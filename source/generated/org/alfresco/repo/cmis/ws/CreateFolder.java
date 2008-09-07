@@ -9,25 +9,23 @@ import javax.xml.bind.annotation.XmlType;
 
 
 /**
- * <p>Java class for createFolder element declaration.
+ * <p>Java class for anonymous complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;element name="createFolder">
- *   &lt;complexType>
- *     &lt;complexContent>
- *       &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *         &lt;sequence>
- *           &lt;element name="repositoryId" type="{http://www.cmis.org/ns/1.0}ID"/>
- *           &lt;element name="typeId" type="{http://www.cmis.org/ns/1.0}ID"/>
- *           &lt;element name="properties" type="{http://www.cmis.org/ns/1.0}propertiesType"/>
- *           &lt;element name="folderId" type="{http://www.cmis.org/ns/1.0}ID"/>
- *         &lt;/sequence>
- *       &lt;/restriction>
- *     &lt;/complexContent>
- *   &lt;/complexType>
- * &lt;/element>
+ * &lt;complexType>
+ *   &lt;complexContent>
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *       &lt;sequence>
+ *         &lt;element name="repositoryId" type="{http://www.w3.org/2001/XMLSchema}string"/>
+ *         &lt;element name="typeId" type="{http://www.w3.org/2001/XMLSchema}string"/>
+ *         &lt;element name="properties" type="{http://www.cmis.org/2008/05}cmisPropertiesType"/>
+ *         &lt;element name="folderId" type="{http://www.w3.org/2001/XMLSchema}string"/>
+ *       &lt;/sequence>
+ *     &lt;/restriction>
+ *   &lt;/complexContent>
+ * &lt;/complexType>
  * </pre>
  * 
  * 
@@ -42,13 +40,13 @@ import javax.xml.bind.annotation.XmlType;
 @XmlRootElement(name = "createFolder")
 public class CreateFolder {
 
-    @XmlElement(namespace = "http://www.cmis.org/ns/1.0", required = true)
+    @XmlElement(required = true)
     protected String repositoryId;
-    @XmlElement(namespace = "http://www.cmis.org/ns/1.0", required = true)
+    @XmlElement(required = true)
     protected String typeId;
-    @XmlElement(namespace = "http://www.cmis.org/ns/1.0", required = true)
-    protected PropertiesType properties;
-    @XmlElement(namespace = "http://www.cmis.org/ns/1.0", required = true)
+    @XmlElement(required = true)
+    protected CmisPropertiesType properties;
+    @XmlElement(required = true)
     protected String folderId;
 
     /**
@@ -104,10 +102,10 @@ public class CreateFolder {
      * 
      * @return
      *     possible object is
-     *     {@link PropertiesType }
+     *     {@link CmisPropertiesType }
      *     
      */
-    public PropertiesType getProperties() {
+    public CmisPropertiesType getProperties() {
         return properties;
     }
 
@@ -116,10 +114,10 @@ public class CreateFolder {
      * 
      * @param value
      *     allowed object is
-     *     {@link PropertiesType }
+     *     {@link CmisPropertiesType }
      *     
      */
-    public void setProperties(PropertiesType value) {
+    public void setProperties(CmisPropertiesType value) {
         this.properties = value;
     }
 

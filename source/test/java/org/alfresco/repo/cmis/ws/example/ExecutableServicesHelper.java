@@ -22,9 +22,10 @@
  * the FLOSS exception, and it is also available here:
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.repo.cmis.ws.example;
+package org.alfresco.cmis.ws.example;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
@@ -37,14 +38,21 @@ import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.xml.namespace.QName;
 import javax.xml.ws.Service;
 
-import org.alfresco.repo.cmis.ws.FolderTreeType;
+import org.alfresco.repo.cmis.ws.CmisObjectType;
+import org.alfresco.repo.cmis.ws.CmisQueryType;
+import org.alfresco.repo.cmis.ws.CmisRepositoryEntryType;
+import org.alfresco.repo.cmis.ws.EnumTypesOfFileableObjects;
 import org.alfresco.repo.cmis.ws.GetChildren;
 import org.alfresco.repo.cmis.ws.GetChildrenResponse;
+import org.alfresco.repo.cmis.ws.GetFolderParent;
+import org.alfresco.repo.cmis.ws.GetRepositories;
+import org.alfresco.repo.cmis.ws.GetRepositoryInfo;
+import org.alfresco.repo.cmis.ws.GetTypes;
 import org.alfresco.repo.cmis.ws.NavigationServicePort;
-import org.alfresco.repo.cmis.ws.RepositoryInfoType;
+import org.alfresco.repo.cmis.ws.ObjectFactory;
 import org.alfresco.repo.cmis.ws.RepositoryServicePort;
-import org.alfresco.repo.cmis.ws.RepositoryType;
-import org.alfresco.repo.cmis.ws.TypesOfFileableObjectsEnum;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.cxf.binding.soap.saaj.SAAJOutInterceptor;
 import org.apache.cxf.endpoint.Client;
 import org.apache.cxf.frontend.ClientProxy;
@@ -65,6 +73,8 @@ public class ExecutableServicesHelper
 
     private static final String NAVIGATION_SERVER_URL_POSTFIX = "/alfresco/cmis/NavigationService?wsdl";
     private static final String REPOSITORY_SERVER_URL_POSTFIX = "/alfresco/cmis/RepositoryService?wsdl";
+
+    private static final Log LOGGER = LogFactory.getLog(ExecutableServicesHelper.class);
 
     private String username;
     private String password;
@@ -126,29 +136,22 @@ public class ExecutableServicesHelper
      * entity types.
      *
      * @param servicesPort - <b>NavigationServicePort</b> configured with <b>WSS4J Client</b> instance
-     * @return <b>List<FolderTreeType></b> - list of all children elements of <b>Company Home</b> folder
+     * @return <b>List< DocumentOrFolderObjectType></b> - list of all children elements of <b>Company Home</b> folder
      * @throws Exception This exception throws when any <b>CMIS Services</b> operations was failed
      */
-    public List<FolderTreeType> receiveSpaceContent(NavigationServicePort servicesPort) throws Exception
+    public List<CmisObjectType> receiveSpaceContent(NavigationServicePort servicesPort) throws Exception
     {
         GetChildrenResponse response;
 
-        try
-        {
-            response = servicesPort.getChildren(configureGetChildrenServiceQuery());
+        response = servicesPort.getChildren(configureGetChildrenServiceQuery());
 
-            if ((response != null) && (response.getChildren().getChild() != null))
-            {
-                return response.getChildren().getChild();
-            }
-            else
-            {
-                return null;
-            }
-        }
-        catch (Exception e)
+        if ((response != null) && (response.getObject() != null))
         {
-            throw new Exception("Can't receive content of Company Home caused: " + e.getMessage());
+            return response.getObject();
+        }
+        else
+        {
+            return null;
         }
     }
 
@@ -161,23 +164,10 @@ public class ExecutableServicesHelper
      */
     public String receiveCompanyHomeObjectId(RepositoryServicePort servicesPort) throws Exception
     {
-        try
-        {
-            List<RepositoryType> repositories = servicesPort.getRepositories();
-            if (repositories.isEmpty())
-            {
-                throw new RuntimeException("List of repositories is empty");
-            }
-            else
-            {
-                RepositoryInfoType repositoryInfo = servicesPort.getRepositoryInfo(repositories.get(0).getRepositoryID());
-                return repositoryInfo.getRootFolderId();
-            }
-        }
-        catch (Exception e)
-        {
-            throw new Exception("Can't receive Repository info caused: " + e.getMessage());
-        }
+        GetRepositoryInfo parameteers = new GetRepositoryInfo();
+        parameteers.setRepositoryId(servicesPort.getRepositories().get(0).getRepositoryID());
+
+        return servicesPort.getRepositoryInfo(parameteers).getRootFolderId();
     }
 
     /**
@@ -196,10 +186,16 @@ public class ExecutableServicesHelper
 
     private GetChildren configureGetChildrenServiceQuery() throws Exception
     {
-        GetChildren requestParameters = new GetChildren();
-        requestParameters.setFilter("*");
-        requestParameters.setFolderId(receiveCompanyHomeObjectId(receiveAuthorizedRepositoryServicePort()));
-        requestParameters.setType(TypesOfFileableObjectsEnum.ANY);
+        ObjectFactory objectFactory = new ObjectFactory();
+
+        RepositoryServicePort authorizedRepositoryServicePort = receiveAuthorizedRepositoryServicePort();
+
+        GetChildren requestParameters = objectFactory.createGetChildren();
+        requestParameters.setRepositoryId(authorizedRepositoryServicePort.getRepositories().get(0).getRepositoryID());
+        requestParameters.setFilter(objectFactory.createGetChildrenFilter("*"));
+        requestParameters.setMaxItems(objectFactory.createGetChildrenMaxItems(BigInteger.valueOf(Long.MAX_VALUE)));
+        requestParameters.setFolderId(receiveCompanyHomeObjectId(authorizedRepositoryServicePort));
+        requestParameters.setType(objectFactory.createGetChildrenType(EnumTypesOfFileableObjects.ANY));
 
         return requestParameters;
     }

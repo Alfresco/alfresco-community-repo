@@ -8,36 +8,33 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
-import org.alfresco.repo.cmis.ws.DeleteTreeResponse.FailedToDelete;
 
 
 /**
- * <p>Java class for deleteTreeResponse element declaration.
+ * <p>Java class for anonymous complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;element name="deleteTreeResponse">
- *   &lt;complexType>
- *     &lt;complexContent>
- *       &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *         &lt;sequence>
- *           &lt;element name="failedToDelete">
- *             &lt;complexType>
- *               &lt;complexContent>
- *                 &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                   &lt;sequence>
- *                     &lt;element name="objectId" type="{http://www.cmis.org/ns/1.0}ID" maxOccurs="unbounded" minOccurs="0"/>
- *                   &lt;/sequence>
- *                 &lt;/restriction>
- *               &lt;/complexContent>
- *             &lt;/complexType>
- *           &lt;/element>
- *         &lt;/sequence>
- *       &lt;/restriction>
- *     &lt;/complexContent>
- *   &lt;/complexType>
- * &lt;/element>
+ * &lt;complexType>
+ *   &lt;complexContent>
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *       &lt;sequence>
+ *         &lt;element name="failedToDelete">
+ *           &lt;complexType>
+ *             &lt;complexContent>
+ *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *                 &lt;sequence>
+ *                   &lt;element name="objectId" type="{http://www.w3.org/2001/XMLSchema}string" maxOccurs="unbounded" minOccurs="0"/>
+ *                 &lt;/sequence>
+ *               &lt;/restriction>
+ *             &lt;/complexContent>
+ *           &lt;/complexType>
+ *         &lt;/element>
+ *       &lt;/sequence>
+ *     &lt;/restriction>
+ *   &lt;/complexContent>
+ * &lt;/complexType>
  * </pre>
  * 
  * 
@@ -49,18 +46,18 @@ import org.alfresco.repo.cmis.ws.DeleteTreeResponse.FailedToDelete;
 @XmlRootElement(name = "deleteTreeResponse")
 public class DeleteTreeResponse {
 
-    @XmlElement(namespace = "http://www.cmis.org/ns/1.0", required = true)
-    protected FailedToDelete failedToDelete;
+    @XmlElement(required = true)
+    protected DeleteTreeResponse.FailedToDelete failedToDelete;
 
     /**
      * Gets the value of the failedToDelete property.
      * 
      * @return
      *     possible object is
-     *     {@link FailedToDelete }
+     *     {@link DeleteTreeResponse.FailedToDelete }
      *     
      */
-    public FailedToDelete getFailedToDelete() {
+    public DeleteTreeResponse.FailedToDelete getFailedToDelete() {
         return failedToDelete;
     }
 
@@ -69,10 +66,10 @@ public class DeleteTreeResponse {
      * 
      * @param value
      *     allowed object is
-     *     {@link FailedToDelete }
+     *     {@link DeleteTreeResponse.FailedToDelete }
      *     
      */
-    public void setFailedToDelete(FailedToDelete value) {
+    public void setFailedToDelete(DeleteTreeResponse.FailedToDelete value) {
         this.failedToDelete = value;
     }
 
@@ -87,7 +84,7 @@ public class DeleteTreeResponse {
      *   &lt;complexContent>
      *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
      *       &lt;sequence>
-     *         &lt;element name="objectId" type="{http://www.cmis.org/ns/1.0}ID" maxOccurs="unbounded" minOccurs="0"/>
+     *         &lt;element name="objectId" type="{http://www.w3.org/2001/XMLSchema}string" maxOccurs="unbounded" minOccurs="0"/>
      *       &lt;/sequence>
      *     &lt;/restriction>
      *   &lt;/complexContent>
@@ -102,7 +99,6 @@ public class DeleteTreeResponse {
     })
     public static class FailedToDelete {
 
-        @XmlElement(namespace = "http://www.cmis.org/ns/1.0", required = true)
         protected List<String> objectId;
 
         /**

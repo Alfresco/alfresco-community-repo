@@ -1,35 +1,35 @@
 
 package org.alfresco.repo.cmis.ws;
 
+import javax.xml.bind.JAXBElement;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
 
 /**
- * <p>Java class for checkIn element declaration.
+ * <p>Java class for anonymous complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;element name="checkIn">
- *   &lt;complexType>
- *     &lt;complexContent>
- *       &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *         &lt;sequence>
- *           &lt;element name="repositoryId" type="{http://www.cmis.org/ns/1.0}ID"/>
- *           &lt;element name="documentId" type="{http://www.cmis.org/ns/1.0}ID"/>
- *           &lt;element name="major" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
- *           &lt;element name="properties" type="{http://www.cmis.org/ns/1.0}propertiesType" minOccurs="0"/>
- *           &lt;element ref="{http://www.cmis.org/ns/1.0}contentStream" minOccurs="0"/>
- *           &lt;element name="checkinComment" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
- *         &lt;/sequence>
- *       &lt;/restriction>
- *     &lt;/complexContent>
- *   &lt;/complexType>
- * &lt;/element>
+ * &lt;complexType>
+ *   &lt;complexContent>
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *       &lt;sequence>
+ *         &lt;element name="repositoryId" type="{http://www.w3.org/2001/XMLSchema}string"/>
+ *         &lt;element name="documentId" type="{http://www.w3.org/2001/XMLSchema}string"/>
+ *         &lt;element name="major" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
+ *         &lt;element name="properties" type="{http://www.cmis.org/2008/05}cmisPropertiesType" minOccurs="0"/>
+ *         &lt;element name="contentStream" type="{http://www.cmis.org/2008/05}cmisContentStreamType" minOccurs="0"/>
+ *         &lt;element name="checkinComment" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
+ *       &lt;/sequence>
+ *     &lt;/restriction>
+ *   &lt;/complexContent>
+ * &lt;/complexType>
  * </pre>
  * 
  * 
@@ -46,18 +46,18 @@ import javax.xml.bind.annotation.XmlType;
 @XmlRootElement(name = "checkIn")
 public class CheckIn {
 
-    @XmlElement(namespace = "http://www.cmis.org/ns/1.0", required = true)
+    @XmlElement(required = true)
     protected String repositoryId;
-    @XmlElement(namespace = "http://www.cmis.org/ns/1.0", required = true)
+    @XmlElement(required = true)
     protected String documentId;
-    @XmlElement(namespace = "http://www.cmis.org/ns/1.0")
-    protected Boolean major;
-    @XmlElement(namespace = "http://www.cmis.org/ns/1.0")
-    protected PropertiesType properties;
-    @XmlElement(namespace = "http://www.cmis.org/ns/1.0")
-    protected ContentStreamType contentStream;
-    @XmlElement(namespace = "http://www.cmis.org/ns/1.0")
-    protected String checkinComment;
+    @XmlElementRef(name = "major", namespace = "http://www.cmis.org/2008/05", type = JAXBElement.class)
+    protected JAXBElement<Boolean> major;
+    @XmlElementRef(name = "properties", namespace = "http://www.cmis.org/2008/05", type = JAXBElement.class)
+    protected JAXBElement<CmisPropertiesType> properties;
+    @XmlElementRef(name = "contentStream", namespace = "http://www.cmis.org/2008/05", type = JAXBElement.class)
+    protected JAXBElement<CmisContentStreamType> contentStream;
+    @XmlElementRef(name = "checkinComment", namespace = "http://www.cmis.org/2008/05", type = JAXBElement.class)
+    protected JAXBElement<String> checkinComment;
 
     /**
      * Gets the value of the repositoryId property.
@@ -112,10 +112,10 @@ public class CheckIn {
      * 
      * @return
      *     possible object is
-     *     {@link Boolean }
+     *     {@link JAXBElement }{@code <}{@link Boolean }{@code >}
      *     
      */
-    public Boolean isMajor() {
+    public JAXBElement<Boolean> getMajor() {
         return major;
     }
 
@@ -124,11 +124,11 @@ public class CheckIn {
      * 
      * @param value
      *     allowed object is
-     *     {@link Boolean }
+     *     {@link JAXBElement }{@code <}{@link Boolean }{@code >}
      *     
      */
-    public void setMajor(Boolean value) {
-        this.major = value;
+    public void setMajor(JAXBElement<Boolean> value) {
+        this.major = ((JAXBElement<Boolean> ) value);
     }
 
     /**
@@ -136,10 +136,10 @@ public class CheckIn {
      * 
      * @return
      *     possible object is
-     *     {@link PropertiesType }
+     *     {@link JAXBElement }{@code <}{@link CmisPropertiesType }{@code >}
      *     
      */
-    public PropertiesType getProperties() {
+    public JAXBElement<CmisPropertiesType> getProperties() {
         return properties;
     }
 
@@ -148,11 +148,11 @@ public class CheckIn {
      * 
      * @param value
      *     allowed object is
-     *     {@link PropertiesType }
+     *     {@link JAXBElement }{@code <}{@link CmisPropertiesType }{@code >}
      *     
      */
-    public void setProperties(PropertiesType value) {
-        this.properties = value;
+    public void setProperties(JAXBElement<CmisPropertiesType> value) {
+        this.properties = ((JAXBElement<CmisPropertiesType> ) value);
     }
 
     /**
@@ -160,10 +160,10 @@ public class CheckIn {
      * 
      * @return
      *     possible object is
-     *     {@link ContentStreamType }
+     *     {@link JAXBElement }{@code <}{@link CmisContentStreamType }{@code >}
      *     
      */
-    public ContentStreamType getContentStream() {
+    public JAXBElement<CmisContentStreamType> getContentStream() {
         return contentStream;
     }
 
@@ -172,11 +172,11 @@ public class CheckIn {
      * 
      * @param value
      *     allowed object is
-     *     {@link ContentStreamType }
+     *     {@link JAXBElement }{@code <}{@link CmisContentStreamType }{@code >}
      *     
      */
-    public void setContentStream(ContentStreamType value) {
-        this.contentStream = value;
+    public void setContentStream(JAXBElement<CmisContentStreamType> value) {
+        this.contentStream = ((JAXBElement<CmisContentStreamType> ) value);
     }
 
     /**
@@ -184,10 +184,10 @@ public class CheckIn {
      * 
      * @return
      *     possible object is
-     *     {@link String }
+     *     {@link JAXBElement }{@code <}{@link String }{@code >}
      *     
      */
-    public String getCheckinComment() {
+    public JAXBElement<String> getCheckinComment() {
         return checkinComment;
     }
 
@@ -196,11 +196,11 @@ public class CheckIn {
      * 
      * @param value
      *     allowed object is
-     *     {@link String }
+     *     {@link JAXBElement }{@code <}{@link String }{@code >}
      *     
      */
-    public void setCheckinComment(String value) {
-        this.checkinComment = value;
+    public void setCheckinComment(JAXBElement<String> value) {
+        this.checkinComment = ((JAXBElement<String> ) value);
     }
 
 }

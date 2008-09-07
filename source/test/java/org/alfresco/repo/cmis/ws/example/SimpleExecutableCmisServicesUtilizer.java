@@ -22,13 +22,14 @@
  * the FLOSS exception, and it is also available here:
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.repo.cmis.ws.example;
+package org.alfresco.cmis.ws.example;
 
 import java.util.List;
 
-import org.alfresco.repo.cmis.ws.FolderTreeType;
-import org.alfresco.repo.cmis.ws.PropertiesType;
-import org.alfresco.repo.cmis.ws.PropertyStringType;
+import org.alfresco.repo.cmis.ws.CmisObjectType;
+import org.alfresco.repo.cmis.ws.CmisPropertiesType;
+import org.alfresco.repo.cmis.ws.CmisProperty;
+import org.alfresco.repo.cmis.ws.CmisPropertyString;
 
 /**
  * This class executes simple processing for prompting server address and user name and password for authentication this user on specified server. After successful connection this
@@ -47,8 +48,6 @@ import org.alfresco.repo.cmis.ws.PropertyStringType;
  */
 public class SimpleExecutableCmisServicesUtilizer
 {
-    private static final String FOLDER_IDENTIFICATOR_SAMPLE_STRING = "folder";
-
     /**
      * Executable entry point - represents main life cycle
      *
@@ -64,7 +63,7 @@ public class SimpleExecutableCmisServicesUtilizer
         if (args.length != 3)
         {
             System.out.println("Usage: cmis-test.bat server_url username password");
-            System.out.println("Example : cmis-test.bat http://localhost:8080/ admin admin");
+            System.out.println("Example : cmis-test.bat http://localhost:8080 admin admin");
             return;
         }
         else
@@ -86,7 +85,7 @@ public class SimpleExecutableCmisServicesUtilizer
             return;
         }
 
-        List<FolderTreeType> response;
+        List<CmisObjectType> response;
 
         try
         {
@@ -95,37 +94,30 @@ public class SimpleExecutableCmisServicesUtilizer
         catch (Exception e)
         {
             System.out.println("Can't receive content of Company Home caused: " + e.getMessage());
+            e.printStackTrace();
             return;
         }
 
         System.out.println("Outing Company Home contents:");
-        for (FolderTreeType item : response)
+        for (CmisObjectType item : response)
         {
-            if (getPropertyStringValue(item.getProperties(), "baseType").contains(FOLDER_IDENTIFICATOR_SAMPLE_STRING))
-            {
-                System.out.println("[" + getPropertyStringValue(item.getProperties(), "name") + "]");
-            }
-            else
-            {
-                System.out.println(getPropertyStringValue(item.getProperties(), "name"));
-            }
+            boolean thisIsFolder = ((CmisPropertyString) getCmisProperty(item.getProperties(), "BaseType")).getValue().contains("folder");
+            String itemName = ((CmisPropertyString) getCmisProperty(item.getProperties(), "Name")).getValue();
+
+            System.out.println(((thisIsFolder) ? ("[") : ("")) + itemName + ((thisIsFolder) ? ("]") : ("")));
         }
     }
 
-    private static String getPropertyStringValue(PropertiesType properties, String propertyName)
+    private static CmisProperty getCmisProperty(CmisPropertiesType properties, String cmisPropertyName)
     {
-        String result = null;
-
-        for (PropertyStringType property : properties.getPropertyString())
+        for (CmisProperty cmisProperty : properties.getProperty())
         {
-            if (propertyName.equals(property.getName()))
+            if (cmisProperty.getName().equalsIgnoreCase(cmisPropertyName))
             {
-                result = property.getValue();
-                break;
+                return cmisProperty;
             }
         }
 
-        return result;
+        return null;
     }
-
 }

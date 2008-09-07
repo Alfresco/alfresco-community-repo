@@ -2,34 +2,34 @@
 package org.alfresco.repo.cmis.ws;
 
 import java.math.BigInteger;
+import javax.xml.bind.JAXBElement;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
 
 /**
- * <p>Java class for getTypes element declaration.
+ * <p>Java class for anonymous complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;element name="getTypes">
- *   &lt;complexType>
- *     &lt;complexContent>
- *       &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *         &lt;sequence>
- *           &lt;element name="repositoryId" type="{http://www.cmis.org/ns/1.0}ID"/>
- *           &lt;element name="typeId" type="{http://www.cmis.org/ns/1.0}ID" minOccurs="0"/>
- *           &lt;element name="returnPropertyDefinitions" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
- *           &lt;element ref="{http://www.cmis.org/ns/1.0}maxItems" minOccurs="0"/>
- *           &lt;element ref="{http://www.cmis.org/ns/1.0}skipCount" minOccurs="0"/>
- *         &lt;/sequence>
- *       &lt;/restriction>
- *     &lt;/complexContent>
- *   &lt;/complexType>
- * &lt;/element>
+ * &lt;complexType>
+ *   &lt;complexContent>
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *       &lt;sequence>
+ *         &lt;element name="repositoryId" type="{http://www.w3.org/2001/XMLSchema}string"/>
+ *         &lt;element name="typeId" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
+ *         &lt;element name="returnPropertyDefinitions" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
+ *         &lt;element name="maxItems" type="{http://www.w3.org/2001/XMLSchema}integer" minOccurs="0"/>
+ *         &lt;element name="skipCount" type="{http://www.w3.org/2001/XMLSchema}integer" minOccurs="0"/>
+ *       &lt;/sequence>
+ *     &lt;/restriction>
+ *   &lt;/complexContent>
+ * &lt;/complexType>
  * </pre>
  * 
  * 
@@ -45,16 +45,16 @@ import javax.xml.bind.annotation.XmlType;
 @XmlRootElement(name = "getTypes")
 public class GetTypes {
 
-    @XmlElement(namespace = "http://www.cmis.org/ns/1.0", required = true)
+    @XmlElement(required = true)
     protected String repositoryId;
-    @XmlElement(namespace = "http://www.cmis.org/ns/1.0")
-    protected String typeId;
-    @XmlElement(namespace = "http://www.cmis.org/ns/1.0")
-    protected Boolean returnPropertyDefinitions;
-    @XmlElement(namespace = "http://www.cmis.org/ns/1.0")
-    protected BigInteger maxItems;
-    @XmlElement(namespace = "http://www.cmis.org/ns/1.0")
-    protected BigInteger skipCount;
+    @XmlElementRef(name = "typeId", namespace = "http://www.cmis.org/2008/05", type = JAXBElement.class)
+    protected JAXBElement<String> typeId;
+    @XmlElementRef(name = "returnPropertyDefinitions", namespace = "http://www.cmis.org/2008/05", type = JAXBElement.class)
+    protected JAXBElement<Boolean> returnPropertyDefinitions;
+    @XmlElementRef(name = "maxItems", namespace = "http://www.cmis.org/2008/05", type = JAXBElement.class)
+    protected JAXBElement<BigInteger> maxItems;
+    @XmlElementRef(name = "skipCount", namespace = "http://www.cmis.org/2008/05", type = JAXBElement.class)
+    protected JAXBElement<BigInteger> skipCount;
 
     /**
      * Gets the value of the repositoryId property.
@@ -85,10 +85,10 @@ public class GetTypes {
      * 
      * @return
      *     possible object is
-     *     {@link String }
+     *     {@link JAXBElement }{@code <}{@link String }{@code >}
      *     
      */
-    public String getTypeId() {
+    public JAXBElement<String> getTypeId() {
         return typeId;
     }
 
@@ -97,11 +97,11 @@ public class GetTypes {
      * 
      * @param value
      *     allowed object is
-     *     {@link String }
+     *     {@link JAXBElement }{@code <}{@link String }{@code >}
      *     
      */
-    public void setTypeId(String value) {
-        this.typeId = value;
+    public void setTypeId(JAXBElement<String> value) {
+        this.typeId = ((JAXBElement<String> ) value);
     }
 
     /**
@@ -109,10 +109,10 @@ public class GetTypes {
      * 
      * @return
      *     possible object is
-     *     {@link Boolean }
+     *     {@link JAXBElement }{@code <}{@link Boolean }{@code >}
      *     
      */
-    public Boolean isReturnPropertyDefinitions() {
+    public JAXBElement<Boolean> getReturnPropertyDefinitions() {
         return returnPropertyDefinitions;
     }
 
@@ -121,11 +121,11 @@ public class GetTypes {
      * 
      * @param value
      *     allowed object is
-     *     {@link Boolean }
+     *     {@link JAXBElement }{@code <}{@link Boolean }{@code >}
      *     
      */
-    public void setReturnPropertyDefinitions(Boolean value) {
-        this.returnPropertyDefinitions = value;
+    public void setReturnPropertyDefinitions(JAXBElement<Boolean> value) {
+        this.returnPropertyDefinitions = ((JAXBElement<Boolean> ) value);
     }
 
     /**
@@ -133,10 +133,10 @@ public class GetTypes {
      * 
      * @return
      *     possible object is
-     *     {@link BigInteger }
+     *     {@link JAXBElement }{@code <}{@link BigInteger }{@code >}
      *     
      */
-    public BigInteger getMaxItems() {
+    public JAXBElement<BigInteger> getMaxItems() {
         return maxItems;
     }
 
@@ -145,11 +145,11 @@ public class GetTypes {
      * 
      * @param value
      *     allowed object is
-     *     {@link BigInteger }
+     *     {@link JAXBElement }{@code <}{@link BigInteger }{@code >}
      *     
      */
-    public void setMaxItems(BigInteger value) {
-        this.maxItems = value;
+    public void setMaxItems(JAXBElement<BigInteger> value) {
+        this.maxItems = ((JAXBElement<BigInteger> ) value);
     }
 
     /**
@@ -157,10 +157,10 @@ public class GetTypes {
      * 
      * @return
      *     possible object is
-     *     {@link BigInteger }
+     *     {@link JAXBElement }{@code <}{@link BigInteger }{@code >}
      *     
      */
-    public BigInteger getSkipCount() {
+    public JAXBElement<BigInteger> getSkipCount() {
         return skipCount;
     }
 
@@ -169,11 +169,11 @@ public class GetTypes {
      * 
      * @param value
      *     allowed object is
-     *     {@link BigInteger }
+     *     {@link JAXBElement }{@code <}{@link BigInteger }{@code >}
      *     
      */
-    public void setSkipCount(BigInteger value) {
-        this.skipCount = value;
+    public void setSkipCount(JAXBElement<BigInteger> value) {
+        this.skipCount = ((JAXBElement<BigInteger> ) value);
     }
 
 }

@@ -9,22 +9,20 @@ import javax.xml.bind.annotation.XmlType;
 
 
 /**
- * <p>Java class for getPropertiesOfLatestVersionResponse element declaration.
+ * <p>Java class for anonymous complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;element name="getPropertiesOfLatestVersionResponse">
- *   &lt;complexType>
- *     &lt;complexContent>
- *       &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *         &lt;sequence>
- *           &lt;element name="object" type="{http://www.cmis.org/ns/1.0}objectType"/>
- *         &lt;/sequence>
- *       &lt;/restriction>
- *     &lt;/complexContent>
- *   &lt;/complexType>
- * &lt;/element>
+ * &lt;complexType>
+ *   &lt;complexContent>
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *       &lt;sequence>
+ *         &lt;element ref="{http://www.cmis.org/2008/05}object"/>
+ *       &lt;/sequence>
+ *     &lt;/restriction>
+ *   &lt;/complexContent>
+ * &lt;/complexType>
  * </pre>
  * 
  * 
@@ -36,18 +34,18 @@ import javax.xml.bind.annotation.XmlType;
 @XmlRootElement(name = "getPropertiesOfLatestVersionResponse")
 public class GetPropertiesOfLatestVersionResponse {
 
-    @XmlElement(namespace = "http://www.cmis.org/ns/1.0", required = true)
-    protected ObjectType object;
+    @XmlElement(required = true)
+    protected CmisObjectType object;
 
     /**
      * Gets the value of the object property.
      * 
      * @return
      *     possible object is
-     *     {@link ObjectType }
+     *     {@link CmisObjectType }
      *     
      */
-    public ObjectType getObject() {
+    public CmisObjectType getObject() {
         return object;
     }
 
@@ -56,10 +54,10 @@ public class GetPropertiesOfLatestVersionResponse {
      * 
      * @param value
      *     allowed object is
-     *     {@link ObjectType }
+     *     {@link CmisObjectType }
      *     
      */
-    public void setObject(ObjectType value) {
+    public void setObject(CmisObjectType value) {
         this.object = value;
     }
 

@@ -2,38 +2,39 @@
 package org.alfresco.repo.cmis.ws;
 
 import java.math.BigInteger;
+import javax.xml.bind.JAXBElement;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
 
 /**
- * <p>Java class for getRelationships element declaration.
+ * <p>Java class for anonymous complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;element name="getRelationships">
- *   &lt;complexType>
- *     &lt;complexContent>
- *       &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *         &lt;sequence>
- *           &lt;element name="repositoryId" type="{http://www.cmis.org/ns/1.0}ID"/>
- *           &lt;element name="objectId" type="{http://www.cmis.org/ns/1.0}ID"/>
- *           &lt;element name="direction" type="{http://www.cmis.org/ns/1.0}relationshipDirectionEnum" minOccurs="0"/>
- *           &lt;element name="typeId" type="{http://www.cmis.org/ns/1.0}ID" minOccurs="0"/>
- *           &lt;element name="includeSubRelationshipTypes" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
- *           &lt;element ref="{http://www.cmis.org/ns/1.0}filter" minOccurs="0"/>
- *           &lt;element name="includeAllowableActions" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
- *           &lt;element ref="{http://www.cmis.org/ns/1.0}maxItems" minOccurs="0"/>
- *           &lt;element ref="{http://www.cmis.org/ns/1.0}skipCount" minOccurs="0"/>
- *         &lt;/sequence>
- *       &lt;/restriction>
- *     &lt;/complexContent>
- *   &lt;/complexType>
- * &lt;/element>
+ * &lt;complexType>
+ *   &lt;complexContent>
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *       &lt;sequence>
+ *         &lt;element name="repositoryId" type="{http://www.w3.org/2001/XMLSchema}string"/>
+ *         &lt;element name="objectId" type="{http://www.w3.org/2001/XMLSchema}string"/>
+ *         &lt;element name="direction" type="{http://www.cmis.org/2008/05}enumRelationshipDirection" minOccurs="0"/>
+ *         &lt;element name="typeId" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
+ *         &lt;element name="includeSubRelationshipTypes" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
+ *         &lt;element name="filter" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
+ *         &lt;element name="includeAllowableActions" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
+ *         &lt;element name="includeRelationships" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
+ *         &lt;element name="maxItems" type="{http://www.w3.org/2001/XMLSchema}integer" minOccurs="0"/>
+ *         &lt;element name="skipCount" type="{http://www.w3.org/2001/XMLSchema}integer" minOccurs="0"/>
+ *       &lt;/sequence>
+ *     &lt;/restriction>
+ *   &lt;/complexContent>
+ * &lt;/complexType>
  * </pre>
  * 
  * 
@@ -47,30 +48,33 @@ import javax.xml.bind.annotation.XmlType;
     "includeSubRelationshipTypes",
     "filter",
     "includeAllowableActions",
+    "includeRelationships",
     "maxItems",
     "skipCount"
 })
 @XmlRootElement(name = "getRelationships")
 public class GetRelationships {
 
-    @XmlElement(namespace = "http://www.cmis.org/ns/1.0", required = true)
+    @XmlElement(required = true)
     protected String repositoryId;
-    @XmlElement(namespace = "http://www.cmis.org/ns/1.0", required = true)
+    @XmlElement(required = true)
     protected String objectId;
-    @XmlElement(namespace = "http://www.cmis.org/ns/1.0")
-    protected RelationshipDirectionEnum direction;
-    @XmlElement(namespace = "http://www.cmis.org/ns/1.0")
-    protected String typeId;
-    @XmlElement(namespace = "http://www.cmis.org/ns/1.0")
-    protected Boolean includeSubRelationshipTypes;
-    @XmlElement(namespace = "http://www.cmis.org/ns/1.0")
-    protected String filter;
-    @XmlElement(namespace = "http://www.cmis.org/ns/1.0")
-    protected Boolean includeAllowableActions;
-    @XmlElement(namespace = "http://www.cmis.org/ns/1.0")
-    protected BigInteger maxItems;
-    @XmlElement(namespace = "http://www.cmis.org/ns/1.0")
-    protected BigInteger skipCount;
+    @XmlElementRef(name = "direction", namespace = "http://www.cmis.org/2008/05", type = JAXBElement.class)
+    protected JAXBElement<EnumRelationshipDirection> direction;
+    @XmlElementRef(name = "typeId", namespace = "http://www.cmis.org/2008/05", type = JAXBElement.class)
+    protected JAXBElement<String> typeId;
+    @XmlElementRef(name = "includeSubRelationshipTypes", namespace = "http://www.cmis.org/2008/05", type = JAXBElement.class)
+    protected JAXBElement<Boolean> includeSubRelationshipTypes;
+    @XmlElementRef(name = "filter", namespace = "http://www.cmis.org/2008/05", type = JAXBElement.class)
+    protected JAXBElement<String> filter;
+    @XmlElementRef(name = "includeAllowableActions", namespace = "http://www.cmis.org/2008/05", type = JAXBElement.class)
+    protected JAXBElement<Boolean> includeAllowableActions;
+    @XmlElementRef(name = "includeRelationships", namespace = "http://www.cmis.org/2008/05", type = JAXBElement.class)
+    protected JAXBElement<Boolean> includeRelationships;
+    @XmlElementRef(name = "maxItems", namespace = "http://www.cmis.org/2008/05", type = JAXBElement.class)
+    protected JAXBElement<BigInteger> maxItems;
+    @XmlElementRef(name = "skipCount", namespace = "http://www.cmis.org/2008/05", type = JAXBElement.class)
+    protected JAXBElement<BigInteger> skipCount;
 
     /**
      * Gets the value of the repositoryId property.
@@ -125,10 +129,10 @@ public class GetRelationships {
      * 
      * @return
      *     possible object is
-     *     {@link RelationshipDirectionEnum }
+     *     {@link JAXBElement }{@code <}{@link EnumRelationshipDirection }{@code >}
      *     
      */
-    public RelationshipDirectionEnum getDirection() {
+    public JAXBElement<EnumRelationshipDirection> getDirection() {
         return direction;
     }
 
@@ -137,11 +141,11 @@ public class GetRelationships {
      * 
      * @param value
      *     allowed object is
-     *     {@link RelationshipDirectionEnum }
+     *     {@link JAXBElement }{@code <}{@link EnumRelationshipDirection }{@code >}
      *     
      */
-    public void setDirection(RelationshipDirectionEnum value) {
-        this.direction = value;
+    public void setDirection(JAXBElement<EnumRelationshipDirection> value) {
+        this.direction = ((JAXBElement<EnumRelationshipDirection> ) value);
     }
 
     /**
@@ -149,10 +153,10 @@ public class GetRelationships {
      * 
      * @return
      *     possible object is
-     *     {@link String }
+     *     {@link JAXBElement }{@code <}{@link String }{@code >}
      *     
      */
-    public String getTypeId() {
+    public JAXBElement<String> getTypeId() {
         return typeId;
     }
 
@@ -161,11 +165,11 @@ public class GetRelationships {
      * 
      * @param value
      *     allowed object is
-     *     {@link String }
+     *     {@link JAXBElement }{@code <}{@link String }{@code >}
      *     
      */
-    public void setTypeId(String value) {
-        this.typeId = value;
+    public void setTypeId(JAXBElement<String> value) {
+        this.typeId = ((JAXBElement<String> ) value);
     }
 
     /**
@@ -173,10 +177,10 @@ public class GetRelationships {
      * 
      * @return
      *     possible object is
-     *     {@link Boolean }
+     *     {@link JAXBElement }{@code <}{@link Boolean }{@code >}
      *     
      */
-    public Boolean isIncludeSubRelationshipTypes() {
+    public JAXBElement<Boolean> getIncludeSubRelationshipTypes() {
         return includeSubRelationshipTypes;
     }
 
@@ -185,11 +189,11 @@ public class GetRelationships {
      * 
      * @param value
      *     allowed object is
-     *     {@link Boolean }
+     *     {@link JAXBElement }{@code <}{@link Boolean }{@code >}
      *     
      */
-    public void setIncludeSubRelationshipTypes(Boolean value) {
-        this.includeSubRelationshipTypes = value;
+    public void setIncludeSubRelationshipTypes(JAXBElement<Boolean> value) {
+        this.includeSubRelationshipTypes = ((JAXBElement<Boolean> ) value);
     }
 
     /**
@@ -197,10 +201,10 @@ public class GetRelationships {
      * 
      * @return
      *     possible object is
-     *     {@link String }
+     *     {@link JAXBElement }{@code <}{@link String }{@code >}
      *     
      */
-    public String getFilter() {
+    public JAXBElement<String> getFilter() {
         return filter;
     }
 
@@ -209,11 +213,11 @@ public class GetRelationships {
      * 
      * @param value
      *     allowed object is
-     *     {@link String }
+     *     {@link JAXBElement }{@code <}{@link String }{@code >}
      *     
      */
-    public void setFilter(String value) {
-        this.filter = value;
+    public void setFilter(JAXBElement<String> value) {
+        this.filter = ((JAXBElement<String> ) value);
     }
 
     /**
@@ -221,10 +225,10 @@ public class GetRelationships {
      * 
      * @return
      *     possible object is
-     *     {@link Boolean }
+     *     {@link JAXBElement }{@code <}{@link Boolean }{@code >}
      *     
      */
-    public Boolean isIncludeAllowableActions() {
+    public JAXBElement<Boolean> getIncludeAllowableActions() {
         return includeAllowableActions;
     }
 
@@ -233,11 +237,35 @@ public class GetRelationships {
      * 
      * @param value
      *     allowed object is
-     *     {@link Boolean }
+     *     {@link JAXBElement }{@code <}{@link Boolean }{@code >}
      *     
      */
-    public void setIncludeAllowableActions(Boolean value) {
-        this.includeAllowableActions = value;
+    public void setIncludeAllowableActions(JAXBElement<Boolean> value) {
+        this.includeAllowableActions = ((JAXBElement<Boolean> ) value);
+    }
+
+    /**
+     * Gets the value of the includeRelationships property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link JAXBElement }{@code <}{@link Boolean }{@code >}
+     *     
+     */
+    public JAXBElement<Boolean> getIncludeRelationships() {
+        return includeRelationships;
+    }
+
+    /**
+     * Sets the value of the includeRelationships property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link JAXBElement }{@code <}{@link Boolean }{@code >}
+     *     
+     */
+    public void setIncludeRelationships(JAXBElement<Boolean> value) {
+        this.includeRelationships = ((JAXBElement<Boolean> ) value);
     }
 
     /**
@@ -245,10 +273,10 @@ public class GetRelationships {
      * 
      * @return
      *     possible object is
-     *     {@link BigInteger }
+     *     {@link JAXBElement }{@code <}{@link BigInteger }{@code >}
      *     
      */
-    public BigInteger getMaxItems() {
+    public JAXBElement<BigInteger> getMaxItems() {
         return maxItems;
     }
 
@@ -257,11 +285,11 @@ public class GetRelationships {
      * 
      * @param value
      *     allowed object is
-     *     {@link BigInteger }
+     *     {@link JAXBElement }{@code <}{@link BigInteger }{@code >}
      *     
      */
-    public void setMaxItems(BigInteger value) {
-        this.maxItems = value;
+    public void setMaxItems(JAXBElement<BigInteger> value) {
+        this.maxItems = ((JAXBElement<BigInteger> ) value);
     }
 
     /**
@@ -269,10 +297,10 @@ public class GetRelationships {
      * 
      * @return
      *     possible object is
-     *     {@link BigInteger }
+     *     {@link JAXBElement }{@code <}{@link BigInteger }{@code >}
      *     
      */
-    public BigInteger getSkipCount() {
+    public JAXBElement<BigInteger> getSkipCount() {
         return skipCount;
     }
 
@@ -281,11 +309,11 @@ public class GetRelationships {
      * 
      * @param value
      *     allowed object is
-     *     {@link BigInteger }
+     *     {@link JAXBElement }{@code <}{@link BigInteger }{@code >}
      *     
      */
-    public void setSkipCount(BigInteger value) {
-        this.skipCount = value;
+    public void setSkipCount(JAXBElement<BigInteger> value) {
+        this.skipCount = ((JAXBElement<BigInteger> ) value);
     }
 
 }

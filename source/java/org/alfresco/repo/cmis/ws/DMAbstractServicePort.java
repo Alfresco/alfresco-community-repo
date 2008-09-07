@@ -29,6 +29,7 @@ import java.math.BigInteger;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
+import javax.xml.bind.JAXBElement;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
@@ -39,6 +40,9 @@ import org.alfresco.cmis.dictionary.CMISMapping;
 import org.alfresco.cmis.property.CMISPropertyService;
 import org.alfresco.cmis.search.CMISQueryService;
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.web.util.paging.Cursor;
+import org.alfresco.repo.web.util.paging.Page;
+import org.alfresco.repo.web.util.paging.Paging;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -58,7 +62,9 @@ import org.alfresco.service.namespace.QName;
 public class DMAbstractServicePort
 {
     private DatatypeFactory _datatypeFactory;
+    private Paging paging = new Paging();
 
+    protected ObjectFactory cmisObjectFactory = new ObjectFactory();
     protected CMISDictionaryService cmisDictionaryService;
     protected CMISQueryService cmisQueryService;
     protected CMISService cmisService;
@@ -84,6 +90,21 @@ public class DMAbstractServicePort
         return _datatypeFactory;
     }
 
+    /**
+     * Asserts "Folder with folderNodeRef exists"
+     *
+     * @param folderNodeRef node reference
+     * @throws FolderNotValidException folderNodeRef doesn't exist or folderNodeRef isn't for folder object
+     */
+    protected void assertExistFolder(NodeRef folderNodeRef) throws FolderNotValidException
+    {
+        CMISMapping cmisMapping = cmisDictionaryService.getCMISMapping();
+        if (folderNodeRef == null || nodeService.exists(folderNodeRef) == false || cmisMapping.isValidCmisFolder(cmisMapping.getCmisType(nodeService.getType(folderNodeRef))) == false)
+        {
+            throw new FolderNotValidException("OID for non-existent object or not folder object");
+        }
+    }
+
     protected NodeRef getNodeRefFromOID(String oid) throws InvalidArgumentException
     {
         NodeRef nodeRef;
@@ -94,93 +115,92 @@ public class DMAbstractServicePort
         }
         catch (AlfrescoRuntimeException e)
         {
-            // TODO: error code
-            throw new  InvalidArgumentException("Invalid OID value", ExceptionUtils.createBasicFault(null, "Invalid OID value"));
+            throw new  InvalidArgumentException("Invalid OID value", e);
         }
 
         return nodeRef;
     }
 
-    private void addBooleanProperty(PropertiesType properties, PropertyFilter filter, String name, NodeRef nodeRef)
+    private void addBooleanProperty(CmisPropertiesType properties, PropertyFilter filter, String name, NodeRef nodeRef)
     {
         Serializable value = cmisPropertyService.getProperty(nodeRef, name);
         if (filter.allow(name) && value != null)
         {
-            PropertyBooleanType propBoolean = new PropertyBooleanType();
-            propBoolean.setName(name);
+            CmisPropertyBoolean propBoolean = new CmisPropertyBoolean ();
+            propBoolean.setName(PropertyUtil.getCMISPropertyName(name));
             propBoolean.setValue((Boolean) value);
-            properties.getPropertyBoolean().add(propBoolean);
+            properties.getProperty().add(propBoolean);
         }
     }
 
-    private void addDateTimeProperty(PropertiesType properties, PropertyFilter filter, String name, NodeRef nodeRef)
+    private void addDateTimeProperty(CmisPropertiesType properties, PropertyFilter filter, String name, NodeRef nodeRef)
     {
         Serializable value = cmisPropertyService.getProperty(nodeRef, name);
         if (filter.allow(name) && value != null)
         {
-            PropertyDateTimeType propDateTime = new PropertyDateTimeType();
-            propDateTime.setName(name);
+            CmisPropertyDateTime propDateTime = new CmisPropertyDateTime();
+            propDateTime.setName(PropertyUtil.getCMISPropertyName(name));
             propDateTime.setValue(convert((Date) value));
-            properties.getPropertyDateTime().add(propDateTime);
+            properties.getProperty().add(propDateTime);
         }
     }
 
-    private void addIDProperty(PropertiesType properties, PropertyFilter filter, String name, NodeRef nodeRef)
+    private void addIDProperty(CmisPropertiesType properties, PropertyFilter filter, String name, NodeRef nodeRef)
     {
         Serializable value = cmisPropertyService.getProperty(nodeRef, name);
         if (filter.allow(name) && value != null)
         {
-            PropertyIDType propID = new PropertyIDType();
-            propID.setName(name);
+            CmisPropertyId propID = new CmisPropertyId();
+            propID.setName(PropertyUtil.getCMISPropertyName(name));
             propID.setValue(value.toString());
-            properties.getPropertyID().add(propID);
+            properties.getProperty().add(propID);
         }
     }
 
-    private void addIntegerProperty(PropertiesType properties, PropertyFilter filter, String name, NodeRef nodeRef)
+    private void addIntegerProperty(CmisPropertiesType properties, PropertyFilter filter, String name, NodeRef nodeRef)
     {
         Serializable value = cmisPropertyService.getProperty(nodeRef, name);
         if (filter.allow(name) && value != null)
         {
-            PropertyIntegerType propInteger = new PropertyIntegerType();
-            propInteger.setName(name);
+            CmisPropertyInteger propInteger = new CmisPropertyInteger();
+            propInteger.setName(PropertyUtil.getCMISPropertyName(name));
             propInteger.setValue(BigInteger.valueOf((Long) value));
-            properties.getPropertyInteger().add(propInteger);
+            properties.getProperty().add(propInteger);
         }
     }
 
-    private void addStringProperty(PropertiesType properties, PropertyFilter filter, String name, NodeRef nodeRef)
+    private void addStringProperty(CmisPropertiesType properties, PropertyFilter filter, String name, NodeRef nodeRef)
     {
         Serializable value = cmisPropertyService.getProperty(nodeRef, name);
         if (filter.allow(name) && value != null)
         {
-            PropertyStringType propString = new PropertyStringType();
-            propString.setName(name);
+            CmisPropertyString propString = new CmisPropertyString();
+            propString.setName(PropertyUtil.getCMISPropertyName(name));
             propString.setValue(value.toString());
-            properties.getPropertyString().add(propString);
+            properties.getProperty().add(propString);
         }
     }
 
-    private void addStringProperty(PropertiesType properties, PropertyFilter filter, String name, String value)
+    private void addStringProperty(CmisPropertiesType properties, PropertyFilter filter, String name, String value)
     {
         if (filter.allow(name) && value != null)
         {
-            PropertyStringType propString = new PropertyStringType();
+            CmisPropertyString propString = new CmisPropertyString();
             propString.setName(name);
             propString.setValue(value);
-            properties.getPropertyString().add(propString);
+            properties.getProperty().add(propString);
         }
     }
 
-    private void addURIProperty(PropertiesType properties, PropertyFilter filter, String name, NodeRef nodeRef)
+    private void addURIProperty(CmisPropertiesType properties, PropertyFilter filter, String name, NodeRef nodeRef)
     {
         Serializable value = cmisPropertyService.getProperty(nodeRef, name);
         if (filter.allow(name) && value != null)
         {
-            PropertyURIType propString = new PropertyURIType();
-            propString.setName(name);
+            CmisPropertyUri propString = new CmisPropertyUri();
+            propString.setName(PropertyUtil.getCMISPropertyName(name));
             propString.setValue(value.toString());
-            properties.getPropertyURI().add(propString);
+            properties.getProperty().add(propString);
         }
     }
 
@@ -191,12 +211,12 @@ public class DMAbstractServicePort
      * @param filter property filter
      * @return properties
      */
-    public PropertiesType getPropertiesType(NodeRef nodeRef, PropertyFilter filter)
+    public CmisPropertiesType getPropertiesType(NodeRef nodeRef, PropertyFilter filter)
     {
         CMISMapping cmisMapping = cmisDictionaryService.getCMISMapping();
         QName cmisType = cmisMapping.getCmisType(nodeService.getType(nodeRef));
 
-        PropertiesType properties = new PropertiesType();
+        CmisPropertiesType properties = new CmisPropertiesType();
 
         if (cmisMapping.isValidCmisDocument(cmisType))
         {
@@ -212,8 +232,8 @@ public class DMAbstractServicePort
             addIDProperty(properties, filter, CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_ID, nodeRef);
             addIntegerProperty(properties, filter, CMISMapping.PROP_CONTENT_STREAM_LENGTH, nodeRef);
             addStringProperty(properties, filter, CMISMapping.PROP_NAME, nodeRef);
-            addStringProperty(properties, filter, "baseType", "document");
-            addIDProperty(properties, filter, CMISMapping.PROP_OBJECT_TYPE_ID, nodeRef);
+            addStringProperty(properties, filter, "BaseType", "document");
+            addStringProperty(properties, filter, CMISMapping.PROP_OBJECT_TYPE_ID, nodeRef);
             addStringProperty(properties, filter, CMISMapping.PROP_CREATED_BY, nodeRef);
             addStringProperty(properties, filter, CMISMapping.PROP_LAST_MODIFIED_BY, nodeRef);
             addStringProperty(properties, filter, CMISMapping.PROP_CONTENT_STREAM_MIME_TYPE, nodeRef);
@@ -230,8 +250,8 @@ public class DMAbstractServicePort
             addIDProperty(properties, filter, CMISMapping.PROP_OBJECT_ID, nodeRef);
             addIDProperty(properties, filter, CMISMapping.PROP_PARENT_ID, nodeRef);
             addStringProperty(properties, filter, CMISMapping.PROP_NAME, nodeRef);
-            addStringProperty(properties, filter, "baseType", "folder");
-            addIDProperty(properties, filter, CMISMapping.PROP_OBJECT_TYPE_ID, nodeRef);
+            addStringProperty(properties, filter, "BaseType", "folder");
+            addStringProperty(properties, filter, CMISMapping.PROP_OBJECT_TYPE_ID, nodeRef);
             addStringProperty(properties, filter, CMISMapping.PROP_CREATED_BY, nodeRef);
             addStringProperty(properties, filter, CMISMapping.PROP_LAST_MODIFIED_BY, nodeRef);
         }
@@ -277,13 +297,24 @@ public class DMAbstractServicePort
         return latestVersionNodeRef;
     }
 
+    public static PropertyFilter createPropertyFilter(JAXBElement<String> filterElt) throws FilterNotValidException
+    {
+        return (filterElt == null) ? (new PropertyFilter()) : (new PropertyFilter(filterElt.getValue()));
+    }
+
+    public Cursor createCursor(int totalRows, BigInteger skipCount, BigInteger maxItems)
+    {
+        Page window = paging.createPageOrWindow(null, null, skipCount != null ? skipCount.intValue() : null, maxItems != null ? maxItems.intValue() : null);
+        return paging.createCursor(totalRows, window);
+    }
+
     /**
      * Converts Date object to XMLGregorianCalendar object
      *
      * @param date Date object
      * @return XMLGregorianCalendar object
      */
-    private XMLGregorianCalendar convert(Date date)
+    public XMLGregorianCalendar convert(Date date)
     {
         GregorianCalendar calendar = new GregorianCalendar();
         calendar.setTime(date);

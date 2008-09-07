@@ -9,22 +9,20 @@ import javax.xml.bind.annotation.XmlType;
 
 
 /**
- * <p>Java class for getAllowableActionsResponse element declaration.
+ * <p>Java class for anonymous complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;element name="getAllowableActionsResponse">
- *   &lt;complexType>
- *     &lt;complexContent>
- *       &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *         &lt;sequence>
- *           &lt;element name="allowableActions" type="{http://www.cmis.org/ns/1.0}allowableActionsType"/>
- *         &lt;/sequence>
- *       &lt;/restriction>
- *     &lt;/complexContent>
- *   &lt;/complexType>
- * &lt;/element>
+ * &lt;complexType>
+ *   &lt;complexContent>
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *       &lt;sequence>
+ *         &lt;element name="allowableActions" type="{http://www.cmis.org/2008/05}cmisAllowableActionsType"/>
+ *       &lt;/sequence>
+ *     &lt;/restriction>
+ *   &lt;/complexContent>
+ * &lt;/complexType>
  * </pre>
  * 
  * 
@@ -36,18 +34,18 @@ import javax.xml.bind.annotation.XmlType;
 @XmlRootElement(name = "getAllowableActionsResponse")
 public class GetAllowableActionsResponse {
 
-    @XmlElement(namespace = "http://www.cmis.org/ns/1.0", required = true)
-    protected AllowableActionsType allowableActions;
+    @XmlElement(required = true)
+    protected CmisAllowableActionsType allowableActions;
 
     /**
      * Gets the value of the allowableActions property.
      * 
      * @return
      *     possible object is
-     *     {@link AllowableActionsType }
+     *     {@link CmisAllowableActionsType }
      *     
      */
-    public AllowableActionsType getAllowableActions() {
+    public CmisAllowableActionsType getAllowableActions() {
         return allowableActions;
     }
 
@@ -56,10 +54,10 @@ public class GetAllowableActionsResponse {
      * 
      * @param value
      *     allowed object is
-     *     {@link AllowableActionsType }
+     *     {@link CmisAllowableActionsType }
      *     
      */
-    public void setAllowableActions(AllowableActionsType value) {
+    public void setAllowableActions(CmisAllowableActionsType value) {
         this.allowableActions = value;
     }
 

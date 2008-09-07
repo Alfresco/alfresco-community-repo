@@ -24,9 +24,6 @@
  */
 package org.alfresco.repo.cmis.ws;
 
-import org.alfresco.repo.cmis.ws.BasicFault;
-import org.alfresco.repo.cmis.ws.PermissionDeniedException;
-import org.alfresco.repo.cmis.ws.RuntimeException;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -47,9 +44,7 @@ public class DMServicePortThrowsAdvice implements ThrowsAdvice
             log.info(e);
         }
 
-        // TODO: error code
-        BasicFault basicFault = ExceptionUtils.createBasicFault(null, "Access denied");
-        throw new PermissionDeniedException("Access denied", basicFault, e);
+        throw new PermissionDeniedException("Access denied", e);
     }
 
     public void afterThrowing(java.lang.RuntimeException e) throws RuntimeException
@@ -59,9 +54,7 @@ public class DMServicePortThrowsAdvice implements ThrowsAdvice
             log.error(e);
         }
 
-        // TODO: error code
-        BasicFault basicFault = ExceptionUtils.createBasicFault(null, "Runtime error");
-        throw new RuntimeException("Runtime error", basicFault, e);
+        throw new RuntimeException("Runtime error", e);
     }
 
 }

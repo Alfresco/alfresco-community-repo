@@ -1,5 +1,10 @@
-﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<definitions xmlns:tns="http://www.cmis.org/ns/1.0" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:ns="http://schemas.xmlsoap.org/soap/encoding/" name="MultiFilingService" targetNamespace="http://www.cmis.org/ns/1.0">
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<definitions xmlns:cmis="http://www.cmis.org/2008/05" 
+xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" 
+xmlns="http://schemas.xmlsoap.org/wsdl/" 
+xmlns:ns="http://schemas.xmlsoap.org/soap/encoding/" name="MultiFilingService" 
+targetNamespace="http://www.cmis.org/2008/05">
   <types>
     <!--
 		<xsd:schema>
@@ -7,77 +12,77 @@
 		</xsd:schema>
 		-->
     <!-- had to use include - .net wsdl.exe code generator doesn't seem to like imports on the schema -->
-    <xsd:schema elementFormDefault="qualified" targetNamespace="http://www.cmis.org/ns/1.0">
+    <xsd:schema elementFormDefault="qualified" targetNamespace="http://www.cmis.org/2008/05">
       <xsd:include schemaLocation="cmisMessageTypes.xsd" />
     </xsd:schema>
   </types>
-  <message name="addObjectToFolder">
-    <part name="parameters" element="tns:addObjectToFolder" />
+  <message name="addObjectToFolderRequest">
+    <part name="parameters" element="cmis:addObjectToFolder" />
   </message>
   <message name="addObjectToFolderResponse">
-    <part name="parameters" element="tns:addObjectToFolderResponse" />
+    <part name="parameters" element="cmis:addObjectToFolderResponse" />
   </message>
-  <message name="removeObjectFromFolder">
-    <part name="parameters" element="tns:removeObjectFromFolder" />
+  <message name="removeObjectFromFolderRequest">
+    <part name="parameters" element="cmis:removeObjectFromFolder" />
   </message>
   <message name="removeObjectFromFolderResponse">
-    <part name="parameters" element="tns:removeObjectFromFolderResponse" />
+    <part name="parameters" element="cmis:removeObjectFromFolderResponse" />
   </message>
   <message name="InvalidArgumentException">
-    <part name="fault" element="tns:invalidArgumentException" />
+    <part name="fault" element="cmis:invalidArgumentException" />
   </message>
   <message name="PermissionDeniedException">
-    <part name="fault" element="tns:permissionDeniedException" />
+    <part name="fault" element="cmis:permissionDeniedException" />
   </message>
   <message name="OperationNotSupportedException">
-    <part name="fault" element="tns:operationNotSupportedException" />
+    <part name="fault" element="cmis:operationNotSupportedException" />
   </message>
   <message name="UpdateConflictException">
-    <part name="fault" element="tns:updateConflictException" />
+    <part name="fault" element="cmis:updateConflictException" />
   </message>
   <message name="RuntimeException">
-    <part name="fault" element="tns:runtimeException" />
+    <part name="fault" element="cmis:runtimeException" />
   </message>
   <message name="ConstraintViolationException">
-    <part name="fault" element="tns:constraintViolationException" />
+    <part name="fault" element="cmis:constraintViolationException" />
   </message>
   <message name="ObjectNotFoundException">
-    <part name="fault" element="tns:objectNotFoundException" />
+    <part name="fault" element="cmis:objectNotFoundException" />
   </message>
   <message name="FolderNotValidException">
-    <part name="fault" element="tns:folderNotValidException" />
+    <part name="fault" element="cmis:folderNotValidException" />
   </message>
   <message name="NotInFolderException">
-    <part name="fault" element="tns:notInFolderException" />
+    <part name="fault" element="cmis:notInFolderException" />
   </message>
   <portType name="MultiFilingServicePort">
     <operation name="addObjectToFolder">
-      <input message="tns:addObjectToFolder" />
-      <output message="tns:addObjectToFolderResponse" />
-      <fault name="InvalidArgumentException" message="tns:InvalidArgumentException" />
-      <fault name="PermissionDeniedException" message="tns:PermissionDeniedException" />
-      <fault name="OperationNotSupportedException" message="tns:OperationNotSupportedException" />
-      <fault name="UpdateConflictException" message="tns:UpdateConflictException" />
-      <fault name="RuntimeException" message="tns:RuntimeException" />
-      <fault name="ConstraintViolationException" message="tns:ConstraintViolationException" />
-      <fault name="ObjectNotFoundException" message="tns:ObjectNotFoundException" />
-      <fault name="FolderNotValidException" message="tns:FolderNotValidException" />
+      <input message="cmis:addObjectToFolderRequest" />
+      <output message="cmis:addObjectToFolderResponse" />
+      <fault name="InvalidArgumentException" message="cmis:InvalidArgumentException" />
+      <fault name="PermissionDeniedException" message="cmis:PermissionDeniedException" />
+      <fault name="OperationNotSupportedException" message="cmis:OperationNotSupportedException" />
+      <fault name="UpdateConflictException" message="cmis:UpdateConflictException" />
+      <fault name="RuntimeException" message="cmis:RuntimeException" />
+      <fault name="ConstraintViolationException" message="cmis:ConstraintViolationException" />
+      <fault name="ObjectNotFoundException" message="cmis:ObjectNotFoundException" />
+      <fault name="FolderNotValidException" message="cmis:FolderNotValidException" />
     </operation>
     <operation name="removeObjectFromFolder">
-      <input message="tns:removeObjectFromFolder" />
-      <output message="tns:removeObjectFromFolderResponse" />
-      <fault name="InvalidArgumentException" message="tns:InvalidArgumentException" />
-      <fault name="PermissionDeniedException" message="tns:PermissionDeniedException" />
-      <fault name="OperationNotSupportedException" message="tns:OperationNotSupportedException" />
-      <fault name="UpdateConflictException" message="tns:UpdateConflictException" />
-      <fault name="RuntimeException" message="tns:RuntimeException" />
-      <fault name="ConstraintViolationException" message="tns:ConstraintViolationException" />
-      <fault name="ObjectNotFoundException" message="tns:ObjectNotFoundException" />
-      <fault name="FolderNotValidException" message="tns:FolderNotValidException" />
-      <fault name="NotInFolderException" message="tns:NotInFolderException" />
+      <input message="cmis:removeObjectFromFolderRequest" />
+      <output message="cmis:removeObjectFromFolderResponse" />
+      <fault name="InvalidArgumentException" message="cmis:InvalidArgumentException" />
+      <fault name="PermissionDeniedException" message="cmis:PermissionDeniedException" />
+      <fault name="OperationNotSupportedException" message="cmis:OperationNotSupportedException" />
+      <fault name="UpdateConflictException" message="cmis:UpdateConflictException" />
+      <fault name="RuntimeException" message="cmis:RuntimeException" />
+      <fault name="ConstraintViolationException" message="cmis:ConstraintViolationException" />
+      <fault name="ObjectNotFoundException" message="cmis:ObjectNotFoundException" />
+      <fault name="FolderNotValidException" message="cmis:FolderNotValidException" />
+      <fault name="NotInFolderException" message="cmis:NotInFolderException" />
     </operation>
   </portType>
-  <binding name="MultiFilingServicePortBinding" type="tns:MultiFilingServicePort">
+  <binding name="MultiFilingServicePortBinding" type="cmis:MultiFilingServicePort">
     <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http" />
     <operation name="addObjectToFolder">
       <soap:operation soapAction="" />
@@ -150,7 +155,7 @@
     </operation>
   </binding>
   <service name="MultiFilingService">
-    <port name="MultiFilingServicePort" binding="tns:MultiFilingServicePortBinding">
+    <port name="MultiFilingServicePort" binding="cmis:MultiFilingServicePortBinding">
       <soap:address location="_REPLACE_WITH_ACTUAL_URL_" />
     </port>
   </service>

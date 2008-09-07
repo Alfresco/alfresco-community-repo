@@ -1,5 +1,11 @@
-﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<definitions xmlns:tns="http://www.cmis.org/ns/1.0" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:ns="http://schemas.xmlsoap.org/soap/encoding/" name="RelationshipService" targetNamespace="http://www.cmis.org/ns/1.0">
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<definitions 
+xmlns:cmis="http://www.cmis.org/2008/05" 
+xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" 
+xmlns="http://schemas.xmlsoap.org/wsdl/" 
+xmlns:ns="http://schemas.xmlsoap.org/soap/encoding/" 
+name="RelationshipService" targetNamespace="http://www.cmis.org/2008/05">
   <types>
     <!--
 		<xsd:schema>
@@ -7,59 +13,59 @@
 		</xsd:schema>
 		-->
     <!-- had to use include - .net wsdl.exe code generator doesn't seem to like imports on the schema -->
-    <xsd:schema elementFormDefault="qualified" targetNamespace="http://www.cmis.org/ns/1.0">
+    <xsd:schema elementFormDefault="qualified" targetNamespace="http://www.cmis.org/2008/05">
       <xsd:include schemaLocation="cmisMessageTypes.xsd" />
     </xsd:schema>
   </types>
-  <message name="getRelationships">
-    <part name="parameters" element="tns:getRelationships" />
+  <message name="getRelationshipsRequest">
+    <part name="parameters" element="cmis:getRelationships" />
   </message>
   <message name="getRelationshipsResponse">
-    <part name="parameters" element="tns:getRelationshipsResponse" />
+    <part name="parameters" element="cmis:getRelationshipsResponse" />
   </message>
   <message name="InvalidArgumentException">
-    <part name="fault" element="tns:invalidArgumentException" />
+    <part name="fault" element="cmis:invalidArgumentException" />
   </message>
   <message name="PermissionDeniedException">
-    <part name="fault" element="tns:permissionDeniedException" />
+    <part name="fault" element="cmis:permissionDeniedException" />
   </message>
   <message name="OperationNotSupportedException">
-    <part name="fault" element="tns:operationNotSupportedException" />
+    <part name="fault" element="cmis:operationNotSupportedException" />
   </message>
   <message name="UpdateConflictException">
-    <part name="fault" element="tns:updateConflictException" />
+    <part name="fault" element="cmis:updateConflictException" />
   </message>
   <message name="RuntimeException">
-    <part name="fault" element="tns:runtimeException" />
+    <part name="fault" element="cmis:runtimeException" />
   </message>
   <message name="ConstraintViolationException">
-    <part name="fault" element="tns:constraintViolationException" />
+    <part name="fault" element="cmis:constraintViolationException" />
   </message>
   <message name="ObjectNotFoundException">
-    <part name="fault" element="tns:objectNotFoundException" />
+    <part name="fault" element="cmis:objectNotFoundException" />
   </message>
   <message name="FilterNotValidException">
-    <part name="fault" element="tns:filterNotValidException" />
+    <part name="fault" element="cmis:filterNotValidException" />
   </message>
   <message name="TypeNotFoundException">
-    <part name="fault" element="tns:typeNotFoundException" />
+    <part name="fault" element="cmis:typeNotFoundException" />
   </message>
   <portType name="RelationshipServicePort">
     <operation name="getRelationships">
-      <input message="tns:getRelationships" />
-      <output message="tns:getRelationshipsResponse" />
-      <fault message="tns:InvalidArgumentException" name="InvalidArgumentException" />
-      <fault message="tns:PermissionDeniedException" name="PermissionDeniedException" />
-      <fault message="tns:OperationNotSupportedException" name="OperationNotSupportedException" />
-      <fault message="tns:UpdateConflictException" name="UpdateConflictException" />
-      <fault message="tns:RuntimeException" name="RuntimeException" />
-      <fault message="tns:ConstraintViolationException" name="ConstraintViolationException" />
-      <fault message="tns:ObjectNotFoundException" name="ObjectNotFoundException" />
-      <fault message="tns:FilterNotValidException" name="FilterNotValidException" />
-      <fault message="tns:TypeNotFoundException" name="TypeNotFoundException" />
+      <input message="cmis:getRelationshipsRequest" />
+      <output message="cmis:getRelationshipsResponse" />
+      <fault message="cmis:InvalidArgumentException" name="InvalidArgumentException" />
+      <fault message="cmis:PermissionDeniedException" name="PermissionDeniedException" />
+      <fault message="cmis:OperationNotSupportedException" name="OperationNotSupportedException" />
+      <fault message="cmis:UpdateConflictException" name="UpdateConflictException" />
+      <fault message="cmis:RuntimeException" name="RuntimeException" />
+      <fault message="cmis:ConstraintViolationException" name="ConstraintViolationException" />
+      <fault message="cmis:ObjectNotFoundException" name="ObjectNotFoundException" />
+      <fault message="cmis:FilterNotValidException" name="FilterNotValidException" />
+      <fault message="cmis:TypeNotFoundException" name="TypeNotFoundException" />
     </operation>
   </portType>
-  <binding name="RelationshipServicePortBinding" type="tns:RelationshipServicePort">
+  <binding name="RelationshipServicePortBinding" type="cmis:RelationshipServicePort">
     <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http" />
     <operation name="getRelationships">
       <soap:operation soapAction="" />
@@ -99,7 +105,7 @@
     </operation>
   </binding>
   <service name="RelationshipService">
-    <port name="RelationshipServicePort" binding="tns:RelationshipServicePortBinding">
+    <port name="RelationshipServicePort" binding="cmis:RelationshipServicePortBinding">
       <soap:address location="_REPLACE_WITH_ACTUAL_URL_" />
     </port>
   </service>

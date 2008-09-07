@@ -9,24 +9,21 @@ import javax.xml.bind.annotation.XmlType;
 
 
 /**
- * <p>Java class for getAllowableActions element declaration.
+ * <p>Java class for anonymous complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;element name="getAllowableActions">
- *   &lt;complexType>
- *     &lt;complexContent>
- *       &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *         &lt;sequence>
- *           &lt;element name="repositoryId" type="{http://www.cmis.org/ns/1.0}ID"/>
- *           &lt;element name="objectId" type="{http://www.cmis.org/ns/1.0}ID"/>
- *           &lt;element name="asUser" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
- *         &lt;/sequence>
- *       &lt;/restriction>
- *     &lt;/complexContent>
- *   &lt;/complexType>
- * &lt;/element>
+ * &lt;complexType>
+ *   &lt;complexContent>
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *       &lt;sequence>
+ *         &lt;element name="repositoryId" type="{http://www.w3.org/2001/XMLSchema}string"/>
+ *         &lt;element name="objectId" type="{http://www.w3.org/2001/XMLSchema}string"/>
+ *       &lt;/sequence>
+ *     &lt;/restriction>
+ *   &lt;/complexContent>
+ * &lt;/complexType>
  * </pre>
  * 
  * 
@@ -34,18 +31,15 @@ import javax.xml.bind.annotation.XmlType;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
     "repositoryId",
-    "objectId",
-    "asUser"
+    "objectId"
 })
 @XmlRootElement(name = "getAllowableActions")
 public class GetAllowableActions {
 
-    @XmlElement(namespace = "http://www.cmis.org/ns/1.0", required = true)
+    @XmlElement(required = true)
     protected String repositoryId;
-    @XmlElement(namespace = "http://www.cmis.org/ns/1.0", required = true)
+    @XmlElement(required = true)
     protected String objectId;
-    @XmlElement(namespace = "http://www.cmis.org/ns/1.0")
-    protected String asUser;
 
     /**
      * Gets the value of the repositoryId property.
@@ -93,30 +87,6 @@ public class GetAllowableActions {
      */
     public void setObjectId(String value) {
         this.objectId = value;
-    }
-
-    /**
-     * Gets the value of the asUser property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getAsUser() {
-        return asUser;
-    }
-
-    /**
-     * Sets the value of the asUser property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setAsUser(String value) {
-        this.asUser = value;
     }
 
 }

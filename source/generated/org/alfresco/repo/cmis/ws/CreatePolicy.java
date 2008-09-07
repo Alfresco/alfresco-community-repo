@@ -1,33 +1,33 @@
 
 package org.alfresco.repo.cmis.ws;
 
+import javax.xml.bind.JAXBElement;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
 
 /**
- * <p>Java class for createPolicy element declaration.
+ * <p>Java class for anonymous complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;element name="createPolicy">
- *   &lt;complexType>
- *     &lt;complexContent>
- *       &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *         &lt;sequence>
- *           &lt;element name="repositoryId" type="{http://www.cmis.org/ns/1.0}ID"/>
- *           &lt;element name="typeId" type="{http://www.cmis.org/ns/1.0}ID"/>
- *           &lt;element name="properties" type="{http://www.cmis.org/ns/1.0}propertiesType"/>
- *           &lt;element name="folderId" type="{http://www.cmis.org/ns/1.0}ID" minOccurs="0"/>
- *         &lt;/sequence>
- *       &lt;/restriction>
- *     &lt;/complexContent>
- *   &lt;/complexType>
- * &lt;/element>
+ * &lt;complexType>
+ *   &lt;complexContent>
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *       &lt;sequence>
+ *         &lt;element name="repositoryId" type="{http://www.w3.org/2001/XMLSchema}string"/>
+ *         &lt;element name="typeId" type="{http://www.w3.org/2001/XMLSchema}string"/>
+ *         &lt;element name="properties" type="{http://www.cmis.org/2008/05}cmisPropertiesType"/>
+ *         &lt;element name="folderId" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
+ *       &lt;/sequence>
+ *     &lt;/restriction>
+ *   &lt;/complexContent>
+ * &lt;/complexType>
  * </pre>
  * 
  * 
@@ -42,14 +42,14 @@ import javax.xml.bind.annotation.XmlType;
 @XmlRootElement(name = "createPolicy")
 public class CreatePolicy {
 
-    @XmlElement(namespace = "http://www.cmis.org/ns/1.0", required = true)
+    @XmlElement(required = true)
     protected String repositoryId;
-    @XmlElement(namespace = "http://www.cmis.org/ns/1.0", required = true)
+    @XmlElement(required = true)
     protected String typeId;
-    @XmlElement(namespace = "http://www.cmis.org/ns/1.0", required = true)
-    protected PropertiesType properties;
-    @XmlElement(namespace = "http://www.cmis.org/ns/1.0")
-    protected String folderId;
+    @XmlElement(required = true)
+    protected CmisPropertiesType properties;
+    @XmlElementRef(name = "folderId", namespace = "http://www.cmis.org/2008/05", type = JAXBElement.class)
+    protected JAXBElement<String> folderId;
 
     /**
      * Gets the value of the repositoryId property.
@@ -104,10 +104,10 @@ public class CreatePolicy {
      * 
      * @return
      *     possible object is
-     *     {@link PropertiesType }
+     *     {@link CmisPropertiesType }
      *     
      */
-    public PropertiesType getProperties() {
+    public CmisPropertiesType getProperties() {
         return properties;
     }
 
@@ -116,10 +116,10 @@ public class CreatePolicy {
      * 
      * @param value
      *     allowed object is
-     *     {@link PropertiesType }
+     *     {@link CmisPropertiesType }
      *     
      */
-    public void setProperties(PropertiesType value) {
+    public void setProperties(CmisPropertiesType value) {
         this.properties = value;
     }
 
@@ -128,10 +128,10 @@ public class CreatePolicy {
      * 
      * @return
      *     possible object is
-     *     {@link String }
+     *     {@link JAXBElement }{@code <}{@link String }{@code >}
      *     
      */
-    public String getFolderId() {
+    public JAXBElement<String> getFolderId() {
         return folderId;
     }
 
@@ -140,11 +140,11 @@ public class CreatePolicy {
      * 
      * @param value
      *     allowed object is
-     *     {@link String }
+     *     {@link JAXBElement }{@code <}{@link String }{@code >}
      *     
      */
-    public void setFolderId(String value) {
-        this.folderId = value;
+    public void setFolderId(JAXBElement<String> value) {
+        this.folderId = ((JAXBElement<String> ) value);
     }
 
 }

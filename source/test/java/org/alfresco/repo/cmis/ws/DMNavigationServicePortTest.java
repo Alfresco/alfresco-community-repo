@@ -54,11 +54,13 @@ public class DMNavigationServicePortTest extends BaseServicePortContentTest
         authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
 
         GetChildren request = new GetChildren();
+        request.setRepositoryId(repositoryId);
+        request.setMaxItems(cmisObjectFactory.createGetChildrenMaxItems(BigInteger.valueOf(3)));
         request.setFolderId(rootNodeRef.toString());
-        request.setType(TypesOfFileableObjectsEnum.FOLDERS);
+        request.setType(cmisObjectFactory.createGetChildrenType(EnumTypesOfFileableObjects.FOLDERS));
 
         GetChildrenResponse response = navigationServicePort.getChildren(request);
-        List<FolderTreeType> listing = response.getChildren().getChild();
+        List<CmisObjectType> listing = response.getObject();
         NodeRef[] expectedNodeRefs = new NodeRef[] { L0_FOLDER_0_NODEREF, L0_FOLDER_1_NODEREF, L0_FOLDER_2_NODEREF };
         checkListExact(listing, 0, 3, expectedNodeRefs);
     }
@@ -68,11 +70,12 @@ public class DMNavigationServicePortTest extends BaseServicePortContentTest
         authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
 
         GetChildren request = new GetChildren();
+        request.setRepositoryId(repositoryId);
         request.setFolderId(rootNodeRef.toString());
-        request.setType(TypesOfFileableObjectsEnum.DOCUMENTS);
+        request.setType(cmisObjectFactory.createGetChildrenType(EnumTypesOfFileableObjects.DOCUMENTS));
 
         GetChildrenResponse response = navigationServicePort.getChildren(request);
-        List<FolderTreeType> listing = response.getChildren().getChild();
+        List<CmisObjectType> listing = response.getObject();
         NodeRef[] expectedNodeRefs = new NodeRef[] { L0_FILE_0_NODEREF, L0_FILE_1_NODEREF, L0_FILE_2_NODEREF };
         checkListExact(listing, 3, 0, expectedNodeRefs);
     }
@@ -82,12 +85,13 @@ public class DMNavigationServicePortTest extends BaseServicePortContentTest
         authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
 
         GetChildren request = new GetChildren();
-        request.setSkipCount(BigInteger.valueOf(1));
+        request.setRepositoryId(repositoryId);
+        request.setSkipCount(cmisObjectFactory.createGetChildrenSkipCount(BigInteger.valueOf(1)));
         request.setFolderId(rootNodeRef.toString());
-        request.setType(TypesOfFileableObjectsEnum.ANY);
+        request.setType(cmisObjectFactory.createGetChildrenType(EnumTypesOfFileableObjects.ANY));
 
         GetChildrenResponse response = navigationServicePort.getChildren(request);
-        List<FolderTreeType> listing = response.getChildren().getChild();
+        List<CmisObjectType> listing = response.getObject();
         NodeRef[] expectedNodeRefs = new NodeRef[] { L0_FOLDER_0_NODEREF, L0_FOLDER_1_NODEREF, L0_FOLDER_2_NODEREF, L0_FILE_0_NODEREF, L0_FILE_1_NODEREF, L0_FILE_2_NODEREF };
         checkList(listing, 5, 3, 3, expectedNodeRefs);
     }
@@ -97,12 +101,13 @@ public class DMNavigationServicePortTest extends BaseServicePortContentTest
         authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
 
         GetChildren request = new GetChildren();
-        request.setMaxItems(BigInteger.valueOf(3));
+        request.setRepositoryId(repositoryId);
+        request.setMaxItems(cmisObjectFactory.createGetChildrenMaxItems(BigInteger.valueOf(3)));
         request.setFolderId(rootNodeRef.toString());
-        request.setType(TypesOfFileableObjectsEnum.ANY);
+        request.setType(cmisObjectFactory.createGetChildrenType(EnumTypesOfFileableObjects.ANY));
 
         GetChildrenResponse response = navigationServicePort.getChildren(request);
-        List<FolderTreeType> listing = response.getChildren().getChild();
+        List<CmisObjectType> listing = response.getObject();
         NodeRef[] expectedNodeRefs = new NodeRef[] { L0_FOLDER_0_NODEREF, L0_FOLDER_1_NODEREF, L0_FOLDER_2_NODEREF, L0_FILE_0_NODEREF, L0_FILE_1_NODEREF, L0_FILE_2_NODEREF };
         checkList(listing, 3, 3, 3, expectedNodeRefs);
     }
@@ -112,12 +117,13 @@ public class DMNavigationServicePortTest extends BaseServicePortContentTest
         authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
 
         GetChildren request = new GetChildren();
-        request.setMaxItems(BigInteger.valueOf(10));
+        request.setRepositoryId(repositoryId);
+        request.setMaxItems(cmisObjectFactory.createGetChildrenMaxItems(BigInteger.valueOf(10)));
         request.setFolderId(rootNodeRef.toString());
-        request.setType(TypesOfFileableObjectsEnum.ANY);
+        request.setType(cmisObjectFactory.createGetChildrenType(EnumTypesOfFileableObjects.ANY));
 
         GetChildrenResponse response = navigationServicePort.getChildren(request);
-        List<FolderTreeType> listing = response.getChildren().getChild();
+        List<CmisObjectType> listing = response.getObject();
         NodeRef[] expectedNodeRefs = new NodeRef[] { L0_FOLDER_0_NODEREF, L0_FOLDER_1_NODEREF, L0_FOLDER_2_NODEREF, L0_FILE_0_NODEREF, L0_FILE_1_NODEREF, L0_FILE_2_NODEREF };
         checkList(listing, 6, 3, 3, expectedNodeRefs);
     }
@@ -127,12 +133,13 @@ public class DMNavigationServicePortTest extends BaseServicePortContentTest
         authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
 
         GetChildren request = new GetChildren();
-        request.setSkipCount(BigInteger.valueOf(10));
+        request.setRepositoryId(repositoryId);
+        request.setSkipCount(cmisObjectFactory.createGetChildrenSkipCount(BigInteger.valueOf(10)));
         request.setFolderId(rootNodeRef.toString());
-        request.setType(TypesOfFileableObjectsEnum.ANY);
+        request.setType(cmisObjectFactory.createGetChildrenType(EnumTypesOfFileableObjects.ANY));
 
         GetChildrenResponse response = navigationServicePort.getChildren(request);
-        List<FolderTreeType> listing = response.getChildren().getChild();
+        List<CmisObjectType> listing = response.getObject();
         NodeRef[] expectedNodeRefs = new NodeRef[] { L0_FOLDER_0_NODEREF, L0_FOLDER_1_NODEREF, L0_FOLDER_2_NODEREF, L0_FILE_0_NODEREF, L0_FILE_1_NODEREF, L0_FILE_2_NODEREF };
         checkList(listing, 0, 3, 3, expectedNodeRefs);
     }
@@ -142,13 +149,14 @@ public class DMNavigationServicePortTest extends BaseServicePortContentTest
         authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
 
         GetChildren request = new GetChildren();
-        request.setSkipCount(BigInteger.valueOf(5));
-        request.setMaxItems(BigInteger.valueOf(4));
+        request.setRepositoryId(repositoryId);
+        request.setSkipCount(cmisObjectFactory.createGetChildrenSkipCount(BigInteger.valueOf(5)));
+        request.setMaxItems(cmisObjectFactory.createGetChildrenMaxItems(BigInteger.valueOf(4)));
         request.setFolderId(rootNodeRef.toString());
-        request.setType(TypesOfFileableObjectsEnum.ANY);
+        request.setType(cmisObjectFactory.createGetChildrenType(EnumTypesOfFileableObjects.ANY));
 
         GetChildrenResponse response = navigationServicePort.getChildren(request);
-        List<FolderTreeType> listing = response.getChildren().getChild();
+        List<CmisObjectType> listing = response.getObject();
         NodeRef[] expectedNodeRefs = new NodeRef[] { L0_FOLDER_0_NODEREF, L0_FOLDER_1_NODEREF, L0_FOLDER_2_NODEREF, L0_FILE_0_NODEREF, L0_FILE_1_NODEREF, L0_FILE_2_NODEREF };
         checkList(listing, 1, 3, 3, expectedNodeRefs);
     }
@@ -158,12 +166,13 @@ public class DMNavigationServicePortTest extends BaseServicePortContentTest
         authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
 
         GetChildren request = new GetChildren();
-        request.setMaxItems(BigInteger.valueOf(0));
+        request.setRepositoryId(repositoryId);
+        request.setMaxItems(cmisObjectFactory.createGetChildrenMaxItems(BigInteger.valueOf(0)));
         request.setFolderId(rootNodeRef.toString());
-        request.setType(TypesOfFileableObjectsEnum.ANY);
+        request.setType(cmisObjectFactory.createGetChildrenType(EnumTypesOfFileableObjects.ANY));
 
         GetChildrenResponse response = navigationServicePort.getChildren(request);
-        List<FolderTreeType> listing = response.getChildren().getChild();
+        List<CmisObjectType> listing = response.getObject();
         NodeRef[] expectedNodeRefs = new NodeRef[] { L0_FOLDER_0_NODEREF, L0_FOLDER_1_NODEREF, L0_FOLDER_2_NODEREF, L0_FILE_0_NODEREF, L0_FILE_1_NODEREF, L0_FILE_2_NODEREF };
         checkListExact(listing, 3, 3, expectedNodeRefs);
     }
@@ -173,8 +182,9 @@ public class DMNavigationServicePortTest extends BaseServicePortContentTest
         authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
 
         GetChildren request = new GetChildren();
+        request.setRepositoryId(repositoryId);
         request.setFolderId(L0_FILE_0_NODEREF.toString());
-        request.setType(TypesOfFileableObjectsEnum.ANY);
+        request.setType(cmisObjectFactory.createGetChildrenType(EnumTypesOfFileableObjects.ANY));
 
         try
         {
@@ -188,7 +198,7 @@ public class DMNavigationServicePortTest extends BaseServicePortContentTest
         fail("Expects exception");
     }
 
-    private void checkListExact(List<FolderTreeType> objects, int expectedFileCount, int expectedFolderCount, NodeRef[] expectedNodeRefs)
+    private void checkListExact(List<CmisObjectType> objects, int expectedFileCount, int expectedFolderCount, NodeRef[] expectedNodeRefs)
     {
         int fileCount = 0;
         int folderCount = 0;
@@ -199,9 +209,9 @@ public class DMNavigationServicePortTest extends BaseServicePortContentTest
             check.add(nodeRef);
         }
 
-        for (FolderTreeType object : objects)
+        for (CmisObjectType object : objects)
         {
-            NodeRef nodeRef = new NodeRef(getPropertyIDValue(object.getProperties(), CMISMapping.PROP_OBJECT_ID));
+            NodeRef nodeRef = new NodeRef((String) PropertyUtil.getProperty(object.getProperties(), CMISMapping.PROP_OBJECT_ID));
 
             if (cmisMapping.isValidCmisFolder(cmisMapping.getCmisType(nodeService.getType(nodeRef))))
             {
@@ -220,7 +230,7 @@ public class DMNavigationServicePortTest extends BaseServicePortContentTest
         assertEquals("Incorrect number of folders", expectedFolderCount, folderCount);
     }
 
-    private void checkList(List<FolderTreeType> objects, int expectedCount, int expectedMaxFileCount, int expectedMaxFolderCount, NodeRef[] expectedNodeRefs)
+    private void checkList(List<CmisObjectType> objects, int expectedCount, int expectedMaxFileCount, int expectedMaxFolderCount, NodeRef[] expectedNodeRefs)
     {
         int fileCount = 0;
         int folderCount = 0;
@@ -231,9 +241,9 @@ public class DMNavigationServicePortTest extends BaseServicePortContentTest
             check.add(nodeRef);
         }
 
-        for (FolderTreeType object : objects)
+        for (CmisObjectType object : objects)
         {
-            NodeRef nodeRef = new NodeRef(getPropertyIDValue(object.getProperties(), CMISMapping.PROP_OBJECT_ID));
+            NodeRef nodeRef = new NodeRef((String) PropertyUtil.getProperty(object.getProperties(), CMISMapping.PROP_OBJECT_ID));
 
             if (cmisMapping.isValidCmisFolder(cmisMapping.getCmisType(nodeService.getType(nodeRef))))
             {

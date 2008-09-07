@@ -18,12 +18,12 @@
 
         <jaxws:outInterceptors>
             <ref local="saajOutInterceptor" />
-<!--            <ref local="wss4jOutInterceptor" /> -->
+            <ref local="wss4jOutInterceptor" />
         </jaxws:outInterceptors>
 
         <jaxws:outFaultInterceptors>
             <ref local="saajOutInterceptor" />
-<!--             <ref local="wss4jOutInterceptor" /> -->
+            <ref local="wss4jOutInterceptor" />
         </jaxws:outFaultInterceptors>
 
         <jaxws:properties>
@@ -44,12 +44,12 @@
 
         <jaxws:outInterceptors>
             <ref local="saajOutInterceptor" />
-<!--             <ref local="wss4jOutInterceptor" />  -->
+            <ref local="wss4jOutInterceptor" />
         </jaxws:outInterceptors>
 
         <jaxws:outFaultInterceptors>
             <ref local="saajOutInterceptor" />
-<!--             <ref local="wss4jOutInterceptor" />  -->
+            <ref local="wss4jOutInterceptor" />
         </jaxws:outFaultInterceptors>
 
         <jaxws:properties>
@@ -70,12 +70,12 @@
 
         <jaxws:outInterceptors>
             <ref local="saajOutInterceptor" />
-<!--             <ref local="wss4jOutInterceptor" />  -->
+            <ref local="wss4jOutInterceptorWithMTOM" />
         </jaxws:outInterceptors>
 
         <jaxws:outFaultInterceptors>
             <ref local="saajOutInterceptor" />
-<!--               <ref local="wss4jOutInterceptor" />  -->
+            <ref local="wss4jOutInterceptor" />
         </jaxws:outFaultInterceptors>
 
         <jaxws:properties>
@@ -198,8 +198,19 @@
         <constructor-arg>
             <map>
                 <entry key="action" value="Timestamp" />
+                <entry key="mustUnderstand" value="false" />
             </map>
         </constructor-arg>
+    </bean>
+
+    <bean id="wss4jOutInterceptorWithMTOM" class="org.apache.cxf.ws.security.wss4j.WSS4JOutInterceptor">
+        <constructor-arg>
+            <map>
+                <entry key="action" value="Timestamp" />
+                <entry key="mustUnderstand" value="false" />
+            </map>
+        </constructor-arg>
+        <property name="allowMTOM" value="true" />
     </bean>
 
     <bean id="authenticationTokenCallback" class="org.alfresco.repo.cmis.ws.AuthenticationTokenCallbackHandler">

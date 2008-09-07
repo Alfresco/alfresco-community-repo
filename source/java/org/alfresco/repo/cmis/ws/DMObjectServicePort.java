@@ -24,14 +24,22 @@
  */
 package org.alfresco.repo.cmis.ws;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Serializable;
 import java.math.BigInteger;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.activation.DataHandler;
 import javax.xml.ws.Holder;
 
 import org.alfresco.cmis.dictionary.CMISMapping;
+import org.alfresco.cmis.dictionary.CMISTypeId;
 import org.alfresco.repo.cmis.ws.DeleteTreeResponse.FailedToDelete;
+import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
@@ -45,150 +53,273 @@ import org.alfresco.service.namespace.QName;
 public class DMObjectServicePort extends DMAbstractServicePort implements ObjectServicePort
 {
 
-    public CreateDocumentResponse createDocument(CreateDocument parameters) throws RuntimeException, InvalidArgumentException, TypeNotFoundException, StorageException,
-            ConstraintViolationException, OperationNotSupportedException, UpdateConflictException, StreamNotSupportedException, FolderNotValidException, PermissionDeniedException
+    private Map<String, Serializable> getPropertiesMap(CmisPropertiesType cmisProperties) throws InvalidArgumentException
+    {
+        Map<String, Serializable> properties = new HashMap<String, Serializable>();
+
+        for (CmisProperty cmisProperty : cmisProperties.getProperty())
+        {
+            String name = PropertyUtil.getRepositoryPropertyName(cmisProperty.getName());
+
+            if (name == null)
+            {
+                throw new InvalidArgumentException("Unknown property with name " + name);
+            }
+
+            properties.put(name, PropertyUtil.getValue(cmisProperty));
+        }
+
+        return properties;
+    }
+
+    public String createDocument(String repositoryId, String typeId, CmisPropertiesType properties, String folderId, CmisContentStreamType contentStream,
+            EnumVersioningState versioningState) throws PermissionDeniedException, UpdateConflictException, StorageException, StreamNotSupportedException, FolderNotValidException,
+            OperationNotSupportedException, TypeNotFoundException, InvalidArgumentException, RuntimeException, ConstraintViolationException
+    {
+
+        if (descriptorService.getServerDescriptor().getId().equals(repositoryId) == false)
+        {
+            throw new InvalidArgumentException("Invalid repository id");
+        }
+
+        Map<String, Serializable> propertiesMap = getPropertiesMap(properties);
+        CMISMapping cmisMapping = cmisDictionaryService.getCMISMapping();
+        CMISTypeId cmisTypeId = cmisMapping.getCmisTypeId(typeId);
+
+        if (cmisMapping.getCmisTypeId(typeId).equals(CMISMapping.DOCUMENT_TYPE_ID) == false)
+        {
+            throw new ConstraintViolationException("Invalid document type");
+        }
+
+        NodeRef parentNodeRef = getNodeRefFromOID(folderId);
+
+        if (!nodeService.exists(parentNodeRef))
+        {
+            throw new FolderNotValidException("Invalid parent OID");
+        }
+
+        String documentName = (String) propertiesMap.get(CMISMapping.PROP_NAME);
+        if (documentName == null)
+        {
+            throw new InvalidArgumentException("Name property not found");
+        }
+
+        NodeRef newDocumentNodeRef = fileFolderService.create(parentNodeRef, documentName, cmisTypeId.getQName()).getNodeRef();
+        ContentWriter writer = fileFolderService.getWriter(newDocumentNodeRef);
+        String mimeType = (String) propertiesMap.get(CMISMapping.PROP_CONTENT_STREAM_MIME_TYPE);
+        if (mimeType != null)
+        {
+            writer.setMimetype(mimeType);
+        }
+        InputStream inputstream = null;
+        try
+        {
+            inputstream = contentStream.getStream().getInputStream();
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+            throw new ConstraintViolationException("", e.getCause());
+        }
+        writer.putContent(inputstream);
+
+        if (versioningState == null)
+        {
+            versioningState = EnumVersioningState.MAJOR;
+        }
+
+        cmisPropertyService.setProperties(newDocumentNodeRef, propertiesMap);
+
+        switch (versioningState)
+        {
+        case CHECKEDOUT:
+            //TODO: maybe this must be done by VersioningService
+            cmisPropertyService.setProperty(newDocumentNodeRef, CMISMapping.PROP_IS_VERSION_SERIES_CHECKED_OUT, Boolean.TRUE);
+            break;
+        case MAJOR:
+            cmisPropertyService.setProperty(newDocumentNodeRef, CMISMapping.PROP_IS_MAJOR_VERSION, Boolean.FALSE);
+            break;
+        case MINOR:
+            cmisPropertyService.setProperty(newDocumentNodeRef, CMISMapping.PROP_IS_MAJOR_VERSION, Boolean.TRUE);
+            break;
+
+        }
+
+        return newDocumentNodeRef.toString();
+    }
+
+      public String createFolder(String repositoryId, String typeId, CmisPropertiesType properties, String folderId) throws PermissionDeniedException, UpdateConflictException,
+            FolderNotValidException, OperationNotSupportedException, TypeNotFoundException, InvalidArgumentException, RuntimeException, ConstraintViolationException
+    {
+        if (descriptorService.getServerDescriptor().getId().equals(repositoryId) == false)
+        {
+            throw new InvalidArgumentException("Invalid repository id");
+        }
+
+        NodeRef folderNodeRef = getNodeRefFromOID(folderId);
+        assertExistFolder(folderNodeRef);
+
+        CMISMapping cmisMapping = cmisDictionaryService.getCMISMapping();
+
+        CMISTypeId cmisTypeId = cmisMapping.getCmisTypeId(typeId);
+
+        Map<String, Serializable> propertiesMap = getPropertiesMap(properties);
+
+        String name = (String) propertiesMap.get(CMISMapping.PROP_NAME);
+        if (name == null)
+        {
+            throw new InvalidArgumentException("Name property not found");
+        }
+
+        try
+        {
+            NodeRef newFolderNodeRef = fileFolderService.create(folderNodeRef, name, cmisTypeId.getQName()).getNodeRef();
+            cmisPropertyService.setProperties(newFolderNodeRef, propertiesMap);
+            return newFolderNodeRef.toString();
+        }
+        catch (FileExistsException e)
+        {
+            throw new UpdateConflictException("Folder already exists");
+        }
+    }
+
+    public String createPolicy(String repositoryId, String typeId, CmisPropertiesType properties, String folderId) throws PermissionDeniedException, UpdateConflictException,
+            FolderNotValidException, OperationNotSupportedException, TypeNotFoundException, InvalidArgumentException, RuntimeException, ConstraintViolationException
     {
         return null;
     }
 
-    public String createFolder(String repositoryId, String typeId, PropertiesType properties, String folderId) throws RuntimeException, InvalidArgumentException,
-            TypeNotFoundException, ConstraintViolationException, OperationNotSupportedException, UpdateConflictException, FolderNotValidException, PermissionDeniedException
+    public String createRelationship(String repositoryId, String typeId, CmisPropertiesType properties, String sourceObjectId, String targetObjectId)
+            throws PermissionDeniedException, UpdateConflictException, ObjectNotFoundException, OperationNotSupportedException, TypeNotFoundException, InvalidArgumentException,
+            RuntimeException, ConstraintViolationException
     {
         return null;
     }
 
-    public String createPolicy(String repositoryId, String typeId, PropertiesType properties, String folderId) throws RuntimeException, InvalidArgumentException,
-            TypeNotFoundException, ConstraintViolationException, OperationNotSupportedException, UpdateConflictException, FolderNotValidException, PermissionDeniedException
+    public void deleteContentStream(String repositoryId, String documentId) throws PermissionDeniedException, UpdateConflictException, StorageException,
+            StreamNotSupportedException, ObjectNotFoundException, OperationNotSupportedException, VersioningException, InvalidArgumentException, RuntimeException,
+            ConstraintViolationException
+    {
+    }
+
+    public void deleteObject(String repositoryId, String objectId) throws PermissionDeniedException, UpdateConflictException, ObjectNotFoundException,
+            OperationNotSupportedException, InvalidArgumentException, RuntimeException, ConstraintViolationException
+    {
+    }
+
+    public FailedToDelete deleteTree(String repositoryId, String folderId, EnumUnfileNonfolderObjects unfileNonfolderObjects, Boolean continueOnFailure)
+            throws PermissionDeniedException, UpdateConflictException, FolderNotValidException, OperationNotSupportedException, InvalidArgumentException, RuntimeException,
+            ConstraintViolationException
     {
         return null;
     }
 
-    public String createRelationship(String repositoryId, String typeId, PropertiesType properties, String sourceObjectId, String targetObjectId) throws RuntimeException,
-            InvalidArgumentException, TypeNotFoundException, ObjectNotFoundException, ConstraintViolationException, OperationNotSupportedException, UpdateConflictException,
-            PermissionDeniedException
+    public CmisAllowableActionsType getAllowableActions(String repositoryId, String objectId) throws PermissionDeniedException, UpdateConflictException, ObjectNotFoundException,
+            OperationNotSupportedException, InvalidArgumentException, RuntimeException
     {
         return null;
     }
 
-    public void deleteContentStream(String repositoryId, String documentId) throws RuntimeException, InvalidArgumentException, VersioningException, ObjectNotFoundException,
-            StorageException, ConstraintViolationException, OperationNotSupportedException, UpdateConflictException, StreamNotSupportedException, PermissionDeniedException
+    public CmisContentStreamType getContentStream(String repositoryId, String documentId) throws PermissionDeniedException, UpdateConflictException, StorageException,
+            StreamNotSupportedException, ObjectNotFoundException, OperationNotSupportedException, InvalidArgumentException, RuntimeException, OffsetException
     {
-    }
-
-    public void deleteObject(String repositoryId, String objectId) throws RuntimeException, InvalidArgumentException, ObjectNotFoundException, ConstraintViolationException,
-            OperationNotSupportedException, UpdateConflictException, PermissionDeniedException
-    {
-    }
-
-    public FailedToDelete deleteTree(String repositoryId, String folderId, UnfileNonfolderObjectsEnum unfileNonfolderObjects, Boolean continueOnFailure) throws RuntimeException,
-            InvalidArgumentException, ConstraintViolationException, OperationNotSupportedException, UpdateConflictException, FolderNotValidException, PermissionDeniedException
-    {
-        return null;
-    }
-
-    public AllowableActionsType getAllowableActions(String repositoryId, String objectId, String asUser) throws RuntimeException, InvalidArgumentException,
-            ObjectNotFoundException, OperationNotSupportedException, UpdateConflictException, PermissionDeniedException
-    {
-        return null;
-    }
-
-    public GetContentStreamResponse getContentStream(GetContentStream parameters) throws RuntimeException, InvalidArgumentException, ObjectNotFoundException, StorageException,
-            OperationNotSupportedException, UpdateConflictException, StreamNotSupportedException, OffsetException, PermissionDeniedException
-    {
-        NodeRef nodeRef = getNodeRefFromOID(parameters.getDocumentId());
+        NodeRef nodeRef = getNodeRefFromOID(documentId);
 
         if (!nodeService.exists(nodeRef))
         {
-            // TODO: error code
-            throw new ObjectNotFoundException("Invalid document OID", ExceptionUtils.createBasicFault(null, "Invalid document OID"));
+            throw new ObjectNotFoundException("Invalid document OID");
         }
 
         CMISMapping cmisMapping = cmisDictionaryService.getCMISMapping();
 
         if (cmisMapping.isValidCmisDocument(cmisMapping.getCmisType(nodeService.getType(nodeRef))) == false)
         {
-            // TODO: error code
-            throw new StreamNotSupportedException("Stream not supported for this type of node", ExceptionUtils.createBasicFault(null, "Stream not supported for this type of node"));
+            throw new StreamNotSupportedException("Stream not supported for this type of node");
         }
 
         ContentReader reader = fileFolderService.getReader(nodeRef);
 
-        GetContentStreamResponse response = new GetContentStreamResponse();
-        response.setContentStream(new ContentStreamType());
-        ContentStreamType contentStream = response.getContentStream();
-        contentStream.setLength(BigInteger.valueOf(reader.getSize()));
-        contentStream.setMimeType(reader.getMimetype());
+        CmisContentStreamType response = new CmisContentStreamType();
+        response.setLength(BigInteger.valueOf(reader.getSize()));
+        response.setMimeType(reader.getMimetype());
         String filename = (String) cmisPropertyService.getProperty(nodeRef, CMISMapping.PROP_NAME);
-        contentStream.setFilename(filename);
-        contentStream.setStream(new DataHandler(new ContentReaderDataSource(reader, filename)));
+        response.setFilename(filename);
+        response.setStream(new DataHandler(new ContentReaderDataSource(reader, filename)));
 
         return response;
     }
 
-    public GetPropertiesResponse getProperties(GetProperties parameters) throws RuntimeException, InvalidArgumentException, ObjectNotFoundException, FilterNotValidException,
-            OperationNotSupportedException, UpdateConflictException, PermissionDeniedException
+    public void moveObject(String repositoryId, String objectId, String targetFolderId, String sourceFolderId) throws PermissionDeniedException, UpdateConflictException,
+            ObjectNotFoundException, FolderNotValidException, OperationNotSupportedException, NotInFolderException, InvalidArgumentException, RuntimeException,
+            ConstraintViolationException
     {
-        PropertyFilter propertyFilter = new PropertyFilter(parameters.getFilter());
+    }
+
+    public void setContentStream(String repositoryId, Holder<String> documentId, Boolean overwriteFlag, CmisContentStreamType contentStream) throws PermissionDeniedException,
+            UpdateConflictException, StorageException, StreamNotSupportedException, ObjectNotFoundException, OperationNotSupportedException, ContentAlreadyExistsException,
+            InvalidArgumentException, RuntimeException, ConstraintViolationException
+    {
+    }
+
+    public void updateProperties(String repositoryId, Holder<String> objectId, String changeToken, CmisPropertiesType properties) throws PermissionDeniedException,
+            UpdateConflictException, ObjectNotFoundException, OperationNotSupportedException, InvalidArgumentException, RuntimeException, ConstraintViolationException
+    {
+    }
+
+    public GetPropertiesResponse getProperties(GetProperties parameters) throws PermissionDeniedException, UpdateConflictException, FilterNotValidException,
+            ObjectNotFoundException, OperationNotSupportedException, InvalidArgumentException, RuntimeException
+    {
+        if (descriptorService.getServerDescriptor().getId().equals(parameters.getRepositoryId()) == false)
+        {
+            throw new InvalidArgumentException("Invalid repository id");
+        }
+
+        PropertyFilter propertyFilter = createPropertyFilter(parameters.getFilter());
 
         NodeRef nodeRef = getNodeRefFromOID(parameters.getObjectId());
 
         if (nodeService.exists(nodeRef) == false)
         {
-            // TODO: error code
-            throw new ObjectNotFoundException("Object not found", ExceptionUtils.createBasicFault(null, "Object not found"));
+            throw new ObjectNotFoundException("Object not found");
         }
 
         QName typeQName = nodeService.getType(nodeRef);
 
-        GetPropertiesResponse response = new GetPropertiesResponse();
-        response.setObject(new ObjectType());
+        CMISMapping cmisMapping = cmisDictionaryService.getCMISMapping();
 
-        if (cmisDictionaryService.getCMISMapping().isValidCmisFolder(typeQName))
+        if (cmisMapping.isValidCmisDocument((cmisMapping.getCmisType(typeQName))))
         {
-            ObjectType folderObject = response.getObject();
-            folderObject.setProperties(getPropertiesType(nodeRef, propertyFilter));
-// TODO:           folderObject.setAllowableActions(getAllowableActionsType(nodeRef));
-        }
-        else
-        {
-            VersionEnum neededVersion = parameters.getReturnVersion();
-
-            if (neededVersion != null)
+            if (parameters.getReturnVersion() != null)
             {
-                if (neededVersion.equals(VersionEnum.LATEST))
+                EnumReturnVersion neededVersion = parameters.getReturnVersion().getValue();
+
+                if (neededVersion.equals(EnumReturnVersion.LATEST))
                 {
                     nodeRef = getLatestVersionNodeRef(nodeRef, false);
                 }
-                else if (neededVersion.equals(VersionEnum.LATEST_MAJOR))
+                else if (neededVersion.equals(EnumReturnVersion.LATESTMAJOR))
                 {
                     nodeRef = getLatestVersionNodeRef(nodeRef, true);
                 }
             }
+        }
 
-            ObjectType documentObject = response.getObject();
-            documentObject.setProperties(getPropertiesType(nodeRef, propertyFilter));
-// TODO:           documentObject.setAllowableActions(getAllowableActionsType(nodeRef));
+        GetPropertiesResponse response = new GetPropertiesResponse();
+        response.setObject(new CmisObjectType());
+        CmisObjectType object = response.getObject();
+        object.setProperties(getPropertiesType(nodeRef, propertyFilter));
+
+        if (parameters.getIncludeAllowableActions() != null && parameters.getIncludeAllowableActions().getValue())
+        {
+            // TODO: allowable actions
+        }
+
+        if (parameters.getIncludeRelationships() != null && parameters.getIncludeAllowableActions().getValue())
+        {
+            // TODO: relationships
         }
 
         return response;
-    }
-
-    public void moveObject(String repositoryId, String objectId, String targetFolderId, String sourceFolderId) throws RuntimeException, InvalidArgumentException,
-            ObjectNotFoundException, NotInFolderException, ConstraintViolationException, OperationNotSupportedException, UpdateConflictException, FolderNotValidException,
-            PermissionDeniedException
-    {
-    }
-
-    public SetContentStreamResponse setContentStream(SetContentStream parameters) throws RuntimeException, InvalidArgumentException, ObjectNotFoundException, StorageException,
-            ContentAlreadyExistsException, ConstraintViolationException, OperationNotSupportedException, UpdateConflictException, StreamNotSupportedException,
-            PermissionDeniedException
-    {
-        return null;
-    }
-
-    public void updateProperties(String repositoryId, Holder<String> objectId, String changeToken, PropertiesType properties) throws RuntimeException, InvalidArgumentException,
-            ObjectNotFoundException, ConstraintViolationException, OperationNotSupportedException, UpdateConflictException, PermissionDeniedException
-    {
     }
 
 }

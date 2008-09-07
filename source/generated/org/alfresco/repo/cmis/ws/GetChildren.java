@@ -2,36 +2,37 @@
 package org.alfresco.repo.cmis.ws;
 
 import java.math.BigInteger;
+import javax.xml.bind.JAXBElement;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
 
 /**
- * <p>Java class for getChildren element declaration.
+ * <p>Java class for anonymous complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;element name="getChildren">
- *   &lt;complexType>
- *     &lt;complexContent>
- *       &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *         &lt;sequence>
- *           &lt;element name="repositoryId" type="{http://www.cmis.org/ns/1.0}ID"/>
- *           &lt;element name="folderId" type="{http://www.cmis.org/ns/1.0}ID"/>
- *           &lt;element name="type" type="{http://www.cmis.org/ns/1.0}typesOfFileableObjectsEnum" minOccurs="0"/>
- *           &lt;element ref="{http://www.cmis.org/ns/1.0}filter" minOccurs="0"/>
- *           &lt;element name="includeAllowableActions" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
- *           &lt;element ref="{http://www.cmis.org/ns/1.0}maxItems" minOccurs="0"/>
- *           &lt;element ref="{http://www.cmis.org/ns/1.0}skipCount" minOccurs="0"/>
- *         &lt;/sequence>
- *       &lt;/restriction>
- *     &lt;/complexContent>
- *   &lt;/complexType>
- * &lt;/element>
+ * &lt;complexType>
+ *   &lt;complexContent>
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *       &lt;sequence>
+ *         &lt;element name="repositoryId" type="{http://www.w3.org/2001/XMLSchema}string"/>
+ *         &lt;element name="folderId" type="{http://www.w3.org/2001/XMLSchema}string"/>
+ *         &lt;element name="type" type="{http://www.cmis.org/2008/05}enumTypesOfFileableObjects" minOccurs="0"/>
+ *         &lt;element name="filter" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
+ *         &lt;element name="includeAllowableActions" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
+ *         &lt;element name="includeRelationships" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
+ *         &lt;element name="maxItems" type="{http://www.w3.org/2001/XMLSchema}integer" minOccurs="0"/>
+ *         &lt;element name="skipCount" type="{http://www.w3.org/2001/XMLSchema}integer" minOccurs="0"/>
+ *       &lt;/sequence>
+ *     &lt;/restriction>
+ *   &lt;/complexContent>
+ * &lt;/complexType>
  * </pre>
  * 
  * 
@@ -43,26 +44,29 @@ import javax.xml.bind.annotation.XmlType;
     "type",
     "filter",
     "includeAllowableActions",
+    "includeRelationships",
     "maxItems",
     "skipCount"
 })
 @XmlRootElement(name = "getChildren")
 public class GetChildren {
 
-    @XmlElement(namespace = "http://www.cmis.org/ns/1.0", required = true)
+    @XmlElement(required = true)
     protected String repositoryId;
-    @XmlElement(namespace = "http://www.cmis.org/ns/1.0", required = true)
+    @XmlElement(required = true)
     protected String folderId;
-    @XmlElement(namespace = "http://www.cmis.org/ns/1.0")
-    protected TypesOfFileableObjectsEnum type;
-    @XmlElement(namespace = "http://www.cmis.org/ns/1.0")
-    protected String filter;
-    @XmlElement(namespace = "http://www.cmis.org/ns/1.0")
-    protected Boolean includeAllowableActions;
-    @XmlElement(namespace = "http://www.cmis.org/ns/1.0")
-    protected BigInteger maxItems;
-    @XmlElement(namespace = "http://www.cmis.org/ns/1.0")
-    protected BigInteger skipCount;
+    @XmlElementRef(name = "type", namespace = "http://www.cmis.org/2008/05", type = JAXBElement.class)
+    protected JAXBElement<EnumTypesOfFileableObjects> type;
+    @XmlElementRef(name = "filter", namespace = "http://www.cmis.org/2008/05", type = JAXBElement.class)
+    protected JAXBElement<String> filter;
+    @XmlElementRef(name = "includeAllowableActions", namespace = "http://www.cmis.org/2008/05", type = JAXBElement.class)
+    protected JAXBElement<Boolean> includeAllowableActions;
+    @XmlElementRef(name = "includeRelationships", namespace = "http://www.cmis.org/2008/05", type = JAXBElement.class)
+    protected JAXBElement<Boolean> includeRelationships;
+    @XmlElementRef(name = "maxItems", namespace = "http://www.cmis.org/2008/05", type = JAXBElement.class)
+    protected JAXBElement<BigInteger> maxItems;
+    @XmlElementRef(name = "skipCount", namespace = "http://www.cmis.org/2008/05", type = JAXBElement.class)
+    protected JAXBElement<BigInteger> skipCount;
 
     /**
      * Gets the value of the repositoryId property.
@@ -117,10 +121,10 @@ public class GetChildren {
      * 
      * @return
      *     possible object is
-     *     {@link TypesOfFileableObjectsEnum }
+     *     {@link JAXBElement }{@code <}{@link EnumTypesOfFileableObjects }{@code >}
      *     
      */
-    public TypesOfFileableObjectsEnum getType() {
+    public JAXBElement<EnumTypesOfFileableObjects> getType() {
         return type;
     }
 
@@ -129,11 +133,11 @@ public class GetChildren {
      * 
      * @param value
      *     allowed object is
-     *     {@link TypesOfFileableObjectsEnum }
+     *     {@link JAXBElement }{@code <}{@link EnumTypesOfFileableObjects }{@code >}
      *     
      */
-    public void setType(TypesOfFileableObjectsEnum value) {
-        this.type = value;
+    public void setType(JAXBElement<EnumTypesOfFileableObjects> value) {
+        this.type = ((JAXBElement<EnumTypesOfFileableObjects> ) value);
     }
 
     /**
@@ -141,10 +145,10 @@ public class GetChildren {
      * 
      * @return
      *     possible object is
-     *     {@link String }
+     *     {@link JAXBElement }{@code <}{@link String }{@code >}
      *     
      */
-    public String getFilter() {
+    public JAXBElement<String> getFilter() {
         return filter;
     }
 
@@ -153,11 +157,11 @@ public class GetChildren {
      * 
      * @param value
      *     allowed object is
-     *     {@link String }
+     *     {@link JAXBElement }{@code <}{@link String }{@code >}
      *     
      */
-    public void setFilter(String value) {
-        this.filter = value;
+    public void setFilter(JAXBElement<String> value) {
+        this.filter = ((JAXBElement<String> ) value);
     }
 
     /**
@@ -165,10 +169,10 @@ public class GetChildren {
      * 
      * @return
      *     possible object is
-     *     {@link Boolean }
+     *     {@link JAXBElement }{@code <}{@link Boolean }{@code >}
      *     
      */
-    public Boolean isIncludeAllowableActions() {
+    public JAXBElement<Boolean> getIncludeAllowableActions() {
         return includeAllowableActions;
     }
 
@@ -177,11 +181,35 @@ public class GetChildren {
      * 
      * @param value
      *     allowed object is
-     *     {@link Boolean }
+     *     {@link JAXBElement }{@code <}{@link Boolean }{@code >}
      *     
      */
-    public void setIncludeAllowableActions(Boolean value) {
-        this.includeAllowableActions = value;
+    public void setIncludeAllowableActions(JAXBElement<Boolean> value) {
+        this.includeAllowableActions = ((JAXBElement<Boolean> ) value);
+    }
+
+    /**
+     * Gets the value of the includeRelationships property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link JAXBElement }{@code <}{@link Boolean }{@code >}
+     *     
+     */
+    public JAXBElement<Boolean> getIncludeRelationships() {
+        return includeRelationships;
+    }
+
+    /**
+     * Sets the value of the includeRelationships property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link JAXBElement }{@code <}{@link Boolean }{@code >}
+     *     
+     */
+    public void setIncludeRelationships(JAXBElement<Boolean> value) {
+        this.includeRelationships = ((JAXBElement<Boolean> ) value);
     }
 
     /**
@@ -189,10 +217,10 @@ public class GetChildren {
      * 
      * @return
      *     possible object is
-     *     {@link BigInteger }
+     *     {@link JAXBElement }{@code <}{@link BigInteger }{@code >}
      *     
      */
-    public BigInteger getMaxItems() {
+    public JAXBElement<BigInteger> getMaxItems() {
         return maxItems;
     }
 
@@ -201,11 +229,11 @@ public class GetChildren {
      * 
      * @param value
      *     allowed object is
-     *     {@link BigInteger }
+     *     {@link JAXBElement }{@code <}{@link BigInteger }{@code >}
      *     
      */
-    public void setMaxItems(BigInteger value) {
-        this.maxItems = value;
+    public void setMaxItems(JAXBElement<BigInteger> value) {
+        this.maxItems = ((JAXBElement<BigInteger> ) value);
     }
 
     /**
@@ -213,10 +241,10 @@ public class GetChildren {
      * 
      * @return
      *     possible object is
-     *     {@link BigInteger }
+     *     {@link JAXBElement }{@code <}{@link BigInteger }{@code >}
      *     
      */
-    public BigInteger getSkipCount() {
+    public JAXBElement<BigInteger> getSkipCount() {
         return skipCount;
     }
 
@@ -225,11 +253,11 @@ public class GetChildren {
      * 
      * @param value
      *     allowed object is
-     *     {@link BigInteger }
+     *     {@link JAXBElement }{@code <}{@link BigInteger }{@code >}
      *     
      */
-    public void setSkipCount(BigInteger value) {
-        this.skipCount = value;
+    public void setSkipCount(JAXBElement<BigInteger> value) {
+        this.skipCount = ((JAXBElement<BigInteger> ) value);
     }
 
 }

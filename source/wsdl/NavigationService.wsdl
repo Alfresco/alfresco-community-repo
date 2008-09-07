@@ -1,5 +1,12 @@
-﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<definitions xmlns:tns="http://www.cmis.org/ns/1.0" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:ns="http://schemas.xmlsoap.org/soap/encoding/" name="NavigationService" targetNamespace="http://www.cmis.org/ns/1.0">
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<definitions 
+xmlns:cmis="http://www.cmis.org/2008/05" 
+xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" 
+xmlns="http://schemas.xmlsoap.org/wsdl/" 
+xmlns:ns="http://schemas.xmlsoap.org/soap/encoding/" 
+name="NavigationService" 
+targetNamespace="http://www.cmis.org/2008/05">
   <types>
     <!--
 		<xsd:schema>
@@ -7,135 +14,135 @@
 		</xsd:schema>
 		-->
     <!-- had to use include - .net wsdl.exe code generator doesn't seem to like imports on the schema -->
-    <xsd:schema elementFormDefault="qualified" targetNamespace="http://www.cmis.org/ns/1.0">
+    <xsd:schema elementFormDefault="qualified" targetNamespace="http://www.cmis.org/2008/05">
       <xsd:include schemaLocation="cmisMessageTypes.xsd" />
     </xsd:schema>
   </types>
-  <message name="getDescendants">
-    <part name="parameters" element="tns:getDescendants" />
+  <message name="getDescendantsRequest">
+    <part name="parameters" element="cmis:getDescendants" />
   </message>
   <message name="getDescendantsResponse">
-    <part name="parameters" element="tns:getDescendantsResponse" />
+    <part name="parameters" element="cmis:getDescendantsResponse" />
   </message>
-  <message name="getChildren">
-    <part name="parameters" element="tns:getChildren" />
+  <message name="getChildrenRequest">
+    <part name="parameters" element="cmis:getChildren" />
   </message>
   <message name="getChildrenResponse">
-    <part name="parameters" element="tns:getChildrenResponse" />
+    <part name="parameters" element="cmis:getChildrenResponse" />
   </message>
-  <message name="getFolderParent">
-    <part name="parameters" element="tns:getFolderParent" />
+  <message name="getFolderParentRequest">
+    <part name="parameters" element="cmis:getFolderParent" />
   </message>
   <message name="getFolderParentResponse">
-    <part name="parameters" element="tns:getFolderParentResponse" />
+    <part name="parameters" element="cmis:getFolderParentResponse" />
   </message>
-  <message name="getObjectParents">
-    <part name="parameters" element="tns:getObjectParents" />
+  <message name="getObjectParentsRequest">
+    <part name="parameters" element="cmis:getObjectParents" />
   </message>
   <message name="getObjectParentsResponse">
-    <part name="parameters" element="tns:getObjectParentsResponse" />
+    <part name="parameters" element="cmis:getObjectParentsResponse" />
   </message>
-  <message name="getCheckedoutDocs">
-    <part name="parameters" element="tns:getCheckedoutDocs" />
+  <message name="getCheckedoutDocsRequest">
+    <part name="parameters" element="cmis:getCheckedoutDocs" />
   </message>
   <message name="getCheckedoutDocsResponse">
-    <part name="parameters" element="tns:getCheckedoutDocsResponse" />
+    <part name="parameters" element="cmis:getCheckedoutDocsResponse" />
   </message>
   <message name="InvalidArgumentException">
-    <part name="fault" element="tns:invalidArgumentException" />
+    <part name="fault" element="cmis:invalidArgumentException" />
   </message>
   <message name="PermissionDeniedException">
-    <part name="fault" element="tns:permissionDeniedException" />
+    <part name="fault" element="cmis:permissionDeniedException" />
   </message>
   <message name="OperationNotSupportedException">
-    <part name="fault" element="tns:operationNotSupportedException" />
+    <part name="fault" element="cmis:operationNotSupportedException" />
   </message>
   <message name="UpdateConflictException">
-    <part name="fault" element="tns:updateConflictException" />
+    <part name="fault" element="cmis:updateConflictException" />
   </message>
   <message name="RuntimeException">
-    <part name="fault" element="tns:runtimeException" />
+    <part name="fault" element="cmis:runtimeException" />
   </message>
   <message name="FilterNotValidException">
-    <part name="fault" element="tns:filterNotValidException" />
+    <part name="fault" element="cmis:filterNotValidException" />
   </message>
   <message name="FolderNotValidException">
-    <part name="fault" element="tns:folderNotValidException" />
+    <part name="fault" element="cmis:folderNotValidException" />
   </message>
   <message name="ConstraintViolationException">
-    <part name="fault" element="tns:constraintViolationException" />
+    <part name="fault" element="cmis:constraintViolationException" />
   </message>
   <message name="ObjectNotFoundException">
-    <part name="fault" element="tns:objectNotFoundException" />
+    <part name="fault" element="cmis:objectNotFoundException" />
   </message>
   <portType name="NavigationServicePort">
     <operation name="getDescendants">
-      <input message="tns:getDescendants" />
-      <output message="tns:getDescendantsResponse" />
-      <fault name="InvalidArgumentException" message="tns:InvalidArgumentException" />
-      <fault name="PermissionDeniedException" message="tns:PermissionDeniedException" />
-      <fault name="OperationNotSupportedException" message="tns:OperationNotSupportedException" />
-      <fault name="UpdateConflictException" message="tns:UpdateConflictException" />
-      <fault name="RuntimeException" message="tns:RuntimeException" />
-      <fault name="ConstraintViolationException" message="tns:ConstraintViolationException" />
-      <fault name="ObjectNotFoundException" message="tns:ObjectNotFoundException" />
-      <fault name="FilterNotValidException" message="tns:FilterNotValidException" />
-      <fault name="FolderNotValidException" message="tns:FolderNotValidException" />
+      <input message="cmis:getDescendantsRequest" />
+      <output message="cmis:getDescendantsResponse" />
+      <fault name="InvalidArgumentException" message="cmis:InvalidArgumentException" />
+      <fault name="PermissionDeniedException" message="cmis:PermissionDeniedException" />
+      <fault name="OperationNotSupportedException" message="cmis:OperationNotSupportedException" />
+      <fault name="UpdateConflictException" message="cmis:UpdateConflictException" />
+      <fault name="RuntimeException" message="cmis:RuntimeException" />
+      <fault name="ConstraintViolationException" message="cmis:ConstraintViolationException" />
+      <fault name="ObjectNotFoundException" message="cmis:ObjectNotFoundException" />
+      <fault name="FilterNotValidException" message="cmis:FilterNotValidException" />
+      <fault name="FolderNotValidException" message="cmis:FolderNotValidException" />
     </operation>
     <operation name="getChildren">
-      <input message="tns:getChildren" />
-      <output message="tns:getChildrenResponse" />
-      <fault name="InvalidArgumentException" message="tns:InvalidArgumentException" />
-      <fault name="PermissionDeniedException" message="tns:PermissionDeniedException" />
-      <fault name="OperationNotSupportedException" message="tns:OperationNotSupportedException" />
-      <fault name="UpdateConflictException" message="tns:UpdateConflictException" />
-      <fault name="RuntimeException" message="tns:RuntimeException" />
-      <fault name="ConstraintViolationException" message="tns:ConstraintViolationException" />
-      <fault name="ObjectNotFoundException" message="tns:ObjectNotFoundException" />
-      <fault name="FilterNotValidException" message="tns:FilterNotValidException" />
-      <fault name="FolderNotValidException" message="tns:FolderNotValidException" />
+      <input message="cmis:getChildrenRequest" />
+      <output message="cmis:getChildrenResponse" />
+      <fault name="InvalidArgumentException" message="cmis:InvalidArgumentException" />
+      <fault name="PermissionDeniedException" message="cmis:PermissionDeniedException" />
+      <fault name="OperationNotSupportedException" message="cmis:OperationNotSupportedException" />
+      <fault name="UpdateConflictException" message="cmis:UpdateConflictException" />
+      <fault name="RuntimeException" message="cmis:RuntimeException" />
+      <fault name="ConstraintViolationException" message="cmis:ConstraintViolationException" />
+      <fault name="ObjectNotFoundException" message="cmis:ObjectNotFoundException" />
+      <fault name="FilterNotValidException" message="cmis:FilterNotValidException" />
+      <fault name="FolderNotValidException" message="cmis:FolderNotValidException" />
     </operation>
     <operation name="getFolderParent">
-      <input message="tns:getFolderParent" />
-      <output message="tns:getFolderParentResponse" />
-      <fault name="InvalidArgumentException" message="tns:InvalidArgumentException" />
-      <fault name="PermissionDeniedException" message="tns:PermissionDeniedException" />
-      <fault name="OperationNotSupportedException" message="tns:OperationNotSupportedException" />
-      <fault name="UpdateConflictException" message="tns:UpdateConflictException" />
-      <fault name="RuntimeException" message="tns:RuntimeException" />
-      <fault name="ConstraintViolationException" message="tns:ConstraintViolationException" />
-      <fault name="ObjectNotFoundException" message="tns:ObjectNotFoundException" />
-      <fault name="FilterNotValidException" message="tns:FilterNotValidException" />
-      <fault name="FolderNotValidException" message="tns:FolderNotValidException" />
+      <input message="cmis:getFolderParentRequest" />
+      <output message="cmis:getFolderParentResponse" />
+      <fault name="InvalidArgumentException" message="cmis:InvalidArgumentException" />
+      <fault name="PermissionDeniedException" message="cmis:PermissionDeniedException" />
+      <fault name="OperationNotSupportedException" message="cmis:OperationNotSupportedException" />
+      <fault name="UpdateConflictException" message="cmis:UpdateConflictException" />
+      <fault name="RuntimeException" message="cmis:RuntimeException" />
+      <fault name="ConstraintViolationException" message="cmis:ConstraintViolationException" />
+      <fault name="ObjectNotFoundException" message="cmis:ObjectNotFoundException" />
+      <fault name="FilterNotValidException" message="cmis:FilterNotValidException" />
+      <fault name="FolderNotValidException" message="cmis:FolderNotValidException" />
     </operation>
     <operation name="getObjectParents">
-      <input message="tns:getObjectParents" />
-      <output message="tns:getObjectParentsResponse" />
-      <fault name="InvalidArgumentException" message="tns:InvalidArgumentException" />
-      <fault name="PermissionDeniedException" message="tns:PermissionDeniedException" />
-      <fault name="OperationNotSupportedException" message="tns:OperationNotSupportedException" />
-      <fault name="UpdateConflictException" message="tns:UpdateConflictException" />
-      <fault name="RuntimeException" message="tns:RuntimeException" />
-      <fault name="FilterNotValidException" message="tns:FilterNotValidException" />
-      <fault name="FolderNotValidException" message="tns:FolderNotValidException" />
-      <fault name="ConstraintViolationException" message="tns:ConstraintViolationException" />
-      <fault name="ObjectNotFoundException" message="tns:ObjectNotFoundException" />
+      <input message="cmis:getObjectParentsRequest" />
+      <output message="cmis:getObjectParentsResponse" />
+      <fault name="InvalidArgumentException" message="cmis:InvalidArgumentException" />
+      <fault name="PermissionDeniedException" message="cmis:PermissionDeniedException" />
+      <fault name="OperationNotSupportedException" message="cmis:OperationNotSupportedException" />
+      <fault name="UpdateConflictException" message="cmis:UpdateConflictException" />
+      <fault name="RuntimeException" message="cmis:RuntimeException" />
+      <fault name="FilterNotValidException" message="cmis:FilterNotValidException" />
+      <fault name="FolderNotValidException" message="cmis:FolderNotValidException" />
+      <fault name="ConstraintViolationException" message="cmis:ConstraintViolationException" />
+      <fault name="ObjectNotFoundException" message="cmis:ObjectNotFoundException" />
     </operation>
     <operation name="getCheckedoutDocs">
-      <input message="tns:getCheckedoutDocs" />
-      <output message="tns:getCheckedoutDocsResponse" />
-      <fault name="InvalidArgumentException" message="tns:InvalidArgumentException" />
-      <fault name="PermissionDeniedException" message="tns:PermissionDeniedException" />
-      <fault name="OperationNotSupportedException" message="tns:OperationNotSupportedException" />
-      <fault name="UpdateConflictException" message="tns:UpdateConflictException" />
-      <fault name="RuntimeException" message="tns:RuntimeException" />
-      <fault name="ConstraintViolationException" message="tns:ConstraintViolationException" />
-      <fault name="ObjectNotFoundException" message="tns:ObjectNotFoundException" />
-      <fault name="FilterNotValidException" message="tns:FilterNotValidException" />
-      <fault name="FolderNotValidException" message="tns:FolderNotValidException" />
+      <input message="cmis:getCheckedoutDocsRequest" />
+      <output message="cmis:getCheckedoutDocsResponse" />
+      <fault name="InvalidArgumentException" message="cmis:InvalidArgumentException" />
+      <fault name="PermissionDeniedException" message="cmis:PermissionDeniedException" />
+      <fault name="OperationNotSupportedException" message="cmis:OperationNotSupportedException" />
+      <fault name="UpdateConflictException" message="cmis:UpdateConflictException" />
+      <fault name="RuntimeException" message="cmis:RuntimeException" />
+      <fault name="ConstraintViolationException" message="cmis:ConstraintViolationException" />
+      <fault name="ObjectNotFoundException" message="cmis:ObjectNotFoundException" />
+      <fault name="FilterNotValidException" message="cmis:FilterNotValidException" />
+      <fault name="FolderNotValidException" message="cmis:FolderNotValidException" />
     </operation>
   </portType>
-  <binding name="NavigationServicePortBinding" type="tns:NavigationServicePort">
+  <binding name="NavigationServicePortBinding" type="cmis:NavigationServicePort">
     <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http" />
     <operation name="getDescendants">
       <soap:operation soapAction="" />
@@ -319,7 +326,7 @@
     </operation>
   </binding>
   <service name="NavigationService">
-    <port name="NavigationServicePort" binding="tns:NavigationServicePortBinding">
+    <port name="NavigationServicePort" binding="cmis:NavigationServicePortBinding">
       <soap:address location="_REPLACE_WITH_ACTUAL_URL_" />
     </port>
   </service>

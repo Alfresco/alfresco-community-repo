@@ -1,35 +1,35 @@
 
 package org.alfresco.repo.cmis.ws;
 
+import javax.xml.bind.JAXBElement;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
 
 /**
- * <p>Java class for createDocument element declaration.
+ * <p>Java class for anonymous complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;element name="createDocument">
- *   &lt;complexType>
- *     &lt;complexContent>
- *       &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *         &lt;sequence>
- *           &lt;element name="repositoryId" type="{http://www.cmis.org/ns/1.0}ID"/>
- *           &lt;element name="typeId" type="{http://www.cmis.org/ns/1.0}ID"/>
- *           &lt;element name="properties" type="{http://www.cmis.org/ns/1.0}propertiesType"/>
- *           &lt;element name="folderId" type="{http://www.cmis.org/ns/1.0}ID" minOccurs="0"/>
- *           &lt;element ref="{http://www.cmis.org/ns/1.0}contentStream" minOccurs="0"/>
- *           &lt;element name="versioningState" type="{http://www.cmis.org/ns/1.0}versioningStateEnum" minOccurs="0"/>
- *         &lt;/sequence>
- *       &lt;/restriction>
- *     &lt;/complexContent>
- *   &lt;/complexType>
- * &lt;/element>
+ * &lt;complexType>
+ *   &lt;complexContent>
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *       &lt;sequence>
+ *         &lt;element name="repositoryId" type="{http://www.w3.org/2001/XMLSchema}string"/>
+ *         &lt;element name="typeId" type="{http://www.w3.org/2001/XMLSchema}string"/>
+ *         &lt;element name="properties" type="{http://www.cmis.org/2008/05}cmisPropertiesType"/>
+ *         &lt;element name="folderId" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
+ *         &lt;element name="contentStream" type="{http://www.cmis.org/2008/05}cmisContentStreamType" minOccurs="0"/>
+ *         &lt;element name="versioningState" type="{http://www.cmis.org/2008/05}enumVersioningState" minOccurs="0"/>
+ *       &lt;/sequence>
+ *     &lt;/restriction>
+ *   &lt;/complexContent>
+ * &lt;/complexType>
  * </pre>
  * 
  * 
@@ -46,18 +46,17 @@ import javax.xml.bind.annotation.XmlType;
 @XmlRootElement(name = "createDocument")
 public class CreateDocument {
 
-    @XmlElement(namespace = "http://www.cmis.org/ns/1.0", required = true)
+    @XmlElement(required = true)
     protected String repositoryId;
-    @XmlElement(namespace = "http://www.cmis.org/ns/1.0", required = true)
+    @XmlElement(required = true)
     protected String typeId;
-    @XmlElement(namespace = "http://www.cmis.org/ns/1.0", required = true)
-    protected PropertiesType properties;
-    @XmlElement(namespace = "http://www.cmis.org/ns/1.0")
+    @XmlElement(required = true)
+    protected CmisPropertiesType properties;
     protected String folderId;
-    @XmlElement(namespace = "http://www.cmis.org/ns/1.0")
-    protected ContentStreamType contentStream;
-    @XmlElement(namespace = "http://www.cmis.org/ns/1.0")
-    protected VersioningStateEnum versioningState;
+    @XmlElementRef(name = "contentStream", namespace = "http://www.cmis.org/2008/05", type = JAXBElement.class)
+    protected JAXBElement<CmisContentStreamType> contentStream;
+    @XmlElementRef(name = "versioningState", namespace = "http://www.cmis.org/2008/05", type = JAXBElement.class)
+    protected JAXBElement<EnumVersioningState> versioningState;
 
     /**
      * Gets the value of the repositoryId property.
@@ -112,10 +111,10 @@ public class CreateDocument {
      * 
      * @return
      *     possible object is
-     *     {@link PropertiesType }
+     *     {@link CmisPropertiesType }
      *     
      */
-    public PropertiesType getProperties() {
+    public CmisPropertiesType getProperties() {
         return properties;
     }
 
@@ -124,10 +123,10 @@ public class CreateDocument {
      * 
      * @param value
      *     allowed object is
-     *     {@link PropertiesType }
+     *     {@link CmisPropertiesType }
      *     
      */
-    public void setProperties(PropertiesType value) {
+    public void setProperties(CmisPropertiesType value) {
         this.properties = value;
     }
 
@@ -160,10 +159,10 @@ public class CreateDocument {
      * 
      * @return
      *     possible object is
-     *     {@link ContentStreamType }
+     *     {@link JAXBElement }{@code <}{@link CmisContentStreamType }{@code >}
      *     
      */
-    public ContentStreamType getContentStream() {
+    public JAXBElement<CmisContentStreamType> getContentStream() {
         return contentStream;
     }
 
@@ -172,11 +171,11 @@ public class CreateDocument {
      * 
      * @param value
      *     allowed object is
-     *     {@link ContentStreamType }
+     *     {@link JAXBElement }{@code <}{@link CmisContentStreamType }{@code >}
      *     
      */
-    public void setContentStream(ContentStreamType value) {
-        this.contentStream = value;
+    public void setContentStream(JAXBElement<CmisContentStreamType> value) {
+        this.contentStream = ((JAXBElement<CmisContentStreamType> ) value);
     }
 
     /**
@@ -184,10 +183,10 @@ public class CreateDocument {
      * 
      * @return
      *     possible object is
-     *     {@link VersioningStateEnum }
+     *     {@link JAXBElement }{@code <}{@link EnumVersioningState }{@code >}
      *     
      */
-    public VersioningStateEnum getVersioningState() {
+    public JAXBElement<EnumVersioningState> getVersioningState() {
         return versioningState;
     }
 
@@ -196,11 +195,11 @@ public class CreateDocument {
      * 
      * @param value
      *     allowed object is
-     *     {@link VersioningStateEnum }
+     *     {@link JAXBElement }{@code <}{@link EnumVersioningState }{@code >}
      *     
      */
-    public void setVersioningState(VersioningStateEnum value) {
-        this.versioningState = value;
+    public void setVersioningState(JAXBElement<EnumVersioningState> value) {
+        this.versioningState = ((JAXBElement<EnumVersioningState> ) value);
     }
 
 }

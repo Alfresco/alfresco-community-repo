@@ -11,22 +11,20 @@ import javax.xml.bind.annotation.XmlType;
 
 
 /**
- * <p>Java class for getRepositoriesResponse element declaration.
+ * <p>Java class for anonymous complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;element name="getRepositoriesResponse">
- *   &lt;complexType>
- *     &lt;complexContent>
- *       &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *         &lt;sequence>
- *           &lt;element name="repository" type="{http://www.cmis.org/ns/1.0}repositoryType" maxOccurs="unbounded" minOccurs="0"/>
- *         &lt;/sequence>
- *       &lt;/restriction>
- *     &lt;/complexContent>
- *   &lt;/complexType>
- * &lt;/element>
+ * &lt;complexType>
+ *   &lt;complexContent>
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *       &lt;sequence>
+ *         &lt;element name="repository" type="{http://www.cmis.org/2008/05}cmisRepositoryEntryType" maxOccurs="unbounded" minOccurs="0"/>
+ *       &lt;/sequence>
+ *     &lt;/restriction>
+ *   &lt;/complexContent>
+ * &lt;/complexType>
  * </pre>
  * 
  * 
@@ -38,8 +36,8 @@ import javax.xml.bind.annotation.XmlType;
 @XmlRootElement(name = "getRepositoriesResponse")
 public class GetRepositoriesResponse {
 
-    @XmlElement(namespace = "http://www.cmis.org/ns/1.0", required = true)
-    protected List<RepositoryType> repository;
+    @XmlElement(nillable = true)
+    protected List<CmisRepositoryEntryType> repository;
 
     /**
      * Gets the value of the repository property.
@@ -59,13 +57,13 @@ public class GetRepositoriesResponse {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link RepositoryType }
+     * {@link CmisRepositoryEntryType }
      * 
      * 
      */
-    public List<RepositoryType> getRepository() {
+    public List<CmisRepositoryEntryType> getRepository() {
         if (repository == null) {
-            repository = new ArrayList<RepositoryType>();
+            repository = new ArrayList<CmisRepositoryEntryType>();
         }
         return this.repository;
     }

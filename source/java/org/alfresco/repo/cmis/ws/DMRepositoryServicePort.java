@@ -24,12 +24,17 @@
  */
 package org.alfresco.repo.cmis.ws;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
+import javax.xml.bind.JAXBElement;
 
 import org.alfresco.cmis.CMISCardinalityEnum;
 import org.alfresco.cmis.CMISContentStreamAllowedEnum;
@@ -37,9 +42,11 @@ import org.alfresco.cmis.CMISFullTextSearchEnum;
 import org.alfresco.cmis.CMISJoinEnum;
 import org.alfresco.cmis.CMISPropertyTypeEnum;
 import org.alfresco.cmis.CMISUpdatabilityEnum;
+import org.alfresco.cmis.dictionary.CMISChoice;
 import org.alfresco.cmis.dictionary.CMISPropertyDefinition;
 import org.alfresco.cmis.dictionary.CMISTypeDefinition;
 import org.alfresco.cmis.dictionary.CMISTypeId;
+import org.alfresco.repo.web.util.paging.Cursor;
 import org.alfresco.service.descriptor.Descriptor;
 
 /**
@@ -51,185 +58,372 @@ import org.alfresco.service.descriptor.Descriptor;
 @javax.jws.WebService(name = "RepositoryServicePort", serviceName = "RepositoryService", portName = "RepositoryServicePort", targetNamespace = "http://www.cmis.org/ns/1.0", endpointInterface = "org.alfresco.repo.cmis.ws.RepositoryServicePort")
 public class DMRepositoryServicePort extends DMAbstractServicePort implements RepositoryServicePort
 {
-    private static Map<CMISFullTextSearchEnum, FulltextEnum> fulltextEnumMapping;
-    private static Map<CMISJoinEnum, JoinEnum> joinEnumMapping;
-    private static Map<CMISContentStreamAllowedEnum, ContentStreamAllowedEnum> contentStreamAllowedEnumMapping;
-    private static Map<CMISUpdatabilityEnum, UpdatabilityEnum> updatabilityEnumMapping;
-    private static Map<CMISCardinalityEnum, CardinalityEnum> cardinalityEnumMapping;
-    private static Map<CMISPropertyTypeEnum, PropertyTypeEnum> propertyTypeEnumMapping;
+    private static Map<CMISFullTextSearchEnum, EnumCapabilityFullText> fulltextEnumMapping;
+    private static Map<CMISJoinEnum, EnumCapabilityJoin> joinEnumMapping;
+    private static Map<CMISContentStreamAllowedEnum, EnumContentStreamAllowed> contentStreamAllowedEnumMapping;
+    private static Map<CMISUpdatabilityEnum, EnumUpdateability> updatabilityEnumMapping;
+    private static Map<CMISCardinalityEnum, EnumCardinality> cardinalityEnumMapping;
+    private static Map<CMISPropertyTypeEnum, EnumPropertyType> propertyTypeEnumMapping;
 
     static
     {
-        fulltextEnumMapping = new HashMap<CMISFullTextSearchEnum, FulltextEnum>();
-        fulltextEnumMapping.put(CMISFullTextSearchEnum.NO_FULL_TEXT, FulltextEnum.NO_FULLTEXT);
-        fulltextEnumMapping.put(CMISFullTextSearchEnum.FULL_TEXT_ONLY, FulltextEnum.FULLTEXT_ONLY);
-        fulltextEnumMapping.put(CMISFullTextSearchEnum.FULL_TEXT_AND_STRUCTURED, FulltextEnum.FULLTEXT_AND_STRUCTURED);
+        fulltextEnumMapping = new HashMap<CMISFullTextSearchEnum, EnumCapabilityFullText>();
+        fulltextEnumMapping.put(CMISFullTextSearchEnum.NO_FULL_TEXT, EnumCapabilityFullText.NONE);
+        fulltextEnumMapping.put(CMISFullTextSearchEnum.FULL_TEXT_ONLY, EnumCapabilityFullText.FULLTEXTONLY);
+        fulltextEnumMapping.put(CMISFullTextSearchEnum.FULL_TEXT_AND_STRUCTURED, EnumCapabilityFullText.FULLTEXTANDSTRUCTURED);
 
-        joinEnumMapping = new HashMap<CMISJoinEnum, JoinEnum>();
-        joinEnumMapping.put(CMISJoinEnum.INNER_AND_OUTER_JOIN_SUPPORT, JoinEnum.INNER_AND_OUTER);
-        joinEnumMapping.put(CMISJoinEnum.INNER_JOIN_SUPPORT, JoinEnum.INNER_ONLY);
-        joinEnumMapping.put(CMISJoinEnum.NO_JOIN_SUPPORT, JoinEnum.NO_JOIN);
+        joinEnumMapping = new HashMap<CMISJoinEnum, EnumCapabilityJoin>();
+        joinEnumMapping.put(CMISJoinEnum.INNER_AND_OUTER_JOIN_SUPPORT, EnumCapabilityJoin.INNERANDOUTER);
+        joinEnumMapping.put(CMISJoinEnum.INNER_JOIN_SUPPORT, EnumCapabilityJoin.INNERONLY);
+        joinEnumMapping.put(CMISJoinEnum.NO_JOIN_SUPPORT, EnumCapabilityJoin.NOJOIN);
 
-        contentStreamAllowedEnumMapping = new HashMap<CMISContentStreamAllowedEnum, ContentStreamAllowedEnum>();
-        contentStreamAllowedEnumMapping.put(CMISContentStreamAllowedEnum.ALLOWED, ContentStreamAllowedEnum.ALLOWED);
-        contentStreamAllowedEnumMapping.put(CMISContentStreamAllowedEnum.NOT_ALLOWED, ContentStreamAllowedEnum.NOT_ALLOWED);
-        contentStreamAllowedEnumMapping.put(CMISContentStreamAllowedEnum.REQUIRED, ContentStreamAllowedEnum.REQUIRED);
+        contentStreamAllowedEnumMapping = new HashMap<CMISContentStreamAllowedEnum, EnumContentStreamAllowed>();
+        contentStreamAllowedEnumMapping.put(CMISContentStreamAllowedEnum.ALLOWED, EnumContentStreamAllowed.ALLOWED);
+        contentStreamAllowedEnumMapping.put(CMISContentStreamAllowedEnum.NOT_ALLOWED, EnumContentStreamAllowed.NOTALLOWED);
+        contentStreamAllowedEnumMapping.put(CMISContentStreamAllowedEnum.REQUIRED, EnumContentStreamAllowed.REQUIRED);
 
-        updatabilityEnumMapping = new HashMap<CMISUpdatabilityEnum, UpdatabilityEnum>();
-        updatabilityEnumMapping.put(CMISUpdatabilityEnum.READ_AND_WRITE, UpdatabilityEnum.READ_WRITE);
-        updatabilityEnumMapping.put(CMISUpdatabilityEnum.READ_AND_WRITE_WHEN_CHECKED_OUT, UpdatabilityEnum.READ_WRITE_WHEN_CHECKED_OUT);
-        updatabilityEnumMapping.put(CMISUpdatabilityEnum.READ_ONLY, UpdatabilityEnum.READ_ONLY);
+        updatabilityEnumMapping = new HashMap<CMISUpdatabilityEnum, EnumUpdateability>();
+        updatabilityEnumMapping.put(CMISUpdatabilityEnum.READ_AND_WRITE, EnumUpdateability.READWRITE);
+        updatabilityEnumMapping.put(CMISUpdatabilityEnum.READ_AND_WRITE_WHEN_CHECKED_OUT, EnumUpdateability.WHENCHECKEDOUT);
+        updatabilityEnumMapping.put(CMISUpdatabilityEnum.READ_ONLY, EnumUpdateability.READONLY);
 
-        cardinalityEnumMapping = new HashMap<CMISCardinalityEnum, CardinalityEnum>();
-        cardinalityEnumMapping.put(CMISCardinalityEnum.MULTI_VALUED, CardinalityEnum.MULTI_VALUED);
-        cardinalityEnumMapping.put(CMISCardinalityEnum.SINGLE_VALUED, CardinalityEnum.SINGLE_VALUED);
+        cardinalityEnumMapping = new HashMap<CMISCardinalityEnum, EnumCardinality>();
+        cardinalityEnumMapping.put(CMISCardinalityEnum.MULTI_VALUED, EnumCardinality.MULTI);
+        cardinalityEnumMapping.put(CMISCardinalityEnum.SINGLE_VALUED, EnumCardinality.SINGLE);
 
-        propertyTypeEnumMapping = new HashMap<CMISPropertyTypeEnum, PropertyTypeEnum>();
-        propertyTypeEnumMapping.put(CMISPropertyTypeEnum.BOOLEAN, PropertyTypeEnum.BOOLEAN);
-        propertyTypeEnumMapping.put(CMISPropertyTypeEnum.DATETIME, PropertyTypeEnum.DATE_TIME);
-        propertyTypeEnumMapping.put(CMISPropertyTypeEnum.DECIMAL, PropertyTypeEnum.DECIMAL);
-        propertyTypeEnumMapping.put(CMISPropertyTypeEnum.HTML, PropertyTypeEnum.HTML);
-        propertyTypeEnumMapping.put(CMISPropertyTypeEnum.ID, PropertyTypeEnum.ID);
-        propertyTypeEnumMapping.put(CMISPropertyTypeEnum.INTEGER, PropertyTypeEnum.INTEGER);
-        propertyTypeEnumMapping.put(CMISPropertyTypeEnum.STRING, PropertyTypeEnum.STRING);
-        propertyTypeEnumMapping.put(CMISPropertyTypeEnum.URI, PropertyTypeEnum.URI);
-        propertyTypeEnumMapping.put(CMISPropertyTypeEnum.XML, PropertyTypeEnum.XML);
+        propertyTypeEnumMapping = new HashMap<CMISPropertyTypeEnum, EnumPropertyType>();
+        propertyTypeEnumMapping.put(CMISPropertyTypeEnum.BOOLEAN, EnumPropertyType.BOOLEAN);
+        propertyTypeEnumMapping.put(CMISPropertyTypeEnum.DATETIME, EnumPropertyType.DATETIME);
+        propertyTypeEnumMapping.put(CMISPropertyTypeEnum.DECIMAL, EnumPropertyType.DECIMAL);
+        propertyTypeEnumMapping.put(CMISPropertyTypeEnum.HTML, EnumPropertyType.HTML);
+        propertyTypeEnumMapping.put(CMISPropertyTypeEnum.ID, EnumPropertyType.ID);
+        propertyTypeEnumMapping.put(CMISPropertyTypeEnum.INTEGER, EnumPropertyType.INTEGER);
+        propertyTypeEnumMapping.put(CMISPropertyTypeEnum.STRING, EnumPropertyType.STRING);
+        propertyTypeEnumMapping.put(CMISPropertyTypeEnum.URI, EnumPropertyType.URI);
+        propertyTypeEnumMapping.put(CMISPropertyTypeEnum.XML, EnumPropertyType.XML);
     }
 
-    public List<RepositoryType> getRepositories() throws RuntimeException, InvalidArgumentException, OperationNotSupportedException, UpdateConflictException,
+    public List<CmisRepositoryEntryType> getRepositories() throws RuntimeException, InvalidArgumentException, OperationNotSupportedException, UpdateConflictException,
             PermissionDeniedException
     {
-        RepositoryType repositoryType = new RepositoryType();
-        Descriptor serverDescriptor = descriptorService.getCurrentRepositoryDescriptor();
-        repositoryType.setRepositoryID(serverDescriptor.getId());
-        repositoryType.setRepositoryName(serverDescriptor.getName());
-        return Collections.singletonList(repositoryType);
+        CmisRepositoryEntryType repositoryEntryType = new CmisRepositoryEntryType();
+        Descriptor serverDescriptor = descriptorService.getServerDescriptor();
+        repositoryEntryType.setRepositoryID(serverDescriptor.getId());
+        repositoryEntryType.setRepositoryName(serverDescriptor.getName());
+        return Collections.singletonList(repositoryEntryType);
     }
 
-    public RepositoryInfoType getRepositoryInfo(String repositoryId) throws RuntimeException, InvalidArgumentException, ObjectNotFoundException, ConstraintViolationException,
-            OperationNotSupportedException, UpdateConflictException, PermissionDeniedException
+    public CmisRepositoryInfoType getRepositoryInfo(GetRepositoryInfo parameters) throws PermissionDeniedException, UpdateConflictException, ObjectNotFoundException,
+            OperationNotSupportedException, InvalidArgumentException, RuntimeException, ConstraintViolationException
     {
-        Descriptor serverDescriptor = descriptorService.getCurrentRepositoryDescriptor();
+        Descriptor serverDescriptor = descriptorService.getServerDescriptor();
 
-        if (serverDescriptor.getId().equals(repositoryId) == false)
+        if (serverDescriptor.getId().equals(parameters.getRepositoryId()) == false)
         {
-            // TODO: error code
-            throw new InvalidArgumentException("Invalid repository id", ExceptionUtils.createBasicFault(null, "Invalid repository id"));
+            throw new InvalidArgumentException("Invalid repository id");
         }
 
-        RepositoryInfoType repositoryInfoType = new RepositoryInfoType();
+        CmisRepositoryInfoType repositoryInfoType = new CmisRepositoryInfoType();
         repositoryInfoType.setRepositoryId(serverDescriptor.getId());
         repositoryInfoType.setRepositoryName(serverDescriptor.getName());
+        repositoryInfoType.setRepositoryRelationship("self");
         repositoryInfoType.setRepositoryDescription("");
         repositoryInfoType.setRootFolderId(cmisService.getDefaultRootNodeRef().toString());
         repositoryInfoType.setVendorName("Alfresco");
         repositoryInfoType.setProductName("Alfresco Repository (" + serverDescriptor.getEdition() + ")");
         repositoryInfoType.setProductVersion(serverDescriptor.getVersion());
-        CapabilitiesType capabilities = new CapabilitiesType();
+
+        CmisRepositoryCapabilitiesType capabilities = new CmisRepositoryCapabilitiesType();
         capabilities.setCapabilityMultifiling(true);
         capabilities.setCapabilityUnfiling(false);
         capabilities.setCapabilityVersionSpecificFiling(false);
-        capabilities.setCapabilityPWCUpdatable(true);
+        capabilities.setCapabilityPWCUpdateable(true);
         capabilities.setCapabilityAllVersionsSearchable(cmisQueryService.getAllVersionsSearchable());
         capabilities.setCapabilityJoin(joinEnumMapping.get(cmisQueryService.getJoinSupport()));
-        capabilities.setCapabilityFulltext(fulltextEnumMapping.get(cmisQueryService.getFullTextSearchSupport()));
+        capabilities.setCapabilityFullText(fulltextEnumMapping.get(cmisQueryService.getFullTextSearchSupport()));
         repositoryInfoType.setCapabilities(capabilities);
+
         repositoryInfoType.setCmisVersionsSupported(cmisService.getCMISVersion());
 
         return repositoryInfoType;
     }
 
     /**
-     * @param allowedTypes collection of CMISTypeId
-     * @param allowedTypesResult output list of strings
+     * Create web service choice object from repository choice object
+     *
+     * @param choice repository choice
+     * @param propertyType type of property
+     * @return web service choice
      */
-    private void setAllowedTypes(Collection<CMISTypeId> allowedTypes, List<String> allowedTypesResult)
+    private JAXBElement<? extends CmisChoiceType> getCmisChoiceType(CMISChoice choice, CMISPropertyTypeEnum propertyType)
     {
-        for(CMISTypeId typeId : allowedTypes)
+        JAXBElement<? extends CmisChoiceType> result = null;
+
+        switch (propertyType)
         {
-            allowedTypesResult.add(typeId.getTypeId());
+        case BOOLEAN:
+            CmisChoiceBooleanType choiceBooleanType = new CmisChoiceBooleanType();
+            choiceBooleanType.setIndex(BigInteger.valueOf(choice.getIndex()));
+            choiceBooleanType.setKey(choice.getName());
+            choiceBooleanType.setValue((Boolean) choice.getValue());
+            result = cmisObjectFactory.createChoiceBoolean(choiceBooleanType);
+            break;
+        case DATETIME:
+            CmisChoiceDateTimeType choiceDateTimeType = new CmisChoiceDateTimeType();
+            choiceDateTimeType.setIndex(BigInteger.valueOf(choice.getIndex()));
+            choiceDateTimeType.setKey(choice.getName());
+            choiceDateTimeType.setValue(convert((Date) choice.getValue()));
+            result = cmisObjectFactory.createChoiceDateTime(choiceDateTimeType);
+            break;
+        case DECIMAL:
+            CmisChoiceDecimalType choiceDecimalType = new CmisChoiceDecimalType();
+            choiceDecimalType.setIndex(BigInteger.valueOf(choice.getIndex()));
+            choiceDecimalType.setKey(choice.getName());
+            choiceDecimalType.setValue(BigDecimal.valueOf((Double) choice.getValue()));
+            result = cmisObjectFactory.createChoiceDecimal(choiceDecimalType);
+            break;
+        case HTML:
+            break;
+        case ID:
+            CmisChoiceIdType choiceIdType = new CmisChoiceIdType();
+            choiceIdType.setIndex(BigInteger.valueOf(choice.getIndex()));
+            choiceIdType.setKey(choice.getName());
+            choiceIdType.setValue((String) choice.getValue());
+            result = cmisObjectFactory.createChoiceId(choiceIdType);
+            break;
+        case INTEGER:
+            CmisChoiceIntegerType choiceIntegerType = new CmisChoiceIntegerType();
+            choiceIntegerType.setIndex(BigInteger.valueOf(choice.getIndex()));
+            choiceIntegerType.setKey(choice.getName());
+            choiceIntegerType.setValue(BigInteger.valueOf((Integer) choice.getValue()));
+            result = cmisObjectFactory.createChoiceInteger(choiceIntegerType);
+            break;
+        case STRING:
+            CmisChoiceStringType choiceStringType = new CmisChoiceStringType();
+            choiceStringType.setIndex(BigInteger.valueOf(choice.getIndex()));
+            choiceStringType.setKey(choice.getName());
+            choiceStringType.setValue((String) choice.getValue());
+            result = cmisObjectFactory.createChoiceString(choiceStringType);
+            break;
+        case URI:
+            break;
+        case XML:
+            break;
+        }
+
+        return result;
+    }
+
+    /**
+     * Add choices childrens to list of JAXBElements
+     *
+     * @param propertyType type of property
+     * @param choices repository choice object
+     * @param cmisChoices web service choice object
+     */
+    private void addChoiceChildrens(CMISPropertyTypeEnum propertyType, Collection<CMISChoice> choices, List<JAXBElement<? extends CmisChoiceType>> cmisChoices)
+    {
+        for (CMISChoice choice : choices)
+        {
+            JAXBElement<? extends CmisChoiceType> cmisChoiceType = getCmisChoiceType(choice, propertyType);
+            cmisChoices.add(cmisChoiceType);
+
+            if (choice.getChildren().isEmpty() == false)
+            {
+                addChoiceChildrens(propertyType, choice.getChildren(), cmisChoiceType.getValue().getChoice());
+            }
         }
     }
 
     /**
-     * @param propertyDefinition
-     * @param propertyDefs
+     * Add root choices to list of choices
+     *
+     * @param propertyType type of property
+     * @param choices repository choice object
+     * @param cmisChoices web service choice object
      */
-    private void addPropertyDef(CMISPropertyDefinition propertyDefinition, List<PropertyAttributesType> propertyDefs)
+    private void addChoices(CMISPropertyTypeEnum propertyType, Collection<CMISChoice> choices, List<CmisChoiceType> cmisChoices)
     {
-        PropertyAttributesType propertyAttributes = new PropertyAttributesType();
+        for (CMISChoice choice : choices)
+        {
+            JAXBElement<? extends CmisChoiceType> cmisChoiceType = getCmisChoiceType(choice, propertyType);
+            cmisChoices.add(cmisChoiceType.getValue());
 
-        propertyAttributes.setPropertyName(propertyDefinition.getPropertyName());
-        propertyAttributes.setPropertyId(propertyDefinition.getPropertyId());
-        propertyAttributes.setDisplayName(propertyDefinition.getDisplayName());
-        propertyAttributes.setDescription(propertyDefinition.getDescription());
-        propertyAttributes.setIsInherited(propertyDefinition.isInherited());
-        propertyAttributes.setPropertyType(propertyTypeEnumMapping.get(propertyDefinition.getPropertyType()));
-        propertyAttributes.setCardinality(cardinalityEnumMapping.get(propertyDefinition.getCardinality()));
-        propertyAttributes.setMaximumLength(BigInteger.valueOf(propertyDefinition.getMaximumLength()));
-        propertyAttributes.setSchemaURI(propertyDefinition.getSchemaURI());
-        propertyAttributes.setEncoding(propertyDefinition.getEncoding());
-        // TODO: add choices
-//        List<ChoiceType> choices = propertyAttributes.getChoice();
-//        for(CMISChoice cmisChoice : propertyDefinition.getChoices())
-//        {
-//            ChoiceType choice = new ChoiceType();
-//            choice.setIndex(BigInteger.valueOf(cmisChoice.getIndex()));
-//            choice.setKey(cmisChoice.getName());
-//            choices.add(choice);
-//        }
-        propertyAttributes.setOpenChoice(propertyDefinition.isOpenChoice());
-        propertyAttributes.setRequired(propertyDefinition.isRequired());
-        propertyAttributes.setDefaultValue(propertyDefinition.getDefaultValue());
-        propertyAttributes.setUpdatability(updatabilityEnumMapping.get(propertyDefinition.getUpdatability()));
-        propertyAttributes.setQueryable(propertyDefinition.isQueryable());
-        propertyAttributes.setOrderable(propertyDefinition.isOrderable());
-
-        propertyDefs.add(propertyAttributes);
+            if (choice.getChildren().isEmpty() == false)
+            {
+                addChoiceChildrens(propertyType, choice.getChildren(), cmisChoiceType.getValue().getChoice());
+            }
+        }
     }
 
-    public ObjectTypeDefinitionType getTypeDefinition(String repositoryId, String typeId) throws RuntimeException, InvalidArgumentException, TypeNotFoundException,
-            ObjectNotFoundException, ConstraintViolationException, OperationNotSupportedException, UpdateConflictException, PermissionDeniedException
+    /**
+     * Add property definitions to list of definitions
+     *
+     * @param propertyDefinition repository property definition
+     * @param wsPropertyDefs web service property definition
+     */
+    private void addPropertyDefs(CMISPropertyDefinition propertyDefinition, List<CmisPropertyDefinitionType> wsPropertyDefs)
+    {
+        CmisPropertyDefinitionType wsPropertyDef = new CmisPropertyDefinitionType();
+        wsPropertyDef.setName(propertyDefinition.getPropertyName());
+        wsPropertyDef.setId(propertyDefinition.getPropertyId());
+        wsPropertyDef.setDisplayName(propertyDefinition.getDisplayName());
+        wsPropertyDef.setDescription(propertyDefinition.getDescription());
+        wsPropertyDef.setPropertyType(propertyTypeEnumMapping.get(propertyDefinition.getPropertyType()));
+        wsPropertyDef.setCardinality(cardinalityEnumMapping.get(propertyDefinition.getCardinality()));
+        wsPropertyDef.setUpdateability(updatabilityEnumMapping.get(propertyDefinition.getUpdatability()));
+        wsPropertyDef.setInherited(propertyDefinition.isInherited());
+        wsPropertyDef.setRequired(propertyDefinition.isRequired());
+        wsPropertyDef.setQueryable(propertyDefinition.isQueryable());
+        wsPropertyDef.setOrderable(propertyDefinition.isOrderable());
+        addChoices(propertyDefinition.getPropertyType(), propertyDefinition.getChoices(), wsPropertyDef.getChoice());
+        wsPropertyDef.setOpenChoice(propertyDefinition.isOpenChoice());
+
+        wsPropertyDefs.add(wsPropertyDef);
+    }
+
+    /**
+     * Set properties for web service type definition
+     *
+     * @param cmisTypeDefinition web service type definition
+     * @param typeDefinition repository type definition
+     * @param includeProperties true if need property definitions for type definition
+     */
+    private void setCmisTypeDefinitionProperties(CmisTypeDefinitionType cmisTypeDefinition, CMISTypeDefinition typeDefinition, boolean includeProperties)
+    {
+        cmisTypeDefinition.setTypeId(typeDefinition.getObjectTypeId().getTypeId());
+        cmisTypeDefinition.setQueryName(typeDefinition.getObjectTypeQueryName());
+        cmisTypeDefinition.setDisplayName(typeDefinition.getObjectTypeDisplayName());
+        cmisTypeDefinition.setBaseType(EnumObjectType.fromValue(typeDefinition.getRootTypeId().getTypeId()));
+        cmisTypeDefinition.setParentId(typeDefinition.getParentTypeId().getTypeId());
+        cmisTypeDefinition.setBaseTypeQueryName(typeDefinition.getRootTypeQueryName());
+        cmisTypeDefinition.setDescription(typeDefinition.getDescription());
+        cmisTypeDefinition.setCreatable(typeDefinition.isCreatable());
+        cmisTypeDefinition.setFileable(typeDefinition.isFileable());
+        cmisTypeDefinition.setQueryable(typeDefinition.isQueryable());
+        cmisTypeDefinition.setControllable(typeDefinition.isControllable());
+        cmisTypeDefinition.setIncludedInSupertypeQuery(typeDefinition.isIncludedInSupertypeQuery());
+
+        if (includeProperties)
+        {
+            List<CmisPropertyDefinitionType> propertyDefs = cmisTypeDefinition.getPropertyDefinition();
+            for (CMISPropertyDefinition cmisPropDef : cmisDictionaryService.getPropertyDefinitions(typeDefinition.getObjectTypeId()).values())
+            {
+                addPropertyDefs(cmisPropDef, propertyDefs);
+            }
+        }
+    }
+
+    /**
+     * Create web service type definition for typeId
+     *
+     * @param typeId type id
+     * @param includeProperties true if need property definitions for type definition
+     * @return web service type definition
+     * @throws ObjectNotFoundException if type id not found
+     */
+    private JAXBElement<? extends CmisTypeDefinitionType> getCmisTypeDefinition(String typeId, boolean includeProperties) throws ObjectNotFoundException
     {
         CMISTypeId cmisTypeId = cmisDictionaryService.getCMISMapping().getCmisTypeId(typeId);
         CMISTypeDefinition typeDefinition = cmisDictionaryService.getType(cmisTypeId);
 
+        if (typeDefinition.getParentTypeId() == null)
+        {
+            return null;
+        }
+
         if (typeDefinition == null)
         {
-            // TODO: error code
-            throw new ObjectNotFoundException("Type not found", ExceptionUtils.createBasicFault(null, "Type not found"));
+            throw new ObjectNotFoundException("Type not found");
         }
 
-        ObjectTypeDefinitionType objectTypeDefinitionType = new ObjectTypeDefinitionType();
-        objectTypeDefinitionType.setObjectTypeID(typeDefinition.getObjectTypeId().getTypeId());
-        objectTypeDefinitionType.setObjectTypeQueryName(typeDefinition.getObjectTypeQueryName());
-        objectTypeDefinitionType.setObjectTypeDisplayName(typeDefinition.getObjectTypeDisplayName());
-        objectTypeDefinitionType.setParentTypeID(typeDefinition.getParentTypeId() == null ? null : typeDefinition.getParentTypeId().getTypeId());
-        objectTypeDefinitionType.setRootTypeQueryName(typeDefinition.getRootTypeQueryName());
-        objectTypeDefinitionType.setDescription(typeDefinition.getDescription());
-        objectTypeDefinitionType.setCreatable(typeDefinition.isCreatable());
-        objectTypeDefinitionType.setFileable(typeDefinition.isFileable());
-        objectTypeDefinitionType.setQueryable(typeDefinition.isQueryable());
-        objectTypeDefinitionType.setControllable(typeDefinition.isControllable());
-        objectTypeDefinitionType.setVersionable(typeDefinition.isVersionable());
-        objectTypeDefinitionType.setContentStreamAllowed(contentStreamAllowedEnumMapping.get(typeDefinition.getContentStreamAllowed()));
-        setAllowedTypes(typeDefinition.getAllowedSourceTypes(), objectTypeDefinitionType.getAllowedSourceType());
-        setAllowedTypes(typeDefinition.getAllowedTargetTypes(), objectTypeDefinitionType.getAllowedTargetType());
+        JAXBElement<? extends CmisTypeDefinitionType> result = null;
 
-        List<PropertyAttributesType> propertyDefs = objectTypeDefinitionType.getProperty();
-
-        for (CMISPropertyDefinition propDef : cmisDictionaryService.getPropertyDefinitions(typeDefinition.getObjectTypeId()).values())
+        switch (cmisTypeId.getScope())
         {
-            addPropertyDef(propDef, propertyDefs);
+        case DOCUMENT:
+            CmisTypeDocumentDefinitionType documentDefinitionType = new CmisTypeDocumentDefinitionType();
+            setCmisTypeDefinitionProperties(documentDefinitionType, typeDefinition, includeProperties);
+            documentDefinitionType.setVersionable(typeDefinition.isVersionable());
+            documentDefinitionType.setContentStreamAllowed(contentStreamAllowedEnumMapping.get(typeDefinition.getContentStreamAllowed()));
+            result = cmisObjectFactory.createDocumentType(documentDefinitionType);
+            break;
+        case FOLDER:
+            CmisTypeFolderDefinitionType folderDefinitionType = new CmisTypeFolderDefinitionType();
+            setCmisTypeDefinitionProperties(folderDefinitionType, typeDefinition, includeProperties);
+            result = cmisObjectFactory.createFolderType(folderDefinitionType);
+            break;
+        case POLICY:
+            CmisTypePolicyDefinitionType policyDefinitionType = new CmisTypePolicyDefinitionType();
+            setCmisTypeDefinitionProperties(policyDefinitionType, typeDefinition, includeProperties);
+            result = cmisObjectFactory.createPolicyType(policyDefinitionType);
+            break;
+        case RELATIONSHIP:
+            CmisTypeRelationshipDefinitionType relationshipDefinitionType = new CmisTypeRelationshipDefinitionType();
+            setCmisTypeDefinitionProperties(relationshipDefinitionType, typeDefinition, includeProperties);
+            result = cmisObjectFactory.createRelationshipType(relationshipDefinitionType);
+            break;
+        case UNKNOWN:
+            throw new ObjectNotFoundException("Bab type");
         }
 
-        return objectTypeDefinitionType;
+        return result;
     }
 
     public GetTypesResponse getTypes(GetTypes parameters) throws RuntimeException, InvalidArgumentException, ObjectNotFoundException, ConstraintViolationException,
             OperationNotSupportedException, UpdateConflictException, PermissionDeniedException
     {
-        return null;
+        if (descriptorService.getServerDescriptor().getId().equals(parameters.getRepositoryId()) == false)
+        {
+            throw new InvalidArgumentException("Invalid repository id");
+        }
+
+        GetTypesResponse response = new GetTypesResponse();
+
+        Collection<CMISTypeId> typeIds = parameters.getTypeId() == null ? cmisDictionaryService.getAllObjectTypeIds() : cmisDictionaryService.getChildTypeIds(cmisDictionaryService
+                .getCMISMapping().getCmisTypeId(parameters.getTypeId().getValue()), true);
+
+        if (parameters.getMaxItems() != null)
+        {
+            response.setHasMoreItems(parameters.getMaxItems().getValue().intValue() < typeIds.size());
+        }
+
+        Cursor cursor = createCursor(typeIds.size(), parameters.getSkipCount() != null ? parameters.getSkipCount().getValue() : null, parameters.getMaxItems() != null ? parameters
+                .getMaxItems().getValue() : null);
+
+        // skip
+        Iterator<CMISTypeId> iterTypeIds = typeIds.iterator();
+        for (int i = 0; i < cursor.getStartRow(); i++)
+        {
+            iterTypeIds.next();
+        }
+
+        boolean returnPropertyDefinitions = parameters.getReturnPropertyDefinitions() == null ? false : parameters.getReturnPropertyDefinitions().getValue();
+
+        List<JAXBElement<? extends CmisTypeDefinitionType>> types = response.getType();
+        for (int i = cursor.getStartRow(); i <= cursor.getEndRow(); i++)
+        {
+            JAXBElement<? extends CmisTypeDefinitionType> element = getCmisTypeDefinition(iterTypeIds.next().getTypeId(), returnPropertyDefinitions);
+            if (element != null)
+            {
+                types.add(element);
+            }
+        }
+
+        return response;
+    }
+
+    public GetTypeDefinitionResponse getTypeDefinition(GetTypeDefinition parameters) throws PermissionDeniedException, UpdateConflictException, ObjectNotFoundException,
+            OperationNotSupportedException, TypeNotFoundException, InvalidArgumentException, RuntimeException, ConstraintViolationException
+    {
+        if (descriptorService.getServerDescriptor().getId().equals(parameters.getRepositoryId()) == false)
+        {
+            throw new InvalidArgumentException("Invalid repository id");
+        }
+
+        GetTypeDefinitionResponse response = new GetTypeDefinitionResponse();
+        response.setType(getCmisTypeDefinition(parameters.getTypeId(), true));
+        return response;
     }
 
 }

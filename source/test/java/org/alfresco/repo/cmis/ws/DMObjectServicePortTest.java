@@ -24,6 +24,8 @@
  */
 package org.alfresco.repo.cmis.ws;
 
+import java.util.List;
+
 import org.alfresco.cmis.dictionary.CMISMapping;
 import org.alfresco.service.cmr.repository.NodeRef;
 
@@ -35,12 +37,14 @@ import org.alfresco.service.cmr.repository.NodeRef;
 public class DMObjectServicePortTest extends BaseServicePortContentTest
 {
     private ObjectServicePort objectServicePort;
+    private RepositoryServicePort repositoryServicePort;
 
     @Override
     protected void onSetUp() throws Exception
     {
         super.onSetUp();
 
+        repositoryServicePort = (RepositoryServicePort) applicationContext.getBean("dmRepositoryService");
         objectServicePort = (ObjectServicePort) applicationContext.getBean("dmObjectService");
     }
 
@@ -49,12 +53,13 @@ public class DMObjectServicePortTest extends BaseServicePortContentTest
         authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
 
         GetProperties request = new GetProperties();
+        request.setRepositoryId(repositoryId);
         request.setObjectId(L0_FOLDER_0_NODEREF.toString());
 
         GetPropertiesResponse response = objectServicePort.getProperties(request);
         assertNotNull(response);
-        assertEquals(rootNodeRef.toString(), getPropertyIDValue(response.getObject().getProperties(), CMISMapping.PROP_PARENT_ID));
-        assertEquals(L0_FOLDER_0, getPropertyStringValue(response.getObject().getProperties(), CMISMapping.PROP_NAME));
+        assertEquals(rootNodeRef.toString(), PropertyUtil.getProperty(response.getObject().getProperties(), CMISMapping.PROP_PARENT_ID));
+        assertEquals(L0_FOLDER_0, PropertyUtil.getProperty(response.getObject().getProperties(), CMISMapping.PROP_NAME));
     }
 
     public void testGetExistentDocumentPropertiesThis() throws Exception
@@ -62,12 +67,13 @@ public class DMObjectServicePortTest extends BaseServicePortContentTest
         authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
 
         GetProperties request = new GetProperties();
+        request.setRepositoryId(repositoryId);
         request.setObjectId(L1_FILE_VERSION_1_0_NODEREF.toString());
 
         GetPropertiesResponse response = objectServicePort.getProperties(request);
         assertNotNull(response);
-        assertEquals(getPropertyStringValue(response.getObject().getProperties(), CMISMapping.PROP_CHECKIN_COMMENT), "1.0");
-        assertTrue(getPropertyBooleanValue(response.getObject().getProperties(), CMISMapping.PROP_IS_MAJOR_VERSION));
+        assertEquals(PropertyUtil.getProperty(response.getObject().getProperties(), CMISMapping.PROP_CHECKIN_COMMENT), "1.0");
+        assertTrue((Boolean) PropertyUtil.getProperty(response.getObject().getProperties(), CMISMapping.PROP_IS_MAJOR_VERSION));
     }
 
     public void testGetExistentDocumentPropertiesLatestMajor() throws Exception
@@ -75,13 +81,14 @@ public class DMObjectServicePortTest extends BaseServicePortContentTest
         authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
 
         GetProperties request = new GetProperties();
-        request.setReturnVersion(VersionEnum.LATEST_MAJOR);
+        request.setRepositoryId(repositoryId);
+        request.setReturnVersion(cmisObjectFactory.createGetPropertiesReturnVersion(EnumReturnVersion.LATESTMAJOR));
         request.setObjectId(L1_FILE_VERSION_1_0_NODEREF.toString());
 
         GetPropertiesResponse response = objectServicePort.getProperties(request);
         assertNotNull(response);
-        assertEquals(getPropertyStringValue(response.getObject().getProperties(), CMISMapping.PROP_CHECKIN_COMMENT), "2.0");
-        assertTrue(getPropertyBooleanValue(response.getObject().getProperties(), CMISMapping.PROP_IS_MAJOR_VERSION));
+        assertEquals(PropertyUtil.getProperty(response.getObject().getProperties(), CMISMapping.PROP_CHECKIN_COMMENT), "2.0");
+        assertTrue((Boolean) PropertyUtil.getProperty(response.getObject().getProperties(), CMISMapping.PROP_IS_MAJOR_VERSION));
     }
 
     public void testGetExistentDocumentPropertiesLatest() throws Exception
@@ -89,13 +96,14 @@ public class DMObjectServicePortTest extends BaseServicePortContentTest
         authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
 
         GetProperties request = new GetProperties();
-        request.setReturnVersion(VersionEnum.LATEST);
+        request.setRepositoryId(repositoryId);
+        request.setReturnVersion(cmisObjectFactory.createGetPropertiesReturnVersion(EnumReturnVersion.LATEST));
         request.setObjectId(L1_FILE_VERSION_2_0_NODEREF.toString());
 
         GetPropertiesResponse response = objectServicePort.getProperties(request);
         assertNotNull(response);
-        assertEquals(getPropertyStringValue(response.getObject().getProperties(), CMISMapping.PROP_CHECKIN_COMMENT), "2.1");
-        assertFalse(getPropertyBooleanValue(response.getObject().getProperties(), CMISMapping.PROP_IS_MAJOR_VERSION));
+        assertEquals(PropertyUtil.getProperty(response.getObject().getProperties(), CMISMapping.PROP_CHECKIN_COMMENT), "2.1");
+        assertFalse((Boolean) PropertyUtil.getProperty(response.getObject().getProperties(), CMISMapping.PROP_IS_MAJOR_VERSION));
     }
 
     public void testGetNonExistentObjectProperties() throws Exception
@@ -103,6 +111,7 @@ public class DMObjectServicePortTest extends BaseServicePortContentTest
         authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
 
         GetProperties request = new GetProperties();
+        request.setRepositoryId(repositoryId);
         request.setObjectId(L0_NONEXISTENT_NODEREF.toString());
         try
         {
@@ -121,6 +130,7 @@ public class DMObjectServicePortTest extends BaseServicePortContentTest
         authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
 
         GetProperties request = new GetProperties();
+        request.setRepositoryId(repositoryId);
         request.setObjectId("invalid OID");
 
         try
@@ -141,45 +151,45 @@ public class DMObjectServicePortTest extends BaseServicePortContentTest
         NodeRef workingCopyNodeRef = checkOutCheckInService.checkout(L0_FILE_0_NODEREF);
 
         GetProperties request = new GetProperties();
+        request.setRepositoryId(repositoryId);
         request.setObjectId(L0_FILE_0_NODEREF.toString());
 
         GetPropertiesResponse response = objectServicePort.getProperties(request);
         assertNotNull(response);
 
-        assertNull(getPropertyStringValue(response.getObject().getProperties(), CMISMapping.PROP_CHECKIN_COMMENT));
-        assertTrue(getPropertyBooleanValue(response.getObject().getProperties(), CMISMapping.PROP_IS_VERSION_SERIES_CHECKED_OUT));
-        assertEquals(getPropertyStringValue(response.getObject().getProperties(), CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_BY), authenticationComponent.getSystemUserName());
-        assertEquals(getPropertyIDValue(response.getObject().getProperties(), CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_ID), workingCopyNodeRef.toString());
+        assertNull(PropertyUtil.getProperty(response.getObject().getProperties(), CMISMapping.PROP_CHECKIN_COMMENT));
+        assertTrue((Boolean) PropertyUtil.getProperty(response.getObject().getProperties(), CMISMapping.PROP_IS_VERSION_SERIES_CHECKED_OUT));
+        assertEquals(PropertyUtil.getProperty(response.getObject().getProperties(), CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_BY), authenticationComponent.getSystemUserName());
+        assertEquals(PropertyUtil.getProperty(response.getObject().getProperties(), CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_ID), workingCopyNodeRef.toString());
 
         request = new GetProperties();
+        request.setRepositoryId(repositoryId);
         request.setObjectId(workingCopyNodeRef.toString());
 
         response = objectServicePort.getProperties(request);
         assertNotNull(response);
-        assertNull(getPropertyStringValue(response.getObject().getProperties(), CMISMapping.PROP_CHECKIN_COMMENT));
-        assertTrue(getPropertyBooleanValue(response.getObject().getProperties(), CMISMapping.PROP_IS_VERSION_SERIES_CHECKED_OUT));
-        assertEquals(getPropertyStringValue(response.getObject().getProperties(), CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_BY), authenticationComponent.getSystemUserName());
-        assertEquals(getPropertyIDValue(response.getObject().getProperties(), CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_ID), workingCopyNodeRef.toString());
+        assertNull(PropertyUtil.getProperty(response.getObject().getProperties(), CMISMapping.PROP_CHECKIN_COMMENT));
+        assertTrue((Boolean) PropertyUtil.getProperty(response.getObject().getProperties(), CMISMapping.PROP_IS_VERSION_SERIES_CHECKED_OUT));
+        assertEquals(PropertyUtil.getProperty(response.getObject().getProperties(), CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_BY), authenticationComponent.getSystemUserName());
+        assertEquals(PropertyUtil.getProperty(response.getObject().getProperties(), CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_ID), workingCopyNodeRef.toString());
     }
 
     public void testGetContentStream() throws Exception
     {
         authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
 
+        List<CmisRepositoryEntryType> repositories = repositoryServicePort.getRepositories();
         String documentId = L0_FILE_0_NODEREF.toString();
-        GetContentStream contStream = new GetContentStream();
-        contStream.setDocumentId(documentId);
-        GetContentStreamResponse result = objectServicePort.getContentStream(contStream);
+        CmisContentStreamType result = objectServicePort.getContentStream(repositories.get(0).getRepositoryID(), documentId);
         assertNotNull(result);
-        if (result.getContentStream().length.intValue() != 9)
+        if (result.getLength().intValue() != 9)
         {
             fail();
         }
 
         try
         {
-            contStream.setDocumentId(documentId + "s");
-            result = objectServicePort.getContentStream(contStream);
+            result = objectServicePort.getContentStream(repositories.get(0).getRepositoryID(), documentId + "s");
         }
         catch (ObjectNotFoundException e)
         {

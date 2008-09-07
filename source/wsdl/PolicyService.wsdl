@@ -1,5 +1,11 @@
-﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<definitions xmlns:tns="http://www.cmis.org/ns/1.0" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:ns="http://schemas.xmlsoap.org/soap/encoding/" name="PolicyService" targetNamespace="http://www.cmis.org/ns/1.0">
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<definitions 
+xmlns:cmis="http://www.cmis.org/2008/05" 
+xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" 
+xmlns="http://schemas.xmlsoap.org/wsdl/" 
+xmlns:ns="http://schemas.xmlsoap.org/soap/encoding/" 
+name="PolicyService" targetNamespace="http://www.cmis.org/2008/05">
   <types>
     <!--
 		<xsd:schema>
@@ -7,89 +13,89 @@
 		</xsd:schema>
 		-->
     <!-- had to use include - .net wsdl.exe code generator doesn't seem to like imports on the schema -->
-    <xsd:schema elementFormDefault="qualified" targetNamespace="http://www.cmis.org/ns/1.0">
+    <xsd:schema elementFormDefault="qualified" targetNamespace="http://www.cmis.org/2008/05">
       <xsd:include schemaLocation="cmisMessageTypes.xsd" />
     </xsd:schema>
   </types>
-  <message name="applyPolicy">
-    <part name="parameters" element="tns:applyPolicy" />
+  <message name="applyPolicyRequest">
+    <part name="parameters" element="cmis:applyPolicy" />
   </message>
   <message name="applyPolicyResponse">
-    <part name="parameters" element="tns:applyPolicyResponse" />
+    <part name="parameters" element="cmis:applyPolicyResponse" />
   </message>
-  <message name="removePolicy">
-    <part name="parameters" element="tns:removePolicy" />
+  <message name="removePolicyRequest">
+    <part name="parameters" element="cmis:removePolicy" />
   </message>
   <message name="removePolicyResponse">
-    <part name="parameters" element="tns:removePolicyResponse" />
+    <part name="parameters" element="cmis:removePolicyResponse" />
   </message>
-  <message name="getAppliedPolicies">
-    <part name="parameters" element="tns:getAppliedPolicies" />
+  <message name="getAppliedPoliciesRequest">
+    <part name="parameters" element="cmis:getAppliedPolicies" />
   </message>
   <message name="getAppliedPoliciesResponse">
-    <part name="parameters" element="tns:getAppliedPoliciesResponse" />
+    <part name="parameters" element="cmis:getAppliedPoliciesResponse" />
   </message>
   <message name="InvalidArgumentException">
-    <part name="fault" element="tns:invalidArgumentException" />
+    <part name="fault" element="cmis:invalidArgumentException" />
   </message>
   <message name="PermissionDeniedException">
-    <part name="fault" element="tns:permissionDeniedException" />
+    <part name="fault" element="cmis:permissionDeniedException" />
   </message>
   <message name="OperationNotSupportedException">
-    <part name="fault" element="tns:operationNotSupportedException" />
+    <part name="fault" element="cmis:operationNotSupportedException" />
   </message>
   <message name="UpdateConflictException">
-    <part name="fault" element="tns:updateConflictException" />
+    <part name="fault" element="cmis:updateConflictException" />
   </message>
   <message name="RuntimeException">
-    <part name="fault" element="tns:runtimeException" />
+    <part name="fault" element="cmis:runtimeException" />
   </message>
   <message name="ConstraintViolationException">
-    <part name="fault" element="tns:constraintViolationException" />
+    <part name="fault" element="cmis:constraintViolationException" />
   </message>
   <message name="ObjectNotFoundException">
-    <part name="fault" element="tns:objectNotFoundException" />
+    <part name="fault" element="cmis:objectNotFoundException" />
   </message>
   <message name="FilterNotValidException">
-    <part name="fault" element="tns:filterNotValidException" />
+    <part name="fault" element="cmis:filterNotValidException" />
   </message>
   <portType name="PolicyServicePort">
     <operation name="applyPolicy">
-      <input message="tns:applyPolicy" />
-      <output message="tns:applyPolicyResponse" />
-      <fault name="InvalidArgumentException" message="tns:InvalidArgumentException" />
-      <fault name="PermissionDeniedException" message="tns:PermissionDeniedException" />
-      <fault name="OperationNotSupportedException" message="tns:OperationNotSupportedException" />
-      <fault name="UpdateConflictException" message="tns:UpdateConflictException" />
-      <fault name="RuntimeException" message="tns:RuntimeException" />
-      <fault name="ConstraintViolationException" message="tns:ConstraintViolationException" />
-      <fault name="ObjectNotFoundException" message="tns:ObjectNotFoundException" />
+      <input message="cmis:applyPolicyRequest" />
+      <output message="cmis:applyPolicyResponse" />
+      <fault name="InvalidArgumentException" message="cmis:InvalidArgumentException" />
+      <fault name="PermissionDeniedException" message="cmis:PermissionDeniedException" />
+      <fault name="OperationNotSupportedException" message="cmis:OperationNotSupportedException" />
+      <fault name="UpdateConflictException" message="cmis:UpdateConflictException" />
+      <fault name="RuntimeException" message="cmis:RuntimeException" />
+      <fault name="ConstraintViolationException" message="cmis:ConstraintViolationException" />
+      <fault name="ObjectNotFoundException" message="cmis:ObjectNotFoundException" />
     </operation>
     <operation name="removePolicy">
-      <input message="tns:removePolicy" />
-      <output message="tns:removePolicyResponse" />
-      <fault name="InvalidArgumentException" message="tns:InvalidArgumentException" />
-      <fault name="PermissionDeniedException" message="tns:PermissionDeniedException" />
-      <fault name="OperationNotSupportedException" message="tns:OperationNotSupportedException" />
-      <fault name="UpdateConflictException" message="tns:UpdateConflictException" />
-      <fault name="RuntimeException" message="tns:RuntimeException" />
-      <fault name="ConstraintViolationException" message="tns:ConstraintViolationException" />
-      <fault name="ObjectNotFoundException" message="tns:ObjectNotFoundException" />
+      <input message="cmis:removePolicyRequest" />
+      <output message="cmis:removePolicyResponse" />
+      <fault name="InvalidArgumentException" message="cmis:InvalidArgumentException" />
+      <fault name="PermissionDeniedException" message="cmis:PermissionDeniedException" />
+      <fault name="OperationNotSupportedException" message="cmis:OperationNotSupportedException" />
+      <fault name="UpdateConflictException" message="cmis:UpdateConflictException" />
+      <fault name="RuntimeException" message="cmis:RuntimeException" />
+      <fault name="ConstraintViolationException" message="cmis:ConstraintViolationException" />
+      <fault name="ObjectNotFoundException" message="cmis:ObjectNotFoundException" />
     </operation>
     <operation name="getAppliedPolicies">
-      <input message="tns:getAppliedPolicies" />
-      <output message="tns:getAppliedPoliciesResponse" />
-      <fault name="InvalidArgumentException" message="tns:InvalidArgumentException" />
-      <fault name="PermissionDeniedException" message="tns:PermissionDeniedException" />
-      <fault name="OperationNotSupportedException" message="tns:OperationNotSupportedException" />
-      <fault name="UpdateConflictException" message="tns:UpdateConflictException" />
-      <fault name="RuntimeException" message="tns:RuntimeException" />
-      <fault name="ConstraintViolationException" message="tns:ConstraintViolationException" />
-      <fault name="ObjectNotFoundException" message="tns:ObjectNotFoundException" />
-      <fault name="FilterNotValidException" message="tns:FilterNotValidException" />
+      <input message="cmis:getAppliedPoliciesRequest" />
+      <output message="cmis:getAppliedPoliciesResponse" />
+      <fault name="InvalidArgumentException" message="cmis:InvalidArgumentException" />
+      <fault name="PermissionDeniedException" message="cmis:PermissionDeniedException" />
+      <fault name="OperationNotSupportedException" message="cmis:OperationNotSupportedException" />
+      <fault name="UpdateConflictException" message="cmis:UpdateConflictException" />
+      <fault name="RuntimeException" message="cmis:RuntimeException" />
+      <fault name="ConstraintViolationException" message="cmis:ConstraintViolationException" />
+      <fault name="ObjectNotFoundException" message="cmis:ObjectNotFoundException" />
+      <fault name="FilterNotValidException" message="cmis:FilterNotValidException" />
     </operation>
   </portType>
-  <binding name="PolicyServicePortBinding" type="tns:PolicyServicePort">
+  <binding name="PolicyServicePortBinding" type="cmis:PolicyServicePort">
     <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http" />
     <operation name="applyPolicy">
       <soap:operation soapAction="" />
@@ -186,7 +192,7 @@
     </operation>
   </binding>
   <service name="PolicyService">
-    <port name="PolicyServicePort" binding="tns:PolicyServicePortBinding">
+    <port name="PolicyServicePort" binding="cmis:PolicyServicePortBinding">
       <soap:address location="_REPLACE_WITH_ACTUAL_URL_" />
     </port>
   </service>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema 
+targetNamespace="http://www.w3.org/XML/1998/namespace" 
+xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+xml:lang="en">
+ <xsd:attribute name="lang">
+  <xsd:simpleType>
+   <xsd:union memberTypes="xsd:language">
+    <xsd:simpleType>    
+     <xsd:restriction base="xsd:string">
+      <xsd:enumeration value=""/>
+     </xsd:restriction>
+    </xsd:simpleType>
+   </xsd:union>
+  </xsd:simpleType>
+ </xsd:attribute>
+
+ <xsd:attribute name="space">
+  <xsd:simpleType>
+   <xsd:restriction base="xsd:NCName">
+    <xsd:enumeration value="default"/>
+    <xsd:enumeration value="preserve"/>
+   </xsd:restriction>
+  </xsd:simpleType>
+ </xsd:attribute>
+
+ <xsd:attribute name="base" type="xsd:anyURI">
+  <xsd:annotation>
+   <xsd:documentation>See http://www.w3.org/TR/xmlbase/ for
+                     information about this attribute.</xsd:documentation>
+  </xsd:annotation>
+ </xsd:attribute>
+ 
+ <xsd:attribute name="id" type="xsd:ID">
+  <xsd:annotation>
+   <xsd:documentation>See http://www.w3.org/TR/xml-id/ for
+                     information about this attribute.</xsd:documentation>
+  </xsd:annotation>
+ </xsd:attribute>
+
+ <xsd:attributeGroup name="specialAttrs">
+  <xsd:attribute ref="xml:base"/>
+  <xsd:attribute ref="xml:lang"/>
+  <xsd:attribute ref="xml:space"/>
+  <xsd:attribute ref="xml:id"/>
+ </xsd:attributeGroup>
+
+</xsd:schema>

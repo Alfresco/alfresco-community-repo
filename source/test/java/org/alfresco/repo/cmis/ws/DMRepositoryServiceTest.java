@@ -61,7 +61,7 @@ public class DMRepositoryServiceTest extends AbstractServiceTest
     {
         try
         {
-        	List<RepositoryType> repositories = ((RepositoryServicePort) servicePort).getRepositories();
+        	List<CmisRepositoryEntryType> repositories = ((RepositoryServicePort) servicePort).getRepositories();
             assertTrue(repositories.size() == 1);
             assertFalse(repositories.get(0).getRepositoryID() == null);
             assertFalse(repositories.get(0).getRepositoryName() == null);
@@ -78,15 +78,17 @@ public class DMRepositoryServiceTest extends AbstractServiceTest
     {
         try
         {
-        	List<RepositoryType> repositories = ((RepositoryServicePort) servicePort).getRepositories();
-        	RepositoryInfoType repositoryInfo = ((RepositoryServicePort) servicePort).getRepositoryInfo(repositories.get(0).getRepositoryID());
+        	List<CmisRepositoryEntryType> repositories = ((RepositoryServicePort) servicePort).getRepositories();
+        	GetRepositoryInfo parameters = new GetRepositoryInfo();
+        	parameters.setRepositoryId(repositories.get(0).getRepositoryID());
+            CmisRepositoryInfoType cmisRepositoryInfoType = ((RepositoryServicePort) servicePort).getRepositoryInfo(parameters);
         	
-            assertTrue(repositoryInfo.getRepositoryId().equals(repositories.get(0).getRepositoryID()));
-            assertTrue(repositoryInfo.getRepositoryName().equals(repositories.get(0).getRepositoryName()));
-            assertTrue("Alfresco".equals(repositoryInfo.getVendorName()));
-            assertTrue(repositoryInfo.getVendorName().indexOf("Alfresco Repository (") > -1 );
-            CapabilitiesType capabilities = repositoryInfo.getCapabilities();
-            assertTrue(capabilities.isCapabilityMultifiling() && capabilities.isCapabilityPWCUpdatable());
+            assertTrue(cmisRepositoryInfoType.getRepositoryId().equals(repositories.get(0).getRepositoryID()));
+            assertTrue(cmisRepositoryInfoType.getRepositoryName().equals(repositories.get(0).getRepositoryName()));
+            assertTrue("Alfresco".equals(cmisRepositoryInfoType.getVendorName()));
+            assertTrue(cmisRepositoryInfoType.getVendorName().indexOf("Alfresco Repository (") > -1 );
+            CmisRepositoryCapabilitiesType capabilities = cmisRepositoryInfoType.getCapabilities();
+            assertTrue(capabilities.isCapabilityMultifiling() && capabilities.isCapabilityPWCUpdateable());
             assertFalse(capabilities.isCapabilityUnfiling() && capabilities.isCapabilityVersionSpecificFiling());
 
         }

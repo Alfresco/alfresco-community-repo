@@ -36,6 +36,7 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
@@ -54,7 +55,7 @@ public class BaseServicePortTest extends AbstractDependencyInjectionSpringContex
     protected NodeService nodeService;
     protected ServiceRegistry serviceRegistry;
     protected DictionaryService dictionaryService;
-
+    protected DescriptorService descriptorService;
     protected CMISMapping cmisMapping;
     protected CMISService cmisService;
 
@@ -63,6 +64,10 @@ public class BaseServicePortTest extends AbstractDependencyInjectionSpringContex
     private UserTransaction txn;
 
     protected NodeRef rootNodeRef;
+
+    protected ObjectFactory cmisObjectFactory = new ObjectFactory();
+
+    protected String repositoryId;
 
     @Override
     protected void onSetUp() throws Exception
@@ -75,6 +80,9 @@ public class BaseServicePortTest extends AbstractDependencyInjectionSpringContex
         transactionService = serviceRegistry.getTransactionService();
         nodeService = serviceRegistry.getNodeService();
         dictionaryService = serviceRegistry.getDictionaryService();
+        descriptorService = serviceRegistry.getDescriptorService();
+
+        repositoryId = descriptorService.getServerDescriptor().getId();
 
         authenticationComponent = (AuthenticationComponent) applicationContext.getBean("authenticationComponent");
 
@@ -115,55 +123,7 @@ public class BaseServicePortTest extends AbstractDependencyInjectionSpringContex
     @Override
     protected String[] getConfigLocations()
     {
-        return new String[] { "classpath:alfresco/application-context.xml", "classpath:test-cmis-context.xml" };
-    }
-
-    protected String getPropertyIDValue(PropertiesType properties, String propertyName)
-    {
-        String result = null;
-
-        for (PropertyIDType property : properties.getPropertyID())
-        {
-            if (propertyName.equals(property.getName()))
-            {
-                result = property.getValue();
-                break;
-            }
-        }
-
-        return result;
-    }
-
-    protected String getPropertyStringValue(PropertiesType properties, String propertyName)
-    {
-        String result = null;
-
-        for (PropertyStringType property : properties.getPropertyString())
-        {
-            if (propertyName.equals(property.getName()))
-            {
-                result = property.getValue();
-                break;
-            }
-        }
-
-        return result;
-    }
-
-    protected boolean getPropertyBooleanValue(PropertiesType properties, String propertyName)
-    {
-        boolean result = false;
-
-        for (PropertyBooleanType property : properties.getPropertyBoolean())
-        {
-            if (propertyName.equals(property.getName()))
-            {
-                result = property.isValue();
-                break;
-            }
-        }
-
-        return result;
+        return new String[] { "classpath:alfresco/application-context.xml", "classpath:alfresco/test-cmis-context.xml" };
     }
 
 }

@@ -43,17 +43,29 @@ public class PropertyFilter
 
     /**
      * Constructor
+     */
+    public PropertyFilter()
+    {
+    }
+
+    /**
+     * Constructor
      *
      * @param filter filter string
      * @throws FilterNotValidException if filter string isn't valid
      */
     public PropertyFilter(String filter) throws FilterNotValidException
     {
-        if (filter != null && filter.equals("") == false)
+        if (filter == null)
+        {
+            throw new FilterNotValidException(filter + " isn't valid");
+        }
+
+        if (filter.equals("") == false)
         {
             if (PROPERTY_FILTER_REGEX.matcher(filter).matches() == false)
             {
-                throw new FilterNotValidException(filter, ExceptionUtils.createBasicFault(null, "Filter isn't valid"));
+                throw new FilterNotValidException(filter + " isn't valid");
             }
 
             if (filter.equals("*") == false)

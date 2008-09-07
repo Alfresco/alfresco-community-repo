@@ -1,66 +1,69 @@
 
 package org.alfresco.repo.cmis.ws;
 
+import java.util.ArrayList;
+import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
 
 /**
- * <p>Java class for getAllVersionsResponse element declaration.
+ * <p>Java class for anonymous complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;element name="getAllVersionsResponse">
- *   &lt;complexType>
- *     &lt;complexContent>
- *       &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *         &lt;sequence>
- *           &lt;element name="versions" type="{http://www.cmis.org/ns/1.0}objectCollectionType"/>
- *         &lt;/sequence>
- *       &lt;/restriction>
- *     &lt;/complexContent>
- *   &lt;/complexType>
- * &lt;/element>
+ * &lt;complexType>
+ *   &lt;complexContent>
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *       &lt;sequence>
+ *         &lt;element ref="{http://www.cmis.org/2008/05}object" maxOccurs="unbounded" minOccurs="0"/>
+ *       &lt;/sequence>
+ *     &lt;/restriction>
+ *   &lt;/complexContent>
+ * &lt;/complexType>
  * </pre>
  * 
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
-    "versions"
+    "object"
 })
 @XmlRootElement(name = "getAllVersionsResponse")
 public class GetAllVersionsResponse {
 
-    @XmlElement(namespace = "http://www.cmis.org/ns/1.0", required = true)
-    protected ObjectCollectionType versions;
+    protected List<CmisObjectType> object;
 
     /**
-     * Gets the value of the versions property.
+     * Gets the value of the object property.
      * 
-     * @return
-     *     possible object is
-     *     {@link ObjectCollectionType }
-     *     
-     */
-    public ObjectCollectionType getVersions() {
-        return versions;
-    }
-
-    /**
-     * Sets the value of the versions property.
+     * <p>
+     * This accessor method returns a reference to the live list,
+     * not a snapshot. Therefore any modification you make to the
+     * returned list will be present inside the JAXB object.
+     * This is why there is not a <CODE>set</CODE> method for the object property.
      * 
-     * @param value
-     *     allowed object is
-     *     {@link ObjectCollectionType }
-     *     
+     * <p>
+     * For example, to add a new item, do as follows:
+     * <pre>
+     *    getObject().add(newItem);
+     * </pre>
+     * 
+     * 
+     * <p>
+     * Objects of the following type(s) are allowed in the list
+     * {@link CmisObjectType }
+     * 
+     * 
      */
-    public void setVersions(ObjectCollectionType value) {
-        this.versions = value;
+    public List<CmisObjectType> getObject() {
+        if (object == null) {
+            object = new ArrayList<CmisObjectType>();
+        }
+        return this.object;
     }
 
 }

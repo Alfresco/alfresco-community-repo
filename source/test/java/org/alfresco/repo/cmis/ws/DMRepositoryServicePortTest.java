@@ -50,7 +50,7 @@ public class DMRepositoryServicePortTest extends BaseServicePortTest
     {
         authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
 
-        List<RepositoryType> repositories = repositoryServicePort.getRepositories();
+        List<CmisRepositoryEntryType> repositories = repositoryServicePort.getRepositories();
         assertTrue(repositories.size() == 1);
         assertFalse(repositories.get(0).getRepositoryID() == null);
         assertFalse(repositories.get(0).getRepositoryName() == null);
@@ -58,21 +58,16 @@ public class DMRepositoryServicePortTest extends BaseServicePortTest
 
     public void testGetRepositoryInfo() throws Exception
     {
-        List<RepositoryType> repositories = repositoryServicePort.getRepositories();
-        RepositoryInfoType repositoryInfo = repositoryServicePort.getRepositoryInfo(repositories.get(0).getRepositoryID());
+        List<CmisRepositoryEntryType> repositories = repositoryServicePort.getRepositories();
+        GetRepositoryInfo response = new GetRepositoryInfo();
+        response.setRepositoryId(repositories.get(0).getRepositoryID());
+        CmisRepositoryInfoType repositoryInfo = repositoryServicePort.getRepositoryInfo(response);
 
         assertTrue(repositoryInfo.getRepositoryId().equals(repositories.get(0).getRepositoryID()));
         assertTrue(repositoryInfo.getRepositoryName().equals(repositories.get(0).getRepositoryName()));
         assertTrue("Alfresco".equals(repositoryInfo.getVendorName()));
-        CapabilitiesType capabilities = repositoryInfo.getCapabilities();
-        assertTrue(capabilities.isCapabilityMultifiling() && capabilities.isCapabilityPWCUpdatable());
+        CmisRepositoryCapabilitiesType capabilities = repositoryInfo.getCapabilities();
+        assertTrue(capabilities.isCapabilityMultifiling() && capabilities.isCapabilityPWCUpdateable());
         assertFalse(capabilities.isCapabilityUnfiling() && capabilities.isCapabilityVersionSpecificFiling());
     }
-    
-    public void testGetTypeDefinition() throws Exception
-    {
-        List<RepositoryType> repositories = repositoryServicePort.getRepositories();
-        repositoryServicePort.getTypeDefinition(repositories.get(0).getRepositoryID(), "DOCUMENT_OBJECT_TYPE");
-    }
-    
 }

@@ -26,6 +26,7 @@
         </jar>
 
         <copy file="${project.dir}/cmis-test.bat" todir="${dist.dir}" />
+        <copy file="${project.dir}/cmis-test.sh" todir="${dist.dir}" />
         <copy todir="${dist.dir}/lib">
             <fileset dir="${project.dir}/lib" />
         </copy>

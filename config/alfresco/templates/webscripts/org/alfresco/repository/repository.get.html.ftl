@@ -30,12 +30,12 @@
         <form action="${url.serviceContext}/api/cmis/test" method="post">
         <tr><td></td></tr>
         <tr><td>Service URI: <input name="url" size="50" value="http://localhost:8080/alfresco/service/api/cmis"></td></tr>
-        <tr><td>Username/Password: <input name="user" value="username/password"></td></tr>
+        <tr><td>Username/Password: <input name="user" value="">  ** enter in the form of username/password</td></tr>
         <tr><td>Validate Responses: <input type="checkbox" name="validate" value="true" checked="checked"></td></tr>
         <tr><td>Trace Request/Responses: <input type="checkbox" name="trace" value="true"></td></tr>
         <tr><td>Argument Style: <select name="args"><option value="url" selected="selected">URL Arguments</option><option value="headers">Request Headers</option><option value="both">Both</option></select></td></tr>
         <tr><td>Tests (use * for wildcard in name): <input name="tests" value="*"></td></tr>
-        <tr><td>(<#list tests as test>${test}<#if test_has_next>, </#if></#list>)</td></tr>
+        <tr><td>** available tests: <#list tests as test>${test}<#if test_has_next>, </#if></#list></td></tr>
         <tr><td><input type="submit" value="Test"></td></tr>
         </form>
     </table>    

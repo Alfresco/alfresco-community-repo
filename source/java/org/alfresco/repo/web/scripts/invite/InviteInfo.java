@@ -24,9 +24,10 @@
  */
 package org.alfresco.repo.web.scripts.invite;
 
+import java.io.Serializable;
 import java.util.Date;
 
-import org.alfresco.repo.jscript.ScriptNode;
+import org.alfresco.repo.template.TemplateNode;
 import org.alfresco.repo.site.SiteInfo;
 
 /**
@@ -35,8 +36,10 @@ import org.alfresco.repo.site.SiteInfo;
  * 
  * @author glen dot johnson at alfresco dot com
  */
-public class InviteInfo
+public class InviteInfo implements Serializable
 {
+	private static final long serialVersionUID = -4514253998906200208L;
+	
     // invitation statuses
     public static final String INVITATION_STATUS_PENDING = "pending";
     public static final String INVITATION_STATUS_ACCEPTED = "accepted";
@@ -45,17 +48,17 @@ public class InviteInfo
     // private instances to hold property values
 	private String invitationStatus;
     private String inviterUserName;
-    private ScriptNode inviterPerson;
+    private TemplateNode inviterPerson;
     private String inviteeUserName;
-    private ScriptNode inviteePerson;
+    private TemplateNode inviteePerson;
     private String role;
     private String siteShortName;
     private SiteInfo siteInfo;
     private Date sentInviteDate;
     private String inviteId;
     
-    public InviteInfo(String invitationStatus, String inviterUserName, ScriptNode inviterPerson,
-    		String inviteeUserName, ScriptNode inviteePerson, String role,
+    public InviteInfo(String invitationStatus, String inviterUserName, TemplateNode inviterPerson,
+    		String inviteeUserName, TemplateNode inviteePerson, String role,
     		String siteShortName, SiteInfo siteInfo, Date sentInviteDate, String inviteId)
     {
     	this.invitationStatus = invitationStatus;
@@ -115,7 +118,7 @@ public class InviteInfo
 	 * 
 	 * @return the invitee person
 	 */
-    public ScriptNode getInviteePerson()
+    public TemplateNode getInviteePerson()
 	{
 		return inviteePerson;
 	}
@@ -125,7 +128,7 @@ public class InviteInfo
 	 * 
 	 * @return the inviter person
 	 */
-    public ScriptNode getInviterPerson()
+    public TemplateNode getInviterPerson()
 	{
 		return inviterPerson;
 	}
@@ -160,7 +163,8 @@ public class InviteInfo
 		return role;
 	}
 
-    public SiteInfo getSiteInfo() {
+    public SiteInfo getSiteInfo()
+    {
         return siteInfo;
     }
     

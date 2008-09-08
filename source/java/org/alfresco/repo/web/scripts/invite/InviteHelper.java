@@ -29,9 +29,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.repo.site.SiteInfo;
 import org.alfresco.repo.site.SiteService;
+import org.alfresco.repo.template.TemplateNode;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.PersonService;
@@ -156,18 +156,20 @@ public class InviteHelper
         
         // fetch the person node for the inviter
         NodeRef inviterRef = personService.getPerson(inviterUserNameProp);
-        ScriptNode inviterPerson = null;
+        TemplateNode inviterPerson = null;
         if (inviterRef != null)
         {
-            inviterPerson = new ScriptNode(inviterRef, serviceRegistry); 
+            inviterPerson = new TemplateNode(inviterRef, serviceRegistry, null); 
+            //inviterPerson = new ScriptNode(inviterRef, serviceRegistry); 
         }
         
         // fetch the person node for the invitee
         NodeRef inviteeRef = personService.getPerson(inviteeUserNameProp);
-        ScriptNode inviteePerson = null;
+        TemplateNode inviteePerson = null;
         if (inviteeRef != null)
         {
-            inviteePerson = new ScriptNode(inviteeRef, serviceRegistry); 
+        	inviteePerson = new TemplateNode(inviteeRef, serviceRegistry, null);
+            //inviteePerson = new ScriptNode(inviteeRef, serviceRegistry); 
         }
         
         // create and return a invite info

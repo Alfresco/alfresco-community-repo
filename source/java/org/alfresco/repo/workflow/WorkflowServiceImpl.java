@@ -618,78 +618,77 @@ public class WorkflowServiceImpl implements WorkflowService
         WorkflowTask workflowTask = getTaskById(taskId);
         List<NodeRef> contents = new ArrayList<NodeRef>();
         
-        if(workflowTask != null)
+        if (workflowTask != null)
         {
             NodeRef workflowPackage = (NodeRef)workflowTask.properties.get(WorkflowModel.ASSOC_PACKAGE);
-            if (workflowPackage.getStoreRef().getProtocol().equals(StoreRef.PROTOCOL_AVM))
+            if (workflowPackage != null)
             {
-               if (protectedNodeService.exists(workflowPackage))
-               {
-                  final NodeRef stagingNodeRef = (NodeRef)
-                     protectedNodeService.getProperty(workflowPackage,
-                                                 WCMModel.PROP_AVM_DIR_INDIRECTION);
-                  final String stagingAvmPath = AVMNodeConverter.ToAVMVersionPath(stagingNodeRef).getSecond();
-                  final String packageAvmPath = AVMNodeConverter.ToAVMVersionPath(workflowPackage).getSecond();
-                  if (logger.isDebugEnabled())
-                      logger.debug("comparing " + packageAvmPath + " with " + stagingAvmPath);
-                  for (AVMDifference d : avmSyncService.compare(-1, packageAvmPath,
-                                                                     -1, stagingAvmPath,
-                                                                     null))
-                  {
-                     if (logger.isDebugEnabled())
-                         logger.debug("got difference " + d);
-                     if (d.getDifferenceCode() == AVMDifference.NEWER ||
-                         d.getDifferenceCode() == AVMDifference.CONFLICT)
-                     {
-                         contents.add(AVMNodeConverter.ToNodeRef(d.getSourceVersion(), d.getSourcePath()));
-                     }
-                  }
-               }
-            }
-            else
-            {
-               // get existing workflow package items
-               List<ChildAssociationRef> childRefs = protectedNodeService.getChildAssocs(
-                       workflowPackage, ContentModel.ASSOC_CONTAINS, 
-                  RegexQNamePattern.MATCH_ALL);   
-            
-               for (ChildAssociationRef ref: childRefs)
-               {
-                  // create our Node representation from the NodeRef
-                  NodeRef nodeRef = ref.getChildRef();
-               
-                  if (!protectedNodeService.exists(nodeRef))
-                  {
-                     if (logger.isDebugEnabled())
-                         logger.debug("Ignoring " + nodeRef + " as it has been removed from the repository");
-                  }
-                  else
-                  {
-                     // find it's type so we can see if it's a node we are interested in
-                     QName type = protectedNodeService.getType(nodeRef);
-                  
-                     // make sure the type is defined in the data dictionary
-                     TypeDefinition typeDef = dictionaryService.getType(type);
-                  
-                     if (typeDef == null)
-                     {
-                        if (logger.isWarnEnabled())
-                            logger.warn("Found invalid object in database: id = " + nodeRef + 
-                                       ", type = " + type);
-                     }
-                     else
-                     {
-                         contents.add(nodeRef);
-                     }
-                  }
-               }
+                if (workflowPackage.getStoreRef().getProtocol().equals(StoreRef.PROTOCOL_AVM))
+                {
+                   if (protectedNodeService.exists(workflowPackage))
+                   {
+                      final NodeRef stagingNodeRef = (NodeRef)
+                         protectedNodeService.getProperty(workflowPackage,
+                                                     WCMModel.PROP_AVM_DIR_INDIRECTION);
+                      final String stagingAvmPath = AVMNodeConverter.ToAVMVersionPath(stagingNodeRef).getSecond();
+                      final String packageAvmPath = AVMNodeConverter.ToAVMVersionPath(workflowPackage).getSecond();
+                      if (logger.isDebugEnabled())
+                          logger.debug("comparing " + packageAvmPath + " with " + stagingAvmPath);
+                      for (AVMDifference d : avmSyncService.compare(-1, packageAvmPath,
+                                                                         -1, stagingAvmPath,
+                                                                         null))
+                      {
+                         if (logger.isDebugEnabled())
+                             logger.debug("got difference " + d);
+                         if (d.getDifferenceCode() == AVMDifference.NEWER ||
+                             d.getDifferenceCode() == AVMDifference.CONFLICT)
+                         {
+                             contents.add(AVMNodeConverter.ToNodeRef(d.getSourceVersion(), d.getSourcePath()));
+                         }
+                      }
+                   }
+                }
+                else
+                {
+                   // get existing workflow package items
+                   List<ChildAssociationRef> childRefs = protectedNodeService.getChildAssocs(
+                           workflowPackage, ContentModel.ASSOC_CONTAINS, 
+                      RegexQNamePattern.MATCH_ALL);   
+                
+                   for (ChildAssociationRef ref: childRefs)
+                   {
+                      // create our Node representation from the NodeRef
+                      NodeRef nodeRef = ref.getChildRef();
+                   
+                      if (!protectedNodeService.exists(nodeRef))
+                      {
+                         if (logger.isDebugEnabled())
+                             logger.debug("Ignoring " + nodeRef + " as it has been removed from the repository");
+                      }
+                      else
+                      {
+                         // find it's type so we can see if it's a node we are interested in
+                         QName type = protectedNodeService.getType(nodeRef);
+                      
+                         // make sure the type is defined in the data dictionary
+                         TypeDefinition typeDef = dictionaryService.getType(type);
+                      
+                         if (typeDef == null)
+                         {
+                            if (logger.isWarnEnabled())
+                                logger.warn("Found invalid object in database: id = " + nodeRef + 
+                                           ", type = " + type);
+                         }
+                         else
+                         {
+                             contents.add(nodeRef);
+                         }
+                      }
+                   }
+                }
             }
         }
         
         return contents;
-        
     }
-
-    
-    
 }

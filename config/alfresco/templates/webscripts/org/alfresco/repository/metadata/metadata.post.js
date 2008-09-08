@@ -33,7 +33,7 @@ function main()
    // Set passed-in mimetype
    if (json.has("mimetype"))
    {
-      node.properties["mimetype"] = json.get("mimetype");
+      node.mimetype = json.get("mimetype");
    }
    
    // Set passed-in tags

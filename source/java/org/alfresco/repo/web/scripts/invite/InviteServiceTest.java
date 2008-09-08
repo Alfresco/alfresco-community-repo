@@ -223,6 +223,7 @@ public class InviteServiceTest extends BaseWebScriptTest
                 // delete invite sites
                 siteService.deleteSite(SITE_SHORT_NAME_INVITE_1);
                 siteService.deleteSite(SITE_SHORT_NAME_INVITE_2);
+                siteService.deleteSite(SITE_SHORT_NAME_INVITE_3);
 
                 return null;
             }

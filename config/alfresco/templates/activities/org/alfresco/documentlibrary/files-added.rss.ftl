@@ -8,4 +8,3 @@
     <guid>${id}</guid>
     <description>${username?xml} added ${fileCount!"multiple"} files to the Document Library.</description>
 </item>
-

@@ -8,4 +8,3 @@
     <guid>${id}</guid>
     <description>${username?xml} added ${(fileName!'a new file')?xml} to the Document Library.</description>
 </item>
-

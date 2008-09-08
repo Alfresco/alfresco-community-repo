@@ -8,10 +8,9 @@
    <id>${id}</id>
    <updated>${xmldate(date)}</updated>
    <summary type="html">
-      <![CDATA[${username} added ${fileCount!"multiple"} files to the <a href="${browseURL}">Document Library</a>.]]>
+      <![CDATA[${username?html} added ${fileCount!"multiple"} files to the <a href="${browseURL}">Document Library</a>.]]>
    </summary>
    <author>
    <name>${userId!""}</name>
    </author> 
 </entry>
-

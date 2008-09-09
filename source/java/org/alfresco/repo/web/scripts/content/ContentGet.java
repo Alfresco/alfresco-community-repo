@@ -89,7 +89,7 @@ public class ContentGet extends StreamContent
         String match = req.getServiceMatch().getPath();
         String[] matchParts = match.split("/");
         Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
-        String[] id = templateVars.get("node_id").split("/");
+        String[] id = templateVars.get("id").split("/");
         String[] path = new String[id.length + 2];
         path[0] = templateVars.get("store_type");
         path[1] = templateVars.get("store_id");

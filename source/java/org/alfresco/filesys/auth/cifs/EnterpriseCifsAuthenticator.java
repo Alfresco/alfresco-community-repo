@@ -290,8 +290,10 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
                 String mecListMIC = null;
                 
                 StringBuilder mic = new StringBuilder();
+                
+                mic.append("cifs/");
                 mic.append( config.getServerName().toLowerCase());
-                mic.append("$@");
+                mic.append("@");
                 mic.append( m_krbRealm);
                 
                 mecListMIC = mic.toString();
@@ -559,7 +561,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
             {
                 // Start a transaction
                 
-                tx = getTransactionService().getUserTransaction( true);
+                tx = getTransactionService().getUserTransaction( false);
                 tx.begin();
 
                 //  Process the hashed password session setup
@@ -716,7 +718,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
             
             // Start a transaction
             
-            tx = getTransactionService().getUserTransaction( true);
+            tx = getTransactionService().getUserTransaction( false);
             tx.begin();
             
             // Process the security blob

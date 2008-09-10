@@ -119,7 +119,7 @@
             </div>
             <div class="taskParam">Due on:</div>
             <div class="taskValue">
-               <input type="text" id="wrkDueDate" value="" />
+               <input type="text" id="wrkDueDate" value="" readonly="readonly" />
                <img src="${url.context}/images/office/date.gif" alt="date" />
             </div>
             <div class="taskParam">Description:</div>

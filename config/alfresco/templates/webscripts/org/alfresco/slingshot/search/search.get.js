@@ -448,6 +448,7 @@ function getSearchResults(term, maxResults, siteId, containerId)
    if (luceneQuery.length != 0)
    {
       luceneQuery = "+PATH:\"" + path + "/*\" +(" + luceneQuery + ")";
+      luceneQuery += " -TYPE:\"{http://www.alfresco.org/model/content/1.0}thumbnail\"";
       nodes = search.luceneSearch(luceneQuery);
    }
    else

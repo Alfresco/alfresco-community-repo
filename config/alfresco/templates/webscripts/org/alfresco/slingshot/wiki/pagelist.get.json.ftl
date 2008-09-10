@@ -19,17 +19,23 @@
          "createdOn": "${page.properties.created?string("MMM dd yyyy, HH:mm:ss")}",
          <#if p.createdBy??>
             <#assign createdBy = (p.createdBy.properties.firstName + " " + p.createdBy.properties.lastName)?trim>
+            <#assign createdByUser = p.createdBy.properties.userName>
          <#else>
             <#assign createdBy="">
+            <#assign createdByUser="">
          </#if>
          "createdBy": "${createdBy}",
+         "createdByUser": "${createdByUser}",
          "modifiedOn": "${page.properties.modified?string("MMM dd yyyy, HH:mm:ss")}",
          <#if p.modifiedBy??>
             <#assign modifiedBy = (p.modifiedBy.properties.firstName + " " + p.modifiedBy.properties.lastName)?trim>
+            <#assign modifiedByUser = p.modifiedBy.properties.userName>
          <#else>
             <#assign modifiedBy="">
+            <#assign modifiedByUser="">
          </#if>
-         "modifiedBy": "${modifiedBy}"
+         "modifiedBy": "${modifiedBy}",
+         "modifiedByUser": "${modifiedByUser}"
       }<#if p_has_next>,</#if>
    </#list>
    ]

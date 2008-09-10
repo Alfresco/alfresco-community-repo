@@ -8,7 +8,8 @@ if (!json.isNull("site"))
 
 var params = {};
 // Variables we are expecting
-var props = [
+var props =
+[
    "from",
    "to",
    "what",
@@ -23,7 +24,7 @@ var props = [
 ];
 
 var p;
-for(var k=0; k < props.length; k++)
+for (var k = 0, kk = props.length; k < kk; k++)
 {
    p = props[k];
    if (!json.isNull(p))
@@ -34,90 +35,96 @@ for(var k=0; k < props.length; k++)
 
 model.result = createEvent(siteId, params);
 
+
 function createEvent(siteId, params)
 {
-  if (siteId === null)
-  {
-    return {
-      "error": "Site identifier is undefined"
-    };
-  }
+   if (siteId === null)
+   {
+      return (
+      {
+         "error": "Site identifier is undefined"
+      });
+   }
 
-  var site = siteService.getSite(siteId);
-  if (site === null)
-  {
-    return {
-      "error": "Could not find specified site"
-    };
-  }
+   var site = siteService.getSite(siteId);
+   if (site === null)
+   {
+      return (
+      {
+         "error": "Could not find specified site"
+      });
+   }
 
-  var calendar = getCalendarContainer(site);
-  if (calendar === null)
-  {
-     return {
-        "error": "Could not get container"
-     }
-  }
+   var calendar = getCalendarContainer(site);
+   if (calendar === null)
+   {
+      return (
+      {
+         "error": "Could not get container"
+      });
+   }
 
-  var timestamp = new Date().getTime();
-  var event = calendar.createNode(timestamp + ".ics", "ia:calendarEvent");
+   var timestamp = new Date().getTime();
+   var random = Math.round(Math.random() * 10000);
+   var event = calendar.createNode(timestamp + "-" + random + ".ics", "ia:calendarEvent");
 
-  if (event === null)
-  {
-    return {
-      "error": "Could not create event"
-    };
-  }
+   if (event === null)
+   {
+      return (
+      {
+         "error": "Could not create event"
+      });
+   }
 
-  event.properties["ia:whatEvent"] = params["what"];
-  event.properties["ia:whereEvent"] = params["where"];
-  event.properties["ia:descriptionEvent"] = params["desc"];
+   event.properties["ia:whatEvent"] = params["what"];
+   event.properties["ia:whereEvent"] = params["where"];
+   event.properties["ia:descriptionEvent"] = params["desc"];
 
-  var fromDate = params["from"];
-  var toDate = params["to"];
-  
-  var allday = params["allday"];
-  if (allday === undefined)
-  {
-     fromDate += " " + params["start"];
-     toDate += " " + params["end"];
-  }
-  
-  var tags = String(params["tags"]); // space delimited string
-  if (tags !== "")
-  {
-     var tagsArray = tags.split(" ");
-     if (tagsArray.length > 0)
-     {
-        event.tags = tagsArray;
-     }
-  }
-  
-  var from = new Date(fromDate);
-  event.properties["ia:fromDate"] = from;
+   var fromDate = params["from"];
+   var toDate = params["to"];
 
-  var to = new Date(toDate);
-  event.properties["ia:toDate"] = to;
-  event.save();
-  
-	try {
-		activities.postActivity("org.alfresco.calendar.event-created", siteId, "calendar", '{ "eventName" : ' + params["what"] + ' }');	
-	}
-	catch(e) {
-		if (logger.isLoggingEnabled()) 
-		{
-			logger.log(e);
-		}
-	}
+   var allday = params["allday"];
+   if (allday === undefined)
+   {
+      fromDate += " " + params["start"];
+      toDate += " " + params["end"];
+   }
 
-  return {
-    "name": params["what"],
-    "from": from,
-    "to": to,
-    "uri": "calendar/event/" + siteId + "/" + event.name,
-    "tags": event.tags
-  };
+   var tags = String(params["tags"]); // space delimited string
+   if (tags !== "")
+   {
+      var tagsArray = tags.split(" ");
+      if (tagsArray.length > 0)
+      {
+         event.tags = tagsArray;
+      }
+   }
+
+   var from = new Date(fromDate);
+   event.properties["ia:fromDate"] = from;
+
+   var to = new Date(toDate);
+   event.properties["ia:toDate"] = to;
+   event.save();
+
+   try
+   {
+      activities.postActivity("org.alfresco.calendar.event-created", siteId, "calendar", '{ "eventName" : ' + params["what"] + ' }');	
+   }
+   catch(e)
+   {
+      if (logger.isLoggingEnabled()) 
+      {
+         logger.log(e);
+      }
+   }
+
+   return (
+   {
+      "name": params["what"],
+      "from": from,
+      "to": to,
+      "uri": "calendar/event/" + siteId + "/" + event.name,
+      "tags": event.tags
+   });
 };
-
-
-

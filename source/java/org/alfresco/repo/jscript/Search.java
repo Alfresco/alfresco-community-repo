@@ -388,7 +388,7 @@ public final class Search extends BaseScopableProcessorExtension
     }
     
     /**
-     * Encode a string to ISO907 - used to build valid paths for Lucene queries etc.
+     * Encode a string to ISO9075 - used to build valid paths for Lucene queries etc.
      * 
      * @param s     Value to encode
      * 
@@ -397,6 +397,18 @@ public final class Search extends BaseScopableProcessorExtension
     public String ISO9075Encode(String s)
     {
         return ISO9075.encode(s);
+    }
+
+    /**
+     * Decode a string from ISO9075
+     * 
+     * @param s     Value to decode
+     * 
+     * @return decoded value
+     */
+    public String ISO9075Decode(String s)
+    {
+        return ISO9075.decode(s);
     }
 
     /**

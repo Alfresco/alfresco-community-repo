@@ -18,7 +18,7 @@
     <import resource="classpath:alfresco/network-protocol-context.xml" />
     <import resource="classpath:alfresco/emailserver/email-service-context.xml" />
     <import resource="classpath:alfresco/content-services-context.xml" />
-    <import resource="classpath*:alfresco/mt/*-context.xml"/>
+    <import resource="classpath:alfresco/mt/st-admin-context.xml"/>
     <import resource="classpath:alfresco/hibernate-context.xml" />
     <import resource="classpath:alfresco/ownable-services-context.xml" />
     <import resource="classpath:alfresco/template-services-context.xml" />

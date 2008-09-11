@@ -1139,7 +1139,7 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         }
     }
     
-    // tenant deployer services delegated to tenant service
+    // tenant deployer/user services delegated to tenant service
     
     public boolean isEnabled()
     {
@@ -1151,6 +1151,11 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         return tenantService.getCurrentUserDomain();
     }
 
+    public String getUserDomain(String username)
+    {
+        return tenantService.getUserDomain(username);
+    }
+    
     public String getDomainUser(String baseUsername, String tenantDomain)
     {
         return tenantService.getDomainUser(baseUsername, tenantDomain);

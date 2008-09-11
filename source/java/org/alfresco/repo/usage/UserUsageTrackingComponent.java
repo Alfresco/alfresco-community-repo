@@ -254,9 +254,16 @@ public class UserUsageTrackingComponent
         // execute in READ-ONLY txn
         final Set<String> userNames = txnHelper.doInTransaction(getAllPeople, true);
         
-        for (String userName : userNames)
+        for (final String userName : userNames)
         {
-            recalculateUsage(userName);
+        	AuthenticationUtil.runAs(new RunAsWork<Object>()
+            {
+        		public Object doWork() throws Exception
+                {
+        			recalculateUsage(userName);
+        			return null;
+                }
+            }, tenantAdminService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantAdminService.getUserDomain(userName)));
         }
 
         if (logger.isDebugEnabled()) 

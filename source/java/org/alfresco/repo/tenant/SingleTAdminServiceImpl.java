@@ -110,6 +110,14 @@ public class SingleTAdminServiceImpl implements TenantAdminService
     }
     
     /**
+     * @return          Returns {@link TenantService#DEFAULT_DOMAIN} always
+     */
+    public String getUserDomain(String username)
+    {
+        return TenantService.DEFAULT_DOMAIN;
+    }
+    
+    /**
      * @return          Returns the given <tt>baseUserName</tt> always
      */
     public String getDomainUser(String baseUsername, String tenantDomain)

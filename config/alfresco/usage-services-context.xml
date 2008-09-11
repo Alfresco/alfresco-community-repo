@@ -4,7 +4,18 @@
 <!-- Beans pertinent to content usage / quota service -->
 <beans>
 
-   <bean id="usageService" class="org.alfresco.repo.usage.UsageServiceImpl">
+   <bean id="usageService" class="org.springframework.aop.framework.ProxyFactoryBean">
+      <property name="target">
+         <ref bean="usageServiceImpl" />
+      </property>
+      <property name="interceptorNames">
+         <list>
+            <value>multiTNodeServiceInterceptor</value>
+         </list>
+      </property>
+   </bean>
+   
+   <bean id="usageServiceImpl" class="org.alfresco.repo.usage.UsageServiceImpl">
       <property name="usageDeltaDAO" ref="usageDeltaDAO"/>
    </bean>
    

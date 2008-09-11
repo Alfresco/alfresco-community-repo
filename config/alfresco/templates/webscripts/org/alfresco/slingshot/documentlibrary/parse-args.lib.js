@@ -89,11 +89,11 @@ function getParsedArgs()
    };
 
    var site, siteNode, container;
-   var qnamePaths = parentNode.qnamePath.split("/");
+   var qnamePaths = search.ISO9075Decode(parentNode.qnamePath).split("/");
    var displayPaths = parentNode.displayPath.split("/");
    if ((qnamePaths.length > 4) && (qnamePaths[2] == "st:sites"))
    {
-      site = qnamePaths[3].substr(3);
+      site = displayPaths[3];
       siteNode = siteService.getSite(site);
       container = qnamePaths[4].substr(3);
       

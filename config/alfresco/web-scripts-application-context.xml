@@ -332,14 +332,14 @@
          class="org.alfresco.repo.web.scripts.invite.Invite"
          parent="webscript">
       <property name="workflowService" ref="WorkflowService"/>
-      <property name="personService" ref="personService"/>
-      <property name="authenticationService" ref="authenticationService"/>
+      <property name="personService" ref="PersonService"/>
+      <property name="authenticationService" ref="AuthenticationService"/>
       <property name="mutableAuthenticationDao" ref="authenticationDao"/>
       <property name="siteService" ref="SiteService"/>
       <property name="nodeService" ref="NodeService"/>
+      <property name="namespaceService" ref="NamespaceService"/>
       <property name="userNameGenerator" ref="userNameGenerator"/>
       <property name="passwordGenerator" ref="passwordGenerator"/>
-      <property name="namespaceService" ref="NamespaceService"/>
    </bean>
    
    <!--                                                                                                       -->

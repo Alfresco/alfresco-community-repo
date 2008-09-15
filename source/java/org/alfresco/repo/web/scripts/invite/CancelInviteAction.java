@@ -24,28 +24,34 @@
  */
 package org.alfresco.repo.web.scripts.invite;
 
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
+import org.alfresco.repo.site.SiteModel;
+import org.alfresco.repo.site.SiteService;
 import org.alfresco.repo.workflow.jbpm.JBPMSpringActionHandler;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.workflow.WorkflowService;
+import org.alfresco.web.scripts.Status;
+import org.alfresco.web.scripts.WebScriptException;
 import org.jbpm.graph.exe.ExecutionContext;
 import org.springframework.beans.factory.BeanFactory;
 
 /**
  * This class contains logic that gets executed when
- * the wf:invitePendingTask in the invite workflow gets completed
- * along the "reject" transition
+ * the wf:invitePendingTask in the invite workflow gets cancelled
+ * along the "cancel" transition
  * 
  * @author glen johnson at alfresco com
  */
-public class RejectInviteAction extends JBPMSpringActionHandler
+public class CancelInviteAction extends JBPMSpringActionHandler
 {
-    private static final long serialVersionUID = 4377660284993206875L;
+    private static final long serialVersionUID = 776961141883350908L;
     
     private MutableAuthenticationDao mutableAuthenticationDao;
     private PersonService personService;
     private WorkflowService workflowService;
+    private SiteService siteService;
 
     /* (non-Javadoc)
      * @see org.alfresco.repo.workflow.jbpm.JBPMSpringActionHandler#initialiseHandler(org.springframework.beans.factory.BeanFactory)
@@ -57,6 +63,7 @@ public class RejectInviteAction extends JBPMSpringActionHandler
         mutableAuthenticationDao = (MutableAuthenticationDao) factory.getBean("authenticationDao");
         personService = (PersonService) services.getPersonService();
         workflowService = (WorkflowService) services.getWorkflowService();
+        siteService = (SiteService) services.getSiteService();
     }
 
     /* (non-Javadoc)
@@ -65,9 +72,26 @@ public class RejectInviteAction extends JBPMSpringActionHandler
     @SuppressWarnings("unchecked")
     public void execute(final ExecutionContext executionContext) throws Exception
     {
-        // get the invitee user name
-        final String inviteeUserName = (String) executionContext.getVariable(InviteWorkflowModel.wfVarInviteeUserName);
-
+        // get the invitee user name and site short name variables off the execution context
+        final String inviteeUserName = (String) executionContext.getVariable(
+                InviteWorkflowModel.wfVarInviteeUserName);
+        final String siteShortName = (String) executionContext.getVariable(
+                InviteWorkflowModel.wfVarSiteShortName);
+        final String inviteId = (String) executionContext.getVariable(
+                InviteWorkflowModel.wfVarWorkflowInstanceId);
+        
+        // throw http status 'forbidden' Web Script Exception if current user is not a Site Manager of the site
+        // associated with the invite (identified by inviteID)
+        String currentUserName = AuthenticationUtil.getCurrentUserName();
+        String currentUserSiteRole = this.siteService.getMembersRole(siteShortName, currentUserName);
+        if ((currentUserSiteRole == null) || (currentUserSiteRole.equals(SiteModel.SITE_MANAGER) == false))
+        {
+            throw new WebScriptException(Status.STATUS_FORBIDDEN,
+                    "Current user '" + currentUserName + "' cannot cancel invite having ID '" + inviteId
+                    + "' because he\\she is not a Site Manager of the site with short name:'" + siteShortName
+                    + "'");
+        }
+        
         // clean up invitee's user account and person node if they are not in use i.e.
         // account is still disabled and there are no pending invites outstanding for the
         // invitee

@@ -62,6 +62,9 @@
       <transition name="reject" to="inviteRejected">
          <action class="org.alfresco.repo.web.scripts.invite.RejectInviteAction"/>
       </transition>
+      <transition name="cancel" to="end">
+         <action class="org.alfresco.repo.web.scripts.invite.CancelInviteAction"/>
+      </transition>
    </task-node>
 
    <task-node name="inviteAccepted">

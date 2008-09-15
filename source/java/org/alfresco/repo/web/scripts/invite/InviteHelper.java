@@ -29,6 +29,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.site.SiteInfo;
 import org.alfresco.repo.site.SiteService;
 import org.alfresco.repo.template.TemplateNode;
@@ -95,7 +98,7 @@ public class InviteHelper
             
             // set process name to "wf:invite" so that only tasks associated with
             // invite workflow instances are returned by query
-            wfTaskQuery.setProcessName(QName.createQName(NamespaceService.WORKFLOW_MODEL_1_0_URI, "invite"));
+            wfTaskQuery.setProcessName(InviteWorkflowModel.WF_PROCESS_INVITE);
             
             // set query to only pick up invite workflow instances
             // associated with the given invitee user name
@@ -105,7 +108,7 @@ public class InviteHelper
 
             // set query to only pick up in-progress invite pending tasks 
             wfTaskQuery.setTaskState(WorkflowTaskState.IN_PROGRESS);
-            wfTaskQuery.setTaskName(InviteWorkflowModel.WF_TASK_INVITE_PENDING);
+            wfTaskQuery.setTaskName(InviteWorkflowModel.WF_INVITE_TASK_INVITE_PENDING);
 
             // query for invite workflow task associate
             List<WorkflowTask> inviteStartTasks = workflowService
@@ -177,5 +180,89 @@ public class InviteHelper
                 inviteeUserNameProp, inviteePerson, role, siteShortNameProp, siteInfo, sentInviteDate, workflowId);
 
         return inviteInfo;
+    }
+    
+    /**
+     * Clean up invitee user account and person node when no longer in use.
+     * They are deemed to no longer be in use when the invitee user account
+     * is still disabled and there are no outstanding pending invites for that invitee.
+     * 
+     * @param inviteeUserName
+     * @param authenticationDao
+     * @param personService
+     * @param workflowService
+     */
+    public static void cleanUpStaleInviteeResources(final String inviteeUserName,
+            final MutableAuthenticationDao authenticationDao, final PersonService personService,
+            final WorkflowService workflowService)
+    {
+        AuthenticationUtil.runAs(new RunAsWork<Object>()
+        {
+            public Object doWork() throws Exception
+            {
+                // see if there are any pending invites (invite workflow instances with invitePending task in-progress)
+                // outstanding for given invitee user name
+                List<WorkflowTask> pendingTasks = InviteHelper.findInvitePendingTasks(inviteeUserName, workflowService);
+                boolean invitesPending = (pendingTasks != null) && (pendingTasks.size() > 0);
+                
+                // if invitee's user account is still disabled and there are no pending invites outstanding
+                // for the invitee, then remove the account and delete the invitee's person node
+                if ((authenticationDao.userExists(inviteeUserName))
+                        && (authenticationDao.getEnabled(inviteeUserName) == false)
+                        && (invitesPending == false))
+                {
+                    // delete the invitee's user account
+                    authenticationDao.deleteUser(inviteeUserName);
+                    
+                    // delete the invitee's person node if one exists
+                    if (personService.personExists(inviteeUserName))
+                    {
+                        personService.deletePerson(inviteeUserName);
+                    }
+                }
+
+                return null;
+            }
+        }, AuthenticationUtil.getSystemUserName());
+    }
+    
+    /**
+     * Complete the specified Invite Workflow Task for the invite workflow 
+     * instance associated with the given invite ID, and follow the given
+     * transition upon completing the task
+     * 
+     * @param inviteId the invite ID of the invite workflow instance for which
+     *          we want to complete the given task
+     * @param fullTaskName qualified name of invite workflow task to complete
+     * @param transitionId the task transition to take on completion of 
+     *          the task (or null, for the default transition)
+     */
+    public static void completeInviteTask(String inviteId, QName fullTaskName, String transitionId,
+            final WorkflowService workflowService)
+    {
+        // create workflow task query
+        WorkflowTaskQuery wfTaskQuery = new WorkflowTaskQuery();
+        
+        // set the given invite ID as the workflow process ID in the workflow query
+        wfTaskQuery.setProcessId(inviteId);
+
+        // find incomplete invite workflow tasks with given task name 
+        wfTaskQuery.setActive(Boolean.TRUE);
+        wfTaskQuery.setTaskState(WorkflowTaskState.IN_PROGRESS);
+        wfTaskQuery.setTaskName(fullTaskName);
+
+        // set process name to "wf:invite" so that only
+        // invite workflow instances are considered by this query
+        wfTaskQuery.setProcessName(InviteWorkflowModel.WF_PROCESS_INVITE);
+
+        // query for invite workflow tasks with the constructed query
+        List<WorkflowTask> wf_invite_tasks = workflowService
+                .queryTasks(wfTaskQuery);
+        
+        // end all tasks found with this name 
+        for (WorkflowTask workflowTask : wf_invite_tasks)
+        {
+            workflowService.endTask(workflowTask.id, transitionId);
+        }
     }
 }

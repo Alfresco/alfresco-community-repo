@@ -25,14 +25,10 @@
 package org.alfresco.repo.web.scripts.invite;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
-import org.alfresco.service.cmr.workflow.WorkflowTaskQuery;
-import org.alfresco.service.cmr.workflow.WorkflowTaskState;
-import org.alfresco.service.namespace.QName;
 import org.alfresco.web.scripts.DeclarativeWebScript;
 import org.alfresco.web.scripts.Status;
 import org.alfresco.web.scripts.WebScriptException;
@@ -140,7 +136,8 @@ public class InviteResponse extends DeclarativeWebScript
                 InviteWorkflowModel.WF_PROP_SITE_SHORT_NAME);
         
         // complete the wf:invitePendingTask along the 'accept' transition because the invitation has been accepted
-        completeInviteTask(inviteId, InviteWorkflowModel.WF_TASK_INVITE_PENDING, InviteWorkflowModel.WF_TRANSITION_ACCEPT);
+        InviteHelper.completeInviteTask(inviteId, InviteWorkflowModel.WF_INVITE_TASK_INVITE_PENDING,
+                InviteWorkflowModel.WF_TRANSITION_ACCEPT, this.workflowService);
         
         // add model properties for template to render
         model.put(MODEL_PROP_KEY_RESPONSE, RESPONSE_ACCEPT);
@@ -167,49 +164,11 @@ public class InviteResponse extends DeclarativeWebScript
                 InviteWorkflowModel.WF_PROP_SITE_SHORT_NAME);
         
         // complete the wf:invitePendingTask task along the 'reject' transition because the invitation has been rejected
-        completeInviteTask(inviteId, InviteWorkflowModel.WF_TASK_INVITE_PENDING, InviteWorkflowModel.WF_TRANSITION_REJECT);
+        InviteHelper.completeInviteTask(inviteId, InviteWorkflowModel.WF_INVITE_TASK_INVITE_PENDING,
+                InviteWorkflowModel.WF_TRANSITION_REJECT, this.workflowService);
         
         // add model properties for template to render
         model.put(MODEL_PROP_KEY_RESPONSE, RESPONSE_REJECT);
         model.put(MODEL_PROP_KEY_SITE_SHORT_NAME, siteShortName);
-    }
-    
-    /**
-     * Complete the specified Invite Workflow Task for the invite workflow 
-     * instance associated with the given invite ID, and follow the given
-     * transition upon completing the task
-     * 
-     * @param inviteId the invite ID of the invite workflow instance for which
-     *          we want to complete the given task
-     * @param fullTaskName qualified name of invite workflow task to complete
-     * @param transitionId the task transition to take on completion of 
-     *          the task (or null, for the default transition)
-     */
-    private void completeInviteTask(String inviteId, QName fullTaskName, String transitionId)
-    {
-        // create workflow task query
-        WorkflowTaskQuery wfTaskQuery = new WorkflowTaskQuery();
-        
-        // set the given invite ID as the workflow process ID in the workflow query
-        wfTaskQuery.setProcessId(inviteId);
-
-        // find incomplete invite workflow tasks with given task name 
-        wfTaskQuery.setActive(Boolean.TRUE);
-        wfTaskQuery.setTaskState(WorkflowTaskState.IN_PROGRESS);
-        wfTaskQuery.setTaskName(fullTaskName);
-
-        // set process name to "wf:invite" so that only
-        // invite workflow instances are considered by this query
-        wfTaskQuery.setProcessName(InviteWorkflowModel.WF_PROCESS_INVITE);
-
-        // query for invite workflow tasks with the constructed query
-        List<WorkflowTask> wf_invite_tasks = this.workflowService
-                .queryTasks(wfTaskQuery);
-        
-        // end all tasks found with this name 
-        for (WorkflowTask workflowTask : wf_invite_tasks)
-        {
-            this.workflowService.endTask(workflowTask.id, transitionId);
-        }
-    }
+    }    
 }

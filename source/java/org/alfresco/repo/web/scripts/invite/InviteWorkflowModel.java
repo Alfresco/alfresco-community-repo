@@ -16,13 +16,12 @@ public interface InviteWorkflowModel {
     public static final QName WF_INVITE_TASK_INVITE_PENDING = QName.createQName(NamespaceService.WORKFLOW_MODEL_1_0_URI, "invitePendingTask");
     public static final QName WF_TASK_ACCEPT_INVITE = QName.createQName(NamespaceService.WORKFLOW_MODEL_1_0_URI, "acceptInviteTask");
     public static final QName WF_TASK_REJECT_INVITE = QName.createQName(NamespaceService.WORKFLOW_MODEL_1_0_URI, "rejectInviteTask");
-    public static final QName WF_TASK_INVITE_PENDING = QName.createQName(NamespaceService.WORKFLOW_MODEL_1_0_URI, "invitePendingTask");
-    
     
     // transition names
     public static final String WF_TRANSITION_SEND_INVITE = "sendInvite";
     public static final String WF_TRANSITION_ACCEPT = "accept";
     public static final String WF_TRANSITION_REJECT = "reject";
+    public static final String WF_TRANSITION_CANCEL = "cancel";
     public static final String WF_TRANSITION_ACCEPT_INVITE_END = "end";
     public static final String WF_TRANSITION_REJECT_INVITE_END = "end";
     
@@ -40,4 +39,8 @@ public interface InviteWorkflowModel {
     public static final QName WF_PROP_SENT_INVITE_DATE = QName.createQName(NamespaceService.WORKFLOW_MODEL_1_0_URI, "sentInviteDate");
     public static final QName WF_PROP_INVITEE_GEN_PASSWORD = QName.createQName(NamespaceService.WORKFLOW_MODEL_1_0_URI, "inviteeGenPassword");
     
+    // workflow execution context variable names
+    public static final String wfVarInviteeUserName = "wf_inviteeUserName";
+    public static final String wfVarSiteShortName = "wf_siteShortName";
+    public static final String wfVarWorkflowInstanceId = "workflowinstanceid";
 }

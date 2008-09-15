@@ -31,6 +31,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
 import org.alfresco.repo.security.authentication.PasswordGenerator;
 import org.alfresco.repo.security.authentication.UserNameGenerator;
@@ -43,10 +45,10 @@ import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
+import org.alfresco.service.cmr.workflow.WorkflowException;
 import org.alfresco.service.cmr.workflow.WorkflowPath;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
-import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
@@ -400,13 +402,23 @@ public class Invite extends DeclarativeWebScript
 
         // create a person node for the invitee with generated invitee user name
         // and other provided person property values
-        Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
+        final Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
         properties.put(ContentModel.PROP_USERNAME, inviteeUserName);
         properties.put(ContentModel.PROP_FIRSTNAME, inviteeFirstName);
         properties.put(ContentModel.PROP_LASTNAME, inviteeLastName);
         properties.put(ContentModel.PROP_EMAIL, inviteeEmail);
-        this.personService.createPerson(properties);
         
+        AuthenticationUtil.runAs(new RunAsWork<Object>()
+        {
+            public Object doWork() throws Exception
+            {
+                personService.createPerson(properties);
+                
+                return null;
+            }
+    
+        }, AuthenticationUtil.getSystemUserName());
+                
         return inviteeUserName;
     }
     
@@ -676,8 +688,9 @@ public class Invite extends DeclarativeWebScript
     }
 
     /**
-     * Cancels pending invite. Note that only the Inviter should cancel the
-     * pending invite.
+     * Cancels pending invite. Note that only a Site Manager of the 
+     * site associated with the pending invite should be able to cancel that
+     * invite
      * 
      * @param model
      *            model to add objects to, which will be passed to the template
@@ -695,10 +708,31 @@ public class Invite extends DeclarativeWebScript
                     "Given invite ID " + inviteId + " null or empty");
         }
 
-        // cancel the workflow with the given invite ID
-        // which is actually the workflow ID
-        this.workflowService.cancelWorkflow(inviteId);
-
+        try
+        {
+            // complete the wf:invitePendingTask along the 'cancel' transition because the invitation has been cancelled
+            InviteHelper.completeInviteTask(inviteId, InviteWorkflowModel.WF_INVITE_TASK_INVITE_PENDING,
+                        InviteWorkflowModel.WF_TRANSITION_CANCEL, this.workflowService);
+        }
+        catch (WorkflowException wfe)
+        {
+            //
+            // If the indirect cause of workflow exception is a WebScriptException object 
+            // then throw this directly, otherwise it will not be picked up by unit tests
+            //
+            
+            Throwable indirectCause = wfe.getCause().getCause();
+            if (indirectCause instanceof WebScriptException)
+            {
+                WebScriptException wse = (WebScriptException) indirectCause;
+                throw wse;
+            }
+            else
+            {
+                throw wfe;
+            }
+        }
+        
         // add model properties for template to render
         model.put(MODEL_PROP_KEY_ACTION, ACTION_CANCEL);
         model.put(MODEL_PROP_KEY_INVITE_ID, inviteId);

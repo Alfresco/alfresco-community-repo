@@ -1,0 +1,7 @@
+<webscript>
+  <shortname>Revert Version Info</shortname>
+  <description>Revert Version Info</description>
+  <url>/api/revert</url>
+  <format default="json" />
+  <authentication>user</authentication>
+</webscript>

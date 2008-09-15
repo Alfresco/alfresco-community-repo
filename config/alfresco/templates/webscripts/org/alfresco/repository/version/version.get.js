@@ -25,6 +25,7 @@ function main()
                   nodeRef: version.node.nodeRef.toString(),
                   name: version.node.name,
                   label: version.label,
+                  description: version.description,
                   createdDate: version.createdDate,
                   creator: {
                      userName: p.properties.userName,
@@ -38,10 +39,10 @@ function main()
          {
             var p = people.getPerson(node.properties.creator);
             versions[0] = {
-               versionGroup: "currentVersion",
                nodeRef: node.nodeRef.toString(),
                name: node.name,
                label: "1.0",
+               description: "",
                createdDate: node.properties.created,
                creator: {
                   userName: p.properties.userName,

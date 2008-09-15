@@ -2,13 +2,14 @@
 <#list versions as v>
    {
       nodeRef: "${v.nodeRef}",
-      name: "${v.name}",
+      name: "${jsonUtils.encodeJSONString(v.name)}",
       label: "${v.label}",
-      createdDate: "${v.createdDate?datetime}",
+      description: "${jsonUtils.encodeJSONString(v.description)}",
+      createdDate: "${v.createdDate?string("dd MMM yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
       creator: {
          userName: "${v.creator.userName}",
-         firstName: "${v.creator.firstName}",
-         lastName: "${v.creator.lastName}"
+         firstName: "${jsonUtils.encodeJSONString(v.creator.firstName)}",
+         lastName: "${jsonUtils.encodeJSONString(v.creator.lastName)}"
       }
    }<#if (v_has_next)>,</#if>
 </#list>

@@ -28,13 +28,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
 import java.net.SocketException;
+import java.util.List;
 import java.util.SortedMap;
+import java.util.regex.Pattern;
 
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.repo.web.scripts.RepoStore;
 import org.alfresco.service.cmr.avm.AVMExistsException;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMNotFoundException;
@@ -42,6 +45,10 @@ import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.web.scripts.Status;
 import org.alfresco.web.scripts.WebScriptException;
 import org.alfresco.web.scripts.WebScriptResponse;
@@ -62,6 +69,7 @@ public class AVMRemoteStore extends BaseRemoteStore
     
     private String rootPath; 
     private AVMService avmService;
+    private SearchService searchService;
     
     
     /**
@@ -80,7 +88,14 @@ public class AVMRemoteStore extends BaseRemoteStore
         this.avmService = avmService;
     }
     
-    
+    /**
+     * @param searchService     the SearchService to set
+     */
+    public void setSearchService(SearchService searchService)
+    {
+        this.searchService = searchService;
+    }
+
     /**
      * Gets the last modified timestamp for the document.
      * 
@@ -229,8 +244,9 @@ public class AVMRemoteStore extends BaseRemoteStore
                         parentPath = dirPath;
                         index++;
                     }
-
+                    
                     avmService.createFile(parts[0], parts[1], content);
+                    avmService.createSnapshot(store, "AVMRemoteStore.createDocument()", path);
                 }
                 catch (AccessDeniedException ae)
                 {
@@ -300,6 +316,7 @@ public class AVMRemoteStore extends BaseRemoteStore
                 try
                 {
                     avmService.removeNode(avmPath);
+                    avmService.createSnapshot(store, "AVMRemoteStore.deleteDocument()", path);
                 }
                 catch (AccessDeniedException ae)
                 {
@@ -355,6 +372,67 @@ public class AVMRemoteStore extends BaseRemoteStore
                 traverseNode(out, n, recurse);
             }
         }
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.web.scripts.bean.BaseRemoteStore#listDocuments(org.alfresco.web.scripts.WebScriptResponse, java.lang.String, java.lang.String)
+     */
+    @Override
+    protected void listDocuments(WebScriptResponse res, String path, String pattern) throws IOException
+    {
+        String avmPath = buildAVMPath(path);
+        AVMNodeDescriptor node = this.avmService.lookup(-1, avmPath);
+        if (node == null)
+        {
+            res.setStatus(Status.STATUS_NOT_FOUND);
+            return;
+        }
+        
+        if (pattern == null || pattern.length() == 0)
+        {
+            pattern = "*";
+        }
+        
+        String matcher = pattern.replace(".","\\.").replace("*",".*");
+        final Pattern pat = Pattern.compile(matcher);
+        
+        String encPath = RepoStore.encodePathISO9075(path);
+        final StringBuilder query = new StringBuilder(128);
+        query.append("+PATH:\"/").append(this.rootPath)
+             .append(encPath.length() != 0 ? ('/' + encPath) : "")
+             .append("//*\" +QNAME:")
+             .append(pattern);
+        
+        final Writer out = res.getWriter();
+        final StoreRef avmStore = new StoreRef(StoreRef.PROTOCOL_AVM + StoreRef.URI_FILLER  + this.store);
+        AuthenticationUtil.runAs(new RunAsWork<Object>()
+        {
+            @SuppressWarnings("synthetic-access")
+            public Object doWork() throws Exception
+            {
+                int cropPoint = store.length() + rootPath.length() + 3;
+                ResultSet resultSet = searchService.query(avmStore, SearchService.LANGUAGE_LUCENE, query.toString());
+                try
+                {
+                    List<NodeRef> nodes = resultSet.getNodeRefs();
+                    for (NodeRef nodeRef : nodes)
+                    {
+                        String path = AVMNodeConverter.ToAVMVersionPath(nodeRef).getSecond();
+                        String name = path.substring(path.lastIndexOf('/') + 1);
+                        if (pat.matcher(name).matches())
+                        {
+                            out.write(path.substring(cropPoint));
+                            out.write("\n");
+                        }
+                    }
+                }
+                finally
+                {
+                    resultSet.close();
+                }
+                return null;
+            }
+        }, AuthenticationUtil.getSystemUserName());
     }
 
     /**

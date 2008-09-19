@@ -48,7 +48,7 @@ import org.apache.commons.logging.LogFactory;
  * from a web-tier application to remotely mirror a WebScript Store instance.
  * 
  * Request format:
- *      <servicepath>/<method>/<path>
+ *      <servicepath>/<method>/<path>[?<args>]
  * 
  * Example:
  *      /service/remotestore/lastmodified/sites/xyz/pages/page.xml
@@ -60,6 +60,8 @@ import org.apache.commons.logging.LogFactory;
  * 
  * Note: path is relative to the root path as configured for this webscript bean
  * 
+ * Further URL arguments may be provided if required by specific API methods.
+ * 
  * For content create and update the request should be POSTed and the content sent as the
  * payload of the request content.
  * 
@@ -70,6 +72,7 @@ import org.apache.commons.logging.LogFactory;
  *                 character encoding, content type, length and modified date will be supplied
  *      GET list -> return the list of available document paths under a path
  *      GET listall -> return the list of available document paths (recursively) under a given path
+ *      GET listpattern -> return the list of document paths matching a file pattern under a given path 
  *      POST create -> create a new document with request content payload
  *      POST update -> update an existing document with request content payload
  *      DELETE delete -> delete an existing document 
@@ -140,7 +143,7 @@ public abstract class BaseRemoteStore extends AbstractWebScript
         if (logger.isDebugEnabled())
             logger.debug("Remote store method: " + extParts[0] + " path: " + path);
         
-        // TODO: support storeref name override as argument (i.e. for AVM virtualisation)
+        // TODO: support storeref name override as argument? (i.e. for AVM virtualisation)
         
         try
         {
@@ -169,6 +172,11 @@ public abstract class BaseRemoteStore extends AbstractWebScript
                 
                 case LISTALL:
                     listDocuments(res, path, true);
+                    break;
+                
+                case LISTPATTERN:
+                    listDocuments(res, path, req.getParameter("m"));
+                    break;
                 
                 case CREATE:
                     validatePath(path);
@@ -268,6 +276,20 @@ public abstract class BaseRemoteStore extends AbstractWebScript
         throws IOException;
     
     /**
+     * Lists the document paths matching a file pattern under a given path.
+     * 
+     * The output will be the list of relative document paths found under the path that
+     * match the given file pattern. Separated by newline characters.
+     * 
+     * @param path      document path
+     * @param pattern   file pattern to match - allows wildcards e.g. *.xml or site*.xml
+     * 
+     * @throws IOException if an error occurs listing the documents
+     */
+    protected abstract void listDocuments(WebScriptResponse res, String path, String pattern)
+        throws IOException;
+    
+    /**
      * Creates a document.
      * 
      * @param path  document path
@@ -307,6 +329,7 @@ public abstract class BaseRemoteStore extends AbstractWebScript
         GET,
         LIST,
         LISTALL,
+        LISTPATTERN,
         CREATE,
         UPDATE,
         DELETE

@@ -27,6 +27,9 @@ package org.alfresco.web.ui.repo.component.evaluator;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.faces.context.FacesContext;
 import javax.faces.el.ValueBinding;
 
@@ -42,6 +45,8 @@ import org.alfresco.web.ui.common.component.evaluator.BaseEvaluator;
  */
 public class ActionInstanceEvaluator extends BaseEvaluator
 {
+   private static final String EVALUATOR_CACHE = "_alf_evaluator_cache";
+   
    /**
     * Evaluate by executing the specified action instance evaluator.
     * 
@@ -56,7 +61,7 @@ public class ActionInstanceEvaluator extends BaseEvaluator
          final Object obj = this.getValue();
          if (obj instanceof Node)
          {
-            result = this.getEvaluator().evaluate((Node)obj);
+            result = evaluateCachedResult((Node)obj);
          }
          else
          {
@@ -85,6 +90,49 @@ public class ActionInstanceEvaluator extends BaseEvaluator
       }
       
       return result;
+   }
+   
+   /**
+    * To reduce invocations of a particular evaluator for a particular node
+    * save a cache of evaluator result for a node against the current request.
+    * Since the same evaluator may get reused several times for multiple actions, but
+    * in effect execute against the same node instance, this can significantly reduce
+    * the number of invocations required for a particular evaluator. 
+    * 
+    * @param node Node to evaluate against
+    * 
+    * @return evaluator result
+    */
+   private boolean evaluateCachedResult(Node node)
+   {
+      Boolean result;
+      
+      ActionEvaluator evaluator = getEvaluator();
+      String cacheKey = node.getNodeRef().toString() + '_' + evaluator.getClass().getName();
+      Map<String, Boolean> cache = getEvaluatorResultCache();
+      result = cache.get(cacheKey);
+      if (result == null)
+      {
+         result = evaluator.evaluate(node);
+         cache.put(cacheKey, result);
+      }
+      
+      return result;
+   }
+
+   /**
+    * @return the evaluator result cache - tied to the current request
+    */
+   private Map<String, Boolean> getEvaluatorResultCache()
+   {
+      FacesContext fc = FacesContext.getCurrentInstance();
+      Map<String, Boolean> cache = (Map<String, Boolean>)fc.getExternalContext().getRequestMap().get(EVALUATOR_CACHE);
+      if (cache == null)
+      {
+         cache = new HashMap<String, Boolean>(64, 1.0f);
+         fc.getExternalContext().getRequestMap().put(EVALUATOR_CACHE, cache);
+      }
+      return cache;
    }
    
    /**

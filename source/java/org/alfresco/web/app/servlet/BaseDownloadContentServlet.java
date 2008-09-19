@@ -72,6 +72,10 @@ public abstract class BaseDownloadContentServlet extends BaseServlet
 {
    private static final long serialVersionUID = -4558907921887235966L;
    
+   private static final String POWER_POINT_DOCUMENT_MIMETYPE = "application/vnd.powerpoint";
+
+   private static final String POWER_POINT_2007_DOCUMENT_MIMETYPE = "application/vnd.openxmlformats-officedocument.presentationml.presentation";
+   
    protected static final String MIMETYPE_OCTET_STREAM = "application/octet-stream";
    
    protected static final String MSG_ERROR_CONTENT_MISSING = "error_content_missing";
@@ -286,6 +290,14 @@ public abstract class BaseDownloadContentServlet extends BaseServlet
                }
             }
          }
+
+         // explicitly set the content disposition header if the content is powerpoint
+         if (!attachment && (mimetype.equals(POWER_POINT_2007_DOCUMENT_MIMETYPE) || 
+                             mimetype.equals(POWER_POINT_DOCUMENT_MIMETYPE)))
+         {
+            res.setHeader("Content-Disposition", "attachment");
+         }
+
          // set mimetype for the content and the character encoding for the stream
          res.setContentType(mimetype);
          res.setCharacterEncoding(reader.getEncoding());

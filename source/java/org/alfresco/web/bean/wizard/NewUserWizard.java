@@ -65,6 +65,7 @@ import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIActionLink;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.commons.validator.EmailValidator;
 
 /**
  * @author Kevin Roast
@@ -84,7 +85,8 @@ public class NewUserWizard extends AbstractWizardBean
    private static final String STEP2_TITLE_ID = "new_user_step2_title";
    private static final String STEP2_DESCRIPTION_ID = "new_user_step2_desc";
    private static final String FINISH_INSTRUCTION_ID = "new_user_finish_instruction";
-   private static final String ERROR = "error_person";
+   private static final String ERROR = "error_person";    
+   private static final String MSG_ERROR_MAIL_NOT_VALID = "email_format_is_not_valid";
 
    /** form variables */
    private String firstName = null;
@@ -916,6 +918,23 @@ public class NewUserWizard extends AbstractWizardBean
       }
    }
    
+   /**
+    * Validate Email field data is acceptable
+    * 
+    * @param context
+    * @param component
+    * @param value
+    * @throws ValidatorException
+    */
+   public void validateEmail(FacesContext context, UIComponent component, Object value) throws ValidatorException
+   {
+      EmailValidator emailValidator = EmailValidator.getInstance();
+      if (!emailValidator.isValid((String) value))
+      {
+         String err =Application.getMessage(context, MSG_ERROR_MAIL_NOT_VALID);
+         throw new ValidatorException(new FacesMessage(err));
+      }
+   }
    
    // ------------------------------------------------------------------------------
    // Helper methods

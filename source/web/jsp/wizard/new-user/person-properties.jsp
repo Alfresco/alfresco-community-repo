@@ -170,7 +170,7 @@
                                  <tr>
                                     <td><h:outputText value="#{msg.email}"/>:</td>
                                     <td>
-                                       <h:inputText id="email" value="#{NewUserWizard.email}" size="35" maxlength="1024" onkeyup="updateButtonState();" onchange="updateButtonState();" />&nbsp;*
+                                       <h:inputText id="email" value="#{NewUserWizard.email}" validator="#{NewUserWizard.validateEmail}" size="35" maxlength="1024" onkeyup="updateButtonState();" onchange="updateButtonState();" />&nbsp;*
                                     </td>
                                  </tr>
                                  
@@ -209,7 +209,7 @@
                                  <tr><td class="wizardButtonSpacing"></td></tr>
                                  <tr>
                                     <td align="center">
-                                       <h:commandButton value="#{msg.cancel_button}" action="#{NewUserWizard.cancel}" styleClass="wizardButton" />
+                                       <h:commandButton value="#{msg.cancel_button}" action="#{NewUserWizard.cancel}" styleClass="wizardButton" immediate="true" />
                                     </td>
                                  </tr>
                               </table>

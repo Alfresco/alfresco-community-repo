@@ -22,20 +22,23 @@
  * http://www.alfresco.com/legal/licensing" */
 package org.alfresco.web.forms;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.domain.PropertyValue;
-import org.alfresco.repo.remote.AVMRemoteInputStream;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
-import org.alfresco.service.cmr.avm.AVMNotFoundException;
 import org.alfresco.service.cmr.remote.AVMRemote;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.w3c.dom.*;
+import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
-import javax.xml.parsers.*;
-import java.io.*;
-import java.util.Map;
-import java.util.HashMap;
 
 /**
  * Common implementation of functions called in the context of FormDataRenderers.
@@ -43,14 +46,15 @@ import java.util.HashMap;
  * of both the alfresco webapp and the virtualization server.
  *
  * @author Ariel Backenroth
+ * @author Arseny Kovalchuk (Fix of the bug reported in https://issues.alfresco.com/jira/browse/ETWOONE-241)
  */
 public class FormDataFunctions
 {
    private static final Log LOGGER = LogFactory.getLog(FormDataFunctions.class);
 
-   private static DocumentBuilder documentBuilder;
-
    private final AVMRemote avmRemote;
+   
+   private ThreadLocal<DocumentBuilderFactory> dbf = new ThreadLocal<DocumentBuilderFactory>();
 
    public FormDataFunctions(final AVMRemote avmRemote)
    {
@@ -70,7 +74,7 @@ public class FormDataFunctions
       final InputStream istream = this.avmRemote.getFileInputStream(-1, avmPath); 
       try 
       {
-         return XMLUtil.parse(istream);
+         return parseXML(istream);
       }
       finally
       {
@@ -123,7 +127,8 @@ public class FormDataFunctions
             final InputStream istream = this.avmRemote.getFileInputStream(-1, avmPath + '/' + entryName);
             try
             {
-               result.put(entryName, XMLUtil.parse(istream));
+               // result.put(entryName, XMLUtil.parse(istream));
+                result.put(entryName, parseXML(istream));
             }
             finally
             {
@@ -131,6 +136,35 @@ public class FormDataFunctions
             }
          }
       }
+      return result;
+   }
+   
+   /*
+    *  We need an internal method for XML parsing with ThreadLocal DocumentBuilderFactory
+    *  to avoid a multithread access to the parser in XMLUtils.
+    *  Fix of the bug reported in https://issues.alfresco.com/jira/browse/ETWOONE-241 reported.
+    */
+   private Document parseXML(InputStream is) throws IOException, SAXException
+   {
+      Document result = null;
+      try 
+      {
+         DocumentBuilderFactory localDbf = dbf.get();
+         if (localDbf == null)
+         {
+            localDbf = DocumentBuilderFactory.newInstance();
+         }
+         localDbf.setNamespaceAware(true);
+         localDbf.setValidating(false);
+         dbf.set(localDbf);
+         DocumentBuilder builder = localDbf.newDocumentBuilder();
+         result = builder.parse(is);
+      }
+      catch (ParserConfigurationException pce)
+      {
+         LOGGER.error(pce);
+      }
+      
       return result;
    }
 }

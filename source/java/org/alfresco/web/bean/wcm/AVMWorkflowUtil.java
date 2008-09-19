@@ -258,6 +258,7 @@ public class AVMWorkflowUtil extends WorkflowUtil
       final HashMap<QName, Object> props = new HashMap<QName, Object>(1, 1.0f);
       props.put(WCMWorkflowModel.PROP_FROM_PATH, fromPath);
       query.setProcessCustomProps(props);
+      query.setActive(true);
       final List<WorkflowTask> tasks = workflowService.queryTasks(query);
       
       if (logger.isDebugEnabled())

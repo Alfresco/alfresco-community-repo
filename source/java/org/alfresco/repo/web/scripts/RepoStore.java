@@ -34,6 +34,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -57,6 +58,7 @@ import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.util.ISO9075;
 import org.alfresco.web.scripts.ScriptContent;
 import org.alfresco.web.scripts.ScriptLoader;
 import org.alfresco.web.scripts.Store;
@@ -219,13 +221,20 @@ public class RepoStore implements Store, TenantDeployer
                         {
                             String query = "PATH:\"" + repoPath + "\"";
                             ResultSet resultSet = searchService.query(repoStore, SearchService.LANGUAGE_LUCENE, query);
-                            if (resultSet.length() == 1)
+                            try
                             {
-                                return resultSet.getNodeRef(0);
+                                if (resultSet.length() == 1)
+                                {
+                                    return resultSet.getNodeRef(0);
+                                }
+                                else if (mustExist)
+                                {
+                                    throw new WebScriptException("Web Script Store " + repoStore.toString() + repoPath + " must exist; it was not found");
+                                }
                             }
-                            else if (mustExist)
+                            finally
                             {
-                                throw new WebScriptException("Web Script Store " + repoStore.toString() + repoPath + " must exist; it was not found");
+                                resultSet.close();
                             }
                             return null;
                         }
@@ -316,19 +325,27 @@ public class RepoStore implements Store, TenantDeployer
                         {
                             org.alfresco.service.cmr.repository.Path repoScriptPath = nodeService.getPath(scriptNodeRef);
                             String id = script.getDescription().getId().substring(scriptPath.length() + (scriptPath.length() > 0 ? 1 : 0));
-                            String query = "+PATH:\"" + repoScriptPath.toPrefixString(namespaceService) + "//*\" +QNAME:" + id + "*";
+                            String query = "+PATH:\"" + repoScriptPath.toPrefixString(namespaceService) +
+                                           "//*\" +QNAME:" + id + "*";
                             ResultSet resultSet = searchService.query(repoStore, SearchService.LANGUAGE_LUCENE, query);
-                            documentPaths = new ArrayList<String>(resultSet.length());
-                            List<NodeRef> nodes = resultSet.getNodeRefs();
-                            for (NodeRef nodeRef : nodes)
+                            try
                             {
-                                String name = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
-                                if (name.startsWith(id))
+                                documentPaths = new ArrayList<String>(resultSet.length());
+                                List<NodeRef> nodes = resultSet.getNodeRefs();
+                                for (NodeRef nodeRef : nodes)
                                 {
-                                    String nodeDir = getPath(nodeRef);
-                                    String documentPath = nodeDir.substring(baseDirLength);
-                                    documentPaths.add(documentPath);
+                                    String name = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+                                    if (name.startsWith(id))
+                                    {
+                                        String nodeDir = getPath(nodeRef);
+                                        String documentPath = nodeDir.substring(baseDirLength);
+                                        documentPaths.add(documentPath);
+                                    }
                                 }
+                            }
+                            finally
+                            {
+                                resultSet.close();
                             }
                         }
                         
@@ -344,34 +361,21 @@ public class RepoStore implements Store, TenantDeployer
      */
     public String[] getDocumentPaths(String path, boolean includeSubPaths, String documentPattern)
     {
-        if ((path == null) || (path.length() == 0))
-        {
-            path = "/";
-        }
-        
-        if (! path.startsWith("/"))
-        {
-            path = "/" + path;
-        }
-        
-        if (! path.endsWith("/"))
-        {
-            path = path + "/";
-        }
-        
         if ((documentPattern == null) || (documentPattern.length() == 0))
         {
             documentPattern = "*";
         }
         
-        final String matcher = documentPattern.replace(".","\\.").replace("*",".*");
+        String matcher = documentPattern.replace(".","\\.").replace("*",".*");
+        final Pattern pattern = Pattern.compile(matcher);
         
-        final StringBuffer query = new StringBuffer();
+        String encPath = encodePathISO9075(path);
+        final StringBuilder query = new StringBuilder(128);
         query.append("+PATH:\"").append(repoPath)
-               .append(path)
-               .append((includeSubPaths ? "/*\"" : ""))
-               .append(" +QNAME:")
-               .append(documentPattern);
+             .append(encPath.length() != 0 ? ('/' + encPath) : "")
+             .append((includeSubPaths ? '/' : ""))
+             .append("/*\" +QNAME:")
+             .append(documentPattern);
         
         return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<String[]>()
         {
@@ -383,25 +387,59 @@ public class RepoStore implements Store, TenantDeployer
                     {
                         int baseDirLength = getBaseDir().length() +1;
                         
+                        List<String> documentPaths;
                         ResultSet resultSet = searchService.query(repoStore, SearchService.LANGUAGE_LUCENE, query.toString());
-                        List<String> documentPaths = new ArrayList<String>(resultSet.length());
-                        List<NodeRef> nodes = resultSet.getNodeRefs();
-                        for (NodeRef nodeRef : nodes)
+                        try
                         {
-                            String name = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
-                            if (Pattern.matches(matcher, name))
+                            documentPaths = new ArrayList<String>(resultSet.length());
+                            List<NodeRef> nodes = resultSet.getNodeRefs();
+                            for (NodeRef nodeRef : nodes)
                             {
-                                String nodeDir = getPath(nodeRef);
-                                String documentPath = nodeDir.substring(baseDirLength);
-                                documentPaths.add(documentPath);
+                                String name = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+                                if (pattern.matcher(name).matches())
+                                {
+                                    String nodeDir = getPath(nodeRef);
+                                    String documentPath = nodeDir.substring(baseDirLength);
+                                    documentPaths.add(documentPath);
+                                }
                             }
                         }
-                        
+                        finally
+                        {
+                            resultSet.close();
+                        }
                         return documentPaths.toArray(new String[documentPaths.size()]);
                     }
                 });
             }
         }, AuthenticationUtil.getSystemUserName());
+    }
+    
+    /**
+     * Helper to encode the elements of a path to be used as a Lucene PATH statement
+     * using the ISO9075 encoding. Note that leading and trailing '/' elements will NOT
+     * be preserved.
+     * 
+     * @param path  Path to encode, elements separated by '/'
+     * 
+     * @return the encoded path, a minimum of the empty string will be returned
+     */
+    public static String encodePathISO9075(String path)
+    {
+        if (path == null || path.length() == 0)
+        {
+            return "";
+        }
+        StringBuilder result = new StringBuilder(path.length() + 16);
+        for (StringTokenizer t = new StringTokenizer(path, "/"); t.hasMoreTokens(); /**/)
+        {
+            result.append(ISO9075.encode(t.nextToken()));
+            if (t.hasMoreTokens())
+            {
+                result.append('/');
+            }
+        }
+        return result.toString();
     }
     
     /* (non-Javadoc)
@@ -427,14 +465,23 @@ public class RepoStore implements Store, TenantDeployer
                     {
                         int baseDirLength = getBaseDir().length() +1;
                         
-                        String query = "+PATH:\"" + repoPath + "//*\" +TYPE:\"{http://www.alfresco.org/model/content/1.0}content\"";
+                        List<String> documentPaths;
+                        String query = "+PATH:\"" + repoPath +
+                                       "//*\" +TYPE:\"{http://www.alfresco.org/model/content/1.0}content\"";
                         ResultSet resultSet = searchService.query(repoStore, SearchService.LANGUAGE_LUCENE, query);
-                        List<String> documentPaths = new ArrayList<String>(resultSet.length());
-                        List<NodeRef> nodes = resultSet.getNodeRefs();
-                        for (NodeRef nodeRef : nodes)
+                        try
                         {
-                            String nodeDir = getPath(nodeRef);
-                            documentPaths.add(nodeDir.substring(baseDirLength));
+                            documentPaths = new ArrayList<String>(resultSet.length());
+                            List<NodeRef> nodes = resultSet.getNodeRefs();
+                            for (NodeRef nodeRef : nodes)
+                            {
+                                String nodeDir = getPath(nodeRef);
+                                documentPaths.add(nodeDir.substring(baseDirLength));
+                            }
+                        }
+                        finally
+                        {
+                            resultSet.close();
                         }
                         
                         return documentPaths.toArray(new String[documentPaths.size()]);

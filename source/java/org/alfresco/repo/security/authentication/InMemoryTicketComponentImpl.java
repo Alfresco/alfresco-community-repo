@@ -49,7 +49,7 @@ public class InMemoryTicketComponentImpl implements TicketComponent
      * Ticket prefix
      */
     public static final String GRANTED_AUTHORITY_TICKET_PREFIX = "TICKET_";
-    
+
     private static ThreadLocal<String> currentTicket = new ThreadLocal<String>();
 
     private boolean ticketsExpire;
@@ -61,10 +61,11 @@ public class InMemoryTicketComponentImpl implements TicketComponent
     private String guid;
 
     private SimpleCache<String, Ticket> ticketsCache; // Can't use Ticket as it's private
+    
+    private ExpiryMode expiryMode = ExpiryMode.AFTER_FIXED_TIME;
 
     /**
      * IOC constructor
-     *
      */
     public InMemoryTicketComponentImpl()
     {
@@ -89,7 +90,7 @@ public class InMemoryTicketComponentImpl implements TicketComponent
         {
             expiryDate = Duration.add(new Date(), validDuration);
         }
-        Ticket ticket = new Ticket(ticketsExpire, expiryDate, userName);
+        Ticket ticket = new Ticket(ticketsExpire ? expiryMode : ExpiryMode.DO_NOT_EXPIRE, expiryDate, userName, validDuration);
         ticketsCache.put(ticket.getTicketId(), ticket);
         String ticketString = GRANTED_AUTHORITY_TICKET_PREFIX + ticket.getTicketId();
         currentTicket.set(ticketString);
@@ -119,6 +120,7 @@ public class InMemoryTicketComponentImpl implements TicketComponent
 
     /**
      * Helper method to find a ticket
+     * 
      * @param ticketString
      * @return - the ticket
      */
@@ -129,7 +131,8 @@ public class InMemoryTicketComponentImpl implements TicketComponent
     }
 
     /**
-     * Helper method to extract the ticket id from the ticket string 
+     * Helper method to extract the ticket id from the ticket string
+     * 
      * @param ticketString
      * @return - the ticket key
      */
@@ -271,14 +274,14 @@ public class InMemoryTicketComponentImpl implements TicketComponent
     
     /**
      * Ticket
+     * 
      * @author andyh
-     *
      */
     public static class Ticket implements Serializable
     {
         private static final long serialVersionUID = -5904510560161261049L;
 
-        private boolean expires;
+        private ExpiryMode expires;
 
         private Date expiryDate;
 
@@ -287,18 +290,18 @@ public class InMemoryTicketComponentImpl implements TicketComponent
         private String ticketId;
 
         private String guid;
+        
+        private Duration validDuration;
 
-        Ticket(boolean expires, Date expiryDate, String userName)
+        Ticket(ExpiryMode expires, Date expiryDate, String userName, Duration validDuration)
         {
             this.expires = expires;
             this.expiryDate = expiryDate;
             this.userName = userName;
+            this.validDuration = validDuration;
             this.guid = UUIDGenerator.getInstance().generateRandomBasedUUID().toString();
-            
 
-            String encode = (expires ? "T" : "F") + 
-                            ((expiryDate == null) ? new Date().toString(): expiryDate.toString()) + 
-                            userName + guid; 
+            String encode = (expires.toString()) + ((expiryDate == null) ? new Date().toString() : expiryDate.toString()) + userName + guid;
             MessageDigest digester;
             try
             {
@@ -314,18 +317,18 @@ public class InMemoryTicketComponentImpl implements TicketComponent
                 }
                 catch (NoSuchAlgorithmException e1)
                 {
-                   CRC32 crc = new CRC32();
-                   crc.update(encode.getBytes());
-                   byte[] bytes = new byte[4];
-                   long value = crc.getValue();
-                   bytes[0] = (byte)(value & 0xFF);
-                   value >>>= 4;
-                   bytes[1] = (byte)(value & 0xFF);
-                   value >>>= 4;
-                   bytes[2] = (byte)(value & 0xFF);
-                   value >>>= 4;
-                   bytes[3] = (byte)(value & 0xFF);
-                   this.ticketId = new String(Hex.encodeHex(bytes));
+                    CRC32 crc = new CRC32();
+                    crc.update(encode.getBytes());
+                    byte[] bytes = new byte[4];
+                    long value = crc.getValue();
+                    bytes[0] = (byte) (value & 0xFF);
+                    value >>>= 4;
+                    bytes[1] = (byte) (value & 0xFF);
+                    value >>>= 4;
+                    bytes[2] = (byte) (value & 0xFF);
+                    value >>>= 4;
+                    bytes[3] = (byte) (value & 0xFF);
+                    this.ticketId = new String(Hex.encodeHex(bytes));
                 }
             }
         }
@@ -337,14 +340,33 @@ public class InMemoryTicketComponentImpl implements TicketComponent
          */
         boolean hasExpired()
         {
-            if (expires && (expiryDate != null) && (expiryDate.compareTo(new Date()) < 0))
+            Date now = new Date();
+            switch (expires)
             {
-                return true;
-            }
-            else
-            {
+            case AFTER_FIXED_TIME:
+                if ((expiryDate != null) && (expiryDate.compareTo(now) < 0))
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            case AFTER_INACTIVITY:
+                if ((expiryDate != null) && (expiryDate.compareTo(now) < 0))
+                {
+                    return true;
+                }
+                else
+                {
+                    expiryDate = Duration.add(now, validDuration);
+                    return false;
+                }
+            case DO_NOT_EXPIRE:
+            default:
                 return false;
             }
+
         }
 
         public boolean equals(Object o)
@@ -358,9 +380,7 @@ public class InMemoryTicketComponentImpl implements TicketComponent
                 return false;
             }
             Ticket t = (Ticket) o;
-            return (this.expires == t.expires)
-                    && this.expiryDate.equals(t.expiryDate) && this.userName.equals(t.userName)
-                    && this.ticketId.equals(t.ticketId);
+            return (this.expires == t.expires) && this.expiryDate.equals(t.expiryDate) && this.userName.equals(t.userName) && this.ticketId.equals(t.ticketId);
         }
 
         public int hashCode()
@@ -368,7 +388,7 @@ public class InMemoryTicketComponentImpl implements TicketComponent
             return ticketId.hashCode();
         }
 
-        protected boolean getExpires()
+        protected ExpiryMode getExpires()
         {
             return expires;
         }
@@ -390,10 +410,11 @@ public class InMemoryTicketComponentImpl implements TicketComponent
 
     }
 
-   /**
-    * Are tickets single use
-    * @param oneOff
-    */
+    /**
+     * Are tickets single use
+     * 
+     * @param oneOff
+     */
     public void setOneOff(boolean oneOff)
     {
         this.oneOff = oneOff;
@@ -401,6 +422,7 @@ public class InMemoryTicketComponentImpl implements TicketComponent
 
     /**
      * Do tickets expire
+     * 
      * @param ticketsExpire
      */
     public void setTicketsExpire(boolean ticketsExpire)
@@ -408,8 +430,19 @@ public class InMemoryTicketComponentImpl implements TicketComponent
         this.ticketsExpire = ticketsExpire;
     }
 
+    
+    /**
+     * How should tickets expire.
+     * @param exipryMode
+     */
+    public void setExpiryMode(String expiryMode)
+    {
+        this.expiryMode = ExpiryMode.valueOf(expiryMode);
+    }
+
     /**
      * How long are tickets valid (XML duration as a string)
+     * 
      * @param validDuration
      */
     public void setValidDuration(String validDuration)
@@ -430,12 +463,12 @@ public class InMemoryTicketComponentImpl implements TicketComponent
     public String getCurrentTicket(String userName)
     {
         String ticket = currentTicket.get();
-        if(ticket == null)
+        if (ticket == null)
         {
             return getNewTicket(userName);
         }
         String ticketUser = getAuthorityForTicket(ticket);
-        if(userName.equals(ticketUser))
+        if (userName.equals(ticketUser))
         {
             return ticket;
         }
@@ -449,9 +482,14 @@ public class InMemoryTicketComponentImpl implements TicketComponent
     {
         clearCurrentSecurityContext();
     }
-    
+
     public static void clearCurrentSecurityContext()
     {
         currentTicket.set(null);
+    }
+
+    public enum ExpiryMode
+    {
+        AFTER_INACTIVITY, AFTER_FIXED_TIME, DO_NOT_EXPIRE;
     }
 }

@@ -47,6 +47,7 @@ import org.springframework.beans.factory.BeanFactory;
 public class ForEachFork extends JBPMSpringActionHandler
 {
     private static final long serialVersionUID = 4643103713602441652L;
+
     private ServiceRegistry services;
     
     private Element foreach;
@@ -190,7 +191,7 @@ public class ForEachFork extends JBPMSpringActionHandler
     protected String getTokenName(Token parent, String transitionName, int loopIndex)
     {
         String tokenName = null;
-        if (transitionName != null)
+        if (transitionName != null && transitionName.length() > 0)
         {
             if (!parent.hasChild(transitionName))
             {
@@ -210,12 +211,13 @@ public class ForEachFork extends JBPMSpringActionHandler
         else
         {
             // no transition name
-            int size = ( parent.getChildren()!=null ? parent.getChildren().size()+1 : 1 );
-            tokenName = Integer.toString(size);
+            int size = (parent.getChildren() != null) ? parent.getChildren().size() + 1 : 1;
+            tokenName = "FOREACHFORK" + Integer.toString(size);
         }
         return tokenName + "." + loopIndex;
     }
     
+
     /**
      * Fork Transition
      */

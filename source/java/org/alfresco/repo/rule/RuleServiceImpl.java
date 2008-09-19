@@ -538,7 +538,8 @@ public class RuleServiceImpl implements RuleService, RuntimeRuleService
 	 * @param ruleNodeRef	the rule node reference
 	 * @return				the rule
 	 */
-    public Rule getRule(NodeRef ruleNodeRef)
+    @SuppressWarnings("unchecked")
+	public Rule getRule(NodeRef ruleNodeRef)
 	{
     	// Get the rule properties
 		Map<QName, Serializable> props = this.runtimeNodeService.getProperties(ruleNodeRef);

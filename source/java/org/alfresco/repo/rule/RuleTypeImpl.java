@@ -129,14 +129,14 @@ public class RuleTypeImpl extends CommonResourceAbstractBase implements RuleType
         	this.nodeService.exists(actionedUponNodeRef) == true && 
         	this.nodeService.hasAspect(actionedUponNodeRef, ContentModel.ASPECT_TEMPORARY) == false)
         {
-    		if (this.ruleService.hasRules(nodeRef) == true)
+			List<Rule> rules = this.ruleService.getRules(
+            		nodeRef, 
+                    true,
+                    this.name);
+			
+    		if (rules.size() != 0)
             {
-                List<Rule> rules = this.ruleService.getRules(
-                		nodeRef, 
-                        true,
-                        this.name);
-    			
-                for (Rule rule : rules)
+               for (Rule rule : rules)
                 {   
                     if (logger.isDebugEnabled() == true)
                     {

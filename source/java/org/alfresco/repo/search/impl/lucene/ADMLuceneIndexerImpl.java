@@ -393,6 +393,18 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
         indexer.initialise(storeRef, deltaId);
         return indexer;
     }
+    
+    public static ADMLuceneNoActionIndexerImpl getNoActionIndexer(StoreRef storeRef, String deltaId, LuceneConfig config) throws LuceneIndexException
+    {
+        if (s_logger.isDebugEnabled())
+        {
+            s_logger.debug("Creating indexer");
+        }
+        ADMLuceneNoActionIndexerImpl indexer = new ADMLuceneNoActionIndexerImpl();
+        indexer.setLuceneConfig(config);
+        indexer.initialise(storeRef, deltaId);
+        return indexer;
+    }
 
     /*
      * Transactional support Used by the resource manager for indexers.

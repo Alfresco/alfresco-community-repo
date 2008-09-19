@@ -412,6 +412,12 @@
         <property name="oneOff">
             <value>false</value>
         </property>
+		<!-- If ticketsEpire is true then how they should expire -->
+		<!-- AFTER_INACTIVITY, AFTER_FIXED_TIME, DO_NOT_EXPIRE  -->
+		<!-- The default is AFTER_FIXED_TIME -->
+		<property name="expiryMode">
+            <value>AFTER_FIXED_TIME</value>
+        </property>
     </bean>
     
     <!-- Used for generating user names                                     -->

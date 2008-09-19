@@ -34,7 +34,6 @@ import java.util.Set;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.repo.template.DateCompareMethod;
@@ -54,6 +53,7 @@ import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PersonService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.commons.validator.EmailValidator;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -261,7 +261,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                                 {
                                     NodeRef person = personService.getPerson(authority);
                                     String address = (String)nodeService.getProperty(person, ContentModel.PROP_EMAIL);
-                                    if (address != null && address.length() != 0)
+                                    if (address != null && address.length() != 0 && validateAddress(address))
                                     {
                                         recipients.add(address);
                                     }
@@ -350,6 +350,28 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
             
             logger.error("Failed to send email to " + to, e);
         }
+    }
+    
+    /**
+     * Return true if address has valid format
+     * @param address
+     * @return
+     */
+    private boolean validateAddress(String address)
+    {
+        boolean result = false;
+        
+        EmailValidator emailValidator = EmailValidator.getInstance();
+        if (emailValidator.isValid(address))
+        {
+            result = true;
+        }
+        else 
+        {
+            logger.error("Failed to send email to '" + address + "' as the address is incorrectly formatted" );
+        }
+      
+        return result;
     }
 
    /**

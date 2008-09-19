@@ -84,6 +84,7 @@ import org.hibernate.Session;
 import org.hibernate.criterion.Conjunction;
 import org.hibernate.criterion.Disjunction;
 import org.hibernate.criterion.Order;
+import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Property;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.proxy.HibernateProxy;
@@ -1302,7 +1303,6 @@ public class JBPMEngine extends BPMEngine
      */
     private Criteria createTaskQueryCriteria(Session session, WorkflowTaskQuery query)
     {
-        Criteria process = null;
         Criteria task = session.createCriteria(TaskInstance.class);
         
         // task id
@@ -1358,35 +1358,9 @@ public class JBPMEngine extends BPMEngine
             }
         }
         
-        // process active?
-        if (query.isActive() != null)
-        {
-            process = (process == null) ? task.createCriteria("processInstance") : process;
-            if (query.isActive())
-            {
-                process.add(Restrictions.isNull("end"));
-            }
-            else
-            {
-                process.add(Restrictions.isNotNull("end"));
-            }
-        }
+        // process criteria
+        Criteria process = createProcessCriteria(task, query);
         
-        // process id
-        if (query.getProcessId() != null)
-        {
-            process = (process == null) ? task.createCriteria("processInstance") : process;
-            process.add(Restrictions.eq("id", getJbpmId(query.getProcessId())));
-        }
-        
-        // process name
-        if (query.getProcessName() != null)
-        {
-            process = (process == null) ? task.createCriteria("processInstance") : process;
-            Criteria processDef = process.createCriteria("processDefinition");
-            processDef.add(Restrictions.eq("name", query.getProcessName().toPrefixString(namespaceService)));
-        }
-
         // process custom properties
         if (query.getProcessCustomProps() != null)
         {
@@ -1398,7 +1372,7 @@ public class JBPMEngine extends BPMEngine
             {
                 // create criteria for process variables
                 Criteria variables = session.createCriteria(VariableInstance.class);
-                variables.setProjection(Property.forName("processInstance"));
+                variables.setProjection(Projections.distinct(Property.forName("processInstance")));
                 Disjunction values = Restrictions.disjunction();
                 for (Map.Entry<QName, Object> prop : props.entrySet())
                 {
@@ -1408,6 +1382,9 @@ public class JBPMEngine extends BPMEngine
                     values.add(value);
                 }
                 variables.add(values);
+                
+                // note: constrain process variables to same criteria as tasks
+                createProcessCriteria(variables, query);
                 
                 // retrieve list of processes matching specified variables
                 List<ProcessInstance> processList = variables.list();
@@ -1489,6 +1466,49 @@ public class JBPMEngine extends BPMEngine
         }
         
         return task;
+    }
+    
+    /**
+     * Create process-specific query criteria
+     * 
+     * @param root
+     * @param query
+     * @return
+     */
+    private Criteria createProcessCriteria(Criteria root, WorkflowTaskQuery query)
+    {
+        Criteria process = null;
+        
+        // process active?
+        if (query.isActive() != null)
+        {
+            process = (process == null) ? root.createCriteria("processInstance") : process;
+            if (query.isActive())
+            {
+                process.add(Restrictions.isNull("end"));
+            }
+            else
+            {
+                process.add(Restrictions.isNotNull("end"));
+            }
+        }
+        
+        // process id
+        if (query.getProcessId() != null)
+        {
+            process = (process == null) ? root.createCriteria("processInstance") : process;
+            process.add(Restrictions.eq("id", getJbpmId(query.getProcessId())));
+        }
+        
+        // process name
+        if (query.getProcessName() != null)
+        {
+            process = (process == null) ? root.createCriteria("processInstance") : process;
+            Criteria processDef = process.createCriteria("processDefinition");
+            processDef.add(Restrictions.eq("name", query.getProcessName().toPrefixString(namespaceService)));
+        }
+        
+        return process;
     }
     
     /**

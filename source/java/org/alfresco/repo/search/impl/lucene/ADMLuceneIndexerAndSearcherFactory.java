@@ -42,15 +42,15 @@ import org.alfresco.service.namespace.NamespaceService;
  */
 public class ADMLuceneIndexerAndSearcherFactory extends AbstractLuceneIndexerAndSearcherFactory implements SupportsBackgroundIndexing
 {
-    private DictionaryService dictionaryService;
+    protected DictionaryService dictionaryService;
 
     private NamespaceService nameSpaceService;
 
-    private NodeService nodeService;
+    protected NodeService nodeService;
 
-    private FullTextSearchIndexer fullTextSearchIndexer;
+    protected FullTextSearchIndexer fullTextSearchIndexer;
 
-    private ContentService contentService;
+    protected ContentService contentService;
 
     /**
      * Set the dictinary service

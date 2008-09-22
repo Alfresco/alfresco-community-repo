@@ -34,6 +34,7 @@ public class ADMLuceneUnIndexedIndexAndSearcherFactory extends ADMLuceneIndexerA
     {
         ADMLuceneNoActionIndexerImpl indexer = ADMLuceneIndexerImpl.getNoActionIndexer(storeRef, deltaId, this);
         indexer.setNodeService(nodeService);
+        indexer.setTenantService(tenantService);
         indexer.setDictionaryService(dictionaryService);
         // indexer.setLuceneIndexLock(luceneIndexLock);
         indexer.setFullTextSearchIndexer(fullTextSearchIndexer);

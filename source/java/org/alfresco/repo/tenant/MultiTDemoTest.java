@@ -62,13 +62,16 @@ import org.alfresco.util.ApplicationContextHelper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-public class MultiTDemoSystemTest extends TestCase
+public class MultiTDemoTest extends TestCase
 {
-    private static Log logger = LogFactory.getLog(MultiTDemoSystemTest.class);
+    private static Log logger = LogFactory.getLog(MultiTDemoTest.class);
 
-    private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
-
+    private static ApplicationContext ctx =new ClassPathXmlApplicationContext(
+            new String[] {ApplicationContextHelper.CONFIG_LOCATIONS[0], "classpath:tenant/mt-*context.xml"}
+            );
+    
     private NodeService nodeService;
     private AuthenticationService authenticationService;
     private PersonService personService;
@@ -105,7 +108,7 @@ public class MultiTDemoSystemTest extends TestCase
     public static StoreRef SPACES_STORE = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
 
     
-    public MultiTDemoSystemTest()
+    public MultiTDemoTest()
     {
     }
 
@@ -559,7 +562,7 @@ public class MultiTDemoSystemTest extends TestCase
     public static void main(String args[]) 
     {
         System.out.println(new Date());
-        junit.textui.TestRunner.run(MultiTDemoSystemTest.class);
+        junit.textui.TestRunner.run(MultiTDemoTest.class);
         System.out.println(new Date());
     }
      

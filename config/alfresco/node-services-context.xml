@@ -42,8 +42,8 @@
       </property>
       <property name="interceptorNames">
          <list>
-            <value>multiTNodeServiceInterceptor</value>
             <value>nodeRefPropertyInterceptor</value>
+            <value>multiTNodeServiceInterceptor</value>
             <value>mlPropertyInterceptor</value>
          </list>
       </property>

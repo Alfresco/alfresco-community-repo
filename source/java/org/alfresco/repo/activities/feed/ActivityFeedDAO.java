@@ -26,6 +26,7 @@ package org.alfresco.repo.activities.feed;
 
 import java.util.Date;
 
+import org.alfresco.util.ISO8601DateFormat;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -161,7 +162,7 @@ public class ActivityFeedDAO
         JSONObject jo = new JSONObject();
         
         jo.put("postUserId", postUserId);
-        jo.put("postDate", postDate);
+        jo.put("postDate", ISO8601DateFormat.format(postDate));
         if (feedUserId != null) { jo.put("feedUserId", feedUserId); } // eg. site feed
         jo.put("siteNetwork", siteNetwork);
         jo.put("activityType", activityType);

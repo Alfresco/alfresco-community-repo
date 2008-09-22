@@ -269,10 +269,6 @@ public class AuthenticationTest extends TestCase
         authenticationService.authenticate("Andy_ Woof/Domain", "".toCharArray());
         assertEquals("Andy_ Woof/Domain", authenticationService.getCurrentUserName());
 
-        authenticationService.createAuthentication("Andy `\u00ac\u00a6!\u00a3$%^&*()-_=+\t\n\u0000[]{};'#:@~,./<>?\\|", "".toCharArray());
-        authenticationService.authenticate("Andy `\u00ac\u00a6!\u00a3$%^&*()-_=+\t\n\u0000[]{};'#:@~,./<>?\\|", "".toCharArray());
-        assertEquals("Andy `\u00ac\u00a6!\u00a3$%^&*()-_=+\t\n\u0000[]{};'#:@~,./<>?\\|", authenticationService.getCurrentUserName());
-
         if (! tenantService.isEnabled())
         {
             authenticationService.createAuthentication("Andy `\u00ac\u00a6!\u00a3$%^&*()-_=+\t\n\u0000[]{};'#:@~,./<>?\\|", "".toCharArray());

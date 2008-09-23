@@ -1,6 +1,10 @@
 <import resource="classpath:alfresco/templates/webscripts/org/alfresco/repository/requestutils.lib.js">
 <import resource="classpath:alfresco/templates/webscripts/org/alfresco/repository/discussions/topicpost.lib.js">
 
+const ASPECT_SYNDICATION = "cm:syndication";
+const PROP_PUBLISHED = "cm:published";
+const PROP_UPDATED = "cm:updated";
+
 /**
  * Updates the passed forum post node.
  * @param topic the topic node if the post is the top level post
@@ -30,16 +34,23 @@ function updatePost(topic, post)
    }
    
    // update the topic title
-   post.properties.title = title;
+   post.properties["cm:title"] = title;
+
+   // make sure the syndication aspect has been added
+   if (! post.hasAspect(ASPECT_SYNDICATION))
+   {
+      var params = [];
+      params[PROP_PUBLISHED] = new Date();
+      params[PROP_UPDATED] = params[PROP_PUBLISHED];
+      post.addAspect(ASPECT_SYNDICATION, params);
+   }
+   else
+   {
+      post.properties[PROP_UPDATED] = new Date();
+   }
    post.mimetype = "text/html";
    post.content = content;
    post.save();
-   
-   // add the content updated aspect
-   var now = new Date();
-   var props = new Array();
-   props["cm:contentupdatedate"] = now;
-   post.addAspect("cm:contentupdated", props);
    
    // Only set the tags if it is a topic post
    // as we currently don't support individual post tagging

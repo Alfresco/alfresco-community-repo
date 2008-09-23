@@ -12,12 +12,12 @@ function getBlogPostList(node, index, count)
    var luceneQuery = " +TYPE:\"{http://www.alfresco.org/model/content/1.0}content\"" +
                        " +PATH:\"" + node.qnamePath + "/*\" ";
 
-   // add the drafts part
-   luceneQuery += "+ASPECT:\"{http://www.alfresco.org/model/blogintegration/1.0}released\" " +
-                  "+@cm\\:creator:\"" + person.properties.userName + "\"";
+   // exclude drafts
+   luceneQuery += " +ISNOTNULL:\"{http://www.alfresco.org/model/content/1.0}published\" " +
+                  " +@cm\\:creator:\"" + person.properties.userName + "\"";
 
 
-   var sortAttribute = "@{http://www.alfresco.org/model/blogintegration/1.0}released";
+   var sortAttribute = "@{http://www.alfresco.org/model/content/1.0}published";
 
    // get the data
    return getPagedResultsDataByLuceneQuery(node, luceneQuery, sortAttribute, false, index, count, getBlogPostData);

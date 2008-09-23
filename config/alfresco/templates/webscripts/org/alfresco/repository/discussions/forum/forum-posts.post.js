@@ -57,6 +57,11 @@ function createPost(forumNode)
    contentNode.content = content;
    contentNode.save();
 
+   // add the cm:syndication aspect
+   var props = new Array();
+   props["cm:published"] = new Date();
+   contentNode.addAspect("cm:syndication", props);
+
    // add the tags to the topic node for now
    topicNode.tags = tags;
 

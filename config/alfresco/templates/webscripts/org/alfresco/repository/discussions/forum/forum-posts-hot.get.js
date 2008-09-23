@@ -21,7 +21,7 @@ function getHotTopicPostList(node, index, count)
    var luceneQuery = " +TYPE:\"{http://www.alfresco.org/model/forum/1.0}post\"" +
                  " +PATH:\"" + node.qnamePath + "/*/*\"" +
                  " +ASPECT:\"cm:referencing\"";
-   var sortAttribute = "@{http://www.alfresco.org/model/content/1.0}created";
+   var sortAttribute = "@{http://www.alfresco.org/model/content/1.0}published";
    var posts = search.luceneSearch(node.nodeRef.storeRef.toString(), luceneQuery, sortAttribute, false);
 
    // check how many posts we check in the result set 

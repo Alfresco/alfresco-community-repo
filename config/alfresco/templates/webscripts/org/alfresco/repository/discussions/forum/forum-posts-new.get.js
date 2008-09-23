@@ -16,7 +16,7 @@ function getTopicPostList(node, numdays, index, count)
    var luceneQuery = " +TYPE:\"{http://www.alfresco.org/model/forum/1.0}topic\"" +
                      " +PATH:\"" + node.qnamePath + "/*\" " +
                      getCreationDateRangeQuery(fromDate, null);
-   var sortAttribute = "@{http://www.alfresco.org/model/content/1.0}created";
+   var sortAttribute = "@{http://www.alfresco.org/model/content/1.0}published";
   
    // get the data
    return getPagedResultsDataByLuceneQuery(node, luceneQuery, sortAttribute, false, index, count, getTopicPostData);

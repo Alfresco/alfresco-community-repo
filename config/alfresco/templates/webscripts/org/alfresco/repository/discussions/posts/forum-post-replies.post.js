@@ -2,6 +2,9 @@
 <import resource="classpath:alfresco/templates/webscripts/org/alfresco/repository/nodenameutils.lib.js">
 <import resource="classpath:alfresco/templates/webscripts/org/alfresco/repository/discussions/topicpost.lib.js">
 
+const ASPECT_SYNDICATION = "cm:syndication";
+const PROP_PUBLISHED = "cm:published";
+
 /**
  * Creates a post inside the passed forum node.
  */
@@ -26,6 +29,11 @@ function createPostReplyImpl(topicNode, parentPostNode)
    postNode.properties.title = title;
    postNode.content = content;
    postNode.save();
+   
+   // add the cm:syndication aspect
+   var props = new Array();
+   props[PROP_PUBLISHED] = new Date();
+   postNode.addAspect(ASPECT_SYNDICATION, props);
    
    // link it to the parent post
    postNode.addAspect("cm:referencing");

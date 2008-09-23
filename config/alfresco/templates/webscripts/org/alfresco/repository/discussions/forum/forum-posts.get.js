@@ -10,7 +10,7 @@ function getTopicPostList(node, tag, index, count)
    // query information
    var luceneQuery = " +TYPE:\"{http://www.alfresco.org/model/forum/1.0}topic\"" +
                        " +PATH:\"" + node.qnamePath + "/*\" ";
-   var sortAttribute = "@{http://www.alfresco.org/model/content/1.0}created";
+   var sortAttribute = "@{http://www.alfresco.org/model/content/1.0}published";
      
    // is a tag selected?
    if (tag != null)

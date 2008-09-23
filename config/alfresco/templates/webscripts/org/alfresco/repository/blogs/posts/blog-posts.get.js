@@ -13,11 +13,11 @@ function getBlogPostList(node, fromDate, toDate, tag, index, count)
                      " +PATH:\"" + node.qnamePath + "/*\"";
                        
    // include all published + my drafts
-   luceneQuery += " ((" +
-                    " -ASPECT:\"{http://www.alfresco.org/model/blogintegration/1.0}released\" " +
-                    "+@cm\\:creator:\"" + person.properties.userName + "\"" +
+   luceneQuery += " +((" +
+                    " -ISNOTNULL:\"{http://www.alfresco.org/model/content/1.0}published\" " +
+                    " +@cm\\:creator:\"" + person.properties.userName + "\"" +
                    ") OR (" +
-                    " +ASPECT:\"{http://www.alfresco.org/model/blogintegration/1.0}released\" " +
+                    " +ISNOTNULL:\"{http://www.alfresco.org/model/content/1.0}published\" " +
                    ")) ";
                        
    // date query ?
@@ -32,7 +32,7 @@ function getBlogPostList(node, fromDate, toDate, tag, index, count)
       luceneQuery += " +PATH:\"/cm:taggable/cm:" + search.ISO9075Encode(tag) + "/member\" ";
    }
 
-   var sortAttribute = "@{http://www.alfresco.org/model/blogintegration/1.0}released";
+   var sortAttribute = "@{http://www.alfresco.org/model/content/1.0}published";
 
    // get the data
    return getPagedResultsDataByLuceneQuery(node, luceneQuery, sortAttribute, false, index, count, getBlogPostData);

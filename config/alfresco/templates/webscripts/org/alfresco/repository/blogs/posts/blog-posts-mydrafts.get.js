@@ -10,11 +10,11 @@ function getBlogPostList(node, index, count)
 {
    // query information
    var luceneQuery = " +TYPE:\"{http://www.alfresco.org/model/content/1.0}content\" " +
-                       "+PATH:\"" + node.qnamePath + "/*\" ";
+                     " +PATH:\"" + node.qnamePath + "/*\" ";
                        
    // add the drafts part
-   luceneQuery += "-ASPECT:\"{http://www.alfresco.org/model/blogintegration/1.0}released\" " +
-                  "+@cm\\:creator:\"" + person.properties.userName + "\"";
+   luceneQuery += " -ISNOTNULL:\"{http://www.alfresco.org/model/content/1.0}published\" " +
+                  " +@cm\\:creator:\"" + person.properties.userName + "\"";
 
    var sortAttribute = "@{http://www.alfresco.org/model/content/1.0}created";
 

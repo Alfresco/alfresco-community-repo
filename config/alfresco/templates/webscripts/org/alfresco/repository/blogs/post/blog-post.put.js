@@ -8,14 +8,14 @@ function updateBlogPostDraftMode(postNode)
 {
    // make sure the user doesn't try to put a non-draft
    // post back into draft node
-   var currentDraft = ! postNode.hasAspect("blg:released");
+   var currentDraft = (postNode.properties[PROP_PUBLISHED] == undefined);
    var isDraft = json.has("draft") && json.get("draft").toString() == "true";
    
    // requested draft, previously non-draft: throw an exception
    if (isDraft && ! currentDraft)
    {
        // set an error
-      status.setCode(status.STATUS_BAD_REQUEST, "Cannot put a released post back into draft mode!");
+      status.setCode(status.STATUS_BAD_REQUEST, "Cannot put a published post back into draft mode");
       return null;
    }
    
@@ -53,7 +53,7 @@ function updateBlogPost(postNode)
    }
    
    // update the node
-   postNode.properties.title = title;
+   postNode.properties["cm:title"] = title;
    postNode.mimetype = "text/html";
    postNode.content = content
    postNode.tags = tags;

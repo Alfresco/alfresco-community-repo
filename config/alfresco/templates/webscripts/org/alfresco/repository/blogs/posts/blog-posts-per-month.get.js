@@ -45,8 +45,8 @@ function getBlogPostMonths(node)
    // query information
    var luceneQuery = " +TYPE:\"{http://www.alfresco.org/model/content/1.0}content\"" +
                      " +PATH:\"" + node.qnamePath + "/*\" " +
-                     " +ASPECT:\"{http://www.alfresco.org/model/blogintegration/1.0}released\" ";
-   var sortAttribute = "@{http://www.alfresco.org/model/blogintegration/1.0}released";
+                     " +ISNOTNULL:\"{http://www.alfresco.org/model/content/1.0}published\" ";
+   var sortAttribute = "@{http://www.alfresco.org/model/content/1.0}published";
    nodes = search.luceneSearch(node.nodeRef.storeRef.toString(), luceneQuery, sortAttribute, true);
    
    // will hold the months information

@@ -30,14 +30,14 @@ function findPostNode(node)
 }
 
  
- /** Returns the topic posts for a topic, ordered by creation date.
+/** Returns the posts of a topic, ordered by creation date.
  * We use this for two things: To find the root node and the last reply
  */
 function getOrderedPosts(topic)
 {
    var query = " +TYPE:\"{http://www.alfresco.org/model/forum/1.0}post\"" +
                " +PATH:\"" + topic.qnamePath + "/*\" ";
-   var sortAttribute = "@{http://www.alfresco.org/model/content/1.0}created";
+   var sortAttribute = "@{http://www.alfresco.org/model/content/1.0}published";
    return search.luceneSearch(topic.nodeRef.storeRef.toString(), query, sortAttribute, true) ;
 }
 

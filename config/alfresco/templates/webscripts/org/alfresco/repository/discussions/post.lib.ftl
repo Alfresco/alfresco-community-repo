@@ -61,9 +61,11 @@
    "title" : "${(post.properties.title!"")}",
    "createdOn" : "${post.properties.created?string("MMM dd yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
    "modifiedOn" : "${post.properties.modified?string("MMM dd yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
-   "isUpdated" : ${post.hasAspect("cm:contentupdated")?string},
-   <#if (post.hasAspect("cm:contentupdated"))>
-      "updatedOn" : "${post.properties["cm:contentupdatedate"]?string("MMM dd yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
+   <#if (post.properties["cm:updated"]??)>
+   "isUpdated" : true,
+   "updatedOn" : "${post.properties["cm:updated"]?string("MMM dd yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
+   <#else>
+   "isUpdated" : false,   
    </#if>
    <#if postData.author??>
       <@renderPerson person=postData.author fieldName="author" />

@@ -1,40 +1,32 @@
 <import resource="classpath:alfresco/templates/webscripts/org/alfresco/repository/comments/comments.lib.js">
 
-const ASPECT_RELEASED = "blg:released";
-const PROP_RELEASED = "blg:released";
-const ASPECT_UPDATED = "cm:contentupdated";
-const PROP_UPDATED = "cm:contentupdatedate";
+const ASPECT_SYNDICATION = "cm:syndication";
+const PROP_PUBLISHED = "cm:published";
+const PROP_UPDATED = "cm:updated";
 
 function setOrUpdateReleasedAndUpdatedDates(node)
 {
-   // check whether we already got the date tracking aspect,
-   // in this case we got an update
-   if (node.hasAspect(ASPECT_RELEASED))
+   // make sure the syndication aspect has been added
+   if (! node.hasAspect(ASPECT_SYNDICATION))
    {
-      if (node.hasAspect(ASPECT_UPDATED))
-      {
-         // just update the modified date
-         node.properties[PROP_UPDATED] = new Date();
-         node.save();
-      }
-      else
-      {
-         // add the updated aspect
-         var props = new Array();
-         props[PROP_UPDATED] = new Date();
-         node.addAspect(ASPECT_UPDATED, props);
-      }
+      node.addAspect(ASPECT_SYNDICATION, new Array());
+   }
+   
+   // (re-)enable permission inheritance which got disable for draft posts
+   node.setInheritsPermissions(true);
+   
+   // check whether the published date has been set
+   if (node.properties[PROP_PUBLISHED] == undefined)
+   {
+      // set the published date
+      node.properties[PROP_PUBLISHED] = new Date();
+      node.save();
    }
    else
    {
-      // attach the released aspect
-      var props = new Array();
-      var now = new Date();
-      props[PROP_RELEASED] = now;
-      node.addAspect(ASPECT_RELEASED, props);
-      
-      // re-enable permission inheritance which got disable for the draft
-      node.setInheritsPermissions(true);
+      // set/update the updated date
+      node.properties[PROP_UPDATED] = new Date();
+      node.save();
    }
 }
 
@@ -48,31 +40,34 @@ function getBlogPostData(node)
    data.author = people.getPerson(node.properties["cm:creator"]);
    data.commentCount = getCommentsCount(node);
    
+   // is the post published
+   var isPublished = (node.properties[PROP_PUBLISHED] != undefined);
+   if (isPublished)
+   {
+      data.releasedDate = node.properties[PROP_PUBLISHED];
+   }
+   
    // draft
-   data.isDraft = ! node.hasAspect(ASPECT_RELEASED);
+   data.isDraft = ! isPublished;
    
    // set the isUpdated flag
-   data.isUpdated = node.hasAspect(ASPECT_UPDATED);
-
-   // fetch all available dates
-   data.createdDate = node.properties["cm:created"];
-   data.modifiedDate = node.properties["cm:modified"];
-   
-   if (node.hasAspect(ASPECT_RELEASED))
-   {
-      data.releasedDate = node.properties[PROP_RELEASED];
-   }
-   if (node.hasAspect(ASPECT_UPDATED))
+   var isUpdated = (node.properties[PROP_UPDATED] != undefined);
+   data.isUpdated = isUpdated;
+   if (isUpdated)
    {
       data.updatedDate = node.properties[PROP_UPDATED];
    }
    
+   // fetch standard created/modified dates
+   data.createdDate = node.properties["cm:created"];
+   data.modifiedDate = node.properties["cm:modified"];
+   
    // does the external post require an update?
-   if (node.hasAspect(ASPECT_RELEASED) && (node.properties["blg:lastUpdate"] != undefined))
+   if (isPublished && (node.properties["blg:lastUpdate"] != undefined))
    {
       // we either use the release or updated date
-      var modifiedDate = data.releaseDate;
-      if (data.updatedDate != undefined)
+      var modifiedDate = data.releasedDate;
+      if (isUpdated)
       {
          modifiedDate = data.updatedDate;
       }

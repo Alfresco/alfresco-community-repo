@@ -10,9 +10,9 @@
     <!-- jdbc connection properties -->
     <property name="hibernate.cache.provider_class">org.alfresco.repo.cache.InternalEhCacheManagerFactoryBean</property>
     <property name="hibernate.cache.use_second_level_cache">true</property>
-    <property name="hibernate.dialect">org.hibernate.dialect.HSQLDialect</property>
-    <property name="hibernate.connection.driver_class">org.hsqldb.jdbcDriver</property>
-    <property name="hibernate.connection.url">jdbc:hsqldb:mem:.;sql.enforce_strict_size=true</property>
+    <property name="hibernate.dialect">org.hibernate.dialect.DerbyDialect</property>
+    <property name="hibernate.connection.driver_class">org.apache.derby.jdbc.EmbeddedDriver</property>
+    <property name="hibernate.connection.url">jdbc:derby:./JBPM;create=true</property>
     <property name="hibernate.connection.username">sa</property>
     <property name="hibernate.connection.password"></property>
         

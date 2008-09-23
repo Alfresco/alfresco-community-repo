@@ -928,14 +928,16 @@
          </associations>
       </aspect>
       
-      <aspect name="cm:contentupdated">
-         <title>Content updated</title>
+      <aspect name="cm:syndication">
+         <title>Content syndication</title>
          <properties>
-            <!-- Last updated timestamp of node "content". -->
-            <property name="cm:contentupdatedate">
-               <title>Last updated</title>
+            <property name="cm:published">
+               <title>Published</title>
                <type>d:datetime</type>
-               <mandatory>true</mandatory>
+            </property>
+            <property name="cm:updated">
+               <title>Updated</title>
+               <type>d:datetime</type>
             </property>
          </properties>
       </aspect>

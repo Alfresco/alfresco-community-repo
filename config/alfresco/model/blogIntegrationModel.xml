@@ -121,19 +121,6 @@
             </association>
          </associations>
    	  </aspect>
-     
-
-      <aspect name="blg:released">
-         <title>Release date</title>
-         <properties>
-         	<!-- Released = not a draft anymore -->
-            <property name="blg:released">
-               <title>Post released</title>
-               <type>d:datetime</type>
-               <mandatory>true</mandatory>
-            </property>
-         </properties>
-      </aspect>
 
    </aspects>
    

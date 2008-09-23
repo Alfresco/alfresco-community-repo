@@ -11,17 +11,20 @@
 
     <jaxws:endpoint address="/RepositoryService" implementor="#dmRepositoryService" implementorClass="org.alfresco.repo.cmis.ws.DMRepositoryServicePort">
         <jaxws:inInterceptors>
+            <ref local="logInbound" />
             <ref local="saajInInterceptor" />
             <ref local="wss4jInInterceptor" />
             <ref local="authenticationInterceptor" />
         </jaxws:inInterceptors>
 
         <jaxws:outInterceptors>
+            <ref local="logOutbound" />
             <ref local="saajOutInterceptor" />
             <ref local="wss4jOutInterceptor" />
         </jaxws:outInterceptors>
 
         <jaxws:outFaultInterceptors>
+            <ref local="logOutbound" />
             <ref local="saajOutInterceptor" />
             <ref local="wss4jOutInterceptor" />
         </jaxws:outFaultInterceptors>
@@ -29,25 +32,24 @@
         <jaxws:properties>
             <entry key="mtom-enabled" value="false" />
         </jaxws:properties>
-
-        <jaxws:features>
-            <bean class="org.apache.cxf.feature.LoggingFeature" />
-        </jaxws:features>
     </jaxws:endpoint>
 
     <jaxws:endpoint address="/NavigationService" implementor="#dmNavigationService" implementorClass="org.alfresco.repo.cmis.ws.DMNavigationServicePort">
         <jaxws:inInterceptors>
+            <ref local="logInbound" />
             <ref local="saajInInterceptor" />
-            <ref local="wss4jInInterceptor" />
+            <ref local="wss4jInInterceptor" />            
             <ref local="authenticationInterceptor" />
         </jaxws:inInterceptors>
 
         <jaxws:outInterceptors>
+            <ref local="logOutbound" />
             <ref local="saajOutInterceptor" />
             <ref local="wss4jOutInterceptor" />
         </jaxws:outInterceptors>
 
         <jaxws:outFaultInterceptors>
+            <ref local="logOutbound" />
             <ref local="saajOutInterceptor" />
             <ref local="wss4jOutInterceptor" />
         </jaxws:outFaultInterceptors>
@@ -55,25 +57,24 @@
         <jaxws:properties>
             <entry key="mtom-enabled" value="false" />
         </jaxws:properties>
-
-        <jaxws:features>
-            <bean class="org.apache.cxf.feature.LoggingFeature" />
-        </jaxws:features>
     </jaxws:endpoint>
 
     <jaxws:endpoint address="/ObjectService" implementor="#dmObjectService" implementorClass="org.alfresco.repo.cmis.ws.DMObjectServicePort">
         <jaxws:inInterceptors>
+            <ref local="logInbound" />
             <ref local="saajInInterceptor" />
             <ref local="wss4jInInterceptor" />
             <ref local="authenticationInterceptor" />
         </jaxws:inInterceptors>
 
         <jaxws:outInterceptors>
+            <ref local="logOutbound" />
             <ref local="saajOutInterceptor" />
             <ref local="wss4jOutInterceptorWithMTOM" />
         </jaxws:outInterceptors>
 
         <jaxws:outFaultInterceptors>
+            <ref local="logOutbound" />
             <ref local="saajOutInterceptor" />
             <ref local="wss4jOutInterceptor" />
         </jaxws:outFaultInterceptors>
@@ -81,10 +82,6 @@
         <jaxws:properties>
             <entry key="mtom-enabled" value="true" />
         </jaxws:properties>
-
-        <jaxws:features>
-            <bean class="org.apache.cxf.feature.LoggingFeature" />
-        </jaxws:features>
     </jaxws:endpoint>
 
     <bean id="dmRepositoryService" class="org.springframework.aop.framework.ProxyFactoryBean">
@@ -174,6 +171,10 @@
     </bean>
 
     <!-- ========================================================================================================= -->
+
+    <bean id="logInbound" class="org.apache.cxf.interceptor.LoggingInInterceptor"/>
+    
+    <bean id="logOutbound" class="org.apache.cxf.interceptor.LoggingOutInterceptor"/>
 
     <bean id="saajInInterceptor" class="org.apache.cxf.binding.soap.saaj.SAAJInInterceptor" />
 

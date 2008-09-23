@@ -377,7 +377,7 @@ public class StreamContent extends AbstractWebScript
         }
         
         // Stream the cotent
-        streamContentImpl(req, res, reader, attach, modified);        
+        streamContentImpl(req, res, reader, attach, modified, String.valueOf(modifiedSince));        
     }
 
     /**
@@ -422,7 +422,7 @@ public class StreamContent extends AbstractWebScript
         reader.setMimetype(mimetype);
         reader.setEncoding("UTF-8");
         
-        streamContentImpl(req, res, reader, attach, this.resouceFileModifiedDate);
+        streamContentImpl(req, res, reader, attach, this.resouceFileModifiedDate, String.valueOf(this.resouceFileModifiedDate.getTime()));
     }
     
     /**
@@ -435,7 +435,7 @@ public class StreamContent extends AbstractWebScript
      * @param modified
      * @throws IOException
      */
-    protected void streamContentImpl(WebScriptRequest req, WebScriptResponse res, ContentReader reader, boolean attach, Date modified)
+    protected void streamContentImpl(WebScriptRequest req, WebScriptResponse res, ContentReader reader, boolean attach, Date modified, String eTag)
         throws IOException
     {
         HttpServletRequest httpReq = ((WebScriptServletRequest)req).getHttpServletRequest();
@@ -477,6 +477,7 @@ public class StreamContent extends AbstractWebScript
         cache.setNeverCache(false);
         cache.setMustRevalidate(true);
         cache.setLastModified(modified);
+        cache.setETag(eTag);
         res.setCache(cache);
         
         // get the content and stream directly to the response output stream

@@ -108,9 +108,11 @@ public class MultiTNodeServiceInterceptor extends DelegatingIntroductionIntercep
             return invocation.proceed();
         }
 
+        String methodName = invocation.getMethod().getName();
+        
         if (logger.isDebugEnabled())
         {
-            logger.debug("Intercepting method " + invocation.getMethod().getName());
+            logger.debug("Intercepting method " + methodName);
         }
         
         Object[] args = invocation.getArguments();
@@ -162,8 +164,49 @@ public class MultiTNodeServiceInterceptor extends DelegatingIntroductionIntercep
         // Make the call
         Object ret = invocation.proceed();
         
-        // Convert the outbound value
-        ret = convertOutboundValue(ret);
+        if (methodName.equals("getStores"))
+        {
+            if ((ret == null) || (! (ret instanceof List)))
+            {
+                return null;
+            }
+            
+            List<StoreRef> rawValues = (List<StoreRef>)ret;
+            final List<StoreRef> convertedValues = new ArrayList<StoreRef>(rawValues.size());
+            
+            for (StoreRef ref : rawValues)
+            {
+                StoreRef storeRef = ref;
+                try
+                {
+                    if (tenantService.isEnabled())
+                    {
+                        String currentUser = AuthenticationUtil.getCurrentUserName();
+
+                        // MT: return tenant stores only (although for super System return all stores - as used by
+                        // ConfigurationChecker, IndexRecovery, IndexBackup etc)
+                        if ((currentUser == null) || (!currentUser.equals(AuthenticationUtil.getSystemUserName())))
+                        {
+                            tenantService.checkDomain(storeRef.getIdentifier());
+                            storeRef = tenantService.getBaseName(storeRef);
+                        }
+                    }
+                    
+                    convertedValues.add(storeRef);
+                }
+                catch (RuntimeException re)
+                {
+                    // deliberately ignore - stores in different domain will not be listed
+                }
+            }
+            
+            return convertedValues;
+        }
+        else
+        {
+            // Convert the outbound value
+            ret = convertOutboundValue(ret);
+        }
         
         // done
         return ret;

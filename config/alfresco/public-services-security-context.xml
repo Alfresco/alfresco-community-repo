@@ -41,7 +41,7 @@
     
     <bean id="permissionServiceImpl" class="org.alfresco.repo.security.permissions.impl.PermissionServiceImpl">
         <property name="nodeService">
-            <ref bean="dbNodeService" />
+            <ref bean="mtAwareNodeService" />
         </property>
         <property name="tenantService">
             <ref bean="tenantService"/>

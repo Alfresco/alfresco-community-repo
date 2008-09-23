@@ -102,7 +102,7 @@
 	     Unfinished, experimental, and probably ephemeral. -->
     <bean id="repoRemoteService" class="org.alfresco.repo.remote.RepoRemoteService">
         <property name="nodeService">
-        	<ref bean="dbNodeService"/>
+        	<ref bean="mtAwareNodeService"/>
         </property>
         <property name="fileFolderService">
             <ref bean="fileFolderService"/>

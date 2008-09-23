@@ -60,20 +60,17 @@ public class MultiTServiceImpl implements TenantService
     {
         this.tenantsCache = tenantsCache;
     }
-   
+    
     public NodeRef getName(NodeRef nodeRef)
     {
-		// Check that all the passed values are not null
-        ParameterCheck.mandatory("NodeRef", nodeRef);
+        if (nodeRef == null) { return null; }
 
         return new NodeRef(nodeRef.getStoreRef().getProtocol(), getName(nodeRef.getStoreRef().getIdentifier()), nodeRef.getId());
     }
     
     public NodeRef getName(NodeRef inNodeRef, NodeRef nodeRef)
     {
-        // Check that all the passed values are not null
-        ParameterCheck.mandatory("InNodeRef", inNodeRef);
-        ParameterCheck.mandatory("NodeRef", nodeRef);
+        if (inNodeRef == null || nodeRef == null) { return null; }
 
         int idx = inNodeRef.getStoreRef().getIdentifier().lastIndexOf(SEPARATOR);
         if (idx != -1)
@@ -87,16 +84,14 @@ public class MultiTServiceImpl implements TenantService
     
     public StoreRef getName(StoreRef storeRef)
     {
-        // Check that all the passed values are not null
-        ParameterCheck.mandatory("StoreRef", storeRef);
+        if (storeRef == null) { return null; }
         
         return new StoreRef(storeRef.getProtocol(), getName(storeRef.getIdentifier()));
     }
     
     public ChildAssociationRef getName(ChildAssociationRef childAssocRef)
     {
-        // Check that all the passed values are not null
-        ParameterCheck.mandatory("ChildAssocRef", childAssocRef);
+        if (childAssocRef == null) { return null; }
         
         return new ChildAssociationRef(
                 childAssocRef.getTypeQName(),
@@ -109,8 +104,7 @@ public class MultiTServiceImpl implements TenantService
     
     public AssociationRef getName(AssociationRef assocRef)
     {
-        // Check that all the passed values are not null
-        ParameterCheck.mandatory("assocRef", assocRef);
+        if (assocRef == null) { return null; }
         
         return new AssociationRef(
                 getName(assocRef.getSourceRef()),
@@ -121,10 +115,10 @@ public class MultiTServiceImpl implements TenantService
 
     public StoreRef getName(String username, StoreRef storeRef)
     {
-        // Check that all the passed values are not null
-        ParameterCheck.mandatory("StoreRef", storeRef);
+        if (storeRef == null) { return null; }
 
-        if (username != null) {
+        if (username != null) 
+        {
             int idx = username.lastIndexOf(SEPARATOR);
             if ((idx > 0) && (idx < (username.length()-1)))
             {
@@ -241,24 +235,21 @@ public class MultiTServiceImpl implements TenantService
       
     public NodeRef getBaseName(NodeRef nodeRef)
     { 
-        // Check that all the passed values are not null
-        ParameterCheck.mandatory("NodeRef", nodeRef);
+        if (nodeRef == null) { return null; }
 
         return new NodeRef(nodeRef.getStoreRef().getProtocol(), getBaseName(nodeRef.getStoreRef().getIdentifier()), nodeRef.getId());
     }
     
     public StoreRef getBaseName(StoreRef storeRef)
     {         
-        // Check that all the passed values are not null
-        ParameterCheck.mandatory("StoreRef", storeRef);
+        if (storeRef == null) { return null; }
         
         return new StoreRef(storeRef.getProtocol(), getBaseName(storeRef.getIdentifier()));
     } 
     
     public ChildAssociationRef getBaseName(ChildAssociationRef childAssocRef)
     {
-        // Check that all the passed values are not null
-        ParameterCheck.mandatory("ChildAssocRef", childAssocRef);
+        if (childAssocRef == null) { return null; }
         
         return new ChildAssociationRef(childAssocRef.getTypeQName(),
                 getBaseName(childAssocRef.getParentRef()),

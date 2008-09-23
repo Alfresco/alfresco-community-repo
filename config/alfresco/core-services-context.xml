@@ -741,7 +741,7 @@
             <ref bean="NodeService" />
         </property>
         <property name="dbNodeService">
-            <ref bean="dbNodeService" />
+            <ref bean="mtAwareNodeService" />
         </property>
         <property name="versionCounterService">
             <ref bean="versionCounterService" />
@@ -768,7 +768,7 @@
 
     <bean id="versionNodeService" class="org.alfresco.repo.version.Node2ServiceImpl">
         <property name="dbNodeService">
-            <ref bean="dbNodeService" />
+            <ref bean="mtAwareNodeService" />
         </property>
         <property name="dictionaryService">
             <ref bean="dictionaryService" />
@@ -777,7 +777,7 @@
     
     <bean id="versionMigrator" class="org.alfresco.repo.version.VersionMigrator" init-method="init">
         <property name="dbNodeService">
-            <ref bean="dbNodeService" />
+            <ref bean="mtAwareNodeService" />
         </property>
         <property name="versionNodeService">
             <ref bean="versionNodeService" />
@@ -1113,7 +1113,7 @@
     <!-- Audit -->
     <bean id="auditableAspect" class="org.alfresco.repo.audit.AuditableAspect" init-method="init">
         <property name="nodeService">
-            <ref bean="dbNodeService" />    <!-- bypass loads of interceptor layers -->
+            <ref bean="mtAwareNodeService" />    <!-- bypass loads of interceptor layers -->
         </property>
         <property name="policyComponent">
             <ref bean="policyComponent" />

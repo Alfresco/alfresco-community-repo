@@ -44,6 +44,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -213,6 +214,35 @@ public class MultiTDemoTest extends TestCase
         }   
     }
     
+    public void testLoginUsers() throws Throwable
+    {
+        logger.info("Login demo users");
+        
+        try
+        {
+            AuthenticationUtil.clearCurrentSecurityContext();
+            
+            for (final String tenantDomain : tenants)
+            {
+                loginLogoutUser(tenantService.getDomainUser(TEST_USER1, tenantDomain), "welcome");
+                
+                loginLogoutUser(tenantService.getDomainUser(TEST_USER2, tenantDomain), "welcome");
+                
+                if (tenantDomain.equals(TEST_TENANT_DOMAIN2))
+                {
+                    loginLogoutUser(tenantService.getDomainUser(TEST_USER3, tenantDomain), "welcome");
+                }
+            }
+        }   
+        catch (Throwable t)
+        {
+            StringWriter stackTrace = new StringWriter();
+            t.printStackTrace(new PrintWriter(stackTrace));
+            System.err.println(stackTrace.toString());
+            throw t;
+        }
+    }
+    
     public void testCreateGroups()
     {
         logger.info("Create demo groups");
@@ -355,6 +385,28 @@ public class MultiTDemoTest extends TestCase
         }
     }
 
+    public void testGetStores()
+    {
+        logger.info("Get tenant stores");
+        
+        // super tenant
+        assertTrue("Super tenant: ", (nodeService.getStores().size() >= 5));
+        
+        for (final String tenantDomain : tenants)
+        {        
+            String tenantAdminName = tenantService.getDomainUser(TenantService.ADMIN_BASENAME, tenantDomain);
+            
+            AuthenticationUtil.runAs(new RunAsWork<Object>()
+            {
+                public Object doWork() throws Exception
+                {
+                    assertEquals("Tenant: "+tenantDomain, 5, nodeService.getStores().size());
+                    
+                    return null;                      
+                }
+            }, tenantAdminName);
+        }
+    }
     
     private void createGroup(String shortName, String parentShortName)
     {
@@ -415,6 +467,26 @@ public class MultiTDemoTest extends TestCase
             
             logger.info("Created user " + userName);
         }
+    }
+    
+    private void loginLogoutUser(String username, String password)
+    {
+        // authenticate via the authentication service
+        authenticationService.authenticate(username, password.toCharArray());
+        
+        // set the user name as stored by the back end 
+        username = authenticationService.getCurrentUserName();
+        
+        NodeRef homeSpaceRef = (NodeRef)nodeService.getProperty(personService.getPerson(username), ContentModel.PROP_HOMEFOLDER);
+        
+        // check that the home space node exists - else user cannot login
+        if (nodeService.exists(homeSpaceRef) == false)
+        {
+           throw new InvalidNodeRefException(homeSpaceRef);
+        }
+        
+        // logout
+        authenticationService.clearCurrentSecurityContext();
     }
     
     private NodeRef getUserHomesNodeRef(StoreRef storeRef)

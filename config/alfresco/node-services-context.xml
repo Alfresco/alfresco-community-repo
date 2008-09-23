@@ -43,7 +43,6 @@
       <property name="interceptorNames">
          <list>
             <value>nodeRefPropertyInterceptor</value>
-            <value>multiTNodeServiceInterceptor</value>
             <value>mlPropertyInterceptor</value>
          </list>
       </property>
@@ -54,14 +53,30 @@
          <value>org.alfresco.service.cmr.repository.NodeService</value>
       </property>
       <property name="defaultBinding">
-         <ref bean="dbNodeService"></ref>
+         <ref bean="mtAwareNodeService"></ref>
       </property>
       <property name="redirectedProtocolBindings">
          <map>
-            <entry key="workspace"><ref bean="dbNodeService"></ref></entry>
+            <entry key="workspace"><ref bean="mtAwareNodeService"></ref></entry>
             <entry key="versionStore"><ref bean="versionNodeService"></ref></entry>
             <entry key="avm"><ref bean="avmNodeService"/></entry>
          </map>
+      </property>
+   </bean>
+   
+   <bean id="mtAwareNodeService" class="org.springframework.aop.framework.ProxyFactoryBean" >
+      <property name="targetName">
+         <value>dbNodeService</value>
+      </property>
+      <property name="proxyInterfaces">
+         <list>
+            <value>org.alfresco.service.cmr.repository.NodeService</value>
+         </list>
+      </property>
+      <property name="interceptorNames">
+         <list>
+            <value>multiTNodeServiceInterceptor</value>
+         </list>
       </property>
    </bean>
 

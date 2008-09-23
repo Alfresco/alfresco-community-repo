@@ -96,7 +96,7 @@
 <h:panelGroup id="props-panel-facets">
    <f:facet name="title">
       <r:permissionEvaluator value="#{DialogManager.bean.document}" allow="Write">
-         <a:actionLink id="titleLink1" value="#{msg.modify}" showLink="false" image="/images/icons/edit_properties.gif" action="dialog:editContentProperties" actionListener="#{DialogManager.bean.setupEditContext}" />
+         <a:actionLink id="titleLink1" value="#{msg.modify}" showLink="false" image="/images/icons/edit_properties.gif" action="#{DialogManager.bean.editContentProperties}" />
       </r:permissionEvaluator>
    </f:facet>
 </h:panelGroup>

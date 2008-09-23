@@ -234,11 +234,25 @@ public class DocumentDetailsDialog extends BaseDetailsBean implements  Navigatio
    }
 
    /**
-    * Adds the node to the dispatch context so that overridden dialogs can be picked up
+    * Fixes an issue reported in https://issues.alfresco.com/jira/browse/ETWOONE-92
+    * 
+    * @return Returns action 
     */
-   public void setupEditContext(ActionEvent event)
+   public String editContentProperties()
    {
-      this.navigator.setupDispatchContext(getDocument());
+       NodeRef nodeRef = getDocument().getNodeRef();
+       if (this.getNodeService().exists(nodeRef))
+       {
+           navigator.setupDispatchContext(getDocument());
+           return "dialog:editContentProperties";
+       }
+       else
+       {
+           Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
+               FacesContext.getCurrentInstance(), Repository.ERROR_NODEREF), new Object[] {nodeRef}) );
+           return "browse";
+       }
+       
    }
 
    /**

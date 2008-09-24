@@ -16,9 +16,9 @@
 <#macro addContent post>
 <#escape x as jsonUtils.encodeJSONString(x)>
    <#if (contentLength?? && contentLength > -1 && (post.content?length > contentLength))>
-      "content" : "${stringUtils.stripUnsafeHTML(post.content?substring(0, contentLength))}",
+      "content" : "${post.content?substring(0, contentLength)}",
    <#else>
-      "content" : "${stringUtils.stripUnsafeHTML(post.content)}",
+      "content" : "${post.content}",
    </#if>
 </#escape>
 </#macro>

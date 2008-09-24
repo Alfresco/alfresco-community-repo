@@ -10,7 +10,7 @@
          "editable" : "<#if page.hasPermission("Write")>true<#else>false</#if>",
          "title" : "<#if page.properties.title?exists>${page.properties.title}<#else>${page.name?replace("_", " ")}</#if>",
          <#-- Strip out any HTML tags -->
-         "text" : "${page.content?replace("</?[^>]+>", " ", "ir")}",
+         "text" : "${page.content}",
          "tags" : [
              <#list p.tags as tag>
                 "${tag}"<#if tag_has_next>,</#if>

@@ -18,9 +18,9 @@
 <#macro addContent item>
 <#escape x as jsonUtils.encodeJSONString(x)>
    <#if (contentLength?? && contentLength > -1 && (item.node.content?length > contentLength))>
-      "content" : "${stringUtils.stripUnsafeHTML(item.node.content?substring(0, contentLength))}",
+      "content" : "${item.node.content?substring(0, contentLength)}",
    <#else>
-      "content" : "${stringUtils.stripUnsafeHTML(item.node.content)}",
+      "content" : "${item.node.content}",
    </#if>
 </#escape>
 </#macro>

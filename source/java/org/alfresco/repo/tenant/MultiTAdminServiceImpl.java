@@ -200,7 +200,8 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
     public static final String PROTOCOL_STORE_ARCHIVE = "archive"; 
     public static final String STORE_BASE_ID_USER = "alfrescoUserStore";
     public static final String STORE_BASE_ID_SYSTEM = "system";
-    public static final String STORE_BASE_ID_VERSION = "lightWeightVersionStore";
+    public static final String STORE_BASE_ID_VERSION1 = "lightWeightVersionStore"; // deprecated
+    public static final String STORE_BASE_ID_VERSION2 = "version2Store";
     public static final String STORE_BASE_ID_SPACES = "SpacesStore";
        
     
@@ -338,8 +339,12 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
                         ImporterBootstrap systemImporterBootstrap = (ImporterBootstrap)ctx.getBean("systemBootstrap");
                         bootstrapSystemTenantStore(systemImporterBootstrap, tenantDomain);
 
+                        // deprecated
                         ImporterBootstrap versionImporterBootstrap = (ImporterBootstrap)ctx.getBean("versionBootstrap");
                         bootstrapVersionTenantStore(versionImporterBootstrap, tenantDomain);
+                        
+                        ImporterBootstrap version2ImporterBootstrap = (ImporterBootstrap)ctx.getBean("version2Bootstrap");
+                        bootstrapVersionTenantStore(version2ImporterBootstrap, tenantDomain);
 
                         ImporterBootstrap spacesArchiveImporterBootstrap = (ImporterBootstrap)ctx.getBean("spacesArchiveBootstrap");
                         bootstrapSpacesArchiveTenantStore(spacesArchiveImporterBootstrap, tenantDomain);
@@ -648,7 +653,8 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
                 // delete tenant-specific stores
                 nodeService.deleteStore(tenantService.getName(tenantAdminUser, new StoreRef(PROTOCOL_STORE_WORKSPACE, STORE_BASE_ID_SPACES)));
                 nodeService.deleteStore(tenantService.getName(tenantAdminUser, new StoreRef(PROTOCOL_STORE_ARCHIVE, STORE_BASE_ID_SPACES)));
-                nodeService.deleteStore(tenantService.getName(tenantAdminUser, new StoreRef(PROTOCOL_STORE_WORKSPACE, STORE_BASE_ID_VERSION)));
+                nodeService.deleteStore(tenantService.getName(tenantAdminUser, new StoreRef(PROTOCOL_STORE_WORKSPACE, STORE_BASE_ID_VERSION1)));
+                nodeService.deleteStore(tenantService.getName(tenantAdminUser, new StoreRef(PROTOCOL_STORE_WORKSPACE, STORE_BASE_ID_VERSION2)));
                 nodeService.deleteStore(tenantService.getName(tenantAdminUser, new StoreRef(PROTOCOL_STORE_SYSTEM, STORE_BASE_ID_SYSTEM)));
                 nodeService.deleteStore(tenantService.getName(tenantAdminUser, new StoreRef(PROTOCOL_STORE_USER, STORE_BASE_ID_USER)));
                         
@@ -701,7 +707,7 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
     }
 
     private void importBootstrapSystemTenantStore(String tenantDomain, File directorySource)
-    {     
+    {
         // Import Bootstrap (restore) Tenant-Specific Version Store
         Properties bootstrapView = new Properties();
         bootstrapView.put("path", "/");
@@ -720,7 +726,8 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
     private void bootstrapSystemTenantStore(ImporterBootstrap systemImporterBootstrap, String tenantDomain)
     {
         // Bootstrap Tenant-Specific System Store
-        StoreRef bootstrapStoreRef = new StoreRef(PROTOCOL_STORE_SYSTEM, tenantService.getName(STORE_BASE_ID_SYSTEM, tenantDomain));
+        StoreRef bootstrapStoreRef = systemImporterBootstrap.getStoreRef();
+        bootstrapStoreRef = new StoreRef(bootstrapStoreRef.getProtocol(), tenantService.getName(bootstrapStoreRef.getIdentifier(), tenantDomain));
         systemImporterBootstrap.setStoreUrl(bootstrapStoreRef.toString());
     
         // override default property (workspace://SpacesStore)        
@@ -734,7 +741,7 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
     }
     
     private void importBootstrapUserTenantStore(String tenantDomain, File directorySource)
-    {     
+    {
         // Import Bootstrap (restore) Tenant-Specific User Store
         Properties bootstrapView = new Properties();
         bootstrapView.put("path", "/");
@@ -751,9 +758,10 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
     }
     
     private void bootstrapUserTenantStore(ImporterBootstrap userImporterBootstrap, String tenantDomain, char[] tenantAdminRawPassword)
-    {     
+    {
         // Bootstrap Tenant-Specific User Store
-        StoreRef bootstrapStoreRef = new StoreRef(PROTOCOL_STORE_USER, tenantService.getName(STORE_BASE_ID_USER, tenantDomain));
+        StoreRef bootstrapStoreRef = userImporterBootstrap.getStoreRef();
+        bootstrapStoreRef = new StoreRef(bootstrapStoreRef.getProtocol(), tenantService.getName(bootstrapStoreRef.getIdentifier(), tenantDomain));
         userImporterBootstrap.setStoreUrl(bootstrapStoreRef.toString());
     
         // override admin username property
@@ -772,11 +780,11 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
     }
 
     private void importBootstrapVersionTenantStore(String tenantDomain, File directorySource)
-    {     
+    {
         // Import Bootstrap (restore) Tenant-Specific Version Store
         Properties bootstrapView = new Properties();
         bootstrapView.put("path", "/");
-        bootstrapView.put("location", directorySource.getPath()+"/"+tenantDomain+"_versions.acp");
+        bootstrapView.put("location", directorySource.getPath()+"/"+tenantDomain+"_versions2.acp");
 
         List<Properties> bootstrapViews = new ArrayList<Properties>(1);
         bootstrapViews.add(bootstrapView);
@@ -791,7 +799,8 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
     private void bootstrapVersionTenantStore(ImporterBootstrap versionImporterBootstrap, String tenantDomain)
     {
         // Bootstrap Tenant-Specific Version Store
-        StoreRef bootstrapStoreRef = new StoreRef(PROTOCOL_STORE_WORKSPACE, tenantService.getName(STORE_BASE_ID_VERSION, tenantDomain));
+        StoreRef bootstrapStoreRef = versionImporterBootstrap.getStoreRef();
+        bootstrapStoreRef = new StoreRef(bootstrapStoreRef.getProtocol(), tenantService.getName(bootstrapStoreRef.getIdentifier(), tenantDomain));
         versionImporterBootstrap.setStoreUrl(bootstrapStoreRef.toString());
     
         versionImporterBootstrap.bootstrap();
@@ -800,7 +809,7 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
     }
     
     private void importBootstrapSpacesArchiveTenantStore(String tenantDomain, File directorySource)
-    {     
+    {
         // Import Bootstrap (restore) Tenant-Specific Spaces Archive Store
         Properties bootstrapView = new Properties();
         bootstrapView.put("path", "/");
@@ -818,13 +827,14 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
     
     private void bootstrapSpacesArchiveTenantStore(ImporterBootstrap spacesArchiveImporterBootstrap, String tenantDomain)
     {
-        // Bootstrap Tenant-Specific Spaces Archive Store 
-        StoreRef bootstrapStoreRef = new StoreRef(PROTOCOL_STORE_ARCHIVE, tenantService.getName(STORE_BASE_ID_SPACES, tenantDomain));
+        // Bootstrap Tenant-Specific Spaces Archive Store
+        StoreRef bootstrapStoreRef = spacesArchiveImporterBootstrap.getStoreRef();
+        bootstrapStoreRef = new StoreRef(bootstrapStoreRef.getProtocol(), tenantService.getName(bootstrapStoreRef.getIdentifier(), tenantDomain));
         spacesArchiveImporterBootstrap.setStoreUrl(bootstrapStoreRef.toString());
     
         // override default property (archive://SpacesStore)       
         List<String> mustNotExistStoreUrls = new ArrayList<String>();
-        mustNotExistStoreUrls.add(new StoreRef(PROTOCOL_STORE_ARCHIVE, tenantService.getName(STORE_BASE_ID_SPACES, tenantDomain)).toString());
+        mustNotExistStoreUrls.add(bootstrapStoreRef.toString());
         spacesArchiveImporterBootstrap.setMustNotExistStoreUrls(mustNotExistStoreUrls);        
         
         spacesArchiveImporterBootstrap.bootstrap();
@@ -833,7 +843,7 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
     }
 
     private void importBootstrapSpacesModelsTenantStore(String tenantDomain, File directorySource)
-    {     
+    {
         // Import Bootstrap (restore) Tenant-Specific Spaces Store
         Properties bootstrapView = new Properties();
         bootstrapView.put("path", "/");
@@ -850,7 +860,7 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
     }
     
     private void importBootstrapSpacesTenantStore(String tenantDomain, File directorySource)
-    {     
+    {
         // Import Bootstrap (restore) Tenant-Specific Spaces Store
         Properties bootstrapView = new Properties();
         bootstrapView.put("path", "/");
@@ -871,8 +881,9 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
     
     private void bootstrapSpacesTenantStore(ImporterBootstrap spacesImporterBootstrap, String tenantDomain)
     {
-        // Bootstrap Tenant-Specific Spaces Store    
-        StoreRef bootstrapStoreRef = new StoreRef(PROTOCOL_STORE_WORKSPACE, tenantService.getName(STORE_BASE_ID_SPACES, tenantDomain));
+        // Bootstrap Tenant-Specific Spaces Store
+        StoreRef bootstrapStoreRef = spacesImporterBootstrap.getStoreRef();
+        bootstrapStoreRef = new StoreRef(bootstrapStoreRef.getProtocol(), tenantService.getName(bootstrapStoreRef.getIdentifier(), tenantDomain));
         spacesImporterBootstrap.setStoreUrl(bootstrapStoreRef.toString());
     
         // override admin username property
@@ -1154,6 +1165,11 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
     public String getUserDomain(String username)
     {
         return tenantService.getUserDomain(username);
+    }
+    
+    public String getBaseNameUser(String username)
+    {
+        return tenantService.getBaseNameUser(username);
     }
     
     public String getDomainUser(String baseUsername, String tenantDomain)

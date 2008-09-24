@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -111,14 +111,17 @@ public interface TenantService extends TenantUserService
     /**
      * @return          the reference <b>without</b> the tenant-specific ID attached
      */
+    public AssociationRef getBaseName(AssociationRef assocRef);
+    
+    /**
+     * @return          the reference <b>without</b> the tenant-specific ID attached
+     */
     public String getBaseName(String name);
     
     /**
      * @return          the reference <b>without</b> the tenant-specific ID attached
      */
     public String getBaseName(String name, boolean forceIfNonTenant);
-    
-    public String getBaseNameUser(String name);
     
     public void checkDomainUser(String username);
     

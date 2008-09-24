@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -61,6 +61,9 @@ public class MultiTServiceImpl implements TenantService
         this.tenantsCache = tenantsCache;
     }
     
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.tenant.TenantService#getName(org.alfresco.service.cmr.repository.NodeRef)
+     */
     public NodeRef getName(NodeRef nodeRef)
     {
         if (nodeRef == null) { return null; }
@@ -68,6 +71,9 @@ public class MultiTServiceImpl implements TenantService
         return new NodeRef(nodeRef.getStoreRef().getProtocol(), getName(nodeRef.getStoreRef().getIdentifier()), nodeRef.getId());
     }
     
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.tenant.TenantService#getName(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef)
+     */
     public NodeRef getName(NodeRef inNodeRef, NodeRef nodeRef)
     {
         if (inNodeRef == null || nodeRef == null) { return null; }
@@ -82,6 +88,9 @@ public class MultiTServiceImpl implements TenantService
         return nodeRef;       
     }    
     
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.tenant.TenantService#getName(org.alfresco.service.cmr.repository.StoreRef)
+     */
     public StoreRef getName(StoreRef storeRef)
     {
         if (storeRef == null) { return null; }
@@ -89,6 +98,9 @@ public class MultiTServiceImpl implements TenantService
         return new StoreRef(storeRef.getProtocol(), getName(storeRef.getIdentifier()));
     }
     
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.tenant.TenantService#getName(org.alfresco.service.cmr.repository.ChildAssociationRef)
+     */
     public ChildAssociationRef getName(ChildAssociationRef childAssocRef)
     {
         if (childAssocRef == null) { return null; }
@@ -102,6 +114,9 @@ public class MultiTServiceImpl implements TenantService
                 childAssocRef.getNthSibling());
     }
     
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.tenant.TenantService#getName(org.alfresco.service.cmr.repository.AssociationRef)
+     */
     public AssociationRef getName(AssociationRef assocRef)
     {
         if (assocRef == null) { return null; }
@@ -109,10 +124,12 @@ public class MultiTServiceImpl implements TenantService
         return new AssociationRef(
                 getName(assocRef.getSourceRef()),
                 assocRef.getTypeQName(),
-                getName(assocRef.getTargetRef())
-                );
+                getName(assocRef.getTargetRef()));
     }
 
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.tenant.TenantService#getName(java.lang.String, org.alfresco.service.cmr.repository.StoreRef)
+     */
     public StoreRef getName(String username, StoreRef storeRef)
     {
         if (storeRef == null) { return null; }
@@ -157,6 +174,9 @@ public class MultiTServiceImpl implements TenantService
         return name;          
     }
     
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.tenant.TenantService#getName(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
+     */
     public QName getName(NodeRef inNodeRef, QName name)
     {
         // Check that all the passed values are not null
@@ -198,6 +218,9 @@ public class MultiTServiceImpl implements TenantService
         return name;  
     }
 
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.tenant.TenantService#getName(java.lang.String)
+     */
     public String getName(String name)
     {
         // Check that all the passed values are not null
@@ -227,12 +250,18 @@ public class MultiTServiceImpl implements TenantService
         return name;          
     }
 
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.tenant.TenantService#getBaseName(org.alfresco.service.namespace.QName, boolean)
+     */
     public QName getBaseName(QName name, boolean forceForNonTenant)
     {  
         String baseNamespaceURI = getBaseName(name.getNamespaceURI(), forceForNonTenant);
         return QName.createQName(baseNamespaceURI, name.getLocalName());
     }
-      
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.tenant.TenantService#getBaseName(org.alfresco.service.cmr.repository.NodeRef)
+     */
     public NodeRef getBaseName(NodeRef nodeRef)
     { 
         if (nodeRef == null) { return null; }
@@ -240,6 +269,9 @@ public class MultiTServiceImpl implements TenantService
         return new NodeRef(nodeRef.getStoreRef().getProtocol(), getBaseName(nodeRef.getStoreRef().getIdentifier()), nodeRef.getId());
     }
     
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.tenant.TenantService#getBaseName(org.alfresco.service.cmr.repository.StoreRef)
+     */
     public StoreRef getBaseName(StoreRef storeRef)
     {         
         if (storeRef == null) { return null; }
@@ -247,11 +279,15 @@ public class MultiTServiceImpl implements TenantService
         return new StoreRef(storeRef.getProtocol(), getBaseName(storeRef.getIdentifier()));
     } 
     
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.tenant.TenantService#getBaseName(org.alfresco.service.cmr.repository.ChildAssociationRef)
+     */
     public ChildAssociationRef getBaseName(ChildAssociationRef childAssocRef)
     {
         if (childAssocRef == null) { return null; }
         
-        return new ChildAssociationRef(childAssocRef.getTypeQName(),
+        return new ChildAssociationRef(
+                childAssocRef.getTypeQName(),
                 getBaseName(childAssocRef.getParentRef()),
                 childAssocRef.getQName(),
                 getBaseName(childAssocRef.getChildRef()),
@@ -259,12 +295,31 @@ public class MultiTServiceImpl implements TenantService
                 childAssocRef.getNthSibling());
     }
     
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.tenant.TenantService#getBaseName(org.alfresco.service.cmr.repository.AssociationRef)
+     */
+    public AssociationRef getBaseName(AssociationRef assocRef)
+    {
+        if (assocRef == null) { return null; }
+        
+        return new AssociationRef(
+                getBaseName(assocRef.getSourceRef()),
+                assocRef.getTypeQName(),
+                getBaseName(assocRef.getTargetRef()));
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.tenant.TenantService#getBaseName(java.lang.String)
+     */
     public String getBaseName(String name)
     {  
         // get base name, but don't force for non-tenant user (e.g. super admin)
         return getBaseName(name, false);       
     }
     
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.tenant.TenantService#getBaseName(java.lang.String, boolean)
+     */
     public String getBaseName(String name, boolean forceForNonTenant)
     {   
         // Check that all the passed values are not null
@@ -293,6 +348,9 @@ public class MultiTServiceImpl implements TenantService
         return name;
     }
     
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.tenant.TenantService#getBaseNameUser(java.lang.String)
+     */
     public String getBaseNameUser(String name)
     {
         // can be null (e.g. for System user / during app ctx init)
@@ -307,6 +365,9 @@ public class MultiTServiceImpl implements TenantService
         return name;
     }
     
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.tenant.TenantService#checkDomainUser(java.lang.String)
+     */
     public void checkDomainUser(String username)
     {   
         // Check that all the passed values are not null        
@@ -333,6 +394,9 @@ public class MultiTServiceImpl implements TenantService
         }
     }
     
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.tenant.TenantService#checkDomain(java.lang.String)
+     */
     public void checkDomain(String name)
     {       
         // Check that all the passed values are not null        
@@ -356,6 +420,9 @@ public class MultiTServiceImpl implements TenantService
         }
     }
     
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.tenant.TenantService#getRootNode(org.alfresco.service.cmr.repository.NodeService, org.alfresco.service.cmr.search.SearchService, org.alfresco.service.namespace.NamespaceService, java.lang.String, org.alfresco.service.cmr.repository.NodeRef)
+     */
     public NodeRef getRootNode(NodeService nodeService, SearchService searchService, NamespaceService namespaceService, String rootPath, NodeRef rootNodeRef)
     {
         // Check that all the passed values are not null
@@ -428,11 +495,17 @@ public class MultiTServiceImpl implements TenantService
         }
     }
 
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.tenant.TenantService#isTenantUser()
+     */
     public boolean isTenantUser()
     {
         return isTenantUser(AuthenticationUtil.getCurrentUserName());
     }
     
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.tenant.TenantService#isTenantUser(java.lang.String)
+     */
     public boolean isTenantUser(String username)
     {    
         // can be null (e.g. for System user / during app ctx init)
@@ -446,6 +519,9 @@ public class MultiTServiceImpl implements TenantService
         return false;
     }
     
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.tenant.TenantService#isTenantName(java.lang.String)
+     */
     public boolean isTenantName(String name)
     {
         // Check that all the passed values are not null
@@ -464,6 +540,9 @@ public class MultiTServiceImpl implements TenantService
         return false;  
     }
     
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.tenant.TenantService#getUserDomain(java.lang.String)
+     */
     public String getUserDomain(String username)
     {
     	// can be null (e.g. for System user / during app ctx init)
@@ -483,12 +562,18 @@ public class MultiTServiceImpl implements TenantService
         return DEFAULT_DOMAIN; // default domain - non-tenant user
     }
     
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.tenant.TenantUserService#getCurrentUserDomain()
+     */
     public String getCurrentUserDomain()
     {
         String user = AuthenticationUtil.getCurrentUserName();
         return getUserDomain(user);
     }
     
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.tenant.TenantUserService#getDomain(java.lang.String)
+     */
     public String getDomain(String name)
     {
         // Check that all the passed values are not null
@@ -513,6 +598,9 @@ public class MultiTServiceImpl implements TenantService
         return nameDomain;
     }
     
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.tenant.TenantUserService#getDomainUser(java.lang.String, java.lang.String)
+     */
     public String getDomainUser(String baseUsername, String tenantDomain)
     {
         // Check that all the passed values are not null
@@ -550,6 +638,9 @@ public class MultiTServiceImpl implements TenantService
         }
     }
 
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.tenant.TenantService#getTenant(java.lang.String)
+     */
     public Tenant getTenant(String tenantDomain)
     {
         Tenant tenant = tenantsCache.get(tenantDomain);
@@ -573,6 +664,9 @@ public class MultiTServiceImpl implements TenantService
         return tenant;
     }
     
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.tenant.TenantUserService#isEnabled()
+     */
     public boolean isEnabled()
     {
         return true;

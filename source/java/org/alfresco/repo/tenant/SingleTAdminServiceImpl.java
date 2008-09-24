@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -115,6 +115,14 @@ public class SingleTAdminServiceImpl implements TenantAdminService
     public String getUserDomain(String username)
     {
         return TenantService.DEFAULT_DOMAIN;
+    }
+    
+    /**
+     * @return          Returns the given <tt>username</tt> always
+     */
+    public String getBaseNameUser(String username)
+    {
+        return username;
     }
     
     /**

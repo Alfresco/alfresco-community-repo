@@ -105,6 +105,7 @@ public class MultiTDemoTest extends TestCase
     public static final String TEST_USER2 = "bob";
     public static final String TEST_USER3 = "eve";
     
+    private static final int DEFAULT_DM_STORE_COUNT = 6;
     
     public static StoreRef SPACES_STORE = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
 
@@ -348,7 +349,7 @@ public class MultiTDemoTest extends TestCase
         }
     }
     
-    public void testCreateUserContent()
+    public void testCreateVersionableUserContent()
     {
         logger.info("Create demo content");
         
@@ -370,11 +371,14 @@ public class MultiTDemoTest extends TestCase
                         public Object doWork() throws Exception
                         {
                             NodeRef homeSpaceRef = getHomeSpaceFolderNode(tenantUserName);
-                            addTextContent(homeSpaceRef, tenantUserName+" quick brown fox.txt", "The quick brown fox jumps over the lazy dog (tenant " + tenantDomain + ")");
+                            
+                            NodeRef contentRef = addTextContent(homeSpaceRef, tenantUserName+" quick brown fox.txt", "The quick brown fox jumps over the lazy dog (tenant " + tenantDomain + ")");
+                            nodeService.addAspect(contentRef, ContentModel.ASPECT_VERSIONABLE, null);
                             
                             if (tenantDomain.equals(TEST_TENANT_DOMAIN2))
                             {
-                                addTextContent(homeSpaceRef, tenantUserName+" quick brown fox ANO.txt", "The quick brown fox jumps over the lazy dog ANO (tenant " + tenantDomain + ")");                                   
+                                contentRef = addTextContent(homeSpaceRef, tenantUserName+" quick brown fox ANO.txt", "The quick brown fox jumps over the lazy dog ANO (tenant " + tenantDomain + ")");                                   
+                                nodeService.addAspect(contentRef, ContentModel.ASPECT_VERSIONABLE, null);
                             }
                             
                             return null;                      
@@ -389,8 +393,27 @@ public class MultiTDemoTest extends TestCase
     {
         logger.info("Get tenant stores");
         
-        // super tenant
-        assertTrue("Super tenant: ", (nodeService.getStores().size() >= 5));
+        // system
+        AuthenticationUtil.runAs(new RunAsWork<Object>()
+        {
+            public Object doWork() throws Exception
+            {
+                assertTrue("System: ", (nodeService.getStores().size() >= (DEFAULT_DM_STORE_COUNT * (tenants.size()+1))));
+                return null;                      
+            }
+        }, AuthenticationUtil.getSystemUserName());
+        
+        // super admin
+        AuthenticationUtil.runAs(new RunAsWork<Object>()
+        {
+            public Object doWork() throws Exception
+            {
+                assertTrue("Super admin: ", (nodeService.getStores().size() >= DEFAULT_DM_STORE_COUNT));
+                return null;                      
+            }
+        }, TenantService.ADMIN_BASENAME);
+        
+        assertTrue("Super tenant: ", (nodeService.getStores().size() >= DEFAULT_DM_STORE_COUNT));
         
         for (final String tenantDomain : tenants)
         {        
@@ -400,7 +423,7 @@ public class MultiTDemoTest extends TestCase
             {
                 public Object doWork() throws Exception
                 {
-                    assertEquals("Tenant: "+tenantDomain, 5, nodeService.getStores().size());
+                    assertEquals("Tenant: "+tenantDomain, DEFAULT_DM_STORE_COUNT, nodeService.getStores().size());
                     
                     return null;                      
                 }
@@ -602,7 +625,7 @@ public class MultiTDemoTest extends TestCase
         return (NodeRef)this.nodeService.getProperty(personService.getPerson(userName), ContentModel.PROP_HOMEFOLDER);
     }
     
-    private void addTextContent(NodeRef spaceRef, String name, String textData)
+    private NodeRef addTextContent(NodeRef spaceRef, String name, String textData)
     {
         Map<QName, Serializable> contentProps = new HashMap<QName, Serializable>();
         contentProps.put(ContentModel.PROP_NAME, name);
@@ -627,6 +650,8 @@ public class MultiTDemoTest extends TestCase
         writer.setEncoding("UTF-8");
 
         writer.putContent(textData);
+        
+        return content;
     }
     
 

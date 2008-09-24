@@ -99,6 +99,11 @@ public class SingleTServiceImpl implements TenantService
     	return childAssocRef;
     }
     
+    public AssociationRef getBaseName(AssociationRef assocRef)
+    {
+        return assocRef;
+    }
+    
     public String getBaseName(String name)
     {
         return name;

@@ -46,7 +46,7 @@ import org.springframework.aop.support.DelegatingIntroductionInterceptor;
  * 
  * @since 3.0 
  * @author Derek Hulley
- * @author Jan Vonka
+ * @author janv
  */
 public class MultiTNodeServiceInterceptor extends DelegatingIntroductionInterceptor//implements NodeService
 {
@@ -253,6 +253,9 @@ public class MultiTNodeServiceInterceptor extends DelegatingIntroductionIntercep
         {
             return null;
         }
+        
+        // TODO use getBaseName ...
+        
         // Deal with collections
         Object value = rawValue;
         if (rawValue instanceof Collection)
@@ -267,7 +270,7 @@ public class MultiTNodeServiceInterceptor extends DelegatingIntroductionIntercep
         else if (rawValue instanceof NodeRef)
         {
             NodeRef ref = (NodeRef) rawValue;
-            value = tenantService.getName(ref);
+            value = tenantService.getBaseName(ref);
         }
         else if (rawValue instanceof ChildAssociationRef)
         {
@@ -279,6 +282,24 @@ public class MultiTNodeServiceInterceptor extends DelegatingIntroductionIntercep
             AssociationRef ref = (AssociationRef) rawValue;
             value = tenantService.getName(ref);
         }
+        /* TODO
+        else if (rawValue instanceof Path)
+        {
+            Path ref = (Path)rawValue;
+            Path outboundPath = new Path();
+            Iterator<Path.Element> itr = ref.iterator();
+            while (itr.hasNext())
+            {
+                Path.Element pathElement = itr.next();
+                if (pathElement instanceof Path.ChildAssocElement)
+                {
+                    pathElement = new Path.ChildAssocElement(tenantService.getBaseName(((Path.ChildAssocElement)pathElement).getRef()));
+                }
+                outboundPath.append(pathElement);
+            }
+            value = outboundPath;
+        }
+        */
         // Done
         return value;
     }

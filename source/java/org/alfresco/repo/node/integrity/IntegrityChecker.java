@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -34,6 +34,7 @@ import java.util.Map;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
@@ -103,6 +104,7 @@ public class IntegrityChecker
     private PolicyComponent policyComponent;
     private DictionaryService dictionaryService;
     private NodeService nodeService;
+    private TenantService tenantService;
     private boolean enabled;
     private boolean failOnViolation;
     private int maxErrorsPerTransaction;
@@ -171,6 +173,11 @@ public class IntegrityChecker
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
+    }
+    
+    public void setTenantService(TenantService tenantService)
+    {
+        this.tenantService = tenantService;
     }
 
     /**
@@ -330,7 +337,7 @@ public class IntegrityChecker
     public void onCreateNode(ChildAssociationRef childAssocRef)
     {
         NodeRef childRef = childAssocRef.getChildRef(); 
-        if (! storesToIgnore.contains(childRef.getStoreRef().toString()))
+        if (! storesToIgnore.contains(tenantService.getBaseName(childRef.getStoreRef()).toString()))
         {
             IntegrityEvent event = null;
             // check properties on child node
@@ -380,7 +387,7 @@ public class IntegrityChecker
             Map<QName, Serializable> before,
             Map<QName, Serializable> after)
     {
-        if (! storesToIgnore.contains(nodeRef.getStoreRef().toString()))
+        if (! storesToIgnore.contains(tenantService.getBaseName(nodeRef.getStoreRef()).toString()))
         {
             IntegrityEvent event = null;
             // check properties on node
@@ -402,7 +409,7 @@ public class IntegrityChecker
      */
     public void onAddAspect(NodeRef nodeRef, QName aspectTypeQName)
     {
-        if (! storesToIgnore.contains(nodeRef.getStoreRef().toString()))
+        if (! storesToIgnore.contains(tenantService.getBaseName(nodeRef.getStoreRef()).toString()))
         {
             IntegrityEvent event = null;
             // check properties on node
@@ -438,7 +445,7 @@ public class IntegrityChecker
      */
     public void onRemoveAspect(NodeRef nodeRef, QName aspectTypeQName)
     {
-        if (! storesToIgnore.contains(nodeRef.getStoreRef().toString()))
+        if (! storesToIgnore.contains(tenantService.getBaseName(nodeRef.getStoreRef()).toString()))
         {
             IntegrityEvent event = null;
             // check mandatory aspects
@@ -463,7 +470,7 @@ public class IntegrityChecker
             return;
         }
         
-        if (! storesToIgnore.contains(childAssocRef.getChildRef().getStoreRef().toString()))
+        if (! storesToIgnore.contains(tenantService.getBaseName(childAssocRef.getChildRef().getStoreRef()).toString()))
         {
             IntegrityEvent event = null;
             // check source type
@@ -513,7 +520,7 @@ public class IntegrityChecker
      */
     public void onDeleteChildAssociation(ChildAssociationRef childAssocRef)
     {
-        if (! storesToIgnore.contains(childAssocRef.getChildRef().getStoreRef().toString()))
+        if (! storesToIgnore.contains(tenantService.getBaseName(childAssocRef.getChildRef().getStoreRef()).toString()))
         {
             IntegrityEvent event = null;
             // check source multiplicity
@@ -543,7 +550,7 @@ public class IntegrityChecker
      */
     public void onCreateAssociation(AssociationRef nodeAssocRef)
     {
-        if (! storesToIgnore.contains(nodeAssocRef.getSourceRef().getStoreRef().toString()))
+        if (! storesToIgnore.contains(tenantService.getBaseName(nodeAssocRef.getSourceRef().getStoreRef()).toString()))
         {
             IntegrityEvent event = null;
             // check source type
@@ -585,7 +592,7 @@ public class IntegrityChecker
      */
     public void onDeleteAssociation(AssociationRef nodeAssocRef)
     {
-        if (! storesToIgnore.contains(nodeAssocRef.getSourceRef().getStoreRef().toString()))
+        if (! storesToIgnore.contains(tenantService.getBaseName(nodeAssocRef.getSourceRef().getStoreRef()).toString()))
         {
             IntegrityEvent event = null;
             // check source multiplicity

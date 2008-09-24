@@ -166,7 +166,7 @@
                 </props>
                 <props>
                     <prop key="storeRef">${version.store.version2Store}</prop>
-                    <prop key="packageName">versions</prop>
+                    <prop key="packageName">versions2</prop>
                 </props>
             </list>
 		</property>

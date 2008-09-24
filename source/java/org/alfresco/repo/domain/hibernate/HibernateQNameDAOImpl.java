@@ -116,6 +116,28 @@ public class HibernateQNameDAOImpl extends HibernateDaoSupport implements QNameD
         return namespace;
     }
 
+    public void updateNamespaceEntity(String oldNamespaceUri, String newNamespaceUri)
+    {
+        // First check for clashes
+        if (getNamespaceEntity(newNamespaceUri) != null)
+        {
+            throw new AlfrescoRuntimeException("Namespace URI '" + newNamespaceUri + "' already exists.");
+        }
+        // Get the old one
+        NamespaceEntity oldNamespaceEntity = getNamespaceEntity(oldNamespaceUri);
+        if (oldNamespaceEntity == null)
+        {
+            // Nothing to rename
+            return;
+        }
+        oldNamespaceEntity.setUri(newNamespaceUri);
+        // Flush to force early failure
+        getSession().flush();
+        // Trash the cache
+        qnameEntityCache.clear();
+        // Done
+    }
+
     public QNameEntity getQNameEntity(Long id)
     {
         QNameEntity qnameEntity = (QNameEntity) getSession().get(QNameEntityImpl.class, id);

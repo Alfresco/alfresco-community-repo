@@ -68,6 +68,16 @@ public interface QNameDAO
     NamespaceEntity newNamespaceEntity(String namespaceUri);
     
     /**
+     * Modifies an existing namespace URI.  If the new URI already exists, then no
+     * new entity is created and a concurrency 
+     * 
+     * @param oldNamespaceUri           the old namespace URI
+     * @param newNamespaceUri           the new namespace URI
+     * @throws AlfrescoRuntimeException if the new namespace is in use
+     */
+    void updateNamespaceEntity(String oldNamespaceUri, String newNamespaceUri);
+    
+    /**
      * @param id            the unique ID of the entity
      * @return              the QName entity (never null)
      * @throws              AlfrescoRuntimeException if the ID provided is invalid

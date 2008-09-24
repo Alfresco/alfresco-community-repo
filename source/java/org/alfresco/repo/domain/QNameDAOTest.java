@@ -92,6 +92,34 @@ public class QNameDAOTest extends TestCase
         retryingTransactionHelper.doInTransaction(callback);
     }
     
+    public void testRenameNamespace() throws Exception
+    {
+        final String namespaceUriBefore = GUID.generate();
+        final QName qnameBefore = QName.createQName(namespaceUriBefore, "before");
+        final String namespaceUriAfter = GUID.generate();
+        final QName qnameAfter = QName.createQName(namespaceUriAfter, "before");
+        RetryingTransactionCallback<Object> callback = new RetryingTransactionCallback<Object>()
+        {
+            public Object execute() throws Throwable
+            {
+                dao.getOrCreateNamespaceEntity(namespaceUriBefore);
+                // Get a QName that has the URI
+                QNameEntity qnameEntityBefore = dao.getOrCreateQNameEntity(qnameBefore);
+                // Now modify the namespace
+                dao.updateNamespaceEntity(namespaceUriBefore, namespaceUriAfter);
+                // The old qname must be gone
+                assertNull("QName must be gone as the URI was renamed", dao.getQNameEntity(qnameBefore));
+                // The new QName must be present and with the same ID
+                QNameEntity qnameEntityAfter = dao.getQNameEntity(qnameAfter);
+                assertNotNull("Expected QName with new URI to exist.", qnameEntityAfter);
+                assertEquals("QName changed ID unexpectedly.", qnameEntityBefore.getId(), qnameEntityAfter.getId());
+                // Done
+                return null;
+            }
+        };
+        retryingTransactionHelper.doInTransaction(callback);
+    }
+    
     public void testNewQName() throws Exception
     {
         final String namespaceUri = GUID.generate();

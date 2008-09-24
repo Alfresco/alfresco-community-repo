@@ -134,6 +134,42 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         }
     }
     
+    public void testETHREEOH_15() throws Exception
+    {
+        SiteInfo siteInfo = this.siteService.createSite(TEST_SITE_PRESET, "mySiteTest", TEST_TITLE, TEST_DESCRIPTION, true);
+        checkSiteInfo(siteInfo, TEST_SITE_PRESET, "mySiteTest", TEST_TITLE, TEST_DESCRIPTION, true);
+        
+        authenticationComponent.setCurrentUser("admin");
+        this.siteService.setMembership(siteInfo.getShortName(), USER_TWO, SiteModel.SITE_MANAGER);
+        
+        authenticationComponent.setCurrentUser(USER_TWO);
+        this.siteService.setMembership(siteInfo.getShortName(), USER_THREE, SiteModel.SITE_CONTRIBUTOR);
+        this.siteService.removeMembership(siteInfo.getShortName(), USER_THREE);
+        
+        authenticationComponent.setCurrentUser("admin");
+        this.siteService.removeMembership(siteInfo.getShortName(), USER_TWO);
+        
+        authenticationComponent.setSystemUserAsCurrentUser();
+        this.siteService.setMembership(siteInfo.getShortName(), USER_THREE, SiteModel.SITE_CONTRIBUTOR);
+        
+        authenticationComponent.setCurrentUser(USER_THREE);
+        try
+        {
+            this.siteService.setMembership(siteInfo.getShortName(), USER_TWO, SiteModel.SITE_CONTRIBUTOR);
+            fail("Shouldn't be able to do this cos you don't have permissions");
+        }
+        catch (Exception exception) {}
+        try
+        {
+            this.siteService.removeMembership(siteInfo.getShortName(), USER_THREE);
+            fail("Shouldn't be able to do this cos you don't have permissions");
+        }
+        catch (Exception exception) {}
+        
+        authenticationComponent.setSystemUserAsCurrentUser();
+        this.siteService.removeMembership(siteInfo.getShortName(), USER_THREE);        
+    }
+    
     private void checkSiteInfo( SiteInfo siteInfo, String expectedSitePreset, String expectedShortName, String expectedTitle, 
                                 String expectedDescription, boolean expectedIsPublic)
     {

@@ -20,7 +20,7 @@ function getEvents(siteId)
    }
 
    var query = "+PATH:\"/app:company_home/st:sites/cm:" + search.ISO9075Encode(site.shortName) + "/cm:calendar/*\" ";
-   query += "+TYPE:\"{com.infoaxon.alfresco.calendar}calendarEvent\"";
+   query += "+TYPE:\"{http\://www.alfresco.org/model/calendar}calendarEvent\"";
 
    var results = search.luceneSearch(query, "ia:fromDate", true);
    var e, events = [];

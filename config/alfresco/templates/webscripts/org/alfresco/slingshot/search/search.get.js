@@ -221,7 +221,7 @@ function getForumPostItem(siteId, containerId, restOfPath, node)
 function getCalendarItem(siteId, containerId, restOfPath, node)
 {
    // only process nodes of the correct type
-   if (node.type != "{com.infoaxon.alfresco.calendar}calendarEvent")
+   if (node.type != "{http://www.alfresco.org/model/calendar}calendarEvent")
    {
       return null;
    }

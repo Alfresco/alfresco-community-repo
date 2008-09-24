@@ -33,7 +33,7 @@ if (subscriptions == null) {
 model.subscriptions = subscriptions;
 
 // perform search
-var nodes = search.luceneSearch('TYPE:\"{com.infoaxon.alfresco.calendar}calendar\"');
+var nodes = search.luceneSearch('TYPE:\"{http\://www.alfresco.org/model/calendar}calendar\"');
 
 /**
 var filtered = new Array();
@@ -51,6 +51,3 @@ var filtered = new Array();
 **/
 
 model.available = nodes;
-
-
-

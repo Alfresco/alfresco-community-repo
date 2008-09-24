@@ -82,7 +82,7 @@ function getDayEvents(requiredDate) {
 		for (var i=0; i<currentSpace.children.length; i++)
 		{
 			var child = currentSpace.children[i];
-			if (child.type=="{com.infoaxon.alfresco.calendar}calendarEvent")
+			if (child.type=="{http://www.alfresco.org/model/calendar}calendarEvent")
 			{
 				var fromDate = new Date(child.properties["ia:fromDate"]);
 				fromDate.setHours(0,0,0,0);

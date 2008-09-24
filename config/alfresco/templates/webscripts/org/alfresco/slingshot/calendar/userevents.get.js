@@ -44,7 +44,7 @@ function getUserEvents(user, range)
 	
 	if (paths.length > 0)
 	{
-		var luceneQuery = "+(" + paths.join(" OR ") + ") +TYPE:\"{com.infoaxon.alfresco.calendar}calendarEvent\"";
+		var luceneQuery = "+(" + paths.join(" OR ") + ") +TYPE:\"{http\://www.alfresco.org/model/calendar}calendarEvent\"";
 		if (range.fromdate)
 		{
 			// Expects the date in the format yyyy/mm/dd

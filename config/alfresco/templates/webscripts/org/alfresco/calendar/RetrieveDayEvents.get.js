@@ -72,7 +72,7 @@ function getEvents(eventdate) {
      }
      for (var i=0; i<space.children.length; i++) {
 	var child = space.children[i];
-	if (child.type=="{com.infoaxon.alfresco.calendar}calendarEvent") {
+	if (child.type=="{http://www.alfresco.org/model/calendar}calendarEvent") {
                if (datestr == child.properties["ia:fromDate"].toDateString()) {
 		 var startdate = child.properties["ia:fromDate"];
 		 var enddate = child.properties["ia:toDate"];

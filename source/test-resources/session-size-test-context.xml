@@ -54,6 +54,9 @@
         <property name="nodeService">
             <ref bean="testSessionSizeDbNodeService" />
         </property>
+        <property name="tenantService">
+            <ref bean="tenantService" />
+        </property>
         <property name="enabled">
             <value>true</value>
         </property>

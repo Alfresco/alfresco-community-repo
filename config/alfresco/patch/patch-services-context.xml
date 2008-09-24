@@ -1510,5 +1510,23 @@
                 <ref bean="patch.emailTemplatesFolder" />
             </list>
         </property>
-    </bean>        
+    </bean>
+    
+    <bean id="patch.calendarNamespaceUri" class="org.alfresco.repo.admin.patch.impl.CalendarModelUriPatch" parent="basePatch" >
+        <property name="id"><value>patch.calendarNamespaceUri</value></property>
+        <property name="description"><value>patch.calendarModelNamespacePatch.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>131</value></property>
+        <property name="targetSchema"><value>132</value></property>
+        <!-- helper beans -->
+        <property name="importerBootstrap">
+            <ref bean="spacesBootstrap" />
+        </property>
+        <property name="indexerAndSearcher">
+            <ref bean="indexerAndSearcherFactory" />
+        </property>
+        <property name="qnameDAO">
+            <ref bean="qnameDAO" />
+        </property>
+    </bean>
 </beans>

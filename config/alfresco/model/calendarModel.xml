@@ -8,7 +8,7 @@
    <version>1.0</version>
 
    <imports>
-   	  <!-- Import Alfresco Dictionary Definitions -->
+   	<!-- Import Alfresco Dictionary Definitions -->
       <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
       <!-- Import Alfresco Content Domain Model Definitions -->
       <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
@@ -16,7 +16,7 @@
 
    <!-- Introduction of new namespaces defined by this model -->
    <namespaces>
-      <namespace uri="com.infoaxon.alfresco.calendar" prefix="ia"/>
+      <namespace uri="http://www.alfresco.org/model/calendar" prefix="ia"/>
    </namespaces>
 
    <types>

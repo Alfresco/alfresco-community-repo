@@ -252,6 +252,9 @@
          <mimetype mimetype="application/x-sv4crc" display="">
             <extension>sv4crc</extension>
          </mimetype>
+         <mimetype mimetype="application/vnd.adobe.air-application-installer-package+zip" display="Adobe AIR">
+            <extension>air</extension>
+         </mimetype>
          <mimetype mimetype="application/x-shockwave-flash" display="Shockwave Flash">
             <extension>swf</extension>
          </mimetype>

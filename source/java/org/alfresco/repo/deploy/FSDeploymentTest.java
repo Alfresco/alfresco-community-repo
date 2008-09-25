@@ -85,7 +85,7 @@ public class FSDeploymentTest extends AVMServiceTestBase
 
             callbacks.add(new DeploymentReportCallback(report));
 
-            service.deployDifferenceFS(-1, "main:/", "localhost", "default", 44100, "Giles", "Watcher", "sampleTarget", matcher, false, false, false, callbacks);
+            service.deployDifferenceFS(-1, "main:/", "default", "localhost", 44100, "Giles", "Watcher", "sampleTarget", matcher, false, false, false, callbacks);
             count = 0;
             for (DeploymentEvent event : report)
             {
@@ -101,7 +101,7 @@ public class FSDeploymentTest extends AVMServiceTestBase
             callbacks.add(new DeploymentReportCallback(report));
 
             
-            service.deployDifferenceFS(-1, "main:/", "localhost", "default", 44100, "Giles", "Watcher", "sampleTarget", matcher, false, false, false, callbacks);
+            service.deployDifferenceFS(-1, "main:/", "default", "localhost", 44100, "Giles", "Watcher", "sampleTarget", matcher, false, false, false, callbacks);
             count = 0;
             for (DeploymentEvent event : report)
             {
@@ -116,7 +116,7 @@ public class FSDeploymentTest extends AVMServiceTestBase
             callbacks = new ArrayList<DeploymentCallback>();
             callbacks.add(new DeploymentReportCallback(report));
 
-            service.deployDifferenceFS(-1, "main:/", "localhost", "default", 44100, "Giles", "Watcher", "sampleTarget", matcher, false, false, false, callbacks);
+            service.deployDifferenceFS(-1, "main:/", "default", "localhost", 44100, "Giles", "Watcher", "sampleTarget", matcher, false, false, false, callbacks);
             count = 0;
             for (DeploymentEvent event : report)
             {
@@ -132,7 +132,7 @@ public class FSDeploymentTest extends AVMServiceTestBase
             callbacks = new ArrayList<DeploymentCallback>();
             callbacks.add(new DeploymentReportCallback(report));
 
-            service.deployDifferenceFS(-1, "main:/", "localhost", "default", 44100, "Giles", "Watcher", "sampleTarget", matcher, false, false, false, callbacks);
+            service.deployDifferenceFS(-1, "main:/", "default", "localhost", 44100, "Giles", "Watcher", "sampleTarget", matcher, false, false, false, callbacks);
             count = 0;
             for (DeploymentEvent event : report)
             {
@@ -147,14 +147,14 @@ public class FSDeploymentTest extends AVMServiceTestBase
             callbacks = new ArrayList<DeploymentCallback>();
             callbacks.add(new DeploymentReportCallback(report));
 
-            service.deployDifferenceFS(-1, "main:/", "localhost", "default", 44100, "Giles", "Watcher", "sampleTarget", matcher, false, false, false, callbacks);
+            service.deployDifferenceFS(-1, "main:/", "default", "localhost", 44100, "Giles", "Watcher", "sampleTarget", matcher, false, false, false, callbacks);
             fService.removeNode("main:/avm/hibernate");
             fService.getFileOutputStream("main:/avm/AVMServiceTest.java").close();
             report = new DeploymentReport();
             callbacks = new ArrayList<DeploymentCallback>();
             callbacks.add(new DeploymentReportCallback(report));
 
-            service.deployDifferenceFS(-1, "main:/", "localhost", "default", 44100,  "Giles", "Watcher", "sampleTarget", matcher, false, false, false, callbacks);
+            service.deployDifferenceFS(-1, "main:/", "default", "localhost", 44100,  "Giles", "Watcher", "sampleTarget", matcher, false, false, false, callbacks);
             count = 0;
             for (DeploymentEvent event : report)
             {

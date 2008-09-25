@@ -44,6 +44,12 @@
     	<property name="authenticationComponent">
     		<ref bean="AuthenticationComponent"/>
     	</property>
+    	<property name="nodeService">
+    		<ref bean="NodeService"/>
+    	</property>	   
+		<property name="policyComponent">
+		    <ref bean="policyComponent"/>
+		</property>
     </bean>
     
     <bean id="deploymentAsynchronousActionExecutionQueue" class="org.alfresco.repo.action.AsynchronousActionExecutionQueueImpl">
@@ -56,6 +62,12 @@
     	<property name="authenticationComponent">
     		<ref bean="AuthenticationComponent"/>
     	</property>
+    	<property name="nodeService">
+    		<ref bean="NodeService"/>
+    	</property>	   
+		<property name="policyComponent">
+		    <ref bean="policyComponent"/>
+		</property>
     </bean>
     
     <!-- Action Service -->
@@ -85,24 +97,7 @@
             </map>   
 		</property>
     </bean>
-    
-    <bean id="asynchronousActionExecutionQueue" class="org.alfresco.repo.action.AsynchronousActionExecutionQueueImpl" init-method="init">
-      <property name="threadPoolExecutor">
-         <ref bean="threadPoolExecutor"/>
-      </property>
-    	<property name="transactionService">
-    		<ref bean="transactionService"/>
-    	</property>
-    	<property name="authenticationComponent">
-    		<ref bean="AuthenticationComponent"/>
-    	</property>
-    	<property name="nodeService">
-    		<ref bean="NodeService"/>
-    	</property>	   
-		<property name="policyComponent">
-		    <ref bean="policyComponent"/>
-		</property>
-    </bean>
+
 
    <!-- Actions Aspect -->
    
@@ -585,7 +580,7 @@
       </property>
       <property name="publicAction">
     	    <value>false</value>
-    	</property>
+      </property>
       <property name="defaultRemoteUsername">
          <value>admin</value>
       </property>

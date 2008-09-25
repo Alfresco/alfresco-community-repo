@@ -53,6 +53,7 @@ public final class DeploymentServerConfig implements Serializable
    public static final String PROP_ALLOCATED_TO = "allocatedTo";
    public static final String PROP_ON_APPROVAL = "onApproval";
    public static final String PROP_GROUP = "group";
+   public static final String PROP_ADAPTER_NAME = "adapterName";
    
    protected String id;
    protected NodeRef serverRef;
@@ -198,6 +199,10 @@ public final class DeploymentServerConfig implements Serializable
          repoProps.put(WCMAppModel.PROP_DEPLOYSERVERGROUP, (Serializable)this.props.get(PROP_GROUP));
       } 
 
+      if (this.props.get(PROP_ADAPTER_NAME) != null && ((String)this.props.get(PROP_ADAPTER_NAME)).length() > 0)
+      {
+         repoProps.put(WCMAppModel.PROP_DEPLOYSERVERADPTERNAME, (Serializable)this.props.get(PROP_ADAPTER_NAME));
+      } 
 
       
       return repoProps;
@@ -283,5 +288,16 @@ public final class DeploymentServerConfig implements Serializable
     	  // Default the group to blank
     	  this.props.put(PROP_GROUP, "");
       }
+      if (repoProps.get(WCMAppModel.PROP_DEPLOYSERVERADPTERNAME) != null)
+      {
+          this.props.put(PROP_ADAPTER_NAME, (String)repoProps.get(WCMAppModel.PROP_DEPLOYSERVERADPTERNAME));
+      } 
+      else 
+      {
+    	  // Default the adapter name to "default"
+    	  this.props.put(PROP_ADAPTER_NAME, "default");
+      }
+
+      
    }
 }

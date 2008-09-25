@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.Set;
 
 import javax.faces.component.UICommand;
 import javax.faces.component.UIComponent;
@@ -46,6 +47,8 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.avm.actions.AVMDeployWebsiteAction;
+import org.alfresco.service.cmr.avm.deploy.DeploymentService;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.repository.Repository;
@@ -71,6 +74,7 @@ public class UIDeploymentServers extends UIInput
    private static final String MSG_TYPE = "deploy_server_type";
    private static final String MSG_NAME = "deploy_server_name";
    private static final String MSG_GROUP = "deploy_server_group";
+   private static final String MSG_ADAPTER_NAME = "deploy_server_adapter_name";
    private static final String MSG_HOST = "deploy_server_host";
    private static final String MSG_PORT = "deploy_server_port";
    private static final String MSG_USER = "deploy_server_username";
@@ -90,6 +94,8 @@ public class UIDeploymentServers extends UIInput
    private DeploymentServerConfig currentServer;
    private Boolean inAddMode;
    private String addType;
+   
+   private DeploymentService deploymentService;
    
    // ------------------------------------------------------------------------------
    // Component implementation
@@ -368,6 +374,26 @@ public class UIDeploymentServers extends UIInput
       out.write("<tr><td colspan='3'>");
       out.write("<table cellpadding='0' cellspacing='0'>");
       out.write("<tr><td width='100%'><table cellpadding='3' cellspacing='0' class='deployConfigServerDetailsLeftCol'>");
+      
+      if (WCMAppModel.CONSTRAINT_FILEDEPLOY.equals(getAddType()) ||
+              (WCMAppModel.CONSTRAINT_FILEDEPLOY.equals(server.getDeployType())))
+      {
+  
+    	  out.write("<tr><td align='right'>");
+    	  out.write(bundle.getString(MSG_ADAPTER_NAME));
+    	  out.write(":</td><td>");
+    	  if (server.getProperties().get(DeploymentServerConfig.PROP_ADAPTER_NAME) != null)
+    	  {
+    		  out.write((String)server.getProperties().get(DeploymentServerConfig.PROP_ADAPTER_NAME));
+    	  }
+    	  else
+    	  {
+    		  out.write(noData);
+    	  }
+    	  out.write("</td></tr>");
+      }
+
+      
       out.write("<tr><td align='right'>");
       out.write(bundle.getString(MSG_HOST));
       out.write(":</td><td>");
@@ -377,12 +403,26 @@ public class UIDeploymentServers extends UIInput
       }
       out.write("</td></tr>");
       
+         
       out.write("<tr><td align='right'>");
       out.write(bundle.getString(MSG_PORT));
       out.write(":</td><td>");
       if (server.getProperties().get(DeploymentServerConfig.PROP_PORT) != null)
       {
          out.write((String)server.getProperties().get(DeploymentServerConfig.PROP_PORT));
+      }
+      else
+      {
+         out.write(noData);
+      }
+      out.write("</td></tr>");
+      
+      out.write("<tr><td align='right'>");
+      out.write(bundle.getString(MSG_URL));
+      out.write(":</td><td>");
+      if (server.getProperties().get(DeploymentServerConfig.PROP_URL) != null)
+      {
+         out.write(Utils.encode((String)server.getProperties().get(DeploymentServerConfig.PROP_URL)));
       }
       else
       {
@@ -404,19 +444,6 @@ public class UIDeploymentServers extends UIInput
          {
             out.write(Application.getMessage(context, MSG_TEST_SERVER));
          }
-      }
-      out.write("</td></tr>");
-      
-      out.write("<tr><td align='right'>");
-      out.write(bundle.getString(MSG_URL));
-      out.write(":</td><td>");
-      if (server.getProperties().get(DeploymentServerConfig.PROP_URL) != null)
-      {
-         out.write(Utils.encode((String)server.getProperties().get(DeploymentServerConfig.PROP_URL)));
-      }
-      else
-      {
-         out.write(noData);
       }
       out.write("</td></tr>");
       
@@ -621,6 +648,87 @@ public class UIDeploymentServers extends UIInput
       Utils.encodeRecursive(context, type);
       out.write("</td></tr>");
       
+      // create the server display name field
+      out.write("<tr><td align='right'>");
+      out.write(bundle.getString(MSG_NAME));
+      out.write(":</td><td>");
+      UIComponent name = context.getApplication().createComponent(
+               UIInput.COMPONENT_TYPE);
+      FacesHelper.setupComponentId(context, name, null);
+      name.getAttributes().put("styleClass", "inputField");
+      ValueBinding vbName = context.getApplication().createValueBinding(
+            "#{WizardManager.bean.editedDeployServerProperties." + 
+            DeploymentServerConfig.PROP_NAME + "}");
+      name.setValueBinding("value", vbName);
+      this.getChildren().add(name);
+      Utils.encodeRecursive(context, name);
+      out.write("</td></tr>");
+      
+      // create the display group name field
+      out.write("<tr><td align='right'>");
+      out.write(bundle.getString(MSG_GROUP));
+      out.write(":</td><td>");
+      UIComponent group = context.getApplication().createComponent(
+               UIInput.COMPONENT_TYPE);
+      FacesHelper.setupComponentId(context, group, null);
+      group.getAttributes().put("styleClass", "inputField");
+      ValueBinding vbGroup = context.getApplication().createValueBinding(
+            "#{WizardManager.bean.editedDeployServerProperties." + 
+            DeploymentServerConfig.PROP_GROUP + "}");
+      group.setValueBinding("value", vbGroup);
+      this.getChildren().add(group);
+      Utils.encodeRecursive(context, group);
+      out.write("</td></tr>");
+
+      
+      // MER START
+      if (WCMAppModel.CONSTRAINT_FILEDEPLOY.equals(getAddType() ) ||
+              (server != null && WCMAppModel.CONSTRAINT_FILEDEPLOY.equals(server.getDeployType())))
+      {
+    	  // for an FSR create the protocol adapter field
+    	  out.write("<tr><td align='right'>");
+    	  out.write(bundle.getString(MSG_ADAPTER_NAME));
+    	  out.write(":</td><td>");
+    	  
+          UIComponent adapterName = context.getApplication().createComponent(
+                  UISelectOne.COMPONENT_TYPE);
+    	  FacesHelper.setupComponentId(context, adapterName, "deploy_server_adapter_name");
+    	  adapterName.getAttributes().put("styleClass", "inputField");
+    	  
+    	  ValueBinding vbAdapterName = context.getApplication().createValueBinding(
+            "#{WizardManager.bean.editedDeployServerProperties." + 
+            DeploymentServerConfig.PROP_ADAPTER_NAME + "}");
+    	  adapterName.setValueBinding("value", vbAdapterName);
+    	  
+    	  UISelectItems adaptersComponent = (UISelectItems)context.getApplication().
+          	createComponent(UISelectItems.COMPONENT_TYPE);
+    	  
+    	  DeploymentService dep = getDeploymentService();
+    	  if(dep == null) 
+    	  {
+        	  List<SelectItem> adapters = new ArrayList<SelectItem>(1);
+        	  adapters.add(new SelectItem("default", "Default")); 
+        	  adaptersComponent.setValue(adapters);
+    	  }
+    	  else
+    	  {
+    		  Set<String> adapterNames = dep.getAdapterNames();
+        	  List<SelectItem> adapters = new ArrayList<SelectItem>(adapterNames.size());
+        	  for(String aname : adapterNames)
+        	  {
+        		  adapters.add(new SelectItem(aname, aname)); 
+        	  }
+        	  adaptersComponent.setValue(adapters);
+    	  }
+    	     	  
+    	  adapterName.getChildren().add(adaptersComponent);
+    	  this.getChildren().add(adapterName);
+    	  Utils.encodeRecursive(context, adapterName);
+    	  
+    	  out.write("</td></tr>");
+      }
+      // MER END
+      
       // create the server host field
       out.write("<tr><td align='right'>");
       out.write(bundle.getString(MSG_HOST));
@@ -661,38 +769,22 @@ public class UIDeploymentServers extends UIInput
       Utils.encodeRecursive(context, port);
       out.write("</td></tr>");
       
-      // create the server display name field
+      // create the server url field
       out.write("<tr><td align='right'>");
-      out.write(bundle.getString(MSG_NAME));
+      out.write(bundle.getString(MSG_URL));
       out.write(":</td><td>");
-      UIComponent name = context.getApplication().createComponent(
+      UIComponent url = context.getApplication().createComponent(
                UIInput.COMPONENT_TYPE);
-      FacesHelper.setupComponentId(context, name, null);
-      name.getAttributes().put("styleClass", "inputField");
-      ValueBinding vbName = context.getApplication().createValueBinding(
+      FacesHelper.setupComponentId(context, url, null);
+      url.getAttributes().put("styleClass", "inputField");
+      ValueBinding vbUrl = context.getApplication().createValueBinding(
             "#{WizardManager.bean.editedDeployServerProperties." + 
-            DeploymentServerConfig.PROP_NAME + "}");
-      name.setValueBinding("value", vbName);
-      this.getChildren().add(name);
-      Utils.encodeRecursive(context, name);
+            DeploymentServerConfig.PROP_URL + "}");
+      url.setValueBinding("value", vbUrl);
+      this.getChildren().add(url);
+      Utils.encodeRecursive(context, url);
       out.write("</td></tr>");
-      
-      // create the display group name field
-      out.write("<tr><td align='right'>");
-      out.write(bundle.getString(MSG_GROUP));
-      out.write(":</td><td>");
-      UIComponent group = context.getApplication().createComponent(
-               UIInput.COMPONENT_TYPE);
-      FacesHelper.setupComponentId(context, group, null);
-      group.getAttributes().put("styleClass", "inputField");
-      ValueBinding vbGroup = context.getApplication().createValueBinding(
-            "#{WizardManager.bean.editedDeployServerProperties." + 
-            DeploymentServerConfig.PROP_GROUP + "}");
-      group.setValueBinding("value", vbGroup);
-      this.getChildren().add(group);
-      Utils.encodeRecursive(context, group);
-      out.write("</td></tr>");
-      
+        
       // create the server username field
       out.write("<tr><td align='right'>");
       out.write(bundle.getString(MSG_USER));
@@ -726,21 +818,7 @@ public class UIDeploymentServers extends UIInput
       Utils.encodeRecursive(context, pwd);
       out.write("</td></tr>");
       
-      // create the server url field
-      out.write("<tr><td align='right'>");
-      out.write(bundle.getString(MSG_URL));
-      out.write(":</td><td>");
-      UIComponent url = context.getApplication().createComponent(
-               UIInput.COMPONENT_TYPE);
-      FacesHelper.setupComponentId(context, url, null);
-      url.getAttributes().put("styleClass", "inputField");
-      ValueBinding vbUrl = context.getApplication().createValueBinding(
-            "#{WizardManager.bean.editedDeployServerProperties." + 
-            DeploymentServerConfig.PROP_URL + "}");
-      url.setValueBinding("value", vbUrl);
-      this.getChildren().add(url);
-      Utils.encodeRecursive(context, url);
-      out.write("</td></tr>");
+
       
       // create the source path field
       out.write("<tr><td align='right'>");
@@ -960,6 +1038,15 @@ public class UIDeploymentServers extends UIInput
       items.add(test);
       
       return items;
+   }
+   
+   protected DeploymentService getDeploymentService()
+   {
+      if (deploymentService == null)
+      {
+         deploymentService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getDeploymentService();
+      }
+      return deploymentService;
    }
    
 }

@@ -661,7 +661,7 @@ public class SiteServiceImpl implements SiteService, SiteModel
             }
             
             // If ...
-            //  -- the current user has change permissions
+            //  -- the current user has change permissions rights on the site
             // or
             //  -- the site is public and
             //  -- the user is ourselves and
@@ -723,103 +723,95 @@ public class SiteServiceImpl implements SiteService, SiteModel
         // Get the user's current role
         final String currentRole = getMembersRole(shortName, userName);
         
-        if (currentRole == null)
-        {        
-            // Do nothing if the role of the user is not being changed
-            if (role.equals(currentRole) == false)
+        // Do nothing if the role of the user is not being changed
+        if (currentRole == null || role.equals(currentRole) == false)
+        {
+            // Determine whether the site is private or not
+            boolean isPublic = isSitePublic(siteNodeRef);
+            
+            // TODO if this is the only site manager do not downgrade their permissions
+            
+            // If we are ...
+            // -- the current user has change permissions rights on the site
+            // or we are ...
+            // -- refering to a public site and
+            // -- the role being set is consumer and
+            // -- the user being added is ourselves and
+            // -- the member does not already have permissions 
+            // ... then we can set the permissions as system user
+            final String currentUserName = AuthenticationUtil.getCurrentUserName();
+            final String currentUserRole = getMembersRole(shortName, currentUserName);
+            if  ((permissionService.hasPermission(siteNodeRef, PermissionService.CHANGE_PERMISSIONS) == AccessStatus.ALLOWED)
+                  || 
+                 (isPublic == true &&
+                  role.equals(SiteModel.SITE_CONSUMER) == true &&
+                  userName.equals(currentUserName) == true &&
+                  currentRole == null))
             {
-                // Determine whether the site is private or not
-                boolean isPublic = isSitePublic(siteNodeRef);
-                
-                // TODO if this is the only site manager do not downgrade their permissions
-                
-                // If we are ...
-                // -- the site manager
-                // or we are ...
-                // -- refering to a public site and
-                // -- the role being set is consumer and
-                // -- the user being added is ourselves and
-                // -- the member does not already have permissions 
-                // ... then we can set the permissions as system user
-                final String currentUserName = AuthenticationUtil.getCurrentUserName();
-                final String currentUserRole = getMembersRole(shortName, currentUserName);
-                if  ((permissionService.hasPermission(siteNodeRef, PermissionService.CHANGE_PERMISSIONS) == AccessStatus.ALLOWED)
-                      || 
-                     (isPublic == true &&
-                      role.equals(SiteModel.SITE_CONSUMER) == true &&
-                      userName.equals(currentUserName) == true &&
-                      currentRole == null))
+                // Check that we are not about to remove the last site manager
+                if (SiteModel.SITE_MANAGER.equals(currentRole) == true)
                 {
-                    // Check that we are not about to remove the last site manager
-                    if (SiteModel.SITE_MANAGER.equals(currentRole) == true)
+                    Set<String> siteMangers = this.authorityService.getContainedAuthorities(
+                            AuthorityType.USER, 
+                            getSiteRoleGroup(shortName, SITE_MANAGER, true), 
+                            true);
+                    if (siteMangers.size() == 1)
                     {
-                        Set<String> siteMangers = this.authorityService.getContainedAuthorities(
-                                AuthorityType.USER, 
-                                getSiteRoleGroup(shortName, SITE_MANAGER, true), 
-                                true);
-                        if (siteMangers.size() == 1)
-                        {
-                            throw new AlfrescoRuntimeException("A site requires at least one site manager.  You can not change '" + userName + "' role from the site memebership because they are currently the only site manager.");
-                        }
+                        throw new AlfrescoRuntimeException("A site requires at least one site manager.  You can not change '" + userName + "' role from the site memebership because they are currently the only site manager.");
                     }
-                    
-                    // Run as system user
-                    AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
+                }
+                
+                // Run as system user
+                AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
+                {
+                    public Object doWork() throws Exception
                     {
-                        public Object doWork() throws Exception
+                        if (currentRole != null)
                         {
-                            if (currentRole != null)
-                            {
-                                // Remove the user from the current permission group
-                                String currentGroup = getSiteRoleGroup(shortName, currentRole, true);
-                                authorityService.removeAuthority(currentGroup, userName);
-                            }
-                            
-                            // Add the user to the new permission group
-                            String newGroup = getSiteRoleGroup(shortName, role, true);
-                            authorityService.addAuthority(newGroup, userName);
-                            
-                            return null;
+                            // Remove the user from the current permission group
+                            String currentGroup = getSiteRoleGroup(shortName, currentRole, true);
+                            authorityService.removeAuthority(currentGroup, userName);
                         }
-                            
-                    }, AuthenticationUtil.SYSTEM_USER_NAME);
-                    
-                    if (currentRole == null)
+                        
+                        // Add the user to the new permission group
+                        String newGroup = getSiteRoleGroup(shortName, role, true);
+                        authorityService.addAuthority(newGroup, userName);
+                        
+                        return null;
+                    }
+                        
+                }, AuthenticationUtil.SYSTEM_USER_NAME);
+                
+                if (currentRole == null)
+                {
+                    if (AuthorityType.getAuthorityType(userName) == AuthorityType.USER)
                     {
-                        if (AuthorityType.getAuthorityType(userName) == AuthorityType.USER)
-                        {
-                            activityService.postActivity(ActivityType.SITE_USER_JOINED, shortName, ACTIVITY_TOOL, getActivityData(userName, role));
-                        }
-                        else
-                        {
-                            // TODO - update this, if sites support groups
-                            logger.error("setMembership - failed to post activity: unexpected authority type: " + AuthorityType.getAuthorityType(userName));
-                        }
+                        activityService.postActivity(ActivityType.SITE_USER_JOINED, shortName, ACTIVITY_TOOL, getActivityData(userName, role));
                     }
                     else
                     {
-                        if (AuthorityType.getAuthorityType(userName) == AuthorityType.USER)
-                        {
-                            activityService.postActivity(ActivityType.SITE_USER_ROLE_UPDATE, shortName, ACTIVITY_TOOL, getActivityData(userName, role));
-                        }
-                        else
-                        {
-                            // TODO - update this, if sites support groups
-                            logger.error("setMembership - failed to post activity: unexpected authority type: " + AuthorityType.getAuthorityType(userName));
-                        }
-                    }                
+                        // TODO - update this, if sites support groups
+                        logger.error("setMembership - failed to post activity: unexpected authority type: " + AuthorityType.getAuthorityType(userName));
+                    }
                 }
                 else
-                {        
-                    // Raise a permission exception
-                    throw new AlfrescoRuntimeException("Access denied, user does not have permissions to modify membership details of the site '" + shortName + "'");
-                }
+                {
+                    if (AuthorityType.getAuthorityType(userName) == AuthorityType.USER)
+                    {
+                        activityService.postActivity(ActivityType.SITE_USER_ROLE_UPDATE, shortName, ACTIVITY_TOOL, getActivityData(userName, role));
+                    }
+                    else
+                    {
+                        // TODO - update this, if sites support groups
+                        logger.error("setMembership - failed to post activity: unexpected authority type: " + AuthorityType.getAuthorityType(userName));
+                    }
+                }                
             }
-        }
-        else
-        {        
-            // Raise a permission exception
-            throw new AlfrescoRuntimeException("Access denied, user does not have permissions to modify membership details of the site '" + shortName + "'");
+            else
+            {        
+                // Raise a permission exception
+                throw new AlfrescoRuntimeException("Access denied, user does not have permissions to modify membership details of the site '" + shortName + "'");
+            }
         }
     }    
 

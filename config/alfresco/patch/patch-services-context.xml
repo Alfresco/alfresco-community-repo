@@ -1484,6 +1484,12 @@
         <property name="versionMigrator">
             <ref bean="versionMigrator" />
         </property>
+        <property name="tenantService">
+            <ref bean="tenantService" />
+        </property>
+        <property name="importerBootstrap">
+            <ref bean="version2Bootstrap" />
+        </property>
     </bean>
             
     <bean id="patch.inviteEmailTemplate" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >

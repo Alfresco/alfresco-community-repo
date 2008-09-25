@@ -507,6 +507,9 @@
                         <entry key="versionMigrator">
                             <ref bean="versionMigrator" />
                         </entry>
+                        <entry key="tenantAdminService">
+                            <ref bean="tenantAdminService" />
+                        </entry>
                    </map>
                </property>
             </bean>

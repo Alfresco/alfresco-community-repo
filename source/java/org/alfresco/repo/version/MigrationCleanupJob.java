@@ -24,7 +24,13 @@
  */
 package org.alfresco.repo.version;
 
+import java.util.List;
+
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.tenant.Tenant;
+import org.alfresco.repo.tenant.TenantAdminService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.quartz.Job;
@@ -39,7 +45,9 @@ public class MigrationCleanupJob implements Job
 {
     private static Log logger = LogFactory.getLog(MigrationCleanupJob.class);
     
-    private static final String KEY_COMPONENT = "versionMigrator";
+    private static final String KEY_VERSION_MIGRATOR = "versionMigrator";
+    private static final String KEY_TENANT_ADMIN_SERVICE = "tenantAdminService";
+    
     private static final String KEY_BATCHSIZE = "batchSize";
     
     private int batchSize = 1;
@@ -47,10 +55,13 @@ public class MigrationCleanupJob implements Job
     public void execute(JobExecutionContext context) throws JobExecutionException
     { 
         JobDataMap jobData = context.getJobDetail().getJobDataMap();
-        VersionMigrator migrationCleanup = (VersionMigrator)jobData.get(KEY_COMPONENT);
+        
+        final VersionMigrator migrationCleanup = (VersionMigrator)jobData.get(KEY_VERSION_MIGRATOR);
+        final TenantAdminService tenantAdminService = (TenantAdminService)jobData.get(KEY_TENANT_ADMIN_SERVICE);
+        
         if (migrationCleanup == null)
         {
-            throw new JobExecutionException("Missing job data: " + KEY_COMPONENT);
+            throw new JobExecutionException("Missing job data: " + KEY_VERSION_MIGRATOR);
         }
         
         String batchSizeStr = (String)jobData.get(KEY_BATCHSIZE);
@@ -75,5 +86,22 @@ public class MigrationCleanupJob implements Job
         
         // perform the cleanup of the old version store
         migrationCleanup.executeCleanup(batchSize);
+        
+    	if ((tenantAdminService != null) && tenantAdminService.isEnabled())
+        {
+        	List<Tenant> tenants = tenantAdminService.getAllTenants();	                            	
+            for (Tenant tenant : tenants)
+            {          
+            	String tenantDomain = tenant.getTenantDomain();
+            	AuthenticationUtil.runAs(new RunAsWork<Object>()
+                {
+            		public Object doWork() throws Exception
+                    {
+            			migrationCleanup.executeCleanup(batchSize);
+            			return null;
+                    }
+                }, tenantAdminService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain));
+            }
+        }
     }
 }

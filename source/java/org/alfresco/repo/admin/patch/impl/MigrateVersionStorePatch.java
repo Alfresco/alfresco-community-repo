@@ -27,7 +27,11 @@ package org.alfresco.repo.admin.patch.impl;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.admin.patch.AbstractPatch;
+import org.alfresco.repo.importer.ImporterBootstrap;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.version.VersionMigrator;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -41,12 +45,25 @@ public class MigrateVersionStorePatch extends AbstractPatch
     private static final String MSG_SUCCESS = "patch.migrateVersionStore.result";
     
     private VersionMigrator versionMigrator;
+    private TenantService tenantService;
+    private ImporterBootstrap version2ImporterBootstrap;
+    
     private int batchSize = 1;
     private boolean deleteImmediately = false;
     
     public void setVersionMigrator(VersionMigrator versionMigrator)
     {
         this.versionMigrator = versionMigrator;
+    }
+    
+    public void setTenantService(TenantService tenantService)
+    {
+        this.tenantService = tenantService;
+    }
+    
+    public void setImporterBootstrap(ImporterBootstrap version2ImporterBootstrap)
+    {
+        this.version2ImporterBootstrap = version2ImporterBootstrap;
     }
     
     public void setBatchSize(int batchSize)
@@ -73,7 +90,17 @@ public class MigrateVersionStorePatch extends AbstractPatch
     
     @Override
     protected String applyInternal() throws Exception
-    { 
+    {
+    	if (tenantService.isEnabled() && tenantService.isTenantUser())
+    	{
+    		// bootstrap new version store
+            StoreRef bootstrapStoreRef = version2ImporterBootstrap.getStoreRef();
+            bootstrapStoreRef = tenantService.getName(AuthenticationUtil.getCurrentEffectiveUserName(),  bootstrapStoreRef);
+            version2ImporterBootstrap.setStoreUrl(bootstrapStoreRef.toString());
+        
+            version2ImporterBootstrap.bootstrap();
+    	}
+    	
         int vhCount = versionMigrator.migrateVersions(batchSize, deleteImmediately);
 
         // build the result message

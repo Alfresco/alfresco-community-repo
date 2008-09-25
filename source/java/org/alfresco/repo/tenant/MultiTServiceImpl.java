@@ -500,7 +500,7 @@ public class MultiTServiceImpl implements TenantService
      */
     public boolean isTenantUser()
     {
-        return isTenantUser(AuthenticationUtil.getCurrentUserName());
+        return isTenantUser(AuthenticationUtil.getCurrentEffectiveUserName());
     }
     
     /* (non-Javadoc)
@@ -567,7 +567,7 @@ public class MultiTServiceImpl implements TenantService
      */
     public String getCurrentUserDomain()
     {
-        String user = AuthenticationUtil.getCurrentUserName();
+    	String user = AuthenticationUtil.getCurrentEffectiveUserName();
         return getUserDomain(user);
     }
     

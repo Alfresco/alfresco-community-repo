@@ -29,6 +29,7 @@ import java.util.Set;
 
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.admin.patch.AbstractPatch;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.site.SiteInfo;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.site.SiteService;
@@ -37,6 +38,7 @@ import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.util.EqualsHelper;
 
 /**
  * Patch's the site permission model to use groups to contain users.
@@ -89,51 +91,59 @@ public class SitePermissionRefactorPatch extends AbstractPatch
     @Override
     protected String applyInternal() throws Exception
     {
-        // Set all the sites in the repository
-        List<SiteInfo> sites = this.siteService.listSites(null, null);
-        for (SiteInfo siteInfo : sites)
+    	// NOTE: SiteService is not currently MT-enabled (eg. getSiteRoot) so skip if applied to tenant
+        if (EqualsHelper.nullSafeEquals(
+                AuthenticationUtil.SYSTEM_USER_NAME,
+                AuthenticationUtil.getCurrentEffectiveUserName())
+                ||
+                !AuthenticationUtil.isMtEnabled())
         {
-            // Create the site's groups
-            String siteGroup = authorityService.createAuthority(
-                    AuthorityType.GROUP, 
-                    null, 
-                    ((SiteServiceImpl)this.siteService).getSiteGroup(siteInfo.getShortName(), 
-                    false));
-            Set<String> permissions = permissionService.getSettablePermissions(SiteModel.TYPE_SITE);
-            for (String permission : permissions)
-            {
-                // Create a group for the permission
-                String permissionGroup = authorityService.createAuthority(
-                                            AuthorityType.GROUP, 
-                                            siteGroup, 
-                                            ((SiteServiceImpl)this.siteService).getSiteRoleGroup(
-                                                    siteInfo.getShortName(), 
-                                                    permission, 
-                                                    false));
-                
-                // Assign the group the relevant permission on the site
-                permissionService.setPermission(siteInfo.getNodeRef(), permissionGroup, permission, true);
-            }
-            
-            // Take the current members and assign them to the appropriate groups
-            Set<AccessPermission> currentPermissions = this.permissionService.getAllSetPermissions(siteInfo.getNodeRef());
-            for (AccessPermission permission : currentPermissions)
-            {
-                // Only support user's being transfered (if public the everyone group will stay on the node)
-                if (permission.getAuthorityType() == AuthorityType.USER)
-                {
-                    // Add this authority to the appropriate group
-                    String group = ((SiteServiceImpl)this.siteService).getSiteRoleGroup(
-                            siteInfo.getShortName(), 
-                            permission.getPermission(), 
-                            true);
-                   this.authorityService.addAuthority(group, permission.getAuthority()); 
-                   
-                   // Remove the permission from the node
-                   this.permissionService.deletePermission(siteInfo.getNodeRef(), permission.getAuthority(), permission.getPermission());
-                }
-            }
-        }
+	        // Set all the sites in the repository
+	        List<SiteInfo> sites = this.siteService.listSites(null, null);
+	        for (SiteInfo siteInfo : sites)
+	        {
+	            // Create the site's groups
+	            String siteGroup = authorityService.createAuthority(
+	                    AuthorityType.GROUP, 
+	                    null, 
+	                    ((SiteServiceImpl)this.siteService).getSiteGroup(siteInfo.getShortName(), 
+	                    false));
+	            Set<String> permissions = permissionService.getSettablePermissions(SiteModel.TYPE_SITE);
+	            for (String permission : permissions)
+	            {
+	                // Create a group for the permission
+	                String permissionGroup = authorityService.createAuthority(
+	                                            AuthorityType.GROUP, 
+	                                            siteGroup, 
+	                                            ((SiteServiceImpl)this.siteService).getSiteRoleGroup(
+	                                                    siteInfo.getShortName(), 
+	                                                    permission, 
+	                                                    false));
+	                
+	                // Assign the group the relevant permission on the site
+	                permissionService.setPermission(siteInfo.getNodeRef(), permissionGroup, permission, true);
+	            }
+	            
+	            // Take the current members and assign them to the appropriate groups
+	            Set<AccessPermission> currentPermissions = this.permissionService.getAllSetPermissions(siteInfo.getNodeRef());
+	            for (AccessPermission permission : currentPermissions)
+	            {
+	                // Only support user's being transfered (if public the everyone group will stay on the node)
+	                if (permission.getAuthorityType() == AuthorityType.USER)
+	                {
+	                    // Add this authority to the appropriate group
+	                    String group = ((SiteServiceImpl)this.siteService).getSiteRoleGroup(
+	                            siteInfo.getShortName(), 
+	                            permission.getPermission(), 
+	                            true);
+	                   this.authorityService.addAuthority(group, permission.getAuthority()); 
+	                   
+	                   // Remove the permission from the node
+	                   this.permissionService.deletePermission(siteInfo.getNodeRef(), permission.getAuthority(), permission.getPermission());
+	                }
+	            }
+	        }
+    	}
      
         // Report status
         return I18NUtil.getMessage(STATUS_MSG);

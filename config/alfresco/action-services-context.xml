@@ -3,8 +3,62 @@
 
 <beans>
 
-    <!-- Action Service -->
+    <!-- Action Service Configuration -->
 
+    <!-- Thread Pools    -->
+    
+    <!--  the default pool is used to run most of the async actions -->
+    <bean id="defaultAsyncThreadPool" class="org.alfresco.util.ThreadPoolExecutorFactoryBean">
+        <property name="poolName">
+            <value>defaultAsyncAction</value>
+        </property>
+        <property name="corePoolSize">
+            <value>2</value>
+        </property>
+        <property name="maximumPoolSize">
+            <value>10</value>
+        </property>
+    </bean>
+    
+    <!--  the deployment pool is used to throttle long running deployments which may otherwise block normal 
+          operations -->
+    <bean id="deploymentAsyncThreadPool" class="org.alfresco.util.ThreadPoolExecutorFactoryBean">
+        <property name="poolName">
+            <value>deploymentAsyncAction</value>
+        </property>
+        <property name="corePoolSize">
+            <value>2</value>
+        </property>
+        <property name="maximumPoolSize">
+            <value>3</value>
+        </property>        
+    </bean>
+    
+    <bean id="defaultAsynchronousActionExecutionQueue" class="org.alfresco.repo.action.AsynchronousActionExecutionQueueImpl">
+      <property name="threadPoolExecutor">
+         <ref bean="defaultAsyncThreadPool"/>
+      </property>
+    	<property name="transactionService">
+    		<ref bean="transactionService"/>
+    	</property>
+    	<property name="authenticationComponent">
+    		<ref bean="AuthenticationComponent"/>
+    	</property>
+    </bean>
+    
+    <bean id="deploymentAsynchronousActionExecutionQueue" class="org.alfresco.repo.action.AsynchronousActionExecutionQueueImpl">
+      <property name="threadPoolExecutor">
+         <ref bean="deploymentAsyncThreadPool"/>
+      </property>
+    	<property name="transactionService">
+    		<ref bean="transactionService"/>
+    	</property>
+    	<property name="authenticationComponent">
+    		<ref bean="AuthenticationComponent"/>
+    	</property>
+    </bean>
+    
+    <!-- Action Service -->
     <bean id="actionService" class="org.alfresco.repo.action.ActionServiceImpl">
         <property name="nodeService">
             <ref bean="NodeService" />
@@ -18,9 +72,18 @@
         <property name="dictionaryService">
             <ref bean="DictionaryService" />
         </property> 
-		<property name="asynchronousActionExecutionQueue">
-	       <ref bean="asynchronousActionExecutionQueue"/>
-		</property> 
+        
+        <property name="asynchronousActionExecutionQueues">
+            <map>
+            	<!--  This is the default async queue -->
+               <entry key="">
+               	   <ref bean="defaultAsynchronousActionExecutionQueue"/>
+               </entry>
+               <entry key="deployment">
+               	   <ref bean="deploymentAsynchronousActionExecutionQueue"/>
+               </entry>
+            </map>   
+		</property>
     </bean>
     
     <bean id="asynchronousActionExecutionQueue" class="org.alfresco.repo.action.AsynchronousActionExecutionQueueImpl" init-method="init">
@@ -506,16 +569,21 @@
     </bean>
     
     <bean id="avm-deploy-website" class="org.alfresco.repo.avm.actions.AVMDeployWebsiteAction" parent="action-executer">
-    	<property name="deploymentService">
+      
+      <!--  Run avm-deploy-website action on the deployment queue -->
+      <property name="queueName">
+      	<value>deployment</value>
+      </property>	
+      <property name="deploymentService">
     	    <ref bean="DeploymentService"/>
-    	</property>
+      </property>
       <property name="contentService">
           <ref bean="ContentService"/>
       </property>
       <property name="nodeService">
           <ref bean="NodeService"/>
       </property>
-    	<property name="publicAction">
+      <property name="publicAction">
     	    <value>false</value>
     	</property>
       <property name="defaultRemoteUsername">

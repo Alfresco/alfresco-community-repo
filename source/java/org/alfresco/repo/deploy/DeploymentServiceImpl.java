@@ -25,21 +25,29 @@
 
 package org.alfresco.repo.deploy;
 
+import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import org.alfresco.deployment.DeploymentReceiverService;
 import org.alfresco.deployment.DeploymentReceiverTransport;
+import org.alfresco.deployment.DeploymentTransportOutputFilter;
 import org.alfresco.deployment.FileDescriptor;
 import org.alfresco.deployment.FileType;
-import org.alfresco.deployment.impl.client.DeploymentReceiverServiceClient;
 import org.alfresco.repo.action.ActionServiceRemote;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.avm.util.SimplePath;
@@ -48,6 +56,7 @@ import org.alfresco.repo.remote.AVMRemoteImpl;
 import org.alfresco.repo.remote.AVMSyncServiceRemote;
 import org.alfresco.repo.remote.ClientTicketHolder;
 import org.alfresco.repo.remote.ClientTicketHolderThread;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.action.ActionServiceTransport;
 import org.alfresco.service.cmr.avm.AVMException;
@@ -58,7 +67,6 @@ import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.service.cmr.avm.AVMWrongTypeException;
 import org.alfresco.service.cmr.avm.deploy.DeploymentCallback;
 import org.alfresco.service.cmr.avm.deploy.DeploymentEvent;
-import org.alfresco.service.cmr.avm.deploy.DeploymentReport;
 import org.alfresco.service.cmr.avm.deploy.DeploymentService;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
@@ -83,57 +91,6 @@ public class DeploymentServiceImpl implements DeploymentService
     private static Log fgLogger = LogFactory.getLog(DeploymentServiceImpl.class);
 
     /**
-     * Class to hold Deployment destination information.
-     * Used as a lock to serialize deployments to the same
-     * destination.
-     * @author britt
-     */
-    private static class DeploymentDestination
-    {
-        private String fHost;
-
-        private int fPort;
-
-        DeploymentDestination(String host, int port)
-        {
-            fHost = host;
-            fPort = port;
-        }
-
-        /* (non-Javadoc)
-         * @see java.lang.Object#equals(java.lang.Object)
-         */
-        @Override
-        public boolean equals(Object obj)
-        {
-            if (this == obj)
-            {
-                return true;
-            }
-            if (!(obj instanceof DeploymentDestination))
-            {
-                return false;
-            }
-            DeploymentDestination other = (DeploymentDestination)obj;
-            return fHost.equals(other.fHost) && fPort == other.fPort;
-        }
-
-        /* (non-Javadoc)
-         * @see java.lang.Object#hashCode()
-         */
-        @Override
-        public int hashCode()
-        {
-            return fHost.hashCode() + fPort;
-        }
-
-        public String toString()
-        {
-            return fHost;
-        }
-    };
-
-    /**
      * Holds locks for all deployment destinations (alfresco->alfresco)
      */
     private Map<DeploymentDestination, DeploymentDestination> fDestinations;
@@ -147,6 +104,11 @@ public class DeploymentServiceImpl implements DeploymentService
      * The Ticket holder.
      */
     private ClientTicketHolder fTicketHolder;
+    
+    /**
+     * number of concurrent sending threads
+     */
+    private int numberOfSendingThreads = 3;
 
     /**
      * Default constructor.
@@ -166,10 +128,12 @@ public class DeploymentServiceImpl implements DeploymentService
         fAVMService = service;
     }
 
-    /* (non-Javadoc)
+    /* 
+     * Deploy differences to an ASR 
+     * (non-Javadoc)
      * @see org.alfresco.service.cmr.avm.deploy.DeploymentService#deployDifference(int, java.lang.String, java.lang.String, int, java.lang.String, java.lang.String, java.lang.String, boolean, boolean)
      */
-    public DeploymentReport deployDifference(int version, String srcPath, String hostName,
+    public void deployDifference(int version, String srcPath, String hostName,
                                              int port, String userName, String password,
                                              String dstPath, NameMatcher matcher, boolean createDst,
                                              boolean dontDelete, boolean dontDo,
@@ -184,7 +148,6 @@ public class DeploymentServiceImpl implements DeploymentService
             }
             try
             {
-                DeploymentReport report = new DeploymentReport();
                 AVMRemote remote = getRemote(hostName, port, userName, password);
                 if (callbacks != null)
                 {
@@ -250,17 +213,10 @@ public class DeploymentServiceImpl implements DeploymentService
                     {
                         fgLogger.debug(event);
                     }
-                    report.add(event);
-                    if (callbacks != null)
-                    {
-                        for (DeploymentCallback callback : callbacks)
-                        {
-                            callback.eventOccurred(event);
-                        }
-                    }
+                    processEvent(event, callbacks);
                     if (dontDo)
                     {
-                        return report;
+                        return;
                     }
                     copyDirectory(version, srcRoot, dstParent, remote, matcher);
                     remote.createSnapshot(storePath[0], "Deployment", "Post Deployment Snapshot.");
@@ -273,12 +229,10 @@ public class DeploymentServiceImpl implements DeploymentService
                         {
                             fgLogger.debug(event);
                         }
-                        for (DeploymentCallback callback : callbacks)
-                        {
-                            callback.eventOccurred(event);
-                        }
+                        processEvent(event, callbacks);
+
                     }
-                    return report;
+                    return;
                 }
                 if (!dstRoot.isDirectory())
                 {
@@ -287,23 +241,17 @@ public class DeploymentServiceImpl implements DeploymentService
                 // The corresponding directory exists so recursively deploy.
                 try
                 {
-                    deployDirectoryPush(version, srcRoot, dstRoot, remote, matcher, dontDelete, dontDo, report, callbacks);
+                    deployDirectoryPush(version, srcRoot, dstRoot, remote, matcher, dontDelete, dontDo, callbacks);
                     remote.createSnapshot(storePath[0], "Deployment", "Post Deployment Snapshot.");
                     if (callbacks != null)
                     {
                         DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.END,
                                                                     new Pair<Integer, String>(version, srcPath),
                                                                     dstPath);
-                        if (fgLogger.isDebugEnabled())
-                        {
-                            fgLogger.debug(event);
-                        }
-                        for (DeploymentCallback callback : callbacks)
-                        {
-                            callback.eventOccurred(event);
-                        }
+                        processEvent(event, callbacks);
+
                     }
-                    return report;
+                    return;
                 }
                 catch (AVMException e)
                 {
@@ -340,10 +288,7 @@ public class DeploymentServiceImpl implements DeploymentService
                     DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.FAILED,
                                                                 new Pair<Integer, String>(version, srcPath),
                                                                 dstPath, e.getMessage());
-                    for (DeploymentCallback callback : callbacks)
-                    {
-                        callback.eventOccurred(event);
-                    }
+                    processEvent(event, callbacks);
                 }
                 throw new AVMException("Deployment to " + hostName + " failed.", e);
             }
@@ -355,7 +300,7 @@ public class DeploymentServiceImpl implements DeploymentService
     }
 
     /**
-     * Deploy all the children of corresponding directories.
+     * Deploy all the children of corresponding directories. (ASR version)
      * @param src The source directory.
      * @param dst The destination directory.
      * @param remote The AVMRemote instance.
@@ -363,11 +308,11 @@ public class DeploymentServiceImpl implements DeploymentService
      * @param dontDo Flag for dry run.
      */
     private void deployDirectoryPush(int version,
-                                     AVMNodeDescriptor src, AVMNodeDescriptor dst,
+                                     AVMNodeDescriptor src, 
+                                     AVMNodeDescriptor dst,
                                      AVMRemote remote,
                                      NameMatcher matcher,
                                      boolean dontDelete, boolean dontDo,
-                                     DeploymentReport report,
                                      List<DeploymentCallback> callbacks)
     {
         if (src.getGuid().equals(dst.getGuid()))
@@ -389,7 +334,7 @@ public class DeploymentServiceImpl implements DeploymentService
             AVMNodeDescriptor dstNode = dstList.get(name);
             if (!excluded(matcher, srcNode.getPath(), dstNode != null ? dstNode.getPath() : null))
             {
-                deploySinglePush(version, srcNode, dst, dstNode, remote, matcher, dontDelete, dontDo, report, callbacks);
+                deploySinglePush(version, srcNode, dst, dstNode, remote, matcher, dontDelete, dontDo, callbacks);
             }
         }
         // Delete nodes that are missing in the source.
@@ -410,18 +355,7 @@ public class DeploymentServiceImpl implements DeploymentService
                         new DeploymentEvent(DeploymentEvent.Type.DELETED,
                                             source,
                                             destination);
-                    if (fgLogger.isDebugEnabled())
-                    {
-                        fgLogger.debug(event);
-                    }
-                    report.add(event);
-                    if (callbacks != null)
-                    {
-                        for (DeploymentCallback callback : callbacks)
-                        {
-                            callback.eventOccurred(event);
-                        }
-                    }
+                    processEvent(event, callbacks);
                     if (dontDo)
                     {
                         continue;
@@ -446,7 +380,6 @@ public class DeploymentServiceImpl implements DeploymentService
                                   AVMNodeDescriptor dst, AVMRemote remote,
                                   NameMatcher matcher,
                                   boolean dontDelete, boolean dontDo,
-                                  DeploymentReport report,
                                   List<DeploymentCallback> callbacks)
     {
         // Destination does not exist.
@@ -461,18 +394,7 @@ public class DeploymentServiceImpl implements DeploymentService
                 DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.COPIED,
                                                       source,
                                                       destination);
-                if (fgLogger.isDebugEnabled())
-                {
-                    fgLogger.debug(event);
-                }
-                report.add(event);
-                if (callbacks != null)
-                {
-                    for (DeploymentCallback callback : callbacks)
-                    {
-                        callback.eventOccurred(event);
-                    }
-                }
+                processEvent(event, callbacks);
                 if (dontDo)
                 {
                     return;
@@ -486,18 +408,7 @@ public class DeploymentServiceImpl implements DeploymentService
             DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.COPIED,
                                                         source,
                                                         destination);
-            if (fgLogger.isDebugEnabled())
-            {
-                fgLogger.debug(event);
-            }
-            report.add(event);
-            if (callbacks != null)
-            {
-                for (DeploymentCallback callback : callbacks)
-                {
-                    callback.eventOccurred(event);
-                }
-            }
+            processEvent(event, callbacks);
             if (dontDo)
             {
                 return;
@@ -515,7 +426,7 @@ public class DeploymentServiceImpl implements DeploymentService
             // If the destination is also a directory, recursively deploy.
             if (dst.isDirectory())
             {
-                deployDirectoryPush(version, src, dst, remote, matcher, dontDelete, dontDo, report, callbacks);
+                deployDirectoryPush(version, src, dst, remote, matcher, dontDelete, dontDo, callbacks);
                 return;
             }
             Pair<Integer, String> source =
@@ -523,18 +434,8 @@ public class DeploymentServiceImpl implements DeploymentService
             String destination = dst.getPath();
             DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.COPIED,
                                                         source, destination);
-            if (fgLogger.isDebugEnabled())
-            {
-                fgLogger.debug(event);
-            }
-            report.add(event);
-            if (callbacks != null)
-            {
-                for (DeploymentCallback callback : callbacks)
-                {
-                    callback.eventOccurred(event);
-                }
-            }
+            processEvent(event, callbacks);
+            
             if (dontDo)
             {
                 return;
@@ -561,14 +462,7 @@ public class DeploymentServiceImpl implements DeploymentService
             {
                 fgLogger.debug(event);
             }
-            report.add(event);
-            if (callbacks != null)
-            {
-                for (DeploymentCallback callback : callbacks)
-                {
-                    callback.eventOccurred(event);
-                }
-            }
+            processEvent(event, callbacks);
             if (dontDo)
             {
                 return;
@@ -585,18 +479,7 @@ public class DeploymentServiceImpl implements DeploymentService
         DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.UPDATED,
                                                     source,
                                                     destination);
-        if (fgLogger.isDebugEnabled())
-        {
-            fgLogger.debug(event);
-        }
-        report.add(event);
-        if (callbacks != null)
-        {
-            for (DeploymentCallback callback : callbacks)
-            {
-                callback.eventOccurred(event);
-            }
-        }
+        processEvent(event, callbacks);
         if (dontDo)
         {
             return;
@@ -762,23 +645,64 @@ public class DeploymentServiceImpl implements DeploymentService
         }
     }
 
-    private DeploymentReceiverService getReceiver(String hostName, int port)
-    {
+    /**
+     * Utility method to get the payload transformers for a named transport
+     * 
+     * The transport adapters are sprung into the deploymentReceiverTransportAdapters property
+     * 
+     * @return the transformers
+     */
+    private List<DeploymentTransportOutputFilter> getTransformers(String transportName)
+    {    	
+        
+        DeploymentReceiverTransportAdapter adapter = deploymentReceiverTransportAdapters.get(transportName);
+        	
+        if(adapter == null) {
+        		// Adapter does not exist
+        		fgLogger.error("Deployment Receiver Transport adapter does not exist for transport. Name: " + transportName);
+        		throw new AVMException("Deployment Receiver Transport adapter does not exist for transport. Name: " + transportName);
+        }
+
+        List<DeploymentTransportOutputFilter> transformers = adapter.getTransformers();
+        return transformers;
+    }
+
+    
+    
+    /**
+     * Utility method to get a connection to a remote file system receiver (FSR)
+     * 
+     * The transport adapters are sprung into the deploymentReceiverTransportAdapters property
+     * @param transportName the name of the adapter for the transport 
+     * @param hostName the hostname or IP address to connect to
+     * @param port the port number
+     * @param version the version of the website to deploy
+     * @param srcPath the path of the website
+     * 
+     * @return an implementation of the service
+     */
+    private DeploymentReceiverService getDeploymentReceiverService(String transportName, String hostName, int port, int version, String srcPath)
+    {    	
+ 
+       DeploymentReceiverTransportAdapter adapter = deploymentReceiverTransportAdapters.get(transportName);
+        	
+        if(adapter == null) {
+        	// Adapter does not exist
+        	fgLogger.error("Deployment Receiver Transport adapter does not exist for transport. Name: " + transportName);
+        		throw new AVMException("Deployment Receiver Transport adapter does not exist for transport. Name: " + transportName);
+        }
         try
         {
-            RmiProxyFactoryBean factory = new RmiProxyFactoryBean();
-            factory.setRefreshStubOnConnectFailure(true);
-            factory.setServiceInterface(DeploymentReceiverTransport.class);
-            factory.setServiceUrl("rmi://" + hostName + ":" + port + "/deployment");
-            factory.afterPropertiesSet();
-            DeploymentReceiverTransport transport = (DeploymentReceiverTransport)factory.getObject();
+        	DeploymentReceiverTransport transport = adapter.getTransport(hostName, port, version, srcPath);
+        		
+        	// Now decorate the transport with the service client
             DeploymentReceiverServiceClient service = new DeploymentReceiverServiceClient();
             service.setDeploymentReceiverTransport(transport);
             return service;
         }
         catch (Exception e)
         {
-            throw new AVMException("Could not connect to " + hostName + " at " + port, e);
+            throw new AVMException("Could not connect to remote FSR, transportName:" + transportName + ", hostName:" + hostName + ", port: " + port, e);
         }
     }
 
@@ -842,85 +766,195 @@ public class DeploymentServiceImpl implements DeploymentService
         }
     }
 
-    /* (non-Javadoc)
+    /**
+     * Deploy differences to a File System Receiver, FSR
+     * 
+     *  @param version snapshot version to deploy.  If 0 then a new snapshot is created.
+     *  @param srcPath 
+     *	@param adapterName
+     *	@param hostName
+     *  @param port
+     *  @param userName 
+     *  @param password
+     *  @param target 
+     *  @param matcher
+     *  @param createDst 	Not implemented
+     *  @param dontDelete   Not implemented
+     *  @param dontDo		Not implemented
+     *  @param callbacks	Event callbacks when a deployment Starts, Ends, Adds, Deletes etc.
+     *  
      * @see org.alfresco.service.cmr.avm.deploy.DeploymentService#deployDifferenceFS(int, java.lang.String, java.lang.String, int, java.lang.String, java.lang.String, java.lang.String, boolean, boolean)
      */
-    public DeploymentReport deployDifferenceFS(int version, String srcPath, String hostName,
-                                               int port, String userName, String password,
-                                               String target, NameMatcher matcher, boolean createDst,
-                                               boolean dontDelete, boolean dontDo,
-                                               List<DeploymentCallback> callbacks)
+	public void deployDifferenceFS(int version, 
+			String srcPath,
+			String adapterName, 
+			String hostName, 
+			int port, 
+			String userName, 
+			String password, 
+			String target,
+			NameMatcher matcher, 
+			boolean createDst, 
+			boolean dontDelete,
+			boolean dontDo, 
+			List<DeploymentCallback> callbacks) 
     {
         if (fgLogger.isDebugEnabled())
         {
-            fgLogger.debug("Deploying To FileSystem Reciever on " + hostName + " to target " + target);
+            fgLogger.debug("Deploying To File System Reciever on " + hostName + " to target " + target);
         }
-        DeploymentReport report = new DeploymentReport();
+        
         DeploymentReceiverService service = null;
+        List<DeploymentTransportOutputFilter>transformers = null;
         String ticket = null;
-        try
-        {
-            service = getReceiver(hostName, port);
-            DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.START,
-                                                        new Pair<Integer, String>(version, srcPath),
-                                                        target);
-            if (fgLogger.isDebugEnabled())
-            {
-                fgLogger.debug(event);
-            }
-            if (callbacks != null)
-            {
-                for (DeploymentCallback callback : callbacks)
-                {
-                    callback.eventOccurred(event);
-                }
-            }
-            report.add(event);
-            String storeName = srcPath.substring(0, srcPath.indexOf(':'));
+        
+        String currentEffectiveUser = AuthenticationUtil.getCurrentEffectiveUserName();
 
-            if (version < 0)
+        try
+        {       
+            // Kick off the event queue that will process deployment call-backs 
+            LinkedBlockingQueue<DeploymentEvent> eventQueue = new LinkedBlockingQueue<DeploymentEvent>();
+            EventQueueWorker eventQueueWorker = new EventQueueWorker(currentEffectiveUser, eventQueue, callbacks);
+		    eventQueueWorker.setName(eventQueueWorker.getClass().getName());
+			eventQueueWorker.setPriority(Thread.currentThread().getPriority());
+            eventQueueWorker.start();
+                
+            try 
             {
-                version = fAVMService.createSnapshot(storeName, null, null).get(storeName);
-            }
-            ticket = service.begin(target, userName, password);
-            deployDirectoryPush(service, ticket, report, callbacks, version, srcPath, "/", matcher);
-            service.commit(ticket);
-            event = new DeploymentEvent(DeploymentEvent.Type.END,
-                                        new Pair<Integer, String>(version, srcPath),
-                                        target);
-            if (callbacks != null)
-            {
-                for (DeploymentCallback callback : callbacks)
+            	 eventQueue.add(new DeploymentEvent(DeploymentEvent.Type.START,
+                        new Pair<Integer, String>(version, srcPath),
+                        target));
+                try {           
+                
+                	if (version < 0)
+                	{
+                		String storeName = srcPath.substring(0, srcPath.indexOf(':'));
+                		version = fAVMService.createSnapshot(storeName, null, null).get(storeName);
+                	}
+
+                	transformers = getTransformers(adapterName);
+                	service = getDeploymentReceiverService(adapterName, hostName, port, version, srcPath);
+                } 
+                catch (Exception e)
                 {
-                    callback.eventOccurred(event);
+                	// unable to get service
+               	 	eventQueue.add(new DeploymentEvent(DeploymentEvent.Type.FAILED,
+                         new Pair<Integer, String>(version, srcPath),
+                         target, e.getMessage()));
+               	 	throw e;
                 }
+            
+                // Go parallel to reduce the problems of high network latency           
+
+                LinkedBlockingQueue<DeploymentWork> sendQueue = new LinkedBlockingQueue<DeploymentWork>();
+                List<Exception> errors = Collections.synchronizedList(new ArrayList<Exception>());
+
+                SendQueueWorker[] workers = new SendQueueWorker[numberOfSendingThreads];
+                for(int i = 0; i < numberOfSendingThreads; i++)
+                {
+       				workers[i] = new SendQueueWorker(currentEffectiveUser, service, fAVMService, errors, eventQueue, sendQueue, transformers);
+       			    workers[i].setName(workers[i].getClass().getName());
+       			    workers[i].setPriority(Thread.currentThread().getPriority());
+                }
+                
+            	for(SendQueueWorker sender : workers) 
+            	{
+            		sender.start();
+            	}
+               
+                try 
+                {
+                	ticket = service.begin(target, userName, password);
+                	deployDirectoryPushFSR(service, ticket, version, srcPath, "/", matcher, eventQueue, sendQueue, errors);
+                }
+                catch (Exception e)
+                {
+                	errors.add(e);
+                }
+                finally
+                {
+                	// clean up senders thread pool
+                	fgLogger.debug("closing deployment workers");
+                	for(SendQueueWorker sender : workers) 
+                	{
+                		sender.stopMeWhenIdle();
+                	}
+                	for(SendQueueWorker sender : workers) 
+                	{
+                		sender.join();
+                	}
+                	fgLogger.debug("deployment workers closed");
+                
+                	if (errors.size() <= 0 && ticket != null)
+                	{
+                		try 
+                		{
+                			service.commit(ticket);
+                		} 
+                		catch (Exception e)
+                		{
+                			errors.add(e);
+                		}
+                	}
+                
+                	if(errors.size() > 0)
+                	{
+                		Exception firstError = errors.get(0);
+                
+                		eventQueue.add(new DeploymentEvent(DeploymentEvent.Type.FAILED,
+                        new Pair<Integer, String>(version, srcPath),
+                        target, firstError.getMessage()));
+
+                		if (ticket != null)
+                		{
+                			try 
+                			{
+                				service.abort(ticket);
+                			} 
+                			catch (Exception ae)
+                			{
+                				// nothing we can do here
+                				fgLogger.error("Unable to abort deployment.  Error in exception handler", ae);
+                			}
+                		}                	
+                		// yes there were errors, throw the first exception that was saved
+                		MessageFormat f = new MessageFormat("Error during deployment srcPath: {0}, version:{1}, adapterName:{2}, hostName:{3}, port:{4}, error:{5}");
+                		Object[] objs = { srcPath, version, adapterName, hostName, port, firstError };
+                	          	
+                		throw new AVMException(f.format(objs), firstError);
+                	}
+                } // end of finally block
+                
+                // Success if we get here
+                eventQueue.add(new DeploymentEvent(DeploymentEvent.Type.END,
+                                        new Pair<Integer, String>(version, srcPath),
+                                        target));
+                
+                fgLogger.debug("deployment completed successfully");
             }
-            report.add(event);
-            return report;
+            finally 
+            {
+            	// Now stutdown the event queue
+            	fgLogger.debug("closing event queue");
+            	eventQueueWorker.stopMeWhenIdle();
+            	eventQueueWorker.join();
+            	fgLogger.debug("event queue closed");
+            }
         }
         catch (Exception e)
         {
-            DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.FAILED,
-                                                        new Pair<Integer, String>(version, srcPath),
-                                                        target, e.getMessage());
-            for (DeploymentCallback callback : callbacks)
-            {
-                callback.eventOccurred(event);
-            }
-            
-            if (service != null && ticket != null)
-            {
-            	// TODO MER - Consider what happens if abort throws an exception itself, then we loose e?
-                service.abort(ticket);
-            }
-            
-            throw new AVMException("Deployment to: " + target + " failed.", e);
+        	// yes there were errors
+    		MessageFormat f = new MessageFormat("Deployment exception, unable to deploy : srcPath:{0}, target:{1}, version:{2}, adapterName:{3}, hostName:{4}, port:{5}, error:{6}");
+    		Object[] objs = { srcPath, target, version, adapterName, hostName, port, e };       
+            throw new AVMException(f.format(objs), e);
         }
     }
     /**
-     * deployDirectoryPush
+     * deployDirectoryPush (FSR only)
+     * 
      * Compares the source and destination listings and updates report with update events required to make 
      * dest similar to src. 
+     * 
      * @param service
      * @param ticket
      * @param report 
@@ -930,21 +964,27 @@ public class DeploymentServiceImpl implements DeploymentService
      * @param dstPath
      * @param matcher
      */
-    private void deployDirectoryPush(DeploymentReceiverService service, String ticket,
-                                     DeploymentReport report, List<DeploymentCallback> callbacks,
-                                     int version,
-                                     String srcPath, String dstPath, NameMatcher matcher)
+    private void deployDirectoryPushFSR(DeploymentReceiverService service, 
+    		String ticket,
+            int version,
+            String srcPath, 
+            String dstPath, 
+            NameMatcher matcher,
+    		BlockingQueue<DeploymentEvent> eventQueue,
+    		BlockingQueue<DeploymentWork> sendQueue,
+    		List<Exception> errors)
     {
         Map<String, AVMNodeDescriptor> srcListing = fAVMService.getDirectoryListing(version, srcPath);
         List<FileDescriptor> dstListing = service.getListing(ticket, dstPath);
         Iterator<AVMNodeDescriptor> srcIter = srcListing.values().iterator();
         Iterator<FileDescriptor> dstIter = dstListing.iterator();
+	    
         // Here with two sorted directory listings
         AVMNodeDescriptor src = null;
         FileDescriptor dst = null;
         
         // Step through both directory listings
-        while (srcIter.hasNext() || dstIter.hasNext() || src != null || dst != null)
+        while ((srcIter.hasNext() || dstIter.hasNext() || src != null || dst != null) && errors.size() <= 0)
         {
             if (src == null)
             {
@@ -970,22 +1010,14 @@ public class DeploymentServiceImpl implements DeploymentService
                 String newDstPath = extendPath(dstPath, dst.getName());
                 if (!excluded(matcher, null, newDstPath))
                 {
-                    service.delete(ticket, newDstPath);
-                    DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.DELETED,
-                                                                new Pair<Integer, String>(version, extendPath(srcPath, dst.getName())),
-                                                                newDstPath);
-                    if (fgLogger.isDebugEnabled())
-                    {
-                        fgLogger.debug(event);
-                    }
-                    if (callbacks != null)
-                    {
-                        for (DeploymentCallback callback : callbacks)
-                        {
-                            callback.eventOccurred(event);
-                        }
-                    }
-                    report.add(event);
+//                    service.delete(ticket, newDstPath);
+//                    eventQueue.add(new DeploymentEvent(DeploymentEvent.Type.DELETED,
+//                                                                new Pair<Integer, String>(version, extendPath(srcPath, dst.getName())),
+//                                                                newDstPath));
+                	
+                    sendQueue.add(new DeploymentWork(new DeploymentEvent(DeploymentEvent.Type.DELETED,
+                            new Pair<Integer, String>(version, extendPath(srcPath, dst.getName())), 
+                            newDstPath), ticket));
                 }
                 dst = null;
                 continue;
@@ -995,7 +1027,7 @@ public class DeploymentServiceImpl implements DeploymentService
             {
                 if (!excluded(matcher, src.getPath(), null))
                 {
-                    copy(service, ticket, report, callbacks, version, src, dstPath, matcher);
+                    createOnFSR(service, ticket, version, src, dstPath, matcher, sendQueue);
                 }
                 src = null;
                 continue;
@@ -1008,7 +1040,7 @@ public class DeploymentServiceImpl implements DeploymentService
             	// src is less than dst - must be new content in src
                 if (!excluded(matcher, src.getPath(), null))
                 {
-                    copy(service, ticket, report, callbacks, version, src, dstPath, matcher);
+                    createOnFSR(service, ticket, version, src, dstPath, matcher, sendQueue);
                 }
                 src = null;
                 continue;
@@ -1024,11 +1056,18 @@ public class DeploymentServiceImpl implements DeploymentService
                 }
                 if (src.isFile())
                 {
+                	// this is an update to a file
                     String extendedPath = extendPath(dstPath, dst.getName());
                     if (!excluded(matcher, src.getPath(), extendedPath))
                     {
-                        copyFile(service, ticket, report, callbacks, version, src,
-                                 extendedPath);
+                    	// Work in progress
+                    	sendQueue.add(new DeploymentWork(
+                    			new DeploymentEvent(DeploymentEvent.Type.UPDATED,
+                                new Pair<Integer, String>(version, src.getPath()),                              
+                                extendedPath), ticket, src));
+                        // Work in progress
+//                        copyFileToFSR(service, ticket, version, src,
+//                                 extendedPath, false);
                     }
                     src = null;
                     dst = null;
@@ -1040,7 +1079,7 @@ public class DeploymentServiceImpl implements DeploymentService
                     String extendedPath = extendPath(dstPath, dst.getName());
                     if (!excluded(matcher, src.getPath(), extendedPath))
                     {
-                        deployDirectoryPush(service, ticket, report, callbacks, version, src.getPath(), extendPath(dstPath, dst.getName()), matcher);
+                        deployDirectoryPushFSR(service, ticket, version, src.getPath(), extendedPath, matcher, eventQueue, sendQueue, errors);
                     }
                     service.setGuid(ticket, extendedPath, src.getGuid());
                     src = null;
@@ -1049,7 +1088,7 @@ public class DeploymentServiceImpl implements DeploymentService
                 }
                 if (!excluded(matcher, src.getPath(), null))
                 {
-                    copy(service, ticket, report, callbacks, version, src, dstPath, matcher);
+                    createOnFSR(service, ticket, version, src, dstPath, matcher, sendQueue);
                 }
                 src = null;
                 dst = null;
@@ -1058,71 +1097,26 @@ public class DeploymentServiceImpl implements DeploymentService
             // diff > 0
             // Destination is missing in source, delete it.
             String newDstPath = extendPath(dstPath, dst.getName());
-            service.delete(ticket, newDstPath);
-            DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.DELETED,
-                                                        new Pair<Integer, String>(version, extendPath(srcPath, dst.getName())),
-                                                        newDstPath);
-            if (fgLogger.isDebugEnabled())
-            {
-                fgLogger.debug(event);
-            }
-            if (callbacks != null)
-            {
-                for (DeploymentCallback callback : callbacks)
-                {
-                    callback.eventOccurred(event);
-                }
-            }
-            report.add(event);
+
+            //            service.delete(ticket, newDstPath);
+//            
+//            eventQueue.add(new DeploymentEvent(DeploymentEvent.Type.DELETED,
+//                                                        new Pair<Integer, String>(version, extendPath(srcPath, dst.getName())),
+//                                                        newDstPath));
+ 
+            //
+            sendQueue.add(new DeploymentWork(new DeploymentEvent(DeploymentEvent.Type.DELETED,
+                    new Pair<Integer, String>(version, extendPath(srcPath, dst.getName())), 
+                    newDstPath), ticket));
+            
+            //
+
             dst = null;
         }
     }
 
     /**
-     * Copy or overwrite a single file.
-     * @param service
-     * @param ticket
-     * @param report
-     * @param callback
-     * @param version
-     * @param src
-     * @param dstPath
-     */
-    private void copyFile(DeploymentReceiverService service, String ticket,
-                          DeploymentReport report, List<DeploymentCallback> callbacks, int version,
-                          AVMNodeDescriptor src, String dstPath)
-    {
-        InputStream in = fAVMService.getFileInputStream(src);
-        OutputStream out = service.send(ticket, dstPath, src.getGuid());
-        try
-        {
-            copyStream(in, out);
-            service.finishSend(ticket, out);
-            DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.COPIED,
-                                                        new Pair<Integer, String>(version, src.getPath()),
-                                                        dstPath);
-            if (fgLogger.isDebugEnabled())
-            {
-                fgLogger.debug(event);
-            }
-            if (callbacks != null)
-            {
-                for (DeploymentCallback callback : callbacks)
-                {
-                    callback.eventOccurred(event);
-                }
-            }
-            report.add(event);
-        }
-        catch (Exception e)
-        {
-            service.abort(ticket);
-            throw new AVMException("Failed to copy " + src + ". Deployment aborted.", e);
-        }
-    }
-
-    /**
-     * Copy a file or directory to an empty destination.
+     * Copy a file or directory to an empty destination on an FSR
      * @param service
      * @param ticket
      * @param report
@@ -1131,21 +1125,45 @@ public class DeploymentServiceImpl implements DeploymentService
      * @param src
      * @param parentPath
      */
-    private void copy(DeploymentReceiverService service, String ticket,
-                      DeploymentReport report, List<DeploymentCallback> callbacks,
-                      int version, AVMNodeDescriptor src, String parentPath, NameMatcher matcher)
+    private void createOnFSR(DeploymentReceiverService service, 
+    		String ticket,
+            int version, 
+            AVMNodeDescriptor src, 
+            String parentPath, 
+            NameMatcher matcher,
+    		BlockingQueue<DeploymentWork> sendQueue)
     {
         String dstPath = extendPath(parentPath, src.getName());
+        
+    	sendQueue.add(new DeploymentWork(
+    			new DeploymentEvent(DeploymentEvent.Type.COPIED,
+                new Pair<Integer, String>(version, src.getPath()),                              
+                dstPath), ticket, src));
+    	
         if (src.isFile())
         {
-            copyFile(service, ticket, report, callbacks, version, src, dstPath);
+ //           copyFileToFSR(service, ticket, version, src, dstPath, true, transformers);
             return;
         }
-        // src is a directory.
-        service.mkdir(ticket, dstPath, src.getGuid());
-        DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.COPIED,
-                                                    new Pair<Integer, String>(version, src.getPath()),
-                                                    dstPath);
+        
+        // Need to create directories in controlling thread since then need to be BEFORE any children are written
+        
+        // here if src is a directory.   
+    	service.mkdir(ticket, dstPath, src.getGuid());
+
+        // now copy the children over
+        Map<String, AVMNodeDescriptor> listing = fAVMService.getDirectoryListing(src);
+        for (AVMNodeDescriptor child : listing.values())
+        {
+            if (!excluded(matcher, child.getPath(), null))
+            {
+                createOnFSR(service, ticket, version, child, dstPath, matcher, sendQueue);
+            }
+        }
+    }
+    
+    private void processEvent(DeploymentEvent event,  List<DeploymentCallback> callbacks)
+    {
         if (fgLogger.isDebugEnabled())
         {
             fgLogger.debug(event);
@@ -1155,15 +1173,6 @@ public class DeploymentServiceImpl implements DeploymentService
             for (DeploymentCallback callback : callbacks)
             {
                 callback.eventOccurred(event);
-            }
-        }
-        report.add(event);
-        Map<String, AVMNodeDescriptor> listing = fAVMService.getDirectoryListing(src);
-        for (AVMNodeDescriptor child : listing.values())
-        {
-            if (!excluded(matcher, child.getPath(), null))
-            {
-                copy(service, ticket, report, callbacks, version, child, dstPath, matcher);
             }
         }
     }
@@ -1199,7 +1208,7 @@ public class DeploymentServiceImpl implements DeploymentService
      * Get the object to lock for an alfresco->alfresco target.
      * @param host
      * @param port
-     * @return
+     * @return the lock
      */
     private synchronized DeploymentDestination getLock(String host, int port)
     {
@@ -1212,4 +1221,256 @@ public class DeploymentServiceImpl implements DeploymentService
         }
         return dest;
     }
+    
+
+    private Map<String, DeploymentReceiverTransportAdapter> deploymentReceiverTransportAdapters;
+    /**
+     * The deployment transport adapters provide the factories used to connect to a remote file system receiver.
+     */
+    public void setDeploymentReceiverTransportAdapters(Map<String, DeploymentReceiverTransportAdapter> adapters) {
+    	this.deploymentReceiverTransportAdapters=adapters;
+    }
+    
+    public Map<String, DeploymentReceiverTransportAdapter> getDeploymentReceiverTransportAdapters() {
+    	return this.deploymentReceiverTransportAdapters;
+    }
+
+	public Set<String> getAdapterNames() 
+	{
+		if(deploymentReceiverTransportAdapters != null) {
+			return(deploymentReceiverTransportAdapters.keySet());
+		}	
+		else 
+		{
+			Set<String> ret = new HashSet<String>(1);
+			ret.add("default");
+			return ret;
+		}
+	}
+	
+	public void setNumberOfSendingThreads(int numberOfSendingThreads) {
+		this.numberOfSendingThreads = numberOfSendingThreads;
+	}
+
+	public int getNumberOfSendingThreads() {
+		return numberOfSendingThreads;
+	}
+
+	/**
+	 * This thread processes the event queue to do the callbacks
+	 * @author mrogers
+	 *
+	 */
+	private class EventQueueWorker extends Thread
+	{
+		private BlockingQueue<DeploymentEvent> eventQueue;
+		private List<DeploymentCallback> callbacks;
+		private String userName;
+		
+		private boolean stopMe = false;
+		
+		EventQueueWorker(String userName, BlockingQueue<DeploymentEvent> eventQueue, List<DeploymentCallback> callbacks)
+		{
+			this.eventQueue = eventQueue;
+			this.callbacks = callbacks;
+			this.userName = userName;
+		}
+		
+		public void run()
+		{
+		    AuthenticationUtil.setCurrentEffectiveUser(userName);
+		    AuthenticationUtil.setCurrentUser(userName);
+		    
+			while (true)
+			{
+				DeploymentEvent event = null;
+				try {
+					event = eventQueue.poll(3, TimeUnit.SECONDS);
+				} catch (InterruptedException e1) {
+					fgLogger.debug("Interrupted ", e1);
+				}
+		
+				if(event == null) 
+				{
+					if(stopMe) 
+					{
+						fgLogger.debug("Event Queue Closing Normally");
+						break;
+					}
+					continue;
+				}
+				
+				if (fgLogger.isDebugEnabled())
+		        {
+		            fgLogger.debug(event);
+		        }
+		        if (callbacks != null)
+		        {
+		            for (DeploymentCallback callback : callbacks)
+		            {
+		                callback.eventOccurred(event);
+		            }
+		        }
+			}
+		}
+		
+		public void stopMeWhenIdle() 
+		{
+			stopMe = true;
+		}
+		
+	}
+	
+	/**
+	 * This thread processes the send queue
+	 * @author mrogers
+	 *
+	 */
+	private class SendQueueWorker extends Thread
+	{
+		private BlockingQueue<DeploymentEvent> eventQueue;
+		private BlockingQueue<DeploymentWork> sendQueue;
+		private DeploymentReceiverService service;
+		private String userName;
+		private AVMService avmService;
+		List<Exception> errors;
+		List<DeploymentTransportOutputFilter> transformers;
+		
+		private boolean stopMe = false;
+		
+		SendQueueWorker(String userName,
+				DeploymentReceiverService service,
+				AVMService avmService,
+				List<Exception> errors,
+				BlockingQueue<DeploymentEvent> eventQueue, 
+				BlockingQueue<DeploymentWork> sendQueue,
+				List<DeploymentTransportOutputFilter> transformers
+				)
+		{
+			this.eventQueue = eventQueue;
+			this.sendQueue = sendQueue;
+			this.service = service;
+			this.avmService = avmService;
+			this.errors = errors;
+			this.transformers = transformers;
+			this.userName = userName;
+
+			
+		}
+		
+		public void run()
+		{
+		    AuthenticationUtil.setCurrentEffectiveUser(userName);
+		    AuthenticationUtil.setCurrentUser(userName);
+            
+			while (errors.size() <= 0)
+			{
+				DeploymentWork work = null;
+				try {
+					work = sendQueue.poll(3, TimeUnit.SECONDS);
+				} catch (InterruptedException e1) {
+					fgLogger.debug("Interrupted ", e1);
+					continue;
+				}
+								
+				if(work == null) 
+				{
+					if(stopMe) 
+					{	
+						fgLogger.debug("Send Queue Worker Closing Normally");
+						eventQueue = null;
+						sendQueue = null;
+						service = null;
+						errors = null;
+						break;
+					}
+				}
+				
+				if(work != null)
+				{
+					DeploymentEvent event = work.getEvent();
+					String ticket = work.getTicket();
+					try 
+					{
+						if(event.getType().equals(DeploymentEvent.Type.DELETED))
+						{
+							service.delete(ticket, event.getDestination());
+						} 
+						else if (event.getType().equals(DeploymentEvent.Type.COPIED))
+						{
+							AVMNodeDescriptor src = work.getSrc();
+							if(src.isFile())
+							{
+								copyFileToFSR(src, event.getDestination(), ticket);
+							}
+							else
+							{
+								// Do nothing. mkdir done on main thread. 
+								//makeDirectoryOnFSR(src, event.getDestination(), ticket);
+							}
+						}
+						else if (event.getType().equals(DeploymentEvent.Type.UPDATED))
+						{
+							copyFileToFSR(work.getSrc(), event.getDestination(), ticket);
+						}
+						// success, now put the event onto the event queue
+						eventQueue.add(event);
+					}
+					catch (Exception e)
+					{
+						errors.add(e);
+					}
+				}
+			}
+			fgLogger.debug("Send Queue Worker finished");
+		}
+		
+		public void stopMeWhenIdle() 
+		{
+			stopMe = true;
+		}
+		
+		
+	   /**
+	     * Create or update a single file on a remote FSR. 
+	     * @param ticket
+	     * @param src which file to copy
+	     * @param dstPath where to copy the file
+	     */
+	    private void copyFileToFSR(
+	            AVMNodeDescriptor src, 
+	            String dstPath,
+	            String ticket)
+	    {
+	        try
+	        {
+	        	InputStream in = avmService.getFileInputStream(src);
+	        
+	        	OutputStream out = service.send(ticket, dstPath, src.getGuid());
+	        	OutputStream baseStream = out; // finish send needs out, not a decorated stream
+	        
+	        	// Buffer the output, we don't want to send lots of small packets
+	        	out = new BufferedOutputStream(out, 10000);
+	        
+	        	// Call content transformers here to transform from local to network format
+	        	if(transformers != null && transformers.size() > 0) {
+	        		// yes we have pay-load transformers
+	        		for(DeploymentTransportOutputFilter transformer : transformers) 
+	        		{
+	        			out = transformer.addFilter(out, src.getPath());
+	        		}
+	        	}
+	        		        
+	            copyStream(in, out);
+	            service.finishSend(ticket, baseStream);
+	        }
+	        catch (Exception e)
+	        {
+	            fgLogger.debug("Failed to copy dstPath:" + dstPath , e);
+	            
+	            // throw first exception - this is the root of the problem.
+	            throw new AVMException("Failed to copy filename:" + dstPath, e);
+	        }
+	    }
+	}
 }

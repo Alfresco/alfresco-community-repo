@@ -306,6 +306,10 @@
                <title>Display Name</title>
                <type>d:text</type>
             </property>
+            <property name="wca: deployserveradaptername">
+               <title>Deployment Server Adapter Name</title>
+               <type>d:text</type>
+            </property>          
             <property name="wca:deployserverusername">
                <title>Username</title>
                <type>d:text</type>

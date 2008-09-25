@@ -45,6 +45,7 @@ import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.avm.deploy.DeploymentCallback;
 import org.alfresco.service.cmr.avm.deploy.DeploymentEvent;
 import org.alfresco.service.cmr.avm.deploy.DeploymentReport;
+import org.alfresco.service.cmr.avm.deploy.DeploymentReportCallback;
 import org.alfresco.service.cmr.avm.deploy.DeploymentService;
 import org.alfresco.service.cmr.avmsync.AVMSyncException;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -72,6 +73,8 @@ public class AVMDeployWebsiteAction extends ActionExecuterAbstractBase
    public static final String PARAM_SERVER = "server";
    public static final String PARAM_ATTEMPT = "attempt";
    public static final String PARAM_CALLBACK = "callback";
+   
+   public static final String ASYNC_QUEUE_NAME = "deployment";
 
    private int delay = -1;
    private int defaultAlfRmiPort = 50500;
@@ -79,6 +82,7 @@ public class AVMDeployWebsiteAction extends ActionExecuterAbstractBase
    private String defaultRemoteUsername = "admin";
    private String defaultRemotePassword = "admin";
    private String defaultTargetName = "default";
+   private String defaultAdapterName = "default";
    private List<DeploymentCallback> configuredCallbacks;
    private DeploymentService deployService;
    private ContentService contentService;
@@ -275,6 +279,7 @@ public class AVMDeployWebsiteAction extends ActionExecuterAbstractBase
       String sourcePath = (String)serverProps.get(WCMAppModel.PROP_DEPLOYSOURCEPATH);
       String excludes = (String)serverProps.get(WCMAppModel.PROP_DEPLOYEXCLUDES);
       String targetName = (String)serverProps.get(WCMAppModel.PROP_DEPLOYSERVERTARGET);
+      String adapterName = (String)serverProps.get(WCMAppModel.PROP_DEPLOYSERVERADPTERNAME);
       String targetPath = path;
 
       if (fileServerDeployment == false)
@@ -288,6 +293,12 @@ public class AVMDeployWebsiteAction extends ActionExecuterAbstractBase
          {
             targetPath = storePath[0] + "live:" + storePath[1];
          }
+      }
+      else 
+      {
+    	  if (adapterName == null) {
+    		  adapterName = defaultAdapterName;
+    	  }
       }
 
       // get defaults for data not provided in server node
@@ -371,7 +382,10 @@ public class AVMDeployWebsiteAction extends ActionExecuterAbstractBase
 
       // make the deploy call passing in the DeploymentCallback, if present
       Throwable deployError = null;
-      DeploymentReport report = null;
+      
+      DeploymentReport report = new DeploymentReport();
+      callbacks.add(new DeploymentReportCallback(report));
+      
       try
       {
          // overwrite the password before logging
@@ -384,8 +398,19 @@ public class AVMDeployWebsiteAction extends ActionExecuterAbstractBase
                logger.debug("Performing file server deployment to " + host + ":" + port +
                             " using deploymentserver: " + serverProps);
 
-            report = this.deployService.deployDifferenceFS(version, path, host, port,
-                     remoteUsername, remotePassword, targetName, regexMatcher, true, false, false, callbacks);
+            this.deployService.deployDifferenceFS(version, 
+            		path, 
+            		adapterName,
+            		host, 
+            		port,
+                    remoteUsername, 
+                    remotePassword, 
+                    targetName, 
+                    regexMatcher, 
+                    true, 
+                    false, 
+                    false, 
+                    callbacks);
          }
          else
          {
@@ -393,14 +418,14 @@ public class AVMDeployWebsiteAction extends ActionExecuterAbstractBase
                logger.debug("Performing Alfresco deployment to " + host + ":" + port +
                             " using deploymentserver: " + serverProps);
 
-            report = this.deployService.deployDifference(version, path, host, port,
-                     remoteUsername, remotePassword, targetPath, regexMatcher, true, false, false, callbacks);
+            this.deployService.deployDifference(version, path, host, port,
+                 remoteUsername, remotePassword, targetPath, regexMatcher, true, false, false, callbacks);
          }
       }
       catch (Throwable err)
       {
          deployError = err;
-         logger.error(deployError);
+         logger.error("Deployment Error", deployError);
       }
 
       if (report != null)
@@ -458,7 +483,7 @@ public class AVMDeployWebsiteAction extends ActionExecuterAbstractBase
       reportProps.put(WCMAppModel.PROP_DEPLOYSERVERURLUSED,
                serverProps.get(WCMAppModel.PROP_DEPLOYSERVERURL));
 
-      reportProps.put(WCMAppModel.PROP_DEPLOYSUCCESSFUL, (report != null));
+      reportProps.put(WCMAppModel.PROP_DEPLOYSUCCESSFUL, (report != null) && (error == null));
       if (report == null && error != null)
       {
          // add error message as fail reason if appropriate (the reported
@@ -515,4 +540,6 @@ public class AVMDeployWebsiteAction extends ActionExecuterAbstractBase
 
       return reportRef;
    }
+   
+
 }

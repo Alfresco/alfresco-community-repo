@@ -53,6 +53,13 @@ public abstract class ActionExecuterAbstractBase extends ParameterizedItemAbstra
     
     /** List of types and aspects for which this action is applicable */
     protected List<QName> applicableTypes = new ArrayList<QName>();
+    
+    /**
+     * 
+     */
+    private String queueName = "";
+    
+
 	
 	/**
 	 * Init method	 
@@ -127,6 +134,18 @@ public abstract class ActionExecuterAbstractBase extends ParameterizedItemAbstra
      * @param actionedUponNodeRef   the actioned upon node
      */
 	protected abstract void executeImpl(Action action, NodeRef actionedUponNodeRef);
+	
+	/**
+	 * Set the queueName which will execute this action
+	 * if blank or null then the action will be executed on the "default" queue
+	 * @param the name of the execution queue which should execute this action.
+	 */ 
+	public void setQueueName(String queueName) 
+	{
+		this.queueName = queueName;
+	}
 
-     
+	public String getQueueName() {
+		return queueName;
+	}
 }

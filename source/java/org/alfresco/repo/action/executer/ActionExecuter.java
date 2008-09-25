@@ -54,4 +54,10 @@ public interface ActionExecuter
     public void execute(
 			Action action,
             NodeRef actionedUponNodeRef);
+    
+	/**
+	 * Get the queueName that will execute this action
+	 */
+	String getQueueName();
+
 }

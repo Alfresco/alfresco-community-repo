@@ -62,6 +62,7 @@ import org.alfresco.service.cmr.thumbnail.ThumbnailService;
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.cmr.view.ExporterService;
 import org.alfresco.service.cmr.view.ImporterService;
+import org.alfresco.service.cmr.avm.deploy.DeploymentService;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.service.namespace.NamespaceService;
@@ -125,6 +126,7 @@ public interface ServiceRegistry
     static final QName VIRT_SERVER_REGISTRY = QName.createQName(NamespaceService.ALFRESCO_URI, "VirtServerRegistry");
     static final QName THUMBNAIL_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "ThumbnailService");
     static final QName TAGGING_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "TaggingService");
+    static final QName DEPLOYMENT_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "DeploymentService");
 
     /**
      * Get the list of services provided by the Repository
@@ -411,4 +413,11 @@ public interface ServiceRegistry
      */
     @NotAuditable
     TaggingService getTaggingService();
+    
+    /**
+     * Get the Deployment Service
+     * @return the deployment service (or null, if one is not provided)
+     */
+    @NotAuditable
+    DeploymentService getDeploymentService();
 }

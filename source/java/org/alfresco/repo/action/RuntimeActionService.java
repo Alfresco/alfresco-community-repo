@@ -24,10 +24,8 @@
  */
 package org.alfresco.repo.action;
 
-import java.util.List;
 import java.util.Set;
 
-import org.alfresco.repo.action.ActionServiceImpl.PendingAction;
 import org.alfresco.repo.action.evaluator.ActionConditionEvaluator;
 import org.alfresco.repo.action.executer.ActionExecuter;
 import org.alfresco.service.cmr.action.Action;
@@ -39,12 +37,17 @@ import org.alfresco.service.namespace.QName;
  */
 public interface RuntimeActionService
 {
+	/**
+	 * 
+	 */
+	void postCommit();
+	
     /**
      * Get the asynchronous action queue.
      * 
      * @return  the asynchronous action queue
      */
-	AsynchronousActionExecutionQueue getAsynchronousActionExecutionQueue();
+	//AsynchronousActionExecutionQueue getAsynchronousActionExecutionQueue();
 	
     /**
      * Register an action condition evaluator
@@ -93,10 +96,10 @@ public interface RuntimeActionService
      */
 	public void directActionExecution(Action action, NodeRef actionedUponNodeRef);
 	
-    /**
-     * Gets a list of the actions that are pending post transaction
-     * 
-     * @return  list of pending actions
-     */
-	public List<PendingAction> getPostTransactionPendingActions();
+//    /**
+//     * Gets a list of the actions that are pending post transaction
+//     * 
+//     * @return  list of pending actions
+//     */
+//	public List<PendingAction> getPostTransactionPendingActions();
 }

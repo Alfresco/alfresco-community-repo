@@ -481,6 +481,9 @@
     </bean>
 
     <bean id="indexThreadPoolExecutor" class="org.alfresco.util.ThreadPoolExecutorFactoryBean">
+    	<property name="poolName">
+    		<value>indexThread</value>
+    	</property>
         <property name="corePoolSize">
             <value>10</value>
         </property>
@@ -1085,18 +1088,7 @@
         </property>
     </bean>
 
-    <!--                -->
-    <!-- Thread Pool    -->
-    <!--                -->
 
-    <bean id="threadPoolExecutor" class="org.alfresco.util.ThreadPoolExecutorFactoryBean">
-        <property name="corePoolSize">
-            <value>2</value>
-        </property>
-        <property name="maximumPoolSize">
-            <value>10</value>
-        </property>
-    </bean>
 
     <!-- Query Register Component -->
 

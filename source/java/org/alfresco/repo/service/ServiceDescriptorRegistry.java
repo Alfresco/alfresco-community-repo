@@ -34,6 +34,7 @@ import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.attributes.AttributeService;
 import org.alfresco.service.cmr.audit.AuditService;
 import org.alfresco.service.cmr.avm.AVMService;
+import org.alfresco.service.cmr.avm.deploy.DeploymentService;
 import org.alfresco.service.cmr.avm.locking.AVMLockingService;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
@@ -451,4 +452,14 @@ public class ServiceDescriptorRegistry
     {
         return (TaggingService)getService(TAGGING_SERVICE);
     }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.service.ServiceRegistry#getDeploymentService()
+     */
+	public DeploymentService getDeploymentService() {
+        return (DeploymentService) getService(DEPLOYMENT_SERVICE);
+
+	}
+    
+
 }

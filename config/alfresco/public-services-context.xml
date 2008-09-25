@@ -1117,57 +1117,6 @@
         </property>
     </bean>
 
-     <!-- Deployment Service. -->
-
-     <bean id="deploymentService" class="org.alfresco.repo.deploy.DeploymentServiceImpl">
-        <property name="avmService">
-            <ref bean="indexingAVMService"/>
-        </property>
-     </bean>
-
-    
-    <bean id="deploymentServiceReadTxnAdvisor" class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
-        <property name="advice">
-            <ref bean="retryingReadTxnAdvice"/>
-        </property>
-        <property name="mappedNames">
-            <list>
-                <value>getRemoteActionService</value>
-            </list>
-        </property>
-    </bean>
-
-    <bean id="deploymentServiceWriteTxnAdvisor" class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
-        <property name="advice">
-            <ref bean="retryingWriteTxnAdvice"/>
-        </property>
-        <property name="mappedNames">
-            <list>
-                <value>deployDifferenceFS</value>
-                <value>deployDifference</value>
-            </list>
-        </property>
-    </bean>
-
-    <bean id="DeploymentService" class="org.springframework.aop.framework.ProxyFactoryBean">
-        <property name="proxyInterfaces">
-            <list>
-                <value>org.alfresco.service.cmr.avm.deploy.DeploymentService</value>
-            </list>
-        </property>
-        <property name="targetName">
-            <value>deploymentService</value>
-        </property>
-        <property name="interceptorNames">
-            <list>
-                <value>deploymentServiceWriteTxnAdvisor</value>
-                <value>deploymentServiceReadTxnAdvisor</value>
-                <value>checkTxnAdvisor</value>
-            </list>
-        </property>
-    </bean>
-
-
     <!-- AVM Locking Service. -->
 
     <bean id="avmLockingServiceReadTxnAdvisor" class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">

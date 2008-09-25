@@ -3,6 +3,7 @@
  */
 package org.alfresco.service.cmr.avm.deploy;
 
+import java.util.Set;
 import java.util.List;
 
 import org.alfresco.service.cmr.action.ActionService;
@@ -29,9 +30,11 @@ public interface DeploymentService
      * @param dontDo If this is set then this is a dry run.
      * @param callback A possibly null callback.
      */
-    public DeploymentReport deployDifference(int version, String srcPath,
-                                             String hostName, int port,
-                                             String userName, String password,
+    public void deployDifference(int version, String srcPath,
+                                             String hostName, 
+                                             int port,
+                                             String userName, 
+                                             String password,
                                              String dstPath,
                                              NameMatcher matcher,
                                              boolean createDst,
@@ -54,23 +57,37 @@ public interface DeploymentService
      * Deploy to a filesystem on another machine.
      * @param version The version to deploy from.
      * @param srcPath The path to deploy from.
+     * @param adapterName The name of the transport adapter to connect to the remote system.  
+     * The value "default" means use the traditional RMI used for versions of Alfresco prior to 3.0
      * @param hostName The hostname of the filesystem receiver.
      * @param port The port to connect to.
-     * @param userName The username for authentication
-     * @param password The password for authentication
+     * @param userName The username for authentication of the target
+     * @param password The password for authentication of the target
      * @param dstTarget The target on the deployment receiver.
      * @param createDst Flag for whether a missing destination should be created.
      * @param dontDelete Don't delete deleted nodes from destination.
      * @param dontDo If this is set, this is a dry run.
      * @param callback A possibly null callback.
      */
-    public DeploymentReport deployDifferenceFS(int version, String srcPath,
-                                               String hostName, int port,
-                                               String userName, String password,
-                                               String dstTarget,
-                                               NameMatcher matcher,
-                                               boolean createDst,
-                                               boolean dontDelete,
-                                               boolean dontDo,
-                                               List<DeploymentCallback> callback);
+    public void deployDifferenceFS(int version, 
+    		String srcPath,
+            String adapterName,
+            String hostName, 
+            int port,
+            String userName, 
+            String password,
+            String dstTarget,
+            NameMatcher matcher,
+            boolean createDst,
+            boolean dontDelete,
+            boolean dontDo,
+            List<DeploymentCallback> callback);
+    
+    /**
+     * Get the names of the transport adapters.
+     * 
+     * @return the adapters
+     */
+    public Set<String> getAdapterNames(); 
+
 }

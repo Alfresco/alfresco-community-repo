@@ -26,11 +26,15 @@
 package org.alfresco.repo.deploy;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.alfresco.repo.avm.AVMServiceTestBase;
 import org.alfresco.repo.avm.util.BulkLoader;
+import org.alfresco.service.cmr.avm.deploy.DeploymentCallback;
 import org.alfresco.service.cmr.avm.deploy.DeploymentEvent;
 import org.alfresco.service.cmr.avm.deploy.DeploymentReport;
+import org.alfresco.service.cmr.avm.deploy.DeploymentReportCallback;
 import org.alfresco.service.cmr.avm.deploy.DeploymentService;
 import org.alfresco.util.Deleter;
 import org.alfresco.util.NameMatcher;
@@ -62,7 +66,11 @@ public class FSDeploymentTest extends AVMServiceTestBase
             NameMatcher matcher = (NameMatcher)fContext.getBean("globalPathExcluder");
             setupBasicTree();
             fService.createFile("main:/a/b", "fudge.bak").close();
-            DeploymentReport report = service.deployDifferenceFS(-1, "main:/", "localhost", 44100, "Giles", "Watcher", "sampleTarget", matcher, false, false, false, null);
+            DeploymentReport report = new DeploymentReport();
+            List<DeploymentCallback> callbacks = new ArrayList<DeploymentCallback>();
+            callbacks.add(new DeploymentReportCallback(report));
+            
+            service.deployDifferenceFS(-1, "main:/", "localhost", "default", 44100, "Giles", "Watcher", "sampleTarget", matcher, false, false, false, callbacks);
             int count = 0;
             for (DeploymentEvent event : report)
             {
@@ -70,7 +78,14 @@ public class FSDeploymentTest extends AVMServiceTestBase
                 count++;
             }
             assertEquals(10, count);
-            report = service.deployDifferenceFS(-1, "main:/", "localhost", 44100, "Giles", "Watcher", "sampleTarget", matcher, false, false, false, null);
+            
+            report = new DeploymentReport();
+            callbacks = new ArrayList<DeploymentCallback>();
+            callbacks.add(new DeploymentReportCallback(report));
+
+            callbacks.add(new DeploymentReportCallback(report));
+
+            service.deployDifferenceFS(-1, "main:/", "localhost", "default", 44100, "Giles", "Watcher", "sampleTarget", matcher, false, false, false, callbacks);
             count = 0;
             for (DeploymentEvent event : report)
             {
@@ -80,7 +95,13 @@ public class FSDeploymentTest extends AVMServiceTestBase
             assertEquals(2, count);
             fService.createFile("main:/d", "jonathan").close();
             fService.removeNode("main:/a/b");
-            report = service.deployDifferenceFS(-1, "main:/", "localhost", 44100, "Giles", "Watcher", "sampleTarget", matcher, false, false, false, null);
+            
+            report = new DeploymentReport();
+            callbacks = new ArrayList<DeploymentCallback>();
+            callbacks.add(new DeploymentReportCallback(report));
+
+            
+            service.deployDifferenceFS(-1, "main:/", "localhost", "default", 44100, "Giles", "Watcher", "sampleTarget", matcher, false, false, false, callbacks);
             count = 0;
             for (DeploymentEvent event : report)
             {
@@ -90,7 +111,12 @@ public class FSDeploymentTest extends AVMServiceTestBase
             assertEquals(4, count);
             fService.removeNode("main:/d/e");
             fService.createFile("main:/d", "e").close();
-            report = service.deployDifferenceFS(-1, "main:/", "localhost", 44100, "Giles", "Watcher", "sampleTarget", matcher, false, false, false, null);
+            
+            report = new DeploymentReport();
+            callbacks = new ArrayList<DeploymentCallback>();
+            callbacks.add(new DeploymentReportCallback(report));
+
+            service.deployDifferenceFS(-1, "main:/", "localhost", "default", 44100, "Giles", "Watcher", "sampleTarget", matcher, false, false, false, callbacks);
             count = 0;
             for (DeploymentEvent event : report)
             {
@@ -102,7 +128,11 @@ public class FSDeploymentTest extends AVMServiceTestBase
             fService.createDirectory("main:/d", "e");
             fService.createFile("main:/d/e", "Warren.txt").close();
             fService.createFile("main:/d/e", "It's a silly name.txt").close();
-            report = service.deployDifferenceFS(-1, "main:/", "localhost", 44100, "Giles", "Watcher", "sampleTarget", matcher, false, false, false, null);
+            report = new DeploymentReport();
+            callbacks = new ArrayList<DeploymentCallback>();
+            callbacks.add(new DeploymentReportCallback(report));
+
+            service.deployDifferenceFS(-1, "main:/", "localhost", "default", 44100, "Giles", "Watcher", "sampleTarget", matcher, false, false, false, callbacks);
             count = 0;
             for (DeploymentEvent event : report)
             {
@@ -113,10 +143,18 @@ public class FSDeploymentTest extends AVMServiceTestBase
             BulkLoader loader = new BulkLoader();
             loader.setAvmService(fService);
             loader.recursiveLoad("source/java/org/alfresco/repo/avm", "main:/");
-            report = service.deployDifferenceFS(-1, "main:/", "localhost", 44100, "Giles", "Watcher", "sampleTarget", matcher, false, false, false, null);
+            report = new DeploymentReport();
+            callbacks = new ArrayList<DeploymentCallback>();
+            callbacks.add(new DeploymentReportCallback(report));
+
+            service.deployDifferenceFS(-1, "main:/", "localhost", "default", 44100, "Giles", "Watcher", "sampleTarget", matcher, false, false, false, callbacks);
             fService.removeNode("main:/avm/hibernate");
             fService.getFileOutputStream("main:/avm/AVMServiceTest.java").close();
-            report = service.deployDifferenceFS(-1, "main:/", "localhost", 44100, "Giles", "Watcher", "sampleTarget", matcher, false, false, false, null);
+            report = new DeploymentReport();
+            callbacks = new ArrayList<DeploymentCallback>();
+            callbacks.add(new DeploymentReportCallback(report));
+
+            service.deployDifferenceFS(-1, "main:/", "localhost", "default", 44100,  "Giles", "Watcher", "sampleTarget", matcher, false, false, false, callbacks);
             count = 0;
             for (DeploymentEvent event : report)
             {

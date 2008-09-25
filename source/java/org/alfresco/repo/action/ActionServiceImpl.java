@@ -112,11 +112,12 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
     
     /** The authentication component */
     private AuthenticationComponent authenticationComponent;
-	
+	   
 	/**
-	 * The asynchronous action execution queue
+	 * The asynchronous action execution queues
+	 * map of name, queue
 	 */
-	private AsynchronousActionExecutionQueue asynchronousActionExecutionQueue;
+	private Map<String, AsynchronousActionExecutionQueue> asynchronousActionExecutionQueues;
 	
 	/**
 	 * Action transaction listener
@@ -182,26 +183,16 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
     {
         this.dictionaryService = dictionaryService;
     }
-    
+    	
 	/**
-	 * Set the asynchronous action execution queue
+	 * Set the asynchronous action execution queues
 	 * 
-	 * @param asynchronousActionExecutionQueue	the asynchronous action execution queue
+	 * @param asynchronousActionExecutionQueue	the asynchronous action execution queues
 	 */
-	public void setAsynchronousActionExecutionQueue(
-			AsynchronousActionExecutionQueue asynchronousActionExecutionQueue)
+	public void setAsynchronousActionExecutionQueues(
+			Map<String, AsynchronousActionExecutionQueue> asynchronousActionExecutionQueues)
 	{
-		this.asynchronousActionExecutionQueue = asynchronousActionExecutionQueue;
-	}
-	
-	/**
-	 * Get the asychronous action execution queue
-	 * 
-	 * @return	the asynchronous action execution queue
-	 */
-	public AsynchronousActionExecutionQueue getAsynchronousActionExecutionQueue()
-	{
-		return asynchronousActionExecutionQueue;
+		this.asynchronousActionExecutionQueues = asynchronousActionExecutionQueues;
 	}
     
     /**
@@ -404,6 +395,71 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
 			addPostTransactionPendingAction(action, actionedUponNodeRef, checkConditions, actionChain);
 		}
 	}
+	
+	/**
+	 * called by transaction service.
+	 */
+	public void postCommit()
+	{
+		for (PendingAction pendingAction : getPostTransactionPendingActions())
+		{
+			queueAction(pendingAction);	
+		}
+	} 
+	
+	/**
+	 * 
+	 */
+	private void queueAction(PendingAction action) 
+	{
+		// Get the right queue
+		AsynchronousActionExecutionQueue queue = getQueue(action.action);
+
+		// Queue the action for execution
+		queue.executeAction(
+				this,
+				action.getAction(),
+				action.getActionedUponNodeRef(),
+				action.getCheckConditions(),
+                action.getActionChain());
+	}
+	
+	/**
+	 * 
+	 * @param compensatingAction
+	 * @param actionedUponNodeRef
+	 */
+	private void queueAction(Action compensatingAction, NodeRef actionedUponNodeRef)
+	{
+		// Get the right queue
+		AsynchronousActionExecutionQueue queue = getQueue(compensatingAction);
+		
+		// Queue the action for execution
+		queue.executeAction(this, compensatingAction, actionedUponNodeRef, false, null);	
+	}
+	
+	private AsynchronousActionExecutionQueue getQueue(Action action)
+	{
+		ActionExecuter executer = (ActionExecuter)this.applicationContext.getBean(action.getActionDefinitionName());
+		AsynchronousActionExecutionQueue queue = null; 
+		
+		String queueName = executer.getQueueName();
+		if(queueName == null)
+		{
+			queue = asynchronousActionExecutionQueues.get("");
+		}
+		else 
+		{
+			queue = asynchronousActionExecutionQueues.get(queueName);
+		}
+		if(queue == null)
+		{
+			// can't get queue
+			throw new ActionServiceException("Unable to get AsynchronousActionExecutionQueue name: "+ queueName);
+		}
+		
+		return queue;
+	}
 
 	/**
 	 * @see org.alfresco.repo.action.RuntimeActionService#executeActionImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef, boolean, org.alfresco.service.cmr.repository.NodeRef)
@@ -501,9 +557,7 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
     				{					
                         // Set the current user
                         ((ActionImpl)compensatingAction).setRunAsUser(currentUserName);
-                        
-    					// Queue the compensating action ready for execution                        
-    					this.asynchronousActionExecutionQueue.executeAction(this, compensatingAction, actionedUponNodeRef, false, null);
+    					queueAction(compensatingAction, actionedUponNodeRef);    				
     				}
     			}
     				
@@ -1195,7 +1249,7 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
 	 * @see org.alfresco.repo.action.RuntimeActionService#getPostTransactionPendingActions()
 	 */
 	@SuppressWarnings("unchecked")
-	public List<PendingAction> getPostTransactionPendingActions()
+	private List<PendingAction> getPostTransactionPendingActions()
 	{
 		return (List<PendingAction>)AlfrescoTransactionSupport.getResource(POST_TRANSACTION_PENDING_ACTIONS);
 	}
@@ -1203,7 +1257,7 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
 	/**
 	 * Pending action details class
 	 */
-	public class PendingAction
+	private class PendingAction
 	{
 		/**
 		 * The action

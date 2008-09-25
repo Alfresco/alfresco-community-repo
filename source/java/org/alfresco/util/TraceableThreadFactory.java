@@ -54,7 +54,7 @@ public class TraceableThreadFactory implements ThreadFactory
     }
     
     private final ThreadGroup group;
-    private final String namePrefix;
+    private String namePrefix;
     private final AtomicInteger threadNumber;
     private boolean threadDaemon;
     private int threadPriority;
@@ -98,4 +98,15 @@ public class TraceableThreadFactory implements ThreadFactory
         
         return thread;
     }
+    
+    public void setNamePrefix(String namePrefix)
+    {
+    	this.namePrefix = namePrefix;
+    }
+    
+    public String getNamePrefix()
+    {
+    	return this.namePrefix;
+    }
+    
 }

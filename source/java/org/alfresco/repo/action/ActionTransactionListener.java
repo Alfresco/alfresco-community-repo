@@ -24,7 +24,6 @@
  */
 package org.alfresco.repo.action;
 
-import org.alfresco.repo.action.ActionServiceImpl.PendingAction;
 import org.alfresco.repo.transaction.TransactionListener;
 import org.alfresco.util.GUID;
 
@@ -81,15 +80,7 @@ public class ActionTransactionListener implements TransactionListener
 	 */
 	public void afterCommit()
 	{
-		for (PendingAction pendingAction : this.actionService.getPostTransactionPendingActions())
-		{
-			this.actionService.getAsynchronousActionExecutionQueue().executeAction(
-					actionService,
-					pendingAction.getAction(),
-					pendingAction.getActionedUponNodeRef(),
-					pendingAction.getCheckConditions(),
-                    pendingAction.getActionChain());
-		} 
+		this.actionService.postCommit();
 	}
 
 	/**

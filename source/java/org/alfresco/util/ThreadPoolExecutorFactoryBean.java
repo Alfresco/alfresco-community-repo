@@ -71,6 +71,7 @@ public class ThreadPoolExecutorFactoryBean implements FactoryBean, InitializingB
     private static final boolean DEFAULT_THREAD_DAEMON = Boolean.TRUE;
     private static final int DEFAULT_WORK_QUEUE_SIZE = -1;
     private static final RejectedExecutionHandler DEFAULT_REJECTED_EXECUTION_HANDLER = new ThreadPoolExecutor.CallerRunsPolicy();
+    private String poolName = "";
     
     private int corePoolSize;
     private int maximumPoolSize;
@@ -183,6 +184,11 @@ public class ThreadPoolExecutorFactoryBean implements FactoryBean, InitializingB
         threadFactory.setThreadDaemon(threadDaemon);
         threadFactory.setThreadPriority(threadPriority);
         
+        if(poolName.length() > 0) 
+        {
+        	threadFactory.setNamePrefix(poolName);
+        }
+        
         if (workQueueSize < 0)
         {
             workQueueSize = Integer.MAX_VALUE;
@@ -226,5 +232,15 @@ public class ThreadPoolExecutorFactoryBean implements FactoryBean, InitializingB
     public Class getObjectType()
     {
         return ThreadPoolExecutor.class;
+    }
+    
+    public String getPoolName() 
+    {
+    	return this.poolName;
+    }
+    
+    public void setPoolName(String poolName)
+    {
+    	this.poolName = poolName;
     }
 }

@@ -13,7 +13,7 @@
       <cmis:vendorName>Alfresco</cmis:vendorName> 
       <cmis:productName>Alfresco Repository (${server.edition})</cmis:productName>
       <cmis:productVersion>${server.version}</cmis:productVersion>
-      <cmis:rootFolderId>${absurl(url.serviceContext)}/api/path/${encodeuri(defaultRootFolderPath)}/children</cmis:rootFolderId> 
+      <cmis:rootFolderId>${absurl(url.serviceContext)}/api/path/${encodeuri(defaultRootFolderPath)}</cmis:rootFolderId> 
       <cmis:capabilities>
         <cmis:capabilityMultifiling>true</cmis:capabilityMultifiling>
         <cmis:capabilityUnfiling>false</cmis:capabilityUnfiling>

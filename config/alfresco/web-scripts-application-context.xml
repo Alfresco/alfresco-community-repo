@@ -457,19 +457,4 @@
    
    <bean id="webscript.org.alfresco.cmis.test.post" class="org.alfresco.repo.cmis.rest.test.CMISTestRunnerWebScript" parent="webscript" />
    
-   <bean id="webscripts.cmis.atom.extension" class="org.alfresco.web.scripts.atom.AbderaExtension">
-      <property name="abderaService" ref="webscripts.abdera"/>
-      <property name="defaultNamespace"><value>http://www.cmis.org/2008/05</value></property>
-      <property name="QNames">
-         <props>
-            <prop key="cmis_object">object</prop>
-         </props>
-      </property>
-      <property name="extensionFactories">
-         <list>
-           <bean class="org.apache.abdera.ext.cmis.CMISExtensionFactory"/>
-         </list>
-      </property>
-   </bean>
-   
 </beans>

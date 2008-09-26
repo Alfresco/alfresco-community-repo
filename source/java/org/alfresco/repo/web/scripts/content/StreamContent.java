@@ -53,9 +53,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.TempFileProvider;
 import org.alfresco.web.scripts.AbstractWebScript;
 import org.alfresco.web.scripts.Cache;
-import org.alfresco.web.scripts.Container;
-import org.alfresco.web.scripts.Description;
-import org.alfresco.web.scripts.ScriptContent;
 import org.alfresco.web.scripts.Status;
 import org.alfresco.web.scripts.WebScriptException;
 import org.alfresco.web.scripts.WebScriptRequest;
@@ -85,10 +82,6 @@ public class StreamContent extends AbstractWebScript
     protected NodeService nodeService;
     protected ContentService contentService;
     protected MimetypeService mimetypeService;    
-    
-    // Script Context
-    private String basePath;
-    private ScriptContent executeScript;
     
     /** Cached file modified date */
     private Date resouceFileModifiedDate;
@@ -125,20 +118,6 @@ public class StreamContent extends AbstractWebScript
         this.contentService = contentService; 
     }    
 
-    /* (non-Javadoc)
-     * @see org.alfresco.web.scripts.AbstractWebScript#init(org.alfresco.web.scripts.WebScriptRegistry)
-     */
-    @Override
-    public void init(Container container, Description description)
-    {
-        super.init(container, description);
-
-        // Test for "execute" script
-        basePath = getDescription().getId();
-        String scriptPath = basePath + ".js";
-        executeScript = container.getScriptProcessor().findScript(scriptPath);
-    }
-
     /**
      * @see org.alfresco.web.scripts.WebScript#execute(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.WebScriptResponse)
      */
@@ -161,16 +140,17 @@ public class StreamContent extends AbstractWebScript
             model.put("cache", cache);
             
             // execute script if it exists
+            ScriptDetails executeScript = getExecuteScript(req.getContentType());
             if (executeScript != null)
             {
                 if (logger.isDebugEnabled())
-                    logger.debug("Executing script " + executeScript.getPathDescription());
+                    logger.debug("Executing script " + executeScript.getContent().getPathDescription());
                 
                 Map<String, Object> scriptModel = createScriptParameters(req, res, model);
                 // add return model allowing script to add items to template model
                 Map<String, Object> returnModel = new HashMap<String, Object>(8, 1.0f);
                 scriptModel.put("model", returnModel);
-                executeScript(executeScript, scriptModel);
+                executeScript(executeScript.getContent(), scriptModel);
                 mergeScriptModelIntoTemplateModel(returnModel, model);
             }
             
@@ -317,7 +297,7 @@ public class StreamContent extends AbstractWebScript
     final protected void renderFormatTemplate(String format, Map<String, Object> model, Writer writer)
     {
         format = (format == null) ? "" : format;
-        String templatePath = basePath + "." + format + ".ftl";
+        String templatePath = getDescription().getId() + "." + format + ".ftl";
 
         if (logger.isDebugEnabled())
             logger.debug("Rendering template '" + templatePath + "'");

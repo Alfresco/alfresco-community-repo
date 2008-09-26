@@ -121,18 +121,7 @@ public class CMISQueryReader implements FormatReader<String>
     public Map<String, Object> createScriptParameters(WebScriptRequest req, WebScriptResponse res)
     {
         Map<String, Object> params = new HashMap<String, Object>();
-        params.put("query", req.parseContent());
+        params.put("query", read(req));
         return params;
     }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.web.scripts.FormatReader#createTemplateParameters(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.WebScriptResponse)
-     */
-    public Map<String, Object> createTemplateParameters(WebScriptRequest req, WebScriptResponse res)
-    {
-        Map<String, Object> params = new HashMap<String, Object>();
-        params.put("query", req.parseContent());
-        return params;
-    }
-
 }

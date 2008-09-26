@@ -70,7 +70,10 @@ public class FSDeploymentTest extends AVMServiceTestBase
             List<DeploymentCallback> callbacks = new ArrayList<DeploymentCallback>();
             callbacks.add(new DeploymentReportCallback(report));
             
-            service.deployDifferenceFS(-1, "main:/", "localhost", "default", 44100, "Giles", "Watcher", "sampleTarget", matcher, false, false, false, callbacks);
+            /**
+             * do our first deployment - should deploy the basic tree defined above
+             */
+            service.deployDifferenceFS(-1, "main:/", "default", "localhost", 44100, "Giles", "Watcher", "sampleTarget", matcher, false, false, false, callbacks);
             int count = 0;
             for (DeploymentEvent event : report)
             {
@@ -79,12 +82,12 @@ public class FSDeploymentTest extends AVMServiceTestBase
             }
             assertEquals(10, count);
             
+            /**
+             *  Now do the same deployment again - should just get start and end events.
+             */
             report = new DeploymentReport();
             callbacks = new ArrayList<DeploymentCallback>();
             callbacks.add(new DeploymentReportCallback(report));
-
-            callbacks.add(new DeploymentReportCallback(report));
-
             service.deployDifferenceFS(-1, "main:/", "default", "localhost", 44100, "Giles", "Watcher", "sampleTarget", matcher, false, false, false, callbacks);
             count = 0;
             for (DeploymentEvent event : report)
@@ -93,6 +96,10 @@ public class FSDeploymentTest extends AVMServiceTestBase
                 count++;
             }
             assertEquals(2, count);
+            
+            /**
+             *  Now create a new dir and file and remove  
+             */
             fService.createFile("main:/d", "jonathan").close();
             fService.removeNode("main:/a/b");
             
@@ -109,6 +116,10 @@ public class FSDeploymentTest extends AVMServiceTestBase
                 count++;
             }
             assertEquals(4, count);
+            
+            /**
+             * Create a single file 
+             */
             fService.removeNode("main:/d/e");
             fService.createFile("main:/d", "e").close();
             
@@ -124,6 +135,10 @@ public class FSDeploymentTest extends AVMServiceTestBase
                 count++;
             }
             assertEquals(3, count);
+            
+            /**
+             * Create a few files
+             */
             fService.removeNode("main:/d/e");
             fService.createDirectory("main:/d", "e");
             fService.createFile("main:/d/e", "Warren.txt").close();
@@ -140,14 +155,22 @@ public class FSDeploymentTest extends AVMServiceTestBase
                 count++;
             }
             assertEquals(5, count);
+            
+            /**
+             *  Now load a large number of files.
+             *  Do a deployment - should load successfully
+             *  
+             *  Remove a node
+             *  Do a deployment - should only see start and end events. 
+             */
             BulkLoader loader = new BulkLoader();
             loader.setAvmService(fService);
             loader.recursiveLoad("source/java/org/alfresco/repo/avm", "main:/");
             report = new DeploymentReport();
             callbacks = new ArrayList<DeploymentCallback>();
             callbacks.add(new DeploymentReportCallback(report));
-
             service.deployDifferenceFS(-1, "main:/", "default", "localhost", 44100, "Giles", "Watcher", "sampleTarget", matcher, false, false, false, callbacks);
+            
             fService.removeNode("main:/avm/hibernate");
             fService.getFileOutputStream("main:/avm/AVMServiceTest.java").close();
             report = new DeploymentReport();

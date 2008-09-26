@@ -230,7 +230,16 @@
                   <td style="background-image: url(<%=request.getContextPath()%>/images/parts/whitepanel_4.gif)" width=4></td>
                   <td style="padding:4px">
                      
-                     <a:panel id="sandboxes-panel" border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white" styleClass="mainSubTitle" label="#{msg.user_sandboxes}">
+                     <%-- used by the panel to add additional component facets --%>
+                     <h:panelGroup id="sandboxes-panel-facets">
+                        <f:facet name="title">
+                           <h:panelGroup id="sandboxes-panel-facets-wrapper">
+                              <h:selectBooleanCheckbox id="showAllSandboxes" value="#{AVMBrowseBean.showAllSandboxes}" onchange="document.forms['website'].submit(); return true;" immediate="false" />
+                              <h:outputText id="txtShowSandboxes" value="#{msg.website_showallsandboxes}" style="vertical-align:15%" />
+                           </h:panelGroup>
+                        </f:facet>
+                     </h:panelGroup>
+                     <a:panel id="sandboxes-panel" border="white" bgcolor="white" titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white" styleClass="mainSubTitle" facetsId="sandboxes-panel-facets" label="#{msg.user_sandboxes}">
                         
                         <%-- User Sandboxes List --%>
                         <w:userSandboxes id="sandboxes" binding="#{AVMBrowseBean.userSandboxes}" value="#{AVMBrowseBean.website.nodeRef}" webapp="#{AVMBrowseBean.webapp}" />

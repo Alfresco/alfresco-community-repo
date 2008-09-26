@@ -28,18 +28,17 @@ import java.io.IOException;
 import java.util.List;
 
 import javax.faces.context.FacesContext;
-import javax.faces.context.ResponseWriter;
-import javax.faces.el.ValueBinding;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.locking.AVMLock;
 import org.alfresco.service.cmr.avm.locking.AVMLockingService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.web.app.Application;
+import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.repository.Repository;
-import org.alfresco.web.bean.repository.User;
+import org.alfresco.web.bean.wcm.AVMBrowseBean;
+import org.alfresco.web.bean.wcm.AVMUtil;
 import org.alfresco.web.bean.wcm.WebProject;
 import org.alfresco.web.ui.repo.component.UILockIcon;
 
@@ -61,7 +60,6 @@ public class UIAVMLockIcon extends UILockIcon
       return ALFRESCO_FACES_AVMLOCKICON;
    }
    
-   
    /**
     * @see javax.faces.component.UIComponentBase#encodeBegin(javax.faces.context.FacesContext)
     */
@@ -75,7 +73,8 @@ public class UIAVMLockIcon extends UILockIcon
       // get the value and see if the image is locked
       final AVMService avmService = Repository.getServiceRegistry(context).getAVMService();
       final AVMLockingService avmLockingService = Repository.getServiceRegistry(context).getAVMLockingService();
-
+      final AVMBrowseBean avmBrowseBean = (AVMBrowseBean)FacesHelper.getManagedBean(context, AVMBrowseBean.BEAN_NAME);
+      
       boolean locked = false;
       boolean lockedOwner = false;
       Object val = getValue();
@@ -89,14 +88,21 @@ public class UIAVMLockIcon extends UILockIcon
       {
          if (avmService.lookup(-1, avmPath) != null)
          {
-            final WebProject webProject = new WebProject(avmPath);
-            final AVMLock lock = avmLockingService.getLock(webProject.getStoreId(), avmPath.substring(avmPath.indexOf("/")));
+            // optimization to reuse the current WebProject object if it represents the 
+            // same webproject that the lock item path is contained within - this ensures
+            // we do not perform slow store property lookups for every UIAVMLockIcon instance
+            String stagingStore = AVMUtil.buildStagingStoreName(AVMUtil.getStoreId(AVMUtil.getStoreName(avmPath)));
+            WebProject webProject = avmBrowseBean.getWebProject();
+            if (webProject == null || !webProject.getStagingStore().equals(stagingStore))
+            {
+               webProject = new WebProject(avmPath);
+            }
+            AVMLock lock = avmLockingService.getLock(webProject.getStoreId(), avmPath.substring(avmPath.indexOf("/")));
             if (lock != null)
             {
                locked = true;
-               final User currentUser = Application.getCurrentUser(context);
                lockUsers = lock.getOwners();
-               lockedOwner = (lockUsers.contains(currentUser.getUserName()));
+               lockedOwner = (lockUsers.contains(Application.getCurrentUser(context).getUserName()));
             }
          }
       }

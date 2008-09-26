@@ -276,15 +276,6 @@ public class AVMNode extends Node implements Map<String, Object>
       return this.workflowInFlight;
    }
 
-   public WebProject getWebProject()
-   {
-      if (this.webProject == null)
-      {
-         this.webProject = new WebProject(this.id);
-      }
-      return this.webProject;
-   }
-
    /**
     * @return All the properties known about this node.
     */

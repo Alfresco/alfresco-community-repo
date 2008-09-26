@@ -53,9 +53,7 @@ import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.avm.AVMNodeType;
 import org.alfresco.repo.avm.actions.AVMRevertStoreAction;
 import org.alfresco.repo.avm.actions.AVMUndoSandboxListAction;
-import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.web.scripts.FileTypeImageUtils;
-import org.alfresco.sandbox.SandboxConstants;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
@@ -77,7 +75,7 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.workflow.WorkflowService;
-import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.Pair;
 import org.alfresco.util.VirtServerUtils;
 import org.alfresco.web.app.Application;
@@ -196,6 +194,9 @@ public class AVMBrowseBean implements IContextListener
 
    /** breadcrumb location */
    private List<IBreadcrumbHandler> location = null;
+   
+   /** Show all user sandboxes flag */
+   private boolean showAllSandboxes = false;
    
    /** The current view page sizes */
    private int pageSizeFolders;
@@ -482,7 +483,8 @@ public class AVMBrowseBean implements IContextListener
       final ResourceBundle msg = Application.getBundle(fc);
       final String stagingStore = this.getStagingStore();
       final AVMStoreDescriptor store = getAvmService().getStore(stagingStore);
-      final String storeId = (String)this.getWebProject().getStoreId();
+      WebProject webProject = this.getWebProject();
+      final String storeId = (String)webProject.getStoreId();
       if (store != null)
       {
          summary.append(msg.getString(MSG_CREATED_ON)).append(": ")
@@ -491,7 +493,8 @@ public class AVMBrowseBean implements IContextListener
          summary.append(msg.getString(MSG_CREATED_BY)).append(": ")
                 .append(store.getCreator())
                 .append("<p>");
-         final int numUsers = this.getRelatedStoreNames(storeId, SandboxConstants.PROP_SANDBOX_AUTHOR_MAIN).size();
+         final int numUsers = nodeService.getChildAssocs(
+              webProject.getNodeRef(), WCMAppModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL).size();
          summary.append(MessageFormat.format(msg.getString(MSG_WORKING_USERS), numUsers));
       }
       
@@ -499,32 +502,6 @@ public class AVMBrowseBean implements IContextListener
       this.currentPath = null;
       
       return summary.toString();
-   }
-
-   /**
-    * Returns the list of store names related to the storeId provided that have 
-    * any of the provided types as store properties.
-    *
-    * @return a list of related store names.
-    */
-   private List<String> getRelatedStoreNames(final String storeId, final QName... types)
-   {
-      QName qn = QName.createQName(null, SandboxConstants.PROP_SANDBOX_STORE_PREFIX + storeId + "%");
-      final Map<String, Map<QName, PropertyValue>> relatedSandboxes =
-         getAvmService().queryStoresPropertyKeys(qn);
-      final List<String> result = new LinkedList<String>();
-      for (String storeName : relatedSandboxes.keySet())
-      {
-         for (final QName type : types)
-         {
-            if (getAvmService().getStoreProperty(storeName, type) != null)
-            {
-               result.add(storeName);
-               break;
-            }
-         }
-      }
-      return result;
    }
    
    /**
@@ -1037,6 +1014,22 @@ public class AVMBrowseBean implements IContextListener
    {
       final User user = Application.getCurrentUser(FacesContext.getCurrentInstance());
       return this.getWebProject().isManager(user);
+   }
+   
+   /**
+    * @return true to show all sandboxes visible to this user, false to only show the current user sandbox
+    */
+   public boolean getShowAllSandboxes()
+   {
+      return this.showAllSandboxes;
+   }
+   
+   /**
+    * @param value  true to show all sandboxes visible to this user, false to only show the current user sandbox
+    */
+   public void setShowAllSandboxes(boolean value)
+   {
+      this.showAllSandboxes = value;
    }
    
    /**
@@ -2020,6 +2013,9 @@ public class AVMBrowseBean implements IContextListener
       
       this.files = null;
       this.folders = null;
+      
+      // reset the WebProject instance - as values may be cached that have now changed
+      this.webProject = null;
    }
    
    /**

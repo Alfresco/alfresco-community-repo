@@ -303,6 +303,8 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
       AVMService avmService = getAVMService(context);
       NodeService nodeService = getNodeService(context);
       PermissionService permissionService = getPermissionService(context);
+      AVMBrowseBean avmBrowseBean = (AVMBrowseBean)FacesHelper.getManagedBean(context, AVMBrowseBean.BEAN_NAME);
+      boolean showAllSandboxes = avmBrowseBean.getShowAllSandboxes();
       UserTransaction tx = null;
       try
       {
@@ -317,19 +319,25 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
          String storeRoot = (String)nodeService.getProperty(websiteRef, WCMAppModel.PROP_AVMSTORE);
          
          // find out the current user role in the web project
-         List<ChildAssociationRef> userInfoRefs = nodeService.getChildAssocs(
-            websiteRef, WCMAppModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
          User currentUser = Application.getCurrentUser(context);
          String currentUserName = currentUser.getUserName();
-         
          String currentUserRole = WebProject.getWebProjectUserRole(websiteRef, currentUser);
          
-         // sort the user list alphabetically and insert the current user at the top of the list 
-         List<UserRoleWrapper> userRoleWrappers = buildSortedUserRoles(nodeService, currentUserName, userInfoRefs);
+         // sort the user list alphabetically and insert the current user at the top of the list
+         List<UserRoleWrapper> userRoleWrappers;
+         if (showAllSandboxes)
+         {
+            List<ChildAssociationRef> userInfoRefs = nodeService.getChildAssocs(
+                  websiteRef, WCMAppModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
+            userRoleWrappers = buildSortedUserRoles(nodeService, currentUserName, userInfoRefs);
+         }
+         else
+         {
+            userRoleWrappers = buildCurrentUserRole(nodeService, websiteRef, currentUser);
+         }
          
          // determine whether the check links action should be shown
          boolean linkValidationEnabled = true;
-         AVMBrowseBean avmBrowseBean = (AVMBrowseBean)FacesHelper.getManagedBean(context, "AVMBrowseBean");
          if (avmBrowseBean != null)
          {
             linkValidationEnabled = avmBrowseBean.isLinkValidationEnabled();
@@ -366,9 +374,12 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
                // check the permissions on this store for the current user
                if (logger.isDebugEnabled())
                      logger.debug("Checking user role to view store: " + mainStore);
-               if (currentUserName.equals(username) ||
-                   AVMUtil.ROLE_CONTENT_MANAGER.equals(currentUserRole) ||
-                   AVMUtil.ROLE_CONTENT_PUBLISHER.equals(currentUserRole))
+               
+               if ((showAllSandboxes &&
+                    (currentUserName.equals(username) ||
+                     AVMUtil.ROLE_CONTENT_MANAGER.equals(currentUserRole) ||
+                     AVMUtil.ROLE_CONTENT_PUBLISHER.equals(currentUserRole))) ||
+                   showAllSandboxes == false)
                {
                   if (logger.isDebugEnabled())
                      logger.debug("Building sandbox view for user store: " + mainStore);
@@ -584,7 +595,7 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
                         "innerwhite");
                   
                   // spacer row
-                  if (index++ < userInfoRefs.size() - 1)
+                  if (index++ < userRoleWrappers.size() - 1)
                   {
                      out.write("<div style='padding:4px'></div>");
                   }
@@ -642,6 +653,29 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
          wrappers.add(0, currentUserWrapper);
       }
       
+      return wrappers;
+   }
+   
+   /**
+    * Build a list containing one item representing the current user role for the website.
+    */
+   private static List<UserRoleWrapper> buildCurrentUserRole(
+         NodeService nodeService, NodeRef webProjectRef, User user)
+   {
+      // build a list of wrappers to hold the fields we need for each user and role
+      List<UserRoleWrapper> wrappers = new ArrayList<UserRoleWrapper>(0);
+      NodeRef userInfoRef = WebProject.findUserRoleNodeRef(webProjectRef, user);
+      if (userInfoRef != null)
+      {
+         wrappers = new ArrayList<UserRoleWrapper>(1);
+         
+         String username = (String)nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERNAME);
+         String userrole = (String)nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERROLE);
+         
+         UserRoleWrapper wrapper = new UserRoleWrapper(username, userrole);
+         wrapper.IsCurrentUser = true;
+         wrappers.add(0, wrapper);
+      }
       return wrappers;
    }
 

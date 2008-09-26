@@ -82,13 +82,14 @@ public class UpdatePermissionsDialog extends BasePermissionsDialog
      */
     protected void createLock(AVMNode node)
     {
-        if (getAvmLockingService().getLock(node.getWebProject().getStoreId(), node.getPath().substring(node.getPath().indexOf("/"))) == null && !node.isDirectory())
+        String webProject = AVMUtil.getStoreId(AVMUtil.getStoreName(node.getPath()));
+
+        if (getAvmLockingService().getLock(webProject, node.getPath().substring(node.getPath().indexOf("/"))) == null && !node.isDirectory())
         {
             String userName = getAuthenticationService().getCurrentUserName();
             List<String> owners = new ArrayList<String>(1);
             owners.add(userName);
 
-            String webProject = node.getWebProject().getStoreId();
             String[] storePath = node.getPath().split(":");
 
             AVMLock lock = new AVMLock(webProject, storePath[0], storePath[1], AVMLockingService.Type.DISCRETIONARY, owners);

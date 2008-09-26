@@ -63,8 +63,6 @@ public class WCMUnlockEvaluator extends BaseActionEvaluator
       
       if (avmService.lookup(p.getFirst(), path) != null)
       {
-          String relPath = AVMUtil.getStoreRelativePath(path);
-          
           WebProject webProject = avmBrowseBean.getWebProject();
           if (webProject == null)
           {
@@ -74,7 +72,7 @@ public class WCMUnlockEvaluator extends BaseActionEvaluator
           }
           
           // determine if the item is locked
-          AVMLock lock = avmLockingService.getLock(webProject.getStoreId(), relPath);
+          AVMLock lock = avmLockingService.getLock(webProject.getStoreId(), AVMUtil.getStoreRelativePath(path));
           proceed = (lock != null);
       }
       

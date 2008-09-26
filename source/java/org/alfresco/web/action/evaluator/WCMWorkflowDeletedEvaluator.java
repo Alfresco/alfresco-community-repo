@@ -28,10 +28,13 @@ import javax.faces.context.FacesContext;
 
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.service.cmr.avm.AVMService;
+import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.bean.wcm.AVMBrowseBean;
 import org.alfresco.web.bean.wcm.AVMNode;
 import org.alfresco.web.bean.wcm.AVMUtil;
+import org.alfresco.web.bean.wcm.WebProject;
 
 /**
  * UI Action Evaluator - return true if the node is not part of an in-progress WCM workflow.
@@ -51,14 +54,24 @@ public class WCMWorkflowDeletedEvaluator extends WCMLockEvaluator
       boolean proceed = false;
       if (super.evaluate(node))
       {
-         final FacesContext facesContext = FacesContext.getCurrentInstance();
-         final AVMService avmService = Repository.getServiceRegistry(facesContext).getAVMService();
-         final String path = AVMNodeConverter.ToAVMVersionPath(node.getNodeRef()).getSecond();
-
-         // evaluate to true if we are within a workflow store (i.e. list of resources in the task
-         // dialog) or not part of an already in-progress workflow
-         proceed = (AVMUtil.isWorkflowStore(AVMUtil.getStoreName(path)) ||
-                    !((AVMNode)node).isWorkflowInFlight());
+         final FacesContext fc = FacesContext.getCurrentInstance();
+         final AVMService avmService = Repository.getServiceRegistry(fc).getAVMService();
+         final AVMBrowseBean avmBrowseBean = (AVMBrowseBean)FacesHelper.getManagedBean(fc, AVMBrowseBean.BEAN_NAME);
+         WebProject webProject = avmBrowseBean.getWebProject();
+         if (webProject == null || webProject.hasWorkflow())
+         {
+            final String path = AVMNodeConverter.ToAVMVersionPath(node.getNodeRef()).getSecond();
+            
+            // evaluate to true if we are within a workflow store (i.e. list of resources in the task
+            // dialog) or not part of an already in-progress workflow
+            proceed = (AVMUtil.isWorkflowStore(AVMUtil.getStoreName(path)) ||
+                       !((AVMNode)node).isWorkflowInFlight());
+         }
+         else
+         {
+            // if the WebProject has no workflow then we can proceed without checking further
+            proceed = true;
+         }
       }
       return proceed;
    }

@@ -71,7 +71,6 @@ import org.apache.commons.logging.LogFactory;
  */
 public class WebProject implements Serializable
 {
-
    /////////////////////////////////////////////////////////////////////////////
 
    private static final long serialVersionUID = 2480625511643744703L;
@@ -184,10 +183,13 @@ public class WebProject implements Serializable
    /////////////////////////////////////////////////////////////////////////////
 
    private final static Log LOGGER = LogFactory.getLog(WebProject.class); 
-   private static String websitesFolderId;
-
+   
+   private static NodeRef websitesFolder;
    private final NodeRef nodeRef;
-
+   private String storeId = null;
+   private Boolean hasWorkflow = null;
+   private Map<String, String> userRoles = new HashMap<String, String>(16, 1.0f);
+   
    public WebProject(final NodeRef nodeRef)
    {
       if (nodeRef == null)
@@ -195,8 +197,7 @@ public class WebProject implements Serializable
          throw new NullPointerException();
       }
 
-      final ServiceRegistry serviceRegistry = this.getServiceRegistry();
-      final NodeService nodeService = serviceRegistry.getNodeService();
+      final NodeService nodeService = getServiceRegistry().getNodeService();
       if (!WCMAppModel.TYPE_AVMWEBFOLDER.equals(nodeService.getType(nodeRef)))
       {
          throw new IllegalArgumentException(nodeRef + " is not a " + WCMAppModel.TYPE_AVMWEBFOLDER);
@@ -236,8 +237,7 @@ public class WebProject implements Serializable
     */
    public String getName()
    {
-      final ServiceRegistry serviceRegistry = this.getServiceRegistry();
-      final NodeService nodeService = serviceRegistry.getNodeService();
+      final NodeService nodeService = this.getServiceRegistry().getNodeService();
       return (String)nodeService.getProperty(this.nodeRef, ContentModel.PROP_NAME);
    }
 
@@ -248,8 +248,7 @@ public class WebProject implements Serializable
     */
    public String getTitle()
    {
-      final ServiceRegistry serviceRegistry = this.getServiceRegistry();
-      final NodeService nodeService = serviceRegistry.getNodeService();
+      final NodeService nodeService = this.getServiceRegistry().getNodeService();
       return (String)nodeService.getProperty(this.nodeRef, ContentModel.PROP_TITLE);
    }
 
@@ -260,8 +259,7 @@ public class WebProject implements Serializable
     */
    public String getDescription()
    {
-      final ServiceRegistry serviceRegistry = this.getServiceRegistry();
-      final NodeService nodeService = serviceRegistry.getNodeService();
+      final NodeService nodeService = this.getServiceRegistry().getNodeService();
       return (String)nodeService.getProperty(this.nodeRef, ContentModel.PROP_DESCRIPTION);
    }
 
@@ -272,9 +270,12 @@ public class WebProject implements Serializable
     */
    public String getStoreId()
    {
-      final ServiceRegistry serviceRegistry = this.getServiceRegistry();
-      final NodeService nodeService = serviceRegistry.getNodeService();
-      return (String)nodeService.getProperty(this.nodeRef, WCMAppModel.PROP_AVMSTORE);
+      if (this.storeId == null)
+      {
+          final NodeService nodeService = this.getServiceRegistry().getNodeService();
+          this.storeId = (String)nodeService.getProperty(this.nodeRef, WCMAppModel.PROP_AVMSTORE);
+      }
+      return this.storeId;
    }
    
    /**
@@ -327,6 +328,35 @@ public class WebProject implements Serializable
       }
       return result;
    }
+   
+   /**
+    * @return true if this WebProject has any workflows assigned directly to the website or
+    *         assigned to any of the forms attached to it
+    */
+   public boolean hasWorkflow()
+   {
+      if (this.hasWorkflow == null)
+      {
+         final NodeService nodeService = this.getServiceRegistry().getNodeService();
+         List<ChildAssociationRef> webWorkflowRefs = nodeService.getChildAssocs(
+               this.nodeRef, WCMAppModel.ASSOC_WEBWORKFLOWDEFAULTS, RegexQNamePattern.MATCH_ALL);
+         this.hasWorkflow = (webWorkflowRefs.size() != 0);
+         if (!this.hasWorkflow)
+         {
+            // might have a workflow assigned to one of the forms used in the website
+            Map<String, Form> forms = getFormsImpl();
+            for (Form form : forms.values())
+            {
+               if (form.getDefaultWorkflow() != null)
+               {
+                  this.hasWorkflow = Boolean.TRUE;
+                  break;
+               }
+            }
+         }
+      }
+      return this.hasWorkflow.booleanValue();
+   }
 
    /**
     * Returns <tt>true</tt> if the user is a manager of this web project.
@@ -337,68 +367,89 @@ public class WebProject implements Serializable
     */
    public boolean isManager(final User user)
    {
-      if (user.isAdmin())
+      String userrole;
+      String username = user.getUserName();
+      synchronized (userRoles)
       {
-         return true;
+         userrole = userRoles.get(username);
+         if (userrole == null)
+         {
+            userrole = WebProject.getWebProjectUserRole(nodeRef, user);
+            userRoles.put(username, userrole);
+         }
       }
-
-      String userrole = WebProject.getWebProjectUserRole(nodeRef, user);
       return AVMUtil.ROLE_CONTENT_MANAGER.equals(userrole);
    }
    
    /**
     * @return the role of this user in the given Web Project, or null for no assigned role
     */
-   public static String getWebProjectUserRole(NodeRef webProjectRef, User currentUser)
+   public static String getWebProjectUserRole(NodeRef webProjectRef, User user)
    {
-		  long start = System.currentTimeMillis();
-	      String userrole = null;
-	      
-	      if (currentUser.isAdmin())
-	      {
-	         // fake the Content Manager role for an admin user
-	         userrole = AVMUtil.ROLE_CONTENT_MANAGER;
-	      }
-	      else
-	      {
-              final ServiceRegistry serviceRegistry = WebProject.getServiceRegistry();
-              final SearchService searchService = serviceRegistry.getSearchService();
-              final NodeService nodeService = serviceRegistry.getNodeService();
-	          
-	          StringBuilder query = new StringBuilder(128);
-	          query.append("+PARENT:\"").append(webProjectRef).append("\" ");
-	          query.append("+TYPE:\"").append(WCMAppModel.TYPE_WEBUSER).append("\" ");
-	          query.append("+@").append(NamespaceService.WCMAPP_MODEL_PREFIX).append("\\:username:\"");
-	          query.append(currentUser.getUserName());
-	          query.append("\"");
-	          
-	          ResultSet resultSet = searchService.query(
-	                  Repository.getStoreRef(),
-	                  SearchService.LANGUAGE_LUCENE,
-	                  query.toString());            
-	          List<NodeRef> nodes = resultSet.getNodeRefs();    
+      String userrole = null;
+      
+      long start = 0;
+      if (LOGGER.isDebugEnabled())
+      {
+         start = System.currentTimeMillis();
+      }
+      
+      if (user.isAdmin())
+      {
+         // fake the Content Manager role for an admin user
+         userrole = AVMUtil.ROLE_CONTENT_MANAGER;
+      }
+      else
+      {
+         NodeService nodeService = WebProject.getServiceRegistry().getNodeService();
+         
+         NodeRef roleRef = findUserRoleNodeRef(webProjectRef, user);
+         if (roleRef != null)
+         {
+            userrole = (String)nodeService.getProperty(roleRef, WCMAppModel.PROP_WEBUSERROLE);
+         }
+         else
+         {
+            LOGGER.warn("getWebProjectUserRole: user role not found for " + user);
+         }
+      }
+      
+      if (LOGGER.isDebugEnabled())
+      {
+         LOGGER.debug("getWebProjectUserRole: " + user.getUserName() + " " + userrole + " in " + (System.currentTimeMillis()-start) + " ms");
+      }
+      
+      return userrole;
+   }
 
-	          if (nodes.size() == 1)
-	          {
-	    	     userrole = (String)nodeService.getProperty(nodes.get(0), WCMAppModel.PROP_WEBUSERROLE);
-	          }
-	          else if (nodes.size() == 0)
-	          {
-	        	  LOGGER.warn("getWebProjectUserRole: user role not found for " + currentUser);
-	          }
-	          else
-	          {
-	        	  LOGGER.warn("getWebProjectUserRole: more than one user role found for " + currentUser);
-	          }
-	      }
-	      
-		  if (LOGGER.isDebugEnabled())
-		  {
-			  LOGGER.debug("getWebProjectUserRole: "+currentUser.getUserName()+" "+userrole+" in "+(System.currentTimeMillis()-start)+" ms");
-		  }
-		  
-	      return userrole;
-	   }
+   /**
+    * Perform a Lucene search to return a NodeRef to the node representing the the User Role
+    * within the given WebProject. 
+    * 
+    * @param webProjectRef      Web Project to search against
+    * @param user               User to test against
+    * 
+    * @return NodeRef of the User Role node or null if none found
+    */
+   public static NodeRef findUserRoleNodeRef(NodeRef webProjectRef, User user)
+   {
+      SearchService searchService = WebProject.getServiceRegistry().getSearchService();
+      
+      StringBuilder query = new StringBuilder(128);
+      query.append("+PARENT:\"").append(webProjectRef).append("\" ");
+      query.append("+TYPE:\"").append(WCMAppModel.TYPE_WEBUSER).append("\" ");
+      query.append("+@").append(NamespaceService.WCMAPP_MODEL_PREFIX).append("\\:username:\"");
+      query.append(user.getUserName());
+      query.append("\"");
+      
+      ResultSet resultSet = searchService.query(
+            Repository.getStoreRef(),
+            SearchService.LANGUAGE_LUCENE,
+            query.toString());            
+      List<NodeRef> nodes = resultSet.getNodeRefs();
+      
+      return (nodes.size() == 1 ? nodes.get(0) : null);
+   }
 
    /**
     * Returns the default webapp for this web project.
@@ -420,9 +471,9 @@ public class WebProject implements Serializable
     * 
     * @throws AlfrescoRuntimeException if unable to find the required folder
     */
-   public static NodeRef getWebsitesFolder()
+   public synchronized static NodeRef getWebsitesFolder()
    {
-      if (WebProject.websitesFolderId == null)
+      if (WebProject.websitesFolder == null)
       {
          // get the template from the special Content Templates folder
          final FacesContext fc = FacesContext.getCurrentInstance();
@@ -433,7 +484,7 @@ public class WebProject implements Serializable
          final List<NodeRef> results = WebProject.getServiceRegistry().getSearchService().selectNodes(rootNodeRef, xpath, null, resolver, false);
          if (results.size() == 1)
          {
-            WebProject.websitesFolderId = results.get(0).getId();
+            WebProject.websitesFolder = new NodeRef(Repository.getStoreRef(), results.get(0).getId());
          }
          else
          {
@@ -441,7 +492,7 @@ public class WebProject implements Serializable
          }
       }
       
-      return new NodeRef(Repository.getStoreRef(), WebProject.websitesFolderId);
+      return WebProject.websitesFolder;
    }
 
    public static List<WebProject> getWebProjects()

@@ -38,6 +38,7 @@ public interface SiteModel
     public static final String SITE_MODEL_PREFIX = "st";
     
     /** Site */
+    public static final QName TYPE_SITES = QName.createQName(SITE_MODEL_URL, "sites");
     public static final QName TYPE_SITE = QName.createQName(SITE_MODEL_URL, "site");
     public static final QName PROP_SITE_PRESET = QName.createQName(SITE_MODEL_URL, "sitePreset");
     

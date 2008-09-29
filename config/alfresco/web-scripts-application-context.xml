@@ -147,11 +147,9 @@
    <bean id="webscripts.registry.prototype" parent="webscripts.registry" scope="prototype"/>
 
 
-
    <!--                            -->
    <!--  Web Script Authenticators -->
    <!--                            -->
-
 
    <!--  HTTP Basic Authenticator (Servlet based) -->
    <bean id="webscripts.authenticator.basic" class="org.alfresco.repo.web.scripts.servlet.BasicHttpAuthenticatorFactory">

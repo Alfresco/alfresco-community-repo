@@ -33,6 +33,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.repo.tenant.TenantDeployer;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
@@ -227,7 +228,7 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
                 // TODO revisit - cleared here, in-lieu of WebClient clear
                 AuthenticationUtil.clearCurrentSecurityContext();
             }
-            transactionedExecute(script, scriptReq, scriptRes);
+            transactionedExecuteAs(script, scriptReq, scriptRes);
         }
         else if ((required == RequiredAuthentication.user || required == RequiredAuthentication.admin) && isGuest)
         {
@@ -261,7 +262,7 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
                     }
                     
                     // Execute Web Script
-                    transactionedExecute(script, scriptReq, scriptRes);
+                    transactionedExecuteAs(script, scriptReq, scriptRes);
                 }
             }
             finally
@@ -323,6 +324,36 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
             {
                 retryingTransactionHelper.doInTransaction(work, false, true); 
             }
+        }
+    }
+    
+    /**
+     * Execute script within required level of transaction as required effective user.
+     * 
+     * @param scriptReq
+     * @param scriptRes
+     * @throws IOException
+     */
+    private void transactionedExecuteAs(final WebScript script, final WebScriptRequest scriptReq,
+            final WebScriptResponse scriptRes) throws IOException
+    {
+        String runAs = script.getDescription().getRunAs();
+        if (runAs == null)
+        {
+            transactionedExecute(script, scriptReq, scriptRes);
+        }
+        else
+        {
+            RunAsWork<Object> work = new RunAsWork<Object>()
+            {
+
+                public Object doWork() throws Exception
+                {
+                    transactionedExecute(script, scriptReq, scriptRes);
+                    return null;
+                }
+            };
+            AuthenticationUtil.runAs(work, runAs);
         }
     }
     

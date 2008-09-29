@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Unit Test for Run As Function</shortname>
+  <description>Echo the name of the effective user</description>
+  <format>argument</format>
+  <url>/test/runas</url>
+  <authentication runas="RunAsOne">user</authentication>
+  <transaction>required</transaction>
+</webscript>

@@ -252,6 +252,14 @@ public class RepoStore implements Store, TenantDeployer
     {
     	return getPath(getBaseNodeRef());
     }
+        
+    /* (non-Javadoc)
+     * @see org.alfresco.web.scripts.Store#isSecure()
+     */
+    public boolean isSecure()
+    {
+        return false;
+    }
 
     /* (non-Javadoc)
      * @see org.alfresco.web.scripts.Store#exists()

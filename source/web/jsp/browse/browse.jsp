@@ -26,6 +26,8 @@
 <%@ page import="org.alfresco.web.app.Application" %>
 <%@ page import="javax.faces.context.FacesContext" %>
 
+<%@ page import="org.alfresco.web.ui.common.PanelGenerator"%>
+
 <%@ taglib uri="http://java.sun.com/jsf/html" prefix="h" %>
 <%@ taglib uri="http://java.sun.com/jsf/core" prefix="f" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
@@ -205,6 +207,9 @@
                   <td style="background-image: url(<%=request.getContextPath()%>/images/parts/statuspanel_8.gif)"></td>
                   <td><img src="<%=request.getContextPath()%>/images/parts/statuspanel_9.gif" width=4 height=9></td>
                </tr>
+
+               <%-- warning message for 'Sites' space --%>
+               <h:outputText id="sites-space-warning" rendered="#{BrowseBean.sitesSpace}" value="#{BrowseBean.sitesSpaceWarningHTML}" escape="false" />
                
                <%-- Custom Template View --%>
                <a:panel id="custom-wrapper-panel" rendered="#{NavigationBean.hasCustomView && NavigationBean.searchContext == null}">

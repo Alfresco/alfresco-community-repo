@@ -24,7 +24,9 @@
  */
 package org.alfresco.web.bean;
 
+import java.io.IOException;
 import java.io.Serializable;
+import java.io.StringWriter;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -37,6 +39,7 @@ import java.util.Set;
 
 import javax.faces.application.NavigationHandler;
 import javax.faces.context.FacesContext;
+import javax.faces.context.ResponseWriter;
 import javax.faces.event.ActionEvent;
 import javax.transaction.UserTransaction;
 
@@ -46,6 +49,7 @@ import org.alfresco.config.ConfigService;
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.SearcherException;
+import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.web.scripts.FileTypeImageUtils;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
@@ -81,6 +85,7 @@ import org.alfresco.web.bean.spaces.CreateSpaceWizard;
 import org.alfresco.web.bean.users.UserPreferencesBean;
 import org.alfresco.web.config.ClientConfigElement;
 import org.alfresco.web.config.ViewsConfigElement;
+import org.alfresco.web.ui.common.PanelGenerator;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.Utils.URLMode;
 import org.alfresco.web.ui.common.component.IBreadcrumbHandler;
@@ -648,6 +653,79 @@ public class BrowseBean implements IContextListener, Serializable
       return result;
    }
 
+   /**
+    * Determines whether the current space is a 'Sites' space
+    * 
+    * @return true if the current space is a 'Sites' space
+    */
+   public boolean isSitesSpace()
+   {
+      boolean siteSpace = false;
+      
+      Node currentNode = this.navigator.getCurrentNode();
+      if (currentNode != null)
+      {
+         // check the type of the node to see if it is a 'site' related space
+         QName currentNodeType = currentNode.getType();
+         
+         if (SiteModel.TYPE_SITES.isMatch(currentNodeType) ||
+             SiteModel.TYPE_SITE.isMatch(currentNodeType))
+         {
+            siteSpace = true;
+         }
+      }
+      
+      return siteSpace;
+   }
+   
+   /**
+    * Returns the HTML to display if a space is a 'Sites' space
+    * 
+    * @return The HTML to display
+    */
+   public String getSitesSpaceWarningHTML()
+   {
+      FacesContext context = FacesContext.getCurrentInstance();
+      String contextPath = context.getExternalContext().getRequestContextPath();
+      StringBuilder html = new StringBuilder();
+      
+      try
+      {
+         html.append("<tr valign='top'>");
+         html.append("<td style='background-image: url(");
+         html.append(contextPath);
+         html.append("/images/parts/whitepanel_4.gif)' ");
+         html.append("width='4'></td><td style='padding:4px'>");
+         
+         StringWriter writer = new StringWriter();
+         PanelGenerator.generatePanelStart(writer, contextPath, "yellowInner", "#ffffcc");
+         html.append(writer.toString());
+         
+         html.append("<table cellpadding='0' cellspacing='0' border='0' width='100%'>");
+         html.append("<tr><td valign='top' style='padding-top: 2px' width='20'>");
+         html.append("<img src='");
+         html.append(contextPath);
+         html.append("/images/icons/warning.gif' width='16' height='16' /></td>");
+         html.append("<td class='mainSubText'>");
+         html.append(Application.getMessage(context, "sites_space_warning"));
+         html.append("</td></tr></table>");
+         
+         writer = new StringWriter();
+         PanelGenerator.generatePanelEnd(writer, contextPath, "yellowInner");
+         html.append(writer.toString());
+            
+         html.append("</td><td style='background-image: url(");
+         html.append(contextPath);
+         html.append("/images/parts/whitepanel_6.gif)'"); 
+         html.append("width='4'></td></tr>");
+      }
+      catch (IOException ioe)
+      {
+         logger.error(ioe);
+      }
+      
+      return html.toString();
+   }
 
    /**
     * Setup the common properties required at data-binding time.

@@ -31,7 +31,8 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.TransformationOptions;
-import org.textmining.text.extraction.WordExtractor;
+import org.textmining.extraction.TextExtractor;
+import org.textmining.extraction.word.WordTextExtractorFactory;
 
 /**
  * Makes use of the {@link http://www.textmining.org/ TextMining} library to
@@ -41,11 +42,11 @@ import org.textmining.text.extraction.WordExtractor;
  */
 public class TextMiningContentTransformer extends AbstractContentTransformer2
 {
-    private WordExtractor wordExtractor;
+    private WordTextExtractorFactory wordExtractorFactory;
     
     public TextMiningContentTransformer()
     {
-        this.wordExtractor = new WordExtractor();
+        this.wordExtractorFactory = new WordTextExtractorFactory();
     }
     
     /**
@@ -73,7 +74,8 @@ public class TextMiningContentTransformer extends AbstractContentTransformer2
         try
         {
             is = reader.getContentInputStream();
-            text = wordExtractor.extractText(is);
+            TextExtractor te = wordExtractorFactory.textExtractor(is);
+            text = te.getText();
         }
         catch (IOException e)
         {

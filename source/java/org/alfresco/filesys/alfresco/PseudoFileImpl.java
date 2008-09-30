@@ -71,34 +71,41 @@ public class PseudoFileImpl implements PseudoFileInterface
         String[] paths = FileName.splitPath( path);
         FileState fstate = getStateForPath( ctx, paths[0]);
         
-        if ( fstate != null && fstate.hasPseudoFiles())
-        {
-            // Check if there is a matching pseudo file
-            
-            PseudoFile pfile = fstate.getPseudoFileList().findFile( paths[1], false);
-            if ( pfile != null)
-                isPseudo = true;
-        }
-        else
-        {
-        	// Check if the file name matches a pseudo-file name in the desktop actions list
+        // Check if there is a file name from the path splitting
+        
+        if ( paths[1] != null) {
+        
+        	// Check the pseudo file list, if available
         	
-        	if ( ctx.hasDesktopActions())
-        	{
-	            DesktopActionTable actions = ctx.getDesktopActions();
-	        	if ( actions.getActionViaPseudoName( paths[1]) != null)
-	        		isPseudo = true;
-        	}
-
-        	// Check if the URL file is enabled
-        		
-    		if ( isPseudo == false && ctx.hasURLFile())
-    		{
-    			// Check if it is the URL file name
-    			
-    			if ( ctx.getURLFileName().equals( paths[1]))
-    				isPseudo = true;
-    		}
+	        if ( fstate != null && fstate.hasPseudoFiles())
+	        {
+	            // Check if there is a matching pseudo file
+	            
+	            PseudoFile pfile = fstate.getPseudoFileList().findFile( paths[1], false);
+	            if ( pfile != null)
+	                isPseudo = true;
+	        }
+	        else
+	        {
+	        	// Check if the file name matches a pseudo-file name in the desktop actions list
+	        	
+	        	if ( ctx.hasDesktopActions())
+	        	{
+		            DesktopActionTable actions = ctx.getDesktopActions();
+		        	if ( actions.getActionViaPseudoName( paths[1]) != null)
+		        		isPseudo = true;
+	        	}
+	
+	        	// Check if the URL file is enabled
+	        		
+	    		if ( isPseudo == false && ctx.hasURLFile())
+	    		{
+	    			// Check if it is the URL file name
+	    			
+	    			if ( ctx.getURLFileName().equals( paths[1]))
+	    				isPseudo = true;
+	    		}
+	        }
         }
         
         // Return the pseudo file status

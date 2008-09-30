@@ -20,9 +20,10 @@ function getFilterParams(filter, parsedArgs)
    switch (String(filter))
    {
       case "all":
-         filterParams.query = "+PATH:\"" + parsedArgs.rootNode.qnamePath + "//*\"";
+         var filterQuery = "+PATH:\"" + parsedArgs.rootNode.qnamePath + "//*\"";
          filterQuery += " -TYPE:\"{http://www.alfresco.org/model/content/1.0}thumbnail\"";
          filterQuery += " -TYPE:\"{http://www.alfresco.org/model/forum/1.0}post\"";
+         filterParams.query = filterQuery;
          break;
          
       case "node":

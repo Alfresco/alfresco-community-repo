@@ -1,17 +1,14 @@
-<#assign username=userId>
-<#if firstName?exists>
-   <#assign username = firstName + " " + lastName>
-</#if>
+<#include "../slingshot-common.lib.ftl">
 <entry xmlns='http://www.w3.org/2005/Atom'>
-   <title>${username} deleted comment</title>
-   <link rel="alternate" type="text/html" href="${(browsePostListUrl!'')?xml}" />
+   <title>Comment deleted from ${htmlTitle?xml}</title>
+   <link rel="alternate" type="text/html" href="" />
    <id>${id}</id>
    <updated>${xmldate(date)}</updated>
    <summary type="html">
-      <![CDATA[${username?html} deleted comment on <a href="${(browseItemUrl!'')}">${(itemTitle!'unknown')?html}</a>]]>
+      <![CDATA[Comment deleted from &quot;${htmlTitle}&quot; by ${userName?html}.]]>
    </summary>
    <author>
-   <name>${userId!""}</name>
+      <name>${userName?xml}</name>
+      <uri>${userId?xml}</uri>
    </author> 
 </entry>
-

@@ -6,47 +6,71 @@ postActivity();
 /* Posts to the activities service after a Document Library action */
 function postActivity()
 {
-   var obj = {};
+   var data = {};
    
+   /*
+    * Activity Type
+    */
    var type = json.get("type");
-	if (type == null || type.length == 0)
-	{
-		status.setCode(status.STATUS_BAD_REQUEST, "Activity 'type' parameter missing when posting activity");
-		return;
-	}
+   if (type == null || type.length === 0)
+   {
+      status.setCode(status.STATUS_BAD_REQUEST, "Activity 'type' parameter missing when posting activity");
+      return;
+   }
 
+   /*
+    * Site
+    */
    var siteId = json.get("site");
-	if (siteId == null || siteId.length == 0)
-	{
-		status.setCode(status.STATUS_BAD_REQUEST, "'site' parameter missing when posting activity");
-		return;
-	}
+   if (siteId == null || siteId.length === 0)
+   {
+      status.setCode(status.STATUS_BAD_REQUEST, "'site' parameter missing when posting activity");
+      return;
+   }
+   var site = siteService.getSite(siteId);
+   if (site == null)
+   {
+      status.setCode(status.STATUS_BAD_REQUEST, "'" + siteId + "' is not a valid site");
+      return;
+   }
+
+   var strParams = "";
 
    switch (String(type).toLowerCase())
    {
       case "file-added":
-         obj.browseURL = json.get("browseURL");
-         obj.contentURL = json.get("contentURL");
-         obj.fileName = json.get("fileName");
+         data.title = json.get("fileName");
+         strParams = "?nodeRef=" + json.get("nodeRef");
          break;
       
       case "files-added":
-         obj.browseURL = json.get("browseURL");
-         obj.fileCount = json.get("fileCount");
+      case "files-deleted":
+         data.title = json.get("fileCount");
+         strParams = "?path=" + json.get("path");
          break;
+      
+      case "file-deleted":
+         data.title = json.get("fileName");
+         strParams = "?path=" + json.get("path");
+         break;
+      
+      default:
+         status.setCode(status.STATUS_BAD_REQUEST, "'" + type + "' is not a valid activity type");
+         return;
    }
    
-	try 
-	{
+   try 
+   {
       // Log to activity service
-		activities.postActivity("org.alfresco.documentlibrary." + type, siteId, "documentlibrary", jsonUtils.toJSONString(obj));
-	}
-	catch(e)
-	{
-		if (logger.isLoggingEnabled())
-		{
-			logger.log(e);
-		}
-	}
+      data.page = json.get("page") + strParams;
+      activities.postActivity("org.alfresco.documentlibrary." + type, siteId, "documentlibrary", jsonUtils.toJSONString(data));
+   }
+   catch(e)
+   {
+      if (logger.isLoggingEnabled())
+      {
+         logger.log(e);
+      }
+   }
 
 }

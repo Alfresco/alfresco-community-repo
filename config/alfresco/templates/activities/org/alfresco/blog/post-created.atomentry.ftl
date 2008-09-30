@@ -1,17 +1,15 @@
-<#assign username=userId>
-<#if firstName?exists>
-   <#assign username = firstName + " " + lastName>
-</#if>
+<#include "../slingshot-common.lib.ftl">
 <entry xmlns='http://www.w3.org/2005/Atom'>
-   <title>New blog post: ${(postTitle!'unknown')?html?xml}</title>
-   <link rel="alternate" type="text/html" href="${(browsePostUrl!'')?xml}" />
+   <title>Blog post created: ${htmlTitle?xml}</title>
+   <link rel="alternate" type="text/html" href="" />
    <id>${id}</id>
    <updated>${xmldate(date)}</updated>
    <summary type="html">
-      <![CDATA[${username} added blog post <a href="${(browsePostUrl!'')}">${(postTitle!'unknown')?html}</a>.]]>
+      <![CDATA[&quot;${htmlTitle}&quot; blog post created by ${userName?html}.]]>
    </summary>
    <author>
-   <name>${userId!""}</name>
+      <name>${userName?xml}</name>
+      <uri>${userId?xml}</uri>
    </author> 
 </entry>
 

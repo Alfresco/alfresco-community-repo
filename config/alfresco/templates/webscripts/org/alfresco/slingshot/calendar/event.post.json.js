@@ -109,7 +109,24 @@ function createEvent(siteId, params)
 
    try
    {
-      activities.postActivity("org.alfresco.calendar.event-created", siteId, "calendar", '{ "eventName" : ' + params["what"] + ' }');	
+      var pad = function (value, length)
+      {
+         value = String(value);
+         length = parseInt(length) || 2;
+         while (value.length < length)
+         {
+            value = "0" + value;
+         }
+         return value;
+      };
+
+      var isoDate = from.getFullYear() + "-" + pad(from.getMonth() + 1) + "-" + pad(from.getDate());
+      var data =
+      {
+         title: params["what"],
+         page: json.get("page") + "?date=" + isoDate
+      }
+      activities.postActivity("org.alfresco.calendar.event-created", siteId, "calendar", jsonUtils.toJSONString(data));
    }
    catch(e)
    {

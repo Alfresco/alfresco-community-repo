@@ -1,16 +1,15 @@
-<#assign username=userId>
-<#if firstName?exists>
-   <#assign username = firstName + " " + lastName>
-</#if>
+<#include "../slingshot-common.lib.ftl">
 <entry xmlns='http://www.w3.org/2005/Atom'>
-   <title>${(fileName!"File uploaded")?xml}</title>
-   <link rel="alternate" type="text/html" href="${browseURL?xml}" />
+   <title>File uploaded: ${htmlTitle?xml}</title>
+   <link rel="alternate" type="text/html" href="" />
    <id>${id}</id>
    <updated>${xmldate(date)}</updated>
    <summary type="html">
-      <![CDATA[${username?html} added <a href="${contentURL}" target="_blank">${fileName?html}</a> to the <a href="${browseURL}">Document Library</a>.]]>
+      <![CDATA[&quot;${htmlTitle}&quot; document added by ${userName?html}.]]>
    </summary>
    <author>
-   <name>${userId!""}</name>
+      <name>${userName?xml}</name>
+      <uri>${userId?xml}</uri>
    </author> 
 </entry>
+

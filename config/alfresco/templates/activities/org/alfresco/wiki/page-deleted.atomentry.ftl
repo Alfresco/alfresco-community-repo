@@ -1,12 +1,15 @@
+<#include "../slingshot-common.lib.ftl">
 <entry xmlns='http://www.w3.org/2005/Atom'>
-    <title>${(pageName!"")?xml}</title>
-    <link rel="alternate" type="text/html" href="" /> 
-    <id>${id}</id>
-    <updated>${xmldate(date)}</updated>
-    <summary type="html">
-<![CDATA[${firstName!"anon"} ${lastName!""} just deleted the wiki page: ${pageName}.]]></summary>
-    <author>
-      <name>${userId!""}</name>
-    </author> 
+   <title>Wiki page deleted: ${htmlTitle?xml}</title>
+   <link rel="alternate" type="text/html" href="" />
+   <id>${id}</id>
+   <updated>${xmldate(date)}</updated>
+   <summary type="html">
+      <![CDATA[&quot;${htmlTitle}&quot; wiki page deleted by ${userName?html}.]]>
+   </summary>
+   <author>
+      <name>${userName?xml}</name>
+      <uri>${userId?xml}</uri>
+   </author> 
 </entry>
 

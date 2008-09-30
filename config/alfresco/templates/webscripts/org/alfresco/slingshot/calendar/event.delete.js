@@ -42,7 +42,12 @@ function deleteEvent()
 
 	try 
 	{
-		activities.postActivity("org.alfresco.calendar.event-deleted", params.siteid, "calendar", '{ "eventName" : ' + whatEvent + ' }')
+	   var data =
+	   {
+	      title: whatEvent,
+         page: decodeURIComponent(args["page"])
+	   }
+		activities.postActivity("org.alfresco.calendar.event-deleted", params.siteid, "calendar", jsonUtils.toJSONString(data));
 	}
 	catch(e) 
 	{

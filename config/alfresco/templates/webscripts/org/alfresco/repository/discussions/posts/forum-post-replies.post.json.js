@@ -83,17 +83,16 @@ function main()
    model.postData = createPostReply(node);
    
    // add an activity item
-   if (json.has("site") && json.has("container") && json.has("browseTopicUrl"))
+   if (json.has("site") && json.has("page"))
    {
       // fetch the topic (and with it the root post
       var topicData = getTopicPostData(model.postData.post.parent);
-      var browseTopicUrl = json.get("browseTopicUrl");
-      browseTopicUrl = browseTopicUrl.replace("{post.name}", topicData.topic.name);
-      var data = {
-         topicTitle: topicData.post.properties.title,
-         browseTopicUrl: browseTopicUrl
+      var data =
+      {
+         title: topicData.post.properties.title,
+         page: json.get("page") + "?topicId=" + topicData.topic.name
       }
-      activities.postActivity("org.alfresco.discussions.reply-created", json.get("site"), json.get("container"), jsonUtils.toJSONString(data));
+      activities.postActivity("org.alfresco.discussions.reply-created", json.get("site"), "discussions", jsonUtils.toJSONString(data));
    }
 }
 

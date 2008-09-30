@@ -1,17 +1,15 @@
-<#assign username=userId>
-<#if firstName?exists>
-   <#assign username = firstName + " " + lastName>
-</#if>
+<#include "../slingshot-common.lib.ftl">
 <entry xmlns='http://www.w3.org/2005/Atom'>
-   <title>New discussion: ${(topicTitle!'unknown')?html?xml}</title>
-   <link rel="alternate" type="text/html" href="${(browseTopicUrl!'')?xml}" />
+   <title>New discussion: ${htmlTitle?xml}</title>
+   <link rel="alternate" type="text/html" href="" />
    <id>${id}</id>
    <updated>${xmldate(date)}</updated>
    <summary type="html">
-      <![CDATA[${username} added topic <a href="${(browseTopicUrl!'')}">${(topicTitle!'unknown')?html}</a>.]]>
+      <![CDATA[&quot;${htmlTitle}&quot; discussion created by ${userName?html}.]]>
    </summary>
    <author>
-   <name>${userId!""}</name>
+      <name>${userName?xml}</name>
+      <uri>${userId?xml}</uri>
    </author> 
 </entry>
 

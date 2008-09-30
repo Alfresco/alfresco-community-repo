@@ -84,15 +84,14 @@ function main()
    model.postData = getTopicPostData(topicPost);
    
    // create an activity entry
-   if (json.has("site") && json.has("container") && json.has("browseTopicUrl"))
+   if (json.has("site") && json.has("page"))
    {
-      var browseTopicUrl = "" + json.get("browseTopicUrl");
-      browseTopicUrl = browseTopicUrl.replace("{post.name}", model.postData.topic.name);
-      var data = {
-          topicTitle: model.postData.post.properties.title,
-          browseTopicUrl: browseTopicUrl
+      var data =
+      {
+         title: model.postData.post.properties.title,
+         page: json.get("page") + "?topicId=" + model.postData.topic.name
       }
-      activities.postActivity("org.alfresco.discussions.post-created", json.get("site"), json.get("container"), jsonUtils.toJSONString(data));
+      activities.postActivity("org.alfresco.discussions.post-created", json.get("site"), "discussions", jsonUtils.toJSONString(data));
    }   
 }
 

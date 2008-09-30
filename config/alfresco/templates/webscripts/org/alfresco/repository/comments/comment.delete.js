@@ -9,7 +9,7 @@ function deleteComment(node)
    // we simply delete the topic
    var nodeRef = node.nodeRef;
    var isDeleted = node.remove();
-   if (! isDeleted)
+   if (!isDeleted)
    {
       status.setCode(status.STATUS_INTERNAL_SERVER_ERROR, "Unable to delete node: " + nodeRef);
       return;
@@ -29,17 +29,20 @@ function main()
 
    deleteComment(node);
    
-   // post an activitiy item, but only if we got a site
-   if ((args["site"] != undefined) &&
-       (args["container"] != undefined) &&
-       (args["itemTitle"] != undefined) &&
-       (args["browseItemUrl"] != undefined))
+   // post an activity item, but only if we got a site
+   if ((args["site"] != undefined) && (args["itemTitle"] != undefined && (args["page"] != undefined)))
    {
-      var data = {
-          itemTitle: decodeURIComponent(args["itemTitle"]),
-          browseItemUrl: decodeURIComponent(args["browseItemUrl"])
+      var params = jsonUtils.toObject(decodeURIComponent(args["pageParams"])), strParams = "";
+      for (param in params)
+      {
+         strParams += param + "=" + encodeURIComponent(params[param]) + "&";
       }
-      activities.postActivity("org.alfresco.comments.comment-deleted", args["site"], args["container"], jsonUtils.toJSONString(data));
+      var data =
+      {
+         title: decodeURIComponent(args["itemTitle"]),
+         page: decodeURIComponent(args["page"]) + (strParams != "" ? "?" + strParams.substring(0, strParams.length - 1) : "")
+      }
+      activities.postActivity("org.alfresco.comments.comment-deleted", args["site"], "comments", jsonUtils.toJSONString(data));
    }
 }
 

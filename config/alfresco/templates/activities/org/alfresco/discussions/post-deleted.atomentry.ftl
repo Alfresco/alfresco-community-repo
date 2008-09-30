@@ -1,16 +1,15 @@
-<#assign username=userId>
-<#if firstName?exists>
-   <#assign username = firstName + " " + lastName>
-</#if>
+<#include "../slingshot-common.lib.ftl">
 <entry xmlns='http://www.w3.org/2005/Atom'>
-   <title>Discussion topic deleted: ${(topicTitle!'unknown')?html?xml}</title>
+   <title>Discussion deleted: ${htmlTitle?xml}</title>
+   <link rel="alternate" type="text/html" href="" />
    <id>${id}</id>
    <updated>${xmldate(date)}</updated>
    <summary type="html">
-      <![CDATA[${username} deleted topic ${(topicTitle!'unknown')?html}.]]>
+      <![CDATA[&quot;${htmlTitle}&quot; discussion deleted by ${userName?html}.]]>
    </summary>
    <author>
-   <name>${userId!""}</name>
+      <name>${userName?xml}</name>
+      <uri>${userId?xml}</uri>
    </author> 
 </entry>
 

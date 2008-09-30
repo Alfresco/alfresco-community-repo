@@ -50,16 +50,17 @@ function update()
       return jsonError("Could not locate wiki container");
    }
 	
-	var page = wiki.childByNamePath(params.pageTitle);
+	var page = wiki.childByNamePath(params.pageTitle), activityType;
 	// Create the page if it doesn't exist
 	if (page === null)
    {
-	   page = createWikiPage(params.pageTitle, wiki, {
+	   page = createWikiPage(params.pageTitle, wiki,
+	   {
 			content: json.get("pagecontent"),
 			versionable: true
 	   });
 	
-      var activityType = "org.alfresco.wiki.page-created";
+      activityType = "org.alfresco.wiki.page-created";
    }
    else 
    {
@@ -68,15 +69,16 @@ function update()
    	workingCopy.content = json.get("pagecontent");
    	workingCopy.checkin();
    	
-      var activityType = "org.alfresco.wiki.page-edited";
+      activityType = "org.alfresco.wiki.page-edited";
    }
 	
-	var d = {
-      pageName: params.pageTitle.replace(/_/g, " "),
-   	pageContext: (args.context ? unescape(args.context) : "")
+	var data =
+	{
+      title: params.pageTitle.replace(/_/g, " "),
+      page: json.get("page") + "?title=" + params.pageTitle
    }
 	// Log activity   
-	activities.postActivity(activityType, params.siteId, "wiki", jsonUtils.toJSONString(d));
+	activities.postActivity(activityType, params.siteId, "wiki", jsonUtils.toJSONString(data));
 	
 	if (!json.isNull("tags"))
    {

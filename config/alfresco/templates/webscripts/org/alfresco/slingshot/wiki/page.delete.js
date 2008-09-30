@@ -47,11 +47,13 @@ function deleteEvent()
    else
    {
       // Log to page deletion to activity service
-      var d = {
-	      pageName: params.pageTitle.replace(/_/g, " "),
+      var data =
+      {
+         title: params.pageTitle.replace(/_/g, " "),
+         page: decodeURIComponent(args["page"])
 	   }
    	
-		activities.postActivity("org.alfresco.wiki.page-deleted", params.siteId, "wiki", jsonUtils.toJSONString(d));
+		activities.postActivity("org.alfresco.wiki.page-deleted", params.siteId, "wiki", jsonUtils.toJSONString(data));
 	}
    
    // Success

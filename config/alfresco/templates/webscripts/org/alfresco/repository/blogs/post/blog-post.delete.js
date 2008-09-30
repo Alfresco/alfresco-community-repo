@@ -9,7 +9,7 @@ function deleteBlogPost(postNode)
    // delete the node
    var nodeRef = postNode.nodeRef;
    var isDeleted = postNode.remove();
-   if (! isDeleted)
+   if (!isDeleted)
    {
       status.setCode(status.STATUS_INTERNAL_SERVER_ERROR, "Unable to delete node: " + nodeRef);
       return;
@@ -33,12 +33,14 @@ function main()
           
    deleteBlogPost(node);
    
-   if (args["site"] != undefined && args["container"] != undefined && ! item.isDraft)
+   if (args["site"] !== undefined && args["page"] !== undefined && !item.isDraft)
    {
-      var data = {
-          postTitle: title
+      var data =
+      {
+         title: title,
+         page: decodeUriComponent(args["page"])
       }
-      activities.postActivity("org.alfresco.blog.post-deleted", args["site"], args["container"], jsonUtils.toJSONString(data));
+      activities.postActivity("org.alfresco.blog.post-deleted", args["site"], "blog", jsonUtils.toJSONString(data));
    }
 }
 

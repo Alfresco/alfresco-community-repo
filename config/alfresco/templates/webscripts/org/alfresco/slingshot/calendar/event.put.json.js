@@ -53,34 +53,35 @@ function main()
       };
    }
 
-	var event = eventsFolder.childByNamePath(params.eventname);
-	if (event === null)
+   var event = eventsFolder.childByNamePath(params.eventname);
+   if (event === null)
    {
       return {
          "error": "Could not find specified event to update"
       };
    }
 
-	var props = [
-		"what",
-		"desc",
-		"where"
-	];
+   var props = [
+      "what",
+      "desc",
+      "where"
+   ];
 
-   var propsmap = {
+   var propsmap =
+   {
       "what" : "ia:whatEvent",
-	  	"desc" : "ia:descriptionEvent",
-	  	"where" : "ia:whereEvent"
+      "desc" : "ia:descriptionEvent",
+      "where" : "ia:whereEvent"
    };
 
    for (var i=0; i < props.length; i++)
    {
-	   var prop = props[i];
-		if (!json.isNull(prop))
-		{
-         var value = json.get(prop);
+      var prop = props[i], value;
+      if (!json.isNull(prop))
+      {
+         value = json.get(prop);
          event.properties[ propsmap[prop] ] = value;
-		}
+      }
    }
    
    if (!json.isNull("tags"))
@@ -96,11 +97,11 @@ function main()
          event.tags = []; // reset
       }
    }
-	
-	try 
-	{
-		// Handle date formatting as a separate case		
-		var from = json.get("from");
+   
+   try 
+   {
+      // Handle date formatting as a separate case      
+      var from = json.get("from");
       var to = json.get("to");
      
       if (json.isNull("allday"))
@@ -110,18 +111,34 @@ function main()
       }
       
       event.properties["ia:fromDate"] = new Date(from);
-		event.properties["ia:toDate"] = new Date(to);
-		
-		var eventName = json.get("what");		
-		activities.postActivity("org.alfresco.calendar.event-updated", params.siteid, "calendar", '{ "eventName" : ' + eventName + ' }');
-	}
-	catch(e)
-	{
-		if (logger.isLoggingEnabled())
-		{
-			logger.log(e);
-		}
-	}
+      event.properties["ia:toDate"] = new Date(to);
+
+      var pad = function (value, length)
+      {
+         value = String(value);
+         length = parseInt(length) || 2;
+         while (value.length < length)
+         {
+            value = "0" + value;
+         }
+         return value;
+      };
+
+      var isoDate = from.getFullYear() + "-" + pad(from.getMonth() + 1) + "-" + pad(from.getDate());
+      var data =
+      {
+         title: json.get("what"),
+         page: json.get("page") + "?date=" + isoDate
+      }
+      activities.postActivity("org.alfresco.calendar.event-created", params.siteid, "calendar", jsonUtils.toJSONString(data));
+   }
+   catch(e)
+   {
+      if (logger.isLoggingEnabled())
+      {
+         logger.log(e);
+      }
+   }
 
    event.save();
    return {};

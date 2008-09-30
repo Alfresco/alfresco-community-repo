@@ -1,11 +1,15 @@
+<#include "../slingshot-common.lib.ftl">
 <entry xmlns='http://www.w3.org/2005/Atom'>
-    <title>Event deleted: ${(eventName!"")?xml}</title>
-    <id>${id}</id>
-    <updated>${xmldate(date)}</updated>
-    <summary>
-${(firstName!"anon")?xml} ${(lastName!"")?xml} deleted the event ${(eventName!"")?xml}.</summary>
-    <author>
-      <name>${userId!""}</name>
-    </author> 
+   <title>Calendar event deleted: ${htmlTitle?xml}</title>
+   <link rel="alternate" type="text/html" href="" />
+   <id>${id}</id>
+   <updated>${xmldate(date)}</updated>
+   <summary type="html">
+      <![CDATA[&quot;${htmlTitle}&quot; calendar event deleted by ${userName?html}.]]>
+   </summary>
+   <author>
+      <name>${userName?xml}</name>
+      <uri>${userId?xml}</uri>
+   </author> 
 </entry>
 

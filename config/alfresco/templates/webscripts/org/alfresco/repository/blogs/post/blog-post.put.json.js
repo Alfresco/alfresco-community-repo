@@ -77,15 +77,14 @@ function main()
    model.item = getBlogPostData(node);
    model.externalBlogConfig = hasExternalBlogConfiguration(node);
    
-   if (json.has("site") && json.has("container") && json.has("browsePostUrl") && ! model.item.isDraft)
+   if (json.has("site") && json.has("container") && json.has("page") && !model.item.isDraft)
    {
-      var browsePostUrl = "" + json.get("browsePostUrl");
-      browsePostUrl = browsePostUrl.replace("{post.name}", model.item.node.properties.name);
-      var data = {
-          postTitle: model.item.node.properties.title,
-          browsePostUrl: browsePostUrl
+      var data =
+      {
+         title: model.item.node.properties.title,
+         page: json.get("page") + "?postId=" + model.item.node.properties.name
       }
-      activities.postActivity("org.alfresco.blog.post-updated", json.get("site"), json.get("container"), jsonUtils.toJSONString(data));
+      activities.postActivity("org.alfresco.blog.post-updated", json.get("site"), "blog", jsonUtils.toJSONString(data));
    }
 }
 

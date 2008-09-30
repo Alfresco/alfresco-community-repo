@@ -23,12 +23,14 @@ function deleteTopicPost(topicNode)
    model.message = "Node " + nodeRef + " deleted";
    
    // post an activitiy item, but only if we got a site
-   if (args["site"] != undefined && args["container"] != undefined)
+   if (url.templateArgs["site"] != undefined && args["page"] != undefined)
    {
-      var data = {
-         topicTitle: topicTitle
+      var data =
+      {
+         title: topicTitle,
+         page: decodeURIComponent(args["page"])
       }
-      activities.postActivity("org.alfresco.discussions.post-deleted", args["site"], args["container"], jsonUtils.toJSONString(data));
+      activities.postActivity("org.alfresco.discussions.post-deleted", url.templateArgs["site"], "discussions", jsonUtils.toJSONString(data));
    }
 }
  

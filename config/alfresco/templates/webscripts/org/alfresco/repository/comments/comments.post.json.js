@@ -44,16 +44,19 @@ function main()
    model.item = getCommentData(comment);
    
    // post an activitiy item, but only if we got a site
-   if (json.has("site") &&
-       json.has("container") &&
-       json.has("itemTitle") &&
-       json.has("browseItemUrl"))
+   if (json.has("site") && json.has("itemTitle") && json.has("page"))
    {
-      var data = {
-          itemTitle: json.get("itemTitle"),
-          browseItemUrl: json.get("browseItemUrl")
+      var params = jsonUtils.toObject(json.get("pageParams")), strParams = "";
+      for (param in params)
+      {
+         strParams += param + "=" + encodeURIComponent(params[param]) + "&";
       }
-      activities.postActivity("org.alfresco.comments.comment-created", json.get("site"), json.get("container"), jsonUtils.toJSONString(data));
+      var data =
+      {
+         title: json.get("itemTitle"),
+         page: json.get("page") + (strParams != "" ? "?" + strParams.substring(0, strParams.length - 1) : "")
+      }
+      activities.postActivity("org.alfresco.comments.comment-created", json.get("site"), "comments", jsonUtils.toJSONString(data));
    }
 }
 

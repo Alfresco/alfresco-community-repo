@@ -75,4 +75,10 @@ public class DeploymentReport implements Serializable, Iterable<DeploymentEvent>
     {
         return fEvents.iterator();
     }
+    
+    public List<DeploymentEvent> getEvents()
+    {
+    	return fEvents;
+    }
+    
 }

@@ -123,4 +123,26 @@ public class DeploymentEvent implements Serializable
         
         return str;
     }
+    
+    /**
+     * 
+     */
+    public int hashCode()
+    {
+    	return (fType.toString() + fDestination).hashCode();
+    }
+    
+    public boolean equals(Object obj)
+    {
+    	if(obj instanceof DeploymentEvent) 
+    	{
+    		DeploymentEvent other = (DeploymentEvent)obj;
+    		if(this.getType() == other.getType() && this.getDestination().equals(other.getDestination()))
+    		{
+    			// objects are equal
+    			return true;
+    		}	
+    	}
+    	return false;
+    }
 }

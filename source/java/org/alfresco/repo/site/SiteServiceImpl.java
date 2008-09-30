@@ -978,6 +978,7 @@ public class SiteServiceImpl implements SiteService, SiteModel
             activityData.put("role", role);
             activityData.put("memberFirstName", memberFN);
             activityData.put("memberLastName", memberLN);
+            activityData.put("title", (memberFN + " " + memberLN + " (" + userName + ")").trim());
             return activityData.toString();
         }
         catch (JSONException je)

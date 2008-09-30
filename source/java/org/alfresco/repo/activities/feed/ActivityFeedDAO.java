@@ -161,6 +161,7 @@ public class ActivityFeedDAO
     {
         JSONObject jo = new JSONObject();
         
+        jo.put("id", id);
         jo.put("postUserId", postUserId);
         jo.put("postDate", ISO8601DateFormat.format(postDate));
         if (feedUserId != null) { jo.put("feedUserId", feedUserId); } // eg. site feed

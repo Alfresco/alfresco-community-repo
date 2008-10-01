@@ -441,7 +441,7 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
     	}
     	else
     	{
-    		newModel = new HashMap<String, Object>(0);
+    		newModel = new HashMap<String, Object>(1, 1.0f);
     	}
         return newModel;
     }
@@ -464,5 +464,4 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
             return super.wrapAsJavaObject(cx, scope, javaObject, staticType);
         }
     }
-    
 }

@@ -29,6 +29,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -83,6 +84,7 @@ public class Repository implements ApplicationContextAware, ApplicationListener,
     private StoreRef companyHomeStore;
     private String companyHomePath;
     private Map<String, NodeRef> companyHomeRefs;
+    private NodeRef rootRef;
     
     
     /**
@@ -205,7 +207,7 @@ public class Repository implements ApplicationContextAware, ApplicationListener,
         
     	if (companyHomeRefs == null)
     	{
-    		companyHomeRefs = new HashMap<String, NodeRef>(1);
+    		companyHomeRefs = new ConcurrentHashMap<String, NodeRef>(4);
     	}
     	
         getCompanyHome();
@@ -219,7 +221,11 @@ public class Repository implements ApplicationContextAware, ApplicationListener,
      */
     public NodeRef getRootHome()
     {
-        return nodeService.getRootNode(companyHomeStore);
+        if (rootRef == null)
+        {
+            rootRef = nodeService.getRootNode(companyHomeStore);
+        }
+        return rootRef;
     }
 
     /**
@@ -281,9 +287,10 @@ public class Repository implements ApplicationContextAware, ApplicationListener,
      */
     public NodeRef getUserHome(NodeRef person)
     {
-        return (NodeRef)nodeService.getProperty(person, ContentModel.PROP_HOMEFOLDER);
+        NodeRef homeFolderRef = (NodeRef)nodeService.getProperty(person, ContentModel.PROP_HOMEFOLDER);
+        return nodeService.exists(homeFolderRef) ? homeFolderRef : null;
     }
-        
+    
     /**
      * Helper to convert a Web Script Request URL to a Node Ref
      * 

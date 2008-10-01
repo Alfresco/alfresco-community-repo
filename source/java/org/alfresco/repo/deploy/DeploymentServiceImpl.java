@@ -149,25 +149,19 @@ public class DeploymentServiceImpl implements DeploymentService
             try
             {
                 AVMRemote remote = getRemote(hostName, port, userName, password);
-                if (callbacks != null)
-                {
-                    DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.START,
-                                                                new Pair<Integer, String>(version, srcPath),
-                                                                dstPath);
-                    if (fgLogger.isDebugEnabled())
-                    {
-                        fgLogger.debug(event);
-                    }
-                    for (DeploymentCallback callback : callbacks)
-                    {
-                        callback.eventOccurred(event);
-                    }
-                }
                 if (version < 0)
                 {
                     String storeName = srcPath.substring(0, srcPath.indexOf(":"));
                     version = fAVMService.createSnapshot(storeName, null, null).get(storeName);
                 }
+
+                {
+                	DeploymentEvent event = new DeploymentEvent(DeploymentEvent.Type.START,
+                                                                new Pair<Integer, String>(version, srcPath),
+                                                                dstPath);
+                	processEvent(event, callbacks);
+                }
+                
                 // Get the root of the deployment from this server.
                 AVMNodeDescriptor srcRoot = fAVMService.lookup(version, srcPath);
                 if (srcRoot == null)
@@ -821,9 +815,7 @@ public class DeploymentServiceImpl implements DeploymentService
                 
             try 
             {
-            	 eventQueue.add(new DeploymentEvent(DeploymentEvent.Type.START,
-                        new Pair<Integer, String>(version, srcPath),
-                        target));
+
                 try {           
                 
                 	if (version < 0)
@@ -843,6 +835,10 @@ public class DeploymentServiceImpl implements DeploymentService
                          target, e.getMessage()));
                	 	throw e;
                 }
+                
+           	 	eventQueue.add(new DeploymentEvent(DeploymentEvent.Type.START,
+                     new Pair<Integer, String>(version, srcPath),
+                     target));
             
                 // Go parallel to reduce the problems of high network latency           
 

@@ -25,7 +25,10 @@
 
 package org.alfresco.repo.deploy;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -33,19 +36,22 @@ import java.util.Set;
 
 import org.alfresco.repo.avm.AVMServiceTestBase;
 import org.alfresco.repo.avm.util.BulkLoader;
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.avm.AVMException;
 import org.alfresco.service.cmr.avm.deploy.DeploymentCallback;
 import org.alfresco.service.cmr.avm.deploy.DeploymentEvent;
 import org.alfresco.service.cmr.avm.deploy.DeploymentReport;
 import org.alfresco.service.cmr.avm.deploy.DeploymentReportCallback;
 import org.alfresco.service.cmr.avm.deploy.DeploymentService;
+import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.util.Deleter;
 import org.alfresco.util.NameMatcher;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 
 /**
- * End to end test of filesystem deployment.
+ * End to end test of deployment to a file system receiver (FSR).
  * @author britt
+ * @author mrogers
  */
 public class FSDeploymentTest extends AVMServiceTestBase
 {
@@ -53,6 +59,10 @@ public class FSDeploymentTest extends AVMServiceTestBase
     private File metadata = null;
     private File data = null;
     private File target = null;
+    
+    private String TEST_USER = "Giles";
+    private String TEST_PASSWORD = "Watcher";
+    private String TEST_TARGET = "sampleTarget";
     
     DeploymentService service = null;
     
@@ -118,20 +128,41 @@ public class FSDeploymentTest extends AVMServiceTestBase
     {
 
             NameMatcher matcher = (NameMatcher)fContext.getBean("globalPathExcluder");
-            setupBasicTree();
+            
+            /**
+             *  set up our test tree
+             */
+            fService.createDirectory("main:/", "a");
 
-            /*
-            BasicTree has the following format
-            "main:/", "a"
-            "main:/a", "b"
-            "main:/a/b", "c"
-            "main:/", "d"
-            "main:/d", "e"
-            "main:/d/e", "f"           
-            "main:/a/b/c", "foo").close()
-            "main:/a/b/c", "bar").close()
-            "main:/a/b", "fudge.bak").close()
-            */
+            fService.createDirectory("main:/a", "b");
+            fService.createDirectory("main:/a/b", "c");
+            
+            fService.createDirectory("main:/", "d");
+            fService.createDirectory("main:/d", "e");
+            fService.createDirectory("main:/d/e", "f");
+            
+            fService.createFile("main:/a/b/c", "foo").close();
+            String fooText="I am main:/a/b/c/foo";
+            ContentWriter writer = fService.getContentWriter("main:/a/b/c/foo");
+            writer.setEncoding("UTF-8");
+            writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+            writer.putContent("I am main:/a/b/c/foo");
+            
+            fService.createFile("main:/a/b/c", "bar").close();
+            writer = fService.getContentWriter("main:/a/b/c/bar");
+            // Force a conversion
+            writer.setEncoding("UTF-16");
+            writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+            writer.putContent("I am main:/a/b/c/bar");
+            
+            String buffyText = "This is test data: Buffy the Vampire Slayer is an Emmy Award-winning and Golden Globe-nominated American cult television series that aired from March 10, 1997 until May 20, 2003. The series was created in 1997 by writer-director Joss Whedon under his production tag, Mutant Enemy Productions with later co-executive producers being Jane Espenson, David Fury, and Marti Noxon. The series narrative follows Buffy Summers (played by Sarah Michelle Gellar), the latest in a line of young women chosen by fate to battle against vampires, demons, and the forces of darkness as the Slayer. Like previous Slayers, Buffy is aided by a Watcher, who guides and trains her. Unlike her predecessors, Buffy surrounds herself with a circle of loyal friends who become known as the Scooby Gang.";
+            fService.createFile("main:/a/b", "buffy").close();
+            writer = fService.getContentWriter("main:/a/b/buffy");
+            // Force a conversion
+            writer.setEncoding("UTF-16");
+            writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+            
+            writer.putContent(buffyText);
             
             fService.createFile("main:/a/b", "fudge.bak").close();
             DeploymentReport report = new DeploymentReport();
@@ -142,18 +173,45 @@ public class FSDeploymentTest extends AVMServiceTestBase
              * Do our first deployment - should deploy the basic tree defined above
              * fudge.bak should be excluded due to the matcher.
              */
-            service.deployDifferenceFS(-1, "main:/", "default", "localhost", 44100, "Giles", "Watcher", "sampleTarget", matcher, false, false, false, callbacks);
+            service.deployDifferenceFS(-1, "main:/", "default", "localhost", 44100, TEST_USER, TEST_PASSWORD, TEST_TARGET, matcher, false, false, false, callbacks);
         	Set<DeploymentEvent> firstDeployment = new HashSet<DeploymentEvent>();
         	firstDeployment.addAll(report.getEvents());
-        	assertTrue("first deployment no start", firstDeployment.contains(new DeploymentEvent(DeploymentEvent.Type.START, null, "sampleTarget")));
-        	assertTrue("first deployment no finish", firstDeployment.contains(new DeploymentEvent(DeploymentEvent.Type.END, null, "sampleTarget")));
-        	assertTrue("first deployment wrong size", firstDeployment.size() == 10);
+        	// validate the deployment report
+        	assertTrue("first deployment no start", firstDeployment.contains(new DeploymentEvent(DeploymentEvent.Type.START, null, TEST_TARGET)));
+        	assertTrue("first deployment no finish", firstDeployment.contains(new DeploymentEvent(DeploymentEvent.Type.END, null, TEST_TARGET)));
+        	assertTrue("first deployment wrong size", firstDeployment.size() == 11);
         	assertTrue("Update missing: /a", firstDeployment.contains(new DeploymentEvent(DeploymentEvent.Type.COPIED, null, "/a")));
         	assertTrue("Update missing: /a/b", firstDeployment.contains(new DeploymentEvent(DeploymentEvent.Type.COPIED, null, "/a/b")));
         	assertTrue("Update missing: /a/b/c", firstDeployment.contains(new DeploymentEvent(DeploymentEvent.Type.COPIED, null, "/a/b/c")));
         	assertTrue("Update missing: /d/e", firstDeployment.contains(new DeploymentEvent(DeploymentEvent.Type.COPIED, null, "/d/e")));
         	assertTrue("Update missing: /a/b/c/foo", firstDeployment.contains(new DeploymentEvent(DeploymentEvent.Type.COPIED, null, "/a/b/c/foo")));
         	assertTrue("Update missing: /a/b/c/bar", firstDeployment.contains(new DeploymentEvent(DeploymentEvent.Type.COPIED, null, "/a/b/c/bar")));
+        	assertTrue("Update missing: /a/b/buffy", firstDeployment.contains(new DeploymentEvent(DeploymentEvent.Type.COPIED, null, "/a/b/buffy")));
+        	assertFalse("Fudge has not been excluded", firstDeployment.contains(new DeploymentEvent(DeploymentEvent.Type.COPIED, null, "/a/b/fudge.bak")));
+        	
+        	// Check that files exist on target
+        	File target = new File("target");
+        	assertTrue("target dir does not extist", target.exists());
+        	assertTrue("target dir is not a directory", target.isDirectory());
+        	
+        	{
+        		File buffyFile = new File(target.getAbsolutePath()+ File.separator + "a" + File.separator+ "b" + File.separator + "buffy");
+        		assertTrue("buffy file not created", buffyFile.exists());
+        		assertTrue("buffy file is not a file", buffyFile.isFile());
+        		BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(buffyFile), "UTF-16"));
+        		String text = reader.readLine();
+        		assertTrue("UTF-16 buffy text is not correct", buffyText.equals(text));
+        	}
+        	
+        	{
+            	File fooFile = new File(target.getAbsolutePath()+ File.separator + "a" + File.separator+ "b" + File.separator + "c" + File.separator + "foo");
+            	assertTrue("foo file not created", fooFile.exists());
+            	assertTrue("foo file is not a file", fooFile.isFile());
+            	BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(fooFile), "UTF-8"));
+        		String text = reader.readLine();
+        		assertTrue("UTF-8 foo text is not correct", fooText.equals(text));
+        	}
+     	
 
             for (DeploymentEvent event : report)
             {
@@ -166,7 +224,7 @@ public class FSDeploymentTest extends AVMServiceTestBase
             report = new DeploymentReport();
             callbacks = new ArrayList<DeploymentCallback>();
             callbacks.add(new DeploymentReportCallback(report));
-            service.deployDifferenceFS(-1, "main:/", "default", "localhost", 44100, "Giles", "Watcher", "sampleTarget", matcher, false, false, false, callbacks);
+            service.deployDifferenceFS(-1, "main:/", "default", "localhost", 44100, TEST_USER, TEST_PASSWORD, TEST_TARGET, matcher, false, false, false, callbacks);
             int count = 0;
             for (DeploymentEvent event : report)
             {
@@ -182,14 +240,15 @@ public class FSDeploymentTest extends AVMServiceTestBase
             report = new DeploymentReport();
             callbacks = new ArrayList<DeploymentCallback>();
             callbacks.add(new DeploymentReportCallback(report));
-            service.deployDifferenceFS(-1, "main:/", "default", "localhost", 44100, "Giles", "Watcher", "sampleTarget", matcher, false, false, false, callbacks);
-            count = 0;
+            service.deployDifferenceFS(-1, "main:/", "default", "localhost", 44100, TEST_USER, TEST_PASSWORD, TEST_TARGET, matcher, false, false, false, callbacks);
+           	Set<DeploymentEvent> smallUpdate = new HashSet<DeploymentEvent>();
+        	smallUpdate.addAll(report.getEvents());
             for (DeploymentEvent event : report)
             {
                 System.out.println(event);
-                count++;
             }
-            assertEquals(3, count);
+            assertEquals(3, smallUpdate.size());
+        	assertTrue("Bar not deleted", smallUpdate.contains(new DeploymentEvent(DeploymentEvent.Type.DELETED, null, "/a/b/c/bar")));
             
             /**
              *  Now create a new dir and file and remove a node in a single deployment 
@@ -202,7 +261,7 @@ public class FSDeploymentTest extends AVMServiceTestBase
             callbacks.add(new DeploymentReportCallback(report));
 
             
-            service.deployDifferenceFS(-1, "main:/", "default", "localhost", 44100, "Giles", "Watcher", "sampleTarget", matcher, false, false, false, callbacks);
+            service.deployDifferenceFS(-1, "main:/", "default", "localhost", 44100, TEST_USER, TEST_PASSWORD, TEST_TARGET, matcher, false, false, false, callbacks);
             count = 0;
             for (DeploymentEvent event : report)
             {
@@ -221,7 +280,7 @@ public class FSDeploymentTest extends AVMServiceTestBase
             callbacks = new ArrayList<DeploymentCallback>();
             callbacks.add(new DeploymentReportCallback(report));
 
-            service.deployDifferenceFS(-1, "main:/", "default", "localhost", 44100, "Giles", "Watcher", "sampleTarget", matcher, false, false, false, callbacks);
+            service.deployDifferenceFS(-1, "main:/", "default", "localhost", 44100, TEST_USER, TEST_PASSWORD, TEST_TARGET, matcher, false, false, false, callbacks);
             count = 0;
             for (DeploymentEvent event : report)
             {
@@ -241,7 +300,7 @@ public class FSDeploymentTest extends AVMServiceTestBase
             callbacks = new ArrayList<DeploymentCallback>();
             callbacks.add(new DeploymentReportCallback(report));
 
-            service.deployDifferenceFS(-1, "main:/", "default", "localhost", 44100, "Giles", "Watcher", "sampleTarget", matcher, false, false, false, callbacks);
+            service.deployDifferenceFS(-1, "main:/", "default", "localhost", 44100, TEST_USER, TEST_PASSWORD, TEST_TARGET, matcher, false, false, false, callbacks);
             count = 0;
             for (DeploymentEvent event : report)
             {
@@ -250,12 +309,57 @@ public class FSDeploymentTest extends AVMServiceTestBase
             }
             assertEquals(5, count);
             
-            /**
-             *  Negative tests
-             *	 Wrong password
-             */
+             
+            
+    }
+	
+    /**
+     * Test for ETWOTWO-507
+     * 1. In a web project, create files called test01.html and test03.html.
+	 * 3. Deploy using the FSR.
+	 * 5. Add a new file called test02.html.
+	 * 6. Delete the file called test03.html.
+	 * 8. Deploy using the FSR. 
+     */
+    public void testEtwoTwo507() throws Exception
+    {
+        DeploymentReport report = new DeploymentReport();
+        List<DeploymentCallback> callbacks = new ArrayList<DeploymentCallback>();
+        callbacks.add(new DeploymentReportCallback(report));
+        
+    	fService.createDirectory("main:/", "a");
+    	fService.createFile("main:/a", "test01.html").close();
+    	fService.createFile("main:/a", "test03.html").close();
+    	service.deployDifferenceFS(-1, "main:/", "default", "localhost", 44100, TEST_USER, TEST_PASSWORD, TEST_TARGET, null, false, false, false, callbacks);
+    	
+    	report = new DeploymentReport();
+    	callbacks = new ArrayList<DeploymentCallback>();
+    	callbacks.add(new DeploymentReportCallback(report));
+    	fService.createFile("main:/a", "test02.html").close();
+    	fService.removeNode("main:/a", "test03.html");
+
+    	service.deployDifferenceFS(-1, "main:/", "default", "localhost", 44100, TEST_USER, TEST_PASSWORD, TEST_TARGET, null, false, false, false, callbacks);
+    	Set<DeploymentEvent> firstDeployment = new HashSet<DeploymentEvent>();
+    	firstDeployment.addAll(report.getEvents());
+    	
+    	assertTrue("Update missing: /a/test02.html", firstDeployment.contains(new DeploymentEvent(DeploymentEvent.Type.COPIED, null, "/a/test02.html")));
+    	assertTrue("delete missing: /a/test03.html", firstDeployment.contains(new DeploymentEvent(DeploymentEvent.Type.DELETED, null, "/a/test03.html")));
+
+
+    	
+    }
+
+
+    
+    /**
+     * Wrong password
+     * Negative test
+     */
+    public void testWrongPassword() 
+    {
+
             try {
-            	service.deployDifferenceFS(-1, "main:/", "default", "localhost", 44100, "Giles", "Wrong!", "sampleTarget", matcher, false, false, false, callbacks);
+            	service.deployDifferenceFS(-1, "main:/", "default", "localhost", 44100, TEST_USER, "Wrong!", TEST_TARGET, null, false, false, false, null);
             	fail("Wrong password should throw exception");
             } 
             catch (AVMException de)
@@ -263,20 +367,22 @@ public class FSDeploymentTest extends AVMServiceTestBase
             	// pass
             	de.printStackTrace();
             }
-            
-            /**
-             *  Negative tests
-             *	 Wrong target
-             */
+    }
+    
+    /**
+     *  Wrong target
+     *  Negative test
+     */
+    public void testWrongTarget()
+    {
             try {
-            	service.deployDifferenceFS(-1, "main:/", "default", "localhost", 44100, "Giles", "Watcher", "crapTarget", matcher, false, false, false, callbacks);
+            	service.deployDifferenceFS(-1, "main:/", "default", "localhost", 44100, TEST_USER, TEST_PASSWORD, "crapTarget", null, false, false, false, null);
             	fail("Wrong target should have thrown an exception");
             } 
             catch (AVMException de)
             {
             	// pass
-            }
-            
+            }     
     }
     
     /**
@@ -295,17 +401,68 @@ public class FSDeploymentTest extends AVMServiceTestBase
     	fService.createDirectory("main:/", "a");
     	fService.createDirectory("main:/a", "b");
     	fService.createFile("main:/a/b", "fudge.bak").close();
-    	service.deployDifferenceFS(-1, "main:/", "default", "localhost", 44100, "Giles", "Watcher", "sampleTarget", null, false, false, false, callbacks);
+    	service.deployDifferenceFS(-1, "main:/", "default", "localhost", 44100, TEST_USER, TEST_PASSWORD, TEST_TARGET, null, false, false, false, callbacks);
     	Set<DeploymentEvent> smallUpdate = new HashSet<DeploymentEvent>();
     	smallUpdate.addAll(report.getEvents());
 
-    	
     	for (DeploymentEvent event : report)
     	{
     		System.out.println(event);
     	}
     	assertTrue("Update missing", smallUpdate.contains(new DeploymentEvent(DeploymentEvent.Type.COPIED, null, "/a/b/fudge.bak")));
     	assertEquals(5, smallUpdate.size());
+    }
+    
+    /**
+     *  Deploy a website, update it, then revert to the first version 
+     */
+    public void testRevertToPreviousVersion() throws Exception
+    {
+        DeploymentReport report = new DeploymentReport();
+        List<DeploymentCallback> callbacks = new ArrayList<DeploymentCallback>();
+        callbacks.add(new DeploymentReportCallback(report));
+        
+    	report = new DeploymentReport();
+    	callbacks = new ArrayList<DeploymentCallback>();
+    	callbacks.add(new DeploymentReportCallback(report));
+    	
+    	fService.createDirectory("main:/", "a");
+    	fService.createDirectory("main:/a", "b");
+    	fService.createFile("main:/a/b", "Zander").close();
+    	fService.createFile("main:/a/b", "Cordelia").close();
+    	fService.createFile("main:/a/b", "Buffy").close();
+    	service.deployDifferenceFS(-1, "main:/", "default", "localhost", 44100, TEST_USER, TEST_PASSWORD, TEST_TARGET, null, false, false, false, callbacks);
+    	int version = report.getEvents().get(0).getSource().getFirst();
+    	assertTrue("version is not set", version > 0);
+    	
+    	// Now do some updates
+    	report = new DeploymentReport();
+    	callbacks = new ArrayList<DeploymentCallback>();
+    	callbacks.add(new DeploymentReportCallback(report));
+    	fService.createFile("main:/a/b", "Master").close();
+        fService.createFile("main:/a/b", "Drusilla").close();
+        fService.removeNode("main:/a/b", "Zander");
+       	service.deployDifferenceFS(-1, "main:/", "default", "localhost", 44100, TEST_USER, TEST_PASSWORD, TEST_TARGET, null, false, false, false, callbacks);
+    	
+        // now do the restore to previous version
+    	report = new DeploymentReport();
+    	callbacks = new ArrayList<DeploymentCallback>();
+    	callbacks.add(new DeploymentReportCallback(report));
+    	service.deployDifferenceFS(version, "main:/", "default", "localhost", 44100, TEST_USER, TEST_PASSWORD, TEST_TARGET, null, false, false, false, callbacks);
+    	Set<DeploymentEvent> smallUpdate = new HashSet<DeploymentEvent>();
+    	smallUpdate.addAll(report.getEvents());   	
+    	for (DeploymentEvent event : report)
+    	{
+    		System.out.println(event);
+    	}
+    	assertTrue("Update missing", smallUpdate.contains(new DeploymentEvent(DeploymentEvent.Type.COPIED, null, "/a/b/Zander")));
+    	assertTrue("Update missing", smallUpdate.contains(new DeploymentEvent(DeploymentEvent.Type.DELETED, null, "/a/b/Drusilla")));
+    	assertTrue("Update missing", smallUpdate.contains(new DeploymentEvent(DeploymentEvent.Type.DELETED, null, "/a/b/Master")));
+    	assertEquals(5, smallUpdate.size());    	
+    		
+
+
+
     }
     
 	/**
@@ -327,11 +484,11 @@ public class FSDeploymentTest extends AVMServiceTestBase
     	report = new DeploymentReport();
     	callbacks = new ArrayList<DeploymentCallback>();
     	callbacks.add(new DeploymentReportCallback(report));
-    	service.deployDifferenceFS(-1, "main:/", "default", "localhost", 44100, "Giles", "Watcher", "sampleTarget", null, false, false, false, callbacks);
+    	service.deployDifferenceFS(-1, "main:/", "default", "localhost", 44100, TEST_USER, TEST_PASSWORD, TEST_TARGET, null, false, false, false, callbacks);
     	Set<DeploymentEvent> bigUpdate = new HashSet<DeploymentEvent>();
     	bigUpdate.addAll(report.getEvents());
-    	assertTrue("big update no start", bigUpdate.contains(new DeploymentEvent(DeploymentEvent.Type.START, null, "sampleTarget")));
-    	assertTrue("big update no finish", bigUpdate.contains(new DeploymentEvent(DeploymentEvent.Type.END, null, "sampleTarget")));
+    	assertTrue("big update no start", bigUpdate.contains(new DeploymentEvent(DeploymentEvent.Type.START, null, TEST_TARGET)));
+    	assertTrue("big update no finish", bigUpdate.contains(new DeploymentEvent(DeploymentEvent.Type.END, null, TEST_TARGET)));
     	assertTrue("big update too small", bigUpdate.size() > 100);
     
     	/**
@@ -342,7 +499,7 @@ public class FSDeploymentTest extends AVMServiceTestBase
     	report = new DeploymentReport();
     	callbacks = new ArrayList<DeploymentCallback>();
     	callbacks.add(new DeploymentReportCallback(report));
-    	service.deployDifferenceFS(-1, "main:/", "default", "localhost", 44100,  "Giles", "Watcher", "sampleTarget", null, false, false, false, callbacks);
+    	service.deployDifferenceFS(-1, "main:/", "default", "localhost", 44100,  TEST_USER, TEST_PASSWORD, TEST_TARGET, null, false, false, false, callbacks);
     	
     	Set<DeploymentEvent> smallUpdate = new HashSet<DeploymentEvent>();
     	smallUpdate.addAll(report.getEvents());
@@ -352,9 +509,10 @@ public class FSDeploymentTest extends AVMServiceTestBase
     	}
     	assertEquals(4, smallUpdate.size());
     	
-    	assertTrue("Start missing", smallUpdate.contains(new DeploymentEvent(DeploymentEvent.Type.START, null, "sampleTarget")));
+    	assertTrue("Start missing", smallUpdate.contains(new DeploymentEvent(DeploymentEvent.Type.START, null, TEST_TARGET)));
     	assertTrue("End missing", smallUpdate.contains(new DeploymentEvent(DeploymentEvent.Type.DELETED, null, "/avm/hibernate")));
     	assertTrue("Update missing", smallUpdate.contains(new DeploymentEvent(DeploymentEvent.Type.UPDATED, null, "/avm/AVMServiceTest.java")));
-    	assertTrue("Delete Missing", smallUpdate.contains(new DeploymentEvent(DeploymentEvent.Type.END, null, "sampleTarget")));	
+    	assertTrue("Delete Missing", smallUpdate.contains(new DeploymentEvent(DeploymentEvent.Type.END, null, TEST_TARGET)));	
     }
+    
 }

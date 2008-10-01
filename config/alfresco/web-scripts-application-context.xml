@@ -133,7 +133,6 @@
           </bean>
       </property>
       <property name="transactionHelper" ref="retryingTransactionHelper" />
-      <property name="permissionService" ref="permissionService" />
       <property name="authorityService" ref="authorityService" />
       <property name="repository" ref="repositoryHelper" />
       <property name="repositoryImageResolver" ref="webscripts.repo.imageresolver" />

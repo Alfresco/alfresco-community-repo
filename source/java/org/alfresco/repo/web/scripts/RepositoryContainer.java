@@ -41,9 +41,7 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.TemplateService;
-import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.AuthorityService;
-import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.web.scripts.AbstractRuntimeContainer;
 import org.alfresco.web.scripts.Authenticator;
@@ -76,7 +74,6 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
     private RepositoryImageResolver imageResolver;
     private RetryingTransactionHelper retryingTransactionHelper;
     private AuthorityService authorityService;
-    private PermissionService permissionService;
     private DescriptorService descriptorService;
     private TenantAdminService tenantAdminService;
     private ObjectFactory registryFactory;
@@ -112,14 +109,6 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
     {
         this.imageResolver = imageResolver;
     }
-    
-    /**
-     * @param permissionService
-     */
-    public void setPermissionService(PermissionService permissionService)
-    {
-        this.permissionService = permissionService;
-    }
 
     /**
      * @param retryingTransactionHelper
@@ -144,7 +133,10 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
     {
         this.authorityService = authorityService;
     }
-    
+
+    /**
+     * @param tenantAdminService
+     */
     public void setTenantAdminService(TenantAdminService tenantAdminService)
     {
         this.tenantAdminService = tenantAdminService;
@@ -188,23 +180,28 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
      */
     private void addRepoParameters(Map<String, Object> params)
     {
-        if (AlfrescoTransactionSupport.getTransactionId() != null && AuthenticationUtil.getCurrentAuthentication() != null)
+        if (AlfrescoTransactionSupport.getTransactionId() != null &&
+            AuthenticationUtil.getCurrentAuthentication() != null)
         {
             NodeRef rootHome = repository.getRootHome();
-            if (rootHome != null && permissionService.hasPermission(rootHome, PermissionService.READ).equals(AccessStatus.ALLOWED))
+            if (rootHome != null)
             {
                 params.put("roothome", rootHome);
             }
             NodeRef companyHome = repository.getCompanyHome();
-            if (companyHome != null && permissionService.hasPermission(companyHome, PermissionService.READ).equals(AccessStatus.ALLOWED))
+            if (companyHome != null)
             {
                 params.put("companyhome", companyHome);
             }
             NodeRef person = repository.getPerson();
-            if (person != null && permissionService.hasPermission(companyHome, PermissionService.READ).equals(AccessStatus.ALLOWED))
+            if (person != null)
             {
                 params.put("person", person);
-                params.put("userhome", repository.getUserHome(person));
+                NodeRef userHome = repository.getUserHome(person);
+                if (userHome != null)
+                {
+                    params.put("userhome", userHome);
+                }
             }
         }
     }
@@ -248,7 +245,7 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
                 {
                     logger.debug("Current authentication: " + (currentUser == null ? "unauthenticated" : "authenticated as " + currentUser));
                     logger.debug("Authentication required: " + required);
-                    logger.debug("Guest login: " + isGuest);
+                    logger.debug("Guest login requested: " + isGuest);
                 }
 
                 //
@@ -346,7 +343,6 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
         {
             RunAsWork<Object> work = new RunAsWork<Object>()
             {
-
                 public Object doWork() throws Exception
                 {
                     transactionedExecute(script, scriptReq, scriptRes);

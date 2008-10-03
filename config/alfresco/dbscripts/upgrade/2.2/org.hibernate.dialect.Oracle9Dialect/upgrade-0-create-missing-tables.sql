@@ -26,7 +26,7 @@ ALTER TABLE alf_audit_date RENAME COLUMN year TO full_year;
 
     create table avm_aspects_new (
         id number(19,0) not null,
-        qname_id number(19,0) not null,
+        name varchar2(200 char) not null,
         primary key (id, qname_id)
     );                                                -- (optional)
 
@@ -57,14 +57,14 @@ ALTER TABLE alf_audit_date RENAME COLUMN year TO full_year;
         double_value double precision,
         string_value varchar2(1024 char),
         serializable_value long raw,
-        qname_id number(19,0) not null,
+        qname varchar2(200 char) not null,
         primary key (node_id, qname_id)
     );                                                -- (optional)
 
     create table avm_store_properties (
         id number(19,0) not null,
         avm_store_id number(19,0),
-        qname_id number(19,0) not null,
+        qname varchar2(200 char) not null,
         actual_type_n number(10,0) not null,
         persisted_type_n number(10,0) not null,
         multi_valued number(1,0) not null,

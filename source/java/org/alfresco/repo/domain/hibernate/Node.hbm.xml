@@ -656,9 +656,10 @@
          node
       from
          org.alfresco.repo.domain.hibernate.NodeImpl as node
+	     join node.properties as props
       where
-         node.properties.serializableValue is not null and
-         node.properties.multiValued = false
+         props.serializableValue is not null and
+         props.multiValued = false
    </query>
 
    <query name="node.patch.GetAssocsAndChildNames">

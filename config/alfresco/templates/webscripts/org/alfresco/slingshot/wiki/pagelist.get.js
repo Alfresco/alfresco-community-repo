@@ -30,8 +30,11 @@ function getWikiPages(siteId)
    }
    
    var query = "+PATH:\"" + wiki.qnamePath + "//*\" ";
+   query += " +@\\{http\\://www.alfresco.org/model/content/1.0\\}content.mimetype:application/octet-stream";
+   query += " -TYPE:\"{http://www.alfresco.org/model/content/1.0}thumbnail\"";
+   query += " -TYPE:\"{http://www.alfresco.org/model/forum/1.0}post\"";
    
-   if (filter && filter != "all")
+   if (filter)
    {
       query += getFilterQuery(filter);
    }
@@ -70,6 +73,7 @@ function getFilterQuery(filter)
       case "all":
          // Nothing to do
          break;
+      
       case "recentlyModified":
          var usingModified = true;
          // fall through...
@@ -94,7 +98,6 @@ function getFilterQuery(filter)
          var fromQuery = date.getFullYear() + "\\-" + (date.getMonth() + 1) + "\\-" + date.getDate();
 
          filterQuery += "+@cm\\:" + dateField + ":[" + fromQuery + "T00\\:00\\:00 TO " + toQuery + "T23\\:59\\:59] ";
-         filterQuery += "-ASPECT:\"{http://www.alfresco.org/model/content/1.0}workingcopy\"";
          break;
          
       case "myPages":

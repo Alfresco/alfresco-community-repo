@@ -153,7 +153,7 @@ public class SearcherComponentTest extends TestCase
 
         xpath = new NodeServiceXPath("*/*", documentNavigator, null);
         list = xpath.selectNodes(new ChildAssociationRef(null, null, null, rootNodeRef));
-        assertEquals(4, list.size());
+        assertEquals(5, list.size());
 
         xpath = new NodeServiceXPath("*/*/*", documentNavigator, null);
         list = xpath.selectNodes(new ChildAssociationRef(null, null, null, rootNodeRef));
@@ -169,7 +169,7 @@ public class SearcherComponentTest extends TestCase
 
         xpath = new NodeServiceXPath("*//.", documentNavigator, null);
         list = xpath.selectNodes(new ChildAssociationRef(null, null, null, rootNodeRef));
-        assertEquals(12, list.size());
+        assertEquals(13, list.size());
 
         xpathStr = "test:root_p_n1";
         xpath = new NodeServiceXPath(xpathStr, documentNavigator, null);
@@ -268,7 +268,7 @@ public class SearcherComponentTest extends TestCase
         xpath = new NodeServiceXPath(xpathStr, documentNavigator, new QueryParameterDefinition[] { paramDef });
         xpath.addNamespace(BaseNodeServiceTest.TEST_PREFIX, BaseNodeServiceTest.NAMESPACE);
         list = xpath.selectNodes(assocRefs.get(qname));
-        assertEquals(2, list.size()); // 2 distinct paths to node n8, which is of type content
+        assertEquals(3, list.size()); // 2 distinct paths to node n8, which is of type content
 
         xpath = new NodeServiceXPath("/", documentNavigator, null);
         xpath.addNamespace(BaseNodeServiceTest.TEST_PREFIX, BaseNodeServiceTest.NAMESPACE);
@@ -560,7 +560,7 @@ public class SearcherComponentTest extends TestCase
                 "element\\(\\s*(\\*|\\$?\\w*:\\w*)\\s*,\\s*(\\*|\\$?\\w*:\\w*)\\s*\\)", "$1[subtypeOf(\"$2\")]"),
                 documentNavigator, null);
         list = xpath.selectNodes(new ChildAssociationRef(null, null, null, rootNodeRef));
-        assertEquals(12, list.size());
+        assertEquals(13, list.size());
 
         xpath = new NodeServiceXPath("//element(jcr:root, *)".replaceAll(
                 "element\\(\\s*(\\*|\\$?\\w*:\\w*)\\s*,\\s*(\\*|\\$?\\w*:\\w*)\\s*\\)", "$1[subtypeOf(\"$2\")]"),
@@ -577,7 +577,7 @@ public class SearcherComponentTest extends TestCase
                 "element\\(\\s*(\\*|\\$?\\w*:\\w*)\\s*,\\s*(\\*|\\$?\\w*:\\w*)\\s*\\)", "$1[subtypeOf(\"$2\")]"),
                 documentNavigator, new QueryParameterDefinition[] { paramDef });
         list = xpath.selectNodes(new ChildAssociationRef(null, null, null, rootNodeRef));
-        assertEquals(2, list.size());
+        assertEquals(3, list.size());
 
         paramDef = new QueryParameterDefImpl(QName.createQName("test:type", namespacePrefixResolver), dictionaryService
                 .getDataType(DataTypeDefinition.QNAME), true, BaseNodeServiceTest.TYPE_QNAME_TEST_CONTENT

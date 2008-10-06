@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -35,12 +36,15 @@ import java.util.List;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.SearcherException;
 import org.alfresco.repo.search.impl.lucene.index.CachingIndexReader;
+import org.alfresco.repo.search.impl.lucene.index.IndexInfo;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.namespace.QName;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.index.IndexReader;
@@ -58,6 +62,11 @@ import org.apache.lucene.search.Weight;
  */
 public class LeafScorer extends Scorer
 {
+    /**
+     * The logger.
+     */
+    private static Log s_logger = LogFactory.getLog(IndexInfo.class);
+
     static class Counter
     {
         int count = 0;
@@ -116,7 +125,7 @@ public class LeafScorer extends Scorer
 
     private int[] cats;
 
-    private TermPositions tp;
+    // private TermPositions tp;
 
     /**
      * Constructor - should use an arg object ...
@@ -143,7 +152,7 @@ public class LeafScorer extends Scorer
         this.containerScorer = containerScorer;
         this.sfps = sfps;
         this.allNodes = allNodes;
-        this.tp = tp;
+        // this.tp = tp;
         if (selfIds == null)
         {
             this.selfIds = new HashMap<String, Counter>();
@@ -169,12 +178,12 @@ public class LeafScorer extends Scorer
 
     }
 
-    private String getId(IndexReader reader, int n) throws IOException
+    private String getPathLinkId(IndexReader reader, int n) throws IOException
     {
         if (reader instanceof CachingIndexReader)
         {
             CachingIndexReader cachingIndexReader = (CachingIndexReader) reader;
-            return cachingIndexReader.getId(n);
+            return cachingIndexReader.getPathLinkId(n);
         }
         else
         {
@@ -221,7 +230,7 @@ public class LeafScorer extends Scorer
             return (path == null) ? null : path.stringValue();
         }
     }
-    
+
     private String getType(IndexReader reader, int n) throws IOException
     {
         if (reader instanceof CachingIndexReader)
@@ -236,7 +245,7 @@ public class LeafScorer extends Scorer
             return (path == null) ? null : path.stringValue();
         }
     }
-    
+
     private String[] getParents(IndexReader reader, int n) throws IOException
     {
         if (reader instanceof CachingIndexReader)
@@ -264,7 +273,7 @@ public class LeafScorer extends Scorer
             }
         }
     }
-    
+
     private String[] getlinkAspects(IndexReader reader, int n) throws IOException
     {
         if (reader instanceof CachingIndexReader)
@@ -292,8 +301,6 @@ public class LeafScorer extends Scorer
             }
         }
     }
-    
-    
 
     private void initialise() throws IOException
     {
@@ -304,7 +311,7 @@ public class LeafScorer extends Scorer
             {
                 int doc = containerScorer.doc();
 
-                String id = getId(reader, doc);
+                String id = getPathLinkId(reader, doc);
                 Counter counter = parentIds.get(id);
                 if (counter == null)
                 {
@@ -348,7 +355,7 @@ public class LeafScorer extends Scorer
             while (level0.next())
             {
                 int doc = level0.doc();
-                String id = getId(reader, doc);
+                String id = getPathLinkId(reader, doc);
                 if (id != null)
                 {
                     Counter counter = parentIds.get(id);
@@ -374,7 +381,10 @@ public class LeafScorer extends Scorer
             }
             else if (parentIds.size() == 0)
             {
-                throw new SearcherException("Index has no root node.  Check that the correct index locations are being used.");
+                if (s_logger.isWarnEnabled())
+                {
+                    s_logger.warn("Index has no root node.  Check that the correct index locations are being used.");
+                }
             }
         }
 
@@ -382,10 +392,14 @@ public class LeafScorer extends Scorer
         {
             int position = 0;
             parents = new int[10000];
-            for (String parent : parentIds.keySet())
+            ArrayList<String> ordered = new ArrayList<String>(parentIds.size());
+            ordered.addAll(parentIds.keySet());
+            Collections.sort(ordered);
+            for (String parent : ordered)
             {
                 Counter counter = parentIds.get(parent);
-                tp.seek(new Term("PARENT", parent));
+                // tp.seek(new Term("PARENT", parent));
+                TermPositions tp = reader.termPositions(new Term("PARENT", parent));
                 while (tp.next())
                 {
                     for (int i = 0, l = tp.freq(); i < l; i++)
@@ -412,9 +426,13 @@ public class LeafScorer extends Scorer
 
             position = 0;
             self = new int[10000];
-            for (String id : selfIds.keySet())
+            ordered = new ArrayList<String>(selfIds.size());
+            ordered.addAll(selfIds.keySet());
+            Collections.sort(ordered);
+            for (String id : ordered)
             {
-                tp.seek(new Term("ID", id));
+                // tp.seek(new Term("ID", id));
+                TermPositions tp = reader.termPositions(new Term("ID", id));
                 while (tp.next())
                 {
                     Counter counter = selfIds.get(id);
@@ -438,7 +456,10 @@ public class LeafScorer extends Scorer
 
             position = 0;
             cats = new int[10000];
-            for (String catid : categories.keySet())
+            ordered = new ArrayList<String>(categories.size());
+            ordered.addAll(categories.keySet());
+            Collections.sort(ordered);
+            for (String catid : ordered)
             {
                 for (QName apsectQName : dictionaryService.getAllAspects())
                 {
@@ -449,7 +470,8 @@ public class LeafScorer extends Scorer
                         {
                             if (propDef.getDataType().getName().equals(DataTypeDefinition.CATEGORY))
                             {
-                                tp.seek(new Term("@" + propDef.getName().toString(), catid));
+                                // tp.seek(new Term("@" + propDef.getName().toString(), catid));
+                                TermPositions tp = reader.termPositions(new Term("@" + propDef.getName().toString(), catid));
                                 while (tp.next())
                                 {
                                     for (int i = 0, l = tp.freq(); i < l; i++)
@@ -819,9 +841,14 @@ public class LeafScorer extends Scorer
             }
         }
 
-        //Document doc = reader.document(doc());
+        // Document doc = reader.document(doc());
         String[] parentFields = getParents(reader, doc());
-        String[] linkFields = getlinkAspects(reader, doc());
+
+        String[] linkFields = null;
+        if (categories.size() > 0)
+        {
+            linkFields = getlinkAspects(reader, doc());
+        }
 
         String parentID = null;
         String linkAspect = null;
@@ -846,7 +873,7 @@ public class LeafScorer extends Scorer
             {
                 return;
             }
-            String id = getId(reader, doc());
+            String id = getPathLinkId(reader, doc());
             StructuredFieldPosition last = sfps[sfps.length - 1];
             if ((last.linkSelf() && selfIds.containsKey(id)))
             {

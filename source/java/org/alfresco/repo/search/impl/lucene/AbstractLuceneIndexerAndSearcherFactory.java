@@ -46,7 +46,6 @@ import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.avm.AVMNodeService;
 import org.alfresco.repo.domain.hibernate.BulkLoader;
 import org.alfresco.repo.search.IndexerException;
 import org.alfresco.repo.search.MLAnalysisMode;
@@ -64,6 +63,7 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.GUID;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.store.Lock;
 import org.quartz.Job;
@@ -126,7 +126,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
     /** the maximum transformation time to allow atomically, defaulting to 20ms */
     private long maxAtomicTransformationTime = 20;
 
-    private int indexerMaxFieldLength;
+    private int indexerMaxFieldLength = IndexWriter.DEFAULT_MAX_FIELD_LENGTH;
 
     private long writeLockTimeout;
 
@@ -141,6 +141,44 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
     private ThreadPoolExecutor threadPoolExecutor;
 
     private BulkLoader bulkLoader;
+
+    private int maxDocIdCacheSize = 10000;
+
+    private int maxDocsForInMemoryMerge = 10000;
+
+    private int maxDocumentCacheSize = 100;
+
+    private int maxIsCategoryCacheSize = -1;
+
+    private int maxLinkAspectCacheSize = 10000;
+
+    private int maxParentCacheSize = 10000;
+
+    private int maxPathCacheSize = 10000;
+
+    private int maxTypeCacheSize = 10000;
+
+    private int mergerMaxMergeDocs = 1000000;
+
+    private int mergerMergeFactor = 5;
+
+    private int mergerMinMergeDocs = 1000;
+
+    private int mergerTargetIndexCount = 5;
+
+    private int mergerTargetOverlayCount = 5;
+
+    private int termIndexInterval =IndexWriter.DEFAULT_TERM_INDEX_INTERVAL;
+
+    private boolean useNioMemoryMapping = true;
+
+    private int writerMaxMergeDocs = 1000000;
+
+    private int writerMergeFactor = 5;
+
+    private int writerMinMergeDocs = 1000;
+
+    private boolean cacheEnabled = true;
 
     /**
      * Private constructor for the singleton TODO: FIt in with IOC
@@ -1460,6 +1498,197 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
     {
         // defaultMLSearchAnalysisMode = MLAnalysisMode.getMLAnalysisMode(mode);
         defaultMLSearchAnalysisMode = mode;
+    }
+
+    
+    public int getMaxDocIdCacheSize()
+    {
+        return maxDocIdCacheSize;
+    }
+
+    public void setMaxDocIdCacheSize(int maxDocIdCacheSize)
+    {
+        this.maxDocIdCacheSize = maxDocIdCacheSize;
+    }
+
+    public int getMaxDocsForInMemoryMerge()
+    {
+        return maxDocsForInMemoryMerge;
+    }
+
+    public void setMaxDocsForInMemoryMerge(int maxDocsForInMemoryMerge)
+    {
+        this.maxDocsForInMemoryMerge = maxDocsForInMemoryMerge;
+    }
+
+    public int getMaxDocumentCacheSize()
+    {
+        return maxDocumentCacheSize;
+    }
+
+    public void setMaxDocumentCacheSize(int maxDocumentCacheSize)
+    {
+        this.maxDocumentCacheSize = maxDocumentCacheSize;
+    }
+
+    public int getMaxIsCategoryCacheSize()
+    {
+        return maxIsCategoryCacheSize;
+    }
+
+    public void setMaxIsCategoryCacheSize(int maxIsCategoryCacheSize)
+    {
+        this.maxIsCategoryCacheSize = maxIsCategoryCacheSize;
+    }
+
+    public int getMaxLinkAspectCacheSize()
+    {
+        return maxLinkAspectCacheSize;
+    }
+
+    public void setMaxLinkAspectCacheSize(int maxLinkAspectCacheSize)
+    {
+        this.maxLinkAspectCacheSize = maxLinkAspectCacheSize;
+    }
+
+    public int getMaxParentCacheSize()
+    {
+        return maxParentCacheSize;
+    }
+
+    public void setMaxParentCacheSize(int maxParentCacheSize)
+    {
+        this.maxParentCacheSize = maxParentCacheSize;
+    }
+
+    public int getMaxPathCacheSize()
+    {
+        return maxPathCacheSize;
+    }
+
+    public void setMaxPathCacheSize(int maxPathCacheSize)
+    {
+        this.maxPathCacheSize = maxPathCacheSize;
+    }
+
+    public int getMaxTypeCacheSize()
+    {
+        return maxTypeCacheSize;
+    }
+
+    public void setMaxTypeCacheSize(int maxTypeCacheSize)
+    {
+        this.maxTypeCacheSize = maxTypeCacheSize;
+    }
+
+    public int getMergerMaxMergeDocs()
+    {
+        return mergerMaxMergeDocs;
+    }
+
+    public void setMergerMaxMergeDocs(int mergerMaxMergeDocs)
+    {
+        this.mergerMaxMergeDocs = mergerMaxMergeDocs;
+    }
+
+    public int getMergerMergeFactor()
+    {
+        return mergerMergeFactor;
+    }
+
+    public void setMergerMergeFactor(int mergerMergeFactor)
+    {
+        this.mergerMergeFactor = mergerMergeFactor;
+    }
+
+    public int getMergerMinMergeDocs()
+    {
+        return mergerMinMergeDocs;
+    }
+
+    public void setMergerMinMergeDocs(int mergerMinMergeDocs)
+    {
+        this.mergerMinMergeDocs = mergerMinMergeDocs;
+    }
+
+    public int getMergerTargetIndexCount()
+    {
+        return mergerTargetIndexCount;
+    }
+
+    public void setMergerTargetIndexCount(int mergerTargetIndexCount)
+    {
+        this.mergerTargetIndexCount = mergerTargetIndexCount;
+    }
+
+    public int getMergerTargetOverlayCount()
+    {
+        return mergerTargetOverlayCount;
+    }
+
+    public void setMergerTargetOverlayCount(int mergerTargetOverlayCount)
+    {
+        this.mergerTargetOverlayCount = mergerTargetOverlayCount;
+    }
+
+    public int getTermIndexInterval()
+    {
+        return termIndexInterval;
+    }
+
+    public void setTermIndexInterval(int termIndexInterval)
+    {
+        this.termIndexInterval = termIndexInterval;
+    }
+
+    public boolean getUseNioMemoryMapping()
+    {
+        return useNioMemoryMapping;
+    }
+
+    public void setUseNioMemoryMapping(boolean useNioMemoryMapping)
+    {
+        this.useNioMemoryMapping = useNioMemoryMapping;
+    }
+
+    public int getWriterMaxMergeDocs()
+    {
+        return writerMaxMergeDocs;
+    }
+
+    public void setWriterMaxMergeDocs(int writerMaxMergeDocs)
+    {
+        this.writerMaxMergeDocs = writerMaxMergeDocs;
+    }
+
+    public int getWriterMergeFactor()
+    {
+        return writerMergeFactor;
+    }
+
+    public void setWriterMergeFactor(int writerMergeFactor)
+    {
+        this.writerMergeFactor = writerMergeFactor;
+    }
+
+    public int getWriterMinMergeDocs()
+    {
+        return writerMinMergeDocs;
+    }
+
+    public void setWriterMinMergeDocs(int writerMinMergeDocs)
+    {
+        this.writerMinMergeDocs = writerMinMergeDocs;
+    }
+
+    public boolean isCacheEnabled()
+    {
+        return cacheEnabled;
+    }
+
+    public void setCacheEnabled(boolean cacheEnabled)
+    {
+        this.cacheEnabled = cacheEnabled;
     }
 
     protected abstract List<StoreRef> getAllStores();

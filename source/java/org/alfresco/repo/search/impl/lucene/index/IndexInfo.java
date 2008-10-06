@@ -132,7 +132,7 @@ public class IndexInfo
     /**
      * Use NIO memory mapping to wite the index control file.
      */
-    private static final boolean useNIOMemoryMapping = true;
+    private static boolean useNIOMemoryMapping = true;
 
     /**
      * The default name for the file that holds the index information
@@ -306,18 +306,12 @@ public class IndexInfo
     private int termIndexInterval = IndexWriter.DEFAULT_TERM_INDEX_INTERVAL;
 
     /**
-     * Control if the cleaner thread is active
-     */
-
-    private boolean enableCleaner = true;
-
-    /**
      * Control if the merger thread is active
      */
 
-    private boolean enableMerger = true;
-
     private ThreadPoolExecutor threadPoolExecutor;
+
+    private LuceneConfig config;
 
     static
     {
@@ -371,11 +365,22 @@ public class IndexInfo
     {
         super();
         initialiseTransitions();
-        
+        this.config = config;
+
         if (config != null)
         {
             this.maxFieldLength = config.getIndexerMaxFieldLength();
             this.threadPoolExecutor = config.getThreadPoolExecutor();
+            IndexInfo.useNIOMemoryMapping = config.getUseNioMemoryMapping();
+            this.maxDocsForInMemoryMerge = config.getMaxDocsForInMemoryMerge();
+            this.writerMinMergeDocs = config.getWriterMinMergeDocs();
+            this.writerMergeFactor = config.getWriterMergeFactor();
+            this.writerMaxMergeDocs = config.getWriterMaxMergeDocs();
+            this.mergerMinMergeDocs = config.getMergerMinMergeDocs();
+            this.mergerMergeFactor = config.getMergerMergeFactor();
+            this.mergerMaxMergeDocs = config.getMergerMaxMergeDocs();
+            this.termIndexInterval = config.getTermIndexInterval();
+            this.mergerTargetOverlays = config.getMergerTargetOverlayCount();
         }
         else
         {
@@ -474,7 +479,7 @@ public class IndexInfo
                                 writeStatus();
 
                                 // The index exists and we should initialise the single reader
-                                registerReferenceCountingIndexReader(entry.getName(), buildReferenceCountingIndexReader(entry.getName()));
+                                registerReferenceCountingIndexReader(entry.getName(), buildReferenceCountingIndexReader(entry.getName(), entry.getDocumentCount()));
                             }
                             catch (IOException e)
                             {
@@ -548,7 +553,7 @@ public class IndexInfo
                                         s_logger.info("Resetting merge to committed " + entry);
                                     }
                                     entry.setStatus(TransactionStatus.COMMITTED);
-                                    registerReferenceCountingIndexReader(entry.getName(), buildReferenceCountingIndexReader(entry.getName()));
+                                    registerReferenceCountingIndexReader(entry.getName(), buildReferenceCountingIndexReader(entry.getName(), entry.getDocumentCount()));
                                     break;
                                 // Complete committing (which is post database
                                 // commit)
@@ -559,12 +564,12 @@ public class IndexInfo
                                         s_logger.info("Committing " + entry);
                                     }
                                     entry.setStatus(TransactionStatus.COMMITTED);
-                                    registerReferenceCountingIndexReader(entry.getName(), buildReferenceCountingIndexReader(entry.getName()));
+                                    registerReferenceCountingIndexReader(entry.getName(), buildReferenceCountingIndexReader(entry.getName(), entry.getDocumentCount()));
                                     mainIndexReader = null;
                                     break;
                                 // States that require no action
                                 case COMMITTED:
-                                    registerReferenceCountingIndexReader(entry.getName(), buildReferenceCountingIndexReader(entry.getName()));
+                                    registerReferenceCountingIndexReader(entry.getName(), buildReferenceCountingIndexReader(entry.getName(), entry.getDocumentCount()));
                                     break;
                                 default:
                                     // nothing to do
@@ -650,6 +655,10 @@ public class IndexInfo
                             String id = file.getName();
                             if (!indexEntries.containsKey(id) && isGUID(id))
                             {
+                                if (s_logger.isDebugEnabled())
+                                {
+                                    s_logger.debug("Deleting unused index directory " + id);
+                                }
                                 deleteQueue.add(id);
                             }
                         }
@@ -1048,7 +1057,7 @@ public class IndexInfo
             }
             return mainIndexReader;
         }
-        catch(RuntimeException e)
+        catch (RuntimeException e)
         {
             e.printStackTrace();
             throw e;
@@ -1147,7 +1156,7 @@ public class IndexInfo
             {
                 reader = new MultiReader(new IndexReader[] { new FilterIndexReaderByStringId("main+id", mainIndexReader, deletions, deleteOnlyNodes), deltaReader });
             }
-            reader = ReferenceCountingReadOnlyIndexReaderFactory.createReader(MAIN_READER + id, reader, false);
+            reader = ReferenceCountingReadOnlyIndexReaderFactory.createReader(MAIN_READER + id, reader, false, config);
             ReferenceCounting refCounting = (ReferenceCounting) reader;
             refCounting.incrementReferenceCount();
             refCounting.setInvalidForReuse();
@@ -1427,7 +1436,8 @@ public class IndexInfo
             // Make sure we have set up the reader for the data
             // ... and close it so we do not up the ref count
             closeDelta(id);
-            tl.set(buildReferenceCountingIndexReader(id));
+            IndexEntry entry = indexEntries.get(id);
+            tl.set(buildReferenceCountingIndexReader(id, entry.getDocumentCount()));
         }
 
         /**
@@ -1538,7 +1548,8 @@ public class IndexInfo
         public void beforeWithReadLock(String id, Set<Term> toDelete, Set<Term> read) throws IOException
         {
             closeDelta(id);
-            tl.set(buildReferenceCountingIndexReader(id));
+            IndexEntry entry = indexEntries.get(id);
+            tl.set(buildReferenceCountingIndexReader(id, entry.getDocumentCount()));
         }
 
         public void transition(String id, Set<Term> toDelete, Set<Term> read) throws IOException
@@ -1825,7 +1836,7 @@ public class IndexInfo
         {
             reader = IndexReader.open(emptyIndex);
         }
-        reader = ReferenceCountingReadOnlyIndexReaderFactory.createReader(MAIN_READER, reader, false);
+        reader = ReferenceCountingReadOnlyIndexReaderFactory.createReader(MAIN_READER, reader, false, config);
         return reader;
     }
 
@@ -1851,19 +1862,27 @@ public class IndexInfo
         referenceCountingReadOnlyIndexReaders.put(id, reader);
     }
 
-    private IndexReader buildReferenceCountingIndexReader(String id) throws IOException
+    private IndexReader buildReferenceCountingIndexReader(String id, long size) throws IOException
     {
         IndexReader reader;
         File location = new File(indexDirectory, id).getCanonicalFile();
         if (IndexReader.indexExists(location))
         {
-            reader = IndexReader.open(location);
+            if (size > config.getMaxDocsForInMemoryMerge())
+            {
+                reader = IndexReader.open(location);
+            }
+            else
+            {
+                RAMDirectory rd = new RAMDirectory(location);
+                reader = IndexReader.open(rd);
+            }
         }
         else
         {
             reader = IndexReader.open(emptyIndex);
         }
-        reader = ReferenceCountingReadOnlyIndexReaderFactory.createReader(id, reader, true);
+        reader = ReferenceCountingReadOnlyIndexReaderFactory.createReader(id, reader, true, config);
         return reader;
     }
 
@@ -2581,7 +2600,7 @@ public class IndexInfo
                 throw new IllegalStateException();
             }
         }
-        
+
         private synchronized void rescheduleRecovery()
         {
             switch (scheduledState)
@@ -2869,7 +2888,7 @@ public class IndexInfo
                                 // Check we have a reader registered
                                 if (referenceCountingReadOnlyIndexReaders.get(entry.getName()) == null)
                                 {
-                                    registerReferenceCountingIndexReader(entry.getName(), buildReferenceCountingIndexReader(entry.getName()));
+                                    registerReferenceCountingIndexReader(entry.getName(), buildReferenceCountingIndexReader(entry.getName(), entry.getDocumentCount()));
                                 }
                             }
 
@@ -3126,7 +3145,7 @@ public class IndexInfo
 
             for (String id : invalidIndexes)
             {
-                IndexReader reader = buildReferenceCountingIndexReader(id);
+                IndexReader reader = buildReferenceCountingIndexReader(id, newIndexCounts.get(id));
                 newReaders.put(id, reader);
             }
 
@@ -3325,13 +3344,15 @@ public class IndexInfo
 
             String mergeTargetId = null;
 
+            long docCount = 0;
+
             if (toMerge.size() > 0)
             {
                 int count = 0;
                 IndexReader[] readers = new IndexReader[toMerge.size() - 1];
                 RAMDirectory ramDirectory = null;
                 IndexWriter writer = null;
-                long docCount = 0;
+
                 File outputLocation = null;
                 for (IndexEntry entry : toMerge.values())
                 {
@@ -3409,7 +3430,7 @@ public class IndexInfo
             getReadLock();
             try
             {
-                newReader = buildReferenceCountingIndexReader(mergeTargetId);
+                newReader = buildReferenceCountingIndexReader(mergeTargetId, docCount);
             }
             finally
             {
@@ -3596,136 +3617,6 @@ public class IndexInfo
         builder.append(" ");
         builder.append(super.toString());
         return builder.toString();
-    }
-
-    public boolean isEnableCleanerThread()
-    {
-        return enableCleaner;
-    }
-
-    public void setEnableCleanerThread(boolean enableCleaner)
-    {
-        this.enableCleaner = enableCleaner;
-    }
-
-    public boolean isEnableMerger()
-    {
-        return enableMerger;
-    }
-
-    public void setEnableMerger(boolean enableMerger)
-    {
-        this.enableMerger = enableMerger;
-    }
-
-    public boolean isIndexIsShared()
-    {
-        return indexIsShared;
-    }
-
-    public void setIndexIsShared(boolean indexIsShared)
-    {
-        this.indexIsShared = indexIsShared;
-    }
-
-    public int getMaxDocsForInMemoryMerge()
-    {
-        return maxDocsForInMemoryMerge;
-    }
-
-    public void setMaxDocsForInMemoryMerge(int maxDocsForInMemoryMerge)
-    {
-        this.maxDocsForInMemoryMerge = maxDocsForInMemoryMerge;
-    }
-
-    public int getMergerMaxMergeDocs()
-    {
-        return mergerMaxMergeDocs;
-    }
-
-    public void setMergerMaxMergeDocs(int mergerMaxMergeDocs)
-    {
-        this.mergerMaxMergeDocs = mergerMaxMergeDocs;
-    }
-
-    public int getMergerMergeFactor()
-    {
-        return mergerMergeFactor;
-    }
-
-    public void setMergerMergeFactor(int mergerMergeFactor)
-    {
-        this.mergerMergeFactor = mergerMergeFactor;
-    }
-
-    public int getMergerMinMergeDocs()
-    {
-        return mergerMinMergeDocs;
-    }
-
-    public void setMergerMinMergeDocs(int mergerMinMergeDocs)
-    {
-        this.mergerMinMergeDocs = mergerMinMergeDocs;
-    }
-
-    public int getMergerTargetOverlays()
-    {
-        return mergerTargetOverlays;
-    }
-
-    public void setMergerTargetOverlays(int mergerTargetOverlays)
-    {
-        this.mergerTargetOverlays = mergerTargetOverlays;
-    }
-
-    public boolean isMergerUseCompoundFile()
-    {
-        return mergerUseCompoundFile;
-    }
-
-    public void setMergerUseCompoundFile(boolean mergerUseCompoundFile)
-    {
-        this.mergerUseCompoundFile = mergerUseCompoundFile;
-    }
-
-    public int getWriterMaxMergeDocs()
-    {
-        return writerMaxMergeDocs;
-    }
-
-    public void setWriterMaxMergeDocs(int writerMaxMergeDocs)
-    {
-        this.writerMaxMergeDocs = writerMaxMergeDocs;
-    }
-
-    public int getWriterMergeFactor()
-    {
-        return writerMergeFactor;
-    }
-
-    public void setWriterMergeFactor(int writerMergeFactor)
-    {
-        this.writerMergeFactor = writerMergeFactor;
-    }
-
-    public int getWriterMinMergeDocs()
-    {
-        return writerMinMergeDocs;
-    }
-
-    public void setWriterMinMergeDocs(int writerMinMergeDocs)
-    {
-        this.writerMinMergeDocs = writerMinMergeDocs;
-    }
-
-    public boolean isWriterUseCompoundFile()
-    {
-        return writerUseCompoundFile;
-    }
-
-    public void setWriterUseCompoundFile(boolean writerUseCompoundFile)
-    {
-        this.writerUseCompoundFile = writerUseCompoundFile;
     }
 
     private boolean isGUID(String guid)

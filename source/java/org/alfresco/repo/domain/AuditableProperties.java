@@ -92,11 +92,12 @@ public class AuditableProperties
         }
         else if (qname.equals(ContentModel.PROP_MODIFIER))
         {
-            return auditModifier;
+            return auditModifier == null ? auditCreator : auditModifier;
         }
         else if (qname.equals(ContentModel.PROP_MODIFIED))
         {
-            return DefaultTypeConverter.INSTANCE.convert(Date.class, auditModified);
+            String dateStr = auditModified == null ? auditCreated : auditModified;
+            return DefaultTypeConverter.INSTANCE.convert(Date.class, dateStr);
         }
         else if (qname.equals(ContentModel.PROP_ACCESSED))
         {

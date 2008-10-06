@@ -94,4 +94,118 @@ public interface LuceneConfig
      */
     public BulkLoader getBulkLoader();
 
+    /**
+     * Use the nio memory mapping (work arounf for bugs with some JVMs)
+     * @return
+     */
+    public boolean getUseNioMemoryMapping();
+    
+    /**
+     * Max doc number that will merged in memory (and not on disk)
+     * 
+     * @return
+     */
+    public int getMaxDocsForInMemoryMerge();
+    
+    /**
+     * Lucene writer config
+     * @return
+     */
+    public int getWriterMinMergeDocs();
+    
+    /**
+     * Lucene writer config
+     * @return
+     */
+    public int getWriterMergeFactor();
+    
+    /**
+     * Lucene writer config
+     * @return
+     */
+    public int getWriterMaxMergeDocs();
+    
+    /**
+     * Lucene merger config
+     * @return
+     */
+    public int getMergerMinMergeDocs();
+    
+    /**
+     * Lucene merger config
+     * @return
+     */
+    public int getMergerMergeFactor();
+    
+    /**
+     * Lucene merger config
+     * @return
+     */
+    public int getMergerMaxMergeDocs();
+    
+    /**
+     * Target overlays (will apply deletions and create indexes if over this limit)
+     * @return
+     */
+    public int getMergerTargetOverlayCount();
+    
+    /**
+     * Target index count. Over this indexes will be merged together.
+     * @return
+     */
+    public int getMergerTargetIndexCount();
+    
+    /**
+     * Lucene term index interval
+     * @return
+     */
+    public int getTermIndexInterval();
+    
+    /**
+     * Is caching enabled for each index fragment?
+     * @return
+     */
+    public boolean isCacheEnabled();
+    
+    /**
+     * How many categories to cache (-ve => unbounded)
+     * @return
+     */
+    public int getMaxIsCategoryCacheSize();
+    
+    /**
+     * How many documents to cache (-ve => unbounded)
+     * @return
+     */
+    public int getMaxDocumentCacheSize();
+    
+    /**
+     * How many document ids to cache (-ve => unbounded)
+     * @return
+     */
+    public int getMaxDocIdCacheSize();
+    
+    /**
+     * How many paths to cache (-ve => unbounded)
+     * @return
+     */
+    public int getMaxPathCacheSize();
+    
+    /**
+     * How many types to cache (-ve => unbounded)
+     * @return
+     */
+    public int getMaxTypeCacheSize();
+    
+    /**
+     * How many parents to cache (-ve => unbounded)
+     * @return
+     */
+    public int getMaxParentCacheSize();
+   
+    /**
+     * How many link aspects to cache (-ve => unbounded)
+     * @return
+     */
+    public int getMaxLinkAspectCacheSize();
 }

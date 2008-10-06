@@ -33,7 +33,9 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
@@ -109,7 +111,7 @@ public class ADMLuceneTest extends TestCase
 {
 
     private static final String TEST_NAMESPACE = "http://www.alfresco.org/test/lucenetest";
- 
+
     private static final QName ASSOC_TYPE_QNAME = QName.createQName(TEST_NAMESPACE, "assoc");
 
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
@@ -420,10 +422,12 @@ public class ADMLuceneTest extends TestCase
 
         documentOrder = new NodeRef[] { rootNodeRef, n4, n5, n6, n7, n8, n9, n10, n11, n12, n13, n14, n3, n1, n2 };
 
-        nodeService.addAspect(n3, ContentModel.ASPECT_AUDITABLE, null);
-        nodeService.addAspect(n1, ContentModel.ASPECT_AUDITABLE, null);
+// TODO: Why was the cm:auditable aspect added here?
+//       By adding it, the auditable properties were set automatically.
+//        nodeService.addAspect(n3, ContentModel.ASPECT_AUDITABLE, null);
+//        nodeService.addAspect(n1, ContentModel.ASPECT_AUDITABLE, null);
         nodeService.setProperty(n1, ContentModel.PROP_MODIFIED, new Date(new Date().getTime() - 1000*60*60));
-        nodeService.addAspect(n2, ContentModel.ASPECT_AUDITABLE, null);
+//        nodeService.addAspect(n2, ContentModel.ASPECT_AUDITABLE, null);
     }
 
     private double orderDoubleCount = -0.11d;
@@ -477,13 +481,17 @@ public class ADMLuceneTest extends TestCase
 
     public void restManyReaders() throws Exception
     {
+        QName propQName = QName.createQName(TEST_NAMESPACE, "text-indexed-stored-tokenised-atomic");
+
         NodeRef base = rootNodeRef;
         for (int i = 0; i < 10; i++)
         {
             NodeRef dir = nodeService.createNode(base, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}d-" + i), testSuperType, null).getChildRef();
-            for (int j = 0; j < 10; j++)
+            for (int j = 0; j < 100; j++)
             {
-                NodeRef file = nodeService.createNode(dir, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}meep"), testSuperType, null).getChildRef();
+                Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
+                properties.put(propQName, "lemon");
+                NodeRef file = nodeService.createNode(dir, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}meep"), testSuperType, properties).getChildRef();
             }
         }
         testTX.commit();
@@ -504,10 +512,23 @@ public class ADMLuceneTest extends TestCase
 
         Thread runner = null;
 
-        for (int i = 0; i < 20; i++)
+        // testQuery(searcher, runner, "PATH:\"/d-0/*\"");
+        // testQuery(searcher, runner, "PATH:\"/d-0/meep\"");
+        // testQuery(searcher, runner, "PATH:\"/d-0//*\"");
+        // testQuery(searcher, runner, "PATH:\"/d-0//meep\"");
+        testQuery(searcher, runner, "PATH:\"//*\"");
+        // testQuery(searcher, runner, "PATH:\"//meep\"");
+        // testQuery(searcher, runner, "@"+LuceneQueryParser.escape(propQName.toString())+":\"lemon\"");
+
+    }
+
+    private void testQuery(ADMLuceneSearcherImpl searcher, Thread runner, String query)
+    {
+        for (int i = 0; i < 1; i++)
         {
-            runner = new QueryThread("Concurrent-" + i, runner, searcher);
+            runner = new QueryThread("Concurrent-" + i, runner, searcher, query);
         }
+        long start = System.nanoTime();
         if (runner != null)
         {
             runner.start();
@@ -521,6 +542,8 @@ public class ADMLuceneTest extends TestCase
                 e.printStackTrace();
             }
         }
+        long end = System.nanoTime();
+        System.out.println(query + "\t" + ((end - start) / 1e9f));
     }
 
     class QueryThread extends Thread
@@ -529,12 +552,15 @@ public class ADMLuceneTest extends TestCase
 
         ADMLuceneSearcherImpl searcher;
 
-        QueryThread(String name, Thread waiter, ADMLuceneSearcherImpl searcher)
+        String query;
+
+        QueryThread(String name, Thread waiter, ADMLuceneSearcherImpl searcher, String query)
         {
             super(name);
             this.setDaemon(true);
             this.waiter = waiter;
             this.searcher = searcher;
+            this.query = query;
         }
 
         public void run()
@@ -546,7 +572,7 @@ public class ADMLuceneTest extends TestCase
             }
             try
             {
-                System.out.println("Start " + this.getName());
+                // System.out.println("Start " + this.getName());
 
                 RetryingTransactionCallback<Object> createAndDeleteCallback = new RetryingTransactionCallback<Object>()
                 {
@@ -555,9 +581,9 @@ public class ADMLuceneTest extends TestCase
                         SessionSizeResourceManager.setDisableInTransaction();
                         for (int i = 0; i < 100; i++)
                         {
-                            ResultSet results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//meep\"");
+                            ResultSet results = searcher.query(rootNodeRef.getStoreRef(), "lucene", query);
                             int count = results.length();
-                            for(ResultSetRow row : results)
+                            for (ResultSetRow row : results)
                             {
                                 NodeRef nr = row.getNodeRef();
                             }
@@ -568,7 +594,7 @@ public class ADMLuceneTest extends TestCase
                 };
                 retryingTransactionHelper.doInTransaction(createAndDeleteCallback);
 
-                System.out.println("End " + this.getName());
+                // System.out.println("End " + this.getName());
             }
             catch (Exception e)
             {
@@ -2002,7 +2028,16 @@ public class ADMLuceneTest extends TestCase
         for (ResultSetRow row : results)
         {
             Date currentBun = DefaultTypeConverter.INSTANCE.convert(Date.class, nodeService.getProperty(row.getNodeRef(), ContentModel.PROP_MODIFIED));
-            //System.out.println("A " + currentBun + " "+row.getQName());
+            if (currentBun != null)
+            {
+                Calendar c = new GregorianCalendar();
+                c.setTime(currentBun);
+                c.set(Calendar.MILLISECOND, 0);
+                c.set(Calendar.SECOND, 0);
+                c.set(Calendar.MINUTE, 0);
+                c.set(Calendar.HOUR_OF_DAY, 0);
+                currentBun = c.getTime();
+            }
             if (date != null)
             {
                 assertTrue(date.compareTo(currentBun) <= 0);
@@ -2023,6 +2058,17 @@ public class ADMLuceneTest extends TestCase
         {
             Date currentBun = DefaultTypeConverter.INSTANCE.convert(Date.class, nodeService.getProperty(row.getNodeRef(), ContentModel.PROP_MODIFIED));
             // System.out.println(currentBun);
+            if (currentBun != null)
+            {
+                Calendar c = new GregorianCalendar();
+                c.setTime(currentBun);
+                c.set(Calendar.MILLISECOND, 0);
+                c.set(Calendar.SECOND, 0);
+                c.set(Calendar.MINUTE, 0);
+                c.set(Calendar.HOUR_OF_DAY, 0);
+                currentBun = c.getTime();
+            }
+
             if ((date != null) && (currentBun != null))
             {
                 assertTrue(date.compareTo(currentBun) >= 0);
@@ -3099,20 +3145,17 @@ public class ADMLuceneTest extends TestCase
         results.close();
 
         // short and long field ranges
-        
+
         sDate = df.format(date);
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@cm\\:created:[MIN TO " + sDate + "]",
-                null, null);
-        assertEquals(4, results.length());
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@cm\\:created:[MIN TO " + sDate + "]", null, null);
+        assertEquals(1, results.length());
         results.close();
-        
+
         sDate = df.format(date);
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(ContentModel.PROP_CREATED) + ":[MIN TO " + sDate + "]",
-                null, null);
-        assertEquals(4, results.length());
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(ContentModel.PROP_CREATED) + ":[MIN TO " + sDate + "]", null, null);
+        assertEquals(1, results.length());
         results.close();
-        
-        
+
         // Date ranges
         // Test date collapses but date time does not
 

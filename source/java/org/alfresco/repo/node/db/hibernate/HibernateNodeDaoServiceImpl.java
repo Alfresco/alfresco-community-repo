@@ -1020,8 +1020,16 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         // Handle cm:auditable
         if (AuditableProperties.isAuditableProperty(propertyQName))
         {
-            AuditableProperties auditableProperties = node.getAuditableProperties();
-            return auditableProperties.getAuditableProperty(propertyQName);
+            // Only bother if the aspect is present
+            if (hasNodeAspect(node, ContentModel.ASPECT_AUDITABLE))
+            {
+                AuditableProperties auditableProperties = node.getAuditableProperties();
+                return auditableProperties.getAuditableProperty(propertyQName);
+            }
+            else
+            {
+                return null;
+            }
         }
         
         QNameEntity propertyQNameEntity = qnameDAO.getQNameEntity(propertyQName);
@@ -1051,8 +1059,11 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
                 dictionaryService);
         
         // Handle cm:auditable
-        AuditableProperties auditableProperties = node.getAuditableProperties();
-        converted.putAll(auditableProperties.getAuditableProperties());
+        if (hasNodeAspect(node, ContentModel.ASPECT_AUDITABLE))
+        {
+            AuditableProperties auditableProperties = node.getAuditableProperties();
+            converted.putAll(auditableProperties.getAuditableProperties());
+        }
         
         // Done
         return converted;

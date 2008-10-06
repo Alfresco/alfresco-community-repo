@@ -35,6 +35,8 @@ public interface CachingIndexReader
 {
     public String getId(int n) throws IOException;
     
+    public String getPathLinkId(int n) throws IOException;
+    
     public String[] getIds(int n) throws IOException;
     
     public String getIsCategory(int n) throws IOException;

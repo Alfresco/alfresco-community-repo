@@ -104,12 +104,25 @@ public class AuditableAspectTest extends BaseSpringTest
                 QName.createQName("{test}testperson"),
                 ContentModel.TYPE_PERSON,
                 personProps);
+        NodeRef nodeRef = childAssocRef.getChildRef();
 
         // Assert the person is not auditable
-        Set<QName> aspects = nodeService.getAspects(childAssocRef.getChildRef());
-        assertFalse(aspects.contains(ContentModel.ASPECT_AUDITABLE));
+        Set<QName> aspects = nodeService.getAspects(nodeRef);
+        assertFalse("cm:auditable must not be present.", aspects.contains(ContentModel.ASPECT_AUDITABLE));
+        Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
+        assertFalse("cm:creator must not be present", properties.containsKey(ContentModel.PROP_CREATOR));
+        assertFalse("cm:created must not be present", properties.containsKey(ContentModel.PROP_CREATED));
+        
+        assertNull(
+                "Didn't expect to get single auditable property",
+                nodeService.getProperty(nodeRef, ContentModel.PROP_CREATOR));
         
         System.out.println(NodeStoreInspector.dumpNodeStore(nodeService, storeRef));
+    }
+    
+    public void test() throws Throwable
+    {
+        
     }
 
 

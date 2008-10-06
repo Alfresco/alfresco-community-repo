@@ -24,13 +24,10 @@
  */
 package org.alfresco.web.bean.users;
 
-import java.text.MessageFormat;
-
 import javax.faces.context.FacesContext;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.web.app.Application;
-import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.ui.common.Utils;
 
 public class ChangeMyPasswordDialog extends UsersDialog
@@ -39,6 +36,7 @@ public class ChangeMyPasswordDialog extends UsersDialog
     private static final long serialVersionUID = 1965846039555088108L;
 
     private static final String MSG_FINISH_BUTTON = "finish_button";
+    private static final String MSG_ERROR_INCORRECT_OLD_PASSWORD = "error_incorrect_old_password";
 
     @Override
     protected String finishImpl(FacesContext context, String outcome) throws Exception
@@ -78,7 +76,8 @@ public class ChangeMyPasswordDialog extends UsersDialog
             catch (Exception e)
             {
                 outcome = null;
-                Utils.addErrorMessage(MessageFormat.format(Application.getMessage(newContext, Repository.ERROR_GENERIC), e.getMessage()), e);
+                Utils.addErrorMessage(Application.getMessage(FacesContext.getCurrentInstance(), 
+                         MSG_ERROR_INCORRECT_OLD_PASSWORD));
             }
         }
         else

@@ -40,7 +40,7 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.cmr.search.QueryParameterDefinition;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.NamespaceService;
@@ -131,15 +131,22 @@ public class RegistryServiceImpl implements RegistryService
     {
         NodeRef registryRootNodeRef = null;
         // Ensure that the registry root node is present
-        ResultSet rs = searchService.query(registryStoreRef, SearchService.LANGUAGE_LUCENE, "PATH:\"" + registryRootPath + "\"");
-        if (rs.length() == 0)
+        NodeRef storeRootNodeRef = nodeService.getRootNode(registryStoreRef);
+        List<NodeRef> nodeRefs = searchService.selectNodes(
+                storeRootNodeRef,
+                registryRootPath,
+                new QueryParameterDefinition[] {},
+                namespaceService,
+                false,
+                SearchService.LANGUAGE_XPATH);
+        if (nodeRefs.size() == 0)
         {
             throw new AlfrescoRuntimeException(
                     "Registry root not present: \n" +
                     "   Store: " + registryStoreRef + "\n" +
                     "   Path:  " + registryRootPath);
         }
-        else if (rs.length() > 1)
+        else if (nodeRefs.size() > 1)
         {
             throw new AlfrescoRuntimeException(
                     "Registry root path has multiple targets: \n" +
@@ -148,8 +155,9 @@ public class RegistryServiceImpl implements RegistryService
         }
         else
         {
-            registryRootNodeRef = rs.getNodeRef(0);
+            registryRootNodeRef = nodeRefs.get(0);
         }
+        
         // Check the root
         QName typeQName = nodeService.getType(registryRootNodeRef);
         if (!typeQName.equals(ContentModel.TYPE_CONTAINER))

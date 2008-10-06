@@ -175,6 +175,60 @@ public class QNameDAOTest extends TestCase
     }
     
     /**
+     * Sinces the unique indexes are case-sensitive, we have to ensure that the DAO handles this accordingly.
+     */
+    public void testNamespaceCaseInsensitivity() throws Throwable
+    {
+        final String guidNs = GUID.generate();
+        final String namespaceUriLower = "aaa-" + guidNs;
+        final String namespaceUriUpper = "AAA-" + guidNs;
+        final QName namespaceUriLowerQName = QName.createQName(namespaceUriLower, "blah");
+        final QName namespaceUriUpperQName = QName.createQName(namespaceUriUpper, "blah");
+        final String localName = GUID.generate();
+        final String localNameLower = "aaa-" + localName;
+        final String localNameUpper = "AAA-" + localName;
+        final QName localNameLowerQName = QName.createQName("blah", localNameLower);
+        final QName localNameUpperQName = QName.createQName("blah", localNameUpper);
+        RetryingTransactionCallback<Object> callback = new RetryingTransactionCallback<Object>()
+        {
+            public Object execute() throws Throwable
+            {
+                // Create QNames with lowercase values
+                dao.getOrCreateQNameEntity(namespaceUriLowerQName);
+                dao.getOrCreateQNameEntity(localNameLowerQName);
+                // Done
+                return null;
+            }
+        };
+        retryingTransactionHelper.doInTransaction(callback);
+        RetryingTransactionCallback<Object> callback2 = new RetryingTransactionCallback<Object>()
+        {
+            public Object execute() throws Throwable
+            {
+                // Check namespace case-insensitivity
+                QNameEntity namespaceUriLowerQNameEntity = dao.getQNameEntity(namespaceUriLowerQName);
+                assertNotNull(namespaceUriLowerQNameEntity);
+                QNameEntity namespaceUriUpperQNameEntity = dao.getOrCreateQNameEntity(namespaceUriUpperQName);
+                assertNotNull(namespaceUriUpperQNameEntity);
+                assertEquals(
+                        "Didn't resolve case-insensitively on namespace",
+                        namespaceUriUpperQNameEntity.getId(), namespaceUriUpperQNameEntity.getId());
+                // Check localname case-insensitivity
+                QNameEntity localNameLowerQNameEntity = dao.getQNameEntity(localNameLowerQName);
+                assertNotNull(localNameLowerQNameEntity);
+                QNameEntity localNameUpperQNameEntity = dao.getOrCreateQNameEntity(localNameUpperQName);
+                assertNotNull(localNameUpperQNameEntity);
+                assertEquals(
+                        "Didn't resolve case-insensitively on local-name",
+                        localNameLowerQNameEntity.getId(), localNameUpperQNameEntity.getId());
+                // Done
+                return null;
+            }
+        };
+        retryingTransactionHelper.doInTransaction(callback2);
+    }
+    
+    /**
      * Forces a bunch of threads to attempt QName creation at exactly the same time
      * for their first attempt.  The subsequent retries should all succeed by
      * finding the QNameEntity.

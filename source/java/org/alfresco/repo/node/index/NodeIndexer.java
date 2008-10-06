@@ -61,6 +61,16 @@ public class NodeIndexer
         this.indexer = indexer;
     }
     
+    /**
+     * Explicit property to disable in-transaction indexing.
+     * 
+     * @param disabled      <tt>true</tt> to index nothing in-line
+     */
+    public void setDisabled(boolean disabled)
+    {
+        this.enabled = !disabled;
+    }
+
     /* package */ void setEnabled(boolean enabled)
     {
         this.enabled = enabled;

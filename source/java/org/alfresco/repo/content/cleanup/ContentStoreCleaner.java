@@ -42,6 +42,7 @@ import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
@@ -272,6 +273,7 @@ public class ContentStoreCleaner
         {
             public void handle(String contentUrl)
             {
+                boolean listenersCalled = false;
                 for (ContentStore store : stores)
                 {
                     if (vmShutdownListener.isVmShuttingDown())
@@ -285,6 +287,17 @@ public class ContentStoreCleaner
                             logger.debug("   Deleting content URL: " + contentUrl);
                         }
                     }
+                    // Only transfer the URL to the listeners once
+                    if (!listenersCalled && listeners.size() > 0)
+                    {
+                        listenersCalled = true;
+                        ContentReader reader = store.getReader(contentUrl);
+                        for (ContentStoreCleanerListener listener : listeners)
+                        {
+                            listener.beforeDelete(reader);
+                        }
+                    }
+                    // Delete
                     store.delete(contentUrl);
                 }
             }

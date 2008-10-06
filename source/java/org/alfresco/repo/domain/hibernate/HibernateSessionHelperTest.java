@@ -1,6 +1,7 @@
 package org.alfresco.repo.domain.hibernate;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
@@ -21,8 +22,15 @@ public class HibernateSessionHelperTest extends BaseSpringTest
     protected void onTearDownInTransaction()
     {
         // force a flush to ensure that the database updates succeed
-        getSession().flush();
-        getSession().clear();
+        try
+        {
+            getSession().flush();
+            getSession().clear();
+        }
+        catch (Throwable e)
+        {
+            e.printStackTrace();
+        }
     }
     
     public void testSimpleMark()
@@ -542,6 +550,7 @@ public class HibernateSessionHelperTest extends BaseSpringTest
         node.setTypeQName(typeQNameEntity);
         node.setTransaction(transaction);
         node.setDeleted(false);
+        node.getAuditableProperties().setAuditValues("system", new Date(), false);
         getSession().save(node);
         
         return node;

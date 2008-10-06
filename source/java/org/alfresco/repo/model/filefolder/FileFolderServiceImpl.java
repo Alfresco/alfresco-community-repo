@@ -26,11 +26,14 @@ package org.alfresco.repo.model.filefolder;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -59,9 +62,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.search.QueryParameterDefinition;
-import org.alfresco.service.cmr.search.ResultSet;
-import org.alfresco.service.cmr.search.ResultSetRow;
-import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -84,28 +84,6 @@ public class FileFolderServiceImpl implements FileFolderService
         " and (subtypeOf('" + ContentModel.TYPE_FOLDER + "') or subtypeOf('" + ContentModel.TYPE_CONTENT + "')" +
         " or subtypeOf('" + ContentModel.TYPE_LINK + "'))]";
     
-    /** Shallow search for all files and folders */
-    private static final String LUCENE_QUERY_SHALLOW_ALL =
-        "+PARENT:\"${cm:parent}\"" +
-        "-TYPE:\"" + ContentModel.TYPE_SYSTEM_FOLDER + "\" " +
-        "+(" +
-        "TYPE:\"" + ContentModel.TYPE_CONTENT + "\" " +
-        "TYPE:\"" + ContentModel.TYPE_FOLDER + "\" " +
-        "TYPE:\"" + ContentModel.TYPE_LINK + "\" " +
-        ")";
-    
-    /** Shallow search for all files and folders */
-    private static final String LUCENE_QUERY_SHALLOW_FOLDERS =
-        "+PARENT:\"${cm:parent}\"" +
-        "-TYPE:\"" + ContentModel.TYPE_SYSTEM_FOLDER + "\" " +
-        "+TYPE:\"" + ContentModel.TYPE_FOLDER + "\" ";
-    
-    /** Shallow search for all files and folders */
-    private static final String LUCENE_QUERY_SHALLOW_FILES =
-        "+PARENT:\"${cm:parent}\"" +
-        "-TYPE:\"" + ContentModel.TYPE_SYSTEM_FOLDER + "\" " +
-        "+TYPE:\"" + ContentModel.TYPE_CONTENT + "\" ";
-    
     /** Deep search for files and folders with a name pattern */
     private static final String XPATH_QUERY_DEEP_ALL =
         ".//*" +
@@ -116,7 +94,6 @@ public class FileFolderServiceImpl implements FileFolderService
     
     /** empty parameters */
     private static final QueryParameterDefinition[] PARAMS_ANY_NAME = new QueryParameterDefinition[1];
-    private static final QName PARAM_QNAME_PARENT = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "parent");
     
     private static Log logger = LogFactory.getLog(FileFolderServiceImpl.class);
 
@@ -131,7 +108,6 @@ public class FileFolderServiceImpl implements FileFolderService
     
     // TODO: Replace this with a more formal means of identifying "system" folders (i.e. aspect or UUID)
     private List systemPaths;
-    private DataTypeDefinition dataTypeNodeRef;
     
     /**
      * Default constructor
@@ -189,12 +165,6 @@ public class FileFolderServiceImpl implements FileFolderService
     
     public void init()
     {
-        PARAMS_ANY_NAME[0] = new QueryParameterDefImpl(
-                ContentModel.PROP_NAME,
-                dictionaryService.getDataType(DataTypeDefinition.TEXT),
-                true,
-                "%");
-        dataTypeNodeRef = dictionaryService.getDataType(DataTypeDefinition.NODE_REF);
     }
 
     /**
@@ -306,7 +276,7 @@ public class FileFolderServiceImpl implements FileFolderService
     public List<FileInfo> list(NodeRef contextNodeRef)
     {
         // execute the query
-        List<NodeRef> nodeRefs = luceneSearch(contextNodeRef, true, true);
+        List<NodeRef> nodeRefs = listSimple(contextNodeRef, true, true);
         // convert the noderefs
         List<FileInfo> results = toFileInfo(nodeRefs);
         // done
@@ -322,7 +292,7 @@ public class FileFolderServiceImpl implements FileFolderService
     public List<FileInfo> listFiles(NodeRef contextNodeRef)
     {
         // execute the query
-        List<NodeRef> nodeRefs = luceneSearch(contextNodeRef, false, true);
+        List<NodeRef> nodeRefs = listSimple(contextNodeRef, false, true);
         // convert the noderefs
         List<FileInfo> results = toFileInfo(nodeRefs);
         // done
@@ -338,7 +308,7 @@ public class FileFolderServiceImpl implements FileFolderService
     public List<FileInfo> listFolders(NodeRef contextNodeRef)
     {
         // execute the query
-        List<NodeRef> nodeRefs = luceneSearch(contextNodeRef, true, false);
+        List<NodeRef> nodeRefs = listSimple(contextNodeRef, true, false);
         // convert the noderefs
         List<FileInfo> results = toFileInfo(nodeRefs);
         // done
@@ -439,16 +409,14 @@ public class FileFolderServiceImpl implements FileFolderService
             namePattern = LUCENE_MULTI_CHAR_WILDCARD;      // default to wildcard
         }
         // now check if we can use Lucene to handle this query
-        boolean useLucene = false;
         boolean anyName = namePattern.equals(LUCENE_MULTI_CHAR_WILDCARD);
-        if (!includeSubFolders && anyName)
-        {
-            // Lucene only handles any name or exact name
-            useLucene = true;
-        }
         
         List<NodeRef> nodeRefs = null;
-        if (!useLucene)         // go with the XPath queries
+        if (!includeSubFolders && anyName)
+        {
+            nodeRefs = listSimple(contextNodeRef, folderSearch, fileSearch);
+        }
+        else                // Go with XPath
         {
             // if the name pattern is null, then we use the ANY pattern
             QueryParameterDefinition[] params = null;
@@ -489,60 +457,47 @@ public class FileFolderServiceImpl implements FileFolderService
                     namespaceService,
                     false);
         }
-        else            // go with Lucene queries
-        {
-            nodeRefs = luceneSearch(contextNodeRef, folderSearch, fileSearch);
-        }
         // done
         return nodeRefs;
     }
     
-    private List<NodeRef> luceneSearch(NodeRef contextNodeRef, boolean folders, boolean files)
+    private List<NodeRef> listSimple(NodeRef contextNodeRef, boolean folders, boolean files)
     {
-        contextNodeRef = tenantService.getName(contextNodeRef);
-
-        SearchParameters params = new SearchParameters();
-        params.setLanguage(SearchService.LANGUAGE_LUCENE);
-        params.addStore(contextNodeRef.getStoreRef());
-        // set the parent parameter
-        QueryParameterDefinition parentParamDef = new QueryParameterDefImpl(
-                PARAM_QNAME_PARENT,
-                dataTypeNodeRef,
-                true,
-                contextNodeRef.toString());
-        params.addQueryParameterDefinition(parentParamDef);
-        if (folders && files)   // search for both files and folders
+        Set<QName> searchTypeQNames = new HashSet<QName>(10);
+        // Build a list of file and folder types
+        if (folders)
         {
-            params.setQuery(LUCENE_QUERY_SHALLOW_ALL);
+            Collection<QName> qnames = dictionaryService.getSubTypes(ContentModel.TYPE_FOLDER, true);
+            searchTypeQNames.addAll(qnames);
+            searchTypeQNames.add(ContentModel.TYPE_FOLDER);
         }
-        else if (folders)       // search for folders only
+        if (files)
         {
-            params.setQuery(LUCENE_QUERY_SHALLOW_FOLDERS);
+            Collection<QName> qnames = dictionaryService.getSubTypes(ContentModel.TYPE_CONTENT, true);
+            searchTypeQNames.addAll(qnames);
+            searchTypeQNames.add(ContentModel.TYPE_CONTENT);
+            qnames = dictionaryService.getSubTypes(ContentModel.TYPE_LINK, true);
+            searchTypeQNames.addAll(qnames);
+            searchTypeQNames.add(ContentModel.TYPE_LINK);
         }
-        else if (files)       // search for files only
+        // Remove 'system' folders
+        Collection<QName> qnames = dictionaryService.getSubTypes(ContentModel.TYPE_SYSTEM_FOLDER, true);
+        searchTypeQNames.removeAll(qnames);
+        searchTypeQNames.remove(ContentModel.TYPE_SYSTEM_FOLDER);
+        // Shortcut
+        if (searchTypeQNames.size() == 0)
         {
-            params.setQuery(LUCENE_QUERY_SHALLOW_FILES);
+            return Collections.emptyList();
         }
-        else
+        // Do the query
+        List<ChildAssociationRef> childAssocRefs = nodeService.getChildAssocs(contextNodeRef, searchTypeQNames);
+        List<NodeRef> result = new ArrayList<NodeRef>(childAssocRefs.size());
+        for (ChildAssociationRef assocRef : childAssocRefs)
         {
-            throw new IllegalArgumentException("Must search for either files or folders or both");
+            result.add(assocRef.getChildRef());
         }
-        ResultSet rs = searchService.query(params);
-        int length = rs.length();
-        List<NodeRef> nodeRefs = new ArrayList<NodeRef>(length);
-        try
-        {
-            for (ResultSetRow row : rs)
-            {
-                nodeRefs.add(row.getNodeRef());
-            }
-        }
-        finally
-        {
-            rs.close();
-        }
-        // done
-        return nodeRefs;
+        // Done
+        return result;
     }
     
     /**

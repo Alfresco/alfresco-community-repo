@@ -508,6 +508,15 @@ public class NodeServiceImpl implements NodeService, VersionModel
     /**
      * @throws UnsupportedOperationException always
      */
+    public List<ChildAssociationRef> getChildAssocs(NodeRef nodeRef, Set<QName> childNodeTypes)
+    {
+        // This operation is not supported for a version store
+        throw new UnsupportedOperationException(MSG_UNSUPPORTED);
+    }
+
+    /**
+     * @throws UnsupportedOperationException always
+     */
     public NodeRef getChildByName(NodeRef nodeRef, QName assocTypeQName, String childName)
     {
         // This operation is not supported for a version store

@@ -232,7 +232,16 @@ public class ConcurrentNodeServiceTest extends TestCase
             }
         }
 
-        // Test it
+        /*
+         * Builds a graph of child associations as follows:
+         * <pre>
+         * Level 0:     root
+         * Level 1:     root_p_n1   root_p_n2
+         * Level 2:     n1_p_n3     n2_p_n4     n1_n4       n2_p_n5     n1_n8
+         * Level 3:     n3_p_n6     n4_n6       n5_p_n7
+         * Level 4:     n6_p_n8     n7_n8
+         * </pre>
+         */
         RetryingTransactionCallback<Object> testCallback = new RetryingTransactionCallback<Object>()
         {
             public Object execute() throws Exception
@@ -241,37 +250,33 @@ public class ConcurrentNodeServiceTest extends TestCase
                 assertEquals(2 * ((COUNT * REPEATS) + 1), nodeService.getChildAssocs(rootNodeRef).size());
 
                 SearchService searcher = (SearchService) ctx.getBean(ServiceRegistry.SEARCH_SERVICE.getLocalName());
-                assertEquals(2 * ((COUNT * REPEATS) + 1), searcher.selectNodes(rootNodeRef, "/*", null,
-                        getNamespacePrefixReolsver(""), false).size());
+                assertEquals(
+                        2 * ((COUNT * REPEATS) + 1),
+                        searcher.selectNodes(rootNodeRef, "/*", null, getNamespacePrefixReolsver(""), false).size());
                 ResultSet results = null;
 
                 results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*\"");
-                // n6 has root aspect - there are three things at the root level in the
-                // index
+                // n6 has root aspect - there are three things at the root level in the index
                 assertEquals(3 * ((COUNT * REPEATS) + 1), results.length());
                 results.close();
 
                 results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/*\"");
-                // n6 has root aspect - there are three things at the root level in the
-                // index
-                assertEquals(3 * ((COUNT * REPEATS) + 1), results.length());
+                // n6 has root aspect - there are three things at the root level in the index
+                assertEquals(4 * ((COUNT * REPEATS) + 1), results.length());
                 results.close();
 
                 results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/*/*\"");
-                // n6 has root aspect - there are three things at the root level in the
-                // index
+                // n6 has root aspect - there are three things at the root level in the index
                 assertEquals(2 * ((COUNT * REPEATS) + 1), results.length());
                 results.close();
 
                 results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/*/*/*\"");
-                // n6 has root aspect - there are three things at the root level in the
-                // index
+                // n6 has root aspect - there are three things at the root level in the index
                 assertEquals(1 * ((COUNT * REPEATS) + 1), results.length());
                 results.close();
 
                 results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"/*/*/*/*/*\"");
-                // n6 has root aspect - there are three things at the root level in the
-                // index
+                // n6 has root aspect - there are three things at the root level in the index
                 assertEquals(0 * ((COUNT * REPEATS) + 1), results.length());
                 results.close();
 

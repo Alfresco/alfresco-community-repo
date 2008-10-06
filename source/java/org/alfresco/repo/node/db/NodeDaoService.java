@@ -255,6 +255,12 @@ public interface NodeDaoService
             ChildAssocRefQueryCallback resultsCallback);
     
     @DirtySessionAnnotation(markDirty=false)
+    public void getChildAssocsByChildTypes(
+            Long parentNodeId,
+            Set<QName> childNodeTypeQNames,
+            ChildAssocRefQueryCallback resultsCallback);
+    
+    @DirtySessionAnnotation(markDirty=false)
     public void getPrimaryChildAssocs(Long parentNodeId, ChildAssocRefQueryCallback resultsCallback);
     
     @DirtySessionAnnotation(markDirty=false)

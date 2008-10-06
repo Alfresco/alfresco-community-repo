@@ -26,7 +26,6 @@ package org.alfresco.service.cmr.model;
 
 import java.util.List;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.Auditable;
 import org.alfresco.service.PublicService;
 import org.alfresco.service.cmr.repository.ContentReader;

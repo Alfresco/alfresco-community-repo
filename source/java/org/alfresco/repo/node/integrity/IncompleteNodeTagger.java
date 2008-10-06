@@ -413,6 +413,11 @@ public class IncompleteNodeTagger
         {
             // get property definitions for the aspect
             AspectDefinition aspectDef = dictionaryService.getAspect(aspectTypeQName);
+            if (aspectDef == null)
+            {
+                // The aspect is not registered so we ignore it
+                continue;
+            }
             propertyDefs = aspectDef.getProperties().values();
             // check them
             boolean aspectPropertiesOK = checkProperties(propertyDefs, nodeProperties);

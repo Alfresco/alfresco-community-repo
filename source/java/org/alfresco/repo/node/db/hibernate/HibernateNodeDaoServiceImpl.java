@@ -131,6 +131,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     private static final String QUERY_GET_CHILD_ASSOC_REFS_BY_QNAME = "node.GetChildAssocRefsByQName";
     private static final String QUERY_GET_CHILD_ASSOC_REFS_BY_TYPEQNAMES = "node.GetChildAssocRefsByTypeQNames";
     private static final String QUERY_GET_CHILD_ASSOC_REFS_BY_TYPEQNAME_AND_QNAME = "node.GetChildAssocRefsByTypeQNameAndQName";
+    private static final String QUERY_GET_CHILD_ASSOC_REFS_BY_CHILD_TYPEQNAME = "node.GetChildAssocRefsByChildTypeQName";
     private static final String QUERY_GET_PRIMARY_CHILD_ASSOCS = "node.GetPrimaryChildAssocs";
     private static final String QUERY_GET_PRIMARY_CHILD_ASSOCS_NOT_IN_SAME_STORE = "node.GetPrimaryChildAssocsNotInSameStore";
     private static final String QUERY_GET_NODES_WITH_CHILDREN_IN_DIFFERENT_STORES ="node.GetNodesWithChildrenInDifferentStores";
@@ -749,30 +750,39 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     {
         updateNodeStatus(node, false);
         // Handle cm:auditable
-        String currentUser = getCurrentUser();
-        Date currentDate = new Date();
-        AuditableProperties auditableProperties = node.getAuditableProperties();
-        auditableProperties.setAuditValues(currentUser, currentDate, true);
+        if (hasNodeAspect(node, ContentModel.ASPECT_AUDITABLE))
+        {
+            String currentUser = getCurrentUser();
+            Date currentDate = new Date();
+            AuditableProperties auditableProperties = node.getAuditableProperties();
+            auditableProperties.setAuditValues(currentUser, currentDate, false);
+        }
     }
 
     private void recordNodeUpdate(Node node)
     {
         updateNodeStatus(node, false);
         // Handle cm:auditable
-        String currentUser = getCurrentUser();
-        Date currentDate = new Date();
-        AuditableProperties auditableProperties = node.getAuditableProperties();
-        auditableProperties.setAuditValues(currentUser, currentDate, false);
+        if (hasNodeAspect(node, ContentModel.ASPECT_AUDITABLE))
+        {
+            String currentUser = getCurrentUser();
+            Date currentDate = new Date();
+            AuditableProperties auditableProperties = node.getAuditableProperties();
+            auditableProperties.setAuditValues(currentUser, currentDate, false);
+        }
     }
 
     private void recordNodeDelete(Node node)
     {
         updateNodeStatus(node, true);
         // Handle cm:auditable
-        String currentUser = getCurrentUser();
-        Date currentDate = new Date();
-        AuditableProperties auditableProperties = node.getAuditableProperties();
-        auditableProperties.setAuditValues(currentUser, currentDate, false);
+        if (hasNodeAspect(node, ContentModel.ASPECT_AUDITABLE))
+        {
+            String currentUser = getCurrentUser();
+            Date currentDate = new Date();
+            AuditableProperties auditableProperties = node.getAuditableProperties();
+            auditableProperties.setAuditValues(currentUser, currentDate, false);
+        }
     }
 
     public Pair<Long, NodeRef> newNode(StoreRef storeRef, String uuid, QName nodeTypeQName) throws InvalidTypeException
@@ -1224,8 +1234,6 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         
         // Add sys:referenceable
         nodeAspectQNames.add(ContentModel.ASPECT_REFERENCEABLE);
-        // Add cm:auditable
-        nodeAspectQNames.add(ContentModel.ASPECT_AUDITABLE);
         
         // Make immutable
         return nodeAspectQNames;
@@ -1238,8 +1246,6 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         aspectQNames = new HashSet<QName>(aspectQNames);
         // Remove sys:referenceable
         aspectQNames.remove(ContentModel.ASPECT_REFERENCEABLE);
-        // Handle cm:auditable
-        aspectQNames.remove(ContentModel.ASPECT_AUDITABLE);
 
         Set<Long> nodeAspects = node.getAspects();
 
@@ -1277,19 +1283,17 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
 
     public boolean hasNodeAspect(Long nodeId, QName aspectQName)
     {
-        Node node = getNodeNotNull(nodeId);
-
         // Shortcut sys:referenceable
         if (aspectQName.equals(ContentModel.ASPECT_REFERENCEABLE))
         {
             return true;
         }
-        // Shortcut cm:auditable
-        else if (aspectQName.equals(ContentModel.ASPECT_AUDITABLE))
-        {
-            return true;
-        }
-        
+        Node node = getNodeNotNull(nodeId);
+        return hasNodeAspect(node, aspectQName);
+    }
+
+    private boolean hasNodeAspect(Node node, QName aspectQName)
+    {
         QNameEntity aspectQNameEntity = qnameDAO.getQNameEntity(aspectQName);
         if (aspectQNameEntity == null)
         {
@@ -1949,6 +1953,48 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         // Done
     }
 
+    public void getChildAssocsByChildTypes(
+            final Long parentNodeId,
+            Set<QName> childNodeTypeQNames,
+            ChildAssocRefQueryCallback resultsCallback)
+    {
+        Node parentNode = getNodeNotNull(parentNodeId);
+
+        // Get the IDs for all the QNames we are after
+        final List<QNameEntity> childNodeTypeQNameEntities = new ArrayList<QNameEntity>(childNodeTypeQNames.size());
+        for (QName childNodeTypeQName : childNodeTypeQNames)
+        {
+            QNameEntity qnameEntity = qnameDAO.getQNameEntity(childNodeTypeQName);
+            if (qnameEntity == null)
+            {
+                // No such QName persisted so ignore it
+                continue;
+            }
+            childNodeTypeQNameEntities.add(qnameEntity);
+        }
+        // Shortcut if there are no QNames available
+        if (childNodeTypeQNameEntities.size() == 0)
+        {
+            return;
+        }
+        
+        HibernateCallback callback = new HibernateCallback()
+        {
+            public Object doInHibernate(Session session)
+            {
+                Query query = session
+                    .getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_CHILD_ASSOC_REFS_BY_CHILD_TYPEQNAME)
+                    .setLong("parentId", parentNodeId)
+                    .setParameterList("childTypeQNameEntities", childNodeTypeQNameEntities);
+                DirtySessionMethodInterceptor.setQueryFlushMode(session, query);
+                return query.scroll(ScrollMode.FORWARD_ONLY);
+            }
+        };
+        ScrollableResults queryResults = (ScrollableResults) getHibernateTemplate().execute(callback);
+        convertToChildAssocRefs(parentNode, queryResults, resultsCallback);
+        // Done
+    }
+
     public void getPrimaryChildAssocs(final Long parentNodeId, ChildAssocRefQueryCallback resultsCallback)
     {
         Node parentNode = getNodeNotNull(parentNodeId);
@@ -2254,29 +2300,6 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         return (childAssocs.size() > 0);
     }
 
-    public ChildAssoc getChildAssoc(final Node parentNode, final QName assocTypeQName, final String childName)
-    {
-        HibernateCallback callback = new HibernateCallback()
-        {
-            public Object doInHibernate(Session session)
-            {
-                String childNameLower = childName.toLowerCase();
-                String childNameShort = getShortName(childNameLower);
-                long childNameLowerCrc = getCrc(childNameLower);
-                Query query = session
-                    .getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_CHILD_ASSOC_BY_TYPE_AND_NAME)
-                    .setLong("parentId", parentNode.getId())
-                    .setParameter("typeQName", assocTypeQName)
-                    .setParameter("childNodeName", childNameShort)
-                    .setLong("childNodeNameCrc", childNameLowerCrc);
-                DirtySessionMethodInterceptor.setQueryFlushMode(session, query);
-                return query.uniqueResult();
-            }
-        };
-        ChildAssoc childAssoc = (ChildAssoc) getHibernateTemplate().execute(callback);
-        return childAssoc;
-    }
-    
     /**
      * Cascade deletion of child associations, recording the IDs of deleted assocs.
      * 
@@ -2645,7 +2668,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         final PropertyMapKey propKey = new PropertyMapKey();
         propKey.setQnameId(propQNameEntityId);
         propKey.setLocaleId(defaultLocaleEntityId);
-        propKey.setListIndex((short)0);
+        propKey.setListIndex(0);
         // Run the query
         HibernateCallback callback = new HibernateCallback()
         {
@@ -3068,7 +3091,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
      * The collection index used to indicate that the value is not part of a collection.
      * All values from zero up are used for real collection indexes.
      */
-    private static final short IDX_NO_COLLECTION = -1;
+    private static final int IDX_NO_COLLECTION = -1;
     
     /**
      * A method that adds properties to the given map.  It copes with collections.
@@ -3080,7 +3103,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     private static void addValueToPersistedProperties(
             Map<PropertyMapKey, NodePropertyValue> propertyMap,
             PropertyDefinition propertyDef,
-            short collectionIndex,
+            int collectionIndex,
             Long propertyQNameId,
             Long propertyLocaleId,
             Serializable value,
@@ -3135,7 +3158,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
             HibernateNodeDaoServiceImpl.addValueToPersistedProperties(
                     propertyMap,
                     propertyDef,
-                    (short) 0,
+                    0,
                     propertyQNameId,
                     propertyLocaleId,
                     value,
@@ -3430,11 +3453,11 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         // A working map.  Ordering is not important for this map.
         Map<PropertyMapKey, NodePropertyValue> scratch = new HashMap<PropertyMapKey, NodePropertyValue>(3);
         // Iterate (sorted) over the map entries and extract values with the same list index
-        Short currentListIndex = Short.MIN_VALUE;
+        Integer currentListIndex = Integer.MIN_VALUE;
         Iterator<Map.Entry<PropertyMapKey, NodePropertyValue>> iterator = sortedPropertyValues.entrySet().iterator();
         while (true)
         {
-            Short nextListIndex = null;
+            Integer nextListIndex = null;
             PropertyMapKey nextPropertyKey = null;
             NodePropertyValue nextPropertyValue = null;
             // Record the next entry's values

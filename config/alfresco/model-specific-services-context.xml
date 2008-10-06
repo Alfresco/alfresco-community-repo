@@ -71,9 +71,6 @@
       <property name="nodeService">
          <ref bean="mlAwareNodeService" />
       </property>
-      <property name="searchService">
-         <ref bean="admSearchService" />
-      </property>
       <property name="permissionService">
          <ref bean="permissionService" />
       </property>

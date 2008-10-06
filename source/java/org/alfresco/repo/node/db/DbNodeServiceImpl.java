@@ -1329,6 +1329,31 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         return orderedList;
     }
     
+    public List<ChildAssociationRef> getChildAssocs(NodeRef nodeRef, Set<QName> childNodeTypeQNames)
+    {
+        // Get the node
+        Pair<Long, NodeRef> nodePair = getNodePairNotNull(nodeRef);
+        Long nodeId = nodePair.getFirst();
+
+        final List<ChildAssociationRef> results = new ArrayList<ChildAssociationRef>(100);
+        
+        NodeDaoService.ChildAssocRefQueryCallback callback = new NodeDaoService.ChildAssocRefQueryCallback()
+        {
+            public boolean handle(
+                    Pair<Long, ChildAssociationRef> childAssocPair,
+                    Pair<Long, NodeRef> parentNodePair,
+                    Pair<Long, NodeRef> childNodePair)
+            {
+                results.add(childAssocPair.getSecond());
+                return false;
+            }
+        };
+        // Get all child associations with the specific qualified name
+        nodeDaoService.getChildAssocsByChildTypes(nodeId, childNodeTypeQNames, callback);
+        // Done
+        return results;
+    }
+
     private List<ChildAssociationRef> reorderChildAssocs(Collection<ChildAssociationRef> childAssocRefs)
     {
         // shortcut if there are no assocs

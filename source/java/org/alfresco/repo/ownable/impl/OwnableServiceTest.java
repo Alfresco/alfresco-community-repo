@@ -153,12 +153,12 @@ public class OwnableServiceTest extends TestCase
         
         assertEquals("andy", ownableService.getOwner(testNode));
         
-        nodeService.setProperty(testNode, ContentModel.PROP_CREATOR, "woof");
-        assertEquals("woof", ownableService.getOwner(testNode));
-        
-        nodeService.setProperty(testNode, ContentModel.PROP_CREATOR, "andy");
-        assertEquals("andy", ownableService.getOwner(testNode));
-        
+//        nodeService.setProperty(testNode, ContentModel.PROP_CREATOR, "woof");
+//        assertEquals("woof", ownableService.getOwner(testNode));
+//        
+//        nodeService.setProperty(testNode, ContentModel.PROP_CREATOR, "andy");
+//        assertEquals("andy", ownableService.getOwner(testNode));
+//        
         permissionService.setInheritParentPermissions(testNode, false);
         
         

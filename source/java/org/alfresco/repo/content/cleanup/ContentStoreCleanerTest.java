@@ -101,6 +101,7 @@ public class ContentStoreCleanerTest extends TestCase
         
         // the content should have disappeared as it is not in the database
         assertFalse("Unprotected content was not deleted", store.exists(contentUrl));
+        assertTrue("Content listener was not called", deletedUrls.contains(contentUrl));
     }
     
     public void testProtectedRemoval() throws Exception

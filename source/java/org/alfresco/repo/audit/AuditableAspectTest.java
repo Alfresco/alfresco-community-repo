@@ -28,6 +28,7 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -88,18 +89,63 @@ public class AuditableAspectTest extends BaseSpringTest
         System.out.println(NodeStoreInspector.dumpNodeStore(nodeService, storeRef));
 	}	
 
-    /**
-     * @deprecated          <b>cm:auditable</b> is always present (2.2.2)
-     */
     public void testNoAudit()
     {
+        // Create a person (which doesn't have auditable capability by default)
+        Map<QName, Serializable> personProps = new HashMap<QName, Serializable>();
+        personProps.put(ContentModel.PROP_USERNAME, "test person");
+        personProps.put(ContentModel.PROP_HOMEFOLDER, rootNodeRef);
+        personProps.put(ContentModel.PROP_FIRSTNAME, "test first name");
+        personProps.put(ContentModel.PROP_LASTNAME, "test last name");
+        
+        ChildAssociationRef childAssocRef = nodeService.createNode(
+                rootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                QName.createQName("{test}testperson"),
+                ContentModel.TYPE_PERSON,
+                personProps);
+
+        // Assert the person is not auditable
+        Set<QName> aspects = nodeService.getAspects(childAssocRef.getChildRef());
+        assertFalse(aspects.contains(ContentModel.ASPECT_AUDITABLE));
+        
+        System.out.println(NodeStoreInspector.dumpNodeStore(nodeService, storeRef));
     }
 
-    /**
-     * @deprecated          <b>cm:auditable</b> is always present (2.2.2)
-     */
+
     public void testAddAudit()
     {
+        // Create a person
+        Map<QName, Serializable> personProps = new HashMap<QName, Serializable>();
+        personProps.put(ContentModel.PROP_USERNAME, "test person");
+        personProps.put(ContentModel.PROP_HOMEFOLDER, rootNodeRef);
+        personProps.put(ContentModel.PROP_FIRSTNAME, "test first name");
+        personProps.put(ContentModel.PROP_LASTNAME, "test last name");
+        
+        ChildAssociationRef childAssocRef = nodeService.createNode(
+                rootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                QName.createQName("{test}testperson"),
+                ContentModel.TYPE_PERSON,
+                personProps);
+
+        // Assert the person is not auditable
+        Set<QName> aspects = nodeService.getAspects(childAssocRef.getChildRef());
+        assertFalse(aspects.contains(ContentModel.ASPECT_AUDITABLE));
+        
+        // Add auditable capability
+        nodeService.addAspect(childAssocRef.getChildRef(), ContentModel.ASPECT_AUDITABLE, null);
+
+        nodeService.addAspect(childAssocRef.getChildRef(), ContentModel.ASPECT_TITLED, null);
+        
+        // Assert the person is now audiable
+        aspects = nodeService.getAspects(childAssocRef.getChildRef());
+        assertTrue(aspects.contains(ContentModel.ASPECT_AUDITABLE));
+        
+        // Assert the person's auditable property
+        assertAuditableProperties(childAssocRef.getChildRef());
+        
+        System.out.println(NodeStoreInspector.dumpNodeStore(nodeService, storeRef));
     }
 
     public synchronized void testAddAspect() throws Exception
@@ -112,7 +158,7 @@ public class AuditableAspectTest extends BaseSpringTest
         personProps.put(ContentModel.PROP_LASTNAME, "test last name");
         
         long t1 = System.currentTimeMillis();
-        this.wait(100);
+        this.wait(100);                             // Needed for system clock inaccuracies
         
         ChildAssociationRef childAssocRef = nodeService.createNode(
                 rootNodeRef,
@@ -121,9 +167,12 @@ public class AuditableAspectTest extends BaseSpringTest
                 ContentModel.TYPE_PERSON,
                 personProps);
         NodeRef nodeRef = childAssocRef.getChildRef();
+        // Add auditable capability
+        nodeService.addAspect(nodeRef, ContentModel.ASPECT_AUDITABLE, null);
         
         assertAuditableProperties(nodeRef);
         
+        this.wait(100);                             // Needed for system clock inaccuracies
         long t2 = System.currentTimeMillis();
         
         // Check that the dates were set correctly

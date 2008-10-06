@@ -486,7 +486,7 @@ public interface NodeService
      * @param nodeRef the parent node - usually a <b>container</b>
      * @param typeQNamePattern the pattern that the type qualified name of the association must match
      * @param qnamePattern the pattern that the qnames of the assocs must match
-     * @return Returns a list of <code>ChildAssocRef</code> instances.  If the
+     * @return Returns a list of <code>ChildAssociationRef</code> instances.  If the
      *      node is not a <b>container</b> then the result will be empty.
      * @throws InvalidNodeRefException if the node could not be found
      * 
@@ -499,6 +499,19 @@ public interface NodeService
             QNamePattern typeQNamePattern,
             QNamePattern qnamePattern)
             throws InvalidNodeRefException;
+    
+    /**
+     * Retrieve immediate children of a given node where the child nodes are in the given inclusive list
+     * and not in the given exclusive list.
+     * 
+     * @param nodeRef           the parent node - usually a <b>container</b>
+     * @param childNodeTypes    the types that the children may be.  Subtypes are not automatically calculated
+     *                          and the list must therefore be exhaustive.
+     * @return                  Returns a list of <code>ChildAssociationRef</code> instances.
+     * @throws InvalidNodeRefException      if the node could not be found
+     */
+    @Auditable(key = Auditable.Key.ARG_0 ,parameters = {"nodeRef", "childNodeTypes"})
+    public List<ChildAssociationRef> getChildAssocs(NodeRef nodeRef, Set<QName> childNodeTypeQNames);
     
     /**
      * Get the node with the given name within the context of the parent node.  The name

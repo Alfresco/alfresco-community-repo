@@ -39,7 +39,7 @@ public class PropertyMapKey implements Serializable, Comparable<PropertyMapKey>
     
     private Long qnameId;
     private Long localeId;
-    private Short listIndex;
+    private Integer listIndex;
     
     public PropertyMapKey()
     {
@@ -121,12 +121,12 @@ public class PropertyMapKey implements Serializable, Comparable<PropertyMapKey>
         this.localeId = localeId;
     }
 
-    public Short getListIndex()
+    public Integer getListIndex()
     {
         return listIndex;
     }
 
-    public void setListIndex(Short listIndex)
+    public void setListIndex(Integer listIndex)
     {
         this.listIndex = listIndex;
     }

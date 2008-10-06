@@ -277,7 +277,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
      * <pre>
      * Level 0:     root
      * Level 1:     root_p_n1   root_p_n2
-     * Level 2:     n1_p_n3     n2_p_n4     n1_n4       n2_p_n5
+     * Level 2:     n1_p_n3     n2_p_n4     n1_n4       n2_p_n5     n1_n8
      * Level 3:     n3_p_n6     n4_n6       n5_p_n7
      * Level 4:     n6_p_n8     n7_n8
      * </pre>
@@ -406,6 +406,10 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
 
         qname = QName.createQName(ns, "n7_n8");
         assoc = nodeService.addChild(n7, n8, ASSOC_TYPE_QNAME_TEST_CHILDREN, qname);
+        ret.put(qname, assoc);
+
+        qname = QName.createQName(ns, "n1_n8");
+        assoc = nodeService.addChild(n1, n8, ASSOC_TYPE_QNAME_TEST_CHILDREN, qname);
         ret.put(qname, assoc);
 
 //        // flush and clear
@@ -1464,7 +1468,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
                 QName.createQName("pathA"),
                 TYPE_QNAME_TEST_MANY_PROPERTIES).getChildRef();
 
-        for (int inc = 0; inc < 5; inc++)
+        for (int inc = 0; inc < 6; inc++)
         {
             System.out.println("----------------------------------------------");
             int collectionSize = (int) Math.pow(10, inc);
@@ -1581,7 +1585,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         // get a child node's parents
         NodeRef n8Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "n6_p_n8")).getChildRef();
         List<ChildAssociationRef> parentAssocs = nodeService.getParentAssocs(n8Ref);
-        assertEquals("Incorrect number of parents", 2, parentAssocs.size());
+        assertEquals("Incorrect number of parents", 3, parentAssocs.size());
         assertTrue("Expected assoc not found", parentAssocs.contains(n6pn8Ref));
         assertTrue("Expected assoc not found", parentAssocs.contains(n7n8Ref));
         
@@ -1613,22 +1617,25 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         NodeRef n1Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE,"root_p_n1")).getChildRef();
         ChildAssociationRef n1pn3Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE,"n1_p_n3"));
         ChildAssociationRef n1n4Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE,"n1_n4"));
+        ChildAssociationRef n1n8Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE,"n1_n8"));
         
         // get the parent node's children
         List<ChildAssociationRef> childAssocRefs = nodeService.getChildAssocs(n1Ref);
-        assertEquals("Incorrect number of children", 2, childAssocRefs.size());
+        assertEquals("Incorrect number of children", 3, childAssocRefs.size());
         // checks that the order of the children is correct
         assertEquals("First child added to n1 was primary to n3: Order of refs is wrong",
                 n1pn3Ref, childAssocRefs.get(0));
         assertEquals("Second child added to n1 was to n4: Order of refs is wrong",
                 n1n4Ref, childAssocRefs.get(1));
         // now set the child ordering explicitly - change the order
-        nodeService.setChildAssociationIndex(n1pn3Ref, 1);
+        nodeService.setChildAssociationIndex(n1pn3Ref, 2);
+        nodeService.setChildAssociationIndex(n1n8Ref, 1);
         nodeService.setChildAssociationIndex(n1n4Ref, 0);
         
         // repeat
         childAssocRefs = nodeService.getChildAssocs(n1Ref);
-        assertEquals("Order of refs is wrong", n1pn3Ref, childAssocRefs.get(1));
+        assertEquals("Order of refs is wrong", n1pn3Ref, childAssocRefs.get(2));
+        assertEquals("Order of refs is wrong", n1n8Ref, childAssocRefs.get(1));
         assertEquals("Order of refs is wrong", n1n4Ref, childAssocRefs.get(0));
         
         // get the child associations based on pattern
@@ -1643,6 +1650,35 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
                 n1Ref,
                 ASSOC_TYPE_QNAME_TEST_CHILDREN,
                 RegexQNamePattern.MATCH_ALL);
+    }
+    
+    public void testGetChildAssocsByChildType() throws Exception
+    {
+        /*
+         * Level 2:     n1_p_n3     n2_p_n4     n1_n4       n2_p_n5     n1_n8
+         * Containers: n1, n3, n4
+         * Files:      n8
+         */
+        Map<QName, ChildAssociationRef> assocRefs = buildNodeGraph();
+        NodeRef n1Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE,"root_p_n1")).getChildRef();
+        NodeRef n8Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE,"n6_p_n8")).getChildRef();
+        ChildAssociationRef n1pn3Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE,"n1_p_n3"));
+        ChildAssociationRef n1n4Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE,"n1_n4"));
+        ChildAssociationRef n1n8Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE,"n1_n8"));
+        
+        // Get N1's container children
+        List<ChildAssociationRef> childAssocRefsContainers =  nodeService.getChildAssocs(
+                n1Ref,
+                Collections.singleton(ContentModel.TYPE_CONTAINER));
+        assertEquals("Incorrect number of cm:container children", 2, childAssocRefsContainers.size());
+        assertTrue("Expected assoc not found", childAssocRefsContainers.contains(n1pn3Ref));
+        assertTrue("Expected assoc not found", childAssocRefsContainers.contains(n1n4Ref));
+        // Get N1's container children
+        List<ChildAssociationRef> childAssocRefsFiles =  nodeService.getChildAssocs(
+                n1Ref,
+                Collections.singleton(BaseNodeServiceTest.TYPE_QNAME_TEST_CONTENT));
+        assertEquals("Incorrect number of test:content children", 1, childAssocRefsFiles.size());
+        assertTrue("Expected assoc not found", childAssocRefsFiles.contains(n1n8Ref));
     }
     
     public static class MovePolicyTester implements NodeServicePolicies.OnMoveNodePolicy
@@ -1852,7 +1888,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
 
         // get all paths for n8
         paths = nodeService.getPaths(n8Ref, false);
-        assertEquals("Incorrect path count", 5, paths.size());  // n6 is a root as well
+        assertEquals("Incorrect path count", 6, paths.size());  // n6 is a root as well
         // check that each path element has parent node ref, qname and child node ref
         for (Path path : paths)
         {

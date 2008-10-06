@@ -50,9 +50,6 @@ import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.ResultSet;
-import org.alfresco.service.cmr.search.SearchParameters;
-import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -84,12 +81,12 @@ import org.apache.commons.logging.LogFactory;
  */
 public class MultilingualContentServiceImpl implements MultilingualContentService
 {
+    private static final QName QNAME_ASSOC_ML_ROOT = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "multilingualRoot");
+    
     private static Log logger = LogFactory.getLog(MultilingualContentServiceImpl.class);
 
     private NodeService nodeService;
-    private SearchService searchService;
     private PermissionService permissionService;
-    private SearchParameters searchParametersMLRoot;
     private ContentFilterLanguagesService contentFilterLanguagesService;
     private FileFolderService fileFolderService;
 
@@ -97,11 +94,6 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
 
     public MultilingualContentServiceImpl()
     {
-        searchParametersMLRoot = new SearchParameters();
-        searchParametersMLRoot.setLanguage(SearchService.LANGUAGE_XPATH);
-        searchParametersMLRoot.setLimit(1);
-        searchParametersMLRoot.addStore(new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore"));
-        searchParametersMLRoot.setQuery("/cm:multilingualRoot");
     }
 
     /**
@@ -109,25 +101,19 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
      */
     private NodeRef getMLContainerRoot()
     {
-        ResultSet rs = searchService.query(searchParametersMLRoot);
-        try
+        NodeRef rootNodeRef = nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
+        List<ChildAssociationRef> assocRefs = nodeService.getChildAssocs(
+                rootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                QNAME_ASSOC_ML_ROOT);
+        if (assocRefs.size() != 1)
         {
-            if (rs.length() > 0)
-            {
-                NodeRef mlRootNodeRef = rs.getNodeRef(0);
-                // done
-                return mlRootNodeRef;
-            }
-            else
-            {
-                throw new AlfrescoRuntimeException(
-                        "Unable to find bootstrap location for ML Root using query: " + searchParametersMLRoot.getQuery());
-            }
+            throw new AlfrescoRuntimeException(
+                    "Unable to find bootstrap location for ML Root using query: " + QNAME_ASSOC_ML_ROOT);
         }
-        finally
-        {
-            rs.close();
-        }
+        NodeRef mlRootNodeRef = assocRefs.get(0).getChildRef();
+        // Done
+        return mlRootNodeRef;
     }
 
     private static final QName QNAME_ML_CONTAINER = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "mlContainer");
@@ -960,11 +946,6 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
-    }
-
-    public void setSearchService(SearchService searchService)
-    {
-        this.searchService = searchService;
     }
 
     public void setPermissionService(PermissionService permissionService)

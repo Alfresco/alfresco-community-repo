@@ -116,7 +116,7 @@
          <key column="node_id" foreign-key="fk_alf_nprop_n" not-null="true" />
          <composite-map-key class="org.alfresco.repo.domain.PropertyMapKey">
              <key-property name="qnameId" column="qname_id" type="long" />
-             <key-property name="listIndex" column="list_index" type="short" />
+             <key-property name="listIndex" column="list_index" type="int" />
              <key-property name="localeId" column="locale_id" type="long" />
          </composite-map-key>
          <composite-element class="org.alfresco.repo.domain.NodePropertyValue" >
@@ -146,10 +146,10 @@
       </set>
       <!-- cm:auditable properties -->
       <component name="auditableProperties" class="org.alfresco.repo.domain.AuditableProperties" optimistic-lock="false">
-         <property name="auditCreator" column="audit_creator" type="string" length="255" not-null="true"/>
-         <property name="auditCreated" column="audit_created" type="string" length="30" not-null="true"/>
-         <property name="auditModifier" column="audit_modifier" type="string" length="255" not-null="true"/>
-         <property name="auditModified" column="audit_modified" type="string" length="30" not-null="true"/>
+         <property name="auditCreator" column="audit_creator" type="string" length="255" not-null="false"/>
+         <property name="auditCreated" column="audit_created" type="string" length="30" not-null="false"/>
+         <property name="auditModifier" column="audit_modifier" type="string" length="255" not-null="false"/>
+         <property name="auditModified" column="audit_modified" type="string" length="30" not-null="false"/>
          <property name="auditAccessed" column="audit_accessed" type="string" length="30" not-null="false"/>
       </component>
    </class>
@@ -383,18 +383,6 @@
          assoc.id
    </query>
    
-   <query name="node.GetChildAssocIdByTypeAndName">
-      select
-         assoc.id
-      from
-         org.alfresco.repo.domain.hibernate.ChildAssocImpl as assoc
-      where
-         assoc.parent.id = :parentId and
-         assoc.typeQName = :typeQName and
-         assoc.childNodeName = :childNodeName and
-         assoc.childNodeNameCrc = :childNodeNameCrc
-   </query>
-   
    <query name="node.GetChildAssocByTypeAndName">
       select
          assoc
@@ -428,7 +416,7 @@
          join assoc.child as child
          join child.store as store
       where
-         assoc.parent.id = :parentId
+         parent.id = :parentId
       order by
          assoc.index,
          assoc.id
@@ -452,7 +440,7 @@
          join assoc.child as child
          join child.store as store
       where
-         assoc.parent.id = :parentId and
+         parent.id = :parentId and
          assoc.qnameNamespace = :qnameNamespace and
          assoc.qnameLocalName = :qnameLocalName
       order by
@@ -478,7 +466,7 @@
          join assoc.child as child
          join child.store as store
       where
-         assoc.parent.id = :parentId and
+         parent.id = :parentId and
          assoc.typeQName.id in (:childAssocTypeQNameIds)
       order by
          assoc.index,
@@ -503,10 +491,35 @@
          join assoc.child as child
          join child.store as store
       where
-         assoc.parent.id = :parentId and
+         parent.id = :parentId and
          assoc.typeQName = :typeQName and
          assoc.qnameNamespace = :qnameNamespace and
          assoc.qnameLocalName = :qnameLocalName
+      order by
+         assoc.index,
+         assoc.id
+   </query>
+    
+   <query name="node.GetChildAssocRefsByChildTypeQName">
+      select
+         assoc.id,
+         assoc.typeQName,
+         assoc.qnameNamespace,
+         assoc.qnameLocalName,
+         assoc.isPrimary,
+         assoc.index,
+         child.id,
+         store.protocol,
+         store.identifier,
+         child.uuid
+      from
+         org.alfresco.repo.domain.hibernate.ChildAssocImpl as assoc
+         join assoc.parent as parent
+         join assoc.child as child
+         join child.store as store
+      where
+         parent.id = :parentId and
+         child.typeQName in (:childTypeQNameEntities)
       order by
          assoc.index,
          assoc.id

@@ -674,9 +674,9 @@ public class TaggingServiceImpl implements TaggingService,
     {
         List<TagDetails> result = new ArrayList<TagDetails>(25);
         
-        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
         try
         {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
             String nextLine = reader.readLine();
             while (nextLine != null)
             {

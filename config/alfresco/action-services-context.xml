@@ -34,7 +34,7 @@
         </property>        
     </bean>
     
-    <bean id="defaultAsynchronousActionExecutionQueue" class="org.alfresco.repo.action.AsynchronousActionExecutionQueueImpl">
+    <bean id="defaultAsynchronousActionExecutionQueue" class="org.alfresco.repo.action.AsynchronousActionExecutionQueueImpl" init-method="init">
       <property name="threadPoolExecutor">
          <ref bean="defaultAsyncThreadPool"/>
       </property>
@@ -52,7 +52,7 @@
 		</property>
     </bean>
     
-    <bean id="deploymentAsynchronousActionExecutionQueue" class="org.alfresco.repo.action.AsynchronousActionExecutionQueueImpl">
+    <bean id="deploymentAsynchronousActionExecutionQueue" class="org.alfresco.repo.action.AsynchronousActionExecutionQueueImpl" init-method="init">
       <property name="threadPoolExecutor">
          <ref bean="deploymentAsyncThreadPool"/>
       </property>

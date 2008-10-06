@@ -41,6 +41,7 @@ import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
+import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -82,6 +83,7 @@ public class TaggingServiceImplTest extends BaseAlfrescoSpringTest
     private static final String TAG_3 = "Tag Three";
     private static final String TAG_4 = "tag four";
     private static final String TAG_5 = "tag five";
+    private static final String TAG_I18N = "àâæçéèêëîïôœùûüÿñ";
     
     private static final String UPPER_TAG = "House";
     private static final String LOWER_TAG = "house";
@@ -279,7 +281,7 @@ public class TaggingServiceImplTest extends BaseAlfrescoSpringTest
         assertNotNull(tags);
         assertEquals(2, tags.size());
         assertTrue(tags.contains(TAG_1));
-        assertTrue(tags.contains(TAG_2));
+        assertTrue(tags.contains(TAG_2));        
         
         this.taggingService.removeTag(this.document, TAG_1);
         tags = this.taggingService.getTags(this.document);
@@ -494,6 +496,31 @@ public class TaggingServiceImplTest extends BaseAlfrescoSpringTest
         assertEquals(2, ts1.getTag(TAG_2).getCount());
         assertEquals(1, ts1.getTag(TAG_3.toLowerCase()).getCount());
         assertEquals(1, ts1.getTag(TAG_4).getCount());               
+    }
+    
+    /* 
+     * https://issues.alfresco.com/jira/browse/ETHREEOH-220 
+     */
+    public void testETHREEOH_220() throws Exception
+    {
+        this.taggingService.addTagScope(this.folder);;
+        this.taggingService.addTag(this.folder, TAG_I18N);
+        waitForActionExecution();
+        
+        // Get the tag from the node
+        List<String> tags = this.taggingService.getTags(this.folder);
+        assertNotNull(tags);
+        assertEquals(1, tags.size());
+        assertEquals(TAG_I18N, tags.get(0));
+        
+        // Get the tag from the tagscope
+        TagScope tagScope = this.taggingService.findTagScope(this.folder);
+        assertNotNull(tagScope);
+        assertEquals(1, tagScope.getTags().size());
+        TagDetails tagDetails = tagScope.getTag(TAG_I18N);
+        assertNotNull(tagDetails);
+        assertEquals(TAG_I18N, tagDetails.getName());
+        assertEquals(1, tagDetails.getCount());
     }
     
     // == Test the JavaScript API ==

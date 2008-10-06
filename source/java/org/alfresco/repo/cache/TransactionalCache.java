@@ -685,7 +685,7 @@ public class TransactionalCache<K extends Serializable, V extends Object>
      * 
      * @author Derek Hulley
      */
-    private class NewCacheBucket<BV> implements CacheBucket<BV>
+    private static class NewCacheBucket<BV> implements CacheBucket<BV>
     {
         private static final long serialVersionUID = -8536386687213957425L;
         
@@ -719,7 +719,7 @@ public class TransactionalCache<K extends Serializable, V extends Object>
      * shared cache values.  This bucket assumes the presence of a pre-existing entry in
      * the shared cache.
      */
-    private class UpdateCacheBucket<BV> extends NewCacheBucket<BV>
+    private static class UpdateCacheBucket<BV> extends NewCacheBucket<BV>
     {
         private static final long serialVersionUID = 7885689778259779578L;
         
@@ -760,7 +760,7 @@ public class TransactionalCache<K extends Serializable, V extends Object>
      * Data holder to keep track of cache removals.  This bucket assumes the previous existence
      * of an entry in the shared cache.
      */
-    private class RemoveCacheBucket<BV> extends UpdateCacheBucket<BV>
+    private static class RemoveCacheBucket<BV> extends UpdateCacheBucket<BV>
     {
         private static final long serialVersionUID = -7736719065158540252L;
 

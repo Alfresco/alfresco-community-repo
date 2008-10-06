@@ -28,6 +28,7 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.VmShutdownListener;
 import org.alfresco.util.transaction.SpringAwareUserTransaction;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
@@ -41,6 +42,8 @@ import org.springframework.transaction.TransactionDefinition;
  */
 public class TransactionServiceImpl implements TransactionService
 {
+    private static VmShutdownListener shutdownListener = new VmShutdownListener("TransactionService");
+
     private PlatformTransactionManager transactionManager;
     private int maxRetries = -1;
     private int minRetryWaitMs = -1;
@@ -79,8 +82,20 @@ public class TransactionServiceImpl implements TransactionService
     
     public boolean isReadOnly()
     {
-    	Boolean allowWrite = (Boolean)sysAdminCache.get(KEY_SYSADMIN_ALLOW_WRITE);
-    	return (allowWrite == null ? false : ! allowWrite);
+        if (shutdownListener.isVmShuttingDown())
+        {
+            return true;
+        }
+        try
+        {
+            Boolean allowWrite = (Boolean)sysAdminCache.get(KEY_SYSADMIN_ALLOW_WRITE);
+            return (allowWrite == null ? false : ! allowWrite);
+        }
+        catch (IllegalStateException e)
+        {
+            // The cache is not working
+            return true;
+        }
     }
     
     /**

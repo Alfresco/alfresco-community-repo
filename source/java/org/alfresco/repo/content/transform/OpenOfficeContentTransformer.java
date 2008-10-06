@@ -34,6 +34,7 @@ import net.sf.jooreports.converter.DocumentFormatRegistry;
 import net.sf.jooreports.converter.XmlDocumentFormatRegistry;
 import net.sf.jooreports.openoffice.connection.OpenOfficeConnection;
 import net.sf.jooreports.openoffice.connection.OpenOfficeException;
+import net.sf.jooreports.openoffice.converter.AbstractOpenOfficeDocumentConverter;
 import net.sf.jooreports.openoffice.converter.OpenOfficeDocumentConverter;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -56,7 +57,7 @@ import org.springframework.core.io.DefaultResourceLoader;
 public class OpenOfficeContentTransformer extends AbstractContentTransformer2
 {
     private OpenOfficeConnection connection;
-    private OpenOfficeDocumentConverter converter;
+    private AbstractOpenOfficeDocumentConverter converter;
     private String documentFormatsConfiguration;
     private DocumentFormatRegistry formatRegistry;
     
@@ -64,11 +65,27 @@ public class OpenOfficeContentTransformer extends AbstractContentTransformer2
     {
     }
     
+    /**
+     * @param connection            the connection that the converter uses
+     */
     public void setConnection(OpenOfficeConnection connection)
     {
         this.connection = connection;
     }
-    
+
+    /**
+     * Explicitly set the converter to be used.  The converter must use the same connection
+     * set in {@link #setConnection(OpenOfficeConnection)}.
+     * <p>
+     * If not set, then the <code>OpenOfficeDocumentConverter</code> will be used.
+     * 
+     * @param converter         the converter to use.
+     */
+    public void setConverter(AbstractOpenOfficeDocumentConverter converter)
+    {
+        this.converter = converter;
+    }
+
     /**
      * Set a non-default location from which to load the document format mappings.
      * 
@@ -110,7 +127,10 @@ public class OpenOfficeContentTransformer extends AbstractContentTransformer2
         }
         
         // set up the converter
-        converter = new OpenOfficeDocumentConverter(connection);
+        if (converter == null)
+        {
+            converter = new OpenOfficeDocumentConverter(connection);
+        }
         
         // Register
         super.register();

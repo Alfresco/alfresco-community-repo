@@ -26,11 +26,10 @@
 *----------------------------------------------------------------------------*/
 package org.alfresco.linkvalidation;
 
-import org.alfresco.util.AbstractLifecycleBean;
-import org.springframework.context.ApplicationEvent;
-import org.springframework.context.ApplicationContext;
-import org.alfresco.service.cmr.avm.AVMNotFoundException;
 import org.alfresco.repo.avm.util.RawServices;
+import org.alfresco.util.AbstractLifecycleBean;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationEvent;
 
 /**
  * Bootstrap for LinkValidationService
@@ -39,10 +38,6 @@ public class LinkValidationServiceBootstrap extends AbstractLifecycleBean
 {
     private LinkValidationService linkValidationService_;
     
-    
-    /* (non-Javadoc)
-     * @see org.alfresco.util.AbstractLifecycleBean#onBootstrap(org.springframework.context.ApplicationEvent)
-     */
     @Override
     protected void onBootstrap(ApplicationEvent event)
     {
@@ -53,9 +48,6 @@ public class LinkValidationServiceBootstrap extends AbstractLifecycleBean
         linkValidationService_.onBootstrap();
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.util.AbstractLifecycleBean#onShutdown(org.springframework.context.ApplicationEvent)
-     */
     @Override
     protected void onShutdown(ApplicationEvent event)
     {

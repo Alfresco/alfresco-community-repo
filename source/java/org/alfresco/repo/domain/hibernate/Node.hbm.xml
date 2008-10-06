@@ -572,9 +572,10 @@
          node.uuid
       from
          org.alfresco.repo.domain.hibernate.NodeImpl as node
+         join node.aspects as aspects
       where
          node.id > :minNodeId and
-         node.aspects.id = :aspectQName
+         aspects.id = :aspectQName
        order by
          node.id
    </query>

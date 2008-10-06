@@ -61,7 +61,7 @@ public class ApplicationAuditEntry extends AbstractNamedAuditEntry implements Ap
 
     public RecordOptions getAuditRecordOptions(String application)
     {
-        throw new UnsupportedOperationException();
+        return getEffectiveRecordOptions();
     }
 
   

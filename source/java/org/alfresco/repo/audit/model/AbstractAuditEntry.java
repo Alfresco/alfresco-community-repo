@@ -25,6 +25,7 @@ package org.alfresco.repo.audit.model;
 import org.alfresco.repo.audit.AuditMode;
 import org.alfresco.repo.audit.AuditModel;
 import org.alfresco.repo.audit.PublicServiceIdentifier;
+import org.alfresco.repo.audit.RecordOptions;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -240,6 +241,51 @@ public abstract class AbstractAuditEntry
 
     }
 
+    protected RecordOptions getEffectiveRecordOptions()
+    {
+        RecordOptions recordOptions;
+        if (checkEnabled() == TrueFalseUnset.TRUE)
+        {
+            recordOptions = getRecordOptionsOrParentRecordOptions();
+        }
+        else
+        {
+            recordOptions = null;
+        }
+        if(s_logger.isDebugEnabled())
+        {
+            s_logger.debug("...Record Options = "+recordOptions);
+        }
+        return recordOptions;
+    }
+    
+    private RecordOptions getRecordOptionsOrParentRecordOptions()
+    {
+        RecordOptions recordOptions = getRecordOptions();
+        if(s_logger.isDebugEnabled())
+        {
+            s_logger.debug("... ...  record options = "+recordOptions);
+        }
+        if (recordOptions == null)
+        {
+            if (getParent() == null)
+            {
+                return null;
+            }
+            else
+            {
+                return getParent().getRecordOptionsOrParentRecordOptions();
+            }
+        }
+        else
+        {
+            return recordOptions;
+        }
+
+    }
+
+    
+    
     private TrueFalseUnset checkEnabled()
     {
         TrueFalseUnset effective = getEnabled();

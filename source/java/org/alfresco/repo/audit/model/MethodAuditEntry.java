@@ -26,6 +26,7 @@ package org.alfresco.repo.audit.model;
 
 import org.alfresco.repo.audit.AuditMode;
 import org.alfresco.repo.audit.MethodAuditModel;
+import org.alfresco.repo.audit.RecordOptions;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -59,9 +60,9 @@ public class MethodAuditEntry extends AbstractNamedAuditEntry implements MethodA
         throw new UnsupportedOperationException();
     }
 
-    public RecordOptionsImpl getAuditRecordOptions(MethodInvocation mi)
+    public RecordOptions getAuditRecordOptions(MethodInvocation mi)
     {
-        throw new UnsupportedOperationException();
+        return getEffectiveRecordOptions();
     }
 
     public TrueFalseUnset getAuditInternalServiceMethods(MethodInvocation mi)

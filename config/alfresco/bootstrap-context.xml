@@ -49,6 +49,7 @@
           <list>
              <value>classpath:alfresco/dbscripts/create/2.2/${db.script.dialect}/AlfrescoPostCreate-2.2-MappedFKIndexes.sql</value>
              <value>classpath:alfresco/dbscripts/create/2.2/${db.script.dialect}/AlfrescoPostCreate-2.2-Extra.sql</value>
+             <value>classpath:alfresco/dbscripts/create/2.2/${db.script.dialect}/post-create-indexes-04.sql</value>
              <value>classpath:alfresco/dbscripts/create/3.0/${db.script.dialect}/create-activities-extras.sql</value>
           </list>
        </property>
@@ -78,6 +79,7 @@
              <ref bean="patch.db-V2.1-VersionColumns2" />
              <ref bean="patch.db-V2.1-JBPMProcessKey" />
              <ref bean="patch.db-V2.1-RemoveWcmSubmittedAspect" />
+             <ref bean="patch.db-V2.1-AuditPathIndex" />
              <ref bean="patch.db-V3.0-0-CreateActivitiesExtras" />
           </list>
        </property>

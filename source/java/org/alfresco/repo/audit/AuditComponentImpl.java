@@ -35,6 +35,7 @@ import org.alfresco.repo.audit.model.AuditEntry;
 import org.alfresco.repo.audit.model.TrueFalseUnset;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.Auditable;
 import org.alfresco.service.NotAuditable;
@@ -42,8 +43,11 @@ import org.alfresco.service.PublicService;
 import org.alfresco.service.cmr.audit.AuditInfo;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchParameters;
+import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.transaction.TransactionService;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.logging.Log;
@@ -51,7 +55,7 @@ import org.apache.commons.logging.LogFactory;
 
 /**
  * The default audit component implementation. TODO: Implement before, after and exception filtering. At the moment
- * these filters are ignired. TODO: Respect audit internal - at the moment audit internal is fixed to false.
+ * these filters are ignored. TODO: Respect audit internal - at the moment audit internal is fixed to false.
  * 
  * @author Andy Hind
  */
@@ -82,7 +86,11 @@ public class AuditComponentImpl implements AuditComponent
     private AuditDAO auditDAO;
 
     private TransactionService transactionService;
+    
+    private NodeService nodeService;
 
+    private NamespacePrefixResolver namespacePrefixResolver;
+    
     private AuditModel auditModel;
 
     /**
@@ -90,6 +98,8 @@ public class AuditComponentImpl implements AuditComponent
      */
 
     private InetAddress auditHost;
+
+   
 
     /**
      * Default constructor
@@ -131,6 +141,16 @@ public class AuditComponentImpl implements AuditComponent
     {
         this.transactionService = transactionService;
     }
+    
+    /**
+     * Set the NodeService for path extracting.
+     * 
+     * @param nodeService
+     */
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
+    }
 
     /**
      * Set the audit configuration.
@@ -160,6 +180,16 @@ public class AuditComponentImpl implements AuditComponent
     public void setAuditModel(AuditModel auditModel)
     {
         this.auditModel = auditModel;
+    }
+
+    
+    /**
+     * Set the namespacePrefixResolver.
+     * @param namespacePrefixResolver
+     */
+    public void setNamespacePrefixResolver(NamespacePrefixResolver namespacePrefixResolver)
+    {
+        this.namespacePrefixResolver = namespacePrefixResolver;
     }
 
     public Object audit(MethodInvocation mi) throws Throwable
@@ -280,7 +310,8 @@ public class AuditComponentImpl implements AuditComponent
                         return null;
                     }
                 };
-                transactionService.getRetryingTransactionHelper().doInTransaction(cb, false, false);
+                boolean requiresNew = (AlfrescoTransactionSupport.getTransactionReadState() != TxnReadState.TXN_READ_WRITE);
+                transactionService.getRetryingTransactionHelper().doInTransaction(cb, false, requiresNew);
             }
             return o;
         }
@@ -367,6 +398,11 @@ public class AuditComponentImpl implements AuditComponent
                     NodeRef key = (NodeRef) returnObject;
                     auditInfo.setKeyStore(key.getStoreRef());
                     auditInfo.setKeyGUID(key.getId());
+                    RecordOptions recordOptions = auditModel.getAuditRecordOptions(mi);
+                    if (recordOptions != null && recordOptions.getRecordPath() == TrueFalseUnset.TRUE)
+                    {
+                        auditInfo.setPath(getNodePath(key));
+                    }
                 }
                 else if (returnObject instanceof StoreRef)
                 {
@@ -377,6 +413,11 @@ public class AuditComponentImpl implements AuditComponent
                     ChildAssociationRef car = (ChildAssociationRef) returnObject;
                     auditInfo.setKeyStore(car.getChildRef().getStoreRef());
                     auditInfo.setKeyGUID(car.getChildRef().getId());
+                    RecordOptions recordOptions = auditModel.getAuditRecordOptions(mi);
+                    if (recordOptions != null && recordOptions.getRecordPath() == TrueFalseUnset.TRUE)
+                    {
+                        auditInfo.setPath(nodeService.getPath(car.getChildRef()).toString());
+                    }
                 }
                 else
                 {
@@ -423,6 +464,9 @@ public class AuditComponentImpl implements AuditComponent
             auditInfo.setFail(false);
             auditInfo.setFiltered(false);
             auditInfo.setHostAddress(auditHost);
+            
+            auditInfo.setPath(null);
+            
             Auditable auditable = mi.getMethod().getAnnotation(Auditable.class);
             Object key = null;
             switch (auditable.key())
@@ -473,10 +517,15 @@ public class AuditComponentImpl implements AuditComponent
             }
             if (key != null)
             {
+                RecordOptions recordOptions = auditModel.getAuditRecordOptions(mi);
                 if (key instanceof NodeRef)
                 {
                     auditInfo.setKeyStore(((NodeRef) key).getStoreRef());
                     auditInfo.setKeyGUID(((NodeRef) key).getId());
+                    if (recordOptions != null && recordOptions.getRecordPath() == TrueFalseUnset.TRUE)
+                    {
+                        auditInfo.setPath(getNodePath((NodeRef) key));
+                    }
                 }
                 else if (key instanceof StoreRef)
                 {
@@ -487,6 +536,10 @@ public class AuditComponentImpl implements AuditComponent
                     ChildAssociationRef car = (ChildAssociationRef) key;
                     auditInfo.setKeyStore(car.getParentRef().getStoreRef());
                     auditInfo.setKeyGUID(car.getParentRef().getId());
+                    if (recordOptions != null && recordOptions.getRecordPath() == TrueFalseUnset.TRUE)
+                    {
+                        auditInfo.setPath(getNodePath(car.getParentRef()));
+                    }
                 }
                 else if (key instanceof SearchParameters)
                 {
@@ -532,7 +585,6 @@ public class AuditComponentImpl implements AuditComponent
                 }
                 auditInfo.setMethodArguments(serArgs);
             }
-            auditInfo.setPath(null);
             auditInfo.setReturnObject(null);
             auditInfo.setSessionId(null);
             auditInfo.setThrowable(null);
@@ -557,7 +609,6 @@ public class AuditComponentImpl implements AuditComponent
     public void audit(String source, String description, NodeRef key, Object... args)
     {
         final AuditState auditInfo = new AuditState(auditConfiguration);
-        // RecordOptions recordOptions = auditModel.getAuditRecordOptions(mi);
         AuditMode auditMode = AuditMode.UNSET;
         try
         {
@@ -610,7 +661,7 @@ public class AuditComponentImpl implements AuditComponent
     private AuditMode onApplicationAudit(AuditMode auditMode, AuditState auditInfo, String source, String description, NodeRef key, Object... args)
     {
         AuditMode effectiveAuditMode = auditModel.beforeExecution(auditMode, source, description, key, args);
-
+        auditModel.getAuditRecordOptions(source);
         if (auditMode != AuditMode.NONE)
         {
             if (source.equals(SYSTEM_APPLICATION))
@@ -627,10 +678,16 @@ public class AuditComponentImpl implements AuditComponent
             auditInfo.setFail(false);
             auditInfo.setFiltered(false);
             auditInfo.setHostAddress(auditHost);
+            auditInfo.setPath(null);
             if (key != null)
             {
                 auditInfo.setKeyStore(key.getStoreRef());
                 auditInfo.setKeyGUID(key.getId());
+                RecordOptions recordOptions = auditModel.getAuditRecordOptions(source);
+                if (recordOptions != null && recordOptions.getRecordPath() == TrueFalseUnset.TRUE)
+                {
+                    auditInfo.setPath(getNodePath(key));
+                }
             }
             auditInfo.setKeyPropertiesAfter(null);
             auditInfo.setKeyPropertiesBefore(null);
@@ -655,7 +712,6 @@ public class AuditComponentImpl implements AuditComponent
                 }
                 auditInfo.setMethodArguments(serArgs);
             }
-            auditInfo.setPath(null);
             auditInfo.setReturnObject(null);
             auditInfo.setSessionId(null);
             auditInfo.setThrowable(null);
@@ -677,4 +733,23 @@ public class AuditComponentImpl implements AuditComponent
         return auditMode;
 
     }
+    
+    /**
+     * Returns human readable path for node.
+     * To improve performance may return simple toString() method of the path.
+     *  
+     * @param nodeRef
+     * @return Human readable path for node
+     */
+    private String getNodePath(NodeRef nodeRef)
+    {
+        String result = null;
+        if (nodeService.exists(nodeRef))
+        {
+            Path path = nodeService.getPath(nodeRef);
+            return path.toPrefixString(namespacePrefixResolver);
+        }
+        return result;
+    }
+
 }

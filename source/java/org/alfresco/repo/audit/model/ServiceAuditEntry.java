@@ -31,6 +31,7 @@ import java.util.Map;
 import org.alfresco.repo.audit.AuditMode;
 import org.alfresco.repo.audit.AuditModel;
 import org.alfresco.repo.audit.MethodAuditModel;
+import org.alfresco.repo.audit.RecordOptions;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.logging.Log;
@@ -40,7 +41,7 @@ import org.dom4j.Element;
 public class ServiceAuditEntry extends AbstractNamedAuditEntry implements MethodAuditModel
 {
     private static Log s_logger = LogFactory.getLog(ServiceAuditEntry.class);
-    
+
     private Map<String, MethodAuditEntry> methods = new HashMap<String, MethodAuditEntry>();
 
     public ServiceAuditEntry()
@@ -55,9 +56,9 @@ public class ServiceAuditEntry extends AbstractNamedAuditEntry implements Method
 
         // Add Methods
 
-        if(s_logger.isDebugEnabled())
+        if (s_logger.isDebugEnabled())
         {
-            s_logger.debug("Adding methods to service "+getName());
+            s_logger.debug("Adding methods to service " + getName());
         }
         for (Iterator nsit = element.elementIterator(AuditModel.EL_METHOD); nsit.hasNext(); /**/)
         {
@@ -66,9 +67,9 @@ public class ServiceAuditEntry extends AbstractNamedAuditEntry implements Method
             method.configure(this, methodElement, namespacePrefixResolver);
             methods.put(method.getName(), method);
         }
-        if(s_logger.isDebugEnabled())
+        if (s_logger.isDebugEnabled())
         {
-            s_logger.debug("...added methods for service "+getName());
+            s_logger.debug("...added methods for service " + getName());
         }
     }
 
@@ -82,9 +83,9 @@ public class ServiceAuditEntry extends AbstractNamedAuditEntry implements Method
         }
         else
         {
-            if(s_logger.isDebugEnabled())
+            if (s_logger.isDebugEnabled())
             {
-                s_logger.debug("Evaluating if service is audited (no specific setting) for "+getName()+"."+methodName);
+                s_logger.debug("Evaluating if service is audited (no specific setting) for " + getName() + "." + methodName);
             }
             return getEffectiveAuditMode();
         }
@@ -100,9 +101,9 @@ public class ServiceAuditEntry extends AbstractNamedAuditEntry implements Method
         throw new UnsupportedOperationException();
     }
 
-    public RecordOptionsImpl getAuditRecordOptions(MethodInvocation mi)
+    public RecordOptions getAuditRecordOptions(MethodInvocation mi)
     {
-        throw new UnsupportedOperationException();
+        return getEffectiveRecordOptions();
     }
 
     public TrueFalseUnset getAuditInternalServiceMethods(MethodInvocation mi)
@@ -115,12 +116,17 @@ public class ServiceAuditEntry extends AbstractNamedAuditEntry implements Method
         }
         else
         {
-            if(s_logger.isDebugEnabled())
+            if (s_logger.isDebugEnabled())
             {
-                s_logger.debug("Evaluating if service is internally audited (no specific setting) for "+getName()+"."+methodName);
+                s_logger.debug("Evaluating if service is internally audited (no specific setting) for " + getName() + "." + methodName);
             }
             return getEffectiveAuditInternal();
         }
+    }
+    
+    public MethodAuditEntry getMethodAuditEntry(String name)
+    {
+        return methods.get(name);
     }
 
 }

@@ -48,7 +48,7 @@ import org.springframework.beans.factory.InitializingBean;
 public class AuditEntry extends AbstractAuditEntry implements InitializingBean, AuditModel
 {
     private static Log s_logger = LogFactory.getLog(AuditEntry.class);
-    
+
     private Map<String, ServiceAuditEntry> services = new HashMap<String, ServiceAuditEntry>();
 
     private Map<String, ApplicationAuditEntry> applications = new HashMap<String, ApplicationAuditEntry>();
@@ -85,8 +85,6 @@ public class AuditEntry extends AbstractAuditEntry implements InitializingBean, 
         configure(null, root, namespacePrefixResolver);
     }
 
- 
-
     @Override
     void configure(AbstractAuditEntry parent, Element element, NamespacePrefixResolver namespacePrefixResolver)
     {
@@ -98,7 +96,7 @@ public class AuditEntry extends AbstractAuditEntry implements InitializingBean, 
         {
             throw new AuditModelException("Audit model has incorrect root node");
         }
-        if(s_logger.isDebugEnabled())
+        if (s_logger.isDebugEnabled())
         {
             s_logger.debug("Audit configuration");
         }
@@ -106,7 +104,7 @@ public class AuditEntry extends AbstractAuditEntry implements InitializingBean, 
 
         // Add services
 
-        if(s_logger.isDebugEnabled())
+        if (s_logger.isDebugEnabled())
         {
             s_logger.debug("Adding services ...");
         }
@@ -120,7 +118,7 @@ public class AuditEntry extends AbstractAuditEntry implements InitializingBean, 
 
         // Add Applications
 
-        if(s_logger.isDebugEnabled())
+        if (s_logger.isDebugEnabled())
         {
             s_logger.debug("Adding applications ...");
         }
@@ -137,21 +135,29 @@ public class AuditEntry extends AbstractAuditEntry implements InitializingBean, 
     {
         String serviceName = getPublicServiceIdentifier().getPublicServiceName(mi);
         ServiceAuditEntry service = services.get(serviceName);
-        if(service != null)
+        if (service != null)
         {
-            return service.beforeExecution(auditMode, mi);
+            MethodAuditEntry method = service.getMethodAuditEntry(mi.getMethod().getName());
+            if (method != null)
+            {
+                return method.beforeExecution(auditMode, mi);
+            }
+            else
+            {
+                return service.beforeExecution(auditMode, mi);
+            }
         }
         else
         {
-            if(s_logger.isDebugEnabled())
+            if (s_logger.isDebugEnabled())
             {
-                s_logger.debug("No specific audit entry for service "+serviceName);
+                s_logger.debug("No specific audit entry for service " + serviceName);
             }
             return getEffectiveAuditMode();
-            
+
         }
     }
-    
+
     public AuditMode afterExecution(AuditMode auditMode, MethodInvocation mi)
     {
         throw new UnsupportedOperationException();
@@ -159,7 +165,29 @@ public class AuditEntry extends AbstractAuditEntry implements InitializingBean, 
 
     public RecordOptions getAuditRecordOptions(MethodInvocation mi)
     {
-        throw new UnsupportedOperationException();
+        String serviceName = getPublicServiceIdentifier().getPublicServiceName(mi);
+        ServiceAuditEntry service = services.get(serviceName);
+        if (service != null)
+        {
+            MethodAuditEntry method = service.getMethodAuditEntry(mi.getMethod().getName());
+            if (method != null)
+            {
+                return method.getAuditRecordOptions(mi);
+            }
+            else
+            {
+                return service.getAuditRecordOptions(mi);
+            }
+        }
+        else
+        {
+            if (s_logger.isDebugEnabled())
+            {
+                s_logger.debug("No specific audit entry for service " + serviceName);
+            }
+            return getEffectiveRecordOptions();
+
+        }
     }
 
     public AuditMode onError(AuditMode auditMode, MethodInvocation mi)
@@ -195,18 +223,18 @@ public class AuditEntry extends AbstractAuditEntry implements InitializingBean, 
     public AuditMode beforeExecution(AuditMode auditMode, String application, String description, NodeRef key, Object... args)
     {
         ApplicationAuditEntry aae = applications.get(application);
-        if(aae != null)
+        if (aae != null)
         {
             return aae.beforeExecution(auditMode, application, description, key, args);
         }
         else
         {
-            if(s_logger.isDebugEnabled())
+            if (s_logger.isDebugEnabled())
             {
-                s_logger.debug("No specific audit entry for application "+application);
+                s_logger.debug("No specific audit entry for application " + application);
             }
             return getEffectiveAuditMode();
-            
+
         }
     }
 
@@ -222,25 +250,46 @@ public class AuditEntry extends AbstractAuditEntry implements InitializingBean, 
 
     public RecordOptions getAuditRecordOptions(String application)
     {
-        throw new UnsupportedOperationException();
-    }
-
-    public TrueFalseUnset getAuditInternalServiceMethods( MethodInvocation mi)
-    {
-        String serviceName = getPublicServiceIdentifier().getPublicServiceName(mi);
-        ServiceAuditEntry service = services.get(serviceName);
-        if(service != null)
+        ApplicationAuditEntry aae = applications.get(application);
+        if (aae != null)
         {
-            return service.getAuditInternalServiceMethods( mi);
+            return aae.getAuditRecordOptions(application);
         }
         else
         {
-            if(s_logger.isDebugEnabled())
+            if (s_logger.isDebugEnabled())
             {
-                s_logger.debug("No specific audit entry for service "+serviceName);
+                s_logger.debug("No specific audit entry for application " + application);
+            }
+            return getEffectiveRecordOptions();
+
+        }
+    }
+
+    public TrueFalseUnset getAuditInternalServiceMethods(MethodInvocation mi)
+    {
+        String serviceName = getPublicServiceIdentifier().getPublicServiceName(mi);
+        ServiceAuditEntry service = services.get(serviceName);
+        if (service != null)
+        {
+            MethodAuditEntry method = service.getMethodAuditEntry(mi.getMethod().getName());
+            if (method != null)
+            {
+                return method.getAuditInternalServiceMethods(mi);
+            }
+            else
+            {
+                return service.getAuditInternalServiceMethods(mi);
+            }
+        }
+        else
+        {
+            if (s_logger.isDebugEnabled())
+            {
+                s_logger.debug("No specific audit entry for service " + serviceName);
             }
             return getEffectiveAuditInternal();
-            
+
         }
     }
 

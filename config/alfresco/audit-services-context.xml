@@ -24,6 +24,12 @@
         <property name="transactionService">
             <ref bean="transactionService"/>
         </property>
+        <property name="nodeService">
+            <ref bean="nodeService"/>
+        </property>
+		<property name="namespacePrefixResolver">
+            <ref bean="namespaceService"/>
+        </property>
         <property name="auditConfiguration">
             <ref bean="auditConfiguration"/>
         </property>

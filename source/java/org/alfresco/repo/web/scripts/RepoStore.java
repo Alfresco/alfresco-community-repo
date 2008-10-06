@@ -54,6 +54,7 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.QueryParameterDefinition;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.PermissionService;
@@ -219,24 +220,28 @@ public class RepoStore implements Store, TenantDeployer
     	            {
                         public NodeRef execute() throws Exception
                         {
-                            String query = "PATH:\"" + repoPath + "\"";
-                            ResultSet resultSet = searchService.query(repoStore, SearchService.LANGUAGE_LUCENE, query);
-                            try
+                            NodeRef repoStoreRootNodeRef = nodeService.getRootNode(repoStore);
+                            List<NodeRef> nodeRefs = searchService.selectNodes(
+                                    repoStoreRootNodeRef,
+                                    repoPath,
+                                    new QueryParameterDefinition[] {},
+                                    namespaceService,
+                                    false,
+                                    SearchService.LANGUAGE_XPATH);
+                            if (nodeRefs.size() == 1)
                             {
-                                if (resultSet.length() == 1)
-                                {
-                                    return resultSet.getNodeRef(0);
-                                }
-                                else if (mustExist)
-                                {
-                                    throw new WebScriptException("Web Script Store " + repoStore.toString() + repoPath + " must exist; it was not found");
-                                }
+                                return nodeRefs.get(0);
                             }
-                            finally
+                            else if (nodeRefs.size() > 1)
                             {
-                                resultSet.close();
+                                throw new WebScriptException(
+                                        "Web Script Store " + repoStore.toString() + repoPath + " must exist; multiple entries found.");
                             }
-                            return null;
+                            else
+                            {
+                                throw new WebScriptException(
+                                        "Web Script Store " + repoStore.toString() + repoPath + " must exist; it was not found");
+                            }
                         }
                     });
                 }

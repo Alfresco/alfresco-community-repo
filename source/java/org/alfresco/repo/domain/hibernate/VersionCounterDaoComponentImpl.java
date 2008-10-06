@@ -24,16 +24,14 @@
  */
 package org.alfresco.repo.domain.hibernate;
 
-import org.alfresco.repo.domain.StoreKey;
+import org.alfresco.repo.domain.Store;
 import org.alfresco.repo.domain.VersionCount;
-import org.alfresco.repo.node.NodeServicePolicies;
-import org.alfresco.repo.policy.JavaBehaviour;
-import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.version.common.counter.VersionCounterService;
+import org.alfresco.service.cmr.repository.InvalidStoreRefException;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.namespace.NamespaceService;
-import org.alfresco.service.namespace.QName;
-import org.hibernate.LockMode;
+import org.hibernate.Query;
+import org.hibernate.Session;
+import org.springframework.orm.hibernate3.HibernateCallback;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
 /**
@@ -50,48 +48,80 @@ public class VersionCounterDaoComponentImpl
         extends HibernateDaoSupport
         implements VersionCounterService
 {
+    private static final String QUERY_GET_VERSION_COUNT_FOR_STORE = "versionCount.GetVersionCountForStore";
+    private static final String QUERY_GET_STORE_BY_ALL = "store.GetStoreByAll";
+    
     /**
      * Retrieves or creates a version counter.  This locks the counter against updates for the
      * current transaction.
      * 
-     * @param storeKey the primary key of the counter
-     * @return Returns a current or new version counter
+     * @param storeKey      the primary key of the counter
+     * @param create        <tt>true</tt> to create on demand
+     * @return              Returns a current or new version counter
      */
-    private VersionCount getVersionCounter(StoreRef storeRef)
+    private VersionCount getVersionCounter(final StoreRef storeRef, boolean create)
     {
-        final StoreKey storeKey = new StoreKey(storeRef.getProtocol(), storeRef.getIdentifier());
-        
-        // check if it exists
-        VersionCount versionCount = (VersionCount) getHibernateTemplate().get(
-                VersionCountImpl.class,
-                storeKey,
-                LockMode.UPGRADE);
-        if (versionCount == null)
+        HibernateCallback callback = new HibernateCallback()
         {
-            // This could fail on some databases with concurrent adds.  But it is only those databases
-            // that don't lock the index against an addition of the row, and then it will only fail once.
-            versionCount = new VersionCountImpl();
-            versionCount.setKey(storeKey);
-            getHibernateTemplate().save(versionCount);
-            // debug
-            if (logger.isDebugEnabled())
+            public Object doInHibernate(Session session)
             {
-                logger.debug("Created version counter: \n" +
-                        "   Thread: " + Thread.currentThread().getName() + "\n" +
-                        "   Version count: " + versionCount.getVersionCount());
+                Query query = session
+                    .getNamedQuery(VersionCounterDaoComponentImpl.QUERY_GET_VERSION_COUNT_FOR_STORE)
+                    .setString("protocol", storeRef.getProtocol())
+                    .setString("identifier", storeRef.getIdentifier());
+                return query.uniqueResult();
             }
-        }
-        else
+        };
+        VersionCount versionCount = (VersionCount) getHibernateTemplate().execute(callback);
+        
+        // Done if it exists
+        if (versionCount != null)
         {
-            // debug
+            // Debug
             if (logger.isDebugEnabled())
             {
                 logger.debug("Got version counter: \n" +
                         "   Thread: " + Thread.currentThread().getName() + "\n" +
                         "   Version count: " + versionCount.getVersionCount());
             }
+            // Done
+            return versionCount;
         }
-        // done
+        else if (!create)
+        {
+            return null;
+        }
+        
+        // We have permission to create
+        callback = new HibernateCallback()
+        {
+            public Object doInHibernate(Session session)
+            {
+                Query query = session
+                    .getNamedQuery(VersionCounterDaoComponentImpl.QUERY_GET_STORE_BY_ALL)
+                    .setString("protocol", storeRef.getProtocol())
+                    .setString("identifier", storeRef.getIdentifier());
+                return query.uniqueResult();
+            }
+        };
+        Store store = (Store) getHibernateTemplate().execute(callback);
+        if (store == null)
+        {
+            throw new InvalidStoreRefException(storeRef);
+        }
+        versionCount = new VersionCountImpl();
+        versionCount.setStore(store);
+        getHibernateTemplate().save(versionCount);
+        
+        // Debug
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Created version counter: \n" +
+                    "   Thread: " + Thread.currentThread().getName() + "\n" +
+                    "   Version count: " + versionCount.getVersionCount());
+        }
+
+        // Done
         return versionCount;
     }
     
@@ -104,7 +134,7 @@ public class VersionCounterDaoComponentImpl
     public int nextVersionNumber(StoreRef storeRef)
     {
         // get the version counter
-        VersionCount versionCount = getVersionCounter(storeRef);
+        VersionCount versionCount = getVersionCounter(storeRef, true);
         // get an incremented count
         int nextCount = versionCount.incrementVersionCount();
         
@@ -127,9 +157,9 @@ public class VersionCounterDaoComponentImpl
     public int currentVersionNumber(StoreRef storeRef)
     {
         // get the version counter
-        VersionCount versionCounter = getVersionCounter(storeRef);
+        VersionCount versionCounter = getVersionCounter(storeRef, false);
         // get an incremented count
-        return versionCounter.getVersionCount();
+        return versionCounter == null ? 0 : versionCounter.getVersionCount();
     }
     
     /**
@@ -143,7 +173,7 @@ public class VersionCounterDaoComponentImpl
     public synchronized void resetVersionNumber(StoreRef storeRef)
     {
         // get the version counter
-        VersionCount versionCounter = getVersionCounter(storeRef);
+        VersionCount versionCounter = getVersionCounter(storeRef, true);
         // get an incremented count
         versionCounter.resetVersionCount();
     }
@@ -160,9 +190,8 @@ public class VersionCounterDaoComponentImpl
     public synchronized void setVersionNumber(StoreRef storeRef, int versionCount)
     {
         // get the version counter
-        VersionCount versionCounter = getVersionCounter(storeRef);
+        VersionCount versionCounter = getVersionCounter(storeRef, true);
         // get an incremented count
         versionCounter.setVersionCount(versionCount);
     }
-    
 }

@@ -112,17 +112,18 @@ ALTER TABLE alf_authority_alias ADD CONSTRAINT fk_alf_autha_aut FOREIGN KEY (aut
 
 -- Tidy up unused cols on ace table and add the FK contstraint back
 -- finish take out of ACL_ID
-ALTER TABLE alf_access_control_entry DROP INDEX FKFFF41F99B9553F6C, DROP FOREIGN KEY FKFFF41F99B9553F6C;
-ALTER TABLE alf_access_control_entry DROP INDEX FKFFF41F9960601995, DROP FOREIGN KEY FKFFF41F9960601995;
-ALTER TABLE alf_access_control_entry DROP COLUMN acl_id, DROP COLUMN authority_id;
 ALTER TABLE alf_access_control_entry
-   CHANGE auth_id authority_id BIGINT NOT NULL;
-CREATE INDEX fk_alf_ace_auth ON alf_access_control_entry (authority_id);
-ALTER TABLE alf_access_control_entry ADD CONSTRAINT fk_alf_ace_auth FOREIGN KEY (authority_id) REFERENCES alf_authority (id);
-CREATE INDEX fk_alf_ace_perm ON alf_access_control_entry (permission_id);
-ALTER TABLE alf_access_control_entry ADD CONSTRAINT fk_alf_ace_perm FOREIGN KEY (permission_id) REFERENCES alf_permission (id);
-CREATE INDEX fk_alf_ace_ctx ON alf_access_control_entry (context_id);
-ALTER TABLE alf_access_control_entry ADD CONSTRAINT fk_alf_ace_ctx FOREIGN KEY (context_id) REFERENCES alf_ace_context (id);
+   DROP INDEX FKFFF41F99B9553F6C, DROP FOREIGN KEY FKFFF41F99B9553F6C,
+   DROP INDEX FKFFF41F9960601995, DROP FOREIGN KEY FKFFF41F9960601995,
+   DROP COLUMN acl_id, DROP COLUMN authority_id,
+   CHANGE auth_id authority_id BIGINT NOT NULL,
+   ADD INDEX fk_alf_ace_auth (authority_id),
+   ADD CONSTRAINT fk_alf_ace_auth FOREIGN KEY (authority_id) REFERENCES alf_authority (id),
+   ADD INDEX fk_alf_ace_perm (permission_id),
+   ADD CONSTRAINT fk_alf_ace_perm FOREIGN KEY (permission_id) REFERENCES alf_permission (id),
+   ADD INDEX fk_alf_ace_ctx (context_id),
+   ADD CONSTRAINT fk_alf_ace_ctx FOREIGN KEY (context_id) REFERENCES alf_ace_context (id)
+;
    
 
 CREATE TABLE alf_tmp_min_ace (
@@ -135,7 +136,17 @@ CREATE TABLE alf_tmp_min_ace (
 ) ENGINE=InnoDB;
 
 INSERT INTO alf_tmp_min_ace (min, permission_id, authority_id, allowed, applies)
-    SELECT min(ace1.id), ace1.permission_id, ace1.authority_id, ace1.allowed, ace1.applies FROM alf_access_control_entry ace1 group by ace1.permission_id, ace1.authority_id, ace1.allowed, ace1.applies;
+    SELECT
+       min(ace1.id),
+       ace1.permission_id,
+       ace1.authority_id,
+       ace1.allowed,
+       ace1.applies
+    FROM
+       alf_access_control_entry ace1
+    GROUP BY
+       ace1.permission_id, ace1.authority_id, ace1.allowed, ace1.applies
+;
    
 
 -- Update members to point to the first use of an access control entry

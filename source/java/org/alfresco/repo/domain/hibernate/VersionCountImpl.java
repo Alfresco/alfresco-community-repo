@@ -26,7 +26,7 @@ package org.alfresco.repo.domain.hibernate;
 
 import java.io.Serializable;
 
-import org.alfresco.repo.domain.StoreKey;
+import org.alfresco.repo.domain.Store;
 import org.alfresco.repo.domain.VersionCount;
 
 /**
@@ -36,9 +36,10 @@ import org.alfresco.repo.domain.VersionCount;
  */
 public class VersionCountImpl implements VersionCount, Serializable
 {
-    private static final long serialVersionUID = 6420375860928877809L;
+    private static final long serialVersionUID = 7778431129424069297L;
 
-    private StoreKey key;
+    private Long id;
+    private Store store;
     private long version;
     private int versionCount;
 
@@ -65,7 +66,7 @@ public class VersionCountImpl implements VersionCount, Serializable
             return false;
         }
         VersionCount that = (VersionCount) obj;
-        return (this.getKey().equals(that.getKey()));
+        return (this.getStore().equals(that.getStore()));
     }
     
     /**
@@ -73,7 +74,7 @@ public class VersionCountImpl implements VersionCount, Serializable
      */
     public int hashCode()
     {
-        return getKey().hashCode();
+        return getStore().hashCode();
     }
     
     /**
@@ -81,16 +82,31 @@ public class VersionCountImpl implements VersionCount, Serializable
      */
     public String toString()
     {
-        return getKey().toString();
+        return getStore().toString();
     }
 
-    public StoreKey getKey() {
-		return key;
+    public Long getId()
+    {
+        return id;
+    }
+    
+    /**
+     * For Hibernate use
+     */
+    @SuppressWarnings("unused")
+    private void setId(Long id)
+    {
+        this.id = id;
+    }
+    
+    public Store getStore()
+    {
+		return store;
 	}
 
-	public void setKey(StoreKey key)
+	public void setStore(Store store)
     {
-		this.key = key;
+		this.store = store;
 	}
     
     public Long getVersion()

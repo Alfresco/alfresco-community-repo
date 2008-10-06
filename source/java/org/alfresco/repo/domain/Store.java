@@ -24,7 +24,6 @@
  */
 package org.alfresco.repo.domain;
 
-import org.alfresco.repo.domain.StoreKey;
 import org.alfresco.service.cmr.repository.StoreRef;
 
 /**
@@ -35,20 +34,35 @@ import org.alfresco.service.cmr.repository.StoreRef;
 public interface Store
 {
     /**
-     * @return Returns the key for the class
-     */
-    public StoreKey getKey();
-    
-    /**
      * @return  Returns the current version number used for optimistic locking
      */
     public Long getVersion();
+    
+    /**
+     * @return          Returns the unique ID of the object
+     */
+    public Long getId();
 
     /**
-     * @param key the key uniquely identifying this store
+     * @return                  the store protocol
      */
-    public void setKey(StoreKey key);
+    public String getProtocol();
     
+    /**
+     * @param protocol          the store protocol
+     */
+    public void setProtocol(String protocol);
+    
+    /**
+     * @return                  the store identifier
+     */
+    public String getIdentifier();
+    
+    /**
+     * @param identifier        the store identifier
+     */
+    public void setIdentifier(String identifier);
+
     /**
      * @return Returns the root of the store
      */

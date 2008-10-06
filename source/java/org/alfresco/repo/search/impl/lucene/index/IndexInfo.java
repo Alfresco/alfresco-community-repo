@@ -48,7 +48,6 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -121,6 +120,8 @@ import org.safehaus.uuid.UUID;
  */
 public class IndexInfo
 {
+    public static final String MAIN_READER = "MainReader";
+
     private static Timer timer = new Timer(true);
 
     /**
@@ -370,7 +371,7 @@ public class IndexInfo
     {
         super();
         initialiseTransitions();
-
+        
         if (config != null)
         {
             this.maxFieldLength = config.getIndexerMaxFieldLength();
@@ -1047,6 +1048,11 @@ public class IndexInfo
             }
             return mainIndexReader;
         }
+        catch(RuntimeException e)
+        {
+            e.printStackTrace();
+            throw e;
+        }
         finally
         {
             releaseReadLock();
@@ -1141,7 +1147,7 @@ public class IndexInfo
             {
                 reader = new MultiReader(new IndexReader[] { new FilterIndexReaderByStringId("main+id", mainIndexReader, deletions, deleteOnlyNodes), deltaReader });
             }
-            reader = ReferenceCountingReadOnlyIndexReaderFactory.createReader("MainReader" + id, reader);
+            reader = ReferenceCountingReadOnlyIndexReaderFactory.createReader(MAIN_READER + id, reader, false);
             ReferenceCounting refCounting = (ReferenceCounting) reader;
             refCounting.incrementReferenceCount();
             refCounting.setInvalidForReuse();
@@ -1819,7 +1825,7 @@ public class IndexInfo
         {
             reader = IndexReader.open(emptyIndex);
         }
-        reader = ReferenceCountingReadOnlyIndexReaderFactory.createReader("MainReader", reader);
+        reader = ReferenceCountingReadOnlyIndexReaderFactory.createReader(MAIN_READER, reader, false);
         return reader;
     }
 
@@ -1857,7 +1863,7 @@ public class IndexInfo
         {
             reader = IndexReader.open(emptyIndex);
         }
-        reader = ReferenceCountingReadOnlyIndexReaderFactory.createReader(id, reader);
+        reader = ReferenceCountingReadOnlyIndexReaderFactory.createReader(id, reader, true);
         return reader;
     }
 

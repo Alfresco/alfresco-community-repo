@@ -296,8 +296,8 @@ public class ADMLuceneTest extends TestCase
         testProperties.put(QName.createQName(TEST_NAMESPACE, "float-ista"), Float.valueOf(3.4f));
         testProperties.put(QName.createQName(TEST_NAMESPACE, "double-ista"), Double.valueOf(5.6));
         testDate = new Date(((new Date().getTime() - 10000)));
-        //testDate = new Date(((new Date().getTime() - 10000)/1000*1000)+668);
-        //System.out.println(testDate.getTime());
+        // testDate = new Date(((new Date().getTime() - 10000)/1000*1000)+668);
+        // System.out.println(testDate.getTime());
         testProperties.put(QName.createQName(TEST_NAMESPACE, "date-ista"), testDate);
         testProperties.put(QName.createQName(TEST_NAMESPACE, "datetime-ista"), testDate);
         testProperties.put(QName.createQName(TEST_NAMESPACE, "boolean-ista"), Boolean.valueOf(true));
@@ -475,6 +475,123 @@ public class ADMLuceneTest extends TestCase
         super(arg0);
     }
 
+    public void restManyReaders() throws Exception
+    {
+        NodeRef base = rootNodeRef;
+        for (int i = 0; i < 10; i++)
+        {
+            NodeRef dir = nodeService.createNode(base, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}d-" + i), testSuperType, null).getChildRef();
+            for (int j = 0; j < 10; j++)
+            {
+                NodeRef file = nodeService.createNode(dir, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}meep"), testSuperType, null).getChildRef();
+            }
+        }
+        testTX.commit();
+        testTX = transactionService.getUserTransaction();
+        testTX.begin();
+
+        ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
+        searcher.setNodeService(nodeService);
+        searcher.setDictionaryService(dictionaryService);
+        searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
+        searcher.setQueryRegister(queryRegisterComponent);
+
+        ResultSet results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//meep\"");
+        int count = results.length();
+        assertTrue(count > 0);
+        results.close();
+        testTX.commit();
+
+        Thread runner = null;
+
+        for (int i = 0; i < 20; i++)
+        {
+            runner = new QueryThread("Concurrent-" + i, runner, searcher);
+        }
+        if (runner != null)
+        {
+            runner.start();
+
+            try
+            {
+                runner.join();
+            }
+            catch (InterruptedException e)
+            {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    class QueryThread extends Thread
+    {
+        Thread waiter;
+
+        ADMLuceneSearcherImpl searcher;
+
+        QueryThread(String name, Thread waiter, ADMLuceneSearcherImpl searcher)
+        {
+            super(name);
+            this.setDaemon(true);
+            this.waiter = waiter;
+            this.searcher = searcher;
+        }
+
+        public void run()
+        {
+            authenticationComponent.setSystemUserAsCurrentUser();
+            if (waiter != null)
+            {
+                waiter.start();
+            }
+            try
+            {
+                System.out.println("Start " + this.getName());
+
+                RetryingTransactionCallback<Object> createAndDeleteCallback = new RetryingTransactionCallback<Object>()
+                {
+                    public Object execute() throws Throwable
+                    {
+                        SessionSizeResourceManager.setDisableInTransaction();
+                        for (int i = 0; i < 100; i++)
+                        {
+                            ResultSet results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PATH:\"//meep\"");
+                            int count = results.length();
+                            for(ResultSetRow row : results)
+                            {
+                                NodeRef nr = row.getNodeRef();
+                            }
+                            results.close();
+                        }
+                        return null;
+                    }
+                };
+                retryingTransactionHelper.doInTransaction(createAndDeleteCallback);
+
+                System.out.println("End " + this.getName());
+            }
+            catch (Exception e)
+            {
+                System.out.println("End " + this.getName() + " with error " + e.getMessage());
+                e.printStackTrace();
+            }
+            finally
+            {
+                authenticationComponent.clearCurrentSecurityContext();
+            }
+            if (waiter != null)
+            {
+                try
+                {
+                    waiter.join();
+                }
+                catch (InterruptedException e)
+                {
+                }
+            }
+        }
+
+    }
 
     public void testOverWritetoZeroSize() throws Exception
     {
@@ -502,7 +619,7 @@ public class ADMLuceneTest extends TestCase
             nodeService.setProperty(n7, QName.createQName("{namespace}property-A"), "A");
             runBaseTests();
             testTX.commit();
-            
+
             testTX = transactionService.getUserTransaction();
             testTX.begin();
             runBaseTests();
@@ -2697,13 +2814,13 @@ public class ADMLuceneTest extends TestCase
         assertEquals(1, results.length());
         assertNotNull(results.getRow(0).getValue(qname));
         results.close();
-        
+
         qname = QName.createQName(TEST_NAMESPACE, "int-ista");
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":[0 TO 2]", null, null);
         assertEquals(1, results.length());
         assertNotNull(results.getRow(0).getValue(qname));
         results.close();
-        
+
         qname = QName.createQName(TEST_NAMESPACE, "int-ista");
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":[0 TO A]", null, null);
         assertEquals(1, results.length());
@@ -2714,12 +2831,12 @@ public class ADMLuceneTest extends TestCase
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":{A TO 1}", null, null);
         assertEquals(0, results.length());
         results.close();
-        
+
         qname = QName.createQName(TEST_NAMESPACE, "int-ista");
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":{0 TO 1}", null, null);
         assertEquals(0, results.length());
         results.close();
-        
+
         qname = QName.createQName(TEST_NAMESPACE, "int-ista");
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":{0 TO A}", null, null);
         assertEquals(1, results.length());
@@ -2729,12 +2846,12 @@ public class ADMLuceneTest extends TestCase
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":{A TO 2}", null, null);
         assertEquals(1, results.length());
         results.close();
-        
+
         qname = QName.createQName(TEST_NAMESPACE, "int-ista");
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":{1 TO 2}", null, null);
         assertEquals(0, results.length());
         results.close();
-        
+
         qname = QName.createQName(TEST_NAMESPACE, "int-ista");
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":{1 TO A}", null, null);
         assertEquals(0, results.length());
@@ -2769,13 +2886,13 @@ public class ADMLuceneTest extends TestCase
         assertEquals(1, results.length());
         assertNotNull(results.getRow(0).getValue(qname));
         results.close();
-        
+
         qname = QName.createQName(TEST_NAMESPACE, "long-ista");
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":[0 TO 2]", null, null);
         assertEquals(1, results.length());
         assertNotNull(results.getRow(0).getValue(qname));
         results.close();
-        
+
         qname = QName.createQName(TEST_NAMESPACE, "long-ista");
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":[0 TO A]", null, null);
         assertEquals(1, results.length());
@@ -2786,12 +2903,12 @@ public class ADMLuceneTest extends TestCase
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":{A TO 2}", null, null);
         assertEquals(0, results.length());
         results.close();
-        
+
         qname = QName.createQName(TEST_NAMESPACE, "long-ista");
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":{0 TO 2}", null, null);
         assertEquals(0, results.length());
         results.close();
-        
+
         qname = QName.createQName(TEST_NAMESPACE, "long-ista");
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":{0 TO A}", null, null);
         assertEquals(1, results.length());
@@ -2801,12 +2918,12 @@ public class ADMLuceneTest extends TestCase
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":{A TO 3}", null, null);
         assertEquals(1, results.length());
         results.close();
-        
+
         qname = QName.createQName(TEST_NAMESPACE, "long-ista");
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":{2 TO 3}", null, null);
         assertEquals(0, results.length());
         results.close();
-        
+
         qname = QName.createQName(TEST_NAMESPACE, "long-ista");
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":{2 TO A}", null, null);
         assertEquals(0, results.length());
@@ -2823,13 +2940,13 @@ public class ADMLuceneTest extends TestCase
         assertEquals(1, results.length());
         assertNotNull(results.getRow(0).getValue(qname));
         results.close();
-        
+
         qname = QName.createQName(TEST_NAMESPACE, "float-ista");
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":[3 TO 4]", null, null);
         assertEquals(1, results.length());
         assertNotNull(results.getRow(0).getValue(qname));
         results.close();
-        
+
         qname = QName.createQName(TEST_NAMESPACE, "float-ista");
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":[3 TO A]", null, null);
         assertEquals(1, results.length());
@@ -2841,13 +2958,13 @@ public class ADMLuceneTest extends TestCase
         assertEquals(1, results.length());
         assertNotNull(results.getRow(0).getValue(qname));
         results.close();
-        
+
         qname = QName.createQName(TEST_NAMESPACE, "float-ista");
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":[3.3 TO 3.4]", null, null);
         assertEquals(1, results.length());
         assertNotNull(results.getRow(0).getValue(qname));
         results.close();
-        
+
         qname = QName.createQName(TEST_NAMESPACE, "float-ista");
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":[3.3 TO A]", null, null);
         assertEquals(1, results.length());
@@ -2858,13 +2975,13 @@ public class ADMLuceneTest extends TestCase
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":{A TO 3.4}", null, null);
         assertEquals(0, results.length());
         results.close();
-        
+
         qname = QName.createQName(TEST_NAMESPACE, "float-ista");
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":[3.3 TO 3.4]", null, null);
         assertEquals(1, results.length());
         assertNotNull(results.getRow(0).getValue(qname));
         results.close();
-        
+
         qname = QName.createQName(TEST_NAMESPACE, "float-ista");
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":[3.3 TO A]", null, null);
         assertEquals(1, results.length());
@@ -2910,13 +3027,13 @@ public class ADMLuceneTest extends TestCase
         assertEquals(1, results.length());
         assertNotNull(results.getRow(0).getValue(qname));
         results.close();
-        
+
         qname = QName.createQName(TEST_NAMESPACE, "double-ista");
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":[5.5 TO 5.7]", null, null);
         assertEquals(1, results.length());
         assertNotNull(results.getRow(0).getValue(qname));
         results.close();
-        
+
         qname = QName.createQName(TEST_NAMESPACE, "double-ista");
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":[5.5 TO A]", null, null);
         assertEquals(1, results.length());
@@ -2927,12 +3044,12 @@ public class ADMLuceneTest extends TestCase
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":{A TO 5.6}", null, null);
         assertEquals(0, results.length());
         results.close();
-        
+
         qname = QName.createQName(TEST_NAMESPACE, "double-ista");
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":{5.5 TO 5.6}", null, null);
         assertEquals(0, results.length());
         results.close();
-        
+
         qname = QName.createQName(TEST_NAMESPACE, "double-ista");
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":{5.5 TO A}", null, null);
         assertEquals(1, results.length());
@@ -2942,12 +3059,12 @@ public class ADMLuceneTest extends TestCase
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":{A TO 5.7}", null, null);
         assertEquals(1, results.length());
         results.close();
-        
+
         qname = QName.createQName(TEST_NAMESPACE, "double-ista");
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":{5.6 TO 5.7}", null, null);
         assertEquals(0, results.length());
         results.close();
-        
+
         qname = QName.createQName(TEST_NAMESPACE, "double-ista");
         results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":{5.6 TO A}", null, null);
         assertEquals(0, results.length());
@@ -3004,16 +3121,14 @@ public class ADMLuceneTest extends TestCase
                 null, null);
         assertEquals(1, results.length());
         results.close();
-        
+
         sDate = df.format(date);
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "date-ista")) + ":[MIN  TO " + sDate + "]",
-                null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "date-ista")) + ":[MIN  TO " + sDate + "]", null, null);
         assertEquals(1, results.length());
         results.close();
-        
+
         sDate = df.format(date);
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "date-ista")) + ":[" + sDate + " TO MAX]",
-                null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "date-ista")) + ":[" + sDate + " TO MAX]", null, null);
         assertEquals(1, results.length());
         results.close();
 
@@ -3022,16 +3137,16 @@ public class ADMLuceneTest extends TestCase
                 "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "datetime-ista")) + ":[" + sDate + " TO " + sDate + "]", null, null);
         assertEquals(usesDateTimeAnalyser ? 0 : 1, results.length());
         results.close();
-        
+
         sDate = CachingDateFormat.getDateFormat().format(date);
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene",
-                "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "datetime-ista")) + ":[MIN TO " + sDate + "]", null, null);
-        assertEquals(1,  results.length());
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "datetime-ista")) + ":[MIN TO " + sDate + "]", null,
+                null);
+        assertEquals(1, results.length());
         results.close();
-        
+
         sDate = CachingDateFormat.getDateFormat().format(date);
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene",
-                "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "datetime-ista")) + ":[" + sDate + " TO MAX]", null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(QName.createQName(TEST_NAMESPACE, "datetime-ista")) + ":[" + sDate + " TO MAX]", null,
+                null);
         assertEquals(usesDateTimeAnalyser ? 0 : 1, results.length());
         results.close();
 
@@ -4370,7 +4485,7 @@ public class ADMLuceneTest extends TestCase
         results = searcher.query(sp);
         assertEquals(1, results.length());
         results.close();
-        
+
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
@@ -4474,19 +4589,19 @@ public class ADMLuceneTest extends TestCase
         results.close();
 
         // Open ended ranges
-        
+
         qname = QName.createQName("{namespace}property-1");
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname)+":[v TO w]", null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":[v TO w]", null, null);
         assertEquals(2, results.length());
         results.close();
-        
+
         qname = QName.createQName("{namespace}property-1");
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname)+":[v TO \uFFFF]", null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":[v TO \uFFFF]", null, null);
         assertEquals(2, results.length());
         results.close();
-        
+
         qname = QName.createQName("{namespace}property-1");
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname)+":[\u0000 TO w]", null, null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@" + escapeQName(qname) + ":[\u0000 TO w]", null, null);
         assertEquals(2, results.length());
         results.close();
     }

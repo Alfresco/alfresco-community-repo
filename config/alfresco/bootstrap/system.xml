@@ -31,7 +31,7 @@
         <sys:children>
             <sys:container view:childName="${system.people_container.childname}">
                 <sys:children>
-                    <cm:person view:childName="cm:person">
+                    <cm:person view:childName="cm:admin">
                         <cm:userName>${alfresco_user_store.adminusername}</cm:userName>
                         <cm:firstName>Administrator</cm:firstName>
                         <cm:lastName></cm:lastName>
@@ -41,7 +41,7 @@
                         <cm:homeFolderProvider>bootstrapHomeFolderProvider</cm:homeFolderProvider>
                     </cm:person>
                     <!-- Guest needs to read their own person information -->
-                    <cm:person view:childName="cm:person">
+                    <cm:person view:childName="cm:guest">
                         <view:acl>
                            <view:ace view:access="ALLOWED">
                               <view:authority>guest</view:authority>

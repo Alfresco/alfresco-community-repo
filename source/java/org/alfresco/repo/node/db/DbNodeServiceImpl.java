@@ -40,7 +40,6 @@ import java.util.Stack;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.Node;
-import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.node.AbstractNodeServiceImpl;
 import org.alfresco.repo.node.StoreArchiveMap;
 import org.alfresco.repo.node.db.NodeDaoService.NodeRefQueryCallback;
@@ -52,7 +51,6 @@ import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ChildAssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
-import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.InvalidAspectException;
 import org.alfresco.service.cmr.dictionary.InvalidTypeException;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
@@ -313,21 +311,19 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         // set the properties passed in
         if (properties.size() > 0)
         {
-            Map<QName, PropertyValue> propertiesConverted = convertProperties(properties);
-            nodeDaoService.addNodeProperties(childNodePair.getFirst(), propertiesConverted);
+            nodeDaoService.addNodeProperties(childNodePair.getFirst(), properties);
         }
         
-        Map<QName, PropertyValue> propertiesAfterValues = nodeDaoService.getNodeProperties(childNodePair.getFirst());
+        Map<QName, Serializable> propertiesAfter = nodeDaoService.getNodeProperties(childNodePair.getFirst());
 
         // Ensure child uniqueness
-        String newName = extractNameProperty(propertiesAfterValues);
+        String newName = extractNameProperty(propertiesAfter);
         // Ensure uniqueness.  Note that the cm:name may be null, in which case the uniqueness is still 
         setChildNameUnique(childAssocPair, newName, null);         // ensure uniqueness
         
         // Invoke policy behaviour
         invokeOnCreateNode(childAssocRef);
         invokeOnCreateChildAssociation(childAssocRef, true);
-        Map<QName, Serializable> propertiesAfter = convertPropertyValues(propertiesAfterValues);
         addIntrinsicProperties(childNodePair, propertiesAfter);
         invokeOnUpdateProperties(
                 childAssocRef.getChildRef(),
@@ -364,16 +360,20 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         }
         // Get the existing values
         Long nodeId = nodePair.getFirst();
-        Map<QName, PropertyValue> existingPropertyValues = nodeDaoService.getNodeProperties(nodeId);
+        Map<QName, Serializable> existingProperties = nodeDaoService.getNodeProperties(nodeId);
         Set<QName> existingAspects = nodeDaoService.getNodeAspects(nodeId);
-        return addDefaultAspects(nodePair, existingAspects, existingPropertyValues, typeQName);
+        return addDefaultAspects(nodePair, existingAspects, existingProperties, typeQName);
     }
     
     /**
      * Add the default aspects to a given node
      * @return          Returns <tt>true</tt> if any aspects were added
      */
-    private boolean addDefaultAspects(Pair<Long, NodeRef> nodePair, Set<QName> existingAspects, Map<QName, PropertyValue> existingPropertyValues, QName typeQName)
+    private boolean addDefaultAspects(
+            Pair<Long, NodeRef> nodePair,
+            Set<QName> existingAspects,
+            Map<QName, Serializable> existingProperties,
+            QName typeQName)
     {
         ClassDefinition classDefinition = dictionaryService.getClass(typeQName);
         if (classDefinition == null)
@@ -428,33 +428,32 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         }
         // Get the existing values
         Long nodeId = nodePair.getFirst();
-        Map<QName, PropertyValue> existingPropertyValues = nodeDaoService.getNodeProperties(nodeId);
-        return addDefaultProperties(nodePair, existingPropertyValues, typeQName);
+        Map<QName, Serializable> existingProperties = nodeDaoService.getNodeProperties(nodeId);
+        return addDefaultProperties(nodePair, existingProperties, typeQName);
     }
     
     /**
      * Adds default properties for the given type to the node.  Default values will not be set if there are existing values.
      */
-    private boolean addDefaultProperties(Pair<Long, NodeRef> nodePair, Map<QName, PropertyValue> existingPropertyValues, QName typeQName)
+    private boolean addDefaultProperties(Pair<Long, NodeRef> nodePair, Map<QName, Serializable> existingProperties, QName typeQName)
     {
         Long nodeId = nodePair.getFirst();
         // Get the default properties for this aspect
         Map<QName, Serializable> defaultProperties = getDefaultProperties(typeQName);
-        Map<QName, PropertyValue> defaultPropertyValues = this.convertProperties(defaultProperties);
         // Remove all default values where a value already exists
-        for (Map.Entry<QName, PropertyValue> entry : existingPropertyValues.entrySet())
+        for (Map.Entry<QName, Serializable> entry : existingProperties.entrySet())
         {
             QName existingPropertyQName = entry.getKey();
-            PropertyValue existingPropertyValue = entry.getValue();
-            if (existingPropertyValue != null)
+            Serializable existingProperty = entry.getValue();
+            if (existingProperty != null)
             {
-                defaultPropertyValues.remove(existingPropertyQName);
+                defaultProperties.remove(existingPropertyQName);
             }
         }
         // Add the properties to the node - but only if there is anything to set
-        if (defaultPropertyValues.size() > 0)
+        if (defaultProperties.size() > 0)
         {
-            nodeDaoService.addNodeProperties(nodeId, defaultPropertyValues);
+            nodeDaoService.addNodeProperties(nodeId, defaultProperties);
             return true;
         }
         else
@@ -567,8 +566,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         
         if (aspectProperties.size() > 0)
         {
-            Map<QName, PropertyValue> aspectPropertyValues = convertProperties(aspectProperties);
-            nodeDaoService.addNodeProperties(nodeId, aspectPropertyValues);
+            nodeDaoService.addNodeProperties(nodeId, aspectProperties);
         }
         
         if (!nodeDaoService.hasNodeAspect(nodeId, aspectTypeQName))
@@ -995,20 +993,16 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             return nodeId;
         }
         
-        PropertyValue propertyValue = nodeDaoService.getNodeProperty(nodeId, qname);
+        Serializable property = nodeDaoService.getNodeProperty(nodeId, qname);
         
         // check if we need to provide a spoofed name
-        if (propertyValue == null && qname.equals(ContentModel.PROP_NAME))
+        if (property == null && qname.equals(ContentModel.PROP_NAME))
         {
             return nodeRef.getId();
         }
         
-        // get the property definition
-        PropertyDefinition propertyDef = dictionaryService.getProperty(qname);
-        // convert to the correct type
-        Serializable value = makeSerializableValue(propertyDef, propertyValue);
         // done
-        return value;
+        return property;
     }
 
     public Map<QName, Serializable> getProperties(NodeRef nodeRef) throws InvalidNodeRefException
@@ -1023,24 +1017,11 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     private Map<QName, Serializable> getPropertiesImpl(Pair<Long, NodeRef> nodePair) throws InvalidNodeRefException
     {
         Long nodeId = nodePair.getFirst();
-        Map<QName, PropertyValue> nodeProperties = nodeDaoService.getNodeProperties(nodeId);
-        Map<QName, Serializable> ret = new HashMap<QName, Serializable>(nodeProperties.size());
-        // copy values
-        for (Map.Entry<QName, PropertyValue> entry: nodeProperties.entrySet())
-        {
-            QName propertyQName = entry.getKey();
-            PropertyValue propertyValue = entry.getValue();
-            // get the property definition
-            PropertyDefinition propertyDef = dictionaryService.getProperty(propertyQName);
-            // convert to the correct type
-            Serializable value = makeSerializableValue(propertyDef, propertyValue);
-            // copy across
-            ret.put(propertyQName, value);
-        }
+        Map<QName, Serializable> nodeProperties = nodeDaoService.getNodeProperties(nodeId);
         // spoof referencable properties
-        addIntrinsicProperties(nodePair, ret);
+        addIntrinsicProperties(nodePair, nodeProperties);
         // done
-        return ret;
+        return nodeProperties;
     }
     
     /**
@@ -1099,10 +1080,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
                 }
             }
             // Set the property
-            PropertyDefinition propertyDef = dictionaryService.getProperty(qname);
-            // get a persistable value
-            PropertyValue propertyValue = makePropertyValue(propertyDef, value);
-            nodeDaoService.addNodeProperty(nodeId, qname, propertyValue);
+            nodeDaoService.addNodeProperty(nodeId, qname, value);
         }
     }
     
@@ -1155,10 +1133,8 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         }
         // Now remove special properties
         extractIntrinsicProperties(properties);
-        // convert the map
-        Map<QName, PropertyValue> propertyValues = convertProperties(properties);
         // Update the node
-        nodeDaoService.setNodeProperties(nodeId, propertyValues);
+        nodeDaoService.setNodeProperties(nodeId, properties);
     }
     
     public void removeProperty(NodeRef nodeRef, QName qname) throws InvalidNodeRefException
@@ -1194,42 +1170,42 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         nodeIndexer.indexUpdateNode(nodeRef);
     }
 
-    private Map<QName, PropertyValue> convertProperties(Map<QName, Serializable> properties) throws InvalidNodeRefException
-    {
-        Map<QName, PropertyValue> convertedProperties = new HashMap<QName, PropertyValue>(17);
-        
-        // check the property type and copy the values across
-        for (QName propertyQName : properties.keySet())
-        {
-            PropertyDefinition propertyDef = dictionaryService.getProperty(propertyQName);
-            Serializable value = properties.get(propertyQName);
-            // get a persistable value
-            PropertyValue propertyValue = makePropertyValue(propertyDef, value);
-            convertedProperties.put(propertyQName, propertyValue);
-        }
-        
-        // Return the converted properties
-        return convertedProperties;
-    }
-    
-    private Map<QName, Serializable> convertPropertyValues(Map<QName, PropertyValue> propertyValues) throws InvalidNodeRefException
-    {
-        Map<QName, Serializable> convertedProperties = new HashMap<QName, Serializable>(17);
-        
-        // check the property type and copy the values across
-        for (Map.Entry<QName, PropertyValue> entry : propertyValues.entrySet())
-        {
-            QName propertyQName = entry.getKey();
-            PropertyValue propertyValue = entry.getValue();
-            PropertyDefinition propertyDef = dictionaryService.getProperty(propertyQName);
-            Serializable property = makeSerializableValue(propertyDef, propertyValue);
-            convertedProperties.put(propertyQName, property);
-        }
-        
-        // Return the converted properties
-        return convertedProperties;
-    }
-    
+//    private Map<QName, PropertyValue> convertProperties(Map<QName, Serializable> properties) throws InvalidNodeRefException
+//    {
+//        Map<QName, PropertyValue> convertedProperties = new HashMap<QName, PropertyValue>(17);
+//        
+//        // check the property type and copy the values across
+//        for (QName propertyQName : properties.keySet())
+//        {
+//            PropertyDefinition propertyDef = dictionaryService.getProperty(propertyQName);
+//            Serializable value = properties.get(propertyQName);
+//            // get a persistable value
+//            PropertyValue propertyValue = makePropertyValue(propertyDef, value);
+//            convertedProperties.put(propertyQName, propertyValue);
+//        }
+//        
+//        // Return the converted properties
+//        return convertedProperties;
+//    }
+//    
+//    private Map<QName, Serializable> convertPropertyValues(Map<QName, PropertyValue> propertyValues) throws InvalidNodeRefException
+//    {
+//        Map<QName, Serializable> convertedProperties = new HashMap<QName, Serializable>(17);
+//        
+//        // check the property type and copy the values across
+//        for (Map.Entry<QName, PropertyValue> entry : propertyValues.entrySet())
+//        {
+//            QName propertyQName = entry.getKey();
+//            PropertyValue propertyValue = entry.getValue();
+//            PropertyDefinition propertyDef = dictionaryService.getProperty(propertyQName);
+//            Serializable property = makeSerializableValue(propertyDef, propertyValue);
+//            convertedProperties.put(propertyQName, property);
+//        }
+//        
+//        // Return the converted properties
+//        return convertedProperties;
+//    }
+//    
     public Collection<NodeRef> getParents(NodeRef nodeRef) throws InvalidNodeRefException
     {
         // Get the node
@@ -1708,41 +1684,29 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         Long nodeId = nodePair.getFirst();
         Pair<Long, ChildAssociationRef> primaryParentAssocPair = nodeDaoService.getPrimaryParentAssoc(nodeId);
         Set<QName> newAspects = new HashSet<QName>(5);
-        Map<QName, PropertyValue> existingPropertyValues = nodeDaoService.getNodeProperties(nodeId);
-        Map<QName, PropertyValue> newPropertyValues = new HashMap<QName, PropertyValue>(11);
+        Map<QName, Serializable> existingProperties = nodeDaoService.getNodeProperties(nodeId);
+        Map<QName, Serializable> newProperties = new HashMap<QName, Serializable>(11);
         
         // add the aspect
         newAspects.add(ContentModel.ASPECT_ARCHIVED);
-        PropertyValue archivedByProperty = makePropertyValue(
-                dictionaryService.getProperty(ContentModel.PROP_ARCHIVED_BY),
-                AuthenticationUtil.getCurrentUserName());
-        newPropertyValues.put(ContentModel.PROP_ARCHIVED_BY, archivedByProperty);
-        PropertyValue archivedDateProperty = makePropertyValue(
-                dictionaryService.getProperty(ContentModel.PROP_ARCHIVED_DATE),
-                new Date());
-        newPropertyValues.put(ContentModel.PROP_ARCHIVED_DATE, archivedDateProperty);
-        PropertyValue archivedPrimaryParentNodeRefProperty = makePropertyValue(
-                dictionaryService.getProperty(ContentModel.PROP_ARCHIVED_ORIGINAL_PARENT_ASSOC),
-                primaryParentAssocPair.getSecond());
-        newPropertyValues.put(ContentModel.PROP_ARCHIVED_ORIGINAL_PARENT_ASSOC, archivedPrimaryParentNodeRefProperty);
-        PropertyValue originalOwnerProperty = existingPropertyValues.get(ContentModel.PROP_OWNER);
-        PropertyValue originalCreatorProperty = existingPropertyValues.get(ContentModel.PROP_CREATOR);
-        if (originalOwnerProperty != null || originalCreatorProperty != null)
+        newProperties.put(ContentModel.PROP_ARCHIVED_BY, AuthenticationUtil.getCurrentUserName());
+        newProperties.put(ContentModel.PROP_ARCHIVED_DATE, new Date());
+        newProperties.put(ContentModel.PROP_ARCHIVED_ORIGINAL_PARENT_ASSOC, primaryParentAssocPair.getSecond());
+        Serializable originalOwner = existingProperties.get(ContentModel.PROP_OWNER);
+        Serializable originalCreator = existingProperties.get(ContentModel.PROP_CREATOR);
+        if (originalOwner != null || originalCreator != null)
         {
-            newPropertyValues.put(
+            newProperties.put(
                     ContentModel.PROP_ARCHIVED_ORIGINAL_OWNER,
-                    originalOwnerProperty != null ? originalOwnerProperty : originalCreatorProperty);
+                    originalOwner != null ? originalOwner : originalCreator);
         }
         
         // change the node ownership
         newAspects.add(ContentModel.ASPECT_OWNABLE);
-        PropertyValue newOwnerProperty = makePropertyValue(
-                dictionaryService.getProperty(ContentModel.PROP_ARCHIVED_ORIGINAL_OWNER),
-                AuthenticationUtil.getCurrentUserName());
-        newPropertyValues.put(ContentModel.PROP_OWNER, newOwnerProperty);
+        newProperties.put(ContentModel.PROP_OWNER, AuthenticationUtil.getCurrentUserName());
         
         // Set the aspects and properties
-        nodeDaoService.addNodeProperties(nodeId, newPropertyValues);
+        nodeDaoService.addNodeProperties(nodeId, newProperties);
         nodeDaoService.addNodeAspects(nodeId, newAspects);
         
         // move the node
@@ -1760,18 +1724,17 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         Long archivedNodeId = archivedNodePair.getFirst();
         Set<QName> existingAspects = nodeDaoService.getNodeAspects(archivedNodeId);
         Set<QName> newAspects = new HashSet<QName>(5);
-        Map<QName, PropertyValue> existingPropertyValues = nodeDaoService.getNodeProperties(archivedNodeId);
-        Map<QName, PropertyValue> newPropertyValues = new HashMap<QName, PropertyValue>(11);
+        Map<QName, Serializable> existingProperties = nodeDaoService.getNodeProperties(archivedNodeId);
+        Map<QName, Serializable> newProperties = new HashMap<QName, Serializable>(11);
         
         // the node must be a top-level archive node
         if (!existingAspects.contains(ContentModel.ASPECT_ARCHIVED))
         {
             throw new AlfrescoRuntimeException("The node to restore is not an archive node");
         }
-        ChildAssociationRef originalPrimaryParentAssocRef = (ChildAssociationRef) makeSerializableValue(
-                dictionaryService.getProperty(ContentModel.PROP_ARCHIVED_ORIGINAL_PARENT_ASSOC),
-                existingPropertyValues.get(ContentModel.PROP_ARCHIVED_ORIGINAL_PARENT_ASSOC));
-        PropertyValue originalOwnerProperty = existingPropertyValues.get(ContentModel.PROP_ARCHIVED_ORIGINAL_OWNER);
+        ChildAssociationRef originalPrimaryParentAssocRef = (ChildAssociationRef) existingProperties.get(
+                ContentModel.PROP_ARCHIVED_ORIGINAL_PARENT_ASSOC);
+        Serializable originalOwner = existingProperties.get(ContentModel.PROP_ARCHIVED_ORIGINAL_OWNER);
         // remove the archived aspect
         Set<QName> removePropertyQNames = new HashSet<QName>(11);
         removePropertyQNames.add(ContentModel.PROP_ARCHIVED_ORIGINAL_PARENT_ASSOC);
@@ -1782,10 +1745,10 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         nodeDaoService.removeNodeAspects(archivedNodeId, Collections.singleton(ContentModel.ASPECT_ARCHIVED));
         
         // restore the original ownership
-        if (originalOwnerProperty != null)
+        if (originalOwner != null)
         {
             newAspects.add(ContentModel.ASPECT_OWNABLE);
-            newPropertyValues.put(ContentModel.PROP_OWNER, originalOwnerProperty);
+            newProperties.put(ContentModel.PROP_OWNER, originalOwner);
         }
         
         if (destinationParentNodeRef == null)
@@ -2100,27 +2063,19 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         }
     }
 
-    private String extractNameProperty(Map<QName, PropertyValue> propertyValues)
+    private String extractNameProperty(Map<QName, Serializable> properties)
     {
-        PropertyValue nameValue = propertyValues.get(ContentModel.PROP_NAME);
-        if (nameValue == null)
-        {
-            return null;
-        }
-        String name = (String) nameValue.getValue(DataTypeDefinition.TEXT);
+        Serializable nameValue = properties.get(ContentModel.PROP_NAME);
+        String name = (String) DefaultTypeConverter.INSTANCE.convert(String.class, nameValue);
         return name;
     }
 
     private void setChildNameUnique(Pair<Long, ChildAssociationRef> childAssocPair, Pair<Long, NodeRef> childNodePair)
     {
         // Get the node's existing name
-        PropertyValue namePropertyValue = nodeDaoService.getNodeProperty(childNodePair.getFirst(), ContentModel.PROP_NAME);
-        String nameValue = null;
-        if (namePropertyValue != null)
-        {
-            nameValue = (String) namePropertyValue.getValue(DataTypeDefinition.TEXT);
-        }
-        setChildNameUnique(childAssocPair, nameValue, null);
+        Serializable nameValue = nodeDaoService.getNodeProperty(childNodePair.getFirst(), ContentModel.PROP_NAME);
+        String name = (String) DefaultTypeConverter.INSTANCE.convert(String.class, nameValue);
+        setChildNameUnique(childAssocPair, name, null);
     }
 
     /**

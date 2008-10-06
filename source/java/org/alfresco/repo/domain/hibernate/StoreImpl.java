@@ -31,8 +31,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
 import org.alfresco.repo.domain.Node;
 import org.alfresco.repo.domain.Store;
-import org.alfresco.repo.domain.StoreKey;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.util.EqualsHelper;
 
 /**
  * Hibernate-specific implementation of the domain entity <b>store</b>.
@@ -41,9 +41,11 @@ import org.alfresco.service.cmr.repository.StoreRef;
  */
 public class StoreImpl implements Store, Serializable
 {
-    private static final long serialVersionUID = -6135740209100885890L;
-
-    private StoreKey key;
+    private static final long serialVersionUID = -5501292033972362796L;
+    
+    private Long id;
+    private String protocol;
+    private String identifier;
     private Long version;
     private Node rootNode;
 
@@ -83,7 +85,7 @@ public class StoreImpl implements Store, Serializable
             // double check
             if (storeRef == null )
             {
-                storeRef = new StoreRef(getKey().getProtocol(), getKey().getIdentifier());
+                storeRef = new StoreRef(protocol, identifier);
             }
             return storeRef;
         }
@@ -119,7 +121,7 @@ public class StoreImpl implements Store, Serializable
             return false;
         }
         Store that = (Store) obj;
-        return (this.getKey().equals(that.getKey()));
+        return EqualsHelper.nullSafeEquals(this.getStoreRef(), that.getStoreRef());
     }
     
     /**
@@ -127,20 +129,53 @@ public class StoreImpl implements Store, Serializable
      */
     public int hashCode()
     {
-        return getKey().hashCode();
+        return protocol.hashCode() + identifier.hashCode();
     }
     
-    public StoreKey getKey()
+    public Long getId()
     {
-        return key;
+        return id;
     }
     
-    public void setKey(StoreKey key)
+    /**
+     * For Hibernate use
+     */
+    @SuppressWarnings("unused")
+    private void setId(Long id)
+    {
+        this.id = id;
+    }
+    
+    public String getProtocol()
+    {
+        return protocol;
+    }
+    
+    public void setProtocol(String protocol)
     {
         refWriteLock.lock();
         try
         {
-            this.key = key;
+            this.protocol = protocol;
+            this.storeRef = null;
+        }
+        finally
+        {
+            refWriteLock.unlock();
+        }
+    }
+    
+    public String getIdentifier()
+    {
+        return identifier;
+    }
+    
+    public void setIdentifier(String identifier)
+    {
+        refWriteLock.lock();
+        try
+        {
+            this.identifier = identifier;
             this.storeRef = null;
         }
         finally

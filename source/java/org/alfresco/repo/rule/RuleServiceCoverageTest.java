@@ -69,6 +69,7 @@ import org.alfresco.service.cmr.action.ActionCondition;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockStatus;
 import org.alfresco.service.cmr.model.FileFolderService;
@@ -127,7 +128,7 @@ public class RuleServiceCoverageTest extends TestCase
      * Category related values
      */
     private static final String TEST_NAMESPACE = "http://www.alfresco.org/test/rulesystemtest";
-    private static final QName CAT_PROP_QNAME = QName.createQName(TEST_NAMESPACE, "Region");
+    private static final QName CAT_PROP_QNAME = QName.createQName(TEST_NAMESPACE, "region");
     private QName regionCategorisationQName;
     private NodeRef catContainer;
     private NodeRef catRoot;
@@ -696,6 +697,7 @@ public class RuleServiceCoverageTest extends TestCase
      *          condition:  no-condition
      *          action:     link-category  
      */
+    @SuppressWarnings("unchecked")
     public void testLinkCategoryAction()
     {        
         // Create categories used in tests
@@ -721,6 +723,12 @@ public class RuleServiceCoverageTest extends TestCase
                 ContentModel.TYPE_CONTENT,
                 getContentProperties()).getChildRef();
         addContentToNode(newNodeRef2);
+        
+        PropertyDefinition catPropDef = this.dictionaryDAO.getProperty(CAT_PROP_QNAME);
+        if (catPropDef == null)
+        {
+            // Why is it undefined?
+        }
         
         // Check that the category value has been set
         // It has been declared as a multi-value property, so we expect that here

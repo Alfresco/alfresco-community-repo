@@ -31,7 +31,8 @@ import java.util.Map;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.domain.Node;
-import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.repo.domain.NodePropertyValue;
+import org.alfresco.repo.domain.PropertyMapKey;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.hibernate.Query;
 import org.hibernate.Session;
@@ -103,22 +104,17 @@ public class NodePropertySerializablePatch extends AbstractPatch
                     {
                         Node node = iterator.next();
                         // retrieve the node properties
-                        Map<Long, PropertyValue> properties = node.getProperties();
+                        Map<PropertyMapKey, NodePropertyValue> properties = node.getProperties();
                         // check each property
-                        for (Map.Entry<Long, PropertyValue> entry : properties.entrySet())
+                        for (Map.Entry<PropertyMapKey, NodePropertyValue> entry : properties.entrySet())
                         {
-                            PropertyValue propertyValue = entry.getValue();
+                            NodePropertyValue propertyValue = entry.getValue();
                             if (propertyValue.getSerializableValue() == null)
                             {
                                 // the property was not persisted as a serializable - nothing to do
                                 continue;
                             }
-                            else if (propertyValue.isMultiValued())
-                            {
-                                // this is a persisted collection - nothing to do
-                                continue;
-                            }
-                            else if (!"SERIALIZABLE".equals(propertyValue.getActualType()))
+                            else if (!"SERIALIZABLE".equals(propertyValue.getActualTypeString()))
                             {
                                 // only handle actual types that were pushed in as any old type
                                 continue;
@@ -126,7 +122,7 @@ public class NodePropertySerializablePatch extends AbstractPatch
                             // make sure that this value is persisted correctly
                             Serializable value = propertyValue.getSerializableValue();
                             // put it back
-                            PropertyValue newPropertyValue = new PropertyValue(DataTypeDefinition.ANY, value);
+                            NodePropertyValue newPropertyValue = new NodePropertyValue(DataTypeDefinition.ANY, value);
                             entry.setValue(newPropertyValue);
                             count++;
                         }

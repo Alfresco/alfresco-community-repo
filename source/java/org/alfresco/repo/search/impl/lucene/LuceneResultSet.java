@@ -33,6 +33,7 @@ import org.alfresco.repo.search.ResultSetRowIterator;
 import org.alfresco.repo.search.SearcherException;
 import org.alfresco.repo.search.SimpleResultSetMetaData;
 import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.repo.search.impl.lucene.index.CachingIndexReader;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -43,6 +44,7 @@ import org.alfresco.service.cmr.search.ResultSetMetaData;
 import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.Searcher;
 
@@ -69,7 +71,7 @@ public class LuceneResultSet extends AbstractResultSet
     private LuceneConfig config;
 
     private BitSet prefetch;
-    
+
 
     /**
      * Wrap a lucene seach result with node support
@@ -106,11 +108,31 @@ public class LuceneResultSet extends AbstractResultSet
 
     public NodeRef getNodeRef(int n)
     {
-        // We have to get the document to resolve this
-        // It is possible the store ref is also stored in the index
-        Document doc = getDocument(n);
-        String id = doc.get("ID");
-        return tenantService.getBaseName(new NodeRef(id));
+        try
+        {
+            // We have to get the document to resolve this
+            // It is possible the store ref is also stored in the index
+            if (searcher instanceof ClosingIndexSearcher)
+            {
+                ClosingIndexSearcher cis = (ClosingIndexSearcher) searcher;
+                IndexReader reader = cis.getReader();
+                if (reader instanceof CachingIndexReader)
+                {
+                    int id = hits.id(n);
+                    CachingIndexReader cir = (CachingIndexReader) reader;
+                    String sid = cir.getId(id);
+                    return tenantService.getBaseName(new NodeRef(sid));
+                }
+            }
+
+            Document doc = hits.doc(n);
+            String id = doc.get("ID");
+            return tenantService.getBaseName(new NodeRef(id));
+        }
+        catch (IOException e)
+        {
+            throw new SearcherException("IO Error reading reading node ref from the result set", e);
+        }
     }
 
     public float getScore(int n) throws SearcherException

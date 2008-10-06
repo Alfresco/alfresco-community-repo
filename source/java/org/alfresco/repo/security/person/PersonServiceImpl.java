@@ -26,6 +26,8 @@ package org.alfresco.repo.security.person;
 
 import java.io.Serializable;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -61,15 +63,14 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-public class PersonServiceImpl
-    extends TransactionListenerAdapter
-    implements PersonService, NodeServicePolicies.OnCreateNodePolicy, NodeServicePolicies.BeforeDeleteNodePolicy
+public class PersonServiceImpl extends TransactionListenerAdapter implements PersonService, NodeServicePolicies.OnCreateNodePolicy, NodeServicePolicies.BeforeDeleteNodePolicy
 {
     private static Log s_logger = LogFactory.getLog(PersonServiceImpl.class);
 
@@ -79,16 +80,16 @@ public class PersonServiceImpl
 
     private static final String LEAVE = "LEAVE";
 
-    public static final String SYSTEM_FOLDER = "/sys:system";
+    public static final String SYSTEM_FOLDER_SHORT_QNAME = "sys:system";
 
-    public static final String PEOPLE_FOLDER = SYSTEM_FOLDER + "/sys:people";
+    public static final String PEOPLE_FOLDER_SHORT_QNAME = "sys:people";
 
     // IOC
 
     private StoreRef storeRef;
 
     private TransactionService transactionService;
-    
+
     private NodeService nodeService;
     
     private TenantService tenantService;
@@ -102,7 +103,7 @@ public class PersonServiceImpl
     private PermissionServiceSPI permissionServiceSPI;
 
     private NamespacePrefixResolver namespacePrefixResolver;
-    
+
     private PolicyComponent policyComponent;
 
     private boolean createMissingPeople;
@@ -120,7 +121,9 @@ public class PersonServiceImpl
     private boolean lastIsBest = true;
 
     private boolean includeAutoCreated = false;
-    
+
+    private PersonDao personDao;
+
     /** a transactionally-safe cache to be injected */
     private SimpleCache<String, NodeRef> personCache;
 
@@ -135,12 +138,13 @@ public class PersonServiceImpl
         props.add(ContentModel.PROP_ORGID);
         mutableProperties = Collections.unmodifiableSet(props);
     }
-    
+
     @Override
     public boolean equals(Object obj)
     {
         return this == obj;
     }
+
     @Override
     public int hashCode()
     {
@@ -161,15 +165,12 @@ public class PersonServiceImpl
         PropertyCheck.mandatory(this, "namespacePrefixResolver", namespacePrefixResolver);
         PropertyCheck.mandatory(this, "policyComponent", policyComponent);
         PropertyCheck.mandatory(this, "personCache", personCache);
-        
-        this.policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateNode"),
-                ContentModel.TYPE_PERSON,
-                new JavaBehaviour(this, "onCreateNode"));
-        this.policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteNode"),
-                ContentModel.TYPE_PERSON,
-                new JavaBehaviour(this, "beforeDeleteNode"));
+        PropertyCheck.mandatory(this, "personDao", personDao);
+
+        this.policyComponent
+                .bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateNode"), ContentModel.TYPE_PERSON, new JavaBehaviour(this, "onCreateNode"));
+        this.policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteNode"), ContentModel.TYPE_PERSON, new JavaBehaviour(this,
+                "beforeDeleteNode"));
     }
 
     public boolean getUserNamesAreCaseSensitive()
@@ -207,10 +208,16 @@ public class PersonServiceImpl
         this.processDuplicates = processDuplicates;
     }
     
+    public void setPersonDao(PersonDao personDao)
+    {
+        this.personDao = personDao;
+    }
+
     /**
      * Set the username to person cache.
      * 
-     * @param personCache     a transactionally safe cache
+     * @param personCache
+     *            a transactionally safe cache
      */
     public void setPersonCache(SimpleCache<String, NodeRef> personCache)
     {
@@ -218,13 +225,12 @@ public class PersonServiceImpl
     }
 
     /**
-     * Retrieve the person NodeRef for a username key. Depending on configuration missing people
-     * will be created if not found, else a NoSuchPersonException exception will be thrown.
+     * Retrieve the person NodeRef for a username key. Depending on configuration missing people will be created if not
+     * found, else a NoSuchPersonException exception will be thrown.
      * 
-     * @param userName of the person NodeRef to retrieve
-     * 
+     * @param userName
+     *            of the person NodeRef to retrieve
      * @return NodeRef of the person as specified by the username
-     * 
      * @throws NoSuchPersonException
      */
     public NodeRef getPerson(String userName)
@@ -233,7 +239,7 @@ public class PersonServiceImpl
         if (personNode == null)
         {
             TxnReadState txnReadState = AlfrescoTransactionSupport.getTransactionReadState();
-            if (createMissingPeople() &&  txnReadState == TxnReadState.TXN_READ_WRITE)
+            if (createMissingPeople() && txnReadState == TxnReadState.TXN_READ_WRITE)
             {
                 // We create missing people AND are in a read-write txn
                 return createMissingPerson(userName);
@@ -259,127 +265,75 @@ public class PersonServiceImpl
         NodeRef returnRef = this.personCache.get(searchUserName);
         if (returnRef == null)
         {
-            SearchParameters sp = new SearchParameters();
-            sp.setLanguage(SearchService.LANGUAGE_LUCENE);
-            sp.setQuery("@cm\\:userName:\"" + searchUserName + "\"");
-            sp.addStore(tenantService.getName(storeRef));
-            sp.excludeDataInTheCurrentTransaction(false);
-    
-            ResultSet rs = null;
-    
-            boolean singleton = true;
-    
-            try
+            List<NodeRef> refs = personDao.getPersonOrNull(searchUserName, userNamesAreCaseSensitive);
+            if (refs.size() > 1)
             {
-                rs = searchService.query(sp);
-    
-                for (ResultSetRow row : rs)
-                {
-                    NodeRef nodeRef = row.getNodeRef();
-                    if (nodeService.exists(nodeRef))
-                    {
-                        String realUserName = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(
-                                nodeRef, ContentModel.PROP_USERNAME));
-    
-                        if (userNamesAreCaseSensitive)
-                        {
-                            if (realUserName.equals(searchUserName))
-                            {
-                                if (returnRef == null)
-                                {
-                                    returnRef = nodeRef;
-                                }
-                                else
-                                {
-                                    singleton = false;
-                                    break;
-                                }
-                            }
-                        }
-                        else
-                        {
-                            if (realUserName.equalsIgnoreCase(searchUserName))
-                            {
-                                if (returnRef == null)
-                                {
-                                    returnRef = nodeRef;
-                                }
-                                else
-                                {
-                                    singleton = false;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
+                returnRef = handleDuplicates(refs, searchUserName);
             }
-            finally
+            else if (refs.size() == 1)
             {
-                if (rs != null)
-                {
-                    rs.close();
-                }
+                returnRef = refs.get(0);
             }
-            if (!singleton)
-            {
-                returnRef = handleDuplicates(searchUserName);
-            }
-            
+
             // add to cache
             this.personCache.put(searchUserName, returnRef);
         }
         return returnRef;
     }
-    private NodeRef handleDuplicates(String searchUserName)
+
+    private NodeRef handleDuplicates(List<NodeRef> refs, String searchUserName)
     {
         if (processDuplicates)
         {
-            NodeRef best = findBest(searchUserName);
-            addDuplicateUserNameToHandle(searchUserName, best);
+            NodeRef best = findBest(refs);
+            HashSet<NodeRef> toHandle = new HashSet<NodeRef>();
+            toHandle.addAll(refs);
+            toHandle.remove(best);
+            addDuplicateNodeRefsToHandle(toHandle);
             return best;
         }
         else
         {
             if (userNamesAreCaseSensitive)
             {
-                throw new AlfrescoRuntimeException("Found more than one user for "
-                        + searchUserName + " (case sensitive)");
+                throw new AlfrescoRuntimeException("Found more than one user for " + searchUserName + " (case sensitive)");
             }
             else
             {
-                throw new AlfrescoRuntimeException("Found more than one user for "
-                        + searchUserName + " (case insensitive)");
+                throw new AlfrescoRuntimeException("Found more than one user for " + searchUserName + " (case insensitive)");
             }
         }
     }
 
     private static final String KEY_POST_TXN_DUPLICATES = "PersonServiceImpl.KEY_POST_TXN_DUPLICATES";
+
     /**
      * Get the txn-bound usernames that need cleaning up
      */
-    private Map<String, NodeRef> getPostTxnDuplicates()
+    private Set<NodeRef> getPostTxnDuplicates()
     {
         @SuppressWarnings("unchecked")
-        Map<String, NodeRef> postTxnDuplicates = (Map<String, NodeRef>) AlfrescoTransactionSupport.getResource(KEY_POST_TXN_DUPLICATES);
+        Set<NodeRef> postTxnDuplicates = (Set<NodeRef>) AlfrescoTransactionSupport.getResource(KEY_POST_TXN_DUPLICATES);
         if (postTxnDuplicates == null)
         {
-            postTxnDuplicates = new HashMap<String, NodeRef>(7);
+            postTxnDuplicates = new HashSet<NodeRef>();
             AlfrescoTransactionSupport.bindResource(KEY_POST_TXN_DUPLICATES, postTxnDuplicates);
         }
         return postTxnDuplicates;
     }
+
     /**
      * Flag a username for cleanup after the transaction.
      */
-    private void addDuplicateUserNameToHandle(String searchUserName, NodeRef best)
+    private void addDuplicateNodeRefsToHandle(Set<NodeRef> refs)
     {
         // Firstly, bind this service to the transaction
         AlfrescoTransactionSupport.bindListener(this);
         // Now get the post txn duplicate list
-        Map<String, NodeRef> postTxnDuplicates = getPostTxnDuplicates();
-        postTxnDuplicates.put(searchUserName, best);
+        Set<NodeRef> postTxnDuplicates = getPostTxnDuplicates();
+        postTxnDuplicates.addAll(refs);
     }
+
     /**
      * Process clean up any duplicates that were flagged during the transaction.
      */
@@ -387,34 +341,31 @@ public class PersonServiceImpl
     public void afterCommit()
     {
         // Get the duplicates in a form that can be read by the transaction work anonymous instance
-        final Map<String, NodeRef> postTxnDuplicates = getPostTxnDuplicates();
+        final Set<NodeRef> postTxnDuplicates = getPostTxnDuplicates();
 
         RetryingTransactionCallback<Object> processDuplicateWork = new RetryingTransactionCallback<Object>()
         {
             public Object execute() throws Throwable
             {
-                for (Map.Entry<String, NodeRef> entry : postTxnDuplicates.entrySet())
+
+                if (duplicateMode.equalsIgnoreCase(SPLIT))
                 {
-                    String username = entry.getKey();
-                    NodeRef best = entry.getValue();
-                    if (duplicateMode.equalsIgnoreCase(SPLIT))
+                    split(postTxnDuplicates);
+                    s_logger.info("Split duplicate person objects");
+                }
+                else if (duplicateMode.equalsIgnoreCase(DELETE))
+                {
+                    delete(postTxnDuplicates);
+                    s_logger.info("Deleted duplicate person objects");
+                }
+                else
+                {
+                    if (s_logger.isDebugEnabled())
                     {
-                        split(username, best);
-                        s_logger.info("Split duplicate person objects for uid " + username);
-                    }
-                    else if (duplicateMode.equalsIgnoreCase(DELETE))
-                    {
-                        delete(username, best);
-                        s_logger.info("Deleted duplicate person objects for uid " + username);
-                    }
-                    else
-                    {
-                        if (s_logger.isDebugEnabled())
-                        {
-                            s_logger.debug("Duplicate person objects exist for uid " + username);
-                        }
+                        s_logger.debug("Duplicate person objects exist");
                     }
                 }
+
                 // Done
                 return null;
             }
@@ -422,210 +373,81 @@ public class PersonServiceImpl
         transactionService.getRetryingTransactionHelper().doInTransaction(processDuplicateWork, false, true);
     }
 
-    private void delete(String searchUserName, NodeRef best)
+    private void delete(Set<NodeRef> toDelete)
     {
-        SearchParameters sp = new SearchParameters();
-        sp.setLanguage(SearchService.LANGUAGE_LUCENE);
-        sp.setQuery("@cm\\:userName:\"" + searchUserName + "\"");
-        sp.addStore(tenantService.getName(storeRef));
-        sp.excludeDataInTheCurrentTransaction(false);
-
-        ResultSet rs = null;
-
-        try
+        for (NodeRef nodeRef : toDelete)
         {
-            rs = searchService.query(sp);
-
-            for (ResultSetRow row : rs)
-            {
-                NodeRef nodeRef = row.getNodeRef();
-                // Do not delete the best
-                if ((!best.equals(nodeRef)) && (nodeService.exists(nodeRef)))
-                {
-                    String realUserName = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(
-                            nodeRef, ContentModel.PROP_USERNAME));
-
-                    if (userNamesAreCaseSensitive)
-                    {
-                        if (realUserName.equals(searchUserName))
-                        {
-                            nodeService.deleteNode(nodeRef);
-                        }
-                    }
-                    else
-                    {
-                        if (realUserName.equalsIgnoreCase(searchUserName))
-                        {
-                            nodeService.deleteNode(nodeRef);
-                        }
-                    }
-                }
-            }
+            nodeService.deleteNode(nodeRef);
         }
-        finally
-        {
-            if (rs != null)
-            {
-                rs.close();
-            }
-        }
-
     }
 
-    private void split(String searchUserName, NodeRef best)
+    private void split(Set<NodeRef> toSplit)
     {
-        SearchParameters sp = new SearchParameters();
-        sp.setLanguage(SearchService.LANGUAGE_LUCENE);
-        sp.setQuery("@cm\\:userName:\"" + searchUserName + "\"");
-        sp.addStore(tenantService.getName(storeRef));
-        sp.excludeDataInTheCurrentTransaction(false);
-
-        ResultSet rs = null;
-
-        try
+        for (NodeRef nodeRef : toSplit)
         {
-            rs = searchService.query(sp);
-
-            for (ResultSetRow row : rs)
-            {
-                NodeRef nodeRef = row.getNodeRef();
-                // Do not delete the best
-                if ((!best.equals(nodeRef)) && (nodeService.exists(nodeRef)))
-                {
-                    String realUserName = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(
-                            nodeRef, ContentModel.PROP_USERNAME));
-
-                    if (userNamesAreCaseSensitive)
-                    {
-                        if (realUserName.equals(searchUserName))
-                        {
-                            nodeService.setProperty(nodeRef, ContentModel.PROP_USERNAME, searchUserName
-                                    + "(" + GUID.generate() + ")");
-                        }
-                    }
-                    else
-                    {
-                        if (realUserName.equalsIgnoreCase(searchUserName))
-                        {
-                            nodeService.setProperty(nodeRef, ContentModel.PROP_USERNAME, searchUserName
-                                    + GUID.generate());
-                        }
-                    }
-                }
-            }
+            String userName = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(nodeRef, ContentModel.PROP_USERNAME));
+            nodeService.setProperty(nodeRef, ContentModel.PROP_USERNAME, userName + GUID.generate());
         }
-        finally
-        {
-            if (rs != null)
-            {
-                rs.close();
-            }
-        }
-
     }
 
-    private NodeRef findBest(String searchUserName)
+    private NodeRef findBest(List<NodeRef> refs)
     {
-        SearchParameters sp = new SearchParameters();
-        sp.setLanguage(SearchService.LANGUAGE_LUCENE);
-        sp.setQuery("@cm\\:userName:\"" + searchUserName + "\"");
-        sp.addStore(tenantService.getName(storeRef));
-        sp.excludeDataInTheCurrentTransaction(false);
         if (lastIsBest)
         {
-            sp.addSort(SearchParameters.SORT_IN_DOCUMENT_ORDER_DESCENDING);
+            Collections.sort(refs, new CreationDateComparator(nodeService, false));
         }
         else
         {
-            sp.addSort(SearchParameters.SORT_IN_DOCUMENT_ORDER_ASCENDING);
+            Collections.sort(refs, new CreationDateComparator(nodeService, true));
         }
-
-        ResultSet rs = null;
 
         NodeRef fallBack = null;
 
-        try
+        for (NodeRef nodeRef : refs)
         {
-            rs = searchService.query(sp);
-
-            for (ResultSetRow row : rs)
+            if (fallBack == null)
             {
-                NodeRef nodeRef = row.getNodeRef();
-                if (fallBack == null)
-                {
-                    fallBack = nodeRef;
-                }
-                // Do not delete the best
-                if (nodeService.exists(nodeRef))
-                {
-                    String realUserName = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(
-                            nodeRef, ContentModel.PROP_USERNAME));
+                fallBack = nodeRef;
+            }
 
-                    if (userNamesAreCaseSensitive)
-                    {
-                        if (realUserName.equals(searchUserName))
-                        {
-                            if (includeAutoCreated || !wasAutoCreated(nodeRef, searchUserName))
-                            {
-                                return nodeRef;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        if (realUserName.equalsIgnoreCase(searchUserName))
-                        {
-                            if (includeAutoCreated || !wasAutoCreated(nodeRef, searchUserName))
-                            {
-                                return nodeRef;
-                            }
-                        }
-                    }
-                }
+            if (includeAutoCreated || !wasAutoCreated(nodeRef))
+            {
+                return nodeRef;
             }
         }
-        finally
-        {
-            if (rs != null)
-            {
-                rs.close();
-            }
-        }
+
         return fallBack;
     }
 
-    private boolean wasAutoCreated(NodeRef nodeRef, String userName)
+    private boolean wasAutoCreated(NodeRef nodeRef)
     {
-        String testString = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(nodeRef,
-                ContentModel.PROP_FIRSTNAME));
+        String userName = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(nodeRef, ContentModel.PROP_USERNAME));
+
+        String testString = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(nodeRef, ContentModel.PROP_FIRSTNAME));
         if ((testString == null) || !testString.equals(userName))
         {
             return false;
         }
 
-        testString = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(nodeRef,
-                ContentModel.PROP_LASTNAME));
+        testString = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(nodeRef, ContentModel.PROP_LASTNAME));
         if ((testString == null) || !testString.equals(""))
         {
             return false;
         }
 
-        testString = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(nodeRef,
-                ContentModel.PROP_EMAIL));
+        testString = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(nodeRef, ContentModel.PROP_EMAIL));
         if ((testString == null) || !testString.equals(""))
         {
             return false;
         }
 
-        testString = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(nodeRef,
-                ContentModel.PROP_ORGID));
+        testString = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(nodeRef, ContentModel.PROP_ORGID));
         if ((testString == null) || !testString.equals(""))
         {
             return false;
         }
 
-        testString = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(nodeRef,
-                ContentModel.PROP_HOME_FOLDER_PROVIDER));
+        testString = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(nodeRef, ContentModel.PROP_HOME_FOLDER_PROVIDER));
         if ((testString == null) || !testString.equals(defaultHomeFolderProvider))
         {
             return false;
@@ -661,8 +483,7 @@ public class PersonServiceImpl
         }
         else
         {
-            String realUserName = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(
-                    personNode, ContentModel.PROP_USERNAME));
+            String realUserName = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(personNode, ContentModel.PROP_USERNAME));
             properties.put(ContentModel.PROP_USERNAME, realUserName);
         }
 
@@ -698,32 +519,41 @@ public class PersonServiceImpl
 
     public NodeRef createPerson(Map<QName, Serializable> properties)
     {
-        String userName = DefaultTypeConverter.INSTANCE.convert(String.class, properties
-                .get(ContentModel.PROP_USERNAME));
+        String userName = DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_USERNAME));
         
         tenantService.checkDomainUser(userName);
         
         properties.put(ContentModel.PROP_USERNAME, userName);
-        
         properties.put(ContentModel.PROP_SIZE_CURRENT, 0L);
         
-        return nodeService.createNode(getPeopleContainer(), ContentModel.ASSOC_CHILDREN, ContentModel.TYPE_PERSON,
+        return nodeService.createNode(
+                getPeopleContainer(),
+                ContentModel.ASSOC_CHILDREN,
+                QName.createQName("cm", userName, namespacePrefixResolver),
                 ContentModel.TYPE_PERSON, properties).getChildRef();
     }
 
     public NodeRef getPeopleContainer()
     {
         NodeRef rootNodeRef = nodeService.getRootNode(tenantService.getName(storeRef));
-        List<NodeRef> results = searchService.selectNodes(rootNodeRef, PEOPLE_FOLDER, null, namespacePrefixResolver,
-                false);
-        if (results.size() == 0)
+        List<ChildAssociationRef> children = nodeService.getChildAssocs(rootNodeRef, RegexQNamePattern.MATCH_ALL, QName.createQName(SYSTEM_FOLDER_SHORT_QNAME, namespacePrefixResolver));
+       
+        if (children.size() == 0)
         {
-            throw new AlfrescoRuntimeException("Required people system path not found: " + PEOPLE_FOLDER);
+            throw new AlfrescoRuntimeException("Required people system path not found: " + SYSTEM_FOLDER_SHORT_QNAME);
         }
-        else
+       
+        NodeRef systemNodeRef = children.get(0).getChildRef();
+        
+        children = nodeService.getChildAssocs(systemNodeRef, RegexQNamePattern.MATCH_ALL, QName.createQName(PEOPLE_FOLDER_SHORT_QNAME, namespacePrefixResolver));
+        
+          if (children.size() == 0)
         {
-            return results.get(0);
+            throw new AlfrescoRuntimeException("Required people system path not found: " + PEOPLE_FOLDER_SHORT_QNAME);
         }
+        
+        NodeRef peopleNodeRef = children.get(0).getChildRef();
+        return peopleNodeRef;
     }
 
     public void deletePerson(String userName)
@@ -749,39 +579,9 @@ public class PersonServiceImpl
 
     public Set<NodeRef> getAllPeople()
     {
-        SearchParameters sp = new SearchParameters();
-        sp.setLanguage(SearchService.LANGUAGE_LUCENE);
-        sp.setQuery("TYPE:\"" + ContentModel.TYPE_PERSON + "\"");
-        sp.addStore(tenantService.getName(storeRef));
-        sp.excludeDataInTheCurrentTransaction(false);
-
-        LinkedHashSet<NodeRef> nodes = new LinkedHashSet<NodeRef>();
-        ResultSet rs = null;
-
-        try
-        {
-            rs = searchService.query(sp);
-
-            for (ResultSetRow row : rs)
-            {
-
-                NodeRef nodeRef = row.getNodeRef();
-                if (nodeService.exists(nodeRef))
-                {
-                    nodes.add(nodeRef);
-                }
-            }
-        }
-        finally
-        {
-            if (rs != null)
-            {
-                rs.close();
-            }
-        }
-        return nodes;
+        return personDao.getAllPeople();
     }
-    
+
     public Set<NodeRef> getPeopleFilteredByProperty(QName propertyKey, Serializable propertyValue)
     {
         // check that given property key is defined for content model type 'cm:person'
@@ -832,27 +632,31 @@ public class PersonServiceImpl
     
     // Policies
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.alfresco.repo.node.NodeServicePolicies.OnCreateNodePolicy#onCreateNode(org.alfresco.service.cmr.repository.ChildAssociationRef)
      */
     public void onCreateNode(ChildAssociationRef childAssocRef)
     {
         NodeRef personRef = childAssocRef.getChildRef();
-        String username = (String)this.nodeService.getProperty(personRef, ContentModel.PROP_USERNAME);
+        String username = (String) this.nodeService.getProperty(personRef, ContentModel.PROP_USERNAME);
         this.personCache.put(username, personRef);
     }
-    
-    /* (non-Javadoc)
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy#beforeDeleteNode(org.alfresco.service.cmr.repository.NodeRef)
      */
     public void beforeDeleteNode(NodeRef nodeRef)
     {
-        String username = (String)this.nodeService.getProperty(nodeRef, ContentModel.PROP_USERNAME);
+        String username = (String) this.nodeService.getProperty(nodeRef, ContentModel.PROP_USERNAME);
         this.personCache.remove(username);
     }
 
     // IOC Setters
-    
+
     public void setCreateMissingPeople(boolean createMissingPeople)
     {
         this.createMissingPeople = createMissingPeople;
@@ -913,10 +717,52 @@ public class PersonServiceImpl
         NodeRef nodeRef = getPersonOrNull(caseSensitiveUserName);
         if ((nodeRef != null) && nodeService.exists(nodeRef))
         {
-            String realUserName = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(nodeRef,
-                    ContentModel.PROP_USERNAME));
+            String realUserName = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(nodeRef, ContentModel.PROP_USERNAME));
             return realUserName;
         }
         return null;
+    }
+
+    public static class CreationDateComparator implements Comparator<NodeRef>
+    {
+        private NodeService nodeService;
+
+        boolean ascending;
+
+        CreationDateComparator(NodeService nodeService, boolean ascending)
+        {
+            this.nodeService = nodeService;
+            this.ascending = ascending;
+        }
+
+        public int compare(NodeRef first, NodeRef second)
+        {
+            Date firstDate = DefaultTypeConverter.INSTANCE.convert(Date.class, nodeService.getProperty(first, ContentModel.PROP_CREATED));
+            Date secondDate = DefaultTypeConverter.INSTANCE.convert(Date.class, nodeService.getProperty(second, ContentModel.PROP_CREATED));
+
+            if (firstDate != null)
+            {
+                if (secondDate != null)
+                {
+                    return firstDate.compareTo(secondDate) * (ascending ? 1 : -1);
+                }
+                else
+                {
+                    return ascending ? -1 : 1;
+                }
+            }
+            else
+            {
+                if (secondDate != null)
+                {
+                    return ascending ? 1 : -1;
+                }
+                else
+                {
+                    return 0;
+                }
+            }
+
+        }
     }
 }

@@ -275,6 +275,18 @@
          </properties>
       </type>
       
+      <type name="test:many-ml-properties">
+         <title>Busy2</title>
+         <parent>sys:base</parent>
+         <properties>
+            <property name="test:multiMLValue">
+               <type>d:mltext</type>
+               <mandatory>true</mandatory>
+               <multiple>true</multiple>
+            </property>
+         </properties>
+      </type>
+
       <type name="test:rendition-page">
          <title>Rendition Page</title>
          <parent>sys:base</parent>

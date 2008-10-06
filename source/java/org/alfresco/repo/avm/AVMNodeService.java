@@ -25,6 +25,7 @@ package org.alfresco.repo.avm;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -46,6 +47,8 @@ import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.cmr.dictionary.DictionaryException;
 import org.alfresco.service.cmr.dictionary.InvalidAspectException;
 import org.alfresco.service.cmr.dictionary.InvalidTypeException;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
@@ -63,6 +66,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreExistsException;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.repository.datatype.TypeConversionException;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNamePattern;
@@ -107,6 +111,115 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
     public void setInvokePolicies(boolean invoke)
     {
         fInvokePolicies = invoke;
+    }
+
+    /**
+     * Helper method to convert the <code>Serializable</code> value into a full,
+     * persistable {@link PropertyValue}.
+     * <p>
+     * Where the property definition is null, the value will take on the
+     * {@link DataTypeDefinition#ANY generic ANY} value.
+     * <p>
+     * Where the property definition specifies a multi-valued property but the
+     * value provided is not a collection, the value will be wrapped in a collection.
+     * 
+     * @param propertyDef the property dictionary definition, may be null
+     * @param value the value, which will be converted according to the definition -
+     *      may be null
+     * @return Returns the persistable property value
+     */
+    protected PropertyValue makePropertyValue(PropertyDefinition propertyDef, Serializable value)
+    {
+        // get property attributes
+        QName propertyTypeQName = null;
+        if (propertyDef == null)                // property not recognised
+        {
+            // allow it for now - persisting excess properties can be useful sometimes
+            propertyTypeQName = DataTypeDefinition.ANY;
+        }
+        else
+        {
+            propertyTypeQName = propertyDef.getDataType().getName();
+            // check that multi-valued properties are allowed
+            boolean isMultiValued = propertyDef.isMultiValued();
+            if (isMultiValued && !(value instanceof Collection))
+            {
+                if (value != null)
+                {
+                    // put the value into a collection
+                    // the implementation gives back a Serializable list
+                    value = (Serializable) Collections.singletonList(value);
+                }
+            }
+            else if (!isMultiValued && (value instanceof Collection))
+            {
+                // we only allow this case if the property type is ANY
+                if (!propertyTypeQName.equals(DataTypeDefinition.ANY))
+                {
+                    throw new DictionaryException(
+                            "A single-valued property of this type may not be a collection: \n" +
+                            "   Property: " + propertyDef + "\n" +
+                            "   Type: " + propertyTypeQName + "\n" +
+                            "   Value: " + value);
+                }
+            }
+        }
+        try
+        {
+            PropertyValue propertyValue = new PropertyValue(propertyTypeQName, value);
+            // done
+            return propertyValue;
+        }
+        catch (TypeConversionException e)
+        {
+            throw new TypeConversionException(
+                    "The property value is not compatible with the type defined for the property: \n" +
+                    "   property: " + (propertyDef == null ? "unknown" : propertyDef) + "\n" +
+                    "   value: " + value + "\n" +
+                    "   value type: " + value.getClass(),
+                    e);
+        }
+    }
+    
+    /**
+     * Extracts the externally-visible property from the {@link PropertyValue propertyValue}.
+     * 
+     * @param propertyDef       the model property definition - may be <tt>null</tt>
+     * @param propertyValue     the persisted property
+     * @return Returns the value of the property in the format dictated by the property
+     *      definition, or null if the property value is null 
+     */
+    protected Serializable makeSerializableValue(PropertyDefinition propertyDef, PropertyValue propertyValue)
+    {
+        if (propertyValue == null)
+        {
+            return null;
+        }
+        // get property attributes
+        QName propertyTypeQName = null;
+        if (propertyDef == null)
+        {
+            // allow this for now
+            propertyTypeQName = DataTypeDefinition.ANY;
+        }
+        else
+        {
+            propertyTypeQName = propertyDef.getDataType().getName();
+        }
+        try
+        {
+            Serializable value = propertyValue.getValue(propertyTypeQName);
+            // done
+            return value;
+        }
+        catch (TypeConversionException e)
+        {
+            throw new TypeConversionException(
+                    "The property value is not compatible with the type defined for the property: \n" +
+                    "   property: " + (propertyDef == null ? "unknown" : propertyDef) + "\n" +
+                    "   property value: " + propertyValue,
+                    e);
+        }
     }
     
     /**

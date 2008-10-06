@@ -26,6 +26,7 @@ package org.alfresco.repo.node.db;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -33,11 +34,11 @@ import java.util.Map;
 
 import javax.transaction.UserTransaction;
 
+import org.alfresco.i18n.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.domain.ChildAssoc;
 import org.alfresco.repo.domain.Node;
-import org.alfresco.repo.domain.NodeStatus;
 import org.alfresco.repo.node.BaseNodeServiceTest;
 import org.alfresco.repo.node.StoreArchiveMap;
 import org.alfresco.repo.node.db.NodeDaoService.NodePropertyHandler;
@@ -351,6 +352,38 @@ public class DbNodeServiceImplTest extends BaseNodeServiceTest
                 "MLText type not returned direct in Map",
                 mlTextProperty,
                 propertiesDirect.get(BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE));
+    }
+
+    /**
+     * Ensure that plain strings going into MLText properties is handled
+     */
+    @SuppressWarnings("unchecked")
+    public void testStringIntoMLTextProperty() throws Exception
+    {
+        String text = "Hello";
+        nodeService.setProperty(rootNodeRef, PROP_QNAME_ML_TEXT_VALUE, text);
+        Serializable mlTextCheck = nodeService.getProperty(rootNodeRef, PROP_QNAME_ML_TEXT_VALUE);
+        assertTrue("Plain string insertion should be returned as MLText", mlTextCheck instanceof MLText);
+        Locale defaultLocale = I18NUtil.getLocale();
+        MLText mlTextCheck2 = (MLText) mlTextCheck;
+        String mlTextDefaultCheck = mlTextCheck2.getDefaultValue();
+        assertEquals("Default MLText value was not set correctly", text, mlTextDefaultCheck);
+        
+        // Reset the property
+        nodeService.setProperty(rootNodeRef, PROP_QNAME_ML_TEXT_VALUE, null);
+        Serializable nullValueCheck = nodeService.getProperty(rootNodeRef, PROP_QNAME_ML_TEXT_VALUE);
+        
+        // Now, just pass a String in
+        nodeService.setProperty(rootNodeRef, PROP_QNAME_ML_TEXT_VALUE, text);
+        // Now update the property with some MLText
+        MLText mlText = new MLText();
+        mlText.addValue(Locale.ENGLISH, "Very good!");
+        mlText.addValue(Locale.FRENCH, "Très bon!");
+        mlText.addValue(Locale.GERMAN, "Sehr gut!");
+        nodeService.setProperty(rootNodeRef, PROP_QNAME_ML_TEXT_VALUE, mlText);
+        // Get it back and check
+        mlTextCheck = nodeService.getProperty(rootNodeRef, PROP_QNAME_ML_TEXT_VALUE);
+        assertEquals("Setting of MLText over String failed.", mlText, mlTextCheck);
     }
     
     public void testDuplicatePrimaryParentHandling() throws Exception

@@ -54,8 +54,7 @@ CREATE INDEX fk_alf_na_tnode ON alf_node_assoc (target_node_id);
 
 CREATE INDEX fk_alf_perm_tqn ON alf_permission (type_qname_id);
 
-CREATE INDEX fk_alf_n_prop ON alf_node_properties (node_id);
-CREATE INDEX fk_alf_np_attr ON alf_node_properties (attribute_value);
+CREATE INDEX fk_alf_nprop_n ON alf_node_properties (node_id);
 
 CREATE INDEX fk_alf_ns_node ON alf_node_status (node_id);
 CREATE INDEX fk_alf_ns_trans ON alf_node_status (transaction_id);

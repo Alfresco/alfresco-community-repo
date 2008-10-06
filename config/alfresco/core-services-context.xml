@@ -1102,22 +1102,6 @@
         <!-- Query collections should be loaded on demand using this component - once loaded thay are available for use -->
     </bean>
 
-    <!-- Audit -->
-    <bean id="auditableAspect" class="org.alfresco.repo.audit.AuditableAspect" init-method="init">
-        <property name="nodeService">
-            <ref bean="mtAwareNodeService" />    <!-- bypass loads of interceptor layers -->
-        </property>
-        <property name="policyComponent">
-            <ref bean="policyComponent" />
-        </property>
-        <property name="authenticationService">
-            <ref bean="authenticationService" />
-        </property>
-        <property name="tenantService">
-            <ref bean="tenantService"/>
-        </property>       
-    </bean>
-
     <!-- Multilingual Document-->
     <bean id="multilingualDocumentAspect" class="org.alfresco.repo.model.ml.MultilingualDocumentAspect" init-method="init">
         <property name="policyComponent">

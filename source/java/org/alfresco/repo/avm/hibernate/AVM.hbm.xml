@@ -46,14 +46,14 @@
         <!-- ACL -->
         <many-to-one name="acl" column="acl_id" foreign-key="fk_avm_n_acl" cascade="none"
             class="org.alfresco.repo.domain.hibernate.DbAccessControlListImpl"/>
-        <set name="aspects" fetch="join" lazy="false" table="avm_aspects_new" cascade="all" optimistic-lock="true">
+        <set name="aspects" fetch="join" lazy="false" table="avm_aspects" cascade="all" optimistic-lock="true">
             <cache usage="read-write"/>
-            <key column="id" not-null="true" foreign-key="fk_avm_asp_n"/>
+            <key column="node_id" not-null="true" foreign-key="fk_avm_nasp_n"/>
             <element column="qname_id" type="long" not-null="true"/>
         </set>
-        <map name="properties" fetch="join" lazy="false" table="avm_node_properties_new" cascade="all" optimistic-lock="true">
+        <map name="properties" fetch="join" lazy="false" table="avm_node_properties" cascade="all" optimistic-lock="true">
             <cache usage="read-write"/>
-            <key column="node_id" not-null="true" foreign-key="fk_avm_np_n"/>
+            <key column="node_id" not-null="true" foreign-key="fk_avm_nprop_n"/>
             <map-key column="qname_id" type="long" />
             <composite-element class="org.alfresco.repo.domain.PropertyValue">
                 <property name="actualType" column="actual_type_n" type="integer" not-null="true" />
@@ -150,12 +150,12 @@
         <id name="id" column="id" type="long">
             <generator class="native"/>
         </id>
-        <many-to-one name="store" class="AVMStoreImpl" column="avm_store_id" foreign-key="fk_avm_sp_store"/>
+        <many-to-one name="store" class="AVMStoreImpl" column="avm_store_id" foreign-key="fk_avm_sprop_store"/>
         <many-to-one
                 name="name"
                 class="org.alfresco.repo.domain.hibernate.QNameEntityImpl"
                 column="qname_id"
-                foreign-key="fk_avm_sp_qname"
+                foreign-key="fk_avm_sprop_qname"
                 lazy="proxy"
                 fetch="select"
                 unique="false"
@@ -228,36 +228,6 @@
         </composite-id>
         <property name="path" type="string" length="512" column="path"/>
     </class>
-
-    <!-- DEPRECATED START -->
-    <!-- These are kept so that the AVMPropertiesPatch and AVMAspectsPatch -->
-    <class name="AVMNodePropertyImpl" proxy="AVMNodeProperty" table="avm_node_properties">
-        <id name="id" column="id" type="long">
-            <generator class="native"/>
-        </id>
-        <many-to-one name="node" class="AVMNodeImpl" column="node_id" foreign-key="fk_avm_np_node"/>
-        <property name="name" column="qname" type="QName" length="200" index="idx_avm_np_name"/>
-        <component class="org.alfresco.repo.domain.PropertyValue" name="value">
-            <property name="actualType" column="actual_type_n" type="integer" not-null="true" />
-            <property name="persistedType" column="persisted_type_n" type="integer" not-null="true" />
-            <property name="multiValued" column="multi_valued" type="boolean" not-null="true" />
-            <property name="booleanValue" column="boolean_value" type="boolean" />
-            <property name="longValue" column="long_value" type="long" />
-            <property name="floatValue" column="float_value" type="float" />
-            <property name="doubleValue" column="double_value" type="double" />
-            <property name="stringValue" column="string_value" type="string" length="1024"/>
-            <property name="serializableValue" column="serializable_value" type="serializable" length="16384"/>
-       </component>
-    </class>
-    <!-- Aspect name table for AVM Nodes. -->
-    <class name="AVMAspectNameImpl" proxy="AVMAspectName" table="avm_aspects">
-        <id name="id" column="id" type="long">
-            <generator class="native"/>
-        </id>
-        <many-to-one name="node" class="AVMNodeImpl" column="node_id" foreign-key="fk_avm_asp_node"/>
-        <property name="name" column="qname" type="QName" length="200"/>
-    </class>
-    <!-- DEPRECATED END -->
 
     <class name="IssuerIDImpl" proxy="IssuerID" table="avm_issuer_ids" optimistic-lock="version" lazy="false">
         <id name="issuer" type="string" length="32" column="issuer"/>

@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.Constraint;
 import org.alfresco.service.cmr.dictionary.ConstraintDefinition;
@@ -102,6 +103,17 @@ public class PropertiesIntegrityEvent extends AbstractIntegrityEvent
         Set<QName> aspectTypeQNames = nodeService.getAspects(nodeRef);
         for (QName aspectTypeQName : aspectTypeQNames)
         {
+            // Shortcut sys:referencable
+            if (aspectTypeQName.equals(ContentModel.ASPECT_REFERENCEABLE))
+            {
+                continue;
+            }
+            // Shortcut cm:auditable
+            if (aspectTypeQName.equals(ContentModel.ASPECT_AUDITABLE))
+            {
+                continue;
+            }
+            
             // get property definitions for the aspect
             AspectDefinition aspectDef = dictionaryService.getAspect(aspectTypeQName);
             propertyDefs = aspectDef.getProperties().values();

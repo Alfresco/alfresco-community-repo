@@ -57,6 +57,8 @@ import org.apache.commons.logging.LogFactory;
 
 /**
  * Immutable property value storage class.
+ * <p>
+ * <b>As of 2.2.1, this class is only used by the AVM persistence layers.</b>
  * 
  * @author Derek Hulley
  */

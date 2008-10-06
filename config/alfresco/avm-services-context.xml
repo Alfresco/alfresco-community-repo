@@ -91,24 +91,12 @@
 		</property>
 	</bean>
 
-	<bean id="avmNodePropertyDAO" class="org.alfresco.repo.avm.hibernate.AVMNodePropertyDAOHibernate">
-		<property name="sessionFactory">
-			<ref bean="sessionFactory"/>
-		</property>
-	</bean>
-
 	<bean id="avmStorePropertyDAO" class="org.alfresco.repo.avm.hibernate.AVMStorePropertyDAOHibernate">
 		<property name="sessionFactory">
 			<ref bean="sessionFactory"/>
 		</property>
 		<property name="qnameDAO">
 			<ref bean="qnameDAO"/>
-		</property>
-	</bean>
-
-	<bean id="avmAspectNameDAO" class="org.alfresco.repo.avm.hibernate.AVMAspectNameDAOHibernate">
-		<property name="sessionFactory">
-			<ref bean="sessionFactory"/>
 		</property>
 	</bean>
 
@@ -149,14 +137,8 @@
 		<property name="mergeLinkDAO">
 			<ref bean="mergeLinkDAO"/>
 		</property>
-		<property name="avmNodePropertyDAO">
-			<ref bean="avmNodePropertyDAO"/>
-		</property>
 		<property name="avmStorePropertyDAO">
 			<ref bean="avmStorePropertyDAO"/>
-		</property>
-		<property name="avmAspectNameDAO">
-			<ref bean="avmAspectNameDAO"/>
 		</property>
 		<property name="attributeDAO">
 		    <ref bean="attributeDAO"/>

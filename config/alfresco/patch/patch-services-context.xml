@@ -827,34 +827,6 @@
         </property>
     </bean>
 
-    <bean id="patch.AVMAspects" class="org.alfresco.repo.admin.patch.impl.AVMAspectsPatch" parent="basePatch">
-        <property name="id"><value>patch.AVMAspects</value></property>
-        <property name="description"><value>patch.AVMAspects.description</value></property>
-        <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>60</value></property>
-        <property name="targetSchema"><value>61</value></property>
-        <property name="avmAspectNameDAO">
-            <ref bean="avmAspectNameDAO"/>
-        </property>
-        <property name="qnameDAO">
-            <ref bean="qnameDAO"/>
-        </property>
-    </bean>
-
-    <bean id="patch.AVMProperties" class="org.alfresco.repo.admin.patch.impl.AVMPropertiesPatch" parent="basePatch">
-        <property name="id"><value>patch.AVMProperties</value></property>
-        <property name="description"><value>patch.AVMProperties.description</value></property>
-        <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>61</value></property>
-        <property name="targetSchema"><value>62</value></property>
-        <property name="avmNodePropertyDAO">
-            <ref bean="avmNodePropertyDAO"/>
-        </property>
-        <property name="qnameDAO">
-            <ref bean="qnameDAO"/>
-        </property>
-    </bean>
-    
     <bean id="patch.db-V2.1-JBPMProcessKey" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
         <property name="id"><value>patch.db-V2.1-JBPMProcessKey</value></property>
         <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
@@ -1237,6 +1209,7 @@
             </list>
         </property>
     </bean>
+    <!--
     <bean id="patch.db-V2.2-1-DropIndexesAndConstraints" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
         <property name="id"><value>patch.db-V2.2-1-DropIndexesAndConstraints</value></property>
         <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
@@ -1282,6 +1255,20 @@
             </list>
         </property>
     </bean>
+        -->
+    <!--
+        This script is a snippet for people upgrading from 2.2.0 or 2.2.1.
+        All upgrades from before that are handled by a script that combines the scripts:
+           - patch.db-V2.2-1-DropIndexesAndConstraints
+           - patch.db-V2.2-2-MoveQNames
+           - patch.db-V2.2-3-PropTypes
+           - patch.db-V2.2-MLText-1
+           - patch.db-V2.2-4-ExtraIndexesAndConstraints
+           - patch.db-V2.2-5-MappedFKIndexes
+        The new script is:
+           - patch.db-V2.2-1-FullDmUpgrade
+    -->
+    <!--
     <bean id="patch.db-V2.2-4-ExtraIndexesAndConstraints" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
         <property name="id"><value>patch.db-V2.2-4-ExtraIndexesAndConstraints</value></property>
         <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
@@ -1309,6 +1296,37 @@
         <property name="dependsOn" >
             <list>
                 <ref bean="patch.db-V2.2-4-ExtraIndexesAndConstraints" />
+            </list>
+        </property>
+    </bean>
+    -->
+    <bean id="patch.db-V2.2-1-MLText" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V2.2-1-MLText</value></property>
+        <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
+        <property name="fixesFromSchema"><value>86</value></property>
+        <property name="fixesToSchema"><value>90</value></property>
+        <property name="targetSchema"><value>91</value></property>
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/2.2/${db.script.dialect}/upgrade-1-mltext.sql</value>
+        </property>
+        <property name="dependsOn" >
+            <list>
+                <ref bean="patch.db-V2.2-0-CreateMissingTables" />
+            </list>
+        </property>
+    </bean>
+    <bean id="patch.db-V2.2-1-FullDmUpgrade" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V2.2-1-FullDmUpgrade</value></property>
+        <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>85</value></property>
+        <property name="targetSchema"><value>91</value></property>
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/2.2/${db.script.dialect}/upgrade-1-fulldm.sql</value>
+        </property>
+        <property name="dependsOn" >
+            <list>
+                <ref bean="patch.db-V2.2-0-CreateMissingTables" />
             </list>
         </property>
     </bean>
@@ -1391,12 +1409,12 @@
         </property>
         <property name="dependsOn" >
             <list>
-                <ref bean="patch.db-V2.2-4-ExtraIndexesAndConstraints" />
+                <ref bean="patch.db-V2.2-1-FullDmUpgrade" />
             </list>
         </property>
     </bean>
-	
-	 <bean id="patch.updateDmPermissions" class="org.alfresco.repo.admin.patch.impl.DmPermissionsPatch" parent="basePatch" >
+    
+    <bean id="patch.updateDmPermissions" class="org.alfresco.repo.admin.patch.impl.DmPermissionsPatch" parent="basePatch" >
         <property name="id"><value>patch.updateDmPermissions</value></property>
         <property name="description"><value>patch.updateDmPermissions.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
@@ -1565,4 +1583,32 @@
             </list>
         </property>
     </bean>
+	
+	<bean id="patch.db-V2.2-Person" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V2.2-Person</value></property>
+        <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>134</value></property>
+        <property name="targetSchema"><value>135</value></property>
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/2.2/${db.script.dialect}/AlfrescoSchemaUpdate-Person.sql</value>
+        </property>
+    </bean>
+
+	<bean id="patch.db-V2.2-OrclBLOB" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V2.2-OrclBLOB</value></property>
+        <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>134</value></property>
+        <property name="targetSchema"><value>135</value></property>
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/2.2/${db.script.dialect}/AlfrescoSchemaUpdate-OrclBLOB.sql</value>
+        </property>
+        <property name="dependsOn" >
+            <list>
+                <ref bean="patch.db-V2.2-Person" />
+            </list>
+        </property>
+    </bean>
+
 </beans>

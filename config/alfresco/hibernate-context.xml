@@ -54,9 +54,9 @@
                 <!-- Alfresco Node Storage -->
                 <!--  -->
 
+                <value>org/alfresco/repo/domain/hibernate/Locale.hbm.xml</value>
                 <value>org/alfresco/repo/domain/hibernate/QName.hbm.xml</value>
                 <value>org/alfresco/repo/domain/hibernate/Node.hbm.xml</value>
-                <value>org/alfresco/repo/domain/hibernate/Store.hbm.xml</value>
                 <value>org/alfresco/repo/domain/hibernate/Transaction.hbm.xml</value>
                 <value>org/alfresco/repo/domain/hibernate/VersionCount.hbm.xml</value>
                 <value>org/alfresco/repo/domain/hibernate/AppliedPatch.hbm.xml</value>
@@ -172,7 +172,6 @@
                 <prop key="org.alfresco.repo.domain.hibernate.NamespaceEntityImpl">${cache.strategy}</prop>
                 <prop key="org.alfresco.repo.domain.hibernate.QNameEntityImpl">${cache.strategy}</prop>
                 <prop key="org.alfresco.repo.domain.hibernate.NodeImpl">${cache.strategy}</prop>
-                <prop key="org.alfresco.repo.domain.hibernate.NodeStatusImpl">${cache.strategy}</prop>
                 <prop key="org.alfresco.repo.domain.hibernate.ChildAssocImpl">${cache.strategy}</prop>
                 <prop key="org.alfresco.repo.domain.hibernate.NodeAssocImpl">${cache.strategy}</prop>
                 <prop key="org.alfresco.repo.domain.hibernate.StoreImpl">${cache.strategy}</prop>
@@ -341,8 +340,17 @@
       <property name="aclDaoComponent">
           <ref bean="aclDaoComponent"/>
       </property>
+      <property name="localeDAO">
+         <ref bean="localeDAO" />
+      </property>
+      <property name="dictionaryService">
+         <ref bean="dictionaryService" />
+      </property>
       <property name="sessionFactory">
          <ref bean="sessionFactory" />
+      </property>
+      <property name="storeAndNodeIdCache">
+         <ref bean="storeAndNodeIdCache"/>
       </property>
       <property name="parentAssocsCache">
          <ref bean="parentAssocsCache"/>
@@ -355,8 +363,7 @@
       </property>
    </bean>
 
-   <bean id="dbNodeDaoServiceDirtySessionInterceptor" class="org.alfresco.repo.domain.hibernate.DirtySessionMethodInterceptor" >
-   </bean>
+   <bean id="daoServiceDirtySessionInterceptor" class="org.alfresco.repo.domain.hibernate.DirtySessionMethodInterceptor" />
 
    <bean id="nodeDaoService" class="org.springframework.aop.framework.ProxyFactoryBean">
       <property name="target">
@@ -364,12 +371,32 @@
       </property>
       <property name="interceptorNames">
          <list>
-            <value>dbNodeDaoServiceDirtySessionInterceptor</value>
+            <value>daoServiceDirtySessionInterceptor</value>
             <value>dbNodeDaoServiceTxnRegistration</value>
          </list>
       </property>
    </bean>
 
+   <bean id="localeDAOImpl" class="org.alfresco.repo.domain.hibernate.HibernateLocaleDAOImpl" >
+      <property name="sessionFactory">
+         <ref bean="sessionFactory" />
+      </property>
+      <property name="localeIdCache">
+         <ref bean="localeIdCache"/>
+      </property>
+   </bean>
+
+   <bean id="localeDAO" class="org.springframework.aop.framework.ProxyFactoryBean">
+      <property name="target">
+         <ref bean="localeDAOImpl" />
+      </property>
+      <property name="interceptorNames">
+         <list>
+            <value>daoServiceDirtySessionInterceptor</value>
+         </list>
+      </property>
+   </bean>
+    
     <bean id="auditDao" class="org.alfresco.repo.audit.hibernate.HibernateAuditDAO">
         <property name="sessionFactory">
             <ref bean="sessionFactory"/>

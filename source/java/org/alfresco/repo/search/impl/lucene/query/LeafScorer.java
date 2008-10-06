@@ -34,6 +34,7 @@ import java.util.List;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.SearcherException;
+import org.alfresco.repo.search.impl.lucene.index.CachingIndexReader;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -52,8 +53,8 @@ import org.apache.lucene.search.Weight;
 
 /**
  * Leaf scorer to complete path queries
+ * 
  * @author andyh
- *
  */
 public class LeafScorer extends Scorer
 {
@@ -134,10 +135,8 @@ public class LeafScorer extends Scorer
      * @param repeat
      * @param tp
      */
-    public LeafScorer(Weight weight, TermPositions root, TermPositions level0, ContainerScorer containerScorer,
-            StructuredFieldPosition[] sfps, TermPositions allNodes, HashMap<String, Counter> selfIds,
-            IndexReader reader, Similarity similarity, byte[] norms, DictionaryService dictionaryService,
-            boolean repeat, TermPositions tp)
+    public LeafScorer(Weight weight, TermPositions root, TermPositions level0, ContainerScorer containerScorer, StructuredFieldPosition[] sfps, TermPositions allNodes,
+            HashMap<String, Counter> selfIds, IndexReader reader, Similarity similarity, byte[] norms, DictionaryService dictionaryService, boolean repeat, TermPositions tp)
     {
         super(similarity);
         this.root = root;
@@ -170,6 +169,132 @@ public class LeafScorer extends Scorer
 
     }
 
+    private String getId(IndexReader reader, int n) throws IOException
+    {
+        if (reader instanceof CachingIndexReader)
+        {
+            CachingIndexReader cachingIndexReader = (CachingIndexReader) reader;
+            return cachingIndexReader.getId(n);
+        }
+        else
+        {
+            Document document = reader.document(n);
+            Field[] fields = document.getFields("ID");
+            if (fields != null)
+            {
+                Field id = fields[fields.length - 1];
+                return (id == null) ? null : id.stringValue();
+            }
+            else
+            {
+                return null;
+            }
+        }
+    }
+
+    private String getIsCategory(IndexReader reader, int n) throws IOException
+    {
+        if (reader instanceof CachingIndexReader)
+        {
+            CachingIndexReader cachingIndexReader = (CachingIndexReader) reader;
+            return cachingIndexReader.getIsCategory(n);
+        }
+        else
+        {
+            Document document = reader.document(n);
+            Field isCategory = document.getField("ISCATEGORY");
+            return (isCategory == null) ? null : isCategory.stringValue();
+        }
+    }
+
+    private String getPath(IndexReader reader, int n) throws IOException
+    {
+        if (reader instanceof CachingIndexReader)
+        {
+            CachingIndexReader cachingIndexReader = (CachingIndexReader) reader;
+            return cachingIndexReader.getPath(n);
+        }
+        else
+        {
+            Document document = reader.document(n);
+            Field path = document.getField("PATH");
+            return (path == null) ? null : path.stringValue();
+        }
+    }
+    
+    private String getType(IndexReader reader, int n) throws IOException
+    {
+        if (reader instanceof CachingIndexReader)
+        {
+            CachingIndexReader cachingIndexReader = (CachingIndexReader) reader;
+            return cachingIndexReader.getType(n);
+        }
+        else
+        {
+            Document document = reader.document(n);
+            Field path = document.getField("TYPE");
+            return (path == null) ? null : path.stringValue();
+        }
+    }
+    
+    private String[] getParents(IndexReader reader, int n) throws IOException
+    {
+        if (reader instanceof CachingIndexReader)
+        {
+            CachingIndexReader cachingIndexReader = (CachingIndexReader) reader;
+            return cachingIndexReader.getParents(n);
+        }
+        else
+        {
+            Document document = reader.document(n);
+            Field[] fields = document.getFields("PARENT");
+            if (fields != null)
+            {
+                String[] answer = new String[fields.length];
+                int i = 0;
+                for (Field field : fields)
+                {
+                    answer[i++] = (field == null) ? null : field.stringValue();
+                }
+                return answer;
+            }
+            else
+            {
+                return null;
+            }
+        }
+    }
+    
+    private String[] getlinkAspects(IndexReader reader, int n) throws IOException
+    {
+        if (reader instanceof CachingIndexReader)
+        {
+            CachingIndexReader cachingIndexReader = (CachingIndexReader) reader;
+            return cachingIndexReader.getLinkAspects(n);
+        }
+        else
+        {
+            Document document = reader.document(n);
+            Field[] fields = document.getFields("LINKASPECT");
+            if (fields != null)
+            {
+                String[] answer = new String[fields.length];
+                int i = 0;
+                for (Field field : fields)
+                {
+                    answer[i++] = (field == null) ? null : field.stringValue();
+                }
+                return answer;
+            }
+            else
+            {
+                return null;
+            }
+        }
+    }
+    
+    
+
     private void initialise() throws IOException
     {
         if (containerScorer != null)
@@ -178,42 +303,40 @@ public class LeafScorer extends Scorer
             while (containerScorer.next())
             {
                 int doc = containerScorer.doc();
-                Document document = reader.document(doc);
-                Field[] fields = document.getFields("ID");
-                Field id = fields[fields.length-1];
-                Counter counter = parentIds.get(id.stringValue());
+
+                String id = getId(reader, doc);
+                Counter counter = parentIds.get(id);
                 if (counter == null)
                 {
                     counter = new Counter();
-                    parentIds.put(id.stringValue(), counter);
+                    parentIds.put(id, counter);
                 }
                 counter.count++;
 
                 if (!hasSelfScorer)
                 {
-                    counter = selfIds.get(id.stringValue());
+                    counter = selfIds.get(id);
                     if (counter == null)
                     {
                         counter = new Counter();
-                        selfIds.put(id.stringValue(), counter);
+                        selfIds.put(id, counter);
                     }
                     counter.count++;
                 }
 
-                Field isCategory = document.getField("ISCATEGORY");
+                String isCategory = getIsCategory(reader, doc);
                 if (isCategory != null)
                 {
-                    Field path = document.getField("PATH");
-                    String pathString = path.stringValue();
+                    String pathString = getPath(reader, doc);
                     if ((pathString.length() > 0) && (pathString.charAt(0) == '/'))
                     {
                         pathString = pathString.substring(1);
                     }
-                    List<String> list = categories.get(id.stringValue());
+                    List<String> list = categories.get(id);
                     if (list == null)
                     {
                         list = new ArrayList<String>();
-                        categories.put(id.stringValue(), list);
+                        categories.put(id, list);
                     }
                     list.add(pathString);
                 }
@@ -225,24 +348,22 @@ public class LeafScorer extends Scorer
             while (level0.next())
             {
                 int doc = level0.doc();
-                Document document = reader.document(doc);
-                Field[] fields = document.getFields("ID");
-                Field id = fields[fields.length-1];
+                String id = getId(reader, doc);
                 if (id != null)
                 {
-                    Counter counter = parentIds.get(id.stringValue());
+                    Counter counter = parentIds.get(id);
                     if (counter == null)
                     {
                         counter = new Counter();
-                        parentIds.put(id.stringValue(), counter);
+                        parentIds.put(id, counter);
                     }
                     counter.count++;
 
-                    counter = selfIds.get(id.stringValue());
+                    counter = selfIds.get(id);
                     if (counter == null)
                     {
                         counter = new Counter();
-                        selfIds.put(id.stringValue(), counter);
+                        selfIds.put(id, counter);
                     }
                     counter.count++;
                 }
@@ -269,20 +390,20 @@ public class LeafScorer extends Scorer
                 {
                     for (int i = 0, l = tp.freq(); i < l; i++)
                     {
-                        for(int j = 0; j < counter.count; j++)
+                        for (int j = 0; j < counter.count; j++)
                         {
-                           parents[position++] = tp.doc();
-                           if (position == parents.length)
-                           {
-                               int[] old = parents;
-                               parents = new int[old.length * 2];
-                               System.arraycopy(old, 0, parents, 0, old.length);
-                           }
+                            parents[position++] = tp.doc();
+                            if (position == parents.length)
+                            {
+                                int[] old = parents;
+                                parents = new int[old.length * 2];
+                                System.arraycopy(old, 0, parents, 0, old.length);
+                            }
                         }
-                       
+
                     }
                 }
-                
+
             }
             int[] old = parents;
             parents = new int[position];
@@ -297,18 +418,18 @@ public class LeafScorer extends Scorer
                 while (tp.next())
                 {
                     Counter counter = selfIds.get(id);
-                    for(int i = 0; i < counter.count; i++)
+                    for (int i = 0; i < counter.count; i++)
                     {
-                       self[position++] = tp.doc();
-                       if (position == self.length)
-                       {
-                           old = self;
-                           self = new int[old.length * 2];
-                           System.arraycopy(old, 0, self, 0, old.length);
-                       }
+                        self[position++] = tp.doc();
+                        if (position == self.length)
+                        {
+                            old = self;
+                            self = new int[old.length * 2];
+                            System.arraycopy(old, 0, self, 0, old.length);
+                        }
                     }
                 }
-                
+
             }
             old = self;
             self = new int[position];
@@ -342,7 +463,7 @@ public class LeafScorer extends Scorer
                                         }
                                     }
                                 }
-                               
+
                             }
                         }
                     }
@@ -698,26 +819,26 @@ public class LeafScorer extends Scorer
             }
         }
 
-        Document doc = reader.document(doc());
-        Field[] parentFields = doc.getFields("PARENT");
-        Field[] linkFields = doc.getFields("LINKASPECT");
+        //Document doc = reader.document(doc());
+        String[] parentFields = getParents(reader, doc());
+        String[] linkFields = getlinkAspects(reader, doc());
 
         String parentID = null;
         String linkAspect = null;
         if ((parentFields != null) && (parentFields.length > position) && (parentFields[position] != null))
         {
-            parentID = parentFields[position].stringValue();
+            parentID = parentFields[position];
         }
         if ((linkFields != null) && (linkFields.length > position) && (linkFields[position] != null))
         {
-            linkAspect = linkFields[position].stringValue();
+            linkAspect = linkFields[position];
         }
 
-        containersIncludeCurrent(doc, parentID, linkAspect);
+        containersIncludeCurrent(parentID, linkAspect);
 
     }
 
-    private void containersIncludeCurrent(Document document, String parentID, String aspectQName) throws IOException
+    private void containersIncludeCurrent(String parentID, String aspectQName) throws IOException
     {
         if ((containerScorer != null) || (level0 != null))
         {
@@ -725,8 +846,7 @@ public class LeafScorer extends Scorer
             {
                 return;
             }
-            Field[] fields = document.getFields("ID");
-            String id = fields[fields.length-1].stringValue();
+            String id = getId(reader, doc());
             StructuredFieldPosition last = sfps[sfps.length - 1];
             if ((last.linkSelf() && selfIds.containsKey(id)))
             {
@@ -747,10 +867,10 @@ public class LeafScorer extends Scorer
                 {
                     if (categories.containsKey(parentID))
                     {
-                        Field typeField = document.getField("TYPE");
-                        if ((typeField != null) && (typeField.stringValue() != null))
+                        String type = getType(reader, doc());
+                        if (type != null)
                         {
-                            QName typeRef = QName.createQName(typeField.stringValue());
+                            QName typeRef = QName.createQName(type);
                             if (isCategory(typeRef))
                             {
                                 Counter counter = parentIds.get(parentID);
@@ -775,6 +895,7 @@ public class LeafScorer extends Scorer
                                         // get field and compare to ID
                                         // Check in path as QName
                                         // somewhere
+                                        Document document = reader.document(doc());
                                         Field[] categoryFields = document.getFields("@" + propDef.getName());
                                         if (categoryFields != null)
                                         {

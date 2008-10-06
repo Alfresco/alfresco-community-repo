@@ -138,10 +138,6 @@ public class LDAPPersonExportSource implements ExportSource
 
         try
         {
-            AttributesImpl attrs = new AttributesImpl();
-            attrs.addAttribute(NamespaceService.REPOSITORY_VIEW_1_0_URI, childQName.getLocalName(), childQName
-                    .toPrefixString(), null, ContentModel.TYPE_PERSON.toPrefixString(namespaceService));
-
             writer.startDocument();
 
             for (String prefix : prefixes)
@@ -206,6 +202,10 @@ public class LDAPPersonExportSource implements ExportSource
                     {
                         s_logger.debug("Adding user for " + uid);
                     }
+
+                    AttributesImpl attrs = new AttributesImpl();
+                    attrs.addAttribute(NamespaceService.REPOSITORY_VIEW_1_0_URI, childQName.getLocalName(), childQName
+                            .toPrefixString(), null, QName.createQName("cm", uid, namespaceService).toPrefixString(namespaceService));
 
                     writer.startElement(ContentModel.TYPE_PERSON.getNamespaceURI(), ContentModel.TYPE_PERSON
                             .getLocalName(), ContentModel.TYPE_PERSON.toPrefixString(namespaceService), attrs);

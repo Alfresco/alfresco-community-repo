@@ -15,17 +15,20 @@
 -- Explicit indexes and constraints not declared in the mappings
 --
 
-CREATE INDEX fk_alf_na_qn ON alf_node_aspects (qname_id);
-ALTER TABLE alf_node_aspects ADD CONSTRAINT fk_alf_na_qn FOREIGN KEY (qname_id) REFERENCES alf_qname (id);
+CREATE INDEX fk_alf_nasp_qn ON alf_node_aspects (qname_id);
+ALTER TABLE alf_node_aspects ADD CONSTRAINT fk_alf_nasp_qn FOREIGN KEY (qname_id) REFERENCES alf_qname (id);
 
-CREATE INDEX fk_alf_np_qn ON alf_node_properties (qname_id);
-ALTER TABLE alf_node_properties ADD CONSTRAINT fk_alf_np_qn FOREIGN KEY (qname_id) REFERENCES alf_qname (id);
+CREATE INDEX fk_alf_nprop_qn ON alf_node_properties (qname_id);
+ALTER TABLE alf_node_properties ADD CONSTRAINT fk_alf_nprop_qn FOREIGN KEY (qname_id) REFERENCES alf_qname (id);
 
-CREATE INDEX fk_avm_na_qn ON avm_aspects_new (qname_id);
-ALTER TABLE avm_aspects_new ADD CONSTRAINT fk_avm_na_qn FOREIGN KEY (qname_id) REFERENCES alf_qname (id);
+CREATE INDEX fk_alf_nprop_loc ON alf_node_properties (locale_id);
+ALTER TABLE alf_node_properties ADD CONSTRAINT fk_alf_nprop_loc FOREIGN KEY (locale_id) REFERENCES alf_locale (id);
 
-CREATE INDEX fk_avm_np_qn ON avm_node_properties_new (qname_id);
-ALTER TABLE avm_node_properties_new ADD CONSTRAINT fk_avm_np_qn FOREIGN KEY (qname_id) REFERENCES alf_qname (id);
+CREATE INDEX fk_avm_nasp_qn ON avm_aspects (qname_id);
+ALTER TABLE avm_aspects ADD CONSTRAINT fk_avm_nasp_qn FOREIGN KEY (qname_id) REFERENCES alf_qname (id);
+
+CREATE INDEX fk_avm_nprop_qn ON avm_node_properties (qname_id);
+ALTER TABLE avm_node_properties ADD CONSTRAINT fk_avm_nprop_qn FOREIGN KEY (qname_id) REFERENCES alf_qname (id);
 
 CREATE INDEX idx_avm_hl_revpk ON avm_history_links (descendent, ancestor);
 

@@ -46,6 +46,8 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch;
 import org.alfresco.repo.content.filestore.FileContentWriter;
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.repo.domain.hibernate.dialect.AlfrescoOracle10gDialect;
+import org.alfresco.repo.domain.hibernate.dialect.AlfrescoOracle9iDialect;
 import org.alfresco.repo.domain.hibernate.dialect.AlfrescoSQLServerDialect;
 import org.alfresco.repo.domain.hibernate.dialect.AlfrescoSybaseAnywhereDialect;
 import org.alfresco.service.ServiceRegistry;
@@ -71,7 +73,10 @@ import org.hibernate.dialect.HSQLDialect;
 import org.hibernate.dialect.MySQL5Dialect;
 import org.hibernate.dialect.MySQLDialect;
 import org.hibernate.dialect.MySQLInnoDBDialect;
+import org.hibernate.dialect.Oracle10gDialect;
 import org.hibernate.dialect.Oracle9Dialect;
+import org.hibernate.dialect.Oracle9iDialect;
+import org.hibernate.dialect.OracleDialect;
 import org.hibernate.dialect.PostgreSQLDialect;
 import org.hibernate.engine.ActionQueue;
 import org.hibernate.tool.hbm2ddl.DatabaseMetadata;
@@ -103,6 +108,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     private static final String MSG_EXECUTING_STATEMENT = "schema.update.msg.executing_statement";
     private static final String MSG_OPTIONAL_STATEMENT_FAILED = "schema.update.msg.optional_statement_failed";
     private static final String WARN_DIALECT_UNSUPPORTED = "schema.update.warn.dialect_unsupported";
+    private static final String WARN_DIALECT_SUBSTITUTING = "schema.update.warn.dialect_substituting";
     private static final String WARN_DIALECT_HSQL = "schema.update.warn.dialect_hsql";
     private static final String WARN_DIALECT_DERBY = "schema.update.warn.dialect_derby";
     private static final String ERR_MULTIPLE_SCHEMAS = "schema.update.err.found_multiple";
@@ -509,6 +515,40 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         }
     }
     
+    /**
+     * Finds the <b>version.properties</b> file and determines the installed <b>version.schema</b>.<br>
+     * The only way to determine the original installed schema number is by quering the for the minimum value in
+     * <b>alf_applied_patch.applied_to_schema</b>.  This might not work if an upgrade is attempted straight from
+     * Alfresco v1.0!
+     * 
+     * @return          the installed schema number or <tt>-1</tt> if the installation is new.
+     */
+    private int getInstalledSchemaNumber(Connection connection) throws Exception
+    {
+        Statement stmt = connection.createStatement();
+        try
+        {
+            ResultSet rs = stmt.executeQuery(
+                    "select min(applied_to_schema) from alf_applied_patch where applied_to_schema > -1;");
+            if (!rs.next())
+            {
+                // Nothing in the table
+                return -1;
+            }
+            if (rs.getObject(1) == null)
+            {
+                // Nothing in the table
+                return -1;
+            }
+            int installedSchema = rs.getInt(1);
+            return installedSchema;
+        }
+        finally
+        {
+            try { stmt.close(); } catch (Throwable e) {}
+        }
+    }
+    
     private static class LockFailedException extends Exception
     {
         private static final long serialVersionUID = -6676398230191205456L;
@@ -655,6 +695,8 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             // and patches will not have been applied yet
             return;
         }
+        // Retrieve the first installed schema number
+        int installedSchema = getInstalledSchemaNumber(connection);
         
         for (SchemaUpgradeScriptPatch patch : scriptPatches)
         {
@@ -667,6 +709,11 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             {
                 // Either the patch was executed before or the system was bootstrapped
                 // with the patch bean present.
+                continue;
+            }
+            else if (!patch.applies(installedSchema))
+            {
+                // Patch does not apply to the installed schema number
                 continue;
             }
             else if (!apply)
@@ -820,7 +867,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                 {
                     // Get the end of statement
                     int endIndex = sql.lastIndexOf(';');
-                    if (endIndex > 0)
+                    if (endIndex > -1)
                     {
                         sql = sql.substring(0, endIndex);
                         execute = true;
@@ -893,6 +940,42 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     }
     
     /**
+     * Substitute the dialect with an alternative, if possible.
+     */
+    private void changeDialect(Configuration cfg)
+    {
+        String dialectName = cfg.getProperty(Environment.DIALECT);
+        if (dialectName == null)
+        {
+            return;
+        }
+        else if (dialectName.equals(Oracle9iDialect.class.getName()))
+        {
+            String subst = AlfrescoOracle9iDialect.class.getName();
+            LogUtil.warn(logger, WARN_DIALECT_SUBSTITUTING, dialectName, subst);
+            cfg.setProperty(Environment.DIALECT, subst);
+        }
+        else if (dialectName.equals(Oracle10gDialect.class.getName()))
+        {
+            String subst = AlfrescoOracle10gDialect.class.getName();
+            LogUtil.warn(logger, WARN_DIALECT_SUBSTITUTING, dialectName, subst);
+            cfg.setProperty(Environment.DIALECT, subst);
+        }
+        else if (dialectName.equals(MySQLDialect.class.getName()))
+        {
+            String subst = MySQLInnoDBDialect.class.getName();
+            LogUtil.warn(logger, WARN_DIALECT_SUBSTITUTING, dialectName, subst);
+            cfg.setProperty(Environment.DIALECT, subst);
+        }
+        else if (dialectName.equals(MySQL5Dialect.class.getName()))
+        {
+            String subst = MySQLInnoDBDialect.class.getName();
+            LogUtil.warn(logger, WARN_DIALECT_SUBSTITUTING, dialectName, subst);
+            cfg.setProperty(Environment.DIALECT, subst);
+        }
+    }
+    
+    /**
      * Performs dialect-specific checking.  This includes checking for InnoDB, dumping the dialect being used
      * as well as setting any runtime, dialect-specific properties.
      */
@@ -904,13 +987,17 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         {
             LogUtil.warn(logger, WARN_DIALECT_UNSUPPORTED, dialectClazz.getName());
         }
-        if (dialectClazz.equals(HSQLDialect.class))
+        else if (dialectClazz.equals(HSQLDialect.class))
         {
             LogUtil.info(logger, WARN_DIALECT_HSQL);
         }
-        if (dialectClazz.equals(DerbyDialect.class))
+        else if (dialectClazz.equals(DerbyDialect.class))
         {
             LogUtil.info(logger, WARN_DIALECT_DERBY);
+        }
+        else if (dialectClazz.equals(OracleDialect.class) || dialectClazz.equals(Oracle9Dialect.class))
+        {
+            LogUtil.warn(logger, WARN_DIALECT_UNSUPPORTED, dialectClazz.getName());
         }
         
         int maxStringLength = SchemaBootstrap.DEFAULT_MAX_STRING_LENGTH;
@@ -945,10 +1032,10 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             // serializable_value blob,
             maxStringLength = Integer.MAX_VALUE;
         }
-        else if (dialect instanceof Oracle9Dialect)
+        else if (dialect instanceof OracleDialect)
         {
             // string_value varchar2(1024 char),
-            // serializable_value long raw,
+            // serializable_value blob,
             maxStringLength = SchemaBootstrap.DEFAULT_MAX_STRING_LENGTH;
         }
         else if (dialect instanceof PostgreSQLDialect)
@@ -979,6 +1066,9 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             connection.setAutoCommit(true);
             
             Configuration cfg = localSessionFactory.getConfiguration();
+            
+            // Fix the dialect
+            changeDialect(cfg);
             
             // Check and dump the dialect being used
             Dialect dialect = Dialect.getDialect(cfg.getProperties());

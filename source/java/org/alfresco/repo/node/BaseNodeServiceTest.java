@@ -102,6 +102,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
     public static final String TEST_PREFIX = "test";
     public static final QName TYPE_QNAME_TEST_CONTENT = QName.createQName(NAMESPACE, "content");
     public static final QName TYPE_QNAME_TEST_MANY_PROPERTIES = QName.createQName(NAMESPACE, "many-properties");
+    public static final QName TYPE_QNAME_TEST_MANY_ML_PROPERTIES = QName.createQName(NAMESPACE, "many-ml-properties");
     public static final QName TYPE_QNAME_EXTENDED_CONTENT = QName.createQName(NAMESPACE, "extendedcontent");
     public static final QName ASPECT_QNAME_TEST_TITLED = QName.createQName(NAMESPACE, "titled");
     public static final QName ASPECT_QNAME_TEST_MARKER = QName.createQName(NAMESPACE, "marker");
@@ -127,6 +128,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
     public static final QName PROP_QNAME_LOCALE_VALUE = QName.createQName(NAMESPACE, "localeValue");
     public static final QName PROP_QNAME_NULL_VALUE = QName.createQName(NAMESPACE, "nullValue");
     public static final QName PROP_QNAME_MULTI_VALUE = QName.createQName(NAMESPACE, "multiValue");    
+    public static final QName PROP_QNAME_MULTI_ML_VALUE = QName.createQName(NAMESPACE, "multiMLValue");    
     public static final QName PROP_QNAME_PROP1 = QName.createQName(NAMESPACE, "prop1");
     public static final QName PROP_QNAME_PROP2 = QName.createQName(NAMESPACE, "prop2");
     public static final QName ASSOC_TYPE_QNAME_TEST_CHILDREN = ContentModel.ASSOC_CHILDREN;
@@ -414,6 +416,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         return ret;
     }
     
+    @SuppressWarnings("unchecked")
     private int countNodesByReference(NodeRef nodeRef)
     {
         String query =
@@ -422,8 +425,9 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
                 NodeImpl.class.getName() + " node" +
                 " where" +
                 "    node.uuid = ? and" +
-                "    node.store.key.protocol = ? and" +
-                "    node.store.key.identifier = ?";
+                "    node.deleted = false and" +
+                "    node.store.protocol = ? and" +
+                "    node.store.identifier = ?";
         Session session = getSession();
         List results = session.createQuery(query)
             .setString(0, nodeRef.getId())
@@ -944,6 +948,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         endTransaction();
     }
     
+    @SuppressWarnings("unchecked")
     private int countChildrenOfNode(NodeRef nodeRef)
     {
         String query =
@@ -951,7 +956,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
                 " from " +
                 ChildAssocImpl.class.getName() + " childAssoc" +
                 " join childAssoc.parent node" +
-                " where node.uuid = ? and node.store.key.protocol = ? and node.store.key.identifier = ?";
+                " where node.uuid = ? and node.store.protocol = ? and node.store.identifier = ?";
         Session session = getSession();
         List results = session.createQuery(query)
             .setString(0, nodeRef.getId())
@@ -1356,6 +1361,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
      * Check that properties go in and come out in the correct format.
      * @see #getCheckPropertyValues(Map)
      */
+    @SuppressWarnings("unchecked")
     public void testPropertyTypes() throws Exception
     {
         ArrayList<String> listProperty = new ArrayList<String>(2);
@@ -1413,6 +1419,127 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         Serializable checkProperty = nodeService.getProperty(nodeRef, PROP_QNAME_MULTI_VALUE);
         assertTrue("Property not converted to a Collection", checkProperty instanceof Collection);
         assertTrue("Collection doesn't contain value", ((Collection)checkProperty).contains("GHI"));
+    }
+    
+    /**
+     * Checks that empty collections can be persisted
+     */
+    @SuppressWarnings("unchecked")
+    public void testEmptyCollections() throws Exception
+    {
+        NodeRef nodeRef = nodeService.createNode(
+                rootNodeRef,
+                ASSOC_TYPE_QNAME_TEST_CHILDREN,
+                QName.createQName("pathA"),
+                TYPE_QNAME_TEST_MANY_PROPERTIES).getChildRef();
+
+        List<String> filledCollection = new ArrayList<String>(2);
+        filledCollection.add("ABC");
+        filledCollection.add("DEF");
+        List<String> emptyCollection = Collections.emptyList();
+        
+        nodeService.setProperty(nodeRef, PROP_QNAME_MULTI_VALUE, (Serializable) filledCollection);
+        List<String> checkFilledCollection = (List<String>) nodeService.getProperty(nodeRef, PROP_QNAME_MULTI_VALUE);
+        assertEquals("Filled collection didn't come back with correct values", filledCollection, checkFilledCollection);
+        
+        nodeService.setProperty(nodeRef, PROP_QNAME_MULTI_VALUE, (Serializable) emptyCollection);
+        List<String> checkEmptyCollection = (List<String>) nodeService.getProperty(nodeRef, PROP_QNAME_MULTI_VALUE);
+        assertEquals("Empty collection didn't come back with correct values", emptyCollection, checkEmptyCollection);
+        
+        // Check that a null value is returned as null
+        nodeService.setProperty(nodeRef, PROP_QNAME_MULTI_VALUE, null);
+        List<String> checkNullCollection = (List<String>) nodeService.getProperty(nodeRef, PROP_QNAME_MULTI_VALUE);
+        assertNull("Null property should stay null", checkNullCollection);
+    }
+    
+    /**
+     * Checks that large collections can be persisted
+     */
+    @SuppressWarnings("unchecked")
+    public void testBigCollections() throws Exception
+    {
+        NodeRef nodeRef = nodeService.createNode(
+                rootNodeRef,
+                ASSOC_TYPE_QNAME_TEST_CHILDREN,
+                QName.createQName("pathA"),
+                TYPE_QNAME_TEST_MANY_PROPERTIES).getChildRef();
+
+        for (int inc = 0; inc < 5; inc++)
+        {
+            System.out.println("----------------------------------------------");
+            int collectionSize = (int) Math.pow(10, inc);
+            List<String> largeCollection = new ArrayList<String>(collectionSize);
+            for (int i = 0; i < collectionSize; i++)
+            {
+                largeCollection.add(String.format("Large-collection-value-%05d", i));
+            }
+            List<String> emptyCollection = Collections.emptyList();
+            
+            long t1 = System.nanoTime();
+            nodeService.setProperty(nodeRef, PROP_QNAME_MULTI_VALUE, (Serializable) largeCollection);
+            double tDelta = (double)(System.nanoTime() - t1)/1E6;
+            System.out.println("Setting " + collectionSize + " multi-valued property took: " + tDelta + "ms");
+            // Now get it back
+            t1 = System.nanoTime();
+            List<String> checkLargeCollection = (List<String>) nodeService.getProperty(nodeRef, PROP_QNAME_MULTI_VALUE);
+            tDelta = (double)(System.nanoTime() - t1)/1E6;
+            System.out.println("First fetch of " + collectionSize + " multi-valued property took: " + tDelta + "ms");
+            assertEquals("Large collection didn't come back with correct values", largeCollection, checkLargeCollection);
+            
+            // Get it back again
+            t1 = System.nanoTime();
+            checkLargeCollection = (List<String>) nodeService.getProperty(nodeRef, PROP_QNAME_MULTI_VALUE);
+            tDelta = (double)(System.nanoTime() - t1)/1E6;
+            System.out.println("Second fetch of " + collectionSize + " multi-valued property took: " + tDelta + "ms");
+            
+            // Add a value
+            largeCollection.add("First addition");
+            t1 = System.nanoTime();
+            nodeService.setProperty(nodeRef, PROP_QNAME_MULTI_VALUE, (Serializable) largeCollection);
+            tDelta = (double)(System.nanoTime() - t1)/1E6;
+            System.out.println("Re-setting " + largeCollection.size() + " multi-valued property took: " + tDelta + "ms");
+            
+            // Add another value
+            largeCollection.add("Second addition");
+            t1 = System.nanoTime();
+            nodeService.setProperty(nodeRef, PROP_QNAME_MULTI_VALUE, (Serializable) largeCollection);
+            tDelta = (double)(System.nanoTime() - t1)/1E6;
+            System.out.println("Re-setting " + largeCollection.size() + " multi-valued property took: " + tDelta + "ms");
+            
+            nodeService.setProperty(nodeRef, PROP_QNAME_MULTI_VALUE, (Serializable) emptyCollection);
+            List<String> checkEmptyCollection = (List<String>) nodeService.getProperty(nodeRef, PROP_QNAME_MULTI_VALUE);
+            assertEquals("Empty collection didn't come back with correct values", emptyCollection, checkEmptyCollection);
+            
+            // Check that a null value is returned as null
+            nodeService.setProperty(nodeRef, PROP_QNAME_MULTI_VALUE, null);
+            List<String> checkNullCollection = (List<String>) nodeService.getProperty(nodeRef, PROP_QNAME_MULTI_VALUE);
+            assertNull("Null property should stay null", checkNullCollection);
+        }
+    }
+    
+    @SuppressWarnings("unchecked")
+    public void testMultiValueMLTextProperties() throws Exception
+    {
+        NodeRef nodeRef = nodeService.createNode(
+                rootNodeRef,
+                ASSOC_TYPE_QNAME_TEST_CHILDREN,
+                QName.createQName("pathA"),
+                TYPE_QNAME_TEST_MANY_ML_PROPERTIES).getChildRef();
+        
+        // Create MLText properties and add to a collection
+        List<MLText> mlTextCollection = new ArrayList<MLText>(2);
+        MLText mlText0 = new MLText();
+        mlText0.addValue(Locale.ENGLISH, "Hello");
+        mlText0.addValue(Locale.FRENCH, "Bonjour");
+        mlTextCollection.add(mlText0);
+        MLText mlText1 = new MLText();
+        mlText1.addValue(Locale.ENGLISH, "Bye bye");
+        mlText1.addValue(Locale.FRENCH, "Au revoir");
+        mlTextCollection.add(mlText1);
+        
+        nodeService.setProperty(nodeRef, PROP_QNAME_MULTI_ML_VALUE, (Serializable) mlTextCollection);
+        Collection<MLText> mlTextCollectionCheck = (Collection<MLText>) nodeService.getProperty(nodeRef, PROP_QNAME_MULTI_ML_VALUE);
+        assertEquals("MLText collection didn't come back correctly.", mlTextCollection, mlTextCollectionCheck);
     }
     
     /**
@@ -2083,13 +2210,13 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
     public void testAR782() throws Exception
     {
         Map<QName, Serializable> properties = nodeService.getProperties(rootNodeRef);
-        // Set cm:created correctly
-        properties.put(ContentModel.PROP_CREATED, new Date());
+        // Set usr:accountExpiryDate correctly
+        properties.put(ContentModel.PROP_ACCOUNT_EXPIRY_DATE, new Date());
         nodeService.setProperties(rootNodeRef, properties);
         try
         {
-            // Set cm:created using something that can't be converted to a Date
-            properties.put(ContentModel.PROP_CREATED, "blah");
+            // Set usr:accountExpiryDate using something that can't be converted to a Date
+            properties.put(ContentModel.PROP_ACCOUNT_EXPIRY_DATE, "blah");
             nodeService.setProperties(rootNodeRef, properties);
             fail("Failed to catch type conversion issue early.");
         }

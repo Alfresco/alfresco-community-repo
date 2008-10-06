@@ -217,24 +217,7 @@ public class LoaderRemoteServer implements LoaderRemote
      */
     public int getNodeCount(String ticket)
     {
-        Authentication authentication = AuthenticationUtil.getCurrentAuthentication();
-        try
-        {
-            authenticationService.validate(ticket);
-            // Make the call
-            RetryingTransactionCallback<Integer> callback = new RetryingTransactionCallback<Integer>()
-            {
-                public Integer execute() throws Throwable
-                {
-                    return nodeDaoService.getNodeCount();
-                }
-            };
-            return retryingTransactionHelper.doInTransaction(callback, false, true);
-        }
-        finally
-        {
-            AuthenticationUtil.setCurrentAuthentication(authentication);
-        }
+        throw new UnsupportedOperationException("getNodeCount cannot be accurately determined at low cost.");
     }
 
     /**
@@ -242,24 +225,7 @@ public class LoaderRemoteServer implements LoaderRemote
      */
     public int getNodeCount(String ticket, final StoreRef storeRef)
     {
-        Authentication authentication = AuthenticationUtil.getCurrentAuthentication();
-        try
-        {
-            authenticationService.validate(ticket);
-            // Make the call
-            RetryingTransactionCallback<Integer> callback = new RetryingTransactionCallback<Integer>()
-            {
-                public Integer execute() throws Throwable
-                {
-                    return nodeDaoService.getNodeCount(storeRef);
-                }
-            };
-            return retryingTransactionHelper.doInTransaction(callback, false, true);
-        }
-        finally
-        {
-            AuthenticationUtil.setCurrentAuthentication(authentication);
-        }
+        throw new UnsupportedOperationException("getNodeCount cannot be accurately determined at low cost.");
     }
 
     public FileInfo[] uploadContent(

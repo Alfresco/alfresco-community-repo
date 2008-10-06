@@ -64,15 +64,23 @@
              <ref bean="patch.db-V2.1-NotNullColumns" />
              <ref bean="patch.db-V2.2-ACL" />
              <ref bean="patch.db-V2.2-0-CreateMissingTables" />
+<!--
              <ref bean="patch.db-V2.2-1-DropIndexesAndConstraints" />
              <ref bean="patch.db-V2.2-2-MoveQNames" />
              <ref bean="patch.db-V2.2-3-PropTypes" />
+-->
+             <ref bean="patch.db-V2.2-1-MLText" />
+             <ref bean="patch.db-V2.2-1-FullDmUpgrade" />
+			 <ref bean="patch.db-V2.2-Person" />
+			 <ref bean="patch.db-V2.2-OrclBLOB" />
           </list>
        </property>
        <property name="postUpdateScriptPatches">
           <list>
+<!--
              <ref bean="patch.db-V2.2-4-ExtraIndexesAndConstraints" />
              <ref bean="patch.db-V2.2-5-MappedFKIndexes" />
+-->
              <ref bean="patch.db-V1.4-TxnCommitTimeIndex" />
              <ref bean="patch.db-V2.0-ContentUrls" />
              <ref bean="patch.db-V2.1-JBPMData" />
@@ -518,8 +526,6 @@
        </property>
     </bean>
 
-    <!-- Startup Message -->
-
     <bean id="openOfficeConnectionTester" class="org.alfresco.util.OpenOfficeConnectionTester" >
         <property name="connection">
             <ref bean="openOfficeConnection" />
@@ -527,15 +533,6 @@
         <property name="strict">
             <value>false</value>
         </property>
-    </bean>
-
-    <bean id="startupLog" class="org.alfresco.repo.descriptor.DescriptorStartupLog">
-       <property name="descriptorService">
-           <ref local="descriptorComponent"/>
-       </property>
-       <property name="tenantService">
-           <ref bean="tenantService"/>
-       </property>
     </bean>
 
     <!-- Workflow Scheduler -->
@@ -578,5 +575,22 @@
       <property name="companyHomeStore"><value>${spaces.store}</value></property>
       <property name="companyHomePath"><value>/${spaces.company_home.childname}</value></property>
    </bean>
-	
+
+   <bean id="personDaoBootstrap" class="org.alfresco.repo.security.person.PersonDaoBootstrap" >
+      <property name="personDaoImpl">
+         <ref bean="personDaoImpl"/>
+      </property>
+   </bean>
+
+    <!-- Startup Message -->
+
+    <bean id="startupLog" class="org.alfresco.repo.descriptor.DescriptorStartupLog">
+       <property name="descriptorService">
+           <ref local="descriptorComponent"/>
+       </property>
+       <property name="tenantService">
+           <ref bean="tenantService"/>
+       </property>
+    </bean>
+   
 </beans>

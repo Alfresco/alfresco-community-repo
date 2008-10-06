@@ -57,8 +57,11 @@ CREATE INDEX idx_alf_acl_inh ON alf_access_control_list (inherits, inherits_from
 CREATE INDEX fk_alf_na_qn ON alf_node_aspects (qname_id);
 ALTER TABLE alf_node_aspects ADD CONSTRAINT fk_alf_na_qn FOREIGN KEY (qname_id) REFERENCES alf_qname (id);
 
-CREATE INDEX fk_alf_np_qn ON alf_node_properties (qname_id);
-ALTER TABLE alf_node_properties ADD CONSTRAINT fk_alf_np_qn FOREIGN KEY (qname_id) REFERENCES alf_qname (id);
+-- alf_node_properties is fully rebuilt in another script
+-- CREATE INDEX fk_alf_nprop_qn ON alf_node_properties (qname_id);
+-- ALTER TABLE alf_node_properties ADD CONSTRAINT fk_alf_nprop_qn FOREIGN KEY (qname_id) REFERENCES alf_qname (id);
+-- CREATE INDEX fk_alf_nprop_loc ON alf_node_properties (locale_id);
+-- ALTER TABLE alf_node_properties ADD CONSTRAINT fk_alf_nprop_loc FOREIGN KEY (locale_id) REFERENCES alf_locale (id);
 
 CREATE INDEX fk_avm_na_qn ON avm_aspects_new (qname_id);
 ALTER TABLE avm_aspects_new ADD CONSTRAINT fk_avm_na_qn FOREIGN KEY (qname_id) REFERENCES alf_qname (id);

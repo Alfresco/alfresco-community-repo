@@ -25,7 +25,6 @@
 package org.alfresco.repo.domain.hibernate;
 
 import java.io.Serializable;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -34,12 +33,14 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
-import org.alfresco.repo.domain.ChildAssoc;
+import org.alfresco.repo.domain.AuditableProperties;
 import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.Node;
-import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.repo.domain.NodePropertyValue;
+import org.alfresco.repo.domain.PropertyMapKey;
 import org.alfresco.repo.domain.QNameEntity;
 import org.alfresco.repo.domain.Store;
+import org.alfresco.repo.domain.Transaction;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.EqualsHelper;
 
@@ -60,10 +61,12 @@ public class NodeImpl extends LifecycleAdapter implements Node, Serializable
     private Store store;
     private String uuid;
     private QNameEntity typeQName;
-    private Set<Long> aspects;
-    private Collection<ChildAssoc> parentAssocs;
-    private Map<Long, PropertyValue> properties;
+    private Transaction transaction;
+    private boolean deleted;
     private DbAccessControlList accessControlList;
+    private Set<Long> aspects;
+    private Map<PropertyMapKey, NodePropertyValue> properties;
+    private AuditableProperties auditableProperties;
     
     private transient ReadLock refReadLock;
     private transient WriteLock refWriteLock;
@@ -71,13 +74,13 @@ public class NodeImpl extends LifecycleAdapter implements Node, Serializable
 
     public NodeImpl()
     {
-        aspects = new HashSet<Long>(5);
-        parentAssocs = new HashSet<ChildAssoc>(5);
-        properties = new HashMap<Long, PropertyValue>(5);
-        
         ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
         refReadLock = lock.readLock();
         refWriteLock = lock.writeLock();
+
+        aspects = new HashSet<Long>(5);
+        properties = new HashMap<PropertyMapKey, NodePropertyValue>(5);
+        auditableProperties = new AuditableProperties();
     }
 
     /**
@@ -120,7 +123,14 @@ public class NodeImpl extends LifecycleAdapter implements Node, Serializable
      */
     public String toString()
     {
-        return getNodeRef().toString();
+        StringBuilder sb = new StringBuilder(50);
+        sb.append("Node")
+          .append("[id=").append(id)
+          .append(", ref=").append(getNodeRef())
+          .append(", txn=").append(transaction)
+          .append(", deleted=").append(deleted)
+          .append("]");
+        return sb.toString();
     }
     
     public boolean equals(Object obj)
@@ -167,20 +177,6 @@ public class NodeImpl extends LifecycleAdapter implements Node, Serializable
         this.id = id;
     }
 
-    public Long getVersion()
-    {
-        return version;
-    }
-
-    /**
-     * For Hibernate use
-     */
-    @SuppressWarnings("unused")
-    private void setVersion(Long version)
-    {
-        this.version = version;
-    }
-
     public Store getStore()
     {
         return store;
@@ -219,6 +215,40 @@ public class NodeImpl extends LifecycleAdapter implements Node, Serializable
         }
     }
 
+    public Long getVersion()
+    {
+        return version;
+    }
+
+    /**
+     * For Hibernate use
+     */
+    @SuppressWarnings("unused")
+    private void setVersion(Long version)
+    {
+        this.version = version;
+    }
+
+    public Transaction getTransaction()
+    {
+        return transaction;
+    }
+
+    public void setTransaction(Transaction transaction)
+    {
+        this.transaction = transaction;
+    }
+
+    public boolean getDeleted()
+    {
+        return deleted;
+    }
+
+    public void setDeleted(boolean deleted)
+    {
+        this.deleted = deleted;
+    }
+
     public QNameEntity getTypeQName()
     {
         return typeQName;
@@ -227,6 +257,16 @@ public class NodeImpl extends LifecycleAdapter implements Node, Serializable
     public void setTypeQName(QNameEntity typeQName)
     {
         this.typeQName = typeQName;
+    }
+
+    public DbAccessControlList getAccessControlList()
+    {
+        return accessControlList;
+    }
+
+    public void setAccessControlList(DbAccessControlList accessControlList)
+    {
+        this.accessControlList = accessControlList;
     }
 
     public Set<Long> getAspects()
@@ -243,21 +283,7 @@ public class NodeImpl extends LifecycleAdapter implements Node, Serializable
         this.aspects = aspects;
     }
 
-    public Collection<ChildAssoc> getParentAssocs()
-    {
-        return parentAssocs;
-    }
-
-    /**
-     * For Hibernate use
-     */
-    @SuppressWarnings("unused")
-    private void setParentAssocs(Collection<ChildAssoc> parentAssocs)
-    {
-        this.parentAssocs = parentAssocs;
-    }
-
-    public Map<Long, PropertyValue> getProperties()
+    public Map<PropertyMapKey, NodePropertyValue> getProperties()
     {
         return properties;
     }
@@ -266,18 +292,18 @@ public class NodeImpl extends LifecycleAdapter implements Node, Serializable
      * For Hibernate use
      */
     @SuppressWarnings("unused")
-    private void setProperties(Map<Long, PropertyValue> properties)
+    private void setProperties(Map<PropertyMapKey, NodePropertyValue> properties)
     {
         this.properties = properties;
     }
 
-    public DbAccessControlList getAccessControlList()
+    public AuditableProperties getAuditableProperties()
     {
-        return accessControlList;
+        return auditableProperties;
     }
 
-    public void setAccessControlList(DbAccessControlList accessControlList)
+    public void setAuditableProperties(AuditableProperties auditableProperties)
     {
-        this.accessControlList = accessControlList;
+        this.auditableProperties = (auditableProperties == null ? new AuditableProperties() : auditableProperties);
     }
 }

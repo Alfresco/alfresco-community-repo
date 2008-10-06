@@ -25,34 +25,41 @@
 package org.alfresco.repo.node.db.hibernate;
 
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.zip.CRC32;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.SimpleCache;
+import org.alfresco.repo.domain.AuditableProperties;
 import org.alfresco.repo.domain.ChildAssoc;
 import org.alfresco.repo.domain.DbAccessControlList;
+import org.alfresco.repo.domain.LocaleDAO;
 import org.alfresco.repo.domain.NamespaceEntity;
 import org.alfresco.repo.domain.Node;
 import org.alfresco.repo.domain.NodeAssoc;
-import org.alfresco.repo.domain.NodeKey;
-import org.alfresco.repo.domain.NodeStatus;
+import org.alfresco.repo.domain.NodePropertyValue;
+import org.alfresco.repo.domain.PropertyMapKey;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.domain.QNameDAO;
 import org.alfresco.repo.domain.QNameEntity;
 import org.alfresco.repo.domain.Server;
 import org.alfresco.repo.domain.Store;
-import org.alfresco.repo.domain.StoreKey;
 import org.alfresco.repo.domain.Transaction;
 import org.alfresco.repo.domain.UsageDeltaDAO;
 import org.alfresco.repo.domain.hibernate.ChildAssocImpl;
@@ -61,7 +68,6 @@ import org.alfresco.repo.domain.hibernate.DbAccessControlListImpl;
 import org.alfresco.repo.domain.hibernate.DirtySessionMethodInterceptor;
 import org.alfresco.repo.domain.hibernate.NodeAssocImpl;
 import org.alfresco.repo.domain.hibernate.NodeImpl;
-import org.alfresco.repo.domain.hibernate.NodeStatusImpl;
 import org.alfresco.repo.domain.hibernate.ServerImpl;
 import org.alfresco.repo.domain.hibernate.StoreImpl;
 import org.alfresco.repo.domain.hibernate.TransactionImpl;
@@ -71,34 +77,39 @@ import org.alfresco.repo.security.permissions.AccessControlListProperties;
 import org.alfresco.repo.security.permissions.SimpleAccessControlListProperties;
 import org.alfresco.repo.security.permissions.impl.AclChange;
 import org.alfresco.repo.security.permissions.impl.AclDaoComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.TransactionAwareSingleton;
 import org.alfresco.repo.transaction.TransactionalDao;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.cmr.dictionary.DictionaryException;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.InvalidTypeException;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.AssociationExistsException;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.DuplicateChildNodeNameException;
+import org.alfresco.service.cmr.repository.EntityRef;
+import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.InvalidStoreRefException;
+import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreExistsException;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
+import org.alfresco.service.cmr.repository.datatype.TypeConversionException;
 import org.alfresco.service.cmr.repository.datatype.TypeConverter;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.hibernate.HibernateException;
-import org.hibernate.ObjectDeletedException;
 import org.hibernate.Query;
 import org.hibernate.ScrollMode;
 import org.hibernate.ScrollableResults;
 import org.hibernate.Session;
-import org.hibernate.StaleStateException;
-import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.orm.hibernate3.HibernateCallback;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
@@ -110,7 +121,9 @@ import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
  */
 public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements NodeDaoService, TransactionalDao
 {
+    private static final String QUERY_GET_STORE_BY_ALL = "store.GetStoreByAll";
     private static final String QUERY_GET_ALL_STORES = "store.GetAllStores";
+    private static final String QUERY_GET_NODE_BY_STORE_ID_AND_UUID = "node.GetNodeByStoreIdAndUuid";
     private static final String QUERY_GET_CHILD_NODE_IDS = "node.GetChildNodeIds";
     private static final String QUERY_GET_CHILD_ASSOCS_BY_ALL = "node.GetChildAssocsByAll";
     private static final String QUERY_GET_CHILD_ASSOC_BY_TYPE_AND_NAME = "node.GetChildAssocByTypeAndName";
@@ -130,10 +143,9 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     private static final String QUERY_GET_NODES_WITH_PROPERTY_VALUES_BY_STRING_AND_STORE = "node.GetNodesWithPropertyValuesByStringAndStore";
     private static final String QUERY_GET_NODES_WITH_PROPERTY_VALUES_BY_ACTUAL_TYPE = "node.GetNodesWithPropertyValuesByActualType";
     private static final String QUERY_GET_SERVER_BY_IPADDRESS = "server.getServerByIpAddress";
-
-    private static final String QUERY_GET_NODE_COUNT = "node.GetNodeCount";
-    private static final String QUERY_GET_NODE_COUNT_FOR_STORE = "node.GetNodeCountForStore";
     
+    private static final Long NULL_CACHE_VALUE = new Long(-1);
+
     private static Log logger = LogFactory.getLog(HibernateNodeDaoServiceImpl.class);
     /** Log to trace parent association caching: <b>classname + .ParentAssocsCache</b> */
     private static Log loggerParentAssocsCache = LogFactory.getLog(HibernateNodeDaoServiceImpl.class.getName() + ".ParentAssocsCache");
@@ -141,6 +153,10 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     private QNameDAO qnameDAO;
     private UsageDeltaDAO usageDeltaDAO;
     private AclDaoComponent aclDaoComponent;
+    private LocaleDAO localeDAO;
+    private DictionaryService dictionaryService;
+    /** A cache mapping StoreRef and NodeRef instances to the entity IDs (primary key) */
+    private SimpleCache<EntityRef, Long> storeAndNodeIdCache;
     /** A cache for more performant lookups of the parent associations */
     private SimpleCache<Long, Set<Long>> parentAssocsCache;
     private boolean isDebugEnabled = logger.isDebugEnabled();
@@ -214,6 +230,32 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     public void setAclDaoComponent(AclDaoComponent aclDaoComponent)
     {
         this.aclDaoComponent = aclDaoComponent;
+    }
+
+    /**
+     * Set the component for creating Locale entities
+     */
+    public void setLocaleDAO(LocaleDAO localeDAO)
+    {
+        this.localeDAO = localeDAO;
+    }
+
+    /**
+     * Set the component for querying the dictionary model
+     */
+    public void setDictionaryService(DictionaryService dictionaryService)
+    {
+        this.dictionaryService = dictionaryService;
+    }
+
+    /**
+     * Ste the transaction-aware cache to store Store and Root Node IDs by Store Reference
+     * 
+     * @param storeAndNodeIdCache          the cache
+     */
+    public void setStoreAndNodeIdCache(SimpleCache<EntityRef, Long> storeAndNodeIdCache)
+    {
+        this.storeAndNodeIdCache = storeAndNodeIdCache;
     }
 
     /**
@@ -398,18 +440,66 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         getSession().flush();
     }
 
-    private Store getStore(StoreRef storeRef)
+    /**
+     * @return              Returns the <tt>Store</tt> entity or <tt>null</tt>
+     */
+    private Store getStore(final StoreRef storeRef)
     {
-        StoreKey storeKey = new StoreKey(storeRef);
-        Store store = (Store) getHibernateTemplate().get(StoreImpl.class, storeKey);
+        // Look it up in the cache
+        Long storeId = storeAndNodeIdCache.get(storeRef);
+        // Load it
+        if (storeId != null)
+        {
+            // Check for null persistence (previously missed value)
+            if (storeId.equals(NULL_CACHE_VALUE))
+            {
+                // There is no such value matching
+                return null;
+            }
+            // Don't use the method that throws an exception as the cache might be invalid.
+            Store store = (Store) getSession().get(StoreImpl.class, storeId);
+            if (store == null)
+            {
+                // It is not available, so we need to go the query route.
+                // But first remove the cache entry
+                storeAndNodeIdCache.remove(storeRef);
+                // Recurse, but this time there is no cache entry
+                return getStore(storeRef);
+            }
+            else
+            {
+                return store;
+            }
+        }
+        // Query for it
+        HibernateCallback callback = new HibernateCallback()
+        {
+            public Object doInHibernate(Session session)
+            {
+                Query query = session
+                    .getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_STORE_BY_ALL)
+                    .setString("protocol", storeRef.getProtocol())
+                    .setString("identifier", storeRef.getIdentifier());
+                return query.uniqueResult();
+            }
+        };
+        Store store = (Store) getHibernateTemplate().execute(callback);
+        if (store == null)
+        {
+            // Persist the null entry
+            storeAndNodeIdCache.put(storeRef, NULL_CACHE_VALUE);
+        }
+        else
+        {
+            storeAndNodeIdCache.put(storeRef, store.getId());
+        }
         // done
         return store;
     }
 
     private Store getStoreNotNull(StoreRef storeRef)
     {
-        StoreKey storeKey = new StoreKey(storeRef);
-        Store store = (Store) getHibernateTemplate().get(StoreImpl.class, storeKey);
+        Store store = getStore(storeRef);
         if (store == null)
         {
             throw new InvalidStoreRefException(storeRef);
@@ -525,9 +615,10 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         }
         
         store = new StoreImpl();
-        // set key
-        store.setKey(new StoreKey(storeRef));
-        // persist so that it is present in the hibernate cache
+        // set key values
+        store.setProtocol(storeRef.getProtocol());
+        store.setIdentifier(storeRef.getIdentifier());
+        // The root node may be null exactly because the Store needs an ID before it can be assigned to a node
         getHibernateTemplate().save(store);
         // create and assign a root node
         Node rootNode = newNode(
@@ -545,186 +636,236 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         DbAccessControlList acl = aclDaoComponent.getDbAccessControlList(id);
         rootNode.setAccessControlList(acl);
         
-        // done
+        // Cache the value
+        storeAndNodeIdCache.put(storeRef, store.getId());
+        // Done
         return new Pair<Long, NodeRef>(rootNode.getId(), rootNode.getNodeRef());
     }
 
     public NodeRef.Status getNodeRefStatus(NodeRef nodeRef)
     {
-        NodeStatus nodeStatus = getNodeStatusOrNull(nodeRef);
-        if (nodeStatus == null)     // node never existed
+        // Get the store
+        StoreRef storeRef = nodeRef.getStoreRef();
+        Store store = getStore(storeRef);
+        if (store == null)
+        {
+            // No such store therefore no such node reference
+            return null;
+        }
+        Node node = getNodeOrNull(store, nodeRef.getId());
+        if (node == null)     // node never existed
         {
             return null;
         }
         else
         {
             return new NodeRef.Status(
-                    nodeStatus.getTransaction().getChangeTxnId(),
-                    nodeStatus.isDeleted());
+                    node.getTransaction().getChangeTxnId(),
+                    node.getDeleted());
         }
     }
     
-    private NodeStatus getNodeStatusOrNull(NodeRef nodeRef)
+    private Node getNodeOrNull(final Store store, final String uuid)
     {
-        NodeKey nodeKey = new NodeKey(nodeRef);
-        NodeStatus status = null;
-        try
+        NodeRef nodeRef = new NodeRef(store.getStoreRef(), uuid);
+        // Look it up in the cache
+        Long nodeId = storeAndNodeIdCache.get(nodeRef);
+        // Load it
+        if (nodeId != null)
         {
-            status = (NodeStatus) getHibernateTemplate().get(NodeStatusImpl.class, nodeKey);
-        }
-        catch (DataAccessException e)
-        {
-            if (e.contains(ObjectDeletedException.class))
+            // Check for null persistence (previously missed value)
+            if (nodeId.equals(NULL_CACHE_VALUE))
             {
-                throw new StaleStateException("Node status was deleted: " + nodeKey);
+                // There is no such value matching
+                return null;
             }
-            throw e;
+            // Don't use the method that throws an exception as the cache might be invalid.
+            Node node = (Node) getSession().get(NodeImpl.class, nodeId);
+            if (node == null)
+            {
+                // It is not available, so we need to go the query route.
+                // But first remove the cache entry
+                storeAndNodeIdCache.remove(nodeRef);
+                // Recurse, but this time there is no cache entry
+                return getNodeOrNull(store, uuid);
+            }
+            else
+            {
+                return node;
+            }
         }
-        return status;
-    }
-    
-    private void recordNodeUpdate(Node node)
-    {
-        NodeRef nodeRef = node.getNodeRef();
-        Transaction currentTxn = getCurrentTransaction();
-        NodeStatus status = getNodeStatusOrNull(nodeRef);
-        if (status == null)
+        // Query for it
+        HibernateCallback callback = new HibernateCallback()
         {
-            NodeKey key = new NodeKey(nodeRef);
-            // We need to to create a status entry for it
-            status = new NodeStatusImpl();
-            status.setKey(key);
-            status.setNode(node);
-            status.setTransaction(currentTxn);
-            getHibernateTemplate().save(status);
+            public Object doInHibernate(Session session)
+            {
+                Query query = session
+                    .getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_NODE_BY_STORE_ID_AND_UUID)
+                    .setLong("storeId", store.getId())
+                    .setString("uuid", uuid);
+                DirtySessionMethodInterceptor.setQueryFlushMode(session, query);
+                return query.uniqueResult();
+            }
+        };
+        Node node = (Node) getHibernateTemplate().execute(callback);
+        // Cache the value
+        if (node == null)
+        {
+            storeAndNodeIdCache.put(nodeRef, NULL_CACHE_VALUE);
         }
         else
         {
-            status.setNode(node);
-            status.setTransaction(currentTxn);
+            storeAndNodeIdCache.put(nodeRef, node.getId());
         }
+        // TODO: Fill cache here
+        return node;
+    }
+    
+    private void updateNodeStatus(Node node, boolean deleted)
+    {
+        Transaction currentTxn = getCurrentTransaction();
+        // Update it if required
+        if (!EqualsHelper.nullSafeEquals(node.getTransaction(), currentTxn))
+        {
+            // Txn has changed
+            DirtySessionMethodInterceptor.setSessionDirty();
+            node.setTransaction(currentTxn);
+        }
+        if (node.getDeleted() != deleted)
+        {
+            DirtySessionMethodInterceptor.setSessionDirty();
+            node.setDeleted(deleted);
+        }
+    }
+    
+    private static final String UNKOWN_USER = "unkown";
+    private String getCurrentUser()
+    {
+        String user = AuthenticationUtil.getCurrentUserName();
+        return (user == null) ? UNKOWN_USER : user;
+    }
+    
+    private void recordNodeCreate(Node node)
+    {
+        updateNodeStatus(node, false);
+        // Handle cm:auditable
+        String currentUser = getCurrentUser();
+        Date currentDate = new Date();
+        AuditableProperties auditableProperties = node.getAuditableProperties();
+        auditableProperties.setAuditValues(currentUser, currentDate, true);
     }
 
-    private void recordNodeDelete(NodeRef nodeRef)
+    private void recordNodeUpdate(Node node)
     {
-        Transaction currentTxn = getCurrentTransaction();
-        NodeStatus status = getNodeStatusOrNull(nodeRef);
-        if (status == null)
-        {
-            NodeKey key = new NodeKey(nodeRef);
-            // We need to to create a status entry for it
-            status = new NodeStatusImpl();
-            status.setKey(key);
-            status.setNode(null);
-            status.setTransaction(currentTxn);
-            getHibernateTemplate().save(status);
-        }
-        else
-        {
-            status.setNode(null);
-            status.setTransaction(currentTxn);
-        }
+        updateNodeStatus(node, false);
+        // Handle cm:auditable
+        String currentUser = getCurrentUser();
+        Date currentDate = new Date();
+        AuditableProperties auditableProperties = node.getAuditableProperties();
+        auditableProperties.setAuditValues(currentUser, currentDate, false);
+    }
+
+    private void recordNodeDelete(Node node)
+    {
+        updateNodeStatus(node, true);
+        // Handle cm:auditable
+        String currentUser = getCurrentUser();
+        Date currentDate = new Date();
+        AuditableProperties auditableProperties = node.getAuditableProperties();
+        auditableProperties.setAuditValues(currentUser, currentDate, false);
     }
 
     public Pair<Long, NodeRef> newNode(StoreRef storeRef, String uuid, QName nodeTypeQName) throws InvalidTypeException
     {
-        Store store = (Store) getHibernateTemplate().load(StoreImpl.class, new StoreKey(storeRef));
+        Store store = (Store) getStoreNotNull(storeRef);
         Node newNode = newNode(store, uuid, nodeTypeQName);
-        return new Pair<Long, NodeRef>(newNode.getId(), newNode.getNodeRef());
+        Long nodeId = newNode.getId();
+        NodeRef nodeRef = newNode.getNodeRef();
+        return new Pair<Long, NodeRef>(nodeId, nodeRef);
     }
     
     private Node newNode(Store store, String uuid, QName nodeTypeQName) throws InvalidTypeException
     {
-        NodeKey key = new NodeKey(store.getKey(), uuid);
-        
-        // create (or reuse) the mandatory node status
-        NodeStatus status = (NodeStatus) getHibernateTemplate().get(NodeStatusImpl.class, key);
-        if (status != null)
-        {
-            // The node existed at some point.
-            // Although unlikely, it is possible that the node was deleted in this transaction.
-            // If that is the case, then the session has to be flushed so that the database
-            // constraints aren't violated as the node creation will write to the database to
-            // get an ID
-            if (status.getTransaction().getChangeTxnId().equals(AlfrescoTransactionSupport.getTransactionId()))
-            {
-                // flush
-                HibernateCallback callback = new HibernateCallback()
-                {
-                    public Object doInHibernate(Session session) throws HibernateException, SQLException
-                    {
-                        DirtySessionMethodInterceptor.flushSession(session);
-                        return null;
-                    }
-                };
-                getHibernateTemplate().execute(callback);
-            }
-        }
-        
         // Get the qname for the node type
         QNameEntity nodeTypeQNameEntity = qnameDAO.getOrCreateQNameEntity(nodeTypeQName);
         
-        // build a concrete node based on a bootstrap type
-        Node node = new NodeImpl();
-        // set other required properties
-        node.setStore(store);
-        node.setUuid(uuid);
-        node.setTypeQName(nodeTypeQNameEntity);
-        // persist the node
-        getHibernateTemplate().save(node);
-
-        // Record change ID
-        recordNodeUpdate(node);
+        // Get any existing Node.  A node with this UUID may have existed before, but must be marked
+        // deleted; otherwise it will be considered live and valid
+        Node node = getNodeOrNull(store, uuid);
+        // If there is already a node attached, then there is a clash
+        if (node != null)
+        {
+            if (!node.getDeleted())
+            {
+                throw new InvalidNodeRefException("Live Node exists: " + node.getNodeRef(), node.getNodeRef());
+            }
+            // Set clean values
+            node.setTypeQName(nodeTypeQNameEntity);
+            node.setDeleted(false);
+            node.setAccessControlList(null);
+            // Record node change
+            recordNodeCreate(node);
+        }
+        else
+        {
+            // There is no existing node, deleted or otherwise.
+            node = new NodeImpl();
+            node.setStore(store);
+            node.setUuid(uuid);
+            node.setTypeQName(nodeTypeQNameEntity);
+            node.setDeleted(false);
+            node.setAccessControlList(null);
+            // Record node change
+            recordNodeCreate(node);
+            // Persist it
+            getHibernateTemplate().save(node);
+            
+            // Update the cache
+            storeAndNodeIdCache.put(node.getNodeRef(), node.getId());
+        }
         
-        // done
+        // Done
         return node;
     }
 
+    /**
+     * This moves the entire node, ensuring that a trail is left behind.  It is more
+     * efficient to move the node and recreate a deleted node in it's wake because of
+     * the other properties and aspects that need to go with the node.
+     */
     public Pair<Long, NodeRef> moveNodeToStore(Long nodeId, StoreRef storeRef)
     {
-        Store store = getStoreNotNull(storeRef);
         Node node = getNodeNotNull(nodeId);
-        // Only do anything if the store has changed
-        Store oldStore = node.getStore();
-        if (oldStore.getKey().equals(store.getKey()))
-        {
-            // No change
-            return new Pair<Long, NodeRef>(node.getId(), node.getNodeRef());
-        }
-        NodeRef oldNodeRef = node.getNodeRef();
+        // Update the node
+        updateNode(nodeId, storeRef, null, null);
+        NodeRef nodeRef = node.getNodeRef();
         
-        // Set the store
-        node.setStore(store);
-        
-        // Record change ID
-        recordNodeDelete(oldNodeRef);
-        recordNodeUpdate(node);
-        
-        return new Pair<Long, NodeRef>(node.getId(), node.getNodeRef());
+        return new Pair<Long, NodeRef>(node.getId(), nodeRef);
     }
 
     public Pair<Long, NodeRef> getNodePair(NodeRef nodeRef)
     {
-        // get it via the node status
-        NodeStatus status = getNodeStatusOrNull(nodeRef);
-        if (status == null)
+        Store store = getStore(nodeRef.getStoreRef());
+        if (store == null)
         {
-            // no status implies no node
+            return null;
+        }
+        // Get the node: none, deleted or live
+        Node node = getNodeOrNull(store, nodeRef.getId());
+        if (node == null)
+        {
+            // The node doesn't exist even as a deleted reference
+            return null;
+        }
+        else if (node.getDeleted())
+        {
+            // The reference exists, but only as a deleted node
             return null;
         }
         else
         {
-            // a status may have a node
-            Node node = status.getNode();
-            // The node might be null (a deleted node)
-            if (node != null)
-            {
-                return  new Pair<Long, NodeRef>(node.getId(), nodeRef);
-            }
-            else
-            {
-                return null;
-            }
+            // The node is live
+            return  new Pair<Long, NodeRef>(node.getId(), nodeRef);
         }
     }
     
@@ -733,6 +874,11 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         Node node = (Node) getHibernateTemplate().get(NodeImpl.class, nodeId);
         if (node == null)
         {
+            return null;
+        }
+        else if (node.getDeleted())
+        {
+            // The node reference exists, but it is officially deleted
             return null;
         }
         else
@@ -786,132 +932,277 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         }
     }
 
-    public void updateNode(Long nodeId, StoreRef storeRef, String uuid, QName nodeTypeQName)
+    public void updateNode(Long nodeId, StoreRef storeRefAfter, String uuidAfter, QName nodeTypeQName)
     {
         Node node = getNodeNotNull(nodeId);
+        Store storeBefore = node.getStore();
+        String uuidBefore = node.getUuid();
         NodeRef nodeRefBefore = node.getNodeRef();
-        if (storeRef != null && storeRef.equals(node.getStore().getStoreRef()))
-        {
-            Store store = getStoreNotNull(storeRef);
-            node.setStore(store);
-        }
-        if (uuid != null)
-        {
-            node.setUuid(uuid);
-        }
-        if (nodeTypeQName != null)
-        {
-            QNameEntity nodeTypeQNameEntity = qnameDAO.getOrCreateQNameEntity(nodeTypeQName);
-            node.setTypeQName(nodeTypeQNameEntity);
-        }
-        NodeRef nodeRefAfter = node.getNodeRef();
         
-        // Record change ID
-        if (nodeRefBefore.equals(nodeRefAfter))
+        final Store storeAfter;
+        if (storeRefAfter == null)
         {
-            recordNodeUpdate(node);
+            storeAfter = storeBefore;
+            storeRefAfter = storeBefore.getStoreRef();
         }
         else
         {
-            recordNodeDelete(nodeRefBefore);
+            storeAfter = getStoreNotNull(storeRefAfter);
+        }
+        if (uuidAfter == null)
+        {
+            uuidAfter = uuidBefore;
+        }
+        
+        NodeRef nodeRefAfter = new NodeRef(storeRefAfter, uuidAfter);
+        if (!nodeRefAfter.equals(nodeRefBefore))
+        {
+            Node conflictingNode = getNodeOrNull(storeAfter, uuidAfter);
+            if (conflictingNode != null)
+            {
+                if (!conflictingNode.getDeleted())
+                {
+                    throw new InvalidNodeRefException("Live Node exists: " + node.getNodeRef(), node.getNodeRef());
+                }
+                // It is a deleted node so just remove the conflict
+                getHibernateTemplate().delete(conflictingNode);
+                // Flush immediately to ensure that the record is deleted
+                DirtySessionMethodInterceptor.flushSession(getSession(), true);
+                // The cache entry will be overwritten so we don't need to do it here
+            }
+            
+            // Change the store
+            node.setStore(storeAfter);
+            node.setUuid(uuidAfter);
+            // We will need to record the change for the new node
+            recordNodeUpdate(node);
+            // Flush immediately to ensure that the record changes
+            DirtySessionMethodInterceptor.flushSession(getSession(), true);
+            
+            // We need to create a dummy reference for the node that was just moved away
+            Node oldNodeDummy = new NodeImpl();
+            oldNodeDummy.setStore(storeBefore);
+            oldNodeDummy.setUuid(uuidBefore);
+            oldNodeDummy.setTypeQName(node.getTypeQName());
+            recordNodeDelete(oldNodeDummy);
+            // Persist
+            getHibernateTemplate().save(oldNodeDummy);
+            
+            // Update cache entries
+            NodeRef nodeRef = node.getNodeRef();
+            storeAndNodeIdCache.put(nodeRef, node.getId());
+            storeAndNodeIdCache.put(nodeRefBefore, oldNodeDummy.getId());
+        }
+        
+        if (nodeTypeQName != null && !nodeTypeQName.equals(node.getTypeQName().getQName()))
+        {
+            QNameEntity nodeTypeQNameEntity = qnameDAO.getOrCreateQNameEntity(nodeTypeQName);
+            node.setTypeQName(nodeTypeQNameEntity);
+            // We will need to record the change
             recordNodeUpdate(node);
         }
     }
 
-    public PropertyValue getNodeProperty(Long nodeId, QName propertyQName)
+    public Serializable getNodeProperty(Long nodeId, QName propertyQName)
     {
+        Node node = getNodeNotNull(nodeId);
+
+        // Handle cm:auditable
+        if (AuditableProperties.isAuditableProperty(propertyQName))
+        {
+            AuditableProperties auditableProperties = node.getAuditableProperties();
+            return auditableProperties.getAuditableProperty(propertyQName);
+        }
+        
         QNameEntity propertyQNameEntity = qnameDAO.getQNameEntity(propertyQName);
         if (propertyQNameEntity == null)
         {
             return null;
         }
         
-        Node node = getNodeNotNull(nodeId);
-        Map<Long, PropertyValue> nodeProperties = node.getProperties();
-        return nodeProperties.get(propertyQNameEntity.getId());
+        Map<PropertyMapKey, NodePropertyValue> nodeProperties = node.getProperties();
+        Serializable propertyValue = HibernateNodeDaoServiceImpl.getPublicProperty(
+                nodeProperties,
+                propertyQName,
+                qnameDAO, localeDAO, dictionaryService);
+        return propertyValue;
     }
 
-    public Map<QName, PropertyValue> getNodeProperties(Long nodeId)
+    public Map<QName, Serializable> getNodeProperties(Long nodeId)
     {
         Node node = getNodeNotNull(nodeId);
-        Map<Long, PropertyValue> nodeProperties = node.getProperties();
+        Map<PropertyMapKey, NodePropertyValue> nodeProperties = node.getProperties();
         
         // Convert the QName IDs
-        Map<QName, PropertyValue> converted = new HashMap<QName, PropertyValue>(nodeProperties.size(), 1.0F);
-        for (Map.Entry<Long, PropertyValue> entry : nodeProperties.entrySet())
-        {
-            Long qnameEntityId = entry.getKey();
-            QName qname = qnameDAO.getQName(qnameEntityId);
-            converted.put(qname, entry.getValue());
-        }
+        Map<QName, Serializable> converted = HibernateNodeDaoServiceImpl.convertToPublicProperties(
+                nodeProperties,
+                qnameDAO,
+                localeDAO,
+                dictionaryService);
         
-        // Make immutable
+        // Handle cm:auditable
+        AuditableProperties auditableProperties = node.getAuditableProperties();
+        converted.putAll(auditableProperties.getAuditableProperties());
+        
+        // Done
         return converted;
     }
 
-    public void addNodeProperty(Long nodeId, QName qname, PropertyValue propertyValue)
+    private void addNodePropertyImpl(Node node, QName qname, Serializable value, Long localeId)
+    {
+        // Handle cm:auditable
+        if (AuditableProperties.isAuditableProperty(qname))
+        {
+            // This is never set manually
+            return;
+        }
+        
+        PropertyDefinition propertyDef = dictionaryService.getProperty(qname);
+        Long qnameId = qnameDAO.getOrCreateQNameEntity(qname).getId();
+        
+        Map<PropertyMapKey, NodePropertyValue> persistableProperties = new HashMap<PropertyMapKey, NodePropertyValue>(3);
+        
+        HibernateNodeDaoServiceImpl.addValueToPersistedProperties(
+                persistableProperties,
+                propertyDef,
+                (short)-1,
+                qnameId,
+                localeId,
+                value,
+                localeDAO);
+        
+        Map<PropertyMapKey, NodePropertyValue> nodeProperties = node.getProperties();
+        
+        Iterator<PropertyMapKey> oldPropertyKeysIterator = nodeProperties.keySet().iterator();
+        while (oldPropertyKeysIterator.hasNext())
+        {
+            PropertyMapKey oldPropertyKey = oldPropertyKeysIterator.next();
+            // If the qname doesn't match, then ignore
+            if (!oldPropertyKey.getQnameId().equals(qnameId))
+            {
+                continue;
+            }
+            // The qname matches, but is the key present in the new values
+            if (persistableProperties.containsKey(oldPropertyKey))
+            {
+                // The key is present in both maps so it'll be updated
+                continue;
+            }
+            // Remove the entry from the node's properties
+            oldPropertyKeysIterator.remove();
+        }
+        
+        // Now add all the new properties.  The will overwrite and/or add values.
+        nodeProperties.putAll(persistableProperties);
+    }
+
+    public void addNodeProperty(Long nodeId, QName qname, Serializable propertyValue)
     {        
         Node node = getNodeNotNull(nodeId);
-        QNameEntity qnameEntity = qnameDAO.getOrCreateQNameEntity(qname);
-        Map<Long, PropertyValue> nodeProperties = node.getProperties();
-        nodeProperties.put(qnameEntity.getId(), propertyValue);
+        Long localeId = localeDAO.getOrCreateDefaultLocalePair().getFirst();
+        addNodePropertyImpl(node, qname, propertyValue, localeId);
         
         // Record change ID
         recordNodeUpdate(node);
     }
-
-    public void addNodeProperties(Long nodeId, Map<QName, PropertyValue> properties)
+    
+    @SuppressWarnings("unchecked")
+    public void addNodeProperties(Long nodeId, Map<QName, Serializable> properties)
     {
         Node node = getNodeNotNull(nodeId);
-        Map<Long, PropertyValue> nodeProperties = node.getProperties();
         
-        for (Map.Entry<QName, PropertyValue> entry : properties.entrySet())
+        Long localeId = localeDAO.getOrCreateDefaultLocalePair().getFirst();
+        for (Map.Entry<QName, Serializable> entry : properties.entrySet())
         {
-            QNameEntity qnameEntity = qnameDAO.getOrCreateQNameEntity(entry.getKey());
-            nodeProperties.put(qnameEntity.getId(), entry.getValue());
+            QName qname = entry.getKey();
+            Serializable value = entry.getValue();
+            addNodePropertyImpl(node, qname, value, localeId);
         }
         
         // Record change ID
         recordNodeUpdate(node);
     }
 
-    public void removeNodeProperties(Long nodeId, Set<QName> propertyQNames)
+    public void setNodeProperties(Long nodeId, Map<QName, Serializable> propertiesIncl)
     {
         Node node = getNodeNotNull(nodeId);
-        Map<Long, PropertyValue> nodeProperties = node.getProperties();
-
-        for (QName qname : propertyQNames)
+        
+        // Handle cm:auditable.  These need to be removed from the properties.
+        Map<QName, Serializable> properties = new HashMap<QName, Serializable>(propertiesIncl.size());
+        for (Map.Entry<QName, Serializable> entry : propertiesIncl.entrySet())
         {
-            QNameEntity qnameEntity = qnameDAO.getOrCreateQNameEntity(qname);
-            nodeProperties.remove(qnameEntity.getId());
+            QName propertyQName = entry.getKey();
+            Serializable value = entry.getValue();
+            if (AuditableProperties.isAuditableProperty(propertyQName))
+            {
+                continue;
+            }
+            // The value was NOT an auditable value
+            properties.put(propertyQName, value);
+        }
+        
+        // Convert
+        Map<PropertyMapKey, NodePropertyValue> persistableProperties = HibernateNodeDaoServiceImpl.convertToPersistentProperties(
+                properties,
+                qnameDAO,
+                localeDAO,
+                dictionaryService);
+
+        // Get the persistent map attached to the node
+        Map<PropertyMapKey, NodePropertyValue> nodeProperties = node.getProperties();
+        
+        // In order to make as few changes as possible, we need to update existing properties wherever possible.
+        // This means keeping track of map keys that weren't updated
+        Set<PropertyMapKey> toRemove = new HashSet<PropertyMapKey>(nodeProperties.keySet());
+        
+        // Loop over the converted values and update the persisted node properties map
+        for (Map.Entry<PropertyMapKey, NodePropertyValue> entry : persistableProperties.entrySet())
+        {
+            PropertyMapKey key = entry.getKey();
+            toRemove.remove(key);
+            // Add the value to the node's map
+            nodeProperties.put(key, entry.getValue());
+        }
+        
+        // Now remove all untouched keys
+        for (PropertyMapKey key : toRemove)
+        {
+            nodeProperties.remove(key);
         }
         
         // Record change ID
         recordNodeUpdate(node);
     }
 
-    public void setNodeProperties(Long nodeId, Map<QName, PropertyValue> properties)
+    public void removeNodeProperties(Long nodeId, Set<QName> propertyQNamesIncl)
     {
         Node node = getNodeNotNull(nodeId);
-        Map<Long, PropertyValue> nodeProperties = node.getProperties();
         
-        nodeProperties.clear();
-        
-        Set<Long> toRemove = new HashSet<Long>(nodeProperties.keySet());
-        
-        for (Map.Entry<QName, PropertyValue> entry : properties.entrySet())
+        // Handle cm:auditable.  These need to be removed from the list.
+        Set<QName> propertyQNames = new HashSet<QName>(propertyQNamesIncl.size());
+        for (QName propertyQName : propertyQNamesIncl)
         {
-            QNameEntity qnameEntity = qnameDAO.getOrCreateQNameEntity(entry.getKey());
-            Long qnameEntityId = qnameEntity.getId();
-            nodeProperties.put(qnameEntityId, entry.getValue());
-            // It's live
-            toRemove.remove(qnameEntityId);
+            if (AuditableProperties.isAuditableProperty(propertyQName))
+            {
+                continue;
+            }
+            propertyQNames.add(propertyQName);
         }
         
-        // Remove all entries that weren't in the updated set
-        for (Long qnameEntityIdToRemove : toRemove)
+        Map<PropertyMapKey, NodePropertyValue> nodeProperties = node.getProperties();
+
+        Set<Long> propertyQNameIds = qnameDAO.convertQNamesToIds(propertyQNames, true);
+        
+        // Loop over the current properties and remove any that have the same qname.
+        // Make a copy as we will modify the original map.
+        Set<PropertyMapKey> entrySet = new HashSet<PropertyMapKey>(nodeProperties.keySet());
+        for (PropertyMapKey propertyMapKey : entrySet)
         {
-            nodeProperties.remove(qnameEntityIdToRemove);
+            Long propertyQNameId = propertyMapKey.getQnameId();
+            if (propertyQNameIds.contains(propertyQNameId))
+            {
+                nodeProperties.remove(propertyMapKey);
+            }
         }
         
         // Record change ID
@@ -933,6 +1224,9 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         
         // Add sys:referenceable
         nodeAspectQNames.add(ContentModel.ASPECT_REFERENCEABLE);
+        // Add cm:auditable
+        nodeAspectQNames.add(ContentModel.ASPECT_AUDITABLE);
+        
         // Make immutable
         return nodeAspectQNames;
     }
@@ -941,12 +1235,11 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     {
         Node node = getNodeNotNull(nodeId);
 
+        aspectQNames = new HashSet<QName>(aspectQNames);
         // Remove sys:referenceable
-        if (aspectQNames.contains(ContentModel.ASPECT_REFERENCEABLE))
-        {
-            aspectQNames = new HashSet<QName>(aspectQNames);
-            aspectQNames.remove(ContentModel.ASPECT_REFERENCEABLE);
-        }
+        aspectQNames.remove(ContentModel.ASPECT_REFERENCEABLE);
+        // Handle cm:auditable
+        aspectQNames.remove(ContentModel.ASPECT_AUDITABLE);
 
         Set<Long> nodeAspects = node.getAspects();
 
@@ -964,12 +1257,11 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     {
         Node node = getNodeNotNull(nodeId);
 
+        aspectQNames = new HashSet<QName>(aspectQNames);
         // Remove sys:referenceable
-        if (aspectQNames.contains(ContentModel.ASPECT_REFERENCEABLE))
-        {
-            aspectQNames = new HashSet<QName>(aspectQNames);
-            aspectQNames.remove(ContentModel.ASPECT_REFERENCEABLE);
-        }
+        aspectQNames.remove(ContentModel.ASPECT_REFERENCEABLE);
+        // Handle cm:auditable
+        aspectQNames.remove(ContentModel.ASPECT_AUDITABLE);
 
         Set<Long> nodeAspects = node.getAspects();
 
@@ -989,6 +1281,11 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
 
         // Shortcut sys:referenceable
         if (aspectQName.equals(ContentModel.ASPECT_REFERENCEABLE))
+        {
+            return true;
+        }
+        // Shortcut cm:auditable
+        else if (aspectQName.equals(ContentModel.ASPECT_AUDITABLE))
         {
             return true;
         }
@@ -1013,7 +1310,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         deleteNodeInternal(node, false, deletedChildAssocIds);
         
         // Record change ID
-        recordNodeDelete(node.getNodeRef());
+        recordNodeDelete(node);
     }
 
     private static final String QUERY_DELETE_PARENT_ASSOCS = "node.DeleteParentAssocs";
@@ -1021,6 +1318,10 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     private static final String QUERY_DELETE_NODE_ASSOCS = "node.DeleteNodeAssocs";
     
     /**
+     * Does a full cleanup of the node if the <tt>deleted</tt> flag is off.  If
+     * the node is marked as <tt>deleted</tt> then the cleanup is assumed to be
+     * unnecessary and the node entry itself is cleaned up.
+     * 
      * @param node                  the node to delete
      * @param cascade               true to cascade delete
      * @param deletedChildAssocIds  previously deleted child associations
@@ -1109,8 +1410,10 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         // Delete deltas
         usageDeltaDAO.deleteDeltas(nodeId);
         
-        // finally delete the node
-        getHibernateTemplate().delete(node);
+//        // finally delete the node
+//        getHibernateTemplate().delete(node);
+        node.setDeleted(true);
+        
         // Remove node from cache
         parentAssocsCache.remove(nodeId);
         if (isDebugParentAssocCacheEnabled)
@@ -1125,7 +1428,14 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     private long getCrc(String str)
     {
         CRC32 crc = new CRC32();
-        crc.update(str.getBytes());
+        try
+        {
+            crc.update(str.getBytes("UTF-8"));              // https://issues.alfresco.com/jira/browse/ALFCOM-1335
+        }
+        catch (UnsupportedEncodingException e)
+        {
+            throw new RuntimeException("UTF-8 encoding is not supported");
+        }
         return crc.getValue();
     }
     
@@ -1349,7 +1659,6 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         }
         else
         {
-            recordNodeDelete(oldChildNodeRef);
             recordNodeUpdate(newChildNode);
         }
         
@@ -2332,6 +2641,11 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
             return;
         }
         final Long propQNameEntityId = propQNameEntity.getId();
+        final Long defaultLocaleEntityId = localeDAO.getDefaultLocalePair().getFirst();
+        final PropertyMapKey propKey = new PropertyMapKey();
+        propKey.setQnameId(propQNameEntityId);
+        propKey.setLocaleId(defaultLocaleEntityId);
+        propKey.setListIndex((short)0);
         // Run the query
         HibernateCallback callback = new HibernateCallback()
         {
@@ -2341,7 +2655,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
                   .getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_NODES_WITH_PROPERTY_VALUES_BY_STRING_AND_STORE)
                   .setString("protocol", storeRef.getProtocol())
                   .setString("identifier", storeRef.getIdentifier())
-                  .setLong("propQNameId", propQNameEntityId)
+                  .setParameter("propKey", propKey)
                   .setString("propStringValue", value)
                   ;
                 DirtySessionMethodInterceptor.setQueryFlushMode(session, query);
@@ -2387,16 +2701,17 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         {
             Node node = (Node) results.get()[0];
             // loop through all the node properties
-            Map<Long, PropertyValue> properties = node.getProperties();
-            for (Map.Entry<Long, PropertyValue> entry : properties.entrySet())
+            Map<PropertyMapKey, NodePropertyValue> properties = node.getProperties();
+            for (Map.Entry<PropertyMapKey, NodePropertyValue> entry : properties.entrySet())
             {
-                Long propertyQNameId = entry.getKey();
-                PropertyValue propertyValue = entry.getValue();
+                PropertyMapKey propertyKey = entry.getKey();
+                NodePropertyValue propertyValue = entry.getValue();
                 // ignore nulls
                 if (propertyValue == null)
                 {
                     continue;
                 }
+                Long  propertyQNameId = propertyKey.getQnameId();
                 // Get the actual value(s) as a collection
                 Collection<Serializable> values = propertyValue.getCollection(DataTypeDefinition.ANY);
                 // attempt to convert instance in the collection
@@ -2435,50 +2750,6 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         }
     }
     
-    /**
-     * {@inheritDoc}
-     */
-    public int getNodeCount()
-    {
-        HibernateCallback callback = new HibernateCallback()
-        {
-            public Object doInHibernate(Session session)
-            {
-                Query query = session.getNamedQuery(QUERY_GET_NODE_COUNT);
-                query.setMaxResults(1)
-                     .setReadOnly(true);
-                DirtySessionMethodInterceptor.setQueryFlushMode(session, query);
-                return query.uniqueResult();
-            }
-        };
-        Long count = (Long) getHibernateTemplate().execute(callback);
-        // done
-        return count.intValue();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public int getNodeCount(final StoreRef storeRef)
-    {
-        HibernateCallback callback = new HibernateCallback()
-        {
-            public Object doInHibernate(Session session)
-            {
-                Query query = session.getNamedQuery(QUERY_GET_NODE_COUNT_FOR_STORE);
-                query.setString("protocol", storeRef.getProtocol())
-                     .setString("identifier", storeRef.getIdentifier())
-                     .setMaxResults(1)
-                     .setReadOnly(true);
-                DirtySessionMethodInterceptor.setQueryFlushMode(session, query);
-                return query.uniqueResult();
-            }
-        };
-        Long count = (Long) getHibernateTemplate().execute(callback);
-        // done
-        return count.intValue();
-    }
-
     /*
      * Queries for transactions
      */
@@ -2722,12 +2993,12 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
                 return query.list();
             }
         };
-        List<NodeStatus> results = (List<NodeStatus>) getHibernateTemplate().execute(callback);
+        List<Node> results = (List<Node>) getHibernateTemplate().execute(callback);
         // transform into a simpler form
         List<NodeRef> nodeRefs = new ArrayList<NodeRef>(results.size());
-        for (NodeStatus nodeStatus : results)
+        for (Node node : results)
         {
-            NodeRef nodeRef = new NodeRef(storeRef, nodeStatus.getKey().getGuid());
+            NodeRef nodeRef = node.getNodeRef();
             nodeRefs.add(nodeRef);
         }
         // done
@@ -2748,18 +3019,575 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
                 return query.list();
             }
         };
-        List<NodeStatus> results = (List<NodeStatus>) getHibernateTemplate().execute(callback);
+        List<Node> results = (List<Node>) getHibernateTemplate().execute(callback);
         // transform into a simpler form
         List<NodeRef> nodeRefs = new ArrayList<NodeRef>(results.size());
-        for (NodeStatus nodeStatus : results)
+        for (Node node : results)
         {
-            NodeRef nodeRef = new NodeRef(
-                    nodeStatus.getKey().getProtocol(),
-                    nodeStatus.getKey().getIdentifier(),
-                    nodeStatus.getKey().getGuid());
+            NodeRef nodeRef = node.getNodeRef();
             nodeRefs.add(nodeRef);
         }
         // done
         return nodeRefs;
+    }
+    
+    //============ PROPERTY HELPER METHODS =================//
+    
+    public static Map<PropertyMapKey, NodePropertyValue> convertToPersistentProperties(
+            Map<QName, Serializable> in,
+            QNameDAO qnameDAO,
+            LocaleDAO localeDAO,
+            DictionaryService dictionaryService)
+    {
+        Map<PropertyMapKey, NodePropertyValue> propertyMap = new HashMap<PropertyMapKey, NodePropertyValue>(in.size() + 5);
+        for (Map.Entry<QName, Serializable> entry : in.entrySet())
+        {
+            Serializable value = entry.getValue();
+            // Get the qname ID
+            QName propertyQName = entry.getKey();
+            Long propertyQNameId = qnameDAO.getOrCreateQNameEntity(propertyQName).getId();
+            // Get the locale ID
+            Long propertylocaleId = localeDAO.getOrCreateDefaultLocalePair().getFirst();
+            // Get the property definition, if available
+            PropertyDefinition propertyDef = dictionaryService.getProperty(propertyQName);
+            // Add it to the map
+            HibernateNodeDaoServiceImpl.addValueToPersistedProperties(
+                    propertyMap,
+                    propertyDef,
+                    HibernateNodeDaoServiceImpl.IDX_NO_COLLECTION,
+                    propertyQNameId,
+                    propertylocaleId,
+                    value,
+                    localeDAO);
+        }
+        // Done
+        return propertyMap;
+    }
+
+    /**
+     * The collection index used to indicate that the value is not part of a collection.
+     * All values from zero up are used for real collection indexes.
+     */
+    private static final short IDX_NO_COLLECTION = -1;
+    
+    /**
+     * A method that adds properties to the given map.  It copes with collections.
+     *
+     * @param propertyDef           the property definition (<tt>null</tt> is allowed)
+     * @param collectionIndex       the index of the property in the collection or <tt>-1</tt> if
+     *                              we are not yet processing a collection 
+     */
+    private static void addValueToPersistedProperties(
+            Map<PropertyMapKey, NodePropertyValue> propertyMap,
+            PropertyDefinition propertyDef,
+            short collectionIndex,
+            Long propertyQNameId,
+            Long propertyLocaleId,
+            Serializable value,
+            LocaleDAO localeDAO)
+    {
+        if (value == null)
+        {
+            // The property is null.  Null is null and cannot be massaged any other way.
+            NodePropertyValue npValue = HibernateNodeDaoServiceImpl.makeNodePropertyValue(propertyDef, null);
+            PropertyMapKey npKey = new PropertyMapKey();
+            npKey.setListIndex(collectionIndex);
+            npKey.setQnameId(propertyQNameId);
+            npKey.setLocaleId(propertyLocaleId);
+            // Add it to the map
+            propertyMap.put(npKey, npValue);
+            // Done
+            return;
+        }
+        
+        // Get or spoof the property datatype
+        QName propertyTypeQName;
+        if (propertyDef == null)                // property not recognised
+        {
+            // allow it for now - persisting excess properties can be useful sometimes
+            propertyTypeQName = DataTypeDefinition.ANY;
+        }
+        else
+        {
+            propertyTypeQName = propertyDef.getDataType().getName();
+        }
+
+        // A property may appear to be multi-valued if the model definition is loose and
+        // an unexploded collection is passed in.  Otherwise, use the model-defined behaviour
+        // strictly.
+        boolean isMultiValued;
+        if (propertyTypeQName.equals(DataTypeDefinition.ANY))
+        {
+            // It is multi-valued if required (we are not in a collection and the property is a new collection)
+            isMultiValued = (value != null) && (value instanceof Collection) && (collectionIndex == IDX_NO_COLLECTION);
+        }
+        else
+        {
+            isMultiValued = propertyDef.isMultiValued();
+        }
+        
+        // Handle different scenarios.
+        // - Do we need to explode a collection?
+        // - Does the property allow collections?
+        if (collectionIndex == IDX_NO_COLLECTION && isMultiValued && !(value instanceof Collection))
+        {
+            // We are not (yet) processing a collection but the property should be part of a collection
+            HibernateNodeDaoServiceImpl.addValueToPersistedProperties(
+                    propertyMap,
+                    propertyDef,
+                    (short) 0,
+                    propertyQNameId,
+                    propertyLocaleId,
+                    value,
+                    localeDAO);
+        }
+        else if (collectionIndex == IDX_NO_COLLECTION && value instanceof Collection)
+        {
+            // We are not (yet) processing a collection and the property is a collection i.e. needs exploding
+            // Check that multi-valued properties are supported if the property is a collection
+            if (!isMultiValued)
+            {
+                throw new DictionaryException(
+                        "A single-valued property of this type may not be a collection: \n" +
+                        "   Property: " + propertyDef + "\n" +
+                        "   Type: " + propertyTypeQName + "\n" +
+                        "   Value: " + value);
+            }
+            // We have an allowable collection.
+            @SuppressWarnings("unchecked")
+            Collection<Object> collectionValues = (Collection<Object>) value;
+            // Persist empty collections directly.  This is handled by the NodePropertyValue.
+            if (collectionValues.size() == 0)
+            {
+                NodePropertyValue npValue = HibernateNodeDaoServiceImpl.makeNodePropertyValue(
+                        null,
+                        (Serializable) collectionValues);
+                PropertyMapKey npKey = new PropertyMapKey();
+                npKey.setListIndex(HibernateNodeDaoServiceImpl.IDX_NO_COLLECTION);
+                npKey.setQnameId(propertyQNameId);
+                npKey.setLocaleId(propertyLocaleId);
+                // Add it to the map
+                propertyMap.put(npKey, npValue);
+            }
+            // Break it up and recurse to persist the values.
+            collectionIndex = -1;
+            for (Object collectionValueObj : collectionValues)
+            {
+                collectionIndex++;
+                if (collectionValueObj != null && !(collectionValueObj instanceof Serializable))
+                {
+                    throw new IllegalArgumentException(
+                            "Node properties must be fully serializable, " +
+                            "including values contained in collections. \n" +
+                            "   Property: " + propertyDef + "\n" +
+                            "   Index:    " + collectionIndex + "\n" +
+                            "   Value:    " + collectionValueObj);
+                }
+                Serializable collectionValue = (Serializable) collectionValueObj;
+                try
+                {
+                    HibernateNodeDaoServiceImpl.addValueToPersistedProperties(
+                            propertyMap,
+                            propertyDef,
+                            collectionIndex,
+                            propertyQNameId,
+                            propertyLocaleId,
+                            collectionValue,
+                            localeDAO);
+                }
+                catch (Throwable e)
+                {
+                    throw new AlfrescoRuntimeException(
+                            "Failed to persist collection entry: \n" +
+                            "   Property: " + propertyDef + "\n" +
+                            "   Index:    " + collectionIndex + "\n" +
+                            "   Value:    " + collectionValue,
+                            e);
+                }
+            }
+        }
+        else
+        {
+            // We are either processing collection elements OR the property is not a collection
+            // Collections of collections are only supported by type d:any
+            if (value instanceof Collection && !propertyTypeQName.equals(DataTypeDefinition.ANY))
+            {
+                throw new DictionaryException(
+                        "Collections of collections (Serializable) are only supported by type 'd:any': \n" +
+                        "   Property: " + propertyDef + "\n" +
+                        "   Type: " + propertyTypeQName + "\n" +
+                        "   Value: " + value);
+            }
+            // Handle MLText
+            if (value instanceof MLText)
+            {
+                // This needs to be split up into individual strings
+                MLText mlTextValue = (MLText) value;
+                for (Map.Entry<Locale, String> mlTextEntry : mlTextValue.entrySet())
+                {
+                    Locale mlTextLocale = mlTextEntry.getKey();
+                    String mlTextStr = mlTextEntry.getValue();
+                    // Get the Locale ID for the text
+                    Long mlTextLocaleId = localeDAO.getOrCreateLocalePair(mlTextLocale).getFirst();
+                    // This is persisted against the current locale, but as a d:text instance
+                    NodePropertyValue npValue = new NodePropertyValue(DataTypeDefinition.TEXT, mlTextStr);
+                    PropertyMapKey npKey = new PropertyMapKey();
+                    npKey.setListIndex(collectionIndex);
+                    npKey.setQnameId(propertyQNameId);
+                    npKey.setLocaleId(mlTextLocaleId);
+                    // Add it to the map
+                    propertyMap.put(npKey, npValue);
+                }
+            }
+            else
+            {
+                NodePropertyValue npValue = HibernateNodeDaoServiceImpl.makeNodePropertyValue(propertyDef, value);
+                PropertyMapKey npKey = new PropertyMapKey();
+                npKey.setListIndex(collectionIndex);
+                npKey.setQnameId(propertyQNameId);
+                npKey.setLocaleId(propertyLocaleId);
+                // Add it to the map
+                propertyMap.put(npKey, npValue);
+            }
+        }
+    }
+
+    /**
+     * Helper method to convert the <code>Serializable</code> value into a full, persistable {@link NodePropertyValue}.
+     * <p>
+     * Where the property definition is null, the value will take on the
+     * {@link DataTypeDefinition#ANY generic ANY} value.
+     * <p>
+     * Collections are NOT supported.  These must be split up by the calling code before
+     * calling this method.  Map instances are supported as plain serializable instances.
+     * 
+     * @param propertyDef       the property dictionary definition, may be null
+     * @param value             the value, which will be converted according to the definition - may be null
+     * @return                  Returns the persistable property value
+     */
+    private static NodePropertyValue makeNodePropertyValue(PropertyDefinition propertyDef, Serializable value)
+    {
+        // get property attributes
+        final QName propertyTypeQName;
+        if (propertyDef == null)                // property not recognised
+        {
+            // allow it for now - persisting excess properties can be useful sometimes
+            propertyTypeQName = DataTypeDefinition.ANY;
+        }
+        else
+        {
+            propertyTypeQName = propertyDef.getDataType().getName();
+        }
+        try
+        {
+            NodePropertyValue propertyValue = new NodePropertyValue(propertyTypeQName, value);
+            // done
+            return propertyValue;
+        }
+        catch (TypeConversionException e)
+        {
+            throw new TypeConversionException(
+                    "The property value is not compatible with the type defined for the property: \n" +
+                    "   property: " + (propertyDef == null ? "unknown" : propertyDef) + "\n" +
+                    "   value: " + value + "\n" +
+                    "   value type: " + value.getClass(),
+                    e);
+        }
+    }
+    
+    public static Serializable getPublicProperty(
+            Map<PropertyMapKey, NodePropertyValue> propertyValues,
+            QName propertyQName,
+            QNameDAO qnameDAO,
+            LocaleDAO localeDAO,
+            DictionaryService dictionaryService)
+    {
+        // Get the qname ID
+        QNameEntity qnameEntity = qnameDAO.getQNameEntity(propertyQName);
+        if (qnameEntity == null)
+        {
+            // There is no persisted property with that QName, so we can't match anything
+            return null;
+        }
+        Long qnameId = qnameEntity.getId();
+        // Now loop over the properties and extract those with the given qname ID
+        SortedMap<PropertyMapKey, NodePropertyValue> scratch = new TreeMap<PropertyMapKey, NodePropertyValue>();
+        for (Map.Entry<PropertyMapKey, NodePropertyValue> entry : propertyValues.entrySet())
+        {
+            PropertyMapKey propertyKey = entry.getKey();
+            if (propertyKey.getQnameId().equals(qnameId))
+            {
+                scratch.put(propertyKey, entry.getValue());
+            }
+        }
+        // If we found anything, then collapse the properties to a Serializable
+        if (scratch.size() > 0)
+        {
+            PropertyDefinition propertyDef = dictionaryService.getProperty(propertyQName);
+            Serializable collapsedValue = HibernateNodeDaoServiceImpl.collapsePropertiesWithSameQName(
+                    propertyDef,
+                    scratch,
+                    localeDAO);
+            return collapsedValue;
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    public static Map<QName, Serializable> convertToPublicProperties(
+            Map<PropertyMapKey, NodePropertyValue> propertyValues,
+            QNameDAO qnameDAO,
+            LocaleDAO localeDAO,
+            DictionaryService dictionaryService)
+    {
+        Map<QName, Serializable> propertyMap = new HashMap<QName, Serializable>(propertyValues.size(), 1.0F);
+        // Shortcut
+        if (propertyValues.size() == 0)
+        {
+            return propertyMap;
+        }
+        // We need to process the properties in order
+        SortedMap<PropertyMapKey, NodePropertyValue> sortedPropertyValues = new TreeMap<PropertyMapKey, NodePropertyValue>(propertyValues);
+        // A working map.  Ordering is important.
+        SortedMap<PropertyMapKey, NodePropertyValue> scratch = new TreeMap<PropertyMapKey, NodePropertyValue>();
+        // Iterate (sorted) over the map entries and extract values with the same qname
+        Long currentQNameId = Long.MIN_VALUE;
+        Iterator<Map.Entry<PropertyMapKey, NodePropertyValue>> iterator = sortedPropertyValues.entrySet().iterator();
+        while (true)
+        {
+            Long nextQNameId = null;
+            PropertyMapKey nextPropertyKey = null;
+            NodePropertyValue nextPropertyValue = null;
+            // Record the next entry's values
+            if (iterator.hasNext())
+            {
+                Map.Entry<PropertyMapKey, NodePropertyValue> entry = iterator.next();
+                nextPropertyKey = entry.getKey();
+                nextPropertyValue = entry.getValue();
+                nextQNameId = nextPropertyKey.getQnameId();
+            }
+            // If the QName is going to change, and we have some entries to process, then process them.
+            if (scratch.size() > 0 && (nextQNameId == null || !nextQNameId.equals(currentQNameId)))
+            {
+                QName currentQName = qnameDAO.getQName(currentQNameId);
+                PropertyDefinition currentPropertyDef = dictionaryService.getProperty(currentQName);
+                // We have added something to the scratch properties but the qname has just changed
+                Serializable collapsedValue = null;
+                // We can shortcut if there is only one value
+                if (scratch.size() == 1)
+                {
+                    // There is no need to collapse list indexes
+                    collapsedValue = HibernateNodeDaoServiceImpl.collapsePropertiesWithSameQNameAndListIndex(
+                            currentPropertyDef,
+                            scratch,
+                            localeDAO);
+                }
+                else
+                {
+                    // There is more than one value so the list indexes need to be collapsed
+                    collapsedValue = HibernateNodeDaoServiceImpl.collapsePropertiesWithSameQName(
+                            currentPropertyDef,
+                            scratch,
+                            localeDAO);
+                }
+                // If the property is multi-valued then the output property must be a collection
+                if (currentPropertyDef != null && currentPropertyDef.isMultiValued())
+                {
+                    if (collapsedValue != null && !(collapsedValue instanceof Collection))
+                    {
+                        collapsedValue = (Serializable) Collections.singletonList(collapsedValue);
+                    }
+                }
+                // Store the value
+                propertyMap.put(currentQName, collapsedValue);
+                // Reset
+                scratch.clear();
+            }
+            if (nextQNameId != null)
+            {
+                // Add to the current entries
+                scratch.put(nextPropertyKey, nextPropertyValue);
+                currentQNameId = nextQNameId;
+            }
+            else
+            {
+                // There is no next value to process
+                break;
+            }
+        }
+        // Done
+        return propertyMap;
+    }
+    
+    private static Serializable collapsePropertiesWithSameQName(
+            PropertyDefinition propertyDef,
+            SortedMap<PropertyMapKey, NodePropertyValue> sortedPropertyValues,
+            LocaleDAO localeDAO)
+    {
+        Serializable result = null;
+        // A working map.  Ordering is not important for this map.
+        Map<PropertyMapKey, NodePropertyValue> scratch = new HashMap<PropertyMapKey, NodePropertyValue>(3);
+        // Iterate (sorted) over the map entries and extract values with the same list index
+        Short currentListIndex = Short.MIN_VALUE;
+        Iterator<Map.Entry<PropertyMapKey, NodePropertyValue>> iterator = sortedPropertyValues.entrySet().iterator();
+        while (true)
+        {
+            Short nextListIndex = null;
+            PropertyMapKey nextPropertyKey = null;
+            NodePropertyValue nextPropertyValue = null;
+            // Record the next entry's values
+            if (iterator.hasNext())
+            {
+                Map.Entry<PropertyMapKey, NodePropertyValue> entry = iterator.next();
+                nextPropertyKey = entry.getKey();
+                nextPropertyValue = entry.getValue();
+                nextListIndex = nextPropertyKey.getListIndex();
+            }
+            // If the list index is going to change, and we have some entries to process, then process them.
+            if (scratch.size() > 0 && (nextListIndex == null || !nextListIndex.equals(currentListIndex)))
+            {
+                // We have added something to the scratch properties but the index has just changed
+                Serializable collapsedValue = HibernateNodeDaoServiceImpl.collapsePropertiesWithSameQNameAndListIndex(
+                        propertyDef,
+                        scratch,
+                        localeDAO);
+                // Store.  If there is a value already, then we must build a collection.
+                if (result == null)
+                {
+                    result = collapsedValue;
+                }
+                else if (result instanceof Collection)
+                {
+                    @SuppressWarnings("unchecked")
+                    Collection<Serializable> collectionResult = (Collection<Serializable>) result;
+                    collectionResult.add(collapsedValue);
+                }
+                else
+                {
+                    Collection<Serializable> collectionResult = new ArrayList<Serializable>(20);
+                    collectionResult.add(result);                   // Add the first result
+                    collectionResult.add(collapsedValue);           // Add the new value
+                    result = (Serializable) collectionResult;
+                }
+                // Reset
+                scratch.clear();
+            }
+            if (nextListIndex != null)
+            {
+                // Add to the current entries
+                scratch.put(nextPropertyKey, nextPropertyValue);
+                currentListIndex = nextListIndex;
+            }
+            else
+            {
+                // There is no next value to process
+                break;
+            }
+        }
+        // Make sure that multi-valued properties are returned as a collection
+        if (propertyDef != null && propertyDef.isMultiValued() && result != null && !(result instanceof Collection))
+        {
+            result = (Serializable) Collections.singletonList(result);
+        }
+        // Done
+        return result;
+    }
+    
+    /**
+     * At this level, the properties have the same qname and list index.  They can only be separated
+     * by locale.  Typically, MLText will fall into this category as only.
+     * <p>
+     * If there are multiple values then they can only be separated by locale.  If they are separated
+     * by locale, then they have to be text-based.  This means that the only way to store them is via
+     * MLText.  Any other multi-locale properties cannot be deserialized.
+     */
+    private static Serializable collapsePropertiesWithSameQNameAndListIndex(
+            PropertyDefinition propertyDef,
+            Map<PropertyMapKey, NodePropertyValue> propertyValues,
+            LocaleDAO localeDAO)
+    {
+        int propertyValuesSize = propertyValues.size();
+        Serializable value = null;
+        if (propertyValuesSize == 0)
+        {
+            // Nothing to do
+        }
+        for (Map.Entry<PropertyMapKey, NodePropertyValue> entry : propertyValues.entrySet())
+        {
+            PropertyMapKey propertyKey = entry.getKey();
+            NodePropertyValue propertyValue = entry.getValue();
+            
+            if (propertyValuesSize == 1 &&
+                    (propertyDef == null || !propertyDef.getDataType().getName().equals(DataTypeDefinition.MLTEXT)))
+            {
+                // This is the only value and it is NOT to be converted to MLText
+                value = HibernateNodeDaoServiceImpl.makeSerializableValue(propertyDef, propertyValue);
+            }
+            else
+            {
+                // There are multiple values, so add them to MLText
+                MLText mltext = (value == null) ? new MLText() : (MLText) value;
+                try
+                {
+                    String mlString = (String) propertyValue.getValue(DataTypeDefinition.TEXT);
+                    // Get the locale
+                    Long localeId = propertyKey.getLocaleId();
+                    Locale locale = localeDAO.getLocalePair(localeId).getSecond();
+                    // Add to the MLText object
+                    mltext.addValue(locale, mlString);
+                }
+                catch (TypeConversionException e)
+                {
+                    // Ignore
+                    logger.warn("Unable to add property value to MLText instance: " + propertyValue);
+                }
+                value = mltext;
+            }
+        }
+        // Done
+        return value;
+    }
+    
+    /**
+     * Extracts the externally-visible property from the persistable value.
+     * 
+     * @param propertyDef       the model property definition - may be <tt>null</tt>
+     * @param propertyValue     the persisted property
+     * @return                  Returns the value of the property in the format dictated by the property
+     *                          definition, or null if the property value is null 
+     */
+    private static Serializable makeSerializableValue(PropertyDefinition propertyDef, NodePropertyValue propertyValue)
+    {
+        if (propertyValue == null)
+        {
+            return null;
+        }
+        // get property attributes
+        final QName propertyTypeQName;
+        if (propertyDef == null)
+        {
+            // allow this for now
+            propertyTypeQName = DataTypeDefinition.ANY;
+        }
+        else
+        {
+            propertyTypeQName = propertyDef.getDataType().getName();
+        }
+        try
+        {
+            Serializable value = propertyValue.getValue(propertyTypeQName);
+            // done
+            return value;
+        }
+        catch (TypeConversionException e)
+        {
+            throw new TypeConversionException(
+                    "The property value is not compatible with the type defined for the property: \n" +
+                    "   property: " + (propertyDef == null ? "unknown" : propertyDef) + "\n" +
+                    "   property value: " + propertyValue,
+                    e);
+        }
     }
 }

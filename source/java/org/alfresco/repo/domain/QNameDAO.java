@@ -29,6 +29,7 @@ import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
 
 /**
  * Data abstraction layer for QName and Namespace entities.
@@ -107,6 +108,8 @@ public interface QNameDAO
      */
     QNameEntity getOrCreateQNameEntity(QName qname);
     
+    Pair<Long, QName> getOrCreateQNamePair(QName qname);
+    
     /**
      * @param qname         the QName to create
      * @return              the new instance
@@ -116,4 +119,6 @@ public interface QNameDAO
     Set<QName> convertIdsToQNames(Set<Long> ids);
     
     Map<QName, ? extends Object> convertIdMapToQNameMap(Map<Long, ? extends Object> idMap);
+    
+    Set<Long> convertQNamesToIds(Set<QName> qnames, boolean create);
 }

@@ -32,7 +32,6 @@ import java.util.Set;
 
 import org.alfresco.repo.domain.ChildAssoc;
 import org.alfresco.repo.domain.NodeAssoc;
-import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.domain.Transaction;
 import org.alfresco.repo.domain.hibernate.DirtySessionAnnotation;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -132,22 +131,22 @@ public interface NodeDaoService
     public void updateNode(Long nodeId, StoreRef storeRef, String uuid, QName nodeTypeQName);
     
     @DirtySessionAnnotation(markDirty=false)
-    public PropertyValue getNodeProperty(Long nodeId, QName propertyQName);
+    public Serializable getNodeProperty(Long nodeId, QName propertyQName);
     
     @DirtySessionAnnotation(markDirty=false)
-    public Map<QName, PropertyValue> getNodeProperties(Long nodeId);
+    public Map<QName, Serializable> getNodeProperties(Long nodeId);
     
     @DirtySessionAnnotation(markDirty=true)
-    public void addNodeProperty(Long nodeId, QName qname, PropertyValue propertyValue);
+    public void addNodeProperty(Long nodeId, QName qname, Serializable value);
     
     @DirtySessionAnnotation(markDirty=true)
-    public void addNodeProperties(Long nodeId, Map<QName, PropertyValue> properties);
+    public void addNodeProperties(Long nodeId, Map<QName, Serializable> properties);
     
     @DirtySessionAnnotation(markDirty=true)
     public void removeNodeProperties(Long nodeId, Set<QName> propertyQNames);
     
     @DirtySessionAnnotation(markDirty=true)
-    public void setNodeProperties(Long nodeId, Map<QName, PropertyValue> properties);
+    public void setNodeProperties(Long nodeId, Map<QName, Serializable> properties);
     
     @DirtySessionAnnotation(markDirty=false)
     public Set<QName> getNodeAspects(Long nodeId);
@@ -398,17 +397,6 @@ public interface NodeDaoService
      */
     @DirtySessionAnnotation(markDirty=true)
     public void getPropertyValuesByActualType(DataTypeDefinition actualDataTypeDefinition, NodePropertyHandler handler);
-    
-    /**
-     * @return      Returns the total number of nodes in the ADM repository
-     */
-    @DirtySessionAnnotation(markDirty=false)
-    public int getNodeCount();
-    /**
-     * @return      Returns the total number of nodes in the ADM store
-     */
-    @DirtySessionAnnotation(markDirty=false)
-    public int getNodeCount(final StoreRef storeRef);
     
     /**
      * Iterface to handle callbacks when iterating over properties

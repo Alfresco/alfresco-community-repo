@@ -62,16 +62,28 @@ public interface Node
     public String getUuid();
     
     public void setUuid(String uuid);
+
+    public Transaction getTransaction();
+    
+    public void setTransaction(Transaction transaction);
+    
+    public boolean getDeleted();
+
+    public void setDeleted(boolean deleted);
     
     public QNameEntity getTypeQName();
     
     public void setTypeQName(QNameEntity typeQName);
 
-    public Set<Long> getAspects();
-    
-    public Map<Long, PropertyValue> getProperties();
-
     public DbAccessControlList getAccessControlList();
 
     public void setAccessControlList(DbAccessControlList accessControlList);
+
+    public Set<Long> getAspects();
+    
+    public Map<PropertyMapKey, NodePropertyValue> getProperties();
+    
+    public AuditableProperties getAuditableProperties();
+
+    public void setAuditableProperties(AuditableProperties auditableProperties);
 }

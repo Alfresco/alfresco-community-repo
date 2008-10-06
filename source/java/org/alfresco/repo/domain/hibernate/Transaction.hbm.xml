@@ -122,53 +122,46 @@
       ]]>
    </query>
    
-   <query name="txn.CountTransactions">
-      select
-         count(txn.id)
-      from
-         org.alfresco.repo.domain.hibernate.TransactionImpl as txn
-   </query>
-
    <query name="txn.GetTxnUpdateCountForStore">
       select
-         count(status.key.guid)
+         count(node.uuid)
       from
-         org.alfresco.repo.domain.hibernate.NodeStatusImpl as status
-         join status.transaction as txn
+         org.alfresco.repo.domain.hibernate.NodeImpl as node
+         join node.transaction as txn
       where
          txn.id = :txnId and
-         status.node is not null
+         node.deleted = false
    </query>
 
    <query name="txn.GetTxnDeleteCountForStore">
       select
-         count(status.key.guid)
+         count(node.uuid)
       from
-         org.alfresco.repo.domain.hibernate.NodeStatusImpl as status
-         join status.transaction as txn
+         org.alfresco.repo.domain.hibernate.NodeImpl as node
+         join node.transaction as txn
       where
          txn.id = :txnId and
-         status.node is null
+         node.deleted = true
    </query>
 
    <query name="txn.GetTxnChangesForStore">
       select
-         status
+         node
       from
-         org.alfresco.repo.domain.hibernate.NodeStatusImpl as status
+         org.alfresco.repo.domain.hibernate.NodeImpl as node
       where
-         status.transaction.id = :txnId and
-         status.key.protocol = :protocol and
-         status.key.identifier = :identifier
+         node.transaction.id = :txnId and
+         node.store.protocol = :protocol and
+         node.store.identifier = :identifier
    </query>
 
    <query name="txn.GetTxnChanges">
       select
-         status
+         node
       from
-         org.alfresco.repo.domain.hibernate.NodeStatusImpl as status
+         org.alfresco.repo.domain.hibernate.NodeImpl as node
       where
-         status.transaction.id = :txnId
+         node.transaction.id = :txnId
    </query>
 
 </hibernate-mapping>

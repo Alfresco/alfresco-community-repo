@@ -127,6 +127,7 @@ public class TransactionalCache<K extends Serializable, V extends Object>
         {
             return false;
         }
+        @SuppressWarnings("unchecked")
         TransactionalCache that = (TransactionalCache) obj;
         return EqualsHelper.nullSafeEquals(this.name, that.name);
     }
@@ -565,14 +566,22 @@ public class TransactionalCache<K extends Serializable, V extends Object>
     }
 
     /**
-     * Merge the transactional caches into the shared cache
+     * NO-OP
      */
     @SuppressWarnings("unchecked")
     public void beforeCommit(boolean readOnly)
     {
+    }
+
+    /**
+     * Merge the transactional caches into the shared cache
+     */
+    @SuppressWarnings("unchecked")
+    public void afterCommit()
+    {
         if (isDebugEnabled)
         {
-            logger.debug("Processing before-commit");
+            logger.debug("Processing after-commit");
         }
         
         TransactionData txnData = getTransactionData();
@@ -609,7 +618,7 @@ public class TransactionalCache<K extends Serializable, V extends Object>
             {
                 Element element = txnData.updatedItemsCache.get(key);
                 CacheBucket<V> bucket = (CacheBucket<V>) element.getObjectValue();
-                sharedCache.put(key, bucket.getValue());
+                bucket.doPostCommit(sharedCache, key);
             }
             if (isDebugEnabled)
             {
@@ -624,14 +633,6 @@ public class TransactionalCache<K extends Serializable, V extends Object>
         {
             removeCaches(txnData);
         }
-    }
-
-    /**
-     * NO-OP
-     */
-    @SuppressWarnings("unchecked")
-    public void afterCommit()
-    {
     }
 
     /**
@@ -769,15 +770,8 @@ public class TransactionalCache<K extends Serializable, V extends Object>
         }
         public void doPostCommit(SimpleCache<Serializable, BV> sharedCache, Serializable key)
         {
-            if (sharedCache.contains(key))
-            {
-                // We remove the shared entry whether it has moved on or not
-                sharedCache.remove(key);
-            }
-            else
-            {
-                // The shared cache no longer has a value
-            }
+            // We remove the shared entry whether it has moved on or not
+            sharedCache.remove(key);
         }
     }
     

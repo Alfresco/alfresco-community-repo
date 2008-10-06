@@ -6,8 +6,37 @@
 
 <hibernate-mapping>
 
-   <typedef class="org.alfresco.repo.domain.hibernate.LocaleUserType" name="Locale" />
-
+   <class
+         name="org.alfresco.repo.domain.hibernate.StoreImpl"
+         proxy="org.alfresco.repo.domain.Store"
+         table="alf_store"
+         dynamic-update="false"
+         dynamic-insert="false"
+         select-before-update="false"
+         optimistic-lock="version" >
+      <!-- auto-generated ID -->
+      <id name="id" column="id" type="long" >
+         <generator class="native" />
+      </id>
+      <!-- Protocol and Identifier must be unique -->
+      <natural-id mutable="true">
+         <property name="protocol" column="protocol" type="string" length="50" not-null="true" />
+         <property name="identifier" column="identifier" type="string" length="100" not-null="true" />
+      </natural-id>
+      <!-- Optimistic locking -->
+      <version column="version" name="version" type="long" />
+      <!-- forward assoc to root node -->
+      <many-to-one
+            name="rootNode"
+            not-null="true"
+            foreign-key="fk_alf_store_root"
+            lazy="proxy"
+            class="org.alfresco.repo.domain.hibernate.NodeImpl"
+            fetch="select" >
+         <column name="root_node_id" />
+      </many-to-one>
+   </class>
+   
    <class
          name="org.alfresco.repo.domain.hibernate.NodeImpl"
          proxy="org.alfresco.repo.domain.Node"
@@ -21,32 +50,42 @@
       <id name="id" column="id" type="long" >
          <generator class="native" />
       </id>
-      <!-- the natural ID of the node -->
+      <!-- Store and UUID must be unique -->
       <natural-id mutable="true">
          <!-- forward assoc to store -->
          <many-to-one
                name="store"
                class="org.alfresco.repo.domain.hibernate.StoreImpl"
+               column="store_id"
                not-null="true"
-               lazy="proxy"
+               lazy="false"
                foreign-key="fk_alf_n_store"
-               optimistic-lock="true"
-               fetch="join">
-            <column name="protocol" not-null="true" />
-            <column name="identifier" not-null="true" />
-         </many-to-one>
+               fetch="join" />
          <!-- the store-unique identifier -->
          <property name="uuid" column="uuid" type="string" length="36" />
       </natural-id>
       <!-- Optimistic locking -->
       <version column="version" name="version" type="long" />
       
+      <!-- forward assoc to Transaction -->
+      <many-to-one
+            name="transaction"
+            class="org.alfresco.repo.domain.hibernate.TransactionImpl"
+            column="transaction_id"
+            foreign-key="fk_alf_node_txn"
+            lazy="proxy"
+            fetch="select"
+            unique="false"
+            not-null="true"
+            cascade="none" />
+      <!-- Keep track of the node even once it dies -->
+      <property name="deleted" column="node_deleted" type="boolean" not-null="true" index="idx_alf_node_del"/>
       <!-- forward assoc to node type (mandatory) -->
       <many-to-one
             name="typeQName"
             class="org.alfresco.repo.domain.hibernate.QNameEntityImpl"
             column="type_qname_id"
-            foreign-key="fk_alf_n_tqname"
+            foreign-key="fk_alf_node_tqn"
             lazy="proxy"
             fetch="select"
             unique="false"
@@ -57,7 +96,7 @@
             name="accessControlList"
             class="org.alfresco.repo.domain.hibernate.DbAccessControlListImpl"
             column="acl_id"
-            foreign-key="fk_alf_n_acl"
+            foreign-key="fk_alf_node_acl"
             lazy="false"
             fetch="join"
             unique="false"
@@ -74,18 +113,20 @@
             inverse="false" 
             optimistic-lock="false"
             cascade="delete" >
-         <key column="node_id" foreign-key="fk_alf_n_prop" not-null="true" />
-         <map-key column="qname_id" type="long" />
-         <composite-element class="org.alfresco.repo.domain.PropertyValue" >
+         <key column="node_id" foreign-key="fk_alf_nprop_n" not-null="true" />
+         <composite-map-key class="org.alfresco.repo.domain.PropertyMapKey">
+             <key-property name="qnameId" column="qname_id" type="long" />
+             <key-property name="listIndex" column="list_index" type="short" />
+             <key-property name="localeId" column="locale_id" type="long" />
+         </composite-map-key>
+         <composite-element class="org.alfresco.repo.domain.NodePropertyValue" >
             <property name="actualType" column="actual_type_n" type="integer" not-null="true" />
             <property name="persistedType" column="persisted_type_n" type="integer" not-null="true" />
-            <property name="multiValued" column="multi_valued" type="boolean" not-null="true" />
             <property name="booleanValue" column="boolean_value" type="boolean" />
             <property name="longValue" column="long_value" type="long" />
             <property name="floatValue" column="float_value" type="float" />
             <property name="doubleValue" column="double_value" type="double" />
             <property name="stringValue" column="string_value" type="string" length="1024"/>
-            <many-to-one name="attributeValue" column="attribute_value" foreign-key="fk_alf_np_attr" class="org.alfresco.repo.attributes.AttributeImpl" />
             <property name="serializableValue" column="serializable_value" type="serializable" length="16384"/>
          </composite-element>
       </map>
@@ -100,51 +141,19 @@
             sort="unsorted"
             optimistic-lock="false"
             cascade="delete" >
-         <key column="node_id" foreign-key="fk_alf_n_asp" not-null="true" />
+         <key column="node_id" foreign-key="fk_alf_nasp_n" not-null="true" />
          <element column="qname_id" type="long" not-null="true" />
       </set>
+      <!-- cm:auditable properties -->
+      <component name="auditableProperties" class="org.alfresco.repo.domain.AuditableProperties" optimistic-lock="false">
+         <property name="auditCreator" column="audit_creator" type="string" length="255" not-null="true"/>
+         <property name="auditCreated" column="audit_created" type="string" length="30" not-null="true"/>
+         <property name="auditModifier" column="audit_modifier" type="string" length="255" not-null="true"/>
+         <property name="auditModified" column="audit_modified" type="string" length="30" not-null="true"/>
+         <property name="auditAccessed" column="audit_accessed" type="string" length="30" not-null="false"/>
+      </component>
    </class>
 
-   <class
-         name="org.alfresco.repo.domain.hibernate.NodeStatusImpl"
-         proxy="org.alfresco.repo.domain.NodeStatus"
-         table="alf_node_status"
-         dynamic-update="false"
-         dynamic-insert="false"
-         select-before-update="false" 
-         lazy="true" 
-         optimistic-lock="version"  >
-      <!-- composite PK -->
-      <composite-id name="key" class="org.alfresco.repo.domain.NodeKey">
-         <key-property name="protocol" length="50" />
-         <key-property name="identifier" length="100" />
-         <key-property name="guid" length="36" />
-      </composite-id>
-      <!-- Optimistic locking -->
-      <version column="version" name="version" type="long" />
-      <!-- forward assoc to transaction -->
-      <many-to-one
-            name="transaction"
-            class="org.alfresco.repo.domain.hibernate.TransactionImpl"
-            column="transaction_id"
-            foreign-key="fk_alf_ns_trans"
-            lazy="proxy"
-            fetch="select"
-            unique="false"
-            not-null="true"
-            cascade="none" />
-      <!-- forward assoc to node (optional) -->
-      <many-to-one
-            name="node"
-            class="org.alfresco.repo.domain.hibernate.NodeImpl"
-            column="node_id"
-            foreign-key="fk_alf_ns_node"
-            lazy="false"
-            fetch="join"
-            unique="false"
-            not-null="false" />
-   </class>
-   
    <class
          name="org.alfresco.repo.domain.hibernate.ChildAssocImpl"
          proxy="org.alfresco.repo.domain.ChildAssoc"
@@ -158,23 +167,23 @@
          <generator class="native" />
       </id>
       <natural-id mutable="true">
-      <!-- forward assoc to parent node -->
-      <many-to-one 
-            name="parent"
-            class="org.alfresco.repo.domain.hibernate.NodeImpl"
-            lazy="proxy"
-               foreign-key="fk_alf_ca_pnode"
-            fetch="select"
-            optimistic-lock="false"
+         <!-- forward assoc to parent node -->
+         <many-to-one 
+               name="parent"
+               class="org.alfresco.repo.domain.hibernate.NodeImpl"
+               lazy="proxy"
+               foreign-key="fk_alf_cass_pnode"
+               fetch="select"
+               optimistic-lock="false"
                not-null="true" >
-         <column name="parent_node_id" not-null="true" />
-      </many-to-one>
+            <column name="parent_node_id" not-null="true" />
+         </many-to-one>
          <!-- forward assoc to assoc type (mandatory) -->
          <many-to-one
                name="typeQName"
                class="org.alfresco.repo.domain.hibernate.QNameEntityImpl"
                column="type_qname_id"
-               foreign-key="fk_alf_ca_tqn"
+               foreign-key="fk_alf_cass_tqn"
                lazy="proxy"
                fetch="select"
                unique="false"
@@ -189,7 +198,7 @@
       <many-to-one
             name="child" 
             lazy="proxy"
-            foreign-key="fk_alf_ca_cnode"
+            foreign-key="fk_alf_cass_cnode"
             fetch="select"
             class="org.alfresco.repo.domain.hibernate.NodeImpl"
             optimistic-lock="false"
@@ -201,13 +210,13 @@
             name="qnameNamespace"
             class="org.alfresco.repo.domain.hibernate.NamespaceEntityImpl"
             column="qname_ns_id"
-            foreign-key="fk_alf_ca_qn_ns" 
+            foreign-key="fk_alf_cass_qnns" 
             lazy="proxy"
             fetch="select"
             unique="false"
             not-null="true"
             cascade="none" />
-      <property name="qnameLocalName" column="qname_localname" type="string" length="200" not-null="true" index="idx_alf_ca_qn_ln" />
+      <property name="qnameLocalName" column="qname_localname" type="string" length="100" not-null="true" index="idx_alf_cass_qnln" />
       <property name="isPrimary" column="is_primary" />
       <property name="index" column="assoc_index" />
    </class>
@@ -226,7 +235,7 @@
                name="source"
                class="org.alfresco.repo.domain.hibernate.NodeImpl"
                optimistic-lock="false"
-               foreign-key="fk_alf_na_snode"
+               foreign-key="fk_alf_nass_snode"
                lazy="false"
                fetch="join"
                not-null="true" >
@@ -237,7 +246,7 @@
                name="target"
                class="org.alfresco.repo.domain.hibernate.NodeImpl"
                optimistic-lock="false"
-               foreign-key="fk_alf_na_tnode"
+               foreign-key="fk_alf_nass_tnode"
                lazy="false"
                fetch="join"
                not-null="true" >
@@ -248,7 +257,7 @@
                 name="typeQName"
                 class="org.alfresco.repo.domain.hibernate.QNameEntityImpl"
                 column="type_qname_id"
-                foreign-key="fk_alf_na_tqn"
+                foreign-key="fk_alf_nass_tqn"
                 lazy="proxy"
                 fetch="select"
                 unique="false"
@@ -259,11 +268,32 @@
       <version column="version" name="version" type="long" />
    </class>
    
+   <query name="store.GetStoreByAll">
+      select
+         store
+      from 
+         org.alfresco.repo.domain.hibernate.StoreImpl as store
+         join store.rootNode
+      where
+         store.protocol = :protocol and
+         store.identifier = :identifier
+   </query>
+   
    <query name="store.GetAllStores">
       select
          store
       from
          org.alfresco.repo.domain.hibernate.StoreImpl as store
+   </query>
+   
+   <query name="node.GetNodeByStoreIdAndUuid">
+      select
+         node
+      from 
+         org.alfresco.repo.domain.hibernate.NodeImpl as node
+      where
+         node.store.id = :storeId and
+         node.uuid = :uuid
    </query>
    
    <query name="node.updateChildAssocName">
@@ -313,19 +343,6 @@
          assoc.target.id = :nodeId
    </query>
 
-   <query name="node.GetPrimaryChildNodeStatuses">
-      select
-         status
-      from
-         org.alfresco.repo.domain.hibernate.NodeStatusImpl as status,
-         org.alfresco.repo.domain.hibernate.ChildAssocImpl as assoc
-         join assoc.child as child
-      where
-         assoc.parent.id = :parentId and
-         assoc.isPrimary = true and
-         status.node.id = childId
-   </query>
-   
    <query name="node.GetChildNodeIds">
       select
          child.id
@@ -402,13 +419,14 @@
          assoc.isPrimary,
          assoc.index,
          child.id,
-         child.store.key.protocol,
-         child.store.key.identifier,
-         child.uuid as parentUuid
+         store.protocol,
+         store.identifier,
+         child.uuid
       from
          org.alfresco.repo.domain.hibernate.ChildAssocImpl as assoc
          join assoc.parent as parent
          join assoc.child as child
+         join child.store as store
       where
          assoc.parent.id = :parentId
       order by
@@ -425,13 +443,14 @@
          assoc.isPrimary,
          assoc.index,
          child.id,
-         child.store.key.protocol,
-         child.store.key.identifier,
-         child.uuid as parentUuid
+         store.protocol,
+         store.identifier,
+         child.uuid
       from
          org.alfresco.repo.domain.hibernate.ChildAssocImpl as assoc
          join assoc.parent as parent
          join assoc.child as child
+         join child.store as store
       where
          assoc.parent.id = :parentId and
          assoc.qnameNamespace = :qnameNamespace and
@@ -450,13 +469,14 @@
          assoc.isPrimary,
          assoc.index,
          child.id,
-         child.store.key.protocol,
-         child.store.key.identifier,
+         store.protocol,
+         store.identifier,
          child.uuid
       from
          org.alfresco.repo.domain.hibernate.ChildAssocImpl as assoc
          join assoc.parent as parent
          join assoc.child as child
+         join child.store as store
       where
          assoc.parent.id = :parentId and
          assoc.typeQName.id in (:childAssocTypeQNameIds)
@@ -474,13 +494,14 @@
          assoc.isPrimary,
          assoc.index,
          child.id,
-         child.store.key.protocol,
-         child.store.key.identifier,
+         store.protocol,
+         store.identifier,
          child.uuid
       from
          org.alfresco.repo.domain.hibernate.ChildAssocImpl as assoc
          join assoc.parent as parent
          join assoc.child as child
+         join child.store as store
       where
          assoc.parent.id = :parentId and
          assoc.typeQName = :typeQName and
@@ -500,13 +521,14 @@
          assoc.isPrimary,
          assoc.index,
          child.id,
-         child.store.key.protocol,
-         child.store.key.identifier,
+         store.protocol,
+         store.identifier,
          child.uuid
       from
          org.alfresco.repo.domain.hibernate.ChildAssocImpl as assoc
          join assoc.parent as parent
          join assoc.child as child
+         join child.store as store
       where
          assoc.parent.id = :parentId and
          assoc.isPrimary = true
@@ -524,20 +546,18 @@
          assoc.isPrimary,
          assoc.index,
          child.id,
-         child.store.key.protocol,
-         child.store.key.identifier,
+         store.protocol,
+         store.identifier,
          child.uuid
       from
          org.alfresco.repo.domain.hibernate.ChildAssocImpl as assoc
          join assoc.parent as parent
          join assoc.child as child
+         join child.store as store
       where
          assoc.parent.id = :parentId and
          assoc.isPrimary = true and
-         (
-            child.store.key.protocol != parent.store.key.protocol or
-            child.store.key.identifier != parent.store.key.identifier
-         )
+         child.store.id != parent.store.id
       order by
          assoc.index,
          assoc.id
@@ -546,20 +566,18 @@
    <query name="node.GetNodesWithChildrenInDifferentStores">
       select
          parent.id,
-         parent.store.key.protocol,
-         parent.store.key.identifier,
+         parentStore.protocol,
+         parentStore.identifier,
          parent.uuid
       from
          org.alfresco.repo.domain.hibernate.ChildAssocImpl as assoc
          join assoc.parent as parent
+         join parent.store as parentStore
          join assoc.child as child
       where
+         child.store.id != parent.store.id and
          parent.id > :minNodeId and
-         assoc.isPrimary = true and
-         (
-            child.store.key.protocol != parent.store.key.protocol or
-            child.store.key.identifier != parent.store.key.identifier
-         )
+         assoc.isPrimary = true
       order by
          parent.id
    </query>
@@ -567,8 +585,8 @@
    <query name="node.GetNodesWithAspect">
       select
          node.id,
-         node.store.key.protocol,
-         node.store.key.identifier,
+         node.store.protocol,
+         node.store.identifier,
          node.uuid
       from
          org.alfresco.repo.domain.hibernate.NodeImpl as node
@@ -629,11 +647,12 @@
          node.typeQName
       from 
          org.alfresco.repo.domain.hibernate.NodeImpl as node
+         join node.store as store
          join node.properties prop
       where
-         node.store.key.protocol = :protocol and
-         node.store.key.identifier = :identifier and
-         index(prop) = :propQNameId and
+         store.protocol = :protocol and
+         store.identifier = :identifier and
+         index(prop) = :propKey and
          prop.stringValue = :propStringValue
    </query>
    
@@ -659,8 +678,7 @@
          org.alfresco.repo.domain.hibernate.NodeImpl as node
 	     join node.properties as props
       where
-         props.serializableValue is not null and
-         props.multiValued = false
+         props.serializableValue is not null
    </query>
 
    <query name="node.patch.GetAssocsAndChildNames">
@@ -677,65 +695,6 @@
       order by
          assoc.id
       ]]>
-   </query>
-   
-   <query name="node.GetNodeStatusesForStore">
-      select
-         status
-      from 
-         org.alfresco.repo.domain.hibernate.NodeStatusImpl as status 
-      where 
-         status.key.protocol = :protocol and 
-         status.key.identifier = :identifier
-   </query>
-     
-   <query name="node.GetChildAssocsForStore">
-      select
-         assoc
-      from 
-         org.alfresco.repo.domain.hibernate.ChildAssocImpl as assoc 
-      where 
-         assoc.parent.id in (select 
-                                node.id 
-                             from 
-                                org.alfresco.repo.domain.hibernate.NodeImpl node 
-                             where 
-                                node.store.key.protocol = :protocol and 
-                                node.store.key.identifier = :identifier)
-   </query>
-   
-   <query name="node.GetNodesExceptRootForStore">
-      select
-         node
-      from 
-         org.alfresco.repo.domain.hibernate.NodeImpl as node 
-      where 
-         node.store.key.protocol = :nodeProtocol and 
-         node.store.key.identifier = :nodeIdentifier and 
-         node.id != (select 
-                        rootNode.id 
-                     from 
-                        org.alfresco.repo.domain.hibernate.StoreImpl store 
-                     where 
-                        store.key.protocol = :storeProtocol and 
-                        store.key.identifier = :storeIdentifier)
-   </query>
-   
-   <query name="node.GetNodeCount">
-      select
-         count(node.id)
-      from 
-         org.alfresco.repo.domain.hibernate.NodeImpl as node
-   </query>
-   
-   <query name="node.GetNodeCountForStore">
-      select
-         count(node.id)
-      from 
-         org.alfresco.repo.domain.hibernate.NodeImpl as node
-      where
-         node.store.key.protocol = :protocol and
-         node.store.key.identifier = :identifier
    </query>
    
 </hibernate-mapping>

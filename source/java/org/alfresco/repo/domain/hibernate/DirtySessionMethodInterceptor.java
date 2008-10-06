@@ -263,6 +263,15 @@ public class DirtySessionMethodInterceptor implements MethodInterceptor
     }
     
     /**
+     * Manually mark the session as dirty.
+     */
+    public static void setSessionDirty()
+    {
+        FlushData flushData = DirtySessionMethodInterceptor.getFlushData();
+        flushData.incrementDirtyCount();
+    }
+    
+    /**
      * Flush and reset the dirty count for the current transaction.  The session is
      * only flushed if it currently dirty.
      * 

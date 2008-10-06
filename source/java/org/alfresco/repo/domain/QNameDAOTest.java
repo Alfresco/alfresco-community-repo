@@ -141,6 +141,39 @@ public class QNameDAOTest extends TestCase
         retryingTransactionHelper.doInTransaction(callback);
     }
     
+    public void testGetQNameManyTimes() throws Exception
+    {
+        final String namespaceUri = GUID.generate();
+        final String localName = GUID.generate();
+        final QName qname = QName.createQName(namespaceUri, localName);
+        RetryingTransactionCallback<QNameEntity> callback = new RetryingTransactionCallback<QNameEntity>()
+        {
+            public QNameEntity execute() throws Throwable
+            {
+                QNameEntity qnameEntity = dao.getQNameEntity(qname);
+                assertNull("QName should not exist yet", qnameEntity);
+                // Now make it
+                qnameEntity = dao.newQNameEntity(qname);
+                assertNotNull("QName should now exist", dao.getQNameEntity(qname));
+                // Done
+                return qnameEntity;
+            }
+        };
+        retryingTransactionHelper.doInTransaction(callback);
+        callback = new RetryingTransactionCallback<QNameEntity>()
+        {
+            public QNameEntity execute() throws Throwable
+            {
+                for (int i = 0; i < 1000; i++)
+                {
+                    dao.getQNameEntity(qname);
+                }
+                return null;
+            }
+        };
+        retryingTransactionHelper.doInTransaction(callback);
+    }
+    
     /**
      * Forces a bunch of threads to attempt QName creation at exactly the same time
      * for their first attempt.  The subsequent retries should all succeed by

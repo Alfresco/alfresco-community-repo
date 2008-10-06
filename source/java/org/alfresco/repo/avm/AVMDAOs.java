@@ -75,19 +75,9 @@ public class AVMDAOs
     public MergeLinkDAO fMergeLinkDAO;
     
     /**
-     * The AVMNodePropertyDAO
-     */
-    public AVMNodePropertyDAO fAVMNodePropertyDAO;
-    
-    /**
      * The AVMStorePropertyDAO
      */
     public AVMStorePropertyDAO fAVMStorePropertyDAO;
-    
-    /**
-     * The AVMAspectNameDAO
-     */
-    public AVMAspectNameDAO fAVMAspectNameDAO;
     
     public AttributeDAO fAttributeDAO;
     
@@ -160,19 +150,9 @@ public class AVMDAOs
         fIssuerDAO = issuerDAO;
     }
     
-    public void setAvmNodePropertyDAO(AVMNodePropertyDAO avmNodePropertyDAO)
-    {
-        fAVMNodePropertyDAO = avmNodePropertyDAO;
-    }
-    
     public void setAvmStorePropertyDAO(AVMStorePropertyDAO avmStorePropertyDAO)
     {
         fAVMStorePropertyDAO = avmStorePropertyDAO;
-    }
-    
-    public void setAvmAspectNameDAO(AVMAspectNameDAO avmAspectNameDAO)
-    {
-        fAVMAspectNameDAO = avmAspectNameDAO;
     }
     
     public void setAttributeDAO(AttributeDAO dao)

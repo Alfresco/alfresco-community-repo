@@ -35,6 +35,7 @@ import org.alfresco.repo.domain.NamespaceEntity;
 import org.alfresco.repo.domain.QNameDAO;
 import org.alfresco.repo.domain.QNameEntity;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Query;
@@ -196,7 +197,7 @@ public class HibernateQNameDAOImpl extends HibernateDaoSupport implements QNameD
                 qnameEntityCache.put(qname, -1L);
             }
         }
-        else if(id == -1L)
+        else if (id == -1L)
         {
             return null;
         }
@@ -226,6 +227,20 @@ public class HibernateQNameDAOImpl extends HibernateDaoSupport implements QNameD
             result = newQNameEntity(qname);
         }
         return result;
+    }
+
+    public Pair<Long, QName> getOrCreateQNamePair(QName qname)
+    {
+        Long id = qnameEntityCache.get(qname);
+        if (id == null)
+        {
+            // It is not cached
+            QNameEntity qnameEntity = getOrCreateQNameEntity(qname);
+            id = qnameEntity.getId();
+        }
+        Pair<Long, QName> qnamePair = new Pair<Long, QName>(id, qname);
+        // Done
+        return qnamePair;
     }
 
     public QNameEntity newQNameEntity(QName qname)
@@ -272,5 +287,43 @@ public class HibernateQNameDAOImpl extends HibernateDaoSupport implements QNameD
             qnameMap.put(qname, entry.getValue());
         }
         return qnameMap;
+    }
+
+    /**
+     * @return      Returns a set of IDs mapping to the QNames provided.  If create is <tt>false</tt>
+     *              then there will not be corresponding entries for the QNames that don't exist.
+     *              So there is no guarantee that the returned set will be ordered the same or even
+     *              contain the same number of elements as the original unless create is <tt>true</tt>.
+     */
+    public Set<Long> convertQNamesToIds(Set<QName> qnames, boolean create)
+    {
+        Set<Long> qnameIds = new HashSet<Long>(qnames.size(), 1.0F);
+        for (QName qname : qnames)
+        {
+            Long qnameEntityId = null;
+            if (create)
+            {
+                qnameEntityId = getOrCreateQNameEntity(qname).getId();
+            }
+            else
+            {
+                QNameEntity qnameEntity = getQNameEntity(qname);
+                if (qnameEntity == null)
+                {
+                    // No such qname and we are not creating one
+                    continue;
+                }
+                else
+                {
+                    qnameEntityId = qnameEntity.getId();
+                }
+            }
+            if (qnameEntityId != null)
+            {
+                qnameIds.add(qnameEntityId);
+            }
+        }
+        // Done
+        return qnameIds;
     }
 }

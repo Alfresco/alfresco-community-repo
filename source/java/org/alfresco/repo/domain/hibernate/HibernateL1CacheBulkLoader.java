@@ -25,12 +25,8 @@
 package org.alfresco.repo.domain.hibernate;
 
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-import org.alfresco.repo.domain.Node;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.hibernate.CacheMode;
 import org.hibernate.Criteria;
@@ -38,25 +34,23 @@ import org.hibernate.EntityMode;
 import org.hibernate.FetchMode;
 import org.hibernate.FlushMode;
 import org.hibernate.Session;
-import org.hibernate.criterion.Projections;
-import org.hibernate.criterion.Property;
 import org.hibernate.criterion.Restrictions;
-import org.hibernate.engine.EntityKey;
 import org.hibernate.metadata.ClassMetadata;
 import org.hibernate.metadata.CollectionMetadata;
-import org.hibernate.stat.SessionStatistics;
-import org.hibernate.stat.Statistics;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
 /**
+ * Pre-populates <b>Node</b> entities for a given set of references.
+ * 
  * @author andyh
+ * @since 3.0
  */
 public class HibernateL1CacheBulkLoader extends HibernateDaoSupport implements BulkLoader
 {
     public void loadIntoCache(Collection<NodeRef> nodeRefs)
     {
-        // TODO: only do if dirty.
-        //getSession().flush();
+        Session session = getSession();
+        DirtySessionMethodInterceptor.flushSession(session);
         
         String[] guids = new String[nodeRefs.size()];
         int index = 0;
@@ -65,10 +59,10 @@ public class HibernateL1CacheBulkLoader extends HibernateDaoSupport implements B
             guids[index++] = nodeRef.getId();
         }
 
-        Criteria criteria = getSession().createCriteria(NodeStatusImpl.class, "status");
+        Criteria criteria = getSession().createCriteria(NodeImpl.class, "node");
         criteria.setResultTransformer(Criteria.ALIAS_TO_ENTITY_MAP);
-        criteria.add(Restrictions.in("key.guid", guids));
-        criteria.createAlias("status.node", "node");
+        criteria.add(Restrictions.in("uuid", guids));
+        criteria.createAlias("node.store", "store");
         criteria.setFetchMode("node.aspects", FetchMode.SELECT);
         criteria.setFetchMode("node.properties", FetchMode.JOIN);
         criteria.setFetchMode("node.store", FetchMode.SELECT);
@@ -77,10 +71,10 @@ public class HibernateL1CacheBulkLoader extends HibernateDaoSupport implements B
 
         criteria.list();
         
-        criteria = getSession().createCriteria(NodeStatusImpl.class, "status");
+        criteria = getSession().createCriteria(NodeImpl.class, "node");
         criteria.setResultTransformer(Criteria.ALIAS_TO_ENTITY_MAP);
-        criteria.add(Restrictions.in("key.guid", guids));
-        criteria.createAlias("status.node", "node");
+        criteria.add(Restrictions.in("uuid", guids));
+        criteria.createAlias("node.store", "store");
         criteria.setFetchMode("node.aspects", FetchMode.JOIN);
         criteria.setFetchMode("node.properties", FetchMode.SELECT);
         criteria.setFetchMode("node.store", FetchMode.SELECT);
@@ -88,10 +82,9 @@ public class HibernateL1CacheBulkLoader extends HibernateDaoSupport implements B
         criteria.setFlushMode(FlushMode.MANUAL);
 
         criteria.list();
-        
-        
     }
 
+    @SuppressWarnings("unchecked")
     public void clear()
     {
         getSession().flush();

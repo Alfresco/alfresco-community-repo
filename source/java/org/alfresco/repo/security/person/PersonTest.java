@@ -174,6 +174,8 @@ public class PersonTest extends BaseSpringTest
 
     public void testCreateMissingPeople2()
     {
+        System.out.print(personService.getAllPeople());
+        
         personService.setCreateMissingPeople(false);
         assertFalse(personService.createMissingPeople());
 
@@ -184,6 +186,13 @@ public class PersonTest extends BaseSpringTest
         assertNotNull(nodeRef);
         testProperties(nodeRef, "andy", "andy", "", "", "");
 
+        nodeRef = personService.getPerson("andy");
+        testProperties(nodeRef, "andy", "andy", "", "", "");
+        
+        nodeRef = personService.getPerson("Andy");
+        testProperties(nodeRef, "andy", "andy", "", "", "");
+        
+        assertEquals(nodeRef, personService.getPerson("Andy"));
         nodeRef = personService.getPerson("Andy");
         assertNotNull(nodeRef);
         if (personService.getUserIdentifier("Andy").equals("Andy"))

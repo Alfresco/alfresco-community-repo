@@ -32,15 +32,17 @@ package org.alfresco.repo.domain;
 public interface VersionCount
 {
     /**
-     * @return Returns the key for the version counter
+     * @return          Returns the auto-generated ID
      */
-    public StoreKey getKey();
-
-    /**
-     * @param key the key uniquely identifying this version counter
-     */
-    public void setKey(StoreKey key);
+    public Long getId();
     
+    /**
+     * @return          Returns the associated store
+     */
+    public Store getStore();
+    
+    public void setStore(Store store);
+
     /**
      * Increments and returns the next version counter associated with this
      * store.

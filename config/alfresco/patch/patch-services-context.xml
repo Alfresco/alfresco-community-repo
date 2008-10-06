@@ -1410,17 +1410,6 @@
             <ref bean="aclDaoComponent" />
         </property>
     </bean>
-	
-    <bean id="patch.db-V2.1-AuditPathIndex" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
-        <property name="id"><value>patch.db-V2.1-AuditPathIndex</value></property>
-        <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
-        <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>132</value></property>
-        <property name="targetSchema"><value>133</value></property>
-        <property name="scriptUrl">
-            <value>classpath:alfresco/dbscripts/upgrade/2.2/${db.script.dialect}/AlfrescoSchemaUpdate-2.1-AuditPathIndex.sql</value>
-        </property>
-    </bean>
 
     <bean id="patch.db-V3.0-0-CreateActivitiesExtras" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
         <property name="id"><value>patch.db-V3.0-0-CreateActivitiesExtras</value></property>
@@ -1544,6 +1533,36 @@
         </property>
         <property name="qnameDAO">
             <ref bean="qnameDAO" />
+        </property>
+    </bean>
+	
+    <bean id="patch.db-V2.1-AuditPathIndex" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V2.1-AuditPathIndex</value></property>
+        <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>132</value></property>
+        <property name="targetSchema"><value>133</value></property>
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/2.2/${db.script.dialect}/AlfrescoSchemaUpdate-2.1-AuditPathIndex.sql</value>
+        </property>
+    </bean>
+    
+    <bean id="patch.spacesStoreGuestPermission" class="org.alfresco.repo.admin.patch.impl.SpacesStoreGuestPermissionPatch" parent="basePatch" >
+        <property name="id"><value>patch.spacesStoreGuestPermission</value></property>
+        <property name="description"><value>patch.spacesStoreGuestPermission.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>133</value></property>
+        <property name="targetSchema"><value>134</value></property>
+        <property name="permissionService">
+            <ref bean="permissionService"/>
+        </property>
+        <property name="importerBootstrap">
+            <ref bean="spacesBootstrap" />
+        </property>
+        <property name="dependsOn">
+            <list>
+                <ref bean="patch.updateGuestPermission" />
+            </list>
         </property>
     </bean>
 </beans>

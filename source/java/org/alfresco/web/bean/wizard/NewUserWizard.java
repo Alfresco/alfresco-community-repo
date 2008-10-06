@@ -814,6 +814,11 @@ public class NewUserWizard extends AbstractWizardBean
     */
    public void setUserName(String userName)
    {
+      if (userName != null) 
+      { 
+         userName = userName.trim();
+      }
+      
       this.userName = userName;
    }
 

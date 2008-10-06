@@ -599,6 +599,12 @@ public class RenderingEngineTemplateImpl
    {
       return this.getClass().getName() + "{name : " + this.getName() + "}";
    }
+   
+   public boolean isExists()
+   {
+       final NodeService nodeService = this.getServiceRegistry().getNodeService();
+       return nodeService.exists(this.nodeRef);
+   }
 
 }
 

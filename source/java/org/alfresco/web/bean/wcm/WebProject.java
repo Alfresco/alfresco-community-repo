@@ -161,7 +161,10 @@ public class WebProject implements Serializable
                nodeService.getProperty(car.getChildRef(), WCMAppModel.PROP_OUTPUT_PATH_PATTERN);
             final RenderingEngineTemplateImpl ret = (RenderingEngineTemplateImpl)
                allRets.get(renderingEngineTemplateName);
-            result.put(ret.getName(), 
+            if (ret != null)
+            {
+
+                result.put(ret.getName(), 
                        new RenderingEngineTemplateImpl(ret.getNodeRef(),
                                                        ret.getRenditionPropertiesNodeRef(),
                                                        this.getFormsService())
@@ -174,6 +177,7 @@ public class WebProject implements Serializable
                              return outputPathPattern;
                           }
                        });
+            }
 
          }
          return result;

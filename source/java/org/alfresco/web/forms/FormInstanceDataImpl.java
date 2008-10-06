@@ -196,8 +196,24 @@ import org.xml.sax.SAXException;
       // regenerate existing renditions
       boolean renditionLockedBefore = false;
       String path = null;
+      
       for (final Rendition r : this.getRenditions())
       {
+         // Try to skip renditions without rendering engine template.
+         if (r instanceof RenditionImpl)
+         {
+             RenditionImpl rImpl = (RenditionImpl)r;
+             RenderingEngineTemplate ret = rImpl.getRenderingEngineTemplate();
+             if ((ret != null) && (ret instanceof RenderingEngineTemplateImpl))
+             {
+                 RenderingEngineTemplateImpl retImpl = (RenderingEngineTemplateImpl) ret;
+                 if (!retImpl.isExists())
+                 {
+                     continue;
+                 }
+             }
+
+         }
          final RenderingEngineTemplate ret = r.getRenderingEngineTemplate();
          if (ret == null || !allRets.contains(ret))
          {
@@ -237,7 +253,7 @@ import org.xml.sax.SAXException;
             }
          }
       }
-
+      
       // render all renditions for newly added templates
       for (final RenderingEngineTemplate ret : allRets)
       {

@@ -32,6 +32,7 @@ import javax.faces.context.FacesContext;
 import javax.faces.context.ResponseWriter;
 import javax.faces.el.ValueBinding;
 
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.workflow.WorkflowInstance;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
@@ -120,10 +121,20 @@ public class UIWorkflowSummary extends SelfRenderingComponent
          out.write("</td></tr><tr><td>");
          out.write(bundle.getString("initiated_by"));
          out.write(":</td><td>");
+         NodeService nodeService = getNodeService(context);
          if (wi.initiator != null)
          {
-            out.write(Utils.encode(User.getFullName(Repository.getServiceRegistry(
-                  context).getNodeService(), wi.initiator)));
+            if (nodeService.exists(wi.initiator))
+            {
+               out.write(Utils.encode(User.getFullName(Repository.getServiceRegistry(
+                        context).getNodeService(), wi.initiator)));
+            }
+            else
+            {
+               out.write("&lt;");
+               out.write(bundle.getString("unknown"));
+               out.write("&gt;");
+            }
          }
          out.write("</td></tr><tr><td>");
          out.write(bundle.getString("started_on"));
@@ -188,5 +199,10 @@ public class UIWorkflowSummary extends SelfRenderingComponent
    public void setValue(WorkflowInstance value)
    {
       this.value = value;
+   }
+   
+   private NodeService getNodeService(FacesContext fc)
+   {
+      return Repository.getServiceRegistry(fc).getNodeService();
    }
 }

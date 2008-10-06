@@ -39,9 +39,13 @@ import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.forms.Form;
 import org.alfresco.web.forms.RenderingEngineTemplate;
 import org.alfresco.web.forms.xforms.SchemaUtil;
@@ -53,6 +57,11 @@ import org.apache.commons.logging.LogFactory;
  * Backing bean for the Edit Form wizard.
  * 
  * @author Ariel Backenroth
+ * @author Arseny Kovalchuk (Bug Fixer)
+ * 
+ * Methods removeRenderingEngineTemplateFromWebProjects, addRenderingEngineTemplateToWebProjects, searchRenderingEngineTemplateInWebProject
+ * are added to fix an issue reported in https://issues.alfresco.com/jira/browse/ETWOONE-317
+ * 
  */
 public class EditFormWizard 
    extends CreateFormWizard
@@ -91,8 +100,10 @@ public class EditFormWizard
          this.getNodeService().getProperty(formNodeRef, WCMAppModel.PROP_XML_SCHEMA);
       if (schemaNodeRef == null)
       {
-         LOGGER.debug(WCMAppModel.PROP_XML_SCHEMA + " not set on " + formNodeRef +
-                      ", checking " + WCMAppModel.PROP_XML_SCHEMA_OLD);
+         if (LOGGER.isDebugEnabled())
+            LOGGER.debug(WCMAppModel.PROP_XML_SCHEMA + " not set on " + formNodeRef +
+                         ", checking " + WCMAppModel.PROP_XML_SCHEMA_OLD);
+
          schemaNodeRef = (NodeRef)
             getNodeService().getProperty(formNodeRef, WCMAppModel.PROP_XML_SCHEMA_OLD);
          if (schemaNodeRef != null)
@@ -175,8 +186,10 @@ public class EditFormWizard
 
       if (wd != null && workflowRefs.size() == 0)
       {
-         LOGGER.debug("adding workflow definition " + wd.getName() + 
-                      " to form " + this.getFormName());
+         if (LOGGER.isDebugEnabled())
+            LOGGER.debug("adding workflow definition " + wd.getName() + 
+                         " to form " + this.getFormName());
+         
          final Map<QName, Serializable> props = new HashMap<QName, Serializable>(1, 1.0f);
          props.put(WCMAppModel.PROP_WORKFLOW_NAME, wd.getName());
          this.getNodeService().createNode(formNodeRef,
@@ -187,15 +200,19 @@ public class EditFormWizard
       }
       else if (wd != null && workflowRefs.size() == 1)
       {
-         LOGGER.debug("setting workflow definition " + wd.getName() + 
-                      " to form " + this.getFormName());
+         if (LOGGER.isDebugEnabled())
+            LOGGER.debug("setting workflow definition " + wd.getName() + 
+                         " to form " + this.getFormName());
+
          this.getNodeService().setProperty(workflowRefs.get(0).getChildRef(),
                                       WCMAppModel.PROP_WORKFLOW_NAME,
                                       wd.getName());
       }              
       else if (wd == null && workflowRefs.size() == 1)
       {
-         LOGGER.debug("removing workflow definitions from form " + this.getFormName());
+         if (LOGGER.isDebugEnabled())
+            LOGGER.debug("removing workflow definitions from form " + this.getFormName());
+         
          this.getNodeService().removeChild(formNodeRef, workflowRefs.get(0).getChildRef());
       }         
 
@@ -222,24 +239,148 @@ public class EditFormWizard
       {
          for (final RenderingEngineTemplateData retd : this.removedRenderingEngineTemplates)
          {
-            LOGGER.debug("removing rendering engine template " + retd);
+            if (LOGGER.isDebugEnabled())
+               LOGGER.debug("removing rendering engine template " + retd);
+            
             assert retd != null;
             assert retd.getNodeRef() != null;
             this.getNodeService().removeChild(formNodeRef, retd.getNodeRef());
+            this.removeRenderingEngineTemplateFromWebProjects(formNodeRef, retd);
+
          }
       }
-
       for (final RenderingEngineTemplateData retd : this.renderingEngineTemplates)
       {
          if (retd.getFile() != null)
          {
             this.saveRenderingEngineTemplate(retd, formNodeRef);
+            this.addRenderingEngineTemplateToWebProjects(formNodeRef, retd);
          }
       }
       return outcome;
    }
-
+   
    /**
+    * Removes an associated Rendering Engine Template from all web forms in all web projects.
+    * 
+    * @param formNodeRef Form nodeRef
+    * @param retd Rendering engine template to remove from web projects
+    */
+   private void removeRenderingEngineTemplateFromWebProjects(NodeRef formNodeRef, RenderingEngineTemplateData retd)
+   {
+       List<WebProject> webProjects = getFormsService().getAssociatedWebProjects(getFormsService().getForm(formNodeRef));
+       for (WebProject wp: webProjects)
+       {
+           ResultSet results = searchRenderingEngineTemplateInWebProject(wp, retd.getName());
+           for (int i=0; i<results.length(); i++)
+           {
+               NodeRef webformTemplateNodeRef = results.getNodeRef(i);
+               NodeRef webformNodeRef = getNodeService().getPrimaryParent(webformTemplateNodeRef).getParentRef();
+               getNodeService().removeChild(webformNodeRef, webformTemplateNodeRef);
+               if (LOGGER.isDebugEnabled())
+                  LOGGER.debug(webformNodeRef);
+           }
+       }
+   }
+   
+   /**
+    * Adds or updates an associated Rendering Engine Template from all web forms in all web projects.
+    * 
+    * @param formNodeRef
+    * @param retd Rendering engine template to remove from web projects
+    */
+   
+   private void addRenderingEngineTemplateToWebProjects(NodeRef formNodeRef, RenderingEngineTemplateData retd)
+   {
+       Form form = getFormsService().getForm(formNodeRef);
+       List<WebProject> webProjects = getFormsService().getAssociatedWebProjects(form);
+       Map<QName, Serializable> props = new HashMap<QName, Serializable>(4, 1.0f);
+       for (WebProject wp: webProjects)
+       {
+           ResultSet results = searchRenderingEngineTemplateInWebProject(wp, retd.getName());
+           int resultsCount = results.length();
+           if (resultsCount>0)
+           {
+               //update
+               for (int i=0; i<resultsCount; i++)
+               {
+                   NodeRef webformTemplateNodeRef = results.getNodeRef(i);
+                   if (retd.getOutputPathPatternForRendition() != null)
+                   {
+                      props.clear();
+                      props.put(WCMAppModel.PROP_OUTPUT_PATH_PATTERN, retd.getOutputPathPatternForRendition());
+                      getNodeService().addAspect(webformTemplateNodeRef, WCMAppModel.ASPECT_OUTPUT_PATH_PATTERN, props);
+                   }
+               }
+           }
+           else
+           {
+               //just add
+               String query = "+TYPE:\"" + WCMAppModel.TYPE_WEBFORM + "\"" +
+                              " +@" + Repository.escapeQName(WCMAppModel.PROP_FORMNAME) + ":\"" + form.getName() + "\"";
+               
+               if (LOGGER.isDebugEnabled())
+                  LOGGER.debug("Search web forms query: " + query);
+
+               ResultSet webforms = getSearchService().query(wp.getNodeRef().getStoreRef(), SearchService.LANGUAGE_LUCENE, query);
+               
+               props.clear();
+               props.put(WCMAppModel.PROP_BASE_RENDERING_ENGINE_TEMPLATE_NAME, 
+                         retd.getName());
+               for (int i=0; i<webforms.length(); i++)
+               {
+                   if (LOGGER.isDebugEnabled())
+                      LOGGER.debug("WebForm NodeRef: " + webforms.getNodeRef(i));
+                   
+                   NodeRef templateRef = getNodeService().createNode(webforms.getNodeRef(i),
+                                                                     WCMAppModel.ASSOC_WEBFORMTEMPLATE,
+                                                                     WCMAppModel.ASSOC_WEBFORMTEMPLATE,
+                                                                     WCMAppModel.TYPE_WEBFORMTEMPLATE,
+                                                                     props).getChildRef();
+                   
+                   if (retd.getOutputPathPatternForRendition() != null)
+                   {
+                      props.clear();
+                      props.put(WCMAppModel.PROP_OUTPUT_PATH_PATTERN, retd.getOutputPathPatternForRendition());
+                      getNodeService().addAspect(templateRef, WCMAppModel.ASPECT_OUTPUT_PATH_PATTERN, props);
+                   }
+               }
+           }
+       }
+   }
+   
+   /**
+    * Searches an specific Web Form Template with appropriate name in the Web Project.
+    * 
+    * @param wp The WebProject to search
+    * @param name The name of Rendering Engine Template to search
+    * @return Search result
+    */
+   private ResultSet searchRenderingEngineTemplateInWebProject(WebProject wp, String name)
+   {
+       ResultSet result = null;
+       StringBuilder query = new StringBuilder(256);
+       query.append("+TYPE:\"").append(WCMAppModel.TYPE_WEBFORMTEMPLATE).append("\" ");
+       query.append("+@").append(Repository.escapeQName(WCMAppModel.PROP_BASE_RENDERING_ENGINE_TEMPLATE_NAME)).append(":\"").append(name).append("\" ");
+       
+       // Search not found anything in this StoreRef!
+       // It looks like a wrong search in RegenerateRenditionsWizard.
+       // 
+       //StoreRef storeRef = AVMNodeConverter.ToStoreRef(wp.getStagingStore());
+       
+       StoreRef storeRef = wp.getNodeRef().getStoreRef();
+       result = getSearchService().query(storeRef, SearchService.LANGUAGE_LUCENE, query.toString());
+       if (LOGGER.isDebugEnabled())
+       {
+           LOGGER.debug(">>>Web Project: " + wp);
+           LOGGER.debug(">>>StoreRef: " + storeRef);
+           LOGGER.debug(">>>Search query: " + query.toString());
+           LOGGER.debug(">>>Search results: " + result.length());
+       }
+       return result;
+   }
+
+/**
     * Action handler called when the Remove button is pressed to remove a 
     * rendering engine
     */

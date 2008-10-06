@@ -35,6 +35,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
@@ -280,6 +281,9 @@ public class ForumsBean implements IContextListener
                this.viewsConfig.getDefaultSortColumn(PAGE_NAME_FORUMS));
          this.forumsRichList.setInitialSortDescending(
                this.viewsConfig.hasDescendingSort(PAGE_NAME_FORUMS));
+         
+         // ETWOONE-183 & ETWOONE-339. For URL addressability of forums spaces
+         this.forumsRichList.setRefreshOnBind(true);
       }
    }
    
@@ -337,6 +341,9 @@ public class ForumsBean implements IContextListener
                this.viewsConfig.getDefaultSortColumn(PAGE_NAME_TOPIC));
          this.topicRichList.setInitialSortDescending(
                this.viewsConfig.hasDescendingSort(PAGE_NAME_TOPIC));
+         
+         // ETWOONE-183. For URL addressability of topics:
+         this.topicRichList.setRefreshOnBind(true);
       }
    }
    
@@ -394,6 +401,9 @@ public class ForumsBean implements IContextListener
                this.viewsConfig.getDefaultSortColumn(PAGE_NAME_FORUM));
          this.forumRichList.setInitialSortDescending(
                this.viewsConfig.hasDescendingSort(PAGE_NAME_FORUM));
+         
+         // ETWOONE-183 & ETWOONE-339. For URL addressability of forum spaces
+         this.forumRichList.setRefreshOnBind(true);
       }
    }
    
@@ -927,6 +937,10 @@ public class ForumsBean implements IContextListener
       // add a timestamp
       SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy-HH-mm-ss");
       name.append(dateFormat.format(new Date()));
+      
+      // add Universal Unique Identifier
+      // fix bugs ETWOONE-196 and ETWOONE-203
+      name.append("-" + UUID.randomUUID());
       
       // add the HTML file extension
       name.append(".html");

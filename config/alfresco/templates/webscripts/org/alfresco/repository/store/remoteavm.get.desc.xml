@@ -4,5 +4,6 @@
   <url>/remotestore/{method}</url>
   <url>/remotestore/{method}/{path}</url>
   <authentication>none</authentication>
+  <transaction>required</transaction>
   <format default="">argument</format>
 </webscript>

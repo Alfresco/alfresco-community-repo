@@ -1868,7 +1868,7 @@ public class IndexInfo
         File location = new File(indexDirectory, id).getCanonicalFile();
         if (IndexReader.indexExists(location))
         {
-            if (size > config.getMaxDocsForInMemoryMerge())
+            if ((config != null) && (size > config.getMaxDocsForInMemoryMerge()))
             {
                 reader = IndexReader.open(location);
             }

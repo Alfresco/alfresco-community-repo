@@ -71,11 +71,12 @@ public class PersonDaoImpl extends HibernateDaoSupport implements PersonDao
         {
             public Object doInHibernate(Session session)
             {
-                SQLQuery query = getSession().createSQLQuery("SELECT {n.*} FROM alf_node n JOIN alf_node_properties p ON n.id = p.node_id JOIN alf_child_assoc c on c.child_node_id = n.id WHERE c.qname_localname = :userName1 AND p.qname_id = :qnameId AND p.string_value = :userName2");
+                SQLQuery query = getSession().createSQLQuery("SELECT {n.*} FROM alf_node n JOIN alf_node_properties p ON n.id = p.node_id JOIN alf_child_assoc c on c.child_node_id = n.id WHERE c.qname_localname = :userName1 AND p.qname_id = :qnameId AND p.string_value = :userName2 and n.node_deleted = :False");
                 query.addEntity("n", NodeImpl.class);
                 query.setParameter("qnameId", qNameId);
                 query.setParameter("userName1", searchUserName);
                 query.setParameter("userName2", searchUserName);
+                query.setParameter("False", Boolean.FALSE);
                 return query.list();
             }
         };
@@ -127,9 +128,10 @@ public class PersonDaoImpl extends HibernateDaoSupport implements PersonDao
         {
             public Object doInHibernate(Session session)
             {
-                SQLQuery query = getSession().createSQLQuery("SELECT {n.*} FROM alf_node n JOIN alf_node_properties p ON n.id = p.node_id WHERE p.qname_id = :qnameId");
+                SQLQuery query = getSession().createSQLQuery("SELECT {n.*} FROM alf_node n JOIN alf_node_properties p ON n.id = p.node_id WHERE p.qname_id = :qnameId and n.node_deleted = :False");
                 query.addEntity("n", NodeImpl.class);
                 query.setParameter("qnameId", qNameId);
+                query.setParameter("False", Boolean.FALSE);
                 return query.list();
             }
         };

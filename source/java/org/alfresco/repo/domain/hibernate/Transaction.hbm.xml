@@ -122,6 +122,13 @@
       ]]>
    </query>
    
+   <query name="txn.CountTransactions">
+      select
+         count(txn.id)
+      from
+         org.alfresco.repo.domain.hibernate.TransactionImpl as txn
+   </query>
+
    <query name="txn.GetTxnUpdateCountForStore">
       select
          count(node.uuid)

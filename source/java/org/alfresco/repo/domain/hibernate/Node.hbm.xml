@@ -59,7 +59,7 @@
                column="store_id"
                not-null="true"
                lazy="false"
-               foreign-key="fk_alf_n_store"
+               foreign-key="fk_alf_node_store"
                fetch="join" />
          <!-- the store-unique identifier -->
          <property name="uuid" column="uuid" type="string" length="36" />

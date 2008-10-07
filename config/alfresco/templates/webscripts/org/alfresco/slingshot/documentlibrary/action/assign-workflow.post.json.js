@@ -14,9 +14,7 @@
  */
 function runAction(p_params)
 {
-   var results = [];
-   var workflowName, files, assignees, dueDate, description;
-   var i, j, file, fileNode, nodeRef;
+   var result, results = [], file, files = [], i, j, workflowName, assignees, dueDate, description;
 
    // Must have workflow type
    if (json.isNull("type"))
@@ -26,8 +24,16 @@ function runAction(p_params)
    }
    workflowName = "jbpm$" + json.get("type");
 
-   // Must have array of files
-   var files = p_params.files;
+   // Only add files that aren't containers
+   for (i in p_params.files)
+   {
+      file = search.findNode(p_params.files[i]);
+      if (file !== null && !file.isContainer)
+      {
+         files.push(file);
+      }
+   }
+   
    if (!files || files.length == 0)
    {
       status.setCode(status.STATUS_BAD_REQUEST, "No files.");
@@ -35,7 +41,7 @@ function runAction(p_params)
    }
 
    // Must also have array of people
-   var assignees = getMultipleInputValues("people");
+   assignees = getMultipleInputValues("people");
    if (typeof assignees == "string")
    {
       status.setCode(status.STATUS_BAD_REQUEST, "No people assigned.");
@@ -73,44 +79,34 @@ function runAction(p_params)
    }
    
    // Get the workflow definition
-   var workflowDefinition = workflow.getDefinitionByName(workflowName)
+   var workflowDefinition = workflow.getDefinitionByName(workflowName);
 
    // Create the workflow package to contain the file nodes
    var workflowPackage = workflow.createPackage();
 
    // Add each file to the workflowPackage as a child association
-   for (file in files)
+   for (i in files)
    {
-      nodeRef = files[file];
+      file = files[i];
       result =
       {
-         nodeRef: nodeRef,
+         nodeRef: file.nodeRef,
          action: "assignWorkflow",
          success: false
-      }
+      };
       
       try
       {
-         fileNode = search.findNode(nodeRef);
-         if (fileNode === null)
-         {
-            result.id = file;
-            result.nodeRef = nodeRef;
-            result.success = false;
-         }
-         else
-         {
-            result.id = fileNode.name;
-            result.type = fileNode.isContainer ? "folder" : "document";
-            // Add the file as a child assoc of the workflow node
-            workflowPackage.addNode(fileNode);
-            result.success = true;
-         }
+         result.id = file.name;
+         result.type = "document";
+         // Add the file as a child assoc of the workflow node
+         workflowPackage.addNode(file);
+         result.success = true;
       }
       catch (e)
       {
-         result.id = file;
-         result.nodeRef = nodeRef;
+         result.id = file.name;
+         result.nodeRef = file.nodeRef;
          result.success = false;
       }
       
@@ -120,7 +116,7 @@ function runAction(p_params)
    var workflowParameters =
    {
       "bpm:workflowDescription": description
-   }
+   };
 
    if (assignees.length == 1)
    {

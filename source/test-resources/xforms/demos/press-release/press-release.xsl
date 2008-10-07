@@ -59,7 +59,8 @@ Produces an html rendition of a press release
 	    <p></p>
 	    <xsl:for-each select="/pr:press_release/pr:body">
 	      <p>
-	        <xsl:if test="position()=1"><xsl:value-of select="normalize-space(/pr:press_release/pr:location)"/>&#8212;<xsl:value-of select="normalize-space(/pr:press_release/pr:launch_date)"/>&#8212;</xsl:if><xsl:value-of select="normalize-space(.)" disable-output-escaping="yes"/>
+	      	<xsl:variable name="body-text"><xsl:value-of select="normalize-space(.)" disable-output-escaping="yes"/></xsl:variable>
+	        <xsl:if test="position()=1"><xsl:value-of select="normalize-space(/pr:press_release/pr:location)"/>&#8212;<xsl:value-of select="normalize-space(/pr:press_release/pr:launch_date)"/>&#8212;</xsl:if><xsl:value-of select="alf:encodeQuotes($body-text)" disable-output-escaping="yes"/>
 	      </p>
 	    </xsl:for-each>
 	    <xsl:for-each select="/pr:press_release/pr:include_company_footer">
@@ -68,7 +69,8 @@ Produces an html rendition of a press release
 	      <xsl:variable name="cf" select="alf:parseXMLDocument($cf-id)"/>
               <h2>About <xsl:value-of select="$cf/pr:name"/></h2>
 	      <xsl:for-each select="$cf/pr:body">
-		<p><xsl:value-of select="." disable-output-escaping="yes"/></p>
+	      	<xsl:variable name="bd-text"><xsl:value-of select="normalize-space(.)" disable-output-escaping="yes"/></xsl:variable>
+			<p><xsl:value-of select="alf:encodeQuotes($bd-text)" disable-output-escaping="yes"/></p>
 	      </xsl:for-each>
 	    </xsl:for-each>
 	    <xsl:if test="/pr:press_release/pr:include_media_contacts='true'">

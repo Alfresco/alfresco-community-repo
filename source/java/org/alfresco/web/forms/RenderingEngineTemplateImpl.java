@@ -263,7 +263,9 @@ public class RenderingEngineTemplateImpl
       result = AVMUtil.buildPath(parentAVMPath, 
                                       result,
                                       AVMUtil.PathRelation.SANDBOX_RELATIVE);
-      LOGGER.debug("processed pattern " + outputPathPattern + " as " + result);
+      if (LOGGER.isDebugEnabled())
+         LOGGER.debug("processed pattern " + outputPathPattern + " as " + result);
+      
       return result;
    }
 
@@ -288,6 +290,7 @@ public class RenderingEngineTemplateImpl
          AVMUtil.makeAllDirectories(parentAVMPath);
          avmService.createFile(parentAVMPath,
                                AVMNodeConverter.SplitBase(renditionAvmPath)[1]);
+         
          if (LOGGER.isDebugEnabled())
             LOGGER.debug("Created file node for file: " + renditionAvmPath);
 
@@ -391,9 +394,12 @@ public class RenderingEngineTemplateImpl
                          RenderingEngineTemplateImpl.this.getServiceRegistry().getNodeService();
                       final NodeRef parentNodeRef = 
                          nodeService.getPrimaryParent(RenderingEngineTemplateImpl.this.getNodeRef()).getParentRef();
-                      LOGGER.debug("request to resolve resource " + name +
-                                   " webapp url is " + webappUrl +
-                                   " and data dictionary workspace is " + parentNodeRef);
+                      if (LOGGER.isDebugEnabled())
+                      {
+                         LOGGER.debug("request to resolve resource " + name +
+                                      " webapp url is " + webappUrl +
+                                      " and data dictionary workspace is " + parentNodeRef);
+                      }
                       final NodeRef result = nodeService.getChildByName(parentNodeRef, ContentModel.ASSOC_CONTAINS, name);
                       if (result != null)
                       {
@@ -401,7 +407,9 @@ public class RenderingEngineTemplateImpl
                             RenderingEngineTemplateImpl.this.getServiceRegistry().getContentService();
                          try
                          {
-                            LOGGER.debug("found " + name + " in data dictonary: " + result);
+                            if (LOGGER.isDebugEnabled())
+                               LOGGER.debug("found " + name + " in data dictonary: " + result);
+                            
                             return contentService.getReader(result, ContentModel.PROP_CONTENT).getContentInputStream();
                          }
                          catch (Exception e)
@@ -419,13 +427,17 @@ public class RenderingEngineTemplateImpl
                          }
                          
                          final URI uri = new URI(webappUrl + '/' + StringUtils.join(path, '/'));
+                         
                          if (LOGGER.isDebugEnabled())
                             LOGGER.debug("loading " + uri);
+                         
                          return uri.toURL().openStream();
                       }
                       catch (Exception e)
                       {
-                         LOGGER.debug(e);
+                         if (LOGGER.isDebugEnabled())
+                            LOGGER.debug(e);
+                         
                          return null;
                       }
                    }
@@ -450,6 +462,38 @@ public class RenderingEngineTemplateImpl
 
       // add methods
       final FormDataFunctions fdf = this.getFormDataFunctions();
+      
+      model.put(QName.createQName(NamespaceService.ALFRESCO_PREFIX,
+                                  "encodeQuotes",
+                                  namespacePrefixResolver),
+                  new RenderingEngine.TemplateProcessorMethod()
+                  {
+                      public Object exec(final Object[] arguments)
+                         throws IOException,
+                         SAXException
+                      {
+                         if (arguments.length != 1)
+                         {
+                            throw new IllegalArgumentException("expected 1 argument to encodeQuotes.  got " +
+                                                               arguments.length);
+
+                         }
+                         if (! (arguments[0] instanceof String))
+                         {
+                            throw new ClassCastException("expected arguments[0] to be a " + String.class.getName() +
+                                                         ".  got a " + arguments[0].getClass().getName() + ".");
+                         }
+                         String text = (String)arguments[0];
+                         
+                         if (LOGGER.isDebugEnabled())
+                            LOGGER.debug("tpm_encodeQuotes('" + text + "'), parentPath = " + parentPath);
+                         
+                         final String result = fdf.encodeQuotes(text);
+                         return result;
+                      }
+                   });
+
+      
       model.put(QName.createQName(NamespaceService.ALFRESCO_PREFIX,
                                   "parseXMLDocument",
                                   namespacePrefixResolver),
@@ -474,8 +518,10 @@ public class RenderingEngineTemplateImpl
                       path = AVMUtil.buildPath(parentPath,
                                                     path,
                                                     AVMUtil.PathRelation.WEBAPP_RELATIVE);
-                      LOGGER.debug("tpm_parseXMLDocument('" + path + 
-                                   "'), parentPath = " + parentPath);
+                      
+                      if (LOGGER.isDebugEnabled())
+                         LOGGER.debug("tpm_parseXMLDocument('" + path + "'), parentPath = " + parentPath);
+                      
                       final Document d = fdf.parseXMLDocument(path);
                       return d != null ? d.getDocumentElement() : null;
                    }
@@ -511,12 +557,17 @@ public class RenderingEngineTemplateImpl
                                                     path,
                                                     AVMUtil.PathRelation.WEBAPP_RELATIVE);
                       final String formName = (String)arguments[0];
-                      LOGGER.debug("tpm_parseXMLDocuments('" + formName + "','" + path + 
-                                   "'), parentPath = " + parentPath);
+                      
+                      if (LOGGER.isDebugEnabled())
+                         LOGGER.debug("tpm_parseXMLDocuments('" + formName + "','" + path + 
+                                      "'), parentPath = " + parentPath);
+                      
                       final Map<String, Document> resultMap = fdf.parseXMLDocuments(formName, path);
-                      LOGGER.debug("received " + resultMap.size() + 
-                                   " documents in " + path +
-                                   " with form name " + formName);
+                      
+                      if (LOGGER.isDebugEnabled())
+                         LOGGER.debug("received " + resultMap.size() + 
+                                      " documents in " + path +
+                                      " with form name " + formName);
 
                       // create a root document for rooting all the results.  we do this
                       // so that each document root element has a common parent node
@@ -564,7 +615,10 @@ public class RenderingEngineTemplateImpl
                       }
 
                       final String path = (String)arguments[0];
-                      LOGGER.debug("tpm_getAVMPAth('" + path + "'), parentPath = " + parentPath);
+                      
+                      if (LOGGER.isDebugEnabled())
+                         LOGGER.debug("tpm_getAVMPAth('" + path + "'), parentPath = " + parentPath);
+                      
                       return AVMUtil.buildPath(parentPath,
                                                     path,
                                                     AVMUtil.PathRelation.WEBAPP_RELATIVE);

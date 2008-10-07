@@ -46,7 +46,7 @@ import org.xml.sax.SAXException;
  * of both the alfresco webapp and the virtualization server.
  *
  * @author Ariel Backenroth
- * @author Arseny Kovalchuk (Fix of the bug reported in https://issues.alfresco.com/jira/browse/ETWOONE-241)
+ * @author Arseny Kovalchuk (Fix for the ETWOONE-241 and ETWOTWO-504 issues)
  */
 public class FormDataFunctions
 {
@@ -166,5 +166,93 @@ public class FormDataFunctions
       }
       
       return result;
+   }
+   
+   
+   /**
+    * Encodes invalid HTML characters. (Fix for ETWOTWO-504 issue)
+    * This code was adopted from WebDAVHelper.encodeHTML() method with some restrictions.
+    * @see press-relese.xsl for pattern. 
+    * 
+    * @param text to encode
+    * @return encoded text
+    * @throws IOException
+    * @throws SAXException
+    */
+   public String encodeQuotes(String text) throws IOException, SAXException
+   {
+       if (text == null)
+       {
+           return "";
+       }
+       
+       StringBuilder sb = null;      //create on demand
+       String enc;
+       char c;
+       for (int i = 0; i < text.length(); i++)
+       {
+           enc = null;
+           c = text.charAt(i);
+           switch (c)
+           {
+               case '"': enc = "&quot;"; break;    //"
+               //case '&': enc = "&amp;"; break;     //&
+               //case '<': enc = "&lt;"; break;      //<
+               //case '>': enc = "&gt;"; break;      //>
+               
+               //german umlauts
+               case '\u00E4' : enc = "&auml;";  break;
+               case '\u00C4' : enc = "&Auml;";  break;
+               case '\u00F6' : enc = "&ouml;";  break;
+               case '\u00D6' : enc = "&Ouml;";  break;
+               case '\u00FC' : enc = "&uuml;";  break;
+               case '\u00DC' : enc = "&Uuml;";  break;
+               case '\u00DF' : enc = "&szlig;"; break;
+               
+               //misc
+               //case 0x80: enc = "&euro;"; break;  sometimes euro symbol is ascii 128, should we suport it?
+               case '\u20AC': enc = "&euro;";  break;
+               case '\u00AB': enc = "&laquo;"; break;
+               case '\u00BB': enc = "&raquo;"; break;
+               case '\u00A0': enc = "&nbsp;"; break;
+               
+               //case '': enc = "&trade"; break;
+               
+               default:
+                   if (((int)c) >= 0x80)
+                   {
+                       //encode all non basic latin characters
+                       enc = "&#" + ((int)c) + ";";
+                   }
+               break;
+           }
+           
+           if (enc != null)
+           {
+               if (sb == null)
+               {
+                   String soFar = text.substring(0, i);
+                   sb = new StringBuilder(i + 8);
+                   sb.append(soFar);
+               }
+               sb.append(enc);
+           }
+           else
+           {
+               if (sb != null)
+               {
+                   sb.append(c);
+               }
+           }
+       }
+       
+       if (sb == null)
+       {
+           return text;
+       }
+       else
+       {
+           return sb.toString();
+       }
    }
 }

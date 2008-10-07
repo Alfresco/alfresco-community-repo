@@ -43,6 +43,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.admin.patch.Patch;
 import org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch;
 import org.alfresco.repo.content.filestore.FileContentWriter;
 import org.alfresco.repo.domain.PropertyValue;
@@ -697,11 +698,24 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         }
         // Retrieve the first installed schema number
         int installedSchema = getInstalledSchemaNumber(connection);
-        
+
+        nextPatch:
         for (SchemaUpgradeScriptPatch patch : scriptPatches)
         {
             final String patchId = patch.getId();
             final String scriptUrl = patch.getScriptUrl();
+            
+            // Check if any of the alternative patches were executed
+            List<Patch> alternatives = patch.getAlternatives();
+            for (Patch alternativePatch : alternatives)
+            {
+                String alternativePatchId = alternativePatch.getId();
+                boolean alternativeSucceeded = didPatchSucceed(connection, alternativePatchId);
+                if (alternativeSucceeded)
+                {
+                    continue nextPatch;
+                }
+            }
 
             // check if the script was successfully executed
             boolean wasSuccessfullyApplied = didPatchSucceed(connection, patchId);
@@ -830,17 +844,17 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             StringBuilder sb = new StringBuilder(1024);
             while(true)
             {
-                String sql = reader.readLine();
+                String sqlOriginal = reader.readLine();
                 line++;
                 
-                if (sql == null)
+                if (sqlOriginal == null)
                 {
                     // nothing left in the file
                     break;
                 }
                 
                 // trim it
-                sql = sql.trim();
+                String sql = sqlOriginal.trim();
                 if (sql.length() == 0 ||
                     sql.startsWith( "--" ) ||
                     sql.startsWith( "//" ) ||
@@ -879,8 +893,19 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                         // Just take it at face value and probably fail.
                     }
                 }
+                // Add newline
+                if (sb.length() > 0)
+                {
+                    sb.append("\n");
+                }
+                // Add leading whitespace for formatting
+                int whitespaceCount = sqlOriginal.indexOf(sql);
+                for (int i = 0; i < whitespaceCount; i++)
+                {
+                    sb.append(" ");
+                }
                 // append to the statement being built up
-                sb.append(" ").append(sql);
+                sb.append(sql);
                 // execute, if required
                 if (execute)
                 {
@@ -918,7 +943,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             }
             stmt.execute(sql);
             // Record the statement
-            executedStatements.append(sql).append(";\n");
+            executedStatements.append(sql).append(";\n\n");
         }
         catch (SQLException e)
         {

@@ -474,7 +474,7 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
             resultSet = this.searchService.query(
                     nodeRef.getStoreRef(), 
                     SearchService.LANGUAGE_LUCENE, 
-                    "ASPECT:\"" + ContentModel.ASPECT_WORKING_COPY.toString() + "\" +@\\{http\\://www.alfresco.org/model/content/1.0\\}" + ContentModel.PROP_COPY_REFERENCE.getLocalName() + ":\"" + nodeRef.toString() + "\"");
+                    "+ASPECT:\"" + ContentModel.ASPECT_WORKING_COPY.toString() + "\" +@\\{http\\://www.alfresco.org/model/content/1.0\\}" + ContentModel.PROP_COPY_REFERENCE.getLocalName() + ":\"" + nodeRef.toString() + "\"");
             if (resultSet.getNodeRefs().size() != 0)
             {
                 workingCopy = resultSet.getNodeRef(0);

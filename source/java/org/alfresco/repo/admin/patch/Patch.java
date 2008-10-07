@@ -70,6 +70,13 @@ public interface Patch
     public List<Patch> getDependsOn();
     
     /**
+     * Get patches that could have done the work already
+     * 
+     * @return Returns a list of patches
+     */
+    public List<Patch> getAlternatives();
+    
+    /**
      * Check if the patch is applicable to a given schema version.
      * 
      * @param version a schema version number

@@ -56,6 +56,7 @@ import org.apache.commons.logging.LogFactory;
 public class PatchServiceImpl implements PatchService
 {
     private static final String MSG_NOT_RELEVANT = "patch.service.not_relevant";
+    private static final String MSG_PRECEEDED_BY_ALTERNATIVE = "patch.service.preceeded_by_alternative";
     private static final String MSG_APPLYING_PATCH = "patch.service.applying_patch";
     
     private static final Date ZERO_DATE = new Date(0L);
@@ -245,11 +246,17 @@ public class PatchServiceImpl implements PatchService
         boolean success = false;
         // first check whether the patch is relevant to the repo
         Descriptor repoDescriptor = descriptorService.getInstalledRepositoryDescriptor();
+        String preceededByAlternative = preceededByAlternative(patch);
         boolean applies = applies(repoDescriptor, patch);
         if (!applies)
         {
             // create a dummy report
             report = I18NUtil.getMessage(MSG_NOT_RELEVANT, repoDescriptor.getSchema());
+            success = true;             // this succeeded because it didn't need to be applied
+        }
+        else if (preceededByAlternative != null)
+        {
+            report = I18NUtil.getMessage(MSG_PRECEEDED_BY_ALTERNATIVE, preceededByAlternative);
             success = true;             // this succeeded because it didn't need to be applied
         }
         else
@@ -307,6 +314,28 @@ public class PatchServiceImpl implements PatchService
             logger.debug("Applied patch: \n" + appliedPatch);
         }
         return appliedPatch;
+    }
+    
+    /**
+     * Identifies if one of the alternative patches has already been executed.
+     * 
+     * @param patch             the patch to check
+     * @return                  Returns the ID of any successfully executed alternative patch
+     */
+    private String preceededByAlternative(Patch patch)
+    {
+        // If any alternatives were executed, then bypass this one
+        List<Patch> alternatives = patch.getAlternatives();
+        for (Patch alternative : alternatives)
+        {
+            // If the patch was executed, then this one was effectively executed
+            AppliedPatch appliedAlternative = patchDaoService.getAppliedPatch(alternative.getId());
+            if (appliedAlternative != null && appliedAlternative.getSucceeded())
+            {
+                return alternative.getId();
+            }
+        }
+        return null;
     }
     
     /**

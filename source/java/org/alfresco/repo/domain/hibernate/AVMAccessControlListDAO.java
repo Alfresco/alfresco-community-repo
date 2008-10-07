@@ -36,6 +36,7 @@ import org.alfresco.repo.domain.AccessControlListDAO;
 import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.hibernate.AclDaoComponentImpl.Indirection;
 import org.alfresco.repo.search.AVMSnapShotTriggeredIndexingMethodInterceptor;
+import org.alfresco.repo.search.impl.lucene.index.IndexInfo;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.ACLType;
@@ -55,6 +56,8 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.Pair;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * The AVM implementation for getting and setting ACLs.
@@ -63,6 +66,11 @@ import org.alfresco.util.Pair;
  */
 public class AVMAccessControlListDAO implements AccessControlListDAO
 {
+    /**
+     * The logger.
+     */
+    private static Log s_logger = LogFactory.getLog(AVMAccessControlListDAO.class);
+    
     /**
      * Reference to the AVM Repository instance.
      */
@@ -765,8 +773,16 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
             case WORKFLOW:
             case WORKFLOW_PREVIEW:
                 AVMNodeDescriptor www = fAVMService.lookup(-1, store.getName() + ":/www");
-                update = fixOldAvmAcls(www, false, indirections);
-                result.add(update);
+                if(www != null)
+                {
+                    update = fixOldAvmAcls(www, false, indirections);
+                    result.add(update);
+                }
+                else
+                {
+                    update = fixOldAvmAcls(root, true, indirections);
+                    result.add(update);
+                }
                 break;
             case UNKNOWN:
             default:
@@ -855,7 +871,7 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
             }
             else
             {
-                throw new IllegalStateException();
+                s_logger.warn("Skipping new style ACLs");
             }
         }
         else if (node.isLayeredDirectory())

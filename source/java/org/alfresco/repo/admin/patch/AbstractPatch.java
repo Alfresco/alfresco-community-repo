@@ -78,31 +78,26 @@ public abstract class AbstractPatch implements Patch
     private String description;
     /** a list of patches that this one depends on */
     private List<Patch> dependsOn;
+    /** a list of patches that, if already present, mean that this one should be ignored */
+    private List<Patch> alternatives;
     /** flag indicating if the patch was successfully applied */
     private boolean applied;
     private boolean applyToTenants;
+    /** track completion * */
+    int percentComplete = 0;
+    /** start time * */
+    long startTime;
 
     /** the service to register ourselves with */
     private PatchService patchService;
     /** used to ensure a unique transaction per execution */
     protected TransactionService transactionService;
-    /** support service */
     protected NamespaceService namespaceService;
-    /** support service */
     protected NodeService nodeService;
-    /** support service */
     protected SearchService searchService;
-    /** support service */
     protected AuthenticationComponent authenticationComponent;
-    /** support service */
     protected TenantAdminService tenantAdminService;
     
-
-    /** track completion * */
-    int percentComplete = 0;
-
-    /** start time * */
-    long startTime;
 
     public AbstractPatch()
     {
@@ -112,6 +107,7 @@ public abstract class AbstractPatch implements Patch
         this.applied = false;
         this.applyToTenants = true;     // by default, apply to each tenant, if tenant service is enabled
         this.dependsOn = Collections.emptyList();
+        this.alternatives = Collections.emptyList();
     }
 
     @Override
@@ -144,33 +140,21 @@ public abstract class AbstractPatch implements Patch
         this.transactionService = transactionService;
     }
 
-    /**
-     * Set a generally-used service
-     */
     public void setNamespaceService(NamespaceService namespaceService)
     {
         this.namespaceService = namespaceService;
     }
 
-    /**
-     * Set a generally-used service
-     */
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
 
-    /**
-     * Set a generally-used service
-     */
     public void setSearchService(SearchService searchService)
     {
         this.searchService = searchService;
     }
 
-    /**
-     * Set a generally-used service
-     */
     public void setAuthenticationComponent(AuthenticationComponent authenticationComponent)
     {
         this.authenticationComponent = authenticationComponent;
@@ -303,6 +287,22 @@ public abstract class AbstractPatch implements Patch
         this.dependsOn = dependsOn;
     }
 
+    public List<Patch> getAlternatives()
+    {
+        return alternatives;
+    }
+
+    /**
+     * Set all anti-dependencies.  If any of the patches in the list have already been executed, then
+     * this one need not be.
+     * 
+     * @param alternatives          a list of alternative patches
+     */
+    public void setAlternatives(List<Patch> alternatives)
+    {
+        this.alternatives = alternatives;
+    }
+
     public boolean applies(int version)
     {
         return ((this.fixesFromSchema <= version) && (version <= fixesToSchema));
@@ -345,7 +345,9 @@ public abstract class AbstractPatch implements Patch
         checkPropertyNotNull(authenticationComponent, "authenticationComponent");
         if (fixesFromSchema == -1 || fixesToSchema == -1 || targetSchema == -1)
         {
-            throw new AlfrescoRuntimeException("Patch properties 'fixesFromSchema', 'fixesToSchema' and 'targetSchema' have not all been set on this patch: \n"
+            throw new AlfrescoRuntimeException(
+                    "Patch properties 'fixesFromSchema', 'fixesToSchema' and 'targetSchema' " +
+                    "have not all been set on this patch: \n"
                     + "   patch: " + this);
         }
     }

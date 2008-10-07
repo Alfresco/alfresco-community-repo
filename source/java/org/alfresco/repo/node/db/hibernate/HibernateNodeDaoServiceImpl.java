@@ -1425,8 +1425,11 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         // Delete deltas
         usageDeltaDAO.deleteDeltas(nodeId);
         
-//        // finally delete the node
-//        getHibernateTemplate().delete(node);
+        // Wipe out properties and aspects
+        node.getProperties().clear();
+        node.getAspects().clear();
+        
+        // Mark the node as deleted
         node.setDeleted(true);
         
         // Remove node from cache

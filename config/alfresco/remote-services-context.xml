@@ -3,6 +3,8 @@
 	"http://www.springframework.org/dtd/spring-beans.dtd">
 
 <beans>
+
+	<!--  Alfresco Remote Services Definition -->
 	<bean id="avmRemoteTransport" class="org.alfresco.repo.avm.AVMRemoteTransportService"
 		init-method="init" destroy-method="shutDown">
 		<property name="idleTimeout">
@@ -31,6 +33,9 @@
 		<property name="registryPort">
 			<value>${alfresco.rmi.services.port}</value>
 		</property>
+		<property name="servicePort">
+			<value>${avm.rmi.service.port}</value>
+		</property>
 	</bean>
 			
     <bean id="avmSyncServiceTransport" class="org.alfresco.repo.avm.AVMSyncServiceTransportImpl">
@@ -55,6 +60,9 @@
         <property name="registryPort">
             <value>${alfresco.rmi.services.port}</value>
         </property>
+        <property name="servicePort">
+			<value>${avmsync.rmi.service.port}</value>
+		</property>
     </bean>
     
     <!-- Remote export of AttributeService -->    
@@ -80,6 +88,9 @@
         <property name="registryPort">
             <value>${alfresco.rmi.services.port}</value>
         </property>
+        <property name="servicePort">
+			<value>${attribute.rmi.service.port}</value>
+		</property>
     </bean>
 
     <!-- The AuthenticationService exported as an RMI service. -->
@@ -95,6 +106,9 @@
 		</property>
 		<property name="registryPort">
 			<value>${alfresco.rmi.services.port}</value>
+		</property>
+		<property name="servicePort">
+			<value>${authentication.rmi.service.port}</value>
 		</property>
 	</bean>    
 	
@@ -163,6 +177,9 @@
         <property name="registryPort">
             <value>${alfresco.rmi.services.port}</value>
         </property>
+        <property name="servicePort">
+			<value>${repo.rmi.service.port}</value>
+		</property>
     </bean>	
     
     <!-- Remoting the ActionService -->
@@ -189,5 +206,8 @@
         <property name="registryPort">
             <value>${alfresco.rmi.services.port}</value>
         </property>
+        <property name="servicePort">
+			<value>${action.rmi.service.port}</value>
+		</property>
     </bean>
 </beans>

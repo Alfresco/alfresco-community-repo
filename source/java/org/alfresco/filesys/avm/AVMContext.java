@@ -31,6 +31,7 @@ import org.alfresco.jlan.server.filesys.DiskInterface;
 import org.alfresco.jlan.server.filesys.FileName;
 import org.alfresco.jlan.server.filesys.FileSystem;
 import org.alfresco.jlan.server.filesys.NotifyChange;
+import org.alfresco.jlan.util.StringList;
 import org.alfresco.repo.avm.CreateStoreCallback;
 import org.alfresco.repo.avm.CreateVersionCallback;
 import org.alfresco.repo.avm.PurgeStoreCallback;
@@ -86,6 +87,11 @@ public class AVMContext extends AlfrescoContext
     
     private int m_showOptions;
     
+    // List of newly created store names that need adding into the virtualization view
+    
+    private StringList m_newStores;
+    private Object m_newStoresLock;
+    
     /**
      * Class constructor
      * 
@@ -127,6 +133,9 @@ public class AVMContext extends AlfrescoContext
     	
     	m_virtualView = true;
     	m_showOptions = showOptions;
+
+    	m_newStoresLock = new Object();
+    	m_newStores = new StringList();
     	
     	// Save the associated filesystem driver
     	
@@ -171,6 +180,34 @@ public class AVMContext extends AlfrescoContext
     public final boolean isVirtualizationView()
     {
     	return m_virtualView;
+    }
+
+    /**
+     * Check if there are any new stores queued for adding to the virtualization view
+     * 
+     * @return boolean
+     */
+    protected final boolean hasNewStoresQueued() {
+    	if ( m_newStores == null || m_newStores.numberOfStrings() == 0)
+    		return false;
+    	return true;
+    }
+    
+    /**
+     * Return the new stores queue, and reset the current queue
+     * 
+     * @return StringList
+     */
+    protected StringList getNewStoresQueue() {
+    	
+    	StringList storesQueue = null;
+    	
+    	synchronized ( m_newStoresLock) {
+    		storesQueue = m_newStores;
+    		m_newStores = new StringList();
+    	}
+    	
+    	return storesQueue;
     }
     
     /**
@@ -285,6 +322,11 @@ public class AVMContext extends AlfrescoContext
 	 */
 	public void storeCreated(String storeName)
 	{
+		// Not interested if the virtualization view is not enabled
+		
+		if ( isVirtualizationView() == false)
+			return;
+		
 		// Make sure the file state cache is enabled
 		
 		FileStateTable fsTable = getStateTable();
@@ -297,10 +339,20 @@ public class AVMContext extends AlfrescoContext
 
 		if ( rootState != null)
 		{
-			// Delete the root folder file state and recreate it
+			// DEBUG
 			
-			fsTable.removeFileState( FileName.DOS_SEPERATOR_STR);
-//			m_avmDriver.findPseudoState( new AVMPath( ""), this);
+			if ( logger.isDebugEnabled())
+				logger.debug("Queueing new store " + storeName + " for addition to virtualization view");
+			
+			// Add the new store name to the list to be picked up by the next file server access
+			// to the filesystem
+			
+			synchronized ( m_newStoresLock) {
+				
+				// Add the new store name
+				
+				m_newStores.addString( storeName);
+			}
 		}
 	}
 	
@@ -311,6 +363,11 @@ public class AVMContext extends AlfrescoContext
 	 */
 	public void storePurged(String storeName)
 	{
+		// Not interested if the virtualization view is not enabled
+		
+		if ( isVirtualizationView() == false)
+			return;
+		
 		// Make sure the file state cache is enabled
 		
 		FileStateTable fsTable = getStateTable();
@@ -367,6 +424,11 @@ public class AVMContext extends AlfrescoContext
 	 */
 	public void versionCreated(String storeName, int versionID)
 	{
+		// Not interested if the virtualization view is not enabled
+		
+		if ( isVirtualizationView() == false)
+			return;
+		
 		// Make sure the file state cache is enabled
 		
 		FileStateTable fsTable = getStateTable();
@@ -432,6 +494,11 @@ public class AVMContext extends AlfrescoContext
 	 */
 	public void versionPurged(String storeName, int versionID)
 	{
+		// Not interested if the virtualization view is not enabled
+		
+		if ( isVirtualizationView() == false)
+			return;
+		
 		// Make sure the file state cache is enabled
 		
 		FileStateTable fsTable = getStateTable();

@@ -369,35 +369,66 @@ public class HibernateAuditDAO extends HibernateDaoSupport implements AuditDAO, 
         }
         else
         {
-
-            InputStream current = new BufferedInputStream(auditInfo.getAuditConfiguration().getInputStream());
-            ContentReader reader = contentStore.getReader(auditConfig.getConfigURL());
-            reader.setMimetype(MimetypeMap.MIMETYPE_XML);
-            reader.setEncoding("UTF-8");
-            InputStream last = new BufferedInputStream(reader.getContentInputStream());
-            int currentValue = -2;
-            int lastValue = -2;
+            InputStream current = null;
+            InputStream last = null;
             try
             {
-                while ((currentValue != -1) && (lastValue != -1) && (currentValue == lastValue))
+                current = new BufferedInputStream(auditInfo.getAuditConfiguration().getInputStream());
+                ContentReader reader = contentStore.getReader(auditConfig.getConfigURL());
+                reader.setMimetype(MimetypeMap.MIMETYPE_XML);
+                reader.setEncoding("UTF-8");
+                last = new BufferedInputStream(reader.getContentInputStream());
+                int currentValue = -2;
+                int lastValue = -2;
+                try
                 {
-                    currentValue = current.read();
-                    lastValue = last.read();
+                    while ((currentValue != -1) && (lastValue != -1) && (currentValue == lastValue))
+                    {
+                        currentValue = current.read();
+                        lastValue = last.read();
 
+                    }
+                }
+                catch (IOException e)
+                {
+                    throw new AlfrescoRuntimeException("Failed to read and validate current audit configuration against the last", e);
+                }
+                if (currentValue != lastValue)
+                {
+                    // Files are different - require a new entry
+                    auditConfig = createNewAuditConfigImpl(auditInfo);
+                }
+                else
+                {
+                    // No change
                 }
             }
-            catch (IOException e)
+            finally
             {
-                throw new AlfrescoRuntimeException("Failed to read and validate current audit configuration against the last", e);
-            }
-            if (currentValue != lastValue)
-            {
-                // Files are different - require a new entry
-                auditConfig = createNewAuditConfigImpl(auditInfo);
-            }
-            else
-            {
-                // No change
+                if (current != null)
+                {
+                    try
+                    {
+                        current.close();
+                    }
+                    catch (IOException e)
+                    {
+                        s_logger.warn(e);
+                    }
+                }
+
+                if (last != null)
+                {
+                    try
+                    {
+                        last.close();
+                    }
+                    catch (IOException e)
+                    {
+                        s_logger.warn(e);
+                    }
+                }
+
             }
         }
 

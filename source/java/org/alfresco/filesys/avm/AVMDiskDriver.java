@@ -2218,6 +2218,32 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
         if ( avmPath.isPseudoPath() == false)
             return null;
         
+        // Check if there are any new stores to be added to the virtualization view
+        
+        if ( avmCtx.hasNewStoresQueued()) {
+        	
+        	// Get the new stores list, there is a chance another thread might get the queue, if the queue is empty
+        	// another thread is processing it
+        	
+        	StringList storeNames = avmCtx.getNewStoresQueue();
+        	
+        	while ( storeNames.numberOfStrings() > 0) {
+
+        		// Get the current store name
+        		
+        		String curStoreName = storeNames.removeStringAt( 0);
+
+        		// DEBUG
+        		
+        		if ( logger.isDebugEnabled())
+        			logger.debug("Adding new store " + curStoreName);
+        		
+        		// Add the current store to the virtualization view
+        		
+        		addNewStore( avmCtx, curStoreName);
+        	}
+        }
+        
         // Check if the path is to a store pseudo folder
         
         FileState fstate = null;
@@ -2890,21 +2916,27 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
 						// Get the web project that the sandbox is linked to
 						
 						WebProjectStorePseudoFile webFolder = (WebProjectStorePseudoFile) fullList.findFile( storeFolder.getWebProject(), false);
-						int role = webFolder.getUserRole( cInfo.getUserName());
 						
-						if ( role == WebProjectStorePseudoFile.RoleContentManager && avmCtx.showStoreType( storeFolder.isStoreType()))
-	    				{
-	    					// User is a content manager, allow access to the store
-	    					
-	    					filterList.addFile( storeFolder);
-	    				}
-						else if ( role == WebProjectStorePseudoFile.RolePublisher && avmCtx.showStoreType( storeFolder.isStoreType()))
-						{
-							// Allow access if the user owns the current folder
+						if ( webFolder != null) {
+							int role = webFolder.getUserRole( cInfo.getUserName());
 							
-							if ( storeFolder.getUserName().equalsIgnoreCase( cInfo.getUserName()))
-								filterList.addFile( storeFolder);
+							if ( role == WebProjectStorePseudoFile.RoleContentManager && avmCtx.showStoreType( storeFolder.isStoreType()))
+		    				{
+		    					// User is a content manager, allow access to the store
+		    					
+		    					filterList.addFile( storeFolder);
+		    				}
+							else if ( role == WebProjectStorePseudoFile.RolePublisher && avmCtx.showStoreType( storeFolder.isStoreType()))
+							{
+								// Allow access if the user owns the current folder
+								
+								if ( storeFolder.getUserName().equalsIgnoreCase( cInfo.getUserName()))
+									filterList.addFile( storeFolder);
+							}
 						}
+						else if ( logger.isDebugEnabled())
+							logger.debug("Cannot find associated web folder for store " + storeFolder.getFileName());
+							
 					}
 					else if ( avmCtx.showNormalStores() || avmCtx.showSiteStores())
 					{
@@ -2919,5 +2951,191 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
     	// Return the filtered list
     	
     	return filterList;
+    }
+    
+    /**
+     * Add a new store to the top level folder list
+     * 
+     * @param avmCtx AVMContext
+     * @param storeName String
+     */
+    protected void addNewStore( AVMContext avmCtx, String storeName) {
+
+    	// Get the root folder file state
+    	
+        FileState fstate = avmCtx.getStateTable().findFileState( FileName.DOS_SEPERATOR_STR, true, false);
+        if ( fstate == null)
+        	return;
+        
+        // Get the properties for the store
+
+    	AVMStoreDescriptor storeDesc = m_avmService.getStore( storeName);
+    	if ( storeDesc == null)
+    		return;
+    	
+        Map<QName, PropertyValue> props = m_avmService.getStoreProperties( storeName);
+        
+        // Check if the store is a main web project
+        
+        if ( props.containsKey( SandboxConstants.PROP_SANDBOX_STAGING_MAIN))
+        {
+        	// Get the noderef for the web project
+        	
+        	PropertyValue prop = props.get( SandboxConstants.PROP_WEB_PROJECT_NODE_REF);
+        	if ( prop != null) {
+        		
+        		// Get the web project noderef
+        		
+        		NodeRef webNodeRef = new NodeRef( prop.getStringValue());
+        		
+        		// Create the web project pseudo folder
+        		
+        		WebProjectStorePseudoFile webProjFolder = new WebProjectStorePseudoFile( storeDesc, FileName.DOS_SEPERATOR_STR + storeName, webNodeRef);
+        		fstate.addPseudoFile( webProjFolder);
+
+        		// DEBUG
+        		
+        		if ( logger.isDebugEnabled())
+        			logger.debug( " Found web project " + webProjFolder.getFileName());
+        		
+        		// Get the list of content managers for this web project
+
+        		List<ChildAssociationRef> mgrAssocs = m_nodeService.getChildAssocs( webNodeRef, WCMAppModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
+        		
+        		for ( ChildAssociationRef mgrRef : mgrAssocs)
+        		{
+        			// Get the child node and see if it is a content manager association
+        			
+        			NodeRef childRef = mgrRef.getChildRef();
+        			
+        			if ( m_nodeService.getProperty( childRef, WCMAppModel.PROP_WEBUSERROLE).equals(ROLE_CONTENT_MANAGER))
+        			{
+        				// Get the user name add it to the web project pseudo folder
+        				
+        				String userName = (String) m_nodeService.getProperty( childRef, WCMAppModel.PROP_WEBUSERNAME);
+        				
+        				webProjFolder.addUserRole( userName, WebProjectStorePseudoFile.RoleContentManager);
+        				
+        				// DEBUG
+        				
+        				if ( logger.isDebugEnabled())
+        					logger.debug("  Added content manager " + userName);
+        			}
+        		}
+        	}
+        }
+        else
+        {
+        	// Check if this store is a web project sandbox
+        	
+        	int storeType = StoreType.Normal;
+        	String webProjName = null;
+        	String userName    = null;
+        	
+            if ( props.containsKey( SandboxConstants.PROP_SANDBOX_AUTHOR_MAIN))
+            {
+            	// Sandbox store, linked to a web project
+            	
+                storeType = StoreType.WebAuthorMain;
+                
+                // Get the associated web project name
+
+                webProjName = props.get( SandboxConstants.PROP_WEBSITE_NAME).getStringValue();
+
+                // Get the user name from teh store name
+
+                userName = storeName.substring( webProjName.length() + 2);
+            }
+            else if ( props.containsKey( SandboxConstants.PROP_SANDBOX_AUTHOR_PREVIEW))
+            {
+            	// Author preview sandbox store, linked to a web project
+            	
+                storeType = StoreType.WebAuthorPreview;
+                
+                // Get the associated web project name
+
+                String projPlusUser = storeName.substring( 0, storeName.length() - "--preview".length());
+                int pos = projPlusUser.lastIndexOf("--");
+                if ( pos != -1)
+                {
+                	webProjName = projPlusUser.substring( 0, pos);
+                	userName    = projPlusUser.substring(pos + 2);
+                }
+            }
+            else if ( props.containsKey( SandboxConstants.PROP_SANDBOX_WORKFLOW_PREVIEW))
+            {
+            	// Staging preview sandbox store, linked to a web project
+            	
+                storeType = StoreType.WebStagingPreview;
+            }
+            else if ( props.containsKey( SandboxConstants.PROP_SANDBOX_STAGING_PREVIEW))
+            {
+            	// Staging preview sandbox store, linked to a web project
+            	
+                storeType = StoreType.WebStagingPreview;
+                
+                // Get the associated web project name
+
+                webProjName = storeName.substring( 0, storeName.length() - "--preview".length());
+            }
+            
+            // DEBUG
+            
+            if ( logger.isDebugEnabled())
+                logger.debug( " Store " + storeDesc.getName() + ", type=" + StoreType.asString( storeType) + ", webproj=" + webProjName + ", username=" + userName);
+            
+            // Add a pseudo file for the current store
+
+            if ( avmCtx.showStoreType( storeType))
+            {
+            	// Create the pseudo folder for the store
+            	
+            	StorePseudoFile storeFolder = new StorePseudoFile( storeDesc, FileName.DOS_SEPERATOR_STR + storeName, storeType);
+            	if ( storeType != StoreType.Normal)
+            	{
+            		storeFolder.setWebProject( webProjName);
+            		storeFolder.setUserName( userName);
+
+            		// Add all publisher/reviewer user names to the web project roles list
+            		
+            		if ( storeFolder.hasWebProject())
+        			{
+        				// Find the associated web project pseudo folder
+        				
+                        PseudoFileList folderList = fstate.getPseudoFileList();
+                        if ( folderList != null) {
+
+                        	// Find the associated web project
+                        	
+	        				WebProjectStorePseudoFile webProj = (WebProjectStorePseudoFile) folderList.findFile( storeFolder.getWebProject(), true);
+
+	        				if ( webProj != null) {
+	        					
+		        				// Strip the web project name from the sandbox store name and extract the user name.
+		        				// Add the user as a publisher/reviewer to the web project roles list
+		        				
+		        				userName = storeFolder.getFileName().substring( webProj.getFileName().length() + 2);
+		        				
+		        				// If the user does not have a content manager role then add as a publisher
+		        				
+		        				if ( webProj.getUserRole( userName) == WebProjectStorePseudoFile.RoleNone)
+		        				{
+		        					webProj.addUserRole( userName, WebProjectStorePseudoFile.RolePublisher);
+		        				
+		            				// DEBUG
+		            				
+		            				if ( logger.isDebugEnabled())
+		            					logger.debug( " Added publisher " + userName + " to " + webProj.getFileName());
+		        				}
+	        				}
+                        }
+        			}
+            	}
+
+            	// Add the store pseudo folder to the root folder file list
+            	
+                fstate.addPseudoFile( storeFolder);
+            }
+        }
     }
 }

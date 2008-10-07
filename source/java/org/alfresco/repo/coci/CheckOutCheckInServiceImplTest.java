@@ -40,6 +40,7 @@ import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.CopyService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -73,6 +74,7 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
     private LockService lockService;
     private TransactionService transactionService;
     private PermissionService permissionService;
+    private CopyService copyService;
     
     /**
 	 * Data used by the tests
@@ -116,7 +118,8 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
         this.lockService = (LockService)this.applicationContext.getBean("lockService");
         this.transactionService = (TransactionService)this.applicationContext.getBean("transactionComponent");
         this.permissionService = (PermissionService)this.applicationContext.getBean("permissionService");
-
+        this.copyService = (CopyService)this.applicationContext.getBean("copyService");
+        
         // Authenticate as system to create initial test data set
         AuthenticationComponent authenticationComponent = (AuthenticationComponent)this.applicationContext.getBean("authenticationComponent");
         authenticationComponent.setSystemUserAsCurrentUser();
@@ -432,7 +435,56 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
                 });
         
         NodeRef wk3 = this.cociService.getWorkingCopy(this.nodeRef);
-        assertNull(wk3);
+        assertNull(wk3);           
+    }
+    
+    /**
+     * Test the getWorkingCopy method
+     */
+    public void testETWOTWO_733()
+    {
+        NodeRef origNodeRef = this.nodeService.createNode(
+                this.rootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                QName.createQName("{test}test2"),
+                ContentModel.TYPE_CONTENT).getChildRef();
+        
+        // Make a copy of the node
+        this.copyService.copyAndRename(
+                origNodeRef,
+                this.rootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                QName.createQName("{test}test6"),
+                false);        
+        
+        NodeRef wk1 = this.cociService.getWorkingCopy(origNodeRef);
+        assertNull(wk1);
+
+        // Check the document out
+        final NodeRef workingCopy = this.cociService.checkout(origNodeRef);
+        
+        // Need to commit the transaction in order to get the indexer to run
+        setComplete();
+        endTransaction();
+        
+        final NodeRef finalNodeRef = origNodeRef;        
+        
+        this.transactionService.getRetryingTransactionHelper().doInTransaction(
+                new RetryingTransactionCallback<Object>()
+                {
+                    public Object execute()
+                    {
+                        NodeRef wk2 = CheckOutCheckInServiceImplTest.this.cociService.getWorkingCopy(finalNodeRef);
+                        assertNotNull(wk2);
+                        assertEquals(workingCopy, wk2);
+                        
+                        CheckOutCheckInServiceImplTest.this.cociService.cancelCheckout(workingCopy);                        
+                        return null;
+                    }
+                });
+        
+        NodeRef wk3 = this.cociService.getWorkingCopy(this.nodeRef);
+        assertNull(wk3);           
     }
     
     public void testAR1056()

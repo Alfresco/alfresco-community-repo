@@ -53,11 +53,11 @@ public class AuthorityServiceTest extends TestCase
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
 
     private AuthenticationComponent authenticationComponent;
-    
+
     private AuthenticationComponent authenticationComponentImpl;
 
     private AuthenticationService authenticationService;
-    
+
     private MutableAuthenticationDao authenticationDAO;
 
     private AuthorityService authorityService;
@@ -83,11 +83,37 @@ public class AuthorityServiceTest extends TestCase
         pubAuthorityService = (AuthorityService) ctx.getBean("AuthorityService");
         personService = (PersonService) ctx.getBean("personService");
         authenticationDAO = (MutableAuthenticationDao) ctx.getBean("authenticationDao");
-        
+
         authenticationComponentImpl.setSystemUserAsCurrentUser();
-        
-        TransactionService transactionService = (TransactionService) ctx.getBean(ServiceRegistry.TRANSACTION_SERVICE
-                .getLocalName());
+
+        TransactionService transactionService = (TransactionService) ctx.getBean(ServiceRegistry.TRANSACTION_SERVICE.getLocalName());
+        tx = transactionService.getUserTransaction();
+        tx.begin();
+        for (String user : pubAuthorityService.getAllAuthorities(AuthorityType.USER))
+        {
+            if (user.equals("guest"))
+            {
+                continue;
+            }
+            else if (user.equals("admin"))
+            {
+                continue;
+            }
+            else
+            {
+                if (personService.personExists(user))
+                {
+                    personService.deletePerson(user);
+                }
+                if (authenticationDAO.userExists(user))
+                {
+                    authenticationDAO.deleteUser(user);
+                }
+            }
+           
+        }
+        tx.commit();
+
         tx = transactionService.getUserTransaction();
         tx.begin();
 
@@ -105,7 +131,7 @@ public class AuthorityServiceTest extends TestCase
         {
             authenticationService.createAuthentication("administrator", "administrator".toCharArray());
         }
-        
+
     }
 
     @Override
@@ -140,21 +166,17 @@ public class AuthorityServiceTest extends TestCase
     public void testAuthorities()
     {
         assertEquals(1, pubAuthorityService.getAllAuthorities(AuthorityType.ADMIN).size());
-        assertTrue(pubAuthorityService.getAllAuthorities(AuthorityType.ADMIN).contains(
-                PermissionService.ADMINISTRATOR_AUTHORITY));
+        assertTrue(pubAuthorityService.getAllAuthorities(AuthorityType.ADMIN).contains(PermissionService.ADMINISTRATOR_AUTHORITY));
         assertEquals(1, pubAuthorityService.getAllAuthorities(AuthorityType.EVERYONE).size());
-        assertTrue(pubAuthorityService.getAllAuthorities(AuthorityType.EVERYONE).contains(
-                PermissionService.ALL_AUTHORITIES));
+        assertTrue(pubAuthorityService.getAllAuthorities(AuthorityType.EVERYONE).contains(PermissionService.ALL_AUTHORITIES));
         // group added for email
         assertEquals(1, pubAuthorityService.getAllAuthorities(AuthorityType.GROUP).size());
-        assertFalse(pubAuthorityService.getAllAuthorities(AuthorityType.GROUP).contains(
-                PermissionService.ALL_AUTHORITIES));
+        assertFalse(pubAuthorityService.getAllAuthorities(AuthorityType.GROUP).contains(PermissionService.ALL_AUTHORITIES));
         assertEquals(1, pubAuthorityService.getAllAuthorities(AuthorityType.GUEST).size());
         assertTrue(pubAuthorityService.getAllAuthorities(AuthorityType.GUEST).contains(PermissionService.GUEST_AUTHORITY));
         assertEquals(0, pubAuthorityService.getAllAuthorities(AuthorityType.OWNER).size());
         assertEquals(0, pubAuthorityService.getAllAuthorities(AuthorityType.ROLE).size());
-        assertEquals(personService.getAllPeople().size(), pubAuthorityService.getAllAuthorities(AuthorityType.USER)
-                .size());
+        assertEquals(personService.getAllPeople().size(), pubAuthorityService.getAllAuthorities(AuthorityType.USER).size());
 
     }
 
@@ -342,7 +364,7 @@ public class AuthorityServiceTest extends TestCase
     public void testCreateAuthTree()
     {
         personService.getPerson("andy");
-        
+
         String auth1;
         String auth2;
         String auth3;
@@ -409,7 +431,7 @@ public class AuthorityServiceTest extends TestCase
     public void testCreateAuthNet()
     {
         personService.getPerson("andy");
-        
+
         String auth1;
         String auth2;
         String auth3;
@@ -437,7 +459,7 @@ public class AuthorityServiceTest extends TestCase
         assertEquals(3, pubAuthorityService.getAllAuthorities(AuthorityType.USER).size());
         pubAuthorityService.addAuthority(auth5, "andy");
         pubAuthorityService.addAuthority(auth1, "andy");
-        
+
         assertEquals(6, pubAuthorityService.getAllAuthorities(AuthorityType.GROUP).size());
         assertEquals(3, pubAuthorityService.getAllRootAuthorities(AuthorityType.GROUP).size());
         // The next call looks for people not users :-)
@@ -446,7 +468,7 @@ public class AuthorityServiceTest extends TestCase
         assertTrue(pubAuthorityService.getContainingAuthorities(null, "andy", false).contains(auth5));
         assertTrue(pubAuthorityService.getContainingAuthorities(null, "andy", false).contains(auth2));
         assertTrue(pubAuthorityService.getContainingAuthorities(null, "andy", false).contains(auth1));
-        
+
         assertEquals(2, pubAuthorityService.getContainedAuthorities(null, auth2, false).size());
         assertTrue(pubAuthorityService.getContainedAuthorities(null, auth2, false).contains(auth5));
         assertTrue(pubAuthorityService.getContainedAuthorities(null, auth2, false).contains("andy"));
@@ -456,7 +478,7 @@ public class AuthorityServiceTest extends TestCase
         assertTrue(pubAuthorityService.getContainedAuthorities(null, auth1, false).contains("andy"));
 
         pubAuthorityService.removeAuthority(auth1, "andy");
-        
+
         assertEquals(6, pubAuthorityService.getAllAuthorities(AuthorityType.GROUP).size());
         assertEquals(3, pubAuthorityService.getAllRootAuthorities(AuthorityType.GROUP).size());
         // The next call looks for people not users :-)
@@ -464,19 +486,19 @@ public class AuthorityServiceTest extends TestCase
         assertEquals(2, pubAuthorityService.getContainingAuthorities(null, "andy", false).size());
         assertTrue(pubAuthorityService.getContainingAuthorities(null, "andy", false).contains(auth5));
         assertTrue(pubAuthorityService.getContainingAuthorities(null, "andy", false).contains(auth2));
-        
+
         assertEquals(2, pubAuthorityService.getContainedAuthorities(null, auth2, false).size());
         assertTrue(pubAuthorityService.getContainedAuthorities(null, auth2, false).contains(auth5));
         assertTrue(pubAuthorityService.getContainedAuthorities(null, auth2, false).contains("andy"));
         assertEquals(2, pubAuthorityService.getContainedAuthorities(null, auth1, false).size());
         assertTrue(pubAuthorityService.getContainedAuthorities(null, auth1, false).contains(auth3));
-        assertTrue(pubAuthorityService.getContainedAuthorities(null, auth1, false).contains(auth4));        
+        assertTrue(pubAuthorityService.getContainedAuthorities(null, auth1, false).contains(auth4));
     }
-    
+
     public void testCreateAuthNet2()
     {
         personService.getPerson("andy");
-        
+
         String auth1;
         String auth2;
         String auth3;
@@ -500,11 +522,11 @@ public class AuthorityServiceTest extends TestCase
         auth5 = pubAuthorityService.createAuthority(AuthorityType.GROUP, auth2, "five");
         assertEquals(6, pubAuthorityService.getAllAuthorities(AuthorityType.GROUP).size());
         assertEquals(3, pubAuthorityService.getAllRootAuthorities(AuthorityType.GROUP).size());
-        
+
         checkAuthorityCollectionSize(3, pubAuthorityService.getAllAuthorities(AuthorityType.USER), AuthorityType.USER);
         pubAuthorityService.addAuthority(auth5, "andy");
         pubAuthorityService.addAuthority(auth1, "andy");
-        
+
         assertEquals(6, pubAuthorityService.getAllAuthorities(AuthorityType.GROUP).size());
         assertEquals(3, pubAuthorityService.getAllRootAuthorities(AuthorityType.GROUP).size());
         // The next call looks for people not users :-)
@@ -513,7 +535,7 @@ public class AuthorityServiceTest extends TestCase
         assertTrue(pubAuthorityService.getContainingAuthorities(null, "andy", false).contains(auth5));
         assertTrue(pubAuthorityService.getContainingAuthorities(null, "andy", false).contains(auth2));
         assertTrue(pubAuthorityService.getContainingAuthorities(null, "andy", false).contains(auth1));
-        
+
         assertEquals(2, pubAuthorityService.getContainedAuthorities(null, auth2, false).size());
         assertTrue(pubAuthorityService.getContainedAuthorities(null, auth2, false).contains(auth5));
         assertTrue(pubAuthorityService.getContainedAuthorities(null, auth2, false).contains("andy"));
@@ -521,10 +543,9 @@ public class AuthorityServiceTest extends TestCase
         assertTrue(pubAuthorityService.getContainedAuthorities(null, auth1, false).contains(auth3));
         assertTrue(pubAuthorityService.getContainedAuthorities(null, auth1, false).contains(auth4));
         assertTrue(pubAuthorityService.getContainedAuthorities(null, auth1, false).contains("andy"));
-        
-        
+
         pubAuthorityService.addAuthority(auth3, auth2);
-        
+
         assertEquals(6, pubAuthorityService.getAllAuthorities(AuthorityType.GROUP).size());
         assertEquals(3, pubAuthorityService.getAllRootAuthorities(AuthorityType.GROUP).size());
         // The next call looks for people not users :-)
@@ -534,7 +555,7 @@ public class AuthorityServiceTest extends TestCase
         assertTrue(pubAuthorityService.getContainingAuthorities(null, "andy", false).contains(auth2));
         assertTrue(pubAuthorityService.getContainingAuthorities(null, "andy", false).contains(auth1));
         assertTrue(pubAuthorityService.getContainingAuthorities(null, "andy", false).contains(auth3));
-        
+
         assertEquals(2, pubAuthorityService.getContainedAuthorities(null, auth2, false).size());
         assertTrue(pubAuthorityService.getContainedAuthorities(null, auth2, false).contains(auth5));
         assertTrue(pubAuthorityService.getContainedAuthorities(null, auth2, false).contains("andy"));
@@ -544,10 +565,9 @@ public class AuthorityServiceTest extends TestCase
         assertTrue(pubAuthorityService.getContainedAuthorities(null, auth1, false).contains(auth2));
         assertTrue(pubAuthorityService.getContainedAuthorities(null, auth1, false).contains(auth5));
         assertTrue(pubAuthorityService.getContainedAuthorities(null, auth1, false).contains("andy"));
-        
+
     }
 
-    
     public void test_AR_1510()
     {
         personService.getPerson("andy1");
@@ -575,7 +595,7 @@ public class AuthorityServiceTest extends TestCase
         pubAuthorityService.addAuthority(auth6, "andy1");
         pubAuthorityService.addAuthority(auth6, "andy5");
         pubAuthorityService.addAuthority(auth6, "andy6");
-       
+
         assertEquals(2, pubAuthorityService.getContainedAuthorities(null, auth1, true).size());
         assertEquals(11, pubAuthorityService.getContainedAuthorities(null, auth1, false).size());
         assertEquals(3, pubAuthorityService.getContainedAuthorities(null, auth2, true).size());
@@ -588,7 +608,7 @@ public class AuthorityServiceTest extends TestCase
         assertEquals(2, pubAuthorityService.getContainedAuthorities(null, auth5, false).size());
         assertEquals(3, pubAuthorityService.getContainedAuthorities(null, auth6, true).size());
         assertEquals(3, pubAuthorityService.getContainedAuthorities(null, auth6, false).size());
-        
+
         assertEquals(0, pubAuthorityService.getContainedAuthorities(null, "andy1", true).size());
         assertEquals(0, pubAuthorityService.getContainedAuthorities(null, "andy1", false).size());
         assertEquals(0, pubAuthorityService.getContainedAuthorities(null, "andy2", true).size());
@@ -601,7 +621,7 @@ public class AuthorityServiceTest extends TestCase
         assertEquals(0, pubAuthorityService.getContainedAuthorities(null, "andy5", false).size());
         assertEquals(0, pubAuthorityService.getContainedAuthorities(null, "andy6", true).size());
         assertEquals(0, pubAuthorityService.getContainedAuthorities(null, "andy6", false).size());
-     
+
         assertEquals(1, pubAuthorityService.getContainedAuthorities(AuthorityType.GROUP, auth1, true).size());
         assertEquals(5, pubAuthorityService.getContainedAuthorities(AuthorityType.GROUP, auth1, false).size());
         assertEquals(1, pubAuthorityService.getContainedAuthorities(AuthorityType.GROUP, auth2, true).size());
@@ -614,7 +634,7 @@ public class AuthorityServiceTest extends TestCase
         assertEquals(0, pubAuthorityService.getContainedAuthorities(AuthorityType.GROUP, auth5, false).size());
         assertEquals(0, pubAuthorityService.getContainedAuthorities(AuthorityType.GROUP, auth6, true).size());
         assertEquals(0, pubAuthorityService.getContainedAuthorities(AuthorityType.GROUP, auth6, false).size());
-        
+
         assertEquals(1, pubAuthorityService.getContainedAuthorities(AuthorityType.USER, auth1, true).size());
         assertEquals(6, pubAuthorityService.getContainedAuthorities(AuthorityType.USER, auth1, false).size());
         assertEquals(2, pubAuthorityService.getContainedAuthorities(AuthorityType.USER, auth2, true).size());
@@ -627,9 +647,9 @@ public class AuthorityServiceTest extends TestCase
         assertEquals(2, pubAuthorityService.getContainedAuthorities(AuthorityType.USER, auth5, false).size());
         assertEquals(3, pubAuthorityService.getContainedAuthorities(AuthorityType.USER, auth6, true).size());
         assertEquals(3, pubAuthorityService.getContainedAuthorities(AuthorityType.USER, auth6, false).size());
-        
+
         // containing
-        
+
         assertEquals(0, pubAuthorityService.getContainingAuthorities(null, auth1, true).size());
         assertEquals(0, pubAuthorityService.getContainingAuthorities(null, auth1, false).size());
         assertEquals(1, pubAuthorityService.getContainingAuthorities(null, auth2, true).size());
@@ -642,7 +662,7 @@ public class AuthorityServiceTest extends TestCase
         assertEquals(4, pubAuthorityService.getContainingAuthorities(null, auth5, false).size());
         assertEquals(1, pubAuthorityService.getContainingAuthorities(null, auth6, true).size());
         assertEquals(3, pubAuthorityService.getContainingAuthorities(null, auth6, false).size());
-        
+
         assertEquals(0, pubAuthorityService.getContainingAuthorities(AuthorityType.GROUP, auth1, true).size());
         assertEquals(0, pubAuthorityService.getContainingAuthorities(AuthorityType.GROUP, auth1, false).size());
         assertEquals(1, pubAuthorityService.getContainingAuthorities(AuthorityType.GROUP, auth2, true).size());
@@ -655,7 +675,7 @@ public class AuthorityServiceTest extends TestCase
         assertEquals(4, pubAuthorityService.getContainingAuthorities(AuthorityType.GROUP, auth5, false).size());
         assertEquals(1, pubAuthorityService.getContainingAuthorities(AuthorityType.GROUP, auth6, true).size());
         assertEquals(3, pubAuthorityService.getContainingAuthorities(AuthorityType.GROUP, auth6, false).size());
-        
+
         assertEquals(0, pubAuthorityService.getContainingAuthorities(AuthorityType.USER, auth1, true).size());
         assertEquals(0, pubAuthorityService.getContainingAuthorities(AuthorityType.USER, auth1, false).size());
         assertEquals(0, pubAuthorityService.getContainingAuthorities(AuthorityType.USER, auth2, true).size());
@@ -668,8 +688,7 @@ public class AuthorityServiceTest extends TestCase
         assertEquals(0, pubAuthorityService.getContainingAuthorities(AuthorityType.USER, auth5, false).size());
         assertEquals(0, pubAuthorityService.getContainingAuthorities(AuthorityType.USER, auth6, true).size());
         assertEquals(0, pubAuthorityService.getContainingAuthorities(AuthorityType.USER, auth6, false).size());
-        
-        
+
         assertEquals(5, pubAuthorityService.getContainingAuthorities(null, "andy1", true).size());
         assertEquals(6, pubAuthorityService.getContainingAuthorities(null, "andy1", false).size());
         assertEquals(1, pubAuthorityService.getContainingAuthorities(null, "andy2", true).size());
@@ -682,7 +701,7 @@ public class AuthorityServiceTest extends TestCase
         assertEquals(6, pubAuthorityService.getContainingAuthorities(null, "andy5", false).size());
         assertEquals(1, pubAuthorityService.getContainingAuthorities(null, "andy6", true).size());
         assertEquals(4, pubAuthorityService.getContainingAuthorities(null, "andy6", false).size());
-        
+
         assertEquals(5, pubAuthorityService.getContainingAuthorities(AuthorityType.GROUP, "andy1", true).size());
         assertEquals(6, pubAuthorityService.getContainingAuthorities(AuthorityType.GROUP, "andy1", false).size());
         assertEquals(1, pubAuthorityService.getContainingAuthorities(AuthorityType.GROUP, "andy2", true).size());
@@ -695,7 +714,7 @@ public class AuthorityServiceTest extends TestCase
         assertEquals(6, pubAuthorityService.getContainingAuthorities(AuthorityType.GROUP, "andy5", false).size());
         assertEquals(1, pubAuthorityService.getContainingAuthorities(AuthorityType.GROUP, "andy6", true).size());
         assertEquals(4, pubAuthorityService.getContainingAuthorities(AuthorityType.GROUP, "andy6", false).size());
-        
+
         assertEquals(0, pubAuthorityService.getContainingAuthorities(AuthorityType.USER, "andy1", true).size());
         assertEquals(0, pubAuthorityService.getContainingAuthorities(AuthorityType.USER, "andy1", false).size());
         assertEquals(0, pubAuthorityService.getContainingAuthorities(AuthorityType.USER, "andy2", true).size());
@@ -709,12 +728,9 @@ public class AuthorityServiceTest extends TestCase
         assertEquals(0, pubAuthorityService.getContainingAuthorities(AuthorityType.USER, "andy6", true).size());
         assertEquals(0, pubAuthorityService.getContainingAuthorities(AuthorityType.USER, "andy6", false).size());
     }
-    
-    
-    
+
     /**
      * Test toknisation of group members
-     *
      */
     public void test_AR_1517__AND__AR_1411()
     {
@@ -732,8 +748,7 @@ public class AuthorityServiceTest extends TestCase
         assertTrue(personService.personExists("andy2"));
         personService.getPerson("an3dy");
         assertTrue(personService.personExists("an3dy"));
-        
-        
+
         assertEquals(1, pubAuthorityService.getAllAuthorities(AuthorityType.GROUP).size());
         assertEquals(1, pubAuthorityService.getAllRootAuthorities(AuthorityType.GROUP).size());
         String auth1 = pubAuthorityService.createAuthority(AuthorityType.GROUP, null, "one");
@@ -748,8 +763,7 @@ public class AuthorityServiceTest extends TestCase
         pubAuthorityService.addAuthority(auth5, "andy2");
         String auth6 = pubAuthorityService.createAuthority(AuthorityType.GROUP, null, "six");
         pubAuthorityService.addAuthority(auth6, "an3dy");
-        
-       
+
         assertEquals(1, pubAuthorityService.getContainedAuthorities(null, auth1, true).size());
         assertTrue(pubAuthorityService.getContainedAuthorities(null, auth1, true).contains("1234"));
         assertEquals(1, pubAuthorityService.getContainedAuthorities(null, auth2, true).size());
@@ -762,7 +776,7 @@ public class AuthorityServiceTest extends TestCase
         assertTrue(pubAuthorityService.getContainedAuthorities(null, auth5, true).contains("andy2"));
         assertEquals(1, pubAuthorityService.getContainedAuthorities(null, auth6, true).size());
         assertTrue(pubAuthorityService.getContainedAuthorities(null, auth6, true).contains("an3dy"));
-        
+
         assertEquals(1, pubAuthorityService.getContainingAuthorities(null, "1234", false).size());
         assertTrue(pubAuthorityService.getContainingAuthorities(null, "1234", false).contains(auth1));
         assertEquals(1, pubAuthorityService.getContainingAuthorities(null, "andy", false).size());
@@ -775,10 +789,9 @@ public class AuthorityServiceTest extends TestCase
         assertTrue(pubAuthorityService.getContainingAuthorities(null, "andy2", false).contains(auth5));
         assertEquals(1, pubAuthorityService.getContainingAuthorities(null, "an3dy", false).size());
         assertTrue(pubAuthorityService.getContainingAuthorities(null, "an3dy", false).contains(auth6));
-        
+
     }
-     
-    
+
     public void testGroupNameTokenisation()
     {
         assertEquals(1, pubAuthorityService.getAllAuthorities(AuthorityType.GROUP).size());
@@ -804,19 +817,18 @@ public class AuthorityServiceTest extends TestCase
         assertEquals(2, pubAuthorityService.getContainedAuthorities(AuthorityType.GROUP, authC2, false).size());
         assertEquals(1, pubAuthorityService.getContainedAuthorities(AuthorityType.GROUP, authStuff, false).size());
         assertEquals(0, pubAuthorityService.getContainedAuthorities(AuthorityType.GROUP, authSpace, false).size());
-        
+
         pubAuthorityService.deleteAuthority(authSpace);
         pubAuthorityService.deleteAuthority(authStuff);
         pubAuthorityService.deleteAuthority(authC2);
         pubAuthorityService.deleteAuthority(authC1);
         pubAuthorityService.deleteAuthority(auth1234);
-        
+
         assertEquals(1, pubAuthorityService.getAllAuthorities(AuthorityType.GROUP).size());
         assertEquals(1, pubAuthorityService.getAllRootAuthorities(AuthorityType.GROUP).size());
     }
-    
-    private Map<QName, Serializable> createDefaultProperties(String userName, String firstName, String lastName,
-            String email, String orgId, NodeRef home)
+
+    private Map<QName, Serializable> createDefaultProperties(String userName, String firstName, String lastName, String email, String orgId, NodeRef home)
     {
         HashMap<QName, Serializable> properties = new HashMap<QName, Serializable>();
         properties.put(ContentModel.PROP_USERNAME, userName);

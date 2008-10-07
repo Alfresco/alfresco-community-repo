@@ -40,7 +40,6 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.QueryParameterDefImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
-import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -100,7 +99,6 @@ public class FileFolderServiceImpl implements FileFolderService
     private NamespaceService namespaceService;
     private DictionaryService dictionaryService;
     private NodeService nodeService;
-    private TenantService tenantService;
     private CopyService copyService;
     private SearchService searchService;
     private ContentService contentService;
@@ -129,11 +127,6 @@ public class FileFolderServiceImpl implements FileFolderService
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
-    }
-
-    public void setTenantService(TenantService tenantService)
-    {
-        this.tenantService = tenantService;
     }
 
     public void setCopyService(CopyService copyService)
@@ -634,7 +627,6 @@ public class FileFolderServiceImpl implements FileFolderService
         }
        
         // Only update the name if it has changed
-        String sourceName = (String)nodeService.getProperty(sourceNodeRef, ContentModel.PROP_NAME);
         String currentName = (String)nodeService.getProperty(targetNodeRef, ContentModel.PROP_NAME);
         if (currentName.equals(newName) == false)
         {
@@ -642,22 +634,31 @@ public class FileFolderServiceImpl implements FileFolderService
             {
                 // changed the name property
                 nodeService.setProperty(targetNodeRef, ContentModel.PROP_NAME, newName);
-                               
-                // Only care about changing the mimetype id the extension has been changed
-                if (getFileExtension(sourceName).equals(getFileExtension(newName)) == false)
+                
+                // May need to update the mimetype, to support apps using .tmp files when saving
+                ContentData contentData = (ContentData)nodeService.getProperty(targetNodeRef, ContentModel.PROP_CONTENT);
+
+                // Check the newName and oldName extensions.
+                // Keep previous mimetype if
+                //      1. new extension is empty
+                //      2. new extension is '.tmp'
+                //      3. extension was not changed,
+                // 
+                // It fixes the ETWOTWO-16 issue.
+                String oldExt = getExtension(beforeFileInfo.getName());
+                String newExt = getExtension(newName);
+                if (contentData != null &&
+                        newExt.length() != 0 &&
+                        !"tmp".equalsIgnoreCase(newExt) &&
+                        !newExt.equalsIgnoreCase(oldExt))
                 {
-	                // May need to update the mimetype, to support apps using .tmp files when saving
-	                ContentData contentData = (ContentData)nodeService.getProperty(targetNodeRef, ContentModel.PROP_CONTENT);
-	                if (contentData != null)
-	                {
-	                    String targetMimetype = contentData.getMimetype();
-	                    String newMimetype = mimetypeService.guessMimetype(newName);
-	                    if (!targetMimetype.equalsIgnoreCase(newMimetype))
-	                	{
-	                        contentData = ContentData.setMimetype(contentData, newMimetype);
-	                        nodeService.setProperty(targetNodeRef, ContentModel.PROP_CONTENT, contentData);
-	                	}
-	                }
+                    String targetMimetype = contentData.getMimetype();
+                    String newMimetype = mimetypeService.guessMimetype(newName);
+                    if (!targetMimetype.equalsIgnoreCase(newMimetype))
+                	{
+                        contentData = ContentData.setMimetype(contentData, newMimetype);
+                        nodeService.setProperty(targetNodeRef, ContentModel.PROP_CONTENT, contentData);
+                	}
                 }
             }
             catch (DuplicateChildNodeNameException e)
@@ -677,22 +678,6 @@ public class FileFolderServiceImpl implements FileFolderService
                     "   after: " + afterFileInfo);
         }
         return afterFileInfo;
-    }
-    
-    /**
-     * Get the file extension for a given file name
-     * 
-     * @param  filename		the file name
-     * @return String		the file extension
-     */
-    private String getFileExtension(String filename)
-    {
-    	String result = "";
-    	if (filename.lastIndexOf(".")!=-1)
-    	{
-    		result = filename.substring(filename.lastIndexOf(".")+1, filename.length());
-    	}
-    	return result;
     }
     
     /**
@@ -978,5 +963,20 @@ public class FileFolderServiceImpl implements FileFolderService
             return service.searchSimple(node, name);
         }
         
+    }
+    
+    private String getExtension(String name)
+    {
+        String result = "";
+        if (name != null)
+        {
+            name = name.trim();
+            int index = name.lastIndexOf('.');
+            if (index > -1 && (index < name.length() - 1))
+            {
+                result = name.substring(index + 1);
+            }
+        }
+        return result;
     }
 }

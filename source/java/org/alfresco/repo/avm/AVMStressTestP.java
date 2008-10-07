@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -34,22 +34,85 @@ import org.alfresco.repo.avm.util.BulkLoader;
  */
 public class AVMStressTestP extends AVMServiceTestBase
 {
+    public void testStressA() throws Throwable
+    {
+        testNThreads(   1,  // nThreads
+                        "source/java/org/alfresco/repo/avm/actions", // relative dir to load from (.../repository)
+                        1,  // nCopies
+                        1,  // create file
+                        1,  // create dir
+                        0,  // rename
+                        0,  // create layered dir
+                        0,  // create layered file
+                        0,  // remove node
+                        0,  // modify file
+                        50,  // read file
+                        0,  // snapshot
+                        100); // # ops (for each thread)
+    }
+    
+    public void testStressB() throws Throwable
+    {
+        testNThreads(   2,  // nThreads
+                        "source/java/org/alfresco/repo/avm", // relative dir to load from (.../repository)
+                        1,  // nCopies
+                        10,  // create file
+                        2,  // create dir
+                        2,  // rename
+                        0,  // create layered dir  // TODO pending ETWOTWO-715 (is 2 in 2.1.x)
+                        0,  // create layered file // TODO pending ETWOTWO-715 (is 2 in 2.1.x)
+                        5,  // remove node
+                        10,  // modify file
+                        50,  // read file
+                        5,  // snapshot
+                        200); // # ops (for each thread)
+    }
+    
+    /*
+    public void xtestStressZ()
+    {
+        testNThreads(   4,      // nThreads
+                        "source", // relative dir to load from (.../repository)
+                        8,      // nCopies
+                        400,    // create file
+                        20,     // create dir
+                        5,      // rename
+                        5,      // create layered dir
+                        5,      // create layered file
+                        10,     // remove node
+                        20,     // modify file
+                        3200,   // read file
+                        10,     // snapshot
+                        40000); // # ops
+    }
+    */
+    
     /**
      * Test N threads
      */
-    public void testNThreads()
+    private void testNThreads(int nThreads, 
+                              String fsPath,
+                              int nCopies,
+                              int createFile,
+                              int createDir,
+                              int rename,
+                              int createLayeredDir,
+                              int createLayeredFile,
+                              int removeNode,
+                              int modifyFile,
+                              int readFile,
+                              int snapshot,
+                              int opCount) throws Throwable
     {
         try
         {
-            int nCopies = 8;
-            int nThreads = 4;
             BulkLoader loader = new BulkLoader();
             loader.setAvmService(fService);
             long start = System.currentTimeMillis();
             for (int i = 0; i < nCopies; i++)
             {
                 fService.createDirectory("main:/", "" + i);
-                loader.recursiveLoad("source", "main:/" + i);
+                loader.recursiveLoad(fsPath, "main:/" + i);
                 fService.createSnapshot("main", null, null);
             }
             System.out.println("Load time: " + (System.currentTimeMillis() - start));
@@ -58,17 +121,17 @@ public class AVMStressTestP extends AVMServiceTestBase
             for (int i = 0; i < nThreads; i++)
             {
                 AVMTester tester
-                    = new AVMTester(400,      // create file.
-                                    20,        // create dir,
-                                    5,        // rename
-                                    5,         // create layered dir
-                                    5,         // create layered file
-                                    10,        // remove node
-                                    20,        // modify file.
-                                    3200,        // read file
-                                    10,        // snapshot
-                                    40000,      // # ops
-                                    fService);   
+                    = new AVMTester(createFile,
+                                createDir,
+                                rename,
+                                createLayeredDir,
+                                createLayeredFile,
+                                removeNode,
+                                modifyFile,
+                                readFile,
+                                snapshot,
+                                opCount,
+                                fService);
                 tester.refresh();
                 Thread thread = new Thread(tester);
                 testers.add(tester);
@@ -101,7 +164,8 @@ public class AVMStressTestP extends AVMServiceTestBase
                                 {
                                     tester.setExit();
                                 }
-                                fail();
+                                //fail();
+                                System.err.println("Stress tester error");
                             }
                             exited++;
                         }
@@ -112,11 +176,33 @@ public class AVMStressTestP extends AVMServiceTestBase
                     // Do nothing.
                 }
             }
+            
+            int errorCnt = 0;
+            for (AVMTester tester : testers)
+            {
+                errorCnt += (tester.getError() ? 1 : 0);
+            }
+            
+            if (errorCnt > 0)
+            {
+            	StringBuffer errorStack = new StringBuffer();
+            	errorStack.append("Stress tester errors: ").append(errorCnt).append(" out of ").append(testers.size()).append(" are in error state");
+            	
+            	for (AVMTester tester : testers)
+                {
+                   if (tester.getError())
+                   {
+                	   errorStack.append("\n\n").append(tester.getErrorStackTrace());
+                   }
+                }
+            	
+            	fail(errorStack.toString());
+            }
         }
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 }

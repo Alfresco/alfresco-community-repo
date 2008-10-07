@@ -164,7 +164,7 @@ public class AVMServiceTest extends AVMServiceTestBase
 
     }
 
-    public void testPathEncoding()
+    public void testPathEncoding() throws Throwable
     {
         try
         {
@@ -202,7 +202,7 @@ public class AVMServiceTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace();
-            fail();
+            throw e;
         }
     }
 

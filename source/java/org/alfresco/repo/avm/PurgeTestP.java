@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -34,7 +34,7 @@ public class PurgeTestP extends AVMServiceTestBase
     /**
      * Test purging a version.
      */
-    public void testPurgeVersion()
+    public void testPurgeVersion() throws Throwable
     {
         try
         {
@@ -42,7 +42,12 @@ public class PurgeTestP extends AVMServiceTestBase
             BulkLoader loader = new BulkLoader();
             loader.setAvmService(fService);
             long start = System.currentTimeMillis();
-            loader.recursiveLoad("source/web", "main:/");
+            
+            
+            //loader.recursiveLoad("source/web", "main:/");
+            loader.recursiveLoad("source/java/org/alfresco/repo/avm", "main:/");
+            
+            
             System.err.println("Load time: " + (System.currentTimeMillis() - start) + "ms");
             fService.createSnapshot("main", null, null);
             System.err.println("Load time + snapshot: " + (System.currentTimeMillis() - start) + "ms");
@@ -52,6 +57,7 @@ public class PurgeTestP extends AVMServiceTestBase
             {
                 try
                 {
+                    System.out.print(".");
                     Thread.sleep(2000);
                 }
                 catch (InterruptedException e)
@@ -59,18 +65,19 @@ public class PurgeTestP extends AVMServiceTestBase
                     // Do nothing.
                 }
             }
+            System.out.println("\nReaper finished");
         }
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
     /**
      * Test purging a version that's not the latest.
      */
-    public void testPurgeOlderVersion()
+    public void testPurgeOlderVersion() throws Throwable
     {
         try
         {
@@ -78,11 +85,21 @@ public class PurgeTestP extends AVMServiceTestBase
             BulkLoader loader = new BulkLoader();
             loader.setAvmService(fService);
             long start = System.currentTimeMillis();
-            loader.recursiveLoad("source", "main:/");
+            
+            
+            //loader.recursiveLoad("source", "main:/");
+            loader.recursiveLoad("source/java/org/alfresco/repo/avm", "main:/");
+            
+            
             System.err.println("Load time: " + (System.currentTimeMillis() - start) + "ms");
             fService.createSnapshot("main", null, null);
             System.err.println("Load time + snapshot: " + (System.currentTimeMillis() - start) + "ms");
-            fService.removeNode("main:/source/java/org/alfresco", "repo");
+            
+            
+            //fService.removeNode("main:/source/java/org/alfresco", "repo");
+            fService.removeNode("main:/avm", "actions");
+            
+            
             fService.createSnapshot("main", null, null);
             fService.purgeVersion(2, "main");
             fReaper.activate();
@@ -90,6 +107,7 @@ public class PurgeTestP extends AVMServiceTestBase
             {
                 try
                 {
+                    System.out.print(".");
                     Thread.sleep(2000);
                 }
                 catch (InterruptedException e)
@@ -97,18 +115,19 @@ public class PurgeTestP extends AVMServiceTestBase
                     // Do nothing.
                 }
             }
+            System.out.println("\nReaper finished");
         }
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }    
 
     /**
      * Test purging an entire store.
      */
-    public void testPurgeStore()
+    public void testPurgeStore() throws Throwable
     {
         try
         {
@@ -116,13 +135,25 @@ public class PurgeTestP extends AVMServiceTestBase
             BulkLoader loader = new BulkLoader();
             loader.setAvmService(fService);
             long start = System.currentTimeMillis();
-            loader.recursiveLoad("source", "main:/");
+            
+            
+            //loader.recursiveLoad("source", "main:/");
+            loader.recursiveLoad("source/java/org/alfresco/repo/avm", "main:/");
+            
+            
             System.err.println("Load time: " + (System.currentTimeMillis() - start) + "ms");
             fService.createSnapshot("main", null, null);
             System.err.println("Load time + snapshot: " + (System.currentTimeMillis() - start) + "ms");
-            fService.createLayeredDirectory("main:/source", "main:/", "layer");
-            fService.removeNode("main:/layer/java/org/alfresco", "repo");
-            fService.createFile("main:/layer/java/org/alfresco", "goofy").close();
+            
+            
+            //fService.createLayeredDirectory("main:/source", "main:/", "layer");
+            //fService.removeNode("main:/layer/java/org/alfresco", "repo");
+            //fService.createFile("main:/layer/java/org/alfresco", "goofy").close();
+            fService.createLayeredDirectory("main:/avm", "main:/", "layer");
+            fService.removeNode("main:/layer", "actions");
+            fService.createFile("main:/layer", "goofy").close();
+            
+            
             fService.createSnapshot("main", null, null);
             fService.purgeStore("main");
             fReaper.activate();
@@ -130,6 +161,7 @@ public class PurgeTestP extends AVMServiceTestBase
             {
                 try
                 {
+                    System.out.print(".");
                     Thread.sleep(2000);
                 }
                 catch (InterruptedException e)
@@ -137,11 +169,12 @@ public class PurgeTestP extends AVMServiceTestBase
                     // Do nothing.
                 }
             }
+            System.out.println("\nReaper finished");
         }
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 }

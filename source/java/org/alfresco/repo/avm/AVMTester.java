@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -26,6 +26,8 @@ package org.alfresco.repo.avm;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -60,7 +62,6 @@ class AVMTester implements Runnable
     private List<String> fAllDirectories;
     private List<String> fAllFiles;
     
-    private static boolean fgFrozen = false;
     private static int fgOpCount = 0;
     
     /**
@@ -92,6 +93,7 @@ class AVMTester implements Runnable
      * Flag for whether this thread errored out.
      */
     private boolean fError;
+    private String fErrorStackTrace = null;
     
     /**
      * Flag for whether this thread should exit.
@@ -203,56 +205,74 @@ class AVMTester implements Runnable
             long startTime = System.currentTimeMillis();
             for (int i = 0; i < fOpCount; i++)
             {
-                if (fgFrozen)
-                {
-                    Thread.sleep(3600000);
-                }
                 if (fExit)
                 {
                     return;
                 }
                 System.out.print(threadID + ":" + i + ":");
                 int which = fgRandom.nextInt(fOpTable.length);
-                switch (fOpTable[which])
+                
+                try
                 {
-                    case CREATE_FILE :
-                        createFile();
-                        break;
-                    case CREATE_DIR :
-                        createDirectory();
-                        break;
-                    case RENAME :
-                        rename();
-                        break;
-                    case CREATE_LAYERED_DIR :
-                        createLayeredDir();
-                        break;
-                    case CREATE_LAYERED_FILE :
-                        createLayeredFile();
-                        break;
-                    case REMOVE_NODE :
-                        removeNode();
-                        break;
-                    case MODIFY_FILE :
-                        modifyFile();
-                        break;
-                    case READ_FILE :
-                        readFile();
-                        break;
-                    case SNAPSHOT :
-                        snapshot();
-                        break;
-                }   
-                IncCount();
+                    switch (fOpTable[which])
+                    {
+                        case CREATE_FILE :
+                            createFile();
+                            break;
+                        case CREATE_DIR :
+                            createDirectory();
+                            break;
+                        case RENAME :
+                            rename();
+                            break;
+                        case CREATE_LAYERED_DIR :
+                            createLayeredDir();
+                            break;
+                        case CREATE_LAYERED_FILE :
+                            createLayeredFile();
+                            break;
+                        case REMOVE_NODE :
+                            removeNode();
+                            break;
+                        case MODIFY_FILE :
+                            modifyFile();
+                            break;
+                        case READ_FILE :
+                            readFile();
+                            break;
+                        case SNAPSHOT :
+                            snapshot();
+                            break;
+                    }   
+                    IncCount();
+                }
+                catch (Exception e)
+                {
+                    e.printStackTrace(System.err);
+                    if (e instanceof AVMException)
+                    {
+                        continue;
+                    }
+                    if (e instanceof ContentIOException)
+                    {
+                        continue;
+                    }
+                    throw new AVMException("Failure", e);
+                }
             }
             System.out.println(fAllPaths.size() + " fses in " + (System.currentTimeMillis() - startTime) +
                                 "ms");
         }
-        catch (Exception e)
+        catch (Throwable t)
         {
-            e.printStackTrace(System.err);
-            fgFrozen = true;
-            fError = true;
+             t.printStackTrace();
+             
+             StringWriter sw = new StringWriter();
+             PrintWriter pw = new PrintWriter(sw);
+             t.printStackTrace(pw);
+             
+             fError = true;
+             fErrorStackTrace = sw.toString();
         }
     }
     
@@ -260,17 +280,20 @@ class AVMTester implements Runnable
     {
         String name = "PF" + fNames[fgRandom.nextInt(26 * 26)];
         String path = randomDirectory();
-        try
+        if (path != null)
         {
-            System.out.println("create " + path + " " + name);
-            PrintStream out = new PrintStream(fService.createFile(path, name));
-            out.println(path + "/" + name);
-            out.close();
-            addFile(appendPath(path, name));
-        }
-        catch (Exception e)
-        {
-            handleException(e);
+            try
+            {
+                System.out.println("create " + path + " " + name);
+                PrintStream out = new PrintStream(fService.createFile(path, name));
+                out.println(path + "/" + name);
+                out.close();
+                addFile(appendPath(path, name));
+            }
+            catch (Exception e)
+            {
+                handleException(e);
+            }
         }
     }
     
@@ -278,15 +301,18 @@ class AVMTester implements Runnable
     {
         String name = "PD" + fNames[fgRandom.nextInt(26 * 26)];
         String path = randomDirectory();
-        try
+        if (path != null)
         {
-            System.out.println("mkdir " + path + " " + name);
-            fService.createDirectory(path, name);
-            addDirectory(appendPath(path, name));
-        }
-        catch (Exception e)
-        {
-            handleException(e);
+            try
+            {
+                System.out.println("mkdir " + path + " " + name);
+                fService.createDirectory(path, name);
+                addDirectory(appendPath(path, name));
+            }
+            catch (Exception e)
+            {
+                handleException(e);
+            }
         }
     }
     
@@ -311,23 +337,26 @@ class AVMTester implements Runnable
         }
         String srcName = path.substring(lastSlash + 1);
         String dstPath = randomDirectory();
-        try
+        if (dstPath != null)
         {
-            System.out.println("rename " + srcPath + " " + srcName + " " + dstPath + " " + name);
-            fService.rename(srcPath, srcName, dstPath, name);
-            removePath(path);
-            if (desc.isDirectory())
+            try
             {
-                addDirectory(appendPath(dstPath, name));
+                System.out.println("rename " + srcPath + " " + srcName + " " + dstPath + " " + name);
+                fService.rename(srcPath, srcName, dstPath, name);
+                removePath(path);
+                if (desc.isDirectory())
+                {
+                    addDirectory(appendPath(dstPath, name));
+                }
+                else
+                {
+                    addFile(appendPath(dstPath, name));
+                }
             }
-            else
+            catch (Exception e)
             {
-                addFile(appendPath(dstPath, name));
+                handleException(e);
             }
-        }
-        catch (Exception e)
-        {
-            handleException(e);
         }
     }      
     
@@ -336,15 +365,18 @@ class AVMTester implements Runnable
         String name = "LD" + fNames[fgRandom.nextInt(26 * 26)];
         String path = randomDirectory();
         String target = randomDirectory();
-        try
+        if ((path != null) && (target != null))
         {
-            System.out.println("mklayereddir " + path + " " + name + " " + target);
-            fService.createLayeredDirectory(target, path, name);
-            addDirectory(appendPath(path, name));
-        }
-        catch (Exception e)
-        {
-            handleException(e);
+            try
+            {
+                System.out.println("mklayereddir " + path + " " + name + " " + target);
+                fService.createLayeredDirectory(target, path, name);
+                addDirectory(appendPath(path, name));
+            }
+            catch (Exception e)
+            {
+                handleException(e);
+            }
         }
     }
     
@@ -353,15 +385,18 @@ class AVMTester implements Runnable
         String name = "LF" + fNames[fgRandom.nextInt(26 * 26)];
         String path = randomDirectory();
         String target = randomFile();
-        try
+        if ((path != null) && (target != null))
         {
-            System.out.println("createlayered " + path + " " + name + " " + target);
-            fService.createLayeredFile(target, path, name);
-            addFile(appendPath(path, name));
-        }
-        catch (Exception e)
-        {
-            handleException(e);
+            try
+            {
+                System.out.println("createlayered " + path + " " + name + " " + target);
+                fService.createLayeredFile(target, path, name);
+                addFile(appendPath(path, name));
+            }
+            catch (Exception e)
+            {
+                handleException(e);
+            }
         }
     }
     
@@ -390,35 +425,41 @@ class AVMTester implements Runnable
     private void modifyFile()
     {
         String path = randomFile();
-        try
+        if (path != null)
         {
-            System.out.println("modify " + path);
-            PrintStream out = 
-                new PrintStream(fService.getFileOutputStream(path));
-            out.println("I am " + path);
-            out.close();
-        }
-        catch (Exception e)
-        {
-            handleException(e);
+            try
+            {
+                System.out.println("modify " + path);
+                PrintStream out = 
+                    new PrintStream(fService.getFileOutputStream(path));
+                out.println("I am " + path);
+                out.close();
+            }
+            catch (Exception e)
+            {
+                handleException(e);
+            }
         }
     }
     
     private void readFile()
     {
         String path = randomFile();
-        try
+        if (path != null)
         {
-            System.out.println("read " + path);
-            BufferedReader reader =
-                new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, path)));
-            String line = reader.readLine();
-            System.out.println(line);
-            reader.close();
-        }
-        catch (Exception e)
-        {
-            handleException(e);
+            try
+            {
+                System.out.println("read " + path);
+                BufferedReader reader =
+                    new BufferedReader(new InputStreamReader(fService.getFileInputStream(-1, path)));
+                String line = reader.readLine();
+                System.out.println(line);
+                reader.close();
+            }
+            catch (Exception e)
+            {
+                handleException(e);
+            }
         }
     }       
     
@@ -489,9 +530,20 @@ class AVMTester implements Runnable
         }
     }
     
+    /**
+     * Is this thread in an error state.
+     */
     public boolean getError()
     {
         return fError;
+    }
+    
+    /**
+     * Get error stack trace
+     */
+    public String getErrorStackTrace()
+    {
+        return fErrorStackTrace;
     }
     
     public void setExit()
@@ -549,16 +601,31 @@ class AVMTester implements Runnable
     
     private String randomDirectory()
     {
+        if (fAllDirectories.size() == 0)
+        {
+            System.out.println("cannot select random directory since no directories");
+            return null;
+        }
         return fAllDirectories.get(fgRandom.nextInt(fAllDirectories.size()));
     }
 
     private String randomFile()
     {
+        if (fAllFiles.size() == 0)
+        {
+            System.out.println("cannot select random file since no files");
+            return null;
+        }
         return fAllFiles.get(fgRandom.nextInt(fAllFiles.size()));
     }
 
     private String randomPath()
     {
+        if (fAllPaths.size() == 0)
+        {
+            System.out.println("cannot select random path since no paths");
+            return null;
+        }
         return fAllPaths.get(fgRandom.nextInt(fAllPaths.size()));
     }
     

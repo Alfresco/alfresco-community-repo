@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -31,41 +31,50 @@ import org.alfresco.repo.avm.util.BulkLoader;
  */
 public class SimultaneousLoadTest extends AVMServiceTestBase
 {
+    public void testSimulLoadA() throws Throwable
+    {
+        testSimultaneousLoad(1,1);
+    }
+    
+    public void testSimulLoadB() throws Throwable
+    {
+        testSimultaneousLoad(5,3);
+    }
+    
     /**
      * Test loading content simultaneously.
      */
-    public void testSimultaneousLoad()
+    private void testSimultaneousLoad(int n, int m) throws Throwable
     {
-//        try
-//        {
-//            int n = 1;
-//            int m = 1;
-//            fReaper.setInactiveBaseSleep(60000);
-//            for (int i = 0; i < n; i++)
-//            {
-//                fService.createDirectory("main:/", "d" + i);
-//            }
-//            fService.createSnapshot("main", null, null);
-//            Thread [] threads = new Thread[n];
-//            for (int i = 0; i < n; i++)
-//            {
-//                Loader loader = new Loader("/Users/britt/stuff/" + i, "main:/d" + i, m);
-//                threads[i] = new Thread(loader);
-//                threads[i].start();
-//            }
-//            for (int i = 0; i < n; i++)
-//            {
-//                threads[i].join();
-//            }
-//        }
-//        catch (Exception e)
-//        {
-//            e.printStackTrace(System.err);
-//            fail();
-//        }
+        try
+        {
+            fReaper.setActiveBaseSleep(60000);
+            for (int i = 0; i < n; i++)
+            {
+                fService.createDirectory("main:/", "d" + i);
+            }
+            fService.createSnapshot("main", null, null);
+            Thread [] threads = new Thread[n];
+            for (int i = 0; i < n; i++)
+            {
+                //Loader loader = new Loader("/Users/britt/stuff/" + i, "main:/d" + i, m);
+                Loader loader = new Loader("source/java/org/alfresco/repo/avm", "main:/d" + i, m);
+                
+                threads[i] = new Thread(loader);
+                threads[i].start();
+            }
+            for (int i = 0; i < n; i++)
+            {
+                threads[i].join();
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+            throw e;
+        }
     }
     
-    @SuppressWarnings("unused")
     private class Loader implements Runnable
     {
         /**

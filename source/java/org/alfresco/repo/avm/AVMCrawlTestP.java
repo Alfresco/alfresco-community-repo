@@ -36,23 +36,60 @@ import org.alfresco.repo.avm.util.BulkLoader;
  */
 public class AVMCrawlTestP extends AVMServiceTestBase
 {
-    /**
-     * Do the crawl test.
-     */
-    public void testCrawl()
+    public void testCrawlA()
     {
-        int n = 8;              // Number of Threads.
-        int m = 2;             // How many multiples of content to start with.
+        testCrawl(1,
+                  "source/java/org/alfresco/repo/avm/actions", // relative from .../repository
+                  1,
+                  30000); // 30 secs
+    }
+    
+    public void testCrawlB()
+    {
+        testCrawl(2,
+                  "source/java/org/alfresco/repo/avm", // relative from .../repository
+                  2,
+                  30000); // 30 secs
+    }
+    
+    /*
+    public void xtestCrawlZ()
+    {
+        testCrawl(8,         
+                  "source", // relative from .../repository
+                  2,         
+                  28800000); // 8 hours
+    }
+    */
+
+    /**
+     * Do the crawl test
+     * 
+     * @param n             Number of threads
+     * @param fsPath        The path in the filesystem to load (tree of stuff) from
+     * @param m             How many multiples of content to start with
+     * @param runTime       Min run time (in msecs)
+     */
+    private void testCrawl(int n, String fsPath, int m, long runTime)
+    {
         try
         {
-            long runTime = 28800000; // 8 Hours. .
-            fService.purgeStore("main");
+            if (m < 1)
+            {
+                fail("Must have at least one 1 copy of content");
+            }
+            
+            if (fService.getStore("main") != null)
+            {
+            	fService.purgeStore("main");
+            }
+            
             BulkLoader loader = new BulkLoader();
             loader.setAvmService(fService);
             for (int i = 0; i < m; i++)
             {
                 fService.createStore("d" + i);
-                loader.recursiveLoad("source", "d" + i + ":/");
+                loader.recursiveLoad(fsPath, "d" + i + ":/");
                 fService.createSnapshot("d" + i, null, null);
             }
             long startTime = System.currentTimeMillis();
@@ -89,7 +126,8 @@ public class AVMCrawlTestP extends AVMServiceTestBase
                                     // Do nothing.
                                 }
                             }
-                            fail();
+                            //fail();
+                            System.err.println("Crawler error");
                         }
                     }
                 }
@@ -119,18 +157,40 @@ public class AVMCrawlTestP extends AVMServiceTestBase
                 }
             }
             long ops = 0L;
+            int errorCnt = 0;
             for (AVMCrawler crawler : crawlers)
             {
                 ops += crawler.getOpCount();
+                errorCnt += (crawler.getError() ? 1 : 0);
             }
+
             long time = System.currentTimeMillis() - startTime;
             System.out.println("Ops/Sec: " + (ops * 1000L / time));
+            
+            if (errorCnt > 0)
+            {
+            	StringBuffer errorStack = new StringBuffer();
+            	errorStack.append("Crawler errors: ").append(errorCnt).append(" out of ").append(crawlers.size()).append(" are in error state");
+            	
+            	for (AVMCrawler crawler : crawlers)
+                {
+                   if (crawler.getError())
+                   {
+                	   errorStack.append("\n\n").append(crawler.getErrorStackTrace());
+                   }
+                }
+            	
+            	fail(errorStack.toString());
+            }
         }
         finally
         {
             for (int i = 0; i < m; i++)
             {
-                if (fService.getStore("d" + i) != null) { fService.purgeStore("d" + i); }
+                if (fService.getStore("d" + i) != null)
+                {
+                    fService.purgeStore("d" + i);
+                }
             }
         }
     }

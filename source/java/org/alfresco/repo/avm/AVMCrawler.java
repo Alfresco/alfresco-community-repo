@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -27,6 +27,8 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -64,6 +66,7 @@ class AVMCrawler implements Runnable
      * Whether an error has occurred.
      */
     private boolean fError;
+    private String fErrorStackTrace = null;
 
     /**
      * Random number generator.
@@ -100,6 +103,14 @@ class AVMCrawler implements Runnable
     }
     
     /**
+     * Get error stack trace
+     */
+    public String getErrorStackTrace()
+    {
+        return fErrorStackTrace;
+    }
+    
+    /**
      * Implementation of run.
      */
     public void run()
@@ -111,9 +122,16 @@ class AVMCrawler implements Runnable
                 doCrawl();
             }
         }
-        catch (Exception e)
+        catch (Throwable t)
         {
+            t.printStackTrace();
+            
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            t.printStackTrace(pw);
+            
             fError = true;
+            fErrorStackTrace = sw.toString();
         }
     }
 
@@ -126,6 +144,13 @@ class AVMCrawler implements Runnable
         {
             List<AVMStoreDescriptor> reps = fService.getStores();
             fOpCount++;
+            
+            if (reps.size() == 0)
+            {
+                System.out.println("No AVM stores");
+                return;
+            }
+            
             AVMStoreDescriptor repDesc = reps.get(fRandom.nextInt(reps.size()));
             Map<String, AVMNodeDescriptor> rootListing = fService.getDirectoryListing(-1, repDesc.getName() + ":/");
             fOpCount++;
@@ -138,101 +163,110 @@ class AVMCrawler implements Runnable
                     dirs.add(desc);
                 }
             }
-            AVMNodeDescriptor dir = dirs.get(fRandom.nextInt(dirs.size()));
-            int depth = 1;
-            while (dir != null)
+            
+            if (dirs.size() == 0)
             {
-                Map<String, AVMNodeDescriptor> listing = fService.getDirectoryListing(-1, dir.getPath());
-                fOpCount++;
-                List<AVMNodeDescriptor> files = new ArrayList<AVMNodeDescriptor>();
-                dirs = new ArrayList<AVMNodeDescriptor>();
-                for (AVMNodeDescriptor desc : listing.values())
+                System.out.println("No dirs in root: "+repDesc.getName() + ":/");
+            }
+            else
+            {
+                AVMNodeDescriptor dir = dirs.get(fRandom.nextInt(dirs.size()));
+                int depth = 1;
+                while (dir != null)
                 {
-                    if (desc.isDirectory())
+                    Map<String, AVMNodeDescriptor> listing = fService.getDirectoryListing(-1, dir.getPath());
+                    fOpCount++;
+                    List<AVMNodeDescriptor> files = new ArrayList<AVMNodeDescriptor>();
+                    dirs = new ArrayList<AVMNodeDescriptor>();
+                    for (AVMNodeDescriptor desc : listing.values())
                     {
-                        dirs.add(desc);
+                        if (desc.isDirectory())
+                        {
+                            dirs.add(desc);
+                        }
+                        else
+                        {
+                            files.add(desc);
+                        }
                     }
-                    else
+                    // Read some files if there are any.
+                    if (files.size() > 0)
                     {
-                        files.add(desc);
+                        for (int i = 0; i < 6; i++)
+                        {
+                            BufferedReader
+                                reader = new BufferedReader
+                                (new InputStreamReader
+                                 (fService.getFileInputStream(-1, files.get(fRandom.nextInt(files.size())).getPath())));
+                            fOpCount++;
+                            String line = reader.readLine();
+                            System.out.println(line);
+                            reader.close();
+                        }
+                        // Modify some files.
+                        for (int i = 0; i < 2; i++)
+                        {
+                            String path = files.get(fRandom.nextInt(files.size())).getPath();
+                            System.out.println("Modifying: " + path);
+                            PrintStream out = new PrintStream(fService.getFileOutputStream(path));
+                            out.println("I am " + path);
+                            out.close();
+                            fOpCount++;
+                        }
                     }
-                }
-                // Read some files if there are any.
-                if (files.size() > 0)
-                {
-                    for (int i = 0; i < 6; i++)
+                    if (fRandom.nextInt(depth) < depth - 1)
                     {
-                        BufferedReader
-                            reader = new BufferedReader
-                            (new InputStreamReader
-                             (fService.getFileInputStream(-1, files.get(fRandom.nextInt(files.size())).getPath())));
-                        fOpCount++;
-                        String line = reader.readLine();
-                        System.out.println(line);
-                        reader.close();
+                        // Create some files.
+                        for (int i = 0; i < 1; i++)
+                        {
+                            String name = randomName();
+                            if (listing.containsKey(name))
+                            {
+                                break;
+                            }
+                            System.out.println("Creating File: " + name);
+                            fService.createFile(dir.getPath(), name, 
+                                new ByteArrayInputStream(("I am " + name).getBytes()));
+                            fOpCount++;
+                        }
                     }
-                    // Modify some files.
-                    for (int i = 0; i < 2; i++)
-                    {
-                        String path = files.get(fRandom.nextInt(files.size())).getPath();
-                        System.out.println("Modifying: " + path);
-                        PrintStream out = new PrintStream(fService.getFileOutputStream(path));
-                        out.println("I am " + path);
-                        out.close();
-                        fOpCount++;
-                    }
-                }
-                if (fRandom.nextInt(depth) < depth - 1)
-                {
-                    // Create some files.
-                    for (int i = 0; i < 1; i++)
+                    // 1 in 100 times create a directory.
+                    if (fRandom.nextInt(100) == 0)
                     {
                         String name = randomName();
                         if (listing.containsKey(name))
                         {
                             break;
                         }
-                        System.out.println("Creating File: " + name);
-                        fService.createFile(dir.getPath(), name, 
-                            new ByteArrayInputStream(("I am " + name).getBytes()));
+                        System.out.println("Creating Directory: " + name);
+                        fService.createDirectory(dir.getPath(), name);
                         fOpCount++;
                     }
-                }
-                // 1 in 100 times create a directory.
-                if (fRandom.nextInt(100) == 0)
-                {
-                    String name = randomName();
-                    if (listing.containsKey(name))
+                    if (listing.size() > 0)
                     {
-                        break;
+                        // 1 in 100 times remove something
+                        if (fRandom.nextInt(100) == 0)
+                        {
+                            List<String> names = new ArrayList<String>(listing.keySet());
+                            String name = names.get(fRandom.nextInt(names.size()));
+                            System.out.println("Removing: " + name);
+                            fService.removeNode(dir.getPath(), 
+                                                name);
+                            fOpCount++;
+                        }
                     }
-                    System.out.println("Creating Directory: " + name);
-                    fService.createDirectory(dir.getPath(), name);
-                    fOpCount++;
-                }
-                if (listing.size() > 0)
-                {
-                    // 1 in 100 times remove something
-                    if (fRandom.nextInt(100) == 0)
+                    if (dirs.size() > 0)
                     {
-                        List<String> names = new ArrayList<String>(listing.keySet());
-                        String name = names.get(fRandom.nextInt(names.size()));
-                        System.out.println("Removing: " + name);
-                        fService.removeNode(dir.getPath(), 
-                                            name);
-                        fOpCount++;
+                        dir = dirs.get(fRandom.nextInt(dirs.size()));
                     }
+                    else
+                    {
+                        dir = null;
+                    }
+                    depth++;
                 }
-                if (dirs.size() > 0)
-                {
-                    dir = dirs.get(fRandom.nextInt(dirs.size()));
-                }
-                else
-                {
-                    dir = null;
-                }
-                depth++;
             }
+            
             if (fRandom.nextInt(16) == 0)
             {
                 System.out.println("Snapshotting: " + repDesc.getName());

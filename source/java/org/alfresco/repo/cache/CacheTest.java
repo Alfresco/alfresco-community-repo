@@ -34,10 +34,9 @@ import javax.transaction.UserTransaction;
 import junit.framework.TestCase;
 import net.sf.ehcache.CacheManager;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
-import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.transaction.TransactionService;

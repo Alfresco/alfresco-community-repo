@@ -34,14 +34,40 @@ import org.alfresco.repo.avm.util.BulkReader;
  */
 public class AVMScaleTestP extends AVMServiceTestBase
 {
-    public void testScaling()
+    public void testScaleA()
     {
-        int n = 250; // The number of BulkLoads to do.
-        
+        testScaling(1,
+                    "source/java/org/alfresco/repo/avm/actions", // relative from .../repository
+                    1);
+    }
+    
+    public void testScaleB()
+    {
+        testScaling(2,
+                    "source/java/org/alfresco/repo/avm", // relative from .../repository
+                    2);
+    }
+
+    /*
+    public void xtestScaleZ()
+    {
+        testScaling(250,         
+                    "/Users/britt/hibernate-3.1",
+                    10);
+    }
+    */
+    
+    /**
+     * Do the scale test
+     * 
+     * @param n             Number of bulkloads to do
+     * @param fsPath        The path in the filesystem to load (tree of stuff) from
+     * @param futzCount     The number of post snapshot modifications to make after each load
+     */
+    private void testScaling(int n, String fsPath, int futzCount)
+    {
         try
         {
-            int futzCount = 10; // The number of post snapshot modifications to make after each load.       
-            String load = "config/alfresco"; // The tree of stuff to load.
             BulkLoader loader = new BulkLoader();
             loader.setAvmService(fService);
             loader.setPropertyCount(50);
@@ -52,7 +78,7 @@ public class AVMScaleTestP extends AVMServiceTestBase
             {
                 System.out.println("Round " + (i + 1));
                 fService.createStore("store" + i);
-                loader.recursiveLoad(load, "store" + i + ":/");
+                loader.recursiveLoad(fsPath, "store" + i + ":/");
                 fService.createSnapshot("store" + i, null, null);
                 long now = System.currentTimeMillis();
                 System.out.println("Load Time: " + (now - lastTime) + "ms");
@@ -68,7 +94,10 @@ public class AVMScaleTestP extends AVMServiceTestBase
         {
             for (int i = 0; i < n; i++)
             {
-                if (fService.getStore("store" + i) != null) { fService.purgeStore("store" + i); }
+                if (fService.getStore("store" + i) != null)
+                {
+                    fService.purgeStore("store" + i);
+                }
             }
         }
     }

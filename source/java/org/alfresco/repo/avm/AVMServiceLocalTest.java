@@ -45,11 +45,12 @@ import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.remote.AVMRemote;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.NameMatcher;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.context.support.FileSystemXmlApplicationContext;
+import org.springframework.context.ApplicationContext;
 
 /**
  * Local unit tests of AVM (AVMSyncService & AVMService)
@@ -71,7 +72,7 @@ public class AVMServiceLocalTest extends TestCase
     /**
      * The application context.
      */
-    protected static FileSystemXmlApplicationContext fContext;
+    protected static ApplicationContext fContext;
 
     protected static NameMatcher excluder;
     
@@ -81,7 +82,7 @@ public class AVMServiceLocalTest extends TestCase
         if (fContext == null)
         {
             // local (embedded) test setup
-            fContext = new FileSystemXmlApplicationContext("config/alfresco/application-context.xml");
+            fContext = ApplicationContextHelper.getApplicationContext();
             fService = (AVMRemote)fContext.getBean("avmRemote");
             fSyncService = (AVMSyncService)fContext.getBean("AVMSyncService");
             excluder = (NameMatcher) fContext.getBean("globalPathExcluder");
@@ -122,7 +123,7 @@ public class AVMServiceLocalTest extends TestCase
         catch (Exception e)
         {
             e.printStackTrace();
-            fail();
+            throw e;
         }
         finally
         {
@@ -133,7 +134,7 @@ public class AVMServiceLocalTest extends TestCase
     /**
      * Do a simple hello world test.
      */
-    public void testSimple()
+    public void testSimple() throws Throwable
     {
         try
         {
@@ -147,7 +148,7 @@ public class AVMServiceLocalTest extends TestCase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
@@ -168,7 +169,7 @@ public class AVMServiceLocalTest extends TestCase
     /**
      * Test reading and writing.
      */
-    public void testReadWrite()
+    public void testReadWrite() throws Throwable
     {
         try
         {
@@ -195,7 +196,7 @@ public class AVMServiceLocalTest extends TestCase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
         finally
         {
@@ -206,7 +207,7 @@ public class AVMServiceLocalTest extends TestCase
     /**
      * Another test of reading.
      */
-    public void testRead()
+    public void testRead() throws Throwable
     {
         try
         {
@@ -231,7 +232,7 @@ public class AVMServiceLocalTest extends TestCase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
         finally
         {
@@ -242,7 +243,7 @@ public class AVMServiceLocalTest extends TestCase
     /**
      * Test a call that should return null;
      */
-    public void testErrorState()
+    public void testErrorState() throws Throwable
     {
         try
         {
@@ -251,7 +252,7 @@ public class AVMServiceLocalTest extends TestCase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
@@ -259,7 +260,7 @@ public class AVMServiceLocalTest extends TestCase
     /**
      * Test update to branch
      */
-    public void testSimpleUpdateBR()
+    public void testSimpleUpdateBR() throws Throwable
     {   
         try
         {
@@ -287,7 +288,7 @@ public class AVMServiceLocalTest extends TestCase
         catch (Exception e)
         {
             e.printStackTrace();
-            fail();
+            throw e;
         }
         finally
         {

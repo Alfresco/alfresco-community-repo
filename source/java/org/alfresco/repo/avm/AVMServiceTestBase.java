@@ -47,7 +47,6 @@ import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.FileSystemXmlApplicationContext;
 
 /**
  * Base class for AVMService tests.
@@ -86,6 +85,11 @@ public class AVMServiceTestBase extends TestCase
     protected static IndexerAndSearcher fIndexerAndSearcher;
     
     protected static AVMLockingService fLockingService;
+    
+    public void testSetup()
+    {
+    	// NOOP
+    }
     
     /**
      * Setup for AVM tests.  Note that we set the polling

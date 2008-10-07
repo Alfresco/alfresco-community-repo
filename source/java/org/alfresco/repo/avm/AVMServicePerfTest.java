@@ -34,7 +34,7 @@ public class AVMServicePerfTest extends AVMServiceTestBase
     /**
      * Test adding 100 files to each directory.
      */
-    public void testAdd100a()
+    public void testAdd100a() throws Throwable
     {
         try
         {
@@ -59,14 +59,14 @@ public class AVMServicePerfTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
     /**
      * Test adding 100 files to each directory.
      */
-    public void testAdd100b()
+    public void testAdd100b() throws Throwable
     {
         try
         {
@@ -91,14 +91,14 @@ public class AVMServicePerfTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
     /**
      * Test adding 100 files to each directory.
      */
-    public void testAdd100c()
+    public void testAdd100c() throws Throwable
     {
         try
         {
@@ -123,14 +123,14 @@ public class AVMServicePerfTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 
     /**
      * Test adding 100 files to each directory.
      */
-    public void testAdd100d()
+    public void testAdd100d() throws Throwable
     {
         try
         {
@@ -155,7 +155,7 @@ public class AVMServicePerfTest extends AVMServiceTestBase
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            fail();
+            throw e;
         }
     }
 }

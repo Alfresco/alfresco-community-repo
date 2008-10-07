@@ -26,7 +26,10 @@ package org.alfresco.repo.avm;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.sf.acegisecurity.Authentication;
+
 import org.alfresco.repo.avm.util.BulkLoader;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 
 
 /**
@@ -72,6 +75,7 @@ public class AVMCrawlTestP extends AVMServiceTestBase
      */
     private void testCrawl(int n, String fsPath, int m, long runTime)
     {
+        Authentication authentication = AuthenticationUtil.setCurrentUser(AuthenticationUtil.SYSTEM_USER_NAME);
         try
         {
             if (m < 1)
@@ -97,7 +101,7 @@ public class AVMCrawlTestP extends AVMServiceTestBase
             List<Thread> threads = new ArrayList<Thread>();
             for (int i = 0; i < n; i++)
             {
-                crawlers.add(new AVMCrawler(fService));
+                crawlers.add(new AVMCrawler(fService, authentication));
                 threads.add(new Thread(crawlers.get(i)));
                 threads.get(i).start();
             }

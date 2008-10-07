@@ -34,6 +34,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import net.sf.acegisecurity.Authentication;
+
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.avm.AVMException;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
@@ -51,6 +54,8 @@ class AVMCrawler implements Runnable
      * The AVMService to use.
      */
     private AVMService fService;
+    
+    private Authentication authentication;
 
     /**
      * The Operation count.
@@ -77,9 +82,10 @@ class AVMCrawler implements Runnable
      * Make up a new one.
      * @param service The AVMService.
      */
-    public AVMCrawler(AVMService service)
+    public AVMCrawler(AVMService service, Authentication authentication)
     {
         fService = service;
+        this.authentication = authentication;
         fOpCount = 0;
         fDone = false;
         fError = false;
@@ -117,6 +123,7 @@ class AVMCrawler implements Runnable
     {
         try
         {
+            AuthenticationUtil.setCurrentAuthentication(authentication);
             while (!fDone)
             {
                 doCrawl();
@@ -132,6 +139,10 @@ class AVMCrawler implements Runnable
             
             fError = true;
             fErrorStackTrace = sw.toString();
+        }
+        finally
+        {
+            AuthenticationUtil.clearCurrentSecurityContext();
         }
     }
 

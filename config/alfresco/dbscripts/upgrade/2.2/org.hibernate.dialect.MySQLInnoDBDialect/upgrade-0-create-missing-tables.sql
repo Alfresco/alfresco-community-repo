@@ -77,6 +77,10 @@ ALTER TABLE alf_audit_date CHANGE COLUMN year full_year INTEGER NOT NULL;
         primary key (id)
     ) type=InnoDB;                                    -- (optional)
 
+-- Add ACL column for AVM tables
+ALTER TABLE avm_stores
+   ADD COLUMN acl_id BIGINT;
+
 --
 -- Record script finish
 --

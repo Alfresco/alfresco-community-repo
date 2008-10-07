@@ -1,5 +1,5 @@
 --
--- Title:      Apply all DM schema modifications 
+-- Title:      Apply schema modifications to upgrade from 2.1 
 -- Database:   MySQL
 -- Since:      V2.2 Schema 91
 -- Author:     Derek Hulley
@@ -15,9 +15,9 @@
 -- Please contact support@alfresco.com if you need assistance with the upgrade.
 --
 
----------------------------------
+-- -------------------------------
 -- Build Namespaces and QNames --
----------------------------------
+-- -------------------------------
 
 CREATE TABLE alf_namespace
 (
@@ -43,10 +43,10 @@ CREATE TABLE alf_qname
 -- Create temporary table for dynamic (child) QNames
 CREATE TABLE t_qnames_dyn
 (
-   qname VARCHAR(100) NOT NULL,
+   qname VARCHAR(255) NOT NULL,
    namespace VARCHAR(100),
    namespace_id BIGINT,
-   local_name VARCHAR(100),
+   local_name VARCHAR(200),
    INDEX tidx_qnd_qn (qname),
    INDEX tidx_qnd_ns (namespace)
 ) ENGINE=InnoDB;
@@ -188,13 +188,15 @@ UPDATE t_qnames t SET t.qname_id =
    WHERE ns.uri = t.namespace AND q.local_name = t.localname
 );
 
-------------------------------
+-- ----------------------------
 -- Populate the Permissions --
-------------------------------
+-- ----------------------------
 
 -- This is a small table so we change it in place
-ALTER TABLE alf_permission DROP INDEX type_qname;
-ALTER TABLE alf_permission ADD COLUMN type_qname_id BIGINT NULL AFTER id;
+ALTER TABLE alf_permission
+   DROP INDEX type_qname,
+   ADD COLUMN type_qname_id BIGINT NULL AFTER id
+;
 UPDATE alf_permission p SET p.type_qname_id =
 (
    SELECT q.id
@@ -202,13 +204,17 @@ UPDATE alf_permission p SET p.type_qname_id =
    JOIN alf_namespace ns ON (q.ns_id = ns.id)
    WHERE CONCAT('{', SUBSTR(ns.uri, 8), '}', q.local_name) = p.type_qname
 );
-ALTER TABLE alf_permission DROP COLUMN type_qname;
-ALTER TABLE alf_permission MODIFY COLUMN type_qname_id BIGINT NOT NULL AFTER id;
-ALTER TABLE alf_permission ADD UNIQUE (type_qname_id, name);
+ALTER TABLE alf_permission
+   DROP COLUMN type_qname,
+   MODIFY COLUMN type_qname_id BIGINT NOT NULL AFTER id,
+   ADD UNIQUE (type_qname_id, name),
+   ADD INDEX fk_alf_perm_tqn (type_qname_id),
+   ADD CONSTRAINT fk_alf_perm_tqn FOREIGN KEY (type_qname_id) REFERENCES alf_qname (id)
+;
 
----------------------
+-- -------------------
 -- Build new Store --
----------------------
+-- -------------------
 
 CREATE TABLE t_alf_store
 (
@@ -221,6 +227,10 @@ CREATE TABLE t_alf_store
    UNIQUE (protocol, identifier)
 ) TYPE=InnoDB;
 
+-- --------------------------
+-- Populate the ADM nodes --
+-- --------------------------
+
 CREATE TABLE t_alf_node (
    id BIGINT NOT NULL AUTO_INCREMENT,
    version BIGINT NOT NULL,
@@ -230,10 +240,10 @@ CREATE TABLE t_alf_node (
    node_deleted bit NOT NULL,
    type_qname_id BIGINT NOT NULL,
    acl_id BIGINT,
-   audit_creator VARCHAR(255) NOT NULL,
-   audit_created VARCHAR(30) NOT NULL,
-   audit_modifier VARCHAR(255) NOT NULL,
-   audit_modified VARCHAR(30) NOT NULL,
+   audit_creator VARCHAR(255),
+   audit_created VARCHAR(30),
+   audit_modifier VARCHAR(255),
+   audit_modified VARCHAR(30),
    audit_accessed VARCHAR(30),
    INDEX idx_alf_node_del (node_deleted),
    INDEX fk_alf_node_acl (acl_id),
@@ -253,18 +263,13 @@ INSERT INTO t_alf_store (version, protocol, identifier, root_node_id)
    SELECT 1, protocol, identifier, root_node_id FROM alf_store
 ;
 
-----------------------------
--- Populate the new nodes --
-----------------------------
-
--- Query OK, 830222 rows affected (2 min 18.96 sec)	
 INSERT INTO t_alf_node
    (
-      id, version, store_id, uuid, transaction_id, node_deleted, type_qname_id,
+      id, version, store_id, uuid, transaction_id, node_deleted, type_qname_id, acl_id,
       audit_creator, audit_created, audit_modifier, audit_modified
    )
    SELECT
-      n.id, 1, s.id, n.uuid, nstat.transaction_id, false, q.qname_id,
+      n.id, 1, s.id, n.uuid, nstat.transaction_id, false, q.qname_id, n.acl_id,
       'unknown', '2008-09-17T02:23:37.212+01:00', 'unkown', '2008-09-17T02:23:37.212+01:00'
    FROM
       t_qnames q
@@ -279,9 +284,38 @@ ALTER TABLE t_alf_store
    ADD CONSTRAINT fk_alf_store_root FOREIGN KEY (root_node_id) REFERENCES t_alf_node (id)
 ;
 
--------------------------------
+-- -----------------------------
+-- Populate Version Counter  --
+-- -----------------------------
+
+CREATE TABLE t_alf_version_count
+(
+   id BIGINT NOT NULL AUTO_INCREMENT,
+   version BIGINT NOT NULL,
+   store_id BIGINT NOT NULL UNIQUE,
+   version_count INTEGER NOT NULL,
+   INDEX fk_alf_vc_store (store_id),
+   CONSTRAINT fk_alf_vc_store FOREIGN KEY (store_id) REFERENCES t_alf_store (id),
+   PRIMARY KEY (id)
+) TYPE=InnoDB;
+
+INSERT INTO t_alf_version_count
+   (
+      version, store_id, version_count
+   )
+   SELECT
+      1, s.id, vc.version_count
+   FROM
+      alf_version_count vc
+      JOIN t_alf_store s ON (s.protocol = vc.protocol AND s.identifier = vc.identifier)
+;
+
+DROP TABLE alf_version_count;
+ALTER TABLE t_alf_version_count RENAME TO alf_version_count;
+
+-- -----------------------------
 -- Populate the Child Assocs --
--------------------------------
+-- -----------------------------
 
 CREATE TABLE t_alf_child_assoc
 (
@@ -337,9 +371,9 @@ DROP TABLE t_qnames_dyn;
 DROP TABLE alf_child_assoc;
 ALTER TABLE t_alf_child_assoc RENAME TO alf_child_assoc;
 
-------------------------------
+-- ----------------------------
 -- Populate the Node Assocs --
-------------------------------
+-- ----------------------------
 
 CREATE TABLE t_alf_node_assoc
 (
@@ -377,9 +411,9 @@ INSERT INTO t_alf_node_assoc
 DROP TABLE alf_node_assoc;
 ALTER TABLE t_alf_node_assoc RENAME TO alf_node_assoc;
 
--------------------------------
+-- -----------------------------
 -- Populate the Node Aspects --
--------------------------------
+-- -----------------------------
 
 CREATE TABLE t_alf_node_aspects
 (
@@ -392,7 +426,7 @@ CREATE TABLE t_alf_node_aspects
    PRIMARY KEY (node_id, qname_id)
 ) TYPE=InnoDB;
 
--- Note the omission of sys:referencable and cm:auditable.  These are implicit.
+-- Note the omission of sys:referencable.  This is implicit.
 -- Query OK, 415051 rows affected (17.59 sec)
 INSERT INTO t_alf_node_aspects
    (
@@ -407,8 +441,7 @@ INSERT INTO t_alf_node_aspects
    WHERE
       tqn.qname NOT IN
       (
-         '{http://www.alfresco.org/model/system/1.0}referenceable',
-         '{http://www.alfresco.org/model/content/1.0}auditable'
+         '{http://www.alfresco.org/model/system/1.0}referenceable'
       )
 ;
 
@@ -416,9 +449,9 @@ INSERT INTO t_alf_node_aspects
 DROP TABLE alf_node_aspects;
 ALTER TABLE t_alf_node_aspects RENAME TO alf_node_aspects;
 
------------------------------------
+-- ---------------------------------
 -- Populate the AVM Node Aspects --
------------------------------------
+-- ---------------------------------
 
 CREATE TABLE t_avm_aspects
 (
@@ -462,9 +495,9 @@ DROP TABLE avm_aspects;
 DROP TABLE avm_aspects_new;
 ALTER TABLE t_avm_aspects RENAME TO avm_aspects;
 
-------------------------------------
+-- ----------------------------------
 -- Migrate Sundry Property Tables --
-------------------------------------
+-- ----------------------------------
 
 -- Create temporary mapping for property types
 CREATE TABLE t_prop_types
@@ -492,47 +525,6 @@ INSERT INTO t_prop_types values ('QNAME', 15);
 INSERT INTO t_prop_types values ('PATH', 16);
 INSERT INTO t_prop_types values ('LOCALE', 17);
 INSERT INTO t_prop_types values ('VERSION_NUMBER', 18);
-
--- Modify the avm_node_properties_new table
-CREATE TABLE t_avm_node_properties_new
-(
-   node_id BIGINT NOT NULL,
-   actual_type_n INTEGER NOT NULL,
-   persisted_type_n INTEGER NOT NULL,
-   multi_valued BIT NOT NULL,
-   boolean_value BIT,
-   long_value BIGINT,
-   float_value FLOAT,
-   double_value DOUBLE PRECISION,
-   string_value TEXT,
-   serializable_value BLOB,
-   qname_id BIGINT NOT NULL,
-   INDEX fk_avm_nprop_n (node_id),
-   INDEX fk_avm_nprop_qn (qname_id),
-   CONSTRAINT fk_avm_nprop_n FOREIGN KEY (node_id) REFERENCES avm_nodes (id),
-   CONSTRAINT fk_avm_nprop_qn FOREIGN KEY (qname_id) REFERENCES alf_qname (id),
-   PRIMARY KEY (node_id, qname_id)
-) TYPE=InnoDB;
-INSERT INTO t_avm_node_properties_new
-   (
-      node_id,
-      qname_id,
-      actual_type_n, persisted_type_n,
-      multi_valued, boolean_value, long_value, float_value, double_value, string_value, serializable_value
-   )
-   SELECT
-      p.node_id,
-      tqn.qname_id,
-      ptypes_actual.type_id, ptypes_persisted.type_id,
-      p.multi_valued, p.boolean_value, p.long_value, p.float_value, p.double_value, p.string_value, p.serializable_value
-   FROM
-      avm_node_properties_new p
-      JOIN t_qnames tqn ON (p.qname = tqn.qname)
-      JOIN t_prop_types ptypes_actual ON (ptypes_actual.type_name = p.actual_type)
-      JOIN t_prop_types ptypes_persisted ON (ptypes_persisted.type_name = p.persisted_type)
-;
-DROP TABLE avm_node_properties_new;
-ALTER TABLE t_avm_node_properties_new RENAME TO avm_node_properties_new;
 
 -- Modify the avm_store_properties table
 CREATE TABLE t_avm_store_properties
@@ -576,8 +568,7 @@ INSERT INTO t_avm_store_properties
 DROP TABLE avm_store_properties;
 ALTER TABLE t_avm_store_properties RENAME TO avm_store_properties;
 
--- Modify the avm_node_properties table
--- This table is old, so the data will be extracte and it will be replaced
+-- Modify the avm_node_properties_new table
 CREATE TABLE t_avm_node_properties
 (
    node_id BIGINT NOT NULL,
@@ -591,8 +582,30 @@ CREATE TABLE t_avm_node_properties
    string_value TEXT,
    serializable_value BLOB,
    qname_id BIGINT NOT NULL,
+   INDEX fk_avm_nprop_n (node_id),
+   INDEX fk_avm_nprop_qn (qname_id),
+   CONSTRAINT fk_avm_nprop_n FOREIGN KEY (node_id) REFERENCES avm_nodes (id),
+   CONSTRAINT fk_avm_nprop_qn FOREIGN KEY (qname_id) REFERENCES alf_qname (id),
    PRIMARY KEY (node_id, qname_id)
 ) TYPE=InnoDB;
+INSERT INTO t_avm_node_properties
+   (
+      node_id,
+      qname_id,
+      actual_type_n, persisted_type_n,
+      multi_valued, boolean_value, long_value, float_value, double_value, string_value, serializable_value
+   )
+   SELECT
+      p.node_id,
+      tqn.qname_id,
+      ptypes_actual.type_id, ptypes_persisted.type_id,
+      p.multi_valued, p.boolean_value, p.long_value, p.float_value, p.double_value, p.string_value, p.serializable_value
+   FROM
+      avm_node_properties_new p
+      JOIN t_qnames tqn ON (p.qname = tqn.qname)
+      JOIN t_prop_types ptypes_actual ON (ptypes_actual.type_name = p.actual_type)
+      JOIN t_prop_types ptypes_persisted ON (ptypes_persisted.type_name = p.persisted_type)
+;
 INSERT INTO t_avm_node_properties
    (
       node_id,
@@ -610,34 +623,19 @@ INSERT INTO t_avm_node_properties
       JOIN t_qnames tqn ON (p.qname = tqn.qname)
       JOIN t_prop_types ptypes_actual ON (ptypes_actual.type_name = p.actual_type)
       JOIN t_prop_types ptypes_persisted ON (ptypes_persisted.type_name = p.persisted_type)
-;
--- Copy values to new table.  Duplicates are avoided just in case.
-INSERT INTO avm_node_properties_new
-   (
-      node_id,
-      qname_id,
-      actual_type_n, persisted_type_n,
-      multi_valued, boolean_value, long_value, float_value, double_value, string_value, serializable_value
-   )
-   SELECT
-      p.node_id,
-      p.qname_id,
-      p.actual_type_n, p.persisted_type_n,
-      p.multi_valued, p.boolean_value, p.long_value, p.float_value, p.double_value, p.string_value, p.serializable_value
-   FROM
-      t_avm_node_properties p
-      LEFT OUTER JOIN avm_node_properties_new pnew ON (pnew.node_id = p.node_id AND pnew.qname_id = p.qname_id)
+      LEFT OUTER JOIN t_avm_node_properties tanp ON (tqn.qname_id = tanp.qname_id)
    WHERE
-      pnew.qname_id is null
+      tanp.qname_id IS NULL
 ;
-DROP TABLE t_avm_node_properties;
+
+DROP TABLE avm_node_properties_new;
 DROP TABLE avm_node_properties;
-ALTER TABLE avm_node_properties_new RENAME TO avm_node_properties;
+ALTER TABLE t_avm_node_properties RENAME TO avm_node_properties;
 
 
--------------------
+-- -----------------
 -- Build Locales --
--------------------
+-- -----------------
 
 CREATE TABLE alf_locale
 (
@@ -659,9 +657,9 @@ INSERT INTO alf_locale (locale_str)
       JOIN alf_map_attribute_entries ma ON (ma.map_id = a1.id)
 ;
 
----------------------------------
+-- -------------------------------
 -- Migrate ADM Property Tables --
----------------------------------
+-- -------------------------------
 
 CREATE TABLE t_alf_node_properties
 (
@@ -686,8 +684,7 @@ CREATE TABLE t_alf_node_properties
    PRIMARY KEY (node_id, qname_id, list_index, locale_id)
 ) TYPE=InnoDB;
 
--- Copy all simple values over
--- Query OK, 2905008 rows affected (7 min 11.49 sec)
+-- Copy values over
 INSERT INTO t_alf_node_properties
    (
       node_id, qname_id, list_index, locale_id,
@@ -708,14 +705,69 @@ INSERT INTO t_alf_node_properties
       JOIN t_prop_types ptypes_actual ON (ptypes_actual.type_name = np.actual_type)
       JOIN t_prop_types ptypes_persisted ON (ptypes_persisted.type_name = np.persisted_type)
    WHERE
-      np.attribute_value is null AND
-      tqn.qname NOT IN
-      (
-         '{http://www.alfresco.org/model/content/1.0}created',
-         '{http://www.alfresco.org/model/content/1.0}creator',
-         '{http://www.alfresco.org/model/content/1.0}modified',
-         '{http://www.alfresco.org/model/content/1.0}modifier'
-      )
+      np.attribute_value IS NULL
+;
+-- Update cm:auditable properties on the nodes
+UPDATE t_alf_node n SET audit_creator =
+(
+   SELECT
+      string_value
+   FROM
+      t_alf_node_properties np
+      JOIN alf_qname qn ON (np.qname_id = qn.id)
+      JOIN alf_namespace ns ON (qn.ns_id = ns.id)
+   WHERE
+      np.node_id = n.id AND
+      ns.uri = 'FILLER-http://www.alfresco.org/model/content/1.0' AND
+      qn.local_name = 'creator'
+);
+UPDATE t_alf_node n SET audit_created =
+(
+   SELECT
+      string_value
+   FROM
+      t_alf_node_properties np
+      JOIN alf_qname qn ON (np.qname_id = qn.id)
+      JOIN alf_namespace ns ON (qn.ns_id = ns.id)
+   WHERE
+      np.node_id = n.id AND
+      ns.uri = 'FILLER-http://www.alfresco.org/model/content/1.0' AND
+      qn.local_name = 'created'
+);
+UPDATE t_alf_node n SET audit_modifier =
+(
+   SELECT
+      string_value
+   FROM
+      t_alf_node_properties np
+      JOIN alf_qname qn ON (np.qname_id = qn.id)
+      JOIN alf_namespace ns ON (qn.ns_id = ns.id)
+   WHERE
+      np.node_id = n.id AND
+      ns.uri = 'FILLER-http://www.alfresco.org/model/content/1.0' AND
+      qn.local_name = 'modifier'
+);
+UPDATE t_alf_node n SET audit_modified =
+(
+   SELECT
+      string_value
+   FROM
+      t_alf_node_properties np
+      JOIN alf_qname qn ON (np.qname_id = qn.id)
+      JOIN alf_namespace ns ON (qn.ns_id = ns.id)
+   WHERE
+      np.node_id = n.id AND
+      ns.uri = 'FILLER-http://www.alfresco.org/model/content/1.0' AND
+      qn.local_name = 'modified'
+);
+-- Remove the unused cm:auditable properties
+DELETE t_alf_node_properties
+   FROM t_alf_node_properties
+   JOIN alf_qname ON (t_alf_node_properties.qname_id = alf_qname.id)
+   JOIN alf_namespace ON (alf_qname.ns_id = alf_namespace.id)
+   WHERE
+      alf_namespace.uri = 'FILLER-http://www.alfresco.org/model/content/1.0' AND
+      alf_qname.local_name IN ('creator', 'created', 'modifier', 'modified')
 ;
 
 -- Copy all MLText values over
@@ -789,9 +841,15 @@ DELETE alf_attributes
 ;
 DROP TABLE t_del_attributes;
 
---------------------
+-- ---------------------------------------------------
+-- Remove the FILLER- values from the namespace uri --
+-- ---------------------------------------------------
+UPDATE alf_namespace SET uri = '.empty' WHERE uri = 'FILLER-';
+UPDATE alf_namespace SET uri = SUBSTR(uri, 8) WHERE uri LIKE 'FILLER-%';
+
+-- ------------------
 -- Final clean up --
---------------------
+-- ------------------
 DROP TABLE t_qnames;
 DROP TABLE t_prop_types;
 DROP TABLE alf_node_status;
@@ -802,14 +860,175 @@ ALTER TABLE t_alf_node RENAME TO alf_node;
 DROP TABLE alf_store;
 ALTER TABLE t_alf_store RENAME TO alf_store;
 
+
+-- -------------------------------------
+-- Modify index and constraint names --
+-- -------------------------------------
+ALTER TABLE alf_attributes DROP INDEX fk_attributes_n_acl, DROP FOREIGN KEY fk_attributes_n_acl;  -- (optional)
+ALTER TABLE alf_attributes
+   ADD INDEX fk_alf_attr_acl (acl_id)
+;
+
+ALTER TABLE alf_audit_date DROP INDEX adt_woy_idx;  -- (optional)
+ALTER TABLE alf_audit_date DROP INDEX adt_date_idx;  -- (optional)
+ALTER TABLE alf_audit_date DROP INDEX adt_y_idx;  -- (optional)
+ALTER TABLE alf_audit_date DROP INDEX adt_q_idx;  -- (optional)
+ALTER TABLE alf_audit_date DROP INDEX adt_m_idx;  -- (optional)
+ALTER TABLE alf_audit_date DROP INDEX adt_dow_idx;  -- (optional)
+ALTER TABLE alf_audit_date DROP INDEX adt_doy_idx;  -- (optional)
+ALTER TABLE alf_audit_date DROP INDEX adt_dom_idx;  -- (optional)
+ALTER TABLE alf_audit_date DROP INDEX adt_hy_idx;  -- (optional)
+ALTER TABLE alf_audit_date DROP INDEX adt_wom_idx;  -- (optional)
+ALTER TABLE alf_audit_date
+   ADD INDEX idx_alf_adtd_woy (week_of_year),
+   ADD INDEX idx_alf_adtd_q (quarter),
+   ADD INDEX idx_alf_adtd_wom (week_of_month),
+   ADD INDEX idx_alf_adtd_dom (day_of_month),
+   ADD INDEX idx_alf_adtd_doy (day_of_year),
+   ADD INDEX idx_alf_adtd_dow (day_of_week),
+   ADD INDEX idx_alf_adtd_m (month),
+   ADD INDEX idx_alf_adtd_hy (half_year),
+   ADD INDEX idx_alf_adtd_fy (full_year),
+   ADD INDEX idx_alf_adtd_dat (date_only)
+;
+
+ALTER TABLE alf_audit_fact DROP INDEX adt_user_idx;  -- (optional)
+ALTER TABLE alf_audit_fact DROP INDEX adt_store_idx;  -- (optional)
+ALTER TABLE alf_audit_fact
+   DROP INDEX FKEAD18174A0F9B8D9, DROP FOREIGN KEY FKEAD18174A0F9B8D9,
+   DROP INDEX FKEAD1817484342E39, DROP FOREIGN KEY FKEAD1817484342E39,
+   DROP INDEX FKEAD18174F524CFD7, DROP FOREIGN KEY FKEAD18174F524CFD7
+;
+ALTER TABLE alf_audit_fact
+   ADD INDEX idx_alf_adtf_ref (store_protocol, store_id, node_uuid),
+   ADD INDEX idx_alf_adtf_usr (user_id),
+   ADD INDEX fk_alf_adtf_src (audit_source_id),
+   ADD CONSTRAINT fk_alf_adtf_src FOREIGN KEY (audit_source_id) REFERENCES alf_audit_source (id),
+   ADD INDEX fk_alf_adtf_date (audit_date_id),
+   ADD CONSTRAINT fk_alf_adtf_date FOREIGN KEY (audit_date_id) REFERENCES alf_audit_date (id),
+   ADD INDEX fk_alf_adtf_conf (audit_conf_id),
+   ADD CONSTRAINT fk_alf_adtf_conf FOREIGN KEY (audit_conf_id) REFERENCES alf_audit_config (id)
+;
+
+ALTER TABLE alf_audit_source DROP INDEX app_source_app_idx;  -- (optional)
+ALTER TABLE alf_audit_source DROP INDEX app_source_ser_idx;  -- (optional)
+ALTER TABLE alf_audit_source DROP INDEX app_source_met_idx;  -- (optional)
+ALTER TABLE alf_audit_source
+   ADD INDEX idx_alf_adts_met (method),
+   ADD INDEX idx_alf_adts_ser (service),
+   ADD INDEX idx_alf_adts_app (application)
+;
+
+ALTER TABLE alf_global_attributes DROP FOREIGN KEY FK64D0B9CF69B9F16A; -- (optional)
+ALTER TABLE alf_global_attributes DROP INDEX FK64D0B9CF69B9F16A; -- (optional)
+-- alf_global_attributes.attribute is declared unique.  Indexes may automatically have been created.
+ALTER TABLE alf_global_attributes
+   ADD INDEX fk_alf_gatt_att (attribute);  -- (optional)
+ALTER TABLE alf_global_attributes
+   ADD CONSTRAINT fk_alf_gatt_att FOREIGN KEY (attribute) REFERENCES alf_attributes (id)
+;
+   
+ALTER TABLE alf_list_attribute_entries DROP INDEX FKC7D52FB02C5AB86C, DROP FOREIGN KEY FKC7D52FB02C5AB86C; -- (optional)
+ALTER TABLE alf_list_attribute_entries DROP INDEX FKC7D52FB0ACD8822C, DROP FOREIGN KEY FKC7D52FB0ACD8822C; -- (optional)
+ALTER TABLE alf_list_attribute_entries
+   ADD INDEX fk_alf_lent_att (attribute_id),
+   ADD CONSTRAINT fk_alf_lent_att FOREIGN KEY (attribute_id) REFERENCES alf_attributes (id),
+   ADD INDEX fk_alf_lent_latt (list_id),
+   ADD CONSTRAINT fk_alf_lent_latt FOREIGN KEY (list_id) REFERENCES alf_attributes (id)
+;
+
+ALTER TABLE alf_map_attribute_entries DROP INDEX FK335CAE26AEAC208C, DROP FOREIGN KEY FK335CAE26AEAC208C; -- (optional)
+ALTER TABLE alf_map_attribute_entries DROP INDEX FK335CAE262C5AB86C, DROP FOREIGN KEY FK335CAE262C5AB86C; -- (optional)
+ALTER TABLE alf_map_attribute_entries
+   ADD INDEX fk_alf_matt_matt (map_id),
+   ADD CONSTRAINT fk_alf_matt_matt FOREIGN KEY (map_id) REFERENCES alf_attributes (id),
+   ADD INDEX fk_alf_matt_att (attribute_id),
+   ADD CONSTRAINT fk_alf_matt_att FOREIGN KEY (attribute_id) REFERENCES alf_attributes (id)
+;
+
+ALTER TABLE alf_transaction DROP INDEX idx_commit_time_ms; -- (optional)
+ALTER TABLE alf_transaction
+   DROP INDEX FKB8761A3A9AE340B7, DROP FOREIGN KEY FKB8761A3A9AE340B7,
+   ADD INDEX fk_alf_txn_svr (server_id),
+   ADD CONSTRAINT fk_alf_txn_svr FOREIGN KEY (server_id) REFERENCES alf_server (id),
+   ADD INDEX idx_alf_txn_ctms (commit_time_ms)
+;
+
+ALTER TABLE avm_child_entries DROP INDEX fk_avm_ce_child, DROP FOREIGN KEY fk_avm_ce_child; -- (optional)
+ALTER TABLE avm_child_entries DROP INDEX fk_avm_ce_parent, DROP FOREIGN KEY fk_avm_ce_parent; -- (optional)
+ALTER TABLE avm_child_entries
+   ADD INDEX fk_avm_ce_child (child_id),
+   ADD CONSTRAINT fk_avm_ce_child FOREIGN KEY (child_id) REFERENCES avm_nodes (id),
+   ADD INDEX fk_avm_ce_parent (parent_id),
+   ADD CONSTRAINT fk_avm_ce_parent FOREIGN KEY (parent_id) REFERENCES avm_nodes (id)
+;
+
+ALTER TABLE avm_history_links DROP INDEX fk_avm_hl_desc, DROP FOREIGN KEY fk_avm_hl_desc; -- (optional)
+ALTER TABLE avm_history_links DROP INDEX fk_avm_hl_ancestor, DROP FOREIGN KEY fk_avm_hl_ancestor; -- (optional)
+ALTER TABLE avm_history_links DROP INDEX idx_avm_hl_revpk; -- (optional)
+ALTER TABLE avm_history_links
+   ADD INDEX fk_avm_hl_desc (descendent),
+   ADD CONSTRAINT fk_avm_hl_desc FOREIGN KEY (descendent) REFERENCES avm_nodes (id),
+   ADD INDEX fk_avm_hl_ancestor (ancestor),
+   ADD CONSTRAINT fk_avm_hl_ancestor FOREIGN KEY (ancestor) REFERENCES avm_nodes (id),
+   ADD INDEX idx_avm_hl_revpk (descendent, ancestor)
+;
+
+ALTER TABLE avm_merge_links DROP INDEX fk_avm_ml_to, DROP FOREIGN KEY fk_avm_ml_to; -- (optional)
+ALTER TABLE avm_merge_links DROP INDEX fk_avm_ml_from, DROP FOREIGN KEY fk_avm_ml_from; -- (optional)
+ALTER TABLE avm_merge_links
+   ADD INDEX fk_avm_ml_to (mto),
+   ADD CONSTRAINT fk_avm_ml_to FOREIGN KEY (mto) REFERENCES avm_nodes (id),
+   ADD INDEX fk_avm_ml_from (mfrom),
+   ADD CONSTRAINT fk_avm_ml_from FOREIGN KEY (mfrom) REFERENCES avm_nodes (id)
+;
+
+ALTER TABLE avm_nodes DROP INDEX fk_avm_n_acl, DROP FOREIGN KEY fk_avm_n_acl; -- (optional)
+ALTER TABLE avm_nodes DROP INDEX fk_avm_n_store, DROP FOREIGN KEY fk_avm_n_store; -- (optional)
+ALTER TABLE avm_nodes DROP INDEX idx_avm_n_pi; -- (optional)
+ALTER TABLE avm_nodes
+   ADD INDEX fk_avm_n_acl (acl_id),
+   ADD CONSTRAINT fk_avm_n_acl FOREIGN KEY (acl_id) REFERENCES alf_access_control_list (id),
+   ADD INDEX fk_avm_n_store (store_new_id),
+   ADD CONSTRAINT fk_avm_n_store FOREIGN KEY (store_new_id) REFERENCES avm_stores (id),
+   ADD INDEX idx_avm_n_pi (primary_indirection)
+;
+
+ALTER TABLE avm_stores DROP INDEX fk_avm_s_root, DROP FOREIGN KEY fk_avm_s_root; -- (optional)
+ALTER TABLE avm_stores
+   ADD INDEX fk_avm_s_acl (acl_id),
+   ADD CONSTRAINT fk_avm_s_acl FOREIGN KEY (acl_id) REFERENCES alf_access_control_list (id),
+   ADD INDEX fk_avm_s_root (current_root_id),
+   ADD CONSTRAINT fk_avm_s_root FOREIGN KEY (current_root_id) REFERENCES avm_nodes (id)
+;
+
+ALTER TABLE avm_version_layered_node_entry DROP INDEX FK182E672DEB9D70C, DROP FOREIGN KEY FK182E672DEB9D70C; -- (optional)
+ALTER TABLE avm_version_layered_node_entry
+   ADD INDEX fk_avm_vlne_vr (version_root_id),
+   ADD CONSTRAINT fk_avm_vlne_vr FOREIGN KEY (version_root_id) REFERENCES avm_version_roots (id)
+;
+
+ALTER TABLE avm_version_roots DROP INDEX idx_avm_vr_version; -- (optional)
+ALTER TABLE avm_version_roots DROP INDEX idx_avm_vr_revuq; -- (optional)
+ALTER TABLE avm_version_roots DROP INDEX fk_avm_vr_root, DROP FOREIGN KEY fk_avm_vr_root; -- (optional)
+ALTER TABLE avm_version_roots DROP INDEX fk_avm_vr_store, DROP FOREIGN KEY fk_avm_vr_store; -- (optional)
+ALTER TABLE avm_version_roots
+   ADD INDEX idx_avm_vr_version (version_id),
+   ADD INDEX idx_avm_vr_revuq (avm_store_id, version_id),
+   ADD INDEX fk_avm_vr_root (root_id),
+   ADD CONSTRAINT fk_avm_vr_root FOREIGN KEY (root_id) REFERENCES avm_nodes (id),
+   ADD INDEX fk_avm_vr_store (avm_store_id),
+   ADD CONSTRAINT fk_avm_vr_store FOREIGN KEY (avm_store_id) REFERENCES avm_stores (id)
+; 
+
 --
 -- Record script finish
 --
-DELETE FROM alf_applied_patch WHERE id = 'patch.db-V2.2-1-FullDmUpgrade';
+DELETE FROM alf_applied_patch WHERE id = 'patch.db-V2.2-Upgrade-From-2.1';
 INSERT INTO alf_applied_patch
   (id, description, fixes_from_schema, fixes_to_schema, applied_to_schema, target_schema, applied_on_date, applied_to_server, was_executed, succeeded, report)
   VALUES
   (
-    'patch.db-V2.2-1-FullDmUpgrade', 'Manually executed script upgrade V2.2: ADM ',
+    'patch.db-V2.2-Upgrade-From-2.1', 'Manually executed script upgrade V2.2: Upgrade from 2.1',
     0, 85, -1, 91, null, 'UNKOWN', 1, 1, 'Script completed'
   );

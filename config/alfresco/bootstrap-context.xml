@@ -64,23 +64,14 @@
              <ref bean="patch.db-V2.1-NotNullColumns" />
              <ref bean="patch.db-V2.2-ACL" />
              <ref bean="patch.db-V2.2-0-CreateMissingTables" />
-<!--
-             <ref bean="patch.db-V2.2-1-DropIndexesAndConstraints" />
-             <ref bean="patch.db-V2.2-2-MoveQNames" />
-             <ref bean="patch.db-V2.2-3-PropTypes" />
--->
-             <ref bean="patch.db-V2.2-1-MLText" />
-             <ref bean="patch.db-V2.2-1-FullDmUpgrade" />
+             <ref bean="patch.db-V2.2-Upgrade-From-2.1" />
+             <ref bean="patch.db-V2.2-Upgrade-From-2.2SP1" />
 			 <ref bean="patch.db-V2.2-Person" />
 			 <ref bean="patch.db-V2.2-OrclBLOB" />
           </list>
        </property>
        <property name="postUpdateScriptPatches">
           <list>
-<!--
-             <ref bean="patch.db-V2.2-4-ExtraIndexesAndConstraints" />
-             <ref bean="patch.db-V2.2-5-MappedFKIndexes" />
--->
              <ref bean="patch.db-V1.4-TxnCommitTimeIndex" />
              <ref bean="patch.db-V2.0-ContentUrls" />
              <ref bean="patch.db-V2.1-JBPMData" />

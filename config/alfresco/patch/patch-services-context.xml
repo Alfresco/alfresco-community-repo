@@ -1209,124 +1209,50 @@
             </list>
         </property>
     </bean>
-    <!--
-    <bean id="patch.db-V2.2-1-DropIndexesAndConstraints" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
-        <property name="id"><value>patch.db-V2.2-1-DropIndexesAndConstraints</value></property>
-        <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
+    <bean id="patch.db-V2.2-2-MoveQNames" class="org.alfresco.repo.admin.patch.impl.NoOpPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V2.2-2-MoveQNames</value></property>
+        <property name="description"><value>patch.noOpPatch.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>120</value></property>
         <property name="targetSchema"><value>121</value></property>
+    </bean>
+    <bean id="patch.db-V2.2-Upgrade-From-2.1" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V2.2-Upgrade-From-2.1</value></property>
+        <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>120</value></property>
+        <property name="targetSchema"><value>135</value></property>
         <property name="scriptUrl">
-            <value>classpath:alfresco/dbscripts/upgrade/2.2/${db.script.dialect}/upgrade-1-drop-indexes-and-constraints.sql</value>
+            <value>classpath:alfresco/dbscripts/upgrade/2.2/${db.script.dialect}/upgrade-from-2.1.sql</value>
         </property>
         <property name="dependsOn" >
             <list>
                 <ref bean="patch.db-V2.2-0-CreateMissingTables" />
             </list>
         </property>
-    </bean>
-    <bean id="patch.db-V2.2-2-MoveQNames" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
-        <property name="id"><value>patch.db-V2.2-2-MoveQNames</value></property>
-        <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
-        <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>120</value></property>
-        <property name="targetSchema"><value>121</value></property>
-        <property name="scriptUrl">
-            <value>classpath:alfresco/dbscripts/upgrade/2.2/${db.script.dialect}/upgrade-2-move-qnames.sql</value>
-        </property>
-        <property name="dependsOn" >
+        <property name="alternatives" >
             <list>
-                <ref bean="patch.db-V2.2-1-DropIndexesAndConstraints" />
+                <ref bean="patch.db-V2.2-2-MoveQNames" />
             </list>
         </property>
     </bean>
-    <bean id="patch.db-V2.2-3-PropTypes" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
-        <property name="id"><value>patch.db-V2.2-3-PropTypes</value></property>
+    <bean id="patch.db-V2.2-Upgrade-From-2.2SP1" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V2.2-Upgrade-From-2.2SP1</value></property>
         <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
-        <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>120</value></property>
-        <property name="targetSchema"><value>121</value></property>
+        <property name="fixesFromSchema"><value>121</value></property>
+        <property name="fixesToSchema"><value>134</value></property>
+        <property name="targetSchema"><value>135</value></property>
         <property name="scriptUrl">
-            <value>classpath:alfresco/dbscripts/upgrade/2.2/${db.script.dialect}/upgrade-3-proptypes.sql</value>
+            <value>classpath:alfresco/dbscripts/upgrade/2.2/${db.script.dialect}/upgrade-from-2.2SP1.sql</value>
         </property>
         <property name="dependsOn" >
             <list>
                 <ref bean="patch.db-V2.2-2-MoveQNames" />
             </list>
         </property>
-    </bean>
-        -->
-    <!--
-        This script is a snippet for people upgrading from 2.2.0 or 2.2.1.
-        All upgrades from before that are handled by a script that combines the scripts:
-           - patch.db-V2.2-1-DropIndexesAndConstraints
-           - patch.db-V2.2-2-MoveQNames
-           - patch.db-V2.2-3-PropTypes
-           - patch.db-V2.2-MLText-1
-           - patch.db-V2.2-4-ExtraIndexesAndConstraints
-           - patch.db-V2.2-5-MappedFKIndexes
-        The new script is:
-           - patch.db-V2.2-1-FullDmUpgrade
-    -->
-    <!--
-    <bean id="patch.db-V2.2-4-ExtraIndexesAndConstraints" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
-        <property name="id"><value>patch.db-V2.2-4-ExtraIndexesAndConstraints</value></property>
-        <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
-        <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>120</value></property>
-        <property name="targetSchema"><value>121</value></property>
-        <property name="scriptUrl">
-            <value>classpath:alfresco/dbscripts/upgrade/2.2/${db.script.dialect}/upgrade-4-extra-indexes-and-constraints.sql</value>
-        </property>
-        <property name="dependsOn" >
+        <property name="alternatives" >
             <list>
-                <ref bean="patch.db-V2.2-3-PropTypes" />
-            </list>
-        </property>
-    </bean>
-    <bean id="patch.db-V2.2-5-MappedFKIndexes" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
-        <property name="id"><value>patch.db-V2.2-5-MappedFKIndexes</value></property>
-        <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
-        <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>120</value></property>
-        <property name="targetSchema"><value>121</value></property>
-        <property name="scriptUrl">
-            <value>classpath:alfresco/dbscripts/upgrade/2.2/${db.script.dialect}/upgrade-5-mapped-fk-indexes.sql</value>
-        </property>
-        <property name="dependsOn" >
-            <list>
-                <ref bean="patch.db-V2.2-4-ExtraIndexesAndConstraints" />
-            </list>
-        </property>
-    </bean>
-    -->
-    <bean id="patch.db-V2.2-1-MLText" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
-        <property name="id"><value>patch.db-V2.2-1-MLText</value></property>
-        <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
-        <property name="fixesFromSchema"><value>86</value></property>
-        <property name="fixesToSchema"><value>90</value></property>
-        <property name="targetSchema"><value>91</value></property>
-        <property name="scriptUrl">
-            <value>classpath:alfresco/dbscripts/upgrade/2.2/${db.script.dialect}/upgrade-1-mltext.sql</value>
-        </property>
-        <property name="dependsOn" >
-            <list>
-                <ref bean="patch.db-V2.2-0-CreateMissingTables" />
-            </list>
-        </property>
-    </bean>
-    <bean id="patch.db-V2.2-1-FullDmUpgrade" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
-        <property name="id"><value>patch.db-V2.2-1-FullDmUpgrade</value></property>
-        <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
-        <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>85</value></property>
-        <property name="targetSchema"><value>91</value></property>
-        <property name="scriptUrl">
-            <value>classpath:alfresco/dbscripts/upgrade/2.2/${db.script.dialect}/upgrade-1-fulldm.sql</value>
-        </property>
-        <property name="dependsOn" >
-            <list>
-                <ref bean="patch.db-V2.2-0-CreateMissingTables" />
+                <ref bean="patch.db-V2.2-Upgrade-From-2.1" />
             </list>
         </property>
     </bean>
@@ -1409,7 +1335,7 @@
         </property>
         <property name="dependsOn" >
             <list>
-                <ref bean="patch.db-V2.2-1-FullDmUpgrade" />
+                <ref bean="patch.db-V2.2-Upgrade-From-2.2SP1" />
             </list>
         </property>
     </bean>

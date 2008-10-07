@@ -86,6 +86,8 @@ public class AVMServiceTestBase extends TestCase
     
     protected static AVMLockingService fLockingService;
     
+    protected static AuthenticationService fAuthService;
+    
     public void testSetup()
     {
     	// NOOP
@@ -109,9 +111,8 @@ public class AVMServiceTestBase extends TestCase
             fTransactionService = (TransactionService)fContext.getBean("transactionComponent");
             fLockingService = (AVMLockingService)fContext.getBean("AVMLockingService");
             fIndexingInterceptor = (AVMSnapShotTriggeredIndexingMethodInterceptor)fContext.getBean("avmSnapShotTriggeredIndexingMethodInterceptor");
+            fAuthService = (AuthenticationService)fContext.getBean("AuthenticationService");
             
-            AuthenticationService authService = (AuthenticationService)fContext.getBean("AuthenticationService");
-            authService.authenticate("admin", "admin".toCharArray());
             CreateStoreTxnListener cstl = (CreateStoreTxnListener)fContext.getBean("createStoreTxnListener");
             cstl.addCallback(
                 new CreateStoreCallback()
@@ -153,6 +154,9 @@ public class AVMServiceTestBase extends TestCase
                 }
             );
         }
+        
+        fAuthService.authenticate("admin", "admin".toCharArray());
+        
         if (fService.getStore("main") == null)
         {
             fService.createStore("main");

@@ -75,127 +75,129 @@ public class AVMCrawlTestP extends AVMServiceTestBase
      */
     private void testCrawl(int n, String fsPath, int m, long runTime)
     {
-        Authentication authentication = AuthenticationUtil.setCurrentUser(AuthenticationUtil.SYSTEM_USER_NAME);
         try
         {
-            if (m < 1)
+            Authentication authentication = AuthenticationUtil.setCurrentUser(AuthenticationUtil.SYSTEM_USER_NAME);
+            try
             {
-                fail("Must have at least one 1 copy of content");
-            }
-            
-            if (fService.getStore("main") != null)
-            {
-            	fService.purgeStore("main");
-            }
-            
-            BulkLoader loader = new BulkLoader();
-            loader.setAvmService(fService);
-            for (int i = 0; i < m; i++)
-            {
-                fService.createStore("d" + i);
-                loader.recursiveLoad(fsPath, "d" + i + ":/");
-                fService.createSnapshot("d" + i, null, null);
-            }
-            long startTime = System.currentTimeMillis();
-            List<AVMCrawler> crawlers = new ArrayList<AVMCrawler>();
-            List<Thread> threads = new ArrayList<Thread>();
-            for (int i = 0; i < n; i++)
-            {
-                crawlers.add(new AVMCrawler(fService, authentication));
-                threads.add(new Thread(crawlers.get(i)));
-                threads.get(i).start();
-            }
-            while (true)
-            {
-                try
+                if (m < 1)
                 {
-                    Thread.sleep(5000);
-                    // Check that none of the crawlers has errored out.
-                    for (AVMCrawler crawler : crawlers)
+                    fail("Must have at least one 1 copy of content");
+                }
+                
+                BulkLoader loader = new BulkLoader();
+                loader.setAvmService(fService);
+                for (int i = 0; i < m; i++)
+                {
+                    fService.createStore("d" + i);
+                    loader.recursiveLoad(fsPath, "d" + i + ":/");
+                    fService.createSnapshot("d" + i, null, null);
+                }
+                long startTime = System.currentTimeMillis();
+                List<AVMCrawler> crawlers = new ArrayList<AVMCrawler>();
+                List<Thread> threads = new ArrayList<Thread>();
+                for (int i = 0; i < n; i++)
+                {
+                    crawlers.add(new AVMCrawler(fService, authentication));
+                    threads.add(new Thread(crawlers.get(i)));
+                    threads.get(i).start();
+                }
+                while (true)
+                {
+                    try
                     {
-                        if (crawler.getError())
+                        Thread.sleep(5000);
+                        // Check that none of the crawlers has errored out.
+                        for (AVMCrawler crawler : crawlers)
                         {
-                            for (AVMCrawler craw : crawlers)
+                            if (crawler.getError())
                             {
-                                craw.setDone();
-                            }
-                            for (Thread thread : threads)
-                            {
-                                try
+                                for (AVMCrawler craw : crawlers)
                                 {
-                                    thread.join();
+                                    craw.setDone();
                                 }
-                                catch (InterruptedException ie)
+                                for (Thread thread : threads)
                                 {
-                                    // Do nothing.
+                                    try
+                                    {
+                                        thread.join();
+                                    }
+                                    catch (InterruptedException ie)
+                                    {
+                                        // Do nothing.
+                                    }
                                 }
+                                //fail();
+                                System.err.println("Crawler error");
                             }
-                            //fail();
-                            System.err.println("Crawler error");
                         }
                     }
+                    catch (InterruptedException ie)
+                    {
+                        // Do nothing.
+                    }
+                    long now = System.currentTimeMillis();
+                    if (now - startTime > runTime)
+                    {
+                        break;
+                    }
                 }
-                catch (InterruptedException ie)
+                for (AVMCrawler crawler : crawlers)
                 {
-                    // Do nothing.
+                    crawler.setDone();
                 }
-                long now = System.currentTimeMillis();
-                if (now - startTime > runTime)
+                for (Thread thread : threads)
                 {
-                    break;
+                    try
+                    {
+                        thread.join();
+                    }
+                    catch (InterruptedException ie)
+                    {
+                        // Do nothing.
+                    }
+                }
+                long ops = 0L;
+                int errorCnt = 0;
+                for (AVMCrawler crawler : crawlers)
+                {
+                    ops += crawler.getOpCount();
+                    errorCnt += (crawler.getError() ? 1 : 0);
+                }
+    
+                long time = System.currentTimeMillis() - startTime;
+                System.out.println("Ops/Sec: " + (ops * 1000L / time));
+                
+                if (errorCnt > 0)
+                {
+                	StringBuffer errorStack = new StringBuffer();
+                	errorStack.append("Crawler errors: ").append(errorCnt).append(" out of ").append(crawlers.size()).append(" are in error state");
+                	
+                	for (AVMCrawler crawler : crawlers)
+                    {
+                       if (crawler.getError())
+                       {
+                    	   errorStack.append("\n\n").append(crawler.getErrorStackTrace());
+                       }
+                    }
+                	
+                	fail(errorStack.toString());
                 }
             }
-            for (AVMCrawler crawler : crawlers)
+            finally
             {
-                crawler.setDone();
-            }
-            for (Thread thread : threads)
-            {
-                try
+                for (int i = 0; i < m; i++)
                 {
-                    thread.join();
+                    if (fService.getStore("d" + i) != null)
+                    {
+                        fService.purgeStore("d" + i);
+                    }
                 }
-                catch (InterruptedException ie)
-                {
-                    // Do nothing.
-                }
-            }
-            long ops = 0L;
-            int errorCnt = 0;
-            for (AVMCrawler crawler : crawlers)
-            {
-                ops += crawler.getOpCount();
-                errorCnt += (crawler.getError() ? 1 : 0);
-            }
-
-            long time = System.currentTimeMillis() - startTime;
-            System.out.println("Ops/Sec: " + (ops * 1000L / time));
-            
-            if (errorCnt > 0)
-            {
-            	StringBuffer errorStack = new StringBuffer();
-            	errorStack.append("Crawler errors: ").append(errorCnt).append(" out of ").append(crawlers.size()).append(" are in error state");
-            	
-            	for (AVMCrawler crawler : crawlers)
-                {
-                   if (crawler.getError())
-                   {
-                	   errorStack.append("\n\n").append(crawler.getErrorStackTrace());
-                   }
-                }
-            	
-            	fail(errorStack.toString());
             }
         }
         finally
         {
-            for (int i = 0; i < m; i++)
-            {
-                if (fService.getStore("d" + i) != null)
-                {
-                    fService.purgeStore("d" + i);
-                }
-            }
+            AuthenticationUtil.clearCurrentSecurityContext();
         }
     }
 }

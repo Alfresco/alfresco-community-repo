@@ -260,15 +260,6 @@ public class CacheTest extends TestCase
                 this.e = e;
                 return;
             }
-            try
-            {
-                transactionalCache.put(key, "ZZZ");
-                e = new RuntimeException("Transactional caches should not allow puts in the after-commit phase");
-            }
-            catch (AlfrescoRuntimeException e)
-            {
-                // Expected
-            }
         }
         @Override
         public int hashCode()

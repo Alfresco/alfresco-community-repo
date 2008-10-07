@@ -810,6 +810,7 @@ public class UIDeploymentServers extends UIInput
       FacesHelper.setupComponentId(context, pwd, null);
       pwd.setRendererType("javax.faces.Secret");
       pwd.getAttributes().put("styleClass", "inputField");
+      pwd.getAttributes().put("redisplay", true);
       ValueBinding vbPwd = context.getApplication().createValueBinding(
             "#{WizardManager.bean.editedDeployServerProperties." + 
             DeploymentServerConfig.PROP_PASSWORD + "}");

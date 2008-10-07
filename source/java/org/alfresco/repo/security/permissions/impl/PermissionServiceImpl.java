@@ -54,6 +54,7 @@ import org.alfresco.repo.security.permissions.PermissionEntry;
 import org.alfresco.repo.security.permissions.PermissionReference;
 import org.alfresco.repo.security.permissions.PermissionServiceSPI;
 import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.repo.version.VersionModel;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -410,17 +411,15 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
         return permissionsDaoComponent.getPermissions(storeRef);
     }
 
-    public AccessStatus hasPermission(final NodeRef nodeRefIn, final PermissionReference permIn)
+    public AccessStatus hasPermission(NodeRef passedNodeRef, final PermissionReference permIn)
     {
         // If the node ref is null there is no sensible test to do - and there
         // must be no permissions
         // - so we allow it
-        if (nodeRefIn == null)
+        if (passedNodeRef == null)
         {
             return AccessStatus.ALLOWED;
         }
-
-        final NodeRef nodeRef = tenantService.getName(nodeRefIn);
 
         // If the permission is null we deny
         if (permIn == null)
@@ -429,16 +428,30 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
         }
 
         // AVM nodes - test for existence underneath
-        if (nodeRef.getStoreRef().getProtocol().equals(StoreRef.PROTOCOL_AVM))
+        if (passedNodeRef.getStoreRef().getProtocol().equals(StoreRef.PROTOCOL_AVM))
         {
-            return doAvmCan(nodeRef, permIn);
+            return doAvmCan(passedNodeRef, permIn);
         }
 
         // Allow permissions for nodes that do not exist
-        if (!nodeService.exists(nodeRef))
+        if (!nodeService.exists(passedNodeRef))
         {
             return AccessStatus.ALLOWED;
         }
+        
+        // Because of VersionedNodeRef has no any inherited from source Frozen NodeRef permissions (it has only default permissions),
+        // it is necessary to avoid cases when some user without appropriate permissions trying to receive any resource from its any version link etc.
+        // That could be proceed through receiving Frozen NodeRef instance for this VersionedNodeRef instance. There is appears a possibility to get
+        // access to specified for Frozen NodeRef instance permissions
+        
+        // NOTE: maybe in future there will appear situation when changing Node permissions will be a cause for creating new Node version. In other words,
+        // VersionedNodeRefs will contain their own permissions (whose, probably, will differ from version to version). In this case you should delete/comment this code!!!
+        if(isVersionedNodeRefInstance(passedNodeRef))
+        {
+            passedNodeRef = convertVersionedNodeRefToFrozenNodeRef(passedNodeRef);
+        }
+        
+        final NodeRef nodeRef = tenantService.getName(passedNodeRef);
 
         final PermissionReference perm;
         if (permIn.equals(OLD_ALL_PERMISSIONS_REFERENCE))
@@ -1910,5 +1923,32 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
             }
         }
         return answer;
+    }
+    
+    /**
+     * This methods checks weather the specified NodeRef instance is an VersionedNodeRef
+     * 
+     * @param nodeRef - probably VersionedNodeRef
+     * @return <b>true</b> if NodeRef if Versioned and <b>false</b> in other case
+     */
+    private boolean isVersionedNodeRefInstance(NodeRef nodeRef)
+    {
+    	return nodeRef.getStoreRef().getProtocol().equals(VersionModel.STORE_PROTOCOL);
+    }
+
+    /**
+     * Converts specified VersionedNodeRef to Frozen NodeRef (from SpacesStore store, accessed by workspace protocol)
+     * 
+     * @param nodeRef - <b>always</b> VersionedNodeRef
+     * @return Frozen NodeRef instance (source for this VersionedNodeRef instance)
+     */
+    private NodeRef convertVersionedNodeRefToFrozenNodeRef(NodeRef nodeRef)
+    {
+
+    	Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
+    
+       return new NodeRef((String) properties.get(ContentModel.PROP_STORE_PROTOCOL),
+                          (String) properties.get(ContentModel.PROP_STORE_IDENTIFIER),
+                          (String) properties.get(ContentModel.PROP_NODE_UUID));
     }
 }

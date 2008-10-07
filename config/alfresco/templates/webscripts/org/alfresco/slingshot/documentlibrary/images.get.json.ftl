@@ -4,7 +4,7 @@
    [
    <#list images.items as item>
       {
-         "title": "${(item.properties.title!d.name)}",
+         "title": "${(item.properties.title!item.name)}",
          "nodeRef": "${item.nodeRef}"
       }<#if item_has_next>,</#if>
    </#list>

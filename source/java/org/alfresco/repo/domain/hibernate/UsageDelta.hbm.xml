@@ -37,11 +37,11 @@
       <many-to-one
             name="node"
             not-null="true"
+            column="node_id"
             lazy="proxy"
             class="org.alfresco.repo.domain.hibernate.NodeImpl"
-            fetch="select" >
-         <column name="node_id" />
-      </many-to-one>
+            foreign-key="fk_alf_usaged_n"
+            fetch="select" />
 
       <property name="deltaSize" column="delta_size" type="long" not-null="true"/>
        

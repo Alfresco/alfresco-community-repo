@@ -56,11 +56,12 @@ public class LinkPropertiesDialog extends BaseDialogBean
 {
    private static final long serialVersionUID = -167326851073011187L;
    
-   private Node editableNode;
+   private Node editableNode = null;
+   
    
    public Map<String, Object> getProperties()
    {
-      return this.editableNode.getProperties();
+      return getEditableNode().getProperties();
    }
    
    @Override
@@ -76,6 +77,17 @@ public class LinkPropertiesDialog extends BaseDialogBean
     */
    public Node getEditableNode()
    {
+      if (this.editableNode == null)
+      {
+         if (this.parameters.containsKey("nodeRef"))
+         {
+            this.editableNode = new Node(new NodeRef(this.parameters.get("nodeRef")));
+         }
+         else
+         {
+            throw new IllegalArgumentException("Dialog has not been initialised with noderef or setup action event called.");
+         }
+      }
       return this.editableNode;
    }
    
@@ -104,7 +116,7 @@ public class LinkPropertiesDialog extends BaseDialogBean
     */
    public String getDestinationPath()
    {
-      NodeRef destRef = (NodeRef)this.editableNode.getProperties().get(ContentModel.PROP_LINK_DESTINATION);
+      NodeRef destRef = (NodeRef)getEditableNode().getProperties().get(ContentModel.PROP_LINK_DESTINATION);
       return Repository.getNamePath(
             this.getNodeService(), this.getNodeService().getPath(destRef), null, "/", null);
    }
@@ -136,8 +148,8 @@ public class LinkPropertiesDialog extends BaseDialogBean
    {
       try
       {
-         NodeRef nodeRef = this.editableNode.getNodeRef();
-         Map<String, Object> props = this.editableNode.getProperties();
+         NodeRef nodeRef = getEditableNode().getNodeRef();
+         Map<String, Object> props = getEditableNode().getProperties();
          
          Map<QName, Serializable> properties = this.getNodeService().getProperties(nodeRef);
          

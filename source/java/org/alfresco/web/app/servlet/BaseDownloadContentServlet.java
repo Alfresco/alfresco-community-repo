@@ -243,20 +243,23 @@ public abstract class BaseDownloadContentServlet extends BaseServlet
          
          // check If-Modified-Since header and set Last-Modified header as appropriate
          Date modified = (Date)nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIED);
-         long modifiedSince = req.getDateHeader("If-Modified-Since");
-         if (modifiedSince > 0L)
+         if (modified != null)
          {
-            // round the date to the ignore millisecond value which is not supplied by header
-            long modDate = (modified.getTime() / 1000L) * 1000L;
-            if (modDate <= modifiedSince)
+            long modifiedSince = req.getDateHeader("If-Modified-Since");
+            if (modifiedSince > 0L)
             {
-               if (logger.isDebugEnabled())
-                  logger.debug("Returning 304 Not Modified.");
-               res.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
-               return;
+               // round the date to the ignore millisecond value which is not supplied by header
+               long modDate = (modified.getTime() / 1000L) * 1000L;
+               if (modDate <= modifiedSince)
+               {
+                  if (logger.isDebugEnabled())
+                     logger.debug("Returning 304 Not Modified.");
+                  res.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
+                  return;
+               }
             }
+            res.setDateHeader("Last-Modified", modified.getTime());
          }
-         res.setDateHeader("Last-Modified", modified.getTime());
          
          if (attachment == true)
          {

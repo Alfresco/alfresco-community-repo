@@ -76,7 +76,7 @@ public class UserShortcutsBean implements Serializable
    /** List of shortcut nodes */
    private List<Node> shortcuts = null;
    
-   private String PREF_SHORTCUTS = "shortcuts";
+   private static final String PREF_SHORTCUTS = "shortcuts";
    
    
    // ------------------------------------------------------------------------------
@@ -142,8 +142,8 @@ public class UserShortcutsBean implements Serializable
             tx.begin();
             
             // get the shortcuts from the preferences for this user
-            shortcuts = (List<String>)PreferencesService.getPreferences(context).getValue(PREF_SHORTCUTS);
-            if (shortcuts != null)
+            shortcuts = getShortcutList(context);
+            if (shortcuts.size() != 0)
             {
                // each shortcut node ID is persisted as a list item in a well known property
                this.shortcuts = new ArrayList<Node>(shortcuts.size());
@@ -274,11 +274,7 @@ public class UserShortcutsBean implements Serializable
                   tx = Repository.getUserTransaction(context);
                   tx.begin();
                   
-                  List<String> shortcuts = (List<String>)PreferencesService.getPreferences(context).getValue(PREF_SHORTCUTS);
-                  if (shortcuts == null)
-                  {
-                     shortcuts = new ArrayList<String>(1);
-                  }
+                  List<String> shortcuts = getShortcutList(context);
                   shortcuts.add(node.getNodeRef().getId());
                   PreferencesService.getPreferences(context).setValue(PREF_SHORTCUTS, (Serializable)shortcuts);
                   
@@ -322,8 +318,8 @@ public class UserShortcutsBean implements Serializable
          tx = Repository.getUserTransaction(context);
          tx.begin();
          
-         List<String> shortcuts = (List<String>)PreferencesService.getPreferences(context).getValue(PREF_SHORTCUTS);
-         if (shortcuts != null && shortcuts.size() > shortcutEvent.Index)
+         List<String> shortcuts = getShortcutList(context);
+         if (shortcuts.size() > shortcutEvent.Index)
          {
             // remove the shortcut from the saved list and persist back
             shortcuts.remove(shortcutEvent.Index);
@@ -345,6 +341,32 @@ public class UserShortcutsBean implements Serializable
                FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), err.getMessage()), err);
          try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
       }
+   }
+
+   /**
+    * @return the List of shortcut values - will always return at least an empty List
+    */
+   private static List<String> getShortcutList(FacesContext context)
+   {
+      List<String> shortcuts = null;
+      
+      Object prefValue = PreferencesService.getPreferences(context).getValue(PREF_SHORTCUTS);
+      if (prefValue instanceof List)
+      {
+         shortcuts = (List<String>)prefValue;
+      }
+      else if (prefValue instanceof String)
+      {
+         shortcuts = new ArrayList<String>(1);
+         shortcuts.add((String)prefValue);
+      }
+      
+      // handle missing and empty (immutable) list collection
+      if (shortcuts == null || shortcuts.size() == 0)
+      {
+         shortcuts = new ArrayList<String>(1);
+      }
+      return shortcuts;
    }
    
    /**
@@ -398,8 +420,8 @@ public class UserShortcutsBean implements Serializable
             tx = Repository.getUserTransaction(context);
             tx.begin();
             
-            List<String> shortcuts = (List<String>)PreferencesService.getPreferences(context).getValue(PREF_SHORTCUTS);
-            if (shortcuts != null && shortcuts.size() > shortcutEvent.Index)
+            List<String> shortcuts = getShortcutList(context);
+            if (shortcuts.size() > shortcutEvent.Index)
             {
                // remove the shortcut from the saved list and persist back
                shortcuts.remove(shortcutEvent.Index);

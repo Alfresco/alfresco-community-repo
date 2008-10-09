@@ -1239,7 +1239,7 @@
     <bean id="patch.db-V2.2-Upgrade-From-2.2SP1" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
         <property name="id"><value>patch.db-V2.2-Upgrade-From-2.2SP1</value></property>
         <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
-        <property name="fixesFromSchema"><value>121</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>134</value></property>
         <property name="targetSchema"><value>135</value></property>
         <property name="scriptUrl">

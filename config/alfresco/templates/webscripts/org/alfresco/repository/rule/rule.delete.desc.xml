@@ -1,0 +1,10 @@
+<webscript>
+   <shortname>Delete Rule</shortname>
+   <description>Delete the rule identified by the specified rule node id.</description>
+   <url>/api/rules/{store_type}/{store_id}/{rule_id}</url>
+   <url>/api/node/{store_type}/{store_id}/{id}/rules/{rule_id}</url>
+   <url>/api/path/{store_type}/{store_id}/{id}/rules/{rule_id}</url>
+   <format default="json"/>
+   <authentication>user</authentication>
+   <transaction>required</transaction>
+</webscript>

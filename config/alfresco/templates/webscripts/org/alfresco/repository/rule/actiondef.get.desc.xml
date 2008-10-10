@@ -1,0 +1,8 @@
+<webscript>
+   <shortname>Get Action Definition</shortname>
+   <description>Get an action definition given its name</description>
+   <url>/api/rules/actiondefs/{actionDefinitionName}</url>
+   <format default="json"/>
+   <authentication>user</authentication>
+   <transaction>required</transaction>
+</webscript>

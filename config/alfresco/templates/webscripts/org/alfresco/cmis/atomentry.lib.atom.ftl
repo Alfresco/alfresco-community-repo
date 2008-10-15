@@ -18,12 +18,12 @@
 [#macro document node propfilter="*" ns=""]
 [@entry ns]
 <author><name>${node.properties.creator!""}</name></author>
-<content type="${node.mimetype}" src="[@contentlink node/]"/>
+<content [@contenttypeattr node.mimetype/] src="[@contentlink node/]"/>
 <id>urn:uuid:${node.id}</id>
 <link rel="self" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}"/>
-<link rel="enclosure" href="[@contentlink node/]" type="${node.mimetype}"/>
+<link rel="enclosure" href="[@contentlink node/]" [@contenttypeattr node.mimetype/]/>
 <link rel="edit" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}"/>
-<link rel="edit-media" href="[@contentlink node/]" type="${node.mimetype}"/>
+<link rel="edit-media" href="[@contentlink node/]" [@contenttypeattr node.mimetype/]/>
 [@documentCMISLinks node=node/]
 <published>${xmldate(node.properties.created)}</published>
 <summary>${node.properties.description!node.properties.title!cropContent(node, 50)}</summary>
@@ -43,7 +43,7 @@
 <link rel="cmis-relationships" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/associations"/>
 <link rel="cmis-parents" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/parents"/>
 <link rel="cmis-allversions" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/versions"/>
-<link rel="cmis-stream" href="[@contentlink node/]" type="${node.mimetype}"/>
+<link rel="cmis-stream" href="[@contentlink node/]" [@contenttypeattr node.mimetype/]/>
 <link rel="cmis-type" href="${absurl(url.serviceContext)}/api/type/${cmistypeid(node)}"/>
 <link rel="cmis-repository" href="[@servicelink/]"/>
 [/#macro]
@@ -86,10 +86,10 @@
 [#macro version node version propfilter="*" ns=""]
 [@entry ns]
 <author><name>${node.properties.creator}</name></author>
-<content type="${node.mimetype}" src="[@contentlink node/]"/>
+<content [@contenttypeattr node.mimetype/] src="[@contentlink node/]"/>
 <id>urn:uuid:${node.id}</id>
 <link rel="self" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}"/>
-<link rel="enclosure" href="[@contentlink node/]" type="${node.mimetype}"/>
+<link rel="enclosure" href="[@contentlink node/]" [@contenttypeattr node.mimetype/]/>
 [@documentCMISLinks node=node/]
 <published>${xmldate(node.properties.created)}</published>
 <summary>${node.properties.description!node.properties.title!cropContent(node.properties.content, 50)}</summary>
@@ -112,12 +112,12 @@
 [#macro pwc node propfilter="*" ns=""]
 [@entry ns]
 <author><name>${node.properties.creator}</name></author>
-<content type="${node.mimetype}" src="[@contentlink node/]"/>
+<content [@contenttypeattr node.mimetype/] src="[@contentlink node/]"/>
 <id>urn:uuid:${node.id}</id>
 <link rel="self" href="${absurl(url.serviceContext)}/api/pwc/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}"/>
-<link rel="enclosure" href="[@contentlink node/]" type="${node.mimetype}"/>
+<link rel="enclosure" href="[@contentlink node/]" [@contenttypeattr node.mimetype/]/>
 <link rel="edit" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}"/>
-<link rel="edit-media" href="[@contentlink node/]" type="${node.mimetype}"/>
+<link rel="edit-media" href="[@contentlink node/]" [@contenttypeattr node.mimetype/]/>
 [@documentCMISLinks node=node/]
 <published>${xmldate(node.properties.created)}</published>
 <summary>${node.properties.description!node.properties.title!cropContent(node.properties.content, 50)}</summary>
@@ -209,7 +209,7 @@
 [#if row.nodes??]
 [#assign node = row.nodes?first]
 <author><name>${node.properties.creator!""}</name></author>
-<content type="${node.mimetype}" src="[@contentlink node/]"/>
+<content [@contenttypeattr node.mimetype/] src="[@contentlink node/]"/>
 <id>urn:uuid:${node.id}</id>
 <link rel="self" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}"/>
 <title>${node.name}</title>
@@ -559,6 +559,9 @@
 
 [#-- Helper to render Alfresco content stream link --]
 [#macro contentlink node]${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/content[#if node.properties.name??].${encodeuri(node.properties.name)}[/#if][/#macro]
+
+[#-- Helper to render type attribute --]
+[#macro contenttypeattr mimetype][#if mimetype??]type="${mimetype}"[/#if][/#macro]
 
 [#-- Helper to render Alfresco service document link --]
 [#macro servicelink]${absurl(url.serviceContext)}/api/repository[/#macro]

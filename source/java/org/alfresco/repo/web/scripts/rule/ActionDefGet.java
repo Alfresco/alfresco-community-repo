@@ -74,8 +74,8 @@ public class ActionDefGet extends DeclarativeWebScript
         // initialise model to pass on for template to render
         Map<String, Object> model = new HashMap<String, Object>();
         
-        // get URL parameter
-        String actionDefName = req.getParameter(REQ_PARAM_ACTION_DEF_NAME);
+        // get actionDefinitionName URL template variable 
+        String actionDefName = req.getServiceMatch().getTemplateVars().get(REQ_PARAM_ACTION_DEF_NAME);
         if ((actionDefName == null) || (actionDefName.length() == 0))
         {
             throw new WebScriptException(Status.STATUS_BAD_REQUEST,

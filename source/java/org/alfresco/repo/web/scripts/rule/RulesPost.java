@@ -50,7 +50,7 @@ public class RulesPost extends DeclarativeWebScript
     
     // model property keys
     private static final String MODEL_PROP_KEY_RULE = "rule";
-    private static final String MODEL_PROP_KEY_ACTIONABLE_NODE_REF = "actionableNodeRef";
+    private static final String MODEL_PROP_KEY_OWNING_NODE_REF = "owningNodeRef";
     
     // properties for services
     private RuleService ruleService;
@@ -131,14 +131,14 @@ public class RulesPost extends DeclarativeWebScript
         
         // create the actionable node reference from the given 
         // URL template tokens
-        NodeRef actionableNodeRef = this.rulesHelper.getNodeRefFromWebScriptUrl(req, storeType, storeId, id);
+        NodeRef owningNodeRef = this.rulesHelper.getNodeRefFromWebScriptUrl(req, storeType, storeId, id);
         
         // apply rule to actionable node
-        this.ruleService.saveRule(actionableNodeRef, rule);
+        this.ruleService.saveRule(owningNodeRef, rule);
         
         // add objects to model for the template to render
         model.put(MODEL_PROP_KEY_RULE, rule);
-        model.put(MODEL_PROP_KEY_ACTIONABLE_NODE_REF, actionableNodeRef);
+        model.put(MODEL_PROP_KEY_OWNING_NODE_REF, owningNodeRef.toString());
         
         return model;
     }

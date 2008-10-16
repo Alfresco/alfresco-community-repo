@@ -37,14 +37,15 @@ import org.alfresco.web.scripts.WebScriptException;
 import org.alfresco.web.scripts.WebScriptRequest;
 
 /**
- * Web Script to GET the rule collection associated with the given actionable node.
+ * Web Script to GET the rule collection associated with the given rule owning node.
  * The following optional parameters can be provided:
  * 
  *      - includeInherited: if provided, then this parameter indicates whether or not to include rules 
- *          inherited from the actionable node's parents. If this parameter is not provided , then rules 
+ *          inherited from the owning node's parents. If this parameter is not provided , then rules 
  *          inherited from the node's parents are included by default.
  *      
- *      - ruleTypeName: if this parameter is provided, then only rules of this given rule type are returned.     
+ *      - ruleTypeName: if this parameter is provided, then only rules of this given rule type are returned.
+ *          If this parameter is not provided then rules of all types will be returned.     
  * 
  * @author glen johnson at alfresco dot com
  */
@@ -60,6 +61,7 @@ public class RulesGet extends DeclarativeWebScript
     
     // model property keys
     private static final String MODEL_PROP_KEY_RULES = "rules";
+    private static final String MODEL_PROP_KEY_OWNING_NODE_REF = "owningNodeRef";
     
     // properties for services
     private RuleService ruleService;
@@ -123,39 +125,37 @@ public class RulesGet extends DeclarativeWebScript
                     "The 'nodeId' URL template token has not been provided in URL");
         }                        
         
+        //
         // get URL parameters
-        String includeInherited = req.getParameter(REQ_PARAM_INCLUDE_INHERITED);
-        boolean includeInheritedParamGiven = ((includeInherited != null) && (includeInherited.length() > 0));
+        //
         
-        String ruleTypeName = req.getParameter(REQ_PARAM_RULE_TYPE_NAME);
-        boolean ruleTypeNameParamGiven = ((ruleTypeName != null) && (ruleTypeName.length() > 0));
+        // get the 'includeInherited' parameter. The value defaults to 'true' if
+        // the parameter has not been provided
+        boolean includeInherited = true;
+        String includeInheritedParam = req.getParameter(REQ_PARAM_INCLUDE_INHERITED);
+        if ((includeInheritedParam != null) && (includeInheritedParam.length() > 0))
+        {
+            includeInherited = Boolean.parseBoolean(includeInheritedParam);
+        }
         
-        // create the actionable node reference from the given 
-        // URL template tokens
-        NodeRef actionableNodeRef = this.rulesHelper.getNodeRefFromWebScriptUrl(req, storeType, storeId, nodeId);
+        // get the 'ruleTypeName' parameter. The value defaults to 'null' if
+        // the parameter has not been provided
+        String ruleTypeName = null;
+        String ruleTypeNameParam = req.getParameter(REQ_PARAM_RULE_TYPE_NAME);
+        if ((ruleTypeNameParam != null) && (ruleTypeNameParam.length() > 0))
+        {
+            ruleTypeName = ruleTypeNameParam;
+        }
         
-        // get rule collection associated with the actionable node
-        List<Rule> rules = null;
-        if ((includeInheritedParamGiven == false) && (ruleTypeNameParamGiven == false))
-        {
-            rules = this.ruleService.getRules(actionableNodeRef);
-        }
-        else if ((includeInheritedParamGiven == true) && (ruleTypeNameParamGiven == false))
-        {
-            rules = this.ruleService.getRules(actionableNodeRef, Boolean.parseBoolean(includeInherited));
-        }
-        else if ((includeInheritedParamGiven == false) && (ruleTypeNameParamGiven == true))
-        {
-            rules = this.ruleService.getRules(actionableNodeRef, true, ruleTypeName);
-        }
-        else
-        // both 'includeInherited' and 'ruleTypeName' parameter values have been given
-        {
-            rules = this.ruleService.getRules(actionableNodeRef, Boolean.parseBoolean(includeInherited), ruleTypeName);
-        }
+        // create the rule owning node reference from the given URL template tokens
+        NodeRef owningNodeRef = this.rulesHelper.getNodeRefFromWebScriptUrl(req, storeType, storeId, nodeId);
+        
+        // get rule collection associated with the rule owning node
+        List<Rule> rules = this.ruleService.getRules(owningNodeRef, includeInherited, ruleTypeName);
         
         // add objects to model for the template to render
         model.put(MODEL_PROP_KEY_RULES, rules);
+        model.put(MODEL_PROP_KEY_OWNING_NODE_REF, owningNodeRef);
         
         return model;
     }        

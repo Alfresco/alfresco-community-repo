@@ -26,8 +26,10 @@ package org.alfresco.repo.web.scripts.rule;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.repo.model.Repository;
 import org.alfresco.service.ServiceRegistry;
@@ -69,6 +71,7 @@ public class RulesHelper
     private static final String COMPOSITE_ACTION_DEF_NAME = "composite-action";
     private static final String REQ_URL_PART_NODE_REF = "/api/node";
     private static final String REQ_URL_PART_NODE_PATH = "/api/path";
+    private static final String REQ_URL_PART_RULE_NODE_REF = "/api/rules";
    
     // service dependencies 
     private ServiceRegistry serviceRegistry;
@@ -128,7 +131,7 @@ public class RulesHelper
     }
 
     /**
-     * Return a Rule object created/updated from a given rule JSON object.
+     * Return a Rule object created/updated from a given rule JSON object (Rule Details sent).
      * 
      * If a node reference is passed into the <pre>ruleNodeRefToUpdate</pre> parameter,
      * then this indicates that an existing rule (identified by that node
@@ -174,55 +177,42 @@ public class RulesHelper
             // set rule properties
             //
             
-            if ((ruleJson.isNull("title") == true) && (update == true))
+            if ((ruleJson.isNull("title") == true) && (update == false))
             {
-                // this field is 'null' and we are doing an update
-                // so don't do anything
+                // the "title" field is mandatory, it is missing in the rule details,
+                // and we are creating a new rule, so throw an exception
+                throw new WebScriptException(Status.STATUS_BAD_REQUEST, "A new rule is being created but the 'title' "
+                        + "field, which is mandatory, has not been included in the rule details"); 
             }
-            else
+            // otherwise go ahead and set the value if the field is present
+            else if (ruleJson.isNull("title") == false)
             {
                 String ruleTitle = ruleJson.getString("title");
                 rule.setTitle(ruleTitle);
             }
             
-            if ((ruleJson.isNull("description") == true) && (update == true))
+            if (ruleJson.isNull("description") == false)
             {
-                // this field is 'null' and we are doing an update
-                // so don't do anything
-            }
-            else
-            {
-                rule.setDescription(ruleJson.optString("description", ""));
+                rule.setDescription(ruleJson.getString("description"));
             }
             
-            if ((ruleJson.isNull("executeAsync") == true) && (update == true))
-            {
-                // this field is 'null' and we are doing an update
-                // so don't do anything
-            }
-            else
+            // set values from the respective Boolean fields below, but if the
+            // if the value given for a field does not equate to either
+            // 'true' or 'false', then set it to a default value of false
+            
+            if (ruleJson.isNull("executeAsync") == false)
             {
                 rule.setExecuteAsynchronously(ruleJson.optBoolean("executeAsync", false));
             }
             
             
-            if ((ruleJson.isNull("ruleDisabled") == true) && (update == true))
-            {
-                // this field is 'null' and we are doing an update
-                // so don't do anything
-            }
-            else
+            if (ruleJson.isNull("ruleDisabled") == false)
             {
                 rule.setRuleDisabled(ruleJson.optBoolean("ruleDisabled", false));
             }
                 
             
-            if ((ruleJson.isNull("appliedToChildren") == true) && (update == true))
-            {
-                    // this field is 'null' and we are doing an update
-                    // so don't do anything
-            }
-            else
+            if (ruleJson.isNull("appliedToChildren") == false)
             {
                 rule.applyToChildren(ruleJson.optBoolean("appliedToChildren", false));
             }
@@ -231,12 +221,14 @@ public class RulesHelper
             // set rule types present in the rule details onto the rule
             //
             
-            if ((ruleJson.isNull("ruleTypes") == true) && (update == true))
+            if ((ruleJson.isNull("ruleTypes") == true) && (update == false))
             {
-                // this field is 'null' and we are doing an update
-                // so don't do anything
+                // the "ruleTypes" field is mandatory,  it is missing in the rule details,
+                // and we are creating a new rule so throw an exception
+                throw new WebScriptException(Status.STATUS_BAD_REQUEST, "A new rule is being created but the 'ruleTypes' "
+                        + "field, which is mandatory, has not been included in the rule details"); 
             }
-            else
+            else if (ruleJson.isNull("ruleTypes") == false)
             {
                 List<String> ruleTypes = new ArrayList<String>();
                 JSONArray ruleTypesJson = ruleJson.getJSONArray("ruleTypes");
@@ -267,16 +259,44 @@ public class RulesHelper
                 rule.setRuleTypes(ruleTypes);
             }
             
-            if ((ruleJson.isNull("action") == true) && (update == true))
+            if ((ruleJson.isNull("action") == true) && (update == false))
             {
-                // this field is 'null' and we are doing an update
-                // so don't do anything
+                // the "action" field is mandatory, it is missing in the rule details,
+                // and we are creating a new rule so throw an exception
+                throw new WebScriptException(Status.STATUS_BAD_REQUEST, "A new rule is being created but the 'action' "
+                        + "field, which is mandatory, has not been included in the rule details"); 
             }
             else
             {
                 // set the action supplied in the rule details onto the rule
-                JSONObject actionJson = ruleJson.getJSONObject("action");
-                Action action = getActionFromJson(actionJson);
+                JSONObject ruleActionJson = ruleJson.getJSONObject("action");
+                
+                // if we're doing an update then the rule should already have
+                // this action set on it, so get the action object already on 
+                // the rule
+                Action ruleActionToUpdate = null;
+                if (update == true)
+                {
+                    String ruleActionJsonId = ruleActionJson.getString("id");
+                    ruleActionToUpdate = rule.getAction();
+                    
+                    // throw a web script exception if the ID of the rule's action,
+                    // already persisted to the repository, is not the same as the one
+                    // given for the rule action's ID in the rule details that we
+                    // wish to perform the rule update with
+                    if (ruleActionToUpdate.getId().equals(ruleActionJsonId) == false)
+                    {
+                        throw new WebScriptException(Status.STATUS_BAD_REQUEST, "The ID sent in the rule details "
+                                + "of the action directly associated with the rule we wish to update does not match "
+                                + " the rule's action already persisted in the repository. The rule's nodeRef is: '"
+                                + ruleNodeRefToUpdate + "', the action ID provided in the rule details is '"
+                                + ruleActionJsonId + "', and the ID for the rule's action already persisted in the"
+                                + " repository is '" + ruleActionToUpdate.getId() + "'");
+                    }
+                }
+                
+                
+                Action action = getActionFromJson(ruleActionJson, ruleActionToUpdate);
                 rule.setAction(action);
             }
         }
@@ -290,17 +310,36 @@ public class RulesHelper
     }
     
     /**
-     * Create and return an Action object from a given action JSON object
+     * Return an Action object created/updated from a given action JSON object (Action Details sent).
      * 
-     * @param actionJson the action JSON object to create the action from
+     * If an action object is passed into the <pre>actionToUpdate</pre> parameter,
+     * then this indicates that this action is to be updated from the action details
+     * provided in the given JSON object and then returned.
+     * If a 'null' is passed into this parameter, then this indicates that a new action is to
+     * be created from scratch and returned.
      * 
-     * @return The action object created from the given action JSON object
+     * @param actionJson the action JSON object used to create/update the action with
+     * @param actionToUpdate The action to be updated.
+     *              Set to <pre>null</pre> if a new action is to be created from scratch. 
+     *              
+     * @return The action created/updated from the given action JSON object
      */
     @SuppressWarnings("unchecked")
-    public Action getActionFromJson(JSONObject actionJson)
+    public Action getActionFromJson(JSONObject actionJson, Action actionToUpdate)
     {
-        Action action = null;
         ActionService actionService = this.serviceRegistry.getActionService();
+        
+        //
+        // if we are doing an update then set the action, to be returned, to
+        // the given actionToUpdate (which will then be updated by the action
+        // details provided in the action JSON - containing the action details sent)
+        //
+        
+        Action action = null;
+        if (actionToUpdate != null)
+        {
+            action = actionToUpdate;
+        }
         
         try
         {
@@ -309,26 +348,80 @@ public class RulesHelper
             //
             
             String actionDefinitionName = actionJson.getString("actionDefinitionName");
-            JSONObject nestedActionsJson = actionJson.optJSONObject("actions");
+            JSONArray nestedActionsJson = actionJson.optJSONArray("actions");
             
             // if action's definition name denotes that it is a composite action and the
             // action JSON object has nested actions, then treat it as a composite action
             if ((actionDefinitionName.equals(COMPOSITE_ACTION_DEF_NAME)) == true && (nestedActionsJson != null))
             {
-                // create composite action object
-                action = actionService.createCompositeAction();
+                // if we are updating an existing action and the given
+                // actionToUpdate is not a composite action, then throw a
+                // web script exception
+                if ((actionToUpdate != null) && ((actionToUpdate instanceof CompositeAction) == false))
+                {
+                    throw new WebScriptException(Status.STATUS_BAD_REQUEST, "The action directly associated with the "
+                            + "rule you wish to update is not a composite action. Thus this action could not be updated with "
+                            + "the given action JSON - the action details sent");
+                }
+                
+                // TODO remove this look-up map when the back-end provides an easy way to lookup actions
+                // on a composite action by ID
+                
+                // if we are updating an existing composite action then create a map to easily look up the
+                // nested action objects for each nested action details provided in the action JSON object
+                Map<String, Action> nestedActionsMap = new HashMap<String, Action>();  
+                if ((actionToUpdate != null) && ((actionToUpdate instanceof CompositeAction) == true))
+                {
+                    List<Action> nestedActions = ((CompositeAction)action).getActions();
+                    for (Action nestedAction: nestedActions)
+                    {
+                        nestedActionsMap.put(nestedAction.getId(), nestedAction);
+                    }
+                }
+                // else if we are not updating then create composite action object
+                // for scratch
+                else if (actionToUpdate == null)
+                {
+                    action = actionService.createCompositeAction();
+                }
                 
                 // recursively add nested actions to this composite action
                 // as some of those nested actions could also be composite actions
-                Iterator<String> nestedActionsIteractor = nestedActionsJson.keys();
-                while (nestedActionsIteractor.hasNext())
+                int numNestedActionsJson = nestedActionsJson.length();
+                for (int i=0; i < numNestedActionsJson; i++)
                 {
-                    String nestedActionKey = nestedActionsIteractor.next();
-                    JSONObject nestedActionJson = nestedActionsJson.optJSONObject(nestedActionKey);
+                    JSONObject nestedActionJson = nestedActionsJson.optJSONObject(i);
                     
                     if (nestedActionJson != null)
                     {
-                        Action nestedAction = getActionFromJson(nestedActionJson);
+                        Action nestedAction = null;
+                        
+                        // if we are doing an action update, then update the nested actions from 
+                        // the nested action JSON 
+                        if (actionToUpdate != null)
+                        {    
+                            String nestedActionJsonID = nestedActionJson.getString("id");
+                            
+                            // lookup to see if nested action from nested action JSON
+                            // already exists on composite action, in which case, update
+                            // the nested action with the nested action details provided in the
+                            // nested action JSON
+                            Action nestedActionToUpdate = nestedActionsMap.get(nestedActionJsonID);
+                            if (nestedActionToUpdate != null)
+                            {
+                                // remove the existing nested action to then be updated below with the
+                                // updated one
+                                
+                                nestedAction = getActionFromJson(nestedActionJson, nestedActionToUpdate);
+                            }
+                        }
+                        // else we are not doing an action update so just pass in the
+                        // actionToUpdate as 'null'
+                        else
+                        {
+                            nestedAction = getActionFromJson(nestedActionJson, null);
+                        }
+                        
                         ((CompositeAction)action).addAction(nestedAction);
                     }
                 }
@@ -356,19 +449,48 @@ public class RulesHelper
             // set action properties
             //
             
-            action.setTitle(actionJson.getString("title"));
             
-            String descriptionDefault = actionJson.getString("title");
-            action.setDescription(actionJson.optString("description", descriptionDefault));
+            if ((actionJson.isNull("title") == true) && (actionToUpdate == null))
+            {
+                // the "title" field is mandatory, it is missing in the rule details,
+                // and we are creating a new rule, so throw an exception
+                throw new WebScriptException(Status.STATUS_BAD_REQUEST, "A new rule is being created but the 'title' "
+                        + "field, which is mandatory, has not been included in the rule details"); 
+            }
+            // otherwise go ahead and set the value if the field is present
+            else if (actionJson.isNull("title") == false)
+            {
+                action.setTitle(actionJson.getString("title"));
+            }
             
-            action.setExecuteAsynchronously(actionJson.optBoolean("executeAsync", false));
+            if (actionJson.isNull("description") == false)
+            {
+                action.setDescription(actionJson.optString("description"));
+            }
+            
+            // If a value has been provided in the action details for the "executeAsync" field
+            // then set it to the action object.
+            // If the value given for a field does not equate to either
+            // 'true' or 'false', then set it to a default value of false
+            
+            if (actionJson.isNull("executeAsync") == false)
+            {
+                action.setExecuteAsynchronously(actionJson.optBoolean("executeAsync", false));
+            }
             
             // set compensating action on current action if a compensating action is present
             // in the action JSON Object
-            JSONObject compActionJson = actionJson.optJSONObject("compensatingAction");
-            if (compActionJson != null)
+            if (actionJson.isNull("compensatingAction") == false)
             {
-                Action compAction = getActionFromJson(compActionJson);
+                JSONObject compActionJson = actionJson.getJSONObject("compensatingAction");
+                Action compActionToUpdate = null;
+                
+                if (actionToUpdate != null)
+                {
+                    compActionToUpdate = action.getCompensatingAction();
+                }
+                Action compAction = getActionFromJson(compActionJson, compActionToUpdate);
+                    
                 action.setCompensatingAction(compAction);
             }
             
@@ -388,44 +510,101 @@ public class RulesHelper
             // set conditions on the current action
             //
             
-            JSONObject conditionsJson = actionJson.optJSONObject("conditions");
-            Iterator<String> conditionIterator = conditionsJson.keys();
-            
-            // get each condition and add it to the action
-            while (conditionIterator.hasNext())
+            if (actionJson.isNull("conditions") == false)
             {
-                String conditionKey = conditionIterator.next();
-                JSONObject conditionJson = conditionsJson.getJSONObject(conditionKey);
+                JSONArray conditionsJson = actionJson.getJSONArray("conditions");
                 
-                // create the condition using the given condition definition name
-                String conditionDefName = conditionJson.getString("conditionDefinitionName");
-                ActionCondition condition = actionService.createActionCondition(conditionDefName);
+                // if we are doing an update then build up a condition map
+                // do be able to do a condition look-up by ID for each condition included 
+                // in the condition JSON - the condition details
                 
-                // get the condition definition
-                ParameterizedItemDefinition conditionDef = actionService.getActionConditionDefinition(conditionDefName);
-                
-                //
-                // set the condition's properties
-                //
-                
-                condition.setInvertCondition(conditionJson.optBoolean("invertCondition", false));
-                
-                //
-                // if there are parameter values on the condition JSON object
-                // then apply them to the condition object
-                //
-                JSONObject condParamValuesJson = conditionJson.optJSONObject("parameterValues");
-                if (condParamValuesJson != null)
+                Map<String, ActionCondition> conditionsMap = new HashMap<String, ActionCondition>();
+                if (actionToUpdate != null)
                 {
-                    setParameterValuesOnParameterizedItemFromJson(condition, conditionDef, condParamValuesJson);
+                    List<ActionCondition> actionConditions = actionToUpdate.getActionConditions();
+                    for (ActionCondition actionCondition : actionConditions)
+                    {
+                        conditionsMap.put(actionCondition.getId(), actionCondition);
+                    }
                 }
                 
-                // add condition to action object
-                action.addActionCondition(condition);
+                // get each condition and add it to the action
+                
+                int numConditionsJson = conditionsJson.length();
+                for (int conditionJsonIndex = 0; conditionJsonIndex < numConditionsJson; conditionJsonIndex++)
+                {
+                    ActionCondition condition = null;
+                    JSONObject conditionJson = conditionsJson.getJSONObject(conditionJsonIndex);
+                    String conditionDefName = null;
+                    
+                    // if we are doing an update, then get the existing condition matching
+                    // the condition ID given in the condition JSON, and update that with
+                    // the condition fields given therein
+                    if (actionToUpdate != null)
+                    {
+                        String conditionJsonId = conditionJson.getString("id");
+                        condition = conditionsMap.get(conditionJsonId);
+                        conditionDefName = condition.getActionConditionDefinitionName();
+                    }
+                    // we are not doing an update, so create the condition using the given condition
+                    // definition name and then populate this new condition from the fields given in
+                    // the condition JSON
+                    else
+                    {
+                        // we are not doing an update, so if the conditionDefinitionName has not been provided 
+                        // in the condition JSON then throw a web script exception
+                        if (conditionJson.isNull("conditionDefinitionName"))
+                        {
+                            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "A condition details at index: '"
+                                    + conditionJsonIndex + "' for action ID '" + action.getId() + " could not be created "
+                                    + "because the 'conditionDefinitionName' field is missing from the condition details sent");
+                        }
+                        // else condition def name has been provided in the condition details
+                        else
+                        {
+                            conditionDefName = conditionJson.getString("conditionDefinitionName");
+                        }
+                        
+                        condition = actionService.createActionCondition(conditionDefName);
+                    }
+                    
+                    // get the condition definition object
+                    ParameterizedItemDefinition conditionDef = actionService.getActionConditionDefinition(conditionDefName);
+                    
+                    //
+                    // set the condition's properties
+                    //
+                    
+                    // Set the value for the 'invertCondition' field if that field is sent
+                    // in the condition JSON. If the value is sent, but it does not equate to 
+                    // either 'true' or 'false', then set it to a default value of false
+                    if (conditionJson.isNull("invertCondition") == false)
+                    {
+                        condition.setInvertCondition(conditionJson.getBoolean("invertCondition"));
+                    }
+                    
+                    //
+                    // if there are parameter values on the condition JSON object
+                    // then apply them to the condition object
+                    //
+                    JSONObject condParamValuesJson = conditionJson.optJSONObject("parameterValues");
+                    if (condParamValuesJson != null)
+                    {
+                        setParameterValuesOnParameterizedItemFromJson(condition, conditionDef, condParamValuesJson);
+                    }
+                    
+                    // add condition to action object
+                    action.addActionCondition(condition);
+                    
+                    // increment the condition JSON index
+                    conditionJsonIndex++;
+                }
             }
         }
         catch (JSONException je)
         {
+            
+            
             throw new WebScriptException(Status.STATUS_INTERNAL_SERVER_ERROR,
                     "Problem creating rule from JSON passed into Web Script.", je); 
         }
@@ -620,7 +799,8 @@ public class RulesHelper
         {
             // see if given ID is part of either a node reference or a node path
             String urlTemplateMatch = req.getServiceMatch().getPath();
-            boolean nodeRefGiven = urlTemplateMatch.startsWith(REQ_URL_PART_NODE_REF);
+            boolean nodeRefGiven = urlTemplateMatch.startsWith(REQ_URL_PART_NODE_REF) ||
+                urlTemplateMatch.startsWith(REQ_URL_PART_RULE_NODE_REF);
             boolean nodePathGiven = urlTemplateMatch.startsWith(REQ_URL_PART_NODE_PATH);
             
             String referenceType = null;

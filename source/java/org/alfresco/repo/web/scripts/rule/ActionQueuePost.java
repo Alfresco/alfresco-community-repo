@@ -108,12 +108,12 @@ public class ActionQueuePost extends DeclarativeWebScript
             actionJson = actionQueueItemJson.getJSONObject("action");
             
             // get the action from the action JSON object
-            action = this.rulesHelper.getActionFromJson(actionJson);
+            action = this.rulesHelper.getActionFromJson(actionJson, null);
                 
             // Get 'checkConditions' and 'executeAsynchronously' properties off action queue item
             checkConditions = actionQueueItemJson.optBoolean("checkConditions", true);
             executeAsynchronously = actionQueueItemJson.optBoolean(
-                    "executeAsynchronously", action.getExecuteAsychronously());
+                    "executeAsync", action.getExecuteAsychronously());
             
             // get the actioned-upon node reference 
             String nodeRefStr = actionQueueItemJson.getString("nodeRef"); 
@@ -145,7 +145,14 @@ public class ActionQueuePost extends DeclarativeWebScript
         actionQItemStatus.setActionId(actionId);
         
         // set the status on the action queue item status bean
-        actionQItemStatus.setStatus(RulesHelper.ACTION_QUEUE_ITEM_STATUS_COMPLETE);
+        if (executeAsynchronously == true)
+        {
+            actionQItemStatus.setStatus(RulesHelper.ACTION_QUEUE_ITEM_STATUS_PENDING);
+        }
+        else
+        {
+            actionQItemStatus.setStatus(RulesHelper.ACTION_QUEUE_ITEM_STATUS_COMPLETE);
+        }
         
         // add objects to model for the template to render
         model.put(MODEL_PROP_KEY_ACTION_Q_ITEM_STATUS, actionQItemStatus);

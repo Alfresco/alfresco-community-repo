@@ -74,8 +74,8 @@ public class ConditionDefGet extends DeclarativeWebScript
         // initialise model to pass on for template to render
         Map<String, Object> model = new HashMap<String, Object>();
         
-        // get URL parameter
-        String conditionDefName = req.getParameter(REQ_PARAM_CONDITION_DEF_NAME);
+        // get conditionDefinitionName URL template variable
+        String conditionDefName = req.getServiceMatch().getTemplateVars().get(REQ_PARAM_CONDITION_DEF_NAME);
         if ((conditionDefName == null) || (conditionDefName.length() == 0))
         {
             throw new WebScriptException(Status.STATUS_BAD_REQUEST,

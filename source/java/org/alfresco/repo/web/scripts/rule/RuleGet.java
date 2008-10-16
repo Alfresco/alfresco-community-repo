@@ -49,6 +49,7 @@ public class RuleGet extends DeclarativeWebScript
     
     // model property keys
     private static final String MODEL_PROP_KEY_RULE = "rule";
+    private static final String MODEL_PROP_KEY_OWNING_NODE_REF = "owningNodeRef";
     
     // properties for services
     private RuleService ruleService;
@@ -118,12 +119,24 @@ public class RuleGet extends DeclarativeWebScript
         // URL template tokens
         NodeRef ruleNodeRef = this.rulesHelper.getNodeRefFromWebScriptUrl(req, storeType, storeId, ruleNodeId);
         
+        // if ruleNodeRef referred to by {store_type} {store_id} {id} is 'null' then the rule identified by that 
+        // given node id or node path no longer exists
+        if (ruleNodeRef == null)
+        {
+            throw new WebScriptException(Status.STATUS_NOT_FOUND, "Rule identified by rule node/path - 'store_type': "
+                    + storeType + " 'store_id': " + storeId + " and 'id': " + ruleNodeId + " could not be found");
+        }
+        
         // get rule identified by the given rule node reference
         Rule rule = this.ruleService.getRule(ruleNodeRef);
         
+        // get rule's owning node
+        NodeRef ruleOwningNodeRef = this.ruleService.getOwningNodeRef(rule);
+        
         // add objects to model for the template to render
         model.put(MODEL_PROP_KEY_RULE, rule);
-        
+        model.put(MODEL_PROP_KEY_OWNING_NODE_REF, ruleOwningNodeRef);
+                
         return model;
     }        
 }

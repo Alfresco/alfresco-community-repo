@@ -45,7 +45,6 @@ public class RuleDelete extends DeclarativeWebScript
     private static final String REQ_TEMPL_VAR_STORE_TYPE = "store_type";
     private static final String REQ_TEMPL_VAR_STORE_ID = "store_id";
     private static final String REQ_TEMPL_VAR_RULE_NODE_ID = "rule_id";
-    private static final String REQ_TEMPL_VAR_RULE_OWNING_NODE_ID = "id";
     
     // properties for services
     private RuleService ruleService;
@@ -106,26 +105,25 @@ public class RuleDelete extends DeclarativeWebScript
         {
             throw new WebScriptException(Status.STATUS_BAD_REQUEST,
                     "The 'rule_id' URL template token has not been provided in URL");
-        }                        
+        }
         
-        String owningNodeId = req.getServiceMatch().getTemplateVars().get(REQ_TEMPL_VAR_RULE_OWNING_NODE_ID);
-        // Handle if 'owningNodeId' URL template token not provided
-        if ((owningNodeId == null) || (owningNodeId.length() == 0))
-        {
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                    "The 'id' URL template token has not been provided in URL");
-        }                        
+        // NOTE -
+        // that if a value is provided for the 'id' URL template variable {id},
+        // i.e. either of the following URL patterns have been used
+        //      <url>/api/node/{store_type}/{store_id}/{id}/rules/{rule_id}</url> or
+        //      <url>/api/path/{store_type}/{store_id}/{id}/rules/{rule_id}</url>
+        // then the rule owning node ref supplied therein will be ignored,
+        // as these URL templates are just provided for convenience and the
+        // rule owning node ref is retrieved by using the rule's identifying node
+        // ref (supplied in {rule_id})
         
         // create the rule's identifying node reference from the given 
         // URL template tokens
         NodeRef ruleNodeRef = this.rulesHelper.getNodeRefFromWebScriptUrl(req, storeType, storeId, ruleNodeId);
-        
-        // create the rule owning node reference from the given 
-        // URL template tokens
-        NodeRef ruleOwningNodeRef = this.rulesHelper.getNodeRefFromWebScriptUrl(req, storeType, storeId, owningNodeId);
-        
+                
         // get the rule using it's unique identifying node reference
         Rule rule = this.ruleService.getRule(ruleNodeRef);
+        NodeRef ruleOwningNodeRef = this.ruleService.getOwningNodeRef(rule); 
         
         // delete rule
         this.ruleService.removeRule(ruleOwningNodeRef, rule);

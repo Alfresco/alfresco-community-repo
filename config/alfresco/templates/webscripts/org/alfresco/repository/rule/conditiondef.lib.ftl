@@ -4,16 +4,22 @@
    <#escape x as jsonUtils.encodeJSONString(x)>
       {
          "name" : "${conditiondef.name}",
-         "title" : "${conditiondef.title},
-         "description" : "${conditiondef.description}",
+         <#if conditiondef.title?exists>
+            "title" : "${conditiondef.title}",
+         </#if>
+         <#if conditiondef.description?exists>
+            "description" : "${conditiondef.description}",
+         </#if>
          "adhocPropertiesAllowed" : "${conditiondef.adhocPropertiesAllowed?string("true", "false")}",
-         "parameterDefinitions" :
-         [
-         <#list conditiondef.parameterDefinitions as paramDef>
-            <@paramDefLib.paramDefJSON paramDef=paramDef/>
-            <#if paramDef_has_next>,</#if>
-         </#list>
-         ],
+         <#if conditiondef.parameterDefinitions?exists>
+            "parameterDefinitions" :
+            [
+            <#list conditiondef.parameterDefinitions as paramDef>
+               <@paramDefLib.paramDefJSON paramDef=paramDef/>
+               <#if paramDef_has_next>,</#if>
+            </#list>
+            ],
+         </#if>
          "url" : "${url.serviceContext + "/api/rules/conditiondefs/" + conditiondef.name}"
       }
    </#escape>

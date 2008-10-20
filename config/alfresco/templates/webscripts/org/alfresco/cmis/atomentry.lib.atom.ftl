@@ -18,12 +18,12 @@
 [#macro document node propfilter="*" ns=""]
 [@entry ns]
 <author><name>${node.properties.creator!""}</name></author>
-<content [@contenttypeattr node.mimetype/] src="[@contentlink node/]"/>
+[@contentstream node/]
 <id>urn:uuid:${node.id}</id>
 <link rel="self" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}"/>
-<link rel="enclosure" href="[@contentlink node/]" [@contenttypeattr node.mimetype/]/>
+[@linkstream node "enclosure"/]
 <link rel="edit" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}"/>
-<link rel="edit-media" href="[@contentlink node/]" [@contenttypeattr node.mimetype/]/>
+[@linkstream node "edit-media"/]
 [@documentCMISLinks node=node/]
 <published>${xmldate(node.properties.created)}</published>
 <summary>${node.properties.description!node.properties.title!cropContent(node, 50)}</summary>
@@ -43,9 +43,9 @@
 <link rel="cmis-relationships" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/associations"/>
 <link rel="cmis-parents" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/parents"/>
 <link rel="cmis-allversions" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/versions"/>
-<link rel="cmis-stream" href="[@contentlink node/]" [@contenttypeattr node.mimetype/]/>
+[@linkstream node "cmis-stream"/]
 <link rel="cmis-type" href="${absurl(url.serviceContext)}/api/type/${cmistypeid(node)}"/>
-<link rel="cmis-repository" href="[@servicelink/]"/>
+<link rel="cmis-repository" href="[@serviceuri/]"/>
 [/#macro]
 
 [#macro documentCMISProps node propfilter]
@@ -86,10 +86,10 @@
 [#macro version node version propfilter="*" ns=""]
 [@entry ns]
 <author><name>${node.properties.creator}</name></author>
-<content [@contenttypeattr node.mimetype/] src="[@contentlink node/]"/>
+[@contentstream node/]
 <id>urn:uuid:${node.id}</id>
 <link rel="self" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}"/>
-<link rel="enclosure" href="[@contentlink node/]" [@contenttypeattr node.mimetype/]/>
+[@linkstream node "enclosure"/]
 [@documentCMISLinks node=node/]
 <published>${xmldate(node.properties.created)}</published>
 <summary>${node.properties.description!node.properties.title!cropContent(node.properties.content, 50)}</summary>
@@ -112,12 +112,12 @@
 [#macro pwc node propfilter="*" ns=""]
 [@entry ns]
 <author><name>${node.properties.creator}</name></author>
-<content [@contenttypeattr node.mimetype/] src="[@contentlink node/]"/>
+[@contentstream node/]
 <id>urn:uuid:${node.id}</id>
 <link rel="self" href="${absurl(url.serviceContext)}/api/pwc/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}"/>
-<link rel="enclosure" href="[@contentlink node/]" [@contenttypeattr node.mimetype/]/>
+[@linkstream node "enclosure"/]
 <link rel="edit" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}"/>
-<link rel="edit-media" href="[@contentlink node/]" [@contenttypeattr node.mimetype/]/>
+[@linkstream node "edit-media"/]
 [@documentCMISLinks node=node/]
 <published>${xmldate(node.properties.created)}</published>
 <summary>${node.properties.description!node.properties.title!cropContent(node.properties.content, 50)}</summary>
@@ -180,7 +180,7 @@
 <link rel="cmis-children" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/children"/>
 <link rel="cmis-descendants" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/descendants"/>
 <link rel="cmis-type" href="${absurl(url.serviceContext)}/api/type/${cmistypeid(node)}"/>
-<link rel="cmis-repository" href="[@servicelink/]"/>
+<link rel="cmis-repository" href="[@serviceuri/]"/>
 [/#macro]
 
 [#macro folderCMISProps node propfilter]
@@ -209,7 +209,7 @@
 [#if row.nodes??]
 [#assign node = row.nodes?first]
 <author><name>${node.properties.creator!""}</name></author>
-<content [@contenttypeattr node.mimetype/] src="[@contentlink node/]"/>
+[@contentstream node/]
 <id>urn:uuid:${node.id}</id>
 <link rel="self" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}"/>
 <title>${node.name}</title>
@@ -340,7 +340,7 @@
 [/#if]
 <link rel="cmis-children" href="${absurl(url.serviceContext)}/api/type/${typedef.objectTypeId}/children"/>
 <link rel="cmis-descendants" href="${absurl(url.serviceContext)}/api/type/${typedef.objectTypeId}/descendants"/>
-<link rel="cmis-repository" href="[@servicelink/]"/>
+<link rel="cmis-repository" href="[@serviceuri/]"/>
 [/#macro]
 
 [#macro typedefCMISProps typedef includeProperties=true includeInheritedProperties=true]
@@ -557,11 +557,14 @@
 [#-- Helper to render Alfresco content type to Atom content type --]
 [#macro contenttype type][#if type == "text/html"]text[#elseif type == "text/xhtml"]xhtml[#elseif type == "text/plain"]text<#else>${type}[/#if][/#macro]
 
-[#-- Helper to render Alfresco content stream link --]
-[#macro contentlink node]${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/content[#if node.properties.name??].${encodeuri(node.properties.name)}[/#if][/#macro]
+[#-- Helper to render atom content element --]
+[#macro contentstream node]<content[#if node.mimetype??] type="${node.mimetype}"[/#if] src="[@contenturi node/]"/>[/#macro]
 
-[#-- Helper to render type attribute --]
-[#macro contenttypeattr mimetype][#if mimetype??]type="${mimetype}"[/#if][/#macro]
+[#-- Helper to render atom content element --]
+[#macro linkstream node rel=""]<link[#if rel !=""] rel="${rel}"[/#if][#if node.mimetype??] type="${node.mimetype}"[/#if] href="[@contenturi node/]"/>[/#macro]
 
-[#-- Helper to render Alfresco service document link --]
-[#macro servicelink]${absurl(url.serviceContext)}/api/repository[/#macro]
+[#-- Helper to render Alfresco content stream uri --]
+[#macro contenturi node]${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/content[#if node.properties.name??].${encodeuri(node.properties.name)}[/#if][/#macro]
+
+[#-- Helper to render Alfresco service document uri --]
+[#macro serviceuri]${absurl(url.serviceContext)}/api/repository[/#macro]

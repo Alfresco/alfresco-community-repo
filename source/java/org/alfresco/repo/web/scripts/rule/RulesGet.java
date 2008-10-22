@@ -155,7 +155,7 @@ public class RulesGet extends DeclarativeWebScript
         
         // add objects to model for the template to render
         model.put(MODEL_PROP_KEY_RULES, rules);
-        model.put(MODEL_PROP_KEY_OWNING_NODE_REF, owningNodeRef);
+        model.put(MODEL_PROP_KEY_OWNING_NODE_REF, owningNodeRef.toString());
         
         return model;
     }        

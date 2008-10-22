@@ -37,6 +37,16 @@ import org.alfresco.web.scripts.WebScriptRequest;
 /**
  * Web Script to DELETE the rule identified by the given rule node id.
  * 
+ * NOTE -
+ * that if a value is provided for the 'id' URL template variable {id},
+ *  i.e. either of the following URL patterns have been used
+ *      <url>/api/node/{store_type}/{store_id}/{id}/rules/{rule_id}</url> or
+ *      <url>/api/path/{store_type}/{store_id}/{id}/rules/{rule_id}</url>
+ * then the rule owning node ref supplied therein will be ignored,
+ * as these URL templates are just provided for convenience and the
+ * rule owning node ref is retrieved by using the rule's identifying node
+ * ref (supplied in {rule_id})
+ *       
  * @author glen johnson at alfresco dot com
  */
 public class RuleDelete extends DeclarativeWebScript
@@ -100,28 +110,25 @@ public class RuleDelete extends DeclarativeWebScript
         }                        
         
         String ruleNodeId = req.getServiceMatch().getTemplateVars().get(REQ_TEMPL_VAR_RULE_NODE_ID);
-        // Handle if 'ruleNodeId' URL template token not provided
+        // Handle if 'rule_id' URL template token not provided
         if ((ruleNodeId == null) || (ruleNodeId.length() == 0))
         {
             throw new WebScriptException(Status.STATUS_BAD_REQUEST,
                     "The 'rule_id' URL template token has not been provided in URL");
         }
         
-        // NOTE -
-        // that if a value is provided for the 'id' URL template variable {id},
-        // i.e. either of the following URL patterns have been used
-        //      <url>/api/node/{store_type}/{store_id}/{id}/rules/{rule_id}</url> or
-        //      <url>/api/path/{store_type}/{store_id}/{id}/rules/{rule_id}</url>
-        // then the rule owning node ref supplied therein will be ignored,
-        // as these URL templates are just provided for convenience and the
-        // rule owning node ref is retrieved by using the rule's identifying node
-        // ref (supplied in {rule_id})
-        
         // create the rule's identifying node reference from the given 
         // URL template tokens
         NodeRef ruleNodeRef = this.rulesHelper.getNodeRefFromWebScriptUrl(req, storeType, storeId, ruleNodeId);
                 
-        // get the rule using it's unique identifying node reference
+        // if ruleNodeRef referred to by {store_type} {store_id} {rule_id} is 'null' then the rule identified by that 
+        // given node id or node path no longer exists
+        if (ruleNodeRef == null)
+        {
+            throw new WebScriptException(Status.STATUS_NOT_FOUND, "Rule identified by rule node/path - 'store_type': "
+                    + storeType + " 'store_id': " + storeId + " and 'rule_id': " + ruleNodeId + " could not be found");
+        }
+        
         Rule rule = this.ruleService.getRule(ruleNodeRef);
         NodeRef ruleOwningNodeRef = this.ruleService.getOwningNodeRef(rule); 
         

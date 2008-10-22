@@ -38,6 +38,16 @@ import org.alfresco.web.scripts.WebScriptRequest;
 /**
  * Web Script to GET the rule identified by the given rule node reference.
  * 
+ * NOTE -
+ * that if a value is provided for the 'id' URL template variable {id},
+ *  i.e. either of the following URL patterns have been used
+ *      <url>/api/node/{store_type}/{store_id}/{id}/rules/{rule_id}</url> or
+ *      <url>/api/path/{store_type}/{store_id}/{id}/rules/{rule_id}</url>
+ * then the rule owning node ref supplied therein will be ignored,
+ * as these URL templates are just provided for convenience and the
+ * rule owning node ref is retrieved by using the rule's identifying node
+ * ref (supplied in {rule_id})
+ *       
  * @author glen johnson at alfresco dot com
  */
 public class RuleGet extends DeclarativeWebScript
@@ -45,7 +55,7 @@ public class RuleGet extends DeclarativeWebScript
     // private constants 
     private static final String REQ_TEMPL_VAR_STORE_TYPE = "store_type";
     private static final String REQ_TEMPL_VAR_STORE_ID = "store_id";
-    private static final String REQ_TEMPL_VAR_RULE_NODE_ID = "id";
+    private static final String REQ_TEMPL_VAR_RULE_NODE_ID = "rule_id";
     
     // model property keys
     private static final String MODEL_PROP_KEY_RULE = "rule";
@@ -119,12 +129,12 @@ public class RuleGet extends DeclarativeWebScript
         // URL template tokens
         NodeRef ruleNodeRef = this.rulesHelper.getNodeRefFromWebScriptUrl(req, storeType, storeId, ruleNodeId);
         
-        // if ruleNodeRef referred to by {store_type} {store_id} {id} is 'null' then the rule identified by that 
+        // if ruleNodeRef referred to by {store_type} {store_id} {rule_id} is 'null' then the rule identified by that 
         // given node id or node path no longer exists
         if (ruleNodeRef == null)
         {
             throw new WebScriptException(Status.STATUS_NOT_FOUND, "Rule identified by rule node/path - 'store_type': "
-                    + storeType + " 'store_id': " + storeId + " and 'id': " + ruleNodeId + " could not be found");
+                    + storeType + " 'store_id': " + storeId + " and 'rule_id': " + ruleNodeId + " could not be found");
         }
         
         // get rule identified by the given rule node reference
@@ -135,7 +145,7 @@ public class RuleGet extends DeclarativeWebScript
         
         // add objects to model for the template to render
         model.put(MODEL_PROP_KEY_RULE, rule);
-        model.put(MODEL_PROP_KEY_OWNING_NODE_REF, ruleOwningNodeRef);
+        model.put(MODEL_PROP_KEY_OWNING_NODE_REF, ruleOwningNodeRef.toString());
                 
         return model;
     }        

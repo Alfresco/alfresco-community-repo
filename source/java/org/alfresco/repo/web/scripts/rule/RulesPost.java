@@ -133,7 +133,7 @@ public class RulesPost extends DeclarativeWebScript
         // URL template tokens
         NodeRef owningNodeRef = this.rulesHelper.getNodeRefFromWebScriptUrl(req, storeType, storeId, id);
         
-        // apply rule to actionable node
+        // apply rule to rule owning node
         this.ruleService.saveRule(owningNodeRef, rule);
         
         // add objects to model for the template to render

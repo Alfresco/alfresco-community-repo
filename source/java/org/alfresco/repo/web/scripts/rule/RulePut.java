@@ -39,6 +39,16 @@ import org.json.JSONObject;
 /**
  * Web Script to PUT (update) the rule identified by the given rule node reference.
  * 
+ * NOTE -
+ * that if a value is provided for the 'id' URL template variable {id},
+ *  i.e. either of the following URL patterns have been used
+ *      <url>/api/node/{store_type}/{store_id}/{id}/rules/{rule_id}</url> or
+ *      <url>/api/path/{store_type}/{store_id}/{id}/rules/{rule_id}</url>
+ * then the rule owning node ref supplied therein will be ignored,
+ * as these URL templates are just provided for convenience and the
+ * rule owning node ref is retrieved by using the rule's identifying node
+ * ref (supplied in {rule_id})
+ *       
  * @author glen johnson at alfresco dot com
  */
 public class RulePut extends DeclarativeWebScript
@@ -46,10 +56,11 @@ public class RulePut extends DeclarativeWebScript
     // private constants 
     private static final String REQ_TEMPL_VAR_STORE_TYPE = "store_type";
     private static final String REQ_TEMPL_VAR_STORE_ID = "store_id";
-    private static final String REQ_TEMPL_VAR_RULE_NODE_ID = "id";
+    private static final String REQ_TEMPL_VAR_RULE_NODE_ID = "rule_id";
     
     // model property keys
     private static final String MODEL_PROP_KEY_RULE = "rule";
+    private static final String MODEL_PROP_KEY_OWNING_NODE_REF = "owningNodeRef";
     
     // properties for services
     private RuleService ruleService;
@@ -120,6 +131,14 @@ public class RulePut extends DeclarativeWebScript
         // URL template tokens
         NodeRef ruleNodeRef = this.rulesHelper.getNodeRefFromWebScriptUrl(req, storeType, storeId, ruleNodeId);
         
+        // if ruleNodeRef referred to by {store_type} {store_id} {rule_id} is 'null' then the rule identified by that 
+        // given node id or node path no longer exists
+        if (ruleNodeRef == null)
+        {
+            throw new WebScriptException(Status.STATUS_NOT_FOUND, "Rule identified by rule node/path - 'store_type': "
+                    + storeType + " 'store_id': " + storeId + " and 'rule_id': " + ruleNodeId + " could not be found");
+        }
+        
         // get the rule JSON object sent in the request content (when PUTting the Rule)
         Object contentObj = req.parseContent();
         if (contentObj == null || !(contentObj instanceof JSONObject))
@@ -129,19 +148,20 @@ public class RulePut extends DeclarativeWebScript
         }
         JSONObject ruleJson = (JSONObject)contentObj;        
         
-        // get the rule object (identified by the rule node reference)
-        // updated by the details in the rule JSON object
+        // update the rule object identified by the given rule node reference
+        // with the details in the rule JSON
         Rule rule = this.rulesHelper.getRuleFromJson(ruleJson, ruleNodeRef);
         
         // get owning node ref that rule was
         // previous applied to
-        NodeRef owningNodeRef = this.ruleService.getOwningNodeRef(rule);
+        NodeRef ruleOwningNodeRef = this.ruleService.getOwningNodeRef(rule);
                 
-        // re-apply rule to actionable node
-        this.ruleService.saveRule(owningNodeRef, rule);
+        // re-apply rule to owning node
+        this.ruleService.saveRule(ruleOwningNodeRef, rule);
         
         // add objects to model for the template to render
         model.put(MODEL_PROP_KEY_RULE, rule);
+        model.put(MODEL_PROP_KEY_OWNING_NODE_REF, ruleOwningNodeRef.toString());
         
         return model;
     }        

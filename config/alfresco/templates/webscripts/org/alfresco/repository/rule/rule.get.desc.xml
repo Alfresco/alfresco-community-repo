@@ -1,9 +1,9 @@
 <webscript>
    <shortname>Get Rule</shortname>
    <description>Get the rule identified by the specified rule node reference.</description>
-   <url>/api/rules/{store_type}/{store_id}/{id}</url>
-   <url>/api/node/{store_type}/{store_id}/{id}/rules/{id}</url>
-   <url>/api/path/{store_type}/{store_id}/{id}/rules/{id}</url>
+   <url>/api/rules/{store_type}/{store_id}/{rule_id}</url>
+   <url>/api/node/{store_type}/{store_id}/{id}/rules/{rule_id}</url>
+   <url>/api/path/{store_type}/{store_id}/{id}/rules/{rule_id}</url>
    <format default="json"/>
    <authentication>user</authentication>
    <transaction>required</transaction>

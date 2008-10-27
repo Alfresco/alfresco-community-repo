@@ -1,0 +1,70 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+    <!-- Web Project service bean -->
+    <bean id="WebProjectService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.wcm.webproject.WebProjectService</value>
+        </property>
+        <property name="target">
+            <ref bean="webProjectService"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref local="WebProjectService_transaction"/>
+                <idref bean="AuditMethodInterceptor"/>
+                <idref bean="exceptionTranslator"/>
+                <idref local="WebProjectService_security"/>
+            </list>
+        </property>
+    </bean>
+
+    <!-- Web Project service transaction bean -->
+    <bean id="WebProjectService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+        <property name="transactionManager">
+            <ref bean="transactionManager"/>
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="get*">${server.transaction.mode.readOnly}</prop>
+                <prop key="list*">${server.transaction.mode.readOnly}</prop>
+                <prop key="is*">${server.transaction.mode.readOnly}</prop>
+                <prop key="find*">${server.transaction.mode.readOnly}</prop>
+                <prop key="*">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
+    
+    <!-- Web Project service security bean -->
+    <bean id="WebProjectService_security" class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
+    
+	
+    <bean id="webProjectService" class="org.alfresco.wcm.webproject.WebProjectServiceImpl">
+       <property name="nodeService" ref="NodeService"/>
+       <property name="searchService" ref="SearchService"/>
+       <property name="avmService" ref="AVMService"/>
+       <property name="avmLockingService" ref="AVMLockingService"/>
+       <property name="authorityService" ref="AuthorityService"/>
+       <property name="permissionService" ref="PermissionService"/>
+       <property name="personService" ref="PersonService"/>
+       <property name="virtServerRegistry" ref="VirtServerRegistry"/>
+       <property name="sandboxFactory" ref="sandboxFactory"/>
+    </bean>
+
+    <bean id="webProjectsScript" parent="baseJavaScriptExtension" class="org.alfresco.wcm.webproject.script.WebProjects">
+        <property name="extensionName">
+            <value>webprojects</value>
+        </property>
+        <property name="serviceRegistry" ref="ServiceRegistry"/>
+        <property name="webProjectService" ref="WebProjectService"/>
+    </bean>
+    
+    <bean id="sandboxFactory" class="org.alfresco.wcm.sandbox.SandboxFactory">
+       <property name="nodeService" ref="NodeService"/>
+       <property name="permissionService" ref="PermissionService"/>
+       <property name="avmService" ref="AVMService"/>
+    </bean>
+    
+</beans>

@@ -22,18 +22,36 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-/*-----------------------------------------------------------------------------
-*  Author  Jon Cox  <jcox@alfresco.com>
-*  File    SandboxConstants.java
-*----------------------------------------------------------------------------*/
+package org.alfresco.wcm.sandbox;
 
-package org.alfresco.sandbox;
+import java.io.Serializable;
 
 /**
- *  WCM sandbox constants
- *  
- *  @deprecated refer to org.alfresco.wcm.sandbox.SandboxConstants
- */
-public class SandboxConstants extends org.alfresco.wcm.sandbox.SandboxConstants
+*  Provides information about a WCM sandbox created by SandboxFactory.
+*/
+public final class SandboxInfo implements Serializable
 {
+    private static final long serialVersionUID = 3615436375385857404L;
+    
+    String [] store_names_;
+    public SandboxInfo(String [] store_names)
+    {
+        store_names_ = store_names;
+    }
+
+    /**
+    *  A list of names of the stores within this sandbox.
+    *  The "main" store should come first in this list;
+    *  any other stores should appear in the order that 
+    *  they are overlaid on "main" (e.g.: any "preview" 
+    *  layers should come afterward, in "lowest first" order).
+    *  <p>
+    *  Note: all sandboxes must have a "main" layer.
+    */
+    public String [] getStoreNames()    { return store_names_; }
+
+    /**
+    *  The name of the "main" store within this sandbox.
+    */
+    public String    getMainStoreName() { return store_names_[0]; }
 }

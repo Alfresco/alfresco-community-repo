@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -69,6 +69,7 @@ import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.wcm.webproject.WebProjectService;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
@@ -461,5 +462,10 @@ public class ServiceDescriptorRegistry
 
 	}
     
-
+	/* (non-Javadoc)
+	 * @see org.alfresco.service.ServiceRegistry#getWebProjectService()
+	 */
+    public WebProjectService getWebProjectService() {
+        return (WebProjectService) getService(WEBPROJECT_SERVICE);
+    }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -68,6 +68,7 @@ import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.wcm.webproject.WebProjectService;
 
 
 /**
@@ -127,6 +128,7 @@ public interface ServiceRegistry
     static final QName THUMBNAIL_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "ThumbnailService");
     static final QName TAGGING_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "TaggingService");
     static final QName DEPLOYMENT_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "DeploymentService");
+    static final QName WEBPROJECT_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "WebProjectService");
 
     /**
      * Get the list of services provided by the Repository
@@ -420,4 +422,11 @@ public interface ServiceRegistry
      */
     @NotAuditable
     DeploymentService getDeploymentService();
+    
+    /**
+     * Get the WebProject Service
+     * @return
+     */
+    @NotAuditable
+    WebProjectService getWebProjectService();
 }

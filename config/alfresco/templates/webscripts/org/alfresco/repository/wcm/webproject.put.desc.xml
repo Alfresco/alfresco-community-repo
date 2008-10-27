@@ -1,0 +1,11 @@
+<webscript>
+  <shortname>Update Web Project</shortname>
+  <description>Update a single WCM web project
+  The following fields are may be updated in the body of the request:
+  name, title, description
+  </description>
+  <format default="json" />
+  <url>/api/wcm/webproject/{webprojectref}</url>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>

@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Invite user to web project</shortname>
+  <description>Adds a new membership to the web project</description>
+  <url>/api/wcm/webproject/{webprojectref}/memberships</url>
+  <format default="json"/>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>

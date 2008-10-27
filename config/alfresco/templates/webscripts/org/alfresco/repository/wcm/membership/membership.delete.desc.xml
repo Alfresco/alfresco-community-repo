@@ -1,0 +1,10 @@
+<webscript>
+  <shortname>Delete Web Project Membership</shortname>
+  <description>Delete (uninvite) the membership for a user.   
+  Sandboxes are deleted even if they have unsubmitted content.
+  </description>
+  <url>/api/wcm/webproject/{webprojectref}/membership/{username}</url>
+  <format default="json"/>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>

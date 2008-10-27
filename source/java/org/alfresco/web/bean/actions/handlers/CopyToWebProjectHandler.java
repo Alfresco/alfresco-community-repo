@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -100,7 +100,7 @@ public class CopyToWebProjectHandler extends BaseActionHandler
          folder = avmPath.substring(avmPath.indexOf(AVMUtil.DIR_ROOT)+4);
          
          // get the destination web project name
-         NodeRef webProjectNode = AVMUtil.getWebProjectNodeFromPath(avmPath);
+         NodeRef webProjectNode = Repository.getServiceRegistry(context).getWebProjectService().findWebProjectNodeFromPath(avmPath);
          webProject = Repository.getNameForNode(
                   Repository.getServiceRegistry(context).getNodeService(), webProjectNode);
       }

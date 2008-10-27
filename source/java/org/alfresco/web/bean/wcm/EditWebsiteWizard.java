@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -33,10 +33,10 @@ import javax.faces.model.SelectItem;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
-import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.wcm.webproject.WebProjectInfo;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 
 /**
@@ -89,15 +89,12 @@ public class EditWebsiteWizard extends CreateWebsiteWizard
    {
       if (this.webappsList == null)
       {
-         // get directory listing to show webapps that can be selected
-         Map<String, AVMNodeDescriptor> dirs = this.getAvmService().getDirectoryListing(
-                  -1, AVMUtil.buildSandboxRootPath(this.dnsName));
-         
          // create list of webapps
-         this.webappsList = new ArrayList<SelectItem>(dirs.size());
-         for (String dirName : dirs.keySet())
+         List<String> webApps = getWebProjectService().listWebApps(getWebProjectNodeRef());
+         this.webappsList = new ArrayList<SelectItem>(webApps.size());
+         for (String webAppName : webApps)
          {
-            this.webappsList.add(new SelectItem(dirName, dirName));
+            this.webappsList.add(new SelectItem(webAppName, webAppName));
          }
       }
       
@@ -112,11 +109,16 @@ public class EditWebsiteWizard extends CreateWebsiteWizard
    {
       NodeRef nodeRef = this.browseBean.getActionSpace().getNodeRef();
       
+      WebProjectInfo wpInfo = getWebProjectService().getWebProject(nodeRef);
+      
       // apply the name, title and description props
-      getNodeService().setProperty(nodeRef, ContentModel.PROP_NAME, this.name);
-      getNodeService().setProperty(nodeRef, ContentModel.PROP_TITLE, this.title);
-      getNodeService().setProperty(nodeRef, ContentModel.PROP_DESCRIPTION, this.description);
-      getNodeService().setProperty(nodeRef, WCMAppModel.PROP_ISSOURCE, this.isSource);
+      
+      wpInfo.setName(this.name);
+      wpInfo.setTitle(this.title);
+      wpInfo.setDescription(this.description);
+      wpInfo.setIsTemplate(this.isSource);
+      
+      getWebProjectService().updateWebProject(wpInfo);
       
       // clear the existing settings for forms, template, workflows and deployment - then 
       // the existing methods can be used to apply the modified and previous settings from scratch

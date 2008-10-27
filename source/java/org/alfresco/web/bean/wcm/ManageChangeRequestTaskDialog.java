@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -35,7 +35,7 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.model.WCMModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
-import org.alfresco.sandbox.SandboxConstants;
+import org.alfresco.wcm.sandbox.SandboxConstants;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.locking.AVMLock;
 import org.alfresco.service.cmr.avm.locking.AVMLockingService;
@@ -269,7 +269,7 @@ public class ManageChangeRequestTaskDialog extends ManageTaskDialog
       String userStoreName = AVMUtil.getStoreName(userStoreAvmPath);
       String stagingStoreName = this.getAvmService().getStoreProperty(userStoreName, 
                SandboxConstants.PROP_WEBSITE_NAME).getStringValue();
-      NodeRef webProjectRef = AVMUtil.getWebProjectNodeFromStore(stagingStoreName);
+      NodeRef webProjectRef = getWebProjectService().findWebProjectNodeFromStore(stagingStoreName);
       
       // update the UI context to the web project
       this.browseBean.clickSpace(webProjectRef);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -33,26 +33,18 @@ import java.util.Map;
 
 import javax.faces.context.FacesContext;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
-import org.alfresco.sandbox.SandboxConstants;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.search.ResultSet;
-import org.alfresco.service.cmr.search.ResultSetRow;
-import org.alfresco.service.cmr.search.SearchParameters;
-import org.alfresco.service.cmr.search.SearchService;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.RegexQNamePattern;
-import org.alfresco.web.app.Application;
+import org.alfresco.wcm.sandbox.SandboxConstants;
 import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.repository.Repository;
-import org.alfresco.web.bean.repository.User;
 import org.alfresco.web.data.IDataContainer;
 import org.alfresco.web.data.QuickSort;
 import org.alfresco.web.forms.Form;
@@ -188,11 +180,9 @@ public class WebProject implements Serializable
 
    private final static Log LOGGER = LogFactory.getLog(WebProject.class); 
    
-   private static NodeRef websitesFolder;
    private final NodeRef nodeRef;
    private String storeId = null;
    private Boolean hasWorkflow = null;
-   private Map<String, String> userRoles = new HashMap<String, String>(16, 1.0f);
    
    public WebProject(final NodeRef nodeRef)
    {
@@ -238,10 +228,12 @@ public class WebProject implements Serializable
     * Returns the name of the web project.
     *
     * @return the name of the web project.
+    * @deprecated
     */
    public String getName()
    {
-      final NodeService nodeService = this.getServiceRegistry().getNodeService();
+       // TODO refactor out ...
+      final NodeService nodeService = getServiceRegistry().getNodeService();
       return (String)nodeService.getProperty(this.nodeRef, ContentModel.PROP_NAME);
    }
 
@@ -249,10 +241,12 @@ public class WebProject implements Serializable
     * Returns the title of the web project.
     *
     * @return the title of the web project.
+    * @deprecated
     */
    public String getTitle()
    {
-      final NodeService nodeService = this.getServiceRegistry().getNodeService();
+      // TODO refactor out ...
+      final NodeService nodeService = getServiceRegistry().getNodeService();
       return (String)nodeService.getProperty(this.nodeRef, ContentModel.PROP_TITLE);
    }
 
@@ -260,10 +254,12 @@ public class WebProject implements Serializable
     * Returns the description of the web project.
     *
     * @return the description of the web project.
+    * @deprecated
     */
    public String getDescription()
    {
-      final NodeService nodeService = this.getServiceRegistry().getNodeService();
+      // TODO refactor out ...
+      final NodeService nodeService = getServiceRegistry().getNodeService();
       return (String)nodeService.getProperty(this.nodeRef, ContentModel.PROP_DESCRIPTION);
    }
 
@@ -271,12 +267,14 @@ public class WebProject implements Serializable
     * Returns the store id for this web project.
     *
     * @return the store id for this web project.
+    * @deprecated
     */
    public String getStoreId()
    {
+      // TODO refactor out ...
       if (this.storeId == null)
       {
-          final NodeService nodeService = this.getServiceRegistry().getNodeService();
+          final NodeService nodeService = getServiceRegistry().getNodeService();
           this.storeId = (String)nodeService.getProperty(this.nodeRef, WCMAppModel.PROP_AVMSTORE);
       }
       return this.storeId;
@@ -286,9 +284,11 @@ public class WebProject implements Serializable
     * Returns the staging store name.
     *
     * @return the staging store name.
+    * @deprecated
     */
    public String getStagingStore()
    {
+      // TODO refactor out ...
       return AVMUtil.buildStagingStoreName(this.getStoreId());
    }
 
@@ -299,7 +299,7 @@ public class WebProject implements Serializable
     */
    public List<Form> getForms()
    {
-      final List forms = new ArrayList(this.getFormsImpl().values());
+      final List<Form> forms = new ArrayList<Form>(this.getFormsImpl().values());
       final QuickSort sorter = new QuickSort(forms, "name", true, IDataContainer.SORT_CASEINSENSITIVE);
       sorter.sort();
       return Collections.unmodifiableList(forms);
@@ -360,166 +360,6 @@ public class WebProject implements Serializable
          }
       }
       return this.hasWorkflow.booleanValue();
-   }
-
-   /**
-    * Returns <tt>true</tt> if the user is a manager of this web project.
-    *
-    * @param user the user
-    * @return <tt>true</tt> if the user is a manager, <tt>false</tt> otherwise.
-    * @exception NullPointerException if the user is null.
-    */
-   public boolean isManager(final User user)
-   {
-      String userrole;
-      String username = user.getUserName();
-      synchronized (userRoles)
-      {
-         userrole = userRoles.get(username);
-         if (userrole == null)
-         {
-            userrole = WebProject.getWebProjectUserRole(nodeRef, user);
-            userRoles.put(username, userrole);
-         }
-      }
-      return AVMUtil.ROLE_CONTENT_MANAGER.equals(userrole);
-   }
-   
-   /**
-    * @return the role of this user in the given Web Project, or null for no assigned role
-    */
-   public static String getWebProjectUserRole(NodeRef webProjectRef, User user)
-   {
-      String userrole = null;
-      
-      long start = 0;
-      if (LOGGER.isDebugEnabled())
-      {
-         start = System.currentTimeMillis();
-      }
-      
-      if (user.isAdmin())
-      {
-         // fake the Content Manager role for an admin user
-         userrole = AVMUtil.ROLE_CONTENT_MANAGER;
-      }
-      else
-      {
-         NodeService nodeService = WebProject.getServiceRegistry().getNodeService();
-         
-         NodeRef roleRef = findUserRoleNodeRef(webProjectRef, user);
-         if (roleRef != null)
-         {
-            userrole = (String)nodeService.getProperty(roleRef, WCMAppModel.PROP_WEBUSERROLE);
-         }
-         else
-         {
-            LOGGER.warn("getWebProjectUserRole: user role not found for " + user);
-         }
-      }
-      
-      if (LOGGER.isDebugEnabled())
-      {
-         LOGGER.debug("getWebProjectUserRole: " + user.getUserName() + " " + userrole + " in " + (System.currentTimeMillis()-start) + " ms");
-      }
-      
-      return userrole;
-   }
-
-   /**
-    * Perform a Lucene search to return a NodeRef to the node representing the the User Role
-    * within the given WebProject. 
-    * 
-    * @param webProjectRef      Web Project to search against
-    * @param user               User to test against
-    * 
-    * @return NodeRef of the User Role node or null if none found
-    */
-   public static NodeRef findUserRoleNodeRef(NodeRef webProjectRef, User user)
-   {
-      SearchService searchService = WebProject.getServiceRegistry().getSearchService();
-      
-      StringBuilder query = new StringBuilder(128);
-      query.append("+PARENT:\"").append(webProjectRef).append("\" ");
-      query.append("+TYPE:\"").append(WCMAppModel.TYPE_WEBUSER).append("\" ");
-      query.append("+@").append(NamespaceService.WCMAPP_MODEL_PREFIX).append("\\:username:\"");
-      query.append(user.getUserName());
-      query.append("\"");
-      
-      ResultSet resultSet = searchService.query(
-            Repository.getStoreRef(),
-            SearchService.LANGUAGE_LUCENE,
-            query.toString());            
-      List<NodeRef> nodes = resultSet.getNodeRefs();
-      
-      return (nodes.size() == 1 ? nodes.get(0) : null);
-   }
-
-   /**
-    * Returns the default webapp for this web project.
-    *
-    * @return the default webapp for this web project.
-    */
-   public String getDefaultWebapp()
-   {
-      final ServiceRegistry serviceRegistry = this.getServiceRegistry();
-      final NodeService nodeService = serviceRegistry.getNodeService();
-      return (String)
-         nodeService.getProperty(this.nodeRef, WCMAppModel.PROP_DEFAULTWEBAPP);
-   }
-
-   /**
-    * Helper to get the ID of the 'Websites' system folder
-    * 
-    * @return ID of the 'Websites' system folder
-    * 
-    * @throws AlfrescoRuntimeException if unable to find the required folder
-    */
-   public synchronized static NodeRef getWebsitesFolder()
-   {
-      if (WebProject.websitesFolder == null)
-      {
-         // get the template from the special Content Templates folder
-         final FacesContext fc = FacesContext.getCurrentInstance();
-         final String xpath = Application.getRootPath(fc) + "/" + Application.getWebsitesFolderName(fc);
-         
-         final NodeRef rootNodeRef = WebProject.getServiceRegistry().getNodeService().getRootNode(Repository.getStoreRef());
-         final NamespaceService resolver = Repository.getServiceRegistry(fc).getNamespaceService();
-         final List<NodeRef> results = WebProject.getServiceRegistry().getSearchService().selectNodes(rootNodeRef, xpath, null, resolver, false);
-         if (results.size() == 1)
-         {
-            WebProject.websitesFolder = new NodeRef(Repository.getStoreRef(), results.get(0).getId());
-         }
-         else
-         {
-            throw new AlfrescoRuntimeException("Unable to find 'Websites' system folder at: " + xpath);
-         }
-      }
-      
-      return WebProject.websitesFolder;
-   }
-
-   public static List<WebProject> getWebProjects()
-   {
-      final ServiceRegistry serviceRegistry = WebProject.getServiceRegistry();
-      final SearchParameters sp = new SearchParameters();
-      sp.addStore(Repository.getStoreRef());
-      sp.setLanguage(SearchService.LANGUAGE_LUCENE);
-      sp.setQuery("+TYPE:\"" + WCMAppModel.TYPE_AVMWEBFOLDER + 
-                  "\" +PARENT:\"" + WebProject.getWebsitesFolder() + "\"");
-      if (LOGGER.isDebugEnabled())
-         LOGGER.debug("running query [" + sp.getQuery() + "]");
-      final ResultSet rs = serviceRegistry.getSearchService().query(sp);
-      if (LOGGER.isDebugEnabled())
-         LOGGER.debug("received " + rs.length() + " results");
-      final List<WebProject> result = new ArrayList<WebProject>(rs.length());
-      for (ResultSetRow row : rs)
-      {
-         result.add(new WebProject(row.getNodeRef()));
-      }
-      QuickSort sorter = new QuickSort((List)result, "name", true, IDataContainer.SORT_CASEINSENSITIVE);
-      sorter.sort();
-      return result;
    }
 
    private Map<String, Form> getFormsImpl()

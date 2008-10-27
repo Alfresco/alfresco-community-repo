@@ -44,6 +44,8 @@ import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.wcm.webproject.WebProjectInfo;
+import org.alfresco.wcm.webproject.WebProjectService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.data.IDataContainer;
@@ -66,6 +68,25 @@ public class CreateLayeredFolderDialog extends CreateFolderDialog
    protected String targetStore;
    protected String targetPath;
    protected List<SelectItem> webProjects;
+   
+   transient protected WebProjectService wpService;
+   
+   /**
+    * @param wpService The WebProjectService to set.
+    */
+   public void setWebProjectService(WebProjectService wpService)
+   {
+      this.wpService = wpService;
+   }
+   
+   protected WebProjectService getWebProjectService()
+   {
+      if (wpService == null)
+      {
+          wpService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getWebProjectService();
+      }
+      return wpService;
+   }
    
    // ------------------------------------------------------------------------------
    // Dialog implementation
@@ -147,39 +168,18 @@ public class CreateLayeredFolderDialog extends CreateFolderDialog
          // get the current web project dns name
          String thisStoreName = this.avmBrowseBean.getWebProject().getStagingStore();
          
-         FacesContext fc = FacesContext.getCurrentInstance();
+         List<WebProjectInfo> wpInfos = getWebProjectService().listWebProjects();
          
-         // construct the query to retrieve the web projects
-         String path = Application.getRootPath(fc) + "/" + Application.getWebsitesFolderName(fc) + "/*";
-         StringBuilder query = new StringBuilder(200);
-         query.append("PATH:\"/").append(path).append("\"");
-         query.append(" +TYPE:\"{").append(NamespaceService.WCMAPP_MODEL_1_0_URI).append("}webfolder\"");
-         
-         ResultSet results = null;
-         try
+         this.webProjects = new ArrayList<SelectItem>(wpInfos.size());
+         for (WebProjectInfo wpInfo : wpInfos)
          {
-            // execute the query
-            results = getSearchService().query(Repository.getStoreRef(), 
-                                          SearchService.LANGUAGE_LUCENE, query.toString());
-            this.webProjects = new ArrayList<SelectItem>(results.length());
-            for (ResultSetRow row : results)
+            String name = wpInfo.getName();
+            String dns = wpInfo.getStoreId();
+           
+            // don't add ourself to the list of projects
+            if (thisStoreName.equals(dns) == false)
             {
-               NodeRef ref = row.getNodeRef();
-               String name = (String)getNodeService().getProperty(ref, ContentModel.PROP_NAME);
-               String dns = (String)getNodeService().getProperty(ref, WCMAppModel.PROP_AVMSTORE);
-               
-               // don't add ourself to the list of projects
-               if (thisStoreName.equals(dns) == false)
-               {
-                  this.webProjects.add(new SelectItem(dns, name));
-               }
-            }
-         }
-         finally
-         {
-            if (results != null)
-            {
-               results.close();
+               this.webProjects.add(new SelectItem(dns, name));
             }
          }
          

@@ -52,13 +52,13 @@ import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
-import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.NameMatcher;
+import org.alfresco.wcm.util.WCMUtil;
+import org.alfresco.wcm.webproject.WebProjectService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.DownloadContentServlet;
 import org.alfresco.web.app.servlet.FacesHelper;
@@ -301,6 +301,7 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
       
       ResourceBundle bundle = Application.getBundle(context);
       AVMService avmService = getAVMService(context);
+      WebProjectService wpService = getWebProjectService(context);
       NodeService nodeService = getNodeService(context);
       PermissionService permissionService = getPermissionService(context);
       AVMBrowseBean avmBrowseBean = (AVMBrowseBean)FacesHelper.getManagedBean(context, AVMBrowseBean.BEAN_NAME);
@@ -321,19 +322,29 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
          // find out the current user role in the web project
          User currentUser = Application.getCurrentUser(context);
          String currentUserName = currentUser.getUserName();
-         String currentUserRole = WebProject.getWebProjectUserRole(websiteRef, currentUser);
+         String currentUserRole = wpService.getWebUserRole(websiteRef, currentUserName);
          
          // sort the user list alphabetically and insert the current user at the top of the list
          List<UserRoleWrapper> userRoleWrappers;
          if (showAllSandboxes)
          {
-            List<ChildAssociationRef> userInfoRefs = nodeService.getChildAssocs(
-                  websiteRef, WCMAppModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
-            userRoleWrappers = buildSortedUserRoles(nodeService, currentUserName, userInfoRefs);
+            // TODO refactor with new SandboxService
+            Map<String, String> userRoles = null;
+            if (currentUserRole.equals(WCMUtil.ROLE_CONTENT_MANAGER))
+            {
+                userRoles = wpService.listWebUsers(websiteRef);
+            }
+            else
+            {
+                userRoles = new HashMap<String, String>(1);
+                userRoles.put(currentUserName, currentUserRole);
+            }
+            
+            userRoleWrappers = buildSortedUserRoles(nodeService, currentUserName, userRoles);
          }
          else
          {
-            userRoleWrappers = buildCurrentUserRole(nodeService, websiteRef, currentUser);
+            userRoleWrappers = buildCurrentUserRole(wpService, websiteRef, currentUserName);
          }
          
          // determine whether the check links action should be shown
@@ -619,16 +630,15 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
     * is inserted at the top of the list if present. 
     */
    private static List<UserRoleWrapper> buildSortedUserRoles(
-         NodeService nodeService, String currentUser, List<ChildAssociationRef> userInfoRefs)
+         NodeService nodeService, String currentUser, Map<String, String> userRoles)
    {
       // build a list of wrappers to hold the fields we need for each user and role
       UserRoleWrapper currentUserWrapper = null;
       List<UserRoleWrapper> wrappers = new LinkedList<UserRoleWrapper>();
-      for (ChildAssociationRef ref : userInfoRefs)
+      for (Map.Entry<String, String> userRole : userRoles.entrySet())
       {
-         NodeRef userInfoRef = ref.getChildRef();
-         String username = (String)nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERNAME);
-         String userrole = (String)nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERROLE);
+         String username = userRole.getKey();
+         String userrole = userRole.getValue();
          
          UserRoleWrapper wrapper = new UserRoleWrapper(username, userrole);
          
@@ -660,18 +670,15 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
     * Build a list containing one item representing the current user role for the website.
     */
    private static List<UserRoleWrapper> buildCurrentUserRole(
-         NodeService nodeService, NodeRef webProjectRef, User user)
+         WebProjectService wpService, NodeRef webProjectRef, String username)
    {
       // build a list of wrappers to hold the fields we need for each user and role
       List<UserRoleWrapper> wrappers = new ArrayList<UserRoleWrapper>(0);
-      NodeRef userInfoRef = WebProject.findUserRoleNodeRef(webProjectRef, user);
-      if (userInfoRef != null)
+      String userrole = wpService.getWebUserRole(webProjectRef, username);
+      if (userrole != null)
       {
          wrappers = new ArrayList<UserRoleWrapper>(1);
-         
-         String username = (String)nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERNAME);
-         String userrole = (String)nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERROLE);
-         
+
          UserRoleWrapper wrapper = new UserRoleWrapper(username, userrole);
          wrapper.IsCurrentUser = true;
          wrappers.add(0, wrapper);
@@ -1317,6 +1324,11 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
       menu.getAttributes().put("style", "white-space:nowrap; margin-left: 4px; margin-right: 6px;");
       
       return menu;
+   }
+   
+   private WebProjectService getWebProjectService(FacesContext fc)
+   {
+      return (WebProjectService)FacesContextUtils.getRequiredWebApplicationContext(fc).getBean("WebProjectService");
    }
    
    private AVMService getAVMService(FacesContext fc)

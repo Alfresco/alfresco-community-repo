@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -38,16 +38,11 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
-import org.alfresco.model.WCMModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
-import org.alfresco.repo.template.AVMTemplateNode;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
-import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
-import org.alfresco.service.cmr.dictionary.TypeDefinition;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.workflow.WorkflowInstance;
@@ -57,8 +52,8 @@ import org.alfresco.service.cmr.workflow.WorkflowTaskDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowTransition;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.Pair;
+import org.alfresco.wcm.webproject.WebProjectService;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.FacesHelper;
@@ -89,6 +84,7 @@ public class ManageTaskDialog extends BaseDialogBean
    transient private WorkflowService workflowService;
    transient private AVMService avmService;
    transient private AVMSyncService avmSyncService;
+   transient private WebProjectService wpService;
    protected Node taskNode;
    transient private WorkflowTask task;
    transient private WorkflowInstance workflowInstance;
@@ -797,6 +793,23 @@ public class ManageTaskDialog extends BaseDialogBean
          avmSyncService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAVMSyncService();
       }
       return avmSyncService;
+   }
+   
+   /**
+    * @param wpService    The WebProjectService to set.
+    */
+   public void setWebProjectService(final WebProjectService wpService)
+   {
+      this.wpService = wpService;
+   }
+   
+   protected WebProjectService getWebProjectService()
+   {
+      if (wpService == null)
+      {
+          wpService = (WebProjectService) FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "WebProjectService");
+      }
+      return wpService;
    }
    
    protected WorkflowTask getWorkflowTask()

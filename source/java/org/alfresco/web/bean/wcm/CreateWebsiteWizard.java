@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -38,28 +38,21 @@ import javax.faces.model.DataModel;
 import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
 
-import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
-import org.alfresco.repo.avm.AVMNodeConverter;
-import org.alfresco.service.cmr.avm.AVMService;
-import org.alfresco.service.cmr.avm.locking.AVMLockingService;
-import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.search.ResultSet;
-import org.alfresco.service.cmr.search.ResultSetRow;
-import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowService;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
-import org.alfresco.util.DNSNameMangler;
 import org.alfresco.util.ExpiringValueCache;
+import org.alfresco.wcm.util.WCMUtil;
+import org.alfresco.wcm.webproject.WebProjectInfo;
+import org.alfresco.wcm.webproject.WebProjectService;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.FacesHelper;
@@ -110,25 +103,28 @@ public class CreateWebsiteWizard extends BaseWizardBean
    protected final static Log logger = LogFactory.getLog(CreateWebsiteWizard.class);
    
    protected boolean editMode = false;
-   protected String dnsName;
    
+   // TODO refactor to WebProjectInfo
+   protected String dnsName;
    protected String title;
    protected String name;
    protected String description;
    protected String webapp = WEBAPP_DEFAULT;
    protected String createFrom = null;
+   protected boolean isSource;
+   protected NodeRef wpNodeRef;
+   
    protected String[] sourceWebProject = null;
    protected ExpiringValueCache<List<UIListItem>> webProjectsList;
    protected List<SelectItem> webappsList;
-   protected boolean isSource;
    protected boolean showAllSourceProjects;
    protected String websiteDescriptionAttribute;
    
-   transient private AVMService avmService;
    transient private WorkflowService workflowService;
    transient private PersonService personService;
-   transient private AVMLockingService avmLockingService;
    transient private FormsService formsService;
+   
+   transient private WebProjectService wpService;
    
    /** set true when an option in the Create From screen is changed - this is used as an
        indicator to reload the wizard data model from the selected source web project */
@@ -164,9 +160,6 @@ public class CreateWebsiteWizard extends BaseWizardBean
    protected Map<String, Object> editedDeployServerProps = null;
    protected boolean inAddDeployServerMode = false;
    protected String addDeployServerType = WCMAppModel.CONSTRAINT_FILEDEPLOY;
-   
-   /** Data for virtualization server notification  */
-   private SandboxInfo sandboxInfo;
    
    // ------------------------------------------------------------------------------
    // Wizard implementation
@@ -221,39 +214,25 @@ public class CreateWebsiteWizard extends BaseWizardBean
       // the Finish button can be pressed early in the steps - ensure the model is up-to-date
       updateModelOnCreateFromChange();
       
-      // create the website space in the correct parent folder
-      final NodeRef websiteParent = WebProject.getWebsitesFolder();
+      // if the user selected Create From existing web project we will branch from it
+      NodeRef sourceNodeRef = null;
+      if (CREATE_EXISTING.equals(this.createFrom) && 
+          (this.sourceWebProject != null && this.sourceWebProject.length != 0))
+      {
+         sourceNodeRef = new NodeRef(this.sourceWebProject[0]);
+      }
       
-      FileInfo fileInfo = this.getFileFolderService().create(
-            websiteParent,
-            this.name,
-            WCMAppModel.TYPE_AVMWEBFOLDER);
-      NodeRef nodeRef = fileInfo.getNodeRef();
+      WebProjectInfo wpInfo = getWebProjectService().createWebProject(this.dnsName, this.name, this.title, this.description, this.webapp, this.isSource, sourceNodeRef);
       
-      if (logger.isDebugEnabled())
-         logger.debug("Created website folder node with name: " + this.name);
+      String avmStore = wpInfo.getStoreId();
+      NodeRef wpNodeRef = wpInfo.getNodeRef();
       
-      // TODO: check that this dns is unique by querying existing store properties for a match
-      String avmStore = DNSNameMangler.MakeDNSName(this.dnsName);
-      
-      // apply the uifacets aspect - icon, title and description props
-      Map<QName, Serializable> uiFacetsProps = new HashMap<QName, Serializable>(4);
-      uiFacetsProps.put(ApplicationModel.PROP_ICON, AVMUtil.SPACE_ICON_WEBSITE);
-      uiFacetsProps.put(ContentModel.PROP_TITLE, this.title);
-      uiFacetsProps.put(ContentModel.PROP_DESCRIPTION, this.description);
-      getNodeService().addAspect(nodeRef, ApplicationModel.ASPECT_UIFACETS, uiFacetsProps);
-      
-      // use as template source flag
-      getNodeService().setProperty(nodeRef, WCMAppModel.PROP_ISSOURCE, this.isSource);
-      
-      // set the default webapp name for the project
-      String webapp = (this.webapp != null && this.webapp.length() != 0) ? this.webapp : WEBAPP_DEFAULT;
-      getNodeService().setProperty(nodeRef, WCMAppModel.PROP_DEFAULTWEBAPP, webapp);
+      final NodeRef websiteParent = getWebProjectService().getWebProjectsRoot();
       
       // call a delegate wizard bean to provide invite user functionality
       InviteWebsiteUsersWizard wiz = getInviteUsersWizard();
       wiz.reset();
-      wiz.setNode(new Node(nodeRef));
+      wiz.setNode(new Node(wpNodeRef));
       wiz.setAvmStore(avmStore);
       wiz.setStandalone(false);
       // the wizard is responsible for notifying the invited users, setting the appropriate
@@ -261,68 +240,16 @@ public class CreateWebsiteWizard extends BaseWizardBean
       outcome = wiz.finish();
       if (outcome != null)
       {
-         // if the user selected Create From existing web project we will branch from it
-         String branchStoreId = null;
-         if (CREATE_EXISTING.equals(this.createFrom) && 
-             (this.sourceWebProject != null && this.sourceWebProject.length != 0))
-         {
-            NodeRef sourceNodeRef = new NodeRef(this.sourceWebProject[0]);
-            branchStoreId = (String)getNodeService().getProperty(sourceNodeRef, WCMAppModel.PROP_AVMSTORE);
-         }
-         
-         // create the AVM staging store to represent the newly created location website
-         this.sandboxInfo =  SandboxFactory.createStagingSandbox(avmStore, nodeRef, branchStoreId);
-         
-         // create the default webapp folder under the hidden system folders
-         if (branchStoreId == null)
-         {
-            String stagingStore = AVMUtil.buildStagingStoreName(avmStore);
-            String stagingStoreRoot = AVMUtil.buildSandboxRootPath(stagingStore);
-            getAvmService().createDirectory(stagingStoreRoot, webapp);
-            getAvmService().addAspect(AVMNodeConverter.ExtendAVMPath(stagingStoreRoot, webapp),
-                                      WCMAppModel.ASPECT_WEBAPP);
-         }
-         
-         // now the sandbox is created set the permissions masks for the store
-         SandboxFactory.setStagingPermissionMasks(avmStore);
-         
-         // set the property on the node to reference the root AVM store
-         getNodeService().setProperty(nodeRef, WCMAppModel.PROP_AVMSTORE, avmStore);
-         
          // persist the forms, templates, workflows, workflow defaults and deployment 
          // config to the model for this web project
-         saveWebProjectModel(nodeRef);
+         saveWebProjectModel(wpNodeRef);
          
          // navigate to the Websites folder so we can see the newly created folder
          this.navigator.setCurrentNodeId(websiteParent.getId());
          
-         // inform the locking service about this new instance
-         this.getAvmLockingService().addWebProject(avmStore);
-         
          outcome = AlfrescoNavigationHandler.CLOSE_WIZARD_OUTCOME;
-
-         // Snapshot the store with the empty webapp
-         getAvmService().createSnapshot( avmStore, null, null);
       }
-      return outcome;
-   }
 
-   /**
-    * @see org.alfresco.web.bean.dialog.BaseDialogBean#doPostCommitProcessing(javax.faces.context.FacesContext, java.lang.String)
-    */
-   @Override
-   protected String doPostCommitProcessing(FacesContext context, String outcome)
-   {
-      if (this.sandboxInfo != null)
-      {
-         // update the virtualisation server with the default ROOT webapp path
-         // performed after the main txn has committed successfully
-         String newStoreName = AVMUtil.buildStagingStoreName(sandboxInfo.getMainStoreName());
-         
-         String path = AVMUtil.buildStoreWebappPath(newStoreName, WEBAPP_DEFAULT);
-         
-         AVMUtil.updateVServerWebapp(path, true);
-      }
       return outcome;
    }
    
@@ -471,17 +398,14 @@ public class CreateWebsiteWizard extends BaseWizardBean
       // simple properties are optionally loaded
       if (loadProperties)
       {
-         Map<QName, Serializable> props = getNodeService().getProperties(nodeRef);
-         this.name = (String)props.get(ContentModel.PROP_NAME);
-         this.title = (String)props.get(ContentModel.PROP_TITLE);
-         this.description = (String)props.get(ContentModel.PROP_DESCRIPTION);
-         this.dnsName = (String)props.get(WCMAppModel.PROP_AVMSTORE);
-         this.webapp = (String)props.get(WCMAppModel.PROP_DEFAULTWEBAPP);
-         Boolean isSource = (Boolean)props.get(WCMAppModel.PROP_ISSOURCE);
-         if (isSource != null)
-         {
-            this.isSource = isSource.booleanValue();
-         }
+         WebProjectInfo wpInfo = getWebProjectService().getWebProject(nodeRef);
+         this.name = wpInfo.getName();
+         this.title = wpInfo.getTitle();
+         this.description = wpInfo.getDescription();
+         this.dnsName = wpInfo.getStoreId();
+         this.webapp = wpInfo.getDefaultWebApp();
+         this.isSource = wpInfo.isTemplate();
+         this.wpNodeRef = wpInfo.getNodeRef();
       }
       
       if (loadUsers)
@@ -490,13 +414,11 @@ public class CreateWebsiteWizard extends BaseWizardBean
          wiz.reset();
          
          // load the users assigned to the web project
-         List<ChildAssociationRef> userInfoRefs = getNodeService().getChildAssocs(
-               nodeRef, WCMAppModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
-         for (ChildAssociationRef ref : userInfoRefs)
+         Map<String, String> userRoles = getWebProjectService().listWebUsers(nodeRef);
+         for (Map.Entry<String, String> userRole : userRoles.entrySet())
          {
-            NodeRef userRef = ref.getChildRef();
-            String username = (String)getNodeService().getProperty(userRef, WCMAppModel.PROP_WEBUSERNAME);
-            String userrole = (String)getNodeService().getProperty(userRef, WCMAppModel.PROP_WEBUSERROLE);
+            String username = userRole.getKey();
+            String userrole = userRole.getValue();
             wiz.addAuthorityWithRole(username, userrole);
          }
       }
@@ -609,23 +531,6 @@ public class CreateWebsiteWizard extends BaseWizardBean
    // Service setters
    
    /**
-    * @param avmService The AVMService to set.
-    */
-   public void setAvmService(AVMService avmService)
-   {
-      this.avmService = avmService;
-   }
-   
-   protected AVMService getAvmService()
-   {
-      if (avmService == null)
-      {
-         avmService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAVMService();
-      }
-      return avmService;
-   }
-   
-   /**
     * @param workflowService  The WorkflowService to set.
     */
    public void setWorkflowService(WorkflowService workflowService)
@@ -658,23 +563,6 @@ public class CreateWebsiteWizard extends BaseWizardBean
       }
       return personService;
    }
-   
-   /**
-    * @param avmLockingService The AVMLockingService to set
-    */
-   public void setAvmLockingService(AVMLockingService avmLockingService)
-   {
-      this.avmLockingService = avmLockingService;
-   }
-   
-   protected AVMLockingService getAvmLockingService()
-   {
-      if (avmLockingService == null)
-      {
-         avmLockingService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAVMLockingService();
-      }
-      return avmLockingService;
-   }
 
    /**
     * @param formsService    The FormsService to set.
@@ -693,7 +581,22 @@ public class CreateWebsiteWizard extends BaseWizardBean
       return formsService;
    }
 
-
+   /**
+    * @param wpService    The WebProjectService to set.
+    */
+   public void setWebProjectService(final WebProjectService wpService)
+   {
+      this.wpService = wpService;
+   }
+   
+   protected WebProjectService getWebProjectService()
+   {
+      if (wpService == null)
+      {
+          wpService = (WebProjectService) FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "WebProjectService");
+      }
+      return wpService;
+   }
    
    // ------------------------------------------------------------------------------
    // Bean getters and setters
@@ -714,6 +617,14 @@ public class CreateWebsiteWizard extends BaseWizardBean
       this.editMode = editMode;
    }
 
+   /**
+    * @return Returns the web project node ref.
+    */
+   protected NodeRef getWebProjectNodeRef()
+   {
+      return wpNodeRef;
+   }
+   
    /**
     * @return Returns the name.
     */
@@ -837,7 +748,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
       }
       else
       {
-         if (existingWebProject != null || existingWebProject.length != 0)
+         if (existingWebProject != null && existingWebProject.length != 0)
          {
             this.createFromValueChanged = true;
          }
@@ -884,45 +795,22 @@ public class CreateWebsiteWizard extends BaseWizardBean
       List<UIListItem> webProjects = this.webProjectsList.get();
       if (webProjects == null)
       {
-         FacesContext fc = FacesContext.getCurrentInstance();
-         
-         // construct the query to retrieve the web projects
-         String path = Application.getRootPath(fc) + "/" + Application.getWebsitesFolderName(fc) + "/*";
-         StringBuilder query = new StringBuilder(200);
-         query.append("PATH:\"/").append(path).append("\"");
-         query.append(" +TYPE:\"{").append(NamespaceService.WCMAPP_MODEL_1_0_URI).append("}webfolder\"");
-         if (this.showAllSourceProjects == false)
+         List<WebProjectInfo> wps = getWebProjectService().listWebProjects();
+         webProjects = new ArrayList<UIListItem>(wps.size());
+         for (WebProjectInfo wpInfo : wps)
          {
-            // only query for web project templates by default
-            query.append(" +@").append(Repository.escapeQName(WCMAppModel.PROP_ISSOURCE)).append(":true");
-         }
-         
-         ResultSet results = null;
-         try
-         {
-            // execute the query
-            results = getSearchService().query(Repository.getStoreRef(), 
-                                          SearchService.LANGUAGE_LUCENE, query.toString());
-            webProjects = new ArrayList<UIListItem>(results.length());
-            for (ResultSetRow row : results)
+            if ((this.showAllSourceProjects == false) && (! wpInfo.isTemplate()))
             {
-               NodeRef ref = row.getNodeRef();
-               String name = (String)getNodeService().getProperty(ref, ContentModel.PROP_NAME);
-               String desc = (String)getNodeService().getProperty(ref, ContentModel.PROP_DESCRIPTION);
-               UIListItem item = new UIListItem();
-               item.setLabel(name);
-               item.setDescription(desc);
-               item.setValue(ref.toString());
-               item.setImage(WebResources.IMAGE_WEBPROJECT_32);
-               webProjects.add(item);
+               // only query for web project templates by default
+               continue;
             }
-         }
-         finally
-         {
-            if (results != null)
-            {
-               results.close();
-            }
+                
+            UIListItem item = new UIListItem();
+            item.setLabel(wpInfo.getName());
+            item.setDescription(wpInfo.getDescription());
+            item.setValue(wpInfo.getNodeRef().toString());
+            item.setImage(WebResources.IMAGE_WEBPROJECT_32);
+            webProjects.add(item);
          }
          
          this.webProjectsList.put(webProjects);
@@ -1030,7 +918,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
       if (foundCurrentUser == false)
       {
          buf.append(getInviteUsersWizard().buildLabelForUserAuthorityRole(
-               currentUser, AVMUtil.ROLE_CONTENT_MANAGER));
+               currentUser, WCMUtil.ROLE_CONTENT_MANAGER));
       }
       
       return buildSummary(
@@ -1060,7 +948,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
       }
       if (foundCurrentUser == false)
       {
-         result.add(new UserWrapper(currentUser, AVMUtil.ROLE_CONTENT_MANAGER));
+         result.add(new UserWrapper(currentUser, WCMUtil.ROLE_CONTENT_MANAGER));
       }
       return result;      
    }

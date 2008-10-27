@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -25,16 +25,12 @@
 package org.alfresco.web.bean.wcm;
 
 import java.text.MessageFormat;
-import java.util.List;
 
 import javax.faces.context.FacesContext;
 
 import org.alfresco.model.WCMAppModel;
-import org.alfresco.service.cmr.avm.AVMService;
-import org.alfresco.service.cmr.avm.locking.AVMLockingService;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.wcm.webproject.WebProjectService;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
@@ -54,10 +50,8 @@ public class DeleteSandboxDialog extends BaseDialogBean
 
    private static final Log logger = LogFactory.getLog(DeleteSandboxDialog.class);
    
-   transient private AVMService avmService;
    protected AVMBrowseBean avmBrowseBean;
-   transient private AVMLockingService avmLockingService;
-   
+   transient private WebProjectService wpService;
    
    // ------------------------------------------------------------------------------
    // Bean property getters and setters 
@@ -69,41 +63,20 @@ public class DeleteSandboxDialog extends BaseDialogBean
    {
       this.avmBrowseBean = avmBrowseBean;
    }
+   
+   public void setWebProjectService(WebProjectService wpService)
+   {
+      this.wpService = wpService;
+   }
 
-   /**
-    * @param avmService    The avmService to set.
-    */
-   public void setAvmService(AVMService avmService)
+   protected WebProjectService getWebProjectService()
    {
-      this.avmService = avmService;
-   }
-   
-   protected AVMService getAvmService()
-   {
-      if (avmService == null)
+      if (wpService == null)
       {
-         avmService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAVMService();
+         wpService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getWebProjectService();
       }
-      return avmService;
+      return wpService;
    }
-   
-   /**
-    * @param avmLockingService The AVMLockingService to set
-    */
-   public void setAvmLockingService(AVMLockingService avmLockingService)
-   {
-      this.avmLockingService = avmLockingService;
-   }
-   
-   protected AVMLockingService getAvmLockingService()
-   {
-      if (avmLockingService == null)
-      {
-         avmLockingService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAVMLockingService();
-      }
-      return avmLockingService;
-   }
-   
    
    // ------------------------------------------------------------------------------
    // Dialog implementation
@@ -112,76 +85,26 @@ public class DeleteSandboxDialog extends BaseDialogBean
    protected String finishImpl(FacesContext context, String outcome)
          throws Exception
    {
-      // the username for the sandbox to delete
+      // the username for the sandbox to delete (also uninvites from the web project)
       String username = this.avmBrowseBean.getUsername();
       if (username != null)
       {
          Node website = this.avmBrowseBean.getWebsite();
-         String storeRoot = (String)website.getProperties().get(WCMAppModel.PROP_AVMSTORE);
-         String mainStore   = AVMUtil.buildUserMainStoreName(storeRoot, username);
-         
-         // remove the store reference from the website folder meta-data
-         List<ChildAssociationRef> userInfoRefs = this.getNodeService().getChildAssocs(
-                  website.getNodeRef(),
-                  WCMAppModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
-         for (ChildAssociationRef ref : userInfoRefs)
-         {
-            NodeRef userInfoRef = ref.getChildRef();
-            String user = (String)getNodeService().getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERNAME);
-            
-            if (username.equals(user))
-            {
-               // found the sandbox to remove
-               String path      = AVMUtil.buildStoreWebappPath(mainStore, this.avmBrowseBean.getWebapp());
-
-               // Notify virtualisation server about removing this sandbox.
-               //
-               // Implementation note:
-               //
-               //     Because the removal of virtual webapps in the 
-               //     virtualization server is recursive,  it only
-               //     needs to be given the name of the main store.  
-               //
-               //     This notification must occur *prior* to purging content
-               //     within the AVM because the virtualization server must list
-               //     the avm_webapps dir in each store to discover which 
-               //     virtual webapps must be unloaded.  The virtualization 
-               //     server traverses the sandbox's stores in most-to-least 
-               //     dependent order, so clients don't have to worry about
-               //     accessing a preview layer whose main layer has been torn
-               //     out from under it.
-               AVMUtil.removeAllVServerWebapps(path, true);
-               
-               // TODO: Use the .sandbox-id.  property to delete all sandboxes,
-               //       rather than assume a sandbox always had a single preview
-               //       layer attached.
-               
-               // purge the user main sandbox store from the system
-               this.getAvmService().purgeStore(mainStore);
-               // remove any locks this user may have
-               this.getAvmLockingService().removeStoreLocks(mainStore);
-               
-               // purge the user preview sandbox store from the system
-               String previewStore = AVMUtil.buildUserPreviewStoreName(storeRoot, username);
-               this.getAvmService().purgeStore(previewStore);
-               // remove any locks this user may have
-               this.getAvmLockingService().removeStoreLocks(previewStore);
-               
-               // remove the association to this web project user meta-data
-               this.getNodeService().removeChild(website.getNodeRef(), ref.getChildRef());
-               
-               break;
-            }
-         }
-         
+         getWebProjectService().uninviteWebUser(website.getNodeRef(), username);
+          
+         String wpStoreId = getWebProjectService().getWebProject(website.getNodeRef()).getStoreId();
+         String mainStore = AVMUtil.buildUserMainStoreName(wpStoreId, username);
+          
          // if the sandbox is allocated to a test server release it
          NodeRef testServer = DeploymentUtil.findAllocatedTestServer(mainStore);
          if (testServer != null)
          {
             getNodeService().setProperty(testServer, WCMAppModel.PROP_DEPLOYSERVERALLOCATEDTO, null);
-            
+             
             if (logger.isDebugEnabled())
+            {
                logger.debug("Released test server from user sandbox: " + mainStore);
+            }
          }
       }
       

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -69,6 +69,8 @@ import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.ISO8601DateFormat;
 import org.alfresco.util.NameMatcher;
 import org.alfresco.util.VirtServerUtils;
+import org.alfresco.wcm.sandbox.SandboxFactory;
+import org.alfresco.wcm.sandbox.SandboxInfo;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.DownloadContentServlet;
 import org.alfresco.web.app.servlet.FacesHelper;
@@ -135,6 +137,7 @@ public class SubmitDialog extends BaseDialogBean
    transient private AVMSyncService avmSyncService;
    transient private AVMLockingService avmLockingService;
    transient private FormsService formsService;
+   transient private SandboxFactory sandboxFactory;
    
    transient private NameMatcher nameMatcher;
   
@@ -256,6 +259,21 @@ public class SubmitDialog extends BaseDialogBean
          formsService = (FormsService) FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "FormsService");
       }
       return formsService;
+   }
+
+   // TODO - refactor ... push down into sandbox service (submit to workflow)
+   public void setSandboxFactory(final SandboxFactory sandboxFactory)
+   {
+      this.sandboxFactory = sandboxFactory;
+   }
+   
+   protected SandboxFactory getSandboxFactory()
+   {
+      if (sandboxFactory == null)
+      {
+          sandboxFactory = (SandboxFactory) FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "SandboxFactory");
+      }
+      return sandboxFactory;
    }
 
 
@@ -544,7 +562,7 @@ public class SubmitDialog extends BaseDialogBean
       if (this.workflowParams != null)
       {
          // Create workflow sandbox for workflow package
-         this.sandboxInfo = SandboxFactory.createWorkflowSandbox(
+         this.sandboxInfo = sandboxFactory.createWorkflowSandbox(
                   this.avmBrowseBean.getStagingStore());
 
          // create container for our avm workflow package

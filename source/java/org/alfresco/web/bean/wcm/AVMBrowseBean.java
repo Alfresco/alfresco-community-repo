@@ -75,9 +75,10 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.workflow.WorkflowService;
-import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.Pair;
 import org.alfresco.util.VirtServerUtils;
+import org.alfresco.wcm.webproject.WebProjectInfo;
+import org.alfresco.wcm.webproject.WebProjectService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.IContextListener;
 import org.alfresco.web.app.context.UIContextService;
@@ -87,7 +88,6 @@ import org.alfresco.web.bean.BrowseBean;
 import org.alfresco.web.bean.NavigationBean;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
-import org.alfresco.web.bean.repository.User;
 import org.alfresco.web.bean.search.SearchContext;
 import org.alfresco.web.forms.FormInstanceData;
 import org.alfresco.web.forms.FormNotFoundException;
@@ -220,6 +220,9 @@ public class AVMBrowseBean implements IContextListener
    /** The NavigationBean bean reference */
    protected NavigationBean navigator;
    
+   /** WebProjectService bean reference */
+   transient protected WebProjectService wpService;
+   
    /** AVM service bean reference */
    transient protected AVMService avmService;
 
@@ -254,6 +257,23 @@ public class AVMBrowseBean implements IContextListener
    
    // ------------------------------------------------------------------------------
    // Bean property getters and setters 
+   
+   /**
+    * @param wpService The WebProjectService to set.
+    */
+   public void setWebProjectService(WebProjectService wpService)
+   {
+      this.wpService = wpService;
+   }
+   
+   protected WebProjectService getWebProjectService()
+   {
+      if (wpService == null)
+      {
+          wpService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getWebProjectService();
+      }
+      return wpService;
+   }
    
    /**
     * @param avmService The AVMService to set.
@@ -493,8 +513,7 @@ public class AVMBrowseBean implements IContextListener
          summary.append(msg.getString(MSG_CREATED_BY)).append(": ")
                 .append(store.getCreator())
                 .append("<p>");
-         final int numUsers = nodeService.getChildAssocs(
-              webProject.getNodeRef(), WCMAppModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL).size();
+         final int numUsers = getWebProjectService().getWebUserCount(webProject.getNodeRef());
          summary.append(MessageFormat.format(msg.getString(MSG_WORKING_USERS), numUsers));
       }
       
@@ -616,7 +635,15 @@ public class AVMBrowseBean implements IContextListener
       if (this.webapp == null)
       {
          // TODO - temporary, should only be called for WCM forms (not ECM forms)
-         this.webapp = this.getWebProject() != null ? this.getWebProject().getDefaultWebapp() : null;
+         Node wpNode = getWebsite();
+         if (wpNode != null)
+         {
+            WebProjectInfo wpInfo = getWebProjectService().getWebProject(wpNode.getNodeRef());
+            if (wpInfo != null)
+            {
+               this.webapp = wpInfo.getDefaultWebApp();
+            }
+         }
       }
       return this.webapp;
    }
@@ -1012,8 +1039,12 @@ public class AVMBrowseBean implements IContextListener
     */
    public boolean getIsManagerRole()
    {
-      final User user = Application.getCurrentUser(FacesContext.getCurrentInstance());
-      return this.getWebProject().isManager(user);
+      Node wpNode = getWebsite();
+      if (wpNode != null)
+      {
+          return getWebProjectService().isContentManager(wpNode.getNodeRef());
+      }
+      return false;
    }
    
    /**

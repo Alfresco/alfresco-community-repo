@@ -47,10 +47,14 @@ import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.wcm.webproject.WebProjectInfo;
+import org.alfresco.wcm.webproject.WebProjectService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wizard.BaseWizardBean;
+import org.alfresco.web.data.IDataContainer;
+import org.alfresco.web.data.QuickSort;
 import org.alfresco.web.forms.Form;
 import org.alfresco.web.forms.FormInstanceData;
 import org.alfresco.web.forms.FormNotFoundException;
@@ -80,6 +84,7 @@ public class RegenerateRenditionsWizard
 
    private final static Log LOGGER = LogFactory.getLog(RegenerateRenditionsWizard.class); 
 
+   transient protected WebProjectService wpService;
    transient private AVMLockingService avmLockingService;
    transient private AVMService avmService;
    transient private AVMSyncService avmSyncService;
@@ -235,16 +240,20 @@ public class RegenerateRenditionsWizard
 
    public List<SelectItem> getWebProjectChoices()
    {
-      final List<WebProject> webProjects = WebProject.getWebProjects();
-      final List<SelectItem> result = new ArrayList<SelectItem>(webProjects.size());
-      for (final WebProject wp : webProjects)
+      List<WebProjectInfo> wpInfos = getWebProjectService().listWebProjects();
+      List<SelectItem> result = new ArrayList<SelectItem>(wpInfos.size());
+      
+      QuickSort sorter = new QuickSort((List<WebProjectInfo>)wpInfos, "name", true, IDataContainer.SORT_CASEINSENSITIVE);
+      sorter.sort();
+      
+      for (WebProjectInfo wpInfo : wpInfos)
       {
-         final String s = wp.getTitle();
+         String s = wpInfo.getTitle();
          if (this.selectedWebProject == null)
          {
-            this.selectedWebProject = wp;
+            this.selectedWebProject = new WebProject(wpInfo.getNodeRef());
          }
-         result.add(new SelectItem(wp.getNodeRef().toString(), s != null && s.length() != 0 ? s : wp.getName()));
+         result.add(new SelectItem(wpInfo.getNodeRef().toString(), s != null && s.length() != 0 ? s : wpInfo.getName()));
       }
       return result;
    }
@@ -362,6 +371,23 @@ public class RegenerateRenditionsWizard
    // ------------------------------------------------------------------------------
    // Service Injection
 
+   /**
+    * @param wpService The WebProjectService to set.
+    */
+   public void setWebProjectService(WebProjectService wpService)
+   {
+      this.wpService = wpService;
+   }
+   
+   protected WebProjectService getWebProjectService()
+   {
+      if (wpService == null)
+      {
+          wpService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getWebProjectService();
+      }
+      return wpService;
+   }
+   
    /**
     * @param avmService       The AVMService to set.
     */

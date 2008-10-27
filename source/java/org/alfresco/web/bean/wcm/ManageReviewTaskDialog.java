@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -85,7 +85,7 @@ public class ManageReviewTaskDialog extends ManageTaskDialog
          
          // get the web project noderef for the workflow store
          String stagingStore = AVMUtil.getStoreId(this.store);
-         this.webProjectRef = AVMUtil.getWebProjectNodeFromStore(stagingStore);
+         this.webProjectRef = getWebProjectService().findWebProjectNodeFromStore(stagingStore);
          
          PropertyValue val = this.getAvmService().getStoreProperty(this.store, 
                   SandboxConstants.PROP_LINK_VALIDATION_REPORT);

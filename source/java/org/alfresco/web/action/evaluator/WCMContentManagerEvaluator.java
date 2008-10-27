@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -26,12 +26,9 @@ package org.alfresco.web.action.evaluator;
 
 import javax.faces.context.FacesContext;
 
-import org.alfresco.model.WCMAppModel;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.web.action.ActionEvaluator;
+import org.alfresco.wcm.webproject.WebProjectService;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
-import org.alfresco.web.bean.wcm.SandboxFactory;
 
 /**
  * Evaluator to return true if the current user is a content manager for the current website.
@@ -48,10 +45,7 @@ public class WCMContentManagerEvaluator extends BaseActionEvaluator
    public boolean evaluate(final Node node)
    {
       FacesContext facesContext = FacesContext.getCurrentInstance();
-      NodeService nodeService = Repository.getServiceRegistry(facesContext).getNodeService();
-      
-      String storeId = (String)nodeService.getProperty(node.getNodeRef(), WCMAppModel.PROP_AVMSTORE);
-      
-      return SandboxFactory.isContentManager(storeId);
+      WebProjectService webProjectService = Repository.getServiceRegistry(facesContext).getWebProjectService();
+      return webProjectService.isContentManager(node.getNodeRef());
    }
 }

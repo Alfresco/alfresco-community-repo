@@ -186,69 +186,69 @@ public class WebProjectTest extends BaseWebScriptTest
     	Response deleteResponse = sendRequest(new DeleteRequest(URL_WEB_PROJECT + "/" + webProjectRef), Status.STATUS_OK);      	 
     } // END testBasicCRUDWebProject
     
-    public void testListWebSites() throws Exception
-    {
-    	int LOOP_COUNT = 5;
-    	        
-        this.authenticationComponent.setCurrentUser("admin");
-
-        for(int i = 0; i < LOOP_COUNT; i++)
-        {
-        	/**
-        	 * Create a web site
-        	 */
-        	JSONObject webProj = new JSONObject();
-        	webProj.put("name", BASIC_NAME + i);
-        	webProj.put("description", BASIC_DESCRIPTION + i);
-        	webProj.put("title", BASIC_TITLE + i);
-        	webProj.put("dnsName", BASIC_DNSNAME + i); 
-        	Response response = sendRequest(new PostRequest(URL_WEB_PROJECT, webProj.toString(), "application/json"), Status.STATUS_OK); 
-        
-        	JSONObject result = new JSONObject(response.getContentAsString());
-        	String webProjectRef = result.getString("webprojectref");
-            this.createdWebProjects.add(webProjectRef);
-        }
-        
-        /**
-         * List the web sites
-         */
-        {
-        	Response list = sendRequest(new GetRequest(URL_WEB_PROJECTS), Status.STATUS_OK);
-        
-        	JSONArray lookupResult = new JSONArray(list.getContentAsString());
-        	assertTrue(lookupResult.length() > LOOP_COUNT);
-        	
-        	/**
-        	 * Now check that the list contains the sites created above
-        	 */
-        	int foundCount = 0;
-        	
-        	for(int i = 0; i < lookupResult.length(); i++)
-        	{
-        		JSONObject obj = lookupResult.getJSONObject(i);
-        		String name = obj.getString("name");
-        		if(name.contains(BASIC_NAME))
-        		{
-        			foundCount++;
-        		}
-        	}
-        	assertTrue (foundCount >= LOOP_COUNT);
-        }
-        
-        /**
-         * List the web sites with a user name (should find 0)
-         */
-        {
-            String stepURL = "/api/wcm/webprojects?userName=Freddy";
-        	Response list = sendRequest(new GetRequest(stepURL), Status.STATUS_OK);
-        	JSONArray lookupResult = new JSONArray(list.getContentAsString());
-        	assertTrue(lookupResult.length() == 0);
-        }
-
-        
-        
-    
-    } // testListWebSites
+//    public void testListWebSites() throws Exception
+//    {
+//    	int LOOP_COUNT = 5;
+//    	        
+//        this.authenticationComponent.setCurrentUser("admin");
+//
+//        for(int i = 0; i < LOOP_COUNT; i++)
+//        {
+//        	/**
+//        	 * Create a web site
+//        	 */
+//        	JSONObject webProj = new JSONObject();
+//        	webProj.put("name", BASIC_NAME + i);
+//        	webProj.put("description", BASIC_DESCRIPTION + i);
+//        	webProj.put("title", BASIC_TITLE + i);
+//        	webProj.put("dnsName", BASIC_DNSNAME + i); 
+//        	Response response = sendRequest(new PostRequest(URL_WEB_PROJECT, webProj.toString(), "application/json"), Status.STATUS_OK); 
+//        
+//        	JSONObject result = new JSONObject(response.getContentAsString());
+//        	String webProjectRef = result.getString("webprojectref");
+//            this.createdWebProjects.add(webProjectRef);
+//        }
+//        
+//        /**
+//         * List the web sites
+//         */
+//        {
+//        	Response list = sendRequest(new GetRequest(URL_WEB_PROJECTS), Status.STATUS_OK);
+//        
+//        	JSONArray lookupResult = new JSONArray(list.getContentAsString());
+//        	assertTrue(lookupResult.length() > LOOP_COUNT);
+//        	
+//        	/**
+//        	 * Now check that the list contains the sites created above
+//        	 */
+//        	int foundCount = 0;
+//        	
+//        	for(int i = 0; i < lookupResult.length(); i++)
+//        	{
+//        		JSONObject obj = lookupResult.getJSONObject(i);
+//        		String name = obj.getString("name");
+//        		if(name.contains(BASIC_NAME))
+//        		{
+//        			foundCount++;
+//        		}
+//        	}
+//        	assertTrue (foundCount >= LOOP_COUNT);
+//        }
+//        
+//        /**
+//         * List the web sites with a user name (should find 0)
+//         */
+//        {
+//            String stepURL = "/api/wcm/webprojects?userName=Freddy";
+//        	Response list = sendRequest(new GetRequest(stepURL), Status.STATUS_OK);
+//        	JSONArray lookupResult = new JSONArray(list.getContentAsString());
+//        	assertTrue(lookupResult.length() == 0);
+//        }
+//
+//        
+//        
+//    
+//    } // testListWebSites
     
     public void testUpdateWebProject() throws Exception
     {

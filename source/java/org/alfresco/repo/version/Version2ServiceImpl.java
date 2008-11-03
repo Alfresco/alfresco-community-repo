@@ -668,10 +668,11 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
         
         if (logger.isTraceEnabled())
         {
-            logger.trace("getVersion: " + versionRef + " " + nodeProperties.keySet());
+            logger.trace("getVersion: " + versionRef + " nodeProperties=\n" + nodeProperties.keySet());
         }
         
         // TODO consolidate with VersionUtil.convertFrozenToOriginalProps
+        nodeProperties.remove(ContentModel.PROP_DESCRIPTION);    
         for (QName key : nodeProperties.keySet())
         {
             Serializable value = nodeProperties.get(key);
@@ -708,6 +709,12 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
         // Create and return the version object
         NodeRef newNodeRef = new NodeRef(new StoreRef(Version2Model.STORE_PROTOCOL, Version2Model.STORE_ID), versionRef.getId());
         Version result = new VersionImpl(versionProperties, newNodeRef);
+        
+        if (logger.isTraceEnabled())
+        {
+            logger.trace("getVersion: " + versionRef + " versionProperties=\n" + versionProperties.keySet());
+        }
+        
         // done
         return result;
     }

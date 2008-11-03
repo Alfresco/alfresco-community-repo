@@ -57,7 +57,7 @@ public class DictionaryServiceTest extends BaseWebScriptTest
 		Response response = sendRequest(new GetRequest("/api/classes/cm_auditable/property/cm_created"), 200);
 		assertEquals(200,response.getStatus());
 		JSONObject result = new JSONObject(response.getContentAsString());
-		assertEquals("{http://www.alfresco.org/model/content/1.0}created", result.get("name"));
+		assertEquals("cm:created", result.get("name"));
 		assertEquals("Created Date", result.get("title"));
 		assertEquals("Created Date", result.get("description"));
 		assertEquals("Date and Time", result.get("dataType"));
@@ -97,7 +97,7 @@ public class DictionaryServiceTest extends BaseWebScriptTest
 		GetRequest req = new GetRequest(URL_SITES + "/cm_person/association/cm_avatar");
 		Response response = sendRequest(req, 200);
 		JSONObject result = new JSONObject(response.getContentAsString());
-		assertEquals("{http://www.alfresco.org/model/content/1.0}avatar", result.get("name"));
+		assertEquals("cm:avatar", result.get("name"));
 		assertEquals(false, result.get("isChild"));
 		assertEquals(false, result.get("protected"));
 		assertEquals(200,response.getStatus());

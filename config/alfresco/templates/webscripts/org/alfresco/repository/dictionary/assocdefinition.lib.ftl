@@ -2,7 +2,7 @@
 <#escape x as jsonUtils.encodeJSONString(x)>
   {
     <#if assocdefs.name?exists>
-        "name" : "${assocdefs.name}",
+        "name" : "${assocdefs.name.toPrefixString()}",
      </#if>
     <#if assocdefs.title?exists>
         "title" : "${assocdefs.title}",
@@ -22,17 +22,21 @@
      </#if>
      	"source" :
      	{
-		"class" : "${assocdefs.getSourceClass().name}",
+		"class" : "${assocdefs.getSourceClass().name.toPrefixString()}",
 		"isSourceMandatory" : ${assocdefs.isSourceMandatory()?string},
 		"isSourceMany" : ${assocdefs.isSourceMany()?string}
 	 	},		
 	 	"target" :
      	{
-		"class" : "${assocdefs.getTargetClass()}",
+		"class" : "${assocdefs.getTargetClass().name.toPrefixString()}",
 		"isTargetMandatory" : ${assocdefs.isTargetMandatory()?string},
 		"isTargetMany" : ${assocdefs.isTargetMany()?string}
-	 	},		
-	  "url" : "${url.serviceContext + "/api/classes" + assocdefs.name}"
+	 	},
+	  <#if assocdefs.isChild() == true>
+       "url" : "${url.serviceContext + "/api/classes/"+ url.templateArgs.classname  + "/childassociation/"+ assocdefs.name.toPrefixString()?replace(":","_")}"
+       <#else>
+       "url" : "${url.serviceContext + "/api/classes/"+ url.templateArgs.classname  + "/association/"+ assocdefs.name.toPrefixString()?replace(":","_")}"
+       </#if>
    }
 </#escape>
 </#macro>

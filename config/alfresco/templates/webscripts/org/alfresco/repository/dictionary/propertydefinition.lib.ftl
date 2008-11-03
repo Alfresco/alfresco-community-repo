@@ -2,7 +2,7 @@
    <#escape x as jsonUtils.encodeJSONString(x)>
   {
     <#if propertydefs.name?exists>
-        "name" : "${propertydefs.name}",
+        "name" : "${propertydefs.name.toPrefixString()}",
      </#if>
     <#if propertydefs.title?exists>
         "title" : "${propertydefs.title}",
@@ -32,7 +32,7 @@
 			</#list>
 			</#if>
        	],
-       	"url" : "${url.serviceContext + "/api/classes" + propertydefs.name}"
+       	"url" : "${url.serviceContext + "/api/classes/" +  url.templateArgs.classname + "/property/" + propertydefs.name.toPrefixString()?replace(":","_")}"
    }
    </#escape>
 </#macro>

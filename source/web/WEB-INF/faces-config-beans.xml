@@ -4118,6 +4118,10 @@
          <property-name>formsService</property-name>
          <value>#{FormsService}</value>
       </managed-property>
+      <managed-property>
+         <property-name>sandboxFactory</property-name>
+         <value>#{sandboxFactory}</value>
+      </managed-property>
    </managed-bean>
 
    <managed-bean>

@@ -1,0 +1,8 @@
+<webscript>
+   <shortname>Get Class Definitions</shortname>
+   <description>Get the collection of class definitions </description>
+   <url>/api/classes?cf={classFilter?}&amp;nsp={namespacePrefix?}&amp;n={name?}</url>
+   <format default="json"/>
+   <authentication>user</authentication>
+   <transaction>required</transaction>
+</webscript>

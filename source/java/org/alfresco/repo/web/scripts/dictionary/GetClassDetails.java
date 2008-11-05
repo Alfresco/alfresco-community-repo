@@ -29,12 +29,16 @@ import org.alfresco.web.scripts.Status;
 import org.alfresco.web.scripts.WebScriptException;
 import org.alfresco.web.scripts.WebScriptRequest;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-/*
+/**
  * Webscript to get the Classdefinitions for a classname eg. =>cm_author
  * @author Saravanan Sellathurai
  */
@@ -44,7 +48,6 @@ public class GetClassDetails extends DeclarativeWebScript
 	
 	private DictionaryService dictionaryservice;
 	private DictionaryHelper dictionaryhelper;
-	private ClassDefinition classdefinition;
 	
 	private static final String MODEL_PROP_KEY_CLASS_DETAILS = "classdefs";
 	private static final String MODEL_PROP_KEY_PROPERTY_DETAILS = "propertydefs";
@@ -80,19 +83,26 @@ public class GetClassDetails extends DeclarativeWebScript
         
         Map<String, Object> model = new HashMap<String, Object>();
         QName qname = null;
+        Map<QName, ClassDefinition> classdef = new HashMap<QName, ClassDefinition>();
+        Map<QName, Collection<PropertyDefinition>> propdef = new HashMap<QName, Collection<PropertyDefinition>>();
+        Map<QName, Collection<AssociationDefinition>> assocdef = new HashMap<QName, Collection<AssociationDefinition>>();
         boolean classnameGiven = (classname != null) && (classname.length() > 0);
+        boolean hasData = false;
         
-        if(classnameGiven)
+        if(classnameGiven && this.dictionaryhelper.isValidClassname(classname))
         {
            	qname = QName.createQName(this.dictionaryhelper.getFullNamespaceURI(classname));
+           	hasData = true;
+           	classdef.put(qname, this.dictionaryservice.getClass(qname));
+        	propdef.put(qname, this.dictionaryservice.getClass(qname).getProperties().values());
+    		assocdef.put(qname, this.dictionaryservice.getClass(qname).getAssociations().values());
         }
         
-        classdefinition = this.dictionaryservice.getClass(qname);
-        if(this.classdefinition != null)
+        if(hasData)
         {
-        	model.put(MODEL_PROP_KEY_CLASS_DETAILS, this.classdefinition);
-        	model.put(MODEL_PROP_KEY_PROPERTY_DETAILS, this.classdefinition.getProperties().values());
-        	model.put(MODEL_PROP_KEY_ASSOCIATION_DETAILS, this.classdefinition.getAssociations().values());
+        	model.put(MODEL_PROP_KEY_CLASS_DETAILS, classdef.values());
+        	model.put(MODEL_PROP_KEY_PROPERTY_DETAILS, propdef.values());
+        	model.put(MODEL_PROP_KEY_ASSOCIATION_DETAILS, assocdef.values());
         	return model;
         }
         else

@@ -33,9 +33,9 @@
 		"isTargetMany" : ${assocdefs.isTargetMany()?string}
 	 	},
 	  <#if assocdefs.isChild() == true>
-       "url" : "${url.serviceContext + "/api/classes/"+ url.templateArgs.classname  + "/childassociation/"+ assocdefs.name.toPrefixString()?replace(":","_")}"
+       "url" : "${"/api/classes/" + url.templateArgs.classname + "/childassociation/" + assocdefs.name.toPrefixString()?replace(":","_")}"
        <#else>
-       "url" : "${url.serviceContext + "/api/classes/"+ url.templateArgs.classname  + "/association/"+ assocdefs.name.toPrefixString()?replace(":","_")}"
+       "url" : "${"/api/classes/" + url.templateArgs.classname + "/association/" + assocdefs.name.toPrefixString()?replace(":","_")}"
        </#if>
    }
 </#escape>

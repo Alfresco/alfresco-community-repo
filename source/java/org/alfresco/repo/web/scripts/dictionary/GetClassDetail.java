@@ -31,10 +31,13 @@ import org.alfresco.web.scripts.WebScriptRequest;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.service.cmr.dictionary.AssociationDefinition;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-/*
+/**
  * Webscript to get the Classdefinitions using classfilter , namespaceprefix and name
  * @author Saravanan Sellathurai
  */
@@ -42,13 +45,17 @@ import java.util.Map;
 public class GetClassDetail extends DeclarativeWebScript
 {
 	private DictionaryService dictionaryservice;
-	private ClassDefinition classdefinition;
 	private DictionaryHelper dictionaryhelper;
 	
 	private static final String MODEL_PROP_KEY_CLASS_DEFS = "classdefs";
 	private static final String MODEL_PROP_KEY_PROPERTY_DETAILS = "propertydefs";
 	private static final String MODEL_PROP_KEY_ASSOCIATION_DETAILS = "assocdefs";
-	private static final String REQ_URL_TEMPL_VAR_CLASS_FILTER = "cf";
+	
+    private static final String CLASS_FILTER_OPTION_TYPE1 = "all";
+    private static final String CLASS_FILTER_OPTION_TYPE2 = "aspect";
+    private static final String CLASS_FILTER_OPTION_TYPE3 = "type";
+    
+    private static final String REQ_URL_TEMPL_VAR_CLASS_FILTER = "cf";
     private static final String REQ_URL_TEMPL_VAR_NAMESPACE_PREFIX = "nsp";
     private static final String REQ_URL_TEMPL_VAR_NAME = "n";
     
@@ -81,23 +88,66 @@ public class GetClassDetail extends DeclarativeWebScript
         String namespaceprefix = req.getParameter(REQ_URL_TEMPL_VAR_NAMESPACE_PREFIX);
         String name = req.getParameter(REQ_URL_TEMPL_VAR_NAME);
         String classname = null;
-                
+        
+        Map<QName, ClassDefinition> classdef = new HashMap<QName, ClassDefinition>();
+        Map<QName, Collection<PropertyDefinition>> propdef = new HashMap<QName, Collection<PropertyDefinition>>();
+        Map<QName, Collection<AssociationDefinition>> assocdef = new HashMap<QName, Collection<AssociationDefinition>>();
         Map<String, Object> model = new HashMap<String, Object>();
-        QName qname = null;
+        
         boolean cfGiven = (classfilter != null) && (classfilter.length() > 0);
         boolean nspGiven = (namespaceprefix != null) && (namespaceprefix.length() > 0);
         boolean nameGiven = (name != null) && (name.length() > 0);
+        boolean ignoreCheck , hasNothing ,isValidClassfilter ,isValidTriples, isValidTwins ,hasData = false;
         
-        if(cfGiven && nspGiven && nameGiven)
-        {
-        	classname = namespaceprefix + "_" + name;
-        	qname = QName.createQName(this.dictionaryhelper.getFullNamespaceURI(classname));
-        }
-        classdefinition = this.dictionaryservice.getClass(qname);
+        classname = namespaceprefix + "_" + name;
+        isValidClassfilter = (cfGiven ) && (classfilter.equals(CLASS_FILTER_OPTION_TYPE1) || classfilter.equals(CLASS_FILTER_OPTION_TYPE2) || classfilter.equals(CLASS_FILTER_OPTION_TYPE3));
+        hasNothing = (!cfGiven && !nspGiven && !nameGiven);
+        ignoreCheck =(cfGiven && !nspGiven && !nameGiven) && isValidClassfilter;
+        isValidTriples = (cfGiven && nspGiven && nameGiven) && this.dictionaryhelper.isValidPrefix(namespaceprefix) && isValidClassfilter && this.dictionaryhelper.isValidClassname(classname);
+        isValidTwins = (cfGiven && nspGiven)&& isValidClassfilter && this.dictionaryhelper.isValidPrefix(namespaceprefix);
         
-        if(this.classdefinition != null)
+        if ((isValidTriples) || (isValidTwins) || (ignoreCheck) || (hasNothing)) 
+        { 
+        	Collection<QName> qname = null;
+        	int maxIteration = 1;
+        	if (hasNothing || classfilter.equalsIgnoreCase(CLASS_FILTER_OPTION_TYPE1)) maxIteration = 2;
+        	else if(classfilter.equalsIgnoreCase(CLASS_FILTER_OPTION_TYPE3)) qname = this.dictionaryservice.getAllTypes();
+	       	else if (classfilter.equalsIgnoreCase(CLASS_FILTER_OPTION_TYPE2)) qname = this.dictionaryservice.getAllAspects();
+	       		        	
+	    	boolean flag = true;
+	    		
+	    	for (int i=0; i<maxIteration; i++)
+    		{
+        		if (maxIteration==2)
+        		{
+        			if(flag) qname = this.dictionaryservice.getAllAspects();
+        			else qname = this.dictionaryservice.getAllTypes();
+        			flag = false;
+        		}
+        		
+        		for(QName qnameObj: qname)
+		        {	
+		        	String url = this.dictionaryhelper.getNamespaceURIfromQname(qnameObj);
+		        	if(hasNothing  ||  ignoreCheck  || url.equals(this.dictionaryhelper.getPrefixesAndUrlsMap().get(namespaceprefix)))
+		        	{
+		        		if(isValidTriples) qnameObj = QName.createQName(this.dictionaryhelper.getFullNamespaceURI(classname));
+		        		classdef.put(qnameObj, this.dictionaryservice.getClass(qnameObj));
+		        		propdef.put(qnameObj, this.dictionaryservice.getClass(qnameObj).getProperties().values());
+		        		assocdef.put(qnameObj, this.dictionaryservice.getClass(qnameObj).getAssociations().values());
+		        		if (isValidTriples) break;
+		        	}
+		         }// end of for loop
+    		  }// end of for loop
+    		 
+	    	hasData = true;
+	    	    
+        	} // end of else block
+	    	
+        if(hasData)
         {
-        	model.put(MODEL_PROP_KEY_CLASS_DEFS, this.classdefinition);
+        	model.put(MODEL_PROP_KEY_CLASS_DEFS, classdef.values());
+        	model.put(MODEL_PROP_KEY_PROPERTY_DETAILS, propdef.values());
+        	model.put(MODEL_PROP_KEY_ASSOCIATION_DETAILS, assocdef.values());
         	return model;
         }
         else

@@ -30,6 +30,7 @@ import org.alfresco.web.scripts.TestWebScriptServer.Response;
 import java.util.HashMap;
 import java.util.Map;
 import org.json.JSONObject;
+import org.json.JSONArray;
 
 /*
  * Unit Test for Dictionaryervice
@@ -60,13 +61,13 @@ public class DictionaryServiceTest extends BaseWebScriptTest
 		assertEquals("cm:created", result.get("name"));
 		assertEquals("Created Date", result.get("title"));
 		assertEquals("Created Date", result.get("description"));
-		assertEquals("Date and Time", result.get("dataType"));
-		assertEquals("false", result.get("multiValued"));
-		assertEquals("true", result.get("mandatory"));
-		assertEquals("true", result.get("enforced"));
-		assertEquals("true", result.get("protected"));
-		assertEquals("true", result.get("indexed"));
-		assertEquals("true", result.get("indexedAtomically"));
+		assertEquals("d:datetime", result.get("dataType"));
+		assertEquals(false, result.get("multiValued"));
+		assertEquals(true, result.get("mandatory"));
+		assertEquals(true, result.get("enforced"));
+		assertEquals(true, result.get("protected"));
+		assertEquals(true, result.get("indexed"));
+		assertEquals(true, result.get("indexedAtomically"));
 		response = sendRequest(new GetRequest("/api/classes/cm_hi/property/cm_welcome"), 404);
 		assertEquals(404,response.getStatus());
 		
@@ -89,6 +90,145 @@ public class DictionaryServiceTest extends BaseWebScriptTest
 		assertEquals(200,response.getStatus());
 		response = sendRequest(new GetRequest("/api/classes/cmsara_hi"), 404);
 		assertEquals(404,response.getStatus());
+	}
+	
+//TODO individual check of all elements
+	
+	public void testGetClassDetails() throws Exception
+	{
+		GetRequest req = new GetRequest(URL_SITES);
+		Map< String, String > arguments = new HashMap< String, String >();
+		arguments.put("cf", "aspect");
+		arguments.put("nsp", "cm");
+		arguments.put("n", "dublincore");
+		req.setArgs(arguments);
+		Response response = sendRequest(req, 200);
+		assertEquals(200,response.getStatus());
+		
+		//check for all aspects under cm without option=>name
+		arguments.clear();
+		arguments.put("cf", "type");
+		arguments.put("nsp", "wca");
+		arguments.put("n", "rendition");
+		req.setArgs(arguments);
+		response = sendRequest(req, 200);
+		assertEquals(200,response.getStatus());
+		
+		//check for all aspects under cm without option=>name
+		arguments.clear();
+		arguments.put("cf", "type");
+		arguments.put("nsp", "wca");
+		arguments.put("n", "rendition");
+		req.setArgs(arguments);
+		response = sendRequest(req, 200);
+		assertEquals(200,response.getStatus());
+		
+		//check for all aspects under cm without option=>name
+		arguments.clear();
+		arguments.put("cf", "aspect");
+		arguments.put("nsp", "cm");
+		req.setArgs(arguments);
+		response = sendRequest(req, 200);
+		assertEquals(200,response.getStatus());
+		
+		//check for all types under cm without option=>name
+		arguments.clear();
+		arguments.put("cf", "type");
+		arguments.put("nsp", "cm");
+		req.setArgs(arguments);
+		response = sendRequest(req, 200);
+		assertEquals(200,response.getStatus());
+		
+		//check for all data under cm without option=>name
+		arguments.clear();
+		arguments.put("cf", "all");
+		arguments.put("nsp", "cm");
+		req.setArgs(arguments);
+		response = sendRequest(req, 200);
+		assertEquals(200,response.getStatus());
+		
+		//check for all dictionary data  without option=>name and option=>namespaceprefix
+		arguments.clear();
+		arguments.put("cf", "all");
+		req.setArgs(arguments);
+		response = sendRequest(req, 200);
+		assertEquals(200,response.getStatus());
+		
+		//check for all aspect dictionary data  without option=>name and option=>namespaceprefix
+		arguments.clear();
+		arguments.put("cf", "aspect");
+		req.setArgs(arguments);
+		response = sendRequest(req, 200);
+		assertEquals(200,response.getStatus());
+		
+		//check for all types dictionary data  without option=>name and option=>namespaceprefix
+		arguments.clear();
+		arguments.put("cf", "type");
+		req.setArgs(arguments);
+		response = sendRequest(req, 200);
+		assertEquals(200,response.getStatus());
+		
+		
+		// Test with wrong data
+		//check for all aspects under cm without option=>name
+		arguments.clear();
+		arguments.put("cf", "aspects");
+		arguments.put("nsp", "cm");
+		req.setArgs(arguments);
+		response = sendRequest(req, 404);
+		assertEquals(404,response.getStatus());
+		
+		//check for all types under cm without option=>name
+		arguments.clear();
+		arguments.put("cf", "types");
+		arguments.put("nsp", "cmd");
+		req.setArgs(arguments);
+		response = sendRequest(req, 404);
+		assertEquals(404,response.getStatus());
+		
+		//check for all data under cm without option=>name
+		arguments.clear();
+		arguments.put("cf", "all");
+		arguments.put("nsp", "cmbb");
+		req.setArgs(arguments);
+		response = sendRequest(req, 404);
+		assertEquals(404,response.getStatus());
+		
+		//check for all dictionary data  without option=>name and option=>namespaceprefix
+		arguments.clear();
+		arguments.put("cf", "allsara");
+		req.setArgs(arguments);
+		response = sendRequest(req, 404);
+		assertEquals(404,response.getStatus());
+		
+		//check for all aspect dictionary data  without option=>name and option=>namespaceprefix
+		arguments.clear();
+		arguments.put("cf", "aspectb");
+		req.setArgs(arguments);
+		response = sendRequest(req, 404);
+		assertEquals(404,response.getStatus());
+		
+		//check for all types dictionary data  without option=>name and option=>namespaceprefix
+		arguments.clear();
+		arguments.put("cf", "typesa");
+		req.setArgs(arguments);
+		response = sendRequest(req, 404);
+		assertEquals(404,response.getStatus());
+		
+		//check for aspects under cm with an invalid name dublincoresara
+		arguments.clear();
+		arguments.put("cf", "aspectss");
+		arguments.put("nsp", "cmsd");
+		arguments.put("n", "dublincoresara");
+		req.setArgs(arguments);
+		response = sendRequest(req, 404);
+		assertEquals(404,response.getStatus());
+		
+		//check for all types dictionary data  without option=>name and option=>namespaceprefix and option=>classfilter
+		arguments.clear();
+		req.setArgs(arguments);
+		response = sendRequest(req, 200);
+		assertEquals(200,response.getStatus());
 	}
 	
 	//TODO individual check of all elements

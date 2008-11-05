@@ -559,6 +559,11 @@
       <property name="dictionaryHelper" ref="dictionaryWebScriptHelper"/>
     </bean>
     
+     <!-- GET CLASS DETAIL - GIVEN A NAMESPACEPREFEIX , CLASSFILTER, NAME -->
+    <bean id="webscript.org.alfresco.repository.dictionary.getclassdetail.get" class="org.alfresco.repo.web.scripts.dictionary.GetClassDetail" parent="webscript">
+      <property name="dictionaryService" ref="DictionaryService"/>
+      <property name="dictionaryHelper" ref="dictionaryWebScriptHelper"/>
+    </bean>
      
     <!-- GET PROPERTY DEFINITION  -->
     <bean id="webscript.org.alfresco.repository.dictionary.getproperty.get" class="org.alfresco.repo.web.scripts.dictionary.GetPropertyDef" parent="webscript">
@@ -596,10 +601,10 @@
      <property name="dictionaryHelper" ref="dictionaryWebScriptHelper"/>
     </bean>
     
-    
     <!-- Dictionary Service Web Script Helper Class -->
    <bean id="dictionaryWebScriptHelper" class="org.alfresco.repo.web.scripts.dictionary.DictionaryHelper" init-method="init">
       <property name="namespaceService" ref="NamespaceService"/>
+      <property name="dictionaryService" ref="DictionaryService"/>
    </bean>
     
     

@@ -34,8 +34,10 @@ import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import java.util.HashMap;
 import java.util.Map;
 
-/*
+/**
+ * 
  * Webscript to get the Propertydefinitions for a given classname eg. =>cm_person
+ * 
  * @author Saravanan Sellathurai
  */
 
@@ -85,6 +87,7 @@ public class GetPropertyDefs extends DeclarativeWebScript
            	qname = QName.createQName(this.dictionaryhelper.getFullNamespaceURI(classname));
         }
         classdefinition = this.dictionaryservice.getClass(qname);
+        
         if(this.classdefinition != null)
         {
 	        model.put(MODEL_PROP_KEY_PROPERTY_DETAILS, this.classdefinition.getProperties().values());

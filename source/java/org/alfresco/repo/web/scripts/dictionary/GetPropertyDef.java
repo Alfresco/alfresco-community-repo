@@ -34,8 +34,9 @@ import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import java.util.HashMap;
 import java.util.Map;
 
-/*
+/**
  * Webscript to get the Propertydefinition for a given classname and propname
+ * 
  * @author Saravanan Sellathurai
  */
 

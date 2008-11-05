@@ -24,7 +24,9 @@
  */
 package org.alfresco.repo.web.scripts.dictionary;
 
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -41,6 +43,7 @@ public class DictionaryHelper
     private Map<String, String> prefixesAndUrlsMap;
     private Map<String, String> urlsAndPrefixesMap;
     private Collection<String> prefixes;
+    private DictionaryService dictionaryservice;
     
     /**
      * Set the namespaceService property.
@@ -50,6 +53,16 @@ public class DictionaryHelper
     public void setNamespaceService(NamespaceService namespaceservice)
     {
     	this.namespaceservice = namespaceservice;
+    }
+    
+    /**
+     * Set the dictionaryService property.
+     * 
+     * @param dictionaryService The dictionary service instance to set
+     */
+    public void setDictionaryService(DictionaryService dictionaryService)
+    {
+        this.dictionaryservice = dictionaryService; 
     }
     
     /**
@@ -68,6 +81,11 @@ public class DictionaryHelper
         }
 	 }
     
+    public String getNamespaceURIfromQname(QName qname){
+    	return qname.getNamespaceURI();
+    	
+   
+    }
 	/**
      * 
      * @param className     the class name as cm_person
@@ -83,13 +101,26 @@ public class DictionaryHelper
 		return result;
     }
     
+    /**
+     * 
+     * @param className     the class name as cm_person
+     * @return String       the full name in the following format {namespaceuri}shorname
+     */
+    public String getNamespaceURIfromPrefix(String prefix)
+    {
+       	String result = null;
+       	if(this.isValidPrefix(prefix))	result = this.prefixesAndUrlsMap.get(prefix);
+		return result;
+    }
+    
      /*
      * checks whether the classname (eg.cm_author) is a valid one
      */
     public boolean isValidClassname(String classname)
     {
     	boolean result = false;
-    	if(this.isValidPrefix(this.getPrefix(classname))) result = true;
+    	QName qname = QName.createQName(this.getFullNamespaceURI(classname));
+    	if(this.isValidPrefix(this.getPrefix(classname))&& this.dictionaryservice.getClass(qname)!=null) result = true;
     	return result;
     }
     
@@ -137,7 +168,7 @@ public class DictionaryHelper
     /*
      * returns a string map or prefixes and urls - with prefix as the key
      */
-    public Map<String, String> prefixesAndUrlsMap()
+    public Map<String, String> getPrefixesAndUrlsMap()
     {
     	return prefixesAndUrlsMap;
     }
@@ -145,7 +176,7 @@ public class DictionaryHelper
     /*
      * returns a string map of urls and prefixes - with url as the key
      */
-    public Map<String, String> urlsAndPrefixesMap()
+    public Map<String, String> getUrlsAndPrefixesMap()
     {
     	return urlsAndPrefixesMap;
     }

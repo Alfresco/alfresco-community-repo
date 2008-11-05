@@ -16,23 +16,24 @@
      	"defaultValues" : "",
      </#if>
      <#if propertydefs.dataType?exists>
-        "dataType" : "${propertydefs.dataType.title}",
+        "dataType" : "${propertydefs.dataType.name.toPrefixString()}",
      </#if>
-     	"multiValued" : "${propertydefs.multiValued?string}",
-        "mandatory" : "${propertydefs.mandatory?string}",
-        "enforced" : "${propertydefs.mandatoryEnforced?string}",
-      	"protected" : "${propertydefs.protected?string}",
-       	"indexed" : "${propertydefs.indexed?string}",
-       	"indexedAtomically" : "${propertydefs.indexedAtomically?string}",
+     	"multiValued" : ${propertydefs.multiValued?string},
+        "mandatory" : ${propertydefs.mandatory?string},
+        "enforced" : ${propertydefs.mandatoryEnforced?string},
+      	"protected" : ${propertydefs.protected?string},
+       	"indexed" : ${propertydefs.indexed?string},
+       	"indexedAtomically" : ${propertydefs.indexedAtomically?string},
        	"constraints" :
        	[
+       		<#--
        		<#if propertydefs.constraints?exists>
        		<#list propertydefs.constraints as constraintdefs>
 				"name" : "${constraintdefs.name}"
 			</#list>
-			</#if>
+			</#if>-->
        	],
-       	"url" : "${url.serviceContext + "/api/classes/" +  url.templateArgs.classname + "/property/" + propertydefs.name.toPrefixString()?replace(":","_")}"
+       	"url" : "${"/api/classes/" +  url.templateArgs.classname + "/property/" + propertydefs.name.toPrefixString()?replace(":","_")}"
    }
    </#escape>
 </#macro>

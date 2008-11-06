@@ -97,44 +97,80 @@ public class GetClassDetail extends DeclarativeWebScript
         boolean cfGiven = (classfilter != null) && (classfilter.length() > 0);
         boolean nspGiven = (namespaceprefix != null) && (namespaceprefix.length() > 0);
         boolean nameGiven = (name != null) && (name.length() > 0);
-        boolean ignoreCheck , hasNothing ,isValidClassfilter ,isValidTriples, isValidTwins ,hasData = false;
+        boolean ignoreCheck ,isValidClassfilter ,isValidTriplet, isValidTwins ,hasData;
+        ignoreCheck = isValidClassfilter = isValidTriplet = isValidTwins = hasData = false;
         
         classname = namespaceprefix + "_" + name;
         isValidClassfilter = (cfGiven ) && (classfilter.equals(CLASS_FILTER_OPTION_TYPE1) || classfilter.equals(CLASS_FILTER_OPTION_TYPE2) || classfilter.equals(CLASS_FILTER_OPTION_TYPE3));
-        hasNothing = (!cfGiven && !nspGiven && !nameGiven);
-        ignoreCheck =(cfGiven && !nspGiven && !nameGiven) && isValidClassfilter;
-        isValidTriples = (cfGiven && nspGiven && nameGiven) && this.dictionaryhelper.isValidPrefix(namespaceprefix) && isValidClassfilter && this.dictionaryhelper.isValidClassname(classname);
-        isValidTwins = (cfGiven && nspGiven)&& isValidClassfilter && this.dictionaryhelper.isValidPrefix(namespaceprefix);
         
-        if ((isValidTriples) || (isValidTwins) || (ignoreCheck) || (hasNothing)) 
+        if (cfGiven && nspGiven && nameGiven) 
+        {
+        	// in this case, even if the classfilter is absurd, like asking for a type, but classname (namespaceprefix+" _"+name) in reality is an aspect,then it ignores the classfilter
+        	// and fetches the correct results provided the classname is a valid one, classname should be of type either aspect or type and not a property name or association name...
+        	isValidTriplet = this.dictionaryhelper.isValidPrefix(namespaceprefix) && isValidClassfilter && this.dictionaryhelper.isValidClassname(classname);
+        }
+        else if (cfGiven && nspGiven && !nameGiven)
+        {
+        	isValidTwins =  isValidClassfilter && this.dictionaryhelper.isValidPrefix(namespaceprefix);
+        }
+        else if (cfGiven && !nspGiven && !nameGiven)
+        {
+        	//since classfilter is given and namespaceprefix, name is not given  , we can ignore the check for particular qname for classname
+        	ignoreCheck = isValidClassfilter;
+        }
+        else if (!cfGiven && !nspGiven && !nameGiven)
+        {
+        	// if nothing is given then throw all data and ignoreCheck for particular classname
+        	classfilter = CLASS_FILTER_OPTION_TYPE1;
+        	ignoreCheck = true;
+        }
+        else if (!cfGiven && nspGiven && !nameGiven)
+        {
+        	// if namespace alone is given , then classfilter is assumed to be all and considered as valid twins
+        	classfilter = CLASS_FILTER_OPTION_TYPE1;
+        	isValidTwins = this.dictionaryhelper.isValidPrefix(namespaceprefix);
+        }
+        else if (!cfGiven && nspGiven && nameGiven){
+        	//if namespace and name are given , then classfilter is assumed to be all (as we don't know whether its a aspect or a type ) and considered as valid twins
+        	classfilter = CLASS_FILTER_OPTION_TYPE1;
+        	isValidTwins = this.dictionaryhelper.isValidPrefix(namespaceprefix) && this.dictionaryhelper.isValidClassname(classname);
+        }
+        else if (!cfGiven && !nspGiven && nameGiven)
+        {
+        	//this case is considered an invalid option so throws all aspects and types and considered as hasNothing
+        	classfilter = CLASS_FILTER_OPTION_TYPE1;
+        	ignoreCheck = true;
+        }
+        
+        if ((isValidTriplet) || (isValidTwins) || (ignoreCheck)) 
         { 
         	Collection<QName> qname = null;
         	int maxIteration = 1;
-        	if (hasNothing || classfilter.equalsIgnoreCase(CLASS_FILTER_OPTION_TYPE1)) maxIteration = 2;
+        	if (classfilter.equalsIgnoreCase(CLASS_FILTER_OPTION_TYPE1)) maxIteration = 2;
         	else if(classfilter.equalsIgnoreCase(CLASS_FILTER_OPTION_TYPE3)) qname = this.dictionaryservice.getAllTypes();
 	       	else if (classfilter.equalsIgnoreCase(CLASS_FILTER_OPTION_TYPE2)) qname = this.dictionaryservice.getAllAspects();
 	       		        	
-	    	boolean flag = true;
+	    	boolean flipflag = true;
 	    		
 	    	for (int i=0; i<maxIteration; i++)
     		{
         		if (maxIteration==2)
         		{
-        			if(flag) qname = this.dictionaryservice.getAllAspects();
+        			if(flipflag) qname = this.dictionaryservice.getAllAspects();
         			else qname = this.dictionaryservice.getAllTypes();
-        			flag = false;
+        			flipflag = false;
         		}
         		
         		for(QName qnameObj: qname)
 		        {	
 		        	String url = this.dictionaryhelper.getNamespaceURIfromQname(qnameObj);
-		        	if(hasNothing  ||  ignoreCheck  || url.equals(this.dictionaryhelper.getPrefixesAndUrlsMap().get(namespaceprefix)))
+		        	if(ignoreCheck  || url.equals(this.dictionaryhelper.getPrefixesAndUrlsMap().get(namespaceprefix)))
 		        	{
-		        		if(isValidTriples) qnameObj = QName.createQName(this.dictionaryhelper.getFullNamespaceURI(classname));
+		        		if(isValidTriplet) qnameObj = QName.createQName(this.dictionaryhelper.getFullNamespaceURI(classname));
 		        		classdef.put(qnameObj, this.dictionaryservice.getClass(qnameObj));
 		        		propdef.put(qnameObj, this.dictionaryservice.getClass(qnameObj).getProperties().values());
 		        		assocdef.put(qnameObj, this.dictionaryservice.getClass(qnameObj).getAssociations().values());
-		        		if (isValidTriples) break;
+		        		if (isValidTriplet) break;
 		        	}
 		         }// end of for loop
     		  }// end of for loop

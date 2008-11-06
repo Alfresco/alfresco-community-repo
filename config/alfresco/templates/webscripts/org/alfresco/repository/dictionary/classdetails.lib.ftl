@@ -11,9 +11,13 @@
      </#if>
      <#if classdefs.title?exists>
        "title" : "${classdefs.title}",
+     <#else>
+       "title" : "",
      </#if>
      <#if classdefs.description?exists>
        "description" : "${classdefs.description}",
+     <#else>
+       "description" : "",
      </#if>
       "parent" : {
         <#if classdefs.parentName?exists>
@@ -24,14 +28,14 @@
       },
       "defaultAspects" : {
        <#if classdefs.defaultAspects?exists>
-         <#list classdefs.defaultAspects as aspectdefs>
-          "${aspectdefs.name.toPrefixString()}" : {
-            "name" : "${aspectdefs.name}",
-            <#if aspectdefs.title?exists>
-            "title" : "${aspectdefs.title}",
+         <#list classdefs.defaultAspects as aspectdef>
+          "${aspectdef.name.toPrefixString()}" : {
+            "name" : "${aspectdef.name.toPrefixString()}",
+            <#if aspectdef.title?exists>
+            "title" : "${aspectdef.title}",
             </#if>
-            "url" : "${"/api/classes/" + classdefs.name.toPrefixString()?replace(":","_") + "/property/" + aspectdefs.name.toPrefixString()?replace(":","_")}"
-           }<#if aspectdefs_has_next>,</#if>
+            "url" : "${"/api/classes/" + classdefs.name.toPrefixString()?replace(":","_") + "/property/" + aspectdef.name.toPrefixString()?replace(":","_")}"
+           }<#if aspectdef_has_next>,</#if>
          </#list>
        </#if>
       },

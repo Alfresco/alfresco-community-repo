@@ -177,7 +177,7 @@ public class GetClassDetail extends DeclarativeWebScript
     		 
 	    	hasData = true;
 	    	    
-        	} // end of else block
+        } // end of else block
 	    	
         if(hasData)
         {

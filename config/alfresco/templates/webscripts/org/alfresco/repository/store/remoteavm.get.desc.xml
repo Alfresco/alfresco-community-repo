@@ -3,7 +3,11 @@
   <description>Remote service mirroring the Store interface - to an AVM store</description>
   <url>/remotestore/{method}</url>
   <url>/remotestore/{method}/{path}</url>
-  <authentication>none</authentication>
+  <url>/remotestore/{method}/s/{store}</url>
+  <url>/remotestore/{method}/s/{store}/{path}</url>  
+  <url>/remotestore/{method}/s/{store}/w/{webapp}</url>
+  <url>/remotestore/{method}/s/{store}/w/{webapp}/{path}</url>  
+  <authentication>guest</authentication>
   <transaction>required</transaction>
   <format default="">argument</format>
 </webscript>

@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.StringTokenizer;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -49,6 +50,8 @@ import org.apache.commons.logging.LogFactory;
  * 
  * Request format:
  *      <servicepath>/<method>/<path>[?<args>]
+ *      <servicepath>/<method>/s/<store>/<path>[?<args>]
+ *      <servicepath>/<method>/s/<store>/w/<webapp>/<path>[?<args>]      
  * 
  * Example:
  *      /service/remotestore/lastmodified/sites/xyz/pages/page.xml
@@ -57,6 +60,11 @@ import org.apache.commons.logging.LogFactory;
  *      /service/remotestore -> service path
  *      /lastmodified        -> method name
  *      /sites/../page.xml   -> document path
+ *      
+ * optional request parameters:
+ * 
+ *      s                    -> the avm store id
+ *      w                    -> the wcm web application id
  * 
  * Note: path is relative to the root path as configured for this webscript bean
  * 
@@ -81,19 +89,25 @@ import org.apache.commons.logging.LogFactory;
  */
 public abstract class BaseRemoteStore extends AbstractWebScript
 {
-    private static final Log logger = LogFactory.getLog(BaseRemoteStore.class);
+    public static final String TOKEN_STORE = "s";
+    public static final String TOKEN_WEBAPP = "w";
+
+	public static final String REQUEST_PARAM_STORE = "s";
+	public static final String REQUEST_PARAM_WEBAPP = "w";
+
+	private static final Log logger = LogFactory.getLog(BaseRemoteStore.class);
     
-    protected String store;
+    protected String defaultStore;
     protected ContentService contentService;
     protected MimetypeService mimetypeService;
     
     
     /**
-     * @param store     the store name of the store to process document requests against
+     * @param defaultStore     the default store name of the store to process document requests against
      */
-    public void setStore(String store)
+    public void setStore(String defaultStore)
     {
-        this.store = store;
+        this.defaultStore = defaultStore;
     }
     
     /**
@@ -124,79 +138,156 @@ public abstract class BaseRemoteStore extends AbstractWebScript
         }
         
         HttpServletRequest httpReq = ((WebScriptServletRequest)req).getHttpServletRequest();
-        
-        // break down and validate the request - expecting method name and document path
+                
+        // the request path for the remote store
         String extPath = req.getExtensionPath();
-        String[] extParts = extPath == null ? new String[0] : extPath.split("/");
-        if (extParts.length < 1)
+        
+        // values that we need to determine
+        String methodName = null;
+        String store = null;
+        String webapp = null;
+        StringBuilder pathBuilder = null;
+        
+        // tokenize the path and figure out tokenized values
+        StringTokenizer tokenizer = new StringTokenizer(extPath, "/");
+        if (tokenizer.hasMoreTokens())
         {
-            throw new WebScriptException("Remote Store expecting method name.");
+        	methodName = tokenizer.nextToken();
+        	
+        	if (tokenizer.hasMoreTokens())
+        	{
+        		String el = tokenizer.nextToken();
+        		
+        		if (TOKEN_STORE.equals(el))
+        		{
+        			// if the token is "s", then the next token is the id of the store
+        			store = tokenizer.nextToken();
+        			
+        			// reset el
+        			el = (tokenizer.hasMoreTokens() ? tokenizer.nextToken() : null);
+        		}       		
+        		
+        		if (TOKEN_WEBAPP.equals(el))
+        		{
+        			// if the token is "w", then the next token is a WCM webapp id
+        			webapp = tokenizer.nextToken();
+        			        			
+        			// reset el
+        			el = (tokenizer.hasMoreTokens() ? tokenizer.nextToken() : null);
+        			
+        		}
+        		
+        		while(el != null)
+        		{
+        			if(pathBuilder == null)
+        			{
+        				pathBuilder = new StringBuilder(128);
+        			}
+        			pathBuilder.append("/");
+        			pathBuilder.append(el);
+        			
+        			el = (tokenizer.hasMoreTokens() ? tokenizer.nextToken() : null);
+        		}        		
+        	}
+        }
+        else
+        {
+        	throw new WebScriptException("Unable to tokenize web path: " + extPath);
         }
         
-        // extract path from url extension
-        String path = null;
-        if (extParts.length >= 2)
+        // if we don't have a store, check whether it came in on a request parameter
+        if (store == null)
         {
-            path = req.getExtensionPath().substring(extParts[0].length() + 1);
+            store = req.getParameter(REQUEST_PARAM_STORE);
+            if (store == null)
+            {
+            	store = this.defaultStore;
+            }
+            if (store == null)
+            {
+            	// not good, we should have a store by this point
+            	
+            	// this means that a store was not passed in and that we
+            	// also didn't have a configured store
+            	throw new WebScriptException("Unable to determine which store to operate against.  A store was not specified and a default was not provided.");
+            }
         }
         
+        // if we don't have a webapp, check whether it may have been passed in on a request parameter
+        if (webapp == null)
+        {
+        	webapp = req.getParameter(REQUEST_PARAM_WEBAPP);
+        }
+        
+        // if we do have a webapp, allow for path prepending
+        if (webapp != null)
+        {
+        	pathBuilder.insert(0, "/www/avm_webapps/" + webapp);        	
+        }
+        
+        // convert down to the path        
+        String path = pathBuilder.toString();
+                
+        // debugger information
         if (logger.isDebugEnabled())
-            logger.debug("Remote store method: " + extParts[0] + " path: " + path);
-        
-        // TODO: support storeref name override as argument? (i.e. for AVM virtualisation)
+        {
+        	logger.debug("Remote method: " + methodName);
+            logger.debug("Remote store id: " + store);
+            logger.debug("Remote path: " + path);
+        }
         
         try
         {
             // generate enum from string method name - so we can use a fast switch table lookup
-            APIMethod method = APIMethod.valueOf(extParts[0].toUpperCase());
+            APIMethod method = APIMethod.valueOf(methodName.toUpperCase());
             switch (method)
             {
                 case LASTMODIFIED:
                     validatePath(path);
-                    lastModified(res, path);
+                    lastModified(res, store, path);
                     break;
                 
                 case HAS:
                     validatePath(path);
-                    hasDocument(res, path);
+                    hasDocument(res, store, path);
                     break;
                 
                 case GET:
                     validatePath(path);
-                    getDocument(res, path);
+                    getDocument(res, store, path);
                     break;
                 
                 case LIST:
-                    listDocuments(res, path, false);
+                    listDocuments(res, store, path, false);
                     break;
                 
                 case LISTALL:
-                    listDocuments(res, path, true);
+                    listDocuments(res, store, path, true);
                     break;
                 
                 case LISTPATTERN:
-                    listDocuments(res, path, req.getParameter("m"));
+                    listDocuments(res, store, path, req.getParameter("m"));
                     break;
                 
                 case CREATE:
                     validatePath(path);
-                    createDocument(res, path, httpReq.getInputStream());
+                    createDocument(res, store, path, httpReq.getInputStream());
                     break;
                 
                 case UPDATE:
                     validatePath(path);
-                    updateDocument(res, path, httpReq.getInputStream());
+                    updateDocument(res, store, path, httpReq.getInputStream());
                     break;
                 
                 case DELETE:
                     validatePath(path);
-                    deleteDocument(res, path);
+                    deleteDocument(res, store, path);
                     break;
             }
         }
         catch (IllegalArgumentException enumErr)
         {
-            throw new WebScriptException("Unknown method specified to remote store API: " + extParts[0]);
+            throw new WebScriptException("Unknown method specified to remote store API: " + methodName);
         }
         catch (IOException ioErr)
         {
@@ -233,9 +324,10 @@ public abstract class BaseRemoteStore extends AbstractWebScript
      * 
      * The output will be the last modified date as a long toString().
      * 
+     * @param store the store id
      * @param path  document path to an existing document
      */
-    protected abstract void lastModified(WebScriptResponse res, String path)
+    protected abstract void lastModified(WebScriptResponse res, String store, String path)
         throws IOException;
     
     /**
@@ -243,9 +335,10 @@ public abstract class BaseRemoteStore extends AbstractWebScript
      * 
      * The output will be either the string "true" or the string "false".
      * 
+     * @param store the store id
      * @param path  document path
      */
-    protected abstract void hasDocument(WebScriptResponse res, String path)
+    protected abstract void hasDocument(WebScriptResponse res, String store, String path)
         throws IOException;
 
     /**
@@ -253,12 +346,13 @@ public abstract class BaseRemoteStore extends AbstractWebScript
      * 
      * The output will be the document content stream.
      * 
+     * @param store the store id
      * @param path  document path
      * @return  
      * 
      * @throws IOException if an error occurs retrieving the document
      */
-    protected abstract void getDocument(WebScriptResponse res, String path)
+    protected abstract void getDocument(WebScriptResponse res, String store, String path)
         throws IOException;
     
     /**
@@ -267,12 +361,13 @@ public abstract class BaseRemoteStore extends AbstractWebScript
      * The output will be the list of relative document paths found under the path.
      * Separated by newline characters.
      * 
+     * @param store     the store id
      * @param path      document path
      * @param recurse   true to peform a recursive list, false for direct children only.
      * 
      * @throws IOException if an error occurs listing the documents
      */
-    protected abstract void listDocuments(WebScriptResponse res, String path, boolean recurse)
+    protected abstract void listDocuments(WebScriptResponse res, String store, String path, boolean recurse)
         throws IOException;
     
     /**
@@ -281,42 +376,46 @@ public abstract class BaseRemoteStore extends AbstractWebScript
      * The output will be the list of relative document paths found under the path that
      * match the given file pattern. Separated by newline characters.
      * 
+     * @param store     the store id
      * @param path      document path
      * @param pattern   file pattern to match - allows wildcards e.g. *.xml or site*.xml
      * 
      * @throws IOException if an error occurs listing the documents
      */
-    protected abstract void listDocuments(WebScriptResponse res, String path, String pattern)
+    protected abstract void listDocuments(WebScriptResponse res, String store, String path, String pattern)
         throws IOException;
     
     /**
      * Creates a document.
      * 
-     * @param path  document path
+     * @param store         the store id
+     * @param path          document path
      * @param content       content of the document to write
      * 
      * @throws IOException if the create fails
      */
-    protected abstract void createDocument(WebScriptResponse res, String path, InputStream content);
+    protected abstract void createDocument(WebScriptResponse res, String store, String path, InputStream content);
     
     /**
      * Updates an existing document.
      * 
+     * @param store the store id
      * @param path  document path
      * @param content       content to update the document with
      * 
      * @throws IOException if the update fails
      */
-    protected abstract void updateDocument(WebScriptResponse res, String path, InputStream content);
+    protected abstract void updateDocument(WebScriptResponse res, String store, String path, InputStream content);
     
     /**
      * Deletes an existing document.
      * 
+     * @param store the store id
      * @param path  document path
      * 
      * @throws IOException if the delete fails
      */
-    protected abstract void deleteDocument(WebScriptResponse res, String path);
+    protected abstract void deleteDocument(WebScriptResponse res, String store, String path);
     
     
     /**

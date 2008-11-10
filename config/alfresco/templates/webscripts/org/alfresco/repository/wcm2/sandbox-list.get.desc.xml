@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Web Content Management - List Sandboxes</shortname>
+  <description>Web Content Management - List Sandboxes</description>
+  <url>/api/wcm/sandbox/list</url>
+  <format default="html">argument</format>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>

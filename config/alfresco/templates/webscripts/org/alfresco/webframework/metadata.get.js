@@ -32,7 +32,7 @@ else
 	}
 	else
 	{
-		path = "/Company Home" + path;
+		//path = "/Company Home" + path;
 	}
 	
 	// look up the content by path
@@ -40,4 +40,3 @@ else
 }
 
 model.object = object;
-model.mimetype = object.mimetype;

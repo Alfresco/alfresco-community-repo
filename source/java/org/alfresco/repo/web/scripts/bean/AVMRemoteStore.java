@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
 import java.net.SocketException;
+import java.util.List;
 import java.util.SortedMap;
 import java.util.regex.Pattern;
 
@@ -36,6 +37,7 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.repo.web.scripts.RepoStore;
 import org.alfresco.service.cmr.avm.AVMExistsException;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMNotFoundException;
@@ -43,6 +45,9 @@ import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.web.scripts.Status;
 import org.alfresco.web.scripts.WebScriptException;
@@ -62,7 +67,7 @@ public class AVMRemoteStore extends BaseRemoteStore
 {
     private static final Log logger = LogFactory.getLog(AVMRemoteStore.class);
     
-    private String rootPath; 
+    private String rootPath = "/"; 
     private AVMService avmService;
     private SearchService searchService;
     
@@ -72,6 +77,11 @@ public class AVMRemoteStore extends BaseRemoteStore
      */
     public void setRootPath(String rootPath)
     {
+    	if(rootPath != null && rootPath.length() == 0)
+    	{
+    		rootPath = "/";
+    	}
+    	
         this.rootPath = rootPath;
     }
 
@@ -94,13 +104,14 @@ public class AVMRemoteStore extends BaseRemoteStore
     /**
      * Gets the last modified timestamp for the document.
      * 
+     * @param store the store id
      * @param path  document path to an existing document
      */
     @Override
-    protected void lastModified(WebScriptResponse res, String path)
+    protected void lastModified(WebScriptResponse res, String store, String path)
         throws IOException
     {
-        String avmPath = buildAVMPath(path);
+        String avmPath = buildAVMPath(store, path);
         AVMNodeDescriptor desc = this.avmService.lookup(-1, avmPath);
         if (desc == null)
         {
@@ -116,9 +127,9 @@ public class AVMRemoteStore extends BaseRemoteStore
      * @see org.alfresco.repo.web.scripts.bean.BaseRemoteStore#getDocument(org.alfresco.web.scripts.WebScriptResponse, java.lang.String)
      */
     @Override
-    protected void getDocument(final WebScriptResponse res, final String path) throws IOException
+    protected void getDocument(final WebScriptResponse res, final String store, final String path) throws IOException
     {
-        final String avmPath = buildAVMPath(path);
+        final String avmPath = buildAVMPath(store, path);
         final AVMNodeDescriptor desc = this.avmService.lookup(-1, avmPath);
         if (desc == null)
         {
@@ -201,9 +212,9 @@ public class AVMRemoteStore extends BaseRemoteStore
      * @see org.alfresco.repo.web.scripts.bean.BaseRemoteStore#hasDocument(org.alfresco.web.scripts.WebScriptResponse, java.lang.String)
      */
     @Override
-    protected void hasDocument(WebScriptResponse res, String path) throws IOException
+    protected void hasDocument(WebScriptResponse res, String store, String path) throws IOException
     {
-        String avmPath = buildAVMPath(path);
+        String avmPath = buildAVMPath(store, path);
         AVMNodeDescriptor desc = this.avmService.lookup(-1, avmPath);
         
         Writer out = res.getWriter();
@@ -215,14 +226,14 @@ public class AVMRemoteStore extends BaseRemoteStore
      * @see org.alfresco.repo.web.scripts.bean.BaseRemoteStore#createDocument(org.alfresco.web.scripts.WebScriptResponse, java.lang.String, java.io.InputStream)
      */
     @Override
-    protected void createDocument(final WebScriptResponse res, final String path, final InputStream content)
+    protected void createDocument(final WebScriptResponse res, final String store, final String path, final InputStream content)
     {
         AuthenticationUtil.runAs(new RunAsWork<Object>()
         {
             @SuppressWarnings("synthetic-access")
             public Object doWork() throws Exception
             {
-                String avmPath = buildAVMPath(path);
+                String avmPath = buildAVMPath(store, path);
                 try
                 {
                     String[] parts = AVMNodeConverter.SplitBase(avmPath);
@@ -241,6 +252,7 @@ public class AVMRemoteStore extends BaseRemoteStore
                     }
                     
                     avmService.createFile(parts[0], parts[1], content);
+                    avmService.createSnapshot(store, "AVMRemoteStore.createDocument()", path);
                 }
                 catch (AccessDeniedException ae)
                 {
@@ -259,9 +271,9 @@ public class AVMRemoteStore extends BaseRemoteStore
      * @see org.alfresco.repo.web.scripts.bean.BaseRemoteStore#updateDocument(org.alfresco.web.scripts.WebScriptResponse, java.lang.String, java.io.InputStream)
      */
     @Override
-    protected void updateDocument(final WebScriptResponse res, final String path, final InputStream content)
+    protected void updateDocument(final WebScriptResponse res, final String store, final String path, final InputStream content)
     {
-        final String avmPath = buildAVMPath(path);
+        final String avmPath = buildAVMPath(store, path);
         AVMNodeDescriptor desc = this.avmService.lookup(-1, avmPath);
         if (desc == null)
         {
@@ -292,9 +304,9 @@ public class AVMRemoteStore extends BaseRemoteStore
      * @see org.alfresco.repo.web.scripts.bean.BaseRemoteStore#deleteDocument(org.alfresco.web.scripts.WebScriptResponse, java.lang.String)
      */
     @Override
-    protected void deleteDocument(final WebScriptResponse res, final String path)
+    protected void deleteDocument(final WebScriptResponse res, final String store, final String path)
     {
-        final String avmPath = buildAVMPath(path);
+        final String avmPath = buildAVMPath(store, path);
         AVMNodeDescriptor desc = this.avmService.lookup(-1, avmPath);
         if (desc == null)
         {
@@ -310,6 +322,7 @@ public class AVMRemoteStore extends BaseRemoteStore
                 try
                 {
                     avmService.removeNode(avmPath);
+                    avmService.createSnapshot(store, "AVMRemoteStore.deleteDocument()", path);
                 }
                 catch (AccessDeniedException ae)
                 {
@@ -324,9 +337,9 @@ public class AVMRemoteStore extends BaseRemoteStore
      * @see org.alfresco.repo.web.scripts.bean.BaseRemoteStore#listDocuments(org.alfresco.web.scripts.WebScriptResponse, java.lang.String, boolean)
      */
     @Override
-    protected void listDocuments(WebScriptResponse res, String path, boolean recurse) throws IOException
+    protected void listDocuments(WebScriptResponse res, String store, String path, boolean recurse) throws IOException
     {
-        String avmPath = buildAVMPath(path);
+        String avmPath = buildAVMPath(store, path);
         AVMNodeDescriptor node = this.avmService.lookup(-1, avmPath);
         if (node == null)
         {
@@ -336,7 +349,7 @@ public class AVMRemoteStore extends BaseRemoteStore
         
         try
         {
-            traverseNode(res.getWriter(), node, null, recurse);
+            traverseNode(res.getWriter(), store, node, recurse);
         }
         catch (AccessDeniedException ae)
         {
@@ -348,13 +361,45 @@ public class AVMRemoteStore extends BaseRemoteStore
         }
     }
     
+    private void traverseNode(Writer out, String store, AVMNodeDescriptor node, boolean recurse)
+        throws IOException
+    {
+    	/**
+    	 * The node path appears as such:
+    	 * project1:/www/avm_webapps/ROOT/WEB-INF/classes/alfresco/site-data/template-instances/file.xml
+    	 */
+    	int cropPoint = store.length() + this.rootPath.length() + 1;
+        SortedMap<String, AVMNodeDescriptor> listing = this.avmService.getDirectoryListing(node);
+        for (AVMNodeDescriptor n : listing.values())
+        {
+            if (n.isFile())
+            {
+            	/*
+            	String myPath = n.getPath();
+            	String origPath = node.getPath();
+            	
+            	String toWrite = myPath.substring(origPath.length());
+            	out.write(toWrite);
+            	out.write("\n");
+            	*/
+            	
+                out.write(n.getPath().substring(cropPoint));
+                out.write("\n");
+            }
+            else if (recurse && n.isDirectory())
+            {
+                traverseNode(out, store, n, recurse);
+            }
+        }
+    }
+    
     /* (non-Javadoc)
      * @see org.alfresco.repo.web.scripts.bean.BaseRemoteStore#listDocuments(org.alfresco.web.scripts.WebScriptResponse, java.lang.String, java.lang.String)
      */
     @Override
-    protected void listDocuments(WebScriptResponse res, String path, String pattern) throws IOException
+    protected void listDocuments(WebScriptResponse res, final String store, String path, String pattern) throws IOException
     {
-        String avmPath = buildAVMPath(path);
+        String avmPath = buildAVMPath(store, path);
         AVMNodeDescriptor node = this.avmService.lookup(-1, avmPath);
         if (node == null)
         {
@@ -368,70 +413,68 @@ public class AVMRemoteStore extends BaseRemoteStore
         }
         
         String matcher = pattern.replace(".","\\.").replace("*",".*");
+        final Pattern pat = Pattern.compile(matcher);
         
-        try
+        String encPath = RepoStore.encodePathISO9075(path);
+        final StringBuilder query = new StringBuilder(128);
+
+        query.append("+PATH:\"").append(this.rootPath)
+        .append(encPath.length() != 0 ? ('/' + encPath) : "")
+        .append("//*\" +QNAME:")
+        .append(pattern);
+
+        /*
+        query.append("+PATH:\"/").append(this.rootPath)
+             .append(encPath.length() != 0 ? ('/' + encPath) : "")
+             .append("//*\" +QNAME:")
+             .append(pattern);
+*/             
+        
+        final Writer out = res.getWriter();
+        final StoreRef avmStore = new StoreRef(StoreRef.PROTOCOL_AVM + StoreRef.URI_FILLER  + store);
+        AuthenticationUtil.runAs(new RunAsWork<Object>()
         {
-            traverseNode(res.getWriter(), node, Pattern.compile(matcher), true);
-        }
-        catch (AccessDeniedException ae)
-        {
-            res.setStatus(Status.STATUS_UNAUTHORIZED);
-        }
-        finally
-        {
-            res.getWriter().close();
-        }
+            @SuppressWarnings("synthetic-access")
+            public Object doWork() throws Exception
+            {
+            	int cropPoint = store.length() + rootPath.length() + 1;
+                ResultSet resultSet = searchService.query(avmStore, SearchService.LANGUAGE_LUCENE, query.toString());
+                try
+                {
+                    List<NodeRef> nodes = resultSet.getNodeRefs();
+                    for (NodeRef nodeRef : nodes)
+                    {
+                        String path = AVMNodeConverter.ToAVMVersionPath(nodeRef).getSecond();
+                        String name = path.substring(path.lastIndexOf('/') + 1);
+                        if (pat.matcher(name).matches())
+                        {
+                            out.write(path.substring(cropPoint));
+                            out.write("\n");
+                        }
+                    }
+                }
+                finally
+                {
+                    resultSet.close();
+                }
+                return null;
+            }
+        }, AuthenticationUtil.getSystemUserName());
     }
 
     /**
+     * @param store     the store id
      * @param path      root path relative
      * 
      * @return full AVM path to document including store and root path components
      */
-    private String buildAVMPath(String path)
+    private String buildAVMPath(String store, String path)
     {
-        return this.store + ":/" + this.rootPath + (path != null ? ("/" + path) : "");
-    }
-    
-    /**
-     * Traverse a Node and recursively output the file paths it contains.
-     * 
-     * @param out       Writer for output - relative paths separated by newline characters
-     * @param node      The AVM Node to traverse
-     * @param pattern   Optional Pattern to match filenames against
-     * @param recurse   True to recurse sub-directories  
-     * 
-     * @throws IOException
-     */
-    private void traverseNode(Writer out, AVMNodeDescriptor node, Pattern pattern, boolean recurse)
-        throws IOException
-    {
-        int cropPoint = this.store.length() + this.rootPath.length() + 3;
-        SortedMap<String, AVMNodeDescriptor> listing = this.avmService.getDirectoryListing(node);
-        for (AVMNodeDescriptor n : listing.values())
-        {
-            if (n.isFile())
-            {
-                String path = n.getPath();
-                if (pattern != null)
-                {
-                    String name = path.substring(path.lastIndexOf('/') + 1);
-                    if (pattern.matcher(name).matches())
-                    {
-                        out.write(path.substring(cropPoint));
-                        out.write("\n");
-                    }
-                }
-                else
-                {
-                    out.write(path.substring(cropPoint));
-                    out.write("\n");
-                }
-            }
-            else if (recurse && n.isDirectory())
-            {
-                traverseNode(out, n, pattern, recurse);
-            }
-        }
+        //return store + ":/" + this.rootPath + (path != null ? ("/" + path) : "");
+    	if(path.startsWith("/"))
+    	{
+    		path = path.substring(1);
+    	}
+    	return store + ":" + this.rootPath + (path != null ? path : "");
     }
 }

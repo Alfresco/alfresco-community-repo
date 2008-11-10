@@ -246,22 +246,28 @@
       <property name="mimetypeService" ref="MimetypeService" />
       <property name="avmService" ref="AVMService" />
       <property name="searchService" ref="SearchService" />
+      <!--
       <property name="rootPath"><value>alfresco</value></property>
       <property name="store"><value>sitestore</value></property>
+      -->
    </bean>
    <bean id="webscript.org.alfresco.repository.store.remoteavm.post" class="org.alfresco.repo.web.scripts.bean.AVMRemoteStore" parent="webscript">
       <property name="mimetypeService" ref="MimetypeService" />
       <property name="avmService" ref="AVMService" />
       <property name="searchService" ref="SearchService" />
+      <!--
       <property name="rootPath"><value>alfresco</value></property>
       <property name="store"><value>sitestore</value></property>
+      -->
    </bean>
    <bean id="webscript.org.alfresco.repository.store.remoteavm.delete" class="org.alfresco.repo.web.scripts.bean.AVMRemoteStore" parent="webscript">
       <property name="mimetypeService" ref="MimetypeService" />
       <property name="avmService" ref="AVMService" />
       <property name="searchService" ref="SearchService" />
+      <!--
       <property name="rootPath"><value>alfresco</value></property>
       <property name="store"><value>sitestore</value></property>
+      -->
    </bean>
 
 

@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Web Content Management - Web Project POST</shortname>
+  <description>Web Content Management - Web Project POST</description>
+  <url>/api/wcm/webproject</url>
+  <format default="json"/>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>

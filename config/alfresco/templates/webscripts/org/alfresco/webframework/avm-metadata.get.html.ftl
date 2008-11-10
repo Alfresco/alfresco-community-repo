@@ -46,11 +46,7 @@
 	<#list object.properties?keys as key>
 		<#if object.properties[key]?exists>
 			<#assign val = object.properties[key]>
-			<#if isUser && object.isTemplateContent(val)>
-				<#if first == false>,</#if>
-				"${key}" : "${val.content?js_string}"
-				<#assign first = false>
-			<#elseif val?is_string == true>
+			<#if val?is_string == true>
 				<#if first == false>,</#if>
 				"${key}" : "${val?js_string}"
 				<#assign first = false>
@@ -86,14 +82,6 @@
 <#else>
 	,
 	"children" : []
-</#if>
-
-<#if isUser && object.associations["cm:avatar"]?exists>
-	,
-	"associations" :
-	{
-		"{http://www.alfresco.org/model/content/1.0}avatar" : ["${object.associations["cm:avatar"][0].nodeRef}"]
-	}
 </#if>
 
 </#macro> 

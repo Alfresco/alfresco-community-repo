@@ -262,11 +262,11 @@ _navigateToNode: function(path)
   }
   if (this.folderRestriction)
   {
-  	req.content.folderRestriction = this.folderRestriction;
+    params.folderRestriction = this.folderRestriction;
   }
   if (this.configSearchName)
   {
-  	req.content.configSearchName = this.configSearchName;
+    params.configSearchName = this.configSearchName;
   }
 
   alfresco.AjaxHelper.sendRequest("FilePickerBean.getFilePickerData",

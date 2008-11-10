@@ -26,7 +26,6 @@ package org.alfresco.repo.node.db;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -37,8 +36,6 @@ import javax.transaction.UserTransaction;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.domain.ChildAssoc;
-import org.alfresco.repo.domain.Node;
 import org.alfresco.repo.node.BaseNodeServiceTest;
 import org.alfresco.repo.node.StoreArchiveMap;
 import org.alfresco.repo.node.db.NodeDaoService.NodePropertyHandler;
@@ -55,6 +52,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.Pair;
+import org.apache.commons.lang.mutable.MutableInt;
 
 /**
  * @see org.alfresco.repo.node.db.DbNodeServiceImpl
@@ -462,5 +460,32 @@ public class DbNodeServiceImplTest extends BaseNodeServiceTest
         
         // Run cleanup
         ns.cleanup();
+    }
+    
+    /**
+     * Adds a property to a node and checks that it can be found using the low-level DB query
+     */
+    public void testGetPropertyValuesByPropertyAndValue() throws Throwable
+    {
+        String findMeValue = "FIND ME";
+        nodeService.setProperty(rootNodeRef, PROP_QNAME_STRING_PROP_SINGLE, findMeValue);
+        final MutableInt count = new MutableInt(0);
+        // Add a property to the root node and check 
+        NodePropertyHandler handler = new NodePropertyHandler()
+        {
+            public void handle(NodeRef nodeRef, QName nodeTypeQName, QName propertyQName, Serializable value)
+            {
+                if (nodeTypeQName.equals(ContentModel.TYPE_STOREROOT))
+                {
+                    count.setValue(1);
+                }
+            }
+        };
+        nodeDaoService.getPropertyValuesByPropertyAndValue(
+                rootNodeRef.getStoreRef(),
+                PROP_QNAME_STRING_PROP_SINGLE,
+                findMeValue,
+                handler);
+        assertTrue("Set value not found.", count.intValue() == 1);
     }
 }

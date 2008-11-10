@@ -460,6 +460,17 @@
     ]]>
     </query>
 	
+    <sql-query name="person.getAllPeople">
+        SELECT
+           {n.*}
+        FROM
+           alf_node n
+           JOIN alf_node_properties p ON n.id = p.node_id
+        WHERE
+           p.qname_id = :qnameId AND
+           n.node_deleted = :False"
+    </sql-query>
+
     <!--
        
    <query name="permission.GetAccessControlEntriesForAuthority">

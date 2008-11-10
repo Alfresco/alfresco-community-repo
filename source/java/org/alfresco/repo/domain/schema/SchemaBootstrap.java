@@ -530,7 +530,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         try
         {
             ResultSet rs = stmt.executeQuery(
-                    "select min(applied_to_schema) from alf_applied_patch where applied_to_schema > -1;");
+                    "select min(applied_to_schema) from alf_applied_patch where applied_to_schema > -1");
             if (!rs.next())
             {
                 // Nothing in the table

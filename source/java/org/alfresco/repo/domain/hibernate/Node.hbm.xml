@@ -654,20 +654,20 @@
          assoc.target.id = :targetId
    </query>
    
-   <query name="node.GetNodesWithPropertyValuesByStringAndStore">
-      select
-         node,
-         node.typeQName
-      from 
-         org.alfresco.repo.domain.hibernate.NodeImpl as node
-         join node.store as store
-         join node.properties prop
-      where
-         store.protocol = :protocol and
-         store.identifier = :identifier and
-         index(prop) = :propKey and
-         prop.stringValue = :propStringValue
-   </query>
+   <sql-query name="node.GetNodesWithPropertyValuesByStringAndStore">
+      <return alias="n" class="org.alfresco.repo.domain.hibernate.NodeImpl"/>
+      SELECT
+         {n.*}
+      FROM
+         alf_node n
+         JOIN alf_store s on s.id = n.store_id
+         JOIN alf_node_properties p ON n.id = p.node_id
+      WHERE
+         s.protocol = :storeProtocol AND
+         s.identifier = :storeIdentifier AND
+         p.qname_id = :propQNameID AND
+         p.string_value = :propStringValue
+   </sql-query>
    
    <query name="node.GetNodesWithPropertyValuesByActualType">
       select

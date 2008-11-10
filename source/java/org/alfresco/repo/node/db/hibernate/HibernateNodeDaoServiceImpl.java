@@ -2678,11 +2678,6 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
             return;
         }
         final Long propQNameEntityId = propQNameEntity.getId();
-        final Long defaultLocaleEntityId = localeDAO.getDefaultLocalePair().getFirst();
-        final PropertyMapKey propKey = new PropertyMapKey();
-        propKey.setQnameId(propQNameEntityId);
-        propKey.setLocaleId(defaultLocaleEntityId);
-        propKey.setListIndex(0);
         // Run the query
         HibernateCallback callback = new HibernateCallback()
         {
@@ -2690,9 +2685,9 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
             {
                 Query query = session
                   .getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_NODES_WITH_PROPERTY_VALUES_BY_STRING_AND_STORE)
-                  .setString("protocol", storeRef.getProtocol())
-                  .setString("identifier", storeRef.getIdentifier())
-                  .setParameter("propKey", propKey)
+                  .setString("storeProtocol", storeRef.getProtocol())
+                  .setString("storeIdentifier", storeRef.getIdentifier())
+                  .setParameter("propQNameID", propQNameEntityId)
                   .setString("propStringValue", value)
                   ;
                 DirtySessionMethodInterceptor.setQueryFlushMode(session, query);
@@ -2706,7 +2701,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         {
             Node node = (Node) results.get(0);
             NodeRef nodeRef = node.getNodeRef();
-            QNameEntity nodeTypeQNameEntity = (QNameEntity) results.get(1);
+            QNameEntity nodeTypeQNameEntity = node.getTypeQName();
             QName nodeTypeQName = nodeTypeQNameEntity.getQName();
             handler.handle(nodeRef, nodeTypeQName, propertyQName, value);
             // Flush if required

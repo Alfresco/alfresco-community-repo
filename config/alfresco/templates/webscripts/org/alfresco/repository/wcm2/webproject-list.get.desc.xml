@@ -1,8 +1,0 @@
-<webscript>
-  <shortname>Web Content Management - List Web Projects</shortname>
-  <description>Web Content Management - List Web Projects</description>
-  <url>/api/wcm/webproject/list</url>
-  <format default="html">argument</format>
-  <authentication>user</authentication>
-  <transaction>required</transaction>
-</webscript>

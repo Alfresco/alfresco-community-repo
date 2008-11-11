@@ -1,8 +1,0 @@
-<webscript>
-  <shortname>Web Content Management - Sandbox GET</shortname>
-  <description>Web Content Management - Sandbox GET</description>
-  <url>/api/wcm/sandbox/{id}</url>
-  <format default="json"/>
-  <authentication>user</authentication>
-  <transaction>required</transaction>
-</webscript>

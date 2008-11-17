@@ -11,50 +11,35 @@ var range = {};
 var dateFilter = args.from;
 if (dateFilter)
 {
-	range["fromdate"] = dateFilter;
+    range["fromdate"] = dateFilter;
 }
 
 model.events = getUserEvents(username, range);
 
 function getUserEvents(user, range)
 {
-	if (!user)
-	{
-		return [];
-	}
-	
-	var paths = [];
-	/**
-	 * This part is inefficient as it looks through all of the sites
-	 * and tries to determine if the user is a member or not; however, until something like
-	 * /people/{userid}/sites is exposed through the JavaScript API, it will have to do.
-	 * 
-	 */
-	var availableSites = siteService.listSites(null, null);
-	for (var j=0; j < availableSites.length; j++)
-	{
-		var site = availableSites[j];
-		if (site.isMember(user))
-		{
-			paths.push("PATH:\"/app:company_home/st:sites/cm:" + search.ISO9075Encode(site.shortName) + "/cm:calendar/*\"");
-		}
-	}
-	
-	var results = [];
-	
-	if (paths.length > 0)
-	{
-		var luceneQuery = "+(" + paths.join(" OR ") + ") +TYPE:\"{http\://www.alfresco.org/model/calendar}calendarEvent\"";
-		if (range.fromdate)
-		{
-			// Expects the date in the format yyyy/mm/dd
-			var from = range.fromdate.split("/").join("\\-"); 
-			var dateClause = " +@ia\\:fromDate:[" + from + "T00:00:00 TO 2099\\-1\\-1T00:00:00]";
-			luceneQuery += dateClause;
-		}
-		results = search.luceneSearch(luceneQuery, "ia:fromDate", true);
-	}
-
-	return results;
+    var paths = [];
+    
+    var sites = siteService.listUserSites(user);
+    for (var j=0; j < sites.length; j++)
+    {
+        paths.push("PATH:\"/app:company_home/st:sites/cm:" + search.ISO9075Encode(sites[j].shortName) + "/cm:calendar/*\"");
+    }
+    
+    var results = [];
+    
+    if (paths.length != 0)
+    {
+        var luceneQuery = "+(" + paths.join(" OR ") + ") +TYPE:\"{http\://www.alfresco.org/model/calendar}calendarEvent\"";
+        if (range.fromdate)
+        {
+            // Expects the date in the format yyyy/mm/dd
+            var from = range.fromdate.split("/").join("\\-"); 
+            var dateClause = " +@ia\\:fromDate:[" + from + "T00:00:00 TO 2099\\-1\\-1T00:00:00]";
+            luceneQuery += dateClause;
+        }
+        results = search.luceneSearch(luceneQuery, "ia:fromDate", true);
+    }
+    
+    return results;
 }
-

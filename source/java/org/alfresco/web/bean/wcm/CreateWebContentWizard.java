@@ -71,7 +71,6 @@ import org.alfresco.web.data.QuickSort;
 import org.alfresco.web.forms.Form;
 import org.alfresco.web.forms.FormInstanceData;
 import org.alfresco.web.forms.FormNotFoundException;
-import org.alfresco.web.forms.FormProcessor;
 import org.alfresco.web.forms.FormsService;
 import org.alfresco.web.forms.RenderingEngineTemplate;
 import org.alfresco.web.forms.Rendition;
@@ -94,14 +93,10 @@ public class CreateWebContentWizard extends CreateContentWizard
 
    private static final Log logger = LogFactory.getLog(CreateWebContentWizard.class);
 
-   protected String content = null;
-   transient private List<SelectItem> createMimeTypes;
    transient private List<SelectItem> formChoices;
    protected String createdPath = null;
    protected List<Rendition> renditions = null;
    protected FormInstanceData formInstanceData = null;
-   protected FormProcessor.Session formProcessorSession = null;
-   transient private Document instanceDataDocument = null;
    protected boolean formSelectDisabled = false;
    protected boolean startWorkflow = false;
    protected List<String> locksToReturnToMainStoreOnCancel = null;
@@ -112,7 +107,6 @@ public class CreateWebContentWizard extends CreateContentWizard
    transient private AVMSyncService avmSyncService;
    protected AVMBrowseBean avmBrowseBean;
    protected FilePickerBean filePickerBean;
-   transient private FormsService formsService;
 
    /**
     * @param avmService The AVMService to set.

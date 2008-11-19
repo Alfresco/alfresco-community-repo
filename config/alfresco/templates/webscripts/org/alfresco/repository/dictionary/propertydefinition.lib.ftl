@@ -26,12 +26,15 @@
        	"indexedAtomically" : ${propertydefs.indexedAtomically?string},
        	"constraints" :
        	[
-       		<#--
-       		<#if propertydefs.constraints?exists>
+       	<#if propertydefs.constraints?exists>
        		<#list propertydefs.constraints as constraintdefs>
-				"name" : "${constraintdefs.name}"
+       			{ <#--constraintdefs.getConstraint()[key]-->
+       			<#assign keys = constraintdefs.getConstraint()?keys>
+				<#list keys as key>"${key}" : <#if constraintdefs.getConstraint()[key]?exists>"${constraintdefs.getConstraint()[key]}"</#if><#if key_has_next>,</#if>   
+				</#list> 
+       			}<#if constraintdefs_has_next>,</#if>
 			</#list>
-			</#if>-->
+		</#if>
        	],
        	"url" : "${"/api/classes/" +  url.templateArgs.classname + "/property/" + propertydefs.name.toPrefixString()?replace(":","_")}"
    }

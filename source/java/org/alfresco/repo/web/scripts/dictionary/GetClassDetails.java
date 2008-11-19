@@ -81,7 +81,7 @@ public class GetClassDetails extends DeclarativeWebScript
     {
         String classname = req.getServiceMatch().getTemplateVars().get(DICTIONARY_CLASS_NAME);
         
-        Map<String, Object> model = new HashMap<String, Object>();
+        Map<String, Object> model = new HashMap<String, Object>(3);
         QName qname = null;
         Map<QName, ClassDefinition> classdef = new HashMap<QName, ClassDefinition>();
         Map<QName, Collection<PropertyDefinition>> propdef = new HashMap<QName, Collection<PropertyDefinition>>();

@@ -25,8 +25,11 @@
 package org.alfresco.repo.web.scripts.dictionary;
 
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.web.scripts.Status;
+import org.alfresco.web.scripts.WebScriptException;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.InvalidQNameException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -44,6 +47,14 @@ public class DictionaryHelper
     private Map<String, String> urlsAndPrefixesMap;
     private Collection<String> prefixes;
     private DictionaryService dictionaryservice;
+    
+    private static final String CLASS_FILTER_OPTION_TYPE1 = "all";
+    private static final String CLASS_FILTER_OPTION_TYPE2 = "aspect";
+    private static final String CLASS_FILTER_OPTION_TYPE3 = "type";
+
+    private static final String ASSOCIATION_FILTER_OPTION_TYPE1 = "all";
+    private static final String ASSOCIATION_FILTER_OPTION_TYPE2 = "general";
+    private static final String ASSOCIATION_FILTER_OPTION_TYPE3 = "child";
     
     /**
      * Set the namespaceService property.
@@ -81,24 +92,36 @@ public class DictionaryHelper
         }
 	 }
     
-    public String getNamespaceURIfromQname(QName qname){
+    /**
+     * 
+     * @param qname
+     * @return the namespaceuri from a qname 
+     */
+    public String getNamespaceURIfromQname(QName qname)
+    {
     	return qname.getNamespaceURI();
-    	
-   
-    }
-	/**
+     }
+	
+    /**
      * 
      * @param className     the class name as cm_person
      * @return String       the full name in the following format {namespaceuri}shorname
      */
     public String getFullNamespaceURI(String classname)
     {
-       	String result = null;
-       	String prefix = this.getPrefix(classname);
-		String url = this.prefixesAndUrlsMap.get(prefix);
-		String name = this.getShortName(classname);
-		result = "{" + url + "}"+ name;
-		return result;
+       	try
+       	{
+			String result = null;
+		   	String prefix = this.getPrefix(classname);
+			String url = this.prefixesAndUrlsMap.get(prefix);
+			String name = this.getShortName(classname);
+			result = "{" + url + "}"+ name;
+			return result;
+       	}
+       	catch(Exception e)
+       	{
+       		throw new WebScriptException(Status.STATUS_NOT_FOUND, "The exact parameter has not been provided in the URL");
+       	}
     }
     
     /**
@@ -108,36 +131,160 @@ public class DictionaryHelper
      */
     public String getNamespaceURIfromPrefix(String prefix)
     {
-       	String result = null;
-       	if(this.isValidPrefix(prefix))	result = this.prefixesAndUrlsMap.get(prefix);
-		return result;
+       	if(this.isValidPrefix(prefix) == true)
+   		{
+       		return this.prefixesAndUrlsMap.get(prefix);
+   		}
+       	else
+		{
+       		return null;
+		}
     }
     
-     /*
-     * checks whether the classname (eg.cm_author) is a valid one
+    /**
+     * 
+     * @param classname - checks whether the classname is valid , gets the classname as input e.g cm_person
+     * @return true - if the class is valid , false - if the class is invalid
      */
-    public boolean isValidClassname(String classname)
+    public boolean isValidClassname(String classname) 
     {
-    	boolean result = false;
-    	QName qname = QName.createQName(this.getFullNamespaceURI(classname));
-    	if(this.isValidPrefix(this.getPrefix(classname))&& this.dictionaryservice.getClass(qname)!=null) result = true;
-    	return result;
+    	QName qname = null;
+    	try
+    	{
+    		qname = QName.createQName(this.getFullNamespaceURI(classname));
+    		if ((this.isValidPrefix(this.getPrefix(classname)) == true) && 
+    	    		this.dictionaryservice.getClass(qname) != null) 
+	    	{
+	    		return true;
+	    	}
+    	}
+    	catch(InvalidQNameException e)
+    	{
+    		//just ignore
+    	}
+    	return false;
     }
     
-    /*
-     * checks whether the prefix is a valid one 
+    /**
+     * 
+     * @param prefix - checks whether the prefix is a valid one 
+     * @return true if the prefix is valid or false
      */
     public boolean isValidPrefix(String prefix)
     {
-    	boolean result = false;
-    	if(this.prefixes.contains(prefix)) result = true;
-    	return result;
+    	if(this.prefixes.contains(prefix) == true) 
+    	{
+    		return true;
+    	}
+    	else
+    	{
+    		return false;
+    	}
     }
     
-           
-    /*
-     * returns the prefix from the classname of the format cm_person 
-     * here cm represents the prefix
+   
+    /**
+     * 
+     * @param namespaceprefix - gets a valid namespaceprefix as input
+     * @return modelname from namespaceprefix - returns null if invalid namespaceprefix is given
+     */
+    public String getModelNameFromPrefix(String namespaceprefix)
+    {
+    	String name = null;
+		for(QName qnameObj:this.dictionaryservice.getAllModels())
+        {
+			String prefix = this.getUrlsAndPrefixesMap().get(qnameObj.getNamespaceURI());
+			if(prefix.equals(namespaceprefix))
+             {
+                 name = qnameObj.getLocalName();
+                 break;
+             }
+        }
+		return name;
+    }
+    
+    /**
+     * 
+     * @param namespaceprefix - gets a valid namespaceprefix as input
+     * @return modelname from namespaceprefix - returns null if invalid namespaceprefix is given
+     */
+    public String getPrefixFromModelName(String modelname)
+    {
+    	String namespaceprefix = null;
+		for(QName qnameObj:this.dictionaryservice.getAllModels())
+        {
+             if(qnameObj.getLocalName().equals(modelname))
+             {
+            	 namespaceprefix = this.getUrlsAndPrefixesMap().get(qnameObj.getNamespaceURI());
+            	 break;
+             }
+        }
+		return namespaceprefix;
+    }
+    
+    public boolean isValidAssociationFilter(String af)
+    {
+    	if(af.equalsIgnoreCase(ASSOCIATION_FILTER_OPTION_TYPE1) ||
+    	   af.equalsIgnoreCase(ASSOCIATION_FILTER_OPTION_TYPE2) ||
+    	   af.equalsIgnoreCase(ASSOCIATION_FILTER_OPTION_TYPE3))
+    	{
+    		return true;
+    	}
+    	else
+    	{
+    		return false;
+    	}
+    }
+    
+    /**
+     * 
+     * @param classname as the input
+     * @return true if it is a aspect or false if it is a Type
+     */
+    public boolean isValidTypeorAspect(String classname)
+    {
+    	try
+    	{
+    		QName qname = QName.createQName(this.getFullNamespaceURI(classname));
+    		if( (this.dictionaryservice.getClass(qname)!=null) && 
+    				(this.dictionaryservice.getClass(qname).isAspect() == true))
+			{
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+    	}
+    	catch(InvalidQNameException e)
+    	{
+    		//ignore
+    	}
+    	return false;
+	}
+    
+    /**
+     * 
+     * @param modelname - gets the modelname as the input (modelname is without prefix ie. cm:contentmodel => where modelname = contentmodel)
+     * @return true if valid or false
+     */
+    public boolean isValidModelName(String modelname)
+    {
+    	boolean value = false;
+    	for(QName qnameObj:this.dictionaryservice.getAllModels())
+		{
+			if(qnameObj.getLocalName().equalsIgnoreCase(modelname))
+			{
+				value = true;
+				break;
+			}
+		}
+    	return value;
+    }
+    /**
+     * 
+     * @param classname - returns the prefix from the classname of the format namespaceprefix:name eg. cm_person
+     * @return prefix - returns the prefix of the classname
      */
     public String getPrefix(String classname)
     {
@@ -150,9 +297,10 @@ public class DictionaryHelper
         return prefix;
     }
     
-    /*
-     * returns the shortname from the classname of the format cm_person 
-     * here person represents the shortname
+    /**
+     * @param classname 
+     * @returns the shortname from the classname of the format cm_person 
+     * 			here person represents the shortname
      */
     public String getShortName(String classname)
     {
@@ -165,8 +313,45 @@ public class DictionaryHelper
         return shortname;
     }
     
-    /*
-     * returns a string map or prefixes and urls - with prefix as the key
+    /**
+     * @param input -gets a string input and validates it
+     * 
+     * @return null if invalid or the string itself if its valid
+     */
+    public String getValidInput(String input)
+    {
+    	if((input != null) && (input.length() > 0))
+    	{
+    		return input;
+    	}
+    	else
+    	{
+    		return null;
+    	}
+    }
+  
+   /**
+    * 
+    * @param classfilter =>valid class filters are all,apect or type
+    * @return true if valid or false if invalid
+    */
+    public boolean isValidClassFilter(String classfilter)
+    {
+    	if(classfilter.equals(CLASS_FILTER_OPTION_TYPE1) || 
+    	   classfilter.equals(CLASS_FILTER_OPTION_TYPE2) || 
+    	   classfilter.equals(CLASS_FILTER_OPTION_TYPE3))
+    	{
+    	    return true;
+    	}
+      	else
+    	{
+    		return false;
+    	}
+    }
+   
+    /**
+     * @param 
+     * @return a string map or prefixes and urls - with prefix as the key
      */
     public Map<String, String> getPrefixesAndUrlsMap()
     {

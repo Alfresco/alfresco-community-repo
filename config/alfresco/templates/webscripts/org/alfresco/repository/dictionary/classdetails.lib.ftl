@@ -26,7 +26,7 @@
           "url" : "${"/api/classes/" + classdefs.parentName.toPrefixString()?replace(":","_")}"
         </#if>
       },
-      "defaultAspects" : {
+     "defaultAspects" : {
        <#if classdefs.defaultAspects?exists>
          <#list classdefs.defaultAspects as aspectdef>
           "${aspectdef.name.toPrefixString()}" : {

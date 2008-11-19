@@ -30,11 +30,12 @@ import org.alfresco.web.scripts.WebScriptException;
 import org.alfresco.web.scripts.WebScriptRequest;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.dictionary.ClassDefinition;
+import org.alfresco.service.cmr.dictionary.AssociationDefinition;
+
 import java.util.HashMap;
 import java.util.Map;
 
-/*
+/**
  * Webscript to get the Associationdefinitions for a given classname 
  * @author Saravanan Sellathurai
  */
@@ -42,12 +43,15 @@ import java.util.Map;
 public class GetAssociationDefs extends DeclarativeWebScript
 {
 	private DictionaryService dictionaryservice;
-	private ClassDefinition classdefinition;
 	private DictionaryHelper dictionaryhelper;
 	
 	private static final String MODEL_PROP_KEY_ASSOCIATION_DETAILS = "assocdefs";
+	private static final String MODEL_PROP_KEY_INDIVIDUAL_PROPERTY_DEFS = "individualproperty";
 	private static final String DICTIONARY_CLASS_NAME = "classname";
-		
+	private static final String REQ_URL_TEMPL_VAR_NAMESPACE_PREFIX = "nsp";
+    private static final String REQ_URL_TEMPL_VAR_NAME = "n";
+    private static final String REQ_URL_TEMPL_VAR_ASSOCIATION_FILTER = "af";
+	
 	/**
      * Set the dictionaryService property.
      * 
@@ -74,25 +78,111 @@ public class GetAssociationDefs extends DeclarativeWebScript
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status)
     {
         String classname = req.getServiceMatch().getTemplateVars().get(DICTIONARY_CLASS_NAME);
+        String associationFilter = req.getParameter(REQ_URL_TEMPL_VAR_ASSOCIATION_FILTER);
+        String namespaceprefix = req.getParameter(REQ_URL_TEMPL_VAR_NAMESPACE_PREFIX);
+        String name = req.getParameter(REQ_URL_TEMPL_VAR_NAME);
+    	
         Map<String, Object> model = new HashMap<String, Object>();
-        QName classqname = null;
-        boolean classnameGiven = (classname != null) && (classname.length() > 0);
+        Map<QName, AssociationDefinition> assocdef = new HashMap<QName, AssociationDefinition>();
+        QName assoc_qname = null;
+        QName class_qname = null;
        
-        if(classnameGiven)
+        if(associationFilter == null)
         {
-           	classqname = QName.createQName(this.dictionaryhelper.getFullNamespaceURI(classname));
+        	associationFilter = "all";
         }
-        classdefinition = this.dictionaryservice.getClass(classqname);
         
-        if(this.classdefinition != null)
+        //validate association filter
+        if(this.dictionaryhelper.isValidAssociationFilter(associationFilter) == false)
         {
-		    model.put(MODEL_PROP_KEY_ASSOCIATION_DETAILS, this.classdefinition.getAssociations().values());
-		    return model;
+        	throw new WebScriptException(Status.STATUS_NOT_FOUND, "Check the associationFilter - " + associationFilter + " - parameter in the URL");
+        }
+        
+        //validate classname
+        if(this.dictionaryhelper.isValidClassname(classname) == true)
+        {
+        	class_qname = QName.createQName(this.dictionaryhelper.getFullNamespaceURI(classname));
         }
         else
         {
-            throw new WebScriptException(Status.STATUS_NOT_FOUND, "The exact parameter has not been provided in the URL");
-        } 
+        	throw new WebScriptException(Status.STATUS_NOT_FOUND, "Check the classname - " + classname + " - parameter in the URL");
+        }
+        
+        //validate namespaceprefix
+        if(namespaceprefix != null)
+        {
+        	if(this.dictionaryhelper.isValidPrefix(namespaceprefix) == false)
+        	{
+        		throw new WebScriptException(Status.STATUS_NOT_FOUND, "Check the namespaceprefix - " + namespaceprefix + " - parameter in the URL");
+        	}
+        	
+        	// validate whether the namespaceprefix is same of classname prefix
+        	if(!this.dictionaryhelper.getPrefix(classname).equalsIgnoreCase(namespaceprefix))
+        	{
+        		throw new WebScriptException(Status.STATUS_NOT_FOUND, "Check the namespaceprefix - " + namespaceprefix + " parameter in the URL, namespaceprefix should be of class-type "+ classname);
+        	}
+        }
+        
+        // validate  the condition, if name is present and namespaceprefix is null => if the name is a valid 
+        if(name !=null && namespaceprefix == null)
+        {
+        	assoc_qname = QName.createQName(this.dictionaryhelper.getFullNamespaceURI(this.dictionaryhelper.getPrefix(classname) + "_" + name));
+        	if(this.dictionaryservice.getClass(class_qname).getAssociations().get(assoc_qname)== null)
+        	{
+        		throw new WebScriptException(Status.STATUS_NOT_FOUND, "Check the parameter name - "+ name +" in the URL ");
+        	}
+        	model.put(MODEL_PROP_KEY_INDIVIDUAL_PROPERTY_DEFS, this.dictionaryservice.getClass(class_qname).getAssociations().get(assoc_qname));
+        }
+        
+        // if both namespaceprefix and name parameters are given then, the combination namespaceprefix_name is used as the index to create the qname
+        if(name != null && namespaceprefix != null)
+        {
+        	// validate the class combination namespaceprefix_name
+        	assoc_qname = QName.createQName(this.dictionaryhelper.getFullNamespaceURI(namespaceprefix + "_" + name));
+        	if(this.dictionaryservice.getClass(class_qname).getAssociations().get(assoc_qname)== null)
+        	{
+        		throw new WebScriptException(Status.STATUS_NOT_FOUND, "Check the namespaceprefix - " + namespaceprefix + " and name - "+ name  + " - parameter in the URL =>has no valid Association with class - "+ classname);
+        	}
+        	model.put(MODEL_PROP_KEY_ASSOCIATION_DETAILS, this.dictionaryservice.getClass(class_qname).getAssociations().values());
+    		
+        	if(associationFilter.equals("child"))
+        	{
+        		if(this.dictionaryservice.getClass(class_qname).getChildAssociations().get(assoc_qname)== null)
+            	{
+            		throw new WebScriptException(Status.STATUS_NOT_FOUND, "Check the namespaceprefix - " + namespaceprefix + " and name - "+ name  + " - parameter in the URL => not a valid childassociation for class - "+ classname);
+            	}
+        		model.put(MODEL_PROP_KEY_INDIVIDUAL_PROPERTY_DEFS, this.dictionaryservice.getClass(class_qname).getChildAssociations().get(assoc_qname));
+        	}
+        	else
+        	{
+        		model.put(MODEL_PROP_KEY_INDIVIDUAL_PROPERTY_DEFS, this.dictionaryservice.getClass(class_qname).getAssociations().get(assoc_qname));
+        	}
+        }
+        else
+        {	//if both name and namespaceprefix are not given, then if the assocfilter is a child =>pull only the childassociations, else if general=> pull 
+        	if(associationFilter.equals("child"))
+        	{
+        		model.put(MODEL_PROP_KEY_ASSOCIATION_DETAILS, this.dictionaryservice.getClass(class_qname).getChildAssociations().values());
+        	}
+        	
+        	if(associationFilter.equals("general"))
+        	{
+        		for(AssociationDefinition assocname:this.dictionaryservice.getClass(class_qname).getAssociations().values())
+		        {
+        			if(assocname.isChild() == false){
+        				assocdef.put(assocname.getName(), assocname);
+        			}
+		        }
+        		model.put(MODEL_PROP_KEY_ASSOCIATION_DETAILS, assocdef.values());
+        	}
+        	
+        	if(associationFilter.equals("all"))
+        	{
+        		model.put(MODEL_PROP_KEY_ASSOCIATION_DETAILS, this.dictionaryservice.getClass(class_qname).getAssociations().values());
+            }
+        }
+        return model;
+        
     }
     
 }

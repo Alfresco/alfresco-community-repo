@@ -55,7 +55,7 @@ public class DictionaryServiceTest extends BaseWebScriptTest
 		super.tearDown();
     }
 	
-	private boolean validatePropertyDef(JSONObject result) throws Exception
+	private void validatePropertyDef(JSONObject result) throws Exception
 	{
 		assertEquals("cm:created", result.get("name"));
 		assertEquals("Created Date", result.get("title"));
@@ -69,10 +69,49 @@ public class DictionaryServiceTest extends BaseWebScriptTest
 		assertEquals(true, result.get("indexedAtomically"));
 		//assertEquals check is yet to be made on constraints
 		assertEquals("/api/classes/cm_auditable/property/cm_created", result.get("url"));
-		return true;
+		
 	}
 	
-	private boolean validateAssociationDef(JSONObject result) throws Exception
+	private void validateChildAssociation(JSONObject result) throws Exception
+	{
+		assertEquals("wca:formworkflowdefaults", result.get("name"));
+		assertEquals("", result.get("title"));
+		assertEquals("", result.get("description"));
+		assertEquals(true, result.get("isChildAssociation"));
+		assertEquals(false, result.get("protected"));
+		
+		assertEquals("wca:form", result.getJSONObject("source").get("class"));
+		assertEquals(false, result.getJSONObject("source").get("mandatory"));
+		assertEquals(false, result.getJSONObject("source").get("many"));
+		
+		assertEquals("wca:workflowdefaults", result.getJSONObject("target").get("class"));
+		assertEquals(false, result.getJSONObject("target").get("mandatory"));
+		assertEquals(false, result.getJSONObject("target").get("many"));
+		
+		assertEquals("/api/classes/wca_form/childassociation/wca_formworkflowdefaults", result.get("url"));
+	}
+	
+	private void validateAssociation(JSONObject result) throws Exception
+	{
+		assertEquals("wca:renderingenginetemplates", result.get("name"));
+		assertEquals("Form Data Renderers", result.get("title"));
+		assertEquals("", result.get("description"));
+		assertEquals(false, result.get("isChildAssociation"));
+		assertEquals(false, result.get("protected"));
+		
+		assertEquals("wca:form", result.getJSONObject("source").get("class"));
+		assertEquals("wca:capture", result.getJSONObject("source").get("role"));
+		assertEquals(false, result.getJSONObject("source").get("mandatory"));
+		assertEquals(false, result.getJSONObject("source").get("many"));
+		
+		assertEquals("wca:renderingenginetemplate", result.getJSONObject("target").get("class"));
+		assertEquals("wca:presentation", result.getJSONObject("target").get("role"));
+		assertEquals(false, result.getJSONObject("target").get("mandatory"));
+		assertEquals(true, result.getJSONObject("target").get("many"));
+		
+		assertEquals("/api/classes/wca_form/association/wca_renderingenginetemplates", result.get("url"));
+	}
+	private void validateAssociationDef(JSONObject result) throws Exception
 	{
 		assertEquals("cm:avatar", result.get("name"));
 		assertEquals("", result.get("title"));
@@ -91,11 +130,9 @@ public class DictionaryServiceTest extends BaseWebScriptTest
 		assertEquals(false, result.getJSONObject("target").get("many"));
 		
 		assertEquals("/api/classes/cm_person/association/cm_avatar", result.get("url"));
-		
-		return true;
 	}
 	
-	private boolean validateTypeClass(JSONObject result) throws Exception
+	private void validateTypeClass(JSONObject result) throws Exception
 	{
 		//cm:cmobject is of type =>type
 		assertEquals("cm:cmobject", result.get("name"));
@@ -124,10 +161,9 @@ public class DictionaryServiceTest extends BaseWebScriptTest
 		
 		assertEquals("/api/classes/cm_cmobject", result.get("url"));
 		
-		return true;
 	}
 	
-	private boolean validateAspectClass(JSONObject result) throws Exception
+	private void validateAspectClass(JSONObject result) throws Exception
 	{
 		//cm:thumbnailed is of type =>aspect
 		assertEquals("cm:thumbnailed", result.get("name"));
@@ -146,16 +182,14 @@ public class DictionaryServiceTest extends BaseWebScriptTest
 		assertEquals("cm:thumbnails", result.getJSONObject("childassociations").getJSONObject("cm:thumbnails").get("name"));
 		assertEquals("/api/classes/cm_thumbnailed/childassociation/cm_thumbnails", result.getJSONObject("childassociations").getJSONObject("cm:thumbnails").get("url"));
 		
-		return true;
 	}
 
-	
 	public void testGetPropertyDef() throws Exception
 	{
 		Response response = sendRequest(new GetRequest("/api/classes/cm_auditable/property/cm_created"), 200);
 		assertEquals(200,response.getStatus());
 		JSONObject result = new JSONObject(response.getContentAsString());
-		assertEquals(true, validatePropertyDef(result));
+		validatePropertyDef(result);
 		// TODO Constraint data has to be added... yet to do
 		assertEquals(13, result.length());
 		response = sendRequest(new GetRequest("/api/classes/cm_hi/property/cm_welcome"), 404);
@@ -164,16 +198,97 @@ public class DictionaryServiceTest extends BaseWebScriptTest
 	
 	public void testGetPropertyDefs() throws Exception
 	{
-		Response response = sendRequest(new GetRequest("/api/classes/cm_auditable/properties"), 200);
+		//validate for a particular property cm_created in the class cm_auditable
+		GetRequest req = new GetRequest(URL_SITES + "/cm_auditable/properties");
+		Map< String, String > arguments = new HashMap< String, String >();
+		arguments.put("nsp", "cm");
+		arguments.put("n", "created");
+		req.setArgs(arguments);
+		Response response = sendRequest(req, 200);
+		assertEquals(200,response.getStatus());
 		JSONArray result = new JSONArray(response.getContentAsString());
+		validatePropertyDef(result.getJSONObject(0));
+		
+		// validate without name parameter => returns an array of property definitions
+		arguments.clear();
+		arguments.put("nsp", "cm");
+		req.setArgs(arguments);
+		response = sendRequest(req, 200);
+		result = new JSONArray(response.getContentAsString());
+		assertEquals(200,response.getStatus());
+		assertEquals(5, result.length());
 		for(int i=0; i<result.length(); i++)
 		{
 			if(result.getJSONObject(i).get("name").equals("cm:created")) 
-				assertEquals(true, validatePropertyDef(result.getJSONObject(i)));
+			{
+				validatePropertyDef(result.getJSONObject(i));
+			}
 		}
+		
+		// validate without namespaceprefix parameter 
+		arguments.clear();
+		arguments.put("n", "created");
+		req.setArgs(arguments);
+		response = sendRequest(req, 200);
+		result = new JSONArray(response.getContentAsString());
+		assertEquals(200,response.getStatus());
+		assertEquals(1, result.length());
+		for(int i=0; i<result.length(); i++)
+		{
+			if(result.getJSONObject(i).get("name").equals("cm:created")) 
+			{
+				validatePropertyDef(result.getJSONObject(i));
+			}
+		}
+		
+		//validate with no parameter => returns an array of property definitions
+		arguments.clear();
+		response = sendRequest(req, 200);
+		result = new JSONArray(response.getContentAsString());
 		assertEquals(200,response.getStatus());
 		assertEquals(5, result.length());
+		for(int i=0; i<result.length(); i++)
+		{
+			if(result.getJSONObject(i).get("name").equals("cm:created")) 
+			{
+				validatePropertyDef(result.getJSONObject(i));
+			}
+		}
+		
+		//wrong data
+		arguments.clear();
 		response = sendRequest(new GetRequest("/api/classes/cm_welcome/properties"), 404);
+		assertEquals(404,response.getStatus());
+		
+		//with invalid name parameter
+		arguments.clear();
+		arguments.put("n", "dublincore");
+		arguments.put("nsp", "cm");
+		req.setArgs(arguments);
+		response = sendRequest(req, 404);
+		assertEquals(404,response.getStatus());
+		
+		// with invalid namespace parameter
+		arguments.clear();
+		arguments.put("nsp", "sara");
+		req.setArgs(arguments);
+		response = sendRequest(req, 404);
+		assertEquals(404,response.getStatus());
+		
+		// with invalid name parameter
+		arguments.clear();
+		arguments.put("nsp", "cm");
+		arguments.put("n", "create");
+		req.setArgs(arguments);
+		response = sendRequest(req, 404);
+		assertEquals(404,response.getStatus());
+		
+		// name is valid here, but the namespaceprefix is different from the classname i.e classname is of cm and given namespaceprefix is wcm - which contradicts
+		arguments.clear();
+		arguments.put("nsp", "wcm");
+		arguments.put("n", "created");
+		req.setArgs(arguments);
+		response = sendRequest(req, 404);
 		assertEquals(404,response.getStatus());
 	}
 	
@@ -182,14 +297,15 @@ public class DictionaryServiceTest extends BaseWebScriptTest
 		GetRequest req = new GetRequest(URL_SITES + "/cm_thumbnailed");
 		Response response = sendRequest(req, 200);
 		JSONObject result = new JSONObject(response.getContentAsString());
+		assertEquals(10, result.length());
 		assertEquals(200,response.getStatus());
-		assertEquals(true, validateAspectClass(result));
-		
+		validateAspectClass(result);
 		req = new GetRequest(URL_SITES + "/cm_cmobject");
 		response = sendRequest(req, 200);
 		result = new JSONObject(response.getContentAsString());
+		assertEquals(10, result.length());
 		assertEquals(200,response.getStatus());
-		assertEquals(true, validateTypeClass(result));
+		validateTypeClass(result);
 		
 		response = sendRequest(new GetRequest("/api/classes/cm_hi"), 404);
 		assertEquals(404,response.getStatus());
@@ -198,7 +314,7 @@ public class DictionaryServiceTest extends BaseWebScriptTest
 	public void testGetClassDetails() throws Exception
 	{
 		/**
-		 *  There are seven scenarios with getting class details , all are optional fields
+		 *  There are eight scenarios with getting class details , all are optional fields
 		 *  Classfilter   namespaceprefix   name   Returns  
 		 *  1   yes				yes			 yes	single class
 		 *  2   yes				yes			 no     Array of classes [returns array of classes of the particular namespaceprefix]
@@ -207,7 +323,7 @@ public class DictionaryServiceTest extends BaseWebScriptTest
 		 * 	5   no				yes			 yes	single class [returns a single class of a valid namespaceprefix:name combination]
 		 * 	6   no				yes			 no		Array of classes [returns an array of all aspects and types under particular namespaceprefix]
 		 * 	7   no				no			 yes    Array of all classes [since name alone doesn't makes any meaning]
-		 * 
+		 *  8   yes 		    no 			 yes
 		 * 	Test cases are provided for all the above scenarios	
 		 */
 		
@@ -221,12 +337,15 @@ public class DictionaryServiceTest extends BaseWebScriptTest
 		req.setArgs(arguments);
 		Response response = sendRequest(req, 200);
 		JSONArray result = new JSONArray(response.getContentAsString());
-		boolean flag = false;
+		assertEquals(1, result.length());
 		for(int i=0; i<result.length(); i++)
 		{
-			if (result.getJSONObject(i).get("name").equals("cm:thumbnailed")) flag = validateAspectClass(result.getJSONObject(i));
+			if (result.getJSONObject(i).get("name").equals("cm:thumbnailed"))
+			{
+				validateAspectClass(result.getJSONObject(i));
+			}
 		}
-		assertEquals(true , flag);
+		//check array length
 		assertEquals(200,response.getStatus());
 		
 		//check for a type under cm with name cmobject [case-type:1]
@@ -237,12 +356,14 @@ public class DictionaryServiceTest extends BaseWebScriptTest
 		req.setArgs(arguments);
 		response = sendRequest(req, 200);
 		result = new JSONArray(response.getContentAsString());
-		flag = false;
+		assertEquals(1, result.length());
 		for(int i=0; i<result.length(); i++)
 		{
-			if (result.getJSONObject(i).get("name").equals("cm:cmobject")) flag = validateTypeClass(result.getJSONObject(i));
+			if (result.getJSONObject(i).get("name").equals("cm:cmobject")) 
+			{
+				validateTypeClass(result.getJSONObject(i));
+			}
 		}
-		assertEquals(true , flag);
 		assertEquals(200,response.getStatus());
 		
 		//check for a type under cm with name cmobject [case-type:1]
@@ -253,12 +374,14 @@ public class DictionaryServiceTest extends BaseWebScriptTest
 		req.setArgs(arguments);
 		response = sendRequest(req, 200);
 		result = new JSONArray(response.getContentAsString());
-		flag = false;
+		assertEquals(1, result.length());
 		for(int i=0; i<result.length(); i++)
 		{
-			if (result.getJSONObject(i).get("name").equals("cm:cmobject")) flag = validateTypeClass(result.getJSONObject(i));
+			if (result.getJSONObject(i).get("name").equals("cm:cmobject")) 
+			{
+				validateTypeClass(result.getJSONObject(i));
+			}
 		}
-		assertEquals(true , flag);
 		assertEquals(200,response.getStatus());
 		
 		//check for a type under cm without options=>name, namespaceprefix [case-type:2]
@@ -268,13 +391,15 @@ public class DictionaryServiceTest extends BaseWebScriptTest
 		req.setArgs(arguments);
 		response = sendRequest(req, 200);
 		result = new JSONArray(response.getContentAsString());
-		flag = false;
+		assertEquals(13, result.length());
 		// the above result has all the types under cm, so now check for the presence type cm:cmobject in the array of classes of all types
 		for(int i=0; i<result.length(); i++)
 		{
-			if (result.getJSONObject(i).get("name").equals("cm:cmobject")) flag = validateTypeClass(result.getJSONObject(i));
+			if (result.getJSONObject(i).get("name").equals("cm:cmobject"))
+			{
+				validateTypeClass(result.getJSONObject(i));
+			}
 		}
-		assertEquals(true , flag);
 		assertEquals(200,response.getStatus());
 		
 		//check for a aspect under cm without options=>name [case-type:2]
@@ -284,15 +409,15 @@ public class DictionaryServiceTest extends BaseWebScriptTest
 		req.setArgs(arguments);
 		response = sendRequest(req, 200);
 		result = new JSONArray(response.getContentAsString());
-		flag = false;
+		assertEquals(34, result.length());
 		// the above result has all the aspects under cm, so now check for the presence aspect cm:thumnailed in the array of classes of all aspects
 		for(int i=0; i<result.length(); i++)
 		{
-			if (result.getJSONObject(i).get("name").equals("cm:thumbnailed")) flag = validateAspectClass(result.getJSONObject(i));
+			if (result.getJSONObject(i).get("name").equals("cm:thumbnailed")) 
+			{
+				validateAspectClass(result.getJSONObject(i));
+			}
 		}
-		assertEquals(true , flag);
-		assertEquals(200,response.getStatus());
-		
 		
 		//check for all aspects under cm without options=>name [case-type:2]
 		arguments.clear();
@@ -301,12 +426,14 @@ public class DictionaryServiceTest extends BaseWebScriptTest
 		req.setArgs(arguments);
 		response = sendRequest(req, 200);
 		result = new JSONArray(response.getContentAsString());
-		flag = false;
+		assertEquals(47, result.length());
 		for(int i=0; i<result.length(); i++)
 		{
-			if (result.getJSONObject(i).get("name").equals("cm:thumbnailed")) flag = validateAspectClass(result.getJSONObject(i));
+			if (result.getJSONObject(i).get("name").equals("cm:thumbnailed"))
+			{
+				validateAspectClass(result.getJSONObject(i));
+			}	
 		}
-		assertEquals(true , flag);
 		assertEquals(200,response.getStatus());
 		
 		//check for all type under cm without options=>name, namespaceprefix [case-type:3]
@@ -315,12 +442,14 @@ public class DictionaryServiceTest extends BaseWebScriptTest
 		req.setArgs(arguments);
 		response = sendRequest(req, 200);
 		result = new JSONArray(response.getContentAsString());
-		flag = false;
+		assertEquals(107, result.length());
 		for(int i=0; i<result.length(); i++)
 		{
-			if (result.getJSONObject(i).get("name").equals("cm:cmobject")) flag = validateTypeClass(result.getJSONObject(i));
+			if (result.getJSONObject(i).get("name").equals("cm:cmobject"))
+			{
+				validateTypeClass(result.getJSONObject(i));
+			}
 		}
-		assertEquals(true , flag);
 		assertEquals(200,response.getStatus());
 		
 		//check for all aspect under cm without options=>name, namespaceprefix [case-type:3]
@@ -329,36 +458,42 @@ public class DictionaryServiceTest extends BaseWebScriptTest
 		req.setArgs(arguments);
 		response = sendRequest(req, 200);
 		result = new JSONArray(response.getContentAsString());
-		flag = false;
+		assertEquals(86, result.length());
 		for(int i=0; i<result.length(); i++)
 		{
-			if (result.getJSONObject(i).get("name").equals("cm:thumbnailed")) flag = validateAspectClass(result.getJSONObject(i));
+			if (result.getJSONObject(i).get("name").equals("cm:thumbnailed")) 
+			{
+				validateAspectClass(result.getJSONObject(i));
+			}
 		}
-		assertEquals(true , flag);
 		assertEquals(200,response.getStatus());
 		
 		//check for all aspect and type in the repository when nothing is given [case-type:4]
 		arguments.clear();
 		response = sendRequest(req, 200);
 		result = new JSONArray(response.getContentAsString());
-		flag = false;
+		assertEquals(193, result.length());
 		for(int i=0; i<result.length(); i++)
 		{
-			if (result.getJSONObject(i).get("name").equals("cm:thumbnailed")) flag = validateAspectClass(result.getJSONObject(i));
+			if (result.getJSONObject(i).get("name").equals("cm:thumbnailed"))
+			{
+				validateAspectClass(result.getJSONObject(i));
+			}
 		}
-		assertEquals(true , flag);
 		assertEquals(200,response.getStatus());
 		
 		//check for all aspect and type in the repository when nothing is given [case-type:4]
 		arguments.clear();
 		response = sendRequest(req, 200);
 		result = new JSONArray(response.getContentAsString());
-		flag = false;
+		assertEquals(193, result.length());
 		for(int i=0; i<result.length(); i++)
 		{
-			if (result.getJSONObject(i).get("name").equals("cm:cmobject")) flag = validateTypeClass(result.getJSONObject(i));
+			if (result.getJSONObject(i).get("name").equals("cm:cmobject"))
+			{
+				validateTypeClass(result.getJSONObject(i));
+			}
 		}
-		assertEquals(true , flag);
 		assertEquals(200,response.getStatus());
 		
 		//check for a classname [namespaceprefix:name => cm:cmobject] without classfilter option [case-type:5]
@@ -368,27 +503,31 @@ public class DictionaryServiceTest extends BaseWebScriptTest
 		req.setArgs(arguments);
 		response = sendRequest(req, 200);
 		result = new JSONArray(response.getContentAsString());
-		flag = false;
+		assertEquals(1, result.length());
 		for(int i=0; i<result.length(); i++)
 		{
-			if (result.getJSONObject(i).get("name").equals("cm:cmobject")) flag = validateTypeClass(result.getJSONObject(i));
+			if (result.getJSONObject(i).get("name").equals("cm:cmobject"))
+			{
+				validateTypeClass(result.getJSONObject(i));
+			}
 		}
-		assertEquals(true , flag);
 		assertEquals(200,response.getStatus());
 		
 		//check for a classname [namespaceprefix:name => cm:thumbnailed] without classfilter option [case-type:5]
 		arguments.clear();
 		arguments.put("nsp", "cm");
-		arguments.put("n", "cmobject");
+		arguments.put("n", "thumbnailed");
 		req.setArgs(arguments);
 		response = sendRequest(req, 200);
 		result = new JSONArray(response.getContentAsString());
-		flag = false;
+		assertEquals(1, result.length());
 		for(int i=0; i<result.length(); i++)
 		{
-			if (result.getJSONObject(i).get("name").equals("cm:thumbnailed")) flag = validateAspectClass(result.getJSONObject(i));
+			if (result.getJSONObject(i).get("name").equals("cm:thumbnailed"))
+			{
+				validateAspectClass(result.getJSONObject(i));
+			}
 		}
-		assertEquals(true , flag);
 		assertEquals(200,response.getStatus());
 		
 		//check for a namespaceprefix [namespaceprefix => cm] without classfilter and name option [case-type:6]
@@ -397,12 +536,14 @@ public class DictionaryServiceTest extends BaseWebScriptTest
 		req.setArgs(arguments);
 		response = sendRequest(req, 200);
 		result = new JSONArray(response.getContentAsString());
-		flag = false;
+		assertEquals(47, result.length());
 		for(int i=0; i<result.length(); i++)
 		{
-			if (result.getJSONObject(i).get("name").equals("cm:thumbnailed")) flag = validateAspectClass(result.getJSONObject(i));
+			if (result.getJSONObject(i).get("name").equals("cm:thumbnailed"))
+			{
+				validateAspectClass(result.getJSONObject(i));
+			}
 		}
-		assertEquals(true , flag);
 		assertEquals(200,response.getStatus());
 		
 		//check for a namespaceprefix [namespaceprefix => cm] without classfilter and name option [case-type:6]
@@ -411,12 +552,14 @@ public class DictionaryServiceTest extends BaseWebScriptTest
 		req.setArgs(arguments);
 		response = sendRequest(req, 200);
 		result = new JSONArray(response.getContentAsString());
-		flag = false;
+		assertEquals(47, result.length());
 		for(int i=0; i<result.length(); i++)
 		{
-			if (result.getJSONObject(i).get("name").equals("cm:cmobject")) flag = validateTypeClass(result.getJSONObject(i));
+			if (result.getJSONObject(i).get("name").equals("cm:cmobject")) 
+			{
+				validateTypeClass(result.getJSONObject(i));
+			}
 		}
-		assertEquals(true , flag);
 		assertEquals(200,response.getStatus());
 		
 		//check for a namespaceprefix [namespaceprefix => cm] without classfilter and name option [case-type:6]
@@ -425,12 +568,14 @@ public class DictionaryServiceTest extends BaseWebScriptTest
 		req.setArgs(arguments);
 		response = sendRequest(req, 200);
 		result = new JSONArray(response.getContentAsString());
-		flag = false;
+		assertEquals(47, result.length());
 		for(int i=0; i<result.length(); i++)
 		{
-			if (result.getJSONObject(i).get("name").equals("cm:cmobject")) flag = validateTypeClass(result.getJSONObject(i));
+			if (result.getJSONObject(i).get("name").equals("cm:cmobject")) 
+			{
+				validateTypeClass(result.getJSONObject(i));
+			}
 		}
-		assertEquals(true , flag);
 		assertEquals(200,response.getStatus());
 		
 		//check for a name alone without classfilter and namespaceprefix option [case-type:7]
@@ -439,12 +584,14 @@ public class DictionaryServiceTest extends BaseWebScriptTest
 		req.setArgs(arguments);
 		response = sendRequest(req, 200);
 		result = new JSONArray(response.getContentAsString());
-		flag = false;
+		assertEquals(193, result.length());
 		for(int i=0; i<result.length(); i++)
 		{
-			if (result.getJSONObject(i).get("name").equals("cm:cmobject")) flag = validateTypeClass(result.getJSONObject(i));
+			if (result.getJSONObject(i).get("name").equals("cm:cmobject"))
+			{
+				validateTypeClass(result.getJSONObject(i));
+			}
 		}
-		assertEquals(true , flag);
 		assertEquals(200,response.getStatus());
 		
 		//check for a name alone without classfilter and namespaceprefix option [case-type:7]
@@ -453,12 +600,65 @@ public class DictionaryServiceTest extends BaseWebScriptTest
 		req.setArgs(arguments);
 		response = sendRequest(req, 200);
 		result = new JSONArray(response.getContentAsString());
-		flag = false;
+		assertEquals(193, result.length());
 		for(int i=0; i<result.length(); i++)
 		{
-			if (result.getJSONObject(i).get("name").equals("cm:thumbnailed")) flag = validateAspectClass(result.getJSONObject(i));
+			if (result.getJSONObject(i).get("name").equals("cm:thumbnailed"))
+			{
+				validateAspectClass(result.getJSONObject(i));
+			}
 		}
-		assertEquals(true , flag);
+		assertEquals(200,response.getStatus());
+		
+		//check for a type under cm with name cmobject and no namespaceprefix [case-type:8]
+		arguments.clear();
+		arguments.put("cf", "type");
+		arguments.put("n", "cmobject");
+		req.setArgs(arguments);
+		response = sendRequest(req, 200);
+		result = new JSONArray(response.getContentAsString());
+		assertEquals(107, result.length());
+		for(int i=0; i<result.length(); i++)
+		{
+			if (result.getJSONObject(i).get("name").equals("cm:cmobject")) 
+			{
+				validateTypeClass(result.getJSONObject(i));
+			}
+		}
+		assertEquals(200,response.getStatus());
+		
+		//check for a type under cm with name cmobject and no namespaceprefix [case-type:8]
+		arguments.clear();
+		arguments.put("cf", "aspect");
+		arguments.put("n", "thumbnailed");
+		req.setArgs(arguments);
+		response = sendRequest(req, 200);
+		result = new JSONArray(response.getContentAsString());
+		assertEquals(86, result.length());
+		for(int i=0; i<result.length(); i++)
+		{
+			if (result.getJSONObject(i).get("name").equals("cm:thumbnailed")) 
+			{
+				validateAspectClass(result.getJSONObject(i));
+			}
+		}
+		assertEquals(200,response.getStatus());
+		
+		//check for a type under cm with name cmobject and no namespaceprefix [case-type:8]
+		arguments.clear();
+		arguments.put("cf", "all");
+		arguments.put("n", "thumbnailed");
+		req.setArgs(arguments);
+		response = sendRequest(req, 200);
+		result = new JSONArray(response.getContentAsString());
+		assertEquals(193, result.length());
+		for(int i=0; i<result.length(); i++)
+		{
+			if (result.getJSONObject(i).get("name").equals("cm:thumbnailed")) 
+			{
+				validateAspectClass(result.getJSONObject(i));
+			}
+		}
 		assertEquals(200,response.getStatus());
 		
 		// Test with wrong data
@@ -521,33 +721,200 @@ public class DictionaryServiceTest extends BaseWebScriptTest
 		assertEquals(200,response.getStatus());
 	}
 	
-	
-
 	public void testGetAssociatoinDef() throws Exception
 	{
 		GetRequest req = new GetRequest(URL_SITES + "/cm_person/association/cm_avatar");
 		Response response = sendRequest(req, 200);
 		JSONObject result = new JSONObject(response.getContentAsString());
-		assertEquals(true, validateAssociationDef(result));
+		validateAssociationDef(result);
 		response = sendRequest(new GetRequest(URL_SITES +"/cm_personalbe/association/cms_avatarsara"), 404);
 		assertEquals(404,response.getStatus());
 	}
 	
 	public void testGetAssociatoinDefs() throws Exception
 	{
-		GetRequest req = new GetRequest(URL_SITES + "/cm_person/associations");
+		//validate with associationfilter=>all  and classname=>wca_form
+		GetRequest req = new GetRequest(URL_SITES + "/wca_form/associations");
+		Map< String, String > arguments = new HashMap< String, String >();
+		arguments.put("af", "all");
+		req.setArgs(arguments);
 		Response response = sendRequest(req, 200);
 		JSONArray result = new JSONArray(response.getContentAsString());
-		boolean flag = true;
+		assertEquals(2,result.length());
 		for(int i=0; i<result.length(); i++)
 		{
-			if(result.getJSONObject(i).get("name").equals("cm:avatar")) 
-				flag = validateAssociationDef(result.getJSONObject(i));
+			if(result.getJSONObject(i).get("name").equals("wca:formworkflowdefaults")) 
+				validateChildAssociation(result.getJSONObject(i));
 		}
-		assertEquals(true, flag);
+		for(int i=0; i<result.length(); i++)
+		{
+			if(result.getJSONObject(i).get("name").equals("wca:renderingenginetemplates")) 
+				validateAssociation(result.getJSONObject(i));
+		}
+		
+		//validate with associationfilter=>child and classname=>wca_form
+		arguments.clear();
+		arguments.put("af", "child");
+		req.setArgs(arguments);
+		response = sendRequest(req, 200);
+		result = new JSONArray(response.getContentAsString());
 		assertEquals(1,result.length());
+		for(int i=0; i<result.length(); i++)
+		{
+			if(result.getJSONObject(i).get("name").equals("wca:formworkflowdefaults")) 
+				validateChildAssociation(result.getJSONObject(i));
+		}
+		
+		//validate with associationfilter=>general and classname=>wca_form
+		arguments.clear();
+		arguments.put("af", "general");
+		req.setArgs(arguments);
+		response = sendRequest(req, 200);
+		result = new JSONArray(response.getContentAsString());
+		assertEquals(1,result.length());
+		for(int i=0; i<result.length(); i++)
+		{
+			if(result.getJSONObject(i).get("name").equals("wca:renderingenginetemplates")) 
+				validateAssociation(result.getJSONObject(i));
+		}
+		
+		//look for association wca_renderingenginetemplates in the class wca_form
+		arguments.clear();
+		arguments.put("af", "general");
+		arguments.put("nsp", "wca");
+		arguments.put("n", "renderingenginetemplates");
+		req.setArgs(arguments);
+		response = sendRequest(req, 200);
+		result = new JSONArray(response.getContentAsString());
+		assertEquals(1,result.length());
+		for(int i=0; i<result.length(); i++)
+		{
+			if(result.getJSONObject(i).get("name").equals("wca:renderingenginetemplates")) 
+				validateAssociation(result.getJSONObject(i));
+		}
+		
+		//look for childassociation wca_formworkflowdefaults in the class wca_form
+		arguments.clear();
+		arguments.put("af", "child");
+		arguments.put("nsp", "wca");
+		arguments.put("n", "formworkflowdefaults");
+		req.setArgs(arguments);
+		response = sendRequest(req, 200);
+		result = new JSONArray(response.getContentAsString());
+		assertEquals(1,result.length());
+		for(int i=0; i<result.length(); i++)
+		{
+			if(result.getJSONObject(i).get("name").equals("wca:formworkflowdefaults")) 
+				validateChildAssociation(result.getJSONObject(i));
+		}
+		
+		//look for details on wca_formworkflowdefaults in the class wca_form
+		arguments.clear();
+		arguments.put("nsp", "wca");
+		arguments.put("n", "formworkflowdefaults");
+		req.setArgs(arguments);
+		response = sendRequest(req, 200);
+		result = new JSONArray(response.getContentAsString());
+		assertEquals(1,result.length());
+		for(int i=0; i<result.length(); i++)
+		{
+			if(result.getJSONObject(i).get("name").equals("wca:formworkflowdefaults")) 
+				validateChildAssociation(result.getJSONObject(i));
+		}
+		
+		//look for childassociation  in the class wca_form , with no name parameter 
+		arguments.clear();
+		arguments.put("af", "child");
+		arguments.put("nsp", "wca");
+		req.setArgs(arguments);
+		response = sendRequest(req, 200);
+		result = new JSONArray(response.getContentAsString());
+		assertEquals(1,result.length());
+		for(int i=0; i<result.length(); i++)
+		{
+			if(result.getJSONObject(i).get("name").equals("wca:formworkflowdefaults")) 
+				validateChildAssociation(result.getJSONObject(i));
+		}
+		
+		//ask for an invalid childassociation => name alone is given , a check is made to ensure renderingenginetemplates is in the associations list, if present check whether its a valid
+		// child association otherwise returns a null array
+		arguments.clear();
+		arguments.put("af", "child");
+		arguments.put("n", "renderingenginetemplates");
+		req.setArgs(arguments);
+		response = sendRequest(req, 200);
+		result = new JSONArray(response.getContentAsString());
+		assertEquals(0,result.length());
+		
+		//ask for an invalid general-association => name alone is given , a check is made to ensure formworkflowdefaults is in the associations list, if present check whether its a valid
+		// general association otherwise returns a null array
+		arguments.clear();
+		arguments.put("af", "general");
+		arguments.put("n", "formworkflowdefaults");
+		req.setArgs(arguments);
+		response = sendRequest(req, 200);
+		result = new JSONArray(response.getContentAsString());
+		assertEquals(0,result.length());
+		
+		
+		//look for associations (excluding child assocs)  in the class wca_form , with no name parameter 
+		arguments.clear();
+		arguments.put("af", "general");
+		arguments.put("nsp", "wca");
+		req.setArgs(arguments);
+		response = sendRequest(req, 200);
+		result = new JSONArray(response.getContentAsString());
+		assertEquals(1,result.length());
+		for(int i=0; i<result.length(); i++)
+		{
+			if(result.getJSONObject(i).get("name").equals("wca:renderingenginetemplates")) 
+				validateAssociation(result.getJSONObject(i));
+		}
+		
+		//wrong data
 		response = sendRequest(new GetRequest(URL_SITES +"/cmsa_personalbe/associations"), 404);
 		assertEquals(404,response.getStatus());
+		
+		//ask for a child-association which is actually not a valid child of classname - wca_form 
+		arguments.clear();
+		arguments.put("af", "child");
+		arguments.put("nsp", "wca");
+		arguments.put("n", "renderingenginetemplates");
+		req.setArgs(arguments);
+		response = sendRequest(req, 404);
+		assertEquals(404,response.getStatus());
+		
+		arguments.clear();
+		arguments.put("af", "general");
+		arguments.put("nsp", "cm"); // invalid namespaceprefix => should be of class-type wca
+		arguments.put("n", "renderingenginetemplates");
+		req.setArgs(arguments);
+		response = sendRequest(req, 404);
+		assertEquals(404,response.getStatus());
+		
+		//data without name parameter
+		arguments.clear();
+		arguments.put("nsp", "cm");
+		req.setArgs(arguments);
+		response = sendRequest(req, 404);
+		assertEquals(404,response.getStatus());
+		
+		//data with invalid association in wca_form
+		arguments.clear();
+		arguments.put("nsp", "wca");
+		arguments.put("n", "dublincore");
+		req.setArgs(arguments);
+		response = sendRequest(req, 404);
+		assertEquals(404,response.getStatus());
+		
+		//data with invalid association in wca_form
+		arguments.clear();
+		arguments.put("nsp", "cm");
+		arguments.put("n", "hiwelcome");
+		req.setArgs(arguments);
+		response = sendRequest(req, 404);
+		assertEquals(404,response.getStatus());
+		
 	}
 	
 	//TODO individual check of all elements

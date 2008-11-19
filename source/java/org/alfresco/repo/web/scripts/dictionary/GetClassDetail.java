@@ -24,6 +24,7 @@
  */
 package org.alfresco.repo.web.scripts.dictionary;
 
+import org.alfresco.web.scripts.Cache;
 import org.alfresco.web.scripts.DeclarativeWebScript;
 import org.alfresco.web.scripts.Status;
 import org.alfresco.web.scripts.WebScriptException;
@@ -82,11 +83,11 @@ public class GetClassDetail extends DeclarativeWebScript
     /**
      * @Override  method from DeclarativeWebScript 
      */
-    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status)
+    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
-        String classfilter = req.getParameter(REQ_URL_TEMPL_VAR_CLASS_FILTER);
-        String namespaceprefix = req.getParameter(REQ_URL_TEMPL_VAR_NAMESPACE_PREFIX);
-        String name = req.getParameter(REQ_URL_TEMPL_VAR_NAME);
+    	String classfilter = this.dictionaryhelper.getValidInput(req.getParameter(REQ_URL_TEMPL_VAR_CLASS_FILTER));
+        String namespaceprefix = this.dictionaryhelper.getValidInput(req.getParameter(REQ_URL_TEMPL_VAR_NAMESPACE_PREFIX));
+        String name = this.dictionaryhelper.getValidInput(req.getParameter(REQ_URL_TEMPL_VAR_NAME));
         String classname = null;
         
         Map<QName, ClassDefinition> classdef = new HashMap<QName, ClassDefinition>();
@@ -94,102 +95,104 @@ public class GetClassDetail extends DeclarativeWebScript
         Map<QName, Collection<AssociationDefinition>> assocdef = new HashMap<QName, Collection<AssociationDefinition>>();
         Map<String, Object> model = new HashMap<String, Object>();
         
-        boolean cfGiven = (classfilter != null) && (classfilter.length() > 0);
-        boolean nspGiven = (namespaceprefix != null) && (namespaceprefix.length() > 0);
-        boolean nameGiven = (name != null) && (name.length() > 0);
-        boolean ignoreCheck ,isValidClassfilter ,isValidTriplet, isValidTwins ,hasData;
-        ignoreCheck = isValidClassfilter = isValidTriplet = isValidTwins = hasData = false;
-        
-        classname = namespaceprefix + "_" + name;
-        isValidClassfilter = (cfGiven ) && (classfilter.equals(CLASS_FILTER_OPTION_TYPE1) || classfilter.equals(CLASS_FILTER_OPTION_TYPE2) || classfilter.equals(CLASS_FILTER_OPTION_TYPE3));
-        
-        if (cfGiven && nspGiven && nameGiven) 
+        Collection <QName> qnames = null; 
+        QName class_qname = null;
+        QName myModel = null;
+		
+        //if classfilter is not given, then it defaults to all
+        if(classfilter == null)
         {
-        	// in this case, even if the classfilter is absurd, like asking for a type, but classname (namespaceprefix+" _"+name) in reality is an aspect,then it ignores the classfilter
-        	// and fetches the correct results provided the classname is a valid one, classname should be of type either aspect or type and not a property name or association name...
-        	isValidTriplet = this.dictionaryhelper.isValidPrefix(namespaceprefix) && isValidClassfilter && this.dictionaryhelper.isValidClassname(classname);
-        }
-        else if (cfGiven && nspGiven && !nameGiven)
-        {
-        	isValidTwins =  isValidClassfilter && this.dictionaryhelper.isValidPrefix(namespaceprefix);
-        }
-        else if (cfGiven && !nspGiven && !nameGiven)
-        {
-        	//since classfilter is given and namespaceprefix, name is not given  , we can ignore the check for particular qname for classname
-        	ignoreCheck = isValidClassfilter;
-        }
-        else if (!cfGiven && !nspGiven && !nameGiven)
-        {
-        	// if nothing is given then throw all data and ignoreCheck for particular classname
-        	classfilter = CLASS_FILTER_OPTION_TYPE1;
-        	ignoreCheck = true;
-        }
-        else if (!cfGiven && nspGiven && !nameGiven)
-        {
-        	// if namespace alone is given , then classfilter is assumed to be all and considered as valid twins
-        	classfilter = CLASS_FILTER_OPTION_TYPE1;
-        	isValidTwins = this.dictionaryhelper.isValidPrefix(namespaceprefix);
-        }
-        else if (!cfGiven && nspGiven && nameGiven){
-        	//if namespace and name are given , then classfilter is assumed to be all (as we don't know whether its a aspect or a type ) and considered as valid twins
-        	classfilter = CLASS_FILTER_OPTION_TYPE1;
-        	isValidTwins = this.dictionaryhelper.isValidPrefix(namespaceprefix) && this.dictionaryhelper.isValidClassname(classname);
-        }
-        else if (!cfGiven && !nspGiven && nameGiven)
-        {
-        	//this case is considered an invalid option so throws all aspects and types and considered as hasNothing
-        	classfilter = CLASS_FILTER_OPTION_TYPE1;
-        	ignoreCheck = true;
+        	classfilter = "all";
         }
         
-        if ((isValidTriplet) || (isValidTwins) || (ignoreCheck)) 
-        { 
-        	Collection<QName> qname = null;
-        	int maxIteration = 1;
-        	if (classfilter.equalsIgnoreCase(CLASS_FILTER_OPTION_TYPE1)) maxIteration = 2;
-        	else if(classfilter.equalsIgnoreCase(CLASS_FILTER_OPTION_TYPE3)) qname = this.dictionaryservice.getAllTypes();
-	       	else if (classfilter.equalsIgnoreCase(CLASS_FILTER_OPTION_TYPE2)) qname = this.dictionaryservice.getAllAspects();
-	       		        	
-	    	boolean flipflag = true;
-	    		
-	    	for (int i=0; i<maxIteration; i++)
-    		{
-        		if (maxIteration==2)
+        //validate classfilter
+        if(this.dictionaryhelper.isValidClassFilter(classfilter) == false)
+        {
+        	throw new WebScriptException(Status.STATUS_NOT_FOUND, "Check the classfilter - " + classfilter + " provided in the URL");
+        }
+        
+        //validate the namespaceprefix and name parameters => if namespaceprefix is given, then name has to be validated along with it
+        if(namespaceprefix != null)
+        {
+        	if(this.dictionaryhelper.isValidPrefix(namespaceprefix) == false)
+	        {
+	        	throw new WebScriptException(Status.STATUS_NOT_FOUND, "Check the namespaceprefix - " + namespaceprefix + " parameter in the URL");
+	        }
+        	
+        	//validate name parameter if present along with the namespaceprefix
+        	if(name != null)
+        	{
+        		classname = namespaceprefix + "_" + name;
+        		if(this.dictionaryhelper.isValidClassname(classname) == false)
         		{
-        			if(flipflag) qname = this.dictionaryservice.getAllAspects();
-        			else qname = this.dictionaryservice.getAllTypes();
-        			flipflag = false;
+        			throw new WebScriptException(Status.STATUS_NOT_FOUND, "Check the name - " + name + "parameter in the URL");
         		}
-        		
-        		for(QName qnameObj: qname)
-		        {	
-		        	String url = this.dictionaryhelper.getNamespaceURIfromQname(qnameObj);
-		        	if(ignoreCheck  || url.equals(this.dictionaryhelper.getPrefixesAndUrlsMap().get(namespaceprefix)))
-		        	{
-		        		if(isValidTriplet) qnameObj = QName.createQName(this.dictionaryhelper.getFullNamespaceURI(classname));
-		        		classdef.put(qnameObj, this.dictionaryservice.getClass(qnameObj));
-		        		propdef.put(qnameObj, this.dictionaryservice.getClass(qnameObj).getProperties().values());
-		        		assocdef.put(qnameObj, this.dictionaryservice.getClass(qnameObj).getAssociations().values());
-		        		if (isValidTriplet) break;
-		        	}
-		         }// end of for loop
-    		  }// end of for loop
-    		 
-	    	hasData = true;
-	    	    
-        } // end of else block
-	    	
-        if(hasData)
-        {
-        	model.put(MODEL_PROP_KEY_CLASS_DEFS, classdef.values());
-        	model.put(MODEL_PROP_KEY_PROPERTY_DETAILS, propdef.values());
-        	model.put(MODEL_PROP_KEY_ASSOCIATION_DETAILS, assocdef.values());
-        	return model;
+        		class_qname = QName.createQName(this.dictionaryhelper.getFullNamespaceURI(classname));
+        		classdef.put(class_qname, this.dictionaryservice.getClass(class_qname));
+        		propdef.put(class_qname, this.dictionaryservice.getClass(class_qname).getProperties().values());
+        		assocdef.put(class_qname, this.dictionaryservice.getClass(class_qname).getAssociations().values());
+        	}
+        	else
+        	{	
+        		//if name is not given then the model is extracted from the namespaceprefix, there can be more than one model associated with one namespaceprefix
+        		String namespaceQname = this.dictionaryhelper.getNamespaceURIfromPrefix(namespaceprefix);
+        		for(QName qnameObj:this.dictionaryservice.getAllModels())
+		        {
+		             if(qnameObj.getNamespaceURI().equals(namespaceQname))
+		             {
+		                 name = qnameObj.getLocalName();
+		                 myModel = QName.createQName(this.dictionaryhelper.getFullNamespaceURI(namespaceprefix + "_" + name));
+		                 
+		                 // check the classfilter to pull out either all or tyype or aspects
+		                 if (classfilter.equalsIgnoreCase(CLASS_FILTER_OPTION_TYPE1)) 
+		                 {
+		             		qnames = this.dictionaryservice.getAspects(myModel);
+		             		qnames.addAll(this.dictionaryservice.getTypes(myModel));
+		             	 }
+		                 else if (classfilter.equalsIgnoreCase(CLASS_FILTER_OPTION_TYPE3))
+		             	 {
+		             		qnames = this.dictionaryservice.getTypes(myModel);
+		             	 }
+		             	else if (classfilter.equalsIgnoreCase(CLASS_FILTER_OPTION_TYPE2))
+		               	{
+		               		qnames = this.dictionaryservice.getAspects(myModel);
+		               	}
+		             }
+		        } 
+        	}
         }
-        else
+        
+        // if namespaceprefix is null, then check the classfilter to pull out either all or type or aspects
+        if(myModel == null)
         {
-            throw new WebScriptException(Status.STATUS_NOT_FOUND, "The exact parameter has not been provided in the URL");
-        } 
+	        if (classfilter.equalsIgnoreCase(CLASS_FILTER_OPTION_TYPE1)) 
+	        {
+	    		qnames = this.dictionaryservice.getAllAspects();
+	        	qnames.addAll(this.dictionaryservice.getAllTypes());
+	        }
+	    	else if (classfilter.equalsIgnoreCase(CLASS_FILTER_OPTION_TYPE3))
+	    	{
+	    		qnames = this.dictionaryservice.getAllTypes();
+	    	}
+	       	else if (classfilter.equalsIgnoreCase(CLASS_FILTER_OPTION_TYPE2))
+	       	{
+	       		qnames = this.dictionaryservice.getAllAspects();
+	       	}
+        }
+        
+		if(classdef.isEmpty() == true)
+		{
+			for(QName qnameObj: qnames)
+	        {	
+	    		classdef.put(qnameObj, this.dictionaryservice.getClass(qnameObj));
+	        	propdef.put(qnameObj, this.dictionaryservice.getClass(qnameObj).getProperties().values());
+	        	assocdef.put(qnameObj, this.dictionaryservice.getClass(qnameObj).getAssociations().values());
+			}
+		}
+    	model.put(MODEL_PROP_KEY_CLASS_DEFS, classdef.values());
+	    model.put(MODEL_PROP_KEY_PROPERTY_DETAILS, propdef.values());
+	    model.put(MODEL_PROP_KEY_ASSOCIATION_DETAILS, assocdef.values());
+	    return model;
     }
    
  }

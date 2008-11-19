@@ -1,0 +1,74 @@
+<alfresco-config>
+   <plug-ins>
+      <element-readers>
+         <element-reader element-name="property-sheet" class="org.alfresco.web.config.PropertySheetElementReader"/>
+         <element-reader element-name="client" class="org.alfresco.web.config.ClientElementReader"/>
+         <element-reader element-name="navigation" class="org.alfresco.web.config.NavigationElementReader" />
+         <element-reader element-name="languages" class="org.alfresco.web.config.LanguagesElementReader" />
+         <element-reader element-name="advanced-search" class="org.alfresco.web.config.AdvancedSearchElementReader" />
+         <element-reader element-name="views" class="org.alfresco.web.config.ViewsElementReader" />
+         <element-reader element-name="actions" class="org.alfresco.web.config.ActionsElementReader" />
+         <element-reader element-name="default-controls" class="org.alfresco.web.config.DefaultControlsElementReader"/>
+         <element-reader element-name="constraint-handlers" class="org.alfresco.web.config.ConstraintHandlersElementReader"/>
+         <element-reader element-name="form" class="org.alfresco.web.config.FormElementReader"/>
+      </element-readers>
+   </plug-ins>
+
+   <config>
+      <default-controls>
+         <type name="d:text" template="org/alfresco/forms/controls/textfield.ftl">
+            <control-param name="size">50</control-param>
+         </type>
+         <type name="d:boolean" template="org/alfresco/forms/controls/checkbox.ftl" />
+         <type name="association" template="org/alfresco/forms/controls/association-picker.ftl" />
+         <type name="abc" template="org/alfresco/abc.ftl">
+            <control-param name="a">1</control-param>
+            <control-param name="b">Hello</control-param>
+            <control-param name="c">For ever and ever.</control-param>
+            <control-param name="d"></control-param>
+         </type>
+      </default-controls>
+      <constraint-handlers>
+         <constraint type="REGEX" validation-handler="Alfresco.forms.validation.regexMatch" />
+         <constraint type="NUMERIC" validation-handler="Alfresco.forms.validation.numericMatch"
+                     message="Test Message" message-id="regex_error" />
+      </constraint-handlers>
+   </config>
+   
+   <!-- The evaluator would normally be node-type, but that makes testing difficult -->
+   <config evaluator="string-compare" condition="content">
+      <!-- For this example, I'm going to include all optional attributes -->
+      <form submission-url="submission/url">
+         <view-form template="/path/view/template" requires-role="Consumer" />
+         <edit-form template="/path/edit/template/manager" requires-role="Manager" />
+         <edit-form template="/path/edit/template/contributor" requires-role="Contributor" />
+         <create-form template="/path/create/template" requires-role="Manager" />
+         <field-visibility>
+            <!-- This comment is here to test the FormReader -->
+            <show id="name" />
+            <show id="title" for-mode="view, create" />
+            <hide id="quota" for-mode="edit" />
+         </field-visibility>
+         <appearance>
+            <set id="details" appearance="fieldset" />
+            <set id="user" parent="details" appearance="panel" />
+
+            <field id="name" label="Name" label-id="field_label_name" disabled="true" set="details"
+                     help-text="This is the name of the node" help-text-id="field_help_name" >
+               <control template="alfresco/extension/formcontrols/my-name.ftl">
+                  <control-param name="foo">bar</control-param>
+               </control>
+               <constraint-message type="REGEX" message="The name can not contain the character '{0}'"
+                                                    message-id="field_error_name" />
+            </field>
+            <field id="title" label="My Title" set="details" />
+            <field id="username" set="user" />
+            <field id="quota" set="user" requires-role="Coordinator" /> 
+         </appearance>
+         <model-override>
+            <property name="fields.title.mandatory">true</property>
+         </model-override>
+      </form>
+   </config>
+   
+</alfresco-config>

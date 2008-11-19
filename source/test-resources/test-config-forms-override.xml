@@ -1,0 +1,24 @@
+<alfresco-config>   
+   <config>
+      <default-controls>
+         <type name="d:text" template="org/alfresco/forms/controls/textfield.ftl">
+            <control-param name="size">50</control-param>
+         </type>
+         <type name="d:boolean" template="org/alfresco/forms/controls/checkbox.ftl" />
+         <type name="association" template="org/alfresco/forms/controls/association-picker.ftl" />
+         <type name="abc" template="org/alfresco/abc.ftl">
+            <control-param name="a">1</control-param>
+            <control-param name="b">Hello</control-param>
+            <control-param name="c">Never.</control-param>
+            <control-param name="d"></control-param>
+         </type>
+         <type name="xyz" template="org/alfresco/xyz.ftl" />
+      </default-controls>
+      <constraint-handlers>
+         <constraint type="REGEX" validation-handler="Alfresco.forms.validation.regexMatch" />
+         <constraint type="NUMERIC" validation-handler="Alfresco.forms.validation.numericMatch"
+                     message="Overridden Message" />
+         <constraint type="RANGE" validation-handler="Alfresco.forms.validation.rangeMatch" />
+      </constraint-handlers>
+   </config>
+</alfresco-config>

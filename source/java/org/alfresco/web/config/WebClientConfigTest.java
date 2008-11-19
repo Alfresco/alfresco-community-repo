@@ -24,10 +24,14 @@
  */
 package org.alfresco.web.config;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.config.Config;
 import org.alfresco.config.ConfigElement;
@@ -38,6 +42,7 @@ import org.alfresco.util.BaseTest;
 import org.alfresco.web.config.ActionsConfigElement.ActionDefinition;
 import org.alfresco.web.config.ActionsConfigElement.ActionGroup;
 import org.alfresco.web.config.AdvancedSearchConfigElement.CustomProperty;
+import org.alfresco.web.config.DefaultControlsConfigElement.ControlParam;
 import org.alfresco.web.config.DialogsConfigElement.DialogConfig;
 import org.alfresco.web.config.PropertySheetConfigElement.ItemConfig;
 import org.alfresco.web.config.WizardsConfigElement.ConditionalPageConfig;
@@ -49,7 +54,7 @@ import org.alfresco.web.config.WizardsConfigElement.WizardConfig;
  * JUnit tests to exercise the capabilities added to the web client config
  * service
  * 
- * @author gavinc
+ * @author gavinc, neil
  */
 public class WebClientConfigTest extends BaseTest
 {
@@ -66,10 +71,7 @@ public class WebClientConfigTest extends BaseTest
     */
    public void testPropertySheetConfig()
    {
-      // setup the config service
-      String configFile = getResourcesDir() + "test-config.xml";
-      XMLConfigService svc = new XMLConfigService(new FileConfigSource(configFile));
-      svc.initConfig();
+      XMLConfigService svc = initXMLConfigService("test-config.xml");
 
       // get hold of the property sheet config from the global section
       Config global = svc.getGlobalConfig();
@@ -126,13 +128,11 @@ public class WebClientConfigTest extends BaseTest
          // expected
       } 
    }
+
    
    public void testPropertyViewing()
    {
-      // setup the config service
-      String configFiles = getResourcesDir() + "test-config.xml";
-      XMLConfigService svc = new XMLConfigService(new FileConfigSource(configFiles));
-      svc.initConfig();
+      XMLConfigService svc = initXMLConfigService("test-config.xml");
       
       Config propViewConfig = svc.getConfig("Property Viewing");
       assertNotNull("Property Viewing section should not be null", propViewConfig);
@@ -170,10 +170,7 @@ public class WebClientConfigTest extends BaseTest
    
    public void testPropertyEditing()
    {
-      // setup the config service
-      String configFiles = getResourcesDir() + "test-config.xml";
-      XMLConfigService svc = new XMLConfigService(new FileConfigSource(configFiles));
-      svc.initConfig();
+      XMLConfigService svc = initXMLConfigService("test-config.xml");
       
       Config propEditConfig = svc.getConfig("Property Editing");
       assertNotNull("Property Editing section should not be null", propEditConfig);
@@ -214,12 +211,7 @@ public class WebClientConfigTest extends BaseTest
    
    public void testPropertyOverride()
    {
-      // setup the config service
-      List<String> configFiles = new ArrayList<String>(2);
-      configFiles.add(getResourcesDir() + "test-config.xml");
-      configFiles.add(getResourcesDir() + "test-config-override.xml");
-      XMLConfigService svc = new XMLConfigService(new FileConfigSource(configFiles));
-      svc.initConfig();
+      XMLConfigService svc = initXMLConfigService("test-config.xml", "test-config-override.xml");
       
       // get the config for the size property in the space-aspect property sheet
       PropertySheetConfigElement propSheet = ((PropertySheetConfigElement)svc.getConfig("space-aspect").
@@ -294,10 +286,7 @@ public class WebClientConfigTest extends BaseTest
     */
    public void testClientConfig()
    {
-      // setup the config service
-      String configFiles = getResourcesDir() + "test-config.xml";
-      XMLConfigService svc = new XMLConfigService(new FileConfigSource(configFiles));
-      svc.initConfig();
+      XMLConfigService svc = initXMLConfigService("test-config.xml");
       
       // get the global config and from that the client config
       ClientConfigElement clientConfig = (ClientConfigElement)svc.getGlobalConfig().
@@ -317,12 +306,7 @@ public class WebClientConfigTest extends BaseTest
    
    public void testClientOverride()
    {
-      // setup the config service
-      List<String> configFiles = new ArrayList<String>(2);
-      configFiles.add(getResourcesDir() + "test-config.xml");
-      configFiles.add(getResourcesDir() + "test-config-override.xml");
-      XMLConfigService svc = new XMLConfigService(new FileConfigSource(configFiles));
-      svc.initConfig();
+      XMLConfigService svc = initXMLConfigService("test-config.xml", "test-config-override.xml");
         
       // try and get the global config section
       Config globalSection = svc.getGlobalConfig();
@@ -350,10 +334,7 @@ public class WebClientConfigTest extends BaseTest
     */
    public void testNavigation()
    {
-      // setup the config service
-      String configFiles = getResourcesDir() + "test-config.xml";
-      XMLConfigService svc = new XMLConfigService(new FileConfigSource(configFiles));
-      svc.initConfig();
+      XMLConfigService svc = initXMLConfigService("test-config.xml");
 
       // *** Test the returning of a view id override
       Config testCfg = svc.getConfig("viewid-navigation-result");
@@ -428,10 +409,7 @@ public class WebClientConfigTest extends BaseTest
    
    public void testNavigationGenericConfig()
    {
-      // setup the config service
-      String configFiles = getResourcesDir() + "test-config.xml";
-      XMLConfigService svc = new XMLConfigService(new FileConfigSource(configFiles));
-      svc.initConfig();
+      XMLConfigService svc = initXMLConfigService("test-config.xml");
       
       // do a lookup using the generic config elements and make sure the correct
       // info comes out
@@ -477,12 +455,7 @@ public class WebClientConfigTest extends BaseTest
    
    public void testLanguages()
    {
-      // setup the config service
-      List<String> configFiles = new ArrayList<String>(2);
-      configFiles.add(getResourcesDir() + "test-config.xml");
-      configFiles.add(getResourcesDir() + "test-config-override.xml");
-      XMLConfigService svc = new XMLConfigService(new FileConfigSource(configFiles));
-      svc.initConfig();
+      XMLConfigService svc = initXMLConfigService("test-config.xml", "test-config-override.xml");
       
       LanguagesConfigElement config = (LanguagesConfigElement)svc.getConfig("Languages").
             getConfigElement(LanguagesConfigElement.CONFIG_ELEMENT_ID);
@@ -517,12 +490,7 @@ public class WebClientConfigTest extends BaseTest
    
    public void testAdvancedSearch()
    {
-      // setup the config service
-      List<String> configFiles = new ArrayList<String>(2);
-      configFiles.add(getResourcesDir() + "test-config.xml");
-      configFiles.add(getResourcesDir() + "test-config-override.xml");
-      XMLConfigService svc = new XMLConfigService(new FileConfigSource(configFiles));
-      svc.initConfig();
+	  XMLConfigService svc = initXMLConfigService("test-config.xml", "test-config-override.xml");
       
       AdvancedSearchConfigElement config = (AdvancedSearchConfigElement)svc.getConfig("Advanced Search").
             getConfigElement(AdvancedSearchConfigElement.CONFIG_ELEMENT_ID);
@@ -565,12 +533,7 @@ public class WebClientConfigTest extends BaseTest
    
    public void testViews()
    {
-      // setup the config service
-      List<String> configFiles = new ArrayList<String>(2);
-      configFiles.add(getResourcesDir() + "test-config.xml");
-      configFiles.add(getResourcesDir() + "test-config-override.xml");
-      XMLConfigService svc = new XMLConfigService(new FileConfigSource(configFiles));
-      svc.initConfig();
+	  XMLConfigService svc = initXMLConfigService("test-config.xml", "test-config-override.xml");
       
       ViewsConfigElement config = (ViewsConfigElement)svc.getConfig("Views").
             getConfigElement(ViewsConfigElement.CONFIG_ELEMENT_ID);
@@ -629,10 +592,7 @@ public class WebClientConfigTest extends BaseTest
    
    public void testDialogs()
    {
-      // setup the config service
-      String configFiles = getResourcesDir() + "test-config-dialogs-wizards.xml";
-      XMLConfigService svc = new XMLConfigService(new FileConfigSource(configFiles));
-      svc.initConfig();
+	  XMLConfigService svc = initXMLConfigService("test-config-dialogs-wizards.xml");
       
       // get Dialogs config section
       Config dialogsConfig = svc.getConfig("Dialogs");
@@ -705,12 +665,7 @@ public class WebClientConfigTest extends BaseTest
    
    public void testDialogOverride()
    {
-      // setup the config service
-      List<String> configFiles = new ArrayList<String>(2);
-      configFiles.add(getResourcesDir() + "test-config-dialogs-wizards.xml");
-      configFiles.add(getResourcesDir() + "test-config-override.xml");
-      XMLConfigService svc = new XMLConfigService(new FileConfigSource(configFiles));
-      svc.initConfig();
+	  XMLConfigService svc = initXMLConfigService("test-config-dialogs-wizards.xml", "test-config-override.xml");
       
       // get the 'dialogs' element
       DialogsConfigElement dialogsElement = ((DialogsConfigElement)svc.getConfig("Dialogs").
@@ -734,10 +689,7 @@ public class WebClientConfigTest extends BaseTest
    
    public void testWizards()
    {
-      // setup the config service
-      String configFiles = getResourcesDir() + "test-config-dialogs-wizards.xml";
-      XMLConfigService svc = new XMLConfigService(new FileConfigSource(configFiles));
-      svc.initConfig();
+	  XMLConfigService svc = initXMLConfigService("test-config-dialogs-wizards.xml");
       
       // get Dialogs config section
       Config wizardsConfig = svc.getConfig("Wizards");
@@ -855,10 +807,7 @@ public class WebClientConfigTest extends BaseTest
    
    public void testActions()
    {
-      // setup the config service
-      String configFile = getResourcesDir() + "test-config.xml";
-      XMLConfigService svc = new XMLConfigService(new FileConfigSource(configFile));
-      svc.initConfig();
+      XMLConfigService svc = initXMLConfigService("test-config.xml");
       
       // get the "Actions" config
       Config cfg = svc.getGlobalConfig();
@@ -894,12 +843,7 @@ public class WebClientConfigTest extends BaseTest
    
    public void testActionsOverriding()
    {
-      // setup the config service
-      List<String> configFiles = new ArrayList<String>(2);
-      configFiles.add(getResourcesDir() + "test-config.xml");
-      configFiles.add(getResourcesDir() + "test-config-override.xml");
-      XMLConfigService svc = new XMLConfigService(new FileConfigSource(configFiles));
-      svc.initConfig();
+	  XMLConfigService svc = initXMLConfigService("test-config.xml", "test-config-override.xml");
       
       // get the "Actions" config
       Config cfg = svc.getConfig("Actions Override");
@@ -957,4 +901,337 @@ public class WebClientConfigTest extends BaseTest
       assertEquals("number of items in new_group group", 1, actions.size());
       assertEquals("action", "custom_action", actions.get(0));
    }
+
+    @SuppressWarnings("unchecked")
+    public void testDefaultControlsConfig()
+    {
+        XMLConfigService svc = initXMLConfigService("test-config-forms.xml");
+
+        // get hold of the default-controls config from the global section
+        Config globalConfig = svc.getGlobalConfig();
+        ConfigElement globalDefaultControls = globalConfig
+                .getConfigElement("default-controls");
+        assertNotNull("global default-controls element should not be null",
+                globalDefaultControls);
+        assertTrue(
+                "config element should be an instance of DefaultControlsConfigElement",
+                (globalDefaultControls instanceof DefaultControlsConfigElement));
+
+        // Test that the default-control types are read from the config file
+        Map<String, String> expectedDataMappings = new HashMap<String, String>();
+        expectedDataMappings.put("d:text",
+                "org/alfresco/forms/controls/textfield.ftl");
+        expectedDataMappings.put("d:boolean",
+                "org/alfresco/forms/controls/checkbox.ftl");
+        expectedDataMappings.put("association",
+                "org/alfresco/forms/controls/association-picker.ftl");
+        expectedDataMappings.put("abc", "org/alfresco/abc.ftl");
+
+        DefaultControlsConfigElement dcConfigElement = (DefaultControlsConfigElement) globalDefaultControls;
+        Set<String> actualNames = dcConfigElement.getNames();
+        assertEquals("Incorrect name count, expected "
+                + expectedDataMappings.size(), expectedDataMappings.size(),
+                actualNames.size());
+
+        // Ugly hack to get around JUnit 3.8.1 not having
+        // assertEquals(Collection, Collection)
+        for (String nextName : expectedDataMappings.keySet())
+        {
+            assertTrue("actualNames was missing " + nextName, actualNames
+                    .contains(nextName));
+        }
+        for (String nextName : actualNames)
+        {
+            assertTrue("expectedDataMappings was missing " + nextName,
+                    expectedDataMappings.keySet().contains(nextName));
+        }
+
+        // Test that the datatypes map to the expected template.
+        for (String nextKey : expectedDataMappings.keySet())
+        {
+            String nextExpectedValue = expectedDataMappings.get(nextKey);
+            String nextActualValue = dcConfigElement.getTemplateFor(nextKey);
+            assertTrue("Incorrect template for " + nextKey + ": "
+                    + nextActualValue, nextExpectedValue
+                    .equals(nextActualValue));
+        }
+
+        Map<String, List<ControlParam>> expectedControlParams = new HashMap<String, List<ControlParam>>();
+
+        List<ControlParam> textParams = new ArrayList<ControlParam>();
+        textParams.add(new ControlParam("size", "50"));
+
+        List<ControlParam> abcParams = new ArrayList<ControlParam>();
+        abcParams.add(new ControlParam("a", "1"));
+        abcParams.add(new ControlParam("b", "Hello"));
+        abcParams.add(new ControlParam("c", "For ever and ever."));
+        abcParams.add(new ControlParam("d", ""));
+
+        expectedControlParams.put("d:text", textParams);
+        expectedControlParams.put("d:boolean", Collections.EMPTY_LIST);
+        expectedControlParams.put("association", Collections.EMPTY_LIST);
+        expectedControlParams.put("abc", abcParams);
+
+        for (String name : expectedControlParams.keySet())
+        {
+            List<ControlParam> actualControlParams = dcConfigElement
+                    .getControlParamsFor(name);
+            assertEquals("Incorrect params for " + name, expectedControlParams
+                    .get(name), actualControlParams);
+        }
+
+        // test that a call to the generic getChildren call throws an error
+        try
+        {
+            dcConfigElement.getChildren();
+            fail("getChildren() did not throw an exception");
+        } catch (ConfigException ce)
+        {
+            // expected
+        }
+    }
+   
+    public void testDefaultControlsOverride()
+    {
+        XMLConfigService svc = initXMLConfigService("test-config-forms.xml",
+                "test-config-forms-override.xml");
+
+        // get hold of the default-controls config from the global section
+        Config globalConfig = svc.getGlobalConfig();
+        ConfigElement globalDefaultControls = globalConfig
+                .getConfigElement("default-controls");
+        assertNotNull("global default-controls element should not be null",
+                globalDefaultControls);
+        assertTrue(
+                "config element should be an instance of DefaultControlsConfigElement",
+                (globalDefaultControls instanceof DefaultControlsConfigElement));
+        DefaultControlsConfigElement dcCE = (DefaultControlsConfigElement) globalDefaultControls;
+
+        assertTrue("New template is missing.", dcCE.getNames().contains("xyz"));
+        assertEquals("Expected template incorrect.", "org/alfresco/xyz.ftl",
+                dcCE.getTemplateFor("xyz"));
+
+        ControlParam expectedNewControlParam = new ControlParam("c", "Never.");
+        assertTrue("New control-param missing.", dcCE
+                .getControlParamsFor("abc").contains(expectedNewControlParam));
+    }
+   
+   /**
+     * Tests the combination of a DefaultControlsConfigElement with another that
+     * contains additional data.
+     */
+    public void testDefaultControlsCombine_Addition()
+    {
+        DefaultControlsConfigElement basicElement = new DefaultControlsConfigElement();
+        basicElement.addDataMapping("text", "path/textbox.ftl", null);
+
+        // This element is the same as the above, but adds a control-param.
+        DefaultControlsConfigElement parameterisedElement = new DefaultControlsConfigElement();
+        List<ControlParam> testParams = new ArrayList<ControlParam>();
+        testParams.add(new ControlParam("A", "1"));
+        parameterisedElement.addDataMapping("text", "path/textbox.ftl",
+                testParams);
+
+        ConfigElement combinedElem = basicElement.combine(parameterisedElement);
+        assertEquals("Combined elem incorrect.", parameterisedElement,
+                combinedElem);
+    }
+
+   /**
+     * Tests the combination of a DefaultControlsConfigElement with another that
+     * contains modified data.
+     */
+    public void testDefaultControlsCombine_Modification()
+    {
+        DefaultControlsConfigElement initialElement = new DefaultControlsConfigElement();
+        List<ControlParam> testParams = new ArrayList<ControlParam>();
+        testParams.add(new ControlParam("A", "1"));
+        initialElement.addDataMapping("text", "path/textbox.ftl", testParams);
+
+        // This element is the same as the above, but modifies the
+        // control-param.
+        DefaultControlsConfigElement modifiedElement = new DefaultControlsConfigElement();
+        List<ControlParam> modifiedTestParams = new ArrayList<ControlParam>();
+        modifiedTestParams.add(new ControlParam("A", "5"));
+        modifiedElement.addDataMapping("text", "path/textbox.ftl",
+                modifiedTestParams);
+
+        ConfigElement combinedElem = initialElement.combine(modifiedElement);
+        assertEquals("Combined elem incorrect.", modifiedElement, combinedElem);
+    }
+
+   /**
+     * Tests the combination of a DefaultControlsConfigElement with another that
+     * contains deleted data. TODO Do we actually need to support this type of
+     * customisation?
+     */
+    public void testDefaultControlsCombine_Deletion()
+    {
+        DefaultControlsConfigElement initialElement = new DefaultControlsConfigElement();
+        List<ControlParam> testParams = new ArrayList<ControlParam>();
+        testParams.add(new ControlParam("A", "1"));
+        initialElement.addDataMapping("text", "path/textbox.ftl", testParams);
+
+        // This element is the same as the above, but modifies the
+        // control-param.
+        DefaultControlsConfigElement modifiedElement = new DefaultControlsConfigElement();
+        modifiedElement.addDataMapping("text", "path/textbox.ftl", null);
+
+        ConfigElement combinedElem = initialElement.combine(modifiedElement);
+        assertEquals("Combined elem incorrect.", modifiedElement, combinedElem);
+    }
+
+    public void testConstraintHandlersConfig()
+    {
+        XMLConfigService svc = initXMLConfigService("test-config-forms.xml");
+
+        // get hold of the constraint-handlers config from the global section
+        Config globalConfig = svc.getGlobalConfig();
+        ConfigElement globalConstraintHandlers = globalConfig
+                .getConfigElement("constraint-handlers");
+        assertNotNull("global constraint-handlers element should not be null",
+                globalConstraintHandlers);
+        assertTrue(
+                "config element should be an instance of ConstraintHandlersConfigElement",
+                (globalConstraintHandlers instanceof ConstraintHandlersConfigElement));
+
+        // Test that the constraint-handlers' constraints are read from the
+        // config file
+        Map<String, String> expectedValidationHandlers = new HashMap<String, String>();
+        expectedValidationHandlers.put("REGEX",
+                "Alfresco.forms.validation.regexMatch");
+        expectedValidationHandlers.put("NUMERIC",
+                "Alfresco.forms.validation.numericMatch");
+
+        ConstraintHandlersConfigElement chConfigElement = (ConstraintHandlersConfigElement) globalConstraintHandlers;
+        List<String> actualTypes = chConfigElement.getConstraintTypes();
+        assertEquals("Incorrect type count.",
+                expectedValidationHandlers.size(), actualTypes.size());
+
+        // Ugly hack to get around JUnit 3.8.1 not having
+        // assertEquals(Collection, Collection)
+        for (String nextType : expectedValidationHandlers.keySet())
+        {
+            assertTrue("actualTypes was missing " + nextType, actualTypes
+                    .contains(nextType));
+        }
+        for (String nextType : actualTypes)
+        {
+            assertTrue("expectedValidationHandlers missing " + nextType,
+                    expectedValidationHandlers.keySet().contains(nextType));
+        }
+
+        // Test that the types map to the expected validation handler.
+        for (String nextKey : expectedValidationHandlers.keySet())
+        {
+            String nextExpectedValue = expectedValidationHandlers.get(nextKey);
+            String nextActualValue = chConfigElement
+                    .getValidationHandlerFor(nextKey);
+            assertTrue("Incorrect handler for " + nextKey + ": "
+                    + nextActualValue, nextExpectedValue
+                    .equals(nextActualValue));
+        }
+
+        // Test that the constraint-handlers' messages are read from the config
+        // file
+        Map<String, String> expectedMessages = new HashMap<String, String>();
+        expectedMessages.put("REGEX", null);
+        expectedMessages.put("NUMERIC", "Test Message");
+
+        // Test that the types map to the expected message.
+        for (String nextKey : expectedValidationHandlers.keySet())
+        {
+            String nextExpectedValue = expectedMessages.get(nextKey);
+            String nextActualValue = chConfigElement.getMessageFor(nextKey);
+            assertEquals("Incorrect message for " + nextKey + ".",
+                    nextExpectedValue, nextActualValue);
+        }
+
+        // Test that the constraint-handlers' message-ids are read from the config
+        // file
+        Map<String, String> expectedMessageIDs = new HashMap<String, String>();
+        expectedMessageIDs.put("REGEX", null);
+        expectedMessageIDs.put("NUMERIC", "regex_error");
+        
+        // Test that the types map to the expected message-id.
+        for (String nextKey : expectedValidationHandlers.keySet())
+        {
+            String nextExpectedValue = expectedMessageIDs.get(nextKey);
+            String nextActualValue = chConfigElement.getMessageIdFor(nextKey);
+            assertEquals("Incorrect message-id for " + nextKey + ".",
+                    nextExpectedValue, nextActualValue);
+        }
+
+        // test that a call to the generic getChildren call throws an error
+        try
+        {
+            chConfigElement.getChildren();
+            fail("getChildren() did not throw an exception");
+        } catch (ConfigException ce)
+        {
+            // expected
+        }
+    }
+   
+    public void testConstraintHandlersOverride()
+    {
+        XMLConfigService svc = initXMLConfigService("test-config-forms.xml",
+                "test-config-forms-override.xml");
+
+        // get hold of the constraint-handlers config from the global section
+        Config globalConfig = svc.getGlobalConfig();
+        ConfigElement globalConstraintHandlers = globalConfig
+                .getConfigElement("constraint-handlers");
+        assertNotNull("global constraint-handlers element should not be null",
+                globalConstraintHandlers);
+        assertTrue(
+                "config element should be an instance of ConstraintHandlersConfigElement",
+                (globalConstraintHandlers instanceof ConstraintHandlersConfigElement));
+        ConstraintHandlersConfigElement chCE = (ConstraintHandlersConfigElement) globalConstraintHandlers;
+
+        assertTrue("New type is missing.", chCE.getConstraintTypes().contains(
+                "RANGE"));
+        assertEquals("Expected handler incorrect.",
+                "Alfresco.forms.validation.rangeMatch", chCE
+                        .getValidationHandlerFor("RANGE"));
+
+        assertEquals("Modified message is wrong.", "Overridden Message", chCE
+                .getMessageFor("NUMERIC"));
+    }
+    
+    private XMLConfigService initXMLConfigService(String xmlConfigFile)
+    {
+        String fullFileName = getResourcesDir() + xmlConfigFile;
+        assertFileIsValid(fullFileName);
+
+        XMLConfigService svc = new XMLConfigService(new FileConfigSource(
+                fullFileName));
+        svc.initConfig();
+        return svc;
+    }
+
+    private XMLConfigService initXMLConfigService(String xmlConfigFile,
+            String overridingXmlConfigFile)
+    {
+        String mainConfigFile = getResourcesDir() + xmlConfigFile;
+        String overridingConfigFile = getResourcesDir()
+                + overridingXmlConfigFile;
+        assertFileIsValid(mainConfigFile);
+        assertFileIsValid(overridingConfigFile);
+
+        List<String> configFiles = new ArrayList<String>();
+        configFiles.add(mainConfigFile);
+        configFiles.add(overridingConfigFile);
+        XMLConfigService svc = new XMLConfigService(new FileConfigSource(
+                configFiles));
+        svc.initConfig();
+        return svc;
+    }
+   
+    private void assertFileIsValid(String fullFileName)
+    {
+        File f = new File(fullFileName);
+        assertTrue("Required file missing: " + fullFileName, f.exists());
+        assertTrue("Required file not readable: " + fullFileName, f.canRead());
+    }
 }

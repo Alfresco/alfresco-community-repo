@@ -45,7 +45,15 @@
 	"many" : ${assocdefs.isTargetMany()?string}
      },
    <#if assocdefs.isChild() == true>
-    "url" : "${"/api/classes/" + url.templateArgs.classname + "/childassociation/" + assocdefs.name.toPrefixString()?replace(":","_")}"
+    <#if assocdefs.getRequiredChildName()?exists>
+    "requiredChildName" : "${assocdefs.getRequiredChildName()}",
+    </#if>
+    <#if assocdefs.getDuplicateChildNamesAllowed() == true>
+	    "duplicateChildNameAllowed" : true,
+	    <#else>
+	    "duplicateChildNameAllowed" : false,
+	</#if>
+	"url" : "${"/api/classes/" + url.templateArgs.classname + "/childassociation/" + assocdefs.name.toPrefixString()?replace(":","_")}"
    <#else>
     "url" : "${"/api/classes/" + url.templateArgs.classname + "/association/" + assocdefs.name.toPrefixString()?replace(":","_")}"
    </#if>

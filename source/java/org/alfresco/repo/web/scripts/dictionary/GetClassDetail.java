@@ -147,20 +147,20 @@ public class GetClassDetail extends DeclarativeWebScript
 		             {
 		                 name = qnameObj.getLocalName();
 		                 myModel = QName.createQName(this.dictionaryhelper.getFullNamespaceURI(namespaceprefix + "_" + name));
-		                 
-		                 // check the classfilter to pull out either all or tyype or aspects
+		                 qnames.clear();
+		                 // check the classfilter to pull out either all or type or aspects
 		                 if (classfilter.equalsIgnoreCase(CLASS_FILTER_OPTION_TYPE1)) 
 		                 {
-		             		qnames = this.dictionaryservice.getAspects(myModel);
+		             		qnames.addAll(this.dictionaryservice.getAspects(myModel));
 		             		qnames.addAll(this.dictionaryservice.getTypes(myModel));
 		             	 }
 		                 else if (classfilter.equalsIgnoreCase(CLASS_FILTER_OPTION_TYPE3))
 		             	 {
-		             		qnames = this.dictionaryservice.getTypes(myModel);
+		             		qnames.addAll(this.dictionaryservice.getTypes(myModel));
 		             	 }
 		             	else if (classfilter.equalsIgnoreCase(CLASS_FILTER_OPTION_TYPE2))
 		               	{
-		               		qnames = this.dictionaryservice.getAspects(myModel);
+		             		qnames.addAll(this.dictionaryservice.getAspects(myModel));
 		               	}
 		             }
 		        } 

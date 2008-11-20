@@ -26,6 +26,17 @@
           "url" : "${"/api/classes/" + classdefs.parentName.toPrefixString()?replace(":","_")}"
         </#if>
       },
+     "defaultValues" : {
+      <#if classdefs.defaultValues?exists>
+     <#assign keys = classdefs.defaultValues?keys>
+	<#list keys as key>
+	"${key.toPrefixString()}" : {
+			"name" : "${key.toPrefixString()}",
+			"url" : "${"/api/classes/" + classdefs.name.toPrefixString()?replace(":","_") + "/property/" + key.toPrefixString()?replace(":","_")}"
+	 }<#if key_has_next>,</#if>
+	</#list>
+      </#if>
+     }, 
      "defaultAspects" : {
        <#if classdefs.defaultAspects?exists>
          <#list classdefs.defaultAspects as aspectdef>

@@ -25,16 +25,20 @@
        	"indexed" : ${propertydefs.indexed?string},
        	"indexedAtomically" : ${propertydefs.indexedAtomically?string},
        	"constraints" :
-       	[
+       	[<#--
        	<#if propertydefs.constraints?exists>
-       		<#list propertydefs.constraints as constraintdefs>
-       			{ <#--constraintdefs.getConstraint()[key]
-       			<#assign keys = constraintdefs.getConstraint()?keys>
-				<#list keys as key>"${key}" : <#if constraintdefs.getConstraint()[key]?exists>"${constraintdefs.getConstraint()[key]}"</#if><#if key_has_next>,</#if>   
-				</#list> -->
-       			}<#if constraintdefs_has_next>,</#if>
-			</#list>
-		</#if>
+		 <#list propertydefs.constraints as constraintdefs>
+		{ 
+		<#assign keys = constraintdefs.getConstraint()?keys>
+			<#list keys as key>
+				<#if key == "expression">
+				"${key}" : <#if constraintdefs.getConstraint()[key]?exists>"${constraintdefs.getConstraint()[key]}" <#else>"has no value"</#if>
+				</#if>
+				<#if key_has_next>,</#if>   
+			</#list> 
+		}<#if constraintdefs_has_next>,</#if>
+		</#list>
+	</#if>-->
        	],
        	"url" : "${"/api/classes/" +  url.templateArgs.classname + "/property/" + propertydefs.name.toPrefixString()?replace(":","_")}"
    }

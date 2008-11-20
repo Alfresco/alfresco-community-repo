@@ -607,6 +607,12 @@
      <property name="dictionaryHelper" ref="dictionaryWebScriptHelper"/>
     </bean>
     
+    <!-- GET subclasses DEFINITION's  -->
+    <bean id="webscript.org.alfresco.repository.dictionary.getsubclassesdef.get" class="org.alfresco.repo.web.scripts.dictionary.GetSubClassesDef" parent="webscript">
+      <property name="dictionaryService" ref="DictionaryService"/>
+     <property name="dictionaryHelper" ref="dictionaryWebScriptHelper"/>
+    </bean>
+    
     <!-- Dictionary Service Web Script Helper Class -->
    <bean id="dictionaryWebScriptHelper" class="org.alfresco.repo.web.scripts.dictionary.DictionaryHelper" init-method="init">
       <property name="namespaceService" ref="NamespaceService"/>

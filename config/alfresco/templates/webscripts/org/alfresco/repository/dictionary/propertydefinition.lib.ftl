@@ -28,10 +28,10 @@
        	[
        	<#if propertydefs.constraints?exists>
        		<#list propertydefs.constraints as constraintdefs>
-       			{ <#--constraintdefs.getConstraint()[key]-->
+       			{ <#--constraintdefs.getConstraint()[key]
        			<#assign keys = constraintdefs.getConstraint()?keys>
 				<#list keys as key>"${key}" : <#if constraintdefs.getConstraint()[key]?exists>"${constraintdefs.getConstraint()[key]}"</#if><#if key_has_next>,</#if>   
-				</#list> 
+				</#list> -->
        			}<#if constraintdefs_has_next>,</#if>
 			</#list>
 		</#if>

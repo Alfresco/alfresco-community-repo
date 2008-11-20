@@ -111,6 +111,11 @@ public class GetClassDetail extends DeclarativeWebScript
         	throw new WebScriptException(Status.STATUS_NOT_FOUND, "Check the classfilter - " + classfilter + " provided in the URL");
         }
         
+        if(namespaceprefix == null && name != null)
+        {
+        	throw new WebScriptException(Status.STATUS_NOT_FOUND, "Missing namespaceprefix parameter in the URL - both combination of name and namespaceprefix is needed");
+        }
+        
         //validate the namespaceprefix and name parameters => if namespaceprefix is given, then name has to be validated along with it
         if(namespaceprefix != null)
         {

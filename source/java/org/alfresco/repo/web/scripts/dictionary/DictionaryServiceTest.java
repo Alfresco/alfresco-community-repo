@@ -322,8 +322,8 @@ public class DictionaryServiceTest extends BaseWebScriptTest
 		 * 	4   no				no			 no		Array of classes [returns all classes of both type and aspects in the entire repository]
 		 * 	5   no				yes			 yes	single class [returns a single class of a valid namespaceprefix:name combination]
 		 * 	6   no				yes			 no		Array of classes [returns an array of all aspects and types under particular namespaceprefix]
-		 * 	7   no				no			 yes    Array of all classes [since name alone doesn't makes any meaning]
-		 *  8   yes 		    no 			 yes
+		 * 	7   no				no			 yes    404 error [since name alone doesn't makes any meaning]
+		 *  8   yes 		    no 			 yes	404 error [since name alone doesn't makes any meaning]
 		 * 	Test cases are provided for all the above scenarios	
 		 */
 		
@@ -578,88 +578,21 @@ public class DictionaryServiceTest extends BaseWebScriptTest
 		}
 		assertEquals(200,response.getStatus());
 		
-		//check for a name alone without classfilter and namespaceprefix option [case-type:7]
+		//check for a name alone without classfilter and namespaceprefix option [case-type:7] => returns 404 error
 		arguments.clear();
 		arguments.put("n", "cmobject");
 		req.setArgs(arguments);
-		response = sendRequest(req, 200);
-		result = new JSONArray(response.getContentAsString());
-		assertEquals(193, result.length());
-		for(int i=0; i<result.length(); i++)
-		{
-			if (result.getJSONObject(i).get("name").equals("cm:cmobject"))
-			{
-				validateTypeClass(result.getJSONObject(i));
-			}
-		}
-		assertEquals(200,response.getStatus());
+		response = sendRequest(req, 404);
+		assertEquals(404,response.getStatus());
 		
-		//check for a name alone without classfilter and namespaceprefix option [case-type:7]
-		arguments.clear();
-		arguments.put("n", "thumbnailed");
-		req.setArgs(arguments);
-		response = sendRequest(req, 200);
-		result = new JSONArray(response.getContentAsString());
-		assertEquals(193, result.length());
-		for(int i=0; i<result.length(); i++)
-		{
-			if (result.getJSONObject(i).get("name").equals("cm:thumbnailed"))
-			{
-				validateAspectClass(result.getJSONObject(i));
-			}
-		}
-		assertEquals(200,response.getStatus());
 		
-		//check for a type under cm with name cmobject and no namespaceprefix [case-type:8]
+		//check for a type under cm with name cmobject and no namespaceprefix [case-type:8] => returns 404 error
 		arguments.clear();
 		arguments.put("cf", "type");
 		arguments.put("n", "cmobject");
 		req.setArgs(arguments);
-		response = sendRequest(req, 200);
-		result = new JSONArray(response.getContentAsString());
-		assertEquals(107, result.length());
-		for(int i=0; i<result.length(); i++)
-		{
-			if (result.getJSONObject(i).get("name").equals("cm:cmobject")) 
-			{
-				validateTypeClass(result.getJSONObject(i));
-			}
-		}
-		assertEquals(200,response.getStatus());
-		
-		//check for a type under cm with name cmobject and no namespaceprefix [case-type:8]
-		arguments.clear();
-		arguments.put("cf", "aspect");
-		arguments.put("n", "thumbnailed");
-		req.setArgs(arguments);
-		response = sendRequest(req, 200);
-		result = new JSONArray(response.getContentAsString());
-		assertEquals(86, result.length());
-		for(int i=0; i<result.length(); i++)
-		{
-			if (result.getJSONObject(i).get("name").equals("cm:thumbnailed")) 
-			{
-				validateAspectClass(result.getJSONObject(i));
-			}
-		}
-		assertEquals(200,response.getStatus());
-		
-		//check for a type under cm with name cmobject and no namespaceprefix [case-type:8]
-		arguments.clear();
-		arguments.put("cf", "all");
-		arguments.put("n", "thumbnailed");
-		req.setArgs(arguments);
-		response = sendRequest(req, 200);
-		result = new JSONArray(response.getContentAsString());
-		assertEquals(193, result.length());
-		for(int i=0; i<result.length(); i++)
-		{
-			if (result.getJSONObject(i).get("name").equals("cm:thumbnailed")) 
-			{
-				validateAspectClass(result.getJSONObject(i));
-			}
-		}
-		assertEquals(200,response.getStatus());
+		response = sendRequest(req, 404);
+		assertEquals(404,response.getStatus());
 		
 		// Test with wrong data
 		//check for all aspects under cm without option=>name
@@ -721,6 +654,83 @@ public class DictionaryServiceTest extends BaseWebScriptTest
 		assertEquals(200,response.getStatus());
 	}
 	
+	public void testSubClassDetails() throws Exception
+	{
+		GetRequest req = new GetRequest(URL_SITES + "/sys_base/subclasses");
+		Map< String, String > arguments = new HashMap< String, String >();
+		arguments.put("r", "true");
+		req.setArgs(arguments);
+		Response response = sendRequest(req, 200);
+		assertEquals(200,response.getStatus());
+		response = sendRequest(req, 200);
+		JSONArray result = new JSONArray(response.getContentAsString());
+		assertEquals(104, result.length());
+		for(int i=0; i<result.length(); i++)
+		{
+			if (result.getJSONObject(i).get("name").equals("cm:cmobject"))
+			{
+				validateTypeClass(result.getJSONObject(i));
+			}
+		}
+		assertEquals(200,response.getStatus());
+		
+		arguments.clear();
+		arguments.put("r", "false");
+		req.setArgs(arguments);
+		response = sendRequest(req, 200);
+		assertEquals(200,response.getStatus());
+		response = sendRequest(req, 200);
+		result = new JSONArray(response.getContentAsString());
+		assertEquals(17, result.length());
+		for(int i=0; i<result.length(); i++)
+		{
+			if (result.getJSONObject(i).get("name").equals("cm:cmobject"))
+			{
+				validateTypeClass(result.getJSONObject(i));
+			}
+		}
+		assertEquals(200,response.getStatus());
+		
+		assertEquals(200,response.getStatus());
+		arguments.clear();
+		arguments.put("r", "false");
+		arguments.put("nsp", "cm");
+		req.setArgs(arguments);
+		response = sendRequest(req, 200);
+		assertEquals(200,response.getStatus());
+		response = sendRequest(req, 200);
+		result = new JSONArray(response.getContentAsString());
+		assertEquals(2, result.length());
+		for(int i=0; i<result.length(); i++)
+		{
+			if (result.getJSONObject(i).get("name").equals("cm:cmobject"))
+			{
+				validateTypeClass(result.getJSONObject(i));
+			}
+		}
+		assertEquals(200,response.getStatus());
+		
+		arguments.clear();
+		arguments.put("r", "true");
+		arguments.put("nsp", "cm");
+		req.setArgs(arguments);
+		response = sendRequest(req, 200);
+		assertEquals(200,response.getStatus());
+		response = sendRequest(req, 200);
+		result = new JSONArray(response.getContentAsString());
+		assertEquals(13, result.length());
+		for(int i=0; i<result.length(); i++)
+		{
+			if (result.getJSONObject(i).get("name").equals("cm:cmobject"))
+			{
+				validateTypeClass(result.getJSONObject(i));
+			}
+		}
+		assertEquals(200,response.getStatus());
+		
+		
+	}
+	
 	public void testGetAssociatoinDef() throws Exception
 	{
 		GetRequest req = new GetRequest(URL_SITES + "/cm_person/association/cm_avatar");
@@ -751,6 +761,7 @@ public class DictionaryServiceTest extends BaseWebScriptTest
 			if(result.getJSONObject(i).get("name").equals("wca:renderingenginetemplates")) 
 				validateAssociation(result.getJSONObject(i));
 		}
+		assertEquals(200,response.getStatus());
 		
 		//validate with associationfilter=>child and classname=>wca_form
 		arguments.clear();
@@ -764,6 +775,7 @@ public class DictionaryServiceTest extends BaseWebScriptTest
 			if(result.getJSONObject(i).get("name").equals("wca:formworkflowdefaults")) 
 				validateChildAssociation(result.getJSONObject(i));
 		}
+		assertEquals(200,response.getStatus());
 		
 		//validate with associationfilter=>general and classname=>wca_form
 		arguments.clear();
@@ -811,6 +823,20 @@ public class DictionaryServiceTest extends BaseWebScriptTest
 		//look for details on wca_formworkflowdefaults in the class wca_form
 		arguments.clear();
 		arguments.put("nsp", "wca");
+		arguments.put("n", "formworkflowdefaults");
+		req.setArgs(arguments);
+		response = sendRequest(req, 200);
+		result = new JSONArray(response.getContentAsString());
+		assertEquals(1,result.length());
+		for(int i=0; i<result.length(); i++)
+		{
+			if(result.getJSONObject(i).get("name").equals("wca:formworkflowdefaults")) 
+				validateChildAssociation(result.getJSONObject(i));
+		}
+		
+		//look for childassociation  in the class wca_form , with a name parameter 
+		arguments.clear();
+		arguments.put("af", "child");
 		arguments.put("n", "formworkflowdefaults");
 		req.setArgs(arguments);
 		response = sendRequest(req, 200);

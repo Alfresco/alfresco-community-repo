@@ -1,0 +1,8 @@
+<webscript>
+   <shortname>Get Sub Class Definitions</shortname>
+   <description>Get the collection of sub classes definitions - parameters r=> recursive, classfilter , namespaceprefix and name</description>
+   <url>/api/classes/{classname}/subclasses?r={recursive?}&amp;nsp={namespacePrefix?}&amp;n={name?}</url>
+   <format default="json"/>
+   <authentication>user</authentication>
+   <transaction>required</transaction>
+</webscript>

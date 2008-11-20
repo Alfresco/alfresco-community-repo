@@ -123,7 +123,7 @@ public class GetAssociationDefs extends DeclarativeWebScript
         	}
         }
         
-        // validate  the condition, if name is present and namespaceprefix is null => if the name is a valid 
+        // validate  the condition, if name is present and namespaceprefix is null 
         if(name !=null && namespaceprefix == null)
         {
         	assoc_qname = QName.createQName(this.dictionaryhelper.getFullNamespaceURI(this.dictionaryhelper.getPrefix(classname) + "_" + name));
@@ -154,12 +154,12 @@ public class GetAssociationDefs extends DeclarativeWebScript
         		model.put(MODEL_PROP_KEY_INDIVIDUAL_PROPERTY_DEFS, this.dictionaryservice.getClass(class_qname).getChildAssociations().get(assoc_qname));
         	}
         	else
-        	{
+        	{	//association filter is either general or all
         		model.put(MODEL_PROP_KEY_INDIVIDUAL_PROPERTY_DEFS, this.dictionaryservice.getClass(class_qname).getAssociations().get(assoc_qname));
         	}
         }
         else
-        {	//if both name and namespaceprefix are not given, then if the assocfilter is a child =>pull only the childassociations, else if general=> pull 
+        {	// this point is always reached, if both name and namespaceprefix are not given OR Just namespaceprefix is alone given 
         	if(associationFilter.equals("child"))
         	{
         		model.put(MODEL_PROP_KEY_ASSOCIATION_DETAILS, this.dictionaryservice.getClass(class_qname).getChildAssociations().values());

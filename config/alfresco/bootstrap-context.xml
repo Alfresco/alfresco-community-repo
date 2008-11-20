@@ -509,6 +509,12 @@
         </constructor-arg>
     </bean>
 
+    <bean id="personDaoBootstrap" class="org.alfresco.repo.security.person.PersonDaoBootstrap" >
+        <property name="personDaoImpl">
+         	<ref bean="personDaoImpl"/>
+      	</property>
+   	</bean>
+   
     <!-- Start the quartz scheduler -->
 
     <bean id="schedulerStarter" class="org.alfresco.util.SchedulerStarterBean" >
@@ -565,12 +571,6 @@
       <property name="avmService" ref="AVMService" />
       <property name="companyHomeStore"><value>${spaces.store}</value></property>
       <property name="companyHomePath"><value>/${spaces.company_home.childname}</value></property>
-   </bean>
-
-   <bean id="personDaoBootstrap" class="org.alfresco.repo.security.person.PersonDaoBootstrap" >
-      <property name="personDaoImpl">
-         <ref bean="personDaoImpl"/>
-      </property>
    </bean>
 
     <!-- Startup Message -->

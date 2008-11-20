@@ -669,6 +669,20 @@
          p.string_value = :propStringValue
    </sql-query>
    
+   <query name="node.GetNodesWithCreatorAndStore">
+      select
+         node.id,
+         node.store.protocol,
+         node.store.identifier,
+         node.uuid
+      from
+         org.alfresco.repo.domain.hibernate.NodeImpl as node
+      where
+         node.store.protocol = :storeProtocol and
+         node.store.identifier = :storeIdentifier and
+         node.auditableProperties.auditCreator = :userName
+   </query>
+   
    <query name="node.GetNodesWithPropertyValuesByActualType">
       select
          node

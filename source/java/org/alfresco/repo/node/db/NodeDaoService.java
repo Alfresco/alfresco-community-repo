@@ -394,6 +394,20 @@ public interface NodeDaoService
             NodePropertyHandler handler);
     
     /**
+     * Iterate over all nodes that have a given creator
+     * 
+     * @param storeRef                          the store to search in
+     * @param userName                          the user to match
+     * @param handler                           the callback to use while iterating over the URLs
+     * @return Returns the values for the given owner
+     */
+    @DirtySessionAnnotation(markDirty=true)
+    public void getNodesWithCreatorAndStore(
+            StoreRef storeRef,
+            String userName,
+            NodeRefQueryCallback resultsCallback);
+            
+    /**
      * Iterate over all property values for the given type definition.  This will also dig out values that
      * were persisted as type <b>d:any</b>.
      * 

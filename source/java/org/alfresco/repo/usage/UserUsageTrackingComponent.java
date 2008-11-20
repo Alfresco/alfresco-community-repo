@@ -25,6 +25,7 @@
 package org.alfresco.repo.usage;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -32,11 +33,11 @@ import java.util.Set;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.db.NodeDaoService;
 import org.alfresco.repo.node.db.NodeDaoService.NodePropertyHandler;
+import org.alfresco.repo.node.db.NodeDaoService.NodeRefQueryCallback;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.Tenant;
 import org.alfresco.repo.tenant.TenantAdminService;
-import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.TransactionServiceImpl;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -47,6 +48,7 @@ import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.usage.UsageService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
 import org.apache.commons.lang.mutable.MutableLong;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -184,63 +186,102 @@ public class UserUsageTrackingComponent
     	}
     }
     
-    public void clearAllUsages()
+    private void clearAllUsages()
     {
-        if (logger.isDebugEnabled()) 
+        if (logger.isInfoEnabled()) 
         {
-            logger.debug("Disabled - clear usages for all users ...");
+            logger.info("Disabled - clear non-missing user usages ...");
         }
 
-        RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
-        
-        // wrap to make the request in a transaction
-        RetryingTransactionCallback<Integer> clearAllUsages = new RetryingTransactionCallback<Integer>()
+        RetryingTransactionCallback<List<NodeRef>> getPersonRefs = new RetryingTransactionCallback<List<NodeRef>>()
         {
-            public Integer execute() throws Throwable
+            public List<NodeRef> execute() throws Throwable
             {
                 Set<NodeRef> allPeople = personService.getAllPeople();
                 
+                if (logger.isDebugEnabled()) 
+                {
+                    logger.debug("Found " + allPeople.size() + " people");
+                }
+                
+                List<NodeRef> personRefsToClear = new ArrayList<NodeRef>();
+                
                 for (NodeRef personNodeRef : allPeople)
                 {
-                    nodeService.setProperty(personNodeRef, ContentModel.PROP_SIZE_CURRENT, null);
-                    usageService.deleteDeltas(personNodeRef);
+                    Long currentUsage = (Long)nodeService.getProperty(personNodeRef, ContentModel.PROP_SIZE_CURRENT);
+                    if (currentUsage != null)
+                    {
+                        personRefsToClear.add(personNodeRef);
+                    }
                 }
-                return allPeople.size();
+                
+                if (logger.isDebugEnabled()) 
+                {
+                    logger.debug("Found " + personRefsToClear.size() + " users to clear");
+                }
+                
+                return personRefsToClear;
             }
         };
-        // execute in txn
-        int count = txnHelper.doInTransaction(clearAllUsages, false);
-
-        if (logger.isDebugEnabled()) 
+        
+        // execute in READ-ONLY txn
+        List<NodeRef> personRefsToClear = transactionService.getRetryingTransactionHelper().doInTransaction(getPersonRefs, true);
+        
+        for (NodeRef personNodeRef : personRefsToClear)
         {
-            logger.debug("... cleared usages for " + count + " users");
+            clearUsage(personNodeRef);
+        }
+
+        if (logger.isInfoEnabled()) 
+        {
+            logger.info("... cleared non-missing usages for " + personRefsToClear.size() + " users");
         }   	
     }
     
-    public void calculateMissingUsages()
+    private void clearUsage(final NodeRef personNodeRef)
     {
-        if (logger.isDebugEnabled()) 
+        RetryingTransactionCallback<Integer> clearPersonUsage = new RetryingTransactionCallback<Integer>()
         {
-            logger.debug("Enabled - calculate missing usages ...");
-        }
-
-        RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
+            public Integer execute() throws Throwable
+            {
+                nodeService.setProperty(personNodeRef, ContentModel.PROP_SIZE_CURRENT, null);
+                usageService.deleteDeltas(personNodeRef);
+                
+                if (logger.isTraceEnabled()) 
+                {
+                    logger.trace("Cleared usage for person ("+ personNodeRef+")");
+                }
+   
+                return null;
+            }
+        };
         
-        // wrap to make the request in a transaction
+        // execute in READ-WRITE txn
+        transactionService.getRetryingTransactionHelper().doInTransaction(clearPersonUsage, false);
+    }
+    
+    private void calculateMissingUsages()
+    {
+        if (logger.isInfoEnabled()) 
+        {
+            logger.info("Enabled - calculate missing user usages ...");
+        }
+        
         RetryingTransactionCallback<Set<String>> getAllPeople = new RetryingTransactionCallback<Set<String>>()
         {
             public Set<String> execute() throws Throwable
             {
                 Set<NodeRef> allPeople = personService.getAllPeople();
+                
+                if (logger.isDebugEnabled()) 
+                {
+                    logger.debug("Found " + allPeople.size() + " people");
+                }
+                
                 Set<String> userNames = new HashSet<String>();
                 
                 for (NodeRef personNodeRef : allPeople)
                 {
-                    // Cater for Lucene indexes being stale
-                    if (!nodeService.exists(personNodeRef))
-                    {
-                        continue;
-                    }
                     Long currentUsage = (Long)nodeService.getProperty(personNodeRef, ContentModel.PROP_SIZE_CURRENT);
                     if (currentUsage == null)
                     {
@@ -248,11 +289,18 @@ public class UserUsageTrackingComponent
                         userNames.add(userName);
                     }
                 }
+                
+                if (logger.isDebugEnabled()) 
+                {
+                    logger.debug("Found " + userNames.size() + " users to recalculate");
+                }
+                
                 return userNames;
             }
         };
+        
         // execute in READ-ONLY txn
-        final Set<String> userNames = txnHelper.doInTransaction(getAllPeople, true);
+        Set<String> userNames = transactionService.getRetryingTransactionHelper().doInTransaction(getAllPeople, true);
         
         for (final String userName : userNames)
         {
@@ -266,9 +314,9 @@ public class UserUsageTrackingComponent
             }, tenantAdminService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantAdminService.getUserDomain(userName)));
         }
 
-        if (logger.isDebugEnabled()) 
+        if (logger.isInfoEnabled()) 
         {
-            logger.debug("... calculated missing usages for " + userNames.size() + " users");
+            logger.info("... calculated missing usages for " + userNames.size() + " users");
         }
     }
 
@@ -279,18 +327,12 @@ public class UserUsageTrackingComponent
      * 
      * @param username          the username to for which calcualte usages
      */
-    public void recalculateUsage(final String username)
-    { 
-        final RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
-        
-        // wrap to make the request in a transaction
+    private void recalculateUsage(final String username)
+    {
         RetryingTransactionCallback<Long> calculatePersonCurrentUsage = new RetryingTransactionCallback<Long>()
         {
             public Long execute() throws Throwable
             {
-//                QNameEntity ownerQnameEntity = qnameDAO.getQNameEntity(ContentModel.PROP_OWNER);
-//                QNameEntity contentQnameEntity = qnameDAO.getQNameEntity(ContentModel.PROP_CONTENT);
-//                
                 List<String> stores = contentUsageImpl.getStores();
                 final MutableLong totalUsage = new MutableLong(0L);
                 
@@ -298,11 +340,11 @@ public class UserUsageTrackingComponent
                 {
                     final StoreRef storeRef = new StoreRef(store);
                     
-                    if (logger.isDebugEnabled())
+                    if (logger.isTraceEnabled())
                     {
-                        logger.debug("Recalc usage (" + username + ") store=" + storeRef);
+                        logger.trace("Recalc usage (" + username + ") store=" + storeRef);
                     }
-
+                    
                     NodePropertyHandler propOwnerHandler = new NodePropertyHandler()
                     {
                         public void handle(NodeRef nodeRef, QName nodeTypeQName, QName propertyQName, Serializable value)
@@ -323,25 +365,19 @@ public class UserUsageTrackingComponent
                     };
                     nodeDaoService.getPropertyValuesByPropertyAndValue(storeRef, ContentModel.PROP_OWNER, username, propOwnerHandler);
                     
-                    if (logger.isDebugEnabled())
+                    // get nodes for which user is creator (ignore those with owner)
+                    NodeRefQueryCallback nodeCreatorHandler = new NodeRefQueryCallback()
                     {
-                        logger.debug("Recalc usage (" + username + ") store=" + storeRef);
-                    }
-
-                    NodePropertyHandler propCreatorHandler = new NodePropertyHandler()
-                    {
-                        public void handle(NodeRef nodeRef, QName nodeTypeQName, QName propertyQName, Serializable value)
+                        public boolean handle(Pair<Long, NodeRef> nodePair)
                         {
-                            if (!nodeTypeQName.equals(ContentModel.TYPE_CONTENT))
-                            {
-                                // It is not content
-                                return;
-                            }
+                            NodeRef nodeRef = nodePair.getSecond();
+                            
                             if (nodeService.getProperty(nodeRef, ContentModel.PROP_OWNER) != null)
                             {
-                                // There is an owner property so we will have process this already
-                                return;
+                                // There is an owner property so we will have processed this already
+                                return true; // continue to next node (more required)
                             }
+                            
                             ContentData contentData = DefaultTypeConverter.INSTANCE.convert(
                                     ContentData.class,
                                     nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT));
@@ -350,42 +386,38 @@ public class UserUsageTrackingComponent
                                 long currentTotalUsage = totalUsage.longValue();
                                 totalUsage.setValue(currentTotalUsage + contentData.getSize());
                             }
+                            return true; // continue to next node (more required)
                         }
                     };
-                    nodeDaoService.getPropertyValuesByPropertyAndValue(storeRef, ContentModel.PROP_OWNER, username, propCreatorHandler);
+                    nodeDaoService.getNodesWithCreatorAndStore(storeRef, username, nodeCreatorHandler);
                 }
                 
-                if (logger.isDebugEnabled()) 
+                if (logger.isTraceEnabled()) 
                 {
                     long quotaSize = contentUsageImpl.getUserQuota(username);
-                    logger.debug("Recalc usage ("+ username+") totalUsage="+totalUsage+", quota="+quotaSize);
+                    logger.trace("Recalc usage ("+ username+") totalUsage="+totalUsage+", quota="+quotaSize);
                 }
                 		
                 return totalUsage.longValue();
             }
         };
-        // execute in READ-ONLY txn
-        final Long currentUsage = txnHelper.doInTransaction(calculatePersonCurrentUsage, true);
         
-        // wrap to make the request in a transaction
+        // execute in READ-ONLY txn
+        final Long currentUsage = transactionService.getRetryingTransactionHelper().doInTransaction(calculatePersonCurrentUsage, true);
+        
         RetryingTransactionCallback<Object> updatePersonCurrentUsage = new RetryingTransactionCallback<Object>()
         {
             public Object execute() throws Throwable
             {
                 NodeRef personNodeRef = personService.getPerson(username);
-                if (!nodeService.exists(personNodeRef))
-                {
-                    // Ignore
-                    return null;
-                }
                 contentUsageImpl.setUserStoredUsage(personNodeRef, currentUsage);
                 usageService.deleteDeltas(personNodeRef);
                 return null;
             }
         };
         
-        // execute in txn
-        txnHelper.doInTransaction(updatePersonCurrentUsage, false);
+        // execute in READ-WRITE txn
+        transactionService.getRetryingTransactionHelper().doInTransaction(updatePersonCurrentUsage, false);
     }
     
     /**
@@ -394,9 +426,6 @@ public class UserUsageTrackingComponent
     private void collapseUsages()
     {
         // Collapse usage deltas (if a person has initial usage set)
-        final RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
-        
-        // wrap to make the request in a transaction
         RetryingTransactionCallback<Object> collapseUsages = new RetryingTransactionCallback<Object>()
         {
             public Object execute() throws Throwable
@@ -425,9 +454,9 @@ public class UserUsageTrackingComponent
                                     usageService.deleteDeltas(personNodeRef);
                                     contentUsageImpl.setUserStoredUsage(personNodeRef, currentUsage);
                                     
-                                    if (logger.isDebugEnabled()) 
+                                    if (logger.isTraceEnabled()) 
                                     {
-                                        logger.debug("Collapsed usage: username=" + userName + ", usage=" + currentUsage);
+                                        logger.trace("Collapsed usage: username=" + userName + ", usage=" + currentUsage);
                                     }
                                 }
                                 else
@@ -446,7 +475,7 @@ public class UserUsageTrackingComponent
             }
         };
         
-    	// execute in txn
-    	txnHelper.doInTransaction(collapseUsages, false);
+        // execute in READ-WRITE txn
+        transactionService.getRetryingTransactionHelper().doInTransaction(collapseUsages, false);
     }
 }

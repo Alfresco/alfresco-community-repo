@@ -142,6 +142,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     private static final String QUERY_GET_TARGET_ASSOCS = "node.GetTargetAssocs";
     private static final String QUERY_GET_SOURCE_ASSOCS = "node.GetSourceAssocs";
     private static final String QUERY_GET_NODES_WITH_PROPERTY_VALUES_BY_STRING_AND_STORE = "node.GetNodesWithPropertyValuesByStringAndStore";
+    private static final String QUERY_GET_NODES_WITH_CREATOR_AND_STORE = "node.GetNodesWithCreatorAndStore";
     private static final String QUERY_GET_NODES_WITH_PROPERTY_VALUES_BY_ACTUAL_TYPE = "node.GetNodesWithPropertyValuesByActualType";
     private static final String QUERY_GET_SERVER_BY_IPADDRESS = "server.getServerByIpAddress";
     
@@ -2709,6 +2710,42 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         }
     }
 
+    public void getNodesWithCreatorAndStore(
+            final StoreRef storeRef,
+            final String userName,
+            final NodeRefQueryCallback resultsCallback)
+    {
+        HibernateCallback callback = new HibernateCallback()
+        {
+            public Object doInHibernate(Session session)
+            {
+                Query query = session
+                    .getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_NODES_WITH_CREATOR_AND_STORE)
+                    .setString("storeProtocol", storeRef.getProtocol())
+                    .setString("storeIdentifier", storeRef.getIdentifier())
+                    .setString("userName", userName)
+                    ;
+                DirtySessionMethodInterceptor.setQueryFlushMode(session, query);
+                return query.scroll(ScrollMode.FORWARD_ONLY);
+            }
+        };
+        ScrollableResults queryResults = null;
+        try
+        {
+            queryResults = (ScrollableResults) getHibernateTemplate().execute(callback);
+            processNodeResults(queryResults, resultsCallback);
+        }
+        finally
+        {
+            if (queryResults != null)
+            {
+                queryResults.close();
+            }
+        }
+
+        // Done
+    }
+    
     public void getPropertyValuesByActualType(DataTypeDefinition actualDataTypeDefinition, NodePropertyHandler handler)
     {
         // get the in-database string representation of the actual type

@@ -10,7 +10,7 @@
          <element-reader element-name="actions" class="org.alfresco.web.config.ActionsElementReader" />
          <element-reader element-name="default-controls" class="org.alfresco.web.config.DefaultControlsElementReader"/>
          <element-reader element-name="constraint-handlers" class="org.alfresco.web.config.ConstraintHandlersElementReader"/>
-         <element-reader element-name="form" class="org.alfresco.web.config.FormElementReader"/>
+         <!-- <element-reader element-name="form" class="org.alfresco.web.config.FormElementReader"/> -->
       </element-readers>
    </plug-ins>
 

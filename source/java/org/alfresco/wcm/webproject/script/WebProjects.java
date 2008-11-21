@@ -30,6 +30,7 @@ import org.alfresco.repo.jscript.BaseScopableProcessorExtension;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.wcm.sandbox.SandboxService;
 import org.alfresco.wcm.webproject.WebProjectInfo;
 import org.alfresco.wcm.webproject.WebProjectService;
 
@@ -44,9 +45,12 @@ public class WebProjects extends BaseScopableProcessorExtension
 	/** Service Registry */
 	private ServiceRegistry serviceRegistry;
 	
-    /** The site service */
+    /** The web projects service */
     private WebProjectService webProjectService;
 
+    /** The sandbox service */
+    private SandboxService sandboxService;
+    
     /**
      * Sets the Service Registry
      * 
@@ -67,6 +71,26 @@ public class WebProjects extends BaseScopableProcessorExtension
         this.webProjectService = webProjectService;
     }
     
+    public WebProjectService getWebProjectService()
+    {
+    	return this.webProjectService;
+    }
+    
+    /**
+     * Set the wcm sandbox service 
+     * 
+     * @param webProjectService   the wcm web project service
+     */
+    public void setSandboxService(SandboxService sandboxService)
+    {
+        this.sandboxService = sandboxService;
+    }
+    
+    public SandboxService getSandboxService()
+    {
+    	return this.sandboxService;
+    }
+    
     /**
      * create web project
      * @param name
@@ -77,7 +101,7 @@ public class WebProjects extends BaseScopableProcessorExtension
     public WebProject createWebProject(String dnsName, String name, String title, String description )
     {
     	WebProjectInfo info = webProjectService.createWebProject(dnsName, name, title, description);    	
-    	return new WebProject(info, webProjectService);
+    	return new WebProject(this, info);
     }
     
     /**
@@ -90,7 +114,7 @@ public class WebProjects extends BaseScopableProcessorExtension
     	WebProjectInfo info = webProjectService.getWebProject(webProjectRef);
     	
     	if(info != null){
-    		WebProject retVal = new WebProject(info, webProjectService);   	
+    		WebProject retVal = new WebProject(this, info);   	
     		return retVal;
     	}
     	return null;
@@ -109,7 +133,7 @@ public class WebProjects extends BaseScopableProcessorExtension
     	int i= 0;
     	for(WebProjectInfo info : projects)
     	{
-    		ret[i++] = new WebProject(info, webProjectService);   
+    		ret[i++] = new WebProject(this, info);   
     	}	
     	return ret;
     }
@@ -127,7 +151,7 @@ public class WebProjects extends BaseScopableProcessorExtension
     	int i= 0;
     	for(WebProjectInfo info : projects)
     	{
-    		ret[i++] = new WebProject(info, webProjectService);   
+    		ret[i++] = new WebProject(this, info);   
     	}	
     	return ret;
     }

@@ -53,8 +53,8 @@ import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthorityService;
@@ -220,7 +220,7 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
         }
         
         // create the AVM staging store to represent the newly created location website
-        sandboxFactory.createStagingSandbox(wpStoreId, wpNodeRef, branchStoreId); // ignore return
+        sandboxFactory.createStagingSandbox(wpStoreId, wpNodeRef, branchStoreId); // ignore return, fails if web project already exists
         
         // create the default webapp folder under the hidden system folders
         if (branchStoreId == null)
@@ -246,7 +246,9 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
         // break the permissions inheritance on the web project node so that only assigned users can access it
         permissionService.setInheritParentPermissions(wpNodeRef, false);
         
-        inviteWebUser(wpNodeRef, AuthenticationUtil.getCurrentEffectiveUserName(), WCMUtil.ROLE_CONTENT_MANAGER);
+        // TODO: Currently auto-creates author sandbox for creator of web project (eg. an admin or a DM contributor to web projects root space)
+        // NOTE: JSF client does not yet allow explicit creation of author sandboxes 
+        inviteWebUser(wpNodeRef, AuthenticationUtil.getCurrentEffectiveUserName(), WCMUtil.ROLE_CONTENT_MANAGER, true);
         
         // Bind the post-commit transaction listener with data required for virtualization server notification
         CreateWebProjectTransactionListener tl = new CreateWebProjectTransactionListener(wpStoreId);
@@ -624,27 +626,19 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
             
             WCMUtil.removeAllVServerWebapps(virtServerRegistry, path, true);
 
-            // get the list of users who have a sandbox in the website
-            final Map<String, String> existingUserRoles = listWebUsers(wpNodeRef);
-            
             AuthenticationUtil.runAs(new RunAsWork<Object>()
             {
                 public Object doWork() throws Exception
                 {
-                    for (Map.Entry<String, String> userRole : existingUserRoles.entrySet())
+                    List<SandboxInfo> sbInfos = sandboxFactory.listSandboxes(wpStoreId, AuthenticationUtil.getSystemUserName());
+                    
+                    for (SandboxInfo sbInfo : sbInfos)
                     {
-                        String username = userRole.getKey();
-
-                        // delete the preview store for this user
-                        deleteStore(WCMUtil.buildUserPreviewStoreName(wpStoreId, username));
-
-                        // delete the main store for this user
-                        deleteStore(WCMUtil.buildUserMainStoreName(wpStoreId, username));
+                        // delete sandbox
+                        sandboxFactory.deleteSandbox(sbInfo.getSandboxId());
                     }
-
-                    // remove the main staging and preview stores
-                    deleteStore(WCMUtil.buildStagingPreviewStoreName(wpStoreId));
-                    deleteStore(WCMUtil.buildStagingStoreName(wpStoreId));
+                    
+                    // TODO delete workflow sandboxes !
                     
                     // delete the web project node itself
                     nodeService.deleteNode(wpNodeRef);
@@ -657,20 +651,6 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
             {
                logger.info("Deleted web project: " + wpNodeRef + " (store id: " + wpStoreId + ")");
             }
-        }
-    }
-    
-    /**
-     * Delete a store, checking for its existence first.
-     * 
-     * @param store
-     */
-    private void deleteStore(final String store)
-    {
-        // check it exists before we try to remove it
-        if (avmService.getStore(store) != null)
-        {
-            avmService.purgeStore(store);
         }
     }
 
@@ -687,7 +667,7 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
      */
     public boolean isContentManager(String storeName, String userName)
     {
-        String wpStoreId = WCMUtil.getStoreId(storeName);
+        String wpStoreId = WCMUtil.getWebProjectStoreId(storeName);
         PropertyValue pValue = avmService.getStoreProperty(wpStoreId, SandboxConstants.PROP_WEB_PROJECT_NODE_REF);
         
         if (pValue != null)
@@ -723,7 +703,7 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
      */
     public boolean isWebUser(String storeName, String username)
     {
-        String wpStoreId = WCMUtil.getStoreId(storeName);
+        String wpStoreId = WCMUtil.getWebProjectStoreId(storeName);
         PropertyValue pValue = avmService.getStoreProperty(wpStoreId, SandboxConstants.PROP_WEB_PROJECT_NODE_REF);
         
         if (pValue != null)
@@ -742,7 +722,7 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
      */
     public boolean isWebUser(NodeRef wpNodeRef, String userName)
     {
-       String userRole = getWebUserRole(wpNodeRef, userName);
+       String userRole = getWebUserRoleImpl(wpNodeRef, userName);
        return (userRole != null);
     }
     
@@ -751,7 +731,7 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
      */
     public int getWebUserCount(NodeRef wpNodeRef)
     {
-        return listWebUserRefs(wpNodeRef).size();
+        return WCMUtil.listWebUsers(nodeService, wpNodeRef).size();
     }
     
     /* (non-Javadoc)
@@ -767,32 +747,15 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
      */
     public Map<String, String> listWebUsers(NodeRef wpNodeRef)
     {
-        if (isContentManager(wpNodeRef))
+        // special case: allow System - eg. to allow user to create their own sandbox on-demand (createAuthorSandbox)
+        if (isContentManager(wpNodeRef) || (AuthenticationUtil.getCurrentEffectiveUserName().equals(AuthenticationUtil.getSystemUserName())))
         {
-            List<ChildAssociationRef> userInfoRefs = listWebUserRefs(wpNodeRef);
-            
-            Map<String, String> webUsers = new HashMap<String, String>(23);
-            
-            for (ChildAssociationRef ref : userInfoRefs)
-            {
-                NodeRef userInfoRef = ref.getChildRef();
-                String userName = (String)nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERNAME);
-                String userRole = (String)nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERROLE);
-                
-                webUsers.put(userName, userRole);
-             }
-
-            return webUsers;
+            return WCMUtil.listWebUsers(nodeService, wpNodeRef);
         }
         else
         {
             throw new AccessDeniedException("Only content managers may list users in a web project");
         }
-    }
-    
-    private List<ChildAssociationRef> listWebUserRefs(NodeRef wpNodeRef)
-    {
-        return nodeService.getChildAssocs(wpNodeRef, WCMAppModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
     }
 
     /* (non-Javadoc)
@@ -808,7 +771,6 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
      */
     public String getWebUserRole(NodeRef wpNodeRef, String userName)
     {
-        long start = System.currentTimeMillis();
         String userRole = null;
    
         if (! isWebProject(wpNodeRef))
@@ -824,34 +786,44 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
         }
         else
         {
-            StringBuilder query = new StringBuilder(128);
-            query.append("+PARENT:\"").append(wpNodeRef).append("\" ");
-            query.append("+TYPE:\"").append(WCMAppModel.TYPE_WEBUSER).append("\" ");
-            query.append("+@").append(NamespaceService.WCMAPP_MODEL_PREFIX).append("\\:username:\"");
-            query.append(userName);
-            query.append("\"");
-   
-            ResultSet resultSet = searchService.query(
-                    WEBPROJECT_STORE,
-                    SearchService.LANGUAGE_LUCENE,
-                    query.toString());            
-            List<NodeRef> nodes = resultSet.getNodeRefs();    
+            userRole = getWebUserRoleImpl(wpNodeRef, userName);
+        }
 
-            if (nodes.size() == 1)
+        return userRole;
+    }
+    
+    private String getWebUserRoleImpl(NodeRef wpNodeRef, String userName)
+    {
+        long start = System.currentTimeMillis();
+        String userRole = null;
+
+        StringBuilder query = new StringBuilder(128);
+        query.append("+PARENT:\"").append(wpNodeRef).append("\" ");
+        query.append("+TYPE:\"").append(WCMAppModel.TYPE_WEBUSER).append("\" ");
+        query.append("+@").append(NamespaceService.WCMAPP_MODEL_PREFIX).append("\\:username:\"");
+        query.append(userName);
+        query.append("\"");
+   
+        ResultSet resultSet = searchService.query(
+                WEBPROJECT_STORE,
+                SearchService.LANGUAGE_LUCENE,
+                query.toString());            
+        List<NodeRef> nodes = resultSet.getNodeRefs();    
+    
+        if (nodes.size() == 1)
+        {
+            userRole = (String)nodeService.getProperty(nodes.get(0), WCMAppModel.PROP_WEBUSERROLE);
+        }
+        else if (nodes.size() == 0)
+        {
+            if (logger.isTraceEnabled())
             {
-                userRole = (String)nodeService.getProperty(nodes.get(0), WCMAppModel.PROP_WEBUSERROLE);
+                logger.trace("getWebProjectUserRole: user role not found for " + userName);
             }
-            else if (nodes.size() == 0)
-            {
-                if (logger.isTraceEnabled())
-                {
-                    logger.trace("getWebProjectUserRole: user role not found for " + userName);
-                }
-            }
-            else
-            {
-                logger.warn("getWebProjectUserRole: more than one user role found for " + userName);
-            }
+        }
+        else
+        {
+            logger.warn("getWebProjectUserRole: more than one user role found for " + userName);
         }
    
         if (logger.isTraceEnabled())
@@ -867,7 +839,7 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
      */
     public NodeRef findWebProjectNodeFromPath(String absoluteAVMPath)
     {
-        return findWebProjectNodeFromStore(WCMUtil.getStoreIdFromPath(absoluteAVMPath));
+        return findWebProjectNodeFromStore(WCMUtil.getWebProjectStoreIdFromPath(absoluteAVMPath));
     }
     
     /*(non-Javadoc)
@@ -938,13 +910,18 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
      */
     public void inviteWebUsersGroups(String wpStoreId, Map<String, String> userGroupRoles)
     {
-        inviteWebUsersGroups(findWebProjectNodeFromStore(wpStoreId), userGroupRoles);
+        inviteWebUsersGroups(findWebProjectNodeFromStore(wpStoreId), userGroupRoles, false);
     }
     
     /* (non-Javadoc)
-     * @see org.alfresco.wcm.webproject.WebProjectService#inviteWebUsers(org.alfresco.service.cmr.repository.NodeRef, java.util.Map)
+     * @see org.alfresco.wcm.webproject.WebProjectService#inviteWebUsersGroups(java.lang.String, java.util.Map, boolean)
      */
-    public void inviteWebUsersGroups(NodeRef wpNodeRef, Map<String, String> userGroupRoles)
+    public void inviteWebUsersGroups(String wpStoreId, Map<String, String> userGroupRoles, boolean autoCreateAuthorSandbox)
+    {
+        inviteWebUsersGroups(findWebProjectNodeFromStore(wpStoreId), userGroupRoles, autoCreateAuthorSandbox);
+    }
+    
+    public void inviteWebUsersGroups(NodeRef wpNodeRef, Map<String, String> userGroupRoles, boolean autoCreateAuthorSandbox)
     {
         if (! isContentManager(wpNodeRef))
         {
@@ -954,13 +931,11 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
         WebProjectInfo wpInfo = getWebProject(wpNodeRef);
         String wpStoreId = wpInfo.getStoreId();
         
-        // create a sandbox for each user appropriately with permissions based on role
         // build a list of managers who will have full permissions on ALL staging areas
         List<String> managers = new ArrayList<String>(4);
         Set<String> existingUsers = new HashSet<String>(8);
         
-        // website already exists - we are only adding to the existing sandboxes
-        // so retrieve the list of managers from the existing users and the selected invitees
+        // retrieve the list of managers from the existing users
         for (Map.Entry<String, String> userRole : userGroupRoles.entrySet())
         {
             String authority = userRole.getKey();
@@ -990,9 +965,6 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
             existingUsers.add(username);
         }
         
-        // build the sandboxes now we have the manager list and complete user list
-        // and create an association to a node to represent each invited user
-
         List<SandboxInfo> sandboxInfoList = new LinkedList<SandboxInfo>();
         
         int invitedCount = 0;
@@ -1005,11 +977,14 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
             
             for (String userAuth : findNestedUserAuthorities(authority))
             {
-                // create the sandbox if the invited user does not already have one
                 if (existingUsers.contains(userAuth) == false)
                 {
-                    SandboxInfo info = sandboxFactory.createUserSandbox(wpStoreId, managers, userAuth, role);
-                    sandboxInfoList.add(info);
+                    if (autoCreateAuthorSandbox)
+                    {
+                        // create a sandbox for the user with permissions based on role
+                        SandboxInfo sbInfo = sandboxFactory.createUserSandbox(wpStoreId, managers, userAuth, role);
+                        sandboxInfoList.add(sbInfo);
+                    }
                     
                     sandboxFactory.addStagingAreaUser(wpStoreId, userAuth, role);
                  
@@ -1029,19 +1004,13 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
            }
         }
         
+        // Bind the post-commit transaction listener with data required for virtualization server notification
+        CreateSandboxTransactionListener tl = new CreateSandboxTransactionListener(sandboxInfoList, listWebApps(wpNodeRef));
+        AlfrescoTransactionSupport.bindListener(tl);
+        
         if (managersUpdateRequired == true)
         {
-           // walk existing sandboxes and reapply manager permissions to include any new manager users
-            for (Map.Entry<String, String> userRole : existingUserRoles.entrySet())
-            {
-                String username = userRole.getKey();
-                if (existingUsers.contains(username))
-                {
-                    // only need to modify the sandboxes we haven't just created
-                    sandboxFactory.updateSandboxManagers(wpStoreId, managers, username);
-                }
-            }
-            sandboxFactory.updateStagingAreaManagers(wpStoreId, wpNodeRef, managers);
+            sandboxFactory.updateSandboxManagers(wpStoreId, wpNodeRef, managers);
         }
         
         // get permissions and roles for a web project folder type
@@ -1066,10 +1035,6 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
             }
         }
         
-        // Bind the post-commit transaction listener with data required for virtualization server notification
-        InviteWebUsersTransactionListener tl = new InviteWebUsersTransactionListener(sandboxInfoList, listWebApps(wpNodeRef));
-        AlfrescoTransactionSupport.bindListener(tl);
-        
         if (logger.isInfoEnabled())
         {
            logger.info("Invited "+invitedCount+" web users (store id: "+wpStoreId+")");
@@ -1081,13 +1046,21 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
      */
     public void inviteWebUser(String wpStoreId, String userAuth, String role)
     {
-        inviteWebUser(findWebProjectNodeFromStore(wpStoreId), userAuth, role);
+        inviteWebUser(findWebProjectNodeFromStore(wpStoreId), userAuth, role, false);
     }
     
     /* (non-Javadoc)
-     * @see org.alfresco.wcm.webproject.WebProjectService#inviteWebUser(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, java.lang.String)
+     * @see org.alfresco.wcm.webproject.WebProjectService#inviteWebUser(java.lang.String, java.lang.String, java.lang.String, boolean)
      */
-    public void inviteWebUser(NodeRef wpNodeRef, String userAuth, String role)
+    public void inviteWebUser(String wpStoreId, String userAuth, String role, boolean autoCreateAuthorSandbox)
+    {
+        inviteWebUser(findWebProjectNodeFromStore(wpStoreId), userAuth, role, autoCreateAuthorSandbox);
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.wcm.webproject.WebProjectService#inviteWebUser(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, java.lang.String, boolean)
+     */
+    public void inviteWebUser(NodeRef wpNodeRef, String userAuth, String role, boolean autoCreateAuthorSandbox)
     {
         if (! isContentManager(wpNodeRef))
         {
@@ -1095,63 +1068,52 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
         }
         
         WebProjectInfo wpInfo = getWebProject(wpNodeRef);
-        String wpStoreId = wpInfo.getStoreId();
-        
-        boolean existingUser = false;
-        
-        // create a sandbox for the user with permissions based on role
-        // build a list of managers who will have full permissions on ALL staging areas
-        List<String> managers = new ArrayList<String>(4);
+        final String wpStoreId = wpInfo.getStoreId();
 
-        // retrieve the list of managers from the existing users
-        Map<String, String> existingUserRoles = listWebUsers(wpNodeRef);
-        for (Map.Entry<String, String> userRole : existingUserRoles.entrySet())
-        {
-            String username = userRole.getKey();
-            String userrole = userRole.getValue();
-              
-            if (WCMUtil.ROLE_CONTENT_MANAGER.equals(userrole) && managers.contains(username) == false)
-            {
-                managers.add(username);
-            }
-            
-            if (username.equals(userAuth))
-            {
-                existingUser = true;
-                break;
-            }
-        }
-        
-        if (existingUser)
+        if (isWebUser(wpNodeRef, userAuth))        
         {
             logger.warn("User '"+userAuth+"' already invited to web project: "+wpNodeRef+" (store id: "+wpStoreId+")");
             return;
         }
         else
         {
+            // build a list of managers who will have full permissions on ALL staging areas
+            List<String> managers = new ArrayList<String>(4);
+            
+            // retrieve the list of managers from the existing users
+            Map<String, String> existingUserRoles = listWebUsers(wpNodeRef);
+            for (Map.Entry<String, String> userRole : existingUserRoles.entrySet())
+            {
+                String username = userRole.getKey();
+                String userrole = userRole.getValue();
+                
+                if (WCMUtil.ROLE_CONTENT_MANAGER.equals(userrole) && managers.contains(username) == false)
+                {
+                    managers.add(username);
+                }
+            }
+            
+            if (autoCreateAuthorSandbox)
+            {
+                // create a sandbox for the user with permissions based on role
+                SandboxInfo sbInfo = sandboxFactory.createUserSandbox(wpStoreId, managers, userAuth, role);
+                
+                List<SandboxInfo> sandboxInfoList = new LinkedList<SandboxInfo>();
+                sandboxInfoList.add(sbInfo);
+                
+                // Bind the post-commit transaction listener with data required for virtualization server notification
+                CreateSandboxTransactionListener tl = new CreateSandboxTransactionListener(sandboxInfoList, listWebApps(wpNodeRef));
+                AlfrescoTransactionSupport.bindListener(tl);
+            }
+            
             // if this new user is a manager, we'll need to update the manager permissions applied
             // to each existing user sandbox - to ensure that new user has access to them
             if (WCMUtil.ROLE_CONTENT_MANAGER.equals(role))
             {
                 managers.add(userAuth);
-    
-                // walk existing sandboxes and reapply manager permissions to include new manager user
-                for (Map.Entry<String, String> userRole : existingUserRoles.entrySet())
-                {
-                    String username = userRole.getKey();
-                    sandboxFactory.updateSandboxManagers(wpStoreId, managers, username);
-                }
-                sandboxFactory.updateStagingAreaManagers(wpStoreId, wpNodeRef, managers);
+                sandboxFactory.updateSandboxManagers(wpStoreId, wpNodeRef, managers);
             }
             
-            // build the user sandboxes now we have the manager list
-            // and create an association to a node to represent invited user
-    
-            List<SandboxInfo> sandboxInfoList = new LinkedList<SandboxInfo>();
-            
-            SandboxInfo info = sandboxFactory.createUserSandbox(wpStoreId, managers, userAuth, role);
-            sandboxInfoList.add(info);
-             
             sandboxFactory.addStagingAreaUser(wpStoreId, userAuth, role);
              
             // create an app:webuser instance for the user and assoc to the web project node
@@ -1172,10 +1134,6 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
                     break;
                 }
             }
-            
-            // Bind the post-commit transaction listener with data required for virtualization server notification
-            InviteWebUsersTransactionListener tl = new InviteWebUsersTransactionListener(sandboxInfoList, listWebApps(wpNodeRef));
-            AlfrescoTransactionSupport.bindListener(tl);
             
             if (logger.isInfoEnabled())
             {
@@ -1202,13 +1160,21 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
      */
     public void uninviteWebUser(String wpStoreId, String userAuth)
     {
-        uninviteWebUser(findWebProjectNodeFromStore(wpStoreId), userAuth);
+        uninviteWebUser(findWebProjectNodeFromStore(wpStoreId), userAuth, false);
     }
     
     /* (non-Javadoc)
-     * @see org.alfresco.wcm.webproject.WebProjectService#uninviteWebUser(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
+     * @see org.alfresco.wcm.webproject.WebProjectService#uninviteWebUser(java.lang.String, java.lang.String, boolean)
      */
-    public void uninviteWebUser(NodeRef wpNodeRef, String userAuth)
+    public void uninviteWebUser(String wpStoreId, String userAuth, boolean autoDeleteAuthorSandbox)
+    {
+        uninviteWebUser(findWebProjectNodeFromStore(wpStoreId), userAuth, autoDeleteAuthorSandbox);
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.wcm.webproject.WebProjectService#uninviteWebUser(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, boolean)
+     */
+    public void uninviteWebUser(NodeRef wpNodeRef, String userAuth, boolean autoDeleteAuthorSandbox)
     {
         if (! isContentManager(wpNodeRef))
         {
@@ -1222,8 +1188,13 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
         String wpStoreId = wpInfo.getStoreId();
         String userMainStore = WCMUtil.buildUserMainStoreName(wpStoreId, userAuth);
        
-        // remove the store reference from the website folder meta-data
-        List<ChildAssociationRef> userInfoRefs = listWebUserRefs(wpNodeRef);
+        if (autoDeleteAuthorSandbox)
+        {
+            sandboxFactory.deleteSandbox(userMainStore);
+        }
+        
+        // remove the store reference from the website folder meta-data (see also WCMUtil.listWebUsers)
+        List<ChildAssociationRef> userInfoRefs = nodeService.getChildAssocs(wpNodeRef, WCMAppModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
         
         // retrieve the list of managers from the existing users
         List<String> managers = new ArrayList<String>(4);
@@ -1246,57 +1217,18 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
           
             if (userAuth.equals(user))
             {
-                // found the sandbox to remove
-                String path = WCMUtil.buildSandboxRootPath(userMainStore); 
-
-                 // Notify virtualisation server about removing this sandbox.
-                 //
-                 // Implementation note:
-                 //
-                 //     Because the removal of virtual webapps in the 
-                 //     virtualization server is recursive,  it only
-                 //     needs to be given the name of the main store.  
-                 //
-                 //     This notification must occur *prior* to purging content
-                 //     within the AVM because the virtualization server must list
-                 //     the avm_webapps dir in each store to discover which 
-                 //     virtual webapps must be unloaded.  The virtualization 
-                 //     server traverses the sandbox's stores in most-to-least 
-                 //     dependent order, so clients don't have to worry about
-                 //     accessing a preview layer whose main layer has been torn
-                 //     out from under it.
+                // remove the association to this web project user meta-data
+                nodeService.removeChild(wpNodeRef, ref.getChildRef());
                  
-                 WCMUtil.removeAllVServerWebapps(virtServerRegistry, path, true);
+                // remove permission for the user (also fixes ETWOONE-338)
+                permissionService.clearPermission(wpNodeRef, userAuth);
                  
-                 // TODO: Use the .sandbox-id.  property to delete all sandboxes,
-                 //       rather than assume a sandbox always had a single preview
-                 //       layer attached.
-                 
-                 // purge the user main sandbox store from the system
-                 avmService.purgeStore(userMainStore);
-                 
-                 // remove any locks this user may have
-                 avmLockingService.removeStoreLocks(userMainStore);
-                 
-                 // purge the user preview sandbox store from the system
-                 String userPreviewStore = WCMUtil.buildUserPreviewStoreName(wpStoreId, userAuth);
-                 avmService.purgeStore(userPreviewStore);
-                 
-                 // remove any locks this user may have
-                 avmLockingService.removeStoreLocks(userPreviewStore);
-                 
-                 // remove the association to this web project user meta-data
-                 nodeService.removeChild(wpNodeRef, ref.getChildRef());
-                 
-                 // remove permission for the user (also fixes ETWOONE-338 - also need to ensure that last content manager does not uninvite themselves)
-                 permissionService.clearPermission(wpNodeRef, userAuth);
-                 
-                 if (logger.isInfoEnabled())
-                 {
+                if (logger.isInfoEnabled())
+                {
                     logger.info("Uninvited web user: "+userAuth+" (store id: "+wpStoreId+")");
-                 }
+                }
                  
-                 break; // for loop
+                break; // for loop
             }
        }
     }
@@ -1375,14 +1307,14 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
     }
     
     /**
-     * Invite Web Users Transaction listener - invoked after commit
+     * Create Sandbox Transaction listener - invoked after commit
      */
-    private class InviteWebUsersTransactionListener extends TransactionListenerAdapter
+    private class CreateSandboxTransactionListener extends TransactionListenerAdapter
     {
         private List<SandboxInfo> sandboxInfoList;
         private List<String> webAppNames;
         
-        public InviteWebUsersTransactionListener(List<SandboxInfo> sandboxInfoList, List<String> webAppNames)
+        public CreateSandboxTransactionListener(List<SandboxInfo> sandboxInfoList, List<String> webAppNames)
         {
             this.sandboxInfoList = sandboxInfoList;
             this.webAppNames = webAppNames;

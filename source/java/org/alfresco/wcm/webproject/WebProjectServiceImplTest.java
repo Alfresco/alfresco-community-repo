@@ -240,7 +240,31 @@ public class WebProjectServiceImplTest extends TestCase
         // Create a web project
         WebProjectInfo wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-create", TEST_WEBPROJ_NAME+"-create", TEST_TITLE, TEST_DESCRIPTION, TEST_DEFAULT_WEBAPP, TEST_USE_AS_TEMPLATE, null);
         checkWebProjectInfo(wpInfo, TEST_WEBPROJ_DNS+"-create", TEST_WEBPROJ_NAME+"-create", TEST_TITLE, TEST_DESCRIPTION, TEST_DEFAULT_WEBAPP, TEST_USE_AS_TEMPLATE);
-
+        
+        // Duplicate web project dns/store name
+        try
+        {
+            // Try to create duplicate web project dns/store (-ve test)
+            wpService.createWebProject(TEST_WEBPROJ_DNS+"-create", TEST_WEBPROJ_NAME+"-x", TEST_TITLE+"x", TEST_DESCRIPTION+"x", TEST_DEFAULT_WEBAPP+"x", TEST_USE_AS_TEMPLATE, null);
+            fail("Shouldn't allow duplicate web project dns/store name");
+        }
+        catch (AlfrescoRuntimeException exception)
+        {
+            // Expected
+        }
+        
+        // Duplicate web project folder/name
+        try
+        {
+            // Try to create duplicate web project folder/name (-ve test)
+            wpService.createWebProject(TEST_WEBPROJ_DNS+"x", TEST_WEBPROJ_NAME+"-create", TEST_TITLE+"x", TEST_DESCRIPTION+"x", TEST_DEFAULT_WEBAPP+"x", TEST_USE_AS_TEMPLATE, null);
+            fail("Shouldn't allow duplicate web project folder/name");
+        }
+        catch (DuplicateChildNodeNameException exception)
+        {
+            // Expected
+        }
+        
         // Mangled case
         String dnsName = TEST_WEBPROJ_DNS+"some.unexpected.chars";
         String name = dnsName + " name";
@@ -286,30 +310,6 @@ public class WebProjectServiceImplTest extends TestCase
             fail("Shouldn't be able to create web project with '--'");
         }
         catch (AlfrescoRuntimeException exception)
-        {
-            // Expected
-        }
-    
-        // Duplicate web project dns/store name
-        try
-        {
-            // Try to create duplicate web project dns/store (-ve test)
-            wpService.createWebProject(TEST_WEBPROJ_DNS+"-create", TEST_WEBPROJ_NAME+"-x", TEST_TITLE+"x", TEST_DESCRIPTION+"x", TEST_DEFAULT_WEBAPP+"x", TEST_USE_AS_TEMPLATE, null);
-            fail("Shouldn't allow duplicate web project dns/store name");
-        }
-        catch (AlfrescoRuntimeException exception)
-        {
-            // Expected
-        }
-        
-        // Duplicate web project folder/name
-        try
-        {
-            // Try to create duplicate web project folder/name (-ve test)
-            wpService.createWebProject(TEST_WEBPROJ_DNS+"x", TEST_WEBPROJ_NAME+"-create", TEST_TITLE+"x", TEST_DESCRIPTION+"x", TEST_DEFAULT_WEBAPP+"x", TEST_USE_AS_TEMPLATE, null);
-            fail("Shouldn't allow duplicate web project folder/name");
-        }
-        catch (DuplicateChildNodeNameException exception)
         {
             // Expected
         }
@@ -525,7 +525,7 @@ public class WebProjectServiceImplTest extends TestCase
         wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-delete2", TEST_WEBPROJ_NAME+"-delete2", TEST_TITLE, TEST_DESCRIPTION, TEST_DEFAULT_WEBAPP, true, null);
         assertNotNull(wpService.getWebProject(wpInfo.getStoreId()));
         
-        wpService.inviteWebUser(wpInfo.getNodeRef(), USER_ONE, WCMUtil.ROLE_CONTENT_MANAGER);
+        wpService.inviteWebUser(wpInfo.getNodeRef(), USER_ONE, WCMUtil.ROLE_CONTENT_MANAGER, false);
         
         // Switch to USER_TWO
         AuthenticationUtil.setCurrentUser(USER_TWO);
@@ -749,7 +749,7 @@ public class WebProjectServiceImplTest extends TestCase
         userGroupRoles.put(USER_THREE, WCMUtil.ROLE_CONTENT_REVIEWER);
         
         // Invite web users - test using wpNodeRef
-        wpService.inviteWebUsersGroups(wpNodeRef, userGroupRoles);
+        wpService.inviteWebUsersGroups(wpNodeRef, userGroupRoles, false);
 
         assertEquals(4, wpService.listWebUsers(wpNodeRef).size());
         assertEquals(WCMUtil.ROLE_CONTENT_MANAGER, wpService.listWebUsers(wpNodeRef).get(USER_ADMIN));
@@ -763,11 +763,15 @@ public class WebProjectServiceImplTest extends TestCase
         webProjects = wpService.listWebProjects();
         assertEquals(userOneWebProjectCount+1, webProjects.size());
         
+        // Start: Test fix ETWOTWO-567
+        
         // Test newly invited content manager can invite other
         userGroupRoles = new HashMap<String, String>();
         userGroupRoles.put(USER_FIVE, WCMUtil.ROLE_CONTENT_CONTRIBUTOR);
         
-        wpService.inviteWebUsersGroups(wpNodeRef, userGroupRoles);
+        wpService.inviteWebUsersGroups(wpNodeRef, userGroupRoles, false);
+        
+        // Finish: Test fix ETWOTWO-567
         
         // Switch back to admin
         AuthenticationUtil.setCurrentUser(USER_ADMIN);
@@ -818,7 +822,7 @@ public class WebProjectServiceImplTest extends TestCase
         wpService.inviteWebUser(wpInfo.getStoreId(), USER_ONE, WCMUtil.ROLE_CONTENT_PUBLISHER);
         
         // Invite one web user - test using wpNodeRef
-        wpService.inviteWebUser(wpNodeRef, USER_TWO, WCMUtil.ROLE_CONTENT_MANAGER);
+        wpService.inviteWebUser(wpNodeRef, USER_TWO, WCMUtil.ROLE_CONTENT_MANAGER, true);
         
         assertEquals(3, wpService.listWebUsers(wpNodeRef).size());
         assertEquals(WCMUtil.ROLE_CONTENT_PUBLISHER, wpService.listWebUsers(wpNodeRef).get(USER_ONE));
@@ -831,8 +835,8 @@ public class WebProjectServiceImplTest extends TestCase
         assertEquals(1, wpService.listWebUsers(wpNodeRef2).size());
         assertEquals(WCMUtil.ROLE_CONTENT_MANAGER, wpService.listWebUsers(wpNodeRef2).get(USER_ADMIN));
         
-        wpService.inviteWebUser(wpNodeRef2, USER_TWO, WCMUtil.ROLE_CONTENT_PUBLISHER);
-        wpService.inviteWebUser(wpNodeRef2, USER_ONE, WCMUtil.ROLE_CONTENT_MANAGER);
+        wpService.inviteWebUser(wpNodeRef2, USER_TWO, WCMUtil.ROLE_CONTENT_PUBLISHER, false);
+        wpService.inviteWebUser(wpNodeRef2, USER_ONE, WCMUtil.ROLE_CONTENT_MANAGER, false);
         
         assertEquals(3, wpService.listWebUsers(wpNodeRef2).size());
         assertEquals(WCMUtil.ROLE_CONTENT_PUBLISHER, wpService.listWebUsers(wpNodeRef2).get(USER_TWO));
@@ -850,7 +854,7 @@ public class WebProjectServiceImplTest extends TestCase
         try
         {
             // Try to invite web user as a non-content-manager (-ve test)
-            wpService.inviteWebUser(wpNodeRef2, USER_THREE, WCMUtil.ROLE_CONTENT_REVIEWER);
+            wpService.inviteWebUser(wpNodeRef2, USER_THREE, WCMUtil.ROLE_CONTENT_REVIEWER, false);
             fail("Shouldn't be able to invite web user since not a content manager");
         }
         catch (AccessDeniedException exception)
@@ -864,7 +868,7 @@ public class WebProjectServiceImplTest extends TestCase
         try
         {
             // Try to invite web user as a non-content-manager (such as System) (-ve test)
-            wpService.inviteWebUser(wpNodeRef2, USER_THREE, WCMUtil.ROLE_CONTENT_REVIEWER);
+            wpService.inviteWebUser(wpNodeRef2, USER_THREE, WCMUtil.ROLE_CONTENT_REVIEWER, false);
             fail("Shouldn't be able to invite web user since not a content manager");
         }
         catch (AccessDeniedException exception)
@@ -878,7 +882,7 @@ public class WebProjectServiceImplTest extends TestCase
         AuthenticationUtil.setCurrentUser(USER_ONE);
         
         // Invite web user
-        wpService.inviteWebUser(wpNodeRef2, USER_THREE, WCMUtil.ROLE_CONTENT_REVIEWER);
+        wpService.inviteWebUser(wpNodeRef2, USER_THREE, WCMUtil.ROLE_CONTENT_REVIEWER, false);
         
         // Switch back to admin
         AuthenticationUtil.setCurrentUser(USER_ADMIN);
@@ -909,12 +913,12 @@ public class WebProjectServiceImplTest extends TestCase
         assertEquals(1, wpService.listWebUsers(wpNodeRef).size());
         assertEquals(WCMUtil.ROLE_CONTENT_MANAGER, wpService.listWebUsers(wpNodeRef).get(USER_ADMIN));
         
-        wpService.inviteWebUser(wpNodeRef, USER_FOUR, WCMUtil.ROLE_CONTENT_CONTRIBUTOR);
+        wpService.inviteWebUser(wpNodeRef, USER_FOUR, WCMUtil.ROLE_CONTENT_CONTRIBUTOR, false);
         
         assertEquals(2, wpService.listWebUsers(wpNodeRef).size());
         assertEquals(WCMUtil.ROLE_CONTENT_CONTRIBUTOR, wpService.listWebUsers(wpNodeRef).get(USER_FOUR));
         
-        wpService.inviteWebUser(wpNodeRef, USER_ONE, WCMUtil.ROLE_CONTENT_MANAGER);
+        wpService.inviteWebUser(wpNodeRef, USER_ONE, WCMUtil.ROLE_CONTENT_MANAGER, false);
         
         assertEquals(3, wpService.listWebUsers(wpNodeRef).size());
         assertEquals(WCMUtil.ROLE_CONTENT_MANAGER, wpService.listWebUsers(wpNodeRef).get(USER_ONE));
@@ -931,7 +935,7 @@ public class WebProjectServiceImplTest extends TestCase
         try
         {
             // Try to uninvite web user as a non-content-manager (-ve test)
-            wpService.uninviteWebUser(wpNodeRef, USER_FOUR);
+            wpService.uninviteWebUser(wpNodeRef, USER_FOUR, false);
             fail("Shouldn't be able to uninvite web user since not a content manager");
         }
         catch (AccessDeniedException exception)
@@ -945,7 +949,7 @@ public class WebProjectServiceImplTest extends TestCase
         try
         {
             // Try to uninvite web user as a non-content-manager (such as System) (-ve test)
-            wpService.uninviteWebUser(wpNodeRef, USER_FOUR);
+            wpService.uninviteWebUser(wpNodeRef, USER_FOUR, false);
             fail("Shouldn't be able to uninvite web user since not a content manager");
         }
         catch (AccessDeniedException exception)
@@ -973,7 +977,7 @@ public class WebProjectServiceImplTest extends TestCase
 
         // Content manager can uninvite themself
         // Uninvite web user - test using wpNodeRef
-        wpService.uninviteWebUser(wpNodeRef, USER_ADMIN);
+        wpService.uninviteWebUser(wpNodeRef, USER_ADMIN, false);
         
         assertEquals(1, wpService.listWebUsers(wpNodeRef).size());
         assertEquals(null, wpService.listWebUsers(wpNodeRef).get(USER_ADMIN));
@@ -985,7 +989,7 @@ public class WebProjectServiceImplTest extends TestCase
         assertEquals(WCMUtil.ROLE_CONTENT_MANAGER, wpService.listWebUsers(wpNodeRef).get(USER_ONE));
         
         // Delete user (in this case, last invited content manager)
-        wpService.uninviteWebUser(wpNodeRef, USER_ONE);
+        wpService.uninviteWebUser(wpNodeRef, USER_ONE, false);
         
         try
         {
@@ -1055,7 +1059,7 @@ public class WebProjectServiceImplTest extends TestCase
             {
                 userRoles.put(TEST_USER+"-"+j, WCMUtil.ROLE_CONTENT_MANAGER);
             }
-            wpService.inviteWebUsersGroups(wpInfo.getNodeRef(), userRoles);
+            wpService.inviteWebUsersGroups(wpInfo.getNodeRef(), userRoles, false);
         }
         
         System.out.println("testPseudoScaleTest: invited "+SCALE_USERS+" content managers to each of "+SCALE_WEBPROJECTS+" web projects in "+(System.currentTimeMillis()-split)+" msecs");
@@ -1064,7 +1068,7 @@ public class WebProjectServiceImplTest extends TestCase
         
         for (int i = 1; i <= SCALE_USERS; i++)
         {
-            wpService.listWebProjects(TEST_USER+"-"+i); // ignore return
+            assertEquals(SCALE_WEBPROJECTS, wpService.listWebProjects(TEST_USER+"-"+i).size());
         }
         
         System.out.println("testPseudoScaleTest: list web projects for "+SCALE_USERS+" content managers in "+(System.currentTimeMillis()-split)+" msecs");

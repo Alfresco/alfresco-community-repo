@@ -332,6 +332,9 @@
         <property name="searchService">
             <ref bean="SearchService" />
         </property>
+        <property name="sandboxFactory">
+            <ref bean="sandboxFactory" />
+        </property>
     </bean>
 
 	<!-- AVM Locking. -->

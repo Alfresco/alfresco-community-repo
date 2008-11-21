@@ -25,18 +25,21 @@
 package org.alfresco.wcm.webproject.script;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Map;
 
+import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.repo.jscript.ScriptableHashMap;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.wcm.webproject.WebProjectInfo;
 import org.alfresco.wcm.webproject.WebProjectService;
-
-import com.sun.corba.se.spi.orbutil.fsm.Guard.Result;
+import org.alfresco.wcm.sandbox.SandboxInfo;
+import org.alfresco.wcm.sandbox.SandboxService;
+import org.alfresco.wcm.sandbox.script.Sandbox;
 
 
 /**
  * WebProject object to expose via JavaScript
- * 
  */
 public class WebProject implements Serializable
 {
@@ -49,8 +52,6 @@ public class WebProject implements Serializable
 	 * 
 	 */
 	private static final long serialVersionUID = -2194205151549790079L;
-
-	WebProjectService service;
 	
 	WebProjectInfo info;
 	
@@ -59,11 +60,12 @@ public class WebProject implements Serializable
 	private String description;
 	private boolean isTemplate;
 	private String webProjectRef;
+	private WebProjects webprojects;
 	
 	/*
 	 * Constructor for Outbound WebProjects
 	 */
-	public WebProject(WebProjectInfo info, WebProjectService service)
+	public WebProject(WebProjects webprojects, WebProjectInfo info)
 	{
 		this.info = info;
 		this.name = info.getName();
@@ -71,7 +73,7 @@ public class WebProject implements Serializable
 		this.description = info.getDescription();
 		this.isTemplate = info.isTemplate();
 		this.webProjectRef = info.getStoreId();
-		this.service = service;	
+		this.webprojects = webprojects;
 	}
 	
 	public void setName(String name) {
@@ -123,8 +125,15 @@ public class WebProject implements Serializable
 	}
 	
 	// 
-	public String getWebProjectRef() {
+	public String getWebProjectRef() 
+	{
 		return webProjectRef;
+	}
+	
+	// read-only property
+	public NodeRef getNodeRef() 
+	{
+		return info.getNodeRef();
 	}
 	
 	/**
@@ -132,7 +141,7 @@ public class WebProject implements Serializable
 	 */
 	public void deleteWebProject()
 	{
-		service.deleteWebProject(webProjectRef);
+		getWebProjectService().deleteWebProject(webProjectRef);
 	}
 	
 	/**
@@ -140,7 +149,74 @@ public class WebProject implements Serializable
 	 */ 
 	public void save()
 	{
-		service.updateWebProject(info);
+		getWebProjectService().updateWebProject(info);
+	}
+	
+	/**
+	 * getSandboxes
+	 * @param userName
+	 * @return the sandboxes or an empty map if there are none.
+	 */
+	public  ScriptableHashMap<String, Sandbox> getSandboxes(String userName)
+	{
+		ScriptableHashMap<String, Sandbox> result = new ScriptableHashMap<String, Sandbox>();
+		
+		// TODO at the moment the user can only have one sandbox - this will change in future
+		SandboxInfo si = getSandboxService().getAuthorSandbox(webProjectRef, userName);
+		if(si != null)
+		{
+			Sandbox sandbox = new Sandbox(this, si);
+			result.put(userName, sandbox);
+		}
+	    return result;
+	}
+	
+	
+	/**
+	 * Create a user sandbox, if the user already has a sandbox does nothing.
+	 * @param userName
+	 * @return the newly created sandbox details
+	 */
+	public Sandbox createSandbox(String userName)
+	{
+		SandboxInfo si = getSandboxService().createAuthorSandbox(webProjectRef, userName);
+		Sandbox sandbox = new Sandbox(this, si);
+		return sandbox;	
+	}
+	
+	/**
+	 * Get a single sandbox by its unique reference
+	 * @param sandboxRef
+	 * @return the sandbox or null if it is not found.
+	 */
+	public Sandbox getSandbox(String sandboxRef)
+	{
+		SandboxInfo si = getSandboxService().getSandbox(sandboxRef);
+		if(si != null)
+		{
+			Sandbox sandbox = new Sandbox(this, si);
+			return sandbox;
+		}
+		return null;		
+	}
+	
+	/**
+	 * getSandboxes for this web project
+	 * @return the sandboxes
+	 */
+	public ScriptableHashMap<String, Sandbox> getSandboxes()
+	{
+		List<SandboxInfo> si = getSandboxService().listSandboxes(webProjectRef);
+
+   	 	ScriptableHashMap<String, Sandbox> result = new ScriptableHashMap<String, Sandbox>();
+   	 	
+		for(SandboxInfo s : si)
+		{
+			Sandbox b = new Sandbox(this, s);
+			result.put(b.getSandboxRef(), b);
+		}
+		
+        return result;
 	}
 	
     /**
@@ -153,7 +229,7 @@ public class WebProject implements Serializable
      */
     public String getMembersRole(String userName)
     {
-    	return service.getWebUserRole(webProjectRef, userName);
+    	return getWebProjectService().getWebUserRole(webProjectRef, userName);
     }
 	
     /**
@@ -170,7 +246,7 @@ public class WebProject implements Serializable
      */
     public void addMembership(String userName, String role)
     {
-    	service.inviteWebUser(webProjectRef, userName, role);
+    	getWebProjectService().inviteWebUser(webProjectRef, userName, role);
     }
     
     /**
@@ -183,7 +259,7 @@ public class WebProject implements Serializable
      */
     public void removeMembership(String userName)
     {
-        service.uninviteWebUser(webProjectRef, userName);
+    	getWebProjectService().uninviteWebUser(webProjectRef, userName);
     }
     
     /**
@@ -193,7 +269,7 @@ public class WebProject implements Serializable
      */
     public ScriptableHashMap<String, String> listMembers()
     {
-    	Map<String, String> members = service.listWebUsers(webProjectRef);
+    	Map<String, String> members = getWebProjectService().listWebUsers(webProjectRef);
         
         ScriptableHashMap<String, String> result = new ScriptableHashMap<String, String>();
         result.putAll(members);
@@ -203,12 +279,36 @@ public class WebProject implements Serializable
     
     /**
      * List the role (name) for a WCM project
-     * @return the roles for a WCM project
+     * @return a map of roles for a WCM project (value, name)
      */
     public ScriptableHashMap<String, String> getRoles()
     {
-    	// TODO Not yet implemented.
+    	//TODO Role names should be I811N from webclient.properties
+    	//ContentManager=Content Manager
+    	//ContentPublisher=Content Publisher
+    	//ContentContributor=Content Contributor
+    	//ContentReviewer=Content Reviewer
     	 ScriptableHashMap<String, String> result = new ScriptableHashMap<String, String>();
+    	 result.put(ROLE_CONTENT_MANAGER, "Content Manager");
+    	 result.put(ROLE_CONTENT_PUBLISHER, "Content Publisher");
+    	 result.put(ROLE_CONTENT_REVIEWER, "Content Reviewer");
+    	 result.put(ROLE_CONTENT_CONTRIBUTOR, "Content Contributor");
+    	 
     	 return result;
+    }
+    
+    public WebProjects getWebProjects()
+    {
+    	return this.webprojects;
+    }
+    
+    public SandboxService getSandboxService()
+    {
+    	return getWebProjects().getSandboxService();
+    }
+    
+    public WebProjectService getWebProjectService()
+    {
+    	return getWebProjects().getWebProjectService();
     }
 }

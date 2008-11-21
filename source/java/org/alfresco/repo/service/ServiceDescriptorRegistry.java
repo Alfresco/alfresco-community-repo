@@ -69,6 +69,7 @@ import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.wcm.sandbox.SandboxService;
 import org.alfresco.wcm.webproject.WebProjectService;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
@@ -466,6 +467,13 @@ public class ServiceDescriptorRegistry
 	 * @see org.alfresco.service.ServiceRegistry#getWebProjectService()
 	 */
     public WebProjectService getWebProjectService() {
-        return (WebProjectService) getService(WEBPROJECT_SERVICE);
+        return (WebProjectService)getService(WEBPROJECT_SERVICE);
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.service.ServiceRegistry#getSandboxService()
+     */
+    public SandboxService getSandboxService() {
+        return (SandboxService)getService(SANDBOX_SERVICE);
     }
 }

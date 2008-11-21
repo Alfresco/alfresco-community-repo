@@ -24,22 +24,17 @@
  */
 package org.alfresco.repo.jscript;
 
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.alfresco.config.JNDIConstants;
 import org.alfresco.repo.avm.AVMNodeConverter;
-import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
-import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
-import org.alfresco.service.cmr.avmsync.AVMDifference;
-import org.alfresco.service.namespace.QName;
-import org.alfresco.util.NameMatcher;
 import org.alfresco.util.ParameterCheck;
+import org.alfresco.wcm.sandbox.SandboxService;
+import org.alfresco.wcm.util.WCMUtil;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Scriptable;
 
@@ -52,8 +47,6 @@ public final class AVM extends BaseScopableProcessorExtension
 {
     /** Repository Service Registry */
     private ServiceRegistry services;
-    
-    private NameMatcher matcher;
 
     /**
      * Set the service registry
@@ -63,11 +56,6 @@ public final class AVM extends BaseScopableProcessorExtension
     public void setServiceRegistry(ServiceRegistry serviceRegistry)
     {
         this.services = serviceRegistry;
-    }
-    
-    public void setNameMatcher(NameMatcher matcher)
-    {
-        this.matcher = matcher;
     }
 
     /**
@@ -163,28 +151,17 @@ public final class AVM extends BaseScopableProcessorExtension
         ParameterCheck.mandatoryString("Username", username);
         ParameterCheck.mandatoryString("Webapp", webapp);
 
-        List<AVMNode> items;
-
-        AVMService avmService = this.services.getAVMService();
-
-        // build the paths to the stores to compare - filter by current webapp
-        String userStore = userSandboxStore(storeId, username);
-        String userStorePath = getStoreRootWebappPath(userStore, webapp);
-        String stagingStore = stagingStore(storeId);
-        String stagingStorePath = getStoreRootWebappPath(stagingStore, webapp);
+        SandboxService sbService = this.services.getSandboxService();
         
-        List<AVMDifference> diffs = this.services.getAVMSyncService().compare(
-                -1, userStorePath, -1, stagingStorePath, this.matcher);
-        items = new ArrayList<AVMNode>(diffs.size());
-        for (AVMDifference diff : diffs)
+        // get modified items - not including deleted
+        List<AVMNodeDescriptor> nodes = sbService.listChangedItemsWebApp(storeId, webapp, false);
+        
+        List<AVMNode> items = new ArrayList<AVMNode>(nodes.size());
+        
+        for (AVMNodeDescriptor node : nodes)
         {
-            // convert each diff record into an AVM Node template wrapper
-            String sourcePath = diff.getSourcePath();
-            AVMNodeDescriptor node = avmService.lookup(-1, sourcePath);
-            if (node != null)
-            {
-                items.add(new AVMNode(node.getPath(), -1, this.services, getScope()));
-            }
+            // convert each diff/node record into an AVM Node wrapper
+            items.add(new AVMNode(node.getPath(), -1, this.services, getScope()));
         }
 
         return items;
@@ -197,8 +174,7 @@ public final class AVM extends BaseScopableProcessorExtension
      */
     public static String stagingStore(String storeId)
     {
-        ParameterCheck.mandatoryString("Store ID", storeId);
-        return storeId;
+        return WCMUtil.buildStagingStoreName(storeId);
     }
 
     /**
@@ -209,9 +185,7 @@ public final class AVM extends BaseScopableProcessorExtension
      */
     public static String userSandboxStore(String storeId, String username)
     {
-        ParameterCheck.mandatoryString("Store ID", storeId);
-        ParameterCheck.mandatoryString("Username", username);
-        return storeId + "--" + username;
+        return WCMUtil.buildUserMainStoreName(storeId, username);
     }
 
     /**
@@ -221,9 +195,7 @@ public final class AVM extends BaseScopableProcessorExtension
      */
     public String websiteStagingUrl(String storeId)
     {
-        ParameterCheck.mandatoryString("Store ID", storeId);
-        return MessageFormat.format(JNDIConstants.PREVIEW_SANDBOX_URL,
-                lookupStoreDNS(storeId), getVServerDomain(), getVServerPort());
+        return WCMUtil.buildStoreUrl(this.services.getAVMService(), storeId, getVServerDomain(), getVServerPort());
     }
 
     /**
@@ -247,25 +219,7 @@ public final class AVM extends BaseScopableProcessorExtension
      */
     public String assetUrl(String store, String assetPath)
     {
-        ParameterCheck.mandatoryString("Store", store);
-        ParameterCheck.mandatoryString("Asset Path", assetPath);
-        
-        if (assetPath.startsWith('/' + JNDIConstants.DIR_DEFAULT_WWW + 
-                '/' + JNDIConstants.DIR_DEFAULT_APPBASE))
-        {
-            assetPath = assetPath.substring(('/' + JNDIConstants.DIR_DEFAULT_WWW + 
-                    '/' + JNDIConstants.DIR_DEFAULT_APPBASE).length());
-        }
-        if (assetPath.startsWith("/ROOT"))
-        {
-            assetPath = assetPath.substring(("/ROOT").length());
-        }
-        if (assetPath.length() == 0 || assetPath.charAt(0) != '/')
-        {
-            assetPath = '/' + assetPath;
-        }
-        return MessageFormat.format(JNDIConstants.PREVIEW_ASSET_URL,
-                lookupStoreDNS(store), getVServerDomain(), getVServerPort(), assetPath);
+        return WCMUtil.buildAssetUrl(assetPath, getVServerDomain(), getVServerPort(), WCMUtil.lookupStoreDNS(this.services.getAVMService(), store));
     }
 
     /**
@@ -315,27 +269,6 @@ public final class AVM extends BaseScopableProcessorExtension
      */
     public static String getWebappsFolderPath()
     {
-        return '/' + JNDIConstants.DIR_DEFAULT_WWW +
-               '/' + JNDIConstants.DIR_DEFAULT_APPBASE;
+        return JNDIConstants.DIR_DEFAULT_WWW_APPBASE;
     }
-    
-    private static String getStoreRootPath(String store)
-    {
-        return store + ":" + getWebappsFolderPath();
-    }
-
-    private static String getStoreRootWebappPath(String store, String webapp)
-    {
-        return getStoreRootPath(store) + '/' + webapp;
-    }
-
-    private String lookupStoreDNS(String store)
-    {
-        Map<QName, PropertyValue> props = 
-            this.services.getAVMService().queryStorePropertyKey(store, QName.createQName(null, PROP_DNS + '%'));
-        return (props.size() == 1
-                ? props.keySet().iterator().next().getLocalName().substring(PROP_DNS.length()) : null);
-    }
-
-    private final static String PROP_DNS = ".dns.";
 }

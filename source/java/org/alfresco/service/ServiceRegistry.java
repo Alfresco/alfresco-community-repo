@@ -33,6 +33,7 @@ import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.attributes.AttributeService;
 import org.alfresco.service.cmr.audit.AuditService;
 import org.alfresco.service.cmr.avm.AVMService;
+import org.alfresco.service.cmr.avm.deploy.DeploymentService;
 import org.alfresco.service.cmr.avm.locking.AVMLockingService;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
@@ -62,12 +63,12 @@ import org.alfresco.service.cmr.thumbnail.ThumbnailService;
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.cmr.view.ExporterService;
 import org.alfresco.service.cmr.view.ImporterService;
-import org.alfresco.service.cmr.avm.deploy.DeploymentService;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.wcm.sandbox.SandboxService;
 import org.alfresco.wcm.webproject.WebProjectService;
 
 
@@ -129,6 +130,7 @@ public interface ServiceRegistry
     static final QName TAGGING_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "TaggingService");
     static final QName DEPLOYMENT_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "DeploymentService");
     static final QName WEBPROJECT_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "WebProjectService");
+    static final QName SANDBOX_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "SandboxService");
 
     /**
      * Get the list of services provided by the Repository
@@ -429,4 +431,11 @@ public interface ServiceRegistry
      */
     @NotAuditable
     WebProjectService getWebProjectService();
+    
+    /**
+     * Get the Sandbox Service
+     * @return
+     */
+    @NotAuditable
+    SandboxService getSandboxService();
 }

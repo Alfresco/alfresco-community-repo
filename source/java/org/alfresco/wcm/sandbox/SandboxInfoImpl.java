@@ -29,38 +29,62 @@ import java.util.Date;
 import org.alfresco.service.namespace.QName;
 
 /**
-*  Provides information about a WCM sandbox created by SandboxFactory.
-*/
-public interface SandboxInfo
+ * Provides information about a WCM sandbox created by Sandbox Service/Factory
+ */
+public class SandboxInfoImpl implements SandboxInfo
 {
-    /**
-     * Get the name
-     * 
-     * @return  String  name
-     */
-    public String getName();
-    
-    /**
-     *  The sandbox store id
-     */
-    public String getSandboxId();
-    
-    /**
-     *  The web project store id
-     */
-    public String getWebProjectId();
-    
-    /**
-     *  The sandbox type ... for now a QName, based on existing SandboxConstants
-     */
-    public QName getSandboxType();
-    
-    public Date getCreatedDate();
+    private String wpStoreId;
+    private String sbStoreId;
+    private QName sandboxType;
+    private String name;
+    private String[] storeNames;
+    private Date createdDate;
+    private String creator;
 
-    public String getCreator();
+    /* package */ SandboxInfoImpl(String wpStoreId, String sbStoreId, QName sandboxType, String name, String[] storeNames, Date createdDate, String creator)
+    {
+        this.wpStoreId = wpStoreId;
+        this.sbStoreId = sbStoreId;
+        this.sandboxType = sandboxType;
+        this.name = name;
+        this.storeNames = storeNames;
+        this.createdDate = createdDate;
+        this.creator = creator;
+    }
     
+    // note: currently derived - for author sandbox this is the username, for staging sandbox this is the sandbox id
+    public String getName()
+    {
+        return this.name;
+    }
+    
+    public String getWebProjectId()
+    {
+        return this.wpStoreId;
+    }
+    
+    public String getSandboxId()
+    {
+        return this.sbStoreId;
+    }
+    
+    public QName getSandboxType()
+    {
+        return this.sandboxType;
+    }
+    
+    public Date getCreatedDate()
+    {
+        return this.createdDate;
+    }
+    
+    public String getCreator()
+    {
+        return this.creator;
+    }
+
     /**
-    *  A list of ids of the stores within this sandbox.
+    *  A list of names of the stores within this sandbox.
     *  The "main" store should come first in this list;
     *  any other stores should appear in the order that 
     *  they are overlaid on "main" (e.g.: any "preview" 
@@ -68,10 +92,13 @@ public interface SandboxInfo
     *  <p>
     *  Note: all sandboxes must have a "main" layer.
     */
-    public String[] getStoreNames();
+    public String [] getStoreNames() { return storeNames; }
 
     /**
-    *  The id of the "main" store within this sandbox.
+    *  The name of the "main" store within this sandbox.
     */
-    public String getMainStoreName();
+    public String getMainStoreName() 
+    { 
+        return storeNames[0];
+    }
 }

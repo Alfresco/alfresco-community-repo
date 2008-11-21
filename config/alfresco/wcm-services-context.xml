@@ -3,6 +3,8 @@
 
 <beans>
 
+    <!-- Web Project Service -->
+
     <!-- Web Project service bean -->
     <bean id="WebProjectService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
@@ -49,22 +51,90 @@
        <property name="authorityService" ref="AuthorityService"/>
        <property name="permissionService" ref="PermissionService"/>
        <property name="personService" ref="PersonService"/>
-       <property name="virtServerRegistry" ref="VirtServerRegistry"/>
        <property name="sandboxFactory" ref="sandboxFactory"/>
+       <property name="virtServerRegistry" ref="VirtServerRegistry"/>
     </bean>
 
+
+    
+   
+    <!-- Sandbox service bean -->
+    <bean id="SandboxService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.wcm.sandbox.SandboxService</value>
+        </property>
+        <property name="target">
+            <ref bean="sandboxService"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref local="SandboxService_transaction"/>
+                <idref bean="AuditMethodInterceptor"/>
+                <idref bean="exceptionTranslator"/>
+                <idref local="SandboxService_security"/>
+            </list>
+        </property>
+    </bean>
+
+    <!-- Sandbox service transaction bean -->
+    <bean id="SandboxService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+        <property name="transactionManager">
+            <ref bean="transactionManager"/>
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="get*">${server.transaction.mode.readOnly}</prop>
+                <prop key="list*">${server.transaction.mode.readOnly}</prop>
+                <prop key="is*">${server.transaction.mode.readOnly}</prop>
+                <prop key="find*">${server.transaction.mode.readOnly}</prop>
+                <prop key="*">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
+    
+    <!-- Sandbox service security bean -->
+    <bean id="SandboxService_security" class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
+    
+	
+    <bean id="sandboxService" class="org.alfresco.wcm.sandbox.SandboxServiceImpl">
+       <property name="webProjectService" ref="WebProjectService"/>
+       <property name="sandboxFactory" ref="sandboxFactory"/>
+       <property name="avmService" ref="AVMService"/>
+       <property name="avmSyncService" ref="AVMSyncService"/>
+       <property name="nameMatcher" ref="globalPathExcluder"/>
+       <property name="virtServerRegistry" ref="VirtServerRegistry"/>
+       <property name="avmLockingService" ref="AVMLockingService"/>
+       <property name="actionService" ref="ActionService"/>
+       <property name="workflowService" ref="WorkflowService"/>
+    </bean>
+
+    <!--
+    <bean id="sandboxScript" parent="baseJavaScriptExtension" class="org.alfresco.wcm.sandbox.script.Sandboxes">
+        <property name="extensionName">
+            <value>sandboxes</value>
+        </property>
+        <property name="serviceRegistry" ref="ServiceRegistry"/>
+        <property name="sandboxService" ref="SandboxService"/>
+    </bean>
+    -->
+    
+    <bean id="sandboxFactory" class="org.alfresco.wcm.sandbox.SandboxFactory">
+       <property name="nodeService" ref="NodeService"/>
+       <property name="permissionService" ref="PermissionService"/>
+       <property name="avmService" ref="AVMService"/>
+       <property name="avmLockingService" ref="AVMLockingService"/>
+       <property name="virtServerRegistry" ref="VirtServerRegistry"/>
+    </bean>
+    
+    
+    <!--  Java script API ROOT Scopeable object for WCM -->
     <bean id="webProjectsScript" parent="baseJavaScriptExtension" class="org.alfresco.wcm.webproject.script.WebProjects">
         <property name="extensionName">
             <value>webprojects</value>
         </property>
         <property name="serviceRegistry" ref="ServiceRegistry"/>
         <property name="webProjectService" ref="WebProjectService"/>
-    </bean>
-    
-    <bean id="sandboxFactory" class="org.alfresco.wcm.sandbox.SandboxFactory">
-       <property name="nodeService" ref="NodeService"/>
-       <property name="permissionService" ref="PermissionService"/>
-       <property name="avmService" ref="AVMService"/>
+        <property name="sandboxService" ref="SandboxService"/>
     </bean>
     
 </beans>

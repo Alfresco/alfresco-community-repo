@@ -347,9 +347,11 @@ public interface WebProjectService
      * Invite users/groups to web project
      * <p>
      * Note: authority name can be user or group, although a group is flattened into a set of users
+     * <p>
+     * Note: author sandbox will NOT be auto created for each invited user
      * 
-     * @param wpStoreId        web project store id
-     * @param userGroupRoles   map of <authority name, role name> pairs
+     * @param wpStoreId                web project store id
+     * @param userGroupRoles           map of <authority name, role name> pairs
      */
     public void inviteWebUsersGroups(String wpStoreId, Map<String, String> userGroupRoles);
     
@@ -358,46 +360,83 @@ public interface WebProjectService
      * <p>
      * Note: authority name can be user or group, although a group is flattened into a set of users
      * 
-     * @param wpNodeRef        web project node ref
-     * @param userGroupRoles   map of <authority name, role name> pairs
+     * @param wpStoreId                web project store id
+     * @param userGroupRoles           map of <authority name, role name> pairs
+     * @param autoCreateAuthorSandbox  if <tt>true</tt> then auto create an author sandbox for each invited user
      */
-    public void inviteWebUsersGroups(NodeRef wpNodeRef, Map<String, String> userGroupRoles);
+    public void inviteWebUsersGroups(String wpStoreId, Map<String, String> userGroupRoles, boolean autoCreateAuthorSandbox);
     
     /**
-     * Invite user to web project
+     * Invite users/groups to web project
+     * <p>
+     * Note: authority name can be user or group, although a group is flattened into a set of users
      * 
-     * @param wpStoreId   web project store id
-     * @param userName    user name (not a group)
-     * @param userRole    web project role
+     * @param wpNodeRef                web project node ref
+     * @param userGroupRoles           map of <authority name, role name> pairs
+     * @param autoCreateAuthorSandbox  if <tt>true</tt> then auto create the author sandbox for each invited user
+     */
+    public void inviteWebUsersGroups(NodeRef wpNodeRef, Map<String, String> userGroupRoles, boolean autoCreateAuthorSandbox);
+  
+    /**
+     * Invite user to web project
+     * <p>
+     * Note: author sandbox will NOT be auto created for each invited user
+     * 
+     * @param wpStoreId                web project store id
+     * @param userName                 user name (not a group)
+     * @param userRole                 web project role
      */
     public void inviteWebUser(String wpStoreId, String userName, String userRole);
     
     /**
      * Invite user to web project
      * 
-     * @param wpNodeRef   web project node ref
-     * @param userName    user name (not a group)
-     * @param userRole    web project role
+     * @param wpStoreId                web project store id
+     * @param userName                 user name (not a group)
+     * @param userRole                 web project role
+     * @param autoCreateAuthorSandbox  if <tt>true</tt> then auto create the author sandbox for each invited user
      */
-    public void inviteWebUser(NodeRef wpNodeRef, String userName, String userRole);
+    public void inviteWebUser(String wpStoreId, String userName, String userRole, boolean autoCreateAuthorSandbox);
+    
+    /**
+     * Invite user to web project
+     * 
+     * @param wpNodeRef                web project node ref
+     * @param userName                 user name (not a group)
+     * @param userRole                 web project role
+     * @param autoCreateAuthorSandbox  if <tt>true</tt> then auto create the author sandbox for each invited user
+     */
+    public void inviteWebUser(NodeRef wpNodeRef, String userName, String userRole, boolean autoCreateAuthorSandbox);
     
     /**
      * Uninvite user from a web project
      * <p>
-     * Note: this will cascade delete the user's sandboxes without warning (even if there are modified items)
+     * Note: author sandbox will NOT be auto deleted
      * 
-     * @param wpStoreId   web project store id
-     * @param userName    user name
+     * @param wpStoreId                web project store id
+     * @param userName                 user name
      */
     public void uninviteWebUser(String wpStoreId, String userName);
     
     /**
      * Uninvite user from a web project
      * <p>
-     * Note: this will cascade delete the user's sandboxes without warning (even if there are modified items)
+     * Note: if author sandbox is auto deleted then this will cascade delete without warning (even if there are changed items)
      * 
-     * @param wpNodeRef      web project node ref
-     * @param userName       user name
+     * @param wpStoreId                web project store id
+     * @param userName                 user name
+     * @param autoDeleteAuthorSandbox  if <tt>true</tt> then auto delete the author sandbox
      */
-    public void uninviteWebUser(NodeRef wpNodeRef, String userName);
+    public void uninviteWebUser(String wpStoreId, String userName, boolean autoDeleteAuthorSandbox);
+    
+    /**
+     * Uninvite user from a web project
+     * <p>
+     * Note: if author sandbox is auto deleted then this will cascade delete without warning (even if there are changed items)
+     * 
+     * @param wpNodeRef                web project node ref
+     * @param userName                 user name
+     * @param autoDeleteAuthorSandbox  if <tt>true</tt> then auto delete the author sandbox
+     */
+    public void uninviteWebUser(NodeRef wpNodeRef, String userName, boolean autoDeleteAuthorSandbox);
 }

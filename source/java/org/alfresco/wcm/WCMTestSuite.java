@@ -22,56 +22,33 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.wcm.sandbox;
+package org.alfresco.wcm;
 
-import java.util.Date;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
-import org.alfresco.service.namespace.QName;
+import org.alfresco.wcm.sandbox.SandboxServiceImplTest;
+import org.alfresco.wcm.webproject.WebProjectServiceImplTest;
 
 /**
-*  Provides information about a WCM sandbox created by SandboxFactory.
-*/
-public interface SandboxInfo
+ * WCM test suite
+ * 
+ * @author janv
+ */
+public class WCMTestSuite extends TestSuite
 {
     /**
-     * Get the name
+     * Creates the test suite
      * 
-     * @return  String  name
+     * @return  the test suite
      */
-    public String getName();
-    
-    /**
-     *  The sandbox store id
-     */
-    public String getSandboxId();
-    
-    /**
-     *  The web project store id
-     */
-    public String getWebProjectId();
-    
-    /**
-     *  The sandbox type ... for now a QName, based on existing SandboxConstants
-     */
-    public QName getSandboxType();
-    
-    public Date getCreatedDate();
+    public static Test suite() 
+    {
+        TestSuite suite = new TestSuite();
+        
+        suite.addTestSuite(WebProjectServiceImplTest.class);
+        suite.addTestSuite(SandboxServiceImplTest.class);
 
-    public String getCreator();
-    
-    /**
-    *  A list of ids of the stores within this sandbox.
-    *  The "main" store should come first in this list;
-    *  any other stores should appear in the order that 
-    *  they are overlaid on "main" (e.g.: any "preview" 
-    *  layers should come afterward, in "lowest first" order).
-    *  <p>
-    *  Note: all sandboxes must have a "main" layer.
-    */
-    public String[] getStoreNames();
-
-    /**
-    *  The id of the "main" store within this sandbox.
-    */
-    public String getMainStoreName();
+        return suite;
+    }
 }

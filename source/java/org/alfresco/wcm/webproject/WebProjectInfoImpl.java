@@ -32,7 +32,7 @@ import org.alfresco.wcm.util.WCMUtil;
  * 
  * @author janv
  */
-public class WebProjectInfoImpl extends WCMUtil implements WebProjectInfo
+public class WebProjectInfoImpl implements WebProjectInfo
 {
 	/** Web Project node reference */    
     private NodeRef nodeRef;

@@ -43,6 +43,7 @@ public class  SandboxConstants
     public final static String PROP_DNS                     = ".dns.";
     public final static String PROP_SANDBOX_STORE_PREFIX    = ".sandbox.store.";
     
+    // sandbox type
     public final static QName PROP_SANDBOX_STAGING_MAIN              = QName.createQName(null, ".sandbox.staging.main");
     public final static QName PROP_SANDBOX_STAGING_PREVIEW           = QName.createQName(null, ".sandbox.staging.preview");
     public final static QName PROP_SANDBOX_AUTHOR_MAIN               = QName.createQName(null, ".sandbox.author.main");
@@ -51,6 +52,7 @@ public class  SandboxConstants
     public final static QName PROP_SANDBOX_WORKFLOW_PREVIEW          = QName.createQName(null, ".sandbox.workflow.preview");
     public final static QName PROP_SANDBOX_AUTHOR_WORKFLOW_MAIN      = QName.createQName(null, ".sandbox.author.workflow.main");
     public final static QName PROP_SANDBOX_AUTHOR_WORKFLOW_PREVIEW   = QName.createQName(null, ".sandbox.author.workflow.preview");
+    
     public final static QName PROP_WEBSITE_NAME                      = QName.createQName(null, ".website.name");
     public final static QName PROP_AUTHOR_NAME                       = QName.createQName(null, ".author.name");
     public final static QName PROP_WEB_PROJECT_NODE_REF              = QName.createQName(null, ".web_project.noderef");

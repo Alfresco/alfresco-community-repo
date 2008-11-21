@@ -25,15 +25,22 @@
 package org.alfresco.wcm.util;
 
 import java.text.MessageFormat;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.alfresco.config.JNDIConstants;
 import org.alfresco.mbeans.VirtServerRegistry;
+import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.cmr.avm.AVMService;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.VirtServerUtils;
 import org.alfresco.wcm.sandbox.SandboxConstants;
@@ -50,15 +57,15 @@ import org.alfresco.wcm.sandbox.SandboxConstants;
 public class WCMUtil
 {
    /**
-    * Extracts the store name from the avm path
+    * Extracts the sandbox store id from the avm path
     *
     * @param avmPath an absolute avm path
     * 
-    * @return the store name
+    * @return the sandbox store id
     */
-   protected static String getStoreName(final String avmPath)
+   protected static String getSandboxStoreId(final String avmPath)
    {
-      final int i = avmPath.indexOf(':');
+      final int i = avmPath.indexOf(AVM_STORE_SEPARATOR);
       if (i == -1)
       {
          throw new IllegalArgumentException("path " + avmPath + " does not contain a store");
@@ -78,7 +85,7 @@ public class WCMUtil
     * 
     * @return the web project store id
     */
-   protected static String getStoreId(final String storeName)
+   protected static String getWebProjectStoreId(final String storeName)
    {
       final int index = storeName.indexOf(WCMUtil.STORE_SEPARATOR);
       return (index == -1
@@ -87,17 +94,17 @@ public class WCMUtil
    }
    
    /**
-    * Extracts the store id from the avm path
+    * Extracts the web project store id from the avm path
     *
-    * For example, if the avm path is: teststore--admin:/www/ROOT then the store id is: teststore
+    * For example, if the avm path is: teststore--admin:/www/ROOT then the web project id is: teststore
     *
     * @param avmPath an absolute avm path
     * 
-    * @return the store id.
+    * @return the web project store id.
     */
-   protected static String getStoreIdFromPath(final String avmPath)
+   protected static String getWebProjectStoreIdFromPath(final String avmPath)
    {
-       return getStoreId(getStoreName(avmPath));
+       return getWebProjectStoreId(getSandboxStoreId(avmPath));
    }
 
    /**
@@ -109,7 +116,7 @@ public class WCMUtil
     */
    protected static boolean isPreviewStore(final String storeName)
    {
-      return storeName.endsWith(WCMUtil.STORE_SEPARATOR + WCMUtil.STORE_PREVIEW);
+      return ((storeName != null) && (storeName.endsWith(WCMUtil.STORE_SEPARATOR + WCMUtil.STORE_PREVIEW)));
    }
 
    /**
@@ -126,7 +133,7 @@ public class WCMUtil
          storeName = WCMUtil.getCorrespondingMainStoreName(storeName);
       }
       
-      return storeName.indexOf(STORE_SEPARATOR + STORE_WORKFLOW) != -1;
+      return ((storeName != null) && (storeName.indexOf(STORE_SEPARATOR + STORE_WORKFLOW) != -1));
    }
    
    /**
@@ -142,19 +149,19 @@ public class WCMUtil
       {
          storeName = WCMUtil.getCorrespondingMainStoreName(storeName);
       }
-      return storeName.indexOf(WCMUtil.STORE_SEPARATOR) != -1;
+      return ((storeName != null) && (storeName.indexOf(WCMUtil.STORE_SEPARATOR) != -1));
    }
    
    /**
-    * Indicates whether the store name describes a main store.
+    * Indicates whether the store name describes a staging store.
     * 
     * @param storeName the store name
     * 
     * @return <tt>true</tt> if the store is a main store, <tt>false</tt> otherwise.
     */
-   protected static boolean isMainStore(String storeName)
+   protected static boolean isStagingStore(String storeName)
    {
-      return (storeName.indexOf(WCMUtil.STORE_SEPARATOR) == -1);
+      return ((storeName != null) && (storeName.indexOf(WCMUtil.STORE_SEPARATOR) == -1));
    }
 
    /**
@@ -164,13 +171,31 @@ public class WCMUtil
     * 
     * @return the username associated or <tt>null</tt> if this is a staging store.
     */
-   protected static String getUserName(String storeName)
+   public static String getUserName(String storeName)
    {
       if (WCMUtil.isPreviewStore(storeName))
       {
          storeName = WCMUtil.getCorrespondingMainStoreName(storeName);
       }
       final int index = storeName.indexOf(WCMUtil.STORE_SEPARATOR);
+      return (index == -1
+              ? null
+              : storeName.substring(index + WCMUtil.STORE_SEPARATOR.length()));
+   }
+   
+   /**
+    * Extracts the workflow id
+    * 
+    * @param storeName
+    * @return
+    */
+   public static String getWorkflowId(String storeName)
+   {
+      if (WCMUtil.isPreviewStore(storeName))
+      {
+         storeName = WCMUtil.getCorrespondingMainStoreName(storeName);
+      }
+      final int index = storeName.indexOf(STORE_SEPARATOR + STORE_WORKFLOW);
       return (index == -1
               ? null
               : storeName.substring(index + WCMUtil.STORE_SEPARATOR.length()));
@@ -226,7 +251,7 @@ public class WCMUtil
     */
    protected static String getCorrespondingPathInMainStore(final String avmPath)
    {
-      String storeName = WCMUtil.getStoreName(avmPath);
+      String storeName = WCMUtil.getSandboxStoreId(avmPath);
       storeName = WCMUtil.getCorrespondingMainStoreName(storeName);
       return WCMUtil.getCorrespondingPath(avmPath, storeName);
    }
@@ -243,7 +268,7 @@ public class WCMUtil
     */
    protected static String getCorrespondingPathInPreviewStore(final String avmPath)
    {
-      String storeName = WCMUtil.getStoreName(avmPath);
+      String storeName = WCMUtil.getSandboxStoreId(avmPath);
       storeName = WCMUtil.getCorrespondingPreviewStoreName(storeName);
       return WCMUtil.getCorrespondingPath(avmPath, storeName);
    }
@@ -258,20 +283,19 @@ public class WCMUtil
     */
    protected static String getCorrespondingPath(final String avmPath, final String otherStore)
    {
-      return (otherStore + ':' + WCMUtil.getStoreRelativePath(avmPath));
+      return (otherStore + AVM_STORE_SEPARATOR + WCMUtil.getStoreRelativePath(avmPath));
    }
    
    /**
-    * Returns the main staging store name for the specified store id.
+    * Returns the main staging store name for the specified web project
     * 
-    * @param storeId store id to build staging store name for
-    * 
-    * @return main staging store name for the specified store id
+    * @param wpStoreId   web project store id to build staging store name for
+    * @return String     main staging store name for the specified web project store id
     */
-   protected static String buildStagingStoreName(final String storeId)
+   public static String buildStagingStoreName(final String wpStoreId)
    {
-       ParameterCheck.mandatoryString("storeId", storeId);
-       return storeId;
+       ParameterCheck.mandatoryString("wpStoreId", wpStoreId);
+       return wpStoreId;
    }
    
    /**
@@ -295,7 +319,7 @@ public class WCMUtil
     * 
     * @return the main store for the specified user and store id
     */
-   protected static String buildUserMainStoreName(final String storeId, 
+   public static String buildUserMainStoreName(final String storeId, 
                                                final String userName)
    {
        ParameterCheck.mandatoryString("userName", userName);
@@ -361,7 +385,7 @@ public class WCMUtil
    protected static String buildStoreRootPath(final String storeName)
    {
        ParameterCheck.mandatoryString("storeName", storeName);
-       return storeName + ":/" + JNDIConstants.DIR_DEFAULT_WWW;
+       return storeName + AVM_STORE_SEPARATOR + "/" + JNDIConstants.DIR_DEFAULT_WWW;
    }
 
    /**
@@ -376,7 +400,7 @@ public class WCMUtil
    protected static String buildSandboxRootPath(final String storeName)
    {
        ParameterCheck.mandatoryString("storeName", storeName);
-       return storeName + ":/" + JNDIConstants.DIR_DEFAULT_WWW_APPBASE;
+       return storeName + AVM_STORE_SEPARATOR + JNDIConstants.DIR_DEFAULT_WWW_APPBASE;
    }
    
    /**
@@ -393,9 +417,7 @@ public class WCMUtil
        return WCMUtil.buildSandboxRootPath(storeName) + '/' + webApp;
    }
    
-   // TODO refactor ...
-   // assume for now that it is a store name rather than a path - eg. main rather than main:/
-   protected static String buildStoreUrl(AVMService avmService, String storeName, String domain, String port)
+   public static String buildStoreUrl(AVMService avmService, String storeName, String domain, String port)
    {
        ParameterCheck.mandatoryString("storeName", storeName);
 
@@ -418,7 +440,7 @@ public class WCMUtil
                : buildStoreUrl(avmService, storeName, domain, port) + '/' + webApp);
    }
    
-   protected static String buildAssetUrl(String assetPath, String domain, String port, String dns)
+   public static String buildAssetUrl(String assetPath, String domain, String port, String dns)
    {
        ParameterCheck.mandatoryString("assetPath", assetPath);
        
@@ -443,7 +465,7 @@ public class WCMUtil
       return MessageFormat.format(JNDIConstants.PREVIEW_ASSET_URL, dns, domain, port, assetPath);
    }
    
-   protected static String lookupStoreDNS(AVMService avmService, String store)
+   public static String lookupStoreDNS(AVMService avmService, String store)
    {
        ParameterCheck.mandatoryString("store", store);
       
@@ -502,8 +524,8 @@ public class WCMUtil
     */
    protected static String getStoreRelativePath(final String absoluteAVMPath)
    {
-      final Matcher m = STORE_RELATIVE_PATH_PATTERN.matcher(absoluteAVMPath);
-      return m.matches() && m.group(1).length() != 0 ? m.group(1) : null;
+       ParameterCheck.mandatoryString("absoluteAVMPath", absoluteAVMPath);
+       return absoluteAVMPath.substring(absoluteAVMPath.indexOf(AVM_STORE_SEPARATOR) + 1);
    }
 
    /**
@@ -569,6 +591,24 @@ public class WCMUtil
    {
       final Matcher m = SANDBOX_RELATIVE_PATH_PATTERN.matcher(absoluteAVMPath);
       return m.matches() && m.group(1).length() != 0 ? m.group(1) : null;
+   }
+
+   protected static Map<String, String> listWebUsers(NodeService nodeService, NodeRef wpNodeRef)
+   {
+       List<ChildAssociationRef> userInfoRefs = nodeService.getChildAssocs(wpNodeRef, WCMAppModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
+       
+       Map<String, String> webUsers = new HashMap<String, String>(23);
+       
+       for (ChildAssociationRef ref : userInfoRefs)
+       {
+           NodeRef userInfoRef = ref.getChildRef();
+           String userName = (String)nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERNAME);
+           String userRole = (String)nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERROLE);
+           
+           webUsers.put(userName, userRole);
+        }
+
+       return webUsers;
    }
    
    /**
@@ -685,6 +725,8 @@ public class WCMUtil
    // Component Separator.
    protected static final String STORE_SEPARATOR = "--";
    
+   protected static final char AVM_STORE_SEPARATOR = ':';
+   
    // names of the stores representing the layers for an AVM website
    //XXXarielb this should be private
    protected final static String STORE_WORKFLOW = "workflow";
@@ -701,10 +743,6 @@ public class WCMUtil
    public static final String ROLE_CONTENT_PUBLISHER   = "ContentPublisher";
    public static final String ROLE_CONTENT_REVIEWER    = "ContentReviewer";
    public static final String ROLE_CONTENT_CONTRIBUTOR = "ContentContributor";
-   
-   // pattern for absolute AVM Path
-   private final static Pattern STORE_RELATIVE_PATH_PATTERN = 
-      Pattern.compile("[^:]+:(.+)");
    
    private final static Pattern WEBAPP_RELATIVE_PATH_PATTERN = 
       Pattern.compile("([^:]+:/" + JNDIConstants.DIR_DEFAULT_WWW +

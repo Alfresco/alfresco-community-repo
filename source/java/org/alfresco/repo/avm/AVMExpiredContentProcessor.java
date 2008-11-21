@@ -44,7 +44,7 @@ import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.workflow.WorkflowModel;
-import org.alfresco.sandbox.SandboxConstants;
+import org.alfresco.wcm.sandbox.SandboxConstants;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
@@ -66,9 +66,8 @@ import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.util.DNSNameMangler;
-import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
+import org.alfresco.wcm.sandbox.SandboxFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -97,6 +96,7 @@ public class AVMExpiredContentProcessor
     protected TransactionService transactionService;
     protected VirtServerRegistry virtServerRegistry;
     protected SearchService searchService;
+    private SandboxFactory sandboxFactory;
     
     private static Log logger = LogFactory.getLog(AVMExpiredContentProcessor.class);
 
@@ -170,6 +170,11 @@ public class AVMExpiredContentProcessor
     public void setAvmLockingAwareService(AVMService avmLockingAwareService)
     {
         this.avmLockingAwareService = avmLockingAwareService;
+    }
+    
+    public void setSandboxFactory(SandboxFactory sandboxFactory)
+    {
+       this.sandboxFactory = sandboxFactory;
     }
 
     /**
@@ -425,7 +430,7 @@ public class AVMExpiredContentProcessor
                     NodeRef assignee = this.personService.getPerson(userName);
                     
                     // create a workflow store layered over the users store
-                    String workflowStoreName = createUserWorkflowSandbox(storeName, userStore);
+                    String workflowStoreName = sandboxFactory.createUserWorkflowSandbox(storeName, userStore);
 
                     // create a workflow package with all the expired items
                     NodeRef workflowPackage = setupWorkflowPackage(workflowStoreName, expiredContent);
@@ -452,124 +457,6 @@ public class AVMExpiredContentProcessor
                 }
             }
         }
-    }
-        
-    /**
-     * Creates a workflow sandbox for the given user store. This will create a
-     * workflow sandbox layered over the user's main store.
-     * 
-     * @param stagingStore The name of the staging store the user sandbox is layered over
-     * @param userStore The name of the user store to create the workflow for
-     * @return The store name of the main store in the workflow sandbox
-     */
-    private String createUserWorkflowSandbox(String stagingStore, String userStore)
-    {
-        // create the workflow 'main' store
-        String packageName = "workflow-" + GUID.generate();
-        String workflowStoreName = userStore + STORE_SEPARATOR + packageName;
-      
-        this.avmService.createStore(workflowStoreName);
-        
-        if (logger.isDebugEnabled())
-            logger.debug("Created user workflow sandbox store: " + workflowStoreName);
-         
-        // create a layered directory pointing to 'www' in the users store
-        this.avmService.createLayeredDirectory(
-                 userStore + ":/" + JNDIConstants.DIR_DEFAULT_WWW, 
-                 workflowStoreName + ":/", JNDIConstants.DIR_DEFAULT_WWW);
-         
-        // tag the store with the store type
-        this.avmService.setStoreProperty(workflowStoreName, 
-                 SandboxConstants.PROP_SANDBOX_AUTHOR_WORKFLOW_MAIN,
-                 new PropertyValue(DataTypeDefinition.TEXT, null));
-         
-        // tag the store with the name of the author's store this one is layered over
-        this.avmService.setStoreProperty(workflowStoreName, 
-                 SandboxConstants.PROP_AUTHOR_NAME,
-                 new PropertyValue(DataTypeDefinition.TEXT, userStore));
-         
-        // tag the store, oddly enough, with its own store name for querying.
-        this.avmService.setStoreProperty(workflowStoreName,
-                 QName.createQName(null, SandboxConstants.PROP_SANDBOX_STORE_PREFIX + workflowStoreName),
-                 new PropertyValue(DataTypeDefinition.TEXT, null));
-         
-        // tag the store with the DNS name property
-        String path = workflowStoreName + ":/" + JNDIConstants.DIR_DEFAULT_WWW + 
-                 "/" + JNDIConstants.DIR_DEFAULT_APPBASE;
-        // DNS name mangle the property name - can only contain value DNS characters!
-        String dnsProp = SandboxConstants.PROP_DNS + DNSNameMangler.MakeDNSName(stagingStore, packageName);
-        this.avmService.setStoreProperty(workflowStoreName, QName.createQName(null, dnsProp),
-                 new PropertyValue(DataTypeDefinition.TEXT, path));
-        
-        // the main workflow store depends on the main user store (dist=1)
-        String prop_key = SandboxConstants.PROP_BACKGROUND_LAYER + userStore;
-        this.avmService.setStoreProperty(workflowStoreName, QName.createQName(null, prop_key),
-                 new PropertyValue(DataTypeDefinition.INT, 1));
-        
-        // The main workflow store depends on the main staging store (dist=2)
-        prop_key = SandboxConstants.PROP_BACKGROUND_LAYER + stagingStore;
-        this.avmService.setStoreProperty(workflowStoreName, QName.createQName(null, prop_key),
-                 new PropertyValue(DataTypeDefinition.INT, 2));
-      
-        // snapshot the store
-        this.avmService.createSnapshot(workflowStoreName, null, null);
-         
-        // create the workflow 'preview' store
-        String previewStoreName = workflowStoreName + STORE_SEPARATOR + "preview";
-        this.avmService.createStore(previewStoreName);
-      
-        if (logger.isDebugEnabled())
-            logger.debug("Created user workflow sandbox preview store: " + previewStoreName);
-         
-        // create a layered directory pointing to 'www' in the workflow 'main' store
-        this.avmService.createLayeredDirectory(
-                 workflowStoreName + ":/" + JNDIConstants.DIR_DEFAULT_WWW, 
-                 previewStoreName + ":/", JNDIConstants.DIR_DEFAULT_WWW);
-         
-        // tag the store with the store type
-        this.avmService.setStoreProperty(previewStoreName, SandboxConstants.PROP_SANDBOX_WORKFLOW_PREVIEW,
-                 new PropertyValue(DataTypeDefinition.TEXT, null));
-      
-        // tag the store with its own store name for querying.
-        avmService.setStoreProperty(previewStoreName,
-                 QName.createQName(null, SandboxConstants.PROP_SANDBOX_STORE_PREFIX + previewStoreName),
-                 new PropertyValue(DataTypeDefinition.TEXT, null));
-         
-        // tag the store with the DNS name property
-        path = previewStoreName + ":/" + JNDIConstants.DIR_DEFAULT_WWW + 
-                 "/" + JNDIConstants.DIR_DEFAULT_APPBASE;
-        // DNS name mangle the property name - can only contain value DNS characters!
-        dnsProp = SandboxConstants.PROP_DNS + DNSNameMangler.MakeDNSName(userStore, packageName, "preview");
-        this.avmService.setStoreProperty(previewStoreName, QName.createQName(null, dnsProp),
-                 new PropertyValue(DataTypeDefinition.TEXT, path));
-
-        // The preview worfkflow store depends on the main workflow store (dist=1)
-        prop_key = SandboxConstants.PROP_BACKGROUND_LAYER + workflowStoreName;
-        this.avmService.setStoreProperty(previewStoreName, QName.createQName(null, prop_key),
-                 new PropertyValue(DataTypeDefinition.INT, 1));
-
-        // The preview workflow store depends on the main user store (dist=2)
-        prop_key = SandboxConstants.PROP_BACKGROUND_LAYER + userStore;
-        this.avmService.setStoreProperty(previewStoreName, QName.createQName(null, prop_key),
-                 new PropertyValue(DataTypeDefinition.INT, 2));
-        
-        // The preview workflow store depends on the main staging store (dist=3)
-        prop_key = SandboxConstants.PROP_BACKGROUND_LAYER + stagingStore;
-        this.avmService.setStoreProperty(previewStoreName, QName.createQName(null, prop_key),
-                 new PropertyValue(DataTypeDefinition.INT, 3));
-      
-        // snapshot the store
-        this.avmService.createSnapshot(previewStoreName, null, null);
-         
-        // tag all related stores to indicate that they are part of a single sandbox
-        QName sandboxIdProp = QName.createQName(SandboxConstants.PROP_SANDBOXID + GUID.generate());
-        this.avmService.setStoreProperty(workflowStoreName, sandboxIdProp,
-                 new PropertyValue(DataTypeDefinition.TEXT, null));
-        this.avmService.setStoreProperty(previewStoreName, sandboxIdProp,
-                 new PropertyValue(DataTypeDefinition.TEXT, null));
-      
-        // return the main workflow store name
-        return workflowStoreName;
     }
     
     /**

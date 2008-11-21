@@ -44,6 +44,9 @@ import org.alfresco.web.config.ActionsConfigElement.ActionGroup;
 import org.alfresco.web.config.AdvancedSearchConfigElement.CustomProperty;
 import org.alfresco.web.config.DefaultControlsConfigElement.ControlParam;
 import org.alfresco.web.config.DialogsConfigElement.DialogConfig;
+import org.alfresco.web.config.FormConfigElement.FormField;
+import org.alfresco.web.config.FormConfigElement.FormSet;
+import org.alfresco.web.config.FormConfigElement.Mode;
 import org.alfresco.web.config.PropertySheetConfigElement.ItemConfig;
 import org.alfresco.web.config.WizardsConfigElement.ConditionalPageConfig;
 import org.alfresco.web.config.WizardsConfigElement.PageConfig;
@@ -1199,6 +1202,111 @@ public class WebClientConfigTest extends BaseTest
                 .getMessageFor("NUMERIC"));
     }
     
+    public void testFormConfig()
+    {
+        XMLConfigService svc = initXMLConfigService("test-config-forms.xml");
+
+        Config contentConfig = svc.getConfig("content");
+        ConfigElement confElement = contentConfig.getConfigElement("form");
+        assertNotNull("confElement was null.", confElement);
+        assertTrue("confElement should be instanceof FormConfigElement.", confElement
+                instanceof FormConfigElement);
+        FormConfigElement formConfigElement = (FormConfigElement)confElement;
+
+        assertEquals("Submission URL was incorrect.", "submission/url",
+                formConfigElement.getSubmissionURL());
+        
+        List<StringPair> expectedModelOverrideProperties = new ArrayList<StringPair>();
+        expectedModelOverrideProperties.add(new StringPair("fields.title.mandatory", "true"));
+        assertEquals("Expected property missing.", expectedModelOverrideProperties,
+                formConfigElement.getModelOverrideProperties());
+        
+        // Get the form templates. Testing the mode and role combinations.
+        // For this config xml, there are no templates available to a user without a role.
+        assertNull("Incorrect template.", formConfigElement.getFormTemplate(Mode.CREATE, null));
+        assertNull("Incorrect template.", formConfigElement.getFormTemplate(Mode.EDIT, null));
+        assertNull("Incorrect template.", formConfigElement.getFormTemplate(Mode.VIEW, null));
+        assertNull("Incorrect template.", formConfigElement.getFormTemplate(Mode.CREATE, Collections.EMPTY_LIST));
+        assertNull("Incorrect template.", formConfigElement.getFormTemplate(Mode.EDIT, Collections.EMPTY_LIST));
+        assertNull("Incorrect template.", formConfigElement.getFormTemplate(Mode.VIEW, Collections.EMPTY_LIST));
+
+        List<String> roles = new ArrayList<String>();
+        roles.add("Consumer");
+        roles.add("Manager");
+        assertEquals("Incorrect template.", "/path/create/template", formConfigElement.getFormTemplate(Mode.CREATE, roles));
+        assertEquals("Incorrect template.", "/path/edit/template/manager", formConfigElement.getFormTemplate(Mode.EDIT, roles));
+        assertEquals("Incorrect template.", "/path/view/template", formConfigElement.getFormTemplate(Mode.VIEW, roles));
+
+        
+        // Field visibility checks.
+        assertTrue("Field should be visible.", formConfigElement.isFieldVisible("name", Mode.CREATE));
+        assertTrue("Field should be visible.", formConfigElement.isFieldVisible("title", Mode.CREATE));
+        assertTrue("Field should be visible.", formConfigElement.isFieldVisible("quota", Mode.CREATE));
+        assertFalse("Field should be invisible.", formConfigElement.isFieldVisible("rubbish", Mode.CREATE));
+        
+        assertTrue("Field should be visible.", formConfigElement.isFieldVisible("name", Mode.EDIT));
+        assertFalse("Field should be invisible.", formConfigElement.isFieldVisible("title", Mode.EDIT));
+        assertFalse("Field should be invisible.", formConfigElement.isFieldVisible("quota", Mode.EDIT));
+        assertFalse("Field should be invisible.", formConfigElement.isFieldVisible("rubbish", Mode.EDIT));
+
+        assertTrue("Field should be visible.", formConfigElement.isFieldVisible("name", Mode.VIEW));
+        assertTrue("Field should be visible.", formConfigElement.isFieldVisible("title", Mode.VIEW));
+        assertTrue("Field should be visible.", formConfigElement.isFieldVisible("quota", Mode.VIEW));
+        assertFalse("Field should be invisible.", formConfigElement.isFieldVisible("rubbish", Mode.VIEW));
+
+        // Set checks
+        List<String> expectedSetIds = new ArrayList<String>();
+        expectedSetIds.add("details");
+        expectedSetIds.add("user");
+        assertEquals("Set IDs were wrong.", expectedSetIds, formConfigElement.getSetIDs());
+        
+        Map<String, FormSet> sets = formConfigElement.getSets();
+        assertEquals("Set parent was wrong.", "details", sets.get("user").getParentId());
+        assertEquals("Set parent was wrong.", null, sets.get("details").getParentId());
+
+        assertEquals("Set parent was wrong.", "fieldset", sets.get("details").getAppearance());
+        assertEquals("Set parent was wrong.", "panel", sets.get("user").getAppearance());
+        
+        // Field checks
+        Map<String, FormField> fields = formConfigElement.getFields();
+        assertEquals("Wrong number of Fields.", 4, fields.size());
+        
+        FormField usernameField = fields.get("username");
+        assertNotNull("usernameField was null.", usernameField);
+        assertTrue("Missing attribute.", usernameField.getAttributes().containsKey("set"));
+        assertEquals("Incorrect attribute.", "user", usernameField.getAttributes().get("set"));
+        assertNull("username field's template should be null.", usernameField.getTemplate());
+        
+        FormField nameField = fields.get("name");
+        String nameTemplate = nameField.getTemplate();
+        assertNotNull("name field had null template", nameTemplate);
+        assertEquals("name field had incorrect template.", "alfresco/extension/formcontrols/my-name.ftl", nameTemplate);
+        
+        List<StringPair> controlParams = nameField.getControlParams();
+        assertNotNull("name field should have control params.", controlParams);
+        assertEquals("name field has incorrect number of control params.", 1, controlParams.size());
+        
+        assertEquals("Control param has wrong name.", "foo", controlParams.get(0).getName());
+        assertEquals("Control param has wrong value.", "bar", controlParams.get(0).getValue());
+        
+        assertEquals("name field had incorrect type.", "REGEX", nameField.getConstraintType());
+        assertEquals("name field had incorrect message.",
+                "The name can not contain the character '{0}'", nameField.getConstraintMessage());
+        assertEquals("name field had incorrect message-id.", "field_error_name",
+                nameField.getConstraintMessageId());
+        
+        // test that a call to the generic getChildren call throws an error
+        try
+        {
+            formConfigElement.getChildren();
+            fail("getChildren() did not throw an exception.");
+        } catch (ConfigException expectedException)
+        {
+            // intentionally empty
+        }
+    }
+
+
     private XMLConfigService initXMLConfigService(String xmlConfigFile)
     {
         String fullFileName = getResourcesDir() + xmlConfigFile;

@@ -57,7 +57,6 @@ public class WebProjectTest extends BaseWebScriptTest
     private static final String USER_TWO = "WebProjectTestTwo";
     private static final String USER_THREE = "WebProjectTestThree";
     
-    private static final String URL_WEB_PROJECT = "/api/wcm/webproject";
     private static final String URL_WEB_PROJECTS = "/api/wcm/webprojects";
     
 	private static final String BASIC_NAME = "testProj";
@@ -118,7 +117,7 @@ public class WebProjectTest extends BaseWebScriptTest
         {
         	try 
         	{
-        		Response deleteResponse = sendRequest(new DeleteRequest(URL_WEB_PROJECT + "/" + webProjectRef), 0);
+        		sendRequest(new DeleteRequest(URL_WEB_PROJECTS + "/" + webProjectRef), 0);
         	} 
         	catch (Exception e)
         	{
@@ -134,6 +133,8 @@ public class WebProjectTest extends BaseWebScriptTest
     {     
         this.authenticationComponent.setCurrentUser("admin");
         
+    	sendRequest(new DeleteRequest(URL_WEB_PROJECTS + "/" + BASIC_DNSNAME),0 );  
+        
         /**
          * Create a web site
          */
@@ -142,9 +143,12 @@ public class WebProjectTest extends BaseWebScriptTest
         webProj.put("description", BASIC_DESCRIPTION);
         webProj.put("title", BASIC_TITLE);
         webProj.put("dnsName", BASIC_DNSNAME); 
-        Response response = sendRequest(new PostRequest(URL_WEB_PROJECT, webProj.toString(), "application/json"), Status.STATUS_OK); 
+        webProj.put("isTemplate", true);
         
-        JSONObject result = new JSONObject(response.getContentAsString());
+        Response response = sendRequest(new PostRequest(URL_WEB_PROJECTS, webProj.toString(), "application/json"), Status.STATUS_OK); 
+        
+        JSONObject top = new JSONObject(response.getContentAsString());
+        JSONObject result = top.getJSONObject("data");
         String webProjectRef = result.getString("webprojectref");
         
         assertNotNull("webproject ref is null", webProjectRef);
@@ -153,16 +157,22 @@ public class WebProjectTest extends BaseWebScriptTest
     	assertEquals(BASIC_NAME, result.get("name"));
        	assertEquals(BASIC_DESCRIPTION, result.get("description"));
        	assertEquals(BASIC_TITLE, result.get("title"));
+     	// not yet implemented
+       	//assertEquals(true, result.get("isTemplate"));
        	
        	/**
        	 *  Read the web site we created above
        	 */
-        Response lookup = sendRequest(new GetRequest(URL_WEB_PROJECT + "/" + webProjectRef), 200);
+        Response lookup = sendRequest(new GetRequest(URL_WEB_PROJECTS + "/" + webProjectRef), Status.STATUS_OK);
         {
-        	JSONObject lookupResult = new JSONObject(lookup.getContentAsString());    
-        	assertEquals(BASIC_NAME, lookupResult.get("name"));
-        	assertEquals(BASIC_DESCRIPTION, lookupResult.get("description"));
-        	assertEquals(BASIC_TITLE, lookupResult.get("title"));
+        	JSONObject lookupResult = new JSONObject(lookup.getContentAsString());
+        	JSONObject data = lookupResult.getJSONObject("data");
+        	assertEquals(BASIC_NAME, data.get("name"));
+        	assertEquals(BASIC_DESCRIPTION, data.get("description"));
+        	assertEquals(BASIC_TITLE, data.get("title"));
+        	String url = data.getString("url");
+        	assertNotNull("url is null", url);
+        	sendRequest(new GetRequest(url), Status.STATUS_OK);
         }
         
        	/**
@@ -171,19 +181,19 @@ public class WebProjectTest extends BaseWebScriptTest
         {
         	JSONObject update = new JSONObject();
         	update.put("name", BASIC_UPDATED_NAME);
-        	Response updateResponse = sendRequest(new PutRequest(URL_WEB_PROJECT + "/" + webProjectRef, update.toString(), "application/json"), Status.STATUS_OK);
-        	JSONObject updateResult = new JSONObject(updateResponse.getContentAsString());    
-
-// TODO TESTS NOT PASSING        	
-//        	assertEquals(BASIC_UPDATED_NAME, updateResult.get("name"));
-//        	assertEquals(BASIC_DESCRIPTION, updateResult.get("description"));
-//        	assertEquals(BASIC_TITLE, updateResult.get("title"));
+        	Response updateResponse = sendRequest(new PutRequest(URL_WEB_PROJECTS + "/" + webProjectRef, update.toString(), "application/json"), Status.STATUS_OK);
+        	JSONObject updateResult = new JSONObject(updateResponse.getContentAsString());  
+        	// TODO TESTS NOT PASSING         	
+//        	JSONObject data = updateResult.getJSONObject("data");  
+//        	assertEquals(BASIC_UPDATED_NAME, data.get("name"));
+//        	assertEquals(BASIC_DESCRIPTION, data.get("description"));
+//        	assertEquals(BASIC_TITLE, data.get("title"));
         }
           	
         /**
          * Delete the web site we created above
          */
-    	Response deleteResponse = sendRequest(new DeleteRequest(URL_WEB_PROJECT + "/" + webProjectRef), Status.STATUS_OK);      	 
+    	sendRequest(new DeleteRequest(URL_WEB_PROJECTS + "/" + webProjectRef), Status.STATUS_OK);      	 
     } // END testBasicCRUDWebProject
     
     public void testListWebSites() throws Exception
@@ -202,10 +212,11 @@ public class WebProjectTest extends BaseWebScriptTest
         	webProj.put("description", BASIC_DESCRIPTION + i);
         	webProj.put("title", BASIC_TITLE + i);
         	webProj.put("dnsName", BASIC_DNSNAME + i); 
-        	Response response = sendRequest(new PostRequest(URL_WEB_PROJECT, webProj.toString(), "application/json"), Status.STATUS_OK); 
+        	Response response = sendRequest(new PostRequest(URL_WEB_PROJECTS, webProj.toString(), "application/json"), Status.STATUS_OK); 
         
         	JSONObject result = new JSONObject(response.getContentAsString());
-        	String webProjectRef = result.getString("webprojectref");
+        	JSONObject data = result.getJSONObject("data");  
+        	String webProjectRef = data.getString("webprojectref");
             this.createdWebProjects.add(webProjectRef);
         }
         
@@ -215,17 +226,18 @@ public class WebProjectTest extends BaseWebScriptTest
         {
         	Response list = sendRequest(new GetRequest(URL_WEB_PROJECTS), Status.STATUS_OK);
         
-        	JSONArray lookupResult = new JSONArray(list.getContentAsString());
-        	assertTrue(lookupResult.length() >= LOOP_COUNT);
+        	JSONObject lookupResult = new JSONObject(list.getContentAsString());
+        	JSONArray data = lookupResult.getJSONArray("data");  
+        	assertTrue(data.length() >= LOOP_COUNT);
         	
         	/**
         	 * Now check that the list contains the sites created above
         	 */
         	int foundCount = 0;
         	
-        	for(int i = 0; i < lookupResult.length(); i++)
+        	for(int i = 0; i < data.length(); i++)
         	{
-        		JSONObject obj = lookupResult.getJSONObject(i);
+        		JSONObject obj = data.getJSONObject(i);
         		String name = obj.getString("name");
         		if(name.contains(BASIC_NAME))
         		{
@@ -240,14 +252,11 @@ public class WebProjectTest extends BaseWebScriptTest
          */
         {
             String stepURL = "/api/wcm/webprojects?userName=Freddy";
-        	Response list = sendRequest(new GetRequest(stepURL), Status.STATUS_OK);
-        	JSONArray lookupResult = new JSONArray(list.getContentAsString());
-        	assertTrue(lookupResult.length() == 0);
+        	Response listResponse = sendRequest(new GetRequest(stepURL), Status.STATUS_OK);
+        	JSONObject lookupResult = new JSONObject(listResponse.getContentAsString());
+         	JSONArray data = lookupResult.getJSONArray("data");   
+        	assertTrue(data.length() == 0);
         }
-
-        
-        
-    
     } // testListWebSites
     
     public void testUpdateWebProject() throws Exception
@@ -262,10 +271,11 @@ public class WebProjectTest extends BaseWebScriptTest
         webProj.put("description", BASIC_DESCRIPTION);
         webProj.put("title", BASIC_TITLE);
         webProj.put("dnsName", BASIC_DNSNAME); 
-        Response response = sendRequest(new PostRequest(URL_WEB_PROJECT, webProj.toString(), "application/json"), Status.STATUS_OK); 
-        
-        JSONObject result = new JSONObject(response.getContentAsString());
+        Response response = sendRequest(new PostRequest(URL_WEB_PROJECTS, webProj.toString(), "application/json"), Status.STATUS_OK); 
+        JSONObject top = new JSONObject(response.getContentAsString());
+        JSONObject result = top.getJSONObject("data");
         String webProjectRef = result.getString("webprojectref");
+        
         
         assertNotNull("webproject ref is null", webProjectRef);
         this.createdWebProjects.add(webProjectRef);
@@ -274,11 +284,12 @@ public class WebProjectTest extends BaseWebScriptTest
        	 *  Read the web site we created above to double check it created correctly
        	 */
         {
-        	Response lookup = sendRequest(new GetRequest(URL_WEB_PROJECT + "/" + webProjectRef), Status.STATUS_OK);
+        	Response lookup = sendRequest(new GetRequest(URL_WEB_PROJECTS + "/" + webProjectRef), Status.STATUS_OK);
         	JSONObject lookupResult = new JSONObject(lookup.getContentAsString());    
-        	assertEquals(BASIC_NAME, lookupResult.get("name"));
-        	assertEquals(BASIC_DESCRIPTION, lookupResult.get("description"));
-        	assertEquals(BASIC_TITLE, lookupResult.get("title"));
+            JSONObject data = lookupResult.getJSONObject("data");
+        	assertEquals(BASIC_NAME, data.get("name"));
+        	assertEquals(BASIC_DESCRIPTION, data.get("description"));
+        	assertEquals(BASIC_TITLE, data.get("title"));
         }
 
         /*
@@ -287,17 +298,18 @@ public class WebProjectTest extends BaseWebScriptTest
         {
         	JSONObject update = new JSONObject();
         	update.put("description", BASIC_UPDATED_DESCRIPTION);
-        	Response updateResponse = sendRequest(new PutRequest(URL_WEB_PROJECT + "/" + webProjectRef, update.toString(), "application/json"), Status.STATUS_OK);
+        	Response updateResponse = sendRequest(new PutRequest(URL_WEB_PROJECTS + "/" + webProjectRef, update.toString(), "application/json"), Status.STATUS_OK);
         	JSONObject updateResult = new JSONObject(updateResponse.getContentAsString());    
 
         	/*
         	 * Read the result, check description updated and other properties remain unchanged
         	 */
-            Response lookup = sendRequest(new GetRequest(URL_WEB_PROJECT + "/" + webProjectRef), Status.STATUS_OK);
+            Response lookup = sendRequest(new GetRequest(URL_WEB_PROJECTS + "/" + webProjectRef), Status.STATUS_OK);
             JSONObject lookupResult = new JSONObject(lookup.getContentAsString());    
-            assertEquals(BASIC_NAME, lookupResult.get("name"));
-            assertEquals(BASIC_UPDATED_DESCRIPTION, lookupResult.get("description"));
-            assertEquals(BASIC_TITLE, lookupResult.get("title"));
+            JSONObject data = lookupResult.getJSONObject("data");
+            assertEquals(BASIC_NAME, data.get("name"));
+            assertEquals(BASIC_UPDATED_DESCRIPTION, data.get("description"));
+            assertEquals(BASIC_TITLE, data.get("title"));
         }
         
         /*
@@ -306,17 +318,18 @@ public class WebProjectTest extends BaseWebScriptTest
         {
         	JSONObject update = new JSONObject();
         	update.put("title", BASIC_UPDATED_TITLE);
-        	Response updateResponse = sendRequest(new PutRequest(URL_WEB_PROJECT + "/" + webProjectRef, update.toString(), "application/json"), Status.STATUS_OK);
-        	JSONObject updateResult = new JSONObject(updateResponse.getContentAsString());    
+        	Response updateResponse = sendRequest(new PutRequest(URL_WEB_PROJECTS + "/" + webProjectRef, update.toString(), "application/json"), Status.STATUS_OK);
+        	new JSONObject(updateResponse.getContentAsString());    
 
         	/*
         	 * Read the result, check description updated and other properties unchanged
         	 */
-            Response lookup = sendRequest(new GetRequest(URL_WEB_PROJECT + "/" + webProjectRef), Status.STATUS_OK);
+            Response lookup = sendRequest(new GetRequest(URL_WEB_PROJECTS + "/" + webProjectRef), Status.STATUS_OK);
             JSONObject lookupResult = new JSONObject(lookup.getContentAsString());    
-            assertEquals(BASIC_NAME, lookupResult.get("name"));
-            assertEquals(BASIC_UPDATED_DESCRIPTION, lookupResult.get("description"));
-            assertEquals(BASIC_UPDATED_TITLE, lookupResult.get("title"));
+            JSONObject data = lookupResult.getJSONObject("data");
+            assertEquals(BASIC_NAME, data.get("name"));
+            assertEquals(BASIC_UPDATED_DESCRIPTION, data.get("description"));
+            assertEquals(BASIC_UPDATED_TITLE, data.get("title"));
         }
 
         /**
@@ -325,17 +338,18 @@ public class WebProjectTest extends BaseWebScriptTest
         {
         	JSONObject update = new JSONObject();
         	update.put("name", BASIC_UPDATED_NAME);
-        	Response updateResponse = sendRequest(new PutRequest(URL_WEB_PROJECT + "/" + webProjectRef, update.toString(), "application/json"), Status.STATUS_OK);
+        	Response updateResponse = sendRequest(new PutRequest(URL_WEB_PROJECTS + "/" + webProjectRef, update.toString(), "application/json"), Status.STATUS_OK);
         	JSONObject updateResult = new JSONObject(updateResponse.getContentAsString());    
 
         	/*
         	 * Read the result, check description updated and other properties unchanged
         	 */
-            Response lookup = sendRequest(new GetRequest(URL_WEB_PROJECT + "/" + webProjectRef), Status.STATUS_OK);
+            Response lookup = sendRequest(new GetRequest(URL_WEB_PROJECTS + "/" + webProjectRef), Status.STATUS_OK);
             JSONObject lookupResult = new JSONObject(lookup.getContentAsString());    
-            assertEquals(BASIC_UPDATED_NAME, lookupResult.get("name"));
-            assertEquals(BASIC_UPDATED_DESCRIPTION, lookupResult.get("description"));
-            assertEquals(BASIC_UPDATED_TITLE, lookupResult.get("title"));
+            JSONObject data = lookupResult.getJSONObject("data");
+            assertEquals(BASIC_UPDATED_NAME, data.get("name"));
+            assertEquals(BASIC_UPDATED_DESCRIPTION, data.get("description"));
+            assertEquals(BASIC_UPDATED_TITLE, data.get("title"));
        	
         }
         
@@ -347,8 +361,7 @@ public class WebProjectTest extends BaseWebScriptTest
         {
         	JSONObject update = new JSONObject();
         	update.put("name", BASIC_UPDATED_NAME);
-        	Response updateResponse = sendRequest(new PutRequest(URL_WEB_PROJECT + "/" + BAD_PROJECT_REF, update.toString(), "application/json"), Status.STATUS_NOT_FOUND);
-        	JSONObject updateResult = new JSONObject(updateResponse.getContentAsString());    
+        	sendRequest(new PutRequest(URL_WEB_PROJECTS + "/" + BAD_PROJECT_REF, update.toString(), "application/json"), Status.STATUS_NOT_FOUND);
         }
     	
     } // end testUpdateWebProject
@@ -361,7 +374,7 @@ public class WebProjectTest extends BaseWebScriptTest
     	 * Delete a project that does not exist
     	 */
         {
-        	Response deleteResponse = sendRequest(new DeleteRequest(URL_WEB_PROJECT + "/" + BAD_PROJECT_REF), Status.STATUS_NOT_FOUND);      	 
+        	sendRequest(new DeleteRequest(URL_WEB_PROJECTS + "/" + BAD_PROJECT_REF), Status.STATUS_NOT_FOUND);      	 
         }
     
     }  // end testDeleteWebproject

@@ -2,7 +2,8 @@
   <shortname>Get Web Project</shortname>
   <description>Get a single WCM web project in JSON format.</description>
   <format default="json" />
-  <url>/api/wcm/webproject/{webprojectref}</url>
+  <url>/api/wcm/webprojects/{webprojectref}</url>
   <authentication>user</authentication>
   <transaction>required</transaction>
+  <family>WCM Service</family>
 </webscript>

@@ -64,7 +64,7 @@ public class WebProjectMembershipTest extends BaseWebScriptTest
     public static final String ROLE_CONTENT_REVIEWER    = "ContentReviewer";
     public static final String ROLE_CONTENT_CONTRIBUTOR = "ContentContributor";
     
-    private static final String URL_WEB_PROJECT = "/api/wcm/webproject";
+    private static final String URL_WEB_PROJECTS = "/api/wcm/webprojects";
     private static final String URL_MEMBERSHIPS = "/memberships";  
 	private static final String BASIC_NAME = "testProj";
 	private static final String BASIC_DESCRIPTION = "testDescription";
@@ -121,7 +121,7 @@ public class WebProjectMembershipTest extends BaseWebScriptTest
         {
         	try 
         	{
-        		sendRequest(new DeleteRequest(URL_WEB_PROJECT + "/" + webProjectRef), 0);
+        		sendRequest(new DeleteRequest(URL_WEB_PROJECTS + "/" + webProjectRef), 0);
         	} 
         	catch (Exception e)
         	{
@@ -148,10 +148,11 @@ public class WebProjectMembershipTest extends BaseWebScriptTest
         webProj.put("description", BASIC_DESCRIPTION);
         webProj.put("title", BASIC_TITLE);
         webProj.put("dnsName", BASIC_DNSNAME); 
-        Response response = sendRequest(new PostRequest(URL_WEB_PROJECT, webProj.toString(), "application/json"), Status.STATUS_OK); 
+        Response response = sendRequest(new PostRequest(URL_WEB_PROJECTS, webProj.toString(), "application/json"), Status.STATUS_OK); 
         
         JSONObject result = new JSONObject(response.getContentAsString());
-        String webProjectRef = result.getString("webprojectref");
+        JSONObject data = result.getJSONObject("data");
+        String webProjectRef = data.getString("webprojectref");
         
         assertNotNull("webproject ref is null", webProjectRef);
         this.createdWebProjects.add(webProjectRef);
@@ -166,17 +167,18 @@ public class WebProjectMembershipTest extends BaseWebScriptTest
         // Create a site
     	String webProjectRef = createWebProject();
     	
-		String validURL = URL_WEB_PROJECT + "/" + webProjectRef + "/memberships";
+		String validURL = URL_WEB_PROJECTS + "/" + webProjectRef + "/memberships";
         
 		/**
 		 * A newly created web project has 1 users (admin is a special case)
 		 */
     	{
     		Response response = sendRequest(new GetRequest(validURL), Status.STATUS_OK);
-    		JSONArray result = new JSONArray(response.getContentAsString());  
+    		JSONObject result = new JSONObject(response.getContentAsString()); 
+    	    JSONArray data = result.getJSONArray("data");
        
-    		assertNotNull(result);
-    		assertEquals(1, result.length());
+    		assertNotNull(data);
+    		assertEquals(1, data.length());
     	}
         
         /**
@@ -190,15 +192,16 @@ public class WebProjectMembershipTest extends BaseWebScriptTest
         	membership.put("person", person);
         	sendRequest(new PostRequest(validURL, membership.toString(), "application/json"), Status.STATUS_OK);
 
-    		Response response = sendRequest(new GetRequest(validURL), Status.STATUS_OK);        	
-        	JSONArray result = new JSONArray(response.getContentAsString());
-        	assertNotNull(result);
-        	assertEquals(2, result.length());
+    		Response response = sendRequest(new GetRequest(validURL), Status.STATUS_OK); 
+        	JSONObject result = new JSONObject(response.getContentAsString());
+    	    JSONArray data = result.getJSONArray("data");
+        	assertNotNull(data);
+        	assertEquals(2, data.length());
         	
         	boolean foundUser = false;
-        	for(int i = 0; i < result.length(); i++)
+        	for(int i = 0; i < data.length(); i++)
         	{
-            	JSONObject obj = result.getJSONObject(i);
+            	JSONObject obj = data.getJSONObject(i);
             	if(USER_ONE.equals(obj.getJSONObject("person").get("userName"))) 
             	{
             		assertEquals(ROLE_CONTENT_MANAGER, obj.get("role"));
@@ -221,15 +224,16 @@ public class WebProjectMembershipTest extends BaseWebScriptTest
         	membership.put("person", person);
         	sendRequest(new PostRequest(validURL, membership.toString(), "application/json"), Status.STATUS_OK);
 
-    		Response response = sendRequest(new GetRequest(validURL), Status.STATUS_OK);        	
-        	JSONArray result = new JSONArray(response.getContentAsString());
-        	assertNotNull(result);
-        	assertEquals(3, result.length());
+    		Response response = sendRequest(new GetRequest(validURL), Status.STATUS_OK); 
+        	JSONObject result = new JSONObject(response.getContentAsString());
+    	    JSONArray data = result.getJSONArray("data");
+        	assertNotNull(data);
+        	assertEquals(3, data.length());
         	
         	boolean foundUser = false;
-        	for(int i = 0; i < result.length(); i++)
+        	for(int i = 0; i < data.length(); i++)
         	{
-            	JSONObject obj = result.getJSONObject(i);
+            	JSONObject obj = data.getJSONObject(i);
             	if(USER_TWO.equals(obj.getJSONObject("person").get("userName"))) 
             	{
             		assertEquals(ROLE_CONTENT_REVIEWER, obj.get("role"));
@@ -247,8 +251,9 @@ public class WebProjectMembershipTest extends BaseWebScriptTest
         {
             String stepURL = "/api/wcm/webprojects?userName=" + USER_TWO;
         	Response list = sendRequest(new GetRequest(stepURL), Status.STATUS_OK);
-        	JSONArray lookupResult = new JSONArray(list.getContentAsString());
-        	assertTrue(lookupResult.length() == 1);
+        	JSONObject response = new JSONObject(list.getContentAsString());
+    	    JSONArray data = response.getJSONArray("data");
+        	assertTrue(data.length() == 1);
         }
         
 		/**
@@ -256,7 +261,7 @@ public class WebProjectMembershipTest extends BaseWebScriptTest
 		 * Project not found
 		 */
     	{
-    		String invalidURL = URL_WEB_PROJECT + "/" + "NotExist" + "/memberships";
+    		String invalidURL = URL_WEB_PROJECTS + "/" + "NotExist" + "/memberships";
     		sendRequest(new GetRequest(invalidURL), Status.STATUS_NOT_FOUND);
     	}
 
@@ -268,7 +273,7 @@ public class WebProjectMembershipTest extends BaseWebScriptTest
     
     	String webProjectRef = createWebProject();
     	
-        String validURL = URL_WEB_PROJECT + "/" + webProjectRef + "/memberships";
+        String validURL = URL_WEB_PROJECTS + "/" + webProjectRef + "/memberships";
         
         /**
          * Create a new membership
@@ -282,23 +287,25 @@ public class WebProjectMembershipTest extends BaseWebScriptTest
         
         	Response response = sendRequest(new PostRequest(validURL, membership.toString(), "application/json"), Status.STATUS_OK);
         	JSONObject result = new JSONObject(response.getContentAsString());
+    	    JSONObject data = result.getJSONObject("data");
         
         	// Check the result
-        	assertEquals(ROLE_CONTENT_MANAGER, result.get("role"));
-        	assertEquals(USER_TWO, result.getJSONObject("person").get("userName")); 
+        	assertEquals(ROLE_CONTENT_MANAGER, data.get("role"));
+        	assertEquals(USER_TWO, data.getJSONObject("person").get("userName")); 
         }
         
         /**
          * Get the membership
          */
         {
-            String validGetURL = URL_WEB_PROJECT + "/" + webProjectRef + "/membership/" + USER_TWO;
+            String validGetURL = URL_WEB_PROJECTS + "/" + webProjectRef + "/memberships/" + USER_TWO;
         	Response response = sendRequest(new GetRequest(validGetURL), Status.STATUS_OK);
         	JSONObject result = new JSONObject(response.getContentAsString());
+    	    JSONObject data = result.getJSONObject("data");
         
         	// Check the result
-        	assertEquals(ROLE_CONTENT_MANAGER, result.get("role"));
-        	assertEquals(USER_TWO, result.getJSONObject("person").get("userName"));
+        	assertEquals(ROLE_CONTENT_MANAGER, data.get("role"));
+        	assertEquals(USER_TWO, data.getJSONObject("person").get("userName"));
         }
         
         /**
@@ -314,10 +321,11 @@ public class WebProjectMembershipTest extends BaseWebScriptTest
         
         	Response response = sendRequest(new PostRequest(validURL, membership.toString(), "application/json"), Status.STATUS_OK);
         	JSONObject result = new JSONObject(response.getContentAsString());
-        
+    	    JSONObject data = result.getJSONObject("data");
+    	    
         	// Check the result
-        	assertEquals(ROLE_CONTENT_MANAGER, result.get("role"));
-        	assertEquals(USER_TWO, result.getJSONObject("person").get("userName")); 
+        	assertEquals(ROLE_CONTENT_MANAGER, data.get("role"));
+        	assertEquals(USER_TWO, data.getJSONObject("person").get("userName")); 
         }
         
         /**
@@ -355,8 +363,8 @@ public class WebProjectMembershipTest extends BaseWebScriptTest
     	String webProjectRef = createWebProject();
     	
         // Test error conditions
-        sendRequest(new GetRequest(URL_WEB_PROJECT + "/badsite" + URL_MEMBERSHIPS + "/" + USER_ONE), Status.STATUS_NOT_FOUND);
-        String validURL = URL_WEB_PROJECT + "/" + webProjectRef + "/membership/";
+        sendRequest(new GetRequest(URL_WEB_PROJECTS + "/badsite" + URL_MEMBERSHIPS + "/" + USER_ONE), Status.STATUS_NOT_FOUND);
+        String validURL = URL_WEB_PROJECTS + "/" + webProjectRef + URL_MEMBERSHIPS ;
         
         // User not found
         sendRequest(new GetRequest(validURL + "baduser"), Status.STATUS_NOT_FOUND);
@@ -364,12 +372,13 @@ public class WebProjectMembershipTest extends BaseWebScriptTest
         /**
          * Now lookup the admin user and check they are a content manager
          */
-        Response response = sendRequest(new GetRequest(validURL + USER_ADMIN), Status.STATUS_OK);
+        Response response = sendRequest(new GetRequest(validURL + "/" + USER_ADMIN), Status.STATUS_OK);
         JSONObject result = new JSONObject(response.getContentAsString());
-        
+	    JSONObject data = result.getJSONObject("data");
+	    
         // Check the result
-        assertEquals(ROLE_CONTENT_MANAGER, result.get("role"));
-        assertEquals(USER_ADMIN, result.getJSONObject("person").get("userName")); 
+        assertEquals(ROLE_CONTENT_MANAGER, data.get("role"));
+        assertEquals(USER_ADMIN, data.getJSONObject("person").get("userName")); 
     }
 
 //    Update Not yet implemented
@@ -464,7 +473,7 @@ public class WebProjectMembershipTest extends BaseWebScriptTest
         
     	String webProjectRef = createWebProject();
     	
-        String validURL = URL_WEB_PROJECT + "/" + webProjectRef + "/memberships";
+        String validURL = URL_WEB_PROJECTS + "/" + webProjectRef + "/memberships";
         
         /**
          * Create a new membership
@@ -478,13 +487,14 @@ public class WebProjectMembershipTest extends BaseWebScriptTest
         
         	Response response = sendRequest(new PostRequest(validURL, membership.toString(), "application/json"), Status.STATUS_OK);
         	JSONObject result = new JSONObject(response.getContentAsString());
-        
+    	    JSONObject data = result.getJSONObject("data");
+    	    
         	// Check the result
-        	assertEquals(ROLE_CONTENT_MANAGER, result.get("role"));
-        	assertEquals(USER_TWO, result.getJSONObject("person").get("userName")); 
+        	assertEquals(ROLE_CONTENT_MANAGER, data.get("role"));
+        	assertEquals(USER_TWO, data.getJSONObject("person").get("userName")); 
         }
         
-        String validGetURL = URL_WEB_PROJECT + "/" + webProjectRef + "/membership/" + USER_TWO;
+        String validGetURL = URL_WEB_PROJECTS + "/" + webProjectRef + URL_MEMBERSHIPS + "/" + USER_TWO;
         
         {
         	sendRequest(new GetRequest(validGetURL), Status.STATUS_OK);

@@ -1,0 +1,18 @@
+<webscript>
+  <shortname>Create user sandbox </shortname>
+  <description>  <![CDATA[
+  Create (POST) a new author sandbox for a user.
+  <BR>The following fields are required in the body of the request:
+  <UL>
+  <LI>userName</LI>
+  </UL>  
+  <BR>
+  Returns STATUS_CREATED on success.
+  ]]>
+  </description>
+  <format default="json" />
+  <url>/api/wcm/webprojects/{webprojectref}/sandboxes</url>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+  <family>WCM Service</family>
+</webscript>

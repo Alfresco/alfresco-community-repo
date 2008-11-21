@@ -1,8 +1,9 @@
 <webscript>
   <shortname>Membership</shortname>
   <description>Get the webproject membership details for a user</description>
-  <url>/api/wcm/webproject/{webprojectref}/membership/{username}</url>
+  <url>/api/wcm/webprojects/{webprojectref}/memberships/{username}</url>
   <format default="json"/>
   <authentication>user</authentication>
   <transaction>required</transaction>
+  <family>WCM Service</family>
 </webscript>

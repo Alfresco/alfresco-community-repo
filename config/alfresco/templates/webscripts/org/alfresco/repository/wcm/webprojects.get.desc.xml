@@ -1,9 +1,13 @@
 <webscript>
   <shortname>Web Projects</shortname>
-  <description>Get a list of the WCM Web projects,   if userName is specified then only those web projects for the 
-  specified user are returned else all web projects are returned.</description>
+  <description>Get a list of the WCM Web projects.   userName is an optional argument that if 
+  specified then only those web projects for the 
+  specified user are returned else all web projects are returned.
+  </description>
   <format default="json" />
   <url>/api/wcm/webprojects?userName={userName?}</url>
+  <url>/api/wcm/webprojects</url>
   <authentication>user</authentication>
   <transaction>required</transaction>
+  <family>WCM Service</family>
 </webscript>

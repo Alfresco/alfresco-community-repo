@@ -11,7 +11,8 @@
   
   </description>
   <format default="json" />
-  <url>/api/wcm/webproject</url>
+  <url>/api/wcm/webprojects</url>
   <authentication>user</authentication>
   <transaction>required</transaction>
+  <family>WCM Service</family>
 </webscript>

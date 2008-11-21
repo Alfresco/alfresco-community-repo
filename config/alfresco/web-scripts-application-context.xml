@@ -241,6 +241,15 @@
       <property name="mimetypeService" ref="MimetypeService" />
    </bean>
    
+   
+   <!--  AVM Remote Store -->
+   <!--  bean id="AVMStoreBean" class="org.alfresco.repo.web.scripts.bean.AVMRemoteStore">
+      <property name="mimetypeService" ref="MimetypeService" />
+      <property name="avmService" ref="AVMService" />
+      <property name="searchService" ref="SearchService" />
+   </bean>
+   -->
+   
    <!--  Remote Store service - AVM -->
    <bean id="webscript.org.alfresco.repository.store.remoteavm.get" class="org.alfresco.repo.web.scripts.bean.AVMRemoteStore" parent="webscript">
       <property name="mimetypeService" ref="MimetypeService" />

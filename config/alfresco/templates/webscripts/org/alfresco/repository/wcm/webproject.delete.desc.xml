@@ -4,7 +4,8 @@
   		webprojectref specifies which project to delete and will have been returned by a prior call to get, create of list web project.
   </description>
   <format default="json" />
-  <url>/api/wcm/webproject/{webprojectref}</url>
+  <url>/api/wcm/webprojects/{webprojectref}</url>
   <authentication>user</authentication>
   <transaction>required</transaction>
+  <family>WCM Service</family>
 </webscript>

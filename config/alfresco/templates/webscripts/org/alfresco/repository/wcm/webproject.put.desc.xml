@@ -1,11 +1,21 @@
 <webscript>
   <shortname>Update Web Project</shortname>
-  <description>Update a single WCM web project
+  <description>
+  <![CDATA[
+  Update a single WCM web project
+  <BR>
   The following fields are may be updated in the body of the request:
-  name, title, description
+  <ul>
+  <li>name</li> 
+  <li>title</li> 
+  <li>description</li>
+  <li>isTemplate</li>
+  <ul>
+  ]]>
   </description>
+  <url>/api/wcm/webprojects/{webprojectref}</url>
   <format default="json" />
-  <url>/api/wcm/webproject/{webprojectref}</url>
   <authentication>user</authentication>
   <transaction>required</transaction>
+  <family>WCM Service</family>
 </webscript>

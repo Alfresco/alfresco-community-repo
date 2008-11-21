@@ -39,6 +39,11 @@ function main() {
 		var description = json.get("description");
 		webproject.setDescription(description);
 	}
+	if(json.has("isTemplate"))
+	{
+		var isTemplate = json.get("isTemplate");
+		webproject.setDescription(isTemplate);
+	}
 	
 	// update the web project
 	webproject.save();

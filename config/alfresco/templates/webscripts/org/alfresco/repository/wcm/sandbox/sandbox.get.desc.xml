@@ -1,0 +1,9 @@
+<webscript>
+  <shortname>Get Web Project Sandbox</shortname>
+  <description>Get a single sandbox of a web project.</description>
+  <url>/api/wcm/webprojects/{webprojectref}/sandboxes/{sandboxref}</url>
+  <format default="json"/>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+  <family>WCM Service</family>
+</webscript>

@@ -3,8 +3,9 @@
   <description>Delete (uninvite) the membership for a user.   
   Sandboxes are deleted even if they have unsubmitted content.
   </description>
-  <url>/api/wcm/webproject/{webprojectref}/membership/{username}</url>
+  <url>/api/wcm/webprojects/{webprojectref}/memberships/{username}</url>
   <format default="json"/>
   <authentication>user</authentication>
   <transaction>required</transaction>
+  <family>WCM Service</family>
 </webscript>

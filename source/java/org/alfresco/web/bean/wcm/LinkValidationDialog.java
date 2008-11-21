@@ -38,7 +38,7 @@ import org.alfresco.linkvalidation.LinkValidationAction;
 import org.alfresco.linkvalidation.LinkValidationReport;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.domain.PropertyValue;
-import org.alfresco.sandbox.SandboxConstants;
+import org.alfresco.wcm.sandbox.SandboxConstants;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.avm.AVMService;
@@ -129,8 +129,7 @@ public class LinkValidationDialog extends BaseDialogBean
                SandboxConstants.PROP_SANDBOX_AUTHOR_MAIN) != null)
       {
          String pattern = Application.getMessage(context, "link_validaton_dialog_title_user");
-         String user = this.store.substring(
-                  this.store.indexOf(AVMUtil.STORE_SEPARATOR)+AVMUtil.STORE_SEPARATOR.length());
+         String user = AVMUtil.getUserName(this.store);
          this.title = MessageFormat.format(pattern, 
                   new Object[] {user});
       }

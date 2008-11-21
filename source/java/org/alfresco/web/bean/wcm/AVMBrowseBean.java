@@ -29,7 +29,6 @@ import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -51,16 +50,12 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.avm.AVMNodeType;
-import org.alfresco.repo.avm.actions.AVMRevertStoreAction;
 import org.alfresco.repo.avm.actions.AVMUndoSandboxListAction;
 import org.alfresco.repo.web.scripts.FileTypeImageUtils;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
-import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
-import org.alfresco.service.cmr.avmsync.AVMDifference;
-import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.repository.FileTypeImageSize;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -77,6 +72,8 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.util.Pair;
 import org.alfresco.util.VirtServerUtils;
+import org.alfresco.wcm.sandbox.SandboxInfo;
+import org.alfresco.wcm.sandbox.SandboxService;
 import org.alfresco.wcm.webproject.WebProjectInfo;
 import org.alfresco.wcm.webproject.WebProjectService;
 import org.alfresco.web.app.Application;
@@ -223,11 +220,11 @@ public class AVMBrowseBean implements IContextListener
    /** WebProjectService bean reference */
    transient protected WebProjectService wpService;
    
+   /** SandboxService bean reference */
+   transient protected SandboxService sbService;
+   
    /** AVM service bean reference */
    transient protected AVMService avmService;
-
-   /** AVM sync service bean reference */
-   transient protected AVMSyncService avmSyncService;
    
    /** Action service bean reference */
    transient protected ActionService actionService;
@@ -276,6 +273,23 @@ public class AVMBrowseBean implements IContextListener
    }
    
    /**
+    * @param sbService The SandboxService to set.
+    */
+   public void setSandboxService(SandboxService sbService)
+   {
+      this.sbService = sbService;
+   }
+   
+   protected SandboxService getSandboxService()
+   {
+      if (sbService == null)
+      {
+          sbService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getSandboxService();
+      }
+      return sbService;
+   }
+   
+   /**
     * @param avmService The AVMService to set.
     */
    public void setAvmService(AVMService avmService)
@@ -290,23 +304,6 @@ public class AVMBrowseBean implements IContextListener
          avmService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAVMService();
       }
       return avmService;
-   }
-
-   /**
-    * @param avmSyncService   The AVMSyncService to set.
-    */
-   public void setAvmSyncService(AVMSyncService avmSyncService)
-   {
-      this.avmSyncService = avmSyncService;
-   }
-   
-   protected AVMSyncService getAvmSyncService()
-   {
-      if (avmSyncService == null)
-      {
-         avmSyncService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAVMSyncService();
-      }
-      return avmSyncService;
    }
    
    /**
@@ -498,22 +495,23 @@ public class AVMBrowseBean implements IContextListener
     */
    public String getStagingSummary()
    {
-      final StringBuilder summary = new StringBuilder(128);
-      final FacesContext fc = FacesContext.getCurrentInstance();
-      final ResourceBundle msg = Application.getBundle(fc);
-      final String stagingStore = this.getStagingStore();
-      final AVMStoreDescriptor store = getAvmService().getStore(stagingStore);
-      WebProject webProject = this.getWebProject();
-      final String storeId = (String)webProject.getStoreId();
-      if (store != null)
+      StringBuilder summary = new StringBuilder(128);
+      FacesContext fc = FacesContext.getCurrentInstance();
+      ResourceBundle msg = Application.getBundle(fc);
+      
+      NodeRef wpNodeRef = getWebsite().getNodeRef();
+      WebProjectInfo wpInfo = getWebProjectService().getWebProject(wpNodeRef);
+      SandboxInfo sbInfo = getSandboxService().getStagingSandbox(wpInfo.getStoreId());
+      
+      if (sbInfo != null)
       {
          summary.append(msg.getString(MSG_CREATED_ON)).append(": ")
-                .append(Utils.getDateFormat(fc).format(new Date(store.getCreateDate())))
+                .append(Utils.getDateFormat(fc).format(sbInfo.getCreatedDate()))
                 .append("<p>");
          summary.append(msg.getString(MSG_CREATED_BY)).append(": ")
-                .append(store.getCreator())
+                .append(sbInfo.getCreator())
                 .append("<p>");
-         final int numUsers = getWebProjectService().getWebUserCount(webProject.getNodeRef());
+         final int numUsers = getWebProjectService().getWebUserCount(wpNodeRef);
          summary.append(MessageFormat.format(msg.getString(MSG_WORKING_USERS), numUsers));
       }
       
@@ -729,14 +727,13 @@ public class AVMBrowseBean implements IContextListener
    {
       if (this.webapps == null)
       {
-         String path = AVMUtil.buildSandboxRootPath(getStagingStore());
-         Map<String, AVMNodeDescriptor> folders = getAvmService().getDirectoryListing(-1, path);
-         List<SelectItem> webapps = new ArrayList<SelectItem>(folders.size());
-         for (AVMNodeDescriptor node : folders.values())
+         List<String> webAppNames = getWebProjectService().listWebApps(getWebsite().getNodeRef());
+         List<SelectItem> webAppItems = new ArrayList<SelectItem>(webAppNames.size());
+         for (String webAppName : webAppNames)
          {
-            webapps.add(new SelectItem(node.getName(), node.getName()));
+             webAppItems.add(new SelectItem(webAppName, webAppName));
          }
-         this.webapps = webapps;
+         this.webapps = webAppItems;
       }
       return this.webapps;
    }
@@ -1341,7 +1338,7 @@ public class AVMBrowseBean implements IContextListener
     */
    public boolean getIsStagingStore()
    {
-      return (this.sandbox != null && this.sandbox.indexOf(AVMUtil.STORE_SEPARATOR) == -1);
+      return AVMUtil.isMainStore(this.sandbox);
    }
    
    
@@ -1686,38 +1683,10 @@ public class AVMBrowseBean implements IContextListener
       String strVersion = params.get("version");
       if (sandbox != null && strVersion != null && strVersion.length() != 0)
       {
-         UserTransaction tx = null;
          try
          {
+            getSandboxService().revertSnapshot(sandbox, Integer.valueOf(strVersion));
             FacesContext context = FacesContext.getCurrentInstance();
-            tx = Repository.getUserTransaction(context, false);
-            tx.begin();
-
-            String sandboxPath = AVMUtil.buildSandboxRootPath( sandbox );
-
-            List<AVMDifference> diffs = 
-                this.getAvmSyncService().compare(
-                   -1,sandboxPath,Integer.valueOf(strVersion),sandboxPath,null);
-            
-            Map<String, Serializable> args = new HashMap<String, Serializable>(1, 1.0f);
-            args.put(AVMRevertStoreAction.PARAM_VERSION, Integer.valueOf(strVersion));
-            Action action = this.getActionService().createAction(AVMRevertStoreAction.NAME, args);
-            this.getActionService().executeAction(action, AVMNodeConverter.ToNodeRef(-1, sandbox + ":/"));
-            
-            // commit the transaction
-            tx.commit();
-
-            // See if any of the files being reverted require
-            // notification of the virt server.
-
-            for (AVMDifference diff : diffs)
-            {
-                if ( VirtServerUtils.requiresUpdateNotification( diff.getSourcePath()) )
-                {
-                    AVMUtil.updateVServerWebapp(diff.getSourcePath() , true);
-                    break;
-                }
-            }
             
             // if we get here, all was well - output friendly status message to the user
             this.displayStatusMessage(context, 
@@ -1730,7 +1699,6 @@ public class AVMBrowseBean implements IContextListener
             err.printStackTrace(System.err);
             Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
                   FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), err.getMessage()), err);
-            try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
          }
       }
    }

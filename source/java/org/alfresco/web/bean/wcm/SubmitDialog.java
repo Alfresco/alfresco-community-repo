@@ -43,10 +43,8 @@ import org.alfresco.config.JNDIConstants;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.model.WCMWorkflowModel;
-import org.alfresco.repo.avm.AVMDAOs;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.domain.PropertyValue;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.web.scripts.FileTypeImageUtils;
@@ -68,9 +66,9 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.ISO8601DateFormat;
 import org.alfresco.util.NameMatcher;
-import org.alfresco.util.VirtServerUtils;
 import org.alfresco.wcm.sandbox.SandboxFactory;
 import org.alfresco.wcm.sandbox.SandboxInfo;
+import org.alfresco.wcm.sandbox.SandboxService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.DownloadContentServlet;
 import org.alfresco.web.app.servlet.FacesHelper;
@@ -138,6 +136,7 @@ public class SubmitDialog extends BaseDialogBean
    transient private AVMLockingService avmLockingService;
    transient private FormsService formsService;
    transient private SandboxFactory sandboxFactory;
+   transient private SandboxService sandboxService;
    
    transient private NameMatcher nameMatcher;
   
@@ -260,6 +259,20 @@ public class SubmitDialog extends BaseDialogBean
       }
       return formsService;
    }
+   
+   public void setSandboxService(final SandboxService sandboxService)
+   {
+      this.sandboxService = sandboxService;
+   }
+   
+   protected SandboxService getSandboxService()
+   {
+      if (sandboxService == null)
+      {
+          sandboxService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getSandboxService();
+      }
+      return sandboxService;
+   }
 
    // TODO - refactor ... push down into sandbox service (submit to workflow)
    public void setSandboxFactory(final SandboxFactory sandboxFactory)
@@ -351,12 +364,6 @@ public class SubmitDialog extends BaseDialogBean
             {
                // if there's no workflow submit changes directly to staging
                outcome = submitDirectToStaging(context);
-
-               // force an update of the virt server if necessary
-               if (this.virtUpdatePath != null)
-               {
-                  AVMUtil.updateVServerWebapp(this.virtUpdatePath, true);
-               }
             }
          }
          finally
@@ -489,54 +496,20 @@ public class SubmitDialog extends BaseDialogBean
    {
       // direct submit to the staging area without workflow
       List<ItemWrapper> items = getSubmitItems();
-
-      // construct diffs for selected items for submission
-      final String sandboxPath = AVMUtil.buildSandboxRootPath(this.avmBrowseBean.getSandbox());
-      final String stagingPath = AVMUtil.buildSandboxRootPath(this.avmBrowseBean.getStagingStore());
-      final List<AVMDifference> diffs = new ArrayList<AVMDifference>(items.size());
-      final String submitLabel = this.label;
-      final String submitComment = this.comment;
       
-      String storeId = this.avmBrowseBean.getWebProject().getStoreId();
+      List<AVMNodeDescriptor> nodes = new ArrayList<AVMNodeDescriptor>(items.size());
+      
       for (ItemWrapper wrapper : items)
       {
-         String srcPath = sandboxPath + wrapper.getPath();
-         String destPath = stagingPath + wrapper.getPath();
-         AVMDifference diff = new AVMDifference(-1, srcPath, -1, destPath, AVMDifference.NEWER);
-         diffs.add(diff);
-
-         // process the expiration date (if any)
-         processExpirationDate(srcPath);
-
-         // recursively remove locks from this item
-         recursivelyRemoveLocks(storeId, -1, getAvmService().lookup(-1, srcPath, true), srcPath);
-
-         // If nothing has required notifying the virtualization server
-         // so far, check to see if destPath forces a notification
-         // (e.g.:  it might be a path to a jar file within WEB-INF/lib).
-         if ( (this.virtUpdatePath == null) &&
-               VirtServerUtils.requiresUpdateNotification( destPath ) )
-         {
-            this.virtUpdatePath = destPath;
-         }
+          nodes.add(wrapper.getDescriptor());
       }
-      // write changes to layer so files are marked as modified
+
+      String sbStoreId = this.avmBrowseBean.getSandbox();
+
+      String submitLabel = this.label;
+      String submitComment = this.comment;
       
-      
-      // Submit is done as system as the staging store is read only
-      // We could add support to runIgnoringStoreACls
-      AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
-      {
-           public Object doWork() throws Exception
-           {
-               getAvmSyncService().update(diffs, null, true, true, false, false, submitLabel, submitComment);
-               AVMDAOs.Instance().fAVMNodeDAO.flush();
-               getAvmSyncService().flatten(sandboxPath, stagingPath);
-               return null;
-           }
-      }, AuthenticationUtil.getSystemUserName());
-      
-      
+      getSandboxService().submitList(sbStoreId, nodes, this.expirationDates, submitLabel, submitComment);
     
       // if we get this far return the default outcome
       return this.getDefaultFinishOutcome();
@@ -731,39 +704,6 @@ public class SubmitDialog extends BaseDialogBean
          for (String storeName : stores.keySet())
          {
             getAvmService().purgeStore(storeName);
-         }
-      }
-   }
-
-   /**
-    * Recursively remove locks from a path. Walking child folders looking for files
-    * to remove locks from.
-    */
-   private void recursivelyRemoveLocks(String webProject, int version, AVMNodeDescriptor desc, String path)
-   {
-      if (desc.isFile() || desc.isDeletedFile())
-      {
-         this.getAvmLockingService().removeLock(webProject, path.substring(path.indexOf(":") + 1));
-      }
-      else
-      {
-         if (desc.isDeletedDirectory())
-         {
-            // lookup the previous child and get its contents
-            final List<AVMNodeDescriptor> history = getAvmService().getHistory(desc, 2);
-            if (history.size() <= 1)
-            {
-               return;
-            }
-            desc = history.get(1);
-         }
-
-         Map<String, AVMNodeDescriptor> list = getAvmService().getDirectoryListingDirect(desc, true);
-         for (Map.Entry<String, AVMNodeDescriptor> child : list.entrySet())
-         {
-            String name = child.getKey();
-            AVMNodeDescriptor childDesc = child.getValue();
-            recursivelyRemoveLocks(webProject, version, childDesc, path + "/" + name);
          }
       }
    }

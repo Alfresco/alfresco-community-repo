@@ -24,7 +24,6 @@
  */
 package org.alfresco.web.bean.wcm;
 
-import java.text.MessageFormat;
 import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -39,9 +38,7 @@ import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.avm.AVMNotFoundException;
 import org.alfresco.service.cmr.avm.AVMService;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.wcm.util.WCMUtil;
-import org.alfresco.wcm.webproject.WebProjectService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wcm.preview.PreviewURIService;
@@ -88,7 +85,7 @@ public final class AVMUtil extends WCMUtil
 
    public static String getStoreName(final String avmPath)
    {
-      return WCMUtil.getStoreName(avmPath);
+      return WCMUtil.getSandboxStoreId(avmPath);
    }
    
    public static boolean isPreviewStore(final String storeName)
@@ -108,7 +105,7 @@ public final class AVMUtil extends WCMUtil
    
    public static boolean isMainStore(String storeName)
    {
-      return WCMUtil.isMainStore(storeName);
+      return WCMUtil.isStagingStore(storeName);
    }
 
    public static String getUserName(String storeName)
@@ -118,7 +115,7 @@ public final class AVMUtil extends WCMUtil
 
    public static String getStoreId(final String storeName)
    {
-      return WCMUtil.getStoreId(storeName);
+      return WCMUtil.getWebProjectStoreId(storeName);
    }
 
    public static String getCorrespondingMainStoreName(final String storeName)
@@ -275,19 +272,10 @@ public final class AVMUtil extends WCMUtil
    
    public static String buildStoreUrl(String store)
    {
-      if (store == null || store.length() == 0)
-      {
-         throw new IllegalArgumentException("Store name is mandatory.");
-      }
-      if (store.indexOf(':') != -1)
-      {
-         store = store.substring(0, store.indexOf(':'));
-      }
+      ServiceRegistry serviceRegistry = Repository.getServiceRegistry(FacesContext.getCurrentInstance());
+      AVMService avmService = serviceRegistry.getAVMService();
       ClientConfigElement config = Application.getClientConfig(FacesContext.getCurrentInstance());
-      return MessageFormat.format(JNDIConstants.PREVIEW_SANDBOX_URL, 
-                                  lookupStoreDNS(store), 
-                                  config.getWCMDomain(), 
-                                  config.getWCMPort());
+      return WCMUtil.buildStoreUrl(avmService, store, config.getWCMDomain(), config.getWCMPort());
    }
    
    public static String buildWebappUrl(final String avmPath)
@@ -530,12 +518,6 @@ public final class AVMUtil extends WCMUtil
       
       return linksManagementConfig;
    }
-   
-   // Component Separator.
-   public static final String STORE_SEPARATOR = WCMUtil.STORE_SEPARATOR;
-   
-   public static final String STORE_WORKFLOW = WCMUtil.STORE_WORKFLOW;
-   public static final String STORE_PREVIEW  = WCMUtil.STORE_PREVIEW;
    
    // pattern for absolute AVM Path
    //private final static Pattern STORE_RELATIVE_PATH_PATTERN = 

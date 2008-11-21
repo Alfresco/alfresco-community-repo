@@ -32,9 +32,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -43,15 +41,12 @@ import javax.faces.context.FacesContext;
 import org.alfresco.config.ConfigElement;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.WCMAppModel;
-import org.alfresco.model.WCMWorkflowModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
-import org.alfresco.service.cmr.avm.AVMNotFoundException;
 import org.alfresco.service.cmr.avm.AVMService;
-import org.alfresco.service.cmr.avm.LayeringDescriptor;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -63,9 +58,8 @@ import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowPath;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
-import org.alfresco.service.cmr.workflow.WorkflowTaskQuery;
-import org.alfresco.service.namespace.QName;
 import org.alfresco.wcm.sandbox.SandboxInfo;
+import org.alfresco.wcm.util.WCMWorkflowUtil;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.workflow.WorkflowUtil;
@@ -257,59 +251,21 @@ public class AVMWorkflowUtil extends WorkflowUtil
 
    public static List<WorkflowTask> getAssociatedTasksForSandbox(final String storeName)
    {
-      final String fromPath = AVMUtil.buildStoreRootPath(storeName);
-      final FacesContext fc = FacesContext.getCurrentInstance();
-      final WorkflowService workflowService = Repository.getServiceRegistry(fc).getWorkflowService();
-      final WorkflowTaskQuery query = new WorkflowTaskQuery();
-      
-      final HashMap<QName, Object> props = new HashMap<QName, Object>(1, 1.0f);
-      props.put(WCMWorkflowModel.PROP_FROM_PATH, fromPath);
-      query.setProcessCustomProps(props);
-      query.setActive(true);
-      final List<WorkflowTask> tasks = workflowService.queryTasks(query);
-      
-      if (logger.isDebugEnabled())
-         logger.debug("found " + tasks.size() + " tasks originating user sandbox " + fromPath);
-      
-      return tasks;
+      FacesContext fc = FacesContext.getCurrentInstance();
+      WorkflowService workflowService = Repository.getServiceRegistry(fc).getWorkflowService();
+      return WCMWorkflowUtil.getAssociatedTasksForSandbox(workflowService, storeName);
    }
    
    public static List<WorkflowTask> getAssociatedTasksForNode(AVMNodeDescriptor node, List<WorkflowTask> tasks)
    {
-      final List<WorkflowTask> result = new LinkedList<WorkflowTask>();
-      final FacesContext fc = FacesContext.getCurrentInstance();
-      final AVMService avmService = Repository.getServiceRegistry(fc).getAVMService();
-      
-      for (final WorkflowTask task : tasks)
-      {
-         final NodeRef ref = task.path.instance.workflowPackage;
-         final String path = AVMUtil.getCorrespondingPath(node.getPath(), ref.getStoreRef().getIdentifier());
-         if (logger.isDebugEnabled())
-            logger.debug("checking store " + ref.getStoreRef().getIdentifier() +
-                         " for " + node.getPath() + " (" + path + ")");
-         try
-         {
-            final LayeringDescriptor ld = avmService.getLayeringInfo(-1, path);
-            if (!ld.isBackground())
-            {
-               if (logger.isDebugEnabled())
-                  logger.debug(path + " is in the foreground.  workflow active");
-               result.add(task);
-            }
-         }
-         catch (final AVMNotFoundException avmnfe)
-         {
-            if (logger.isDebugEnabled())
-               logger.debug(path + " not found");
-         }
-      }
-      
-      return result;
+      FacesContext fc = FacesContext.getCurrentInstance();
+      AVMService avmService = Repository.getServiceRegistry(fc).getAVMService();
+      return WCMWorkflowUtil.getAssociatedTasksForNode(avmService, node, tasks);
    }
    
    public static List<WorkflowTask> getAssociatedTasksForNode(AVMNodeDescriptor node)
    {
       final List<WorkflowTask> tasks = AVMWorkflowUtil.getAssociatedTasksForSandbox(AVMUtil.getStoreName(node.getPath()));
-      return getAssociatedTasksForNode(node, tasks);
+      return AVMWorkflowUtil.getAssociatedTasksForNode(node, tasks);
    }
 }

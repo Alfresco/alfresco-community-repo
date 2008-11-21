@@ -114,7 +114,7 @@ public class InviteWebsiteUsersWizard extends BaseInviteUsersWizard
           selectedInvitees.put(userRole.getAuthority(), userRole.getRole());
       }
       
-      getWebProjectService().inviteWebUsersGroups(this.getNode().getNodeRef(), selectedInvitees);
+      getWebProjectService().inviteWebUsersGroups(this.getNode().getNodeRef(), selectedInvitees, true);
 
       return outcome;
    }

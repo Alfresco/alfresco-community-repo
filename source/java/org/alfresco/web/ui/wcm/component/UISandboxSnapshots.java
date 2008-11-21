@@ -42,13 +42,14 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.domain.PropertyValue;
-import org.alfresco.sandbox.SandboxConstants;
+import org.alfresco.wcm.sandbox.SandboxConstants;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.VersionDescriptor;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.wcm.sandbox.SandboxService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wcm.AVMCompareUtils;
@@ -164,6 +165,7 @@ public class UISandboxSnapshots extends SelfRenderingComponent
         ResourceBundle bundle = Application.getBundle(context);
         DateFormat df = Utils.getDateTimeFormat(context);
         AVMService avmService = getAVMService(context);
+        SandboxService sbService = getSandboxService(context);
         UserTransaction tx = null;
         try
         {
@@ -200,7 +202,7 @@ public class UISandboxSnapshots extends SelfRenderingComponent
             String dateFilter = getDateFilter();
             if (dateFilter == null || dateFilter.equals(FILTER_DATE_ALL))
             {
-                versions = avmService.getStoreVersions(sandbox);
+                versions = sbService.listSnapshots(sandbox, false);
             }
             else
             {
@@ -227,7 +229,7 @@ public class UISandboxSnapshots extends SelfRenderingComponent
                 {
                     throw new IllegalArgumentException("Unknown date filter mode: " + dateFilter);
                 }
-                versions = avmService.getStoreVersions(sandbox, fromDate, toDate);
+                versions = sbService.listSnapshots(sandbox, fromDate, toDate, false);
             }
 
             // determine whether the deploy action should be shown
@@ -622,7 +624,12 @@ public class UISandboxSnapshots extends SelfRenderingComponent
 
     private AVMService getAVMService(FacesContext fc)
     {
-        return (AVMService) FacesContextUtils.getRequiredWebApplicationContext(fc).getBean("AVMLockingAwareService");
+        return (AVMService)FacesContextUtils.getRequiredWebApplicationContext(fc).getBean("AVMLockingAwareService");
+    }
+    
+    private SandboxService getSandboxService(FacesContext fc)
+    {
+        return (SandboxService)FacesContextUtils.getRequiredWebApplicationContext(fc).getBean("SandboxService");
     }
 
     // ------------------------------------------------------------------------------

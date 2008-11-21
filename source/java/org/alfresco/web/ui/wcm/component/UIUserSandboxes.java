@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -49,15 +49,15 @@ import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.web.scripts.FileTypeImageUtils;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
-import org.alfresco.service.cmr.avm.AVMService;
-import org.alfresco.service.cmr.avmsync.AVMDifference;
-import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
-import org.alfresco.util.NameMatcher;
+import org.alfresco.wcm.sandbox.SandboxConstants;
+import org.alfresco.wcm.sandbox.SandboxInfo;
+import org.alfresco.wcm.sandbox.SandboxService;
 import org.alfresco.wcm.util.WCMUtil;
+import org.alfresco.wcm.webproject.WebProjectInfo;
 import org.alfresco.wcm.webproject.WebProjectService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.DownloadContentServlet;
@@ -70,7 +70,6 @@ import org.alfresco.web.bean.wcm.AVMNode;
 import org.alfresco.web.bean.wcm.AVMUtil;
 import org.alfresco.web.bean.wcm.DeploymentUtil;
 import org.alfresco.web.bean.wcm.WebProject;
-import org.alfresco.web.config.ClientConfigElement;
 import org.alfresco.web.data.IDataContainer;
 import org.alfresco.web.data.QuickSort;
 import org.alfresco.web.forms.Form;
@@ -86,7 +85,6 @@ import org.alfresco.web.ui.repo.component.UIActions;
 import org.alfresco.web.ui.wcm.WebResources;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.web.jsf.FacesContextUtils;
 
 /**
  * Component responsible for rendering the list of user sandboxes for a web project.
@@ -300,7 +298,7 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
       this.forms = null;
       
       ResourceBundle bundle = Application.getBundle(context);
-      AVMService avmService = getAVMService(context);
+      SandboxService sbService = getSandboxService(context);
       WebProjectService wpService = getWebProjectService(context);
       NodeService nodeService = getNodeService(context);
       PermissionService permissionService = getPermissionService(context);
@@ -328,11 +326,24 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
          List<UserRoleWrapper> userRoleWrappers;
          if (showAllSandboxes)
          {
-            // TODO refactor with new SandboxService
             Map<String, String> userRoles = null;
             if (currentUserRole.equals(WCMUtil.ROLE_CONTENT_MANAGER))
             {
-                userRoles = wpService.listWebUsers(websiteRef);
+                Map<String, String> allUserRoles = wpService.listWebUsers(websiteRef);
+                
+                WebProjectInfo wpInfo = wpService.getWebProject(websiteRef);
+                List<SandboxInfo> sbInfos = sbService.listSandboxes(wpInfo.getStoreId());
+                
+                userRoles = new HashMap<String, String>(sbInfos.size());
+                
+                // Note: currently displays author sandboxes only
+                for (SandboxInfo sbInfo : sbInfos)
+                {
+                    if (sbInfo.getSandboxType().equals(SandboxConstants.PROP_SANDBOX_AUTHOR_MAIN))
+                    {
+                        userRoles.put(sbInfo.getName(), allUserRoles.get(sbInfo.getName()));
+                    }
+                }
             }
             else
             {
@@ -376,11 +387,11 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
             this.userToRowLookup.put(index, username);
             this.rowToUserLookup.put(username, index);
             
-            // build the name of the main store for this user
+            // build the name of the main store for this user (user sandbox id)
             String mainStore = AVMUtil.buildUserMainStoreName(storeRoot, username);
             
             // check it exists before we render the view
-            if (avmService.getStore(mainStore) != null)
+            if (sbService.getSandbox(mainStore) != null)
             {
                // check the permissions on this store for the current user
                if (logger.isDebugEnabled())
@@ -701,29 +712,20 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
          FacesContext fc, ResponseWriter out, String username, String storeRoot, int index)
          throws IOException
    {
-      AVMSyncService avmSyncService = getAVMSyncService(fc);
-      AVMService avmService = getAVMService(fc);
       PermissionService permissionService = getPermissionService(fc);
+      SandboxService sandboxService = getSandboxService(fc);
       
       DateFormat df = Utils.getDateTimeFormat(fc);
       ResourceBundle bundle = Application.getBundle(fc);
       
-      // build the paths to the stores to compare - filter by current webapp
+      // compare user sandbox to staging sandbox - filter by current webapp, include deleted items
       String userStore = AVMUtil.buildUserMainStoreName(storeRoot, username);
-      String userStorePath = AVMUtil.buildStoreWebappPath(userStore, getWebapp());
-      String stagingStore = AVMUtil.buildStagingStoreName(storeRoot);
-      String stagingStorePath = AVMUtil.buildStoreWebappPath(stagingStore, getWebapp());
+      List<AVMNodeDescriptor> nodes = sandboxService.listChangedItemsWebApp(userStore, getWebapp(), true);
       
-      // use the sync service to get the list of diffs between the stores
-      NameMatcher matcher = (NameMatcher)FacesContextUtils.getRequiredWebApplicationContext(fc).getBean(
-            "globalPathExcluder");
-      List<AVMDifference> diffs = avmSyncService.compare(-1, userStorePath, -1, stagingStorePath, matcher);
-      if (diffs.size() != 0)
+      if (nodes.size() != 0)
       {
          // info we need to calculate preview paths for assets
-         String dns = AVMUtil.lookupStoreDNS(userStore);
          int rootPathIndex = AVMUtil.buildSandboxRootPath(userStore).length();
-         ClientConfigElement config = Application.getClientConfig(fc);
          
          // get the UIActions component responsible for rendering context related user actions
          // TODO: we may need a component per user instance? (or use evaluators for roles...)
@@ -734,7 +736,6 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
          String id = getClientId(fc);
          
          // store lookup of username to list of modified nodes
-         List<AVMNodeDescriptor> nodes = new ArrayList<AVMNodeDescriptor>(diffs.size());
          this.userNodes.put(username, nodes);
          
          // output the table of modified items
@@ -780,27 +781,11 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
          
          // output each of the modified files as a row in the table
          int rowIndex = 0;
-         for (AVMDifference diff : diffs)
+         for (AVMNodeDescriptor node : nodes)
          {
             // TODO: different display cases for diff.getDifferenceCode()?
-            boolean isGhost = false;
-            String sourcePath = diff.getSourcePath();
-            AVMNodeDescriptor node = avmService.lookup(-1, sourcePath);
-            if (node == null)
-            {
-               // may have been deleted from this sandbox - which is a ghost node
-               node = avmService.lookup(-1, diff.getSourcePath(), true);
-               isGhost = true;
-            }
-            
-            // handle missing node case by skipping the row rendering
-            if (node == null)
-            {
-               continue;
-            }
-            
-            // save reference to this node for multi-select action lookup later
-            nodes.add(node);
+            boolean isGhost = node.isDeleted();
+            String sourcePath = node.getPath();
             
             // output multi-select checkbox
             out.write("<tr><td><input type='checkbox' name='");
@@ -1328,12 +1313,7 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
    
    private WebProjectService getWebProjectService(FacesContext fc)
    {
-      return (WebProjectService)FacesContextUtils.getRequiredWebApplicationContext(fc).getBean("WebProjectService");
-   }
-   
-   private AVMService getAVMService(FacesContext fc)
-   {
-      return (AVMService)FacesContextUtils.getRequiredWebApplicationContext(fc).getBean("AVMLockingAwareService");
+      return Repository.getServiceRegistry(fc).getWebProjectService();
    }
    
    private NodeService getNodeService(FacesContext fc)
@@ -1341,14 +1321,14 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
       return Repository.getServiceRegistry(fc).getNodeService();
    }
    
-   private AVMSyncService getAVMSyncService(FacesContext fc)
-   {
-      return (AVMSyncService)FacesContextUtils.getRequiredWebApplicationContext(fc).getBean("AVMSyncService");
-   }
-   
    private PermissionService getPermissionService(FacesContext fc)
    {
       return Repository.getServiceRegistry(fc).getPermissionService();
+   }
+   
+   private SandboxService getSandboxService(FacesContext fc)
+   {
+      return Repository.getServiceRegistry(fc).getSandboxService();
    }
    
    

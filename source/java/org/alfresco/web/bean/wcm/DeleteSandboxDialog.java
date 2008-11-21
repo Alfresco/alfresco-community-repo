@@ -90,7 +90,7 @@ public class DeleteSandboxDialog extends BaseDialogBean
       if (username != null)
       {
          Node website = this.avmBrowseBean.getWebsite();
-         getWebProjectService().uninviteWebUser(website.getNodeRef(), username);
+         getWebProjectService().uninviteWebUser(website.getNodeRef(), username, true);
           
          String wpStoreId = getWebProjectService().getWebProject(website.getNodeRef()).getStoreId();
          String mainStore = AVMUtil.buildUserMainStoreName(wpStoreId, username);

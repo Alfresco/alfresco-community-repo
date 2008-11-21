@@ -539,16 +539,13 @@ public class UIDeploymentServers extends UIInput
             out.write("'><nobr>");
             out.write(bundle.getString("yes"));
             out.write("&nbsp;(");
-            if (allocatedToTip.indexOf(
-                AVMUtil.STORE_SEPARATOR + AVMUtil.STORE_WORKFLOW + "-") != -1)
+            if (AVMUtil.isWorkflowStore(allocatedToTip))
             {
                out.write(bundle.getString("review_sandbox"));
             }
             else
             {
-               String username = allocatedToTip.substring(
-                        allocatedToTip.indexOf(AVMUtil.STORE_SEPARATOR) +
-                        AVMUtil.STORE_SEPARATOR.length());
+               String username = AVMUtil.getUserName(allocatedToTip);
                out.write(username);
             }
             out.write(")</nobr></span>");

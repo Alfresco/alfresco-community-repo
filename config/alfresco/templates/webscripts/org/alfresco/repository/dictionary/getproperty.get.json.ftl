@@ -1,3 +1,6 @@
 <#import "propertydefinition.lib.ftl" as propertyDefLib/>
-
-<@propertyDefLib.propertyDefJSON propertydefs=propertydefs/>		
+<#if propertydefs?exists>
+	<@propertyDefLib.propertyDefJSON propertydefs=propertydefs/>
+<#else>
+	{}
+</#if>

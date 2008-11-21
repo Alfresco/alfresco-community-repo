@@ -24,13 +24,14 @@
  */
 package org.alfresco.repo.web.scripts.dictionary;
 
+import org.alfresco.web.scripts.Cache;
 import org.alfresco.web.scripts.DeclarativeWebScript;
 import org.alfresco.web.scripts.Status;
 import org.alfresco.web.scripts.WebScriptException;
 import org.alfresco.web.scripts.WebScriptRequest;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.dictionary.ClassDefinition;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -43,7 +44,6 @@ import java.util.Map;
 public class GetPropertyDef extends DeclarativeWebScript
 {
 	private DictionaryService dictionaryservice;
-	private ClassDefinition classdefinition;
 	private DictionaryHelper dictionaryhelper;
 	
 	private static final String MODEL_PROP_KEY_PROPERTY_DETAILS = "propertydefs";
@@ -73,32 +73,37 @@ public class GetPropertyDef extends DeclarativeWebScript
     /**
      * @Override  method from DeclarativeWebScript 
      */
-    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status)
+    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
-        String classname = req.getServiceMatch().getTemplateVars().get(DICTIONARY_CLASS_NAME);
-        String propertyname = req.getServiceMatch().getTemplateVars().get(DICTIONARY_PROPERTY_NAME);
-        Map<String, Object> model = new HashMap<String, Object>();
-        QName qname = null;
-        QName propname = null;
-        boolean classnameGiven = (classname != null) && (classname.length() > 0);
-        boolean propertynameGiven = (propertyname != null) && (propertyname.length() > 0);
+        String className = req.getServiceMatch().getTemplateVars().get(DICTIONARY_CLASS_NAME);
+        String propertyName = req.getServiceMatch().getTemplateVars().get(DICTIONARY_PROPERTY_NAME);
+        Map<String, Object> model = new HashMap<String, Object>(1);
+        QName classQname = null;
+        QName propertyQname = null;
         
-        if(classnameGiven && propertynameGiven)
+        //validate the classname
+        if(this.dictionaryhelper.isValidClassname(className) == false)
         {
-           	qname = QName.createQName(this.dictionaryhelper.getFullNamespaceURI(classname));
-           	propname = QName.createQName(this.dictionaryhelper.getFullNamespaceURI(propertyname));
+        	throw new WebScriptException(Status.STATUS_NOT_FOUND, "Check the classname - " + className + " - parameter in the URL");
         }
-        classdefinition = this.dictionaryservice.getClass(qname);
+       
+        classQname = QName.createQName(this.dictionaryhelper.getFullNamespaceURI(className));
         
-        if(this.classdefinition != null)
+        //validate the presence of property name
+        if(propertyName == null)
         {
-	        model.put(MODEL_PROP_KEY_PROPERTY_DETAILS, this.classdefinition.getProperties().get(propname));
-	        return model;
+        	throw new WebScriptException(Status.STATUS_NOT_FOUND, "Missing parameter propertyname in the URL");
         }
-        else
-        {
-            throw new WebScriptException(Status.STATUS_NOT_FOUND, "The exact parameter has not been provided in the URL");
-        } 
+        
+        propertyQname = QName.createQName(this.dictionaryhelper.getFullNamespaceURI(propertyName));
+        
+		if(this.dictionaryservice.getClass(classQname).getProperties().get(propertyQname) != null)
+		{
+			model.put(MODEL_PROP_KEY_PROPERTY_DETAILS, this.dictionaryservice.getClass(classQname).getProperties().get(propertyQname));
+		}
+		
+		return model;
+       
     }
     
 }

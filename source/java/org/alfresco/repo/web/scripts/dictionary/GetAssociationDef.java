@@ -24,13 +24,14 @@
  */
 package org.alfresco.repo.web.scripts.dictionary;
 
+import org.alfresco.web.scripts.Cache;
 import org.alfresco.web.scripts.DeclarativeWebScript;
 import org.alfresco.web.scripts.Status;
 import org.alfresco.web.scripts.WebScriptException;
 import org.alfresco.web.scripts.WebScriptRequest;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.dictionary.ClassDefinition;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -42,7 +43,6 @@ import java.util.Map;
 public class GetAssociationDef extends DeclarativeWebScript
 {
 	private DictionaryService dictionaryservice;
-	private ClassDefinition classdefinition;
 	private DictionaryHelper dictionaryhelper;
 	
 	private static final String MODEL_PROP_KEY_ASSOCIATION_DETAILS = "assocdefs";
@@ -72,32 +72,35 @@ public class GetAssociationDef extends DeclarativeWebScript
     /**
      * @Override  method from DeclarativeWebScript 
      */
-    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status)
+    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
-        String classname = req.getServiceMatch().getTemplateVars().get(DICTIONARY_CLASS_NAME);
-        String assocname = req.getServiceMatch().getTemplateVars().get(DICTIONARY_ASSOCIATION_NAME);
-        Map<String, Object> model = new HashMap<String, Object>();
-        QName classqname = null;
-        QName assocqname = null;
-        boolean classnameGiven = (classname != null) && (classname.length() > 0);
-        boolean assocnameGiven = (assocname != null) && (assocname.length() > 0);
+        String className = req.getServiceMatch().getTemplateVars().get(DICTIONARY_CLASS_NAME);
+        String associationName = req.getServiceMatch().getTemplateVars().get(DICTIONARY_ASSOCIATION_NAME);
+        Map<String, Object> model = new HashMap<String, Object>(1);
+        QName classQname = null;
+        QName associationQname = null;
         
-        if(classnameGiven && assocnameGiven)
+        //validate the classname
+        if(this.dictionaryhelper.isValidClassname(className) == false)
         {
-           	classqname = QName.createQName(this.dictionaryhelper.getFullNamespaceURI(classname));
-            assocqname = QName.createQName(this.dictionaryhelper.getFullNamespaceURI(assocname));
+        	throw new WebScriptException(Status.STATUS_NOT_FOUND, "Check the classname - " + className + " - parameter in the URL");
         }
-        classdefinition = this.dictionaryservice.getClass(classqname);
+       
+        classQname = QName.createQName(this.dictionaryhelper.getFullNamespaceURI(className));
         
-        if(this.classdefinition != null)
+        if(associationName == null)
         {
-	        model.put(MODEL_PROP_KEY_ASSOCIATION_DETAILS, this.classdefinition.getAssociations().get(assocqname));
-	        return model;
+        	throw new WebScriptException(Status.STATUS_NOT_FOUND, "Missing parameter association name in the URL");
         }
-        else
-        {
-            throw new WebScriptException(Status.STATUS_NOT_FOUND, "The exact parameter has not been provided in the URL");
-        } 
+        
+        associationQname = QName.createQName(this.dictionaryhelper.getFullNamespaceURI(associationName));
+        
+		if(this.dictionaryservice.getClass(classQname).getAssociations().get(associationQname) != null)
+		{
+			model.put(MODEL_PROP_KEY_ASSOCIATION_DETAILS, this.dictionaryservice.getClass(classQname).getAssociations().get(associationQname));
+		}
+		
+		return model;
     }
     
 }

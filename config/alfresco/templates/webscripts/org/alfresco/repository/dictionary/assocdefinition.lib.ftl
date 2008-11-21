@@ -49,14 +49,12 @@
     "requiredChildName" : "${assocdefs.getRequiredChildName()}",
     </#if>
     <#if assocdefs.getDuplicateChildNamesAllowed() == true>
-	    "duplicateChildNameAllowed" : true,
+	"duplicateChildNameAllowed" : true,
 	    <#else>
-	    "duplicateChildNameAllowed" : false,
+	"duplicateChildNameAllowed" : false,
 	</#if>
-	"url" : "${"/api/classes/" + url.templateArgs.classname + "/childassociation/" + assocdefs.name.toPrefixString()?replace(":","_")}"
-   <#else>
-    "url" : "${"/api/classes/" + url.templateArgs.classname + "/association/" + assocdefs.name.toPrefixString()?replace(":","_")}"
    </#if>
+    "url" : "${"/api/classes/" + url.templateArgs.classname + "/association/" + assocdefs.name.toPrefixString()?replace(":","_")}"
   }
 </#escape>
 </#macro>

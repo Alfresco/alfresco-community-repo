@@ -37,6 +37,8 @@ import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Webscript to get the Classdefinitions using classfilter , namespaceprefix and name
@@ -85,103 +87,104 @@ public class GetClassDetail extends DeclarativeWebScript
      */
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
-    	String classfilter = this.dictionaryhelper.getValidInput(req.getParameter(REQ_URL_TEMPL_VAR_CLASS_FILTER));
-        String namespaceprefix = this.dictionaryhelper.getValidInput(req.getParameter(REQ_URL_TEMPL_VAR_NAMESPACE_PREFIX));
+    	String classFilter = this.dictionaryhelper.getValidInput(req.getParameter(REQ_URL_TEMPL_VAR_CLASS_FILTER));
+        String namespacePrefix = this.dictionaryhelper.getValidInput(req.getParameter(REQ_URL_TEMPL_VAR_NAMESPACE_PREFIX));
         String name = this.dictionaryhelper.getValidInput(req.getParameter(REQ_URL_TEMPL_VAR_NAME));
-        String classname = null;
+        String className = null;
         
         Map<QName, ClassDefinition> classdef = new HashMap<QName, ClassDefinition>();
         Map<QName, Collection<PropertyDefinition>> propdef = new HashMap<QName, Collection<PropertyDefinition>>();
         Map<QName, Collection<AssociationDefinition>> assocdef = new HashMap<QName, Collection<AssociationDefinition>>();
         Map<String, Object> model = new HashMap<String, Object>();
         
-        Collection <QName> qnames = null; 
-        QName class_qname = null;
+        List<QName> qnames = new ArrayList<QName>();
+        QName classQname = null;
         QName myModel = null;
 		
         //if classfilter is not given, then it defaults to all
-        if(classfilter == null)
+        if(classFilter == null)
         {
-        	classfilter = "all";
+        	classFilter = "all";
         }
         
         //validate classfilter
-        if(this.dictionaryhelper.isValidClassFilter(classfilter) == false)
+        if(this.dictionaryhelper.isValidClassFilter(classFilter) == false)
         {
-        	throw new WebScriptException(Status.STATUS_NOT_FOUND, "Check the classfilter - " + classfilter + " provided in the URL");
+        	throw new WebScriptException(Status.STATUS_NOT_FOUND, "Check the classfilter - " + classFilter + " provided in the URL");
         }
         
-        if(namespaceprefix == null && name != null)
+        //name alone has no meaning without namespaceprefix
+        if(namespacePrefix == null && name != null)
         {
         	throw new WebScriptException(Status.STATUS_NOT_FOUND, "Missing namespaceprefix parameter in the URL - both combination of name and namespaceprefix is needed");
         }
         
         //validate the namespaceprefix and name parameters => if namespaceprefix is given, then name has to be validated along with it
-        if(namespaceprefix != null)
+        if(namespacePrefix != null)
         {
-        	if(this.dictionaryhelper.isValidPrefix(namespaceprefix) == false)
+        	if(this.dictionaryhelper.isValidPrefix(namespacePrefix) == false)
 	        {
-	        	throw new WebScriptException(Status.STATUS_NOT_FOUND, "Check the namespaceprefix - " + namespaceprefix + " parameter in the URL");
+	        	throw new WebScriptException(Status.STATUS_NOT_FOUND, "Check the namespaceprefix - " + namespacePrefix + " parameter in the URL");
 	        }
         	
         	//validate name parameter if present along with the namespaceprefix
         	if(name != null)
         	{
-        		classname = namespaceprefix + "_" + name;
-        		if(this.dictionaryhelper.isValidClassname(classname) == false)
+        		className = namespacePrefix + "_" + name;
+        		if(this.dictionaryhelper.isValidClassname(className) == false)
         		{
         			throw new WebScriptException(Status.STATUS_NOT_FOUND, "Check the name - " + name + "parameter in the URL");
         		}
-        		class_qname = QName.createQName(this.dictionaryhelper.getFullNamespaceURI(classname));
-        		classdef.put(class_qname, this.dictionaryservice.getClass(class_qname));
-        		propdef.put(class_qname, this.dictionaryservice.getClass(class_qname).getProperties().values());
-        		assocdef.put(class_qname, this.dictionaryservice.getClass(class_qname).getAssociations().values());
+        		classQname = QName.createQName(this.dictionaryhelper.getFullNamespaceURI(className));
+        		classdef.put(classQname, this.dictionaryservice.getClass(classQname));
+        		propdef.put(classQname, this.dictionaryservice.getClass(classQname).getProperties().values());
+        		assocdef.put(classQname, this.dictionaryservice.getClass(classQname).getAssociations().values());
         	}
         	else
         	{	
         		//if name is not given then the model is extracted from the namespaceprefix, there can be more than one model associated with one namespaceprefix
-        		String namespaceQname = this.dictionaryhelper.getNamespaceURIfromPrefix(namespaceprefix);
+        		String namespaceUri = this.dictionaryhelper.getNamespaceURIfromPrefix(namespacePrefix);
         		for(QName qnameObj:this.dictionaryservice.getAllModels())
 		        {
-		             if(qnameObj.getNamespaceURI().equals(namespaceQname))
+		             if(qnameObj.getNamespaceURI().equals(namespaceUri))
 		             {
 		                 name = qnameObj.getLocalName();
-		                 myModel = QName.createQName(this.dictionaryhelper.getFullNamespaceURI(namespaceprefix + "_" + name));
-		                 qnames.clear();
+		                 myModel = QName.createQName(this.dictionaryhelper.getFullNamespaceURI(namespacePrefix + "_" + name));
+		                 
 		                 // check the classfilter to pull out either all or type or aspects
-		                 if (classfilter.equalsIgnoreCase(CLASS_FILTER_OPTION_TYPE1)) 
-		                 {
+		                 if (classFilter.equalsIgnoreCase(CLASS_FILTER_OPTION_TYPE1)) 
+		                 {	
 		             		qnames.addAll(this.dictionaryservice.getAspects(myModel));
 		             		qnames.addAll(this.dictionaryservice.getTypes(myModel));
 		             	 }
-		                 else if (classfilter.equalsIgnoreCase(CLASS_FILTER_OPTION_TYPE3))
+		                 else if (classFilter.equalsIgnoreCase(CLASS_FILTER_OPTION_TYPE3))
 		             	 {
 		             		qnames.addAll(this.dictionaryservice.getTypes(myModel));
 		             	 }
-		             	else if (classfilter.equalsIgnoreCase(CLASS_FILTER_OPTION_TYPE2))
-		               	{
+		             	 else if (classFilter.equalsIgnoreCase(CLASS_FILTER_OPTION_TYPE2))
+		               	 {
 		             		qnames.addAll(this.dictionaryservice.getAspects(myModel));
-		               	}
+		             	 }
 		             }
 		        } 
         	}
         }
         
-        // if namespaceprefix is null, then check the classfilter to pull out either all or type or aspects
+        // if namespacePrefix is null, then check the classfilter to pull out either all or type or aspects
         if(myModel == null)
         {
-	        if (classfilter.equalsIgnoreCase(CLASS_FILTER_OPTION_TYPE1)) 
+	        if (classFilter.equalsIgnoreCase(CLASS_FILTER_OPTION_TYPE1)) 
 	        {
-	    		qnames = this.dictionaryservice.getAllAspects();
-	        	qnames.addAll(this.dictionaryservice.getAllTypes());
+	    		qnames.addAll(this.dictionaryservice.getAllAspects());
+	    		qnames.addAll(this.dictionaryservice.getAllTypes());
 	        }
-	    	else if (classfilter.equalsIgnoreCase(CLASS_FILTER_OPTION_TYPE3))
+	    	else if (classFilter.equalsIgnoreCase(CLASS_FILTER_OPTION_TYPE3))
 	    	{
-	    		qnames = this.dictionaryservice.getAllTypes();
+	    		qnames.addAll(this.dictionaryservice.getAllTypes());
 	    	}
-	       	else if (classfilter.equalsIgnoreCase(CLASS_FILTER_OPTION_TYPE2))
+	       	else if (classFilter.equalsIgnoreCase(CLASS_FILTER_OPTION_TYPE2))
 	       	{
-	       		qnames = this.dictionaryservice.getAllAspects();
+	       		qnames.addAll(this.dictionaryservice.getAllAspects());
 	       	}
         }
         

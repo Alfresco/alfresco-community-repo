@@ -1,3 +1,6 @@
 <#import "assocdefinition.lib.ftl" as assocDefLib/>
-
-<@assocDefLib.assocDefJSON assocdefs=assocdefs/>		
+<#if assocdefs?exists>
+<@assocDefLib.assocDefJSON assocdefs=assocdefs/>
+<#else>
+{}
+</#if>		

@@ -40,7 +40,7 @@ import java.util.Map;
 
 /**
  * 
- * Webscript to get the Sub-Classdefinitions using classfilter , namespaceprefix and name
+ * Webscript to get the Sub-Classdefinitions using classfilter , namespacePrefix and name
  * @author Saravanan Sellathurai
  */
 
@@ -85,9 +85,9 @@ public class GetSubClassesDef extends DeclarativeWebScript
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
     	String name = req.getParameter(REQ_URL_TEMPL_VAR_NAME);
-    	String namespaceprefix = req.getParameter(REQ_URL_TEMPL_VAR_NAMESPACE_PREFIX);
-        String classname = req.getServiceMatch().getTemplateVars().get(DICTIONARY_CLASS_NAME);
-        String recursive_value = this.dictionaryhelper.getValidInput(req.getParameter(REQ_URL_TEMPL_IMMEDIATE_SUB_TYPE_CHILDREN));
+    	String namespacePrefix = req.getParameter(REQ_URL_TEMPL_VAR_NAMESPACE_PREFIX);
+        String className = req.getServiceMatch().getTemplateVars().get(DICTIONARY_CLASS_NAME);
+        String recursiveValue = this.dictionaryhelper.getValidInput(req.getParameter(REQ_URL_TEMPL_IMMEDIATE_SUB_TYPE_CHILDREN));
         
         boolean recursive = true;
         
@@ -103,35 +103,35 @@ public class GetSubClassesDef extends DeclarativeWebScript
         boolean ignoreCheck = false;
         
         // validate recursive parameter => can be either true or false or null
-        if(recursive_value == null)
+        if(recursiveValue == null)
         {
         	recursive = true;
         }
-        else if(recursive_value.equalsIgnoreCase("true"))
+        else if(recursiveValue.equalsIgnoreCase("true"))
         {
         	recursive = true;
         }
-        else if (recursive_value.equalsIgnoreCase("false"))
+        else if (recursiveValue.equalsIgnoreCase("false"))
         {
         	recursive = false;
         }
         else
         {
-        	throw new WebScriptException(Status.STATUS_NOT_FOUND, "Check the value for the parameter recursive=> " + recursive_value +"  can only be either true or false");
+        	throw new WebScriptException(Status.STATUS_NOT_FOUND, "Check the value for the parameter recursive=> " + recursiveValue +"  can only be either true or false");
         }
         	
-        //validate the classname
-        if(this.dictionaryhelper.isValidClassname(classname) == true)
+        //validate the className
+        if(this.dictionaryhelper.isValidClassname(className) == true)
         {
-        	classQName = QName.createQName(this.dictionaryhelper.getFullNamespaceURI(classname));
-        	if(this.dictionaryhelper.isValidTypeorAspect(classname) == true) 
+        	classQName = QName.createQName(this.dictionaryhelper.getFullNamespaceURI(className));
+        	if(this.dictionaryhelper.isValidTypeorAspect(className) == true) 
         	{
         		isAspect = true;
         	}
         }
         else
         {
-        	throw new WebScriptException(Status.STATUS_NOT_FOUND, "Check the classname - " + classname + " parameter in the URL");
+        	throw new WebScriptException(Status.STATUS_NOT_FOUND, "Check the className - " + className + " parameter in the URL");
         }
         
         // collect the subaspects or subtypes of the class
@@ -145,11 +145,11 @@ public class GetSubClassesDef extends DeclarativeWebScript
 		}
         
         //validate the namespaceprefix parameter
-        if(namespaceprefix != null)
+        if(namespacePrefix != null)
         {
-        	if(this.dictionaryhelper.isValidPrefix(namespaceprefix) == false)
+        	if(this.dictionaryhelper.isValidPrefix(namespacePrefix) == false)
         	{
-        		throw new WebScriptException(Status.STATUS_NOT_FOUND, "Check the namespaceprefix - " + namespaceprefix + " - parameter in the URL");
+        		throw new WebScriptException(Status.STATUS_NOT_FOUND, "Check the namespacePrefix - " + namespacePrefix + " - parameter in the URL");
         	}
         }
         
@@ -163,34 +163,35 @@ public class GetSubClassesDef extends DeclarativeWebScript
         }
         
         //validate the name parameter
-        if (namespaceprefix == null && name != null)
+        if (namespacePrefix == null && name != null)
         {
         	namespaceUri = this.dictionaryhelper.getNamespaceURIfromPrefix(this.dictionaryhelper.getPrefixFromModelName(name));
         }
         
-        if (namespaceprefix != null && name == null)
+        if (namespacePrefix != null && name == null)
         {
-        	namespaceUri = this.dictionaryhelper.getNamespaceURIfromPrefix(namespaceprefix);
+        	namespaceUri = this.dictionaryhelper.getNamespaceURIfromPrefix(namespacePrefix);
         }
         
-        if(namespaceprefix == null && name == null)
+        if(namespacePrefix == null && name == null)
         {
         	namespaceUri = null;
         	ignoreCheck = true;
         }
         
-        if (namespaceprefix != null && name != null)
+        if (namespacePrefix != null && name != null)
         {
-        	if(this.dictionaryhelper.isValidClassname(namespaceprefix + "_" + name) == false)
+        	if(this.dictionaryhelper.isValidClassname(namespacePrefix + "_" + name) == false)
         	{
-        		throw new WebScriptException(Status.STATUS_NOT_FOUND, "Check the namespaceprefix - " + namespaceprefix + " and name - "+ name  + " - parameter in the URL");
+        		throw new WebScriptException(Status.STATUS_NOT_FOUND, "Check the namespacePrefix - " + namespacePrefix + " and name - "+ name  + " - parameter in the URL");
         	}
-        	namespaceUri = this.dictionaryhelper.getNamespaceURIfromPrefix(namespaceprefix);
+        	namespaceUri = this.dictionaryhelper.getNamespaceURIfromPrefix(namespacePrefix);
         }
         
         for(QName qnameObj: qname)
 	    {	
-			if(ignoreCheck || qnameObj.getNamespaceURI().equals(namespaceUri))
+			if((ignoreCheck == true)  || 
+			   (qnameObj.getNamespaceURI().equals(namespaceUri)))
 			{
 	    		classdef.put(qnameObj, this.dictionaryservice.getClass(qnameObj));
 	    		propdef.put(qnameObj, this.dictionaryservice.getClass(qnameObj).getProperties().values());

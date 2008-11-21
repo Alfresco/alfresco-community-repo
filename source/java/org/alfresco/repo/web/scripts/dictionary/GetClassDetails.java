@@ -79,36 +79,33 @@ public class GetClassDetails extends DeclarativeWebScript
      */
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status)
     {
-        String classname = req.getServiceMatch().getTemplateVars().get(DICTIONARY_CLASS_NAME);
+        String className = req.getServiceMatch().getTemplateVars().get(DICTIONARY_CLASS_NAME);
         
         Map<String, Object> model = new HashMap<String, Object>(3);
-        QName qname = null;
+        QName classQname = null;
         Map<QName, ClassDefinition> classdef = new HashMap<QName, ClassDefinition>();
         Map<QName, Collection<PropertyDefinition>> propdef = new HashMap<QName, Collection<PropertyDefinition>>();
         Map<QName, Collection<AssociationDefinition>> assocdef = new HashMap<QName, Collection<AssociationDefinition>>();
-        boolean classnameGiven = (classname != null) && (classname.length() > 0);
-        boolean hasData = false;
         
-        if(classnameGiven && this.dictionaryhelper.isValidClassname(classname))
+        //validate the classname and throw appropriate error message
+        if(this.dictionaryhelper.isValidClassname(className) == true)
         {
-           	qname = QName.createQName(this.dictionaryhelper.getFullNamespaceURI(classname));
-           	hasData = true;
-           	classdef.put(qname, this.dictionaryservice.getClass(qname));
-        	propdef.put(qname, this.dictionaryservice.getClass(qname).getProperties().values());
-    		assocdef.put(qname, this.dictionaryservice.getClass(qname).getAssociations().values());
-        }
-        
-        if(hasData)
-        {
-        	model.put(MODEL_PROP_KEY_CLASS_DETAILS, classdef.values());
-        	model.put(MODEL_PROP_KEY_PROPERTY_DETAILS, propdef.values());
-        	model.put(MODEL_PROP_KEY_ASSOCIATION_DETAILS, assocdef.values());
-        	return model;
+        	classQname = QName.createQName(this.dictionaryhelper.getFullNamespaceURI(className));
+        	classdef.put(classQname, this.dictionaryservice.getClass(classQname));
+        	propdef.put(classQname, this.dictionaryservice.getClass(classQname).getProperties().values());
+    		assocdef.put(classQname, this.dictionaryservice.getClass(classQname).getAssociations().values());
         }
         else
         {
-            throw new WebScriptException(Status.STATUS_NOT_FOUND, "The exact parameter has not been provided in the URL");
-        } 
+        	throw new WebScriptException(Status.STATUS_NOT_FOUND, "Check the classname - " + className + " - parameter in the URL");
+        }
+        
+        model.put(MODEL_PROP_KEY_CLASS_DETAILS, classdef.values());
+        model.put(MODEL_PROP_KEY_PROPERTY_DETAILS, propdef.values());
+        model.put(MODEL_PROP_KEY_ASSOCIATION_DETAILS, assocdef.values());
+        
+        return model;
+         
     }
     
 }

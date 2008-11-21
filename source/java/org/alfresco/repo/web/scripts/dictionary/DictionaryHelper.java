@@ -120,7 +120,7 @@ public class DictionaryHelper
        	}
        	catch(Exception e)
        	{
-       		throw new WebScriptException(Status.STATUS_NOT_FOUND, "The exact parameter has not been provided in the URL");
+       		throw new WebScriptException(Status.STATUS_NOT_FOUND, "The exact classname - " + classname + "  parameter has not been provided in the URL");
        	}
     }
     
@@ -180,27 +180,6 @@ public class DictionaryHelper
     	{
     		return false;
     	}
-    }
-    
-   
-    /**
-     * 
-     * @param namespaceprefix - gets a valid namespaceprefix as input
-     * @return modelname from namespaceprefix - returns null if invalid namespaceprefix is given
-     */
-    public String getModelNameFromPrefix(String namespaceprefix)
-    {
-    	String name = null;
-		for(QName qnameObj:this.dictionaryservice.getAllModels())
-        {
-			String prefix = this.getUrlsAndPrefixesMap().get(qnameObj.getNamespaceURI());
-			if(prefix.equals(namespaceprefix))
-             {
-                 name = qnameObj.getLocalName();
-                 break;
-             }
-        }
-		return name;
     }
     
     /**
@@ -358,8 +337,9 @@ public class DictionaryHelper
     	return prefixesAndUrlsMap;
     }
     
-    /*
-     * returns a string map of urls and prefixes - with url as the key
+    /**
+     * 
+     * @return- a string map of urls and prefixes - with url as the key
      */
     public Map<String, String> getUrlsAndPrefixesMap()
     {

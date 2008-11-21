@@ -94,7 +94,7 @@
             <#if assocdefs.title?exists>
 	     "title" : "${assocdefs.title}",
 	    </#if>
-	     "url" : "${"/api/classes/" + classdefs.name.toPrefixString()?replace(":","_") + "/childassociation/" + assocdefs.name.toPrefixString()?replace(":","_")}"
+	     "url" : "${"/api/classes/" + classdefs.name.toPrefixString()?replace(":","_") + "/association/" + assocdefs.name.toPrefixString()?replace(":","_")}"
 	   }
 	  </#if>
 	</#list>

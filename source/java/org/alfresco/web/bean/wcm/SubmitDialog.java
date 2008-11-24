@@ -51,7 +51,6 @@ import org.alfresco.repo.web.scripts.FileTypeImageUtils;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
-import org.alfresco.service.cmr.avm.locking.AVMLockingService;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -133,7 +132,6 @@ public class SubmitDialog extends BaseDialogBean
    transient private AVMService avmService;
    transient private WorkflowService workflowService;
    transient private AVMSyncService avmSyncService;
-   transient private AVMLockingService avmLockingService;
    transient private FormsService formsService;
    transient private SandboxFactory sandboxFactory;
    transient private SandboxService sandboxService;
@@ -178,23 +176,6 @@ public class SubmitDialog extends BaseDialogBean
          this.avmSyncService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAVMSyncService();
       }
       return this.avmSyncService;
-   }
-
-   /**
-    * @param avmLockingService The AVMLockingService to set
-    */
-   public void setAvmLockingService(AVMLockingService avmLockingService)
-   {
-      this.avmLockingService = avmLockingService;
-   }
-
-   protected AVMLockingService getAvmLockingService()
-   {
-      if (this.avmLockingService == null)
-      {
-         this.avmLockingService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAVMLockingService();
-      }
-      return this.avmLockingService;
    }
 
    /**
@@ -509,7 +490,7 @@ public class SubmitDialog extends BaseDialogBean
       String submitLabel = this.label;
       String submitComment = this.comment;
       
-      getSandboxService().submitList(sbStoreId, nodes, this.expirationDates, submitLabel, submitComment);
+      getSandboxService().submitListNodes(sbStoreId, nodes, this.expirationDates, submitLabel, submitComment);
     
       // if we get this far return the default outcome
       return this.getDefaultFinishOutcome();

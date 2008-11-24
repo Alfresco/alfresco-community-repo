@@ -195,7 +195,7 @@ public class Sandbox implements Serializable
 	 */
 	public List<Asset> getModifiedAssetsWebApp(String webApp)
 	{
-		List<AVMNodeDescriptor> items = getSandboxService().listChangedItems(getSandboxRef(), webApp, true);
+		List<AVMNodeDescriptor> items = getSandboxService().listChangedItemsWebApp(getSandboxRef(), webApp, true);
         ArrayList<Asset> ret = new ArrayList<Asset>(items.size());
 		
 		for(AVMNodeDescriptor item : items)
@@ -203,7 +203,7 @@ public class Sandbox implements Serializable
 			Asset a = new Asset(this, item);
 			ret.add(a);
 		}
-		return ret;	
+		return ret;
 	}
 	
 	/**

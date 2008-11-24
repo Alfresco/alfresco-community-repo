@@ -60,6 +60,16 @@ public interface SandboxInfo
     public String getCreator();
     
     /**
+     *   The sandbox root relative path - eg. for WCM, typically /www
+     */
+    public String getSandboxRootPath();
+    
+    /**
+     *   The webapps root relative path - eg. for WCM, typically /www/avm_webapps
+     */
+    public String getWebAppsPath();
+    
+    /**
     *  A list of ids of the stores within this sandbox.
     *  The "main" store should come first in this list;
     *  any other stores should appear in the order that 

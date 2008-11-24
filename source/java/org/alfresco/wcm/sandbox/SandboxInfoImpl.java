@@ -26,6 +26,7 @@ package org.alfresco.wcm.sandbox;
 
 import java.util.Date;
 
+import org.alfresco.config.JNDIConstants;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -81,6 +82,16 @@ public class SandboxInfoImpl implements SandboxInfo
     public String getCreator()
     {
         return this.creator;
+    }
+    
+    public String getSandboxRootPath()
+    {
+        return "/"+JNDIConstants.DIR_DEFAULT_WWW;
+    }
+    
+    public String getWebAppsPath()
+    {
+        return JNDIConstants.DIR_DEFAULT_WWW_APPBASE;
     }
 
     /**

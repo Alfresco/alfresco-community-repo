@@ -24,15 +24,23 @@
  */
 package org.alfresco.repo.web.scripts.site;
 
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.site.SiteInfo;
 import org.alfresco.repo.site.SiteModel;
+import org.alfresco.repo.site.SiteService;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
 import org.alfresco.web.scripts.TestWebScriptServer.DeleteRequest;
@@ -53,6 +61,8 @@ public class SiteServiceTest extends BaseWebScriptTest
     private AuthenticationService authenticationService;
     private AuthenticationComponent authenticationComponent;
     private PersonService personService;
+    private SiteService siteService;
+    private NodeService nodeService;
     
     private static final String USER_ONE = "SiteTestOne";
     private static final String USER_TWO = "SiteTestTwo";
@@ -71,6 +81,8 @@ public class SiteServiceTest extends BaseWebScriptTest
         this.authenticationService = (AuthenticationService)getServer().getApplicationContext().getBean("AuthenticationService");
         this.authenticationComponent = (AuthenticationComponent)getServer().getApplicationContext().getBean("authenticationComponent");
         this.personService = (PersonService)getServer().getApplicationContext().getBean("PersonService");
+        this.siteService = (SiteService)getServer().getApplicationContext().getBean("SiteService");
+        this.nodeService = (NodeService)getServer().getApplicationContext().getBean("NodeService");
         
         // Create users
         createUser(USER_ONE);
@@ -411,4 +423,30 @@ public class SiteServiceTest extends BaseWebScriptTest
         assertNotNull(result);
         assertEquals(2, result.length());
     }   
+    
+    public void testSiteCustomProperties()
+        throws Exception
+    {
+        // Create a site with a custom property
+        SiteInfo siteInfo = this.siteService.createSite("testPreset", "mySiteWithCustomProperty2", "testTitle", "testDescription", true);
+        NodeRef siteNodeRef = siteInfo.getNodeRef();
+        Map<QName, Serializable> properties = new HashMap<QName, Serializable>(1);
+        properties.put(QName.createQName(SiteModel.SITE_CUSTOM_PROPERTY_URL, "additionalInformation"), "information");
+        this.nodeService.addAspect(siteNodeRef, QName.createQName(SiteModel.SITE_MODEL_URL, "customSiteProperties"), properties);
+        this.createdSites.add("mySiteWithCustomProperty2");
+        
+        // Get the detail so of the site
+        Response response = sendRequest(new GetRequest(URL_SITES + "/mySiteWithCustomProperty2"), 200);
+        JSONObject result = new JSONObject(response.getContentAsString());
+        assertNotNull(result);
+        JSONObject customProperties = result.getJSONObject("customProperties");
+        assertNotNull(customProperties);
+        JSONObject addInfo = customProperties.getJSONObject("{http://www.alfresco.org/model/sitecustomproperty/1.0}additionalInformation");
+        assertNotNull(addInfo);
+        assertEquals("{http://www.alfresco.org/model/sitecustomproperty/1.0}additionalInformation", addInfo.get("name"));
+        assertEquals("information", addInfo.get("value"));
+        assertEquals("{http://www.alfresco.org/model/dictionary/1.0}text", addInfo.get("type"));
+        assertEquals("Additional Site Information", addInfo.get("title"));
+        
+    }
 }

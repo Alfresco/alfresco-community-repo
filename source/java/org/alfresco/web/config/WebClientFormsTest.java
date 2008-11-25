@@ -27,6 +27,7 @@ package org.alfresco.web.config;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -402,11 +403,10 @@ public class WebClientFormsTest extends BaseTest
 
     public void testGetSetsFromForm()
     {
-        List<String> expectedSetIds = new ArrayList<String>();
+        Set<String> expectedSetIds = new HashSet<String>();
         expectedSetIds.add("details");
         expectedSetIds.add("user");
-        assertEquals("Set IDs were wrong.", expectedSetIds, formConfigElement
-                .getSetIDs());
+        assertEquals("Set IDs were wrong.", expectedSetIds, formConfigElement.getSets().keySet());
 
         Map<String, FormSet> sets = formConfigElement.getSets();
         assertEquals("Set parent was wrong.", "details", sets.get("user")

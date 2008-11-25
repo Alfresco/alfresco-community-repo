@@ -1,4 +1,4 @@
-<alfresco-config>   
+<alfresco-config>
    <config>
       <default-controls>
          <type name="d:text" template="org/alfresco/forms/controls/textfield.ftl">
@@ -12,13 +12,51 @@
             <control-param name="c">Never.</control-param>
             <control-param name="d"></control-param>
          </type>
-         <type name="xyz" template="org/alfresco/xyz.ftl" />
+         <type name="xyz" template="org/alfresco/xyz.ftl">
+         </type>
       </default-controls>
       <constraint-handlers>
          <constraint type="REGEX" validation-handler="Alfresco.forms.validation.regexMatch" />
          <constraint type="NUMERIC" validation-handler="Alfresco.forms.validation.numericMatch"
-                     message="Overridden Message" />
+                     message="Overridden Message" message-id="regex_error" />
          <constraint type="RANGE" validation-handler="Alfresco.forms.validation.rangeMatch" />
       </constraint-handlers>
    </config>
+
+   <!-- The evaluator would normally be node-type, but that makes testing difficult -->
+   <config evaluator="string-compare" condition="content">
+      <!-- For this example, I'm going to include all optional attributes -->
+      <form submission-url="overridden/submission/url">
+         <view-form template="/path/view/template" requires-role="Consumer" />
+         <edit-form template="/path/edit/template/manager" requires-role="Manager" />
+         <edit-form template="/path/edit/template/contributor" requires-role="Contributor" />
+         <create-form template="/path/create/template" requires-role="Manager" />
+         <field-visibility>
+            <!-- This comment is here to test the FormReader -->
+            <show id="name" />
+            <show id="title" for-mode="view, create" />
+            <hide id="quota" for-mode="edit" />
+         </field-visibility>
+         <appearance>
+            <set id="details" appearance="fieldset" />
+            <set id="user" parent="details" appearance="panel" />
+
+            <field id="name" label="Name" label-id="field_label_name" disabled="true" set="details"
+                     help-text="This is the name of the node" help-text-id="field_help_name" >
+               <control template="alfresco/extension/formcontrols/my-name.ftl">
+                  <control-param name="foo">bar</control-param>
+               </control>
+               <constraint-message type="REGEX" message="The name can not contain the character '{0}'"
+                                                    message-id="field_error_name" />
+            </field>
+            <field id="title" label="My Title" set="details" />
+            <field id="username" set="user" />
+            <field id="quota" set="user" requires-role="Coordinator" /> 
+         </appearance>
+         <model-override>
+            <property name="fields.title.mandatory">false</property>
+         </model-override>
+      </form>
+   </config>
+   
 </alfresco-config>

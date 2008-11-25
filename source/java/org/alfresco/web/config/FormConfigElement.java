@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -115,10 +116,123 @@ public class FormConfigElement extends ConfigElementAdapter
     /**
      * @see org.alfresco.config.ConfigElement#combine(org.alfresco.config.ConfigElement)
      */
-    public ConfigElement combine(ConfigElement configElement)
+    public ConfigElement combine(ConfigElement otherConfigElement)
     {
-        // TODO Impl this.
-        throw new UnsupportedOperationException("This method not yet impl'd.");
+        FormConfigElement otherFormElem = (FormConfigElement)otherConfigElement;
+        FormConfigElement result = new FormConfigElement();
+        
+        combineSubmissionURL(otherFormElem, result);
+        
+        combineTemplates(otherFormElem, result);
+        
+        combineFieldVisibilities(otherFormElem, result);
+        
+        combineSets(otherFormElem, result);
+        
+        //TODO Fields
+        
+        //TODO field-controls
+        
+        //TODO constraint-for-field
+        
+        combineModelOverrides(otherFormElem, result);
+        
+        return result;
+    }
+
+    private void combineModelOverrides(FormConfigElement otherFormElem,
+            FormConfigElement result)
+    {
+        for (StringPair override : modelOverrides)
+        {
+            result.addModelOverrides(override.getName(), override.getValue());
+        }
+        for (StringPair override : otherFormElem.modelOverrides)
+        {
+            result.addModelOverrides(override.getName(), override.getValue());
+        }
+    }
+
+    private void combineSets(FormConfigElement otherFormElem,
+            FormConfigElement result)
+    {
+        for (String nextOldSet : setIdentifiers)
+        {
+            FormSet nextOldSetData = sets.get(nextOldSet);
+            String setId = nextOldSetData.getSetId();
+            String parentId = nextOldSetData.getParentId();
+            String appearance = nextOldSetData.getAppearance();
+            result.addSet(setId, parentId, appearance);
+        }
+        for (String nextNewSet : otherFormElem.setIdentifiers)
+        {
+            FormSet nextNewSetData = otherFormElem.sets.get(nextNewSet);
+            String setId = nextNewSetData.getSetId();
+            String parentId = nextNewSetData.getParentId();
+            String appearance = nextNewSetData.getAppearance();
+            result.addSet(setId, parentId, appearance);
+        }
+    }
+
+    private void combineFieldVisibilities(FormConfigElement otherFormElem,
+            FormConfigElement result)
+    {
+        List<FieldVisibilityInstruction> combinedInstructions = new ArrayList<FieldVisibilityInstruction>();
+        combinedInstructions.addAll(this.visibilityInstructions);
+
+        //If there are already instructions pertaining to a particular
+        // field id, we can just leave them in place as the new should override the old.
+        //TODO Test this is true.
+        combinedInstructions.addAll(otherFormElem.visibilityInstructions);
+        for (FieldVisibilityInstruction fvi : combinedInstructions)
+        {
+            result.addFieldVisibility(fvi.isShow() ? "show" : "hide"
+                , fvi.getFieldId(), fvi.getModesAsString());
+        }
+    }
+
+    private void combineTemplates(FormConfigElement otherFormElem,
+            FormConfigElement result)
+    {
+        for (String s : this.createTemplates)
+        {
+            String reqsRole = this.rolesForCreateTemplates.get(s);
+            result.addFormTemplate("create-form", s, reqsRole);
+        }
+        for (String s : otherFormElem.createTemplates)
+        {
+            String reqsRole = otherFormElem.rolesForCreateTemplates.get(s);
+            result.addFormTemplate("create-form", s, reqsRole);
+        }
+        
+        for (String s : this.editTemplates)
+        {
+            String reqsRole = this.rolesForEditTemplates.get(s);
+            result.addFormTemplate("edit-form", s, reqsRole);
+        }
+        for (String s : otherFormElem.editTemplates)
+        {
+            String reqsRole = otherFormElem.rolesForEditTemplates.get(s);
+            result.addFormTemplate("edit-form", s, reqsRole);
+        }
+        
+        for (String s : this.viewTemplates)
+        {
+            String reqsRole = this.rolesForViewTemplates.get(s);
+            result.addFormTemplate("view-form", s, reqsRole);
+        }
+        for (String s : otherFormElem.viewTemplates)
+        {
+            String reqsRole = otherFormElem.rolesForViewTemplates.get(s);
+            result.addFormTemplate("view-form", s, reqsRole);
+        }
+    }
+
+    private void combineSubmissionURL(FormConfigElement otherFormElem,
+            FormConfigElement result)
+    {
+        String otherSubmissionURL = otherFormElem.getSubmissionURL();
+        result.setSubmissionURL(otherSubmissionURL == null ? this.submissionURL : otherSubmissionURL);
     }
 
     public String getSubmissionURL()
@@ -257,6 +371,21 @@ public class FormConfigElement extends ConfigElementAdapter
         return null;
     }
     
+    public List<String> getCreateTemplates()
+    {
+        return Collections.unmodifiableList(createTemplates);
+    }
+    
+    public List<String> getEditTemplates()
+    {
+        return Collections.unmodifiableList(editTemplates);
+    }
+    
+    public List<String> getViewTemplates()
+    {
+        return Collections.unmodifiableList(viewTemplates);
+    }
+    
     public List<StringPair> getModelOverrideProperties()
     {
         return Collections.unmodifiableList(modelOverrides);
@@ -277,17 +406,26 @@ public class FormConfigElement extends ConfigElementAdapter
         
         if (nodeName.equals("create-form"))
         {
-            createTemplates.add(template);
+            if (!createTemplates.contains(template))
+            {
+                createTemplates.add(template);
+            }
             rolesForCreateTemplates.put(template, requiredRole);
         }
         else if (nodeName.equals("edit-form"))
         {
-            editTemplates.add(template);
+            if (!editTemplates.contains(template))
+            {
+                editTemplates.add(template);
+            }
             rolesForEditTemplates.put(template, requiredRole);
         }
         else if (nodeName.equals("view-form"))
         {
-            viewTemplates.add(template);
+            if (!viewTemplates.contains(template))
+            {
+                viewTemplates.add(template);
+            }
             rolesForViewTemplates.put(template, requiredRole);
         }
         else
@@ -306,7 +444,10 @@ public class FormConfigElement extends ConfigElementAdapter
 
     /* package */void addSet(String setId, String parentSetId, String appearance)
     {
-        setIdentifiers.add(setId);
+        if (!setIdentifiers.contains(setId))
+        {
+            setIdentifiers.add(setId);
+        }
         sets.put(setId, new FormSet(setId, parentSetId, appearance));
     }
 
@@ -344,7 +485,16 @@ public class FormConfigElement extends ConfigElementAdapter
 
     /* package */void addModelOverrides(String name, String value)
     {
-        modelOverrides.add(new StringPair(name, value));
+        StringPair modelOverride = new StringPair(name, value);
+        //TODO Consider using a different collection type here.
+        for (Iterator<StringPair> iter = modelOverrides.iterator(); iter.hasNext(); )
+        {
+            if (iter.next().getName().equals(name))
+            {
+                iter.remove();
+            }
+        }
+        modelOverrides.add(modelOverride);
     }
     
     public static class FormSet
@@ -369,6 +519,27 @@ public class FormConfigElement extends ConfigElementAdapter
         public String getAppearance()
         {
             return appearance;
+        }
+
+        @Override
+        public boolean equals(Object otherObj)
+        {
+            if (otherObj == null
+                    || !otherObj.getClass().equals(this.getClass()))
+            {
+                return false;
+            }
+            FormSet otherSet = (FormSet) otherObj;
+            return this.setId.equals(otherSet.setId)
+                    && this.parentId.equals(otherSet.parentId)
+                    && this.appearance.equals(otherSet.appearance);
+        }
+        
+        @Override
+        public int hashCode()
+        {
+            return setId.hashCode()
+                    + 7 * parentId.hashCode() + 13 * appearance.hashCode();
         }
     }
 
@@ -478,6 +649,20 @@ public class FormConfigElement extends ConfigElementAdapter
             return Collections.unmodifiableList(forModes);
         }
         
+        public String getModesAsString()
+        {
+            StringBuilder result = new StringBuilder();
+            for (Iterator<Mode> iter = forModes.iterator(); iter.hasNext(); )
+            {
+                result.append(iter.next());
+                if (iter.hasNext())
+                {
+                    result.append(", ");
+                }
+            }
+            return result.toString();
+        }
+        
         public String toString()
         {
             StringBuilder result = new StringBuilder();
@@ -485,5 +670,27 @@ public class FormConfigElement extends ConfigElementAdapter
             result.append(" ").append(fieldId).append(" ").append(forModes);
             return result.toString();
         }
+
+        @Override
+        public boolean equals(Object otherObj)
+        {
+            if (otherObj == null
+                    || !otherObj.getClass().equals(this.getClass()))
+            {
+                return false;
+            }
+            FieldVisibilityInstruction otherFVI = (FieldVisibilityInstruction) otherObj;
+            return this.show == otherFVI.show
+                    && this.fieldId.equals(otherFVI.fieldId)
+                    && this.forModes.equals(otherFVI.forModes);
+        }
+        
+        @Override
+        public int hashCode()
+        {
+            return show ? 1 : 0
+                    + 7 * fieldId.hashCode() + 13 * forModes.hashCode();
+        }
     }
 }
+

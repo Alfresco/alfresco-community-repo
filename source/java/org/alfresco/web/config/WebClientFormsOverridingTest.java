@@ -24,6 +24,9 @@
  */
 package org.alfresco.web.config;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.alfresco.config.Config;
 import org.alfresco.config.ConfigElement;
 import org.alfresco.config.xml.XMLConfigService;
@@ -31,29 +34,44 @@ import org.alfresco.util.BaseTest;
 import org.alfresco.web.config.DefaultControlsConfigElement.ControlParam;
 
 /**
- * JUnit tests to exercise the forms-related capabilities in to the web client config
- * service. These only include those override-related tests that require multiple
- * config xml files.
+ * JUnit tests to exercise the forms-related capabilities in to the web client
+ * config service. These only include those override-related tests that require
+ * multiple config xml files.
  * 
  * @author Neil McErlean
  */
 public class WebClientFormsOverridingTest extends BaseTest
 {
-   /**
-    * @see junit.framework.TestCase#setUp()
-    */
-   protected void setUp() throws Exception
-   {
-      super.setUp();
-   }
+    private XMLConfigService configService;
+    private Config globalConfig;
+    private FormConfigElement formConfigElement;
+    private static final String FORMS_CONFIG = "test-config-forms.xml";
+    private static final String FORMS_OVERRIDE_CONFIG = "test-config-forms-override.xml";
 
-   public void testDefaultControlsOverride()
+    /**
+     * @see junit.framework.TestCase#setUp()
+     */
+    protected void setUp() throws Exception
     {
-        XMLConfigService svc = initXMLConfigService("test-config-forms.xml",
-                "test-config-forms-override.xml");
+        super.setUp();
+        configService = initXMLConfigService(FORMS_CONFIG,
+                FORMS_OVERRIDE_CONFIG);
+        assertNotNull("configService was null.", configService);
+        globalConfig = configService.getGlobalConfig();
+        assertNotNull("Global config was null.", globalConfig);
 
-        // get hold of the default-controls config from the global section
-        Config globalConfig = svc.getGlobalConfig();
+        Config contentConfig = configService.getConfig("content");
+        assertNotNull("contentConfig was null.", contentConfig);
+
+        ConfigElement confElement = contentConfig.getConfigElement("form");
+        assertNotNull("confElement was null.", confElement);
+        assertTrue("confElement should be instanceof FormConfigElement.",
+                confElement instanceof FormConfigElement);
+        formConfigElement = (FormConfigElement) confElement;
+    }
+
+    public void testDefaultControlsOverride()
+    {
         ConfigElement globalDefaultControls = globalConfig
                 .getConfigElement("default-controls");
         assertNotNull("global default-controls element should not be null",
@@ -71,14 +89,9 @@ public class WebClientFormsOverridingTest extends BaseTest
         assertTrue("New control-param missing.", dcCE
                 .getControlParamsFor("abc").contains(expectedNewControlParam));
     }
-   
-   public void testConstraintHandlersOverride()
-    {
-        XMLConfigService svc = initXMLConfigService("test-config-forms.xml",
-                "test-config-forms-override.xml");
 
-        // get hold of the constraint-handlers config from the global section
-        Config globalConfig = svc.getGlobalConfig();
+    public void testConstraintHandlersOverride()
+    {
         ConfigElement globalConstraintHandlers = globalConfig
                 .getConfigElement("constraint-handlers");
         assertNotNull("global constraint-handlers element should not be null",
@@ -97,4 +110,18 @@ public class WebClientFormsOverridingTest extends BaseTest
         assertEquals("Modified message is wrong.", "Overridden Message", chCE
                 .getMessageFor("NUMERIC"));
     }
+
+    public void testFormSubmissionUrlAndModelOverridePropsOverride()
+    {
+        assertEquals("Submission URL was incorrect.", "overridden/submission/url",
+                formConfigElement.getSubmissionURL());
+
+        List<StringPair> expectedModelOverrideProperties = new ArrayList<StringPair>();
+        expectedModelOverrideProperties.add(new StringPair(
+                "fields.title.mandatory", "false"));
+        assertEquals("Expected property missing.",
+                expectedModelOverrideProperties, formConfigElement
+                        .getModelOverrideProperties());
+    }
+
 }

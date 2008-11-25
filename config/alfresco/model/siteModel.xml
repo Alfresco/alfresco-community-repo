@@ -22,6 +22,8 @@
    <!-- Sites Namespace -->
    <namespaces>
       <namespace uri="http://www.alfresco.org/model/site/1.0" prefix="st"/>
+      <!-- if you want to extend the properties of a site then use this namespace to mark the custom properties -->
+      <namespace uri="http://www.alfresco.org/model/sitecustomproperty/1.0" prefix="stcp"/>
    </namespaces>
    
    <types>
@@ -61,6 +63,17 @@
          <properties>
             <property name="st:componentId">
             	<title>Component Id</title>
+            	<type>d:text</type>        
+            </property>
+         </properties>
+  	   </aspect>
+  	   
+  	   <!-- Example Custom Site Properties Aspect -->
+      <aspect name="st:customSiteProperties">
+     	<title>Custom Site Properties</title> 	      
+         <properties>
+            <property name="stcp:additionalInformation">
+            	<title>Additional Site Information</title>
             	<type>d:text</type>        
             </property>
          </properties>

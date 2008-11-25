@@ -24,6 +24,7 @@
  */
 package org.alfresco.repo.site;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,6 +40,7 @@ import org.alfresco.service.cmr.repository.ScriptLocation;
 import org.alfresco.service.cmr.repository.ScriptService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.tagging.TaggingService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.PropertyMap;
 
@@ -266,7 +268,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
     
     public void testUpdateSite()
     {
-        SiteInfo siteInfo = new SiteInfo(TEST_SITE_PRESET, "testUpdateSite", "changedTitle", "changedDescription", false);
+        SiteInfo siteInfo = new SiteInfo(TEST_SITE_PRESET, "testUpdateSite", "changedTitle", "changedDescription", false, null);
         
         // update a site that isn't there
         try
@@ -614,12 +616,52 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
 //        }
     }
     
+    public void testCustomSiteProperties()
+    {
+        QName additionalInformationQName = QName.createQName(SiteModel.SITE_CUSTOM_PROPERTY_URL, "additionalInformation");
+        
+        // Create a site
+        SiteInfo siteInfo = this.siteService.createSite(TEST_SITE_PRESET, "mySiteTest", TEST_TITLE, TEST_DESCRIPTION, true);
+        checkSiteInfo(siteInfo, TEST_SITE_PRESET, "mySiteTest", TEST_TITLE, TEST_DESCRIPTION, true);
+        assertNull(siteInfo.getCustomProperty(additionalInformationQName));
+        assertNotNull(siteInfo.getCustomProperties());
+        assertTrue(siteInfo.getCustomProperties().isEmpty());
+        
+        // Add an aspect with a custom property
+        NodeRef siteNodeRef = siteInfo.getNodeRef();
+        Map<QName, Serializable> properties = new HashMap<QName, Serializable>(1);
+        properties.put(additionalInformationQName, "information");
+        this.nodeService.addAspect(siteNodeRef, QName.createQName(SiteModel.SITE_MODEL_URL, "customSiteProperties"), properties);
+        
+        // Get the site again
+        siteInfo = this.siteService.getSite("mySiteTest");
+        assertNotNull(siteInfo);
+        assertEquals("information", siteInfo.getCustomProperty(additionalInformationQName));
+        assertNotNull(siteInfo.getCustomProperties());
+        assertFalse(siteInfo.getCustomProperties().isEmpty());
+        assertEquals(1, siteInfo.getCustomProperties().size());
+        assertEquals("information", siteInfo.getCustomProperties().get(additionalInformationQName));
+        
+    }
+    
     // == Test the JavaScript API ==
     
     public void testJSAPI() throws Exception
     {
+        // Create a site with a custom property
+        SiteInfo siteInfo = this.siteService.createSite(TEST_SITE_PRESET, "mySiteWithCustomProperty", TEST_TITLE, TEST_DESCRIPTION, true);
+        NodeRef siteNodeRef = siteInfo.getNodeRef();
+        Map<QName, Serializable> properties = new HashMap<QName, Serializable>(1);
+        properties.put(QName.createQName(SiteModel.SITE_CUSTOM_PROPERTY_URL, "additionalInformation"), "information");
+        this.nodeService.addAspect(siteNodeRef, QName.createQName(SiteModel.SITE_MODEL_URL, "customSiteProperties"), properties);
+        
+        // Create a model to pass to the unit test scripts
+        Map<String, Object> model = new HashMap<String, Object>(1);
+        model.put("customSiteName", "mySiteWithCustomProperty");
+        
+        // Execute the unit test script
         ScriptLocation location = new ClasspathScriptLocation("org/alfresco/repo/site/script/test_siteService.js");
-        this.scriptService.executeScript(location, new HashMap<String, Object>(0));
+        this.scriptService.executeScript(location, model);
     }
 
 }

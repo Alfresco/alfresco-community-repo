@@ -259,8 +259,30 @@ public class SiteServiceImpl implements SiteService, SiteModel
             }, AuthenticationUtil.getSystemUserName());               
            
         // Return created site information
-        SiteInfo siteInfo = new SiteInfo(sitePreset, shortName, title, description, isPublic, siteNodeRef);
+        Map<QName, Serializable> customProperties = getSiteCustomProperties(siteNodeRef);
+        SiteInfo siteInfo = new SiteInfo(sitePreset, shortName, title, description, isPublic, customProperties, siteNodeRef);
         return siteInfo;
+    }
+    
+    /**
+     * Gets a map containing the site's custom properties
+     * 
+     * @return  Map<QName, Serializable>    map containing the custom properties of the site
+     */
+    private Map<QName, Serializable> getSiteCustomProperties(NodeRef siteNodeRef)
+    {
+        Map<QName, Serializable> customProperties = new HashMap<QName, Serializable>(5);
+        Map<QName, Serializable> properties = nodeService.getProperties(siteNodeRef);
+        
+        for (Map.Entry<QName, Serializable> entry : properties.entrySet())                
+        {
+            if (entry.getKey().getNamespaceURI().equals(SITE_CUSTOM_PROPERTY_URL) == true)
+            {                
+                customProperties.put(entry.getKey(), entry.getValue());
+            }
+        }  
+        
+        return customProperties;
     }
     
     /**
@@ -409,7 +431,8 @@ public class SiteServiceImpl implements SiteService, SiteModel
         boolean isPublic = isSitePublic(siteNodeRef);
         
         // Create and return the site information
-        SiteInfo siteInfo = new SiteInfo(sitePreset, shortName, title, description, isPublic, siteNodeRef);
+        Map<QName, Serializable> customProperties = getSiteCustomProperties(siteNodeRef);
+        SiteInfo siteInfo = new SiteInfo(sitePreset, shortName, title, description, isPublic, customProperties, siteNodeRef);
         return siteInfo;
     }   
     

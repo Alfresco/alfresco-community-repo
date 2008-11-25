@@ -50,7 +50,8 @@ function testListSites()
 	
 	// Check the list
 	test.assertNotNull(sites);
-	test.assertEquals(2, sites.length);
+	// Note: the result is 3 since we created a site to place in the model
+	test.assertEquals(3, sites.length);
 	
 	// TODO .. check the filters
 }
@@ -176,6 +177,32 @@ function testRolesAndGroups()
    
 }
 
+function testSiteCustomProperties()
+{
+	var site = siteService.getSite("siteShortName");
+	test.assertNotNull(site);
+	test.assertNull(site.getCustomProperty("{http://www.alfresco.org/model/sitecustomproperty/1.0}additionalInformation"));
+	test.assertNotNull(site.getCustomProperties());
+	test.assertEquals(0, site.getCustomProperties().length);	
+
+	site = siteService.getSite(customSiteName);
+	test.assertNotNull(site);
+	var customProperty = site.getCustomProperty("{http://www.alfresco.org/model/sitecustomproperty/1.0}additionalInformation");
+	test.assertNotNull(customProperty);
+	test.assertEquals("{http://www.alfresco.org/model/sitecustomproperty/1.0}additionalInformation", customProperty.name);
+	test.assertEquals("information", customProperty.value);
+	test.assertEquals("{http://www.alfresco.org/model/dictionary/1.0}text", customProperty.type);	
+	test.assertEquals("Additional Site Information", customProperty.title);
+	test.assertNotNull(site.getCustomProperties());
+	test.assertEquals(1, site.getCustomProperties().length);
+	customProperty = site.getCustomProperties()["{http://www.alfresco.org/model/sitecustomproperty/1.0}additionalInformation"];
+	test.assertNotNull(customProperty);
+	test.assertEquals("{http://www.alfresco.org/model/sitecustomproperty/1.0}additionalInformation", customProperty.name);
+	test.assertEquals("information", customProperty.value);
+	test.assertEquals("{http://www.alfresco.org/model/dictionary/1.0}text", customProperty.type);	
+	test.assertEquals("Additional Site Information", customProperty.title);
+}
+
 // Execute test's
 testCRUD();
 testListSites();
@@ -183,3 +210,4 @@ testMembership();
 testContainer();
 testPermissions();
 testRolesAndGroups();
+testSiteCustomProperties();

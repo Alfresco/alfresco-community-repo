@@ -29,8 +29,11 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.jscript.ContentAwareScriptableQNameMap;
 import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.repo.jscript.ScriptableHashMap;
+import org.alfresco.repo.jscript.ScriptableQNameMap;
+import org.alfresco.repo.jscript.ScriptNode.NodeValueConverter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
@@ -38,6 +41,7 @@ import org.alfresco.repo.site.SiteInfo;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.site.SiteService;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
@@ -61,8 +65,11 @@ public class Site implements Serializable
     private String siteGroup;
     private ScriptableHashMap<String, String> siteRoleGroups;
     
+    /** The custom properties of the site */
+    private ScriptableQNameMap<String, CustomProperty> customProperties = null;
+    
     /** Services Registry */
-    private ServiceRegistry serviceRegistry;
+    private ServiceRegistry services;
     
     /** Site service */
     private SiteService siteService;
@@ -80,7 +87,7 @@ public class Site implements Serializable
      */
     /*package*/ Site(SiteInfo siteInfo, ServiceRegistry serviceRegistry, SiteService siteService, Scriptable scope)
     {
-    	this.serviceRegistry = serviceRegistry;
+    	this.services = serviceRegistry;
         this.siteService = siteService;
         this.siteInfo = siteInfo;
         this.scope = scope;
@@ -179,7 +186,7 @@ public class Site implements Serializable
         ScriptNode node = null;
         if (this.siteInfo.getNodeRef() != null)
         {
-            node = new ScriptNode(this.siteInfo.getNodeRef(), this.serviceRegistry, this.scope);
+            node = new ScriptNode(this.siteInfo.getNodeRef(), this.services, this.scope);
         }
         
         return node;
@@ -334,7 +341,7 @@ public class Site implements Serializable
     		NodeRef containerNodeRef = this.siteService.getContainer(getShortName(), componentId);
     		if (containerNodeRef != null)
     		{
-    		    container = new ScriptNode(containerNodeRef, this.serviceRegistry, this.scope);
+    		    container = new ScriptNode(containerNodeRef, this.services, this.scope);
     		}
 		}
     	catch(AlfrescoRuntimeException e)
@@ -385,7 +392,7 @@ public class Site implements Serializable
                 public NodeRef doWork() throws Exception
                 {
                     // Get the container type
-                    QName folderQName = (folderType == null) ? null : QName.createQName(folderType, serviceRegistry.getNamespaceService());
+                    QName folderQName = (folderType == null) ? null : QName.createQName(folderType, services.getNamespaceService());
                     
                     // Create the container node
                     NodeRef containerNodeRef = Site.this.siteService.createContainer(getShortName(), componentId, folderQName, null);
@@ -409,7 +416,7 @@ public class Site implements Serializable
                                 if (value instanceof String)
                                 {                                   
                                     // Set the permission on the container
-                                    Site.this.serviceRegistry.getPermissionService().setPermission(containerNodeRef, key, (String)value, true);
+                                    Site.this.services.getPermissionService().setPermission(containerNodeRef, key, (String)value, true);
                                 }
                             }
                         }
@@ -420,7 +427,7 @@ public class Site implements Serializable
             }, AuthenticationUtil.SYSTEM_USER_NAME);
             
             // Create the script node for the container
-            container = new ScriptNode(containerNodeRef, this.serviceRegistry, this.scope); 
+            container = new ScriptNode(containerNodeRef, this.services, this.scope); 
         }
         catch(AlfrescoRuntimeException e)
         {
@@ -463,7 +470,7 @@ public class Site implements Serializable
         if (permissions != null && permissions instanceof ScriptableObject)
         {
             // Get the permission service
-            final PermissionService permissionService = this.serviceRegistry.getPermissionService();
+            final PermissionService permissionService = this.services.getPermissionService();
             
             if (!permissionService.getInheritParentPermissions(nodeRef))
             {
@@ -518,7 +525,7 @@ public class Site implements Serializable
     {
         final NodeRef nodeRef = node.getNodeRef();
         
-        PermissionService permissionService = serviceRegistry.getPermissionService();
+        PermissionService permissionService = services.getPermissionService();
         try
         {
             // Ensure node isn't inheriting permissions from an ancestor before deleting
@@ -531,6 +538,108 @@ public class Site implements Serializable
         catch (AccessDeniedException e)
         {
             throw new AlfrescoRuntimeException("You do not have the authority to update permissions on this node.", e);
+        }
+    }  
+    
+    /**
+     * Get the value of a custom property, null if the custom property has not been set or doesn't exist.
+     * 
+     * @param  name             qname of the property 
+     * @return Serializable     value of the property, null if not set
+     */
+    public CustomProperty getCustomProperty(String name)
+    {
+        return (CustomProperty)getCustomProperties().get(name);
+    }
+    
+    /**
+     * Get a map of the sites custom properties
+     * 
+     * @return ScriptableQNameMap<String, Serializable>     map of names and values
+     */
+    public ScriptableQNameMap<String, CustomProperty> getCustomProperties()
+    {
+        if (this.customProperties == null)
+        {
+            // create the custom properties map
+            ScriptNode siteNode = new ScriptNode(this.siteInfo.getNodeRef(), this.services);
+            this.customProperties = new ContentAwareScriptableQNameMap<String, CustomProperty>(siteNode, this.services);
+            
+            Map<QName, Serializable> props = siteInfo.getCustomProperties();
+            for (QName qname : props.keySet())
+            {
+                // get the property value
+                Serializable propValue = props.get(qname);
+                
+                // convert the value
+                NodeValueConverter valueConverter = siteNode.new NodeValueConverter();
+                Serializable value = valueConverter.convertValueForScript(qname, propValue);
+                
+                // get the type and label information from the dictionary
+                String title = null;
+                String type = null;
+                PropertyDefinition propDef = this.services.getDictionaryService().getProperty(qname);
+                if (propDef != null)
+                {
+                    type = propDef.getDataType().getName().toString();
+                    title = propDef.getTitle();
+                }
+                
+                // create the custom property and add to the map
+                CustomProperty customProp = new CustomProperty(qname.toString(), value, type, title);
+                this.customProperties.put(qname.toString(), customProp);
+            }
+        }
+        return this.customProperties;
+    }
+    
+    /**
+     * Custom property helper class
+     * 
+     * @author Roy Wetherall
+     */
+    public class CustomProperty
+    {
+        /** Details of the custom property */
+        private String name;
+        private Serializable value;
+        private String type;
+        private String title;
+        
+        /**
+         * Constructor
+         * 
+         * @param name      property name
+         * @param value     property value
+         * @param type      property type
+         * @param title     property title
+         */
+        public CustomProperty(String name, Serializable value, String type, String title)
+        {
+            this.name = name;
+            this.value = value;
+            this.type = type;
+            this.title = title;
+        }
+        
+        public String getName()
+        {
+            return name;
+        }
+        
+        public Serializable getValue()
+        {
+            return value;
+        }
+        
+        public String getType()
+        {
+            return type;
+        }
+        
+        public String getTitle()
+        {
+            return title;
         }
     }
 }

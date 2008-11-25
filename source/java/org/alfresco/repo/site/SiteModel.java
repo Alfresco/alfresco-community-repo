@@ -36,6 +36,8 @@ public interface SiteModel
     /** Site Model */
     public static final String SITE_MODEL_URL = "http://www.alfresco.org/model/site/1.0";
     public static final String SITE_MODEL_PREFIX = "st";
+    public static final String SITE_CUSTOM_PROPERTY_URL = "http://www.alfresco.org/model/sitecustomproperty/1.0";
+    public static final String SITE_CUSTOM_PROPERTY_PREFIX = "stcp";
     
     /** Site */
     public static final QName TYPE_SITES = QName.createQName(SITE_MODEL_URL, "sites");

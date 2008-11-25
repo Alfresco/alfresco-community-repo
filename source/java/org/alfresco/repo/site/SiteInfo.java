@@ -24,7 +24,12 @@
  */
 package org.alfresco.repo.site;
 
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.QName;
 
 /**
  * Site Information Class
@@ -50,6 +55,9 @@ public class SiteInfo
     
     /** Indicates whether the site is public or not */
     private boolean isPublic;
+    
+    /** Set of custom properties that have been defined for site */
+    private Map<QName, Serializable> customProperties = new HashMap<QName, Serializable>(1);
    
     /**
      * Constructor
@@ -61,9 +69,9 @@ public class SiteInfo
      * @param isPublic      is site public
      * @param nodeRef       site node reference
      */
-    /*package*/ SiteInfo(String sitePreset, String shortName, String title, String description, boolean isPublic, NodeRef nodeRef)
+    /*package*/ SiteInfo(String sitePreset, String shortName, String title, String description, boolean isPublic, Map<QName, Serializable> customProperties, NodeRef nodeRef)
     {
-        this(sitePreset, shortName, title, description, isPublic);
+        this(sitePreset, shortName, title, description, isPublic, customProperties);
         this.nodeRef = nodeRef;
     }
     
@@ -76,13 +84,17 @@ public class SiteInfo
      * @param description   description
      * @param isPublic      is site public
      */
-    /*package*/ SiteInfo(String sitePreset, String shortName, String title, String description, boolean isPublic)
+    /*package*/ SiteInfo(String sitePreset, String shortName, String title, String description, boolean isPublic, Map<QName, Serializable> customProperties)
     {
         this.sitePreset = sitePreset;
         this.shortName = shortName;
         this.title = title;
         this.description = description;
         this.isPublic = isPublic;
+        if (customProperties != null)
+        {
+            this.customProperties = customProperties;
+        }
     }
     
     /**
@@ -173,5 +185,31 @@ public class SiteInfo
     public boolean getIsPublic()
     {
         return this.isPublic;
+    }
+    
+    /**
+     * Get the custom property values
+     * 
+     * @return  Map<QName, Serializable>    map of custom property names and values
+     */
+    public Map<QName, Serializable> getCustomProperties()
+    {
+        return this.customProperties;
+    }
+    
+    /**
+     * Get the value of a custom property
+     * 
+     * @param  name             name of custom property
+     * @return Serializable     value of the property, null if not set or doesn't exist    
+     */
+    public Serializable getCustomProperty(QName name)
+    {
+        Serializable result = null;
+        if (this.customProperties != null)
+        {
+            result = this.customProperties.get(name);
+        }
+        return result;
     }
 }

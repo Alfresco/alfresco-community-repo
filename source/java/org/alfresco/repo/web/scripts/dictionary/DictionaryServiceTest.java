@@ -726,18 +726,8 @@ public class DictionaryServiceTest extends BaseWebScriptTest
 		arguments.put("r", "true");
 		arguments.put("n", "cmobject");
 		req.setArgs(arguments);
-		response = sendRequest(req, 200);
-		assertEquals(200,response.getStatus());
-		result = new JSONArray(response.getContentAsString());
-		assertEquals(result.length()>0, true);
-		for(int i=0; i<result.length(); i++)
-		{
-			if (result.getJSONObject(i).get("name").equals("cm:cmobject"))
-			{
-				validateTypeClass(result.getJSONObject(i));
-			}
-		}
-		assertEquals(200,response.getStatus());
+		response = sendRequest(req, 404);
+		assertEquals(404,response.getStatus());
 		
 		//wrong data
 		// invalid namespaceprefix
@@ -754,10 +744,8 @@ public class DictionaryServiceTest extends BaseWebScriptTest
 		arguments.put("n", "dublincore"); //name and namespaceprefix are valid one , but its not present in sys_base as a sub-class
 		arguments.put("nsp", "cm");
 		req.setArgs(arguments);
-		response = sendRequest(req, 200);
-		result = new JSONArray(response.getContentAsString());
-		assertEquals(200,response.getStatus());
-		assertEquals(0, result.length());
+		response = sendRequest(req, 404);
+		assertEquals(404,response.getStatus());
 		
 		//invalid name and a valid namespaceprefix
 		arguments.clear();

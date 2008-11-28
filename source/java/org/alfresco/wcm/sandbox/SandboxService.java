@@ -148,56 +148,56 @@ public interface SandboxService
     public void deleteSandbox(String sbStoreId);
     
     /**
-     * List changed items for given sandbox (eg. for user sandbox compared to staging sandbox)
+     * List all changed assets for given sandbox (eg. for user sandbox compared to staging sandbox)
      * <p>
-     * Note: This will list new/modified/deleted items from the root directory and below, including all web apps
+     * Note: This will list all new/modified/deleted assets from the sandbox root directory (eg. /www/avm_webapps) - ie. across all web apps
      * 
      * @param sbStoreId                 sandbox store id
-     * @param  includeDeleted           if true, include deleted items as well as new/modified items
-     * @return List<AVMNodeDescriptor>  list of changed items
+     * @param  includeDeleted           if true, include deleted assets as well as new/modified assets
+     * @return List<AVMNodeDescriptor>  list of all changed assets
      */
-    public List<AVMNodeDescriptor> listChangedItems(String sbStoreId, boolean includeDeleted);
+    public List<AVMNodeDescriptor> listChangedAll(String sbStoreId, boolean includeDeleted);
     
     /**
-     * List changed items for given sandbox and web app (eg. in user sandbox)
+     * List changed assets for given sandbox and web app (eg. in user sandbox)
      * <p>
-     * Note: This will list new/modified/deleted items for the given web app
+     * Note: This will list new/modified/deleted assets for the given web app
      *
      * @param sbStoreId                 sandbox store id
      * @param webApp                    web app to filter by
-     * @param  includeDeleted           if true, include deleted items as well as new/modified items
-     * @return List<AVMNodeDescriptor>  list of changed items
+     * @param  includeDeleted           if true, include deleted assets as well as new/modified assets
+     * @return List<AVMNodeDescriptor>  list of changed assets
      */
-    public List<AVMNodeDescriptor> listChangedItemsWebApp(String sbStoreId, String webApp, boolean includeDeleted);
+    public List<AVMNodeDescriptor> listChangedWebApp(String sbStoreId, String webApp, boolean includeDeleted);
     
     /**
-     * List changed items for given sandbox path (eg. between user sandbox and staging sandbox)
+     * List changed assets for given sandbox path (eg. between user sandbox and staging sandbox)
      * <p>
-     * Note: This will list new/modified/deleted items from the directory and below. The destination path will be dervied.
+     * Note: This will list new/modified/deleted assets from the directory and below. The destination path will be dervied.
      *
      * @param sbStoreId                 sandbox store id
      * @param relativePath              relative path to filter by (eg. /www/avm_webapps/ROOT/MyFolderToList)
-     * @param  includeDeleted           if true, include deleted items as well as new/modified items
-     * @return List<AVMNodeDescriptor>  list of changed items
+     * @param  includeDeleted           if true, include deleted assets as well as new/modified assets
+     * @return List<AVMNodeDescriptor>  list of changed assets
      */
-    public List<AVMNodeDescriptor> listChangedItemsDir(String sbStoreId, String relativePath, boolean includeDeleted);
+    public List<AVMNodeDescriptor> listChanged(String sbStoreId, String relativePath, boolean includeDeleted);
     
     /**
-     * List changed (new/modified/deleted) items between any two sandbox paths
+     * List changed (new/modified/deleted) assets between any two sandbox paths
      * 
      * @param srcSandboxStoreId         source sandbox store id
      * @param srcRelativePath           source relative path to filter by (eg. /www/avm_webapps/ROOT/MyFolderToList)
      * @param dstSandboxStoreId         destination sandbox store id
      * @param dstRelativePath           destination relative path to filter by (eg. /www/avm_webapps/ROOT/MyFolderToList)
-     * @param  includeDeleted           if true, include deleted items as well as new/modified items
-     * @return List<AVMNodeDescriptor>  list of changed items
+     * @param  includeDeleted           if true, include deleted assets as well as new/modified assets
+     * @return List<AVMNodeDescriptor>  list of changed assets
      */
-    public List<AVMNodeDescriptor> listChangedItems(String srcSandboxStoreId, String srcRelativePath, String dstSandboxStoreId, String dstRelativePath, boolean includeDeleted);
+    public List<AVMNodeDescriptor> listChanged(String srcSandboxStoreId, String srcRelativePath, String dstSandboxStoreId, String dstRelativePath, boolean includeDeleted);
     
     /**
-     * Submit all changed items for given sandbox (eg. from user sandbox to staging sandbox)
+     * Submit all changed assets for given sandbox (eg. from user sandbox to staging sandbox)
      * <p>
-     * Note: This will submit new/modified/deleted items from the sandbox root directory (eg. /www) and below, including all web apps
+     * Note: This will submit all new/modified/deleted assets from the sandbox root directory (eg. /www/avm_webapps) - ie. across all web apps
      * <p>
      * @param sbStoreId      sandbox store id
      * @param submitLabel    label for submitted snapshot
@@ -206,95 +206,103 @@ public interface SandboxService
     public void submitAll(String sbStoreId, String submitLabel, String submitComment);
     
     /**
-     * Submit all changed items for given sandbox and web app (eg. in user sandbox)
+     * Submit changed assets for given sandbox and web app (eg. in user sandbox)
      * <p>
-     * Note: This will submit new/modified/deleted items for the given web app
+     * Note: This will submit new/modified/deleted assets for the given web app
      * 
      * @param sbStoreId      sandbox store id
      * @param webApp         web app to filter by
      * @param submitLabel    label for submitted snapshot
      * @param submitComment  comment for submitted snapshot
      */
-    public void submitAllWebApp(String sbStoreId, String webApp, String submitLabel, String submitComment);
+    public void submitWebApp(String sbStoreId, String webApp, String submitLabel, String submitComment);
     
     /**
-     * Submit all changed items for given sandbox path (eg. in user sandbox)
+     * Submit changed asset(s) for given sandbox path (eg. in user sandbox)
      * <p>
-     * Note: This will submit new/modified/deleted items from the directory and below
+     * Note: This will submit new/modified/deleted asset(s) for given path (either file or directory and below)
      * 
      * @param sbStoreId      sandbox store id
-     * @param relativePath   relative path to filter by (eg. /www/avm_webapps/ROOT/MyFolderToRevert)
+     * @param relativePath   relative path to filter by (eg. /www/avm_webapps or /www/avm_webapps/ROOT/MyFolderToSubmit)
      * @param submitLabel    label for submitted snapshot
      * @param submitComment  comment for submitted snapshot
      */
-    public void submitAllDir(String sbStoreId, String relativePath, String submitLabel, String submitComment);
+    public void submit(String sbStoreId, String relativePath, String submitLabel, String submitComment);
     
     /**
-     * Submit list of changed items for given sandbox path (eg. in user sandbox)
+     * Submit list of changed assets for given sandbox (eg. in user sandbox)
      * 
      * @param sbStoreId      sandbox store id
-     * @param itemPaths      list of items, as relative paths (eg. /www/avm_webapps/ROOT/MyFolderToRevert)
+     * @param assetPaths      list of assets, as relative paths (eg. /www/avm_webapps/ROOT/MyFolderToSubmit)
      * @param submitLabel    label for submitted snapshot
      * @param submitComment  comment for submitted snapshot
      */
     public void submitList(String sbStoreId, List<String> relativePaths, String submitLabel, String submitComment);
     
     /**
-     * Submit list of changed items for given sandbox (eg. from user sandbox to staging sandbox)
+     * Submit list of changed assets for given sandbox (eg. from user sandbox to staging sandbox)
      * 
      * @param sbStoreId      sandbox store id
-     * @param itemNodes      list of items, as AVM node descriptors
+     * @param assetNodes      list of assets, as AVM node descriptors
      * @param submitLabel    label for submitted snapshot
      * @param submitComment  comment for submitted snapshot
      */
-    public void submitListNodes(String sbStoreId, List<AVMNodeDescriptor> items, String submitLabel, String submitComment);
+    public void submitListNodes(String sbStoreId, List<AVMNodeDescriptor> assets, String submitLabel, String submitComment);
     
     /**
-     * Submit list of changed items for given sandbox (eg. from user sandbox to staging sandbox)
+     * Submit list of changed assets for given sandbox (eg. from user sandbox to staging sandbox)
      * 
      * @param sbStoreId        sandbox store id
-     * @param items            list of items, as AVM node descriptors
-     * @param expirationDates  map of <path, date> for those items set with an expiration date, or can be null (if no expiration dates)
+     * @param assets            list of assets, as AVM node descriptors
+     * @param expirationDates  map of <path, date> for those assets set with an expiration date, or can be null (if no expiration dates)
      * @param submitLabel      label for submitted snapshot
      * @param submitComment    comment for submitted snapshot
      */
-    public void submitListNodes(String sbStoreId, List<AVMNodeDescriptor> items, Map<String, Date> expirationDates, String submitLabel, String submitComment);
+    public void submitListNodes(String sbStoreId, List<AVMNodeDescriptor> assets, Map<String, Date> expirationDates, String submitLabel, String submitComment);
     
     /**
-     * Revert all changed items for given sandbox (eg. in user sandbox)
+     * Revert all changed assets for given sandbox (eg. in user sandbox)
      * <p>
-     * Note: This will revert new/modified/deleted items from the sandbox root directory (eg. /www) and below, including all web apps
+     * Note: This will revert all new/modified/deleted assets from the sandbox store root directory (eg. /www/avm_webapps) - ie. across all web apps
      *
      * @param sbStoreId  sandbox store id
      */
     public void revertAll(String sbStoreId);
     
     /**
-     * Revert all changed items for given sandbox and web app (eg. in user sandbox)
+     * Revert changed assets for given sandbox and web app (eg. in user sandbox)
      * <p>
-     * Note: This will revert new/modified/deleted items for the given web app
+     * Note: This will revert new/modified/deleted assets for the given web app
      * 
      * @param sbStoreId  sandbox store id
      * @param webApp     web app to filter by
      */
-    public void revertAllWebApp(String sbStoreId, String webApp);
+    public void revertWebApp(String sbStoreId, String webApp);
     
     /**
-     * Revert all changed items for given sandbox path (eg. in user sandbox)
+     * Revert changed asset(s) for given sandbox path (eg. in user sandbox)
      * <p>
-     * Note: This will revert new/modified/deleted items from the directory and below
+     * Note: This will revert new/modified/deleted asset(s) for given path (either file or directory and below)
      * 
      * @param sbStoreId     sandbox store id
      * @param relativePath  relative path to filter by (eg. /www/avm_webapps/ROOT/MyFolderToRevert)
      */
-    public void revertAllDir(String sbStoreId, String relativePath);
+    public void revert(String sbStoreId, String relativePath);
     
     /**
-     * Revert list of changed items for given sandbox (eg. in user sandbox)
+     * Revert list of changed assets for given sandbox (eg. in user sandbox)
      * 
-     * @param items             list of AVM node descriptors
+     * @param sbStoreId      sandbox store id
+     * @param assetPaths      list of assets, as relative paths (eg. /www/avm_webapps/ROOT/MyFolderToRevert)
      */
-    public void revertListNodes(String sbStoreId, List<AVMNodeDescriptor> items);
+    public void revertList(String sbStoreId, List<String> relativePaths);
+    
+    /**
+     * Revert list of changed assets for given sandbox (eg. in user sandbox)
+     * 
+     * @param assets             list of AVM node descriptors
+     */
+    public void revertListNodes(String sbStoreId, List<AVMNodeDescriptor> assets);
     
     /**
      * Revert sandbox to a specific snapshot version ID (ie. for staging sandbox)

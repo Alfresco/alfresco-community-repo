@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.alfresco.repo.jscript.ScriptableHashMap;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.util.ISO8601DateFormat;
 import org.alfresco.wcm.sandbox.SandboxInfo;
@@ -96,7 +95,7 @@ public class Sandbox implements Serializable
 	 */
 	public void submitAllWebApp(String webApp, String submitLabel, String submitComment)
 	{
-		getSandboxService().submitAllWebApp(getSandboxRef(), webApp, submitLabel, submitComment);
+		getSandboxService().submitWebApp(getSandboxRef(), webApp, submitLabel, submitComment);
 	}
 	
 	/**
@@ -112,7 +111,7 @@ public class Sandbox implements Serializable
 	 */
 	public void revertAllWebApp(String webApp)
 	{
-		getSandboxService().revertAllWebApp(getSandboxRef(), webApp);
+		getSandboxService().revertWebApp(getSandboxRef(), webApp);
 	}
 	
 	/**
@@ -178,7 +177,7 @@ public class Sandbox implements Serializable
 	 */
 	public List<Asset> getModifiedAssets()
 	{
-		List<AVMNodeDescriptor> items = getSandboxService().listChangedItems(getSandboxRef(), true);
+		List<AVMNodeDescriptor> items = getSandboxService().listChangedAll(getSandboxRef(), true);
         ArrayList<Asset> ret = new ArrayList<Asset>(items.size());
 		
 		for(AVMNodeDescriptor item : items)
@@ -195,7 +194,7 @@ public class Sandbox implements Serializable
 	 */
 	public List<Asset> getModifiedAssetsWebApp(String webApp)
 	{
-		List<AVMNodeDescriptor> items = getSandboxService().listChangedItemsWebApp(getSandboxRef(), webApp, true);
+		List<AVMNodeDescriptor> items = getSandboxService().listChangedWebApp(getSandboxRef(), webApp, true);
         ArrayList<Asset> ret = new ArrayList<Asset>(items.size());
 		
 		for(AVMNodeDescriptor item : items)

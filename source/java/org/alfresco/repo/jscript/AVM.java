@@ -154,7 +154,7 @@ public final class AVM extends BaseScopableProcessorExtension
         SandboxService sbService = this.services.getSandboxService();
         
         // get modified items - not including deleted
-        List<AVMNodeDescriptor> nodes = sbService.listChangedItemsWebApp(storeId, webapp, false);
+        List<AVMNodeDescriptor> nodes = sbService.listChangedWebApp(storeId, webapp, false);
         
         List<AVMNode> items = new ArrayList<AVMNode>(nodes.size());
         

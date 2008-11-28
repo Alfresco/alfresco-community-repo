@@ -86,11 +86,6 @@ public class SandboxInfoImpl implements SandboxInfo
     
     public String getSandboxRootPath()
     {
-        return "/"+JNDIConstants.DIR_DEFAULT_WWW;
-    }
-    
-    public String getWebAppsPath()
-    {
         return JNDIConstants.DIR_DEFAULT_WWW_APPBASE;
     }
 

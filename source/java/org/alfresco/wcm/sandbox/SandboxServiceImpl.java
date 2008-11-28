@@ -348,33 +348,33 @@ public class SandboxServiceImpl extends WCMUtil implements SandboxService
     }
     
     /* (non-Javadoc)
-     * @see org.alfresco.wcm.sandbox.SandboxService#listChangedItems(java.lang.String, boolean)
+     * @see org.alfresco.wcm.sandbox.SandboxService#listChangedAll(java.lang.String, boolean)
      */
-    public List<AVMNodeDescriptor> listChangedItems(String sbStoreId, boolean includeDeleted)
+    public List<AVMNodeDescriptor> listChangedAll(String sbStoreId, boolean includeDeleted)
     {
         ParameterCheck.mandatoryString("sbStoreId", sbStoreId);
         
-        String avmDirectoryPath = WCMUtil.buildStoreRootPath(sbStoreId); // currently <sbStoreId>:/www
-        return listChangedItemsDir(sbStoreId, WCMUtil.getStoreRelativePath(avmDirectoryPath), includeDeleted);
+        String avmDirectoryPath = WCMUtil.buildSandboxRootPath(sbStoreId); // currently <sbStoreId>:/www/avm_webapps
+        return listChanged(sbStoreId, WCMUtil.getStoreRelativePath(avmDirectoryPath), includeDeleted);
     }
     
     /* (non-Javadoc)
-     * @see org.alfresco.wcm.sandbox.SandboxService#listChangedItemsWebApp(java.lang.String, java.lang.String, boolean)
+     * @see org.alfresco.wcm.sandbox.SandboxService#listChangedWebApp(java.lang.String, java.lang.String, boolean)
      */
-    public List<AVMNodeDescriptor> listChangedItemsWebApp(String sbStoreId, String webApp, boolean includeDeleted)
+    public List<AVMNodeDescriptor> listChangedWebApp(String sbStoreId, String webApp, boolean includeDeleted)
     {
         ParameterCheck.mandatoryString("sbStoreId", sbStoreId);
         ParameterCheck.mandatoryString("webApp", webApp);
         
         // filter by current webapp
         String avmDirectoryPath = WCMUtil.buildStoreWebappPath(sbStoreId, webApp);
-        return listChangedItemsDir(sbStoreId, WCMUtil.getStoreRelativePath(avmDirectoryPath), includeDeleted);
+        return listChanged(sbStoreId, WCMUtil.getStoreRelativePath(avmDirectoryPath), includeDeleted);
     }
     
     /* (non-Javadoc)
-     * @see org.alfresco.wcm.sandbox.SandboxService#listChangedItemsDir(java.lang.String, java.lang.String, boolean)
+     * @see org.alfresco.wcm.sandbox.SandboxService#listChanged(java.lang.String, java.lang.String, boolean)
      */
-    public List<AVMNodeDescriptor> listChangedItemsDir(String sbStoreId, String relativePath, boolean includeDeleted)
+    public List<AVMNodeDescriptor> listChanged(String sbStoreId, String relativePath, boolean includeDeleted)
     {
         ParameterCheck.mandatoryString("sbStoreId", sbStoreId);
         ParameterCheck.mandatoryString("relativePath", relativePath);
@@ -389,13 +389,13 @@ public class SandboxServiceImpl extends WCMUtil implements SandboxService
         String wpStoreId = WCMUtil.getWebProjectStoreId(sbStoreId);
         String stagingSandboxId = WCMUtil.buildStagingStoreName(wpStoreId);
         
-        return listChangedItems(sbStoreId, relativePath, stagingSandboxId, relativePath, includeDeleted);
+        return listChanged(sbStoreId, relativePath, stagingSandboxId, relativePath, includeDeleted);
     }
     
     /* (non-Javadoc)
-     * @see org.alfresco.wcm.sandbox.SandboxService#listChangedItems(java.lang.String, java.lang.String, java.lang.String, java.lang.String, boolean)
+     * @see org.alfresco.wcm.sandbox.SandboxService#listChanged(java.lang.String, java.lang.String, java.lang.String, java.lang.String, boolean)
      */
-    public List<AVMNodeDescriptor> listChangedItems(String srcSandboxStoreId, String srcRelativePath, String dstSandboxStoreId, String dstRelativePath, boolean includeDeleted)
+    public List<AVMNodeDescriptor> listChanged(String srcSandboxStoreId, String srcRelativePath, String dstSandboxStoreId, String dstRelativePath, boolean includeDeleted)
     {
         ParameterCheck.mandatoryString("srcSandboxStoreId", srcSandboxStoreId);
         ParameterCheck.mandatoryString("srcRelativePath", srcRelativePath);
@@ -406,16 +406,16 @@ public class SandboxServiceImpl extends WCMUtil implements SandboxService
         String avmSrcPath = srcSandboxStoreId + AVM_STORE_SEPARATOR + srcRelativePath;
         String avmDstPath = dstSandboxStoreId + AVM_STORE_SEPARATOR + dstRelativePath;
         
-        return listChangedItems(-1, avmSrcPath, -1, avmDstPath, includeDeleted);
+        return listChanged(-1, avmSrcPath, -1, avmDstPath, includeDeleted);
     }
     
-    private List<AVMNodeDescriptor> listChangedItems(int srcVersion, String srcPath, int dstVersion, String dstPath, boolean includeDeleted)
+    private List<AVMNodeDescriptor> listChanged(int srcVersion, String srcPath, int dstVersion, String dstPath, boolean includeDeleted)
     {
         long start = System.currentTimeMillis();
         
         List<AVMDifference> diffs = avmSyncService.compare(srcVersion, srcPath, dstVersion, dstPath, nameMatcher);
         
-        List<AVMNodeDescriptor> items = new ArrayList<AVMNodeDescriptor>(diffs.size());
+        List<AVMNodeDescriptor> assets = new ArrayList<AVMNodeDescriptor>(diffs.size());
         
         for (AVMDifference diff : diffs)
         {
@@ -424,16 +424,16 @@ public class SandboxServiceImpl extends WCMUtil implements SandboxService
             AVMNodeDescriptor node = avmService.lookup(-1, sourcePath, includeDeleted);
             if (node != null)
             {
-                items.add(node);
+                assets.add(node);
             }
         }
         
         if (logger.isTraceEnabled())
         {
-            logger.trace("listModifiedItems: "+items.size()+" items in "+(System.currentTimeMillis()-start)+" ms (between "+srcVersion+","+srcPath+" and "+dstVersion+","+dstPath);
+            logger.trace("listChanged: "+assets.size()+" assets in "+(System.currentTimeMillis()-start)+" ms (between "+srcVersion+","+srcPath+" and "+dstVersion+","+dstPath);
         }
 
-        return items;
+        return assets;
     }
     
     /* (non-Javadoc)
@@ -443,40 +443,43 @@ public class SandboxServiceImpl extends WCMUtil implements SandboxService
     {
         ParameterCheck.mandatoryString("sbStoreId", sbStoreId);
         
-        String avmDirectoryPath = WCMUtil.buildStoreRootPath(sbStoreId); // currently <sbStoreId>:/www
-        submitAllDir(sbStoreId, WCMUtil.getStoreRelativePath(avmDirectoryPath), submitLabel, submitComment);
+        String avmDirectoryPath = WCMUtil.buildSandboxRootPath(sbStoreId); // currently <sbStoreId>:/www/avm_webapps
+        submit(sbStoreId, WCMUtil.getStoreRelativePath(avmDirectoryPath), submitLabel, submitComment);
     }
     
     /* (non-Javadoc)
-     * @see org.alfresco.wcm.sandbox.SandboxService#submitAllWebApp(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
+     * @see org.alfresco.wcm.sandbox.SandboxService#submitWebApp(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
      */
-    public void submitAllWebApp(String sbStoreId, String webApp, String submitLabel, String submitComment)
+    public void submitWebApp(String sbStoreId, String webApp, String submitLabel, String submitComment)
     {
         ParameterCheck.mandatoryString("sbStoreId", sbStoreId);
         ParameterCheck.mandatoryString("webApp", webApp);
         
         String avmDirectoryPath = WCMUtil.buildStoreWebappPath(sbStoreId, webApp);
-        submitAllDir(sbStoreId, WCMUtil.getStoreRelativePath(avmDirectoryPath), submitLabel, submitComment);
+        submit(sbStoreId, WCMUtil.getStoreRelativePath(avmDirectoryPath), submitLabel, submitComment);
     }
     
     /* (non-Javadoc)
-     * @see org.alfresco.wcm.sandbox.SandboxService#submitAllDir(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
+     * @see org.alfresco.wcm.sandbox.SandboxService#submit(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
      */
-    public void submitAllDir(String sbStoreId, String relativePath, String submitLabel, String submitComment)
+    public void submit(String sbStoreId, String relativePath, String submitLabel, String submitComment)
     {
         ParameterCheck.mandatoryString("sbStoreId", sbStoreId);
         ParameterCheck.mandatoryString("relativePath", relativePath);
         
-        List<AVMNodeDescriptor> items = listChangedItemsDir(sbStoreId, relativePath, true);
+        List<AVMNodeDescriptor> assets = listChanged(sbStoreId, relativePath, true);
         
-        submitListNodes(sbStoreId, items, submitLabel, submitComment);
+        submitListNodes(sbStoreId, assets, submitLabel, submitComment);
     }
     
+    /* (non-Javadoc)
+     * @see org.alfresco.wcm.sandbox.SandboxService#submitList(java.lang.String, java.util.List, java.lang.String, java.lang.String)
+     */
     public void submitList(String sbStoreId, List<String> relativePaths, String submitLabel, String submitComment)
     {
         ParameterCheck.mandatoryString("sbStoreId", sbStoreId);
         
-        List<AVMNodeDescriptor> items = new ArrayList<AVMNodeDescriptor>(relativePaths.size());
+        List<AVMNodeDescriptor> assets = new ArrayList<AVMNodeDescriptor>(relativePaths.size());
         
         for (String relativePath : relativePaths)
         {
@@ -484,27 +487,27 @@ public class SandboxServiceImpl extends WCMUtil implements SandboxService
             AVMNodeDescriptor node = avmService.lookup(-1, sbStoreId + WCMUtil.AVM_STORE_SEPARATOR + relativePath, true);
             if (node != null)
             {
-                items.add(node);
+                assets.add(node);
             }
         }
         
-        submitListNodes(sbStoreId, items, null, submitLabel, submitComment);
+        submitListNodes(sbStoreId, assets, null, submitLabel, submitComment);
     }
     
     /* (non-Javadoc)
      * @see org.alfresco.wcm.sandbox.SandboxService#submitListNodes(java.lang.String, java.util.List, java.lang.String, java.lang.String)
      */
-    public void submitListNodes(String sbStoreId, List<AVMNodeDescriptor> items, String submitLabel, String submitComment)
+    public void submitListNodes(String sbStoreId, List<AVMNodeDescriptor> assets, String submitLabel, String submitComment)
     {
         ParameterCheck.mandatoryString("sbStoreId", sbStoreId);
         
-        submitListNodes(sbStoreId, items, null, submitLabel, submitComment);
+        submitListNodes(sbStoreId, assets, null, submitLabel, submitComment);
     }
     
     /* (non-Javadoc)
      * @see org.alfresco.wcm.sandbox.SandboxService#submitListNodes(java.lang.String, java.util.List, java.util.Map, java.lang.String, java.lang.String)
      */
-    public void submitListNodes(String sbStoreId, List<AVMNodeDescriptor> items, Map<String, Date> expirationDates, final String submitLabel, final String submitComment)
+    public void submitListNodes(String sbStoreId, List<AVMNodeDescriptor> assets, Map<String, Date> expirationDates, final String submitLabel, final String submitComment)
     {
         ParameterCheck.mandatoryString("sbStoreId", sbStoreId);
         
@@ -516,13 +519,13 @@ public class SandboxServiceImpl extends WCMUtil implements SandboxService
             throw new AlfrescoRuntimeException("Not an author sandbox: "+sbStoreId);
         }
         
-        // construct diffs for selected items for submission
+        // construct diffs for selected assets for submission
         String wpStoreId = WCMUtil.getWebProjectStoreId(sbStoreId);
         String stagingSandboxId = WCMUtil.buildStagingStoreName(wpStoreId);
         
-        final List<AVMDifference> diffs = new ArrayList<AVMDifference>(items.size());
+        final List<AVMDifference> diffs = new ArrayList<AVMDifference>(assets.size());
         
-        for (AVMNodeDescriptor item : items)
+        for (AVMNodeDescriptor item : assets)
         {
             String relativePath = WCMUtil.getStoreRelativePath(item.getPath());
             
@@ -580,46 +583,68 @@ public class SandboxServiceImpl extends WCMUtil implements SandboxService
     {
         ParameterCheck.mandatoryString("sbStoreId", sbStoreId);
         
-        String avmDirectoryPath = WCMUtil.buildStoreRootPath(sbStoreId); // currently <sbStoreId>:/www
-        revertAllDir(sbStoreId, WCMUtil.getStoreRelativePath(avmDirectoryPath));
+        String avmDirectoryPath = WCMUtil.buildSandboxRootPath(sbStoreId); // currently <sbStoreId>:/www/avm_webapps
+        revert(sbStoreId, WCMUtil.getStoreRelativePath(avmDirectoryPath));
     }
     
     /* (non-Javadoc)
-     * @see org.alfresco.wcm.sandbox.SandboxService#revertAll(java.lang.String, java.lang.String)
+     * @see org.alfresco.wcm.sandbox.SandboxService#revertWebApp(java.lang.String, java.lang.String)
      */
-    public void revertAllWebApp(String sbStoreId, String webApp)
+    public void revertWebApp(String sbStoreId, String webApp)
     {
         ParameterCheck.mandatoryString("sbStoreId", sbStoreId);
         ParameterCheck.mandatoryString("webApp", webApp);
         
         String avmDirectoryPath = WCMUtil.buildStoreWebappPath(sbStoreId, webApp);
-        revertAllDir(sbStoreId, WCMUtil.getStoreRelativePath(avmDirectoryPath));
+        revert(sbStoreId, WCMUtil.getStoreRelativePath(avmDirectoryPath));
     }
     
     /* (non-Javadoc)
      * @see org.alfresco.wcm.sandbox.SandboxService#revertAllDir(java.lang.String, java.lang.String)
      */
-    public void revertAllDir(String sbStoreId, String relativePath)
+    public void revert(String sbStoreId, String relativePath)
     {
         ParameterCheck.mandatoryString("sbStoreId", sbStoreId);
         ParameterCheck.mandatoryString("relativePath", relativePath);
         
-        List<AVMNodeDescriptor> items = listChangedItemsDir(sbStoreId, relativePath, true);
+        List<AVMNodeDescriptor> assets = listChanged(sbStoreId, relativePath, true);
         
-        revertListNodes(sbStoreId, items);
+        revertListNodes(sbStoreId, assets);
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.wcm.sandbox.SandboxService#revertList(java.lang.String, java.util.List)
+     */
+    public void revertList(String sbStoreId, List<String> relativePaths)
+    {
+        ParameterCheck.mandatoryString("sbStoreId", sbStoreId);
+        
+        List<AVMNodeDescriptor> assets = new ArrayList<AVMNodeDescriptor>(relativePaths.size());
+        
+        for (String relativePath : relativePaths)
+        {
+            // convert each path into an AVM node descriptor
+            AVMNodeDescriptor node = avmService.lookup(-1, sbStoreId + WCMUtil.AVM_STORE_SEPARATOR + relativePath, true);
+            if (node != null)
+            {
+                assets.add(node);
+            }
+        }
+        
+        revertListNodes(sbStoreId, assets);
     }
     
     /* (non-Javadoc)
      * @see org.alfresco.wcm.sandbox.SandboxService#revertListNodes(java.lang.String, java.util.List)
      */
-    public void revertListNodes(String sbStoreId, List<AVMNodeDescriptor> items)
+    public void revertListNodes(String sbStoreId, List<AVMNodeDescriptor> assets)
     {
         ParameterCheck.mandatoryString("sbStoreId", sbStoreId);
         
-        List<Pair<Integer, String>> versionPaths = new ArrayList<Pair<Integer, String>>(items.size());
+        List<Pair<Integer, String>> versionPaths = new ArrayList<Pair<Integer, String>>(assets.size());
         
         List<WorkflowTask> tasks = null;
-        for (AVMNodeDescriptor node : items)
+        for (AVMNodeDescriptor node : assets)
         {
            if (tasks == null)
            {

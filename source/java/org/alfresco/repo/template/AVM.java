@@ -144,7 +144,7 @@ public class AVM extends BaseTemplateProcessorExtension
         SandboxService sbService = this.services.getSandboxService();
         
         // get modified items - not including deleted
-        List<AVMNodeDescriptor> nodes = sbService.listChangedItemsWebApp(storeId, webapp, false);
+        List<AVMNodeDescriptor> nodes = sbService.listChangedWebApp(storeId, webapp, false);
         
         List<AVMTemplateNode> items = new ArrayList<AVMTemplateNode>(nodes.size());
         

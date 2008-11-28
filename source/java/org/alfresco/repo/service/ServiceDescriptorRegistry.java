@@ -27,6 +27,7 @@ package org.alfresco.repo.service;
 import java.util.Collection;
 
 import org.alfresco.mbeans.VirtServerRegistry;
+import org.alfresco.repo.forms.FormService;
 import org.alfresco.repo.site.SiteService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.ServiceRegistry;
@@ -458,22 +459,32 @@ public class ServiceDescriptorRegistry
     /* (non-Javadoc)
      * @see org.alfresco.service.ServiceRegistry#getDeploymentService()
      */
-	public DeploymentService getDeploymentService() {
+	public DeploymentService getDeploymentService() 
+	{
         return (DeploymentService) getService(DEPLOYMENT_SERVICE);
-
 	}
     
 	/* (non-Javadoc)
 	 * @see org.alfresco.service.ServiceRegistry#getWebProjectService()
 	 */
-    public WebProjectService getWebProjectService() {
+    public WebProjectService getWebProjectService() 
+    {
         return (WebProjectService)getService(WEBPROJECT_SERVICE);
     }
     
     /* (non-Javadoc)
      * @see org.alfresco.service.ServiceRegistry#getSandboxService()
      */
-    public SandboxService getSandboxService() {
+    public SandboxService getSandboxService() 
+    {
         return (SandboxService)getService(SANDBOX_SERVICE);
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.service.ServiceRegistry#getFormService()
+     */
+    public FormService getFormService() 
+    {
+        return (FormService)getService(FORM_SERVICE);
     }
 }

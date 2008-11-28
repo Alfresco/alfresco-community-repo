@@ -47,6 +47,7 @@
     <import resource="classpath:alfresco/swf-transform-context.xml"/>
     <import resource="classpath:alfresco/site-services-context.xml"/>
     <import resource="classpath:alfresco/tagging-services-context.xml"/>
+    <import resource="classpath:alfresco/form-services-context.xml"/>
     <import resource="classpath:alfresco/cmis-api-context.xml" />
     <import resource="classpath*:alfresco/patch/*-context.xml" />
     <import resource="classpath*:alfresco/domain/*-context.xml" />

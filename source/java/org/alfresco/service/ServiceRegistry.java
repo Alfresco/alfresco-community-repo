@@ -27,6 +27,7 @@ package org.alfresco.service;
 import java.util.Collection;
 
 import org.alfresco.mbeans.VirtServerRegistry;
+import org.alfresco.repo.forms.FormService;
 import org.alfresco.repo.site.SiteService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.action.ActionService;
@@ -131,6 +132,7 @@ public interface ServiceRegistry
     static final QName DEPLOYMENT_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "DeploymentService");
     static final QName WEBPROJECT_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "WebProjectService");
     static final QName SANDBOX_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "SandboxService");
+    static final QName FORM_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "FormService");
 
     /**
      * Get the list of services provided by the Repository
@@ -438,4 +440,11 @@ public interface ServiceRegistry
      */
     @NotAuditable
     SandboxService getSandboxService();
+    
+    /**
+     * Get the form service (or null if one is not provided)
+     * @return
+     */
+    @NotAuditable
+    FormService getFormService();
 }

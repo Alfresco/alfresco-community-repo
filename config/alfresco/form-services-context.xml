@@ -1,0 +1,43 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+    
+    <!-- form service bean -->
+    <bean id="FormService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.repo.forms.FormService</value>
+        </property>
+        <property name="target">
+            <ref bean="formService"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref bean="AuditMethodInterceptor"/>
+                <idref bean="exceptionTranslator"/>
+            </list>
+        </property>
+    </bean>
+    
+    <bean id="formService" class="org.alfresco.repo.forms.FormServiceImpl">
+       <property name="nodeService" ref="NodeService"/>
+       <property name="fileFolderService" ref="FileFolderService"/>
+       <property name="searchService" ref="SearchService"/>
+       <property name="permissionService" ref="PermissionService" />
+    </bean>
+    
+    <!-- Form model processor factory bean -->
+    
+    
+    
+    <!--  
+    <bean id="formServiceScript" parent="baseJavaScriptExtension" class="org.alfresco.repo.forms.script.ScriptFormService">
+        <property name="extensionName">
+            <value>formService</value>
+        </property>
+        <property name="serviceRegistry" ref="ServiceRegistry"/>
+        <property name="formService" ref="formService"/>
+    </bean>
+    -->
+    
+</beans>

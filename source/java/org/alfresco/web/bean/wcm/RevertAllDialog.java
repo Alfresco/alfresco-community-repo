@@ -79,7 +79,7 @@ public class RevertAllDialog extends BaseDialogBean
       String webApp = this.avmBrowseBean.getWebapp();
       String userSandboxId = this.avmBrowseBean.getSandbox();
       
-      getSandboxService().revertAllWebApp(userSandboxId, webApp);
+      getSandboxService().revertWebApp(userSandboxId, webApp);
        
       String msg = MessageFormat.format(Application.getMessage(
             context, MSG_REVERTALL_SUCCESS), this.avmBrowseBean.getUsername());

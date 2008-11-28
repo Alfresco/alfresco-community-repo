@@ -456,7 +456,7 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
                   out.write("</nobr></td><td><nobr>");
                   
                   // Preview Website
-                  String websiteUrl = AVMUtil.getPreviewURI(mainStore, '/' + JNDIConstants.DIR_DEFAULT_WWW + '/' + JNDIConstants.DIR_DEFAULT_APPBASE + '/' + getWebapp());
+                  String websiteUrl = AVMUtil.getPreviewURI(mainStore, JNDIConstants.DIR_DEFAULT_WWW_APPBASE + '/' + getWebapp());
                   Map requestMap = context.getExternalContext().getRequestMap();
                   requestMap.put(REQUEST_PREVIEW_REF, websiteUrl);
                   Utils.encodeRecursive(context, aquireAction(
@@ -720,7 +720,7 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
       
       // compare user sandbox to staging sandbox - filter by current webapp, include deleted items
       String userStore = AVMUtil.buildUserMainStoreName(storeRoot, username);
-      List<AVMNodeDescriptor> nodes = sandboxService.listChangedItemsWebApp(userStore, getWebapp(), true);
+      List<AVMNodeDescriptor> nodes = sandboxService.listChangedWebApp(userStore, getWebapp(), true);
       
       if (nodes.size() != 0)
       {
@@ -840,7 +840,7 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
                // build node context required for actions
                AVMNode avmNode = new AVMNode(node);
                String assetPath = sourcePath.substring(rootPathIndex);
-               String previewUrl = AVMUtil.getPreviewURI(userStore, '/' + JNDIConstants.DIR_DEFAULT_WWW + '/' + JNDIConstants.DIR_DEFAULT_APPBASE + assetPath);
+               String previewUrl = AVMUtil.getPreviewURI(userStore, JNDIConstants.DIR_DEFAULT_WWW_APPBASE + assetPath);
                avmNode.getProperties().put("previewUrl", previewUrl);
                
                // size of files

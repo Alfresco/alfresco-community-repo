@@ -24,13 +24,16 @@
  */
 package org.alfresco.wcm.sandbox.script;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.util.ISO8601DateFormat;
+import org.alfresco.wcm.sandbox.SandboxService;
 
 /**
- * Asset in a sandbox exposed over Java Script API.
+ * WCM Asset in a sandbox exposed over Java Script API.
  * @author mrogers
  *
  */
@@ -45,6 +48,10 @@ public class Asset
 		this.desc = desc;
 	}
 	
+	/**
+	 * The creator of this asset
+	 * @return the creator
+	 */
 	public String getCreator()
 	{
 		return desc.getCreator();
@@ -85,9 +92,23 @@ public class Asset
 		return desc.getName();
 	}
 	
+	/**
+	 * Get the full path of this asset eg. /www/avm_webapps/ROOT/myFile.jpg
+	 * @return the path of this asset.
+	 */
 	public String getPath()
 	{
-		return desc.getPath();
+		String path = desc.getPath();
+		
+		if (path != null)
+		{
+			String[] splits = path.split(":");
+			return splits[1];
+		}
+		else
+		{
+			return path;
+		}
 	}
 	
 	public boolean isFile()
@@ -105,6 +126,32 @@ public class Asset
 		return desc.isDeleted();
 	}
 	
+	
+	public int getVersion()
+	{
+		return desc.getVersionID();
+	}
+	
+	/**
+	 * Submit this asset to staging
+	 * @param submitLabel
+	 * @param submitComment
+	 */
+	public void submit(String submitLabel, String submitComment)
+	{
+		List<String> items = new ArrayList<String>(1);
+		items.add(this.getPath());
+		getSandboxService().submitList(getSandbox().getSandboxRef(), items, submitLabel, submitComment);
+	}
+	
+	/**
+	 * revert this asset
+	 */
+	public void revert()
+	{
+		//getSandboxService().revertList(getSandbox().getSandboxRef(), items);
+	}
+	
 	/**
 	 * Get the parent sandbox which contains this asset
 	 * @return the parent sandbox which contains this asset
@@ -112,5 +159,10 @@ public class Asset
 	public Sandbox getSandbox()
 	{
 		return this.sandbox;
+	}
+	
+	private SandboxService getSandboxService()
+	{
+	    return getSandbox().getWebproject().getWebProjects().getSandboxService();
 	}
 }

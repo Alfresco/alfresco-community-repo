@@ -32,6 +32,7 @@ import java.util.List;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.util.ISO8601DateFormat;
 import org.alfresco.wcm.sandbox.SandboxInfo;
+import org.alfresco.wcm.sandbox.SandboxConstants;
 import org.alfresco.wcm.sandbox.SandboxService;
 import org.alfresco.wcm.webproject.script.WebProject;
 
@@ -81,13 +82,42 @@ public class Sandbox implements Serializable
 	{
 		// read only
 	}
-	
+
 	/**
 	 * Submit the modified contents of this sandbox
 	 */
 	public void submitAll(String submitLabel, String submitComment)
 	{
 		getSandboxService().submitAll(getSandboxRef(), submitLabel, submitComment);
+	}
+	
+	/**
+	 * Submit the specified assets (files and directories) modified contents of this sandbox
+	 */
+	public void submitAssets(Asset[] files, String submitLabel, String submitComment)
+	{
+		List<String> items = new ArrayList<String>(files.length);
+		
+		for(int i = 0; i < files.length; i++)
+		{
+			items.add(i, files[i].getPath());
+		}
+		
+		getSandboxService().submitList(getSandboxRef(), items, submitLabel, submitComment);
+	}
+	/**
+	 * Submit the specified files and directories modified contents of this sandbox
+	 */
+	public void submit(String[] files, String submitLabel, String submitComment)
+	{
+		List<String> items = new ArrayList<String>(files.length);
+		
+		for(int i = 0; i < files.length; i++)
+		{
+			items.add(i, files[i]);
+		}
+		
+		getSandboxService().submitList(getSandboxRef(), items, submitLabel, submitComment);
 	}
 	
 	/**
@@ -172,18 +202,37 @@ public class Sandbox implements Serializable
 	}
 	
 	/**
+	 * Is this an author sandbox ?
+	 * @return is this an author sandbox
+	 */
+	public boolean isAuthorSandbox()
+	{
+		return si.getSandboxType().equals(SandboxConstants.PROP_SANDBOX_AUTHOR_MAIN);
+	}
+	
+	/**
+	 * Is this a staging sandbox ?
+	 * @return is this an author sandbox
+	 */
+	public boolean isStagingSandbox()
+	{
+		return si.getSandboxType().equals(SandboxConstants.PROP_SANDBOX_STAGING_MAIN);
+	}
+	
+	
+	/**
 	 * Get the modified assets within this sandbox
 	 * @return the list of changed assets
 	 */
-	public List<Asset> getModifiedAssets()
+	public Asset[] getModifiedAssets()
 	{
 		List<AVMNodeDescriptor> items = getSandboxService().listChangedAll(getSandboxRef(), true);
-        ArrayList<Asset> ret = new ArrayList<Asset>(items.size());
+        Asset[] ret = new Asset[items.size()];
 		
+        int i = 0;
 		for(AVMNodeDescriptor item : items)
 		{
-			Asset a = new Asset(this, item);
-			ret.add(a);
+			ret[i++] = new Asset(this, item);
 		}
 		return ret;	
 	}
@@ -192,38 +241,32 @@ public class Sandbox implements Serializable
 	 * Get the modified assets within this sandbox
 	 * @return the list of changed assets
 	 */
-	public List<Asset> getModifiedAssetsWebApp(String webApp)
+	public Asset[] getModifiedAssetsWebApp(String webApp)
 	{
 		List<AVMNodeDescriptor> items = getSandboxService().listChangedWebApp(getSandboxRef(), webApp, true);
-        ArrayList<Asset> ret = new ArrayList<Asset>(items.size());
-		
+        Asset[] ret = new Asset[items.size()];
+        
+        int i = 0;
 		for(AVMNodeDescriptor item : items)
 		{
-			Asset a = new Asset(this, item);
-			ret.add(a);
+			ret[i++] = new Asset(this, item);
 		}
 		return ret;
 	}
 	
 	/**
-	 * Submit a list of files
+	 * Get the web project that owns this sandbox
+	 * @return the web project
 	 */
-	public void submitList(List<String> toSubmit, String submitLabel, String submitComment) 
-	{
-		// TODO - Interface will add string list
-		//ss.submitList(sbStoreId, items, submitLabel, submitComment)	
-	}
-	
-	public List<Asset> getAssets(String path)
-	{
-		return null;
-	}
-	
 	public WebProject getWebproject()
 	{
 		return this.webproject;
 	}
 	
+	/**
+	 * Get the sandbox service
+	 * @return the sandbox service
+	 */
 	private SandboxService getSandboxService()
 	{
 	    return webproject.getWebProjects().getSandboxService();

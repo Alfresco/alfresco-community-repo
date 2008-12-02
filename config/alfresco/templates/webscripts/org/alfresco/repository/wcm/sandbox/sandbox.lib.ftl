@@ -11,6 +11,8 @@
     	    "${name}" <#if name_has_next>,</#if>	 	   
           </#list>
   		],
+        "isAuthorSandbox" : ${sandbox.authorSandbox?string("true", "false")},
+        "isStagingSandbox" : ${sandbox.stagingSandbox?string("true", "false")},
         "url" : "${url.serviceContext + "/api/wcm/webprojects/" + webproject.webProjectRef + "/sandboxes/" + sandbox.sandboxRef}"
       }
    </#escape>

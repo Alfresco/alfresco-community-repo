@@ -33,7 +33,8 @@ function main()
 	
 	if(webApp != null)
 	{
-		model.assets = sandbox.modifiedAssets(webApp);
+							   
+		model.assets = sandbox.getModifiedAssetsWebApp(webApp);
 	}
 	else
 	{

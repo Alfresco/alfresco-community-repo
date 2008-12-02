@@ -93,6 +93,7 @@ public class SandboxTest  extends BaseWebScriptTest {
         
         // Do tests as user one
         this.authenticationComponent.setCurrentUser(USER_ONE);
+        
     }
     
     private void createUser(String userName)
@@ -211,11 +212,15 @@ public class SandboxTest  extends BaseWebScriptTest {
         	JSONObject createdDate = data.getJSONObject("createdDate");
         	String createdOn = createdDate.getString("iso8601");
         	String createdBy = data.getString("creator");
+        	boolean isAuthorSandbox = data.getBoolean("isAuthorSandbox");
+        	boolean isStagingSandbox = data.getBoolean("isStagingSandbox");
         	assertNotNull("created date is null", createdOn );
         	assertNotNull("created by is null", createdBy );
         	assertNotNull("sandboxref is null", sandboxref);
         	assertNotNull("url is null", url);
         	assertNotNull("name is null", name);
+         	assertTrue("not author sandbox", isAuthorSandbox);
+          	assertFalse("is staging sandbox", isStagingSandbox);
         	
         	// check created date - throws exception if format invalid
         	@SuppressWarnings("unused")

@@ -1,0 +1,19 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+ 
+<!-- 
+   Sample implementation of a Preview URI Service override which 
+   allows Alfresco Web Studio to operate as a preview server from within
+   the JSF client.
+   
+   Since: Labs 3C
+   Author: muzquiano
+-->
+<beans>
+
+   <!-- Define the Web Studio Preview URI Service -->   
+   <bean id="PreviewURIService" class="org.alfresco.web.bean.wcm.preview.WebStudioPreviewURIService">
+      <property name="studioURI" value="http://localhost:8080/studio" />
+   </bean>
+
+</beans>

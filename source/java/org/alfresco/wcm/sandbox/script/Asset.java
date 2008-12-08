@@ -149,7 +149,9 @@ public class Asset
 	 */
 	public void revert()
 	{
-		//getSandboxService().revertList(getSandbox().getSandboxRef(), items);
+		List<String> items = new ArrayList<String>(1);
+		items.add(this.getPath());
+		getSandboxService().revertList(getSandbox().getSandboxRef(), items);
 	}
 	
 	/**

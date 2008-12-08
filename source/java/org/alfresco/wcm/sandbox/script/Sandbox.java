@@ -38,6 +38,9 @@ import org.alfresco.wcm.webproject.script.WebProject;
 
 /**
  * Sandbox object to expose via JavaScript
+ * 
+ * Provides access to the sandbox metadata and its collection of assets.
+ * 
  * @author mrogers
  *
  */
@@ -89,6 +92,36 @@ public class Sandbox implements Serializable
 	public void submitAll(String submitLabel, String submitComment)
 	{
 		getSandboxService().submitAll(getSandboxRef(), submitLabel, submitComment);
+	}
+
+	/**
+	 * Revert the specified assets (files and directories) modified contents of this sandbox
+	 */
+	public void revertAssets(Asset[] files)
+	{
+		List<String> items = new ArrayList<String>(files.length);
+		
+		for(int i = 0; i < files.length; i++)
+		{
+			items.add(i, files[i].getPath());
+		}
+		
+		getSandboxService().revertList(getSandboxRef(), items);
+	}
+	
+	/**
+	 * Revert the specified files and directories modified contents of this sandbox
+	 */
+	public void revert(String[] files)
+	{
+		List<String> items = new ArrayList<String>(files.length);
+		
+		for(int i = 0; i < files.length; i++)
+		{
+			items.add(i, files[i]);
+		}
+		
+		getSandboxService().revertList(getSandboxRef(), items);
 	}
 	
 	/**
@@ -144,14 +177,15 @@ public class Sandbox implements Serializable
 		getSandboxService().revertWebApp(getSandboxRef(), webApp);
 	}
 	
-	/**
-	 * Get the snapshots
-	 * @param includeSystemGenerated
-	 */
-	public void getSnapshots(boolean includeSystemGenerated)
-	{
-		getSandboxService().listSnapshots(getSandboxRef(), includeSystemGenerated);
-	}
+//	/**
+//	 * Get the snapshots, Version Descriptors
+//	 * @param includeSystemGenerated
+//	 */
+//	public void getSnapshots(boolean includeSystemGenerated)
+//	{
+//		//TODO - What is returned?
+//		getSandboxService().listSnapshots(getSandboxRef(), includeSystemGenerated);
+//	}
 
 	/**
 	 * Get the unique reference for this sandbox

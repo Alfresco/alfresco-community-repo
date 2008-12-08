@@ -259,6 +259,8 @@ public abstract class BaseDownloadContentServlet extends BaseServlet
                }
             }
             res.setDateHeader("Last-Modified", modified.getTime());
+            res.setHeader("Cache-Control", "must-revalidate");
+            res.setHeader("ETag", "\"" + Long.toString(modified.getTime()) + "\"");
          }
          
          if (attachment == true)

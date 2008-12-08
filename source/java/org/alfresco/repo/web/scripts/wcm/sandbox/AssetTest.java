@@ -224,7 +224,7 @@ public class AssetTest  extends BaseWebScriptTest {
     }
     
     /**
-     * test the modified assets methods
+     * Test the modified assets (Web App) methods
      * @throws Exception
      */
     public void testModifiedAssetsWebAppTest() throws Exception
@@ -646,12 +646,351 @@ public class AssetTest  extends BaseWebScriptTest {
     }
     
     /**
-     * test the modified assets methods
+     * Test the submit assets (Web App) methods
+     * @throws Exception
+     */
+    public void testSubmitAssetsWebAppTest() throws Exception
+    {
+        this.authenticationComponent.setCurrentUser("admin");
+    	String webprojref = createWebProject();
+    	createMembership(webprojref, USER_ONE, ROLE_CONTENT_MANAGER);
+    	String sandboxref = createSandbox(webprojref, USER_ONE);
+   	
+    	//TODO REPLACE THIS IMPLEMENTATION WITH THE REST API ONCE AVAILABLE
+        String bodgeRootPath = sandboxref + AVM_STORE_SEPARATOR + "/www/avm_webapps/" + WEBAPP_ROOT;
+        String bodgeYellowPath = sandboxref + AVM_STORE_SEPARATOR + "/www/avm_webapps/" + WEBAPP_YELLOW;  
+        avmLockingAwareService.createDirectory(sandboxref + AVM_STORE_SEPARATOR + "/www/avm_webapps", WEBAPP_YELLOW);
+        
+        String submitterURL = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + sandboxref + "/submitter";
+        JSONObject submitForm = new JSONObject();
+        submitForm.put("label", "the label");
+        submitForm.put("comment", "the comment");
+        submitForm.put("all", true);
+        sendRequest(new PostRequest(submitterURL, submitForm.toString(), "application/json"), Status.STATUS_OK);
+    
+        /**
+         * Now we can set up our test data
+         */
+        avmLockingAwareService.createFile(bodgeRootPath, "rootFile1");
+        avmLockingAwareService.createFile(bodgeYellowPath, "yellowFile1");
+        
+        /** 
+         * Submit YELLOW - Should leave root alone
+         */       
+        submitForm.put("label", "yellow submit");
+        submitForm.put("comment", "yellow submit");
+        submitForm.put("all", true);
+        sendRequest(new PostRequest(submitterURL + "?webApp=" + WEBAPP_YELLOW, submitForm.toString(), "application/json"), Status.STATUS_OK);
+        
+    	/**
+    	 * Get the modified asset (yellow should have been submitted leaving root
+    	 */
+    	{
+    	    String sandboxesURL = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + sandboxref + "/modified";
+       	    Response list = sendRequest(new GetRequest(sandboxesURL), Status.STATUS_OK);
+       	    JSONObject result = new JSONObject(list.getContentAsString());
+    	    JSONArray lookupResult = result.getJSONArray("data");
+    	    
+    	    assertEquals("testListUserSandbox", lookupResult.length(), 1);
+    	    
+    	    // Now check the contents..
+    	    JSONObject x = lookupResult.getJSONObject(0);
+    		String name = x.getString("name");
+    		
+    		assertNotNull("name is null", name);
+    		assertEquals("name is wrong", "rootFile1", name);
+    	}
+    }
+    
+    /**
+     * test the revert assets methods
      * @throws Exception
      */
     public void testRevertAssetsTest() throws Exception
     {
+        this.authenticationComponent.setCurrentUser("admin");
+    	String webprojref = createWebProject();
+    	createMembership(webprojref, USER_ONE, ROLE_CONTENT_MANAGER);
+    	String sandboxref = createSandbox(webprojref, USER_ONE);
     	
+    	//TODO REPLACE THIS IMPLEMENTATION WITH THE REST API ONCE AVAILABLE
+        String bodgePath = sandboxref + AVM_STORE_SEPARATOR + "/www/avm_webapps/ROOT";
+        avmLockingAwareService.createFile(bodgePath, "myFile1");
+        
+        String reverterURL = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + sandboxref + "/reverter";
+
+        /**
+         * Revert all Negative test - invalid project
+         */
+        {
+            
+            String crapURL = URL_WEB_PROJECT + "/" + "crap" + URI_SANDBOXES + "/" + sandboxref + "/reverter";
+     
+            JSONObject submitForm = new JSONObject();
+            submitForm.put("all", true);
+            sendRequest(new PostRequest(crapURL, submitForm.toString(), "application/json"), Status.STATUS_NOT_FOUND); 
+        }
+        
+        /**
+         * Submit all Negative test - invalid sandbox
+         */
+        {
+            
+            String crapURL = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + "crap" + "/reverter";
+     
+            JSONObject submitForm = new JSONObject();
+            submitForm.put("all", true);
+            sendRequest(new PostRequest(crapURL, submitForm.toString(), "application/json"), Status.STATUS_NOT_FOUND); 
+        }
+        
+        /**
+         * Submit all Negative test - none of all, assets or paths.
+         */
+        {
+            JSONObject submitForm = new JSONObject();
+            submitForm.put("all", false);
+            sendRequest(new PostRequest(reverterURL, submitForm.toString(), "application/json"), Status.STATUS_BAD_REQUEST); 
+        }
+        
+        /**
+         * Positive test - Revert all
+         */
+        {
+            avmLockingAwareService.createFile(bodgePath, "myFile2");
+            
+        	{
+        	    String sandboxesURL = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + sandboxref + "/modified";
+           	    Response list = sendRequest(new GetRequest(sandboxesURL), Status.STATUS_OK);
+           	    JSONObject result = new JSONObject(list.getContentAsString());
+        	    JSONArray lookupResult = result.getJSONArray("data");
+        	    
+        	    assertTrue("testListUserSandbox", lookupResult.length() > 0);
+        	} 
+            
+            JSONObject submitForm = new JSONObject();
+            submitForm.put("all", true);
+            Response response = sendRequest(new PostRequest(reverterURL, submitForm.toString(), "application/json"), Status.STATUS_OK);
+            //TODO Nothing in the response now.
+            
+        	checkSandboxEmpty(webprojref, sandboxref);
+
+        }
+        
+        /**
+         * Revert via paths
+         */
+        {
+        	avmLockingAwareService.createFile(bodgePath, "myFile3");
+            JSONObject submitForm = new JSONObject();
+            
+            JSONArray paths = new JSONArray();
+            paths.put("/www/avm_webapps/ROOT/myFile3");
+            submitForm.put("paths", paths);
+            Response response = sendRequest(new PostRequest(reverterURL, submitForm.toString(), "application/json"), Status.STATUS_OK); 
+         	checkSandboxEmpty(webprojref, sandboxref);
+        }
+        
+        /**
+         * Revert assets - get a list of modified assets and revert them back
+         */
+        {
+            avmLockingAwareService.createFile(bodgePath, "myFile4");
+            
+        	{
+        	    String sandboxesURL = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + sandboxref + "/modified";
+           	    Response list = sendRequest(new GetRequest(sandboxesURL), Status.STATUS_OK);
+           	    JSONObject result = new JSONObject(list.getContentAsString());
+        	    JSONArray lookupResult = result.getJSONArray("data");
+        	    
+        	    assertTrue("testListUserSandbox", lookupResult.length() > 0);
+        	    
+                JSONObject submitForm = new JSONObject();
+                submitForm.put("assets", lookupResult);
+                Response response = sendRequest(new PostRequest(reverterURL, submitForm.toString(), "application/json"), Status.STATUS_OK); 
+
+        	}
+        	checkSandboxEmpty(webprojref, sandboxref);
+        	    
+         }
+        
+        /**
+         * Revert assets more complex example - get a list of modified assets and submit them back
+         * Also has a delete to revert
+         */
+        {
+            avmLockingAwareService.createFile(bodgePath, "buffy.jpg");
+            avmLockingAwareService.createDirectory(bodgePath, "vampires");
+            avmLockingAwareService.createFile(bodgePath + "/vampires", "master");
+            avmLockingAwareService.createFile(bodgePath + "/vampires", "drusilla");
+            avmLockingAwareService.createDirectory(bodgePath, "humans");
+            avmLockingAwareService.createFile(bodgePath + "/humans", "willow");
+            avmLockingAwareService.createFile(bodgePath + "/humans", "xander");
+            
+        	{
+        	    String sandboxesURL = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + sandboxref + "/modified";
+           	    Response list = sendRequest(new GetRequest(sandboxesURL), Status.STATUS_OK);
+           	    JSONObject result = new JSONObject(list.getContentAsString());
+        	    JSONArray lookupResult = result.getJSONArray("data");
+        	    
+        	    assertTrue("testListUserSandbox", lookupResult.length() > 0);
+        	    
+                JSONObject submitForm = new JSONObject();
+                submitForm.put("assets", lookupResult);
+                Response response = sendRequest(new PostRequest(reverterURL, submitForm.toString(), "application/json"), Status.STATUS_OK); 
+
+        	}
+        	checkSandboxEmpty(webprojref, sandboxref);
+        	    	    	
+         }
+        
+
+        /**
+         * Now finally, a big complicated reversion of assets and paths.
+         */
+        {
+        	// First submit a chunk of data
+            avmLockingAwareService.createFile(bodgePath, "buffy.jpg");
+            avmLockingAwareService.createDirectory(bodgePath, "vampires");
+            avmLockingAwareService.createFile(bodgePath + "/vampires", "master");
+            avmLockingAwareService.createFile(bodgePath + "/vampires", "drusilla");
+            avmLockingAwareService.createDirectory(bodgePath, "humans");
+            avmLockingAwareService.createFile(bodgePath + "/humans", "willow");
+            avmLockingAwareService.createFile(bodgePath + "/humans", "xander");
+
+            JSONObject submitForm = new JSONObject();
+            submitForm.put("label", "the label");
+            submitForm.put("comment", "the comment");
+            submitForm.put("all", true);
+            String submitterURL = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + sandboxref + "/submitter";
+            sendRequest(new PostRequest(submitterURL, submitForm.toString(), "application/json"), Status.STATUS_OK);
+            
+            // Now we can set up the data that will get reverted
+            
+        	// single file in existing dir
+            avmLockingAwareService.createFile(bodgePath + "/vampires", "angel");
+            
+            //delete from an existing dir
+            avmLockingAwareService.removeNode(sandboxref + AVM_STORE_SEPARATOR + "/www/avm_webapps/ROOT/vampires/drusilla");
+            // multiple file in existing dir
+            avmLockingAwareService.createFile(bodgePath + "/humans", "giles");
+            avmLockingAwareService.createFile(bodgePath + "/humans", "dawn");
+            avmLockingAwareService.createFile(bodgePath + "/humans", "anya");
+            // new directory
+            avmLockingAwareService.createDirectory(bodgePath, "cast");
+            avmLockingAwareService.createFile(bodgePath + "/cast", "Anthony Head");
+            avmLockingAwareService.createFile(bodgePath + "/cast", "James Marsters");
+
+            
+        	{
+        	    String sandboxesURL = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + sandboxref + "/modified";
+           	    Response list = sendRequest(new GetRequest(sandboxesURL), Status.STATUS_OK);
+           	    JSONObject result = new JSONObject(list.getContentAsString());
+        	    JSONArray lookupResult = result.getJSONArray("data");
+        	    JSONArray assets = new JSONArray();
+                JSONArray paths = new JSONArray();
+                JSONArray omitted = new JSONArray();
+        	    assertTrue("testListUserSandbox", lookupResult.length() > 4);
+        	    
+        	    /**
+        	     * chop off 3 items from the modified list.   First 2 go into path which should leave 1 unsubmitted.
+        	     */
+        	    for(int i = 0; i < lookupResult.length(); i++)
+        	    {
+        	    	if (i < 2) 
+        	    	{
+        	    	    // do nothing	
+        	    		omitted.put(lookupResult.getJSONObject(i).get("path"));
+        	    	} 
+        	    	else if ( i < 4)
+        	    	{
+        	    		// copy into paths
+        	    		paths.put(lookupResult.getJSONObject(i).get("path"));
+        	    	} 
+        	    	else 
+        	    	{
+        	    		// copy into assets
+        	    		assets.put(lookupResult.getJSONObject(i));
+        	    	}
+        	    }
+        	    
+                JSONObject revertForm = new JSONObject();
+                revertForm.put("assets", assets);
+                revertForm.put("paths", paths);
+                
+                sendRequest(new PostRequest(reverterURL, revertForm.toString(), "application/json"), Status.STATUS_OK); 
+                
+           	    Response listTwo = sendRequest(new GetRequest(sandboxesURL), Status.STATUS_OK);
+           	    JSONObject resultTwo = new JSONObject(listTwo.getContentAsString());
+        	    JSONArray lookupResultTwo = resultTwo.getJSONArray("data");
+        	    assertTrue("testListUserSandbox", lookupResultTwo.length() == 2);
+                
+                /**
+                 * Now revert the omitted two files                
+                 */
+                JSONObject submitOmitted = new JSONObject();
+                submitOmitted.put("paths", omitted);
+                sendRequest(new PostRequest(reverterURL, submitOmitted.toString(), "application/json"), Status.STATUS_OK); 
+        	}
+        	checkSandboxEmpty(webprojref, sandboxref);
+        	    	    	
+         }
     }
     
-}
+    /**
+     * Test the revert assets (Web App) methods
+     * @throws Exception
+     */
+    public void testRevertAssetsWebAppTest() throws Exception
+    {
+        this.authenticationComponent.setCurrentUser("admin");
+    	String webprojref = createWebProject();
+    	createMembership(webprojref, USER_ONE, ROLE_CONTENT_MANAGER);
+    	String sandboxref = createSandbox(webprojref, USER_ONE);
+   	
+    	//TODO REPLACE THIS IMPLEMENTATION WITH THE REST API ONCE AVAILABLE
+        String bodgeRootPath = sandboxref + AVM_STORE_SEPARATOR + "/www/avm_webapps/" + WEBAPP_ROOT;
+        String bodgeYellowPath = sandboxref + AVM_STORE_SEPARATOR + "/www/avm_webapps/" + WEBAPP_YELLOW;  
+        avmLockingAwareService.createDirectory(sandboxref + AVM_STORE_SEPARATOR + "/www/avm_webapps", WEBAPP_YELLOW);
+        
+        String submitterURL = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + sandboxref + "/submitter";
+        JSONObject submitForm = new JSONObject();
+        submitForm.put("label", "the label");
+        submitForm.put("comment", "the comment");
+        submitForm.put("all", true);
+        sendRequest(new PostRequest(submitterURL, submitForm.toString(), "application/json"), Status.STATUS_OK);
+    
+        /**
+         * Now we can set up our test data
+         */
+        avmLockingAwareService.createFile(bodgeRootPath, "rootFile1");
+        avmLockingAwareService.createFile(bodgeYellowPath, "yellowFile1");
+        
+        /** 
+         * Revert YELLOW - Should leave root alone
+         */
+        
+        String reverterURL = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + sandboxref + "/reverter?webApp=" + WEBAPP_YELLOW;
+        JSONObject revertForm = new JSONObject();
+        revertForm.put("all", true);
+        sendRequest(new PostRequest(reverterURL, revertForm.toString(), "application/json"), Status.STATUS_OK);
+        
+    	/**
+    	 * Get the modified asset (yellow should have been reverted leaving root
+    	 */
+    	{
+    	    String sandboxesURL = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + sandboxref + "/modified";
+       	    Response list = sendRequest(new GetRequest(sandboxesURL), Status.STATUS_OK);
+       	    JSONObject result = new JSONObject(list.getContentAsString());
+    	    JSONArray lookupResult = result.getJSONArray("data");
+    	    
+    	    assertTrue("testListUserSandbox", lookupResult.length() == 1);
+    	    
+    	    // Now check the contents..
+    	    JSONObject x = lookupResult.getJSONObject(0);
+    		String name = x.getString("name");
+    		
+    		assertNotNull("name is null", name);
+    		assertEquals("name is wrong", "rootFile1", name);
+    	}
+    }  // End of testRevertAssetsWebAppTest
+} // End of AssetTest

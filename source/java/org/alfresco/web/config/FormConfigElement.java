@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 import org.alfresco.config.ConfigElement;
@@ -276,6 +277,11 @@ public class FormConfigElement extends ConfigElementAdapter
     public Map<String, FormSet> getSets()
     {
         return Collections.unmodifiableMap(this.sets);
+    }
+    
+    public Set<String> getSetIDs()
+    {
+        return Collections.unmodifiableSet(this.sets.keySet());
     }
     
     public List<FieldVisibilityRule> getFieldVisibilityRules()

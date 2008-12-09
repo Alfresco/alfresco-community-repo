@@ -26,11 +26,8 @@ package org.alfresco.web.config;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.alfresco.config.Config;
 import org.alfresco.config.ConfigElement;
@@ -40,11 +37,7 @@ import org.alfresco.util.BaseTest;
 import org.alfresco.web.config.ActionsConfigElement.ActionDefinition;
 import org.alfresco.web.config.ActionsConfigElement.ActionGroup;
 import org.alfresco.web.config.AdvancedSearchConfigElement.CustomProperty;
-import org.alfresco.web.config.DefaultControlsConfigElement.ControlParam;
 import org.alfresco.web.config.DialogsConfigElement.DialogConfig;
-import org.alfresco.web.config.FormConfigElement.FormField;
-import org.alfresco.web.config.FormConfigElement.FormSet;
-import org.alfresco.web.config.FormConfigElement.Mode;
 import org.alfresco.web.config.PropertySheetConfigElement.ItemConfig;
 import org.alfresco.web.config.WizardsConfigElement.ConditionalPageConfig;
 import org.alfresco.web.config.WizardsConfigElement.PageConfig;

@@ -24,29 +24,24 @@
  */
 package org.alfresco.repo.forms;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 
 /**
- * Form service API.
- * <p>
- * This service API is designed to support the public facing Form APIs
- * 
+ * Exception used by the Form services
+ *
  * @author Gavin Cornwell
  */
-public interface FormService
+public class FormException extends AlfrescoRuntimeException
 {
-    /**
-     * Returns a form representation of the given item
-     * 
-     * @param item The item to get a form for
-     * @return The Form representation
-     */
-    public Form getForm(String item);
+    private static final long serialVersionUID = 688834574410335422L;
+
+    public FormException(String msg)
+    {
+        super(msg);
+    }
     
-    /**
-     * Persists the given form representation for the given item
-     * 
-     * @param item The item to persist the form for
-     * @param data An object representing the form data to persist
-     */
-    public void saveForm(String item, FormData data);
+    public FormException(String msg, Throwable cause)
+    {
+        super(msg, cause);
+    }
 }

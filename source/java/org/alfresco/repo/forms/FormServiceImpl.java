@@ -24,10 +24,8 @@
  */
 package org.alfresco.repo.forms;
 
-import org.alfresco.service.cmr.model.FileFolderService;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.search.SearchService;
-import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.repo.forms.processor.FormProcessor;
+import org.alfresco.repo.forms.processor.FormProcessorRegistry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -42,68 +40,65 @@ public class FormServiceImpl implements FormService
     private static Log logger = LogFactory.getLog(FormServiceImpl.class);
     
     /** Services */
-    private NodeService nodeService;
-    private FileFolderService fileFolderService;
-    private SearchService searchService;
-    private PermissionService permissionService;
+    private FormProcessorRegistry processorRegistry;
     
     /**
-     * Set node service
+     * Sets the FormProcessorRegistry
      * 
-     * @param nodeService   node service
+     * @param registry The FormProcessorRegistry instance to use
      */
-    public void setNodeService(NodeService nodeService)
+    public void setProcessorRegistry(FormProcessorRegistry registry)
     {
-        this.nodeService = nodeService;
+        this.processorRegistry = registry;
     }
-    
-    /**
-     * Set file folder service
-     * 
-     * @param fileFolderService     file folder service
-     */
-    public void setFileFolderService(FileFolderService fileFolderService)
-    {
-        this.fileFolderService = fileFolderService;
-    }
-    
-    /**
-     * Set search service
-     * 
-     * @param searchService     search service
-     */
-    public void setSearchService(SearchService searchService)
-    {
-        this.searchService = searchService;
-    }
-    
-    /**
-     * Set permission service
-     * 
-     * @param permissionService     permission service
-     */
-    public void setPermissionService(PermissionService permissionService)
-    {
-        this.permissionService = permissionService;
-    }
-    
+
     /**
      * @see org.alfresco.repo.forms.FormService#getForm(java.lang.String)
      */
-    public Form getForm(String id)
+    public Form getForm(String item)
     {
-        if (logger.isDebugEnabled())
-            logger.debug("Retrieving form for item with id: " + id);
+        if (this.processorRegistry == null)
+        {
+            throw new FormException("Property 'processorRegistry' has not been set.");
+        }
         
-        return null;
+        if (logger.isDebugEnabled())
+            logger.debug("Retrieving form for item: " + item);
+        
+        FormProcessor processor = this.processorRegistry.getApplicableFormProcessor(item);
+        
+        if (processor == null)
+        {
+            throw new FormException("Failed to find appropriate FormProcessor to generate Form for item: " + item);
+        }
+        else
+        {
+            return processor.generate(item);
+        }
     }
 
     /*
-     * @see org.alfresco.repo.forms.FormService#saveForm(java.lang.String, org.alfresco.repo.forms.Form)
+     * @see org.alfresco.repo.forms.FormService#saveForm(java.lang.String, org.alfresco.repo.forms.FormData)
      */
-    public void saveForm(String id, Form form)
+    public void saveForm(String item, FormData data)
     {
+        if (this.processorRegistry == null)
+        {
+            throw new FormException("FormProcessorRegistry has not been setup");
+        }
+        
         if (logger.isDebugEnabled())
-            logger.debug("Saving form for item with id '" + id + "': " + form);
+            logger.debug("Saving form for item '" + item + "': " + data);
+        
+        FormProcessor processor = this.processorRegistry.getApplicableFormProcessor(item);
+        
+        if (processor == null)
+        {
+            throw new FormException("Failed to find appropriate FormProcessor to persist Form for item: " + item);
+        }
+        else
+        {
+            processor.persist(item, data);
+        }
     }
 }

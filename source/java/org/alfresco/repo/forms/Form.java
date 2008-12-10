@@ -24,8 +24,8 @@
  */
 package org.alfresco.repo.forms;
 
-import java.util.List;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  * Data representation of a form to be displayed in the UI.
@@ -35,32 +35,19 @@ import java.util.Map;
 public class Form
 {
     protected String item;
-    protected String submissionUrl;
     protected String type;
-    protected List<FieldDefinition> fieldDefinitions;
-    protected List<FieldGroup> fieldGroups;
-    protected Map<String, String> formData;
+    protected Collection<FieldDefinition> fieldDefinitions;
+    protected Collection<FieldGroup> fieldGroups;
+    protected FormData data;
     
     /**
      * Constructs a Form
      * 
-     * @param item              The identifier
-     * @param submissionUrl     Default submission URL
-     * @param type              The type of the item
-     * @param fieldDefinitions  List of fields that could be displayed
-     * @param fieldGroups       List of field groups
-     * @param formData          Map of the form data
+     * @param item An identifier for the item the form is for
      */
-    public Form(String item, String submissionUrl, String type, 
-                List<FieldDefinition> fieldDefinitions, List<FieldGroup> fieldGroups,
-                Map<String, String> formData)
+    public Form(String item)
     {
-        this.fieldDefinitions = fieldDefinitions;
-        this.fieldGroups = fieldGroups;
-        this.formData = formData;
         this.item = item;
-        this.submissionUrl = submissionUrl;
-        this.type = type;
     }
 
     /**
@@ -72,18 +59,7 @@ public class Form
     public String getItem()
     {
         return this.item;
-    }
-    
-    /**
-     * Returns the submission URL to use to post back to this service, acts as a
-     * default URL for clients to use
-     * 
-     * @return The default submission URL
-     */
-    public String getSubmissionUrl()
-    {
-        return this.submissionUrl;
-    }
+    }  
     
     /**
      * Returns the type of the item the form is for, could be a content model type, a
@@ -95,36 +71,114 @@ public class Form
     {
         return this.type;
     }
+    
+    /**
+     * Sets the type of the item this Form represents
+     * 
+     * @param type The type
+     */
+    public void setType(String type)
+    {
+        this.type = type;
+    }
        
     /**
-     * Returns the list of fields appropriate for the item
+     * Returns the collection of field definitions for the form
      * 
-     * @return List of FieldDefintion objects or null if there are no fields
+     * @return Collection of FieldDefintion objects or null if there are no fields
      */
-    public List<FieldDefinition> getFieldDefinitions()
+    public Collection<FieldDefinition> getFieldDefinitions()
     {
         return this.fieldDefinitions;
     }
     
     /**
-     * Returns the list of field groups for the form 
+     * Sets the collection of FieldDefintion objects representing the fields the
+     * form is able to display
      * 
-     * @return List of FieldGroup objects or null if there are no groups
+     * @param fieldDefinitions Collection of FieldDefinition objects
      */
-    public List<FieldGroup> getFieldGroups()
+    public void setFieldDefinitions(Collection<FieldDefinition> fieldDefinitions)
+    {
+        this.fieldDefinitions = fieldDefinitions;
+    }
+    
+    /**
+     * Adds the given FieldDefinition to the form.
+     * <p>
+     * NOTE: Multiple fields with the same name can be added to the list,
+     *       it is therefore the form processor and the client of the 
+     *       FormService responsibility to differentiate the fields in
+     *       some way i.e. by type, property vs. association.
+     * 
+     * @param definition The FieldDefinition to add
+     */
+    public void addFieldDefinition(FieldDefinition definition)
+    {
+        if (this.fieldDefinitions == null)
+        {
+            this.fieldDefinitions = new ArrayList<FieldDefinition>(8);
+        }
+        
+        this.fieldDefinitions.add(definition);
+    }
+    
+    /**
+     * Returns the collection of field groups for the form 
+     * 
+     * @return Collection of FieldGroup objects or null if there are no groups
+     */
+    public Collection<FieldGroup> getFieldGroups()
     {
         return this.fieldGroups;
     }
     
     /**
+     * Sets the collection of FieldGroup objects representing the groups of
+     * fields the form should display and maintain
+     * 
+     * @param fieldGroups Collection of FieldGroup objects
+     */
+    public void setFieldGroups(Collection<FieldGroup> fieldGroups)
+    {
+        this.fieldGroups = fieldGroups;
+    }
+    
+    /**
      * Returns the data to display in the form
      * 
-     * @return Map of String objects representing the form data or null if
-     *         there is no data
+     * @return FormData object holding the data of the form or null
+     *         if there is no data i.e. for a create form
      */
-    public Map<String, String> getFormData()
+    public FormData getFormData()
     {
-        return this.formData;
+        return this.data;
+    }
+
+    /**
+     * Sets the data this form should display
+     * 
+     * @param data FormData instance containing the data
+     */
+    public void setFormData(FormData data)
+    {
+        this.data = data;
+    }
+    
+    /*
+     * @see java.lang.Object#toString()
+     */
+    public String toString()
+    {
+        StringBuilder buffer = new StringBuilder(super.toString());
+        buffer.append(" (");
+        buffer.append("item=").append(this.item);
+        buffer.append(", type=").append(this.type);
+        buffer.append(", fieldGroups=").append(this.fieldGroups);
+        buffer.append("\nfieldDefinitions=").append(this.fieldDefinitions);
+        buffer.append("\nformData=").append(this.data);
+        buffer.append(")");
+        return buffer.toString();
     }
 }
 

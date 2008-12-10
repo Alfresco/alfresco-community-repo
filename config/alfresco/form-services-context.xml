@@ -20,16 +20,56 @@
     </bean>
     
     <bean id="formService" class="org.alfresco.repo.forms.FormServiceImpl">
-       <property name="nodeService" ref="NodeService"/>
-       <property name="fileFolderService" ref="FileFolderService"/>
-       <property name="searchService" ref="SearchService"/>
-       <property name="permissionService" ref="PermissionService" />
+       <property name="processorRegistry" ref="formProcessorRegistry" />
     </bean>
     
-    <!-- Form model processor factory bean -->
+    <!-- Registry beans -->
+    <bean id="formProcessorRegistry" 
+          class="org.alfresco.repo.forms.processor.FormProcessorRegistry" />
+
+    <bean id="nodeHandlerRegistry"
+          class="org.alfresco.repo.forms.processor.HandlerRegistry" />
     
+    <!-- Form processors  -->
+    <bean id="baseFormProcessor" abstract="true" init-method="register"
+          class="org.alfresco.repo.forms.processor.AbstractFormProcessor">
+        <property name="processorRegistry" ref="formProcessorRegistry" />
+    </bean>
     
+    <bean id="baseFormProcessorByHandlers" abstract="true"
+          class="org.alfresco.repo.forms.processor.AbstractFormProcessorByHandlers" 
+          parent="baseFormProcessor" />
+     
+    <bean id="nodeFormProcessor" 
+          class="org.alfresco.repo.forms.processor.NodeFormProcessor" 
+          parent="baseFormProcessorByHandlers">
+        <property name="handlerRegistry" ref="nodeHandlerRegistry" />
+        <property name="nodeService" ref="NodeService" />
+        <property name="matchPattern">
+            <value>[workspace://*]</value>
+        </property>
+    </bean>
     
+    <!--  Handlers -->
+    <bean id="baseFormHandler" abstract="true" init-method="register"
+          class="org.alfresco.repo.forms.processor.AbstractHandler" />
+    
+    <bean id="nodeFormHandler"
+          class="org.alfresco.repo.forms.processor.NodeHandler"
+          parent="baseFormHandler">
+        <property name="handlerRegistry" ref="nodeHandlerRegistry" />
+        <property name="nodeService" ref="NodeService" />
+        <property name="dictionaryService" ref="DictionaryService" />
+        <property name="namespaceService" ref="NamespaceService" />
+    </bean>
+          
+    <!-- 
+    <bean id="imageAspectFormHandler"
+          class="org.alfresco.repo.forms.processor.ImageAspectHandler"
+          parent="baseFormHandler" />
+    -->
+     
+     
     <!--  
     <bean id="formServiceScript" parent="baseJavaScriptExtension" class="org.alfresco.repo.forms.script.ScriptFormService">
         <property name="extensionName">

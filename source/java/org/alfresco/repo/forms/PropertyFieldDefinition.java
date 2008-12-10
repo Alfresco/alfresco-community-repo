@@ -32,46 +32,24 @@ import java.util.Map;
  *
  * @author Gavin Cornwell
  */
-public class PropertyFieldDefiniton extends FieldDefinition
+public class PropertyFieldDefinition extends FieldDefinition
 {
     protected String dataType;
-    protected boolean mandatory;
-    protected boolean repeats;
+    protected boolean mandatory = false;
+    protected boolean repeats = false;
     protected List<FieldConstraint> constraints;
     
     /**
-     * Constructs a FieldDefinition
+     * Default constructor
      * 
      * @param name              The name of the property
-     * @param label             The display label of the property
-     * @param description       The description of the property
      * @param dataType          The data type of the property
-     * @param defaultValue      Default value of the property
-     * @param binding           Binding of the property
-     * @param protectedField    Whether the property should be read only
-     * @param mandatory         Whether the property is mandatory
-     * @param repeats           Whether the property can contain multiple values
-     * @param group             The group the property belongs to
-     * @param constraints       List of constraints the property has
      */
-    // TODO: Look at the Builder pattern to reduce the size of the constructor!!
-    public PropertyFieldDefiniton(String name, String label, String description,
-                String dataType, String defaultValue, String binding, 
-                boolean protectedField, boolean mandatory, boolean repeats, 
-                FieldGroup group, List<FieldConstraint> constraints)
+    public PropertyFieldDefinition(String name, String dataType)
     {
-        this.name = name;
-        this.label = label;
-        this.description = description;
-        this.defaultValue = defaultValue;
-        this.binding = binding;
-        this.protectedField = protectedField;
-        this.group = group;
+        super(name);
         
         this.dataType = dataType;
-        this.mandatory = mandatory;
-        this.repeats = repeats;
-        this.constraints = constraints;
     }
     
     /**
@@ -94,6 +72,16 @@ public class PropertyFieldDefiniton extends FieldDefinition
     {
         return this.mandatory;
     }
+    
+    /**
+     * Sets whether the property is mandatory
+     * 
+     * @param mandatory true if it is mandatory
+     */
+    public void setMandatory(boolean mandatory)
+    {
+        this.mandatory = mandatory;
+    }
 
     /**
      * Determines if the property can contain multiple values
@@ -103,6 +91,16 @@ public class PropertyFieldDefiniton extends FieldDefinition
     public boolean isRepeating()
     {
         return this.repeats;
+    }
+
+    /**
+     * Sets whether the property can contain multiple values
+     * 
+     * @param repeats true if the field can contain multiple values
+     */
+    public void setRepeating(boolean repeats)
+    {
+        this.repeats = repeats;
     }
 
     /**
@@ -116,6 +114,38 @@ public class PropertyFieldDefiniton extends FieldDefinition
         return this.constraints;
     }
 
+    /**
+     * Sets the list of FieldConstraint objects for the property
+     * 
+     * @param constraints List of FieldConstraint objects
+     */
+    public void setConstraints(List<FieldConstraint> constraints)
+    {
+        this.constraints = constraints;
+    }
+
+    /*
+     * @see java.lang.Object#toString()
+     */
+    public String toString()
+    {
+        StringBuilder buffer = new StringBuilder(super.toString());
+        buffer.append(" (");
+        buffer.append("name=").append(this.name);
+        buffer.append(", dataType=").append(this.dataType);
+        buffer.append(", label=").append(this.label);
+        buffer.append(", description=").append(this.description);
+        buffer.append(", binding=").append(this.binding);
+        buffer.append(", defaultValue=").append(this.defaultValue);
+        buffer.append(", group=").append(this.group);
+        buffer.append(", protectedField=").append(this.protectedField);
+        buffer.append(", mandatory=").append(this.mandatory);
+        buffer.append(", repeats=").append(this.repeats);
+        buffer.append(", constraints=").append(this.constraints);
+        buffer.append(")");
+        return buffer.toString();
+    }
+    
     /**
      * Represents a constraint on a property field
      */

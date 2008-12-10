@@ -22,31 +22,50 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.repo.forms;
+package org.alfresco.repo.forms.processor;
 
+import org.alfresco.service.cmr.repository.InvalidNodeRefException;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 
 /**
- * Form service API.
- * <p>
- * This service API is designed to support the public facing Form APIs
- * 
+ * FormProcessor implementation that can generate and persist Form objects
+ * for repository nodes.
+ *
  * @author Gavin Cornwell
  */
-public interface FormService
+public class NodeFormProcessor extends AbstractFormProcessorByHandlers
 {
-    /**
-     * Returns a form representation of the given item
-     * 
-     * @param item The item to get a form for
-     * @return The Form representation
-     */
-    public Form getForm(String item);
+    /** Services */
+    protected NodeService nodeService;
     
     /**
-     * Persists the given form representation for the given item
+     * Sets the node service 
      * 
-     * @param item The item to persist the form for
-     * @param data An object representing the form data to persist
+     * @param nodeService The NodeService instance
      */
-    public void saveForm(String item, FormData data);
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
+    }
+    
+    /*
+     * @see org.alfresco.repo.forms.processor.AbstractFormProcessor#getTypedItem(java.lang.String)
+     */
+    protected Object getTypedItem(String item)
+    {
+        // create NodeRef representation
+        NodeRef nodeRef = new NodeRef(item);
+        
+        // check the node itself exists
+        if (this.nodeService.exists(nodeRef) == false)
+        {
+            throw new InvalidNodeRefException("Node does not exist: " + nodeRef, nodeRef);
+        }
+        else
+        {
+            // all Node based handlers can expect to get a NodeRef
+            return nodeRef;
+        }
+    }
 }

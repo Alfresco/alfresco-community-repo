@@ -40,6 +40,14 @@ public abstract class FieldDefinition
     protected boolean protectedField;
 
     /**
+     * Default constructor
+     */
+    public FieldDefinition(String name)
+    {
+        this.name = name;
+    }
+    
+    /**
      * Returns the name of the field
      * 
      * @return The field's name
@@ -60,6 +68,16 @@ public abstract class FieldDefinition
     }
     
     /**
+     * Sets the display label for the field
+     * 
+     * @param label The field's display label
+     */
+    public void setLabel(String label)
+    {
+        this.label = label;
+    }
+    
+    /**
      * Returns the description of the field
      * 
      * @return The field's description
@@ -67,6 +85,16 @@ public abstract class FieldDefinition
     public String getDescription()
     {
         return this.description;
+    }
+    
+    /**
+     * Sets the description of the field
+     * 
+     * @param description The field's description
+     */
+    public void setDescription(String description)
+    {
+        this.description = description;
     }
     
     /**
@@ -82,6 +110,18 @@ public abstract class FieldDefinition
     }
     
     /**
+     * Sets the binding to use for the field, this is used by some
+     * FormModelProcessor implementations to generate an 
+     * alternative representation of the data
+     * 
+     * @param binding The field's binding
+     */
+    public void setBinding(String binding)
+    {
+        this.binding = binding;
+    }
+
+    /**
      * Returns any default value the field may have
      * 
      * @return The field's default value or null if there isn't one
@@ -89,6 +129,16 @@ public abstract class FieldDefinition
     public String getDefaultValue()
     {
         return this.defaultValue;
+    }
+    
+    /**
+     * Sets the default value for the field
+     * 
+     * @param defaultValue The field's default value
+     */
+    public void setDefaultValue(String defaultValue)
+    {
+        this.defaultValue = defaultValue;
     }
     
     /**
@@ -102,6 +152,16 @@ public abstract class FieldDefinition
     }
     
     /**
+     * Sets the group the field is part of
+     * 
+     * @param group The group the field belongs to
+     */
+    public void setGroup(FieldGroup group)
+    {
+        this.group = group;
+    }
+    
+    /**
      * Determines whether the field is protected i.e. it should be rendered
      * as read-only in any client displaying the field
      * 
@@ -110,5 +170,16 @@ public abstract class FieldDefinition
     public boolean isProtectedField()
     {
         return this.protectedField;
+    }
+
+    /**
+     * Sets whether the field is protected i.e. it should be rendered
+     * as read-only in any client displaying the field
+     * 
+     * @param protectedField true if the field is protected
+     */
+    public void setProtectedField(boolean protectedField)
+    {
+        this.protectedField = protectedField;
     }
 }

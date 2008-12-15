@@ -69,6 +69,25 @@ public class SimpleAcceptOrRejectAllAuthenticationComponentImpl extends Abstract
     {
        return accept;
     }
+
+    @Override
+    public String getMD4HashedPassword(String userName)
+    {
+        if(accept)
+        {
+            return "0cb6948805f797bf2a82807973b89537";
+        }
+        else
+        {
+            throw new AuthenticationException("Access Denied");
+        }
+    }
+
+    @Override
+    public NTLMMode getNTLMMode()
+    {
+        return NTLMMode.MD4_PROVIDER;
+    }
     
     
 }

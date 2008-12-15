@@ -128,6 +128,10 @@ public class ADMLuceneTest extends TestCase
 
     QName orderInt = QName.createQName(TEST_NAMESPACE, "orderInt");
 
+    QName orderText = QName.createQName(TEST_NAMESPACE, "orderText");
+
+    QName orderMLText = QName.createQName(TEST_NAMESPACE, "orderMLText");
+
     QName aspectWithChildren = QName.createQName(TEST_NAMESPACE, "aspectWithChildren");
 
     TransactionService transactionService;
@@ -422,12 +426,12 @@ public class ADMLuceneTest extends TestCase
 
         documentOrder = new NodeRef[] { rootNodeRef, n4, n5, n6, n7, n8, n9, n10, n11, n12, n13, n14, n3, n1, n2 };
 
-// TODO: Why was the cm:auditable aspect added here?
-//       By adding it, the auditable properties were set automatically.
-//        nodeService.addAspect(n3, ContentModel.ASPECT_AUDITABLE, null);
-//        nodeService.addAspect(n1, ContentModel.ASPECT_AUDITABLE, null);
-        nodeService.setProperty(n1, ContentModel.PROP_MODIFIED, new Date(new Date().getTime() - 1000*60*60));
-//        nodeService.addAspect(n2, ContentModel.ASPECT_AUDITABLE, null);
+        // TODO: Why was the cm:auditable aspect added here?
+        // By adding it, the auditable properties were set automatically.
+        // nodeService.addAspect(n3, ContentModel.ASPECT_AUDITABLE, null);
+        // nodeService.addAspect(n1, ContentModel.ASPECT_AUDITABLE, null);
+        nodeService.setProperty(n1, ContentModel.PROP_MODIFIED, new Date(new Date().getTime() - 1000 * 60 * 60));
+        // nodeService.addAspect(n2, ContentModel.ASPECT_AUDITABLE, null);
     }
 
     private double orderDoubleCount = -0.11d;
@@ -440,6 +444,8 @@ public class ADMLuceneTest extends TestCase
 
     private int orderIntCount = -45764576;
 
+    private int orderTextCount = 0;
+
     /**
      * @return properties
      */
@@ -451,11 +457,20 @@ public class ADMLuceneTest extends TestCase
         testProperties.put(orderFloat, orderFloatCount);
         testProperties.put(orderLong, orderLongCount);
         testProperties.put(orderInt, orderIntCount);
+        testProperties.put(orderText, new String(new char[] { (char) ('a' + orderTextCount) }) + " cabbage");
+
+        MLText mlText = new MLText();
+        mlText.addValue(Locale.ENGLISH, new String(new char[] { (char) ('a' + orderTextCount) }) + " banana");
+        mlText.addValue(Locale.FRENCH, new String(new char[] { (char) ('z' - orderTextCount) }) + " banane");
+        mlText.addValue(Locale.CHINESE, new String(new char[] { (char) ('香' + orderTextCount) }) + " 香蕉");
+        testProperties.put(orderMLText, mlText);
+
         orderDate = Duration.subtract(orderDate, new Duration("P1D"));
         orderDoubleCount += 0.1d;
         orderFloatCount += 0.82f;
         orderLongCount += 299999999999999l;
         orderIntCount += 8576457;
+        orderTextCount++;
         return testProperties;
     }
 
@@ -691,7 +706,7 @@ public class ADMLuceneTest extends TestCase
     private void doBulkTest(int n) throws Exception
     {
         SessionSizeResourceManager.setDisableInTransaction();
-        
+
         Map<QName, Serializable> testProperties = new HashMap<QName, Serializable>();
         testProperties.put(QName.createQName(TEST_NAMESPACE, "text-indexed-stored-tokenised-atomic"), "BULK");
         for (int i = 0; i < n; i++)
@@ -734,7 +749,7 @@ public class ADMLuceneTest extends TestCase
     private void getCold(ADMLuceneSearcherImpl searcher, int n)
     {
         hibernateL1CacheBulkLoader.clear();
-        
+
         long start;
 
         long end;
@@ -759,10 +774,10 @@ public class ADMLuceneTest extends TestCase
 
         System.out.println(n + " Cold in " + ((end - start) / 10e9));
     }
-    
+
     private void getWarm(ADMLuceneSearcherImpl searcher, int n)
     {
-       
+
         long start;
 
         long end;
@@ -787,11 +802,11 @@ public class ADMLuceneTest extends TestCase
 
         System.out.println(n + " Warm in " + ((end - start) / 10e9));
     }
-    
+
     private void getCold10(ADMLuceneSearcherImpl searcher, int n)
     {
         hibernateL1CacheBulkLoader.clear();
-        
+
         long start;
 
         long end;
@@ -816,11 +831,11 @@ public class ADMLuceneTest extends TestCase
 
         System.out.println(n + " Prefetch 10 in " + ((end - start) / 10e9));
     }
-    
+
     private void getCold100(ADMLuceneSearcherImpl searcher, int n)
     {
         hibernateL1CacheBulkLoader.clear();
-        
+
         long start;
 
         long end;
@@ -845,11 +860,11 @@ public class ADMLuceneTest extends TestCase
 
         System.out.println(n + " Prefetch 100 in " + ((end - start) / 10e9));
     }
-    
+
     private void getCold1000(ADMLuceneSearcherImpl searcher, int n)
     {
         hibernateL1CacheBulkLoader.clear();
-        
+
         long start;
 
         long end;
@@ -874,11 +889,11 @@ public class ADMLuceneTest extends TestCase
 
         System.out.println(n + " Prefetch 1000 in " + ((end - start) / 10e9));
     }
-    
+
     private void getCold10000(ADMLuceneSearcherImpl searcher, int n)
     {
         hibernateL1CacheBulkLoader.clear();
-        
+
         long start;
 
         long end;
@@ -2016,7 +2031,7 @@ public class ADMLuceneTest extends TestCase
             date = currentBun;
         }
         results.close();
-        
+
         SearchParameters sp_7 = new SearchParameters();
         sp_7.addStore(rootNodeRef.getStoreRef());
         sp_7.setLanguage(SearchService.LANGUAGE_LUCENE);
@@ -2038,7 +2053,7 @@ public class ADMLuceneTest extends TestCase
                 c.set(Calendar.HOUR_OF_DAY, 0);
                 currentBun = c.getTime();
             }
-            if (date != null)
+            if ((date != null) && (currentBun != null))
             {
                 assertTrue(date.compareTo(currentBun) <= 0);
             }
@@ -2245,16 +2260,116 @@ public class ADMLuceneTest extends TestCase
         }
         results.close();
 
-        luceneFTS.resume();
+        // sort by text
 
         SearchParameters sp17 = new SearchParameters();
         sp17.addStore(rootNodeRef.getStoreRef());
         sp17.setLanguage(SearchService.LANGUAGE_LUCENE);
         sp17.setQuery("PATH:\"//.\"");
-        sp17.addSort("cabbage", false);
+        sp17.addSort("@" + orderText, true);
         results = searcher.query(sp17);
+
+        String text = null;
+        for (ResultSetRow row : results)
+        {
+            String currentBun = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(row.getNodeRef(), orderText));
+            // System.out.println( (currentBun == null ? "null" : NumericEncoder.encode(currentBun))+ " "+currentBun);
+            if ((text != null) && (currentBun != null))
+            {
+                assertTrue(text.compareTo(currentBun) <= 0);
+            }
+            text = currentBun;
+        }
         results.close();
-        
+
+        SearchParameters sp18 = new SearchParameters();
+        sp18.addStore(rootNodeRef.getStoreRef());
+        sp18.setLanguage(SearchService.LANGUAGE_LUCENE);
+        sp18.setQuery("PATH:\"//.\"");
+        sp18.addSort("@" + orderText, false);
+        results = searcher.query(sp18);
+
+        text = null;
+        for (ResultSetRow row : results)
+        {
+            String currentBun = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(row.getNodeRef(), orderText));
+            // System.out.println(currentBun);
+            if ((text != null) && (currentBun != null))
+            {
+                assertTrue(text.compareTo(currentBun) >= 0);
+            }
+            text = currentBun;
+        }
+        results.close();
+
+        // sort by ML text
+
+        Locale[] testLocales = new Locale[] { I18NUtil.getLocale(), Locale.ENGLISH, Locale.FRENCH, Locale.CHINESE };
+        for (Locale testLocale : testLocales)
+        {
+
+            SearchParameters sp19 = new SearchParameters();
+            sp19.addStore(rootNodeRef.getStoreRef());
+            sp19.setLanguage(SearchService.LANGUAGE_LUCENE);
+            sp19.setQuery("PATH:\"//.\"");
+            sp19.addSort("@" + orderMLText, true);
+            sp19.addLocale(testLocale);
+            results = searcher.query(sp19);
+
+            text = null;
+            for (ResultSetRow row : results)
+            {
+                MLText mltext = DefaultTypeConverter.INSTANCE.convert(MLText.class, nodeService.getProperty(row.getNodeRef(), orderMLText));
+                if (mltext != null)
+                {
+                    String currentBun = mltext.getValue(testLocale);
+                    // System.out.println( (currentBun == null ? "null" : NumericEncoder.encode(currentBun))+ "
+                    // "+currentBun);
+                    if ((text != null) && (currentBun != null))
+                    {
+                        assertTrue(text.compareTo(currentBun) <= 0);
+                    }
+                    text = currentBun;
+                }
+            }
+            results.close();
+
+            SearchParameters sp20 = new SearchParameters();
+            sp20.addStore(rootNodeRef.getStoreRef());
+            sp20.setLanguage(SearchService.LANGUAGE_LUCENE);
+            sp20.setQuery("PATH:\"//.\"");
+            sp20.addSort("@" + orderMLText, false);
+            sp20.addLocale(testLocale);
+            results = searcher.query(sp20);
+
+            text = null;
+            for (ResultSetRow row : results)
+            {
+                MLText mltext = DefaultTypeConverter.INSTANCE.convert(MLText.class, nodeService.getProperty(row.getNodeRef(), orderMLText));
+                if (mltext != null)
+                {
+                    String currentBun = mltext.getValue(testLocale);
+                    if ((text != null) && (currentBun != null))
+                    {
+                        assertTrue(text.compareTo(currentBun) >= 0);
+                    }
+                    text = currentBun;
+                }
+            }
+            results.close();
+
+        }
+
+        luceneFTS.resume();
+
+        SearchParameters spN = new SearchParameters();
+        spN.addStore(rootNodeRef.getStoreRef());
+        spN.setLanguage(SearchService.LANGUAGE_LUCENE);
+        spN.setQuery("PATH:\"//.\"");
+        spN.addSort("cabbage", false);
+        results = searcher.query(spN);
+        results.close();
+
         luceneFTS.resume();
     }
 
@@ -4480,13 +4595,13 @@ public class ADMLuceneTest extends TestCase
         results = searcher.query(sp);
         assertEquals(1, results.length());
         results.close();
-        
+
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
         sp.setQuery("ISNULL:\"" + QName.createQName(TEST_NAMESPACE, "null").toString() + "\"");
         results = searcher.query(sp);
-        //assertEquals(62, results.length());
+        // assertEquals(62, results.length());
         results.close();
 
         sp = new SearchParameters();
@@ -4496,13 +4611,13 @@ public class ADMLuceneTest extends TestCase
         results = searcher.query(sp);
         assertEquals(0, results.length());
         results.close();
-        
+
         sp = new SearchParameters();
         sp.addStore(rootNodeRef.getStoreRef());
         sp.setLanguage("lucene");
         sp.setQuery("ISNULL:\"" + QName.createQName(TEST_NAMESPACE, "path-ista").toString() + "\"");
         results = searcher.query(sp);
-        //assertEquals(61, results.length());
+        // assertEquals(61, results.length());
         results.close();
 
         sp = new SearchParameters();
@@ -4534,7 +4649,7 @@ public class ADMLuceneTest extends TestCase
         sp.setLanguage("lucene");
         sp.setQuery("ISNULL:\"" + QName.createQName(TEST_NAMESPACE, "aspectProperty").toString() + "\"");
         results = searcher.query(sp);
-        //assertEquals(62, results.length());
+        // assertEquals(62, results.length());
         results.close();
 
         sp = new SearchParameters();

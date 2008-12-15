@@ -32,6 +32,11 @@
                <title>Name</title>
                <type>d:text</type>
                <mandatory enforced="true">true</mandatory>
+			   <index enabled="true">
+				  <atomic>true</atomic>
+				  <stored>false</stored> 
+                  <tokenised>both</tokenised>
+               </index>
                <constraints>
                   <constraint ref="cm:filename" />
                </constraints>
@@ -373,10 +378,20 @@
             <property name="cm:title">
                <title>Title</title>
                <type>d:mltext</type>
+			   <index enabled="true">
+				  <atomic>true</atomic>
+				  <stored>false</stored> 
+                  <tokenised>both</tokenised>
+               </index>
             </property>
             <property name="cm:description">
                <title>Description</title>
                <type>d:mltext</type>
+			   <index enabled="true">
+				  <atomic>true</atomic>
+				  <stored>false</stored> 
+                  <tokenised>both</tokenised>
+               </index>
             </property>
          </properties>
       </aspect>

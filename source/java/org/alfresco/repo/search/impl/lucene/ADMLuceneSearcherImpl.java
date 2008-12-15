@@ -26,22 +26,30 @@ package org.alfresco.repo.search.impl.lucene;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.search.CannedQueryDef;
 import org.alfresco.repo.search.EmptyResultSet;
+import org.alfresco.repo.search.MLAnalysisMode;
 import org.alfresco.repo.search.QueryRegisterComponent;
 import org.alfresco.repo.search.SearcherException;
 import org.alfresco.repo.search.impl.NodeSearcher;
 import org.alfresco.repo.search.impl.lucene.QueryParser.Operator;
 import org.alfresco.repo.search.impl.lucene.analysis.DateTimeAnalyser;
+import org.alfresco.repo.search.impl.lucene.analysis.MLTokenDuplicator;
+import org.alfresco.repo.search.impl.lucene.analysis.VerbatimAnalyser;
 import org.alfresco.repo.search.results.SortedResultSet;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -68,6 +76,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermEnum;
+import org.apache.lucene.index.IndexReader.FieldOption;
 import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Searcher;
@@ -269,13 +278,77 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
                         switch (sd.getSortType())
                         {
                         case FIELD:
+                            Locale sortLocale = null;
                             String field = sd.getField();
                             if (field.startsWith("@"))
                             {
                                 field = expandAttributeFieldName(field);
                                 PropertyDefinition propertyDef = getDictionaryService().getProperty(QName.createQName(field.substring(1)));
 
-                                if (propertyDef.getDataType().getName().equals(DataTypeDefinition.DATETIME))
+                                if (propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT))
+                                {
+                                    throw new SearcherException("Order on content properties is not curently supported");
+                                }
+                                else if ((propertyDef.getDataType().getName().equals(DataTypeDefinition.MLTEXT)) || (propertyDef.getDataType().getName().equals(DataTypeDefinition.TEXT)))
+                                {
+                                    List<Locale> locales = searchParameters.getLocales();
+                                    if (((locales == null) || (locales.size() == 0)))
+                                    {
+                                        locales = Collections.singletonList(I18NUtil.getLocale());
+                                    }
+
+                                    if (locales.size() > 1)
+                                    {
+                                        throw new SearcherException("Order on text/mltext properties with more than one locale is not curently supported");
+                                    }
+                                    
+                                    sortLocale = locales.get(0);
+                                    // find best field match
+
+                                    MLAnalysisMode analysisMode = getLuceneConfig().getDefaultMLSearchAnalysisMode();
+                                    HashSet<String> allowableLocales = new HashSet<String>();
+                                    for (Locale l : MLAnalysisMode.getLocales(analysisMode, sortLocale, false))
+                                    {
+                                        allowableLocales.add(l.toString());
+                                    }
+
+                                    String sortField = field;
+
+                                    for (Object current : searcher.getReader().getFieldNames(FieldOption.INDEXED))
+                                    {
+                                        String currentString = (String) current;
+                                        if (currentString.startsWith(field) && currentString.endsWith(".sort"))
+                                        {
+                                            String fieldLocale = currentString.substring(field.length() + 1, currentString.length() - 5);
+                                            if (allowableLocales.contains(fieldLocale))
+                                            {
+                                                if (fieldLocale.equals(sortLocale.toString()))
+                                                {
+                                                    sortField = currentString;
+                                                    break;
+                                                }
+                                                else if (sortLocale.toString().startsWith(fieldLocale))
+                                                {
+                                                    if (sortField.equals(field) || (currentString.length() < sortField.length()))
+                                                    {
+                                                        sortField = currentString;
+                                                    }
+                                                }
+                                                else if (fieldLocale.startsWith(sortLocale.toString()))
+                                                {
+                                                    if (sortField.equals(field) || (currentString.length() < sortField.length()))
+                                                    {
+                                                        sortField = currentString;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    field = sortField;
+
+                                }
+                                else if (propertyDef.getDataType().getName().equals(DataTypeDefinition.DATETIME))
                                 {
                                     DataTypeDefinition dataType = propertyDef.getDataType();
                                     String analyserClassName = dataType.getAnalyserClassName();
@@ -292,7 +365,7 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
                             }
                             if (fieldHasTerm(searcher.getReader(), field))
                             {
-                                fields[index++] = new SortField(field, !sd.isAscending());
+                                fields[index++] = new SortField(field, sortLocale, !sd.isAscending());
                             }
                             else
                             {
@@ -309,7 +382,7 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
 
                     }
                     hits = searcher.search(query, new Sort(fields));
-                    
+
                 }
                 else
                 {
@@ -318,7 +391,7 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
 
                 Path[] paths = searchParameters.getAttributePaths().toArray(new Path[0]);
                 ResultSet rs = new LuceneResultSet(hits, searcher, nodeService, tenantService, paths, searchParameters, getLuceneConfig());
-                if(requiresPostSort)
+                if (requiresPostSort)
                 {
                     ResultSet sorted = new SortedResultSet(rs, nodeService, searchParameters, namespacePrefixResolver);
                     return sorted;
@@ -359,7 +432,8 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
                     return new EmptyResultSet();
                 }
                 Hits hits = searcher.search(query);
-                return new LuceneResultSet(hits, searcher, nodeService, tenantService, searchParameters.getAttributePaths().toArray(new Path[0]), searchParameters, getLuceneConfig());
+                return new LuceneResultSet(hits, searcher, nodeService, tenantService, searchParameters.getAttributePaths().toArray(new Path[0]), searchParameters,
+                        getLuceneConfig());
             }
             catch (SAXPathException e)
             {
@@ -757,7 +831,7 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
                 Term term = terms.term();
                 if (term != null)
                 {
-                    if(!term.field().equals(field))
+                    if (!term.field().equals(field))
                     {
                         break;
                     }
@@ -765,26 +839,26 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
                     Pair<String, Integer> pair = new Pair<String, Integer>(term.text(), Integer.valueOf(freq));
                     if (answer.size() < count)
                     {
-                       if (answer.size() == 0)
-                       {
-                           answer.add(pair);
-                       }
-                       else if (answer.get(answer.size() - 1).getSecond().compareTo(pair.getSecond()) >= 0)
-                       {
-                           answer.add(pair);
-                       }
-                       else
-                       {
-                           for (ListIterator<Pair<String, Integer>> it = answer.listIterator(); it.hasNext(); /**/)
-                           {
-                               Pair<String, Integer> test = it.next();
-                               if (test.getSecond().compareTo(pair.getSecond()) < 0)
-                               {
-                                   it.previous();
-                                   it.add(pair);
-                                   break;
-                               }
-                           }
+                        if (answer.size() == 0)
+                        {
+                            answer.add(pair);
+                        }
+                        else if (answer.get(answer.size() - 1).getSecond().compareTo(pair.getSecond()) >= 0)
+                        {
+                            answer.add(pair);
+                        }
+                        else
+                        {
+                            for (ListIterator<Pair<String, Integer>> it = answer.listIterator(); it.hasNext(); /**/)
+                            {
+                                Pair<String, Integer> test = it.next();
+                                if (test.getSecond().compareTo(pair.getSecond()) < 0)
+                                {
+                                    it.previous();
+                                    it.add(pair);
+                                    break;
+                                }
+                            }
                         }
                     }
                     else if (answer.get(count - 1).getSecond().compareTo(pair.getSecond()) < 0)
@@ -806,7 +880,8 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
                         // off the end
                     }
                 }
-            } while (terms.next());
+            }
+            while (terms.next());
             terms.close();
             return answer;
 
@@ -832,7 +907,9 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
 
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.alfresco.repo.search.impl.lucene.LuceneSearcher#getClosingIndexSearcher()
      */
     public ClosingIndexSearcher getClosingIndexSearcher()

@@ -27,6 +27,7 @@ package org.alfresco.repo.search;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Locale;
+import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 
@@ -720,7 +721,7 @@ public enum MLAnalysisMode
 
     public abstract boolean includesExactCountryMatch();
 
-    public static Collection<Locale> getLocales(MLAnalysisMode mlAnalaysisMode, Locale locale, boolean withWildcards)
+    public static Set<Locale> getLocales(MLAnalysisMode mlAnalaysisMode, Locale locale, boolean withWildcards)
     {
         HashSet<Locale> locales = new HashSet<Locale>();
 

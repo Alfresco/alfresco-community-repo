@@ -69,6 +69,26 @@
                         <tokenised>true</tokenised>
                     </index>
                 </property>
+				<property name="test:orderText">
+                    <type>d:text</type>
+                    <mandatory>true</mandatory>
+                    <multiple>false</multiple>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <stored>true</stored>
+                        <tokenised>both</tokenised>
+                    </index>
+                </property>
+				<property name="test:orderMLText">
+                    <type>d:mltext</type>
+                    <mandatory>true</mandatory>
+                    <multiple>false</multiple>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <stored>true</stored>
+                        <tokenised>both</tokenised>
+                    </index>
+                </property>
             </properties>
             <associations>
                 <child-association name="test:assoc">

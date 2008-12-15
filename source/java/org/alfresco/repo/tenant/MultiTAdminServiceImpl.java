@@ -50,8 +50,6 @@ import org.alfresco.repo.node.db.DbNodeServiceImpl;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
-import org.alfresco.repo.usage.UserUsageBootstrapJob;
-import org.alfresco.repo.usage.UserUsageTrackingComponent;
 import org.alfresco.repo.workflow.WorkflowDeployer;
 import org.alfresco.service.cmr.admin.RepoAdminService;
 import org.alfresco.service.cmr.attributes.AttributeService;
@@ -895,9 +893,11 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
    
         spacesImporterBootstrap.bootstrap();
         
+        /* TODO - pending fix for ETHREEOH-283
         // calculate any missing usages
         UserUsageTrackingComponent userUsageTrackingComponent = (UserUsageTrackingComponent)ctx.getBean(UserUsageBootstrapJob.KEY_COMPONENT);
         userUsageTrackingComponent.bootstrapInternal();
+        */
        
         logger.debug("Bootstrapped store: " + tenantService.getBaseName(bootstrapStoreRef));
     }

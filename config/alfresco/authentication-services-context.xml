@@ -221,6 +221,13 @@
 		<property name="dictionaryService">
             <ref bean="dictionaryService" />
         </property>
+        <property name="tenantService">
+            <ref bean="tenantService"/>
+        </property>
+        <!-- The store in which people are persisted. -->
+        <property name="storeUrl">
+           <value>${spaces.store}</value>
+        </property>
 	</bean>
 
 

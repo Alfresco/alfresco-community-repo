@@ -39,8 +39,10 @@ import org.alfresco.repo.domain.PropertyMapKey;
 import org.alfresco.repo.domain.QNameDAO;
 import org.alfresco.repo.domain.hibernate.NodeImpl;
 import org.alfresco.repo.node.db.hibernate.HibernateNodeDaoServiceImpl;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.QName;
 import org.hibernate.SQLQuery;
@@ -61,22 +63,40 @@ public class PersonDaoImpl extends HibernateDaoSupport implements PersonDao
     private LocaleDAO localeDAO;
 
     private DictionaryService dictionaryService;
+    
+    private StoreRef storeRef;
+    
+    private TenantService tenantService;
+    
+    public void setStoreUrl(String storeUrl)
+    {
+        this.storeRef = new StoreRef(storeUrl);
+    }
+    
+    public void setTenantService(TenantService tenantService)
+    {
+        this.tenantService = tenantService;
+    }
 
     @SuppressWarnings("unchecked")
     public List<NodeRef> getPersonOrNull(final String searchUserName, boolean userNamesAreCaseSensitive)
     {
+        final StoreRef personStoreRef = tenantService.getName(storeRef);
+        
         List<NodeRef> answer = new ArrayList<NodeRef>();
 
         HibernateCallback callback = new HibernateCallback()
         {
             public Object doInHibernate(Session session)
             {
-                SQLQuery query = getSession().createSQLQuery("SELECT {n.*} FROM alf_node n JOIN alf_node_properties p ON n.id = p.node_id JOIN alf_child_assoc c on c.child_node_id = n.id WHERE c.qname_localname = :userName1 AND p.qname_id = :qnameId AND p.string_value = :userName2 and n.node_deleted = :False");
+                SQLQuery query = getSession().createSQLQuery("SELECT {n.*} FROM alf_node n JOIN alf_node_properties p ON n.id = p.node_id JOIN alf_child_assoc c on c.child_node_id = n.id JOIN alf_store s on s.id = n.store_id WHERE c.qname_localname = :userName1 AND p.qname_id = :qnameId AND p.string_value = :userName2 and n.node_deleted = :False and s.protocol = :storeProtocol and s.identifier = :storeIdentifier");
                 query.addEntity("n", NodeImpl.class);
                 query.setParameter("qnameId", qNameId);
                 query.setParameter("userName1", searchUserName);
                 query.setParameter("userName2", searchUserName);
                 query.setParameter("False", Boolean.FALSE);
+                query.setParameter("storeProtocol", personStoreRef.getProtocol());
+                query.setParameter("storeIdentifier", personStoreRef.getIdentifier());
                 return query.list();
             }
         };
@@ -122,16 +142,20 @@ public class PersonDaoImpl extends HibernateDaoSupport implements PersonDao
     @SuppressWarnings("unchecked")
     public Set<NodeRef> getAllPeople()
     {
+        final StoreRef personStoreRef = tenantService.getName(storeRef);
+        
         Set<NodeRef> answer = new HashSet<NodeRef>();
 
         HibernateCallback callback = new HibernateCallback()
         {
             public Object doInHibernate(Session session)
             {
-                SQLQuery query = getSession().createSQLQuery("SELECT {n.*} FROM alf_node n JOIN alf_node_properties p ON n.id = p.node_id WHERE p.qname_id = :qnameId and n.node_deleted = :False");
+                SQLQuery query = getSession().createSQLQuery("SELECT {n.*} FROM alf_node n JOIN alf_node_properties p ON n.id = p.node_id JOIN alf_store s on s.id = n.store_id WHERE p.qname_id = :qnameId and n.node_deleted = :False and s.protocol = :storeProtocol and s.identifier = :storeIdentifier");
                 query.addEntity("n", NodeImpl.class);
                 query.setParameter("qnameId", qNameId);
                 query.setParameter("False", Boolean.FALSE);
+                query.setParameter("storeProtocol", personStoreRef.getProtocol());
+                query.setParameter("storeIdentifier", personStoreRef.getIdentifier());
                 return query.list();
             }
         };

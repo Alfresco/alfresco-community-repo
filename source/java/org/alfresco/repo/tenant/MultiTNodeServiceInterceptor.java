@@ -24,17 +24,23 @@
  */
 package org.alfresco.repo.tenant;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.logging.Log;
@@ -164,7 +170,52 @@ public class MultiTNodeServiceInterceptor extends DelegatingIntroductionIntercep
         // Make the call
         Object ret = invocation.proceed();
         
-        if (methodName.equals("getStores"))
+        if (methodName.equals("getProperty"))
+        {
+            if (ret != null)
+            {
+                // Convert the outbound value
+                QName qname = (QName)args[1];
+                if (qname.equals(ContentModel.PROP_STORE_IDENTIFIER))
+                {
+                    String rawStoreId = (String)ret;
+                    ret = tenantService.getBaseName(rawStoreId);
+                }
+                else
+                {
+                    ret = convertOutboundValue(ret);
+                }
+            }
+            
+            return ret;
+        }
+        else if (methodName.equals("getProperties"))
+        {
+            if (ret != null)
+            {
+                // Convert the outbound values
+                Map<QName, Serializable> rawValues = (Map<QName, Serializable>)ret;
+                for (Map.Entry<QName, Serializable> rawValue : rawValues.entrySet())
+                {
+                    QName qname = rawValue.getKey();
+                    Serializable value = rawValue.getValue();
+
+                    if (qname.equals(ContentModel.PROP_STORE_IDENTIFIER) && (value != null))
+                    {
+                        rawValues.put(ContentModel.PROP_STORE_IDENTIFIER, tenantService.getBaseName((String)value));
+                    }
+                    else
+                    {
+                        rawValues.put(qname, (Serializable)convertOutboundValue(value));
+                    }
+                }
+                
+                ret = rawValues;
+            }
+            
+            return ret;
+        }
+        else if (methodName.equals("getStores"))
         {
             if ((ret == null) || (! (ret instanceof List)))
             {
@@ -254,8 +305,6 @@ public class MultiTNodeServiceInterceptor extends DelegatingIntroductionIntercep
             return null;
         }
         
-        // TODO use getBaseName ...
-        
         // Deal with collections
         Object value = rawValue;
         if (rawValue instanceof Collection)
@@ -265,7 +314,7 @@ public class MultiTNodeServiceInterceptor extends DelegatingIntroductionIntercep
         else if (rawValue instanceof StoreRef)
         {
             StoreRef ref = (StoreRef) rawValue;
-            value = tenantService.getName(ref);
+            value = tenantService.getBaseName(ref);
         }
         else if (rawValue instanceof NodeRef)
         {
@@ -275,14 +324,14 @@ public class MultiTNodeServiceInterceptor extends DelegatingIntroductionIntercep
         else if (rawValue instanceof ChildAssociationRef)
         {
             ChildAssociationRef ref = (ChildAssociationRef) rawValue;
+            // TODO use getBaseName ... fix tenant bootstrap
             value = tenantService.getName(ref);
         }
         else if (rawValue instanceof AssociationRef)
         {
             AssociationRef ref = (AssociationRef) rawValue;
-            value = tenantService.getName(ref);
+            value = tenantService.getBaseName(ref);
         }
-        /* TODO
         else if (rawValue instanceof Path)
         {
             Path ref = (Path)rawValue;
@@ -299,7 +348,6 @@ public class MultiTNodeServiceInterceptor extends DelegatingIntroductionIntercep
             }
             value = outboundPath;
         }
-        */
         // Done
         return value;
     }

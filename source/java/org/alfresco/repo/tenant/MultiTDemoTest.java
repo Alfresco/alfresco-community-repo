@@ -32,6 +32,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import junit.framework.TestCase;
 
@@ -104,6 +105,7 @@ public class MultiTDemoTest extends TestCase
     public static final String TEST_USER1 = "alice";
     public static final String TEST_USER2 = "bob";
     public static final String TEST_USER3 = "eve";
+    public static final String TEST_USER4 = "fred";
     
     private static final int DEFAULT_DM_STORE_COUNT = 6;
     
@@ -146,6 +148,17 @@ public class MultiTDemoTest extends TestCase
     {   
         logger.info("Create tenants");
         
+        Set<NodeRef> personRefs = personService.getAllPeople();
+        //assertEquals(2, personRefs.size()); // super-tenant: admin, guest (note: checking for 2 assumes that this test is run in a fresh bootstrap env)
+        for (NodeRef personRef : personRefs)
+        {
+            String userName = (String)nodeService.getProperty(personRef, ContentModel.PROP_USERNAME);
+            for (final String tenantDomain : tenants)
+            {    
+                assertFalse("Unexpected (tenant) user: "+userName, userName.endsWith(tenantDomain));
+            }
+        }
+        
         try 
         {   
             for (final String tenantDomain : tenants)
@@ -181,6 +194,17 @@ public class MultiTDemoTest extends TestCase
     {
         logger.info("Create demo users");
         
+        Set<NodeRef> personRefs = personService.getAllPeople();
+        //assertEquals(2, personRefs.size()); // super-tenant: admin, guest (note: checking for 2 assumes that this test is run in a fresh bootstrap env)
+        for (NodeRef personRef : personRefs)
+        {
+            String userName = (String)nodeService.getProperty(personRef, ContentModel.PROP_USERNAME);
+            for (final String tenantDomain : tenants)
+            {    
+                assertFalse("Unexpected (tenant) user: "+userName, userName.endsWith(tenantDomain));
+            }
+        }
+        
         try
         {
             for (final String tenantDomain : tenants)
@@ -188,22 +212,50 @@ public class MultiTDemoTest extends TestCase
                 String tenantAdminName = tenantService.getDomainUser(TenantService.ADMIN_BASENAME, tenantDomain);
                 
                 AuthenticationUtil.runAs(new RunAsWork<Object>()
+                {
+                    public Object doWork() throws Exception
+                    {
+                        createUser(TEST_USER1, tenantDomain, "welcome");
+                        createUser(TEST_USER2, tenantDomain, "welcome");
+                        
+                        if (tenantDomain.equals(TEST_TENANT_DOMAIN2))
                         {
-                            public Object doWork() throws Exception
-                            {
-                                createUser(TEST_USER1, tenantDomain, "welcome");
-                                
-                                createUser(TEST_USER2, tenantDomain, "welcome");
-                                
-                                if (tenantDomain.equals(TEST_TENANT_DOMAIN2))
-                                {
-                                    createUser(TEST_USER3, tenantDomain, "welcome");
-                                }
-                                
-                                return null;                      
-                            }
-                        }, tenantAdminName);  
+                            createUser(TEST_USER3, tenantDomain, "welcome");
+                        }
+                        
+                        return null;                      
+                    }
+                }, tenantAdminName);
+            }
+            
+            for (final String tenantDomain : tenants)
+            {        
+                String tenantAdminName = tenantService.getDomainUser(TenantService.ADMIN_BASENAME, tenantDomain);
                 
+                AuthenticationUtil.runAs(new RunAsWork<Object>()
+                {
+                    public Object doWork() throws Exception
+                    {
+                        Set<NodeRef> personRefs = personService.getAllPeople();
+                        
+                        if (tenantDomain.equals(TEST_TENANT_DOMAIN2))
+                        {
+                            assertEquals(5, personRefs.size()); // admin@tenant, guest@tenant, alice@tenant, bob@tenant, eve@tenant
+                        }
+                        else
+                        {
+                            assertEquals(4, personRefs.size()); // admin@tenant, guest@tenant, alice@tenant, bob@tenant
+                        }
+                        
+                        for (NodeRef personRef : personRefs)
+                        {
+                            String userName = (String)nodeService.getProperty(personRef, ContentModel.PROP_USERNAME); 
+                            assertTrue(userName.endsWith(tenantDomain));
+                        }
+                        
+                        return null;                      
+                    }
+                }, tenantAdminName);
             }
         }   
         catch (Throwable t)
@@ -212,7 +264,7 @@ public class MultiTDemoTest extends TestCase
             t.printStackTrace(new PrintWriter(stackTrace));
             System.err.println(stackTrace.toString());
             throw t;
-        }   
+        } 
     }
     
     public void testLoginUsers() throws Throwable
@@ -431,6 +483,37 @@ public class MultiTDemoTest extends TestCase
         }
     }
     
+    public void testGetProperty()
+    {
+        logger.info("Test get property");
+        
+        final String tenantDomain = TEST_TENANT_DOMAIN1;
+        String tenantAdminName = tenantService.getDomainUser(TenantService.ADMIN_BASENAME, tenantDomain);
+        
+        AuthenticationUtil.runAs(new RunAsWork<Object>()
+        {
+            public Object doWork() throws Exception
+            {
+                NodeRef personNodeRef = createUser(TEST_USER4, tenantDomain, "welcome");
+                
+                // Test nodeRef property
+                NodeRef homeFolderNodeRef = (NodeRef)nodeService.getProperty(personNodeRef, ContentModel.PROP_HOMEFOLDER);
+                assertFalse(homeFolderNodeRef.toString().contains(tenantDomain));
+                
+                Map<QName, Serializable> props = (Map<QName, Serializable>)nodeService.getProperties(personNodeRef);
+                assertFalse(props.get(ContentModel.PROP_HOMEFOLDER).toString().contains(tenantDomain));
+                
+                // Test "store-identifier" property
+                String storeId = (String)nodeService.getProperty(personNodeRef, ContentModel.PROP_STORE_IDENTIFIER);
+                assertFalse(storeId.contains(tenantDomain));
+                
+                assertFalse(props.get(ContentModel.PROP_STORE_IDENTIFIER).toString().contains(tenantDomain));
+                
+                return null;                      
+            }
+        }, tenantAdminName);
+    }
+    
     private void createGroup(String shortName, String parentShortName)
     {
         // create new Group using authority Service
@@ -458,9 +541,11 @@ public class MultiTDemoTest extends TestCase
     }
 
     
-    private void createUser(String baseUserName, String tenantDomain, String password)
+    private NodeRef createUser(String baseUserName, String tenantDomain, String password)
     {
         String userName = tenantService.getDomainUser(baseUserName, tenantDomain);
+        
+        NodeRef personNodeRef = null;
         
         if (! this.authenticationService.authenticationExists(userName))
         {
@@ -483,13 +568,21 @@ public class MultiTDemoTest extends TestCase
             personProperties.put(ContentModel.PROP_LASTNAME, baseUserName+"-"+tenantDomain); // add domain suffix here for demo only
             personProperties.put(ContentModel.PROP_EMAIL, userName);
             
-            NodeRef newPerson = this.personService.createPerson(personProperties);
+            personNodeRef = this.personService.createPerson(personProperties);
             
             // ensure the user can access their own Person object
-            this.permissionService.setPermission(newPerson, userName, permissionService.getAllPermission(), true);
+            this.permissionService.setPermission(personNodeRef, userName, permissionService.getAllPermission(), true);
             
             logger.info("Created user " + userName);
         }
+        else
+        {
+            personNodeRef = personService.getPerson(userName);
+            
+            logger.info("Found existing user " + userName);
+        }
+        
+        return personNodeRef;
     }
     
     private void loginLogoutUser(String username, String password)

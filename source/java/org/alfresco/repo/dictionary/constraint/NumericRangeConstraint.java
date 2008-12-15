@@ -24,6 +24,9 @@
  */
 package org.alfresco.repo.dictionary.constraint;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.alfresco.service.cmr.dictionary.ConstraintException;
 import org.alfresco.service.cmr.dictionary.DictionaryException;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
@@ -49,6 +52,15 @@ public class NumericRangeConstraint extends AbstractConstraint
     
     private double minValue = Double.MIN_VALUE;
     private double maxValue = Double.MAX_VALUE;
+
+    /*
+     * @see org.alfresco.service.cmr.dictionary.Constraint#getType()
+     */
+    @Override
+    public String getType()
+    {
+        return "MINMAX";
+    }
     
     @Override
     public String toString()
@@ -107,10 +119,16 @@ public class NumericRangeConstraint extends AbstractConstraint
         this.maxValue = maxValue;
     }
     
+    /*
+     * @see org.alfresco.service.cmr.dictionary.Constraint#initialize()
+     */
     public void initialize()
     {
     }
 
+    /*
+     * @see org.alfresco.repo.dictionary.constraint.AbstractConstraint#evaluateSingleValue(java.lang.Object)
+     */
     protected void evaluateSingleValue(Object value)
     {
         // ensure that the value can be converted to a double
@@ -135,5 +153,18 @@ public class NumericRangeConstraint extends AbstractConstraint
         {
             throw new ConstraintException(ERR_OUT_OF_RANGE, checkValue, minValue, maxValue);
         }
+    }
+    
+    /*
+     * @see org.alfresco.service.cmr.dictionary.Constraint#getParameters()
+     */
+    public Map<String, Object> getParameters()
+    {
+        Map<String, Object> params = new HashMap<String, Object>(2);
+        
+        params.put("minValue", this.minValue);
+        params.put("maxValue", this.maxValue);
+        
+        return params;
     }
 }

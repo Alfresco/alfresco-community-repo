@@ -46,7 +46,7 @@
         <property name="handlerRegistry" ref="nodeHandlerRegistry" />
         <property name="nodeService" ref="NodeService" />
         <property name="matchPattern">
-            <value>[workspace://*]</value>
+            <value>workspace://[\w\-\/]*</value>
         </property>
     </bean>
     

@@ -24,6 +24,8 @@
  */
 package org.alfresco.service.cmr.dictionary;
 
+import java.util.Map;
+
 
 /**
  * The interface for classes that implement constraints on property values.
@@ -43,6 +45,21 @@ package org.alfresco.service.cmr.dictionary;
  */
 public interface Constraint
 {
+    /**
+     * Returns the 'type' of the constraint, this is the identifier given to 
+     * constraint in the configuration.
+     *  
+     * @return The type
+     */
+    public String getType();
+    
+    /**
+     * Returns the parameters passed to the instance of the constraint.
+     * 
+     * @return Map of parameters, null if there are no parameters
+     */
+    public Map<String, Object> getParameters();
+    
     /**
      * Initializes the constraint with appropriate values, which will depend
      * on the implementation itself.  This method can be implemented as a

@@ -41,6 +41,14 @@ public abstract class AbstractConstraint implements Constraint
     public static final String ERR_PROP_NOT_SET = "d_dictionary.constraint.err.property_not_set";
     public static final String ERR_EVALUATE_EXCEPTION = "d_dictionary.constraint.err.evaluate_exception";
 
+    /*
+     * @see org.alfresco.service.cmr.dictionary.Constraint#getType()
+     */
+    public String getType()
+    {
+        return this.getClass().getName();
+    }
+    
     /**
      * Check that the given value is not <tt>null</tt>.
      * 

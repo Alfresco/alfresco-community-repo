@@ -32,9 +32,12 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.forms.AssociationFieldDefinition.Direction;
+import org.alfresco.repo.forms.PropertyFieldDefinition.FieldConstraint;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -149,7 +152,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         setComplete();
         endTransaction();
     }
-	
+    
     public void testGetForm() throws Exception
     {
         Form form = this.formService.getForm(this.document.toString());
@@ -228,18 +231,16 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         assertTrue("Expecting cm:name to be mandatory", nameField.isMandatory());
         assertFalse("Expecting cm:name to be single valued", nameField.isRepeating());
         
-        // TODO: get the constraint for the name field and check
-        /*
+        // get the constraint for the name field and check
         List<FieldConstraint> constraints = nameField.getConstraints();
-        assertEquals("Expecting 1 constraint for cm:name", constraints.size());
+        assertEquals("Expecting 1 constraint for cm:name", 1, constraints.size());
         FieldConstraint constraint = constraints.get(0);
-        assertEquals("Expecting name of constraint to be 'REGEX'", "REGEX", constraint.getName());
+        assertEquals("Expecting name of constraint to be 'REGEX'", "REGEX", constraint.getType());
         Map<String, String> params = constraint.getParams();
         assertNotNull("Expecting constraint parameters", params);
         assertEquals("Expecting 2 constraint parameters", 2, params.size());
         assertNotNull("Expecting an 'expression' constraint parameter", params.get("expression"));
         assertNotNull("Expecting an 'requiresMatch' constraint parameter", params.get("requiresMatch"));
-        */
         
         // check details of the addressees field
         assertEquals("Expecting cm:addressees type to be d:text", "d:text", addresseesField.getDataType());

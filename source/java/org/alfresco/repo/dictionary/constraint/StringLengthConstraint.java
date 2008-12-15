@@ -24,6 +24,9 @@
  */
 package org.alfresco.repo.dictionary.constraint;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.alfresco.service.cmr.dictionary.ConstraintException;
 import org.alfresco.service.cmr.dictionary.DictionaryException;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
@@ -47,6 +50,15 @@ public class StringLengthConstraint extends AbstractConstraint
     private int minLength = 0;
     private int maxLength = Integer.MAX_VALUE;
     
+    /*
+     * @see org.alfresco.service.cmr.dictionary.Constraint#getType()
+     */
+    @Override
+    public String getType()
+    {
+        return "LENGTH";
+    }
+
     @Override
     public String toString()
     {
@@ -131,5 +143,18 @@ public class StringLengthConstraint extends AbstractConstraint
             }
             throw new ConstraintException(ERR_INVALID_LENGTH, checkValue, minLength, maxLength);
         }
+    }
+
+    /*
+     * @see org.alfresco.service.cmr.dictionary.Constraint#getParameters()
+     */
+    public Map<String, Object> getParameters()
+    {
+        Map<String, Object> params = new HashMap<String, Object>(2);
+        
+        params.put("minLength", this.minLength);
+        params.put("maxLength", this.maxLength);
+        
+        return params;
     }
 }

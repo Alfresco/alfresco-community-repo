@@ -151,30 +151,30 @@ public class PropertyFieldDefinition extends FieldDefinition
      */
     public class FieldConstraint
     {
-        protected String name;
+        protected String type;
         protected Map<String, String> params;
         
         /**
          * Constructs a FieldConstraint
          * 
-         * @param name      The name of the constraint
+         * @param type      The type of the constraint
          * @param params    Map of parameters for the constraint
          */
-        public FieldConstraint(String name, Map<String, String> params)
+        public FieldConstraint(String type, Map<String, String> params)
         {
             super();
-            this.name = name;
+            this.type = type;
             this.params = params;
         }
 
         /**
-         * Returns the name of the constraint
+         * Returns the type of the constraint
          * 
-         * @return The constraint name
+         * @return The constraint type
          */
-        public String getName()
+        public String getType()
         {
-            return this.name;
+            return this.type;
         }
 
         /**

@@ -26,7 +26,9 @@ package org.alfresco.repo.dictionary.constraint;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.service.cmr.dictionary.ConstraintException;
 import org.alfresco.service.cmr.dictionary.DictionaryException;
@@ -55,6 +57,15 @@ public class ListOfValuesConstraint extends AbstractConstraint
     public ListOfValuesConstraint()
     {
         caseSensitive = true;
+    }
+    
+    /*
+     * @see org.alfresco.service.cmr.dictionary.Constraint#getType()
+     */
+    @Override
+    public String getType()
+    {
+        return "LIST";
     }
     
     @Override
@@ -156,5 +167,18 @@ public class ListOfValuesConstraint extends AbstractConstraint
                 throw new ConstraintException(ERR_INVALID_VALUE, value);
             }
         }
+    }
+    
+    /*
+     * @see org.alfresco.service.cmr.dictionary.Constraint#getParameters()
+     */
+    public Map<String, Object> getParameters()
+    {
+        Map<String, Object> params = new HashMap<String, Object>(2);
+        
+        params.put("caseSensitive", this.caseSensitive);
+        params.put("allowedValues", this.allowedValues);
+        
+        return params;
     }
 }

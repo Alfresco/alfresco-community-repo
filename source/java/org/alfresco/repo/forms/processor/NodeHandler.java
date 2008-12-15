@@ -178,16 +178,20 @@ public class NodeHandler extends AbstractHandler
                 
                 for (ConstraintDefinition constraintDef : constraints)
                 {
-                    // TODO: We need to define a common interface for all constraints
-                    //       so that we can determine the name and parameters without
-                    //       having to know all the implementations
-                    
-                    /*
                     Constraint constraint = constraintDef.getConstraint();
-                    FieldConstraint fieldConstraint = fieldDef.new FieldConstraint(constraint.toString(), 
-                                new HashMap<String,String>());
+                    Map<String, String> fieldConstraintParams = null;
+                    Map<String, Object> constraintParams = constraint.getParameters();
+                    if (constraintParams != null)
+                    {
+                        fieldConstraintParams = new HashMap<String, String>(constraintParams.size());
+                        for (String name : constraintParams.keySet())
+                        {
+                            fieldConstraintParams.put(name, constraintParams.get(name).toString());
+                        }
+                    }
+                    FieldConstraint fieldConstraint = fieldDef.new FieldConstraint(
+                                constraint.getType(), fieldConstraintParams);
                     fieldConstraints.add(fieldConstraint);
-                    */
                 }
                 
                 fieldDef.setConstraints(fieldConstraints);

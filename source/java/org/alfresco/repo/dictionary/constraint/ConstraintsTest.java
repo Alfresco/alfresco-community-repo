@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import junit.framework.TestCase;
 
@@ -63,7 +64,12 @@ public class ConstraintsTest extends TestCase
     {
         DummyConstraint constraint = new DummyConstraint();
         constraint.initialize();
-
+        
+        assertEquals("DummyConstraint type should be 'org.alfresco.repo.dictionary.constraint.ConstraintsTest$DummyConstraint'", 
+                    "org.alfresco.repo.dictionary.constraint.ConstraintsTest$DummyConstraint", 
+                    constraint.getType());
+        assertNull("DummyConstraint should not have parameters", constraint.getParameters());
+        
         List<Object> dummyObjects = new ArrayList<Object>(3);
         dummyObjects.add("ABC");   // correct
         dummyObjects.add("DEF");   // correct
@@ -150,6 +156,15 @@ public class ConstraintsTest extends TestCase
         constraint.setMinLength(3);
         constraint.setMaxLength(6);
         
+        assertEquals("StringLengthConstraint type should be 'LENGTH'", 
+                    "LENGTH", constraint.getType());
+        assertNotNull("StringLengthConstraint should have parameters", constraint.getParameters());
+        assertEquals("StringLengthConstraint should have 2 parameters", 2, constraint.getParameters().size());
+        assertEquals("minLength should be 3", 3, 
+                    constraint.getParameters().get("minLength"));
+        assertEquals("maxLength should be 6", 6, 
+                    constraint.getParameters().get("maxLength"));
+        
         evaluate(constraint, "abc", false);
         evaluate(constraint, "abcdef", false);
         evaluate(constraint, Arrays.asList("abc", "abcdef"), false);
@@ -158,6 +173,7 @@ public class ConstraintsTest extends TestCase
         evaluate(constraint, Arrays.asList("abc", "abcdefg"), true);
     }
     
+    @SuppressWarnings("unchecked")
     public void testListOfValuesConstraint() throws Exception
     {
         ListOfValuesConstraint constraint = new ListOfValuesConstraint();
@@ -173,6 +189,18 @@ public class ConstraintsTest extends TestCase
         List<String> allowedValues = Arrays.asList(new String[] {"abc", "def", "ghi"});
         constraint.setAllowedValues(allowedValues);
         
+        assertEquals("ListOfValuesConstraint type should be 'LIST'", 
+                    "LIST", constraint.getType());
+        assertNotNull("ListOfValuesConstraint should have parameters", constraint.getParameters());
+        assertEquals("ListOfValuesConstraint should have 2 parameters", 2, constraint.getParameters().size());
+        assertEquals("caseSensitive should be true", Boolean.TRUE,
+                    constraint.getParameters().get("caseSensitive"));
+        List<String> allowedValuesParam = (List<String>)constraint.getParameters().get("allowedValues");
+        assertEquals("Should be 3 allowable values", 3, allowedValuesParam.size());
+        assertEquals("First allowable value should be 'abc'", "abc", allowedValuesParam.get(0));
+        assertEquals("First allowable value should be 'def'", "def", allowedValuesParam.get(1));
+        assertEquals("First allowable value should be 'ghi'", "ghi", allowedValuesParam.get(2));
+        
         evaluate(constraint, "def", false);
         evaluate(constraint, "DEF", true);
         evaluate(constraint, Arrays.asList("abc", "def"), false);
@@ -180,6 +208,8 @@ public class ConstraintsTest extends TestCase
         
         // now make it case-insensitive
         constraint.setCaseSensitive(false);
+        assertEquals("caseSensitive should be false", Boolean.FALSE,
+                    constraint.getParameters().get("caseSensitive"));
         evaluate(constraint, "DEF", false);
         evaluate(constraint, Arrays.asList("abc", "DEF"), false);
     }
@@ -188,6 +218,11 @@ public class ConstraintsTest extends TestCase
     {
         NumericRangeConstraint constraint = new NumericRangeConstraint();
         constraint.initialize();
+        
+        assertEquals("NumericRangeConstraint type should be 'MINMAX'", 
+                    "MINMAX", constraint.getType());
+        assertNotNull("NumericRangeConstraint should have parameters", constraint.getParameters());
+        assertEquals("NumericRangeConstraint should have 2 parameters", 2, constraint.getParameters().size());
         
         // check that Double.MIN_VALUE and Double.MAX_VALUE are allowed by default
         constraint.evaluate(Double.MIN_VALUE);
@@ -200,6 +235,9 @@ public class ConstraintsTest extends TestCase
         constraint.setMinValue(-5.0D);
         constraint.setMaxValue(+5.0D);
         constraint.initialize();
+        
+        assertEquals("minValue should be -5", -5.0D, constraint.getParameters().get("minValue"));
+        assertEquals("maxValue should be 5", 5.0D, constraint.getParameters().get("maxValue"));
         
         evaluate(constraint, "-1.0", false);
         evaluate(constraint, "+1.0", false);
@@ -216,6 +254,15 @@ public class ConstraintsTest extends TestCase
         constraint.setRequiresMatch(true);
         constraint.initialize();
         
+        assertEquals("RegexConstraint type should be 'REGEX'", 
+                    "REGEX", constraint.getType());
+        assertNotNull("RegexConstraint should have parameters", constraint.getParameters());
+        assertEquals("RegexConstraint should have 2 parameters", 2, constraint.getParameters().size());
+        assertEquals("requiresMatch should be true", Boolean.TRUE,
+                    constraint.getParameters().get("requiresMatch"));
+        assertEquals("expression should be [A-Z]*", "[A-Z]*",
+                    constraint.getParameters().get("expression"));
+        
         // do some successful stuff
         evaluate(constraint, "ABC", false);
         evaluate(constraint, "DEF", false);
@@ -231,6 +278,8 @@ public class ConstraintsTest extends TestCase
         // now switch the requiresMatch around
         constraint.setRequiresMatch(false);
         constraint.initialize();
+        assertEquals("requiresMatch should be false", Boolean.FALSE,
+                    constraint.getParameters().get("requiresMatch"));
         
         evaluate(constraint, DummyEnum.abc, false);
     }
@@ -269,7 +318,10 @@ public class ConstraintsTest extends TestCase
     private class DummyConstraint extends AbstractConstraint
     {
         private List<Object> tested;
-        
+
+        /*
+         * @see org.alfresco.service.cmr.dictionary.Constraint#initialize()
+         */
         public void initialize()
         {
             tested = new ArrayList<Object>(4);
@@ -295,6 +347,14 @@ public class ConstraintsTest extends TestCase
             {
                 throw new ConstraintException("Non-String value");
             }
+        }
+        
+        /*
+         * @see org.alfresco.service.cmr.dictionary.Constraint#getParameters()
+         */
+        public Map<String, Object> getParameters()
+        {
+            return null;
         }
     }
 }

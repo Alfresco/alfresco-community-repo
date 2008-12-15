@@ -24,6 +24,8 @@
  */
 package org.alfresco.repo.dictionary.constraint;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -54,6 +56,14 @@ public class RegexConstraint extends AbstractConstraint
     private Pattern patternMatcher;
     private boolean requiresMatch = true;
     
+    /*
+     * @see org.alfresco.service.cmr.dictionary.Constraint#getType()
+     */
+    public String getType()
+    {
+        return "REGEX";
+    }
+
     @Override
     public String toString()
     {
@@ -126,5 +136,15 @@ public class RegexConstraint extends AbstractConstraint
                 throw new ConstraintException(RegexConstraint.CONSTRAINT_REGEX_MATCH, value, expression);
             }
         }
+    }
+    
+    public Map<String, Object> getParameters()
+    {
+        Map<String, Object> params = new HashMap<String, Object>(2);
+        
+        params.put("expression", this.expression);
+        params.put("requiresMatch", this.requiresMatch);
+        
+        return params;
     }
 }

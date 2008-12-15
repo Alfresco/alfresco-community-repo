@@ -24,6 +24,9 @@
  */
 package org.alfresco.repo.forms.processor;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -40,6 +43,7 @@ public abstract class AbstractFormProcessor implements FormProcessor
     protected FormProcessorRegistry processorRegistry;
     protected String matchPattern;
     protected boolean active = true;
+    protected Pattern patternMatcher;
 
     /**
      * Sets the form process registry
@@ -91,6 +95,11 @@ public abstract class AbstractFormProcessor implements FormProcessor
             
             return;
         }
+        else
+        {
+            // setup pattern matcher
+            this.patternMatcher = Pattern.compile(this.matchPattern);
+        }
 
         // register this instance
         this.processorRegistry.addProcessor(this);
@@ -109,12 +118,16 @@ public abstract class AbstractFormProcessor implements FormProcessor
      */
     public boolean isApplicable(String item)
     {
-        // TODO: do a regular expression match on the pattern supplied to 
-        //       determine if the processor matches
+        // this form processor matches if the match pattern provided matches
+        // the item provided
         
-        // NOTE: For now just return true as there is only going to be one
-        //       form processor instance
-        return true;
+        Matcher matcher = patternMatcher.matcher(item);
+        boolean matches = matcher.matches();
+        
+        if (logger.isDebugEnabled())
+            logger.debug("Checking processor " + this + " for applicability for item '" + item + "', result = " + matches);
+        
+        return matches;
     }
     
     /*

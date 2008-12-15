@@ -1215,6 +1215,12 @@ public class VersionServiceImpl extends AbstractVersionServiceImpl implements Ve
         }
     }
     
+    public void deleteVersion(NodeRef nodeRef, Version version)
+    {
+        // This operation is not supported for a version1 store
+        throw new UnsupportedOperationException("Delete version is unsupported by the old (deprecated) version store implementation");
+    }
+    
     @Override
     protected void defaultOnCreateVersion(
             QName classRef,

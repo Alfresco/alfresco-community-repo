@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -38,7 +38,7 @@ import org.alfresco.service.namespace.QName;
 /**
  * Interface for public and internal version operations.
  * 
- * @author Roy Wetherall
+ * @author Roy Wetherall, janv
  */
 @PublicService
 public interface VersionService
@@ -282,4 +282,19 @@ public interface VersionService
     @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef"})
 	public void deleteVersionHistory(NodeRef nodeRef)
 		throws AspectMissingException;
+    
+    /**
+     * Delete a specific version associated with a node reference.
+     * <p>
+     * This operation is permanent, the specific version in the version history is
+     * deleted and cannot be retrieved.
+     * <p> 
+     * If this is the last version, then the current version label for the node reference is 
+     * reset and any subsequent versions of the node will result in a new version history being created.
+     *  
+     * @param nodeRef   the node reference
+     * @param version   the version to delete
+     */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef", "version"})
+    public void deleteVersion(NodeRef nodeRef, Version version);
 }

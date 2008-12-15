@@ -25,8 +25,10 @@
 package org.alfresco.repo.version;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -213,6 +215,28 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
             
             // Check the new version
             checkNewVersion(beforeVersionTime, expectedVersionNumber, expectedVersionLabel, version, originalNodeRef);
+        }
+    }
+    
+    private void CheckVersionHistory(VersionHistory vh, List<Version> expectedVersions)
+    {
+        if (vh == null)
+        {
+            assertNull(expectedVersions);
+        }
+        else
+        {
+            Iterator<Version> itr = expectedVersions.iterator();
+            
+            for (Version version : vh.getAllVersions())
+            {
+                Version expectedVersion = itr.next();
+                
+                assertEquals(version.getVersionLabel(), expectedVersion.getVersionLabel());
+                assertEquals(version.getFrozenStateNodeRef(), expectedVersion.getFrozenStateNodeRef());
+            }
+            
+            assertFalse(itr.hasNext());
         }
     }
     
@@ -510,6 +534,141 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
     	assertNotNull(versionLabel3);
     	assertEquals(version2.getVersionLabel(), versionLabel3);
     	
+    }
+    
+    /**
+     * Test deleteVersion
+     */
+    public void testDeleteVersion()
+    {
+        // Create a versionable node
+        NodeRef versionableNode = createNewVersionableNode();
+        
+        // Check that there is no version history
+        VersionHistory versionHistory = this.versionService.getVersionHistory(versionableNode);
+        CheckVersionHistory(versionHistory, null);
+        
+        // Check that the current version property on the versionable node is not set
+        String versionLabel = (String)this.dbNodeService.getProperty(versionableNode, ContentModel.PROP_VERSION_LABEL);
+        assertNull(versionLabel);
+        
+        // Check that there is no current version
+        Version version = this.versionService.getCurrentVersion(versionableNode);
+        assertNull(version);
+        
+        // Create a couple of versions
+        Version version0 = createVersion(versionableNode);
+        Version version1 = createVersion(versionableNode);
+        
+        // Check that the version label is correct on the versionable node
+        String versionLabel1 = (String)this.dbNodeService.getProperty(versionableNode, ContentModel.PROP_VERSION_LABEL);
+        assertEquals("1.1", versionLabel1);
+        assertEquals(version1.getVersionLabel(), versionLabel1);
+        
+        // Check the version history
+        List<Version> expectedVersions = new ArrayList<Version>(2);
+        expectedVersions.add(version1);
+        expectedVersions.add(version0);
+        versionHistory = this.versionService.getVersionHistory(versionableNode);
+        assertEquals(2, versionHistory.getAllVersions().size());
+        CheckVersionHistory(versionHistory, expectedVersions);
+        
+        // Check current version
+        Version currentVersion = this.versionService.getCurrentVersion(versionableNode);
+        assertEquals(currentVersion.getVersionLabel(), version1.getVersionLabel());
+        assertEquals(currentVersion.getFrozenStateNodeRef(), version1.getFrozenStateNodeRef());
+        
+        // Create a couple more versions
+        Version version2 = createVersion(versionableNode);
+        Version version3 = createVersion(versionableNode);
+        
+        // Check that the version label is correct on the versionable node
+        String versionLabel3 = (String)this.dbNodeService.getProperty(versionableNode, ContentModel.PROP_VERSION_LABEL);
+        assertEquals("1.3", versionLabel3);
+        assertEquals(version3.getVersionLabel(), versionLabel3);
+        
+        // Check the version history
+        expectedVersions = new ArrayList<Version>(4);
+        expectedVersions.add(version3);
+        expectedVersions.add(version2);
+        expectedVersions.add(version1);
+        expectedVersions.add(version0);
+        versionHistory = this.versionService.getVersionHistory(versionableNode);
+        assertEquals(4, versionHistory.getAllVersions().size());
+        CheckVersionHistory(versionHistory, expectedVersions);
+        
+        // Check current version
+        currentVersion = this.versionService.getCurrentVersion(versionableNode);
+        assertEquals(currentVersion.getVersionLabel(), version3.getVersionLabel());
+        assertEquals(currentVersion.getFrozenStateNodeRef(), version3.getFrozenStateNodeRef());
+
+        // Delete version 2
+        this.versionService.deleteVersion(versionableNode, version2);
+        
+        // Delete version 0
+        this.versionService.deleteVersion(versionableNode, version0);
+        
+        // Check the version history
+        expectedVersions = new ArrayList<Version>(2);
+        expectedVersions.add(version3);
+        expectedVersions.add(version1);
+        versionHistory = this.versionService.getVersionHistory(versionableNode);
+        assertEquals(2, versionHistory.getAllVersions().size());
+        CheckVersionHistory(versionHistory, expectedVersions);
+        
+        // Check current version is unchanged
+        currentVersion = this.versionService.getCurrentVersion(versionableNode);
+        assertEquals(currentVersion.getVersionLabel(), version3.getVersionLabel());
+        assertEquals(currentVersion.getFrozenStateNodeRef(), version3.getFrozenStateNodeRef());
+        
+        // Delete version 3
+        this.versionService.deleteVersion(versionableNode, version3);
+        
+        // Check the version history size
+        expectedVersions = new ArrayList<Version>(1);
+        expectedVersions.add(version1);
+        versionHistory = this.versionService.getVersionHistory(versionableNode);
+        assertEquals(1, versionHistory.getAllVersions().size());
+        CheckVersionHistory(versionHistory, expectedVersions);
+        
+        // Check current version has changed to version 1
+        currentVersion = this.versionService.getCurrentVersion(versionableNode);
+        assertEquals(currentVersion.getVersionLabel(), version1.getVersionLabel());
+        assertEquals(currentVersion.getFrozenStateNodeRef(), version1.getFrozenStateNodeRef());
+        
+        // Create version 4
+        Version version4 = createVersion(versionableNode);
+        
+        // Check the version history size
+        expectedVersions = new ArrayList<Version>(2);
+        expectedVersions.add(version4);
+        expectedVersions.add(version1);
+        versionHistory = this.versionService.getVersionHistory(versionableNode);
+        assertEquals(2, versionHistory.getAllVersions().size());
+        CheckVersionHistory(versionHistory, expectedVersions);
+        
+        // Check current version has changed to version 4
+        currentVersion = this.versionService.getCurrentVersion(versionableNode);
+        assertEquals(currentVersion.getVersionLabel(), version4.getVersionLabel());
+        assertEquals(currentVersion.getFrozenStateNodeRef(), version4.getFrozenStateNodeRef());
+        
+        // Delete version 1
+        this.versionService.deleteVersion(versionableNode, version1);
+        
+        // Delete version 4
+        this.versionService.deleteVersion(versionableNode, version4);
+        
+        // Check the version history is empty
+        versionHistory = this.versionService.getVersionHistory(versionableNode);
+        CheckVersionHistory(versionHistory, null);
+        
+        // Check that the current version property on the versionable node is no longer set
+        versionLabel = (String)this.dbNodeService.getProperty(versionableNode, ContentModel.PROP_VERSION_LABEL);
+        assertNull(versionLabel);
+        
+        // Check that there is no current version
+        version = this.versionService.getCurrentVersion(versionableNode);
+        assertNull(version);
     }
     
     public void testAutoVersionOnInitialVersionOn()

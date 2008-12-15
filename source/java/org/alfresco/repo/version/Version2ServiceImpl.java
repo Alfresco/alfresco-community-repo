@@ -41,7 +41,6 @@ import org.alfresco.repo.version.common.VersionHistoryImpl;
 import org.alfresco.repo.version.common.VersionImpl;
 import org.alfresco.repo.version.common.VersionUtil;
 import org.alfresco.service.cmr.repository.AspectMissingException;
-import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -1036,22 +1035,35 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
         if (versionHistoryNodeRef != null)
         {
         	List<ChildAssociationRef> versionsAssoc = this.dbNodeService.getChildAssocs(versionHistoryNodeRef, Version2Model.CHILD_QNAME_VERSIONS, RegexQNamePattern.MATCH_ALL);
+        	
+        	ChildAssociationRef headVersionAssoc = null;
+        	int headVersionNumber = -1;
         	for (ChildAssociationRef versionAssoc : versionsAssoc)
             {
-                NodeRef versionNodeRef = versionAssoc.getChildRef();
-                List<AssociationRef> successors = this.dbNodeService.getTargetAssocs(versionNodeRef, Version2Model.ASSOC_SUCCESSOR);
-                if (successors.size() == 0)
+        	    String localName = versionAssoc.getQName().getLocalName();
+                if (localName.indexOf(Version2Model.CHILD_VERSIONS+"-") != -1) // TODO - could remove this belts-and-braces, should match correctly above !
                 {
-                    NodeRef versionedNodeRef = (NodeRef)this.dbNodeService.getProperty(
-                            versionNodeRef,
-                            QName.createQName(Version2Model.NAMESPACE_URI, Version2Model.PROP_FROZEN_NODE_REF));             
-                    StoreRef versionStoreRef = versionedNodeRef.getStoreRef();
-                    if (storeRef.equals(versionStoreRef) == true)
+                    int versionNumber = Integer.parseInt(localName.substring((Version2Model.CHILD_VERSIONS+"-").length()));
+                    if (versionNumber > headVersionNumber)
                     {
-                        version = getVersion(versionNodeRef);
+                        headVersionNumber = versionNumber;
+                        headVersionAssoc = versionAssoc;
                     }
                 }
             }
+        	
+        	if (headVersionAssoc != null)
+        	{
+        	    NodeRef versionNodeRef = headVersionAssoc.getChildRef();
+                NodeRef versionedNodeRef = (NodeRef)this.dbNodeService.getProperty(
+                            versionNodeRef,
+                            QName.createQName(Version2Model.NAMESPACE_URI, Version2Model.PROP_FROZEN_NODE_REF));             
+                StoreRef versionStoreRef = versionedNodeRef.getStoreRef();
+                if (storeRef.equals(versionStoreRef) == true)
+                {
+                    version = getVersion(versionNodeRef);
+                }
+        	}
         }
 
         return version;
@@ -1081,6 +1093,42 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
                 {
                     // Reset the version label property on the versionable node
                     this.nodeService.setProperty(nodeRef, ContentModel.PROP_VERSION_LABEL, null);
+                }
+            }
+        }
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.version.VersionService#deleteVersion(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.version.Version)
+     */
+    public void deleteVersion(NodeRef nodeRef, Version version)
+    {
+        if (useDeprecatedV1)
+        {
+            super.deleteVersion(nodeRef, version); // throws UnsupportedOperationException
+        }
+        else
+        {
+            // Check the mandatory parameters
+            ParameterCheck.mandatory("nodeRef", nodeRef);
+            ParameterCheck.mandatory("version", version);
+            
+            Version currentVersion = getCurrentVersion(nodeRef);
+            
+            // Delete the version node
+            this.dbNodeService.deleteNode(VersionUtil.convertNodeRef(version.getFrozenStateNodeRef()));
+            
+            if (currentVersion.getVersionLabel().equals(version.getVersionLabel()))
+            {
+                Version headVersion = getHeadVersion(nodeRef);
+                if (headVersion != null)
+                {
+                    // Reset the version label property on the versionable node to new head version
+                    this.nodeService.setProperty(nodeRef, ContentModel.PROP_VERSION_LABEL, headVersion.getVersionLabel());
+                }
+                else
+                {
+                    deleteVersionHistory(nodeRef);
                 }
             }
         }

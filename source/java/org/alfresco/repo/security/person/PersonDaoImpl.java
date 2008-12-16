@@ -52,9 +52,8 @@ import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
 public class PersonDaoImpl extends HibernateDaoSupport implements PersonDao
 {
-    private static final String PERSON_GET_PERSON = "person.getPerson";
-
-    private static final String PERSON_GET_ALL_PEOPLE = "person.getAllPeople";
+    private static final String QUERY_PERSON_GET_PERSON = "person.getPerson";
+    private static final String QUERY_PERSON_GET_ALL_PEOPLE = "person.getAllPeople";
 
     private QNameDAO qnameDAO;
 
@@ -89,8 +88,7 @@ public class PersonDaoImpl extends HibernateDaoSupport implements PersonDao
         {
             public Object doInHibernate(Session session)
             {
-                SQLQuery query = getSession().createSQLQuery("SELECT {n.*} FROM alf_node n JOIN alf_node_properties p ON n.id = p.node_id JOIN alf_child_assoc c on c.child_node_id = n.id JOIN alf_store s on s.id = n.store_id WHERE c.qname_localname = :userName1 AND p.qname_id = :qnameId AND p.string_value = :userName2 and n.node_deleted = :False and s.protocol = :storeProtocol and s.identifier = :storeIdentifier");
-                query.addEntity("n", NodeImpl.class);
+                SQLQuery query = (SQLQuery) session.getNamedQuery(QUERY_PERSON_GET_PERSON);
                 query.setParameter("qnameId", qNameId);
                 query.setParameter("userName1", searchUserName);
                 query.setParameter("userName2", searchUserName);
@@ -150,8 +148,7 @@ public class PersonDaoImpl extends HibernateDaoSupport implements PersonDao
         {
             public Object doInHibernate(Session session)
             {
-                SQLQuery query = getSession().createSQLQuery("SELECT {n.*} FROM alf_node n JOIN alf_node_properties p ON n.id = p.node_id JOIN alf_store s on s.id = n.store_id WHERE p.qname_id = :qnameId and n.node_deleted = :False and s.protocol = :storeProtocol and s.identifier = :storeIdentifier");
-                query.addEntity("n", NodeImpl.class);
+                SQLQuery query = (SQLQuery) session.getNamedQuery(QUERY_PERSON_GET_ALL_PEOPLE);
                 query.setParameter("qnameId", qNameId);
                 query.setParameter("False", Boolean.FALSE);
                 query.setParameter("storeProtocol", personStoreRef.getProtocol());

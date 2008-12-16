@@ -365,7 +365,16 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
         DbAccessControlList acl = null;
         try
         {
-            acl = getACLDAO(nodeRef).getAccessControlList(nodeRef);
+            AccessControlListDAO aclDAO = getACLDAO(nodeRef);
+            if (aclDAO == null)
+            {
+                return;
+            }
+            acl = aclDAO.getAccessControlList(nodeRef);
+            if (acl == null)
+            {
+                return;
+            }
         }
         catch (InvalidNodeRefException e)
         {
@@ -402,7 +411,16 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
         DbAccessControlList acl = null;
         try
         {
-            acl = getACLDAO(nodeRef).getAccessControlList(nodeRef);
+            AccessControlListDAO aclDAO = getACLDAO(nodeRef);
+            if (aclDAO == null)
+            {
+                return;
+            }
+            acl = aclDAO.getAccessControlList(nodeRef);
+            if (acl == null)
+            {
+                return;
+            }
         }
         catch (InvalidNodeRefException e)
         {

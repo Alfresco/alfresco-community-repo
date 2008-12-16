@@ -197,25 +197,38 @@ public class AuditEntry extends AbstractAuditEntry implements InitializingBean, 
 
     private Document createDocument()
     {
-        InputStream is = auditConfiguration.getInputStream();
-        if (is == null)
-        {
-            throw new AuditModelException("Audit configuration could not be opened");
-        }
-        SAXReader reader = new SAXReader();
+        InputStream is = null;
         try
         {
-            Document document = reader.read(is);
-            is.close();
-            return document;
+            is = auditConfiguration.getInputStream();
+            if (is == null)
+            {
+                throw new AuditModelException("Audit configuration could not be opened");
+            }
+            SAXReader reader = new SAXReader();
+            try
+            {
+                Document document = reader.read(is);
+                return document;
+            }
+            catch (DocumentException e)
+            {
+                throw new AuditModelException("Failed to create audit model document ", e);
+            }
         }
-        catch (DocumentException e)
+        finally
         {
-            throw new AuditModelException("Failed to create audit model document ", e);
-        }
-        catch (IOException e)
-        {
-            throw new AuditModelException("Failed to close audit model document ", e);
+            if (is != null)
+            {
+                try
+                {
+                    is.close();
+                }
+                catch (IOException e)
+                {
+                    throw new AuditModelException("Failed to close audit model document ", e);
+                }
+            }
         }
 
     }

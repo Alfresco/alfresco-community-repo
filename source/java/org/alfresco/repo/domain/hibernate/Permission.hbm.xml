@@ -444,7 +444,6 @@
     ]]>
     </query>
     
-    
 	<query name="permission.GetDmNodeCount">
     <![CDATA[
         select count(*)
@@ -460,17 +459,39 @@
     ]]>
     </query>
 	
-    <sql-query name="person.getAllPeople">
+    <sql-query name="person.getPerson">
+        <return alias="n" class="org.alfresco.repo.domain.hibernate.NodeImpl"/>
         SELECT
            {n.*}
         FROM
            alf_node n
            JOIN alf_node_properties p ON n.id = p.node_id
+           JOIN alf_child_assoc c on c.child_node_id = n.id
+		   JOIN alf_store s on s.id = n.store_id
+        WHERE
+           c.qname_localname = :userName1 AND
+           p.qname_id = :qnameId AND
+           p.string_value = :userName2 AND
+           n.node_deleted = :False AND
+		   s.protocol = :storeProtocol AND
+		   s.identifier = :storeIdentifier
+    </sql-query>
+    
+    <sql-query name="person.getAllPeople">
+        <return alias="n" class="org.alfresco.repo.domain.hibernate.NodeImpl"/>
+        SELECT
+           {n.*}
+        FROM
+           alf_node n
+           JOIN alf_node_properties p ON n.id = p.node_id
+		   JOIN alf_store s on s.id = n.store_id
         WHERE
            p.qname_id = :qnameId AND
-           n.node_deleted = :False"
+           n.node_deleted = :False AND
+		   s.protocol = :storeProtocol AND
+		   s.identifier = :storeIdentifier
     </sql-query>
-
+    
     <!--
        
    <query name="permission.GetAccessControlEntriesForAuthority">

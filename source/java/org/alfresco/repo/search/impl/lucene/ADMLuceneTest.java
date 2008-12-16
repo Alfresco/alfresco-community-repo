@@ -494,6 +494,9 @@ public class ADMLuceneTest extends TestCase
         super(arg0);
     }
 
+    /**
+     * Not required to run all the time; it's here for profiling.
+     */
     public void restManyReaders() throws Exception
     {
         QName propQName = QName.createQName(TEST_NAMESPACE, "text-indexed-stored-tokenised-atomic");

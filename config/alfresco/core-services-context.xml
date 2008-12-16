@@ -929,6 +929,9 @@
                 <!-- Blog Integration model -->
                 <value>alfresco/model/blogIntegrationModel.xml</value>
 
+		<!-- Links model -->
+                <value>alfresco/model/linksModel.xml</value>
+
                 <!-- Deprecated types -->
                 <value>alfresco/model/deprecated/deprecated_contentModel.xml</value>
             </list>

@@ -18,28 +18,67 @@ model.events = getUserEvents(username, range);
 
 function getUserEvents(user, range)
 {
-    var paths = [];
-    
-    var sites = siteService.listUserSites(user);
-    for (var j=0; j < sites.length; j++)
-    {
-        paths.push("PATH:\"/app:company_home/st:sites/cm:" + search.ISO9075Encode(sites[j].shortName) + "/cm:calendar/*\"");
-    }
-    
-    var results = [];
-    
-    if (paths.length != 0)
-    {
-        var luceneQuery = "+(" + paths.join(" OR ") + ") +TYPE:\"{http\://www.alfresco.org/model/calendar}calendarEvent\"";
-        if (range.fromdate)
-        {
-            // Expects the date in the format yyyy/mm/dd
-            var from = range.fromdate.split("/").join("\\-"); 
-            var dateClause = " +@ia\\:fromDate:[" + from + "T00:00:00 TO 2099\\-1\\-1T00:00:00]";
-            luceneQuery += dateClause;
-        }
-        results = search.luceneSearch(luceneQuery, "ia:fromDate", true);
-    }
-    
-    return results;
+	if (!user)
+	{
+		return [];
+	}
+	
+	var paths = [];
+  
+  var sites = siteService.listUserSites(user);
+  for (var j=0; j < sites.length; j++)
+  {
+      paths.push("PATH:\"/app:company_home/st:sites/cm:" + search.ISO9075Encode(sites[j].shortName) + "/cm:calendar/*\"");
+  }
+	
+	var results = [];
+	
+	if (paths.length > 0)
+	{
+		var luceneQuery = "+(" + paths.join(" OR ") + ") +TYPE:\"{http\://www.alfresco.org/model/calendar}calendarEvent\"";
+		if (range.fromdate)
+		{
+			// Expects the date in the format yyyy/mm/dd
+			var from = range.fromdate.split("/").join("\\-"); 
+			var dateClause = " +@ia\\:fromDate:[" + from + "T00:00:00 TO 2099\\-1\\-1T00:00:00]";
+			luceneQuery += dateClause;
+		}
+		results = search.luceneSearch(luceneQuery, "ia:fromDate", true);
+	}
+  // repurpose results into custom array so as to add custom properties
+  var events = [];
+  for (var i=0;i<results.length;i++)
+  {
+    var event = {};
+    var e = results[i];
+    event.name  = e.name;
+    event.title = e.properties["ia:whatEvent"];
+    event.where = e.properties["ia:whereEvent"];
+    event.when = e.properties["ia:fromDate"];
+    event.start = e.properties["ia:fromDate"];
+    event.end = e.properties["ia:toDate"];
+    event.site = e.parent.parent.name;
+    event.allday = (isAllDayEvent(e)) ? 'true' : 'false';
+    event.tags = e.tags.join(' ');
+    events.push(event);
+  }
+	return events;
 }
+
+/**
+ * NOTE: Another option would be to add an "all day" property to the
+ * existing calendar model.
+ */
+function isAllDayEvent(event)
+{
+   var startDate = event.properties["ia:fromDate"];
+   var endDate = event.properties["ia:toDate"];
+   
+   var startTime = startDate.getHours() + ":" + startDate.getMinutes();
+   var endTime = endDate.getHours() + ":" + endDate.getMinutes();
+   
+   logger.log("STARTTIME: " + startTime + " " + endTime + " " + (startTime == "0:0" && (startTime == endTime)));
+  
+   return (startTime == "0:0" && (startTime == endTime));
+}
+

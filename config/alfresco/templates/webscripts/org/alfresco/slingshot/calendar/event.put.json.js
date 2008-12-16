@@ -109,10 +109,12 @@ function main()
          from += " " + json.get("start");
          to += " " + json.get("end");
       }
+      from = new Date(from);
+      to = new Date(to);
+      event.properties["ia:fromDate"] = from;
+      event.properties["ia:toDate"] = to;
       
-      event.properties["ia:fromDate"] = new Date(from);
-      event.properties["ia:toDate"] = new Date(to);
-
+      
       var pad = function (value, length)
       {
          value = String(value);
@@ -124,11 +126,13 @@ function main()
          return value;
       };
 
-      var isoDate = from.getFullYear() + "-" + pad(from.getMonth() + 1) + "-" + pad(from.getDate());
+      var fromIsoDate = from.getFullYear() + "-" + pad(from.getMonth() + 1) + "-" + pad(from.getDate());
+      var toIsoDate = to.getFullYear() + "-" + pad(to.getMonth() + 1) + "-" + pad(to.getDate()); 
+
       var data =
       {
          title: json.get("what"),
-         page: json.get("page") + "?date=" + isoDate
+         page: json.get("page") + "?date=" + fromIsoDate
       }
       activities.postActivity("org.alfresco.calendar.event-created", params.siteid, "calendar", jsonUtils.toJSONString(data));
    }
@@ -139,9 +143,24 @@ function main()
          logger.log(e);
       }
    }
-
+   //saved data
+   // {"site":"testSite","page":"calendar","from":"Tuesday, 4 November 2008","to":"Tuesday, 4 November 2008"
+   // 
+   // ,"what":"big lunchie","where":"somewhere","desc":"","fromdate":"Tuesday, 4 November 2008","start":"12
+   // 
+   // :00","todate":"Tuesday, 4 November 2008","end":"13:00","tags":""}
    event.save();
-   return {};
+   var savedData = {
+       summary : json.get('what'),
+       location : json.get('where'),
+       description : json.get('desc'),
+       dtstart : fromIsoDate+ 'T' +json.get('start'),
+       dtend : toIsoDate + 'T' +json.get('end'),
+       allday : (json.isNull("allday")) ? false : (json.get('allday')=='on') ? true : false,
+       uri : "calendar/event/" + params.siteid + "/" + event.name
+   }
+
+   return savedData;
 }
 
 model.result = main();

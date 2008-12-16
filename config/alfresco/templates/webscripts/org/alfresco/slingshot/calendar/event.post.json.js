@@ -90,14 +90,17 @@ function createEvent(siteId, params)
       toDate += " " + params["end"];
    }
 
-   var tags = String(params["tags"]); // space delimited string
-   if (tags !== "")
+   if (params['tags'])
    {
-      var tagsArray = tags.split(" ");
-      if (tagsArray.length > 0)
-      {
-         event.tags = tagsArray;
-      }
+     var tags = String(params["tags"]); // space delimited string
+     if (tags !== "")
+     {
+        var tagsArray = tags.split(" ");
+        if (tagsArray.length > 0)
+        {
+           event.tags = tagsArray;
+        }
+     }     
    }
 
    var from = new Date(fromDate);
@@ -142,6 +145,8 @@ function createEvent(siteId, params)
       "from": from,
       "to": to,
       "uri": "calendar/event/" + siteId + "/" + event.name,
-      "tags": event.tags
+      "tags": event.tags,
+      "desc": params['desc'],
+      "where":params['where']
    });
 };

@@ -22,7 +22,7 @@
       <type name="lnk:link">
          <parent>cm:content</parent>
          <properties>
-            <property name="lnk:linkTitle">
+            <property name="lnk:title">
                <title>Link Title</title>
                <type>d:text</type>
                <mandatory>false</mandatory>

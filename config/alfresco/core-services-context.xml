@@ -929,7 +929,7 @@
                 <!-- Blog Integration model -->
                 <value>alfresco/model/blogIntegrationModel.xml</value>
 
-		<!-- Links model -->
+                <!-- Links model -->
                 <value>alfresco/model/linksModel.xml</value>
 
                 <!-- Deprecated types -->

@@ -2,25 +2,22 @@
 const LINK_INTERNAL_ASPECT = "lnk:internal";
 const ASPECT_INTERNAL = "lnk:isInternal";
 
-
 function getLinksData(node)
 {
-    var itm = {};
-    itm.node = node;
-    itm.name  = node.name||"";
-    itm.title = node.properties["lnk:linkTitle"]||"";
-    itm.description = node.properties["lnk:description"]||"";
-    itm.url = node.properties["lnk:url"]||"";
+   var itm = {};
+   itm.node = node;
+   itm.name  = node.name || "";
+   itm.title = node.properties["lnk:title"] || "";
+   itm.description = node.properties["lnk:description"] || "";
+   itm.url = node.properties["lnk:url"] || "";
+   itm.createdOn = node.properties.created || "";
+   itm.modifiedOn = node.properties.modified || "";
+   itm.creator = people.getPerson(node.properties["cm:creator"]);
 
-      // get the tags JSONArray and copy it into a real javascript array object
-    itm.tags = node.tags;
-    itm.internal = (node.hasAspect("lnk:internal")?"true":"false");
-    
-    itm.author = people.getPerson(node.properties["cm:creator"]);
-    // (re-)enable permission
-    node.setInheritsPermissions(true);
-    /*itm.isUpdated = node.properties.isUpdated || "false";*/
-    return itm;
+   itm.tags = node.tags;
+   itm.internal = node.hasAspect("lnk:internal");
+         
+   return itm;
 }
 
 /**
@@ -34,17 +31,17 @@ function getLinkProperties()
 
    if (json.has("title"))
    {
-      data["lnk:linkTitle"] = json.get("title");
+     data["lnk:title"] = json.get("title");
    }
 
    if (json.has("url"))
    {
-      data["lnk:url"] = json.get("url");
+     data["lnk:url"] = json.get("url");
    }
 
    if (json.has("description"))
    {
-      data["lnk:description"] = json.get("description");
+     data["lnk:description"] = json.get("description");
    }
    
    return data;
@@ -52,5 +49,5 @@ function getLinkProperties()
 
 function isLinkInternal()
 {
-    return (json.has("isinternal")?true:false);
+   return (json.has("internal") ? true : false);
 }

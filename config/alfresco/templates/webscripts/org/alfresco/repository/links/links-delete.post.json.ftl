@@ -1,3 +1,5 @@
+<#escape x as jsonUtils.encodeJSONString(x)>
 {
-	"message":"deleted"
+	"message":"${message}" 
 }
+</#escape>

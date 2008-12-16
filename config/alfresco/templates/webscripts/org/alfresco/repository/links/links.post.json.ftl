@@ -1,3 +1,7 @@
+<#escape x as jsonUtils.encodeJSONString(x)>
 {
-   "name" : "${item.name}" 
+   "message": "${message}"<#if item??>,
+   "name": "${item.name?string}"
+</#if>
 }
+</#escape>

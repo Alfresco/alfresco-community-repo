@@ -39,9 +39,14 @@ function getRequestNodes()
 
    for (var i in items)
    {
-      var tmpNode = node.childByNamePath(items[i]);
-      if (tmpNode)
-         nodes.push(tmpNode);
+      if (i)
+      {
+         var tmpNode = node.childByNamePath(items[i]);
+         if (tmpNode)
+         {
+            nodes.push(tmpNode);
+         }
+      }
    }
 
    return nodes;
@@ -58,17 +63,20 @@ function deleteLink(linkNode)
    var isDeleted = linkNode.remove();
    if (! isDeleted)
    {
-      status.setCode(status.STATUS_INTERNAL_SERVER_ERROR, "Unable to delete node: " + nodeRef);
+      var mes = "Unable to delete node: " + nodeRef; 
+      status.setCode(status.STATUS_INTERNAL_SERVER_ERROR, mes);
+      model.message = mes; 
       return;
    }
-   //model.message = "Node " + nodeRef + " deleted";
+   model.message = "Node " + nodeRef + " deleted";
 
    var siteId = url.templateArgs.site;
    var containerId = url.templateArgs.container;
-   var data = {
-      title:linkData["title"],
+   var data =
+   {
+      title:linkData.title,
       page: "links"
-   }
+   };
 
    activities.postActivity("org.alfresco.links.link-deleted", siteId, containerId, jsonUtils.toJSONString(data));
 }
@@ -82,8 +90,22 @@ function main()
       return;
    }
 
-   for (var i in nodes)
-      deleteLink(nodes[i]);
+ for (var i in nodes)
+ {
+   if (i)
+   {
+    if (!nodes[i].hasPermission("Delete"))
+    {
+      status.code = 403;
+      var mes = "Permission to delete is denied";
+      status.message = mes;
+      model.message = mes;
+      return;
+    }
+
+    deleteLink(nodes[i]);
+   }
+ }
 
 }
 

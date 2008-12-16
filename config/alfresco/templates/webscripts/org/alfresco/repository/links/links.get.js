@@ -3,29 +3,29 @@
 <import resource="classpath:alfresco/templates/webscripts/org/alfresco/repository/generic-paged-results.lib.js">
 <import resource="classpath:alfresco/templates/webscripts/org/alfresco/repository/links/links.lib.js">
 
+const DEFAULT_NUM_DAYS = 7;
 
 /**
  * Fetches all links added to the site
  */
-function getLinksList(node,filter,tag,numdays, index, count)
+function getLinksList(node, filter, tag, numdays, index, count)
 {
-   //var fromDate = getTodayMinusXDays(numdays);
-
    // query information
-   var luceneQuery = " +TYPE:\"{http://www.alfresco.org/model/linksmodel/1.0}link\"" +
-                     " +PATH:\"" + node.qnamePath + "/*\"";
+   var luceneQuery = " +TYPE:\"{http://www.alfresco.org/model/linksmodel/1.0}link\" +PATH:\"" + node.qnamePath + "/*\"";
     
-   if (filter == "internal")
+   if (filter == "recent")
    {
-      //luceneQuery += " +@cm\\:internal:\"true\"";
-       luceneQuery += "+ASPECT:\"{http://www.alfresco.org/model/linksmodel/1.0}internal\" ";
+      var fromDate = getTodayMinusXDays(DEFAULT_NUM_DAYS);
+      var toDate = new Date();
+
+      luceneQuery += getCreationDateRangeQuery(fromDate, toDate);
    }
-   else if (filter == "www")
+   else if (filter == "user")
    {
-      luceneQuery += "-ASPECT:\"{http://www.alfresco.org/model/linksmodel/1.0}internal\" ";
+      luceneQuery += " +@cm\\:creator:" + person.properties.userName;
    }
 
-   if (tag != null)
+   if (tag !== null)
    {
       luceneQuery += " +PATH:\"/cm:taggable/cm:" + search.ISO9075Encode(tag) + "/member\" ";
    }
@@ -44,20 +44,19 @@ function main()
    {
       return;
    }
-    
-   var pNumber = parseInt(args.page);
-   var pSize = parseInt(args.pageSize);
+
+   var pNumber = parseInt(args.page, 10);
+   var pSize = parseInt(args.pageSize, 10);
    var filter = args.filter;
-   var tag = (args["tag"] != undefined && args["tag"].length > 0) ? args["tag"] : null;
-    
-   if ((pNumber == undefined) || (pSize == undefined))
+   var tag = (args.tag != undefined && args.tag.length > 0) ? args.tag : null;
+
+   if ((pNumber === undefined) || (pSize === undefined))
    {
       model.error = "Parameters missing!";
       return;
    }
+    model.links = node;
     model.data = getLinksList(node,filter,tag,7,(pNumber - 1) * pSize,pSize);
-  
-    
 }
 
 main();

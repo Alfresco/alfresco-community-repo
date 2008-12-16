@@ -1,4 +1,0 @@
-{
-    "nodeinfo":${nodeinfo},
-    "nodedata":${data}
-}

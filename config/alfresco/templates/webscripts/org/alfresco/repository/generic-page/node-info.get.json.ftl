@@ -1,0 +1,4 @@
+{
+    "nodeinfo":${nodeinfo},
+    "nodedata":${data}
+}

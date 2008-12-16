@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Links</shortname>
+  <description>Get all links</description>
+  <url>/api/links/site/{site}/{container}</url>
+  <format default="json"/>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>

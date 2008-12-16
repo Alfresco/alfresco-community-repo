@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Link update</shortname>
+  <description>Updates a link</description>
+  <url>/api/links/site/{site}/{container}/{path}</url>
+  <format default="json"/>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>

@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>page-data</shortname>
+  <description>Get data of page</description>
+  <url>/api/pagedata/{page}</url>
+  <format default="json"/>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>

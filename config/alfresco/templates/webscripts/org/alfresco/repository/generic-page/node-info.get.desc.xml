@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>node-info</shortname>
+  <description>Get data of node</description>
+  <url>/api/node-info/{path}</url>
+  <format default="json"/>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>

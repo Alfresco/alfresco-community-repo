@@ -27,6 +27,7 @@ package org.alfresco.repo.webdav.auth;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.security.Principal;
 import java.util.Vector;
 
 import javax.security.auth.Subject;
@@ -254,12 +255,12 @@ public class KerberosAuthenticationFilter implements Filter, CallbackHandler
             else
                 throw new ServletException("Kerberos realm not specified");
             
-            // Get the CIFS service account password
+            // Get the HTTP service account password
             
             String srvPassword = args.getInitParameter("Password");
             if ( srvPassword != null && srvPassword.length() > 0)
             {
-                // Set the CIFS service account password
+                // Set the HTTP service account password
                 
                 m_password = srvPassword;
             }
@@ -295,46 +296,11 @@ public class KerberosAuthenticationFilter implements Filter, CallbackHandler
             	throw new ServletException( "Failed to get local host name");
             }
             
-            // Get the server principal name
-            
-            String principal = args.getInitParameter( "Principal");
-            
-            if ( principal != null) {
-              
-            	// Use the supplied principal name to build the account name
-            	
-            	StringBuffer httpAccount = new StringBuffer();
-            	
-            	httpAccount.append( principal);
-            	httpAccount.append("@");
-            	httpAccount.append(m_krbRealm);
-
-            	m_accountName = httpAccount.toString();
-            }
-            else {
-              
-	            // Build the HTTP service account name
-	            
-	            StringBuilder httpAccount = new StringBuilder();
-	            
-	            httpAccount.append("HTTP/");
-	            httpAccount.append( localName);
-	            httpAccount.append("@");
-	            httpAccount.append(m_krbRealm);
-	            
-	            m_accountName = httpAccount.toString();
-            }
-            
-            // Create a login context for the CIFS server service
+            // Create a login context for the HTTP server service
             
             try
             {
-            	// DEBUG
-            	
-            	if ( logger.isDebugEnabled())
-            		logger.debug( "HTTP Kerberos login using account " + m_accountName);
-            	
-                // Login the CIFS server service
+                // Login the HTTP server service
                 
                 m_loginContext = new LoginContext( m_loginEntryName, this);
                 m_loginContext.login();
@@ -353,6 +319,18 @@ public class KerberosAuthenticationFilter implements Filter, CallbackHandler
                 
                 throw new ServletException("Failed to login HTTP server service");
             }
+            
+            // Get the HTTP service account name from the subject
+            
+            Subject subj = m_loginContext.getSubject();
+            Principal princ = subj.getPrincipals().iterator().next();
+            
+            m_accountName = princ.getName();
+            
+            // DEBUG
+            
+            if ( logger.isDebugEnabled())
+            	logger.debug("Logged on using principal " + m_accountName);
             
             // Create the Oid list for the SPNEGO NegTokenInit, include NTLMSSP for fallback
             

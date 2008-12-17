@@ -90,19 +90,21 @@ public abstract class BaseNTLMAuthenticationFilter implements Filter
     protected static final String AUTH_NTLM = "NTLM";
     
     // NTLM flags mask for use with an authentication component that supports MD4 hashed password
-    private static final int NTLM_FLAGS_MD4 = NTLM.Flag56Bit +
-                                              NTLM.Flag128Bit +
-                                              NTLM.FlagLanManKey +
-                                              NTLM.FlagNegotiateNTLM +
-                                              NTLM.FlagNTLM2Key +
-                                              NTLM.FlagNegotiateUnicode;
+    // Enable NTLMv1 and NTLMv2
+    private static final int NTLM_FLAGS_NTLM2 = NTLM.Flag56Bit +
+                                                NTLM.Flag128Bit +
+                                                NTLM.FlagLanManKey +
+                                                NTLM.FlagNegotiateNTLM +
+                                                NTLM.FlagNTLM2Key +
+                                                NTLM.FlagNegotiateUnicode;
 
     // NTLM flags mask for use with an authentication component that uses passthru auth
-    private static final int NTLM_FLAGS_PASSTHRU = NTLM.Flag56Bit +
-                                                   NTLM.FlagLanManKey +
-                                                   NTLM.FlagNegotiateNTLM +
-                                                   NTLM.FlagNegotiateOEM +
-                                                   NTLM.FlagNegotiateUnicode;
+    // Enable NTLMv1 only
+    private static final int NTLM_FLAGS_NTLM1 = NTLM.Flag56Bit +
+                                                NTLM.FlagLanManKey +
+                                                NTLM.FlagNegotiateNTLM +
+                                                NTLM.FlagNegotiateOEM +
+                                                NTLM.FlagNegotiateUnicode;
     
     // NTLM flags to send to the client with the allowed logon types
     private int m_ntlmFlags;
@@ -141,6 +143,8 @@ public abstract class BaseNTLMAuthenticationFilter implements Filter
     // Allow guest access, map unknown users to the guest account
     private boolean m_mapUnknownUserToGuest = false;
     
+    // Disable NTLMv2 support
+    private boolean m_disableNTLMv2 = false;
     
     /**
      * Initialize the filter
@@ -251,15 +255,17 @@ public abstract class BaseNTLMAuthenticationFilter implements Filter
         
         // Set the NTLM flags depending on the authentication component supporting MD4 passwords,
         // or is using passthru auth
-        if (m_authComponent.getNTLMMode() == NTLMMode.MD4_PROVIDER)
+        if (m_authComponent.getNTLMMode() == NTLMMode.MD4_PROVIDER && m_disableNTLMv2 == false)
         {
             // Allow the client to use an NTLMv2 logon
-            m_ntlmFlags = NTLM_FLAGS_MD4;
+        	
+            m_ntlmFlags = NTLM_FLAGS_NTLM2;
         }
         else
         {
             // Only allows NTLMv1 type logons as passthru authentication is being used
-            m_ntlmFlags = NTLM_FLAGS_PASSTHRU;
+        	
+            m_ntlmFlags = NTLM_FLAGS_NTLM1;
         }
     }
     
@@ -325,6 +331,7 @@ public abstract class BaseNTLMAuthenticationFilter implements Filter
             if (m_authComponent.getNTLMMode() == NTLMMode.MD4_PROVIDER)
             {
                 // Generate a random 8 byte challenge
+            	
                 challenge = new byte[8];
                 DataPacker.putIntelLong(m_random.nextLong(), challenge, 0);
             }
@@ -677,6 +684,20 @@ public abstract class BaseNTLMAuthenticationFilter implements Filter
      */
     protected boolean validateLocalHashedPassword(Type3NTLMMessage type3Msg, NTLMLogonDetails ntlmDetails, boolean authenticated, String md4hash)
     {
+    	// Make sure we have hte cached NTLM details, including the type2 message with the server challenge
+    	
+    	if ( ntlmDetails == null || ntlmDetails.getType2Message() == null)
+    	{
+    		// DEBUG
+    		
+    		if ( getLogger().isDebugEnabled())
+    			getLogger().debug("No cached Type2, ntlmDetails=" + ntlmDetails);
+    		
+    		// Not authenticated
+    		
+    		return false;
+    	}
+    	
         //  Determine if the client sent us NTLMv1 or NTLMv2
         if (type3Msg.hasFlag(NTLM.FlagNTLM2Key))
         {
@@ -688,6 +709,20 @@ public abstract class BaseNTLMAuthenticationFilter implements Filter
                 
                 if (getLogger().isDebugEnabled())
                     getLogger().debug((authenticated ? "Logged on" : "Logon failed") + " using NTLMSSP/NTLMv2");
+                
+                // If the NTlmv2 autentication failed then check if the client has sent an NTLMv1 hash
+                
+                if ( authenticated == false && type3Msg.hasFlag(NTLM.Flag56Bit) && type3Msg.getLMHashLength() == 24)
+                {
+            		// Check the LM hash field
+            		
+            		authenticated = checkNTLMv1(md4hash, ntlmDetails.getChallengeKey(), type3Msg, true);
+
+            		// DEBUG
+            		
+                    if (getLogger().isDebugEnabled())
+                        getLogger().debug((authenticated ? "Logged on" : "Logon failed") + " using NTLMSSP/NTLMv1 (via fallback)");
+                }
             }
             else
             {
@@ -701,7 +736,7 @@ public abstract class BaseNTLMAuthenticationFilter implements Filter
         else
         {
             //  Looks like an NTLMv1 blob
-            authenticated = checkNTLMv1(md4hash, ntlmDetails.getChallengeKey(), type3Msg);
+            authenticated = checkNTLMv1(md4hash, ntlmDetails.getChallengeKey(), type3Msg, false);
             
             if (getLogger().isDebugEnabled())
                 getLogger().debug((authenticated ? "Logged on" : "Logon failed") + " using NTLMSSP/NTLMv1");
@@ -715,9 +750,10 @@ public abstract class BaseNTLMAuthenticationFilter implements Filter
      * @param String md4hash
      * @param byte[] challenge
      * @param Type3NTLMMessage type3Msg
+     * @param checkLMHash boolean
      * @return boolean
      */
-    protected final boolean checkNTLMv1(String md4hash, byte[] challenge, Type3NTLMMessage type3Msg)
+    protected final boolean checkNTLMv1(String md4hash, byte[] challenge, Type3NTLMMessage type3Msg, boolean checkLMHash)
     {
         // Generate the local encrypted password using the challenge that was sent to the client
         byte[] p21 = new byte[21];
@@ -736,7 +772,7 @@ public abstract class BaseNTLMAuthenticationFilter implements Filter
         }
 
         // Validate the password
-        byte[] clientHash = type3Msg.getNTLMHash();
+        byte[] clientHash = checkLMHash ? type3Msg.getLMHash() : type3Msg.getNTLMHash();
 
         if (clientHash != null && localHash != null && clientHash.length == localHash.length)
         {
@@ -768,6 +804,9 @@ public abstract class BaseNTLMAuthenticationFilter implements Filter
      */
     protected final boolean checkNTLMv2(String md4hash, byte[] challenge, Type3NTLMMessage type3Msg)
     {
+    	boolean ntlmv2OK = false;
+    	boolean lmv2OK   = false;
+    	
         try
         {
             // Generate the v2 hash using the challenge that was sent to the client
@@ -792,8 +831,50 @@ public abstract class BaseNTLMAuthenticationFilter implements Filter
                 if (i == clientHmac.length)
                 {
                     //  HMAC matches the client, user authenticated
-                    return true;
+                	
+                	ntlmv2OK = true;
                 }
+            }
+            
+            // NTLMv2 check failed, try the LMv2 value
+
+            if ( ntlmv2OK == false)
+            {
+	        	byte[] lmv2 = type3Msg.getLMHash();
+	        	byte[] clChallenge = v2blob.getClientChallenge();
+	        	
+	            if ( lmv2 != null && lmv2.length == 24 && clChallenge != null && clChallenge.length == 8)
+	            {
+	            	// Check that the LM hash contains the client challenge as the last 8 bytes
+	            	
+	            	int i = 0;
+	            	
+	            	while ( i < clChallenge.length && lmv2[ i + 16] == clChallenge[ i])
+	            		i++;
+	            	
+	            	if ( i == clChallenge.length)
+	            	{
+	            		// Calculate the LMv2 value
+	            		
+	            		byte[] lmv2Hmac = v2blob.calculateLMv2HMAC(v2hash, challenge, clChallenge);
+	            		
+	            		// Check if the LMv2 HMAC matches
+	            		
+	                    i = 0;
+	
+	                    while (i < lmv2Hmac.length && lmv2[i] == lmv2Hmac[i])
+	                        i++;
+	
+	                    if (i == lmv2Hmac.length)
+	                    {
+	                        //  LMv2 HMAC matches the client, user authenticated
+	                    	
+	                        //return true;
+	                    	lmv2OK = true;
+	                    }
+	            		
+	            	}
+	            }
             }
         }
         catch (Exception ex)
@@ -802,7 +883,10 @@ public abstract class BaseNTLMAuthenticationFilter implements Filter
                 getLogger().debug(ex);
         }
 
-        // NTLMv2 check failed
+        // Check if either of the NTLMv2 checks passed
+        
+        if ( ntlmv2OK || lmv2OK)
+        	return true;
         return false;
     }
 
@@ -993,5 +1077,18 @@ public abstract class BaseNTLMAuthenticationFilter implements Filter
         return null;
     }
     
+    /**
+     * Return the logger
+     * 
+     * @return Log
+     */
     protected abstract Log getLogger();
+    
+    /**
+     * Disable NTLMv2 support, must be called from the implementation constructor
+     */
+    protected final void disableNTLMv2()
+    {
+    	m_disableNTLMv2 = true;
+    }
 }

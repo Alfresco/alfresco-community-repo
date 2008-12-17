@@ -106,9 +106,7 @@ public class RepoServerMgmt implements RepoServerMgmtMBean, ApplicationContextAw
             try
             {
                 licenseService = (LicenseService) ctx.getBean("org.alfresco.license.LicenseComponent");
-
-                // verify license, but only if license component is installed
-                licenseService.verifyLicense();
+                readOnly = !licenseService.isLicenseValid();
             }
             catch (NoSuchBeanDefinitionException e)
             {

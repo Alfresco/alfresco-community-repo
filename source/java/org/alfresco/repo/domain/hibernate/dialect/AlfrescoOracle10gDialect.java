@@ -15,6 +15,6 @@ public class AlfrescoOracle10gDialect extends Oracle10gDialect
     public AlfrescoOracle10gDialect()
     {
         super();
-        registerColumnType( Types.VARCHAR, "blob" );
+        registerColumnType( Types.VARBINARY, "blob" );
     }
 }

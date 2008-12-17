@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
@@ -47,12 +48,23 @@ public class BehaviourFilterImpl implements BehaviourFilter
     // Dictionary Service
     private DictionaryService dictionaryService;
     
+    // Tenant Service
+    private TenantService tenantService;
+    
     /**
      * @param dictionaryService  dictionary service
      */    
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;
+    }
+    
+    /**
+     * @param tenantService  dictionary service
+     */    
+    public void setTenantService(TenantService tenantService)
+    {
+        this.tenantService = tenantService;
     }
         
     /* (non-Javadoc)
@@ -79,6 +91,8 @@ public class BehaviourFilterImpl implements BehaviourFilter
      */
     public boolean disableBehaviour(NodeRef nodeRef, QName className)
     {
+        nodeRef = tenantService.getName(nodeRef);
+        
         Map<NodeRef,List<QName>> filters = nodeRefFilter.get();
         if (filters == null)
         {
@@ -116,6 +130,8 @@ public class BehaviourFilterImpl implements BehaviourFilter
      */
     public void enableBehaviour(NodeRef nodeRef, QName className)
     {
+        nodeRef = tenantService.getName(nodeRef);
+        
         Map<NodeRef,List<QName>> filters = nodeRefFilter.get();
         if (filters != null)
         {
@@ -136,6 +152,8 @@ public class BehaviourFilterImpl implements BehaviourFilter
      */
     public void enableBehaviours(NodeRef nodeRef)
     {
+        nodeRef = tenantService.getName(nodeRef);
+        
         Map<NodeRef,List<QName>> filters = nodeRefFilter.get();
         if (filters != null)
         {
@@ -165,6 +183,8 @@ public class BehaviourFilterImpl implements BehaviourFilter
         {
             return false;
         }
+        
+        nodeRef = tenantService.getName(nodeRef);
         
         // check node level filters
         Map<NodeRef,List<QName>> nodeFilters = nodeRefFilter.get();

@@ -15,6 +15,6 @@ public class AlfrescoOracle9iDialect extends Oracle9iDialect
     public AlfrescoOracle9iDialect()
     {
         super();
-        registerColumnType( Types.VARCHAR, "blob" );
+        registerColumnType( Types.VARBINARY, "blob" );
     }
 }

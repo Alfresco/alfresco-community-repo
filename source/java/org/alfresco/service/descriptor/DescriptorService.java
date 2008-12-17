@@ -71,5 +71,4 @@ public interface DescriptorService
      */
     @NotAuditable
     public LicenseDescriptor getLicenseDescriptor();
-    
 }

@@ -196,7 +196,11 @@ public class InternalEhCacheManagerFactoryBean implements FactoryBean, CacheProv
      */
     public void stop()
     {
-        InternalEhCacheManagerFactoryBean.getInstance().shutdown();
+        synchronized (getClass())
+        {
+            InternalEhCacheManagerFactoryBean.getInstance().shutdown();
+            initialized = false;
+        }
     }
 
     /**

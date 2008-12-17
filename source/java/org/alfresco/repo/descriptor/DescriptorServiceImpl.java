@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,113 +18,97 @@
  * As a special exception to the terms and conditions of version 2.0 of 
  * the GPL, you may redistribute this Program in connection with Free/Libre 
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
+ * FLOSS exception.  You should have received a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
 package org.alfresco.repo.descriptor;
 
-import java.io.IOException;
-import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.model.ContentModel;
-import org.alfresco.repo.importer.ImporterBootstrap;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.descriptor.Descriptor;
 import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.service.license.LicenseDescriptor;
 import org.alfresco.service.license.LicenseException;
 import org.alfresco.service.license.LicenseService;
-import org.alfresco.service.namespace.NamespaceService;
-import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.AbstractLifecycleBean;
 import org.alfresco.util.VersionNumber;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
-import org.springframework.core.io.Resource;
 
 /**
- * Implementation of Descriptor Service
+ * Implementation of Descriptor Service.
  * 
  * @author David Caruana
  */
 public class DescriptorServiceImpl extends AbstractLifecycleBean implements DescriptorService, InitializingBean
 {
-    private static Log logger = LogFactory.getLog(DescriptorServiceImpl.class);
 
-    private String repositoryName;
-    private Properties serverProperties;
+    /** The server descriptor DAO. */
+    private DescriptorDAO serverDescriptorDAO;
 
-    private ImporterBootstrap systemBootstrap;
+    /** The current repo descriptor DAO. */
+    private DescriptorDAO currentRepoDescriptorDAO;
 
-    private NamespaceService namespaceService;
+    /** The installed repo descriptor DAO. */
+    private DescriptorDAO installedRepoDescriptorDAO;
 
-    private NodeService nodeService;
-
-    private SearchService searchService;
-
+    /** The transaction service. */
     private TransactionService transactionService;
 
+    /** The license service. */
     private LicenseService licenseService = null;
 
+    /** The server descriptor. */
     private Descriptor serverDescriptor;
 
+    /** The current repo descriptor. */
     private Descriptor currentRepoDescriptor;
 
+    /** The installed repo descriptor. */
     private Descriptor installedRepoDescriptor;
 
-
     /**
-     * Sets the repository properties from a resource file
+     * Sets the server descriptor DAO.
      * 
-     * @param repositoryResource  resource containing repository properties
-     * @throws IOException
+     * @param serverDescriptorDAO
+     *            the new server descriptor DAO
      */
-    public void setRepositoryName(String repositoryName)
-        throws IOException
+    public void setServerDescriptorDAO(DescriptorDAO serverDescriptorDAO)
     {
-        this.repositoryName = repositoryName;
+        this.serverDescriptorDAO = serverDescriptorDAO;
     }
-    
+
     /**
-     * Sets the server descriptor from a resource file
+     * Sets the current repo descriptor DAO.
      * 
-     * @param descriptorResource
-     *            resource containing server descriptor meta-data
-     * @throws IOException
+     * @param currentRepoDescriptorDAO
+     *            the new current repo descriptor DAO
      */
-    public void setDescriptor(Resource descriptorResource) throws IOException
+    public void setCurrentRepoDescriptorDAO(DescriptorDAO currentRepoDescriptorDAO)
     {
-        this.serverProperties = new Properties();
-        this.serverProperties.load(descriptorResource.getInputStream());
+        this.currentRepoDescriptorDAO = currentRepoDescriptorDAO;
     }
 
     /**
-     * @param systemBootstrap
-     *            system bootstrap
+     * Sets the installed repo descriptor DAO.
+     * 
+     * @param installedRepoDescriptorDAO
+     *            the new installed repo descriptor DAO
      */
-    public void setSystemBootstrap(ImporterBootstrap systemBootstrap)
+    public void setInstalledRepoDescriptorDAO(DescriptorDAO installedRepoDescriptorDAO)
     {
-        this.systemBootstrap = systemBootstrap;
+        this.installedRepoDescriptorDAO = installedRepoDescriptorDAO;
     }
 
     /**
+     * Sets the transaction service.
+     * 
      * @param transactionService
      *            transaction service
      */
@@ -133,36 +117,8 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean implements Desc
         this.transactionService = transactionService;
     }
 
-    /**
-     * @param namespaceService
-     *            namespace service
-     */
-    public void setNamespaceService(NamespaceService namespaceService)
-    {
-        this.namespaceService = namespaceService;
-    }
-
-    /**
-     * @param nodeService
-     *            node service
-     */
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
-    }
-
-    /**
-     * @param searchService
-     *            search service
-     */
-    public void setSearchService(SearchService searchService)
-    {
-        this.searchService = searchService;
-    }
-
     /*
      * (non-Javadoc)
-     * 
      * @see org.alfresco.service.descriptor.DescriptorService#getDescriptor()
      */
     public Descriptor getServerDescriptor()
@@ -172,15 +128,15 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean implements Desc
 
     /*
      * (non-Javadoc)
-     * 
      * @see org.alfresco.service.descriptor.DescriptorService#getCurrentRepositoryDescriptor()
      */
     public Descriptor getCurrentRepositoryDescriptor()
     {
         return currentRepoDescriptor;
     }
-    
-    /* (non-Javadoc)
+
+    /*
+     * (non-Javadoc)
      * @see org.alfresco.service.descriptor.DescriptorService#getRepositoryDescriptor()
      */
     public Descriptor getInstalledRepositoryDescriptor()
@@ -190,7 +146,6 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean implements Desc
 
     /*
      * (non-Javadoc)
-     * 
      * @see org.alfresco.service.descriptor.DescriptorService#getLicenseDescriptor()
      */
     public LicenseDescriptor getLicenseDescriptor()
@@ -198,6 +153,10 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean implements Desc
         return (licenseService == null) ? null : licenseService.getLicense();
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.util.AbstractLifecycleBean#onBootstrap(org.springframework.context.ApplicationEvent)
+     */
     @Override
     protected void onBootstrap(ApplicationEvent event)
     {
@@ -214,15 +173,22 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean implements Desc
                 licenseService.verifyLicense();
 
                 // persist the server descriptor values
-                currentRepoDescriptor = updateCurrentRepositoryDescriptor(serverDescriptor);
+                currentRepoDescriptor = DescriptorServiceImpl.this.currentRepoDescriptorDAO
+                        .updateDescriptor(serverDescriptor);
 
                 // create the installed descriptor
-                return createInstalledRepositoryDescriptor();
+                Descriptor installed = DescriptorServiceImpl.this.installedRepoDescriptorDAO.getDescriptor();
+                return installed == null ? new UnknownDescriptor() : installed;
             }
         };
-        installedRepoDescriptor = transactionService.getRetryingTransactionHelper().doInTransaction(createDescriptorWork, transactionService.isReadOnly(), false);
+        installedRepoDescriptor = transactionService.getRetryingTransactionHelper().doInTransaction(
+                createDescriptorWork, transactionService.isReadOnly(), false);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.util.AbstractLifecycleBean#onShutdown(org.springframework.context.ApplicationEvent)
+     */
     @Override
     protected void onShutdown(ApplicationEvent event)
     {
@@ -233,158 +199,19 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean implements Desc
     }
 
     /**
-     * Initialise Descriptors
+     * Initialise Descriptors.
+     * 
+     * @throws Exception
+     *             the exception
      */
     public void afterPropertiesSet() throws Exception
     {
         // initialise server descriptor
-        serverDescriptor = createServerDescriptor();
+        serverDescriptor = this.serverDescriptorDAO.getDescriptor();
     }
 
     /**
-     * Create server descriptor
-     * 
-     * @return descriptor
-     */
-    private Descriptor createServerDescriptor()
-    {
-        return new ServerDescriptor();
-    }
-
-    /**
-     * Create repository descriptor
-     * 
-     * @return descriptor
-     */
-    private Descriptor createInstalledRepositoryDescriptor()
-    {
-        // retrieve system descriptor location
-        StoreRef storeRef = systemBootstrap.getStoreRef();
-        Properties systemProperties = systemBootstrap.getConfiguration();
-        String path = systemProperties.getProperty("system.descriptor.childname");
-
-        // retrieve system descriptor
-        NodeRef descriptorNodeRef = getDescriptorNodeRef(storeRef, path, false);
-        // create appropriate descriptor
-        if (descriptorNodeRef != null)
-        {
-            Map<QName, Serializable> properties = nodeService.getProperties(descriptorNodeRef);
-            return new RepositoryDescriptor(properties);
-        }
-        else
-        {
-            // descriptor cannot be found
-            return new UnknownDescriptor();
-        }
-    }
-
-    /**
-     * Push the current server descriptor properties into persistence.
-     * 
-     * @param serverDescriptor
-     *            the current server descriptor
-     */
-    private Descriptor updateCurrentRepositoryDescriptor(Descriptor serverDescriptor)
-    {
-        // retrieve system descriptor location
-        StoreRef storeRef = systemBootstrap.getStoreRef();
-        Properties systemProperties = systemBootstrap.getConfiguration();
-        String path = systemProperties.getProperty("system.descriptor.current.childname");
-
-        // retrieve system descriptor
-        NodeRef currentDescriptorNodeRef = getDescriptorNodeRef(storeRef, path, true);
-        // if the node is missing but it should have been created
-        if (currentDescriptorNodeRef == null)
-        {
-            return null;
-        }
-        // set the properties
-        if (!transactionService.isReadOnly())
-        {
-	        nodeService.setProperty(currentDescriptorNodeRef, ContentModel.PROP_SYS_NAME, serverDescriptor.getName());
-	        nodeService.setProperty(currentDescriptorNodeRef, ContentModel.PROP_SYS_VERSION_MAJOR, serverDescriptor.getVersionMajor());
-	        nodeService.setProperty(currentDescriptorNodeRef, ContentModel.PROP_SYS_VERSION_MINOR, serverDescriptor.getVersionMinor());
-	        nodeService.setProperty(currentDescriptorNodeRef, ContentModel.PROP_SYS_VERSION_REVISION, serverDescriptor.getVersionRevision());
-	        nodeService.setProperty(currentDescriptorNodeRef, ContentModel.PROP_SYS_VERSION_LABEL, serverDescriptor.getVersionLabel());
-	        nodeService.setProperty(currentDescriptorNodeRef, ContentModel.PROP_SYS_VERSION_BUILD, serverDescriptor.getVersionBuild());
-	        nodeService.setProperty(currentDescriptorNodeRef, ContentModel.PROP_SYS_VERSION_SCHEMA, serverDescriptor.getSchema());
-	        Collection<String> editions = new ArrayList<String>();
-	        editions.add(serverDescriptor.getEdition());
-	        nodeService.setProperty(currentDescriptorNodeRef, ContentModel.PROP_SYS_VERSION_EDITION, (Serializable)editions);
-	
-	        // done
-	        if (logger.isDebugEnabled())
-	        {
-	            logger.debug("Updated current repository descriptor properties: \n" + "   node: " + currentDescriptorNodeRef + "\n" + "   descriptor: " + serverDescriptor);
-	        }
-        }
-
-        Map<QName, Serializable> properties = nodeService.getProperties(currentDescriptorNodeRef);
-        return new RepositoryDescriptor(properties);
-    }
-
-    /**
-     * @param storeRef
-     *            the store to search
-     * @param path
-     *            the path below the root node to search
-     * @param create
-     *            true if the node must be created if missing. No properties will be set.
-     * @return Returns the node for the path, or null
-     */
-    private NodeRef getDescriptorNodeRef(StoreRef storeRef, String path, boolean create)
-    {
-        NodeRef descriptorNodeRef = null;
-        String searchPath = "/" + path;
-
-        // check for the store
-        if (nodeService.exists(storeRef))
-        {
-            NodeRef rootNodeRef = nodeService.getRootNode(storeRef);
-            List<NodeRef> nodeRefs = searchService.selectNodes(rootNodeRef, searchPath, null, namespaceService, false);
-            if (nodeRefs.size() == 1)
-            {
-                descriptorNodeRef = nodeRefs.get(0);
-            }
-            else if (nodeRefs.size() == 0)
-            {
-            }
-            else if (nodeRefs.size() > 1)
-            {
-                if (logger.isDebugEnabled())
-                {
-                    logger.debug("Multiple descriptors: \n" + "   store: " + storeRef + "\n" + "   path: " + searchPath);
-                }
-                // get the first one
-                descriptorNodeRef = nodeRefs.get(0);
-            }
-        }
-
-        if (descriptorNodeRef == null)
-        {
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Descriptor not found: \n" + "   store: " + storeRef + "\n" + "   path: " + searchPath);
-            }
-
-            // create if necessary
-            if (create)
-            {
-                storeRef = nodeService.createStore(storeRef.getProtocol(), storeRef.getIdentifier());
-                NodeRef rootNodeRef = nodeService.getRootNode(storeRef);
-                descriptorNodeRef = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName(path, namespaceService),
-                        QName.createQName("sys:descriptor", namespaceService)).getChildRef();
-                if (logger.isDebugEnabled())
-                {
-                    logger.debug("Created missing descriptor node: " + descriptorNodeRef);
-                }
-            }
-        }
-        return descriptorNodeRef;
-    }
-
-    /**
-     * Initialise License Service
+     * Initialise License Service.
      */
     private void initialiseLicenseService()
     {
@@ -392,9 +219,15 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean implements Desc
         {
             // NOTE: We could tie in the License Component via Spring configuration, but then it could
             // be declaratively taken out in an installed environment.
-            Class licenseComponentClass = Class.forName("org.alfresco.license.LicenseComponent");
-            Constructor constructor = licenseComponentClass.getConstructor(new Class[] { ApplicationContext.class });
-            licenseService = (LicenseService) constructor.newInstance(new Object[] { getApplicationContext() });
+            Class<?> licenseComponentClass = Class.forName("org.alfresco.license.LicenseComponent");
+            Constructor<?> constructor = licenseComponentClass.getConstructor(new Class[]
+            {
+                ApplicationContext.class
+            });
+            licenseService = (LicenseService) constructor.newInstance(new Object[]
+            {
+                getApplicationContext()
+            });
         }
         catch (ClassNotFoundException e)
         {
@@ -427,14 +260,14 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean implements Desc
     }
 
     /**
-     * Dummy License Service
+     * Dummy License Service.
      */
     private class NOOPLicenseService implements LicenseService
     {
         /*
          * (non-Javadoc)
-         * 
-         * @see org.alfresco.service.license.LicenseService#verify()
+         * @see org.alfresco.service.license.LicenseService#verifyLicense(org.alfresco.service.descriptor.Descriptor,
+         * org.alfresco.service.descriptor.DescriptorDAO)
          */
         public void verifyLicense() throws LicenseException
         {
@@ -442,7 +275,15 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean implements Desc
 
         /*
          * (non-Javadoc)
-         * 
+         * @see org.alfresco.service.license.LicenseService#isLicenseValid()
+         */
+        public boolean isLicenseValid()
+        {
+            return true;
+        }
+
+        /*
+         * (non-Javadoc)
          * @see org.alfresco.service.license.LicenseService#getLicense()
          */
         public LicenseDescriptor getLicense() throws LicenseException
@@ -450,13 +291,18 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean implements Desc
             return null;
         }
 
+        /*
+         * (non-Javadoc)
+         * @see org.alfresco.service.license.LicenseService#shutdown()
+         */
         public void shutdown()
         {
         }
+
     }
 
     /**
-     * Unknown descriptor
+     * Unknown descriptor.
      * 
      * @author David Caruana
      */
@@ -464,7 +310,6 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean implements Desc
     {
         /*
          * (non-Javadoc)
-         * 
          * @see org.alfresco.service.descriptor.Descriptor#getId()
          */
         public String getId()
@@ -472,15 +317,17 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean implements Desc
             return "Unknown";
         }
 
-        /* (non-Javadoc)
+        /*
+         * (non-Javadoc)
          * @see org.alfresco.service.descriptor.Descriptor#getName()
          */
         public String getName()
         {
             return "Unknown";
         }
-        
-        /* (non-Javadoc)
+
+        /*
+         * (non-Javadoc)
          * @see org.alfresco.service.descriptor.Descriptor#getVersionMajor()
          */
         public String getVersionMajor()
@@ -490,7 +337,6 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean implements Desc
 
         /*
          * (non-Javadoc)
-         * 
          * @see org.alfresco.service.descriptor.Descriptor#getVersionMinor()
          */
         public String getVersionMinor()
@@ -500,7 +346,6 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean implements Desc
 
         /*
          * (non-Javadoc)
-         * 
          * @see org.alfresco.service.descriptor.Descriptor#getVersionRevision()
          */
         public String getVersionRevision()
@@ -510,7 +355,6 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean implements Desc
 
         /*
          * (non-Javadoc)
-         * 
          * @see org.alfresco.service.descriptor.Descriptor#getVersionLabel()
          */
         public String getVersionLabel()
@@ -520,7 +364,6 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean implements Desc
 
         /*
          * (non-Javadoc)
-         * 
          * @see org.alfresco.service.descriptor.Descriptor#getVersionBuild()
          */
         public String getVersionBuild()
@@ -528,6 +371,10 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean implements Desc
             return "Unknown";
         }
 
+        /*
+         * (non-Javadoc)
+         * @see org.alfresco.service.descriptor.Descriptor#getVersionNumber()
+         */
         public VersionNumber getVersionNumber()
         {
             return new VersionNumber("1.0.0");
@@ -535,7 +382,6 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean implements Desc
 
         /*
          * (non-Javadoc)
-         * 
          * @see org.alfresco.service.descriptor.Descriptor#getVersion()
          */
         public String getVersion()
@@ -545,7 +391,6 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean implements Desc
 
         /*
          * (non-Javadoc)
-         * 
          * @see org.alfresco.service.descriptor.Descriptor#getEdition()
          */
         public String getEdition()
@@ -555,7 +400,6 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean implements Desc
 
         /*
          * (non-Javadoc)
-         * 
          * @see org.alfresco.service.descriptor.Descriptor#getSchema()
          */
         public int getSchema()
@@ -565,7 +409,6 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean implements Desc
 
         /*
          * (non-Javadoc)
-         * 
          * @see org.alfresco.service.descriptor.Descriptor#getDescriptorKeys()
          */
         public String[] getDescriptorKeys()
@@ -575,7 +418,6 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean implements Desc
 
         /*
          * (non-Javadoc)
-         * 
          * @see org.alfresco.service.descriptor.Descriptor#getDescriptor(java.lang.String)
          */
         public String getDescriptor(String key)
@@ -589,11 +431,19 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean implements Desc
      * 
      * @author gavinc
      */
-    public abstract class BaseDescriptor implements Descriptor
+    public static abstract class BaseDescriptor implements Descriptor
     {
+
+        /** The version number. */
         private VersionNumber versionNumber = null;
+
+        /** The number as a string. */
         private String strVersion = null;
-        
+
+        /*
+         * (non-Javadoc)
+         * @see org.alfresco.service.descriptor.Descriptor#getVersionNumber()
+         */
         public VersionNumber getVersionNumber()
         {
             if (this.versionNumber == null)
@@ -609,6 +459,10 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean implements Desc
             return this.versionNumber;
         }
 
+        /*
+         * (non-Javadoc)
+         * @see org.alfresco.service.descriptor.Descriptor#getVersion()
+         */
         public String getVersion()
         {
             if (this.strVersion == null)
@@ -618,50 +472,50 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean implements Desc
                 version.append(getVersionMinor());
                 version.append(".");
                 version.append(getVersionRevision());
-                
+
                 String label = getVersionLabel();
                 String build = getVersionBuild();
-                
+
                 boolean hasLabel = (label != null && label.length() > 0);
                 boolean hasBuild = (build != null && build.length() > 0);
-                
+
                 // add opening bracket if either a label or build number is present
                 if (hasLabel || hasBuild)
                 {
-                   version.append(" (");
+                    version.append(" (");
                 }
-                
+
                 // add label if present
                 if (hasLabel)
                 {
-                   version.append(label);
+                    version.append(label);
                 }
-                
+
                 // add build number is present
                 if (hasBuild)
                 {
-                   // if there is also a label we need a separating space
-                   if (hasLabel)
-                   {
-                      version.append(" ");
-                   }
-                   
-                   version.append(build);
+                    // if there is also a label we need a separating space
+                    if (hasLabel)
+                    {
+                        version.append(" ");
+                    }
+
+                    version.append(build);
                 }
-                
+
                 // add closing bracket if either a label or build number is present
                 if (hasLabel || hasBuild)
                 {
-                   version.append(")");
+                    version.append(")");
                 }
-                
+
                 this.strVersion = version.toString();
             }
             return this.strVersion;
         }
 
         /**
-         * Returns the int representation of the given schema string
+         * Returns the int representation of the given schema string.
          * 
          * @param schemaStr
          *            The schema number as a string
@@ -686,265 +540,6 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean implements Desc
             {
                 throw new AlfrescoRuntimeException("Schema must be a positive integer '" + schemaStr + "' is not!");
             }
-        }
-    }
-
-    /**
-     * Repository Descriptor whose meta-data is retrieved from the repository store
-     */
-    private class RepositoryDescriptor extends BaseDescriptor
-    {
-        private Map<QName, Serializable> properties;
-
-        /**
-         * Construct
-         * 
-         * @param properties
-         *            system descriptor properties
-         */
-        private RepositoryDescriptor(Map<QName, Serializable> properties)
-        {
-            this.properties = properties;
-        }
-
-        /*
-         * (non-Javadoc)
-         * 
-         * @see org.alfresco.service.descriptor.Descriptor#getId()
-         */
-        public String getId()
-        {
-            return getDescriptor("sys:node-uuid");
-        }
-
-        /* (non-Javadoc)
-         * @see org.alfresco.service.descriptor.Descriptor#getName()
-         */
-        public String getName()
-        {
-            return getDescriptor("sys:name");
-        }
-        
-        /* (non-Javadoc)
-         * @see org.alfresco.service.descriptor.Descriptor#getVersionMajor()
-         */
-        public String getVersionMajor()
-        {
-            return getDescriptor("sys:versionMajor");
-        }
-
-        /*
-         * (non-Javadoc)
-         * 
-         * @see org.alfresco.service.descriptor.Descriptor#getVersionMinor()
-         */
-        public String getVersionMinor()
-        {
-            return getDescriptor("sys:versionMinor");
-        }
-
-        /*
-         * (non-Javadoc)
-         * 
-         * @see org.alfresco.service.descriptor.Descriptor#getVersionRevision()
-         */
-        public String getVersionRevision()
-        {
-            return getDescriptor("sys:versionRevision");
-        }
-
-        /*
-         * (non-Javadoc)
-         * 
-         * @see org.alfresco.service.descriptor.Descriptor#getVersionLabel()
-         */
-        public String getVersionLabel()
-        {
-            return getDescriptor("sys:versionLabel");
-        }
-
-        /*
-         * (non-Javadoc)
-         * 
-         * @see org.alfresco.service.descriptor.Descriptor#getVersionBuild()
-         */
-        public String getVersionBuild()
-        {
-            return getDescriptor("sys:versionBuild");
-        }
-
-        /*
-         * (non-Javadoc)
-         * 
-         * @see org.alfresco.service.descriptor.Descriptor#getEdition()
-         */
-        public String getEdition()
-        {
-            return getDescriptor("sys:versionEdition");
-        }
-
-        /*
-         * (non-Javadoc)
-         * 
-         * @see org.alfresco.service.descriptor.Descriptor#getSchema()
-         */
-        public int getSchema()
-        {
-            return getSchema(getDescriptor("sys:versionSchema"));
-        }
-
-        /*
-         * (non-Javadoc)
-         * 
-         * @see org.alfresco.service.descriptor.Descriptor#getDescriptorKeys()
-         */
-        public String[] getDescriptorKeys()
-        {
-            String[] keys = new String[properties.size()];
-            properties.keySet().toArray(keys);
-            return keys;
-        }
-
-        /*
-         * (non-Javadoc)
-         * 
-         * @see org.alfresco.service.descriptor.Descriptor#getDescriptor(java.lang.String)
-         */
-        public String getDescriptor(String key)
-        {
-            String strValue = null;
-            QName qname = QName.createQName(key, namespaceService);
-            Serializable value = properties.get(qname);
-            if (value != null)
-            {
-                if (value instanceof Collection)
-                {
-                    Collection coll = (Collection)value;
-                    if (coll.size() > 0)
-                    {
-                        strValue = coll.iterator().next().toString();
-                    }
-                }
-                else
-                {
-                    strValue = value.toString();
-                }
-            }
-            return strValue;
-        }
-    }
-
-    /**
-     * Server Descriptor whose meta-data is retrieved from run-time environment
-     */
-    private class ServerDescriptor extends BaseDescriptor
-    {
-        /*
-         * (non-Javadoc)
-         * 
-         * @see org.alfresco.service.descriptor.Descriptor#getId()
-         */
-        public String getId()
-        {
-            return "<Unknown";
-        }
-
-        /* (non-Javadoc)
-         * @see org.alfresco.service.descriptor.Descriptor#getName()
-         */
-        public String getName()
-        {
-            return repositoryName == null ? "<Unknown>" : repositoryName;
-        }
-        
-        /* (non-Javadoc)
-         * @see org.alfresco.service.descriptor.Descriptor#getVersionMajor()
-         */
-        public String getVersionMajor()
-        {
-            return serverProperties.getProperty("version.major");
-        }
-
-        /*
-         * (non-Javadoc)
-         * 
-         * @see org.alfresco.service.descriptor.Descriptor#getVersionMinor()
-         */
-        public String getVersionMinor()
-        {
-            return serverProperties.getProperty("version.minor");
-        }
-
-        /*
-         * (non-Javadoc)
-         * 
-         * @see org.alfresco.service.descriptor.Descriptor#getVersionRevision()
-         */
-        public String getVersionRevision()
-        {
-            return serverProperties.getProperty("version.revision");
-        }
-
-        /*
-         * (non-Javadoc)
-         * 
-         * @see org.alfresco.service.descriptor.Descriptor#getVersionLabel()
-         */
-        public String getVersionLabel()
-        {
-            return serverProperties.getProperty("version.label");
-        }
-
-        /*
-         * (non-Javadoc)
-         * 
-         * @see org.alfresco.service.descriptor.Descriptor#getVersionBuild()
-         */
-        public String getVersionBuild()
-        {
-            return serverProperties.getProperty("version.build");
-        }
-
-        /*
-         * (non-Javadoc)
-         * 
-         * @see org.alfresco.service.descriptor.Descriptor#getEdition()
-         */
-        public String getEdition()
-        {
-            return serverProperties.getProperty("version.edition");
-        }
-
-        /*
-         * (non-Javadoc)
-         * 
-         * @see org.alfresco.service.descriptor.Descriptor#getSchema()
-         */
-        public int getSchema()
-        {
-            return getSchema(serverProperties.getProperty("version.schema"));
-        }
-
-        /*
-         * (non-Javadoc)
-         * 
-         * @see org.alfresco.service.descriptor.Descriptor#getDescriptorKeys()
-         */
-        public String[] getDescriptorKeys()
-        {
-            String[] keys = new String[serverProperties.size()];
-            serverProperties.keySet().toArray(keys);
-            return keys;
-        }
-
-        /*
-         * (non-Javadoc)
-         * 
-         * @see org.alfresco.service.descriptor.Descriptor#getDescriptor(java.lang.String)
-         */
-        public String getDescriptor(String key)
-        {
-            return serverProperties.getProperty(key, "");
         }
     }
 

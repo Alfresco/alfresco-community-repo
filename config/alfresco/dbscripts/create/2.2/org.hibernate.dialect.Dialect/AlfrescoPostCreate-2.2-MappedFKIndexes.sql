@@ -64,8 +64,6 @@ CREATE INDEX fk_alf_txn_svr ON alf_transaction (server_id);
 
 CREATE INDEX fk_alf_usaged_n ON alf_usage_delta (node_id);
 
-CREATE INDEX fk_alf_vc_store ON alf_version_count (store_id);
-
 CREATE INDEX fk_avm_nasp_n ON avm_aspects (node_id);
 
 CREATE INDEX fk_avm_ce_child ON avm_child_entries (child_id);

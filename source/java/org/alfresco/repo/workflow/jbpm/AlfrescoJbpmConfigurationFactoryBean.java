@@ -34,84 +34,93 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.BeanNameAware;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.io.Resource;
 import org.springmodules.workflow.jbpm31.JbpmFactoryLocator;
 
 /**
- * Implementation of Spring Module's JbpmConfigurationFactoryBean for
- * Jbpm 3.2.
- *
+ * Implementation of Spring Module's JbpmConfigurationFactoryBean for Jbpm 3.2.
+ * 
  * @author Costin Leau
  * @author davidc
  */
-public class AlfrescoJbpmConfigurationFactoryBean implements InitializingBean, FactoryBean, BeanFactoryAware, BeanNameAware
+public class AlfrescoJbpmConfigurationFactoryBean implements InitializingBean, FactoryBean, BeanFactoryAware,
+        BeanNameAware, DisposableBean
 {
     private JbpmConfiguration jbpmConfiguration;
     private ObjectFactory objectFactory;
     private Resource configuration;
     private SessionFactory sessionFactory;
     private String contextName = JbpmContext.DEFAULT_JBPM_CONTEXT_NAME;
-    
+
     /**
      * FactoryLocator
      */
-    private JbpmFactoryLocator factoryLocator = new JbpmFactoryLocator();
+    private final AlfrescoJbpmFactoryLocator factoryLocator = new AlfrescoJbpmFactoryLocator();
 
-    
-    /* (non-Javadoc)
-     * @see org.springframework.beans.factory.BeanFactoryAware#setBeanFactory(org.springframework.beans.factory.BeanFactory)
+    /*
+     * (non-Javadoc)
+     * @see
+     * org.springframework.beans.factory.BeanFactoryAware#setBeanFactory(org.springframework.beans.factory.BeanFactory)
      */
-    public void setBeanFactory(BeanFactory beanFactory) throws BeansException
+    public void setBeanFactory(final BeanFactory beanFactory) throws BeansException
     {
-        factoryLocator.setBeanFactory(beanFactory);
+        this.factoryLocator.setBeanFactory(beanFactory);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
      * @see org.springframework.beans.factory.BeanNameAware#setBeanName(java.lang.String)
      */
-    public void setBeanName(String name)
+    public void setBeanName(final String name)
     {
-        factoryLocator.setBeanName(name);
+        this.factoryLocator.setBeanName(name);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
      * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
      */
     public void afterPropertiesSet() throws Exception
     {
-        if (configuration == null)
+        if (this.configuration == null)
+        {
             throw new IllegalArgumentException("configuration or objectFactory property need to be not null");
+        }
 
         // 1. Construct Jbpm Configuration
         // NOTE: Jbpm 3.2 adds a JbpmConfiguration value to its context
-        InputStream stream = configuration.getInputStream();
-        jbpmConfiguration = JbpmConfiguration.parseInputStream(stream);
+        final InputStream stream = this.configuration.getInputStream();
+        this.jbpmConfiguration = JbpmConfiguration.parseInputStream(stream);
 
         // 2. inject the HB session factory if it is the case
-        if (sessionFactory != null)
+        if (this.sessionFactory != null)
         {
-            JbpmContext context = jbpmConfiguration.createJbpmContext(contextName);
+            final JbpmContext context = this.jbpmConfiguration.createJbpmContext(this.contextName);
             try
             {
-                context.setSessionFactory(sessionFactory);
-            } finally
+                context.setSessionFactory(this.sessionFactory);
+            }
+            finally
             {
                 context.close();
             }
         }
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
      * @see org.springframework.beans.factory.FactoryBean#getObject()
      */
     public Object getObject() throws Exception
     {
-        return jbpmConfiguration;
+        return this.jbpmConfiguration;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
      * @see org.springframework.beans.factory.FactoryBean#getObjectType()
      */
     public Class getObjectType()
@@ -119,7 +128,8 @@ public class AlfrescoJbpmConfigurationFactoryBean implements InitializingBean, F
         return JbpmConfiguration.class;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
      * @see org.springframework.beans.factory.FactoryBean#isSingleton()
      */
     public boolean isSingleton()
@@ -132,13 +142,14 @@ public class AlfrescoJbpmConfigurationFactoryBean implements InitializingBean, F
      */
     public Resource getConfiguration()
     {
-        return configuration;
+        return this.configuration;
     }
 
     /**
-     * @param configuration  The configuration to set
+     * @param configuration
+     *            The configuration to set
      */
-    public void setConfiguration(Resource configuration)
+    public void setConfiguration(final Resource configuration)
     {
         this.configuration = configuration;
     }
@@ -148,13 +159,14 @@ public class AlfrescoJbpmConfigurationFactoryBean implements InitializingBean, F
      */
     public ObjectFactory getObjectFactory()
     {
-        return objectFactory;
+        return this.objectFactory;
     }
 
     /**
-     * @param objectFactory  The objectFactory to set
+     * @param objectFactory
+     *            The objectFactory to set
      */
-    public void setObjectFactory(ObjectFactory objectFactory)
+    public void setObjectFactory(final ObjectFactory objectFactory)
     {
         this.objectFactory = objectFactory;
     }
@@ -164,13 +176,14 @@ public class AlfrescoJbpmConfigurationFactoryBean implements InitializingBean, F
      */
     public String getContextName()
     {
-        return contextName;
+        return this.contextName;
     }
 
     /**
-     * @param contextName  The contextName to set
+     * @param contextName
+     *            The contextName to set
      */
-    public void setContextName(String contextName)
+    public void setContextName(final String contextName)
     {
         this.contextName = contextName;
     }
@@ -180,15 +193,37 @@ public class AlfrescoJbpmConfigurationFactoryBean implements InitializingBean, F
      */
     public SessionFactory getSessionFactory()
     {
-        return sessionFactory;
+        return this.sessionFactory;
     }
 
     /**
-     * @param sessionFactory  The sessionFactory to set
+     * @param sessionFactory
+     *            The sessionFactory to set
      */
-    public void setSessionFactory(SessionFactory sessionFactory)
+    public void setSessionFactory(final SessionFactory sessionFactory)
     {
         this.sessionFactory = sessionFactory;
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.springframework.beans.factory.DisposableBean#destroy()
+     */
+    public void destroy() throws Exception
+    {
+        this.factoryLocator.destroy();
+    }
+
+    private static class AlfrescoJbpmFactoryLocator extends JbpmFactoryLocator
+    {
+        public void destroy()
+        {
+            JbpmFactoryLocator.beanFactories.clear();
+            JbpmFactoryLocator.beanFactoriesNames.clear();
+            JbpmFactoryLocator.referenceCounter.clear();
+            JbpmFactoryLocator.canUseDefaultBeanFactory = true;
+            JbpmFactoryLocator.defaultFactory = null;
+        }
     }
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,7 +18,7 @@
  * As a special exception to the terms and conditions of version 2.0 of 
  * the GPL, you may redistribute this Program in connection with Free/Libre 
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
+ * FLOSS exception.  You should have received a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
@@ -27,9 +27,8 @@ package org.alfresco.service.license;
 import org.alfresco.service.NotAuditable;
 import org.alfresco.service.PublicService;
 
-
 /**
- * Contract for managing licenses
+ * Contract for managing licenses.
  * 
  * @author davidc
  */
@@ -38,24 +37,33 @@ public interface LicenseService
 {
 
     /**
-     * Verify License
+     * Begin the license verification loop. Throws an exception if a new .lic file has been supplied that is invalid.
+     * Will quietly make the repository read only if there is no license and the repository isn't eligible for the free
+     * trial period or the license has expired.
      * 
      * @throws LicenseException
+     *             if an invalid .lic file has been supplied
      */
     @NotAuditable
     public void verifyLicense() throws LicenseException;
-    
+
     /**
-     * Get description of installed license
+     * Was the license known to be valid the last time it was checked?.
      * 
-     * @return  license descriptor (or null, if one is not installed)
-     * @throws LicenseException
+     * @return true if there is a valid license
+     */
+    public boolean isLicenseValid();
+
+    /**
+     * Get description of installed license.
+     * 
+     * @return license descriptor (or null, if no valid license is installed)
      */
     @NotAuditable
-    public LicenseDescriptor getLicense() throws LicenseException;
-    
+    public LicenseDescriptor getLicense();
+
     /**
-     * Informs the service it is being shutdown
+     * Informs the service it is being shutdown.
      */
     @NotAuditable
     public void shutdown();

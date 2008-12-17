@@ -324,8 +324,7 @@ public class MultiTNodeServiceInterceptor extends DelegatingIntroductionIntercep
         else if (rawValue instanceof ChildAssociationRef)
         {
             ChildAssociationRef ref = (ChildAssociationRef) rawValue;
-            // TODO use getBaseName ... fix tenant bootstrap
-            value = tenantService.getName(ref);
+            value = tenantService.getBaseName(ref);
         }
         else if (rawValue instanceof AssociationRef)
         {

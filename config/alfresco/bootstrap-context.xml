@@ -166,7 +166,7 @@
         </property>
     </bean>
 
-    <bean id="systemBootstrap" parent="systemStoreImporter" singleton="false">
+    <bean id="systemBootstrap" parent="systemStoreImporter" singleton="true">
         <property name="bootstrapViews">
             <list>
                 <props>
@@ -398,14 +398,40 @@
        </property>
     </bean>
 
-    <!-- Descriptor Service -->
+   <bean id="personDaoBootstrap" class="org.alfresco.repo.security.person.PersonDaoBootstrap" >
+      <property name="personDaoImpl">
+         <ref bean="personDaoImpl"/>
+      </property>
+   </bean>
 
+    <!-- Descriptor Service -->
     <bean id="descriptorComponent" class="org.alfresco.repo.descriptor.DescriptorServiceImpl">
+       <property name="serverDescriptorDAO">
+           <ref bean="serverDescriptorDAO"/>
+       </property>
+       <property name="currentRepoDescriptorDAO">
+           <ref bean="currentRepoDescriptorDAO"/>
+       </property>
+       <property name="installedRepoDescriptorDAO">
+           <ref bean="installedRepoDescriptorDAO"/>
+       </property>
+       <property name="transactionService">
+           <ref bean="transactionService"/>
+       </property>
+    </bean>
+
+    <bean id="serverDescriptorDAO" class="org.alfresco.repo.descriptor.ServerDescriptorDAOImpl">
        <property name="repositoryName">
            <value>${repository.name}</value>
        </property>
-       <property name="descriptor">
+       <property name="resource">
            <value>classpath:alfresco/version.properties</value>
+       </property>
+    </bean>
+
+    <bean id="currentRepoDescriptorDAO" class="org.alfresco.repo.descriptor.RepositoryDescriptorDAOImpl">
+       <property name="name">
+           <value>system.descriptor.current.childname</value>
        </property>
        <property name="systemBootstrap">
            <ref bean="systemBootstrap"/>
@@ -419,10 +445,38 @@
        <property name="nodeService">
            <ref bean="nodeService"/>
        </property>
+       <property name="contentService">
+           <ref bean="contentService"/>
+       </property>
        <property name="searchService">
            <ref bean="searchService"/>
        </property>
     </bean>
+
+    <bean id="installedRepoDescriptorDAO" class="org.alfresco.repo.descriptor.RepositoryDescriptorDAOImpl">
+       <property name="name">
+           <value>system.descriptor.childname</value>
+       </property>
+       <property name="systemBootstrap">
+           <ref bean="systemBootstrap"/>
+       </property>
+       <property name="transactionService">
+           <ref bean="transactionService"/>
+       </property>
+       <property name="namespaceService">
+           <ref bean="namespaceService"/>
+       </property>
+       <property name="nodeService">
+           <ref bean="nodeService"/>
+       </property>
+       <property name="contentService">
+           <ref bean="contentService"/>
+       </property>
+       <property name="searchService">
+           <ref bean="searchService"/>
+       </property>
+    </bean>
+
 
     <!-- This component checks the interconnection between the metadata, indexes and content -->
     <bean id="configurationChecker" class="org.alfresco.repo.admin.ConfigurationChecker">

@@ -17,12 +17,18 @@
 		<property name="dictionaryService">
 			<ref bean="dictionaryService"/>
 	    </property>
+		<property name="tenantService">
+			<ref bean="tenantService"/>
+	    </property>
     </bean>
     
      <bean id="unboundPolicyBehaviourFilter" class="org.alfresco.repo.policy.BehaviourFilterImpl">
 		<property name="dictionaryService">
 			<ref bean="dictionaryService"/>
 	    </property>
+		<property name="tenantService">
+			<ref bean="tenantService"/>
+	    </property>	    
     </bean>
 
     <bean id="policyComponent" class="org.alfresco.repo.policy.PolicyComponentImpl">

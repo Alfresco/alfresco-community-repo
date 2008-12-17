@@ -34,12 +34,12 @@ import java.util.Map;
 
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.domain.AppliedPatch;
+import org.alfresco.repo.transaction.TransactionServiceImpl;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.admin.PatchException;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.descriptor.Descriptor;
 import org.alfresco.service.descriptor.DescriptorService;
-import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -58,6 +58,7 @@ public class PatchServiceImpl implements PatchService
     private static final String MSG_NOT_RELEVANT = "patch.service.not_relevant";
     private static final String MSG_PRECEEDED_BY_ALTERNATIVE = "patch.service.preceeded_by_alternative";
     private static final String MSG_APPLYING_PATCH = "patch.service.applying_patch";
+    private static final String MSG_VALIDATION_FAILED = "patch.validation.failed";
     
     private static final Date ZERO_DATE = new Date(0L);
     private static final Date INFINITE_DATE = new Date(Long.MAX_VALUE);
@@ -65,7 +66,7 @@ public class PatchServiceImpl implements PatchService
     private static Log logger = LogFactory.getLog(PatchExecuter.class);
     
     private DescriptorService descriptorService;
-    private TransactionService transactionService;
+    private TransactionServiceImpl transactionService;
     private RuleService ruleService;
     private PatchDaoService patchDaoService;
     private List<Patch> patches;
@@ -80,7 +81,7 @@ public class PatchServiceImpl implements PatchService
         this.descriptorService = descriptorService;
     }
 
-    public void setTransactionService(TransactionService transactionService)
+    public void setTransactionService(TransactionServiceImpl transactionService)
     {
         this.transactionService = transactionService;
     }
@@ -100,6 +101,27 @@ public class PatchServiceImpl implements PatchService
         patches.add(patch);
     }
 
+    public boolean validatePatches()
+    {
+        boolean success = true;
+        int serverSchemaVersion = descriptorService.getServerDescriptor().getSchema();
+        for (Patch patch : patches)
+        {
+            if (patch.getFixesToSchema() > serverSchemaVersion)
+            {
+                logger.error(I18NUtil.getMessage(MSG_VALIDATION_FAILED, patch.getId(), serverSchemaVersion, patch
+                        .getFixesToSchema(), patch.getTargetSchema()));
+                success = false;
+            }
+
+        }
+        if (!success)
+        {
+            this.transactionService.setAllowWrite(false);
+        }
+        return success;
+    }
+    
     public boolean applyOutstandingPatches()
     {
         boolean success = true;
@@ -114,7 +136,7 @@ public class PatchServiceImpl implements PatchService
                 List<Patch> sortedPatches = new ArrayList<Patch>(patches);
                 Comparator<Patch> comparator = new PatchTargetSchemaComparator();
                 Collections.sort(sortedPatches, comparator);
-    
+                
                 // construct a list of executed patches by ID (also check the date)
                 Map<String, AppliedPatch> appliedPatchesById = new HashMap<String, AppliedPatch>(23);
                 List<AppliedPatch> appliedPatches = patchDaoService.getAppliedPatches();

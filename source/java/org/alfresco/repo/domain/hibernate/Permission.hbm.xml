@@ -336,6 +336,17 @@
          authority.authority = :authority
    </query>
     
+   <query name="permission.GetAcesByAuthority" cacheable="true">
+       select
+         ace
+       from
+         org.alfresco.repo.domain.hibernate.DbAccessControlEntryImpl as ace
+         join ace.authority as authority
+       where
+         authority.authority = :authority
+   </query>
+    
+    
     
    <query name="permission.GetAcesForAcl" cacheable="true">
        select

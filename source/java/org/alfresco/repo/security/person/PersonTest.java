@@ -37,6 +37,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.NoSuchPersonException;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
@@ -54,6 +55,8 @@ public class PersonTest extends BaseSpringTest
 
     private NodeRef rootNodeRef;
 
+    private PermissionService permissionService;
+
     public PersonTest()
     {
         super();
@@ -65,6 +68,7 @@ public class PersonTest extends BaseSpringTest
         transactionService = (TransactionService) applicationContext.getBean("transactionService");
         personService = (PersonService) applicationContext.getBean("personService");
         nodeService = (NodeService) applicationContext.getBean("nodeService");
+        permissionService = (PermissionService) applicationContext.getBean("permissionService");
 
         StoreRef storeRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.currentTimeMillis());
         rootNodeRef = nodeService.getRootNode(storeRef);
@@ -119,6 +123,25 @@ public class PersonTest extends BaseSpringTest
         }
     }
 
+    public void testDeletePerson()
+    {
+        personService.getPerson("andy");
+        NodeRef n1 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER).getChildRef();
+        NodeRef n2 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}two"), ContentModel.TYPE_FOLDER).getChildRef();
+        permissionService.setPermission(n1, "andy", PermissionService.READ, true);
+        permissionService.setPermission(n2, "andy", PermissionService.ALL_PERMISSIONS, true);
+        setComplete();
+        endTransaction();
+        startNewTransaction();
+        nodeService.deleteNode(n1);
+        setComplete();
+        endTransaction();
+        startNewTransaction();
+        personService.deletePerson("andy");
+        setComplete();
+        endTransaction();
+        startNewTransaction();
+    }
     
     public void testCreateAndThenDelete()
     {

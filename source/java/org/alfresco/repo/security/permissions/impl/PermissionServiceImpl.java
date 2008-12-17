@@ -790,6 +790,7 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
                 }
             }
         }
+        auths.addAll(authorityService.getAuthoritiesForUser(user.getUsername()));
         return auths;
     }
 

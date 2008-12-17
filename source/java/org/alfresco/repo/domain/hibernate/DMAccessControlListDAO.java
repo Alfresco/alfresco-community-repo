@@ -206,7 +206,8 @@ public class DMAccessControlListDAO implements AccessControlListDAO
         // Do the children first
 
         DbAccessControlList existingAcl = getAccessControlList(nodeRef);
-        Long toInherit = inherited;
+        Long toInherit = null;
+        Long idToInheritFrom = null;
 
         if (existingAcl != null)
         {
@@ -229,13 +230,13 @@ public class DMAccessControlListDAO implements AccessControlListDAO
                 }
                 if (existingAcl.getInherits())
                 {
-                    if (toInherit != null)
+                    if (inherited != null)
                     {
-                        aclDaoComponent.enableInheritance(id, toInherit);
+                        aclDaoComponent.enableInheritance(id, inherited);
                     }
                 }
 
-                toInherit = aclDaoComponent.getInheritedAccessControlList(id);
+                idToInheritFrom = id;
 
                 setAccessControlList(nodeRef, newAcl);
             }
@@ -256,20 +257,33 @@ public class DMAccessControlListDAO implements AccessControlListDAO
 
                 DbAccessControlList newAcl = aclDaoComponent.getDbAccessControlList(id);
 
-                toInherit = aclDaoComponent.getInheritedAccessControlList(id);
+                idToInheritFrom = id;
 
                 setAccessControlList(nodeRef, newAcl);
             }
             else
             {
                 // Unset - simple inherit
-                DbAccessControlList inheritedAcl = aclDaoComponent.getDbAccessControlList(toInherit);
+                DbAccessControlList inheritedAcl = aclDaoComponent.getDbAccessControlList(inherited);
                 setAccessControlList(nodeRef, inheritedAcl);
             }
         }
 
         for (ChildAssociationRef child : nodeService.getChildAssocs(nodeRef))
         {
+            // Only make inherited if required
+            if(toInherit == null)
+            {
+                if(idToInheritFrom == null)
+                {
+                    toInherit = inherited;
+                }
+                else
+                {
+                    toInherit = aclDaoComponent.getInheritedAccessControlList(idToInheritFrom);
+                }
+            }
+            
             if (child.isPrimary())
             {
                 CounterSet update = fixOldDmAcls(child.getChildRef(), toInherit, false);

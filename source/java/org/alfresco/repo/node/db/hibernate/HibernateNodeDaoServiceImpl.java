@@ -1440,6 +1440,15 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         node.getProperties().clear();
         node.getAspects().clear();
         
+        // delete ACLs
+        
+        DbAccessControlList dbAcl = node.getAccessControlList();
+        node.setAccessControlList(null);
+        if(dbAcl != null)
+        {
+            getHibernateTemplate().delete(dbAcl);
+        }
+        
         // Mark the node as deleted
         node.setDeleted(true);
         

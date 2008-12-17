@@ -156,15 +156,15 @@ public class PermissionServiceTest extends AbstractPermissionTest
         {
 
         }
-        
+
         runAs("admin");
         permissionService.setPermission(folder, "andy", PermissionService.ALL_PERMISSIONS, true);
-        
+
         FileFolderServiceImpl.makeFolders(serviceRegistry.getFileFolderService(), folder, pathElements, ContentModel.TYPE_FOLDER);
 
     }
 
-    public void testRunAsRealAndEffectiveUsers()
+    public void testRunAsRealAndEffectiveUsersWithPriorAuthentication()
     {
         runAs("admin");
 
@@ -197,6 +197,201 @@ public class PermissionServiceTest extends AbstractPermissionTest
 
     }
 
+    public void testNestedRunAsRealAndEffectiveUsersWithPriorAuthentication()
+    {
+        runAs("admin");
+
+        final NodeRef n1 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER).getChildRef();
+
+        runAs("andy");
+        assertTrue(permissionService.hasPermission(n1, getPermission(PermissionService.CONTRIBUTOR)) == AccessStatus.DENIED);
+
+        assertEquals("andy", AuthenticationUtil.getCurrentRealUserName());
+        assertEquals("andy", AuthenticationUtil.getCurrentEffectiveUserName());
+
+        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
+        {
+
+            public Object doWork() throws Exception
+            {
+                assertTrue(permissionService.hasPermission(n1, getPermission(PermissionService.CONTRIBUTOR)) == AccessStatus.ALLOWED);
+
+                assertEquals("andy", AuthenticationUtil.getCurrentRealUserName());
+                assertEquals("admin", AuthenticationUtil.getCurrentEffectiveUserName());
+
+                AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
+                {
+
+                    public Object doWork() throws Exception
+                    {
+                        assertTrue(permissionService.hasPermission(n1, getPermission(PermissionService.CONTRIBUTOR)) == AccessStatus.DENIED);
+
+                        assertEquals("andy", AuthenticationUtil.getCurrentRealUserName());
+                        assertEquals("lemur", AuthenticationUtil.getCurrentEffectiveUserName());
+
+                        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
+                        {
+
+                            public Object doWork() throws Exception
+                            {
+                                assertTrue(permissionService.hasPermission(n1, getPermission(PermissionService.CONTRIBUTOR)) == AccessStatus.ALLOWED);
+
+                                assertEquals("andy", AuthenticationUtil.getCurrentRealUserName());
+                                assertEquals("admin", AuthenticationUtil.getCurrentEffectiveUserName());
+                                
+                                AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
+                                        {
+
+                                            public Object doWork() throws Exception
+                                            {
+                                                assertTrue(permissionService.hasPermission(n1, getPermission(PermissionService.CONTRIBUTOR)) == AccessStatus.DENIED);
+
+                                                assertEquals("andy", AuthenticationUtil.getCurrentRealUserName());
+                                                assertEquals("andy", AuthenticationUtil.getCurrentEffectiveUserName());
+
+                                                return null;
+                                            }
+                                        }, "andy");
+                                
+
+                                assertEquals("andy", AuthenticationUtil.getCurrentRealUserName());
+                                assertEquals("admin", AuthenticationUtil.getCurrentEffectiveUserName());
+                                
+                                return null;
+                            }
+                        }, "admin");
+                        
+                        assertEquals("andy", AuthenticationUtil.getCurrentRealUserName());
+                        assertEquals("lemur", AuthenticationUtil.getCurrentEffectiveUserName());
+
+                        return null;
+                    }
+                }, "lemur");
+
+                assertEquals("andy", AuthenticationUtil.getCurrentRealUserName());
+                assertEquals("admin", AuthenticationUtil.getCurrentEffectiveUserName());
+
+                return null;
+            }
+        }, "admin");
+
+        assertEquals("andy", AuthenticationUtil.getCurrentRealUserName());
+        assertEquals("andy", AuthenticationUtil.getCurrentEffectiveUserName());
+
+    }
+
+    public void testRunAsRealAndEffectiveUsersWithNoPriorAuthentication()
+    {
+        runAs("admin");
+
+        final NodeRef n1 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER).getChildRef();
+
+        AuthenticationUtil.clearCurrentSecurityContext();
+
+        assertNull(AuthenticationUtil.getCurrentRealUserName());
+        assertNull(AuthenticationUtil.getCurrentEffectiveUserName());
+
+        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
+        {
+
+            public Object doWork() throws Exception
+            {
+                assertTrue(permissionService.hasPermission(n1, getPermission(PermissionService.CONTRIBUTOR)) == AccessStatus.ALLOWED);
+
+                assertEquals("admin", AuthenticationUtil.getCurrentRealUserName());
+                assertEquals("admin", AuthenticationUtil.getCurrentEffectiveUserName());
+                return null;
+            }
+        }, "admin");
+
+        assertNull(AuthenticationUtil.getCurrentRealUserName());
+        assertNull(AuthenticationUtil.getCurrentEffectiveUserName());
+    }
+
+    
+    public void testNestedRunAsRealAndEffectiveUsersWithNoPriorAuthentication()
+    {
+        runAs("admin");
+
+        final NodeRef n1 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER).getChildRef();
+
+        AuthenticationUtil.clearCurrentSecurityContext();
+
+        assertNull(AuthenticationUtil.getCurrentRealUserName());
+        assertNull(AuthenticationUtil.getCurrentEffectiveUserName());
+
+        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
+        {
+
+            public Object doWork() throws Exception
+            {
+                assertTrue(permissionService.hasPermission(n1, getPermission(PermissionService.CONTRIBUTOR)) == AccessStatus.ALLOWED);
+
+                assertEquals("admin", AuthenticationUtil.getCurrentRealUserName());
+                assertEquals("admin", AuthenticationUtil.getCurrentEffectiveUserName());
+
+                AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
+                {
+
+                    public Object doWork() throws Exception
+                    {
+                        assertTrue(permissionService.hasPermission(n1, getPermission(PermissionService.CONTRIBUTOR)) == AccessStatus.DENIED);
+
+                        assertEquals("admin", AuthenticationUtil.getCurrentRealUserName());
+                        assertEquals("lemur", AuthenticationUtil.getCurrentEffectiveUserName());
+
+                        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
+                        {
+
+                            public Object doWork() throws Exception
+                            {
+                                assertTrue(permissionService.hasPermission(n1, getPermission(PermissionService.CONTRIBUTOR)) == AccessStatus.ALLOWED);
+
+                                assertEquals("admin", AuthenticationUtil.getCurrentRealUserName());
+                                assertEquals("admin", AuthenticationUtil.getCurrentEffectiveUserName());
+                                
+                                AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
+                                        {
+
+                                            public Object doWork() throws Exception
+                                            {
+                                                assertTrue(permissionService.hasPermission(n1, getPermission(PermissionService.CONTRIBUTOR)) == AccessStatus.DENIED);
+
+                                                assertEquals("admin", AuthenticationUtil.getCurrentRealUserName());
+                                                assertEquals("andy", AuthenticationUtil.getCurrentEffectiveUserName());
+
+                                                return null;
+                                            }
+                                        }, "andy");
+                                
+
+                                assertEquals("admin", AuthenticationUtil.getCurrentRealUserName());
+                                assertEquals("admin", AuthenticationUtil.getCurrentEffectiveUserName());
+                                
+                                return null;
+                            }
+                        }, "admin");
+                        
+                        assertEquals("admin", AuthenticationUtil.getCurrentRealUserName());
+                        assertEquals("lemur", AuthenticationUtil.getCurrentEffectiveUserName());
+
+                        return null;
+                    }
+                }, "lemur");
+
+                assertEquals("admin", AuthenticationUtil.getCurrentRealUserName());
+                assertEquals("admin", AuthenticationUtil.getCurrentEffectiveUserName());
+
+                return null;
+            }
+        }, "admin");
+
+        assertNull(AuthenticationUtil.getCurrentRealUserName());
+        assertNull(AuthenticationUtil.getCurrentEffectiveUserName());
+
+
+    }
+    
     public void testDefaultModelPermissions()
     {
         runAs("admin");

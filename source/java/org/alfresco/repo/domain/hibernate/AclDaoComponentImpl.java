@@ -93,6 +93,8 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
     // static String QUERY_GET_AUTHORITY_ALIASES = "permission.GetAuthorityAliases";
 
     static String QUERY_GET_ACES_AND_ACLS_BY_AUTHORITY = "permission.GetAcesAndAclsByAuthority";
+    
+    static String QUERY_GET_ACES_BY_AUTHORITY = "permission.GetAcesByAuthority";
 
     static String QUERY_GET_ACES_FOR_ACL = "permission.GetAcesForAcl";
 
@@ -855,6 +857,26 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
             getHibernateTemplate().delete(ace);
         }
 
+        
+        // Tidy up any unreferenced ACEs
+        
+        callback = new HibernateCallback()
+        {
+            public Object doInHibernate(Session session)
+            {
+                Query query = session.getNamedQuery(QUERY_GET_ACES_BY_AUTHORITY);
+                query.setParameter("authority", authority);
+                return query.list();
+            }
+        };
+        List<DbAccessControlEntry> unreferenced = (List<DbAccessControlEntry>) getHibernateTemplate().execute(callback);
+        
+        for (DbAccessControlEntry ace : unreferenced)
+        {
+            getHibernateTemplate().delete(ace);
+        }
+
+        
         // remove authority
 
         callback = new HibernateCallback()

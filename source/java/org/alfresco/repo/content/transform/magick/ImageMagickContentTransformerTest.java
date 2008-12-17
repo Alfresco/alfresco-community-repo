@@ -47,7 +47,7 @@ public class ImageMagickContentTransformerTest extends AbstractContentTransforme
         super.setUp();
         
         RuntimeExec executer = new RuntimeExec();
-        executer.setCommand("imconvert.exe ${source} ${options} ${target}");
+        executer.setCommand(new String[] {"imconvert.exe", "${source}", "${options}", "${target}"});
         executer.setDefaultProperties(Collections.singletonMap("options", ""));
         
         transformer = new ImageMagickContentTransformer();

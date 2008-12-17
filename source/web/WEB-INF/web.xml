@@ -185,6 +185,11 @@
       <filter-name>Authentication Filter</filter-name>
       <url-pattern>/wcs/*</url-pattern>
    </filter-mapping>
+   
+   <filter-mapping>
+      <filter-name>Authentication Filter</filter-name>
+      <url-pattern>/ajax/*</url-pattern>
+   </filter-mapping>
    -->
    
    <filter-mapping>

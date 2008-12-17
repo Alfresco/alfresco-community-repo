@@ -77,7 +77,7 @@ onkeyup="javascript:checkButtonState();" /><f:verbatim>
 <td><nobr></f:verbatim><h:outputText value="#{msg.export_from}:" rendered="#{NavigationBean.currentUser.admin == true}"/><f:verbatim></nobr></td>
 <td>
 </f:verbatim><h:selectOneRadio value="#{DialogManager.bean.mode}" layout="pageDirection" rendered="#{NavigationBean.currentUser.admin == true}">
-<f:selectItem itemValue="all" itemLabel="#{msg.all_spaces_root}" />
+<f:selectItem itemValue="all" itemLabel="#{msg.all_spaces_root}" itemDisabled="true" />
 <f:selectItem itemValue="current" itemLabel="#{msg.current_space}" />
 </h:selectOneRadio><f:verbatim>
 </td>

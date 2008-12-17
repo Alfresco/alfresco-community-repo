@@ -38,7 +38,7 @@ function main()
       var data =
       {
          title: title,
-         page: decodeUriComponent(args["page"])
+         page: decodeURIComponent(args["page"])
       }
       activities.postActivity("org.alfresco.blog.post-deleted", args["site"], "blog", jsonUtils.toJSONString(data));
    }

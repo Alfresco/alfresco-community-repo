@@ -29,6 +29,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.transaction.Status;
+import javax.transaction.UserTransaction;
 
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.model.Repository;
@@ -147,7 +149,7 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
      */
     public ServerModel getDescription()
     {
-        return new RepositoryServerModel(descriptorService.getCurrentRepositoryDescriptor());
+        return new RepositoryServerModel(descriptorService.getCurrentRepositoryDescriptor(), descriptorService.getServerDescriptor());
     }
 
     /* (non-Javadoc)
@@ -301,13 +303,53 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
             {
                 public Object execute() throws Exception
                 {
-                    if (logger.isDebugEnabled())
-                        logger.debug("Begin transaction: " + description.getRequiredTransaction());
-                    
-                    script.execute(scriptReq, scriptRes);
-                    
-                    if (logger.isDebugEnabled())
-                        logger.debug("End transaction: " + description.getRequiredTransaction());
+                    try
+                    {
+                        if (logger.isDebugEnabled())
+                            logger.debug("Begin retry transaction block: " + description.getRequiredTransaction());
+                        
+                        script.execute(scriptReq, scriptRes);
+                    }
+                    catch(Exception e)
+                    {
+                        if (logger.isDebugEnabled())
+                        {
+                            logger.debug("Transaction exception: " + description.getRequiredTransaction() + ": " + e.getMessage());
+                            // Note: user transaction shouldn't be null, but just in case inside this exception handler
+                            UserTransaction userTrx = RetryingTransactionHelper.getActiveUserTransaction();
+                            if (userTrx != null)
+                            {
+                                logger.debug("Transaction status: " + userTrx.getStatus());
+                            }
+                        }
+                        
+                        UserTransaction userTrx = RetryingTransactionHelper.getActiveUserTransaction();
+                        if (userTrx != null)
+                        {
+                            if (userTrx.getStatus() != Status.STATUS_MARKED_ROLLBACK)
+                            {
+                                if (logger.isDebugEnabled())
+                                    logger.debug("Marking web script transaction for rollback");
+                                try
+                                {
+                                    userTrx.setRollbackOnly();
+                                }
+                                catch(Throwable re)
+                                {
+                                    if (logger.isDebugEnabled())
+                                        logger.debug("Caught and ignoring exception during marking for rollback: " + re.getMessage());
+                                }
+                            }
+                        }
+                        
+                        // re-throw original exception for retry
+                        throw e;
+                    }
+                    finally
+                    {
+                        if (logger.isDebugEnabled())
+                            logger.debug("End retry transaction block: " + description.getRequiredTransaction());
+                    }
                     
                     return null;
                 }        

@@ -35,6 +35,7 @@ import org.alfresco.web.scripts.ServerModel;
  */
 public class RepositoryServerModel implements ServerModel
 {
+    private Descriptor currentDescriptor;
     private Descriptor serverDescriptor;
     
     /**
@@ -42,8 +43,9 @@ public class RepositoryServerModel implements ServerModel
      * 
      * @param serverDescriptor
      */
-    /*package*/ RepositoryServerModel(Descriptor serverDescriptor)
+    /*package*/ RepositoryServerModel(Descriptor currentDescriptor, Descriptor serverDescriptor)
     {
+        this.currentDescriptor = currentDescriptor;
         this.serverDescriptor = serverDescriptor;
     }
 
@@ -60,7 +62,7 @@ public class RepositoryServerModel implements ServerModel
      */
     public String getId()
     {
-        return serverDescriptor.getId();
+        return currentDescriptor.getId();
     }
 
     /* (non-Javadoc)
@@ -68,7 +70,7 @@ public class RepositoryServerModel implements ServerModel
      */
     public String getName()
     {
-        return serverDescriptor.getName();
+        return currentDescriptor.getName();
     }
     
     /* (non-Javadoc)
@@ -76,7 +78,7 @@ public class RepositoryServerModel implements ServerModel
      */
     public String getVersionMajor()
     {
-        return serverDescriptor.getVersionMajor();
+        return currentDescriptor.getVersionMajor();
     }
 
     /* (non-Javadoc)
@@ -84,7 +86,7 @@ public class RepositoryServerModel implements ServerModel
      */
     public String getVersionMinor()
     {
-        return serverDescriptor.getVersionMinor();
+        return currentDescriptor.getVersionMinor();
     }
 
     /* (non-Javadoc)
@@ -92,7 +94,7 @@ public class RepositoryServerModel implements ServerModel
      */
     public String getVersionRevision()
     {
-        return serverDescriptor.getVersionRevision();
+        return currentDescriptor.getVersionRevision();
     }
 
     /* (non-Javadoc)
@@ -100,7 +102,7 @@ public class RepositoryServerModel implements ServerModel
      */
     public String getVersionLabel()
     {
-        return serverDescriptor.getVersionLabel();
+        return currentDescriptor.getVersionLabel();
     }
 
     /* (non-Javadoc)
@@ -108,7 +110,7 @@ public class RepositoryServerModel implements ServerModel
      */
     public String getVersionBuild()
     {
-        return serverDescriptor.getVersionBuild();
+        return currentDescriptor.getVersionBuild();
     }
 
     /* (non-Javadoc)
@@ -116,7 +118,7 @@ public class RepositoryServerModel implements ServerModel
      */
     public String getVersion()
     {
-        return serverDescriptor.getVersion();
+        return currentDescriptor.getVersion();
     }
 
     /* (non-Javadoc)
@@ -132,7 +134,7 @@ public class RepositoryServerModel implements ServerModel
      */
     public int getSchema()
     {
-        return serverDescriptor.getSchema();
+        return currentDescriptor.getSchema();
     }
     
 }

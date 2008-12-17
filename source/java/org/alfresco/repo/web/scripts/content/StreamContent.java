@@ -204,27 +204,7 @@ public class StreamContent extends AbstractWebScript
         }
         catch(Throwable e)
         {
-            if (logger.isInfoEnabled())
-                logger.info("Caught exception & redirecting to status template: " + e.getMessage());
-                
-            // extract status code, if specified
-            int statusCode = HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
-            if (e instanceof WebScriptException)
-            {
-                statusCode = ((WebScriptException)e).getStatus();
-            }
-
-            // send status
-            Status status = new Status();
-            status.setCode(statusCode);
-            status.setMessage(e.getMessage());
-            status.setException(e);
-            Cache cache = new Cache();
-            cache.setNeverCache(true);
-            Map<String, Object> customModel = new HashMap<String, Object>(8, 1.0f);
-            customModel.put("status", status);
-            Map<String, Object> templateModel = createTemplateParameters(req, res, customModel);
-            sendStatus(req, res, status, cache, format, templateModel);
+            throw createStatusException(e, req, res);
         }
     }
     

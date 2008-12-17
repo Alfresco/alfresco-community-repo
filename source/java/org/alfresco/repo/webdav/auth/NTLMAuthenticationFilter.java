@@ -256,8 +256,6 @@ public class NTLMAuthenticationFilter extends BaseNTLMAuthenticationFilter
     protected SessionUser createUserEnvironment(HttpSession session, String userName)
         throws IOException, ServletException
     {
-        Log logger = getLogger();
-        
         SessionUser user = null;
         
         UserTransaction tx = m_transactionService.getUserTransaction();
@@ -266,15 +264,17 @@ public class NTLMAuthenticationFilter extends BaseNTLMAuthenticationFilter
         {
             tx.begin();
             
-            // Get user details for the authenticated user
-            m_authComponent.setCurrentUser(userName.toLowerCase());
-            
-            // The user name used may be a different case to the NTLM supplied user name,
-            // read the current user and use that name
-            userName = m_authComponent.getCurrentUserName();
-            
             // Setup User object and Home space ID etc.
             NodeRef personNodeRef = m_personService.getPerson(userName);
+            
+            // Use the system user context to do the user lookup
+            m_authComponent.setCurrentUser(m_authComponent.getSystemUserName());
+            
+            // User name should match the uid in the person entry found
+            m_authComponent.setSystemUserAsCurrentUser();
+            userName = (String) m_nodeService.getProperty(personNodeRef, ContentModel.PROP_USERNAME);
+            
+            m_authComponent.setCurrentUser(userName);
             String currentTicket = m_authService.getCurrentTicket();
             user = new WebDAVUser(userName, currentTicket, personNodeRef);
             

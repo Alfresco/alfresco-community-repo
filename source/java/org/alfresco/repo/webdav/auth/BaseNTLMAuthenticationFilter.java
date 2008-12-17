@@ -527,7 +527,7 @@ public abstract class BaseNTLMAuthenticationFilter implements Filter
                 {
                     // Passthru mode, send the hashed password details to the passthru authentication server
                     NTLMPassthruToken authToken = (NTLMPassthruToken) ntlmDetails.getAuthenticationToken();
-                    authToken.setUserAndPassword( type3Msg.getUserName(), type3Msg.getNTLMHash(), PasswordEncryptor.NTLM1);
+                    authToken.setUserAndPassword(type3Msg.getUserName(), type3Msg.getNTLMHash(), PasswordEncryptor.NTLM1);
                     
                     try
                     {
@@ -592,7 +592,7 @@ public abstract class BaseNTLMAuthenticationFilter implements Filter
                 if (ntlmDetails == null)
                 {
                     // No cached NTLM details
-                    ntlmDetails = new NTLMLogonDetails( userName, workstation, domain, false, m_srvName);
+                    ntlmDetails = new NTLMLogonDetails(userName, workstation, domain, false, m_srvName);
                     ntlmDetails.setNTLMHashedPassword(type3Msg.getNTLMHash());
                     session.setAttribute(NTLM_AUTH_DETAILS, ntlmDetails);
                     

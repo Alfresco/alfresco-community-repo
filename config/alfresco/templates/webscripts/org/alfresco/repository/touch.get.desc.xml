@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Touch</shortname>
+  <description>Touch the server - return a simple 200 OK status</description>
+  <url>/touch</url>
+  <format default="html"/>
+  <authentication>none</authentication>
+  <transaction>none</transaction>
+</webscript>

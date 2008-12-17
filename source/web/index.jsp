@@ -114,12 +114,21 @@ else
       try { tx.rollback(); } catch (Throwable tex) {}
    }
 }
-if (NavigationBean.LOCATION_MYALFRESCO.equals(location))
+if(request.getMethod().equalsIgnoreCase("GET"))
 {
-   response.sendRedirect(request.getContextPath() + "/faces/jsp/dashboards/container.jsp");
+   if (NavigationBean.LOCATION_MYALFRESCO.equals(location))
+   {
+      response.sendRedirect(request.getContextPath() + "/faces/jsp/dashboards/container.jsp");
+   }
+   else
+   {
+      response.sendRedirect(request.getContextPath() + "/faces/jsp/browse/browse.jsp");
+   }
 }
-else
+// route WebDAV requests
+else if (request.getMethod().equalsIgnoreCase("PROPFIND") ||
+         request.getMethod().equalsIgnoreCase("OPTIONS"))
 {
-   response.sendRedirect(request.getContextPath() + "/faces/jsp/browse/browse.jsp");
+   response.sendRedirect(request.getContextPath() + "/webdav/");
 }
 %>

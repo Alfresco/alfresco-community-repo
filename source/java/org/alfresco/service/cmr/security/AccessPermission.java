@@ -62,4 +62,26 @@ public interface AccessPermission
      * @return
      */
     public AuthorityType getAuthorityType();
+    
+   
+    /**
+     * At what position in the inheritance chain for permissions is this permission set?
+     * = 0 -> Set direct on the object.
+     * > 0 -> Inherited
+     * < 0 -> We don't know and are using this object for reporting (e.g. the actual permissions that apply to a node for the current user)
+     * @return
+     */
+    public int getPosition();
+    
+   /**
+    * Is this an inherited permission entry?
+    * @return
+    */ 
+    public boolean isInherited();
+    
+    /**
+     * Is this permission set on the object?
+     * @return
+     */ 
+     public boolean isSetDirectly();
 }

@@ -106,10 +106,14 @@ import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.Criteria;
 import org.hibernate.Query;
 import org.hibernate.ScrollMode;
 import org.hibernate.ScrollableResults;
 import org.hibernate.Session;
+import org.hibernate.criterion.Criterion;
+import org.hibernate.criterion.Projections;
+import org.hibernate.criterion.Restrictions;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.orm.hibernate3.HibernateCallback;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
@@ -1446,7 +1450,34 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         node.setAccessControlList(null);
         if(dbAcl != null)
         {
-            getHibernateTemplate().delete(dbAcl);
+            if(dbAcl.getAclType() == ACLType.DEFINING)
+            {
+                getHibernateTemplate().delete(dbAcl);
+            }
+            if(dbAcl.getAclType() == ACLType.SHARED)
+            {
+                // check unused
+                Long defining = dbAcl.getInheritsFrom();
+                if(getHibernateTemplate().get(DbAccessControlListImpl.class, defining) == null)
+                {
+                    final Long id = dbAcl.getId();
+                    HibernateCallback check = new HibernateCallback()
+                    {
+                        public Object doInHibernate(Session session)
+                        {
+                            Criteria criteria = getSession().createCriteria(NodeImpl.class, "n");
+                            criteria.add(Restrictions.eq("n.accessControlList.id", id));
+                            criteria.setProjection(Projections.rowCount());
+                            return criteria.list();
+                        }
+                    };
+                    List<Integer> list =  (List<Integer>)getHibernateTemplate().execute(check);
+                    if(list.get(0).intValue() == 0)
+                    {
+                        getHibernateTemplate().delete(dbAcl);
+                    }
+                }
+            }
         }
         
         // Mark the node as deleted

@@ -60,6 +60,8 @@ import org.springframework.context.ApplicationContextAware;
  */
 public class AVMLockingAwareService implements AVMService, ApplicationContextAware
 {
+    public static final String STORE_SEPARATOR = "--";
+    
     private AVMService fService;
 
     private AVMLockingService fLockingService;
@@ -856,7 +858,11 @@ public class AVMLockingAwareService implements AVMService, ApplicationContextAwa
             return null;
         }
         String dnsString = results.keySet().iterator().next().getLocalName();
-        return dnsString.substring(dnsString.lastIndexOf('.') + 1, dnsString.length());
+        String storeName = dnsString.substring(dnsString.lastIndexOf('.') + 1, dnsString.length());
+        final int index = storeName.indexOf(STORE_SEPARATOR);
+        return (index == -1
+                ? storeName
+                : storeName.substring(0, index));
     }
 
     private void grabLock(String path)

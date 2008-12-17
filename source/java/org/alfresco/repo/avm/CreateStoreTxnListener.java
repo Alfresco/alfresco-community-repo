@@ -40,17 +40,20 @@ public class CreateStoreTxnListener extends TransactionListenerAdapter
     public void afterCommit() 
     {
         List<String> created = fCreatedStores.get();
-        for (String name : created)
+        if (created != null)
         {
-            synchronized (this)
+            for (String name : created)
             {
-                for (CreateStoreCallback cb : fCallbacks)
+                synchronized (this)
                 {
-                    cb.storeCreated(name);
+                    for (CreateStoreCallback cb : fCallbacks)
+                    {
+                        cb.storeCreated(name);
+                    }
                 }
             }
+            fCreatedStores.set(null);
         }
-        fCreatedStores.set(null);
     }
 
     /* (non-Javadoc)

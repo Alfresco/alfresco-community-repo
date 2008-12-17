@@ -42,13 +42,16 @@ public class AccessPermissionImpl implements AccessPermission
     private String authority;
 
     private AuthorityType authorityType;
+    
+    private int position;
 
-    public AccessPermissionImpl(String permission, AccessStatus accessStatus, String authority)
+    public AccessPermissionImpl(String permission, AccessStatus accessStatus, String authority, int position)
     {
         this.permission = permission;
         this.accessStatus = accessStatus;
         this.authority = authority;
         this.authorityType = AuthorityType.getAuthorityType(authority);
+        this.position = position;
     }
 
     public String getPermission()
@@ -98,5 +101,20 @@ public class AccessPermissionImpl implements AccessPermission
     public int hashCode()
     {
         return ((authority.hashCode() * 37) + permission.hashCode()) * 37 + accessStatus.hashCode();
+    }
+
+    public int getPosition()
+    {
+        return position;
+    }
+
+    public boolean isInherited()
+    {
+       return (position > 0);
+    }
+
+    public boolean isSetDirectly()
+    {
+        return (position == 0);
     }
 }

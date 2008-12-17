@@ -414,7 +414,10 @@ public class ExporterComponent
                     exporter.startACL(nodeRef);
                     for (AccessPermission permission : permissions)
                     {
-                        exporter.permission(nodeRef, permission);
+                        if(permission.isSetDirectly())
+                        {
+                            exporter.permission(nodeRef, permission);
+                        }
                     }
                     exporter.endACL(nodeRef);
                 }

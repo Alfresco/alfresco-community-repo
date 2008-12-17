@@ -864,7 +864,7 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
                 {
                     if (!change.getBefore().equals(change.getAfter()))
                     {
-                        throw new IllegalStateException("ACL fix should not change the acl ids - unexpected COW!");
+                        s_logger.warn("ACL fix should not change the acl ids - unexpected COW!");
                     }
 
                 }
@@ -910,7 +910,7 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
             {
                 if (!change.getBefore().equals(change.getAfter()))
                 {
-                    throw new IllegalStateException("ACL fix should not change the acl ids - unexpected COW!");
+                    s_logger.warn("ACL fix should not change the acl ids - unexpected COW!");
                 }
 
             }

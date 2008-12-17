@@ -70,6 +70,7 @@ public final class SimplePermissionEntry extends AbstractPermissionEntry
         this.permissionReference = permissionReference;
         this.authority = authority;
         this.accessStatus = accessStatus;
+        this.position = position;
     }
 
     public PermissionReference getPermissionReference()

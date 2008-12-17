@@ -41,17 +41,20 @@ public class CreateVersionTxnListener extends TransactionListenerAdapter
     public void afterCommit() 
     {
         List<Pair<String, Integer>> created = fCreatedVersions.get();
-        for (Pair<String, Integer> version : created)
+        if (created != null)
         {
-            synchronized (this)
+            for (Pair<String, Integer> version : created)
             {
-                for (CreateVersionCallback cb : fCallbacks)
+                synchronized (this)
                 {
-                    cb.versionCreated(version.getFirst(), version.getSecond());
+                    for (CreateVersionCallback cb : fCallbacks)
+                    {
+                        cb.versionCreated(version.getFirst(), version.getSecond());
+                    }
                 }
             }
+            fCreatedVersions.set(null);
         }
-        fCreatedVersions.set(null);
     }
 
     /* (non-Javadoc)

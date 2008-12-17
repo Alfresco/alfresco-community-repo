@@ -41,17 +41,20 @@ public class PurgeVersionTxnListener extends TransactionListenerAdapter
     public void afterCommit() 
     {
         List<Pair<String, Integer>> created = fPurgedVersions.get();
-        for (Pair<String, Integer> version : created)
+        if (created != null)
         {
-            synchronized (this)
+            for (Pair<String, Integer> version : created)
             {
-                for (PurgeVersionCallback cb : fCallbacks)
+                synchronized (this)
                 {
-                    cb.versionPurged(version.getFirst(), version.getSecond());
+                    for (PurgeVersionCallback cb : fCallbacks)
+                    {
+                        cb.versionPurged(version.getFirst(), version.getSecond());
+                    }
                 }
             }
+            fPurgedVersions.set(null);
         }
-        fPurgedVersions.set(null);
     }
 
     /* (non-Javadoc)

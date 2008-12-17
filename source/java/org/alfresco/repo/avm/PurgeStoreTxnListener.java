@@ -40,17 +40,20 @@ public class PurgeStoreTxnListener extends TransactionListenerAdapter
     public void afterCommit() 
     {
         List<String> created = fPurgedStores.get();
-        for (String name : created)
+        if (created != null)
         {
-            synchronized (this)
+            for (String name : created)
             {
-                for (PurgeStoreCallback cb : fCallbacks)
+                synchronized (this)
                 {
-                    cb.storePurged(name);
+                    for (PurgeStoreCallback cb : fCallbacks)
+                    {
+                        cb.storePurged(name);
+                    }
                 }
             }
+            fPurgedStores.set(null);
         }
-        fPurgedStores.set(null);
     }
 
     /* (non-Javadoc)

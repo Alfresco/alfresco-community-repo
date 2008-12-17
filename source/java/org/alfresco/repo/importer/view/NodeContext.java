@@ -507,6 +507,7 @@ public class NodeContext extends ElementContext
         private AccessStatus accessStatus;
         private String authority;
         private String permission;
+        private int position;
 
         /*
          *  (non-Javadoc)
@@ -542,6 +543,21 @@ public class NodeContext extends ElementContext
         public AuthorityType getAuthorityType()
         {
             return null;
+        }
+
+        public int getPosition()
+        {
+            return 0;
+        }
+
+        public boolean isInherited()
+        {
+            return false;
+        }
+
+        public boolean isSetDirectly()
+        {
+           return true;
         }
     }
 

@@ -104,41 +104,126 @@ public class PermissionServiceTest extends AbstractPermissionTest
 
         assertEquals(0, permissionService.getAllSetPermissions(n1).size());
         assertEquals(0, permissionService.getAllSetPermissions(n2).size());
-        
+
         permissionService.deletePermissions(n1);
         permissionService.deletePermissions(n2);
-        
+
         permissionService.setPermission(new SimplePermissionEntry(n1, getPermission(PermissionService.READ), "andy", AccessStatus.ALLOWED));
-        
+
         assertEquals(1, permissionService.getAllSetPermissions(n1).size());
         assertEquals(1, permissionService.getAllSetPermissions(n2).size());
-        
+
         permissionService.deletePermissions(n2);
-        
+
         assertEquals(1, permissionService.getAllSetPermissions(n1).size());
         assertEquals(1, permissionService.getAllSetPermissions(n2).size());
-        
+
         permissionService.setPermission(new SimplePermissionEntry(n2, getPermission(PermissionService.WRITE), "andy", AccessStatus.ALLOWED));
-        
+
         assertEquals(1, permissionService.getAllSetPermissions(n1).size());
         assertEquals(2, permissionService.getAllSetPermissions(n2).size());
 
         permissionService.deletePermissions(n2);
-        
+
         assertEquals(1, permissionService.getAllSetPermissions(n1).size());
         assertEquals(1, permissionService.getAllSetPermissions(n2).size());
-        
+
         permissionService.setPermission(new SimplePermissionEntry(n2, getPermission(PermissionService.WRITE), "andy", AccessStatus.ALLOWED));
-        
+
         assertEquals(1, permissionService.getAllSetPermissions(n1).size());
         assertEquals(2, permissionService.getAllSetPermissions(n2).size());
-        
+
         permissionService.deletePermissions(n1);
-        
+
         assertEquals(0, permissionService.getAllSetPermissions(n1).size());
         assertEquals(1, permissionService.getAllSetPermissions(n2).size());
     }
-    
+
+    /**
+     * This will break when merged forward
+     */
+    public void testPositionInformation()
+    {
+        runAs("admin");
+        NodeRef one = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER).getChildRef();
+        NodeRef two = nodeService.createNode(one, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}two"), ContentModel.TYPE_FOLDER).getChildRef();
+        NodeRef three = nodeService.createNode(two, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}three"), ContentModel.TYPE_FOLDER).getChildRef();
+        NodeRef four = nodeService.createNode(three, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}three"), ContentModel.TYPE_FOLDER).getChildRef();
+        permissionService.setPermission(one, "andy", PermissionService.ALL_PERMISSIONS, true);
+        permissionService.setPermission(two, "bob", PermissionService.ALL_PERMISSIONS, true);
+        permissionService.setPermission(three, "carol", PermissionService.ALL_PERMISSIONS, true);
+
+        Set<AccessPermission> set = permissionService.getAllSetPermissions(one);
+        assertEquals(1, set.size());
+        for (AccessPermission ap : set)
+        {
+            if (ap.getAuthority().equals("andy"))
+            {
+                assertFalse(ap.isInherited());
+                assertEquals(0, ap.getPosition());
+            }
+        }
+
+        set = permissionService.getAllSetPermissions(two);
+        assertEquals(2, set.size());
+        for (AccessPermission ap : set)
+        {
+            if (ap.getAuthority().equals("andy"))
+            {
+                assertTrue(ap.isInherited());
+                assertEquals(2, ap.getPosition());
+            }
+            if (ap.getAuthority().equals("bob"))
+            {
+                assertFalse(ap.isInherited());
+                assertEquals(0, ap.getPosition());
+            }
+        }
+
+        set = permissionService.getAllSetPermissions(three);
+        assertEquals(3, set.size());
+        for (AccessPermission ap : set)
+        {
+            if (ap.getAuthority().equals("andy"))
+            {
+                assertTrue(ap.isInherited());
+                assertEquals(4, ap.getPosition());
+            }
+            if (ap.getAuthority().equals("bob"))
+            {
+                assertTrue(ap.isInherited());
+                assertEquals(2, ap.getPosition());
+            }
+            if (ap.getAuthority().equals("carol"))
+            {
+                assertFalse(ap.isInherited());
+                assertEquals(0, ap.getPosition());
+            }
+        }
+
+        set = permissionService.getAllSetPermissions(four);
+        assertEquals(3, set.size());
+        for (AccessPermission ap : set)
+        {
+            if (ap.getAuthority().equals("andy"))
+            {
+                assertTrue(ap.isInherited());
+                assertEquals(5, ap.getPosition());
+            }
+            if (ap.getAuthority().equals("bob"))
+            {
+                assertTrue(ap.isInherited());
+                assertEquals(3, ap.getPosition());
+            }
+            if (ap.getAuthority().equals("carol"))
+            {
+                assertTrue(ap.isInherited());
+                assertEquals(1, ap.getPosition());
+            }
+        }
+
+    }
+
     public void test_AR_2055()
     {
         runAs("admin");
@@ -183,11 +268,63 @@ public class PermissionServiceTest extends AbstractPermissionTest
             {
                 assertEquals("andy", AuthenticationUtil.getCurrentRealUserName());
                 assertEquals("admin", AuthenticationUtil.getCurrentEffectiveUserName());
-                
+
                 assertTrue(permissionService.hasPermission(n1, getPermission(PermissionService.CONTRIBUTOR)) == AccessStatus.ALLOWED);
 
                 assertEquals("andy", AuthenticationUtil.getCurrentRealUserName());
                 assertEquals("admin", AuthenticationUtil.getCurrentEffectiveUserName());
+
+                AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
+                {
+
+                    public Object doWork() throws Exception
+                    {
+                        assertTrue(permissionService.hasPermission(n1, getPermission(PermissionService.CONTRIBUTOR)) == AccessStatus.DENIED);
+
+                        assertEquals("andy", AuthenticationUtil.getCurrentRealUserName());
+                        assertEquals("lemur", AuthenticationUtil.getCurrentEffectiveUserName());
+
+                        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
+                        {
+
+                            public Object doWork() throws Exception
+                            {
+                                assertTrue(permissionService.hasPermission(n1, getPermission(PermissionService.CONTRIBUTOR)) == AccessStatus.ALLOWED);
+
+                                assertEquals("andy", AuthenticationUtil.getCurrentRealUserName());
+                                assertEquals("admin", AuthenticationUtil.getCurrentEffectiveUserName());
+
+                                AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
+                                {
+
+                                    public Object doWork() throws Exception
+                                    {
+                                        assertTrue(permissionService.hasPermission(n1, getPermission(PermissionService.CONTRIBUTOR)) == AccessStatus.DENIED);
+
+                                        assertEquals("andy", AuthenticationUtil.getCurrentRealUserName());
+                                        assertEquals("andy", AuthenticationUtil.getCurrentEffectiveUserName());
+
+                                        return null;
+                                    }
+                                }, "andy");
+
+                                assertEquals("andy", AuthenticationUtil.getCurrentRealUserName());
+                                assertEquals("admin", AuthenticationUtil.getCurrentEffectiveUserName());
+
+                                return null;
+                            }
+                        }, "admin");
+
+                        assertEquals("andy", AuthenticationUtil.getCurrentRealUserName());
+                        assertEquals("lemur", AuthenticationUtil.getCurrentEffectiveUserName());
+
+                        return null;
+                    }
+                }, "lemur");
+
+                assertEquals("andy", AuthenticationUtil.getCurrentRealUserName());
+                assertEquals("admin", AuthenticationUtil.getCurrentEffectiveUserName());
+
                 return null;
             }
         }, "admin");
@@ -238,29 +375,28 @@ public class PermissionServiceTest extends AbstractPermissionTest
 
                                 assertEquals("andy", AuthenticationUtil.getCurrentRealUserName());
                                 assertEquals("admin", AuthenticationUtil.getCurrentEffectiveUserName());
-                                
+
                                 AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
-                                        {
+                                {
 
-                                            public Object doWork() throws Exception
-                                            {
-                                                assertTrue(permissionService.hasPermission(n1, getPermission(PermissionService.CONTRIBUTOR)) == AccessStatus.DENIED);
+                                    public Object doWork() throws Exception
+                                    {
+                                        assertTrue(permissionService.hasPermission(n1, getPermission(PermissionService.CONTRIBUTOR)) == AccessStatus.DENIED);
 
-                                                assertEquals("andy", AuthenticationUtil.getCurrentRealUserName());
-                                                assertEquals("andy", AuthenticationUtil.getCurrentEffectiveUserName());
+                                        assertEquals("andy", AuthenticationUtil.getCurrentRealUserName());
+                                        assertEquals("andy", AuthenticationUtil.getCurrentEffectiveUserName());
 
-                                                return null;
-                                            }
-                                        }, "andy");
-                                
+                                        return null;
+                                    }
+                                }, "andy");
 
                                 assertEquals("andy", AuthenticationUtil.getCurrentRealUserName());
                                 assertEquals("admin", AuthenticationUtil.getCurrentEffectiveUserName());
-                                
+
                                 return null;
                             }
                         }, "admin");
-                        
+
                         assertEquals("andy", AuthenticationUtil.getCurrentRealUserName());
                         assertEquals("lemur", AuthenticationUtil.getCurrentEffectiveUserName());
 
@@ -308,7 +444,6 @@ public class PermissionServiceTest extends AbstractPermissionTest
         assertNull(AuthenticationUtil.getCurrentEffectiveUserName());
     }
 
-    
     public void testNestedRunAsRealAndEffectiveUsersWithNoPriorAuthentication()
     {
         runAs("admin");
@@ -349,29 +484,28 @@ public class PermissionServiceTest extends AbstractPermissionTest
 
                                 assertEquals("admin", AuthenticationUtil.getCurrentRealUserName());
                                 assertEquals("admin", AuthenticationUtil.getCurrentEffectiveUserName());
-                                
+
                                 AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
-                                        {
+                                {
 
-                                            public Object doWork() throws Exception
-                                            {
-                                                assertTrue(permissionService.hasPermission(n1, getPermission(PermissionService.CONTRIBUTOR)) == AccessStatus.DENIED);
+                                    public Object doWork() throws Exception
+                                    {
+                                        assertTrue(permissionService.hasPermission(n1, getPermission(PermissionService.CONTRIBUTOR)) == AccessStatus.DENIED);
 
-                                                assertEquals("admin", AuthenticationUtil.getCurrentRealUserName());
-                                                assertEquals("andy", AuthenticationUtil.getCurrentEffectiveUserName());
+                                        assertEquals("admin", AuthenticationUtil.getCurrentRealUserName());
+                                        assertEquals("andy", AuthenticationUtil.getCurrentEffectiveUserName());
 
-                                                return null;
-                                            }
-                                        }, "andy");
-                                
+                                        return null;
+                                    }
+                                }, "andy");
 
                                 assertEquals("admin", AuthenticationUtil.getCurrentRealUserName());
                                 assertEquals("admin", AuthenticationUtil.getCurrentEffectiveUserName());
-                                
+
                                 return null;
                             }
                         }, "admin");
-                        
+
                         assertEquals("admin", AuthenticationUtil.getCurrentRealUserName());
                         assertEquals("lemur", AuthenticationUtil.getCurrentEffectiveUserName());
 
@@ -389,9 +523,8 @@ public class PermissionServiceTest extends AbstractPermissionTest
         assertNull(AuthenticationUtil.getCurrentRealUserName());
         assertNull(AuthenticationUtil.getCurrentEffectiveUserName());
 
-
     }
-    
+
     public void testDefaultModelPermissions()
     {
         runAs("admin");
@@ -565,21 +698,21 @@ public class PermissionServiceTest extends AbstractPermissionTest
     private void printPermissions(NodeRef nodeRef, String path)
     {
         Long id = nodeDaoService.getNodePair(nodeRef).getFirst();
-        System.out.println(path + " has "+id);
-        for(AccessControlEntry entry : aclDaoComponent.getAccessControlList(id).getEntries())
+        System.out.println(path + " has " + id);
+        for (AccessControlEntry entry : aclDaoComponent.getAccessControlList(id).getEntries())
         {
-            System.out.println("\t\t "+id+"  "+entry);
+            System.out.println("\t\t " + id + "  " + entry);
         }
         List<ChildAssociationRef> children = nodeService.getChildAssocs(nodeRef);
-        for(ChildAssociationRef child: children)
+        for (ChildAssociationRef child : children)
         {
-            String newPath = path+"/"+child.getQName();
+            String newPath = path + "/" + child.getQName();
             printPermissions(child.getChildRef(), newPath);
-           
+
         }
-        
+
     }
-    
+
     public void testSetNodePermissionEntry()
     {
         runAs("andy");
@@ -2003,14 +2136,14 @@ public class PermissionServiceTest extends AbstractPermissionTest
         assertFalse(permissionService.hasPermission(n2, getPermission(PermissionService.READ_CHILDREN)) == AccessStatus.ALLOWED);
         assertFalse(permissionService.hasPermission(n2, getPermission(PermissionService.READ_CONTENT)) == AccessStatus.ALLOWED);
 
-        //printPermissions(rootNodeRef, "/");
-        
+        // printPermissions(rootNodeRef, "/");
+
         permissionService.deletePermission(new SimplePermissionEntry(n2, getPermission(PermissionService.READ_CHILDREN), "andy", AccessStatus.ALLOWED));
         permissionService.deletePermission(new SimplePermissionEntry(n2, getPermission(PermissionService.READ_PROPERTIES), "andy", AccessStatus.ALLOWED));
         permissionService.deletePermission(new SimplePermissionEntry(n2, getPermission(PermissionService.READ_CONTENT), "andy", AccessStatus.ALLOWED));
 
-        //printPermissions(rootNodeRef, "/");
-        
+        // printPermissions(rootNodeRef, "/");
+
         runAs("andy");
         assertFalse(permissionService.hasPermission(n2, getPermission(PermissionService.READ)) == AccessStatus.ALLOWED);
         assertFalse(permissionService.hasPermission(n2, getPermission(PermissionService.READ_PROPERTIES)) == AccessStatus.ALLOWED);

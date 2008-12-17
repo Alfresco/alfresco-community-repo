@@ -540,11 +540,14 @@ public class CopyServiceImpl implements CopyService
                 // Set the permission values on the destination node    	
                 for (AccessPermission permission : permissions) 
                 {
-                    this.permissionService.setPermission(
+                    if(permission.isSetDirectly())
+                    {
+                        this.permissionService.setPermission(
                             destinationNodeRef, 
                             permission.getAuthority(), 
                             permission.getPermission(), 
                             permission.getAccessStatus().equals(AccessStatus.ALLOWED));
+                    }
                 }
                 this.permissionService.setInheritParentPermissions(destinationNodeRef, includeInherited);
             }

@@ -24,8 +24,6 @@
  */
 package org.alfresco.web.app.servlet;
 
-import java.util.regex.Pattern;
-
 import javax.faces.FactoryFinder;
 import javax.faces.component.UIComponent;
 import javax.faces.component.UIViewRoot;
@@ -142,8 +140,9 @@ public final class FacesHelper
       // set a new viewRoot, otherwise context.getViewRoot returns null
       if (viewRoot == null)
       {
-         viewRoot = "/jsp/close.jsp";
+         viewRoot = "/jsp/browse/browse.jsp";
       }
+      
       UIViewRoot view = facesContext.getApplication().getViewHandler().createView(facesContext, viewRoot);
       facesContext.setViewRoot(view);
 

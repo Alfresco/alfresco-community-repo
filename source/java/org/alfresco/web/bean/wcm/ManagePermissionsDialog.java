@@ -51,14 +51,12 @@ import org.alfresco.web.ui.repo.WebResources;
  */
 public class ManagePermissionsDialog extends BasePermissionsDialog implements IContextListener, FilterViewSupport
 {
-
     private static final long serialVersionUID = -6980134441634707541L;
 
     private static final String MSG_MANAGE_PERMS_FOR = "manage_permissions_title";
     private static final String MSG_VIEW_PERMS_FOR = "view_permissions_title";
 
     private static final String LOCAL = "local";
-
     private static final String INHERITED = "inherited";
 
     private final static String MSG_CLOSE = "close";
@@ -72,6 +70,7 @@ public class ManagePermissionsDialog extends BasePermissionsDialog implements IC
     private UIRichList usersRichList = null;
 
     private boolean inheritParenSpacePermissions;
+
 
     /**
      * @param personService The personService to set.
@@ -122,7 +121,6 @@ public class ManagePermissionsDialog extends BasePermissionsDialog implements IC
      */
     public List<Map> getUsers()
     {
-
         boolean includeInherited = true;
 
         if (this.filterMode.equals(LOCAL))
@@ -146,7 +144,6 @@ public class ManagePermissionsDialog extends BasePermissionsDialog implements IC
             // found.
 
             NodeRef actionNode = getAvmBrowseBean().getAvmActionNode().getNodeRef();
-            // getPermissionService().setInheritParentPermissions(actionNode, inheritParenSpacePermissions);
 
             Map<String, List<String>> permissionMap;
             Map<String, List<String>> parentPermissionMap;
@@ -156,13 +153,10 @@ public class ManagePermissionsDialog extends BasePermissionsDialog implements IC
             permissionMap = getPerson(permissions, permsToDisplay);
 
             NodeRef parentRef = getNodeService().getPrimaryParent(actionNode).getParentRef();
-            // getPermissionService().getAllSetPermissions(parentRef);
             parentPermissionMap = getPerson(getPermissionService().getAllSetPermissions(parentRef), permsToDisplay);
 
-            // for each authentication (username/group key) found we get the
-            // Person
-            // node represented by it and use that for our list databinding
-            // object
+            // for each authentication (username/group key) found we get the Person
+            // node represented by it and use that for our list databinding object
             personNodes = new ArrayList<Map>(permissionMap.size());
             List<String> local = new ArrayList<String>();
             List<String> inh = new ArrayList<String>();
@@ -392,7 +386,6 @@ public class ManagePermissionsDialog extends BasePermissionsDialog implements IC
     public void areaChanged()
     {
         // nothing to do
-
     }
 
     /*
@@ -406,7 +399,6 @@ public class ManagePermissionsDialog extends BasePermissionsDialog implements IC
         {
             this.usersRichList.setValue(null);
         }
-
     }
 
     /*
@@ -417,7 +409,6 @@ public class ManagePermissionsDialog extends BasePermissionsDialog implements IC
     public void spaceChanged()
     {
         // nothing to do
-
     }
 
     /*
@@ -428,14 +419,12 @@ public class ManagePermissionsDialog extends BasePermissionsDialog implements IC
     public void filterModeChanged(ActionEvent event)
     {
         UIModeList viewList = (UIModeList) event.getComponent();
-        // this.filterModeMode = viewList.getValue().toString();
         setFilterMode(viewList.getValue().toString());
         // force the list to be re-queried when the page is refreshed
         if (this.usersRichList != null)
         {
             this.usersRichList.setValue(null);
         }
-
     }
 
     /*
@@ -506,7 +495,6 @@ public class ManagePermissionsDialog extends BasePermissionsDialog implements IC
     }
 
 
-
     /*
      * (non-Javadoc)
      * 
@@ -538,7 +526,6 @@ public class ManagePermissionsDialog extends BasePermissionsDialog implements IC
     @Override
     public boolean getFinishButtonDisabled()
     {
-
         return false;
     }
 
@@ -559,7 +546,6 @@ public class ManagePermissionsDialog extends BasePermissionsDialog implements IC
         FacesContext fc = FacesContext.getCurrentInstance();
         String pattern = Application.getMessage(fc, isRendered() ? MSG_MANAGE_PERMS_FOR : MSG_VIEW_PERMS_FOR);
 
-        // avmBrowseBean.getAvmActionNode().getNodePath().toDisplayPath(getNodeService(), getPermissionService());
         return MessageFormat.format(pattern, getAvmBrowseBean().getAvmActionNode().getName());
     }
 
@@ -605,5 +591,4 @@ public class ManagePermissionsDialog extends BasePermissionsDialog implements IC
         boolean inheritPermissions = (Boolean)event.getNewValue();
         setInheritParenSpacePermissions(inheritPermissions);
     }
-
 }

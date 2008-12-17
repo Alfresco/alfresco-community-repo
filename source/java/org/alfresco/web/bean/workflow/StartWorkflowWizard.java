@@ -567,7 +567,8 @@ public class StartWorkflowWizard extends BaseWizardBean
       for (WorkflowDefinition workflowDef : workflowDefs)
       {
          String name = workflowDef.name;
-         if (configuredWcmWorkflows.containsKey(name) == false)
+         if (configuredWcmWorkflows.containsKey(name) == false &&
+             "jbpm$wf:invite".equals(name) == false)
          {
             // add the workflow if it is not a WCM specific workflow
             String label = workflowDef.title;
@@ -580,13 +581,8 @@ public class StartWorkflowWizard extends BaseWizardBean
          }
       }
       
-      // set the initial selected workflow to the first in the list, unless there are no
-      // workflows, in which disable the next button
-      if (this.availableWorkflows.size() > 0)
-      {
-         this.selectedWorkflow = (String)this.availableWorkflows.get(0).getValue();
-      }
-      else
+      // disable the next button if there are no workflows
+      if (this.availableWorkflows.size() == 0)
       {
          this.nextButtonDisabled = true;
       }
@@ -609,6 +605,12 @@ public class StartWorkflowWizard extends BaseWizardBean
       
       QuickSort sorter = new QuickSort(availableWorkflows, "label", true, IDataContainer.SORT_CASEINSENSITIVE);
       sorter.sort();
+      
+      // select the first workflow in the list
+      if (this.availableWorkflows.size() > 0)
+      {
+         this.selectedWorkflow = (String)this.availableWorkflows.get(0).getValue();
+      }
       
       return availableWorkflows;
    }

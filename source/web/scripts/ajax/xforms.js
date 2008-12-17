@@ -4287,9 +4287,12 @@ alfresco.xforms.XForm = new Class({
         var clone = prototypeClones.pop();
         // walk all nodes of the clone and ensure that they have generated ids.
         // those that do not are nested repeats that should not be added
-        assert(clone.getAttribute("id") in generatedIds,
-               "expected clone id " + clone.getAttribute("id") +
-               " to be a generated id");
+        if ((clone.getAttribute("id") in generatedIds) == false)
+        {
+           throw new Error("expected clone id " + clone.getAttribute("id") +
+                           " to be a generated id");
+        }
+        
         function _removeNonGeneratedChildNodes(node, ids)
         {
           var child = node.firstChild;

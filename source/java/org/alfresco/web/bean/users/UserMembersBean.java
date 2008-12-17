@@ -60,18 +60,23 @@ import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.BrowseBean;
 import org.alfresco.web.bean.NavigationBean;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
+import org.alfresco.web.bean.dialog.FilterViewSupport;
 import org.alfresco.web.bean.repository.MapNode;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIActionLink;
+import org.alfresco.web.ui.common.component.UIListItem;
+import org.alfresco.web.ui.common.component.UIModeList;
 import org.alfresco.web.ui.common.component.data.UIRichList;
 import org.alfresco.web.ui.repo.WebResources;
 
 /**
+ * Bean backing the Manage Space/Content Permission pages.
+ * 
  * @author Kevin Roast
  */
-public abstract class UserMembersBean extends BaseDialogBean implements IContextListener
+public abstract class UserMembersBean extends BaseDialogBean implements IContextListener, FilterViewSupport
 {
    private static final String MSG_SUCCESS_INHERIT_NOT = "success_not_inherit_permissions";
    private static final String MSG_SUCCESS_INHERIT = "success_inherit_permissions";
@@ -79,6 +84,13 @@ public abstract class UserMembersBean extends BaseDialogBean implements IContext
    private static final String ERROR_DELETE = "error_remove_user";
 
    private static final String OUTCOME_FINISH = "finish";
+
+   private static final String LOCAL = "local";
+   private static final String INHERITED = "inherited";
+
+   private final static String MSG_CLOSE = "close";
+
+   private String filterMode = LOCAL;
 
    /** NodeService bean reference */
    transient private NodeService nodeService;
@@ -337,6 +349,8 @@ public abstract class UserMembersBean extends BaseDialogBean implements IContext
    {
       FacesContext context = FacesContext.getCurrentInstance();
       
+      boolean includeInherited = (this.filterMode.equals(INHERITED));
+      
       List<Map> personNodes = null;
       
       UserTransaction tx = null;
@@ -359,17 +373,20 @@ public abstract class UserMembersBean extends BaseDialogBean implements IContext
                  permission.getAuthorityType() == AuthorityType.GUEST ||
                  permission.getAuthorityType() == AuthorityType.EVERYONE))
             {
-               String authority = permission.getAuthority();
-               
-               List<String> userPermissions = permissionMap.get(authority);
-               if (userPermissions == null)
+               if (includeInherited || permission.isSetDirectly())
                {
-                  // create for first time
-                  userPermissions = new ArrayList<String>(4);
-                  permissionMap.put(authority, userPermissions);
+                  String authority = permission.getAuthority();
+                  
+                  List<String> userPermissions = permissionMap.get(authority);
+                  if (userPermissions == null)
+                  {
+                     // create for first time
+                     userPermissions = new ArrayList<String>(4);
+                     permissionMap.put(authority, userPermissions);
+                  }
+                  // add the permission name for this authority
+                  userPermissions.add(permission.getPermission());
                }
-               // add the permission name for this authority
-               userPermissions.add(permission.getPermission());
             }
          }
          
@@ -396,6 +413,7 @@ public abstract class UserMembersBean extends BaseDialogBean implements IContext
                   props.put("roles", roleListToString(context, permissionMap.get(authority)));
                   props.put("icon", WebResources.IMAGE_PERSON);
                   props.put("isGroup", Boolean.FALSE);
+                  props.put("inherited", includeInherited);
                   
                   personNodes.add(node);
                }
@@ -403,7 +421,7 @@ public abstract class UserMembersBean extends BaseDialogBean implements IContext
             else
             {
                // need a map (dummy node) to represent props for this Group Authority
-               Map<String, Object> node = new HashMap<String, Object>(5, 1.0f);
+               Map<String, Object> node = new HashMap<String, Object>(8, 1.0f);
                if (authority.startsWith(PermissionService.GROUP_PREFIX) == true)
                {
                   node.put("fullName", authority.substring(PermissionService.GROUP_PREFIX.length()));
@@ -417,6 +435,8 @@ public abstract class UserMembersBean extends BaseDialogBean implements IContext
                node.put("roles", roleListToString(context, permissionMap.get(authority)));
                node.put("icon", WebResources.IMAGE_GROUP);
                node.put("isGroup", Boolean.TRUE);
+               node.put("inherited", includeInherited);
+               
                personNodes.add(node);
             }
          }
@@ -501,6 +521,65 @@ public abstract class UserMembersBean extends BaseDialogBean implements IContext
       // nothing to do
    }
    
+   
+   // ------------------------------------------------------------------------------
+   // FilterViewSupport implementation
+   
+   /**
+    * @see org.alfresco.web.bean.dialog.FilterViewSupport#filterModeChanged(javax.faces.event.ActionEvent)
+    */
+   public void filterModeChanged(ActionEvent event)
+   {
+      UIModeList viewList = (UIModeList) event.getComponent();
+      setFilterMode(viewList.getValue().toString());
+      // force the list to be re-queried when the page is refreshed
+      if (this.usersRichList != null)
+      {
+         this.usersRichList.setValue(null);
+      }
+   }
+
+   /**
+    * @see org.alfresco.web.bean.dialog.FilterViewSupport#getFilterItems()
+    */
+   public List<UIListItem> getFilterItems()
+   {
+      FacesContext context = FacesContext.getCurrentInstance();
+      List<UIListItem> items = new ArrayList<UIListItem>(2);
+      
+      UIListItem item1 = new UIListItem();
+      item1.setValue(INHERITED);
+      item1.setLabel(Application.getMessage(context, INHERITED));
+      items.add(item1);
+      
+      UIListItem item2 = new UIListItem();
+      item2.setValue(LOCAL);
+      item2.setLabel(Application.getMessage(context, LOCAL));
+      items.add(item2);
+      
+      return items;
+   }
+
+   /**
+    * @see org.alfresco.web.bean.dialog.FilterViewSupport#getFilterMode()
+    */
+   public String getFilterMode()
+   {
+      return filterMode;
+   }
+
+   /**
+    * @see org.alfresco.web.bean.dialog.FilterViewSupport#setFilterMode(java.lang.String)
+    */
+   public void setFilterMode(final String filterMode)
+   {
+      this.filterMode = filterMode;
+      
+      // clear datalist cache ready to change results based on filter setting
+      contextUpdated();
+   }
+
+
    // ------------------------------------------------------------------------------
    // Action event handlers
    

@@ -26,6 +26,7 @@ package org.alfresco.web.app.servlet;
 
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.Stack;
 import java.util.StringTokenizer;
 
 import javax.faces.application.NavigationHandler;
@@ -131,6 +132,16 @@ public class ExternalAccessServlet extends BaseServlet
       // get services we need
       ServiceRegistry serviceRegistry = getServiceRegistry(getServletContext());
       PermissionService permissionService = serviceRegistry.getPermissionService();
+      
+      // as we are potentially coming in from an external app reset the view stack
+      Stack viewStack = (Stack)fc.getExternalContext().getSessionMap().get("_alfViewStack");
+      if (viewStack != null)
+      {
+         viewStack.clear();
+         
+         if (logger.isDebugEnabled())
+            logger.debug("Cleared view stack");
+      }
       
       // setup is required for certain outcome requests
       if (OUTCOME_DOCDETAILS.equals(outcome))

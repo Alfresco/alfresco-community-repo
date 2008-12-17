@@ -29,29 +29,28 @@ import java.util.List;
 import java.util.Locale;
 import java.util.StringTokenizer;
 
+import javax.servlet.Filter;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-public class AbstractAuthenticationFilter
-{
 
+/**
+ * Base class for all externally based authentication mechanism filters
+ */
+public abstract class AbstractAuthenticationFilter implements Filter
+{
     private static Log logger = LogFactory.getLog(AbstractAuthenticationFilter.class);
     
-    public AbstractAuthenticationFilter()
-    {
-        super();
-    }
-
-
+    
     /**
      * Parse the Accept-Lanaguage HTTP header value
      * 
      * @param req HttpServletRequest
      * @return Locale
      */
-    protected static final Locale parseAcceptLanguageHeader(HttpServletRequest req, List<String> m_languages)
+    public static final Locale parseAcceptLanguageHeader(HttpServletRequest req, List<String> m_languages)
     {
         // Default the locale
         
@@ -176,5 +175,4 @@ public class AbstractAuthenticationFilter
         
         return locale;
     }
-
 }

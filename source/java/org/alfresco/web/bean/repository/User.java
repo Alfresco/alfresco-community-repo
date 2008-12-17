@@ -35,6 +35,7 @@ import javax.transaction.UserTransaction;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.SessionUser;
 import org.alfresco.repo.configuration.ConfigurableService;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -52,7 +53,7 @@ import org.springframework.web.jsf.FacesContextUtils;
  * 
  * @author gavinc
  */
-public final class User implements Serializable
+public final class User implements SessionUser
 {
    private static final long serialVersionUID = -90577901805847829L;
 

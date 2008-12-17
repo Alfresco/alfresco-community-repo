@@ -488,10 +488,6 @@ public class AVMExpiredContentProcessor
         NodeRef packageNodeRef = workflowService.createPackage(
                  AVMNodeConverter.ToNodeRef(-1, packageDesc.getPath()));
         this.nodeService.setProperty(packageNodeRef, WorkflowModel.PROP_IS_SYSTEM_PACKAGE, true);
-
-        // apply global permission to workflow package
-        this.permissionService.setPermission(packageNodeRef, PermissionService.ALL_AUTHORITIES, 
-                 PermissionService.ALL_PERMISSIONS, true);
       
         return packageNodeRef;
     }

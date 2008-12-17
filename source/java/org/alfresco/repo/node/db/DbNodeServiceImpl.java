@@ -1039,8 +1039,15 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         Long nodeId = nodePair.getFirst();
         
         // Ensure that we are not setting intrinsic properties
-        Map<QName, Serializable> properties = Collections.singletonMap(qname, value);
+        Map<QName, Serializable> properties = new HashMap<QName, Serializable>(1, 1.0F);
+        properties.put(qname, value);
         extractIntrinsicProperties(properties);
+        
+        // Shortcut if nothing is left
+        if (properties.size() == 0)
+        {
+            return;
+        }
 
         // Get the properties from before
         Map<QName, Serializable> propertiesBefore = getPropertiesImpl(nodePair);

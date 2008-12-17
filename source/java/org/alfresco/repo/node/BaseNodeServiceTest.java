@@ -1575,6 +1575,15 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         assertTrue("Node DB ID property not present in map", properties.containsKey(ContentModel.PROP_NODE_DBID));
     }
     
+    public void testReferencePropertySet() throws Exception
+    {
+        Serializable nodeDbId = nodeService.getProperty(rootNodeRef, ContentModel.PROP_NODE_DBID);
+        // Now set it
+        nodeService.setProperty(rootNodeRef, ContentModel.PROP_NODE_DBID, new Long(-1));
+        Serializable nodeDbIdCheck = nodeService.getProperty(rootNodeRef, ContentModel.PROP_NODE_DBID);
+        assertEquals("Cannot set Node DB ID", nodeDbId, nodeDbIdCheck);
+    }
+    
     public void testGetParentAssocs() throws Exception
     {
         Map<QName, ChildAssociationRef> assocRefs = buildNodeGraph();

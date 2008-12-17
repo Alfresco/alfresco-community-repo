@@ -63,6 +63,7 @@ INSERT INTO t_alf_store (version, protocol, identifier, root_node_id)
    SELECT 1, protocol, identifier, root_node_id FROM alf_store
 ;
 
+-- Copy data over
 INSERT INTO t_alf_node
    (
       id, version, store_id, uuid, transaction_id, node_deleted, type_qname_id, acl_id,
@@ -70,7 +71,7 @@ INSERT INTO t_alf_node
    )
    SELECT
       n.id, 1, s.id, n.uuid, nstat.transaction_id, false, n.type_qname_id, n.acl_id,
-      'unknown', '2008-09-17T02:23:37.212+01:00', 'unkown', '2008-09-17T02:23:37.212+01:00'
+      null, null, null, null
    FROM
       alf_node n
       JOIN alf_node_status nstat ON (nstat.node_id = n.id)
@@ -232,10 +233,10 @@ INSERT INTO t_alf_usage_delta
       ud.delta_size
    FROM
       alf_usage_delta ud
-;
+;                                                          -- (optional)
 
 -- Clean up
-DROP TABLE alf_usage_delta;
+DROP TABLE alf_usage_delta;                                -- (optional)
 ALTER TABLE t_alf_usage_delta RENAME TO alf_usage_delta;
 
 -- -----------------------------

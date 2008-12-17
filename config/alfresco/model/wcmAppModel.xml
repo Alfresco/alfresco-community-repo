@@ -396,6 +396,11 @@
                <title>Time Of Deploy Attempt</title>
                <type>d:datetime</type>
                <mandatory enforced="true">true</mandatory>
+			   <index enabled="true">
+				  <atomic>true</atomic>
+				  <stored>false</stored> 
+                  <tokenised>both</tokenised>
+               </index>
             </property>
          </properties>
          <associations>
@@ -431,11 +436,21 @@
                <title>Time Deploy Started</title>
                <type>d:datetime</type>
                <mandatory enforced="true">true</mandatory>
+			   <index enabled="true">
+				  <atomic>true</atomic>
+				  <stored>false</stored> 
+                  <tokenised>both</tokenised>
+               </index>
             </property>
             <property name="wca:deployendtime">
                <title>Time Deploy Finished</title>
                <type>d:datetime</type>
                <mandatory enforced="true">true</mandatory>
+			   <index enabled="true">
+				  <atomic>true</atomic>
+				  <stored>false</stored> 
+                  <tokenised>both</tokenised>
+               </index>
             </property>
             <property name="wca:deploysuccessful">
                <title>Deployment Successful</title>
@@ -624,6 +639,11 @@
                <title>Expiration Date</title>
                <type>d:datetime</type>
                <mandatory enforced="true">true</mandatory>
+			   <index enabled="true">
+				  <atomic>true</atomic>
+				  <stored>false</stored> 
+                  <tokenised>both</tokenised>
+               </index>
             </property>
          </properties>
       </aspect>

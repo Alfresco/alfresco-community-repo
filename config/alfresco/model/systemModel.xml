@@ -160,6 +160,11 @@
             <property name="sys:archivedDate">
                <type>d:datetime</type>
                <mandatory>true</mandatory>
+			   <index enabled="true">
+				  <atomic>true</atomic>
+				  <stored>false</stored> 
+                  <tokenised>both</tokenised>
+               </index>
             </property>
             <property name="sys:archivedOriginalOwner">
                <type>d:text</type>

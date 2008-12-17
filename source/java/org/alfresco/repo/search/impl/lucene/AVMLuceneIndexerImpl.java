@@ -54,7 +54,10 @@ import org.alfresco.repo.content.transform.ContentTransformer;
 import org.alfresco.repo.dictionary.IndexTokenisationMode;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.search.IndexMode;
+import org.alfresco.repo.search.MLAnalysisMode;
 import org.alfresco.repo.search.impl.lucene.analysis.DateTimeAnalyser;
+import org.alfresco.repo.search.impl.lucene.analysis.MLTokenDuplicator;
+import org.alfresco.repo.search.impl.lucene.analysis.VerbatimAnalyser;
 import org.alfresco.repo.search.impl.lucene.fts.FTSIndexerAware;
 import org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexer;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
@@ -85,6 +88,7 @@ import org.alfresco.util.ISO9075;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.lucene.analysis.Token;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.index.IndexReader;
@@ -739,6 +743,8 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
 
             if (isContent)
             {
+                // Content is always tokenised
+                
                 ContentData contentData = DefaultTypeConverter.INSTANCE.convert(ContentData.class, serializableValue);
                 if (!index || contentData.getMimetype() == null)
                 {
@@ -815,6 +821,12 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
                                 transformer.transform(reader, writer);
                                 // point the reader to the new-written content
                                 reader = writer.getReader();
+                                // Check that the reader is a view onto something concrete
+                                if (!reader.exists())
+                                {
+                                    throw new ContentIOException("The transformation did not write any content, yet: \n"
+                                            + "   transformer:     " + transformer + "\n" + "   temp writer:     " + writer);
+                                }
                             }
                             catch (ContentIOException e)
                             {
@@ -899,9 +911,88 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
                         for (Locale locale : mlText.getLocales())
                         {
                             String localeString = mlText.getValue(locale);
-                            StringBuilder builder = new StringBuilder();
-                            builder.append("\u0000").append(locale.toString()).append("\u0000").append(localeString);
-                            doc.add(new Field(attributeName, builder.toString(), fieldStore, fieldIndex, Field.TermVector.NO));
+                            StringBuilder builder;
+                            MLAnalysisMode analysisMode;
+                            VerbatimAnalyser vba;
+                            MLTokenDuplicator duplicator;
+                            Token t;
+                            switch (tokenise)
+                            {
+                            case TRUE:
+                                builder = new StringBuilder();
+                                builder.append("\u0000").append(locale.toString()).append("\u0000").append(localeString);
+                                doc.add(new Field(attributeName, builder.toString(), fieldStore, fieldIndex, Field.TermVector.NO));
+                                break;
+                            case FALSE:
+                                // analyse ml text
+                                analysisMode = getLuceneConfig().getDefaultMLIndexAnalysisMode();
+                                // Do the analysis here
+                                vba = new VerbatimAnalyser(false);
+                                duplicator = new MLTokenDuplicator(vba.tokenStream(attributeName, new StringReader(localeString)), locale, null, analysisMode);
+                                try
+                                {
+                                    while ((t = duplicator.next()) != null)
+                                    {
+                                        String localeText = "";
+                                        if (t.termText().indexOf('{') == 0)
+                                        {
+                                            int end = t.termText().indexOf('}', 1);
+                                            if (end != -1)
+                                            {
+                                                localeText = t.termText().substring(1, end);
+                                            }
+                                        }
+                                        if (localeText.length() > 0)
+                                        {
+                                            doc.add(new Field(attributeName, t.termText(), Field.Store.NO, Field.Index.NO_NORMS, Field.TermVector.NO));
+                                        }
+                                        
+                                        doc.add(new Field(attributeName, t.termText(), Field.Store.NO, Field.Index.NO_NORMS, Field.TermVector.NO));
+
+                                    }
+                                }
+                                catch (IOException e)
+                                {
+                                    // TODO ??
+                                }
+
+                                break;
+                            case BOTH:
+                                builder = new StringBuilder();
+                                builder.append("\u0000").append(locale.toString()).append("\u0000").append(localeString);
+                                doc.add(new Field(attributeName, builder.toString(), fieldStore, fieldIndex, Field.TermVector.NO));
+
+                                // analyse ml text
+                                analysisMode = getLuceneConfig().getDefaultMLIndexAnalysisMode();
+                                // Do the analysis here
+                                vba = new VerbatimAnalyser(false);
+                                duplicator = new MLTokenDuplicator(vba.tokenStream(attributeName, new StringReader(localeString)), locale, null, analysisMode);
+                                try
+                                {
+                                    while ((t = duplicator.next()) != null)
+                                    {
+                                        String localeText = "";
+                                        if (t.termText().indexOf('{') == 0)
+                                        {
+                                            int end = t.termText().indexOf('}', 1);
+                                            if (end != -1)
+                                            {
+                                                localeText = t.termText().substring(1, end);
+                                            }
+                                        }
+                                        if (localeText.length() > 0)
+                                        {
+                                            doc.add(new Field(attributeName + "." + localeText + ".sort", t.termText(), Field.Store.NO, Field.Index.NO_NORMS, Field.TermVector.NO));
+                                        }
+                                    }
+                                }
+                                catch (IOException e)
+                                {
+                                    // TODO ??
+                                }
+
+                                break;
+                            }
                         }
                     }
                     else if (isText)
@@ -929,42 +1020,121 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
                         }
                         
                         StringBuilder builder;
-                        switch(tokenise)
+                        MLAnalysisMode analysisMode;
+                        VerbatimAnalyser vba;
+                        MLTokenDuplicator duplicator;
+                        Token t;
+                        switch (tokenise)
                         {
                         default:
                         case TRUE:
-                        	builder = new StringBuilder();
+                            builder = new StringBuilder();
                             builder.append("\u0000").append(locale.toString()).append("\u0000").append(strValue);
                             doc.add(new Field(attributeName, builder.toString(), fieldStore, fieldIndex, Field.TermVector.NO));
-                        	break;
+                            break;
                         case FALSE:
-                        	doc.add(new Field(attributeName, strValue, fieldStore, fieldIndex, Field.TermVector.NO));
-                        	break;
+                            analysisMode = getLuceneConfig().getDefaultMLIndexAnalysisMode();
+                            // Do the analysis here
+                            vba = new VerbatimAnalyser(false);
+                            duplicator = new MLTokenDuplicator(vba.tokenStream(attributeName, new StringReader(strValue)), locale, null, analysisMode);
+                            try
+                            {
+                                while ((t = duplicator.next()) != null)
+                                {
+                                    String localeText = "";
+                                    if (t.termText().indexOf('{') == 0)
+                                    {
+                                        int end = t.termText().indexOf('}', 1);
+                                        if (end != -1)
+                                        {
+                                            localeText = t.termText().substring(1, end);
+                                        }
+                                    }
+                                    if (localeText.length() > 0)
+                                    {
+                                        doc.add(new Field(attributeName, t.termText(), Field.Store.NO, Field.Index.NO_NORMS, Field.TermVector.NO));
+                                    }
+                                    
+                                    doc.add(new Field(attributeName, t.termText(), Field.Store.NO, Field.Index.NO_NORMS, Field.TermVector.NO));                                
+                                }
+                            }
+                            catch (IOException e)
+                            {
+                                // TODO ??
+                            }
+
+                            break;
                         case BOTH:
-                        	builder = new StringBuilder();
+                            builder = new StringBuilder();
                             builder.append("\u0000").append(locale.toString()).append("\u0000").append(strValue);
                             doc.add(new Field(attributeName, builder.toString(), fieldStore, fieldIndex, Field.TermVector.NO));
-                            
-                            doc.add(new Field(attributeName, strValue, fieldStore, fieldIndex, Field.TermVector.NO));
-                        	break;
+
+                            analysisMode = getLuceneConfig().getDefaultMLIndexAnalysisMode();
+                            // Do the analysis here
+                            vba = new VerbatimAnalyser(false);
+                            duplicator = new MLTokenDuplicator(vba.tokenStream(attributeName, new StringReader(strValue)), locale, null, analysisMode);
+                            try
+                            {
+                                while ((t = duplicator.next()) != null)
+                                {
+                                    String localeText = "";
+                                    if (t.termText().indexOf('{') == 0)
+                                    {
+                                        int end = t.termText().indexOf('}', 1);
+                                        if (end != -1)
+                                        {
+                                            localeText = t.termText().substring(1, end);
+                                        }
+                                    }
+                                    if (localeText.length() > 0)
+                                    {
+                                        doc.add(new Field(attributeName + "." + localeText + ".sort", t.termText(), Field.Store.NO, Field.Index.NO_NORMS, Field.TermVector.NO));
+                                    }
+                                }
+                            }
+                            catch (IOException e)
+                            {
+                                // TODO ??
+                            }
+                            break;
                         }
                     }
                     else if (isDateTime)
                     {
-
-                        doc.add(new Field(attributeName, strValue, fieldStore, fieldIndex, Field.TermVector.NO));
-
-                        SimpleDateFormat df = CachingDateFormat.getDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS", true);
-
+                        SimpleDateFormat df;
                         Date date;
-                        try
+                        switch (tokenise)
                         {
-                            date = df.parse(strValue);
-                            doc.add(new Field(attributeName + ".sort", df.format(date), Field.Store.NO, Field.Index.NO_NORMS, Field.TermVector.NO));
-                        }
-                        catch (ParseException e)
-                        {
-                            // ignore for ordering
+                        default:
+                        case TRUE:
+                            doc.add(new Field(attributeName, strValue, fieldStore, fieldIndex, Field.TermVector.NO));
+                            break;
+                        case FALSE:
+                            df = CachingDateFormat.getDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS", true);
+                            try
+                            {
+                                date = df.parse(strValue);
+                                doc.add(new Field(attributeName, df.format(date), Field.Store.NO, Field.Index.NO_NORMS, Field.TermVector.NO));
+                            }
+                            catch (ParseException e)
+                            {
+                                // ignore for ordering
+                            }
+                            break;
+                        case BOTH:
+                            doc.add(new Field(attributeName, strValue, fieldStore, fieldIndex, Field.TermVector.NO));
+                            
+                            df = CachingDateFormat.getDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS", true);
+                            try
+                            {
+                                date = df.parse(strValue);
+                                doc.add(new Field(attributeName + ".sort", df.format(date), Field.Store.NO, Field.Index.NO_NORMS, Field.TermVector.NO));
+                            }
+                            catch (ParseException e)
+                            {
+                                // ignore for ordering
+                            }
+                            break;
                         }
                     }
                     else

@@ -49,12 +49,22 @@
             </property>
             <property name="usr:accountExpiryDate">
                <type>d:datetime</type>
+			   <index enabled="true">
+				  <atomic>true</atomic>
+				  <stored>false</stored> 
+                  <tokenised>both</tokenised>
+               </index>
             </property>
             <property name="usr:credentialsExpire">
                <type>d:boolean</type>
             </property>
             <property name="usr:credentialsExpiryDate">
                <type>d:datetime</type>
+			   <index enabled="true">
+				  <atomic>true</atomic>
+				  <stored>false</stored> 
+                  <tokenised>both</tokenised>
+               </index>
             </property>
             <property name="usr:accountLocked">
                <type>d:boolean</type>

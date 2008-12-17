@@ -238,6 +238,11 @@
           <title>Launch Date</title>
           <description>Date the content in the submission should be committed</description>
           <type>d:datetime</type>
+		  <index enabled="true">
+		     <atomic>true</atomic>
+			 <stored>false</stored> 
+             <tokenised>both</tokenised>
+          </index>
         </property>
         <property name="wcmwf:validateLinks">
           <title>Validate Links</title>

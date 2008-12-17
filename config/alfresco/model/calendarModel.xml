@@ -29,9 +29,19 @@
             </property>
             <property name="ia:fromDate">
                <type>d:datetime</type>
+			   <index enabled="true">
+				  <atomic>true</atomic>
+				  <stored>false</stored> 
+                  <tokenised>both</tokenised>
+               </index>
             </property>
             <property name="ia:toDate">
                <type>d:datetime</type>
+			   <index enabled="true">
+				  <atomic>true</atomic>
+				  <stored>false</stored> 
+                  <tokenised>both</tokenised>
+               </index>
             </property>
             <property name="ia:whereEvent">
                <type>d:text</type>
@@ -54,9 +64,19 @@
             </property>
             <property name="ia:fromDateDefault">
                <type>d:datetime</type>
+			   <index enabled="true">
+				  <atomic>true</atomic>
+				  <stored>false</stored> 
+                  <tokenised>both</tokenised>
+               </index>
             </property>
             <property name="ia:toDateDefault">
                <type>d:datetime</type>
+			   <index enabled="true">
+				  <atomic>true</atomic>
+				  <stored>false</stored> 
+                  <tokenised>both</tokenised>
+               </index>
             </property>
             <property name="ia:whereEventDefault">
                <type>d:text</type>

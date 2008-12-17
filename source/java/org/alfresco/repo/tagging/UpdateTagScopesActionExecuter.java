@@ -33,6 +33,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -101,96 +102,105 @@ public class UpdateTagScopesActionExecuter extends ActionExecuterAbstractBase
      * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
-    protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
+    protected void executeImpl(final Action action, final NodeRef actionedUponNodeRef)
     {
         try
-        {
-            
-        if (this.nodeService.exists(actionedUponNodeRef) == true)
-        {
-            // Get the parameter values
-            Map<String, Boolean> tagUpdates = (Map<String, Boolean>)action.getParameterValue(PARAM_TAG_UPDATES);
-            
-            // Get the tag scopes for the actioned upon node
-            List<TagScope> tagScopes = this.taggingService.findAllTagScopes(actionedUponNodeRef);
-            
-            // Update each tag scope
-            for (TagScope tagScope : tagScopes)
+        {            
+            if (this.nodeService.exists(actionedUponNodeRef) == true)
             {
-                NodeRef tagScopeNodeRef = tagScope.getNodeRef();                
-                List<TagDetails> tags = null;
-                
-                // Get the current tags
-                ContentReader contentReader = this.contentService.getReader(tagScopeNodeRef, ContentModel.PROP_TAGSCOPE_CACHE);
-                if (contentReader == null)
+                // Run the update as the system user
+                AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
                 {
-                    tags = new ArrayList<TagDetails>(1);
-                }
-                else
-                {
-                    tags = TaggingServiceImpl.readTagDetails(contentReader.getContentInputStream());
-                }
-                
-                for (String tagName : tagUpdates.keySet())
-                {
-                    boolean isAdd = tagUpdates.get(tagName).booleanValue();
-                                     
-                    TagDetails currentTag = null;
-                    for (TagDetails tag : tags)
+                    @SuppressWarnings("unchecked")
+                    public Object doWork() throws Exception
                     {
-                        if (tag.getName().equals(tagName) == true)
+                        // Get the parameter values
+                        Map<String, Boolean> tagUpdates = (Map<String, Boolean>)action.getParameterValue(PARAM_TAG_UPDATES);
+                        
+                        // Get the tag scopes for the actioned upon node
+                        List<TagScope> tagScopes = taggingService.findAllTagScopes(actionedUponNodeRef);
+                        
+                        // Update each tag scope
+                        for (TagScope tagScope : tagScopes)
                         {
-                            currentTag = tag;
-                            break;
-                        }
-                    }
-                    
-                    if (isAdd == true)
-                    {
-                        if (currentTag == null)
-                        {
-                            tags.add(new TagDetailsImpl(tagName, 1));
-                        }
-                        else
-                        {
-                            ((TagDetailsImpl)currentTag).incrementCount();
-                        }
-                     
-                    }
-                    else
-                    {
-                        if (currentTag != null)
-                        {
-                            int currentTagCount = currentTag.getCount();                        
-                            if (currentTagCount == 1)
+                            NodeRef tagScopeNodeRef = tagScope.getNodeRef();                
+                            List<TagDetails> tags = null;
+                            
+                            // Get the current tags
+                            ContentReader contentReader = contentService.getReader(tagScopeNodeRef, ContentModel.PROP_TAGSCOPE_CACHE);
+                            if (contentReader == null)
                             {
-                                tags.remove(currentTag);
+                                tags = new ArrayList<TagDetails>(1);
                             }
                             else
                             {
-                                ((TagDetailsImpl)currentTag).decrementCount();
+                                tags = TaggingServiceImpl.readTagDetails(contentReader.getContentInputStream());
                             }
+                            
+                            for (String tagName : tagUpdates.keySet())
+                            {
+                                boolean isAdd = tagUpdates.get(tagName).booleanValue();
+                                                 
+                                TagDetails currentTag = null;
+                                for (TagDetails tag : tags)
+                                {
+                                    if (tag.getName().equals(tagName) == true)
+                                    {
+                                        currentTag = tag;
+                                        break;
+                                    }
+                                }
+                                
+                                if (isAdd == true)
+                                {
+                                    if (currentTag == null)
+                                    {
+                                        tags.add(new TagDetailsImpl(tagName, 1));
+                                    }
+                                    else
+                                    {
+                                        ((TagDetailsImpl)currentTag).incrementCount();
+                                    }
+                                 
+                                }
+                                else
+                                {
+                                    if (currentTag != null)
+                                    {
+                                        int currentTagCount = currentTag.getCount();                        
+                                        if (currentTagCount == 1)
+                                        {
+                                            tags.remove(currentTag);
+                                        }
+                                        else
+                                        {
+                                            ((TagDetailsImpl)currentTag).decrementCount();
+                                        }
+                                    }
+                                }
+                            }
+                            
+                            // Order the list
+                            Collections.sort(tags);
+                            
+                            // Write new content back to tag scope
+                            String tagContent = TaggingServiceImpl.tagDetailsToString(tags);
+                            ContentWriter contentWriter = contentService.getWriter(tagScopeNodeRef, ContentModel.PROP_TAGSCOPE_CACHE, true);
+                            contentWriter.setEncoding("UTF-8");
+                            contentWriter.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+                            contentWriter.putContent(tagContent);    
                         }
+
+                        return null;
                     }
-                }
-                
-                // Order the list
-                Collections.sort(tags);
-                
-                // Write new content back to tag scope
-                String tagContent = TaggingServiceImpl.tagDetailsToString(tags);
-                ContentWriter contentWriter = this.contentService.getWriter(tagScopeNodeRef, ContentModel.PROP_TAGSCOPE_CACHE, true);
-                contentWriter.setEncoding("UTF-8");
-                contentWriter.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
-                contentWriter.putContent(tagContent);    
-            }
-        }
-        
+                    
+                }, AuthenticationUtil.getSystemUserName());                
+            }        
         }
         catch (RuntimeException exception)
         {
             exception.printStackTrace();
-            throw exception;
+            throw new RuntimeException("Unable to update the tag scopes.", exception);
         }
     }
 

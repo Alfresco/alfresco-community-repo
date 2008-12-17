@@ -89,9 +89,6 @@ public class SiteServiceImpl implements SiteService, SiteModel
     private TaggingService taggingService;
     private AuthorityService authorityService;
     
-    /** The site root node reference */
-    private NodeRef siteRootNodeRef;
-    
     /**
      * Set node service
      * 
@@ -351,26 +348,21 @@ public class SiteServiceImpl implements SiteService, SiteModel
      * @return  NodeRef     node reference
      */
     private NodeRef getSiteRoot()
-    {
-        if (this.siteRootNodeRef == null)
+    {        
+        // Get the root 'sites' folder
+        ResultSet resultSet = this.searchService.query(SITE_STORE, SearchService.LANGUAGE_LUCENE, "TYPE:\"st:sites\"");
+        if (resultSet.length() == 0)
         {
-            // Get the root 'sites' folder
-            ResultSet resultSet = this.searchService.query(SITE_STORE, SearchService.LANGUAGE_LUCENE, "TYPE:\"st:sites\"");
-            if (resultSet.length() == 0)
-            {
-                // No root site folder exists
-                throw new AlfrescoRuntimeException("No root sites folder exists");
-            }
-            else if (resultSet.length() != 1)
-            {
-                // More than one root site folder exits
-                throw new AlfrescoRuntimeException("More than one root sites folder exists");
-            }        
-         
-            this.siteRootNodeRef = resultSet.getNodeRef(0);
+            // No root site folder exists
+            throw new AlfrescoRuntimeException("No root sites folder exists");
         }
-        
-        return this.siteRootNodeRef;
+        else if (resultSet.length() != 1)
+        {
+            // More than one root site folder exits
+            throw new AlfrescoRuntimeException("More than one root sites folder exists");
+        }        
+     
+        return resultSet.getNodeRef(0);
     }
     
     /**
@@ -664,7 +656,6 @@ public class SiteServiceImpl implements SiteService, SiteModel
         
         // Get the current user
         String currentUserName = AuthenticationUtil.getCurrentUserName();
-        String currentUserRole = getMembersRole(shortName, currentUserName);
         
         // Get the user current role 
         final String role = getMembersRole(shortName, userName);        
@@ -763,7 +754,6 @@ public class SiteServiceImpl implements SiteService, SiteModel
             // -- the member does not already have permissions 
             // ... then we can set the permissions as system user
             final String currentUserName = AuthenticationUtil.getCurrentUserName();
-            final String currentUserRole = getMembersRole(shortName, currentUserName);
             if  ((permissionService.hasPermission(siteNodeRef, PermissionService.CHANGE_PERMISSIONS) == AccessStatus.ALLOWED)
                   || 
                  (isPublic == true &&

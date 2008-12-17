@@ -9,16 +9,16 @@
    <typeAlias alias="ActivityFeed" type="org.alfresco.repo.activities.feed.ActivityFeedDAO"/>
 
    <resultMap id="ActivityFeedResult" class="ActivityFeed">
-      <result property="id" column="ID"/>
-      <result property="feedUserId" column="FEED_USER_ID"/>
-      <result property="postUserId" column="POST_USER_ID"/>
-      <result property="postDate" column="POST_DATE"/>
-      <result property="postId" column="POST_ID"/> <!-- not an explicit FK constraint, can dangle if and when activity post is deleted -->
-      <result property="siteNetwork" column="SITE_NETWORK"/>
-      <result property="activityType" column="ACTIVITY_TYPE"/>
-      <result property="activitySummary" column="ACTIVITY_SUMMARY"/>
-      <result property="activitySummaryFormat" column="ACTIVITY_FORMAT"/>
-      <result property="feedDate" column="FEED_DATE"/>
+      <result property="id" column="id"/>
+      <result property="feedUserId" column="feed_user_id"/>
+      <result property="postUserId" column="post_user_id"/>
+      <result property="postDate" column="post_date"/>
+      <result property="postId" column="post_id"/> <!-- not an explicit FK constraint, can dangle if and when activity post is deleted -->
+      <result property="siteNetwork" column="site_network"/>
+      <result property="activityType" column="activity_type"/>
+      <result property="activitySummary" column="activity_summary"/>
+      <result property="activitySummaryFormat" column="activity_format"/>
+      <result property="feedDate" column="feed_date"/>
    </resultMap>
   
    <select id="select.activity.feed.for.feeduser" parameterClass="ActivityFeed" resultClass="ActivityFeed">

@@ -73,11 +73,22 @@ public class HibernateContentUrlDAOImpl extends HibernateDaoSupport implements C
                 return query.scroll(ScrollMode.FORWARD_ONLY);
             }
         };
-        ScrollableResults results = (ScrollableResults) getHibernateTemplate().execute(callback);
-        while (results.next())
+        ScrollableResults results = null;
+        try
         {
-            String contentUrl = results.getText(0);
-            handler.handle(contentUrl);
+            results = (ScrollableResults) getHibernateTemplate().execute(callback);
+            while (results.next())
+            {
+                String contentUrl = results.getText(0);
+                handler.handle(contentUrl);
+            }
+        }
+        finally
+        {
+            if(results != null)
+            {
+                results.close();
+            }
         }
     }
 

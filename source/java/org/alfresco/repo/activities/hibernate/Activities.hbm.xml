@@ -13,19 +13,19 @@
          table="alf_activity_post" >
       
       <!-- auto-generated ID -->
-      <id name="id" column="SEQUENCE_ID" type="long">
+      <id name="id" column="sequence_id" type="long">
          <generator class="native"/>
       </id>  
       
-      <property name="postDate" column="POST_DATE" not-null="true" type="timestamp"/>
-      <property name="status" column="STATUS" not-null="true" type="string" length="10"/>
-      <property name="activityData" column="ACTIVITY_DATA" not-null="true" type="string" length="4000"/>
-      <property name="userId" column="POST_USER_ID" not-null="true" type="string" length="255"/>
-      <property name="jobTaskNode" column="JOB_TASK_NODE" not-null="true" type="integer"/>
-      <property name="siteNetwork" column="SITE_NETWORK" type="string" length="255"/>
-      <property name="appTool" column="APP_TOOL" type="string" length="36"/>
-      <property name="activityType" column="ACTIVITY_TYPE" not-null="true" type="string" length="255"/>
-      <property name="lastModified" column="LAST_MODIFIED" not-null="true" type="timestamp"/>
+      <property name="postDate" column="post_date" not-null="true" type="timestamp"/>
+      <property name="status" column="status" not-null="true" type="string" length="10"/>
+      <property name="activityData" column="activity_data" not-null="true" type="string" length="4000"/>
+      <property name="userId" column="post_user_id" not-null="true" type="string" length="255"/>
+      <property name="jobTaskNode" column="job_task_node" not-null="true" type="integer"/>
+      <property name="siteNetwork" column="site_network" type="string" length="255"/>
+      <property name="appTool" column="app_tool" type="string" length="36"/>
+      <property name="activityType" column="activity_type" not-null="true" type="string" length="255"/>
+      <property name="lastModified" column="last_modified" not-null="true" type="timestamp"/>
       
    </class>
    
@@ -34,20 +34,20 @@
          table="alf_activity_feed" >
       
       <!-- auto-generated ID -->
-      <id name="id" column="ID" type="long">
+      <id name="id" column="id" type="long">
          <generator class="native"/>
       </id>    
       
-      <property name="postId" column="POST_ID" type="long"/>
-      <property name="postDate" column="POST_DATE" not-null="true" type="timestamp"/>
-      <property name="activitySummary" column="ACTIVITY_SUMMARY" type="string" length="4000"/>
-      <property name="feedUserId" column="FEED_USER_ID" type="string" length="255"/>
-      <property name="activityType" column="ACTIVITY_TYPE" not-null="true" type="string" length="255"/>
-      <property name="activitySummaryFormat" column="ACTIVITY_FORMAT" type="string" length="10"/>
-      <property name="siteNetwork" column="SITE_NETWORK" type="string" length="255"/>
-      <property name="appTool" column="APP_TOOL" type="string" length="36"/>
-      <property name="postUserId" column="POST_USER_ID" not-null="true" type="string" length="255"/>
-      <property name="feedDate" column="FEED_DATE" not-null="true" type="timestamp"/>
+      <property name="postId" column="post_id" type="long"/>
+      <property name="postDate" column="post_date" not-null="true" type="timestamp"/>
+      <property name="activitySummary" column="activity_summary" type="string" length="4000"/>
+      <property name="feedUserId" column="feed_user_id" type="string" length="255"/>
+      <property name="activityType" column="activity_type" not-null="true" type="string" length="255"/>
+      <property name="activitySummaryFormat" column="activity_format" type="string" length="10"/>
+      <property name="siteNetwork" column="site_network" type="string" length="255"/>
+      <property name="appTool" column="app_tool" type="string" length="36"/>
+      <property name="postUserId" column="post_user_id" not-null="true" type="string" length="255"/>
+      <property name="feedDate" column="feed_date" not-null="true" type="timestamp"/>
 
    </class>
    
@@ -56,14 +56,14 @@
          table="alf_activity_feed_control" >
       
       <!-- auto-generated ID -->
-      <id name="id" column="ID" type="long">
+      <id name="id" column="id" type="long">
          <generator class="native"/>
       </id>  
       
-      <property name="feedUserId" column="FEED_USER_ID" not-null="true" type="string" length="255"/>
-      <property name="siteNetwork" column="SITE_NETWORK" type="string" length="255"/>
-      <property name="appTool" column="APP_TOOL" type="string" length="36"/>
-      <property name="lastModified" column="LAST_MODIFIED" not-null="true" type="timestamp"/>
+      <property name="feedUserId" column="feed_user_id" not-null="true" type="string" length="255"/>
+      <property name="siteNetwork" column="site_network" type="string" length="255"/>
+      <property name="appTool" column="app_tool" type="string" length="36"/>
+      <property name="lastModified" column="last_modified" not-null="true" type="timestamp"/>
       
    </class>
    

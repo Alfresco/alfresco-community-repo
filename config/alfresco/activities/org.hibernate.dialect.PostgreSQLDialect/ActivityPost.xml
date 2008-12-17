@@ -9,16 +9,16 @@
    <typeAlias alias="ActivityPost" type="org.alfresco.repo.activities.post.ActivityPostDAO"/>
 
    <resultMap id="ActivityPostResult" class="ActivityPost">
-      <result property="id" column="SEQUENCE_ID"/>
-      <result property="activityData" column="ACTIVITY_DATA"/>
-      <result property="activityType" column="ACTIVITY_TYPE"/>
-      <result property="userId" column="POST_USER_ID"/>
-      <result property="postDate" column="POST_DATE"/>
-      <result property="jobTaskNode" column="JOB_TASK_NODE"/>
-      <result property="siteNetwork" column="SITE_NETWORK"/>
-      <result property="appTool" column="APP_TOOL"/>
-      <result property="status" column="STATUS"/>
-      <result property="lastModified" column="LAST_MODIFIED"/>
+      <result property="id" column="sequence_id"/>
+      <result property="activityData" column="activity_data"/>
+      <result property="activityType" column="activity_type"/>
+      <result property="userId" column="post_user_id"/>
+      <result property="postDate" column="post_date"/>
+      <result property="jobTaskNode" column="job_task_node"/>
+      <result property="siteNetwork" column="site_network"/>
+      <result property="appTool" column="app_tool"/>
+      <result property="status" column="status"/>
+      <result property="lastModified" column="last_modified"/>
    </resultMap>
 
    <select id="select.activity.posts" parameterClass="ActivityPost" resultClass="ActivityPost">

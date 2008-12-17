@@ -563,7 +563,7 @@
          <value>org.alfresco.resourceBundleBaseNamesTransactionalCache</value>
       </property>
       <property name="maxCacheSize">
-         <value>10</value>
+         <value>100</value>
       </property>
    </bean>
 
@@ -595,7 +595,7 @@
          <value>org.alfresco.loadedResourceBundlesTransactionalCache</value>
       </property>
       <property name="maxCacheSize">
-         <value>10</value>
+         <value>100</value>
       </property>
    </bean>
    
@@ -627,7 +627,7 @@
          <value>org.alfresco.messagesTransactionalCache</value>
       </property>
       <property name="maxCacheSize">
-         <value>10</value>
+         <value>100</value>
       </property>
    </bean>
    
@@ -664,7 +664,7 @@
          <value>org.alfresco.uriToModelsTransactionalCache</value>
       </property>
       <property name="maxCacheSize">
-         <value>10</value>
+         <value>100</value>
       </property>
    </bean>
    
@@ -696,7 +696,7 @@
          <value>org.alfresco.compiledModelsTransactionalCache</value>
       </property>
       <property name="maxCacheSize">
-         <value>10</value>
+         <value>100</value>
       </property>
    </bean>
 
@@ -728,7 +728,7 @@
          <value>org.alfresco.urisTransactionalCache</value>
       </property>
       <property name="maxCacheSize">
-         <value>10</value>
+         <value>100</value>
       </property>
    </bean>
    
@@ -760,7 +760,7 @@
          <value>org.alfresco.prefixesTransactionalCache</value>
       </property>
       <property name="maxCacheSize">
-         <value>10</value>
+         <value>100</value>
       </property>
    </bean>
    
@@ -796,7 +796,7 @@
          <value>org.alfresco.webScriptsRegistryTransactionalCache</value>
       </property>
       <property name="maxCacheSize">
-         <value>10</value>
+         <value>100</value>
       </property>
    </bean>
    

@@ -1362,16 +1362,26 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
                 return query.scroll(ScrollMode.FORWARD_ONLY);
             }
         };
-        ScrollableResults childNodeIds = (ScrollableResults) getHibernateTemplate().execute(getChildNodeIdsCallback);
-        while (childNodeIds.next())
+        ScrollableResults childNodeIds = null;
+        try
         {
-            Long childNodeId = childNodeIds.getLong(0);
-            parentAssocsCache.remove(childNodeId);
-            if (isDebugParentAssocCacheEnabled)
+            childNodeIds = (ScrollableResults) getHibernateTemplate().execute(getChildNodeIdsCallback);
+        
+            while (childNodeIds.next())
             {
-                loggerParentAssocsCache.debug("\n" +
-                        "Parent associations cache - Removing entry: \n" +
-                        "   Node:   " + childNodeId);
+                Long childNodeId = childNodeIds.getLong(0);
+                parentAssocsCache.remove(childNodeId);
+                if (isDebugParentAssocCacheEnabled)
+                {
+                    loggerParentAssocsCache.debug("\n" + "Parent associations cache - Removing entry: \n" + "   Node:   " + childNodeId);
+                }
+            }
+        }
+        finally
+        {
+            if(childNodeIds != null)
+            {
+                childNodeIds.close();
             }
         }
         HibernateCallback deleteParentAssocsCallback = new HibernateCallback()
@@ -1848,16 +1858,28 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
                 return query.scroll(ScrollMode.FORWARD_ONLY);
             }
         };
-        ScrollableResults queryResults = (ScrollableResults) getHibernateTemplate().execute(callback);
-        convertToChildAssocRefs(parentNode, queryResults, queryCallback);
-        
-        // Now recurse, if required
-        if (recurse)
+        ScrollableResults queryResults = null;
+        try
         {
-            for (Long childNodeId : childNodeIds)
+            queryResults = (ScrollableResults) getHibernateTemplate().execute(callback);
+            convertToChildAssocRefs(parentNode, queryResults, queryCallback);
+
+            // Now recurse, if required
+            if (recurse)
             {
-                getChildAssocs(childNodeId, resultsCallback, recurse);
-            } 
+                for (Long childNodeId : childNodeIds)
+                {
+                    getChildAssocs(childNodeId, resultsCallback, recurse);
+                }
+            }
+            // Done
+        }
+        finally
+        {
+            if (queryResults != null)
+            {
+                queryResults.close();
+            }
         }
         // Done
     }
@@ -1887,8 +1909,19 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
                 return query.scroll(ScrollMode.FORWARD_ONLY);
             }
         };
-        ScrollableResults queryResults = (ScrollableResults) getHibernateTemplate().execute(callback);
-        convertToChildAssocRefs(parentNode, queryResults, resultsCallback);
+        ScrollableResults queryResults = null;
+        try
+        {
+            queryResults = (ScrollableResults) getHibernateTemplate().execute(callback);
+            convertToChildAssocRefs(parentNode, queryResults, resultsCallback);
+        }
+        finally
+        {
+            if (queryResults != null)
+            {
+                queryResults.close();
+            }
+        }
         // Done
     }
 
@@ -1927,8 +1960,19 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
                 return query.scroll(ScrollMode.FORWARD_ONLY);
             }
         };
-        ScrollableResults queryResults = (ScrollableResults) getHibernateTemplate().execute(callback);
-        convertToChildAssocRefs(parentNode, queryResults, resultsCallback);
+        ScrollableResults queryResults = null;
+        try
+        {
+            queryResults = (ScrollableResults) getHibernateTemplate().execute(callback);
+            convertToChildAssocRefs(parentNode, queryResults, resultsCallback);
+        }
+        finally
+        {
+            if (queryResults != null)
+            {
+                queryResults.close();
+            }
+        }
         // Done
     }
 
@@ -1963,8 +2007,19 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
                 return query.scroll(ScrollMode.FORWARD_ONLY);
             }
         };
-        ScrollableResults queryResults = (ScrollableResults) getHibernateTemplate().execute(callback);
-        convertToChildAssocRefs(parentNode, queryResults, resultsCallback);
+        ScrollableResults queryResults = null;
+        try
+        {
+            queryResults = (ScrollableResults) getHibernateTemplate().execute(callback);
+            convertToChildAssocRefs(parentNode, queryResults, resultsCallback);
+        }
+        finally
+        {
+            if (queryResults != null)
+            {
+                queryResults.close();
+            }
+        }
         // Done
     }
 
@@ -2005,8 +2060,19 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
                 return query.scroll(ScrollMode.FORWARD_ONLY);
             }
         };
-        ScrollableResults queryResults = (ScrollableResults) getHibernateTemplate().execute(callback);
-        convertToChildAssocRefs(parentNode, queryResults, resultsCallback);
+        ScrollableResults queryResults = null;
+        try
+        {
+            queryResults = (ScrollableResults) getHibernateTemplate().execute(callback);
+            convertToChildAssocRefs(parentNode, queryResults, resultsCallback);
+        }
+        finally
+        {
+            if (queryResults != null)
+            {
+                queryResults.close();
+            }
+        }
         // Done
     }
 
@@ -2024,8 +2090,19 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
                 return query.scroll(ScrollMode.FORWARD_ONLY);
             }
         };
-        ScrollableResults queryResults = (ScrollableResults) getHibernateTemplate().execute(callback);
-        convertToChildAssocRefs(parentNode, queryResults, resultsCallback);
+        ScrollableResults queryResults = null;
+        try
+        {
+            queryResults = (ScrollableResults) getHibernateTemplate().execute(callback);
+            convertToChildAssocRefs(parentNode, queryResults, resultsCallback);
+        }
+        finally
+        {
+            if (queryResults != null)
+            {
+                queryResults.close();
+            }
+        }
         // Done
     }
 
@@ -2043,8 +2120,19 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
                 return query.scroll(ScrollMode.FORWARD_ONLY);
             }
         };
-        ScrollableResults queryResults = (ScrollableResults) getHibernateTemplate().execute(callback);
-        convertToChildAssocRefs(parentNode, queryResults, resultsCallback);
+        ScrollableResults queryResults = null;
+        try
+        {
+            queryResults = (ScrollableResults) getHibernateTemplate().execute(callback);
+            convertToChildAssocRefs(parentNode, queryResults, resultsCallback);
+        }
+        finally
+        {
+            if (queryResults != null)
+            {
+                queryResults.close();
+            }
+        }
         // Done
     }
 
@@ -2215,8 +2303,20 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
                 return query.scroll(ScrollMode.FORWARD_ONLY);
             }
         };
-        ScrollableResults queryResults = (ScrollableResults) getHibernateTemplate().execute(callback);
-        processNodeResults(queryResults, resultsCallback);
+        ScrollableResults queryResults = null;
+        try
+        {
+            queryResults = (ScrollableResults) getHibernateTemplate().execute(callback);
+            processNodeResults(queryResults, resultsCallback);
+        }
+        finally
+        {
+            if (queryResults != null)
+            {
+                queryResults.close();
+            }
+        }
+
         // Done
     }
 
@@ -2234,8 +2334,20 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
                 return query.scroll(ScrollMode.FORWARD_ONLY);
             }
         };
-        ScrollableResults queryResults = (ScrollableResults) getHibernateTemplate().execute(callback);
-        processNodeResults(queryResults, resultsCallback);
+        ScrollableResults queryResults = null;
+        try
+        {
+            queryResults = (ScrollableResults) getHibernateTemplate().execute(callback);
+            processNodeResults(queryResults, resultsCallback);
+        }
+        finally
+        {
+            if (queryResults != null)
+            {
+                queryResults.close();
+            }
+        }
+
         // Done
     }
     
@@ -2695,18 +2807,29 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
                 return query.scroll(ScrollMode.FORWARD_ONLY);
             }
         };
-        ScrollableResults results = (ScrollableResults) getHibernateTemplate().execute(callback);
-        // Callback with the results
-        Session session = getSession();
-        while (results.next())
+        ScrollableResults results = null;
+        try
         {
-            Node node = (Node) results.get(0);
-            NodeRef nodeRef = node.getNodeRef();
-            QNameEntity nodeTypeQNameEntity = node.getTypeQName();
-            QName nodeTypeQName = nodeTypeQNameEntity.getQName();
-            handler.handle(nodeRef, nodeTypeQName, propertyQName, value);
-            // Flush if required
-            DirtySessionMethodInterceptor.flushSession(session);
+            results = (ScrollableResults) getHibernateTemplate().execute(callback);
+            // Callback with the results
+            Session session = getSession();
+            while (results.next())
+            {
+                Node node = (Node) results.get(0);
+                NodeRef nodeRef = node.getNodeRef();
+                QNameEntity nodeTypeQNameEntity = node.getTypeQName();
+                QName nodeTypeQName = nodeTypeQNameEntity.getQName();
+                handler.handle(nodeRef, nodeTypeQName, propertyQName, value);
+                // Flush if required
+                DirtySessionMethodInterceptor.flushSession(session);
+            }
+        }
+        finally
+        {
+            if (results != null)
+            {
+                results.close();
+            }
         }
     }
 
@@ -2762,59 +2885,71 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
                 return query.scroll(ScrollMode.FORWARD_ONLY);
             }
         };
-        ScrollableResults results = (ScrollableResults) getHibernateTemplate().execute(callback);
-        // Loop through, extracting content URLs
-        TypeConverter converter = DefaultTypeConverter.INSTANCE;
-        int unflushedCount = 0;
-        while(results.next())
+        ScrollableResults results = null;
+        try
         {
-            Node node = (Node) results.get()[0];
-            // loop through all the node properties
-            Map<PropertyMapKey, NodePropertyValue> properties = node.getProperties();
-            for (Map.Entry<PropertyMapKey, NodePropertyValue> entry : properties.entrySet())
+            results = (ScrollableResults) getHibernateTemplate().execute(callback);
+
+            // Loop through, extracting content URLs
+            TypeConverter converter = DefaultTypeConverter.INSTANCE;
+            int unflushedCount = 0;
+            while (results.next())
             {
-                PropertyMapKey propertyKey = entry.getKey();
-                NodePropertyValue propertyValue = entry.getValue();
-                // ignore nulls
-                if (propertyValue == null)
+                Node node = (Node) results.get()[0];
+                // loop through all the node properties
+                Map<PropertyMapKey, NodePropertyValue> properties = node.getProperties();
+                for (Map.Entry<PropertyMapKey, NodePropertyValue> entry : properties.entrySet())
                 {
-                    continue;
-                }
-                Long  propertyQNameId = propertyKey.getQnameId();
-                // Get the actual value(s) as a collection
-                Collection<Serializable> values = propertyValue.getCollection(DataTypeDefinition.ANY);
-                // attempt to convert instance in the collection
-                for (Serializable value : values)
-                {
-                    // ignore nulls (null entries in collections)
-                    if (value == null)
+                    PropertyMapKey propertyKey = entry.getKey();
+                    NodePropertyValue propertyValue = entry.getValue();
+                    // ignore nulls
+                    if (propertyValue == null)
                     {
                         continue;
                     }
-                    Serializable convertedValue = null;
-                    try
+                    Long propertyQNameId = propertyKey.getQnameId();
+                    // Get the actual value(s) as a collection
+                    Collection<Serializable> values = propertyValue.getCollection(DataTypeDefinition.ANY);
+                    // attempt to convert instance in the collection
+                    for (Serializable value : values)
                     {
-                         convertedValue = (Serializable) converter.convert(actualDataTypeDefinition, value);
-                    }
-                    catch (Throwable e)
-                    {
-                        // The value can't be converted - forget it
-                    }
-                    if (convertedValue != null)
-                    {
-                        NodeRef nodeRef = node.getNodeRef();
-                        QName nodeTypeQName = node.getTypeQName().getQName();
-                        QName propertyQName = qnameDAO.getQName(propertyQNameId);
-                        handler.handle(nodeRef, nodeTypeQName, propertyQName, convertedValue);
+                        // ignore nulls (null entries in collections)
+                        if (value == null)
+                        {
+                            continue;
+                        }
+                        Serializable convertedValue = null;
+                        try
+                        {
+                            convertedValue = (Serializable) converter.convert(actualDataTypeDefinition, value);
+                        }
+                        catch (Throwable e)
+                        {
+                            // The value can't be converted - forget it
+                        }
+                        if (convertedValue != null)
+                        {
+                            NodeRef nodeRef = node.getNodeRef();
+                            QName nodeTypeQName = node.getTypeQName().getQName();
+                            QName propertyQName = qnameDAO.getQName(propertyQNameId);
+                            handler.handle(nodeRef, nodeTypeQName, propertyQName, convertedValue);
+                        }
                     }
                 }
+                unflushedCount++;
+                if (unflushedCount >= 1000)
+                {
+                    // evict all data from the session
+                    getSession().clear();
+                    unflushedCount = 0;
+                }
             }
-            unflushedCount++;
-            if (unflushedCount >= 1000)
+        }
+        finally
+        {
+            if (results != null)
             {
-                // evict all data from the session
-                getSession().clear();
-                unflushedCount = 0;
+                results.close();
             }
         }
     }

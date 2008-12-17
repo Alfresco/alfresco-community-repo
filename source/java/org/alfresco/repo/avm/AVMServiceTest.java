@@ -1349,7 +1349,7 @@ public class AVMServiceTest extends AVMServiceTestBase
 
             StoreRef storeRef = AVMNodeConverter.ToStoreRef("main");
             SearchService searchService = fIndexerAndSearcher.getSearcher(storeRef, true);
-            ResultSet results = searchService.query(storeRef, "lucene", "TEXT:\"tutorial\"");
+            ResultSet results = searchService.query(storeRef, "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_NAME.toString()) + ":\"guest\"");
             assertEquals(0, results.length());
             results.close();
 
@@ -1363,7 +1363,7 @@ public class AVMServiceTest extends AVMServiceTestBase
 
             fService.createSnapshot("main", null, null);
             searchService = fIndexerAndSearcher.getSearcher(storeRef, true);
-            results = searchService.query(storeRef, "lucene", "TEXT:\"tutorial\"");
+            results = searchService.query(storeRef, "lucene", "@" + LuceneQueryParser.escape(ContentModel.PROP_NAME.toString()) + ":\"guest\"");
             assertEquals(1, results.length());
             results.close();
 

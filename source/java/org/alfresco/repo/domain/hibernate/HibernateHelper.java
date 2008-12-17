@@ -48,18 +48,31 @@ public class HibernateHelper
      */
     public static int deleteDbAccessControlEntries(Session session, Query query)
     {
-        ScrollableResults entities = query.scroll(ScrollMode.FORWARD_ONLY);
+        ScrollableResults entities = null;
         int count = 0;
-        while (entities.next())
+        try
         {
-            DbAccessControlEntry entry = (DbAccessControlEntry) entities.get(0);
-            entry.delete();
-            if (++count % 50 == 0)
+            entities = query.scroll(ScrollMode.FORWARD_ONLY);
+        
+            while (entities.next())
             {
-                session.flush();
-                session.clear();
+                DbAccessControlEntry entry = (DbAccessControlEntry) entities.get(0);
+                entry.delete();
+                if (++count % 50 == 0)
+                {
+                    session.flush();
+                    session.clear();
+                }
             }
         }
+        finally
+        {
+            if(entities != null)
+            {
+                entities.close();
+            }
+        }
+        
         return count;
     }
 }

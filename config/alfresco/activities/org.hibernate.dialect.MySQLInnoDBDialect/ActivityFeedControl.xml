@@ -9,11 +9,11 @@
    <typeAlias alias="FeedControl" type="org.alfresco.repo.activities.feed.control.FeedControlDAO"/>
 
    <resultMap id="FeedControlResult" class="FeedControl">
-      <result property="id" column="ID"/>
-      <result property="feedUserId" column="FEED_USER_ID"/>
-      <result property="siteNetwork" column="SITE_NETWORK"/>
-      <result property="appTool" column="APP_TOOL"/>
-      <result property="lastModified" column="LAST_MODIFIED"/>
+      <result property="id" column="id"/>
+      <result property="feedUserId" column="feed_user_id"/>
+      <result property="siteNetwork" column="site_network"/>
+      <result property="appTool" column="app_tool"/>
+      <result property="lastModified" column="last_modified"/>
    </resultMap>
   
    <select id="select.activity.feedcontrols.for.user" parameterClass="FeedControl" resultClass="FeedControl">
@@ -40,7 +40,7 @@
       
       <!-- optionally return auto-generated primary key - only required for debug (can be commented out) -->
       <selectKey resultClass="long" keyProperty="id" type="post">
-         SELECT LAST_INSERT_ID() AS value
+         select LAST_INSERT_ID() AS value
       </selectKey>
    </insert>
   

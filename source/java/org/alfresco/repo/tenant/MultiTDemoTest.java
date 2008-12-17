@@ -85,16 +85,20 @@ public class MultiTDemoTest extends TestCase
     private TenantService tenantService;
     private AuthorityService authorityService;
     private CategoryService categoryService;
-
-    public static final String TEST_TENANT_DOMAIN1 = "yyy.com";
-    public static final String TEST_TENANT_DOMAIN2 = "zzz.com";
     
-    private static List<String> tenants;
+    public static int NUM_TENANTS = 11;
+    
+    public static final String TEST_TENANT_DOMAIN = "my.test";
+    public static final String TEST_TENANT_DOMAIN2 = TEST_TENANT_DOMAIN+"2";
+    
+    public static List<String> tenants;
     
     static {
-        tenants = new ArrayList<String>(2);
-        tenants.add(TEST_TENANT_DOMAIN1);
-        tenants.add(TEST_TENANT_DOMAIN2);
+        tenants = new ArrayList<String>(NUM_TENANTS);
+        for (int i = 1; i <= NUM_TENANTS; i++)
+        {
+            tenants.add(TEST_TENANT_DOMAIN+i);
+        }
     }
     
     public static final String ROOT_DIR = "./tenantstores";
@@ -487,31 +491,33 @@ public class MultiTDemoTest extends TestCase
     {
         logger.info("Test get property");
         
-        final String tenantDomain = TEST_TENANT_DOMAIN1;
-        String tenantAdminName = tenantService.getDomainUser(TenantService.ADMIN_BASENAME, tenantDomain);
-        
-        AuthenticationUtil.runAs(new RunAsWork<Object>()
+        for (final String tenantDomain : tenants)
         {
-            public Object doWork() throws Exception
+            String tenantAdminName = tenantService.getDomainUser(TenantService.ADMIN_BASENAME, tenantDomain);
+            
+            AuthenticationUtil.runAs(new RunAsWork<Object>()
             {
-                NodeRef personNodeRef = createUser(TEST_USER4, tenantDomain, "welcome");
-                
-                // Test nodeRef property
-                NodeRef homeFolderNodeRef = (NodeRef)nodeService.getProperty(personNodeRef, ContentModel.PROP_HOMEFOLDER);
-                assertFalse(homeFolderNodeRef.toString().contains(tenantDomain));
-                
-                Map<QName, Serializable> props = (Map<QName, Serializable>)nodeService.getProperties(personNodeRef);
-                assertFalse(props.get(ContentModel.PROP_HOMEFOLDER).toString().contains(tenantDomain));
-                
-                // Test "store-identifier" property
-                String storeId = (String)nodeService.getProperty(personNodeRef, ContentModel.PROP_STORE_IDENTIFIER);
-                assertFalse(storeId.contains(tenantDomain));
-                
-                assertFalse(props.get(ContentModel.PROP_STORE_IDENTIFIER).toString().contains(tenantDomain));
-                
-                return null;                      
-            }
-        }, tenantAdminName);
+                public Object doWork() throws Exception
+                {
+                    NodeRef personNodeRef = createUser(TEST_USER4, tenantDomain, "welcome");
+                    
+                    // Test nodeRef property
+                    NodeRef homeFolderNodeRef = (NodeRef)nodeService.getProperty(personNodeRef, ContentModel.PROP_HOMEFOLDER);
+                    assertFalse(homeFolderNodeRef.toString().contains(tenantDomain));
+                    
+                    Map<QName, Serializable> props = (Map<QName, Serializable>)nodeService.getProperties(personNodeRef);
+                    assertFalse(props.get(ContentModel.PROP_HOMEFOLDER).toString().contains(tenantDomain));
+                    
+                    // Test "store-identifier" property
+                    String storeId = (String)nodeService.getProperty(personNodeRef, ContentModel.PROP_STORE_IDENTIFIER);
+                    assertFalse(storeId.contains(tenantDomain));
+                    
+                    assertFalse(props.get(ContentModel.PROP_STORE_IDENTIFIER).toString().contains(tenantDomain));
+                    
+                    return null;                      
+                }
+            }, tenantAdminName);
+        }
     }
     
     private void createGroup(String shortName, String parentShortName)

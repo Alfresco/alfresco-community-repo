@@ -31,6 +31,7 @@ import java.util.List;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -96,26 +97,37 @@ public class RefreshTagScopeActionExecuter extends ActionExecuterAbstractBase
      * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
-    protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
+    protected void executeImpl(final Action action, final NodeRef actionedUponNodeRef)
     {
         if (this.nodeService.exists(actionedUponNodeRef) == true &&
             this.nodeService.hasAspect(actionedUponNodeRef, ContentModel.ASPECT_TAGSCOPE) == true)
         {
-                // Create a new list of tag details
-                List<TagDetails> tags = new ArrayList<TagDetails>(10);
+            // Run the update as the system user
+            AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
+            {
+                @SuppressWarnings("unchecked")
+                public Object doWork() throws Exception
+                {
+                    // Create a new list of tag details
+                    List<TagDetails> tags = new ArrayList<TagDetails>(10);
+                    
+                    // Count the tags found in all the (primary) children of the node
+                    countTags(actionedUponNodeRef, tags);
+                    
+                    // Order the list
+                    Collections.sort(tags);
+                    
+                    // Write new content back to tag scope
+                    String tagContent = TaggingServiceImpl.tagDetailsToString(tags);
+                    ContentWriter contentWriter = contentService.getWriter(actionedUponNodeRef, ContentModel.PROP_TAGSCOPE_CACHE, true);
+                    contentWriter.setEncoding("UTF-8");
+                    contentWriter.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+                    contentWriter.putContent(tagContent);    
+
+                    return null;
+                }
                 
-                // Count the tags found in all the (primary) children of the node
-                countTags(actionedUponNodeRef, tags);
-                
-                // Order the list
-                Collections.sort(tags);
-                
-                // Write new content back to tag scope
-                String tagContent = TaggingServiceImpl.tagDetailsToString(tags);
-                ContentWriter contentWriter = this.contentService.getWriter(actionedUponNodeRef, ContentModel.PROP_TAGSCOPE_CACHE, true);
-                contentWriter.setEncoding("UTF-8");
-                contentWriter.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
-                contentWriter.putContent(tagContent);                         
+            }, AuthenticationUtil.getSystemUserName());                      
         }
     }
 

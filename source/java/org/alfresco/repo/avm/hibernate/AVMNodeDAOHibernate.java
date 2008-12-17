@@ -162,11 +162,22 @@ class AVMNodeDAOHibernate extends HibernateDaoSupport implements
     public void getContentUrls(ContentUrlHandler handler)
     {
         Query query = getSession().getNamedQuery("PlainFileNode.GetContentUrls");
-        ScrollableResults results = query.scroll(ScrollMode.FORWARD_ONLY);
-        while (results.next())
+        ScrollableResults results = null;
+        try
         {
-            String contentUrl = results.getText(0);
-            handler.handle(contentUrl);
+            results = query.scroll(ScrollMode.FORWARD_ONLY);
+            while (results.next())
+            {
+                String contentUrl = results.getText(0);
+                handler.handle(contentUrl);
+            }
+        }
+        finally
+        {
+            if (results != null)
+            {
+                results.close();
+            }
         }
     }
 

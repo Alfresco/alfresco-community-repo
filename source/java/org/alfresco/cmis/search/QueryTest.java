@@ -40,7 +40,7 @@ import org.alfresco.util.CachingDateFormat;
 /**
  * @author andyh
  */
-public class QueryTestX extends BaseCMISTest
+public class QueryTest extends BaseCMISTest
 {
     @SuppressWarnings("unchecked")
     private <T> T testQuery(String query, int size, boolean dump, String returnPropertyName, T returnType, boolean shouldThrow)

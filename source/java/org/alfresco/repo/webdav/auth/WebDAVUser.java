@@ -27,6 +27,7 @@ package org.alfresco.repo.webdav.auth;
 
 import java.io.Serializable;
 
+import org.alfresco.repo.SessionUser;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -36,7 +37,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * 
  * @author GKSpencer
  */
-public class WebDAVUser implements Serializable
+public class WebDAVUser implements SessionUser
 {
     private static final long serialVersionUID = -6948146071131901345L;
 

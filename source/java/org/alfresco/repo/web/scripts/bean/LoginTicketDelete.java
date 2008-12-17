@@ -81,7 +81,7 @@ public class LoginTicketDelete extends DeclarativeWebScript
         }
         
         // construct model for ticket
-        Map<String, Object> model = new HashMap<String, Object>(7, 1.0f);
+        Map<String, Object> model = new HashMap<String, Object>(1, 1.0f);
         model.put("ticket",  ticket);
         
         try

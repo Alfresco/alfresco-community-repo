@@ -71,9 +71,9 @@ public class LoginTicket extends DeclarativeWebScript
         }
         
         // construct model for ticket
-        Map<String, Object> model = new HashMap<String, Object>(7, 1.0f);
+        Map<String, Object> model = new HashMap<String, Object>(1, 1.0f);
         model.put("ticket",  ticket);
-
+        
         try
         {
             String ticketUser = ticketComponent.validateTicket(ticket);
@@ -86,7 +86,7 @@ public class LoginTicket extends DeclarativeWebScript
                 status.setMessage("Ticket not found");
             }
         }
-        catch(AuthenticationException e)
+        catch (AuthenticationException e)
         {
             status.setRedirect(true);
             status.setCode(HttpServletResponse.SC_NOT_FOUND);

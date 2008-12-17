@@ -3,6 +3,7 @@ function main()
 {
 
    var json = "";
+   var versions = [];
 
    // allow for content to be loaded from id
    if(args["nodeRef"] != null)
@@ -10,10 +11,8 @@ function main()
       var nodeRef = args["nodeRef"];
       node = search.findNode(nodeRef);
 
-      var versions = null;
       if (node != null)
       {
-         versions = [];
          var versionHistory = node.versionHistory;
          if(versionHistory != null)
          {

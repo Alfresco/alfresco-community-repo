@@ -32,10 +32,10 @@ import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
 import org.alfresco.repo.security.authentication.PasswordGenerator;
 import org.alfresco.repo.security.authentication.UserNameGenerator;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.site.SiteService;
 import org.alfresco.repo.workflow.WorkflowModel;
@@ -52,6 +52,7 @@ import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
+import org.alfresco.web.scripts.Cache;
 import org.alfresco.web.scripts.DeclarativeWebScript;
 import org.alfresco.web.scripts.Status;
 import org.alfresco.web.scripts.WebScriptException;
@@ -78,6 +79,7 @@ public class Invite extends DeclarativeWebScript
     private static final String MODEL_PROP_KEY_INVITEE_LASTNAME = "inviteeLastName";
     private static final String MODEL_PROP_KEY_INVITEE_EMAIL = "inviteeEmail";
     private static final String MODEL_PROP_KEY_SITE_SHORT_NAME = "siteShortName";
+    private static final String MODEL_PROP_KEY_INVITEE_USERNAME = "inviteeUserName";
     
     // URL request parameter names
     private static final String PARAM_INVITEE_FIRSTNAME = "inviteeFirstName";
@@ -217,8 +219,7 @@ public class Invite extends DeclarativeWebScript
      * org.alfresco.web.scripts.WebScriptResponse)
      */
     @Override
-    protected Map<String, Object> executeImpl(WebScriptRequest req,
-            Status status)
+    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
         // initialise model to pass on for template to render
         Map<String, Object> model = new HashMap<String, Object>();
@@ -254,7 +255,7 @@ public class Invite extends DeclarativeWebScript
         {
             // check for 'inviteeFirstName' parameter not provided
             String inviteeFirstName = req.getParameter(PARAM_INVITEE_FIRSTNAME);
-            if ((inviteeFirstName == null) || (inviteeFirstName.length() == 0))
+            if ((inviteeFirstName == null) || (inviteeFirstName.trim().length() == 0))
             {
                 // handle inviteeFirstName URL parameter not provided
                 throw new WebScriptException(Status.STATUS_BAD_REQUEST,
@@ -265,7 +266,7 @@ public class Invite extends DeclarativeWebScript
 
             // check for 'inviteeLastName' parameter not provided
             String inviteeLastName = req.getParameter(PARAM_INVITEE_LASTNAME);
-            if ((inviteeLastName == null) || (inviteeLastName.length() == 0))
+            if ((inviteeLastName == null) || (inviteeLastName.trim().length() == 0))
             {
                 // handle inviteeLastName URL parameter not provided
                 throw new WebScriptException(Status.STATUS_BAD_REQUEST,
@@ -276,7 +277,7 @@ public class Invite extends DeclarativeWebScript
 
             // check for 'inviteeEmail' parameter not provided
             String inviteeEmail = req.getParameter(PARAM_INVITEE_EMAIL);
-            if ((inviteeEmail == null) || (inviteeEmail.length() == 0))
+            if ((inviteeEmail == null) || (inviteeEmail.trim().length() == 0))
             {
                 // handle inviteeEmail URL parameter not provided
                 throw new WebScriptException(Status.STATUS_BAD_REQUEST,
@@ -287,7 +288,7 @@ public class Invite extends DeclarativeWebScript
 
             // check for 'siteShortName' parameter not provided
             String siteShortName = req.getParameter(PARAM_SITE_SHORT_NAME);
-            if ((siteShortName == null) || (siteShortName.length() == 0))
+            if ((siteShortName == null) || (siteShortName.trim().length() == 0))
             {
                 // handle siteShortName URL parameter not provided
                 throw new WebScriptException(Status.STATUS_BAD_REQUEST,
@@ -298,7 +299,7 @@ public class Invite extends DeclarativeWebScript
             
             // check for 'inviteeSiteRole' parameter not provided
             String inviteeSiteRole = req.getParameter(PARAM_INVITEE_SITE_ROLE);
-            if ((inviteeSiteRole == null) || (inviteeSiteRole.length() == 0))
+            if ((inviteeSiteRole == null) || (inviteeSiteRole.trim().length() == 0))
             {
                 // handle inviteeSiteRole URL parameter not provided
                 throw new WebScriptException(Status.STATUS_BAD_REQUEST,
@@ -308,7 +309,7 @@ public class Invite extends DeclarativeWebScript
             
             // check for 'serverPath' parameter not provided
             String serverPath = req.getParameter(PARAM_SERVER_PATH);
-            if ((serverPath == null) || (serverPath.length() == 0))
+            if ((serverPath == null) || (serverPath.trim().length() == 0))
             {
                 // handle serverPath URL parameter not provided
                 throw new WebScriptException(Status.STATUS_BAD_REQUEST,
@@ -318,7 +319,7 @@ public class Invite extends DeclarativeWebScript
             
             // check for 'acceptUrl' parameter not provided
             String acceptUrl = req.getParameter(PARAM_ACCEPT_URL);
-            if ((acceptUrl == null) || (acceptUrl.length() == 0))
+            if ((acceptUrl == null) || (acceptUrl.trim().length() == 0))
             {
                 // handle acceptUrl URL parameter not provided
                 throw new WebScriptException(Status.STATUS_BAD_REQUEST,
@@ -328,16 +329,19 @@ public class Invite extends DeclarativeWebScript
             
             // check for 'rejectUrl' parameter not provided
             String rejectUrl = req.getParameter(PARAM_REJECT_URL);
-            if ((rejectUrl == null) || (rejectUrl.length() == 0))
+            if ((rejectUrl == null) || (rejectUrl.trim().length() == 0))
             {
                 // handle rejectUrl URL parameter not provided
                 throw new WebScriptException(Status.STATUS_BAD_REQUEST,
                         "'rejectUrl' parameter has not been provided in URL for action '"
                                 + ACTION_START + "'");
             }
+            
+            // check for the invitee user name (if present)
+            String inviteeUserName = req.getParameter(MODEL_PROP_KEY_INVITEE_USERNAME);
 
             // process action 'start' with provided parameters
-            startInvite(model, inviteeFirstName, inviteeLastName, inviteeEmail, siteShortName, inviteeSiteRole, serverPath, acceptUrl, rejectUrl);
+            startInvite(model, inviteeFirstName, inviteeLastName, inviteeEmail, inviteeUserName, siteShortName, inviteeSiteRole, serverPath, acceptUrl, rejectUrl);
         }
         // else handle if provided 'action' is 'cancel'
         else if (action.equals(ACTION_CANCEL))
@@ -500,7 +504,7 @@ public class Invite extends DeclarativeWebScript
      *            externally accessible server address of server hosting invite web scripts
      */
     private void startInvite(Map<String, Object> model, String inviteeFirstName, String inviteeLastName,
-            String inviteeEmail, String siteShortName, String inviteeSiteRole, String serverPath, String acceptUrl, String rejectUrl)
+            String inviteeEmail, String inviteeUserName, String siteShortName, String inviteeSiteRole, String serverPath, String acceptUrl, String rejectUrl)
     {
         // get the inviter user name (the name of user web script is executed under)
         // - needs to be assigned here because various system calls further on
@@ -519,53 +523,46 @@ public class Invite extends DeclarativeWebScript
         }
         
         //
+        // if we have not explicitly been passed an existing user's user name then ....
+        //
         // if a person already exists who has the given invitee email address
         //
         // 1) obtain invitee user name from first person found having the invitee email address (there
         //          should only be one)
         // 2) handle error conditions - (invitee already has an invitation in progress for the given site, 
         // or he/she is already a member of the given site
-        //
-        Set<NodeRef> peopleWithInviteeEmail = this.personService.getPeopleFilteredByProperty(
-                ContentModel.PROP_EMAIL, inviteeEmail);
-        String inviteeUserName;
-        if (peopleWithInviteeEmail.isEmpty() == false)
+        //        
+        if (inviteeUserName == null || inviteeUserName.trim().length() == 0)
         {
-            // get person already existing who has the given 
-            // invitee email address (there should only be one, so just take
-            // the first from the set of people).
-            NodeRef person = (NodeRef) peopleWithInviteeEmail.toArray()[0];
-
-            // get invitee user name of that person
-            
-            Serializable userNamePropertyVal = this.nodeService.getProperty(
-                    person, ContentModel.PROP_USERNAME);
-            inviteeUserName = DefaultTypeConverter.INSTANCE.convert(String.class, userNamePropertyVal);
-            
-            // throw web script exception if person is already a member of the given site
-            if (this.siteService.isMember(siteShortName, inviteeUserName))
+            Set<NodeRef> peopleWithInviteeEmail = this.personService.getPeopleFilteredByProperty(
+                    ContentModel.PROP_EMAIL, inviteeEmail);
+            if (peopleWithInviteeEmail.isEmpty() == false)
             {
-                throw new WebScriptException(Status.STATUS_CONFLICT,
-                        "Cannot proceed with invitation. A person with user name: '" + inviteeUserName
-                        + "' and invitee email address: '"
-                        + inviteeEmail + "' is already a member of the site: '" + siteShortName + "'.");
+                // get person already existing who has the given 
+                // invitee email address (there should only be one, so just take
+                // the first from the set of people).
+                NodeRef person = (NodeRef) peopleWithInviteeEmail.toArray()[0];
+    
+                // get invitee user name of that person                
+                Serializable userNamePropertyVal = this.nodeService.getProperty(
+                        person, ContentModel.PROP_USERNAME);
+                inviteeUserName = DefaultTypeConverter.INSTANCE.convert(String.class, userNamePropertyVal);                               
             }
-            
-            // if an there is already an invite being processed for the person
-            // then throw a web script exception
-            // if (isInviteAlreadyInProgress(inviteeUserName, siteShortName))
-            // {
-            //    throw new WebScriptException(Status.STATUS_CONFLICT,
-            //            "Cannot proceed with invitation. There is already an invitation in progress " +
-            //            "for a person with user name: '" + inviteeUserName + "' and invitee email address: '"
-            //            + inviteeEmail + "' who is already a member of the site: '" + siteShortName + "'.");
-            // }
+            // else there are no existing people who have the given invitee email address
+            // so create invitee person
+            else
+            {
+                inviteeUserName = createInviteePerson(inviteeFirstName, inviteeLastName, inviteeEmail);
+            }
         }
-        // else there are no existing people who have the given invitee email address
-        // so create invitee person
-        else
+        
+        // throw web script exception if person is already a member of the given site
+        if (this.siteService.isMember(siteShortName, inviteeUserName))
         {
-            inviteeUserName = createInviteePerson(inviteeFirstName, inviteeLastName, inviteeEmail);
+            throw new WebScriptException(Status.STATUS_CONFLICT,
+                    "Cannot proceed with invitation. A person with user name: '" + inviteeUserName
+                    + "' and invitee email address: '"
+                    + inviteeEmail + "' is already a member of the site: '" + siteShortName + "'.");
         }
         
         //

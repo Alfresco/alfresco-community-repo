@@ -52,6 +52,7 @@ import org.alfresco.service.cmr.workflow.WorkflowInstance;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
 import org.alfresco.util.URLEncoder;
 import org.alfresco.web.scripts.Status;
@@ -291,6 +292,12 @@ public class InviteServiceTest extends BaseWebScriptTest
         this.authorityService.deleteAuthority(fullGroupName);
     }
 
+    public static String PERSON_FIRSTNAME = "FirstName123";
+    public static String PERSON_LASTNAME = "LastName123";
+    public static String PERSON_JOBTITLE = "JobTitle123";
+    public static String PERSON_ORG = "Organisation123";
+    
+    
     private void createPerson(String userName, String emailAddress)
     {
         // if user with given user name doesn't already exist then create user
@@ -308,11 +315,11 @@ public class InviteServiceTest extends BaseWebScriptTest
             // create person properties
             PropertyMap personProps = new PropertyMap();
             personProps.put(ContentModel.PROP_USERNAME, userName);
-            personProps.put(ContentModel.PROP_FIRSTNAME, "FirstName123");
-            personProps.put(ContentModel.PROP_LASTNAME, "LastName123");
+            personProps.put(ContentModel.PROP_FIRSTNAME, PERSON_FIRSTNAME);
+            personProps.put(ContentModel.PROP_LASTNAME, PERSON_LASTNAME);
             personProps.put(ContentModel.PROP_EMAIL, emailAddress);
-            personProps.put(ContentModel.PROP_JOBTITLE, "JobTitle123");
-            personProps.put(ContentModel.PROP_JOBTITLE, "Organisation123");
+            personProps.put(ContentModel.PROP_JOBTITLE, PERSON_JOBTITLE);
+            personProps.put(ContentModel.PROP_ORGANIZATION, PERSON_ORG);
 
             // create person node for user
             this.personService.createPerson(personProps);
@@ -793,5 +800,30 @@ public class InviteServiceTest extends BaseWebScriptTest
         }, AuthenticationUtil.getSystemUserName());
         
         assertEquals(true, inviteePersonExists);
+    }
+    
+    /**
+     * https://issues.alfresco.com/jira/browse/ETHREEOH-520
+     */
+    public void testETHREEOH_520()
+        throws Exception
+    {
+        final String userName = "userInviteServiceTest" + GUID.generate();
+        final String emailAddress = " ";
+        
+        // Create a person with a blank email address and 
+        AuthenticationUtil.runAs(new RunAsWork<Object>()
+        {
+            public Object doWork() throws Exception
+            {
+                createPerson(userName, " ");
+                return null;
+            }
+    
+        }, AuthenticationUtil.getSystemUserName());
+        
+        // Try and add an existing person to the site with no email address
+        // Should return bad request since the email address has not been provided
+        startInvite(PERSON_FIRSTNAME, PERSON_LASTNAME, emailAddress, INVITEE_SITE_ROLE, SITE_SHORT_NAME_INVITE_1, 400);
     }
 }

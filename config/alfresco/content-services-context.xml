@@ -358,9 +358,17 @@
          <bean name="transformer.ImageMagick.Command" class="org.alfresco.util.exec.RuntimeExec">
             <property name="commandsAndArguments">
                 <map>
-                    <entry key=".*">
+                    <entry key="Windows.*">
                         <list>
                             <value>imconvert</value>
+                            <value>${source}</value>
+                            <value>SPLIT:${options}</value>
+                            <value>${target}</value>
+                        </list>
+                    </entry>
+                    <entry key=".*">
+                        <list>
+                            <value>convert</value>
                             <value>${source}</value>
                             <value>SPLIT:${options}</value>
                             <value>${target}</value>

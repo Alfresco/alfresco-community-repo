@@ -334,39 +334,40 @@ public class InMemoryTicketComponentImpl implements TicketComponent
         }
 
         /**
-         * Has the tick expired
+         * Has the ticket expired
          * 
          * @return - if expired
          */
         boolean hasExpired()
         {
-            Date now = new Date();
             switch (expires)
             {
-            case AFTER_FIXED_TIME:
-                if ((expiryDate != null) && (expiryDate.compareTo(now) < 0))
-                {
-                    return true;
-                }
-                else
-                {
+                case AFTER_FIXED_TIME:
+                    if ((expiryDate != null) && (expiryDate.compareTo(new Date()) < 0))
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                    
+                case AFTER_INACTIVITY:
+                    Date now = new Date();
+                    if ((expiryDate != null) && (expiryDate.compareTo(now) < 0))
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        expiryDate = Duration.add(now, validDuration);
+                        return false;
+                    }
+                    
+                case DO_NOT_EXPIRE:
+                default:
                     return false;
-                }
-            case AFTER_INACTIVITY:
-                if ((expiryDate != null) && (expiryDate.compareTo(now) < 0))
-                {
-                    return true;
-                }
-                else
-                {
-                    expiryDate = Duration.add(now, validDuration);
-                    return false;
-                }
-            case DO_NOT_EXPIRE:
-            default:
-                return false;
             }
-
         }
 
         public boolean equals(Object o)

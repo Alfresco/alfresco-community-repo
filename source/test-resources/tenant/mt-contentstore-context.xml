@@ -38,30 +38,10 @@
    
    <!-- override content store cleaner to use tenant routing file content store -->
    <!-- Performs the content cleanup -->
-   <bean id="contentStoreCleaner" class="org.alfresco.repo.content.cleanup.ContentStoreCleaner" >
-      <property name="dictionaryService">
-         <ref bean="dictionaryService" />
-      </property>
-      <property name="nodeDaoService" >
-         <ref bean="nodeDaoService" />
-      </property>
-      <property name="avmNodeDAO">
-            <ref bean="avmNodeDAO"/>
-      </property>
-      <property name="transactionService" >
-         <ref bean="transactionService" />
-      </property>
-      <property name="protectDays" >
-         <value>14</value>
-      </property>
+   <bean id="contentStoreCleaner" parent="baseContentStoreCleaner">
       <property name="stores" >
          <list>
             <ref bean="tenantFileContentStore" />
-         </list>
-      </property>
-      <property name="listeners" >
-         <list>
-            <ref bean="deletedContentBackupListener" />
          </list>
       </property>
    </bean>

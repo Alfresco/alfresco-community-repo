@@ -40,7 +40,7 @@
                <ref bean="internalEHCacheManager" />
             </property>
             <property name="cacheName">
-               <value>defaultCache</value>
+               <value>org.alfresco.cache.qnameEntityCache</value>
             </property>
          </bean>
       </property>
@@ -76,7 +76,7 @@
                <ref bean="internalEHCacheManager" />
             </property>
             <property name="cacheName">
-               <value>defaultCache</value>
+               <value>org.alfresco.cache.localeIdCache</value>
             </property>
          </bean>
       </property>

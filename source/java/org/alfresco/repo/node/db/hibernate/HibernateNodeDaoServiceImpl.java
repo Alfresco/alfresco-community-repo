@@ -2958,6 +2958,8 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
      * Queries for transactions
      */
     private static final String QUERY_GET_TXN_BY_ID = "txn.GetTxnById";
+    private static final String QUERY_GET_MIN_COMMIT_TIME = "txn.GetMinCommitTime";
+    private static final String QUERY_GET_MAX_COMMIT_TIME = "txn.GetMaxCommitTime";
     private static final String QUERY_GET_TXNS_BY_COMMIT_TIME_ASC = "txn.GetTxnsByCommitTimeAsc";
     private static final String QUERY_GET_TXNS_BY_COMMIT_TIME_DESC = "txn.GetTxnsByCommitTimeDesc";
     private static final String QUERY_GET_SELECTED_TXNS_BY_COMMIT_TIME_ASC = "txn.GetSelectedTxnsByCommitAsc";
@@ -2983,6 +2985,38 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         Transaction txn = (Transaction) getHibernateTemplate().execute(callback);
         // done
         return txn;
+    }
+    
+    public Long getMinTxnCommitTime()
+    {
+        HibernateCallback callback = new HibernateCallback()
+        {
+            public Object doInHibernate(Session session)
+            {
+                Query query = session.getNamedQuery(QUERY_GET_MIN_COMMIT_TIME);
+                query.setReadOnly(true);
+                return query.uniqueResult();
+            }
+        };
+        Long commitTime = (Long) getHibernateTemplate().execute(callback);
+        // done
+        return (commitTime == null) ? 0L : commitTime;
+    }
+    
+    public Long getMaxTxnCommitTime()
+    {
+        HibernateCallback callback = new HibernateCallback()
+        {
+            public Object doInHibernate(Session session)
+            {
+                Query query = session.getNamedQuery(QUERY_GET_MAX_COMMIT_TIME);
+                query.setReadOnly(true);
+                return query.uniqueResult();
+            }
+        };
+        Long commitTime = (Long) getHibernateTemplate().execute(callback);
+        // done
+        return (commitTime == null) ? 0L : commitTime;
     }
     
     @SuppressWarnings("unchecked")
@@ -3067,14 +3101,33 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     
     private static final Long TXN_ID_DUD = Long.valueOf(-1L);
     private static final Long SERVER_ID_DUD = Long.valueOf(-1L);
+    private static final long MIN_TIME_QUERY_RANGE = 10L * 60L * 1000L;     // 10 minutes
+    
     @SuppressWarnings("unchecked")
     public List<Transaction> getTxnsByCommitTimeAscending(
-            final long fromTimeInclusive,
-            final long toTimeExclusive,
-            final int count,
+            long fromTimeInclusive,
+            long toTimeExclusive,
+            int count,
             List<Long> excludeTxnIds,
             boolean remoteOnly)
     {
+        // Start with some sane defaults
+        if (fromTimeInclusive < 0L)
+        {
+            fromTimeInclusive = getMinTxnCommitTime();
+        }
+        if (toTimeExclusive < 0L || toTimeExclusive == Long.MAX_VALUE)
+        {
+            toTimeExclusive = ((long)getMaxTxnCommitTime())+1L;
+        }
+        // Get the time difference required
+        long diffTime = toTimeExclusive - fromTimeInclusive;
+        if (diffTime <= 0)
+        {
+            // There can be no results
+            return Collections.emptyList();
+        }
+        
         // Make sure that we have at least one entry in the exclude list
         final List<Long> excludeTxnIdsInner = new ArrayList<Long>(excludeTxnIds == null ? 1 : excludeTxnIds.size());
         if (excludeTxnIds == null || excludeTxnIds.isEmpty())
@@ -3104,34 +3157,71 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         {
             excludeServerIds.add(SERVER_ID_DUD);
         }
-        HibernateCallback callback = new HibernateCallback()
+        
+        List<Transaction> results = new ArrayList<Transaction>(count);
+        // Each query must be constrained in the time range,
+        // so query larger and larger sets until enough results are retrieved.
+        long iteration = 0L;
+        long queryFromTimeInclusive = fromTimeInclusive;
+        long queryToTimeExclusive = fromTimeInclusive;
+        int queryCount = count;
+        while ((results.size() < count) && (queryToTimeExclusive <= toTimeExclusive))
         {
-            public Object doInHibernate(Session session)
+            iteration++;
+            queryFromTimeInclusive = queryToTimeExclusive;
+            queryToTimeExclusive += (iteration * MIN_TIME_QUERY_RANGE);
+            queryCount = count - results.size();
+        
+            final long innerQueryFromTimeInclusive = queryFromTimeInclusive;
+            final long innerQueryToTimeExclusive = queryToTimeExclusive;
+            final int innerQueryCount = queryCount;
+            HibernateCallback callback = new HibernateCallback()
             {
-                Query query = session.getNamedQuery(QUERY_GET_TXNS_BY_COMMIT_TIME_ASC);
-                query.setLong("fromTimeInclusive", fromTimeInclusive)
-                     .setLong("toTimeExclusive", toTimeExclusive)
-                     .setParameterList("excludeTxnIds", excludeTxnIdsInner)
-                     .setParameterList("excludeServerIds", excludeServerIds)
-                     .setMaxResults(count)
-                     .setReadOnly(true);
-                DirtySessionMethodInterceptor.setQueryFlushMode(session, query);
-                return query.list();
-            }
-        };
-        List<Transaction> results = (List<Transaction>) getHibernateTemplate().execute(callback);
+                public Object doInHibernate(Session session)
+                {
+                    Query query = session.getNamedQuery(QUERY_GET_TXNS_BY_COMMIT_TIME_ASC);
+                    query.setLong("fromTimeInclusive", innerQueryFromTimeInclusive)
+                         .setLong("toTimeExclusive", innerQueryToTimeExclusive)
+                         .setParameterList("excludeTxnIds", excludeTxnIdsInner)
+                         .setParameterList("excludeServerIds", excludeServerIds)
+                         .setMaxResults(innerQueryCount)
+                         .setReadOnly(true);
+                    return query.list();
+                }
+            };
+            List<Transaction> queryResults = (List<Transaction>) getHibernateTemplate().execute(callback);
+            // Copy results over
+            results.addAll(queryResults);
+        }
         // done
         return results;
     }
     
     @SuppressWarnings("unchecked")
     public List<Transaction> getTxnsByCommitTimeDescending(
-            final long fromTimeInclusive,
-            final long toTimeExclusive,
-            final int count,
+            long fromTimeInclusive,
+            long toTimeExclusive,
+            int count,
             List<Long> excludeTxnIds,
             boolean remoteOnly)
     {
+        // Start with some sane defaults
+        if (fromTimeInclusive < 0L)
+        {
+            fromTimeInclusive = getMinTxnCommitTime();
+        }
+        if (toTimeExclusive < 0L || toTimeExclusive == Long.MAX_VALUE)
+        {
+            toTimeExclusive = ((long)getMaxTxnCommitTime())+1L;
+        }
+        // Get the time difference required
+        long diffTime = toTimeExclusive - fromTimeInclusive;
+        if (diffTime <= 0)
+        {
+            // There can be no results
+            return Collections.emptyList();
+        }
+        
         // Make sure that we have at least one entry in the exclude list
         final List<Long> excludeTxnIdsInner = new ArrayList<Long>(excludeTxnIds == null ? 1 : excludeTxnIds.size());
         if (excludeTxnIds == null || excludeTxnIds.isEmpty())
@@ -3161,22 +3251,44 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         {
             excludeServerIds.add(SERVER_ID_DUD);
         }
-        HibernateCallback callback = new HibernateCallback()
+        
+        
+
+        List<Transaction> results = new ArrayList<Transaction>(count);
+        // Each query must be constrained in the time range,
+        // so query larger and larger sets until enough results are retrieved.
+        long iteration = 0L;
+        long queryFromTimeInclusive = toTimeExclusive;
+        long queryToTimeExclusive = toTimeExclusive;
+        int queryCount = count;
+        while ((results.size() < count) && (queryFromTimeInclusive >= fromTimeInclusive))
         {
-            public Object doInHibernate(Session session)
+            iteration++;
+            queryToTimeExclusive = queryFromTimeInclusive;
+            queryFromTimeInclusive -= (iteration * MIN_TIME_QUERY_RANGE);
+            queryCount = count - results.size();
+        
+            final long innerQueryFromTimeInclusive = queryFromTimeInclusive;
+            final long innerQueryToTimeExclusive = queryToTimeExclusive;
+            final int innerQueryCount = queryCount;
+            HibernateCallback callback = new HibernateCallback()
             {
-                Query query = session.getNamedQuery(QUERY_GET_TXNS_BY_COMMIT_TIME_DESC);
-                query.setLong("fromTimeInclusive", fromTimeInclusive)
-                     .setLong("toTimeExclusive", toTimeExclusive)
-                     .setParameterList("excludeTxnIds", excludeTxnIdsInner)
-                     .setParameterList("excludeServerIds", excludeServerIds)
-                     .setMaxResults(count)
-                     .setReadOnly(true);
-                DirtySessionMethodInterceptor.setQueryFlushMode(session, query);
-                return query.list();
-            }
-        };
-        List<Transaction> results = (List<Transaction>) getHibernateTemplate().execute(callback);
+                public Object doInHibernate(Session session)
+                {
+                    Query query = session.getNamedQuery(QUERY_GET_TXNS_BY_COMMIT_TIME_DESC);
+                    query.setLong("fromTimeInclusive", innerQueryFromTimeInclusive)
+                         .setLong("toTimeExclusive", innerQueryToTimeExclusive)
+                         .setParameterList("excludeTxnIds", excludeTxnIdsInner)
+                         .setParameterList("excludeServerIds", excludeServerIds)
+                         .setMaxResults(innerQueryCount)
+                         .setReadOnly(true);
+                    return query.list();
+                }
+            };
+            List<Transaction> queryResults = (List<Transaction>) getHibernateTemplate().execute(callback);
+            // Copy results over
+            results.addAll(queryResults);
+        }
         // done
         return results;
     }

@@ -121,30 +121,30 @@ public class QueryTestX extends BaseCMISTest
     public void test_ALLOWED_CHILD_OBJECT_TYPES()
     {
         testQuery("SELECT AllowedChildObjectTypeIds FROM Folder WHERE AllowedChildObjectTypeIds =  'test'", 0, false, "AllowedChildObjectTypeIds", new String(), false);
-        testQuery("SELECT AllowedChildObjectTypeIds FROM Folder WHERE AllowedChildObjectTypeIds <> 'test'", 34, false, "AllowedChildObjectTypeIds", new String(), false);
+        testQuery("SELECT AllowedChildObjectTypeIds FROM Folder WHERE AllowedChildObjectTypeIds <> 'test'", 33, false, "AllowedChildObjectTypeIds", new String(), false);
         testQuery("SELECT AllowedChildObjectTypeIds FROM Folder WHERE AllowedChildObjectTypeIds <  'test'", 0, false, "AllowedChildObjectTypeIds", new String(), false);
         testQuery("SELECT AllowedChildObjectTypeIds FROM Folder WHERE AllowedChildObjectTypeIds <= 'test'", 0, false, "AllowedChildObjectTypeIds", new String(), false);
         testQuery("SELECT AllowedChildObjectTypeIds FROM Folder WHERE AllowedChildObjectTypeIds >  'test'", 0, false, "AllowedChildObjectTypeIds", new String(), false);
         testQuery("SELECT AllowedChildObjectTypeIds FROM Folder WHERE AllowedChildObjectTypeIds >= 'test'", 0, false, "AllowedChildObjectTypeIds", new String(), false);
 
         testQuery("SELECT AllowedChildObjectTypeIds FROM Folder WHERE AllowedChildObjectTypeIds IN     ('test')", 0, false, "AllowedChildObjectTypeIds", new String(), false);
-        testQuery("SELECT AllowedChildObjectTypeIds FROM Folder WHERE AllowedChildObjectTypeIds NOT IN ('test')", 34, false, "AllowedChildObjectTypeIds", new String(), false);
+        testQuery("SELECT AllowedChildObjectTypeIds FROM Folder WHERE AllowedChildObjectTypeIds NOT IN ('test')", 33, false, "AllowedChildObjectTypeIds", new String(), false);
 
         testQuery("SELECT AllowedChildObjectTypeIds FROM Folder WHERE AllowedChildObjectTypeIds     LIKE 'test'", 0, false, "AllowedChildObjectTypeIds", new String(), false);
         testQuery("SELECT AllowedChildObjectTypeIds FROM Folder WHERE AllowedChildObjectTypeIds NOT LIKE 'test'", 0, false, "AllowedChildObjectTypeIds", new String(), false);
 
         testQuery("SELECT AllowedChildObjectTypeIds FROM Folder WHERE AllowedChildObjectTypeIds IS NOT NULL", 0, false, "AllowedChildObjectTypeIds", new String(), false);
-        testQuery("SELECT AllowedChildObjectTypeIds FROM Folder WHERE AllowedChildObjectTypeIds IS     NULL", 34, false, "AllowedChildObjectTypeIds", new String(), false);
+        testQuery("SELECT AllowedChildObjectTypeIds FROM Folder WHERE AllowedChildObjectTypeIds IS     NULL", 33, false, "AllowedChildObjectTypeIds", new String(), false);
 
         testQuery("SELECT AllowedChildObjectTypeIds FROM Folder WHERE 'test' =  ANY AllowedChildObjectTypeIds", 0, false, "AllowedChildObjectTypeIds", new String(), false);
-        testQuery("SELECT AllowedChildObjectTypeIds FROM Folder WHERE 'test' <> ANY AllowedChildObjectTypeIds", 34, false, "AllowedChildObjectTypeIds", new String(), false);
+        testQuery("SELECT AllowedChildObjectTypeIds FROM Folder WHERE 'test' <> ANY AllowedChildObjectTypeIds", 33, false, "AllowedChildObjectTypeIds", new String(), false);
         testQuery("SELECT AllowedChildObjectTypeIds FROM Folder WHERE 'test' <  ANY AllowedChildObjectTypeIds", 0, false, "AllowedChildObjectTypeIds", new String(), false);
         testQuery("SELECT AllowedChildObjectTypeIds FROM Folder WHERE 'test' <= ANY AllowedChildObjectTypeIds", 0, false, "AllowedChildObjectTypeIds", new String(), false);
         testQuery("SELECT AllowedChildObjectTypeIds FROM Folder WHERE 'test' >  ANY AllowedChildObjectTypeIds", 0, false, "AllowedChildObjectTypeIds", new String(), false);
         testQuery("SELECT AllowedChildObjectTypeIds FROM Folder WHERE 'test' >= ANY AllowedChildObjectTypeIds", 0, false, "AllowedChildObjectTypeIds", new String(), false);
 
         testQuery("SELECT AllowedChildObjectTypeIds FROM Folder WHERE ANY AllowedChildObjectTypeIds IN     ('test')", 0, false, "AllowedChildObjectTypeIds", new String(), false);
-        testQuery("SELECT AllowedChildObjectTypeIds FROM Folder WHERE ANY AllowedChildObjectTypeIds NOT IN ('test')", 34, false, "AllowedChildObjectTypeIds", new String(), false);
+        testQuery("SELECT AllowedChildObjectTypeIds FROM Folder WHERE ANY AllowedChildObjectTypeIds NOT IN ('test')", 33, false, "AllowedChildObjectTypeIds", new String(), false);
     }
     
     public void test_PARENT()
@@ -152,30 +152,30 @@ public class QueryTestX extends BaseCMISTest
         NodeRef rootNode = cmisService.getDefaultRootNodeRef();
         
         testQuery("SELECT ParentId FROM Folder WHERE ParentId =  '" + rootNode.toString() + "'", 4, false, "ParentId", new String(), false);
-        testQuery("SELECT ParentId FROM Folder WHERE ParentId <> '" + rootNode.toString() + "'", 30, false, "ParentId", new String(), false);
+        testQuery("SELECT ParentId FROM Folder WHERE ParentId <> '" + rootNode.toString() + "'", 29, false, "ParentId", new String(), false);
         testQuery("SELECT ParentId FROM Folder WHERE ParentId <  '" + rootNode.toString() + "'", 0, false, "ParentId", new String(), true);
         testQuery("SELECT ParentId FROM Folder WHERE ParentId <= '" + rootNode.toString() + "'", 0, false, "ParentId", new String(), true);
         testQuery("SELECT ParentId FROM Folder WHERE ParentId >  '" + rootNode.toString() + "'", 0, false, "ParentId", new String(), true);
         testQuery("SELECT ParentId FROM Folder WHERE ParentId >= '" + rootNode.toString() + "'", 0, false, "ParentId", new String(), true);
 
         testQuery("SELECT ParentId FROM Folder WHERE ParentId IN     ('" + rootNode.toString() + "')", 4, false, "ParentId", new String(), false);
-        testQuery("SELECT ParentId FROM Folder WHERE ParentId NOT IN ('" + rootNode.toString() + "')", 30, false, "ParentId", new String(), false);
+        testQuery("SELECT ParentId FROM Folder WHERE ParentId NOT IN ('" + rootNode.toString() + "')", 29, false, "ParentId", new String(), false);
 
         testQuery("SELECT ParentId FROM Folder WHERE ParentId     LIKE '" + rootNode.toString() + "'", 4, false, "ParentId", new String(), false);
-        testQuery("SELECT ParentId FROM Folder WHERE ParentId NOT LIKE '" + rootNode.toString() + "'", 30, false, "ParentId", new String(), false);
+        testQuery("SELECT ParentId FROM Folder WHERE ParentId NOT LIKE '" + rootNode.toString() + "'", 29, false, "ParentId", new String(), false);
 
-        testQuery("SELECT ParentId FROM Folder WHERE ParentId IS NOT NULL", 34, false, "ParentId", new String(), false);
+        testQuery("SELECT ParentId FROM Folder WHERE ParentId IS NOT NULL", 33, false, "ParentId", new String(), false);
         testQuery("SELECT ParentId FROM Folder WHERE ParentId IS     NULL", 0, false, "ParentId", new String(), false);
 
         testQuery("SELECT ParentId FROM Folder WHERE '" + rootNode.toString() + "' =  ANY ParentId", 4, false, "ParentId", new String(), false);
-        testQuery("SELECT ParentId FROM Folder WHERE '" + rootNode.toString() + "' <> ANY ParentId", 30, false, "ParentId", new String(), false);
+        testQuery("SELECT ParentId FROM Folder WHERE '" + rootNode.toString() + "' <> ANY ParentId", 29, false, "ParentId", new String(), false);
         testQuery("SELECT ParentId FROM Folder WHERE '" + rootNode.toString() + "' <  ANY ParentId", 0, false, "ParentId", new String(), true);
         testQuery("SELECT ParentId FROM Folder WHERE '" + rootNode.toString() + "' <= ANY ParentId", 0, false, "ParentId", new String(), true);
         testQuery("SELECT ParentId FROM Folder WHERE '" + rootNode.toString() + "' >  ANY ParentId", 0, false, "ParentId", new String(), true);
         testQuery("SELECT ParentId FROM Folder WHERE '" + rootNode.toString() + "' >= ANY ParentId", 0, false, "ParentId", new String(), true);
 
         testQuery("SELECT ParentId FROM Folder WHERE ANY ParentId IN     ('" + rootNode.toString() + "')", 4, false, "ParentId", new String(), false);
-        testQuery("SELECT ParentId FROM Folder WHERE ANY ParentId NOT IN ('" + rootNode.toString() + "')", 30, false, "ParentId", new String(), false);
+        testQuery("SELECT ParentId FROM Folder WHERE ANY ParentId NOT IN ('" + rootNode.toString() + "')", 29, false, "ParentId", new String(), false);
     }
 
     
@@ -622,30 +622,30 @@ public class QueryTestX extends BaseCMISTest
     public void test_folder_NAME()
     {
         testQuery("SELECT Name FROM Folder WHERE Name =  'company'", 1, false, "ObjectId", new String(), false);
-        testQuery("SELECT Name FROM Folder WHERE Name <> 'company'", 33, false, "ObjectId", new String(), false);
+        testQuery("SELECT Name FROM Folder WHERE Name <> 'company'", 32, false, "ObjectId", new String(), false);
         testQuery("SELECT Name FROM Folder WHERE Name <  'company'", 6, false, "ObjectId", new String(), false);
         testQuery("SELECT Name FROM Folder WHERE Name <= 'company'", 7, false, "ObjectId", new String(), false);
-        testQuery("SELECT Name FROM Folder WHERE Name >  'company'", 31, false, "ObjectId", new String(), false);
-        testQuery("SELECT Name FROM Folder WHERE Name >= 'company'", 31, false, "ObjectId", new String(), false);
+        testQuery("SELECT Name FROM Folder WHERE Name >  'company'", 30, false, "ObjectId", new String(), false);
+        testQuery("SELECT Name FROM Folder WHERE Name >= 'company'", 30, false, "ObjectId", new String(), false);
 
         testQuery("SELECT Name FROM Folder WHERE Name IN     ('company')", 1, false, "ObjectId", new String(), false);
-        testQuery("SELECT Name FROM Folder WHERE Name NOT IN ('company')", 33, false, "ObjectId", new String(), false);
+        testQuery("SELECT Name FROM Folder WHERE Name NOT IN ('company')", 32, false, "ObjectId", new String(), false);
 
         testQuery("SELECT Name FROM Folder WHERE Name     LIKE 'company'", 1, false, "ObjectId", new String(), false);
-        testQuery("SELECT Name FROM Folder WHERE Name NOT LIKE 'company'", 33, false, "ObjectId", new String(), false);
+        testQuery("SELECT Name FROM Folder WHERE Name NOT LIKE 'company'", 32, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT Name FROM Folder WHERE Name IS NOT NULL", 34, false, "ObjectId", new String(), false);
+        testQuery("SELECT Name FROM Folder WHERE Name IS NOT NULL", 33, false, "ObjectId", new String(), false);
         testQuery("SELECT Name FROM Folder WHERE Name IS     NULL", 0, false, "ObjectId", new String(), false);
 
         testQuery("SELECT Name FROM Folder WHERE 'company' =  ANY Name", 1, false, "ObjectId", new String(), false);
-        testQuery("SELECT Name FROM Folder WHERE 'company' <> ANY Name", 33, false, "ObjectId", new String(), false);
+        testQuery("SELECT Name FROM Folder WHERE 'company' <> ANY Name", 32, false, "ObjectId", new String(), false);
         testQuery("SELECT Name FROM Folder WHERE 'company' <  ANY Name", 6, false, "ObjectId", new String(), false);
         testQuery("SELECT Name FROM Folder WHERE 'company' <= ANY Name", 7, false, "ObjectId", new String(), false);
-        testQuery("SELECT Name FROM Folder WHERE 'company' >  ANY Name", 31, false, "ObjectId", new String(), false);
-        testQuery("SELECT Name FROM Folder WHERE 'company' >= ANY Name", 31, false, "ObjectId", new String(), false);
+        testQuery("SELECT Name FROM Folder WHERE 'company' >  ANY Name", 30, false, "ObjectId", new String(), false);
+        testQuery("SELECT Name FROM Folder WHERE 'company' >= ANY Name", 30, false, "ObjectId", new String(), false);
 
         testQuery("SELECT Name FROM Folder WHERE ANY Name IN     ('company')", 1, false, "ObjectId", new String(), false);
-        testQuery("SELECT Name FROM Folder WHERE ANY Name NOT IN ('company')", 33, false, "ObjectId", new String(), false);
+        testQuery("SELECT Name FROM Folder WHERE ANY Name NOT IN ('company')", 32, false, "ObjectId", new String(), false);
     }
 
     public void test_document_Name()
@@ -680,30 +680,30 @@ public class QueryTestX extends BaseCMISTest
     public void test_CHANGE_TOKEN()
     {
         testQuery("SELECT ChangeToken FROM Folder WHERE ChangeToken =  'test'", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT ChangeToken FROM Folder WHERE ChangeToken <> 'test'", 34, false, "ObjectId", new String(), false);
+        testQuery("SELECT ChangeToken FROM Folder WHERE ChangeToken <> 'test'", 33, false, "ObjectId", new String(), false);
         testQuery("SELECT ChangeToken FROM Folder WHERE ChangeToken <  'test'", 0, false, "ObjectId", new String(), false);
         testQuery("SELECT ChangeToken FROM Folder WHERE ChangeToken <= 'test'", 0, false, "ObjectId", new String(), false);
         testQuery("SELECT ChangeToken FROM Folder WHERE ChangeToken >  'test'", 0, false, "ObjectId", new String(), false);
         testQuery("SELECT ChangeToken FROM Folder WHERE ChangeToken >= 'test'", 0, false, "ObjectId", new String(), false);
 
         testQuery("SELECT ChangeToken FROM Folder WHERE ChangeToken IN     ('test')", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT ChangeToken FROM Folder WHERE ChangeToken NOT IN ('test')", 34, false, "ObjectId", new String(), false);
+        testQuery("SELECT ChangeToken FROM Folder WHERE ChangeToken NOT IN ('test')", 33, false, "ObjectId", new String(), false);
 
         testQuery("SELECT ChangeToken FROM Folder WHERE ChangeToken     LIKE 'test'", 0, false, "ObjectId", new String(), false);
         testQuery("SELECT ChangeToken FROM Folder WHERE ChangeToken NOT LIKE 'test'", 0, false, "ObjectId", new String(), false);
 
         testQuery("SELECT ChangeToken FROM Folder WHERE ChangeToken IS NOT NULL", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT ChangeToken FROM Folder WHERE ChangeToken IS     NULL", 34, false, "ObjectId", new String(), false);
+        testQuery("SELECT ChangeToken FROM Folder WHERE ChangeToken IS     NULL", 33, false, "ObjectId", new String(), false);
 
         testQuery("SELECT ChangeToken FROM Folder WHERE 'test' =  ANY ChangeToken", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT ChangeToken FROM Folder WHERE 'test' <> ANY ChangeToken", 34, false, "ObjectId", new String(), false);
+        testQuery("SELECT ChangeToken FROM Folder WHERE 'test' <> ANY ChangeToken", 33, false, "ObjectId", new String(), false);
         testQuery("SELECT ChangeToken FROM Folder WHERE 'test' <  ANY ChangeToken", 0, false, "ObjectId", new String(), false);
         testQuery("SELECT ChangeToken FROM Folder WHERE 'test' <= ANY ChangeToken", 0, false, "ObjectId", new String(), false);
         testQuery("SELECT ChangeToken FROM Folder WHERE 'test' >  ANY ChangeToken", 0, false, "ObjectId", new String(), false);
         testQuery("SELECT ChangeToken FROM Folder WHERE 'test' >= ANY ChangeToken", 0, false, "ObjectId", new String(), false);
 
         testQuery("SELECT ChangeToken FROM Folder WHERE ANY ChangeToken IN     ('test')", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT ChangeToken FROM Folder WHERE ANY ChangeToken NOT IN ('test')", 34, false, "ObjectId", new String(), false);
+        testQuery("SELECT ChangeToken FROM Folder WHERE ANY ChangeToken NOT IN ('test')", 33, false, "ObjectId", new String(), false);
     }
 
     public void test_LAST_MODIFICATION_DATE()
@@ -1031,30 +1031,30 @@ public class QueryTestX extends BaseCMISTest
 
         // FOLDER
 
-        testQuery("SELECT ObjectTypeId FROM Folder WHERE ObjectTypeId =  'Folder'", 34, false, "ObjectId", new String(), false);
+        testQuery("SELECT ObjectTypeId FROM Folder WHERE ObjectTypeId =  'Folder'", 33, false, "ObjectId", new String(), false);
         testQuery("SELECT ObjectTypeId FROM Folder WHERE ObjectTypeId <> 'Folder'", 0, false, "ObjectId", new String(), false);
         testQuery("SELECT ObjectTypeId FROM Folder WHERE ObjectTypeId <  'Folder'", 0, false, "ObjectId", new String(), true);
         testQuery("SELECT ObjectTypeId FROM Folder WHERE ObjectTypeId <= 'Folder'", 0, false, "ObjectId", new String(), true);
         testQuery("SELECT ObjectTypeId FROM Folder WHERE ObjectTypeId >  'Folder'", 0, false, "ObjectId", new String(), true);
         testQuery("SELECT ObjectTypeId FROM Folder WHERE ObjectTypeId >= 'Folder'", 0, false, "ObjectId", new String(), true);
 
-        testQuery("SELECT ObjectTypeId FROM Folder WHERE ObjectTypeId IN     ('Folder')", 34, false, "ObjectId", new String(), false);
+        testQuery("SELECT ObjectTypeId FROM Folder WHERE ObjectTypeId IN     ('Folder')", 33, false, "ObjectId", new String(), false);
         testQuery("SELECT ObjectTypeId FROM Folder WHERE ObjectTypeId NOT IN ('Folder')", 0, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT ObjectTypeId FROM Folder WHERE ObjectTypeId     LIKE 'Folder'", 34, false, "ObjectId", new String(), false);
+        testQuery("SELECT ObjectTypeId FROM Folder WHERE ObjectTypeId     LIKE 'Folder'", 33, false, "ObjectId", new String(), false);
         testQuery("SELECT ObjectTypeId FROM Folder WHERE ObjectTypeId NOT LIKE 'Folder'", 0, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT ObjectTypeId FROM Folder WHERE ObjectTypeId IS NOT NULL", 34, false, "ObjectId", new String(), false);
+        testQuery("SELECT ObjectTypeId FROM Folder WHERE ObjectTypeId IS NOT NULL", 33, false, "ObjectId", new String(), false);
         testQuery("SELECT ObjectTypeId FROM Folder WHERE ObjectTypeId IS     NULL", 0, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT ObjectTypeId FROM Folder WHERE 'Folder' =  ANY ObjectTypeId", 34, false, "ObjectId", new String(), false);
+        testQuery("SELECT ObjectTypeId FROM Folder WHERE 'Folder' =  ANY ObjectTypeId", 33, false, "ObjectId", new String(), false);
         testQuery("SELECT ObjectTypeId FROM Folder WHERE 'Folder' <> ANY ObjectTypeId", 0, false, "ObjectId", new String(), false);
         testQuery("SELECT ObjectTypeId FROM Folder WHERE 'Folder' <  ANY ObjectTypeId", 0, false, "ObjectId", new String(), true);
         testQuery("SELECT ObjectTypeId FROM Folder WHERE 'Folder' <= ANY ObjectTypeId", 0, false, "ObjectId", new String(), true);
         testQuery("SELECT ObjectTypeId FROM Folder WHERE 'Folder' >  ANY ObjectTypeId", 0, false, "ObjectId", new String(), true);
         testQuery("SELECT ObjectTypeId FROM Folder WHERE 'Folder' >= ANY ObjectTypeId", 0, false, "ObjectId", new String(), true);
 
-        testQuery("SELECT ObjectTypeId FROM Folder WHERE ANY ObjectTypeId IN     ('Folder')", 34, false, "ObjectId", new String(), false);
+        testQuery("SELECT ObjectTypeId FROM Folder WHERE ANY ObjectTypeId IN     ('Folder')", 33, false, "ObjectId", new String(), false);
         testQuery("SELECT ObjectTypeId FROM Folder WHERE ANY ObjectTypeId NOT IN ('Folder')", 0, false, "ObjectId", new String(), false);
 
         // RELATIONSHIP
@@ -1066,30 +1066,30 @@ public class QueryTestX extends BaseCMISTest
     public void test_URI()
     {
         testQuery("SELECT Uri FROM Folder WHERE Uri =  'test'", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT Uri FROM Folder WHERE Uri <> 'test'", 34, false, "ObjectId", new String(), false);
+        testQuery("SELECT Uri FROM Folder WHERE Uri <> 'test'", 33, false, "ObjectId", new String(), false);
         testQuery("SELECT Uri FROM Folder WHERE Uri <  'test'", 0, false, "ObjectId", new String(), false);
         testQuery("SELECT Uri FROM Folder WHERE Uri <= 'test'", 0, false, "ObjectId", new String(), false);
         testQuery("SELECT Uri FROM Folder WHERE Uri >  'test'", 0, false, "ObjectId", new String(), false);
         testQuery("SELECT Uri FROM Folder WHERE Uri >= 'test'", 0, false, "ObjectId", new String(), false);
 
         testQuery("SELECT Uri FROM Folder WHERE Uri IN     ('test')", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT Uri FROM Folder WHERE Uri NOT IN ('test')", 34, false, "ObjectId", new String(), false);
+        testQuery("SELECT Uri FROM Folder WHERE Uri NOT IN ('test')", 33, false, "ObjectId", new String(), false);
 
         testQuery("SELECT Uri FROM Folder WHERE Uri     LIKE 'test'", 0, false, "ObjectId", new String(), false);
         testQuery("SELECT Uri FROM Folder WHERE Uri NOT LIKE 'test'", 0, false, "ObjectId", new String(), false);
 
         testQuery("SELECT Uri FROM Folder WHERE Uri IS NOT NULL", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT Uri FROM Folder WHERE Uri IS     NULL", 34, false, "ObjectId", new String(), false);
+        testQuery("SELECT Uri FROM Folder WHERE Uri IS     NULL", 33, false, "ObjectId", new String(), false);
 
         testQuery("SELECT Uri FROM Folder WHERE 'test' =  ANY Uri", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT Uri FROM Folder WHERE 'test' <> ANY Uri", 34, false, "ObjectId", new String(), false);
+        testQuery("SELECT Uri FROM Folder WHERE 'test' <> ANY Uri", 33, false, "ObjectId", new String(), false);
         testQuery("SELECT Uri FROM Folder WHERE 'test' <  ANY Uri", 0, false, "ObjectId", new String(), false);
         testQuery("SELECT Uri FROM Folder WHERE 'test' <= ANY Uri", 0, false, "ObjectId", new String(), false);
         testQuery("SELECT Uri FROM Folder WHERE 'test' >  ANY Uri", 0, false, "ObjectId", new String(), false);
         testQuery("SELECT Uri FROM Folder WHERE 'test' >= ANY Uri", 0, false, "ObjectId", new String(), false);
 
         testQuery("SELECT Uri FROM Folder WHERE ANY Uri IN     ('test')", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT Uri FROM Folder WHERE ANY Uri NOT IN ('test')", 34, false, "ObjectId", new String(), false);
+        testQuery("SELECT Uri FROM Folder WHERE ANY Uri NOT IN ('test')", 33, false, "ObjectId", new String(), false);
     }
 
     public void test_ObjectId()
@@ -1097,33 +1097,33 @@ public class QueryTestX extends BaseCMISTest
         String companyHomeId = testQuery("SELECT ObjectId FROM Folder WHERE Name = '\"company home\"'", 1, false, "ObjectId", new String(), false);
 
         testQuery("SELECT ObjectId FROM Folder WHERE ObjectId =  '" + companyHomeId + "'", 1, false, "ObjectId", new String(), false);
-        testQuery("SELECT ObjectId FROM Folder WHERE ObjectId <> '" + companyHomeId + "'", 33, false, "ObjectId", new String(), false);
+        testQuery("SELECT ObjectId FROM Folder WHERE ObjectId <> '" + companyHomeId + "'", 32, false, "ObjectId", new String(), false);
         testQuery("SELECT ObjectId FROM Folder WHERE ObjectId <  '" + companyHomeId + "'", 0, false, "ObjectId", new String(), true);
         testQuery("SELECT ObjectId FROM Folder WHERE ObjectId <= '" + companyHomeId + "'", 0, false, "ObjectId", new String(), true);
         testQuery("SELECT ObjectId FROM Folder WHERE ObjectId >  '" + companyHomeId + "'", 0, false, "ObjectId", new String(), true);
         testQuery("SELECT ObjectId FROM Folder WHERE ObjectId >= '" + companyHomeId + "'", 0, false, "ObjectId", new String(), true);
 
         testQuery("SELECT ObjectId FROM Folder WHERE ObjectId IN     ('" + companyHomeId + "')", 1, false, "ObjectId", new String(), false);
-        testQuery("SELECT ObjectId FROM Folder WHERE ObjectId NOT IN ('" + companyHomeId + "')", 33, false, "ObjectId", new String(), false);
+        testQuery("SELECT ObjectId FROM Folder WHERE ObjectId NOT IN ('" + companyHomeId + "')", 32, false, "ObjectId", new String(), false);
 
         testQuery("SELECT ObjectId FROM Folder WHERE ObjectId     LIKE '" + companyHomeId + "'", 1, false, "ObjectId", new String(), false);
-        testQuery("SELECT ObjectId FROM Folder WHERE ObjectId NOT LIKE '" + companyHomeId + "'", 33, false, "ObjectId", new String(), false);
+        testQuery("SELECT ObjectId FROM Folder WHERE ObjectId NOT LIKE '" + companyHomeId + "'", 32, false, "ObjectId", new String(), false);
 
         testQuery("SELECT ObjectId FROM Folder WHERE IN_FOLDER('" + companyHomeId + "')", 4, false, "ObjectId", new String(), false);
-        testQuery("SELECT ObjectId FROM Folder WHERE IN_TREE  ('" + companyHomeId + "')", 33, false, "ObjectId", new String(), false);
+        testQuery("SELECT ObjectId FROM Folder WHERE IN_TREE  ('" + companyHomeId + "')", 32, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT ObjectId FROM Folder WHERE ObjectId IS NOT NULL", 34, false, "ObjectId", new String(), false);
+        testQuery("SELECT ObjectId FROM Folder WHERE ObjectId IS NOT NULL", 33, false, "ObjectId", new String(), false);
         testQuery("SELECT ObjectId FROM Folder WHERE ObjectId IS     NULL", 0, false, "ObjectId", new String(), false);
 
         testQuery("SELECT ObjectId FROM Folder WHERE '" + companyHomeId + "' =  ANY ObjectId", 1, false, "ObjectId", new String(), false);
-        testQuery("SELECT ObjectId FROM Folder WHERE '" + companyHomeId + "' <> ANY ObjectId", 33, false, "ObjectId", new String(), false);
+        testQuery("SELECT ObjectId FROM Folder WHERE '" + companyHomeId + "' <> ANY ObjectId", 32, false, "ObjectId", new String(), false);
         testQuery("SELECT ObjectId FROM Folder WHERE '" + companyHomeId + "' <  ANY ObjectId", 0, false, "ObjectId", new String(), true);
         testQuery("SELECT ObjectId FROM Folder WHERE '" + companyHomeId + "' <= ANY ObjectId", 0, false, "ObjectId", new String(), true);
         testQuery("SELECT ObjectId FROM Folder WHERE '" + companyHomeId + "' >  ANY ObjectId", 0, false, "ObjectId", new String(), true);
         testQuery("SELECT ObjectId FROM Folder WHERE '" + companyHomeId + "' >= ANY ObjectId", 0, false, "ObjectId", new String(), true);
 
         testQuery("SELECT ObjectId FROM Folder WHERE ANY ObjectId IN     ('" + companyHomeId + "')", 1, false, "ObjectId", new String(), false);
-        testQuery("SELECT ObjectId FROM Folder WHERE ANY ObjectId NOT IN ('" + companyHomeId + "')", 33, false, "ObjectId", new String(), false);
+        testQuery("SELECT ObjectId FROM Folder WHERE ANY ObjectId NOT IN ('" + companyHomeId + "')", 32, false, "ObjectId", new String(), false);
     }
 
     public void testOrderBy()
@@ -1195,7 +1195,7 @@ public class QueryTestX extends BaseCMISTest
 
         query = "SELECT * FROM Folder WHERE Name IS NOT NULL AND NOT Name = 'company'";
         rs = cmisQueryService.query(query);
-        assertEquals(33, rs.getLength());
+        assertEquals(32, rs.getLength());
         for (CMISResultSetRow row : rs)
         {
             System.out.println(row.getValue("Name") + " Score " + row.getScore() + " " + row.getScores());
@@ -1225,7 +1225,7 @@ public class QueryTestX extends BaseCMISTest
 
         query = "SELECT * FROM Folder WHERE Name IS NOT NULL AND Name <> 'company'";
         rs = cmisQueryService.query(query);
-        assertEquals(33, rs.getLength());
+        assertEquals(32, rs.getLength());
         for (CMISResultSetRow row : rs)
         {
             System.out.println(row.getValue("Name") + " Score " + row.getScore() + " " + row.getScores());
@@ -1255,7 +1255,7 @@ public class QueryTestX extends BaseCMISTest
 
         query = "SELECT * FROM Folder WHERE Name IS NOT NULL AND Name > 'company'";
         rs = cmisQueryService.query(query);
-        assertEquals(31, rs.getLength());
+        assertEquals(30, rs.getLength());
         for (CMISResultSetRow row : rs)
         {
             System.out.println(row.getValue("Name") + " Score " + row.getScore() + " " + row.getScores());
@@ -1265,7 +1265,7 @@ public class QueryTestX extends BaseCMISTest
 
         query = "SELECT * FROM Folder WHERE Name IS NOT NULL AND Name >= 'company'";
         rs = cmisQueryService.query(query);
-        assertEquals(31, rs.getLength());
+        assertEquals(30, rs.getLength());
         for (CMISResultSetRow row : rs)
         {
             System.out.println(row.getValue("Name") + " Score " + row.getScore() + " " + row.getScores());
@@ -1285,7 +1285,7 @@ public class QueryTestX extends BaseCMISTest
 
         query = "SELECT * FROM Folder WHERE Name IS NOT NULL AND Name NOT IN ('company', 'home')";
         rs = cmisQueryService.query(query);
-        assertEquals(32, rs.getLength());
+        assertEquals(31, rs.getLength());
         for (CMISResultSetRow row : rs)
         {
             System.out.println(row.getValue("Name") + " Score " + row.getScore() + " " + row.getScores());
@@ -1305,7 +1305,7 @@ public class QueryTestX extends BaseCMISTest
 
         query = "SELECT * FROM Folder WHERE Name IS NOT NULL AND ANY Name NOT IN ('company', 'home')";
         rs = cmisQueryService.query(query);
-        assertEquals(32, rs.getLength());
+        assertEquals(31, rs.getLength());
         for (CMISResultSetRow row : rs)
         {
             System.out.println(row.getValue("Name") + " Score " + row.getScore() + " " + row.getScores());
@@ -1345,7 +1345,7 @@ public class QueryTestX extends BaseCMISTest
 
         query = "SELECT * FROM Folder WHERE Name IS NOT NULL AND Name NOT LIKE 'c_m_a_y'";
         rs = cmisQueryService.query(query);
-        assertEquals(33, rs.getLength());
+        assertEquals(32, rs.getLength());
         for (CMISResultSetRow row : rs)
         {
             System.out.println(row.getValue("Name") + " Score " + row.getScore() + " " + row.getScores());
@@ -1427,7 +1427,7 @@ public class QueryTestX extends BaseCMISTest
     {
         String query = "SELECT * FROM Folder WHERE Name IS NOT NULL";
         CMISResultSet rs = cmisQueryService.query(query);
-        assertEquals(34, rs.getLength());
+        assertEquals(33, rs.getLength());
         for (CMISResultSetRow row : rs)
         {
             System.out.println(row.getValue("Name") + " Score " + row.getScore() + " " + row.getScores());
@@ -1534,7 +1534,7 @@ public class QueryTestX extends BaseCMISTest
 
         String query = "SELECT * FROM Folder WHERE IN_TREE('" + id + "')";
         CMISResultSet rs = cmisQueryService.query(query);
-        assertEquals(33, rs.getLength());
+        assertEquals(32, rs.getLength());
         for (CMISResultSetRow row : rs)
         {
             System.out.println(row.getValue("Name") + " Score " + row.getScore() + " " + row.getScores());

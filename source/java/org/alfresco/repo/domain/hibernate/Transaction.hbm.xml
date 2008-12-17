@@ -74,6 +74,20 @@
          txn.id = :txnId
    </query>
 
+   <query name="txn.GetMinCommitTime">
+      select
+         min(txn.commitTimeMs)
+      from
+         org.alfresco.repo.domain.hibernate.TransactionImpl as txn
+   </query>
+
+   <query name="txn.GetMaxCommitTime">
+      select
+         max(txn.commitTimeMs)
+      from
+         org.alfresco.repo.domain.hibernate.TransactionImpl as txn
+   </query>
+
    <query name="txn.GetTxnsByCommitTimeAsc">
       <![CDATA[
       select

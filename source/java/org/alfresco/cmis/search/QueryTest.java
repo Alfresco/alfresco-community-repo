@@ -182,147 +182,147 @@ public class QueryTestX extends BaseCMISTest
     public void test_CONTENT_STREAM_URI()
     {
         testQuery("SELECT ContentStreamUri FROM Document WHERE ContentStreamUri =  'test'", 0, false, "ContentStreamUri", new String(), false);
-        testQuery("SELECT ContentStreamUri FROM Document WHERE ContentStreamUri <> 'test'", 46, false, "ContentStreamUri", new String(), false);
+        testQuery("SELECT ContentStreamUri FROM Document WHERE ContentStreamUri <> 'test'", 45, false, "ContentStreamUri", new String(), false);
         testQuery("SELECT ContentStreamUri FROM Document WHERE ContentStreamUri <  'test'", 0, false, "ContentStreamUri", new String(), false);
         testQuery("SELECT ContentStreamUri FROM Document WHERE ContentStreamUri <= 'test'", 0, false, "ContentStreamUri", new String(), false);
         testQuery("SELECT ContentStreamUri FROM Document WHERE ContentStreamUri >  'test'", 0, false, "ContentStreamUri", new String(), false);
         testQuery("SELECT ContentStreamUri FROM Document WHERE ContentStreamUri >= 'test'", 0, false, "ContentStreamUri", new String(), false);
 
         testQuery("SELECT ContentStreamUri FROM Document WHERE ContentStreamUri IN     ('test')", 0, false, "ContentStreamUri", new String(), false);
-        testQuery("SELECT ContentStreamUri FROM Document WHERE ContentStreamUri NOT IN ('test')", 46, false, "ContentStreamUri", new String(), false);
+        testQuery("SELECT ContentStreamUri FROM Document WHERE ContentStreamUri NOT IN ('test')", 45, false, "ContentStreamUri", new String(), false);
 
         testQuery("SELECT ContentStreamUri FROM Document WHERE ContentStreamUri     LIKE 'test'", 0, false, "ContentStreamUri", new String(), false);
         testQuery("SELECT ContentStreamUri FROM Document WHERE ContentStreamUri NOT LIKE 'test'", 0, false, "ContentStreamUri", new String(), false);
 
         testQuery("SELECT ContentStreamUri FROM Document WHERE ContentStreamUri IS NOT NULL", 0, false, "ContentStreamUri", new String(), false);
-        testQuery("SELECT ContentStreamUri FROM Document WHERE ContentStreamUri IS     NULL", 46, false, "ContentStreamUri", new String(), false);
+        testQuery("SELECT ContentStreamUri FROM Document WHERE ContentStreamUri IS     NULL", 45, false, "ContentStreamUri", new String(), false);
 
         testQuery("SELECT ContentStreamUri FROM Document WHERE 'test' =  ANY ContentStreamUri", 0, false, "ContentStreamUri", new String(), false);
-        testQuery("SELECT ContentStreamUri FROM Document WHERE 'test' <> ANY ContentStreamUri", 46, false, "ContentStreamUri", new String(), false);
+        testQuery("SELECT ContentStreamUri FROM Document WHERE 'test' <> ANY ContentStreamUri", 45, false, "ContentStreamUri", new String(), false);
         testQuery("SELECT ContentStreamUri FROM Document WHERE 'test' <  ANY ContentStreamUri", 0, false, "ContentStreamUri", new String(), false);
         testQuery("SELECT ContentStreamUri FROM Document WHERE 'test' <= ANY ContentStreamUri", 0, false, "ContentStreamUri", new String(), false);
         testQuery("SELECT ContentStreamUri FROM Document WHERE 'test' >  ANY ContentStreamUri", 0, false, "ContentStreamUri", new String(), false);
         testQuery("SELECT ContentStreamUri FROM Document WHERE 'test' >= ANY ContentStreamUri", 0, false, "ContentStreamUri", new String(), false);
 
         testQuery("SELECT ContentStreamUri FROM Document WHERE ANY ContentStreamUri IN     ('test')", 0, false, "ContentStreamUri", new String(), false);
-        testQuery("SELECT ContentStreamUri FROM Document WHERE ANY ContentStreamUri NOT IN ('test')", 46, false, "ContentStreamUri", new String(), false);
+        testQuery("SELECT ContentStreamUri FROM Document WHERE ANY ContentStreamUri NOT IN ('test')", 45, false, "ContentStreamUri", new String(), false);
     }
 
     
     public void test_CONTENT_STREAM_FILENAME()
     {
-        testQuery("SELECT ContentStreamFilename FROM Document WHERE ContentStreamFilename =  'tutorial'", 1, false, "ContentStreamFilename", new String(), false);
+        testQuery("SELECT ContentStreamFilename FROM Document WHERE ContentStreamFilename =  'tutorial'", 0, false, "ContentStreamFilename", new String(), false);
         testQuery("SELECT ContentStreamFilename FROM Document WHERE ContentStreamFilename <> 'tutorial'", 45, false, "ContentStreamFilename", new String(), false);
-        testQuery("SELECT ContentStreamFilename FROM Document WHERE ContentStreamFilename <  'tutorial'", 46, false, "ContentStreamFilename", new String(), false);
-        testQuery("SELECT ContentStreamFilename FROM Document WHERE ContentStreamFilename <= 'tutorial'", 46, false, "ContentStreamFilename", new String(), false);
+        testQuery("SELECT ContentStreamFilename FROM Document WHERE ContentStreamFilename <  'tutorial'", 45, false, "ContentStreamFilename", new String(), false);
+        testQuery("SELECT ContentStreamFilename FROM Document WHERE ContentStreamFilename <= 'tutorial'", 45, false, "ContentStreamFilename", new String(), false);
         testQuery("SELECT ContentStreamFilename FROM Document WHERE ContentStreamFilename >  'tutorial'", 8, true, "ContentStreamFilename", new String(), false);
-        testQuery("SELECT ContentStreamFilename FROM Document WHERE ContentStreamFilename >= 'tutorial'", 9, false, "ContentStreamFilename", new String(), false);
+        testQuery("SELECT ContentStreamFilename FROM Document WHERE ContentStreamFilename >= 'tutorial'", 8, false, "ContentStreamFilename", new String(), false);
 
-        testQuery("SELECT ContentStreamFilename FROM Document WHERE ContentStreamFilename IN     ('tutorial')", 1, false, "ContentStreamFilename", new String(), false);
+        testQuery("SELECT ContentStreamFilename FROM Document WHERE ContentStreamFilename IN     ('tutorial')", 0, false, "ContentStreamFilename", new String(), false);
         testQuery("SELECT ContentStreamFilename FROM Document WHERE ContentStreamFilename NOT IN ('tutorial')", 45, false, "ContentStreamFilename", new String(), false);
 
-        testQuery("SELECT ContentStreamFilename FROM Document WHERE ContentStreamFilename     LIKE 'tutorial'", 1, false, "ContentStreamFilename", new String(), false);
+        testQuery("SELECT ContentStreamFilename FROM Document WHERE ContentStreamFilename     LIKE 'tutorial'", 0, false, "ContentStreamFilename", new String(), false);
         testQuery("SELECT ContentStreamFilename FROM Document WHERE ContentStreamFilename NOT LIKE 'tutorial'", 45, false, "ContentStreamFilename", new String(), false);
 
-        testQuery("SELECT ContentStreamFilename FROM Document WHERE ContentStreamFilename IS NOT NULL", 46, false, "ContentStreamFilename", new String(), false);
+        testQuery("SELECT ContentStreamFilename FROM Document WHERE ContentStreamFilename IS NOT NULL", 45, false, "ContentStreamFilename", new String(), false);
         testQuery("SELECT ContentStreamFilename FROM Document WHERE ContentStreamFilename IS     NULL", 0, false, "ContentStreamFilename", new String(), false);
 
-        testQuery("SELECT ContentStreamFilename FROM Document WHERE 'tutorial' =  ANY ContentStreamFilename", 1, false, "ContentStreamFilename", new String(), false);
+        testQuery("SELECT ContentStreamFilename FROM Document WHERE 'tutorial' =  ANY ContentStreamFilename", 0, false, "ContentStreamFilename", new String(), false);
         testQuery("SELECT ContentStreamFilename FROM Document WHERE 'tutorial' <> ANY ContentStreamFilename", 45, false, "ContentStreamFilename", new String(), false);
-        testQuery("SELECT ContentStreamFilename FROM Document WHERE 'tutorial' <  ANY ContentStreamFilename", 46, false, "ContentStreamFilename", new String(), false);
-        testQuery("SELECT ContentStreamFilename FROM Document WHERE 'tutorial' <= ANY ContentStreamFilename", 46, false, "ContentStreamFilename", new String(), false);
+        testQuery("SELECT ContentStreamFilename FROM Document WHERE 'tutorial' <  ANY ContentStreamFilename", 45, false, "ContentStreamFilename", new String(), false);
+        testQuery("SELECT ContentStreamFilename FROM Document WHERE 'tutorial' <= ANY ContentStreamFilename", 45, false, "ContentStreamFilename", new String(), false);
         testQuery("SELECT ContentStreamFilename FROM Document WHERE 'tutorial' >  ANY ContentStreamFilename", 8, false, "ContentStreamFilename", new String(), false);
-        testQuery("SELECT ContentStreamFilename FROM Document WHERE 'tutorial' >= ANY ContentStreamFilename", 9, false, "ContentStreamFilename", new String(), false);
+        testQuery("SELECT ContentStreamFilename FROM Document WHERE 'tutorial' >= ANY ContentStreamFilename", 8, false, "ContentStreamFilename", new String(), false);
 
-        testQuery("SELECT ContentStreamFilename FROM Document WHERE ANY ContentStreamFilename IN     ('tutorial')", 1, false, "ContentStreamFilename", new String(), false);
+        testQuery("SELECT ContentStreamFilename FROM Document WHERE ANY ContentStreamFilename IN     ('tutorial')", 0, false, "ContentStreamFilename", new String(), false);
         testQuery("SELECT ContentStreamFilename FROM Document WHERE ANY ContentStreamFilename NOT IN ('tutorial')", 45, false, "ContentStreamFilename", new String(), false);
     }
     
     public void test_CONTENT_STREAM_MIME_TYPE()
     {
         testQuery("SELECT ContentStreamMimeType FROM Document WHERE ContentStreamMimeType =  'text/plain'", 27, false, "ContentStreamMimeType", new String(), false);
-        testQuery("SELECT ContentStreamMimeType FROM Document WHERE ContentStreamMimeType <> 'text/plain'", 19, false, "ContentStreamMimeType", new String(), false);
-        testQuery("SELECT ContentStreamMimeType FROM Document WHERE ContentStreamMimeType <  'text/plain'", 14, true, "ContentStreamMimeType", new String(), false);
-        testQuery("SELECT ContentStreamMimeType FROM Document WHERE ContentStreamMimeType <= 'text/plain'", 41, false, "ContentStreamMimeType", new String(), false);
+        testQuery("SELECT ContentStreamMimeType FROM Document WHERE ContentStreamMimeType <> 'text/plain'", 18, false, "ContentStreamMimeType", new String(), false);
+        testQuery("SELECT ContentStreamMimeType FROM Document WHERE ContentStreamMimeType <  'text/plain'", 13, true, "ContentStreamMimeType", new String(), false);
+        testQuery("SELECT ContentStreamMimeType FROM Document WHERE ContentStreamMimeType <= 'text/plain'", 40, false, "ContentStreamMimeType", new String(), false);
         testQuery("SELECT ContentStreamMimeType FROM Document WHERE ContentStreamMimeType >  'text/plain'", 5, false, "ContentStreamMimeType", new String(), false);
         testQuery("SELECT ContentStreamMimeType FROM Document WHERE ContentStreamMimeType >= 'text/plain'", 32, false, "ContentStreamMimeType", new String(), false);
 
         testQuery("SELECT ContentStreamMimeType FROM Document WHERE ContentStreamMimeType IN     ('text/plain')", 27, false, "ContentStreamMimeType", new String(), false);
-        testQuery("SELECT ContentStreamMimeType FROM Document WHERE ContentStreamMimeType NOT IN ('text/plain')", 19, false, "ContentStreamMimeType", new String(), false);
+        testQuery("SELECT ContentStreamMimeType FROM Document WHERE ContentStreamMimeType NOT IN ('text/plain')", 18, false, "ContentStreamMimeType", new String(), false);
 
         testQuery("SELECT ContentStreamMimeType FROM Document WHERE ContentStreamMimeType     LIKE 'text/plain'", 27, false, "ContentStreamMimeType", new String(), false);
-        testQuery("SELECT ContentStreamMimeType FROM Document WHERE ContentStreamMimeType NOT LIKE 'text/plain'", 19, false, "ContentStreamMimeType", new String(), false);
+        testQuery("SELECT ContentStreamMimeType FROM Document WHERE ContentStreamMimeType NOT LIKE 'text/plain'", 18, false, "ContentStreamMimeType", new String(), false);
 
-        testQuery("SELECT ContentStreamMimeType FROM Document WHERE ContentStreamMimeType IS NOT NULL", 46, false, "ContentStreamMimeType", new String(), false);
+        testQuery("SELECT ContentStreamMimeType FROM Document WHERE ContentStreamMimeType IS NOT NULL", 45, false, "ContentStreamMimeType", new String(), false);
         testQuery("SELECT ContentStreamMimeType FROM Document WHERE ContentStreamMimeType IS     NULL", 0, false, "ContentStreamMimeType", new String(), false);
 
         testQuery("SELECT ContentStreamMimeType FROM Document WHERE 'text/plain' =  ANY ContentStreamMimeType", 27, false, "ContentStreamMimeType", new String(), false);
-        testQuery("SELECT ContentStreamMimeType FROM Document WHERE 'text/plain' <> ANY ContentStreamMimeType", 19, false, "ContentStreamMimeType", new String(), false);
-        testQuery("SELECT ContentStreamMimeType FROM Document WHERE 'text/plain' <  ANY ContentStreamMimeType", 14, false, "ContentStreamMimeType", new String(), false);
-        testQuery("SELECT ContentStreamMimeType FROM Document WHERE 'text/plain' <= ANY ContentStreamMimeType", 41, false, "ContentStreamMimeType", new String(), false);
+        testQuery("SELECT ContentStreamMimeType FROM Document WHERE 'text/plain' <> ANY ContentStreamMimeType", 18, false, "ContentStreamMimeType", new String(), false);
+        testQuery("SELECT ContentStreamMimeType FROM Document WHERE 'text/plain' <  ANY ContentStreamMimeType", 13, false, "ContentStreamMimeType", new String(), false);
+        testQuery("SELECT ContentStreamMimeType FROM Document WHERE 'text/plain' <= ANY ContentStreamMimeType", 40, false, "ContentStreamMimeType", new String(), false);
         testQuery("SELECT ContentStreamMimeType FROM Document WHERE 'text/plain' >  ANY ContentStreamMimeType", 5, false, "ContentStreamMimeType", new String(), false);
         testQuery("SELECT ContentStreamMimeType FROM Document WHERE 'text/plain' >= ANY ContentStreamMimeType", 32, false, "ContentStreamMimeType", new String(), false);
 
         testQuery("SELECT ContentStreamMimeType FROM Document WHERE ANY ContentStreamMimeType IN     ('text/plain')", 27, false, "ContentStreamMimeType", new String(), false);
-        testQuery("SELECT ContentStreamMimeType FROM Document WHERE ANY ContentStreamMimeType NOT IN ('text/plain')", 19, false, "ContentStreamMimeType", new String(), false);
+        testQuery("SELECT ContentStreamMimeType FROM Document WHERE ANY ContentStreamMimeType NOT IN ('text/plain')", 18, false, "ContentStreamMimeType", new String(), false);
     }
 
     public void test_CONTENT_STREAM_LENGTH()
     {
         testQuery("SELECT ContentStreamLength FROM Document WHERE ContentStreamLength =  750", 1, false, "ContentStreamLength", new String(), false);
-        testQuery("SELECT ContentStreamLength FROM Document WHERE ContentStreamLength <> 750", 45, true, "ContentStreamLength", new String(), false);
+        testQuery("SELECT ContentStreamLength FROM Document WHERE ContentStreamLength <> 750", 44, true, "ContentStreamLength", new String(), false);
         testQuery("SELECT ContentStreamLength FROM Document WHERE ContentStreamLength <  750", 28, false, "ContentStreamLength", new String(), false);
         testQuery("SELECT ContentStreamLength FROM Document WHERE ContentStreamLength <= 750", 29, false, "ContentStreamLength", new String(), false);
-        testQuery("SELECT ContentStreamLength FROM Document WHERE ContentStreamLength >  750", 17, false, "ContentStreamLength", new String(), false);
-        testQuery("SELECT ContentStreamLength FROM Document WHERE ContentStreamLength >= 750", 18, false, "ContentStreamLength", new String(), false);
+        testQuery("SELECT ContentStreamLength FROM Document WHERE ContentStreamLength >  750", 16, false, "ContentStreamLength", new String(), false);
+        testQuery("SELECT ContentStreamLength FROM Document WHERE ContentStreamLength >= 750", 17, false, "ContentStreamLength", new String(), false);
 
         testQuery("SELECT ContentStreamLength FROM Document WHERE ContentStreamLength IN     (750)", 1, false, "ContentStreamLength", new String(), false);
-        testQuery("SELECT ContentStreamLength FROM Document WHERE ContentStreamLength NOT IN (750)", 45, false, "ContentStreamLength", new String(), false);
+        testQuery("SELECT ContentStreamLength FROM Document WHERE ContentStreamLength NOT IN (750)", 44, false, "ContentStreamLength", new String(), false);
 
         testQuery("SELECT ContentStreamLength FROM Document WHERE ContentStreamLength     LIKE '750'", 1, false, "ContentStreamLength", new String(), false);
-        testQuery("SELECT ContentStreamLength FROM Document WHERE ContentStreamLength NOT LIKE '750'", 45, false, "ContentStreamLength", new String(), false);
+        testQuery("SELECT ContentStreamLength FROM Document WHERE ContentStreamLength NOT LIKE '750'", 44, false, "ContentStreamLength", new String(), false);
 
-        testQuery("SELECT ContentStreamLength FROM Document WHERE ContentStreamLength IS NOT NULL", 46, false, "ContentStreamLength", new String(), false);
+        testQuery("SELECT ContentStreamLength FROM Document WHERE ContentStreamLength IS NOT NULL", 45, false, "ContentStreamLength", new String(), false);
         testQuery("SELECT ContentStreamLength FROM Document WHERE ContentStreamLength IS     NULL", 0, false, "ContentStreamLength", new String(), false);
 
         testQuery("SELECT ContentStreamLength FROM Document WHERE 750 =  ANY ContentStreamLength", 1, false, "ContentStreamLength", new String(), false);
-        testQuery("SELECT ContentStreamLength FROM Document WHERE 750 <> ANY ContentStreamLength", 45, false, "ContentStreamLength", new String(), false);
+        testQuery("SELECT ContentStreamLength FROM Document WHERE 750 <> ANY ContentStreamLength", 44, false, "ContentStreamLength", new String(), false);
         testQuery("SELECT ContentStreamLength FROM Document WHERE 750 <  ANY ContentStreamLength", 28, false, "ContentStreamLength", new String(), false);
         testQuery("SELECT ContentStreamLength FROM Document WHERE 750 <= ANY ContentStreamLength", 29, false, "ContentStreamLength", new String(), false);
-        testQuery("SELECT ContentStreamLength FROM Document WHERE 750 >  ANY ContentStreamLength", 17, false, "ContentStreamLength", new String(), false);
-        testQuery("SELECT ContentStreamLength FROM Document WHERE 750 >= ANY ContentStreamLength", 18, false, "ContentStreamLength", new String(), false);
+        testQuery("SELECT ContentStreamLength FROM Document WHERE 750 >  ANY ContentStreamLength", 16, false, "ContentStreamLength", new String(), false);
+        testQuery("SELECT ContentStreamLength FROM Document WHERE 750 >= ANY ContentStreamLength", 17, false, "ContentStreamLength", new String(), false);
 
         testQuery("SELECT ContentStreamLength FROM Document WHERE ANY ContentStreamLength IN     (750)", 1, false, "ContentStreamLength", new String(), false);
-        testQuery("SELECT ContentStreamLength FROM Document WHERE ANY ContentStreamLength NOT IN (750)", 45, false, "ContentStreamLength", new String(), false);
+        testQuery("SELECT ContentStreamLength FROM Document WHERE ANY ContentStreamLength NOT IN (750)", 44, false, "ContentStreamLength", new String(), false);
     }
     
     
     public void test_CONTENT_STREAM_ALLOWED()
     {
-        testQuery("SELECT ContentStreamAllowed FROM Document WHERE ContentStreamAllowed =  'ALLOWED'", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT ContentStreamAllowed FROM Document WHERE ContentStreamAllowed =  'ALLOWED'", 45, false, "ObjectId", new String(), false);
         testQuery("SELECT ContentStreamAllowed FROM Document WHERE ContentStreamAllowed <> 'ALLOWED'", 0, false, "ObjectId", new String(), false);
         testQuery("SELECT ContentStreamAllowed FROM Document WHERE ContentStreamAllowed <  'ALLOWED'", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT ContentStreamAllowed FROM Document WHERE ContentStreamAllowed <= 'ALLOWED'", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT ContentStreamAllowed FROM Document WHERE ContentStreamAllowed <= 'ALLOWED'", 45, false, "ObjectId", new String(), false);
         testQuery("SELECT ContentStreamAllowed FROM Document WHERE ContentStreamAllowed >  'ALLOWED'", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT ContentStreamAllowed FROM Document WHERE ContentStreamAllowed >= 'ALLOWED'", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT ContentStreamAllowed FROM Document WHERE ContentStreamAllowed >= 'ALLOWED'", 45, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT ContentStreamAllowed FROM Document WHERE ContentStreamAllowed IN     ('ALLOWED')", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT ContentStreamAllowed FROM Document WHERE ContentStreamAllowed IN     ('ALLOWED')", 45, false, "ObjectId", new String(), false);
         testQuery("SELECT ContentStreamAllowed FROM Document WHERE ContentStreamAllowed NOT IN ('ALLOWED')", 0, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT ContentStreamAllowed FROM Document WHERE ContentStreamAllowed     LIKE 'ALLOWED'", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT ContentStreamAllowed FROM Document WHERE ContentStreamAllowed     LIKE 'ALLOWED'", 45, false, "ObjectId", new String(), false);
         testQuery("SELECT ContentStreamAllowed FROM Document WHERE ContentStreamAllowed NOT LIKE 'ALLOWED'", 0, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT ContentStreamAllowed FROM Document WHERE ContentStreamAllowed IS NOT NULL", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT ContentStreamAllowed FROM Document WHERE ContentStreamAllowed IS NOT NULL", 45, false, "ObjectId", new String(), false);
         testQuery("SELECT ContentStreamAllowed FROM Document WHERE ContentStreamAllowed IS     NULL", 0, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT ContentStreamAllowed FROM Document WHERE 'ALLOWED' =  ANY ContentStreamAllowed", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT ContentStreamAllowed FROM Document WHERE 'ALLOWED' =  ANY ContentStreamAllowed", 45, false, "ObjectId", new String(), false);
         testQuery("SELECT ContentStreamAllowed FROM Document WHERE 'ALLOWED' <> ANY ContentStreamAllowed", 0, false, "ObjectId", new String(), false);
         testQuery("SELECT ContentStreamAllowed FROM Document WHERE 'ALLOWED' <  ANY ContentStreamAllowed", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT ContentStreamAllowed FROM Document WHERE 'ALLOWED' <= ANY ContentStreamAllowed", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT ContentStreamAllowed FROM Document WHERE 'ALLOWED' <= ANY ContentStreamAllowed", 45, false, "ObjectId", new String(), false);
         testQuery("SELECT ContentStreamAllowed FROM Document WHERE 'ALLOWED' >  ANY ContentStreamAllowed", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT ContentStreamAllowed FROM Document WHERE 'ALLOWED' >= ANY ContentStreamAllowed", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT ContentStreamAllowed FROM Document WHERE 'ALLOWED' >= ANY ContentStreamAllowed", 45, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT ContentStreamAllowed FROM Document WHERE ANY ContentStreamAllowed IN     ('ALLOWED')", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT ContentStreamAllowed FROM Document WHERE ANY ContentStreamAllowed IN     ('ALLOWED')", 45, false, "ObjectId", new String(), false);
         testQuery("SELECT ContentStreamAllowed FROM Document WHERE ANY ContentStreamAllowed NOT IN ('ALLOWED')", 0, false, "ObjectId", new String(), false);
     }
 
@@ -477,30 +477,30 @@ public class QueryTestX extends BaseCMISTest
     public void test_VERSION_LABEL()
     {
         testQuery("SELECT VersionLabel FROM Document WHERE VersionLabel =  'company'", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT VersionLabel FROM Document WHERE VersionLabel <> 'company'", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT VersionLabel FROM Document WHERE VersionLabel <> 'company'", 45, false, "ObjectId", new String(), false);
         testQuery("SELECT VersionLabel FROM Document WHERE VersionLabel <  'company'", 0, false, "ObjectId", new String(), false);
         testQuery("SELECT VersionLabel FROM Document WHERE VersionLabel <= 'company'", 0, false, "ObjectId", new String(), false);
         testQuery("SELECT VersionLabel FROM Document WHERE VersionLabel >  'company'", 0, false, "ObjectId", new String(), false);
         testQuery("SELECT VersionLabel FROM Document WHERE VersionLabel >= 'company'", 0, false, "ObjectId", new String(), false);
 
         testQuery("SELECT VersionLabel FROM Document WHERE VersionLabel IN     ('company')", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT VersionLabel FROM Document WHERE VersionLabel NOT IN ('company')", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT VersionLabel FROM Document WHERE VersionLabel NOT IN ('company')", 45, false, "ObjectId", new String(), false);
 
         testQuery("SELECT VersionLabel FROM Document WHERE VersionLabel     LIKE 'company'", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT VersionLabel FROM Document WHERE VersionLabel NOT LIKE 'company'", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT VersionLabel FROM Document WHERE VersionLabel NOT LIKE 'company'", 45, false, "ObjectId", new String(), false);
 
         testQuery("SELECT VersionLabel FROM Document WHERE VersionLabel IS NOT NULL", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT VersionLabel FROM Document WHERE VersionLabel IS     NULL", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT VersionLabel FROM Document WHERE VersionLabel IS     NULL", 45, false, "ObjectId", new String(), false);
 
         testQuery("SELECT VersionLabel FROM Document WHERE 'company' =  ANY VersionLabel", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT VersionLabel FROM Document WHERE 'company' <> ANY VersionLabel", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT VersionLabel FROM Document WHERE 'company' <> ANY VersionLabel", 45, false, "ObjectId", new String(), false);
         testQuery("SELECT VersionLabel FROM Document WHERE 'company' <  ANY VersionLabel", 0, false, "ObjectId", new String(), false);
         testQuery("SELECT VersionLabel FROM Document WHERE 'company' <= ANY VersionLabel", 0, false, "ObjectId", new String(), false);
         testQuery("SELECT VersionLabel FROM Document WHERE 'company' >  ANY VersionLabel", 0, false, "ObjectId", new String(), false);
         testQuery("SELECT VersionLabel FROM Document WHERE 'company' >= ANY VersionLabel", 0, false, "ObjectId", new String(), false);
 
         testQuery("SELECT VersionLabel FROM Document WHERE ANY VersionLabel IN     ('company')", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT VersionLabel FROM Document WHERE ANY VersionLabel NOT IN ('company')", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT VersionLabel FROM Document WHERE ANY VersionLabel NOT IN ('company')", 45, false, "ObjectId", new String(), false);
     }
 
     public void test_IS_LATEST_MAJOR_VERSION()
@@ -650,30 +650,30 @@ public class QueryTestX extends BaseCMISTest
 
     public void test_document_Name()
     {
-        testQuery("SELECT Name FROM Document WHERE Name =  'tutorial'", 1, false, "Name", new String(), false);
+        testQuery("SELECT Name FROM Document WHERE Name =  'tutorial'", 0, false, "Name", new String(), false);
         testQuery("SELECT Name FROM Document WHERE Name <> 'tutorial'", 45, false, "Name", new String(), false);
-        testQuery("SELECT Name FROM Document WHERE Name <  'tutorial'", 46, false, "Name", new String(), false);
-        testQuery("SELECT Name FROM Document WHERE Name <= 'tutorial'", 46, false, "Name", new String(), false);
+        testQuery("SELECT Name FROM Document WHERE Name <  'tutorial'", 45, false, "Name", new String(), false);
+        testQuery("SELECT Name FROM Document WHERE Name <= 'tutorial'", 45, false, "Name", new String(), false);
         testQuery("SELECT Name FROM Document WHERE Name >  'tutorial'", 8, true, "Name", new String(), false);
-        testQuery("SELECT Name FROM Document WHERE Name >= 'tutorial'", 9, false, "Name", new String(), false);
+        testQuery("SELECT Name FROM Document WHERE Name >= 'tutorial'", 8, false, "Name", new String(), false);
 
-        testQuery("SELECT Name FROM Document WHERE Name IN     ('tutorial')", 1, false, "Name", new String(), false);
+        testQuery("SELECT Name FROM Document WHERE Name IN     ('tutorial')", 0, false, "Name", new String(), false);
         testQuery("SELECT Name FROM Document WHERE Name NOT IN ('tutorial')", 45, false, "Name", new String(), false);
 
-        testQuery("SELECT Name FROM Document WHERE Name     LIKE 'tutorial'", 1, false, "Name", new String(), false);
+        testQuery("SELECT Name FROM Document WHERE Name     LIKE 'tutorial'", 0, false, "Name", new String(), false);
         testQuery("SELECT Name FROM Document WHERE Name NOT LIKE 'tutorial'", 45, false, "Name", new String(), false);
 
-        testQuery("SELECT Name FROM Document WHERE Name IS NOT NULL", 46, false, "Name", new String(), false);
+        testQuery("SELECT Name FROM Document WHERE Name IS NOT NULL", 45, false, "Name", new String(), false);
         testQuery("SELECT Name FROM Document WHERE Name IS     NULL", 0, false, "Name", new String(), false);
 
-        testQuery("SELECT Name FROM Document WHERE 'tutorial' =  ANY Name", 1, false, "Name", new String(), false);
+        testQuery("SELECT Name FROM Document WHERE 'tutorial' =  ANY Name", 0, false, "Name", new String(), false);
         testQuery("SELECT Name FROM Document WHERE 'tutorial' <> ANY Name", 45, false, "Name", new String(), false);
-        testQuery("SELECT Name FROM Document WHERE 'tutorial' <  ANY Name", 46, false, "Name", new String(), false);
-        testQuery("SELECT Name FROM Document WHERE 'tutorial' <= ANY Name", 46, false, "Name", new String(), false);
+        testQuery("SELECT Name FROM Document WHERE 'tutorial' <  ANY Name", 45, false, "Name", new String(), false);
+        testQuery("SELECT Name FROM Document WHERE 'tutorial' <= ANY Name", 45, false, "Name", new String(), false);
         testQuery("SELECT Name FROM Document WHERE 'tutorial' >  ANY Name", 8, false, "Name", new String(), false);
-        testQuery("SELECT Name FROM Document WHERE 'tutorial' >= ANY Name", 9, false, "Name", new String(), false);
+        testQuery("SELECT Name FROM Document WHERE 'tutorial' >= ANY Name", 8, false, "Name", new String(), false);
 
-        testQuery("SELECT Name FROM Document WHERE ANY Name IN     ('tutorial')", 1, false, "Name", new String(), false);
+        testQuery("SELECT Name FROM Document WHERE ANY Name IN     ('tutorial')", 0, false, "Name", new String(), false);
         testQuery("SELECT Name FROM Document WHERE ANY Name NOT IN ('tutorial')", 45, false, "Name", new String(), false);
     }
 
@@ -727,30 +727,30 @@ public class QueryTestX extends BaseCMISTest
 
         // Today (assuming al ws created today)
 
-        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate =  '" + sDate + "'", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate =  '" + sDate + "'", 45, false, "ObjectId", new String(), false);
         testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate <> '" + sDate + "'", 0, false, "ObjectId", new String(), false);
         testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate <  '" + sDate + "'", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate <= '" + sDate + "'", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate <= '" + sDate + "'", 45, false, "ObjectId", new String(), false);
         testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate >  '" + sDate + "'", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate >= '" + sDate + "'", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate >= '" + sDate + "'", 45, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate IN     ('" + sDate + "')", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate IN     ('" + sDate + "')", 45, false, "ObjectId", new String(), false);
         testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate NOT IN ('" + sDate + "')", 0, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate     LIKE '" + sDate + "'", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate     LIKE '" + sDate + "'", 45, false, "ObjectId", new String(), false);
         testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate NOT LIKE '" + sDate + "'", 0, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate IS NOT NULL", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate IS NOT NULL", 45, false, "ObjectId", new String(), false);
         testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate IS     NULL", 0, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT LastModificationDate FROM Document WHERE '" + sDate + "' =  ANY LastModificationDate", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE '" + sDate + "' =  ANY LastModificationDate", 45, false, "ObjectId", new String(), false);
         testQuery("SELECT LastModificationDate FROM Document WHERE '" + sDate + "' <> ANY LastModificationDate", 0, false, "ObjectId", new String(), false);
         testQuery("SELECT LastModificationDate FROM Document WHERE '" + sDate + "' <  ANY LastModificationDate", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT LastModificationDate FROM Document WHERE '" + sDate + "' <= ANY LastModificationDate", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE '" + sDate + "' <= ANY LastModificationDate", 45, false, "ObjectId", new String(), false);
         testQuery("SELECT LastModificationDate FROM Document WHERE '" + sDate + "' >  ANY LastModificationDate", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT LastModificationDate FROM Document WHERE '" + sDate + "' >= ANY LastModificationDate", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE '" + sDate + "' >= ANY LastModificationDate", 45, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT LastModificationDate FROM Document WHERE ANY LastModificationDate IN     ('" + sDate + "')", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE ANY LastModificationDate IN     ('" + sDate + "')", 45, false, "ObjectId", new String(), false);
         testQuery("SELECT LastModificationDate FROM Document WHERE ANY LastModificationDate NOT IN ('" + sDate + "')", 0, false, "ObjectId", new String(), false);
 
         // using yesterday
@@ -762,30 +762,30 @@ public class QueryTestX extends BaseCMISTest
         sDate = df.format(yesterday.getTime());
 
         testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate =  '" + sDate + "'", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate <> '" + sDate + "'", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate <> '" + sDate + "'", 45, false, "ObjectId", new String(), false);
         testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate <  '" + sDate + "'", 0, false, "ObjectId", new String(), false);
         testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate <= '" + sDate + "'", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate >  '" + sDate + "'", 46, false, "ObjectId", new String(), false);
-        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate >= '" + sDate + "'", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate >  '" + sDate + "'", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate >= '" + sDate + "'", 45, false, "ObjectId", new String(), false);
 
         testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate IN     ('" + sDate + "')", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate NOT IN ('" + sDate + "')", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate NOT IN ('" + sDate + "')", 45, false, "ObjectId", new String(), false);
 
         testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate     LIKE '" + sDate + "'", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate NOT LIKE '" + sDate + "'", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate NOT LIKE '" + sDate + "'", 45, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate IS NOT NULL", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate IS NOT NULL", 45, false, "ObjectId", new String(), false);
         testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate IS     NULL", 0, false, "ObjectId", new String(), false);
 
         testQuery("SELECT LastModificationDate FROM Document WHERE '" + sDate + "' =  ANY LastModificationDate", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT LastModificationDate FROM Document WHERE '" + sDate + "' <> ANY LastModificationDate", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE '" + sDate + "' <> ANY LastModificationDate", 45, false, "ObjectId", new String(), false);
         testQuery("SELECT LastModificationDate FROM Document WHERE '" + sDate + "' <  ANY LastModificationDate", 0, false, "ObjectId", new String(), false);
         testQuery("SELECT LastModificationDate FROM Document WHERE '" + sDate + "' <= ANY LastModificationDate", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT LastModificationDate FROM Document WHERE '" + sDate + "' >  ANY LastModificationDate", 46, false, "ObjectId", new String(), false);
-        testQuery("SELECT LastModificationDate FROM Document WHERE '" + sDate + "' >= ANY LastModificationDate", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE '" + sDate + "' >  ANY LastModificationDate", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE '" + sDate + "' >= ANY LastModificationDate", 45, false, "ObjectId", new String(), false);
 
         testQuery("SELECT LastModificationDate FROM Document WHERE ANY LastModificationDate IN     ('" + sDate + "')", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT LastModificationDate FROM Document WHERE ANY LastModificationDate NOT IN ('" + sDate + "')", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE ANY LastModificationDate NOT IN ('" + sDate + "')", 45, false, "ObjectId", new String(), false);
 
         // using tomorrow
 
@@ -796,59 +796,59 @@ public class QueryTestX extends BaseCMISTest
         sDate = df.format(tomorrow.getTime());
 
         testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate =  '" + sDate + "'", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate <> '" + sDate + "'", 46, false, "ObjectId", new String(), false);
-        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate <  '" + sDate + "'", 46, false, "ObjectId", new String(), false);
-        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate <= '" + sDate + "'", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate <> '" + sDate + "'", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate <  '" + sDate + "'", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate <= '" + sDate + "'", 45, false, "ObjectId", new String(), false);
         testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate >  '" + sDate + "'", 0, false, "ObjectId", new String(), false);
         testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate >= '" + sDate + "'", 0, false, "ObjectId", new String(), false);
 
         testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate IN     ('" + sDate + "')", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate NOT IN ('" + sDate + "')", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate NOT IN ('" + sDate + "')", 45, false, "ObjectId", new String(), false);
 
         testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate     LIKE '" + sDate + "'", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate NOT LIKE '" + sDate + "'", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate NOT LIKE '" + sDate + "'", 45, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate IS NOT NULL", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate IS NOT NULL", 45, false, "ObjectId", new String(), false);
         testQuery("SELECT LastModificationDate FROM Document WHERE LastModificationDate IS     NULL", 0, false, "ObjectId", new String(), false);
 
         testQuery("SELECT LastModificationDate FROM Document WHERE '" + sDate + "' =  ANY LastModificationDate", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT LastModificationDate FROM Document WHERE '" + sDate + "' <> ANY LastModificationDate", 46, false, "ObjectId", new String(), false);
-        testQuery("SELECT LastModificationDate FROM Document WHERE '" + sDate + "' <  ANY LastModificationDate", 46, false, "ObjectId", new String(), false);
-        testQuery("SELECT LastModificationDate FROM Document WHERE '" + sDate + "' <= ANY LastModificationDate", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE '" + sDate + "' <> ANY LastModificationDate", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE '" + sDate + "' <  ANY LastModificationDate", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE '" + sDate + "' <= ANY LastModificationDate", 45, false, "ObjectId", new String(), false);
         testQuery("SELECT LastModificationDate FROM Document WHERE '" + sDate + "' >  ANY LastModificationDate", 0, false, "ObjectId", new String(), false);
         testQuery("SELECT LastModificationDate FROM Document WHERE '" + sDate + "' >= ANY LastModificationDate", 0, false, "ObjectId", new String(), false);
 
         testQuery("SELECT LastModificationDate FROM Document WHERE ANY LastModificationDate IN     ('" + sDate + "')", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT LastModificationDate FROM Document WHERE ANY LastModificationDate NOT IN ('" + sDate + "')", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModificationDate FROM Document WHERE ANY LastModificationDate NOT IN ('" + sDate + "')", 45, false, "ObjectId", new String(), false);
 
     }
 
     public void test_LAST_MODIFIED_BY()
     {
-        testQuery("SELECT LastModifiedBy FROM Document WHERE LastModifiedBy =  'System'", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModifiedBy FROM Document WHERE LastModifiedBy =  'System'", 45, false, "ObjectId", new String(), false);
         testQuery("SELECT LastModifiedBy FROM Document WHERE LastModifiedBy <> 'System'", 0, false, "ObjectId", new String(), false);
         testQuery("SELECT LastModifiedBy FROM Document WHERE LastModifiedBy <  'System'", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT LastModifiedBy FROM Document WHERE LastModifiedBy <= 'System'", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModifiedBy FROM Document WHERE LastModifiedBy <= 'System'", 45, false, "ObjectId", new String(), false);
         testQuery("SELECT LastModifiedBy FROM Document WHERE LastModifiedBy >  'System'", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT LastModifiedBy FROM Document WHERE LastModifiedBy >= 'System'", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModifiedBy FROM Document WHERE LastModifiedBy >= 'System'", 45, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT LastModifiedBy FROM Document WHERE LastModifiedBy IN     ('System')", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModifiedBy FROM Document WHERE LastModifiedBy IN     ('System')", 45, false, "ObjectId", new String(), false);
         testQuery("SELECT LastModifiedBy FROM Document WHERE LastModifiedBy NOT IN ('System')", 0, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT LastModifiedBy FROM Document WHERE LastModifiedBy     LIKE 'System'", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModifiedBy FROM Document WHERE LastModifiedBy     LIKE 'System'", 45, false, "ObjectId", new String(), false);
         testQuery("SELECT LastModifiedBy FROM Document WHERE LastModifiedBy NOT LIKE 'System'", 0, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT LastModifiedBy FROM Document WHERE LastModifiedBy IS NOT NULL", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModifiedBy FROM Document WHERE LastModifiedBy IS NOT NULL", 45, false, "ObjectId", new String(), false);
         testQuery("SELECT LastModifiedBy FROM Document WHERE LastModifiedBy IS     NULL", 0, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT LastModifiedBy FROM Document WHERE 'System' =  ANY LastModifiedBy", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModifiedBy FROM Document WHERE 'System' =  ANY LastModifiedBy", 45, false, "ObjectId", new String(), false);
         testQuery("SELECT LastModifiedBy FROM Document WHERE 'System' <> ANY LastModifiedBy", 0, false, "ObjectId", new String(), false);
         testQuery("SELECT LastModifiedBy FROM Document WHERE 'System' <  ANY LastModifiedBy", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT LastModifiedBy FROM Document WHERE 'System' <= ANY LastModifiedBy", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModifiedBy FROM Document WHERE 'System' <= ANY LastModifiedBy", 45, false, "ObjectId", new String(), false);
         testQuery("SELECT LastModifiedBy FROM Document WHERE 'System' >  ANY LastModifiedBy", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT LastModifiedBy FROM Document WHERE 'System' >= ANY LastModifiedBy", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModifiedBy FROM Document WHERE 'System' >= ANY LastModifiedBy", 45, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT LastModifiedBy FROM Document WHERE ANY LastModifiedBy IN     ('System')", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT LastModifiedBy FROM Document WHERE ANY LastModifiedBy IN     ('System')", 45, false, "ObjectId", new String(), false);
         testQuery("SELECT LastModifiedBy FROM Document WHERE ANY LastModifiedBy NOT IN ('System')", 0, false, "ObjectId", new String(), false);
 
     }
@@ -874,30 +874,30 @@ public class QueryTestX extends BaseCMISTest
 
         // Today (assuming al ws created today)
 
-        testQuery("SELECT CreationDate FROM Document WHERE CreationDate =  '" + sDate + "'", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE CreationDate =  '" + sDate + "'", 45, false, "ObjectId", new String(), false);
         testQuery("SELECT CreationDate FROM Document WHERE CreationDate <> '" + sDate + "'", 0, false, "ObjectId", new String(), false);
         testQuery("SELECT CreationDate FROM Document WHERE CreationDate <  '" + sDate + "'", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT CreationDate FROM Document WHERE CreationDate <= '" + sDate + "'", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE CreationDate <= '" + sDate + "'", 45, false, "ObjectId", new String(), false);
         testQuery("SELECT CreationDate FROM Document WHERE CreationDate >  '" + sDate + "'", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT CreationDate FROM Document WHERE CreationDate >= '" + sDate + "'", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE CreationDate >= '" + sDate + "'", 45, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT CreationDate FROM Document WHERE CreationDate IN     ('" + sDate + "')", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE CreationDate IN     ('" + sDate + "')", 45, false, "ObjectId", new String(), false);
         testQuery("SELECT CreationDate FROM Document WHERE CreationDate NOT IN ('" + sDate + "')", 0, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT CreationDate FROM Document WHERE CreationDate     LIKE '" + sDate + "'", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE CreationDate     LIKE '" + sDate + "'", 45, false, "ObjectId", new String(), false);
         testQuery("SELECT CreationDate FROM Document WHERE CreationDate NOT LIKE '" + sDate + "'", 0, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT CreationDate FROM Document WHERE CreationDate IS NOT NULL", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE CreationDate IS NOT NULL", 45, false, "ObjectId", new String(), false);
         testQuery("SELECT CreationDate FROM Document WHERE CreationDate IS     NULL", 0, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT CreationDate FROM Document WHERE '" + sDate + "' =  ANY CreationDate", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE '" + sDate + "' =  ANY CreationDate", 45, false, "ObjectId", new String(), false);
         testQuery("SELECT CreationDate FROM Document WHERE '" + sDate + "' <> ANY CreationDate", 0, false, "ObjectId", new String(), false);
         testQuery("SELECT CreationDate FROM Document WHERE '" + sDate + "' <  ANY CreationDate", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT CreationDate FROM Document WHERE '" + sDate + "' <= ANY CreationDate", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE '" + sDate + "' <= ANY CreationDate", 45, false, "ObjectId", new String(), false);
         testQuery("SELECT CreationDate FROM Document WHERE '" + sDate + "' >  ANY CreationDate", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT CreationDate FROM Document WHERE '" + sDate + "' >= ANY CreationDate", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE '" + sDate + "' >= ANY CreationDate", 45, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT CreationDate FROM Document WHERE ANY CreationDate IN     ('" + sDate + "')", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE ANY CreationDate IN     ('" + sDate + "')", 45, false, "ObjectId", new String(), false);
         testQuery("SELECT CreationDate FROM Document WHERE ANY CreationDate NOT IN ('" + sDate + "')", 0, false, "ObjectId", new String(), false);
 
         // using yesterday
@@ -909,30 +909,30 @@ public class QueryTestX extends BaseCMISTest
         sDate = df.format(yesterday.getTime());
 
         testQuery("SELECT CreationDate FROM Document WHERE CreationDate =  '" + sDate + "'", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT CreationDate FROM Document WHERE CreationDate <> '" + sDate + "'", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE CreationDate <> '" + sDate + "'", 45, false, "ObjectId", new String(), false);
         testQuery("SELECT CreationDate FROM Document WHERE CreationDate <  '" + sDate + "'", 0, false, "ObjectId", new String(), false);
         testQuery("SELECT CreationDate FROM Document WHERE CreationDate <= '" + sDate + "'", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT CreationDate FROM Document WHERE CreationDate >  '" + sDate + "'", 46, false, "ObjectId", new String(), false);
-        testQuery("SELECT CreationDate FROM Document WHERE CreationDate >= '" + sDate + "'", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE CreationDate >  '" + sDate + "'", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE CreationDate >= '" + sDate + "'", 45, false, "ObjectId", new String(), false);
 
         testQuery("SELECT CreationDate FROM Document WHERE CreationDate IN     ('" + sDate + "')", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT CreationDate FROM Document WHERE CreationDate NOT IN ('" + sDate + "')", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE CreationDate NOT IN ('" + sDate + "')", 45, false, "ObjectId", new String(), false);
 
         testQuery("SELECT CreationDate FROM Document WHERE CreationDate     LIKE '" + sDate + "'", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT CreationDate FROM Document WHERE CreationDate NOT LIKE '" + sDate + "'", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE CreationDate NOT LIKE '" + sDate + "'", 45, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT CreationDate FROM Document WHERE CreationDate IS NOT NULL", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE CreationDate IS NOT NULL", 45, false, "ObjectId", new String(), false);
         testQuery("SELECT CreationDate FROM Document WHERE CreationDate IS     NULL", 0, false, "ObjectId", new String(), false);
 
         testQuery("SELECT CreationDate FROM Document WHERE '" + sDate + "' =  ANY CreationDate", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT CreationDate FROM Document WHERE '" + sDate + "' <> ANY CreationDate", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE '" + sDate + "' <> ANY CreationDate", 45, false, "ObjectId", new String(), false);
         testQuery("SELECT CreationDate FROM Document WHERE '" + sDate + "' <  ANY CreationDate", 0, false, "ObjectId", new String(), false);
         testQuery("SELECT CreationDate FROM Document WHERE '" + sDate + "' <= ANY CreationDate", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT CreationDate FROM Document WHERE '" + sDate + "' >  ANY CreationDate", 46, false, "ObjectId", new String(), false);
-        testQuery("SELECT CreationDate FROM Document WHERE '" + sDate + "' >= ANY CreationDate", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE '" + sDate + "' >  ANY CreationDate", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE '" + sDate + "' >= ANY CreationDate", 45, false, "ObjectId", new String(), false);
 
         testQuery("SELECT CreationDate FROM Document WHERE ANY CreationDate IN     ('" + sDate + "')", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT CreationDate FROM Document WHERE ANY CreationDate NOT IN ('" + sDate + "')", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE ANY CreationDate NOT IN ('" + sDate + "')", 45, false, "ObjectId", new String(), false);
 
         // using tomorrow
 
@@ -943,58 +943,58 @@ public class QueryTestX extends BaseCMISTest
         sDate = df.format(tomorrow.getTime());
 
         testQuery("SELECT CreationDate FROM Document WHERE CreationDate =  '" + sDate + "'", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT CreationDate FROM Document WHERE CreationDate <> '" + sDate + "'", 46, false, "ObjectId", new String(), false);
-        testQuery("SELECT CreationDate FROM Document WHERE CreationDate <  '" + sDate + "'", 46, false, "ObjectId", new String(), false);
-        testQuery("SELECT CreationDate FROM Document WHERE CreationDate <= '" + sDate + "'", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE CreationDate <> '" + sDate + "'", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE CreationDate <  '" + sDate + "'", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE CreationDate <= '" + sDate + "'", 45, false, "ObjectId", new String(), false);
         testQuery("SELECT CreationDate FROM Document WHERE CreationDate >  '" + sDate + "'", 0, false, "ObjectId", new String(), false);
         testQuery("SELECT CreationDate FROM Document WHERE CreationDate >= '" + sDate + "'", 0, false, "ObjectId", new String(), false);
 
         testQuery("SELECT CreationDate FROM Document WHERE CreationDate IN     ('" + sDate + "')", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT CreationDate FROM Document WHERE CreationDate NOT IN ('" + sDate + "')", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE CreationDate NOT IN ('" + sDate + "')", 45, false, "ObjectId", new String(), false);
 
         testQuery("SELECT CreationDate FROM Document WHERE CreationDate     LIKE '" + sDate + "'", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT CreationDate FROM Document WHERE CreationDate NOT LIKE '" + sDate + "'", 46, false, "ObjectId", new String(), false);
-        testQuery("SELECT CreationDate FROM Document WHERE CreationDate IS NOT NULL", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE CreationDate NOT LIKE '" + sDate + "'", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE CreationDate IS NOT NULL", 45, false, "ObjectId", new String(), false);
         testQuery("SELECT CreationDate FROM Document WHERE CreationDate IS     NULL", 0, false, "ObjectId", new String(), false);
 
         testQuery("SELECT CreationDate FROM Document WHERE '" + sDate + "' =  ANY CreationDate", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT CreationDate FROM Document WHERE '" + sDate + "' <> ANY CreationDate", 46, false, "ObjectId", new String(), false);
-        testQuery("SELECT CreationDate FROM Document WHERE '" + sDate + "' <  ANY CreationDate", 46, false, "ObjectId", new String(), false);
-        testQuery("SELECT CreationDate FROM Document WHERE '" + sDate + "' <= ANY CreationDate", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE '" + sDate + "' <> ANY CreationDate", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE '" + sDate + "' <  ANY CreationDate", 45, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE '" + sDate + "' <= ANY CreationDate", 45, false, "ObjectId", new String(), false);
         testQuery("SELECT CreationDate FROM Document WHERE '" + sDate + "' >  ANY CreationDate", 0, false, "ObjectId", new String(), false);
         testQuery("SELECT CreationDate FROM Document WHERE '" + sDate + "' >= ANY CreationDate", 0, false, "ObjectId", new String(), false);
 
         testQuery("SELECT CreationDate FROM Document WHERE ANY CreationDate IN     ('" + sDate + "')", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT CreationDate FROM Document WHERE ANY CreationDate NOT IN ('" + sDate + "')", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreationDate FROM Document WHERE ANY CreationDate NOT IN ('" + sDate + "')", 45, false, "ObjectId", new String(), false);
 
     }
 
     public void test_CREATED_BY()
     {
-        testQuery("SELECT CreatedBy FROM Document WHERE CreatedBy =  'System'", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreatedBy FROM Document WHERE CreatedBy =  'System'", 45, false, "ObjectId", new String(), false);
         testQuery("SELECT CreatedBy FROM Document WHERE CreatedBy <> 'System'", 0, false, "ObjectId", new String(), false);
         testQuery("SELECT CreatedBy FROM Document WHERE CreatedBy <  'System'", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT CreatedBy FROM Document WHERE CreatedBy <= 'System'", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreatedBy FROM Document WHERE CreatedBy <= 'System'", 45, false, "ObjectId", new String(), false);
         testQuery("SELECT CreatedBy FROM Document WHERE CreatedBy >  'System'", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT CreatedBy FROM Document WHERE CreatedBy >= 'System'", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreatedBy FROM Document WHERE CreatedBy >= 'System'", 45, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT CreatedBy FROM Document WHERE CreatedBy IN     ('System')", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreatedBy FROM Document WHERE CreatedBy IN     ('System')", 45, false, "ObjectId", new String(), false);
         testQuery("SELECT CreatedBy FROM Document WHERE CreatedBy NOT IN ('System')", 0, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT CreatedBy FROM Document WHERE CreatedBy     LIKE 'System'", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreatedBy FROM Document WHERE CreatedBy     LIKE 'System'", 45, false, "ObjectId", new String(), false);
         testQuery("SELECT CreatedBy FROM Document WHERE CreatedBy NOT LIKE 'System'", 0, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT CreatedBy FROM Document WHERE CreatedBy IS NOT NULL", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreatedBy FROM Document WHERE CreatedBy IS NOT NULL", 45, false, "ObjectId", new String(), false);
         testQuery("SELECT CreatedBy FROM Document WHERE CreatedBy IS     NULL", 0, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT CreatedBy FROM Document WHERE 'System' =  ANY CreatedBy", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreatedBy FROM Document WHERE 'System' =  ANY CreatedBy", 45, false, "ObjectId", new String(), false);
         testQuery("SELECT CreatedBy FROM Document WHERE 'System' <> ANY CreatedBy", 0, false, "ObjectId", new String(), false);
         testQuery("SELECT CreatedBy FROM Document WHERE 'System' <  ANY CreatedBy", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT CreatedBy FROM Document WHERE 'System' <= ANY CreatedBy", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreatedBy FROM Document WHERE 'System' <= ANY CreatedBy", 45, false, "ObjectId", new String(), false);
         testQuery("SELECT CreatedBy FROM Document WHERE 'System' >  ANY CreatedBy", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT CreatedBy FROM Document WHERE 'System' >= ANY CreatedBy", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreatedBy FROM Document WHERE 'System' >= ANY CreatedBy", 45, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT CreatedBy FROM Document WHERE ANY CreatedBy IN     ('System')", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT CreatedBy FROM Document WHERE ANY CreatedBy IN     ('System')", 45, false, "ObjectId", new String(), false);
         testQuery("SELECT CreatedBy FROM Document WHERE ANY CreatedBy NOT IN ('System')", 0, false, "ObjectId", new String(), false);
 
     }
@@ -1003,30 +1003,30 @@ public class QueryTestX extends BaseCMISTest
     {
         // DOC
 
-        testQuery("SELECT ObjectTypeId FROM Document WHERE ObjectTypeId =  'Document'", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT ObjectTypeId FROM Document WHERE ObjectTypeId =  'Document'", 45, false, "ObjectId", new String(), false);
         testQuery("SELECT ObjectTypeId FROM Document WHERE ObjectTypeId <> 'Document'", 0, false, "ObjectId", new String(), false);
         testQuery("SELECT ObjectTypeId FROM Document WHERE ObjectTypeId <  'Document'", 0, false, "ObjectId", new String(), true);
         testQuery("SELECT ObjectTypeId FROM Document WHERE ObjectTypeId <= 'Document'", 0, false, "ObjectId", new String(), true);
         testQuery("SELECT ObjectTypeId FROM Document WHERE ObjectTypeId >  'Document'", 0, false, "ObjectId", new String(), true);
         testQuery("SELECT ObjectTypeId FROM Document WHERE ObjectTypeId >= 'Document'", 0, false, "ObjectId", new String(), true);
 
-        testQuery("SELECT ObjectTypeId FROM Document WHERE ObjectTypeId IN     ('Document')", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT ObjectTypeId FROM Document WHERE ObjectTypeId IN     ('Document')", 45, false, "ObjectId", new String(), false);
         testQuery("SELECT ObjectTypeId FROM Document WHERE ObjectTypeId NOT IN ('Document')", 0, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT ObjectTypeId FROM Document WHERE ObjectTypeId     LIKE 'Document'", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT ObjectTypeId FROM Document WHERE ObjectTypeId     LIKE 'Document'", 45, false, "ObjectId", new String(), false);
         testQuery("SELECT ObjectTypeId FROM Document WHERE ObjectTypeId NOT LIKE 'Document'", 0, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT ObjectTypeId FROM Document WHERE ObjectTypeId IS NOT NULL", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT ObjectTypeId FROM Document WHERE ObjectTypeId IS NOT NULL", 45, false, "ObjectId", new String(), false);
         testQuery("SELECT ObjectTypeId FROM Document WHERE ObjectTypeId IS     NULL", 0, false, "ObjectId", new String(), false);
 
-        testQuery("SELECT ObjectTypeId FROM Document WHERE 'Document' =  ANY ObjectTypeId", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT ObjectTypeId FROM Document WHERE 'Document' =  ANY ObjectTypeId", 45, false, "ObjectId", new String(), false);
         testQuery("SELECT ObjectTypeId FROM Document WHERE 'Document' <> ANY ObjectTypeId", 0, false, "ObjectId", new String(), false);
         testQuery("SELECT ObjectTypeId FROM Document WHERE 'Document' <  ANY ObjectTypeId", 0, false, "ObjectId", new String(), true);
         testQuery("SELECT ObjectTypeId FROM Document WHERE 'Document' <= ANY ObjectTypeId", 0, false, "ObjectId", new String(), true);
         testQuery("SELECT ObjectTypeId FROM Document WHERE 'Document' >  ANY ObjectTypeId", 0, false, "ObjectId", new String(), true);
         testQuery("SELECT ObjectTypeId FROM Document WHERE 'Document' >= ANY ObjectTypeId", 0, false, "ObjectId", new String(), true);
 
-        testQuery("SELECT ObjectTypeId FROM Document WHERE ANY ObjectTypeId IN     ('Document')", 46, false, "ObjectId", new String(), false);
+        testQuery("SELECT ObjectTypeId FROM Document WHERE ANY ObjectTypeId IN     ('Document')", 45, false, "ObjectId", new String(), false);
         testQuery("SELECT ObjectTypeId FROM Document WHERE ANY ObjectTypeId NOT IN ('Document')", 0, false, "ObjectId", new String(), false);
 
         // FOLDER
@@ -1457,7 +1457,7 @@ public class QueryTestX extends BaseCMISTest
 
         query = "SELECT * FROM Document WHERE Uri IS NULL";
         rs = cmisQueryService.query(query);
-        assertEquals(46, rs.getLength());
+        assertEquals(45, rs.getLength());
         for (CMISResultSetRow row : rs)
         {
             System.out.println(row.getValue("Name") + " Score " + row.getScore() + " " + row.getScores());
@@ -1577,7 +1577,7 @@ public class QueryTestX extends BaseCMISTest
         runAs("guest");
         String query = "SELECT * FROM Document";
         CMISResultSet rs = cmisQueryService.query(query);
-        assertEquals(2, rs.getLength());
+        assertEquals(1, rs.getLength());
         rs.close();
     }
 

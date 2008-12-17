@@ -100,14 +100,11 @@ public class NodeInfoBean implements Serializable
       {
          // Try to catch TransformerInfoException to display it in NodeInfo pane.
          // Fix bug reported in https://issues.alfresco.com/jira/browse/ETWOTWO-440
-         
-         logger.error(ex);
          Throwable cause = ex.getCause();
          while (cause != null)
          {
-            logger.error(cause);
             cause = cause.getCause();
-            if (cause != null && cause instanceof TransformerInfoException)
+            if (cause instanceof TransformerInfoException)
             {
                out.write("<tr><td colspan=\"2\"><span class='errorMessage'>" + cause.getMessage() + "</span></td></tr>");
                return;

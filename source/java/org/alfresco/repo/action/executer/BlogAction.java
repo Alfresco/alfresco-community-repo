@@ -28,9 +28,9 @@ package org.alfresco.repo.action.executer;
 import java.util.List;
 
 import org.alfresco.repo.action.ParameterDefinitionImpl;
-import org.alfresco.repo.blogIntegration.BlogDetails;
-import org.alfresco.repo.blogIntegration.BlogIntegrationRuntimeException;
-import org.alfresco.repo.blogIntegration.BlogIntegrationService;
+import org.alfresco.repo.blog.BlogDetails;
+import org.alfresco.repo.blog.BlogIntegrationRuntimeException;
+import org.alfresco.repo.blog.BlogIntegrationService;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;

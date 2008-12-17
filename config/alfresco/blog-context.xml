@@ -7,7 +7,7 @@
     
     <bean id="BlogIntegrationService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
-            <value>org.alfresco.repo.blogIntegration.BlogIntegrationService</value>
+            <value>org.alfresco.repo.blog.BlogIntegrationService</value>
         </property>
         <property name="target">
             <ref bean="blogIntegrationService"/>
@@ -35,7 +35,7 @@
     
     <bean id="BlogIntegrationService_security" class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
     
-    <bean id="blogIntegrationService" class="org.alfresco.repo.blogIntegration.BlogIntegrationServiceImpl">
+    <bean id="blogIntegrationService" class="org.alfresco.repo.blog.BlogIntegrationServiceImpl">
     	<property name="nodeService" ref="NodeService"/>
     	<property name="contentService" ref="ContentService"/>
     </bean>    
@@ -46,12 +46,12 @@
     	<property name="blogIntegrationService" ref="blogIntegrationService"/>
     </bean>
     
-    <bean id="wordPressBlogIntegration" parent="baseBlogIntegrationImplmentation" class="org.alfresco.repo.blogIntegration.wordpress.WordPressIntegration">
+    <bean id="wordPressBlogIntegration" parent="baseBlogIntegrationImplmentation" class="org.alfresco.repo.blog.wordpress.WordPressIntegration">
     	<property name="name" value="wordpress"/>
     	<property name="displayName" value="WordPress"/>
     </bean>
     
-    <bean id="typePadBlogIntegration" parent="baseBlogIntegrationImplmentation" class="org.alfresco.repo.blogIntegration.typepad.TypepadIntegration">
+    <bean id="typePadBlogIntegration" parent="baseBlogIntegrationImplmentation" class="org.alfresco.repo.blog.typepad.TypepadIntegration">
     	<property name="name" value="typepad"/>
     	<property name="displayName" value="Typepad"/>
     </bean>

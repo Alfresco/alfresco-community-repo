@@ -30,6 +30,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import javax.transaction.UserTransaction;
 
@@ -50,6 +51,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.Pair;
 import org.apache.commons.lang.mutable.MutableInt;
@@ -487,5 +489,71 @@ public class DbNodeServiceImplTest extends BaseNodeServiceTest
                 findMeValue,
                 handler);
         assertTrue("Set value not found.", count.intValue() == 1);
+    }
+    
+    public void testAspectRemovalWithCommit() throws Throwable
+    {
+       // Create a node to add the aspect to
+       NodeRef sourceNodeRef = nodeService.createNode(
+               rootNodeRef,
+               ASSOC_TYPE_QNAME_TEST_CHILDREN,
+               QName.createQName(BaseNodeServiceTest.NAMESPACE, "testAspectRemoval-source"),
+               ContentModel.TYPE_CONTAINER).getChildRef();
+       
+       // Create a target for the associations
+       NodeRef targetNodeRef = nodeService.createNode(
+               rootNodeRef,
+               ASSOC_TYPE_QNAME_TEST_CHILDREN,
+               QName.createQName(BaseNodeServiceTest.NAMESPACE, "testAspectRemoval-target"),
+               ContentModel.TYPE_CONTAINER).getChildRef();
+       
+       // Add the aspect to the source
+       nodeService.addAspect(sourceNodeRef, ASPECT_WITH_ASSOCIATIONS, null);
+       // Make the associations
+       nodeService.addChild(
+               sourceNodeRef,
+               targetNodeRef,
+               ASSOC_ASPECT_CHILD_ASSOC,
+               QName.createQName(NAMESPACE, "aspect-child"));
+       nodeService.createAssociation(sourceNodeRef, targetNodeRef, ASSOC_ASPECT_NORMAL_ASSOC);
+       
+       // Check that the correct associations are present
+       assertEquals("Expected exactly one child",
+               1, nodeService.getChildAssocs(sourceNodeRef).size());
+       assertEquals("Expected exactly one target",
+               1, nodeService.getTargetAssocs(sourceNodeRef, RegexQNamePattern.MATCH_ALL).size());
+       
+       // Force a commit here
+       setComplete();
+       endTransaction();
+       
+       // start another transaction to remove the aspect
+       UserTransaction txn = txnService.getUserTransaction();
+       txn.begin();
+       
+       try
+       {
+          Set<QName> aspects = nodeService.getAspects(sourceNodeRef); 
+          int noAspectsBefore = aspects.size();
+          
+          // Now remove the aspect
+          nodeService.removeAspect(sourceNodeRef, ASPECT_WITH_ASSOCIATIONS);
+          
+          // Check that the associations were removed
+          assertEquals("Expected exactly zero child",
+                  0, nodeService.getChildAssocs(sourceNodeRef).size());
+          assertEquals("Expected exactly zero target",
+                  0, nodeService.getTargetAssocs(sourceNodeRef, RegexQNamePattern.MATCH_ALL).size());
+          aspects = nodeService.getAspects(sourceNodeRef); 
+          assertEquals("Expected exactly one less aspect",
+                  noAspectsBefore-1, aspects.size());
+          
+          txn.commit();
+       }
+       catch (Throwable e)
+       {
+           try { txn.rollback(); } catch (Throwable ee) {}
+           throw e;
+       }
     }
 }

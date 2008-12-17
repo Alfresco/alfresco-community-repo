@@ -22,7 +22,7 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing
  */
-package org.alfresco.repo.blogIntegration;
+package org.alfresco.repo.blog;
 
 /**
  * Base blog implementation class.  Extend this when writting a blog integration implementation.

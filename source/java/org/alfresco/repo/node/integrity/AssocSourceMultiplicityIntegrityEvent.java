@@ -27,6 +27,7 @@ package org.alfresco.repo.node.integrity;
 import java.util.List;
 
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
+import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -136,6 +137,23 @@ public class AssocSourceMultiplicityIntegrityEvent extends AbstractIntegrityEven
             // it is not mandatory and it allows many on both sides of the assoc
             return;
         }
+        
+        // check the target of the association if this is a delete
+        if (isDelete)
+        {
+            // get the class the association is defined for and see if it is an aspect
+            ClassDefinition classDef = assocDef.getTargetClass(); 
+            if (classDef.isAspect())
+            {
+                // see if the target node has the aspect applied, if it does not
+                // there's no need to check multiplicity
+                if (!this.nodeService.hasAspect(targetNodeRef, classDef.getName()))
+                {
+                    return;
+                }
+            }
+        }
+        
         int actualSize = 0;
         if (assocDef.isChild())
         {
@@ -152,6 +170,7 @@ public class AssocSourceMultiplicityIntegrityEvent extends AbstractIntegrityEven
             List<AssociationRef> sourceAssocRefs = nodeService.getSourceAssocs(targetNodeRef, assocTypeQName);
             actualSize = sourceAssocRefs.size();
         }
+        
         if ((mandatory && actualSize == 0) || (!allowMany && actualSize > 1))
         {
             String parentOrSourceStr = (assocDef.isChild() ? "parent" : "source");

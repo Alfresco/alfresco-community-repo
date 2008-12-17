@@ -22,10 +22,10 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing
  */
-package org.alfresco.repo.blogIntegration.typepad;
+package org.alfresco.repo.blog.typepad;
 
-import org.alfresco.repo.blogIntegration.BlogDetails;
-import org.alfresco.repo.blogIntegration.DefaultBlogIntegrationImplementation;
+import org.alfresco.repo.blog.BlogDetails;
+import org.alfresco.repo.blog.DefaultBlogIntegrationImplementation;
 
 /**
  * Typepad integration implementation

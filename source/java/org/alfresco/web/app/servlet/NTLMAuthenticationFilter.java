@@ -61,7 +61,7 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
 /**
- * NTLM Authentication Filter Class
+ * Web-client NTLM Authentication Filter Class
  * 
  * @author GKSpencer
  */
@@ -182,8 +182,7 @@ public class NTLMAuthenticationFilter extends BaseNTLMAuthenticationFilter
             if (logger.isDebugEnabled())
                 logger.debug("Opera detected, redirecting to login page");
 
-            // Redirect to the login page
-            resp.sendRedirect(req.getContextPath() + "/faces" + getLoginPage());
+            redirectToLoginPage(req, resp);
             return;
         }
         
@@ -219,10 +218,17 @@ public class NTLMAuthenticationFilter extends BaseNTLMAuthenticationFilter
                 if (logger.isDebugEnabled())
                     logger.debug("NTLM blob not handled, redirecting to login page.");
                 
-                // Redirect to the login page
-                resp.sendRedirect(req.getContextPath() + "/faces" + getLoginPage());
+                redirectToLoginPage(req, resp);
             }
         }
+    }
+
+    /**
+     * Redirect to the login page
+     */
+    protected void redirectToLoginPage(HttpServletRequest req, HttpServletResponse res) throws IOException
+    {
+        res.sendRedirect(req.getContextPath() + "/faces" + getLoginPage());
     }
     
     /* (non-Javadoc)
@@ -260,7 +266,7 @@ public class NTLMAuthenticationFilter extends BaseNTLMAuthenticationFilter
         throws IOException
     {
         // Redirect to the login page if user validation fails
-        res.sendRedirect(req.getContextPath() + "/faces" + getLoginPage());
+        redirectToLoginPage(req, res);
     }
     
     /* (non-Javadoc)
@@ -270,12 +276,9 @@ public class NTLMAuthenticationFilter extends BaseNTLMAuthenticationFilter
     protected SessionUser createUserEnvironment(HttpSession session, String userName)
         throws IOException, ServletException
     {
-        Log logger = getLogger();
-        
         SessionUser user = null;
         
         UserTransaction tx = m_transactionService.getUserTransaction();
-        NodeRef homeSpaceRef = null;
         
         try
         {
@@ -286,7 +289,7 @@ public class NTLMAuthenticationFilter extends BaseNTLMAuthenticationFilter
             
             // Use the system user context to do the user lookup
             m_authComponent.setCurrentUser(m_authComponent.getSystemUserName());
-   
+            
             // User name should match the uid in the person entry found
             m_authComponent.setSystemUserAsCurrentUser();
             userName = (String) m_nodeService.getProperty(personNodeRef, ContentModel.PROP_USERNAME);
@@ -295,7 +298,7 @@ public class NTLMAuthenticationFilter extends BaseNTLMAuthenticationFilter
             String currentTicket = m_authService.getCurrentTicket();
             user = new User(userName, currentTicket, personNodeRef);
             
-            homeSpaceRef = (NodeRef) m_nodeService.getProperty(personNodeRef, ContentModel.PROP_HOMEFOLDER);
+            NodeRef homeSpaceRef = (NodeRef) m_nodeService.getProperty(personNodeRef, ContentModel.PROP_HOMEFOLDER);
             ((User)user).setHomeSpaceId(homeSpaceRef.getId());
             
             tx.commit();

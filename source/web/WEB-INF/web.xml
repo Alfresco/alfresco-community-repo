@@ -88,22 +88,22 @@
    <filter>
       <filter-name>Authentication Filter</filter-name>
       <filter-class>org.alfresco.web.app.servlet.AuthenticationFilter</filter-class>
-
+      
+      <!-- For NTLM authentication support use the following filter, also see the filter-mapping section -->
+      <!--
+      <filter-class>org.alfresco.web.app.servlet.NTLMAuthenticationFilter</filter-class>
+      -->
+      
       <!-- For Novell IChain support use the following filter -->
       <!--
         <filter-class>org.alfresco.web.app.servlet.NovellIChainsHTTPRequestAuthenticationFilter</filter-class>
-      -->
-
-      <!-- For NTLM authentication support use the following filter -->
-      <!--
-        <filter-class>org.alfresco.web.app.servlet.NTLMAuthenticationFilter</filter-class>
       -->
    </filter>
 
    <filter>
       <filter-name>WebDAV Authentication Filter</filter-name>
       <filter-class>org.alfresco.repo.webdav.auth.AuthenticationFilter</filter-class>
-
+      
       <!-- For NTLM authentication support use the following filter -->
       <!--
         <filter-class>org.alfresco.repo.webdav.auth.NTLMAuthenticationFilter</filter-class>
@@ -133,12 +133,8 @@
       </init-param>
    </filter>
 
-   <filter-mapping>
-      <filter-name>Authentication Filter</filter-name>
-      <url-pattern>/faces/*</url-pattern>
-   </filter-mapping>
-
-   <!-- For NTLM authentication support enable the following mapping -->
+   <!-- For NTLM authentication support enable the following mappings -->
+   <!-- after enabling the NTLMAuthenticationFilter filter classes above -->
    <!--
    <filter-mapping>
       <filter-name>Authentication Filter</filter-name>
@@ -180,6 +176,11 @@
       <url-pattern>/d/*</url-pattern>
    </filter-mapping>
    -->
+   
+   <filter-mapping>
+      <filter-name>Authentication Filter</filter-name>
+      <url-pattern>/faces/*</url-pattern>
+   </filter-mapping>
 
    <filter-mapping>
       <filter-name>WebDAV Authentication Filter</filter-name>
@@ -388,6 +389,11 @@
    <servlet>
       <servlet-name>JBPMDeployProcessServlet</servlet-name>
       <servlet-class>org.alfresco.web.app.servlet.JBPMDeployProcessServlet</servlet-class>
+   </servlet>
+   
+   <servlet>
+      <servlet-name>StatusOKServlet</servlet-name>
+      <servlet-class>org.alfresco.web.app.servlet.StatusOKServlet</servlet-class>
    </servlet>
 
    <servlet-mapping>

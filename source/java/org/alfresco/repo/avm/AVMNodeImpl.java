@@ -366,6 +366,13 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
         fAspects = new HashSet<Long>(other.getAspects());
     }
     
+    protected void copyCreationAndOwnerBasicAttributes(AVMNode other)
+    {
+        fBasicAttributes.setCreateDate(other.getBasicAttributes().getCreateDate());
+        fBasicAttributes.setCreator(other.getBasicAttributes().getCreator());
+        fBasicAttributes.setOwner(other.getBasicAttributes().getOwner());
+    }
+    
     protected void copyACLs(AVMNode other, Long parentAcl, ACLCopyMode mode)
     {
         DbAccessControlList acl = other.getAcl();
@@ -384,6 +391,7 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
         copyAspects(other);
         copyACLs(other, parentAcl, ACLCopyMode.COPY);
         copyProperties(other);
+        copyCreationAndOwnerBasicAttributes(other);
     }
     
     /**

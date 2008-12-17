@@ -116,6 +116,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
             copyProperties(toCopy);
             copyACLs(toCopy, parentAcl, mode);
             copyAspects(toCopy);
+            copyCreationAndOwnerBasicAttributes(toCopy);
         }
         else
         {
@@ -131,7 +132,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
                     }
                     else
                     {
-                        // TODO: Will not pick up changes if we start with no permission on teh terget node - may need
+                        // TODO: Will not pick up changes if we start with no permission on the target node - may need
                         // to add
                         setAcl(DbAccessControlListImpl.createLayeredAcl(null));
                     }
@@ -186,6 +187,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         copyProperties(other);
         copyAspects(other);
         copyACLs(other, parentAcl, mode);
+        copyCreationAndOwnerBasicAttributes(other);
     }
 
     /**
@@ -222,6 +224,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         copyProperties(other);
         copyAspects(other);
         copyACLs(other, parentAcl, mode);
+        copyCreationAndOwnerBasicAttributes(other);
     }
 
     /**
@@ -258,6 +261,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         copyProperties(dir);
         copyAspects(dir);
         copyACLs(dir, inheritedAcl, mode);
+        copyCreationAndOwnerBasicAttributes(dir);
     }
 
     /**
@@ -768,6 +772,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
             AVMDAOs.Instance().fAVMNodeDAO.flush();
             ghost.setAncestor(child);
             ghost.setDeletedType(child.getType());
+            ghost.copyCreationAndOwnerBasicAttributes(child);
             this.putChild(name, ghost);
         }
         else

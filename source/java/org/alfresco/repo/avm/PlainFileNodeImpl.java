@@ -103,6 +103,7 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
         copyProperties(other);
         copyAspects(other);
         copyACLs(other, parentAcl, mode);
+        copyCreationAndOwnerBasicAttributes(other);
     }
 
     // TODO Is there a reason for passing all these parameters instead

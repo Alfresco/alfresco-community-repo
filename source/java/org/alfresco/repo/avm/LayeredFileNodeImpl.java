@@ -75,6 +75,7 @@ class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
         copyProperties(other);
         copyAspects(other);
         copyACLs(other, parentAcl, mode);
+        copyCreationAndOwnerBasicAttributes(other);
     }
 
     /**

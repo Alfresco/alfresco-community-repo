@@ -67,7 +67,8 @@ public class DeletedNodeImpl extends AVMNodeImpl implements DeletedNode
         AVMDAOs.Instance().fAVMNodeDAO.flush();
         copyProperties(other);
         copyAspects(other);
-        copyACLs(other, parentAcl, mode);        
+        copyACLs(other, parentAcl, mode);       
+        copyCreationAndOwnerBasicAttributes(other);
     }
     
     /**

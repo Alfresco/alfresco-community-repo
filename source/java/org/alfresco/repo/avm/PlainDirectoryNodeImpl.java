@@ -89,6 +89,7 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
         copyProperties(other);
         copyAspects(other);
         copyACLs(other, parentAcl, mode);
+        copyCreationAndOwnerBasicAttributes(other);
     }
 
     /**
@@ -277,6 +278,7 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
                 AVMDAOs.Instance().fAVMNodeDAO.flush();
                 ghost.setAncestor(child);
                 ghost.setDeletedType(child.getType());
+                ghost.copyCreationAndOwnerBasicAttributes(child);
                 putChild(name, ghost);
             }
             else

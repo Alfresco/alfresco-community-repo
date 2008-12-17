@@ -24,6 +24,7 @@
  */
 package org.alfresco.repo.transaction;
 
+import java.lang.reflect.Method;
 import java.sql.BatchUpdateException;
 import java.sql.SQLException;
 import java.util.Random;
@@ -44,8 +45,11 @@ import org.apache.commons.logging.LogFactory;
 import org.hibernate.ObjectNotFoundException;
 import org.hibernate.StaleObjectStateException;
 import org.hibernate.StaleStateException;
+import org.hibernate.cache.CacheException;
 import org.hibernate.exception.ConstraintViolationException;
 import org.hibernate.exception.LockAcquisitionException;
+import org.springframework.aop.MethodBeforeAdvice;
+import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DeadlockLoserDataAccessException;
@@ -74,6 +78,7 @@ import org.springframework.jdbc.UncategorizedSQLException;
 public class RetryingTransactionHelper
 {
     private static final String MSG_READ_ONLY = "permissions.err_read_only";
+    private static final String KEY_ACTIVE_TRANSACTION = "RetryingTransactionHelper.ActiveTxn";
     private static Log    logger = LogFactory.getLog(RetryingTransactionHelper.class);
 
     /**
@@ -95,7 +100,8 @@ public class RetryingTransactionHelper
                 DataIntegrityViolationException.class,
                 StaleStateException.class,
                 ObjectNotFoundException.class,
-                RemoteCacheException.class
+                CacheException.class,                       // Usually a cache replication issue
+                RemoteCacheException.class                  // A cache replication issue
                 };
     }
 
@@ -104,6 +110,8 @@ public class RetryingTransactionHelper
      */
     private TransactionService txnService;
 
+//    /** Performs post-failure exception neatening */
+//    private ExceptionTransformer exceptionTransformer;
     /** The maximum number of retries. -1 for infinity. */
     private int maxRetries;
     /** The minimum time to wait between retries. */
@@ -151,6 +159,16 @@ public class RetryingTransactionHelper
     }
 
     // Setters.
+
+//    /**
+//     * Optionally set the component that will transform or neaten any exceptions that are
+//     * propagated.
+//     */
+//    public void setExceptionTransformer(ExceptionTransformer exceptionTransformer)
+//    {
+//        this.exceptionTransformer = exceptionTransformer;
+//    }
+//
     /**
      * Set the TransactionService.
      */
@@ -289,6 +307,14 @@ public class RetryingTransactionHelper
                 if (txn != null)
                 {
                     txn.begin();
+                    // Wrap it to protect it
+                    UserTransactionProtectionAdvise advise = new UserTransactionProtectionAdvise();
+                    ProxyFactory proxyFactory = new ProxyFactory(txn);
+                    proxyFactory.addAdvice(advise);
+                    UserTransaction wrappedTxn = (UserTransaction) proxyFactory.getProxy();
+                    // Store the UserTransaction for static retrieval.  There is no need to unbind it
+                    // because the transaction management will do that for us.
+                    AlfrescoTransactionSupport.bindResource(KEY_ACTIVE_TRANSACTION, wrappedTxn);
                 }
                 // Do the work.
                 R result = cb.execute();
@@ -340,12 +366,12 @@ public class RetryingTransactionHelper
                 if (logger.isDebugEnabled())
                 {
                     logger.debug("\n" +
-                    		"Transaction commit failed: \n" +
-                    		"   Thread: " + Thread.currentThread().getName() + "\n" +
-                    		"   Txn:    " + txn + "\n" +
-                    		"   Iteration: " + count + "\n" +
-                    		"   Exception follows:",
-                    		e);
+                            "Transaction commit failed: \n" +
+                            "   Thread: " + Thread.currentThread().getName() + "\n" +
+                            "   Txn:    " + txn + "\n" +
+                            "   Iteration: " + count + "\n" +
+                            "   Exception follows:",
+                            e);
                 }
                 // Rollback if we can.
                 if (txn != null)
@@ -438,6 +464,46 @@ public class RetryingTransactionHelper
         {
             // A simple match
             return retryCause;
+        }
+    }
+    
+    /**
+     * Utility method to get the active transaction.  The transaction status can be queried and
+     * marked for rollback.
+     * <p>
+     * <b>NOTE:</b> Any attempt to actually commit or rollback the transaction will cause failures.
+     * 
+     * @return          Returns the currently active user transaction or <tt>null</tt> if
+     *                  there isn't one.
+     */
+    public static UserTransaction getActiveUserTransaction()
+    {
+        // Dodge if there is no wrapping transaction
+        if (AlfrescoTransactionSupport.getTransactionReadState() == TxnReadState.TXN_NONE)
+        {
+            return null;
+        }
+        // Get the current transaction.  There might not be one if the transaction was not started using
+        // this class i.e. it wasn't started with retries.
+        UserTransaction txn = (UserTransaction) AlfrescoTransactionSupport.getResource(KEY_ACTIVE_TRANSACTION);
+        if (txn == null)
+        {
+            return null;
+        }
+        // Done
+        return txn;
+    }
+    
+    private static class UserTransactionProtectionAdvise implements MethodBeforeAdvice
+    {
+        public void before(Method method, Object[] args, Object target) throws Throwable
+        {
+            String methodName = method.getName();
+            if (methodName.equals("begin") || methodName.equals("commit") || methodName.equals("rollback"))
+            {
+                throw new IllegalAccessException(
+                        "The user transaction cannot be manipulated from within the transactional work load");
+            }
         }
     }
 }

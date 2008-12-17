@@ -42,6 +42,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import javax.transaction.Status;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.filesys.ServerConfigurationBean;
@@ -412,6 +413,7 @@ public class NTLMAuthenticationFilter implements Filter
                 
                 Type3NTLMMessage type3Msg = new Type3NTLMMessage(ntlmByts);
                 processType3(type3Msg, req, resp, httpSess, chain);
+                return;
             }                
         }
 
@@ -664,9 +666,58 @@ public class NTLMAuthenticationFilter implements Filter
             
             if ( m_authComponent.getNTLMMode() == NTLMMode.MD4_PROVIDER)
             {
-                // Get the stored MD4 hashed password for the user, or null if the user does not exist
+            	// Wrap the auth componenet calls in a transaction
+            	
+                UserTransaction tx = m_transactionService.getUserTransaction();
+                String md4hash = null;
                 
-                String md4hash = m_authComponent.getMD4HashedPassword(userName);
+                try
+                {
+                    tx.begin();
+
+                    // Get the stored MD4 hashed password for the user, or null if the user does not exist
+                
+                    md4hash = m_authComponent.getMD4HashedPassword(userName);
+                }
+                catch ( Throwable ex) {
+                	
+                	if ( logger.isDebugEnabled())
+                		logger.debug(ex);
+                }
+                finally {
+                	
+                	// Rollback/commit the transaction if still valid
+                	
+                	if ( tx != null) {
+
+                		try
+                        {
+                            // Commit or rollback the transaction
+                            
+                            if ( tx.getStatus() == Status.STATUS_MARKED_ROLLBACK ||
+                          	   tx.getStatus() == Status.STATUS_ROLLEDBACK ||
+                          	   tx.getStatus() == Status.STATUS_ROLLING_BACK)
+                            {
+                                // Transaction is marked for rollback
+                                
+                                tx.rollback();
+                            }
+                            else
+                            {
+                          	  	// Commit the transaction
+                                
+                                tx.commit();
+                            }
+                        }
+                		catch (Throwable ex) {
+
+                			if ( logger.isDebugEnabled())
+                        		logger.debug(ex);
+                		}
+                	}
+                }
+                
+                // Check if we got a valid MD4 hashed password
                 
                 if ( md4hash != null)
                 {
@@ -772,33 +823,44 @@ public class NTLMAuthenticationFilter implements Filter
                     
                     // commit
                     tx.commit();
+                    tx = null;
                 }
-                catch (Throwable ex)
-                {
-                    try
-                    {
-                        tx.rollback();
-                    }
-                    catch (Exception ex2)
-                    {
-                        logger.error("Failed to rollback transaction", ex2);
-                    }
-                    if(ex instanceof RuntimeException)
-                    {
-                        throw (RuntimeException)ex;
-                    }
-                    else if(ex instanceof IOException)
-                    {
-                        throw (IOException)ex;
-                    }
-                    else if(ex instanceof ServletException)
-                    {
-                        throw (ServletException)ex;
-                    }
-                    else
-                    {
-                        throw new RuntimeException("Authentication setup failed", ex);
-                    }
+                catch ( Throwable ex) {
+                	
+                	if ( logger.isDebugEnabled())
+                		logger.debug(ex);
+                }
+                finally {
+                	
+                	// Rollback/commit the transaction if still valid
+                	
+                	if ( tx != null) {
+
+                		try
+                        {
+                            // Commit or rollback the transaction
+                            
+                            if ( tx.getStatus() == Status.STATUS_MARKED_ROLLBACK ||
+                          	   tx.getStatus() == Status.STATUS_ROLLEDBACK ||
+                          	   tx.getStatus() == Status.STATUS_ROLLING_BACK)
+                            {
+                                // Transaction is marked for rollback
+                                
+                                tx.rollback();
+                            }
+                            else
+                            {
+                          	  	// Commit the transaction
+                                
+                                tx.commit();
+                            }
+                        }
+                		catch (Throwable ex) {
+
+                			if ( logger.isDebugEnabled())
+                        		logger.debug(ex);
+                		}
+                	}
                 }
                 
                 // Store the user

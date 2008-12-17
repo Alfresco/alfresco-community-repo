@@ -36,11 +36,11 @@ function main()
 
    // Resolve path if available
    var path = url.templateArgs.path;
-	// Path might be null for the root folder
-	if (!path)
-	{
-	   path = "";
-	}
+   // Path might be null for the root folder
+   if (!path)
+   {
+      path = "";
+   }
    // Remove any leading or trailing "/" from the path
    // Fix-up parent path to have no leading or trailing slashes
    if (path.length > 0)

@@ -1,3 +1,4 @@
+<#escape x as jsonUtils.encodeJSONString(x)>
 {
    "action" : "${action}",
    <#if inviteId??>
@@ -22,3 +23,4 @@
       "siteShortName" : "${siteShortName}"
    </#if>
 }
+</#escape>

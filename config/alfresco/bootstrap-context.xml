@@ -552,12 +552,6 @@
            <ref local="fileServerConfiguration"/>
         </constructor-arg>
     </bean>
-
-    <bean id="personDaoBootstrap" class="org.alfresco.repo.security.person.PersonDaoBootstrap" >
-        <property name="personDaoImpl">
-         	<ref bean="personDaoImpl"/>
-      	</property>
-   	</bean>
    
     <!-- Start the quartz scheduler -->
 

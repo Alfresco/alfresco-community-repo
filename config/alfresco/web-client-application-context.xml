@@ -18,7 +18,7 @@
             <value>classpath:alfresco/web-client-config-wcm.xml</value>
             <value>classpath:alfresco/web-client-config-actions.xml</value>
             <value>classpath:alfresco/web-client-config-forum-actions.xml</value>
-            <value>classpath:alfresco/web-client-config-blog-actions.xml</value>
+
             <value>classpath:alfresco/web-client-config-wcm-actions.xml</value>
             <value>classpath:alfresco/web-client-config-workflow-actions.xml</value>
             <value>classpath:alfresco/extension/web-client-config-custom.xml</value>
@@ -290,18 +290,6 @@
       </property>
    </bean>
    
-    <!-- Blog Integration Action Listeners -->
-    <bean id="BlogDetailsActionListener" class="org.alfresco.web.bean.actions.blogIntegration.BlogDetailsActionListener">               
-        <property name="serviceRegistry">
-            <ref bean="ServiceRegistry"/>
-        </property>
-    </bean>
-    
-    <bean id="BlogActionListener" class="org.alfresco.web.bean.actions.blogIntegration.BlogActionListener">               
-        <property name="serviceRegistry" ref="ServiceRegistry"/>
-        <property name="blogIntegrationService" ref="BlogIntegrationService"/>
-    </bean>
-    
     <!-- ===================================== -->
     <!-- Web Script Beans             -->
     <!-- ===================================== -->

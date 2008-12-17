@@ -1129,9 +1129,6 @@
             <action idref="add_translation" />
             <action idref="add_translation_wc" />
             <action idref="ml_details" />
-            <action idref="postBlog" />
-            <action idref="updateBlog" />
-            <action idref="removeBlog" />
          </action-group>
 
          <action-group id="multilingual_details_actions">

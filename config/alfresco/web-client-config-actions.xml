@@ -488,14 +488,6 @@
             <action>wizard:createContent</action>
          </action>
 
-         <!-- Create XML content type -->
-         <action id="create_form">
-            <evaluator>org.alfresco.web.action.evaluator.CreateFormEvaluator</evaluator>
-            <label-id>create_form</label-id>
-            <image>/images/icons/create_form.gif</image>
-            <action>wizard:createForm</action>
-         </action>
-
          <!-- Edit XML content type -->
          <action id="edit_form">
             <permissions>
@@ -1066,7 +1058,6 @@
          <!-- Actions Menu for Create in Browse screen -->
          <action-group id="browse_create_menu">
             <action idref="create_content" />
-            <action idref="create_form" />
             <action idref="create_web_form" />      
             <action idref="create_website_wizard" />
             <action idref="create_space" />

@@ -81,7 +81,8 @@ public class XFormsProcessor implements FormProcessor
       "/scripts/ajax/tiny_mce_wcm_extensions.js",
       "/scripts/ajax/xforms.js",
       "/scripts/ajax/file_picker_widget.js",
-      "/scripts/upload_helper.js"
+      "/scripts/upload_helper.js",
+      "/scripts/ajax/dojo/src/date/serialize.js"
    };
 
    /** Localized strings needed by the xforms client. */

@@ -26,10 +26,10 @@ package org.alfresco.repo.avm.wf;
 import java.util.List;
 
 import org.alfresco.repo.workflow.jbpm.JBPMSpringActionHandler;
+import org.alfresco.sandbox.SandboxConstants;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
-import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jbpm.graph.exe.ExecutionContext;
@@ -81,9 +81,9 @@ public class AVMSubmitHandler extends JBPMSpringActionHandler
             return;
         }
         String webSiteName = 
-            fAVMService.getStoreProperty(storePath[0], QName.createQName(null, ".website.name")).
+            fAVMService.getStoreProperty(storePath[0], SandboxConstants.PROP_WEBSITE_NAME).
             getStringValue();
-        String avmDest = webSiteName + "-staging:" + storePath[1];
+        String avmDest = webSiteName + ":" + storePath[1]; // note: it is implied that the website name is the same as staging name
         List<AVMDifference> diffs = 
             fAVMSyncService.compare(-1, avmSource, -1, avmDest, null);
         // TODO fix update comments if needed.

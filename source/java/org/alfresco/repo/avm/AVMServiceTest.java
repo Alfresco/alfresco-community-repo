@@ -52,6 +52,7 @@ import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.sandbox.SandboxConstants;
 import org.alfresco.service.cmr.avm.AVMBadArgumentException;
 import org.alfresco.service.cmr.avm.AVMCycleException;
 import org.alfresco.service.cmr.avm.AVMException;
@@ -1963,24 +1964,25 @@ public class AVMServiceTest extends AVMServiceTestBase
      */
     public void testSubmitAction() throws Exception
     {
+        final String STAGING = "foo-staging"; // note: it is implied that the website/webproject name is the same as staging name
         try
         {
-            fService.createStore("foo-staging");
-            fService.createDirectory("foo-staging:/", JNDIConstants.DIR_DEFAULT_WWW);
-            fService.createDirectory("foo-staging:/" + JNDIConstants.DIR_DEFAULT_WWW, "a");
-            fService.createDirectory("foo-staging:/" + JNDIConstants.DIR_DEFAULT_WWW + "/a", "b");
-            fService.createDirectory("foo-staging:/" + JNDIConstants.DIR_DEFAULT_WWW + "/a/b", "c");
-            fService.createFile("foo-staging:/" + JNDIConstants.DIR_DEFAULT_WWW + "/a/b/c", "foo").close();
-            fService.createFile("foo-staging:/" + JNDIConstants.DIR_DEFAULT_WWW + "/a/b/c", "bar").close();
+            fService.createStore(STAGING);
+            fService.createDirectory(STAGING+":/", JNDIConstants.DIR_DEFAULT_WWW);
+            fService.createDirectory(STAGING+":/" + JNDIConstants.DIR_DEFAULT_WWW, "a");
+            fService.createDirectory(STAGING+":/" + JNDIConstants.DIR_DEFAULT_WWW + "/a", "b");
+            fService.createDirectory(STAGING+":/" + JNDIConstants.DIR_DEFAULT_WWW + "/a/b", "c");
+            fService.createFile(STAGING+":/" + JNDIConstants.DIR_DEFAULT_WWW + "/a/b/c", "foo").close();
+            fService.createFile(STAGING+":/" + JNDIConstants.DIR_DEFAULT_WWW + "/a/b/c", "bar").close();
             fService.createStore("area");
-            fService.setStoreProperty("area", QName.createQName(null, ".website.name"), new PropertyValue(null, "foo"));
-            fService.createLayeredDirectory("foo-staging:/" + JNDIConstants.DIR_DEFAULT_WWW, "area:/", JNDIConstants.DIR_DEFAULT_WWW);
+            fService.setStoreProperty("area", SandboxConstants.PROP_WEBSITE_NAME, new PropertyValue(null, STAGING)); // note: it is implied that the website name is the same as staging name
+            fService.createLayeredDirectory(STAGING+":/" + JNDIConstants.DIR_DEFAULT_WWW, "area:/", JNDIConstants.DIR_DEFAULT_WWW);
             fService.createFile("area:/" + JNDIConstants.DIR_DEFAULT_WWW, "figs").close();
             fService.getFileOutputStream("area:/" + JNDIConstants.DIR_DEFAULT_WWW + "/a/b/c/foo").close();
             fService.removeNode("area:/" + JNDIConstants.DIR_DEFAULT_WWW + "/a/b/c/bar");
-            List<AVMDifference> diffs = fSyncService.compare(-1, "area:/" + JNDIConstants.DIR_DEFAULT_WWW, -1, "foo-staging:/" + JNDIConstants.DIR_DEFAULT_WWW, null);
+            List<AVMDifference> diffs = fSyncService.compare(-1, "area:/" + JNDIConstants.DIR_DEFAULT_WWW, -1, STAGING+":/" + JNDIConstants.DIR_DEFAULT_WWW, null);
             assertEquals(3, diffs.size());
-            assertEquals("[area:/www/a/b/c/bar[-1] > foo-staging:/www/a/b/c/bar[-1], area:/www/a/b/c/foo[-1] > foo-staging:/www/a/b/c/foo[-1], area:/www/figs[-1] > foo-staging:/www/figs[-1]]", diffs.toString());
+            assertEquals("[area:/www/a/b/c/bar[-1] > "+STAGING+":/www/a/b/c/bar[-1], area:/www/a/b/c/foo[-1] > "+STAGING+":/www/a/b/c/foo[-1], area:/www/figs[-1] > "+STAGING+":/www/figs[-1]]", diffs.toString());
             final SimpleAVMSubmitAction action = (SimpleAVMSubmitAction) fContext.getBean("simple-avm-submit");
             class TxnWork implements RetryingTransactionCallback<Object>
             {
@@ -1994,7 +1996,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             TransactionService transactionService = (TransactionService) fContext.getBean("transactionService");
             transactionService.getRetryingTransactionHelper().doInTransaction(new TxnWork());
 
-            diffs = fSyncService.compare(-1, "area:/" + JNDIConstants.DIR_DEFAULT_WWW, -1, "foo-staging:/" + JNDIConstants.DIR_DEFAULT_WWW, null);
+            diffs = fSyncService.compare(-1, "area:/" + JNDIConstants.DIR_DEFAULT_WWW, -1, STAGING+":/" + JNDIConstants.DIR_DEFAULT_WWW, null);
 
             assertEquals(0, diffs.size());
         }
@@ -2005,7 +2007,7 @@ public class AVMServiceTest extends AVMServiceTestBase
         }
         finally
         {
-            fService.purgeStore("foo-staging");
+            fService.purgeStore(STAGING);
             fService.purgeStore("area");
         }
     }

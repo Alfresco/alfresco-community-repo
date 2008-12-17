@@ -190,7 +190,7 @@
        </transition>
     </decision>
 
-    <task-node name="submitpending">
+    <task-node name="submitpending" end-tasks="true">
         <task name="wcmwf:submitpendingTask" swimlane="initiator">
            <event type="task-create">
               <script>

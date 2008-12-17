@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -30,6 +30,7 @@ import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
 import org.alfresco.repo.avm.AVMDAOs;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.sandbox.SandboxConstants;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.avm.AVMService;
@@ -37,7 +38,6 @@ import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncException;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.QName;
 import org.alfresco.util.NameMatcher;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
@@ -125,17 +125,16 @@ public class SimpleAVMSubmitAction extends ActionExecuterAbstractBase
         }
         // Get the .website.name property.
         PropertyValue wsProp = 
-            fAVMService.getStoreProperty(storePath[0], 
-                    QName.createQName(null, ".website.name"));
+            fAVMService.getStoreProperty(storePath[0], SandboxConstants.PROP_WEBSITE_NAME);
         if (wsProp == null)
         {
-            fgLogger.warn(".website.name property not found.");
+            fgLogger.warn(SandboxConstants.PROP_WEBSITE_NAME.toString()+" property not found.");
             return;
         }
         // And the actual web-site name.
         String websiteName = wsProp.getStringValue();
         // Construct the submit destination path.
-        String avmDest = websiteName + "-staging:" + storePath[1];
+        String avmDest = websiteName + ":" + storePath[1]; // note: it is implied that the website name is the same as staging name
         // Get the difference between source and destination.
         List<AVMDifference> diffs = 
             fAVMSyncService.compare(version, path, -1, avmDest, fExcluder);
@@ -146,7 +145,7 @@ public class SimpleAVMSubmitAction extends ActionExecuterAbstractBase
         // Cleanup by flattening the source relative to the destination.
         // This is an ugliness to prevent database write misorderings in flatten.
         AVMDAOs.Instance().fAVMNodeDAO.flush();
-        fAVMSyncService.flatten(storePath[0] + ":/" + JNDIConstants.DIR_DEFAULT_WWW, websiteName + "-staging:/" + JNDIConstants.DIR_DEFAULT_WWW);
+        fAVMSyncService.flatten(storePath[0] + ":/" + JNDIConstants.DIR_DEFAULT_WWW, websiteName + ":/" + JNDIConstants.DIR_DEFAULT_WWW);
     }
 
     /**

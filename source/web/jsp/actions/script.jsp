@@ -33,7 +33,21 @@
 <%@ page import="org.alfresco.web.ui.common.PanelGenerator" %>
 
 <r:page titleId="title_action_script">
-
+<script type="text/javascript">
+   function toggleOk()
+   {
+      var selectElement = document.getElementById("script-action:scripts-list");
+      var okButton = document.getElementById("script-action:ok-button");
+      if (selectElement.selectedIndex == 0)
+      {
+         okButton.setProperty('disabled', true);
+      }
+      else
+      {
+         okButton.setProperty('disabled', false);
+      }
+   }
+</script>
 <f:view>
    
    <%-- load a bundle of properties with I18N strings --%>
@@ -114,7 +128,7 @@
                                     <td><nobr><h:outputText value="#{msg.action_script_select}"/>:</nobr></td>
                                     <td width=100%>
                                        <%-- Scripts drop-down selector --%>
-                                       <h:selectOneMenu value="#{WizardManager.bean.actionProperties.script}">
+                                       <h:selectOneMenu id="scripts-list" value="#{WizardManager.bean.actionProperties.script}" onchange="javascript:toggleOk()">
                                           <f:selectItems value="#{TemplateSupportBean.scriptFiles}" />
                                        </h:selectOneMenu>
                                     </td>
@@ -129,12 +143,12 @@
                               <table cellpadding="1" cellspacing="1" border="0">
                                  <tr>
                                     <td align="center">
-                                       <h:commandButton value="#{msg.ok}" action="#{WizardManager.bean.addAction}" styleClass="wizardButton" />
+                                       <h:commandButton id="ok-button" value="#{msg.ok}" action="#{WizardManager.bean.addAction}" styleClass="wizardButton" disabled="true" />
                                     </td>
                                  </tr>
                                  <tr>
                                     <td align="center">
-                                       <h:commandButton value="#{msg.cancel_button}" action="#{WizardManager.bean.cancelAddAction}" styleClass="wizardButton" />
+                                       <h:commandButton id="cancel-button" value="#{msg.cancel_button}" action="#{WizardManager.bean.cancelAddAction}" styleClass="wizardButton" />
                                     </td>
                                  </tr>
                               </table>

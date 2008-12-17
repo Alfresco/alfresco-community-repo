@@ -64,20 +64,12 @@ public class DeleteForumDialog extends DeleteSpaceDialog
    {
       // find out what the parent type of the node being deleted 
       Node node = this.browseBean.getActionSpace();
+      NodeRef parent = null;
       ChildAssociationRef assoc = this.getNodeService().getPrimaryParent(node.getNodeRef());
       if (assoc != null)
       {
          // get the parent node
-         NodeRef parent = assoc.getParentRef();
-         
-         // get the association type
-         QName type = assoc.getTypeQName();
-         if (type.equals(ForumModel.ASSOC_DISCUSSION))
-         {
-            // if the association type is the 'discussion' association we
-            // need to remove the discussable aspect from the parent node
-            this.getNodeService().removeAspect(parent, ForumModel.ASPECT_DISCUSSABLE);
-         }
+         parent = assoc.getParentRef();
          
          // if the parent type is a forum space then we need the dialog to go
          // back to the forums view otherwise it will use the default of 'browse',
@@ -89,7 +81,23 @@ public class DeleteForumDialog extends DeleteSpaceDialog
          }
       }
 
-      return super.finishImpl(context, outcome);
+      // delete the forum itself
+      outcome = super.finishImpl(context, outcome);
+      
+      // remove the discussable aspect if appropriate
+      if (assoc != null && parent != null)
+      {
+         // get the association type
+         QName type = assoc.getTypeQName();
+         if (type.equals(ForumModel.ASSOC_DISCUSSION))
+         {
+            // if the association type is the 'discussion' association we
+            // need to remove the discussable aspect from the parent node
+            this.getNodeService().removeAspect(parent, ForumModel.ASPECT_DISCUSSABLE);
+         }
+      }
+      
+      return outcome;
    }
 
    @Override

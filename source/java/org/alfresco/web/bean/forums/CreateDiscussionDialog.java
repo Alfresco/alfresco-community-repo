@@ -179,6 +179,10 @@ public class CreateDiscussionDialog extends CreateTopicDialog
          tx = Repository.getUserTransaction(context);
          tx.begin();
          
+         // remove this node from the breadcrumb if required
+         Node forumNode = this.navigator.getCurrentNode();
+         this.browseBean.removeSpaceFromBreadcrumb(forumNode);
+         
          // remove the discussable aspect from the node we were going to discuss!
          // AWC-1519: removing the aspect that defines the child association now does the 
          //           cascade delete so we no longer have to delete the child explicitly
@@ -186,10 +190,6 @@ public class CreateDiscussionDialog extends CreateTopicDialog
          
          // commit the transaction
          tx.commit();
-         
-         // remove this node from the breadcrumb if required
-         Node forumNode = this.navigator.getCurrentNode();
-         this.browseBean.removeSpaceFromBreadcrumb(forumNode);
                
          // clear action context
          this.browseBean.setActionSpace(null);

@@ -157,7 +157,8 @@ function main()
        dtstart : fromIsoDate+ 'T' +json.get('start'),
        dtend : toIsoDate + 'T' +json.get('end'),
        allday : (json.isNull("allday")) ? false : (json.get('allday')=='on') ? true : false,
-       uri : "calendar/event/" + params.siteid + "/" + event.name
+       uri : "calendar/event/" + params.siteid + "/" + event.name,
+       tags : tags
    }
 
    return savedData;

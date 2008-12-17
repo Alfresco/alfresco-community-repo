@@ -9,7 +9,8 @@
        "dtstart" : "${result.dtstart}",
        "dtend" : "${result.dtend}",
        "uri" : "${result.uri}",       
-       "allday" : ${result.allday?string}
+       "allday" : "${result.allday?string}",
+       "tags" : "${result.tags}"
    }
    
 </#if>

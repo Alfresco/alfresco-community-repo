@@ -134,7 +134,7 @@
    </filter>
 
    <!-- For NTLM authentication support enable the following mappings -->
-   <!-- after enabling the NTLMAuthenticationFilter filter classes above -->
+   <!-- after enabling the NTLMAuthenticationFilter filter class above -->
    <!--
    <filter-mapping>
       <filter-name>Authentication Filter</filter-name>
@@ -174,6 +174,16 @@
    <filter-mapping>
       <filter-name>Authentication Filter</filter-name>
       <url-pattern>/d/*</url-pattern>
+   </filter-mapping>
+   
+   <filter-mapping>
+      <filter-name>Authentication Filter</filter-name>
+      <url-pattern>/wcservice/*</url-pattern>
+   </filter-mapping>
+   
+   <filter-mapping>
+      <filter-name>Authentication Filter</filter-name>
+      <url-pattern>/wcs/*</url-pattern>
    </filter-mapping>
    -->
    

@@ -96,7 +96,7 @@
       
       <!-- For Novell IChain support use the following filter -->
       <!--
-        <filter-class>org.alfresco.web.app.servlet.NovellIChainsHTTPRequestAuthenticationFilter</filter-class>
+      <filter-class>org.alfresco.web.app.servlet.NovellIChainsHTTPRequestAuthenticationFilter</filter-class>
       -->
    </filter>
 
@@ -106,7 +106,7 @@
       
       <!-- For NTLM authentication support use the following filter -->
       <!--
-        <filter-class>org.alfresco.repo.webdav.auth.NTLMAuthenticationFilter</filter-class>
+      <filter-class>org.alfresco.repo.webdav.auth.NTLMAuthenticationFilter</filter-class>
       -->
    </filter>
 

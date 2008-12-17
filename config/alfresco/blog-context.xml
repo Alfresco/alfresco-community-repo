@@ -1,0 +1,78 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+    <!-- Blog Integration Service -->
+    
+    <bean id="BlogIntegrationService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.repo.blogIntegration.BlogIntegrationService</value>
+        </property>
+        <property name="target">
+            <ref bean="blogIntegrationService"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref local="BlogIntegrationService_transaction"/>
+                <idref bean="AuditMethodInterceptor"/>
+                <idref bean="exceptionTranslator"/>
+                <idref local="BlogIntegrationService_security"/>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="BlogIntegrationService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+        <property name="transactionManager">
+            <ref bean="transactionManager"/>
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="*">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
+    
+    <bean id="BlogIntegrationService_security" class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
+    
+    <bean id="blogIntegrationService" class="org.alfresco.repo.blogIntegration.BlogIntegrationServiceImpl">
+    	<property name="nodeService" ref="NodeService"/>
+    	<property name="contentService" ref="ContentService"/>
+    </bean>    
+    
+    <!-- Blog Integration Implementations -->
+    
+    <bean id="baseBlogIntegrationImplmentation" abstract="true" init-method="register">
+    	<property name="blogIntegrationService" ref="blogIntegrationService"/>
+    </bean>
+    
+    <bean id="wordPressBlogIntegration" parent="baseBlogIntegrationImplmentation" class="org.alfresco.repo.blogIntegration.wordpress.WordPressIntegration">
+    	<property name="name" value="wordpress"/>
+    	<property name="displayName" value="WordPress"/>
+    </bean>
+    
+    <bean id="typePadBlogIntegration" parent="baseBlogIntegrationImplmentation" class="org.alfresco.repo.blogIntegration.typepad.TypepadIntegration">
+    	<property name="name" value="typepad"/>
+    	<property name="displayName" value="Typepad"/>
+    </bean>
+
+	<!-- Blog Repository Actions -->
+	
+   <bean id="blog-post" class="org.alfresco.repo.action.executer.BlogAction" parent="action-executer">
+      <property name="nodeService">
+         <ref bean="nodeService" />
+      </property>
+      <property name="dictionaryService">
+         <ref bean="dictionaryService" />
+      </property>
+      <property name="blogIntegrationService">
+         <ref bean="blogIntegrationService" />
+      </property>
+      <property name="applicableTypes">
+      	<list>
+      		<value>{http://www.alfresco.org/model/content/1.0}null</value>
+      	</list>
+      </property>
+   </bean>
+
+</beans>

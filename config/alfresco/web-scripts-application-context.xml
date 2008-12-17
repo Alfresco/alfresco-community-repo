@@ -278,6 +278,9 @@
       <property name="store"><value>sitestore</value></property>
       -->
    </bean>
+   
+   <!-- Web-tier SSO authentication touch point -->
+   <bean id="webscript.org.alfresco.repository.touch.get" class="org.alfresco.repo.web.scripts.bean.Touch" parent="webscript" />
 
 
    <!--                            -->

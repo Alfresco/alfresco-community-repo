@@ -29,6 +29,7 @@ import junit.framework.TestSuite;
 
 import org.alfresco.wcm.sandbox.SandboxServiceImplTest;
 import org.alfresco.wcm.webproject.WebProjectServiceImplTest;
+import org.alfresco.wcm.webproject.script.ScriptWebProjectsTest;
 
 /**
  * WCM test suite
@@ -48,6 +49,7 @@ public class WCMTestSuite extends TestSuite
         
         suite.addTestSuite(WebProjectServiceImplTest.class);
         suite.addTestSuite(SandboxServiceImplTest.class);
+        suite.addTestSuite(ScriptWebProjectsTest.class);
 
         return suite;
     }

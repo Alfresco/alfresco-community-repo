@@ -964,7 +964,7 @@ public class SandboxServiceImplTest extends TestCase
         
         // Invite web users
         wpService.inviteWebUser(wpStoreId, USER_ONE, WCMUtil.ROLE_CONTENT_CONTRIBUTOR, true);
-        wpService.inviteWebUser(wpStoreId, USER_TWO, WCMUtil.ROLE_CONTENT_PUBLISHER, true);
+        wpService.inviteWebUser(wpStoreId, USER_TWO, WCMUtil.ROLE_CONTENT_MANAGER, true); // note: publisher does not have permission to delete
         
         // Switch to USER_ONE
         AuthenticationUtil.setCurrentUser(USER_ONE);
@@ -1066,7 +1066,11 @@ public class SandboxServiceImplTest extends TestCase
         
         // Invite web users
         wpService.inviteWebUser(wpStoreId, USER_ONE, WCMUtil.ROLE_CONTENT_CONTRIBUTOR, true);
-        wpService.inviteWebUser(wpStoreId, USER_TWO, WCMUtil.ROLE_CONTENT_PUBLISHER, true);
+        
+        // TODO - pending fix for ETWOTWO-981
+        //wpService.inviteWebUser(wpStoreId, USER_TWO, WCMUtil.ROLE_CONTENT_PUBLISHER, true);
+        
+        wpService.inviteWebUser(wpStoreId, USER_TWO, WCMUtil.ROLE_CONTENT_MANAGER, true);
         
         // Switch to USER_ONE
         AuthenticationUtil.setCurrentUser(USER_ONE);

@@ -43,6 +43,9 @@ public abstract class AbstractAuthenticationFilter implements Filter
 {
     private static Log logger = LogFactory.getLog(AbstractAuthenticationFilter.class);
     
+    /** Request level marker to indicate that authentication should not be processed */
+    final static String NO_AUTH_REQUIRED = "alfNoAuthRequired"; 
+    
     
     /**
      * Parse the Accept-Lanaguage HTTP header value

@@ -27,6 +27,7 @@ package org.alfresco.web.bean.admin;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,6 +40,7 @@ import javax.faces.model.SelectItem;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -57,6 +59,7 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ISO9075;
 import org.alfresco.web.app.servlet.DownloadContentServlet;
 import org.alfresco.web.bean.repository.Repository;
@@ -105,12 +108,30 @@ public class AdminNodeBrowseBean implements Serializable
     transient private DataModel avmStoreProps = null;
 
     // supporting repository services
+    transient private TransactionService transactionService;
     transient private NodeService nodeService;
     transient private DictionaryService dictionaryService;
     transient private SearchService searchService;
     transient private NamespaceService namespaceService;
     transient private PermissionService permissionService;
     transient private AVMService avmService;
+
+    /**
+     * @param transactionService        transaction service
+     */
+    public void setTransactionService(TransactionService transactionService)
+    {
+        this.transactionService = transactionService;
+    }
+
+    private TransactionService getTransactionService()
+    {
+        if (transactionService == null)
+        {
+            transactionService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getTransactionService();
+        }
+        return transactionService;
+    }
 
     /**
      * @param nodeService node service
@@ -529,7 +550,7 @@ public class AdminNodeBrowseBean implements Serializable
      * 
      * @return query languages
      */
-    public List getQueryLanguages()
+    public List<SelectItem> getQueryLanguages()
     {
         return queryLanguages;
     }
@@ -667,30 +688,38 @@ public class AdminNodeBrowseBean implements Serializable
      */
     public String submitSearch()
     {
-        try
+        RetryingTransactionCallback<String> searchCallback = new RetryingTransactionCallback<String>()
         {
-            if (queryLanguage.equals("noderef"))
+            public String execute() throws Throwable
             {
-                // ensure node exists
-                NodeRef nodeRef = new NodeRef(query);
-                boolean exists = getNodeService().exists(nodeRef);
-                if (!exists)
+                if (queryLanguage.equals("noderef"))
                 {
-                    throw new AlfrescoRuntimeException("Node " + nodeRef + " does not exist.");
+                    // ensure node exists
+                    NodeRef nodeRef = new NodeRef(query);
+                    boolean exists = getNodeService().exists(nodeRef);
+                    if (!exists)
+                    {
+                        throw new AlfrescoRuntimeException("Node " + nodeRef + " does not exist.");
+                    }
+                    setNodeRef(nodeRef);
+                    return "node";
                 }
-                setNodeRef(nodeRef);
-                return "node";
-            }
-            else if (queryLanguage.equals("selectnodes"))
-            {
-                List<NodeRef> nodes = getSearchService().selectNodes(getNodeRef(), query, null, getNamespaceService(), false);
-                searchResults = new SearchResults(nodes);
+                else if (queryLanguage.equals("selectnodes"))
+                {
+                    List<NodeRef> nodes = getSearchService().selectNodes(getNodeRef(), query, null, getNamespaceService(), false);
+                    searchResults = new SearchResults(nodes);
+                    return "search";
+                }
+
+                // perform search
+                searchResults = new SearchResults(getSearchService().query(getNodeRef().getStoreRef(), queryLanguage, query));
                 return "search";
             }
+        };
 
-            // perform search
-            searchResults = new SearchResults(getSearchService().query(getNodeRef().getStoreRef(), queryLanguage, query));
-            return "search";
+        try
+        {
+            return getTransactionService().getRetryingTransactionHelper().doInTransaction(searchCallback, true);
         }
         catch (Throwable e)
         {
@@ -724,6 +753,7 @@ public class AdminNodeBrowseBean implements Serializable
          * @param name property name
          * @param value property values
          */
+        @SuppressWarnings("unchecked")
         public Property(QName name, Serializable value)
         {
             this.name = name;
@@ -740,19 +770,20 @@ public class AdminNodeBrowseBean implements Serializable
             }
 
             // handle multi/single values
-            // TODO: perhaps this is not the most efficient way - lots of list creations
-            List<Value> values = new ArrayList<Value>();
+            final List<Value> values;
             if (value instanceof Collection)
             {
+                Collection<Serializable> oldValues = (Collection<Serializable>) value;
+                values = new ArrayList<Value>(oldValues.size());
                 isCollection = true;
-                for (Serializable multiValue : (Collection<Serializable>) value)
+                for (Serializable multiValue : oldValues)
                 {
                     values.add(new Value(multiValue));
                 }
             }
             else
             {
-                values.add(new Value(value));
+                values = Collections.singletonList(new Value(value));
             }
             this.values = new ListDataModel(values);
         }

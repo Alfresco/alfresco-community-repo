@@ -1864,6 +1864,10 @@
       <managed-bean-class>org.alfresco.web.bean.admin.AdminNodeBrowseBean</managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
+         <property-name>transactionService</property-name>
+         <value>#{TransactionService}</value>
+      </managed-property>
+      <managed-property>
          <property-name>nodeService</property-name>
          <value>#{NodeService}</value>
       </managed-property>

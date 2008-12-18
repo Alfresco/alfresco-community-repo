@@ -99,6 +99,14 @@
       <filter-class>org.alfresco.web.app.servlet.NovellIChainsHTTPRequestAuthenticationFilter</filter-class>
       -->
    </filter>
+   
+   <!-- For NTLM authentication support use the following filter, also see the filter-mapping section -->
+   <!--
+   <filter>
+      <filter-name>WebScript NTLM Authentication Filter</filter-name>
+      <filter-class>org.alfresco.web.app.servlet.WebScriptNTLMAuthenticationFilter</filter-class>
+   </filter>
+   -->
 
    <filter>
       <filter-name>WebDAV Authentication Filter</filter-name>
@@ -177,12 +185,12 @@
    </filter-mapping>
    
    <filter-mapping>
-      <filter-name>Authentication Filter</filter-name>
+      <filter-name>WebScript NTLM Authentication Filter</filter-name>
       <url-pattern>/wcservice/*</url-pattern>
    </filter-mapping>
    
    <filter-mapping>
-      <filter-name>Authentication Filter</filter-name>
+      <filter-name>WebScript NTLM Authentication Filter</filter-name>
       <url-pattern>/wcs/*</url-pattern>
    </filter-mapping>
    

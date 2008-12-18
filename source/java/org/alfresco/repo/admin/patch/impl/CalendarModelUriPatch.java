@@ -76,7 +76,7 @@ public class CalendarModelUriPatch extends AbstractPatch
     protected String applyInternal() throws Exception
     {
         // modify namespace for all calendar entries
-        qnameDAO.updateNamespaceEntity(URI_BEFORE, URI_AFTER);
+        qnameDAO.updateNamespace(URI_BEFORE, URI_AFTER);
         
         // reindex the calendar entries
         int count = reindex("TYPE:\\{" + QueryParser.escape(URI_BEFORE) + "\\}*", importerBootstrap.getStoreRef());

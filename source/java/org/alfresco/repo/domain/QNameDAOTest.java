@@ -39,6 +39,7 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
+import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
@@ -76,17 +77,17 @@ public class QNameDAOTest extends TestCase
     public void testNewNamespace() throws Exception
     {
         final String namespaceUri = GUID.generate();
-        RetryingTransactionCallback<NamespaceEntity> callback = new RetryingTransactionCallback<NamespaceEntity>()
+        RetryingTransactionCallback<Pair<Long, String>> callback = new RetryingTransactionCallback<Pair<Long, String>>()
         {
-            public NamespaceEntity execute() throws Throwable
+            public Pair<Long, String> execute() throws Throwable
             {
-                NamespaceEntity namespace = dao.getNamespaceEntity(namespaceUri);
-                assertNull("Namespace should not exist yet", namespace);
+                Pair<Long, String> namespacePair = dao.getNamespace(namespaceUri);
+                assertNull("Namespace should not exist yet", namespacePair);
                 // Now make it
-                namespace = dao.newNamespaceEntity(namespaceUri);
-                assertNotNull("Namespace should now exist", dao.getNamespaceEntity(namespaceUri));
+                namespacePair = dao.newNamespace(namespaceUri);
+                assertNotNull("Namespace should now exist", dao.getNamespace(namespaceUri));
                 // Done
-                return namespace;
+                return namespacePair;
             }
         };
         retryingTransactionHelper.doInTransaction(callback);
@@ -102,17 +103,17 @@ public class QNameDAOTest extends TestCase
         {
             public Object execute() throws Throwable
             {
-                dao.getOrCreateNamespaceEntity(namespaceUriBefore);
+                dao.getOrCreateNamespace(namespaceUriBefore);
                 // Get a QName that has the URI
-                QNameEntity qnameEntityBefore = dao.getOrCreateQNameEntity(qnameBefore);
+                Long qnameIdBefore = dao.getOrCreateQName(qnameBefore).getFirst();
                 // Now modify the namespace
-                dao.updateNamespaceEntity(namespaceUriBefore, namespaceUriAfter);
+                dao.updateNamespace(namespaceUriBefore, namespaceUriAfter);
                 // The old qname must be gone
-                assertNull("QName must be gone as the URI was renamed", dao.getQNameEntity(qnameBefore));
+                assertNull("QName must be gone as the URI was renamed", dao.getQName(qnameBefore));
                 // The new QName must be present and with the same ID
-                QNameEntity qnameEntityAfter = dao.getQNameEntity(qnameAfter);
-                assertNotNull("Expected QName with new URI to exist.", qnameEntityAfter);
-                assertEquals("QName changed ID unexpectedly.", qnameEntityBefore.getId(), qnameEntityAfter.getId());
+                Pair<Long, QName> qnamePairAfter = dao.getQName(qnameAfter);
+                assertNotNull("Expected QName with new URI to exist.", qnamePairAfter);
+                assertEquals("QName changed ID unexpectedly.", qnameIdBefore, qnamePairAfter.getFirst());
                 // Done
                 return null;
             }
@@ -125,17 +126,17 @@ public class QNameDAOTest extends TestCase
         final String namespaceUri = GUID.generate();
         final String localName = GUID.generate();
         final QName qname = QName.createQName(namespaceUri, localName);
-        RetryingTransactionCallback<QNameEntity> callback = new RetryingTransactionCallback<QNameEntity>()
+        RetryingTransactionCallback<Pair<Long, QName>> callback = new RetryingTransactionCallback<Pair<Long, QName>>()
         {
-            public QNameEntity execute() throws Throwable
+            public Pair<Long, QName> execute() throws Throwable
             {
-                QNameEntity qnameEntity = dao.getQNameEntity(qname);
-                assertNull("QName should not exist yet", qnameEntity);
+                Pair<Long, QName> qnamePair = dao.getQName(qname);
+                assertNull("QName should not exist yet", qnamePair);
                 // Now make it
-                qnameEntity = dao.newQNameEntity(qname);
-                assertNotNull("QName should now exist", dao.getQNameEntity(qname));
+                qnamePair = dao.newQName(qname);
+                assertNotNull("QName should now exist", dao.getQName(qname));
                 // Done
-                return qnameEntity;
+                return qnamePair;
             }
         };
         retryingTransactionHelper.doInTransaction(callback);
@@ -146,27 +147,27 @@ public class QNameDAOTest extends TestCase
         final String namespaceUri = GUID.generate();
         final String localName = GUID.generate();
         final QName qname = QName.createQName(namespaceUri, localName);
-        RetryingTransactionCallback<QNameEntity> callback = new RetryingTransactionCallback<QNameEntity>()
+        RetryingTransactionCallback<Pair<Long, QName>> callback = new RetryingTransactionCallback<Pair<Long, QName>>()
         {
-            public QNameEntity execute() throws Throwable
+            public Pair<Long, QName> execute() throws Throwable
             {
-                QNameEntity qnameEntity = dao.getQNameEntity(qname);
-                assertNull("QName should not exist yet", qnameEntity);
+                Pair<Long, QName> qnamePair = dao.getQName(qname);
+                assertNull("QName should not exist yet", qnamePair);
                 // Now make it
-                qnameEntity = dao.newQNameEntity(qname);
-                assertNotNull("QName should now exist", dao.getQNameEntity(qname));
+                qnamePair = dao.newQName(qname);
+                assertNotNull("QName should now exist", dao.getQName(qname));
                 // Done
-                return qnameEntity;
+                return qnamePair;
             }
         };
         retryingTransactionHelper.doInTransaction(callback);
-        callback = new RetryingTransactionCallback<QNameEntity>()
+        callback = new RetryingTransactionCallback<Pair<Long, QName>>()
         {
-            public QNameEntity execute() throws Throwable
+            public Pair<Long, QName> execute() throws Throwable
             {
                 for (int i = 0; i < 1000; i++)
                 {
-                    dao.getQNameEntity(qname);
+                    dao.getQName(qname);
                 }
                 return null;
             }
@@ -194,8 +195,8 @@ public class QNameDAOTest extends TestCase
             public Object execute() throws Throwable
             {
                 // Create QNames with lowercase values
-                dao.getOrCreateQNameEntity(namespaceUriLowerQName);
-                dao.getOrCreateQNameEntity(localNameLowerQName);
+                dao.getOrCreateQName(namespaceUriLowerQName);
+                dao.getOrCreateQName(localNameLowerQName);
                 // Done
                 return null;
             }
@@ -206,21 +207,21 @@ public class QNameDAOTest extends TestCase
             public Object execute() throws Throwable
             {
                 // Check namespace case-insensitivity
-                QNameEntity namespaceUriLowerQNameEntity = dao.getQNameEntity(namespaceUriLowerQName);
-                assertNotNull(namespaceUriLowerQNameEntity);
-                QNameEntity namespaceUriUpperQNameEntity = dao.getOrCreateQNameEntity(namespaceUriUpperQName);
-                assertNotNull(namespaceUriUpperQNameEntity);
+                Pair<Long, QName> namespaceUriLowerQNamePair = dao.getQName(namespaceUriLowerQName);
+                assertNotNull(namespaceUriLowerQNamePair);
+                Pair<Long, QName> namespaceUriUpperQNamePair = dao.getOrCreateQName(namespaceUriUpperQName);
+                assertNotNull(namespaceUriUpperQNamePair);
                 assertEquals(
                         "Didn't resolve case-insensitively on namespace",
-                        namespaceUriUpperQNameEntity.getId(), namespaceUriUpperQNameEntity.getId());
+                        namespaceUriLowerQNamePair.getFirst(), namespaceUriUpperQNamePair.getFirst());
                 // Check localname case-insensitivity
-                QNameEntity localNameLowerQNameEntity = dao.getQNameEntity(localNameLowerQName);
-                assertNotNull(localNameLowerQNameEntity);
-                QNameEntity localNameUpperQNameEntity = dao.getOrCreateQNameEntity(localNameUpperQName);
-                assertNotNull(localNameUpperQNameEntity);
+                Pair<Long, QName> localNameLowerQNamePair = dao.getQName(localNameLowerQName);
+                assertNotNull(localNameLowerQNamePair);
+                Pair<Long, QName> localNameUpperQNamePair = dao.getOrCreateQName(localNameUpperQName);
+                assertNotNull(localNameUpperQNamePair);
                 assertEquals(
                         "Didn't resolve case-insensitively on local-name",
-                        localNameLowerQNameEntity.getId(), localNameUpperQNameEntity.getId());
+                        localNameLowerQNamePair.getFirst(), localNameUpperQNamePair.getFirst());
                 // Done
                 return null;
             }
@@ -242,9 +243,9 @@ public class QNameDAOTest extends TestCase
         final CountDownLatch startLatch = new CountDownLatch(1);
         final CountDownLatch doneLatch = new CountDownLatch(threadCount);
         final List<Throwable> errors = Collections.synchronizedList(new ArrayList<Throwable>(0));
-        final RetryingTransactionCallback<QNameEntity> callback = new RetryingTransactionCallback<QNameEntity>()
+        final RetryingTransactionCallback<Pair<Long, QName>> callback = new RetryingTransactionCallback<Pair<Long, QName>>()
         {
-            public QNameEntity execute() throws Throwable
+            public Pair<Long, QName> execute() throws Throwable
             {
                 String threadName = Thread.currentThread().getName();
                 // We use a common namespace and assign one of a limited set of random numbers
@@ -252,8 +253,8 @@ public class QNameDAOTest extends TestCase
                 // so as to ensure a good few others are trying the same thing.
                 String localName = "" + random.nextInt(10);
                 QName qname = QName.createQName(namespaceUri, localName);
-                QNameEntity qnameEntity = dao.getQNameEntity(qname);
-                if (qnameEntity == null)
+                Pair<Long, QName> qnamePair = dao.getQName(qname);
+                if (qnamePair == null)
                 {
                     // Notify that we are ready
                     logger.debug("Thread " + threadName + " is READY");
@@ -266,7 +267,7 @@ public class QNameDAOTest extends TestCase
                     {
                         // This could fail with concurrency, but that's what we're testing
                         logger.debug("Thread " + threadName + " is CREATING " + qname);
-                        qnameEntity = dao.newQNameEntity(qname);
+                        qnamePair = dao.newQName(qname);
                     }
                     catch (Throwable e)
                     {
@@ -280,12 +281,12 @@ public class QNameDAOTest extends TestCase
                     // it is quite possible that the entity was created as the ready latch
                     // is released after five seconds
                 }
-                assertNotNull("QName should now exist", qnameEntity);
+                assertNotNull("QName should now exist", qnamePair);
                 // Notify the counter that this thread is done
                 logger.debug("Thread " + threadName + " is DONE");
                 doneLatch.countDown();
                 // Done
-                return qnameEntity;
+                return qnamePair;
             }
         };
         Runnable runnable = new Runnable()

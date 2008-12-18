@@ -38,10 +38,11 @@ import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.Node;
 import org.alfresco.repo.domain.NodePropertyValue;
 import org.alfresco.repo.domain.PropertyMapKey;
-import org.alfresco.repo.domain.QNameEntity;
+import org.alfresco.repo.domain.QNameDAO;
 import org.alfresco.repo.domain.Store;
 import org.alfresco.repo.domain.Transaction;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
 
 /**
@@ -60,7 +61,7 @@ public class NodeImpl extends LifecycleAdapter implements Node, Serializable
     private Long version;
     private Store store;
     private String uuid;
-    private QNameEntity typeQName;
+    private Long typeQNameId;
     private Transaction transaction;
     private boolean deleted;
     private DbAccessControlList accessControlList;
@@ -71,6 +72,7 @@ public class NodeImpl extends LifecycleAdapter implements Node, Serializable
     private transient ReadLock refReadLock;
     private transient WriteLock refWriteLock;
     private transient NodeRef nodeRef;
+    private transient QName typeQName;
 
     public NodeImpl()
     {
@@ -118,6 +120,46 @@ public class NodeImpl extends LifecycleAdapter implements Node, Serializable
         }
     }
     
+    public QName getTypeQName(QNameDAO qnameDAO)
+    {
+        refReadLock.lock();
+        try
+        {
+            if (typeQName != null)
+            {
+                return typeQName;
+            }
+        }
+        finally
+        {
+            refReadLock.unlock();
+        }
+        refWriteLock.lock();
+        try
+        {
+            typeQName = qnameDAO.getQName(typeQNameId).getSecond();
+            return typeQName;
+        }
+        finally
+        {
+            refWriteLock.unlock();
+        }
+    }
+
+    public void setTypeQName(QNameDAO qnameDAO, QName qname)
+    {
+        refWriteLock.lock();
+        try
+        {
+            Long typeQNameId = qnameDAO.getOrCreateQName(qname).getFirst();
+            setTypeQNameId(typeQNameId);
+        }
+        finally
+        {
+            refWriteLock.unlock();
+        }
+    }
+
     /**
      * @see #getNodeRef()
      */
@@ -249,14 +291,23 @@ public class NodeImpl extends LifecycleAdapter implements Node, Serializable
         this.deleted = deleted;
     }
 
-    public QNameEntity getTypeQName()
+    public Long getTypeQNameId()
     {
-        return typeQName;
+        return typeQNameId;
     }
 
-    public void setTypeQName(QNameEntity typeQName)
+    public void setTypeQNameId(Long typeQNameId)
     {
-        this.typeQName = typeQName;
+        refWriteLock.lock();
+        try
+        {
+            this.typeQNameId = typeQNameId;
+            this.typeQName = null;
+        }
+        finally
+        {
+            refWriteLock.unlock();
+        }
     }
 
     public DbAccessControlList getAccessControlList()

@@ -37,7 +37,6 @@ import org.alfresco.repo.domain.Node;
 import org.alfresco.repo.domain.NodePropertyValue;
 import org.alfresco.repo.domain.PropertyMapKey;
 import org.alfresco.repo.domain.QNameDAO;
-import org.alfresco.repo.domain.hibernate.NodeImpl;
 import org.alfresco.repo.node.db.hibernate.HibernateNodeDaoServiceImpl;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -134,7 +133,7 @@ public class PersonDaoImpl extends HibernateDaoSupport implements PersonDao
 
     public void init()
     {
-        qNameId = qnameDAO.getOrCreateQNameEntity(ContentModel.PROP_USERNAME).getId();
+        qNameId = qnameDAO.getOrCreateQName(ContentModel.PROP_USERNAME).getFirst();
     }
 
     @SuppressWarnings("unchecked")

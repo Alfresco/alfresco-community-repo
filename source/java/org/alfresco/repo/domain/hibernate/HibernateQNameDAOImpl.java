@@ -24,6 +24,7 @@
  */
 package org.alfresco.repo.domain.hibernate;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -56,26 +57,68 @@ public class HibernateQNameDAOImpl extends HibernateDaoSupport implements QNameD
     private static final String QUERY_GET_NS_BY_URI = "qname.GetNamespaceByUri";
     private static final String QUERY_GET_QNAME_BY_URI_AND_LOCALNAME = "qname.GetQNameByUriAndLocalName";
 
-    private SimpleCache<QName, Long> qnameEntityCache;
-    
-    public void setQnameEntityCache(SimpleCache<QName, Long> qnameEntityCache)
+    private static final Long CACHE_NULL_LONG = Long.MIN_VALUE;
+    private SimpleCache<Serializable, Serializable> namespaceEntityCache;
+    private SimpleCache<Serializable, Serializable> qnameEntityCache;
+
+    /**
+     * Set the cache that maintains the ID-Namespace mappings and vice-versa.
+     * 
+     * @param namespaceEntityCache          the cache
+     */
+    public void setNamespaceEntityCache(SimpleCache<Serializable, Serializable> namespaceEntityCache)
+    {
+        this.namespaceEntityCache = namespaceEntityCache;
+    }
+
+    /**
+     * Set the cache that maintains the ID-QName mappings and vice-versa.
+     * 
+     * @param qnameEntityCache              the cache
+     */
+    public void setQnameEntityCache(SimpleCache<Serializable, Serializable> qnameEntityCache)
     {
         this.qnameEntityCache = qnameEntityCache;
     }
 
-    public NamespaceEntity getNamespaceEntity(Long id)
+    public Pair<Long, String> getNamespace(Long id)
     {
+        // Check the cache
+        String uri = (String) namespaceEntityCache.get(id);
+        if (uri != null)
+        {
+            return new Pair<Long, String>(id, uri);
+        }
+        // Get it from the DB
         NamespaceEntity namespaceEntity = (NamespaceEntity) getSession().get(NamespaceEntityImpl.class, id);
         if (namespaceEntity == null)
         {
             throw new AlfrescoRuntimeException("The NamespaceEntity ID " + id + " doesn't exist.");
         }
-        return namespaceEntity;
+        uri = namespaceEntity.getUri();
+        // Cache it
+        namespaceEntityCache.put(uri, id);
+        namespaceEntityCache.put(id, uri);
+        // Done
+        return new Pair<Long, String>(id, uri);
     }
 
-    public NamespaceEntity getNamespaceEntity(final String namespaceUri)
+    public Pair<Long, String> getNamespace(final String namespaceUri)
     {
-        // TODO: Use a cache if external use becomes common
+        // Check the cache
+        Long id = (Long) namespaceEntityCache.get(namespaceUri);
+        if (id != null)
+        {
+            if (id.equals(CACHE_NULL_LONG))
+            {
+                return null;
+            }
+            else
+            {
+                return new Pair<Long, String>(id, namespaceUri);
+            }
+        }
+        // Get it from the DB
         HibernateCallback callback = new HibernateCallback()
         {
             public Object doInHibernate(Session session)
@@ -89,21 +132,35 @@ public class HibernateQNameDAOImpl extends HibernateDaoSupport implements QNameD
             }
         };
         NamespaceEntity result = (NamespaceEntity) getHibernateTemplate().execute(callback);
-        // Done
-        return result;
-    }
-
-    public NamespaceEntity getOrCreateNamespaceEntity(String namespaceUri)
-    {
-        NamespaceEntity result = getNamespaceEntity(namespaceUri);
         if (result == null)
         {
-            result = newNamespaceEntity(namespaceUri);
+            // Cache it
+            namespaceEntityCache.put(namespaceUri, CACHE_NULL_LONG);
+            // Done
+            return null;
+        }
+        else
+        {
+            id = result.getId();
+            // Cache it
+            namespaceEntityCache.put(id, namespaceUri);
+            namespaceEntityCache.put(namespaceUri, id);
+            // Done
+            return new Pair<Long, String>(id, namespaceUri);
+        }
+    }
+
+    public Pair<Long, String> getOrCreateNamespace(String namespaceUri)
+    {
+        Pair<Long, String> result = getNamespace(namespaceUri);
+        if (result == null)
+        {
+            result = newNamespace(namespaceUri);
         }
         return result;
     }
 
-    public NamespaceEntity newNamespaceEntity(String namespaceUri)
+    public Pair<Long, String> newNamespace(String namespaceUri)
     {
         if (logger.isDebugEnabled())
         {
@@ -112,25 +169,29 @@ public class HibernateQNameDAOImpl extends HibernateDaoSupport implements QNameD
         NamespaceEntity namespace = new NamespaceEntityImpl();
         namespace.setUri(namespaceUri);
         // Persist
-        getSession().save(namespace);
+        Long id = (Long) getSession().save(namespace);
+        // Cache it
+        namespaceEntityCache.put(id, namespaceUri);
+        namespaceEntityCache.put(namespaceUri, id);
         // Done
-        return namespace;
+        return new Pair<Long, String>(id, namespaceUri);
     }
 
-    public void updateNamespaceEntity(String oldNamespaceUri, String newNamespaceUri)
+    public void updateNamespace(String oldNamespaceUri, String newNamespaceUri)
     {
         // First check for clashes
-        if (getNamespaceEntity(newNamespaceUri) != null)
+        if (getNamespace(newNamespaceUri) != null)
         {
             throw new AlfrescoRuntimeException("Namespace URI '" + newNamespaceUri + "' already exists.");
         }
         // Get the old one
-        NamespaceEntity oldNamespaceEntity = getNamespaceEntity(oldNamespaceUri);
-        if (oldNamespaceEntity == null)
+        Pair<Long, String> oldNamespacePair = getNamespace(oldNamespaceUri);
+        if (oldNamespacePair == null)
         {
             // Nothing to rename
             return;
         }
+		NamespaceEntity oldNamespaceEntity = (NamespaceEntity) getSession().load(NamespaceEntityImpl.class, oldNamespacePair.getFirst());
         oldNamespaceEntity.setUri(newNamespaceUri);
         // Flush to force early failure
         getSession().flush();
@@ -139,111 +200,88 @@ public class HibernateQNameDAOImpl extends HibernateDaoSupport implements QNameD
         // Done
     }
 
-    public QNameEntity getQNameEntity(Long id)
+    public Pair<Long, QName> getQName(Long id)
     {
+        // Check the cache
+        QName qname = (QName) qnameEntityCache.get(id);
+        if (qname != null)
+        {
+            return new Pair<Long, QName>(id, qname);
+        }
         QNameEntity qnameEntity = (QNameEntity) getSession().get(QNameEntityImpl.class, id);
         if (qnameEntity == null)
         {
             throw new AlfrescoRuntimeException("The QNameEntity ID " + id + " doesn't exist.");
         }
-        return qnameEntity;
+        qname = qnameEntity.getQName();
+        // Cache it
+        qnameEntityCache.put(id, qname);
+        qnameEntityCache.put(qname, id);
+        // Done
+        return new Pair<Long, QName>(id, qname);
     }
 
-    public QName getQName(Long id)
+    public Pair<Long, QName> getQName(final QName qname)
     {
-        // TODO: Explore caching options here
-        QNameEntity qnameEntity = getQNameEntity(id);
-        if (qnameEntity == null)
+        // Check the cache
+        Long id = (Long) qnameEntityCache.get(qname);
+        if (id != null)
         {
-            return null;
-        }
-        else
-        {
-            return qnameEntity.getQName();
-        }
-    }
-
-    public QNameEntity getQNameEntity(final QName qname)
-    {
-        QNameEntity result;
-        // First check the cache
-        Long id = qnameEntityCache.get(qname);
-        if (id == null)
-        {
-            // It's not in the cache, so query
-            HibernateCallback callback = new HibernateCallback()
+            if (id.equals(CACHE_NULL_LONG))
             {
-                public Object doInHibernate(Session session)
-                {
-                    String namespaceUri = qname.getNamespaceURI();
-                    String oracleSafeUri = (namespaceUri.length() == 0) ? NamespaceEntityImpl.EMPTY_URI_SUBSTITUTE : namespaceUri;
-                    
-                    Query query = session
-                        .getNamedQuery(HibernateQNameDAOImpl.QUERY_GET_QNAME_BY_URI_AND_LOCALNAME)
-                        .setString("namespaceUri", oracleSafeUri)
-                        .setString("localName", qname.getLocalName());
-                    return query.uniqueResult();
-                }
-            };
-            result = (QNameEntity) getHibernateTemplate().execute(callback);
-            if (result != null)
-            {
-                id = result.getId();
-                // We found something, so we can add it to the cache
-                qnameEntityCache.put(qname, id);
+                return null;
             }
             else
             {
-                qnameEntityCache.put(qname, -1L);
+                return new Pair<Long, QName>(id, qname);
             }
         }
-        else if (id == -1L)
+        QNameEntity result;
+        // It's not in the cache, so query
+        HibernateCallback callback = new HibernateCallback()
         {
+            public Object doInHibernate(Session session)
+            {
+                String namespaceUri = qname.getNamespaceURI();
+                String oracleSafeUri = (namespaceUri.length() == 0) ? NamespaceEntityImpl.EMPTY_URI_SUBSTITUTE : namespaceUri;
+                
+                Query query = session
+                    .getNamedQuery(HibernateQNameDAOImpl.QUERY_GET_QNAME_BY_URI_AND_LOCALNAME)
+                    .setString("namespaceUri", oracleSafeUri)
+                    .setString("localName", qname.getLocalName());
+                return query.uniqueResult();
+            }
+        };
+        result = (QNameEntity) getHibernateTemplate().execute(callback);
+        if (result == null)
+        {
+            // Cache it
+            qnameEntityCache.put(qname, CACHE_NULL_LONG);
+            // Done
             return null;
         }
         else
         {
-            // Found in the cache.  Load using the ID.
-            // Don't use the method that throws an exception as the cache might be invalid.
-            result = (QNameEntity) getSession().get(QNameEntityImpl.class, id);
-            if (result == null)
-            {
-                // It is not available, so we need to go the query route.
-                // But first remove the cache entry
-                qnameEntityCache.remove(qname);
-                // Recurse, but this time there is no cache entry
-                return getQNameEntity(qname);
-            }
+            id = result.getId();
+            // Cache it
+            qnameEntityCache.put(id, qname);
+            qnameEntityCache.put(qname, id);
+            // Done
+            return new Pair<Long, QName>(id, qname);
         }
-        // Done
-        return result;
     }
 
-    public QNameEntity getOrCreateQNameEntity(QName qname)
+    public Pair<Long, QName> getOrCreateQName(QName qname)
     {
-        QNameEntity result = getQNameEntity(qname);
+        Pair<Long, QName> result = getQName(qname);
         if (result == null)
         {
-            result = newQNameEntity(qname);
+            result = newQName(qname);
         }
         return result;
     }
 
-    public Pair<Long, QName> getOrCreateQNamePair(QName qname)
-    {
-        Long id = qnameEntityCache.get(qname);
-        if (id == null)
-        {
-            // It is not cached
-            QNameEntity qnameEntity = getOrCreateQNameEntity(qname);
-            id = qnameEntity.getId();
-        }
-        Pair<Long, QName> qnamePair = new Pair<Long, QName>(id, qname);
-        // Done
-        return qnamePair;
-    }
-
-    public QNameEntity newQNameEntity(QName qname)
+    public Pair<Long, QName> newQName(QName qname)
     {
         if (logger.isDebugEnabled())
         {
@@ -251,11 +289,10 @@ public class HibernateQNameDAOImpl extends HibernateDaoSupport implements QNameD
         }
         final String namespaceUri = qname.getNamespaceURI();
         final String localName = qname.getLocalName();
-        NamespaceEntity namespace = getNamespaceEntity(namespaceUri);
-        if (namespace == null)
-        {
-            namespace = newNamespaceEntity(namespaceUri);
-        }
+        // Get the namespace
+        Pair<Long, String> namespacePair = getOrCreateNamespace(namespaceUri);
+        NamespaceEntity namespace = (NamespaceEntity) getSession().load(NamespaceEntityImpl.class, namespacePair.getFirst());
+        // Create the QNameEntity
         QNameEntity qnameEntity = new QNameEntityImpl();
         qnameEntity.setNamespace(namespace);
         qnameEntity.setLocalName(localName);
@@ -263,8 +300,9 @@ public class HibernateQNameDAOImpl extends HibernateDaoSupport implements QNameD
         Long id = (Long) getSession().save(qnameEntity);
         // Update the cache
         qnameEntityCache.put(qname, id);
+        qnameEntityCache.put(id, qname);
         // Done
-        return qnameEntity;
+        return new Pair<Long, QName>(id, qname);
     }
 
     public Set<QName> convertIdsToQNames(Set<Long> ids)
@@ -272,7 +310,7 @@ public class HibernateQNameDAOImpl extends HibernateDaoSupport implements QNameD
         Set<QName> qnames = new HashSet<QName>(ids.size() * 2 + 1);
         for (Long id : ids)
         {
-            QName qname = getQName(id);             // Never null
+            QName qname = getQName(id).getSecond();                     // getQName(id) is never null
             qnames.add(qname);
         }
         return qnames;
@@ -283,7 +321,7 @@ public class HibernateQNameDAOImpl extends HibernateDaoSupport implements QNameD
         Map<QName, Object> qnameMap = new HashMap<QName, Object>(idMap.size() + 3);
         for (Map.Entry<Long, ? extends Object> entry : idMap.entrySet())
         {
-            QName qname = getQName(entry.getKey());
+            QName qname = getQName(entry.getKey()).getSecond();         // getQName(id) is never null
             qnameMap.put(qname, entry.getValue());
         }
         return qnameMap;
@@ -303,19 +341,19 @@ public class HibernateQNameDAOImpl extends HibernateDaoSupport implements QNameD
             Long qnameEntityId = null;
             if (create)
             {
-                qnameEntityId = getOrCreateQNameEntity(qname).getId();
+                qnameEntityId = getOrCreateQName(qname).getFirst();     // getOrCreateQName(qname) is never null
             }
             else
             {
-                QNameEntity qnameEntity = getQNameEntity(qname);
-                if (qnameEntity == null)
+                Pair<Long, QName> qnamePair = getQName(qname);
+                if (qnamePair == null)
                 {
                     // No such qname and we are not creating one
                     continue;
                 }
                 else
                 {
-                    qnameEntityId = qnameEntity.getId();
+                    qnameEntityId = qnamePair.getFirst();
                 }
             }
             if (qnameEntityId != null)

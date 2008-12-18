@@ -306,8 +306,9 @@
         <property name="contentUsageImpl">
             <ref bean="contentUsageImpl"/>
         </property>
-        <property name="personService">
-            <ref bean="personService"/>
+        <!-- The store in which people are persisted-->
+        <property name="personStoreUrl">
+           <value>${spaces.store}</value>
         </property>
         <property name="nodeService">
             <ref bean="nodeService"/>
@@ -320,7 +321,13 @@
         </property>
         <property name="tenantAdminService">
             <ref bean="tenantAdminService" />
-        </property>        
+        </property>
+        <property name="clearBatchSize">
+            <value>50</value>
+        </property>
+        <property name="updateBatchSize">
+            <value>50</value>
+        </property>
         <property name="enabled">
             <value>${system.usages.enabled}</value>
         </property>
@@ -345,11 +352,9 @@
         
         <!-- enable this to activate bean -->
         
-		<!--
         <property name="scheduler">
             <ref bean="schedulerFactory" />
         </property>
-        -->    
 			    
         <!-- start after 5 minutes and repeat every 5 minutes -->
         <property name="startDelayMinutes">
@@ -380,13 +385,11 @@
         
         <!-- enable this to activate bean -->
         
-		<!--
         <property name="scheduler">
             <ref bean="schedulerFactory" />
         </property>
-		-->
                 
-        <!-- start after bootstrap (0 minutes) and run once -->
+        <!-- start after scheduler bootstrap (0 minutes) and run once -->
         <property name="startDelayMinutes">
             <value>0</value>
         </property>

@@ -27,7 +27,6 @@ package org.alfresco.repo.admin.patch.impl;
 import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.domain.DbPermission;
 import org.alfresco.repo.domain.QNameDAO;
-import org.alfresco.repo.domain.QNameEntity;
 import org.alfresco.repo.domain.hibernate.DbPermissionImpl;
 import org.alfresco.service.namespace.QName;
 import org.hibernate.Query;
@@ -78,11 +77,11 @@ public abstract class AbstractPermissionChangePatch extends AbstractPatch
     /** Helper to get a permission entity */
     private static class GetPermissionCallback implements HibernateCallback
     {
-        private QNameEntity typeQNameEntity;
+        private Long typeQNameId;
         private String name;
-        public GetPermissionCallback(QNameEntity typeQNameEntity, String name)
+        public GetPermissionCallback(Long typeQNameId, String name)
         {
-            this.typeQNameEntity = typeQNameEntity;
+            this.typeQNameId = typeQNameId;
             this.name = name;
         }
         public Object doInHibernate(Session session)
@@ -91,7 +90,7 @@ public abstract class AbstractPermissionChangePatch extends AbstractPatch
             session.flush();
             
             Query query = session.getNamedQuery(HibernateHelper.QUERY_GET_PERMISSION);
-            query.setParameter("permissionTypeQName", typeQNameEntity)
+            query.setLong("permissionTypeQNameId", typeQNameId)
                  .setString("permissionName", name);
             return query.uniqueResult();
         }
@@ -120,23 +119,23 @@ public abstract class AbstractPermissionChangePatch extends AbstractPatch
             }
             
             // Get the QName entities
-            QNameEntity oldTypeQNameEntity = qnameDAO.getOrCreateQNameEntity(oldTypeQName);
-            QNameEntity newTypeQNameEntity = qnameDAO.getOrCreateQNameEntity(newTypeQName);
+            Long oldTypeQNameId = qnameDAO.getOrCreateQName(oldTypeQName).getFirst();
+            Long newTypeQNameId = qnameDAO.getOrCreateQName(newTypeQName).getFirst();
             
-            HibernateCallback getNewPermissionCallback = new GetPermissionCallback(oldTypeQNameEntity, oldName);
+            HibernateCallback getNewPermissionCallback = new GetPermissionCallback(oldTypeQNameId, oldName);
             DbPermission permission = (DbPermission) getHibernateTemplate().execute(getNewPermissionCallback);
             if (permission == null)
             {
                 // create the permission
                 permission = new DbPermissionImpl();
-                permission.setTypeQName(newTypeQNameEntity);
+                permission.setTypeQNameId(newTypeQNameId);
                 permission.setName(newName);
                 // save
                 getHibernateTemplate().save(permission);
             }
             else
             {
-                permission.setTypeQName(newTypeQNameEntity);
+                permission.setTypeQNameId(newTypeQNameId);
                 permission.setName(newName);
             }
             // done

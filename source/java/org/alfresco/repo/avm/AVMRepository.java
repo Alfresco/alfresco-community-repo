@@ -2335,6 +2335,7 @@ public class AVMRepository
      *            The sql 'like' pattern, inserted into a QName.
      * @return A Map of the matching key value pairs.
      */
+    @SuppressWarnings("unchecked")
     public Map<QName, PropertyValue> queryStorePropertyKey(String store, QName keyPattern)
     {
         AVMStore st = getAVMStoreByName(store);
@@ -2342,15 +2343,14 @@ public class AVMRepository
         {
             throw new AVMNotFoundException("Store not found.");
         }
-        List<AVMStoreProperty> matches =
-            fAVMStorePropertyDAO.queryByKeyPattern(st,
-                                                   keyPattern);
-        Map<QName, PropertyValue> results = new HashMap<QName, PropertyValue>();
+        List<AVMStoreProperty> matches = fAVMStorePropertyDAO.queryByKeyPattern(st, keyPattern);
+        Map<Long, PropertyValue> matchesMap = new HashMap<Long, PropertyValue>();
         for (AVMStoreProperty prop : matches)
         {
-            results.put(prop.getName().getQName(), prop.getValue());
+            matchesMap.put(prop.getQnameId(), prop.getValue());
         }
-        return results;
+        Map<QName, PropertyValue> propertyMap = (Map<QName, PropertyValue>) qnameDAO.convertIdMapToQNameMap(matchesMap);
+        return propertyMap;
     }
 
     /**
@@ -2363,20 +2363,19 @@ public class AVMRepository
     public Map<String, Map<QName, PropertyValue>>
         queryStoresPropertyKeys(QName keyPattern)
     {
-        List<AVMStoreProperty> matches =
-            fAVMStorePropertyDAO.queryByKeyPattern(keyPattern);
-        Map<String, Map<QName, PropertyValue>> results =
-            new HashMap<String, Map<QName, PropertyValue>>();
+        List<AVMStoreProperty> matches = fAVMStorePropertyDAO.queryByKeyPattern(keyPattern);
+        Map<String, Map<QName, PropertyValue>> results =  new HashMap<String, Map<QName, PropertyValue>>();
         for (AVMStoreProperty prop : matches)
         {
             String storeName = prop.getStore().getName();
+            QName propQName = qnameDAO.getQName(prop.getQnameId()).getSecond();
             Map<QName, PropertyValue> pairs = null;
             if ((pairs = results.get(storeName)) == null)
             {
                 pairs = new HashMap<QName, PropertyValue>();
                 results.put(storeName, pairs);
             }
-            pairs.put(prop.getName().getQName(), prop.getValue());
+            pairs.put(propQName, prop.getValue());
         }
         return results;
     }
@@ -3203,20 +3202,16 @@ public class AVMRepository
         context.addDynamicAuthorityAssignment(AVMNodeUnwrapper.Unwrap(node).getBasicAttributes().getOwner(), PermissionService.OWNER_AUTHORITY);
 
         // Pass in node aspects
-        Set<Long> nodeAspectQNameIds = node.getAspects();
+        Set<QName> nodeAspectQNames = qnameDAO.convertIdsToQNames(node.getAspects());
         Set<QName> contextQNames = context.getAspects();
-        for (Long nodeAspectQNameId : nodeAspectQNameIds)
-        {
-            QName qname = qnameDAO.getQName(nodeAspectQNameId);
-            contextQNames.add(qname);
-        }
+        contextQNames.addAll(nodeAspectQNames);
         // Pass in node properties
         Map<Long, PropertyValue> nodeProperties = node.getProperties();
         Map<QName, Serializable> contextProperties = new HashMap<QName, Serializable>(5);
         QNameDAO qnameDAO = AVMDAOs.Instance().fQNameDAO;
         for (Map.Entry<Long, PropertyValue> entry : nodeProperties.entrySet())
         {
-            QName qname = qnameDAO.getQName(entry.getKey());
+            QName qname = qnameDAO.getQName(entry.getKey()).getSecond();
             PropertyDefinition def = fDictionaryService.getProperty(qname);
             if (def == null)
             {

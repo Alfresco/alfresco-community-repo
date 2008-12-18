@@ -25,6 +25,7 @@
 package org.alfresco.repo.domain;
 
 import org.alfresco.service.cmr.repository.AssociationRef;
+import org.alfresco.service.namespace.QName;
 
 /**
  * Represents a generic association between two nodes.  The association is named
@@ -47,7 +48,29 @@ public interface NodeAssoc
      */
     public void buildAssociation(Node sourceNode, Node targetNode);
 
-    public AssociationRef getNodeAssocRef();
+    /**
+     * Convenience method to retrieve the association's reference
+     * 
+     * @param qnameDAO          helper DAO
+     * @return                  the association's reference
+     */
+    public AssociationRef getNodeAssocRef(QNameDAO qnameDAO);
+    
+    /**
+     * Convenience method to retrieve the association's type QName
+     * 
+     * @param qnameDAO          helper DAO
+     * @return                  the association's type QName
+     */
+    public QName getTypeQName(QNameDAO qnameDAO);
+    
+    /**
+     * Convenience method to set the association's type
+     * 
+     * @param qnameDAO      the helper DAO
+     * @param typeQName     the association's type QName
+     */
+    public void setTypeQName(QNameDAO qnameDAO, QName typeQName);
     
     public Long getId();
     
@@ -63,10 +86,10 @@ public interface NodeAssoc
     /**
      * @return              Returns the type of the association
      */
-    public QNameEntity getTypeQName();
+    public Long getTypeQNameId();
     
     /**
-     * @param typeQName     the association's dictionary type
+     * @param typeQNameId   the association's dictionary type
      */
-    public void setTypeQName(QNameEntity typeQName);
+    public void setTypeQNameId(Long typeQNameId);
 }

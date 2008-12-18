@@ -105,7 +105,7 @@ public class FileFolderServiceImpl implements FileFolderService
     private MimetypeService mimetypeService;
     
     // TODO: Replace this with a more formal means of identifying "system" folders (i.e. aspect or UUID)
-    private List systemPaths;
+    private List<String> systemPaths;
     
     /**
      * Default constructor

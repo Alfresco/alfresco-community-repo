@@ -58,18 +58,43 @@ public interface ChildAssoc extends Comparable<ChildAssoc>
     /**
      * A convenience method to get a reference to this association.
      * 
+     * @param qnameDAO      the DAO to resolve the qname references
      * @return              Returns a reference to this association
      */
-    public ChildAssociationRef getChildAssocRef();
+    public ChildAssociationRef getChildAssocRef(QNameDAO qnameDAO);
 
+    /**
+     * Convenience method to get the association's type
+     * 
+     * @param qnameDAO      the helper DAO
+     * @return              the association's type QName
+     */
+    public QName getTypeQName(QNameDAO qnameDAO);
+    
+    /**
+     * Convenience method to set the association's type
+     * 
+     * @param qnameDAO      the helper DAO
+     * @param typeQName     the association's type QName
+     */
+    public void setTypeQName(QNameDAO qnameDAO, QName typeQName);
+    
     /**
      * A convenience method to aggregate the qualified name's namespace and localname
      * into a single qualified name.
      * 
      * @return              Returns the qualified name of the association 
      */
-    public QName getQname();
+    public QName getQName(QNameDAO qnameDAO);
 
+    /**
+     * Convenience method to set the association's qname
+     * 
+     * @param qnameDAO      the helper DAO
+     * @param qname         the association's QName
+     */
+    public void setQName(QNameDAO qnameDAO, QName qname);
+    
     public Long getId();
 
     /**
@@ -84,12 +109,12 @@ public interface ChildAssoc extends Comparable<ChildAssoc>
     /**
      * @return              Returns the type of the association
      */
-    public QNameEntity getTypeQName();
+    public Long getTypeQNameId();
     
     /**
-     * @param typeQName     the association's dictionary type
+     * @param typeQNameId   the association's dictionary type
      */
-    public void setTypeQName(QNameEntity typeQName);
+    public void setTypeQNameId(Long typeQNameId);
 
     /**
      * @return Returns the child node name.  This may be truncated, in which case it
@@ -116,12 +141,12 @@ public interface ChildAssoc extends Comparable<ChildAssoc>
     /**
      * @return              Returns the namespace of the association's local QName
      */
-    public NamespaceEntity getQnameNamespace();
+    public Long getQnameNamespaceId();
     
     /**
-     * @param namespace     the namespace of the association's local QName
+     * @param namespaceId   the namespace of the association's local QName
      */
-    public void setQnameNamespace(NamespaceEntity namespace);
+    public void setQnameNamespaceId(Long namespaceId);
     
     /**
      * @return              Returns the localname of the association's local QName

@@ -30,9 +30,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
 import org.alfresco.repo.domain.ChildAssoc;
-import org.alfresco.repo.domain.NamespaceEntity;
 import org.alfresco.repo.domain.Node;
-import org.alfresco.repo.domain.QNameEntity;
+import org.alfresco.repo.domain.QNameDAO;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
@@ -48,8 +47,8 @@ public class ChildAssocImpl implements ChildAssoc, Serializable
     private Long version;
     private Node parent;
     private Node child;
-    private QNameEntity typeQName;
-    private NamespaceEntity qnameNamespace;
+    private Long typeQNameId;
+    private Long qnameNamespaceId;
     private String qnameLocalName;
     private String childNodeName;
     private long childNodeNameCrc;
@@ -59,6 +58,7 @@ public class ChildAssocImpl implements ChildAssoc, Serializable
     private transient ReadLock refReadLock;
     private transient WriteLock refWriteLock;
     private transient ChildAssociationRef childAssocRef;
+    private transient QName typeQName;
     private transient QName qname;
     
     public ChildAssocImpl()
@@ -86,7 +86,7 @@ public class ChildAssocImpl implements ChildAssoc, Serializable
      * <p>
      * This method is thread-safe and lazily creates the required references, if required.
      */
-    public ChildAssociationRef getChildAssocRef()
+    public ChildAssociationRef getChildAssocRef(QNameDAO qnameDAO)
     {
         boolean trashReference = false;
         // first check if it is available
@@ -119,10 +119,19 @@ public class ChildAssocImpl implements ChildAssoc, Serializable
             // double check
             if (childAssocRef == null || trashReference)
             {
+                if (typeQName == null)
+                {
+                    typeQName = qnameDAO.getQName(this.typeQNameId).getSecond();
+                }
+                if (qname == null )
+                {
+                    String qnameNamespace = qnameDAO.getNamespace(qnameNamespaceId).getSecond();
+                    qname = QName.createQName(qnameNamespace, qnameLocalName);
+                }
                 childAssocRef = new ChildAssociationRef(
-                        this.typeQName.getQName(),
+                        typeQName,
                         parent.getNodeRef(),
-                        this.getQname(),
+                        qname,
                         child.getNodeRef(),
                         this.isPrimary,
                         index);
@@ -137,10 +146,53 @@ public class ChildAssocImpl implements ChildAssoc, Serializable
 
     /**
      * {@inheritDoc}
+     */
+    public QName getTypeQName(QNameDAO qnameDAO)
+    {
+        refReadLock.lock();
+        try
+        {
+            if (typeQName != null)
+            {
+                return typeQName;
+            }
+        }
+        finally
+        {
+            refReadLock.unlock();
+        }
+        refWriteLock.lock();
+        try
+        {
+            typeQName = qnameDAO.getQName(typeQNameId).getSecond();
+            return typeQName;
+        }
+        finally
+        {
+            refWriteLock.unlock();
+        }
+    }
+
+    public void setTypeQName(QNameDAO qnameDAO, QName typeQName)
+    {
+        Long typeQNameId = qnameDAO.getOrCreateQName(typeQName).getFirst();
+        refWriteLock.lock();
+        try
+        {
+            setTypeQNameId(typeQNameId);
+        }
+        finally
+        {
+            refWriteLock.unlock();
+        }
+    }
+
+    /**
+     * {@inheritDoc}
      * <p>
      * This method is thread-safe and lazily creates the required references, if required.
      */
-    public QName getQname()
+    public QName getQName(QNameDAO qnameDAO)
     {
         // first check if it is available
         refReadLock.lock();
@@ -162,9 +214,28 @@ public class ChildAssocImpl implements ChildAssoc, Serializable
             // double check
             if (qname == null )
             {
-                qname = QName.createQName(qnameNamespace.getUri(), qnameLocalName);
+                String qnameNamespace = qnameDAO.getNamespace(qnameNamespaceId).getSecond();
+                qname = QName.createQName(qnameNamespace, qnameLocalName);
             }
             return qname;
+        }
+        finally
+        {
+            refWriteLock.unlock();
+        }
+    }
+
+    public void setQName(QNameDAO qnameDAO, QName qname)
+    {
+        String assocQNameNamespace = qname.getNamespaceURI();
+        String assocQNameLocalName = qname.getLocalName();
+        Long assocQNameNamespaceId = qnameDAO.getOrCreateNamespace(assocQNameNamespace).getFirst();
+        // get write lock
+        refWriteLock.lock();
+        try
+        {
+            setQnameNamespaceId(assocQNameNamespaceId);
+            setQnameLocalName(assocQNameLocalName);
         }
         finally
         {
@@ -187,10 +258,19 @@ public class ChildAssocImpl implements ChildAssoc, Serializable
             return false;
         }
         ChildAssoc that = (ChildAssoc) obj;
-        return (EqualsHelper.nullSafeEquals(this.getTypeQName(), that.getTypeQName())
-                && EqualsHelper.nullSafeEquals(this.getQname(), that.getQname())
-                && EqualsHelper.nullSafeEquals(this.getChild(), that.getChild())
-                && EqualsHelper.nullSafeEquals(this.getParent(), that.getParent()));
+        if (EqualsHelper.nullSafeEquals(id, that.getId()))
+        {
+            return true;
+        }
+        else
+        {
+            return (EqualsHelper.nullSafeEquals(this.getParent(), that.getParent())
+                    && EqualsHelper.nullSafeEquals(this.typeQNameId, that.getTypeQNameId())
+                    && EqualsHelper.nullSafeEquals(this.getChild(), that.getChild())
+                    && EqualsHelper.nullSafeEquals(this.qnameLocalName, that.getQnameLocalName())
+                    && EqualsHelper.nullSafeEquals(this.qnameNamespaceId, that.getQnameNamespaceId())
+                    );
+        }
     }
     
     public int hashCode()
@@ -207,8 +287,9 @@ public class ChildAssocImpl implements ChildAssoc, Serializable
           .append(", child=").append(child.getId())
           .append(", child name=").append(childNodeName)
           .append(", child name crc=").append(childNodeNameCrc)
-          .append(", assoc type=").append(getTypeQName().getQName())
-          .append(", assoc name=").append(getQname())
+          .append(", assoc type=").append(typeQNameId)
+          .append(", assoc qname ns=").append(qnameNamespaceId)
+          .append(", assoc qname localname=").append(qnameLocalName)
           .append(", isPrimary=").append(isPrimary)
           .append("]");
         return sb.toString();
@@ -321,18 +402,19 @@ public class ChildAssocImpl implements ChildAssoc, Serializable
         }
     }
     
-    public QNameEntity getTypeQName()
+    public Long getTypeQNameId()
     {
-        return typeQName;
+        return typeQNameId;
     }
 
-    public void setTypeQName(QNameEntity typeQName)
+    public void setTypeQNameId(Long typeQNameId)
     {
         refWriteLock.lock();
         try
         {
-            this.typeQName = typeQName;
+            this.typeQNameId = typeQNameId;
             this.childAssocRef = null;
+            this.typeQName = null;
         }
         finally
         {
@@ -340,17 +422,17 @@ public class ChildAssocImpl implements ChildAssoc, Serializable
         }
     }
     
-    public NamespaceEntity getQnameNamespace()
+    public Long getQnameNamespaceId()
     {
-        return qnameNamespace;
+        return qnameNamespaceId;
     }
 
-    public void setQnameNamespace(NamespaceEntity qnameNamespace)
+    public void setQnameNamespaceId(Long qnameNamespaceId)
     {
         refWriteLock.lock();
         try
         {
-            this.qnameNamespace = qnameNamespace;
+            this.qnameNamespaceId = qnameNamespaceId;
             this.childAssocRef = null;
             this.qname = null;
         }

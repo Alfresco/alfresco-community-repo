@@ -64,6 +64,42 @@
    </bean>
    
    <!-- ===================================== -->
+   <!-- ID lookup for Namespace entities          -->
+   <!-- ===================================== -->
+
+   <!-- The cross-transaction shared cache for Namespace entities -->
+   
+   <bean name="namespaceEntitySharedCache" class="org.alfresco.repo.cache.EhCacheAdapter">
+      <property name="cache">
+         <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean" >
+            <property name="cacheManager">
+               <ref bean="internalEHCacheManager" />
+            </property>
+            <property name="cacheName">
+               <value>org.alfresco.cache.namespaceEntityCache</value>
+            </property>
+         </bean>
+      </property>
+   </bean>
+   
+   <!-- The transactional cache for Namespace entities -->
+   
+   <bean name="namespaceEntityCache" class="org.alfresco.repo.cache.TransactionalCache">
+      <property name="sharedCache">
+         <ref bean="namespaceEntitySharedCache" />
+      </property>
+      <property name="cacheManager" >
+         <ref bean="transactionalEHCacheManager" />
+      </property>
+      <property name="name">
+         <value>org.alfresco.cache.namespaceEntityTransactionalCache</value>
+      </property>
+      <property name="maxCacheSize">
+         <value>100</value>
+      </property>
+   </bean>
+   
+   <!-- ===================================== -->
    <!-- ID lookup for Locale entities          -->
    <!-- ===================================== -->
 

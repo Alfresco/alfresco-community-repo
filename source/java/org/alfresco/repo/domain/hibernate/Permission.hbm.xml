@@ -173,17 +173,8 @@
         </id>
 
         <natural-id mutable="true" >
-            <many-to-one
-                name="typeQName"
-                class="org.alfresco.repo.domain.hibernate.QNameEntityImpl"
-                column="type_qname_id"
-                foreign-key="fk_alf_perm_tqn"
-                lazy="proxy"
-                fetch="select"
-                unique="false"
-                not-null="true"
-                cascade="none" />
-           <property name="name" type="string" length="100" column="name" />
+            <property name="typeQNameId" column="type_qname_id" type="long" not-null="true" />  <!-- fk_alf_perm_tqn -->
+            <property name="name" type="string" length="100" column="name" />
         </natural-id>
 
         <version column="version" name="version" type="long" />
@@ -275,7 +266,7 @@
       from
          org.alfresco.repo.domain.hibernate.DbPermissionImpl as permission
       where
-         permission.typeQName = :permissionTypeQName and
+         permission.typeQNameId = :permissionTypeQNameId and
          permission.name = :permissionName
    </query>
     

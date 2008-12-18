@@ -87,8 +87,11 @@ public interface NodeDaoService
     public NodeRef.Status getNodeRefStatus(NodeRef nodeRef);
     
     /**
+     * Create a new node.  Note that allowing the <b>uuid</b> to be assigned by passing in a <tt>null</tt>
+     * is more efficient.
+     * 
      * @param storeRef the store to which the node must belong
-     * @param uuid the node store-unique identifier
+     * @param uuid the node store-unique identifier, or <tt>null</tt> to assign a GUID
      * @param nodeTypeQName the type of the node
      * @return Returns a new node Id of the given type and attached to the store
      * @throws InvalidTypeException if the node type is invalid or if the node type
@@ -394,19 +397,49 @@ public interface NodeDaoService
             NodePropertyHandler handler);
     
     /**
-     * Iterate over all nodes that have a given creator
+     * Interface used to iterate over object array results
+     */
+    public interface ObjectArrayQueryCallback
+    {
+        boolean handle(Object[] array);
+    }
+    
+    /**
+     * Iterate over all content nodes to get owner/creator and content url (in order to extract content size)
      * 
      * @param storeRef                          the store to search in
-     * @param userName                          the user to match
      * @param handler                           the callback to use while iterating over the URLs
-     * @return Returns the values for the given owner
+     * @return Returns the values for the given owner, creator and content url
      */
     @DirtySessionAnnotation(markDirty=true)
-    public void getNodesWithCreatorAndStore(
+    public void getContentUrlsForStore(
             StoreRef storeRef,
-            String userName,
-            NodeRefQueryCallback resultsCallback);
-            
+            ObjectArrayQueryCallback resultsCallback);
+    
+    /**
+     * Iterate over all person nodes to get users without a calculated usage
+     * 
+     * @param storeRef                          the store to search in
+     * @param handler                           the callback to use while iterating over the people
+     * @return Returns the values for username and person node uuid (excluding System)
+     */
+    @DirtySessionAnnotation(markDirty=true)
+    public void getUsersWithoutUsage(
+            StoreRef storeRef,
+            ObjectArrayQueryCallback resultsCallback);
+    
+    /**
+     * Iterate over all person nodes to get users with a calculated usage
+     * 
+     * @param storeRef                          the store to search in
+     * @param handler                           the callback to use while iterating over the people
+     * @return Returns the values for the username and person node uuid (excluding System)
+     */
+    @DirtySessionAnnotation(markDirty=true)
+    public void getUsersWithUsage(
+            StoreRef storeRef,
+            ObjectArrayQueryCallback resultsCallback);
+       
     /**
      * Iterate over all property values for the given type definition.  This will also dig out values that
      * were persisted as type <b>d:any</b>.

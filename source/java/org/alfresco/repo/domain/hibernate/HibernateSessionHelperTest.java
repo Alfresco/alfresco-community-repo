@@ -7,7 +7,6 @@ import java.util.Set;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.Node;
 import org.alfresco.repo.domain.QNameDAO;
-import org.alfresco.repo.domain.QNameEntity;
 import org.alfresco.repo.domain.Server;
 import org.alfresco.repo.domain.Store;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
@@ -93,7 +92,7 @@ public class HibernateSessionHelperTest extends BaseSpringTest
         assertFalse(SessionSizeResourceManager.isDisableInTransaction());
         
         QNameDAO qnameDAO = (QNameDAO) getApplicationContext().getBean("qnameDAO");
-        QNameEntity baseQNameEntity = qnameDAO.getOrCreateQNameEntity(ContentModel.TYPE_BASE);
+        Long baseQNameId = qnameDAO.getOrCreateQName(ContentModel.TYPE_BASE).getFirst();
         
         StoreImpl store = new StoreImpl();
         store.setProtocol(StoreRef.PROTOCOL_WORKSPACE);
@@ -124,35 +123,35 @@ public class HibernateSessionHelperTest extends BaseSpringTest
         assertTrue(SessionSizeResourceManager.isDisableInTransaction());
         assertEquals(1, helper.getMarks().size());
         
-        Node n1 = createNode(transaction, store, "1", baseQNameEntity);
+        Node n1 = createNode(transaction, store, "1", baseQNameId);
                
         assertEquals(5, getSession().getStatistics().getEntityCount());
         helper.mark();
         assertTrue(SessionSizeResourceManager.isDisableInTransaction());
         assertEquals(2, helper.getMarks().size());
         
-        Node n2 = createNode(transaction, store, "2", baseQNameEntity);
+        Node n2 = createNode(transaction, store, "2", baseQNameId);
         
         assertEquals(6, getSession().getStatistics().getEntityCount());
         helper.mark();
         assertTrue(SessionSizeResourceManager.isDisableInTransaction());
         assertEquals(3, helper.getMarks().size());
         
-        Node n3 = createNode(transaction, store, "3", baseQNameEntity);
+        Node n3 = createNode(transaction, store, "3", baseQNameId);
         
         assertEquals(7, getSession().getStatistics().getEntityCount());
         helper.mark();
         assertTrue(SessionSizeResourceManager.isDisableInTransaction());
         assertEquals(4, helper.getMarks().size());
         
-        Node n4 = createNode(transaction, store, "4", baseQNameEntity);
+        Node n4 = createNode(transaction, store, "4", baseQNameId);
         
         assertEquals(8, getSession().getStatistics().getEntityCount());
         helper.mark();
         assertTrue(SessionSizeResourceManager.isDisableInTransaction());
         assertEquals(5, helper.getMarks().size());
         
-        Node n5 = createNode(transaction, store, "5", baseQNameEntity);
+        Node n5 = createNode(transaction, store, "5", baseQNameId);
         
         assertEquals(9, getSession().getStatistics().getEntityCount());
         
@@ -321,7 +320,7 @@ public class HibernateSessionHelperTest extends BaseSpringTest
         assertFalse(SessionSizeResourceManager.isDisableInTransaction());
         
         QNameDAO qnameDAO = (QNameDAO) getApplicationContext().getBean("qnameDAO");
-        QNameEntity baseQNameEntity = qnameDAO.getOrCreateQNameEntity(ContentModel.TYPE_BASE);
+        Long baseQNameId = qnameDAO.getOrCreateQName(ContentModel.TYPE_BASE).getFirst();
         
         StoreImpl store = new StoreImpl();
         store.setProtocol(StoreRef.PROTOCOL_WORKSPACE);
@@ -354,7 +353,7 @@ public class HibernateSessionHelperTest extends BaseSpringTest
         assertTrue(SessionSizeResourceManager.isDisableInTransaction());
         assertEquals(1, helper.getMarks().size());
         
-        Node n1 = createNode(transaction, store, "1", baseQNameEntity);
+        Node n1 = createNode(transaction, store, "1", baseQNameId);
                
         assertEquals(5, getSession().getStatistics().getEntityCount());
         helper.mark("Two");
@@ -362,7 +361,7 @@ public class HibernateSessionHelperTest extends BaseSpringTest
         assertTrue(SessionSizeResourceManager.isDisableInTransaction());
         assertEquals(2, helper.getMarks().size());
         
-        Node n2 = createNode(transaction, store, "2", baseQNameEntity);
+        Node n2 = createNode(transaction, store, "2", baseQNameId);
         
         assertEquals(6, getSession().getStatistics().getEntityCount());
         helper.mark("Three");
@@ -370,7 +369,7 @@ public class HibernateSessionHelperTest extends BaseSpringTest
         assertTrue(SessionSizeResourceManager.isDisableInTransaction());
         assertEquals(3, helper.getMarks().size());
         
-        Node n3 = createNode(transaction, store, "3", baseQNameEntity);
+        Node n3 = createNode(transaction, store, "3", baseQNameId);
         
         assertEquals(7, getSession().getStatistics().getEntityCount());
         helper.mark("Four");
@@ -378,7 +377,7 @@ public class HibernateSessionHelperTest extends BaseSpringTest
         assertTrue(SessionSizeResourceManager.isDisableInTransaction());
         assertEquals(4, helper.getMarks().size());
         
-        Node n4 = createNode(transaction, store, "4", baseQNameEntity);
+        Node n4 = createNode(transaction, store, "4", baseQNameId);
         
         assertEquals(8, getSession().getStatistics().getEntityCount());
         helper.mark("Five");
@@ -386,7 +385,7 @@ public class HibernateSessionHelperTest extends BaseSpringTest
         assertTrue(SessionSizeResourceManager.isDisableInTransaction());
         assertEquals(5, helper.getMarks().size());
         
-        Node n5 = createNode(transaction, store, "5", baseQNameEntity);
+        Node n5 = createNode(transaction, store, "5", baseQNameId);
         
         assertEquals(9, getSession().getStatistics().getEntityCount());
         
@@ -541,13 +540,13 @@ public class HibernateSessionHelperTest extends BaseSpringTest
         assertNull(helper.getCurrentMark());
     }
     
-    private Node createNode(TransactionImpl transaction, Store store, String uuid, QNameEntity typeQNameEntity)
+    private Node createNode(TransactionImpl transaction, Store store, String uuid, Long typeQNameId)
     {
         // Create the Node
         Node node = new NodeImpl();
         node.setStore(store);
         node.setUuid(uuid);
-        node.setTypeQName(typeQNameEntity);
+        node.setTypeQNameId(typeQNameId);
         node.setTransaction(transaction);
         node.setDeleted(false);
         node.getAuditableProperties().setAuditValues("system", new Date(), false);

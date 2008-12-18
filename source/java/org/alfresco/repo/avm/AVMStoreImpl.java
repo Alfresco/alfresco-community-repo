@@ -42,9 +42,8 @@ import org.alfresco.repo.avm.util.RawServices;
 import org.alfresco.repo.avm.util.SimplePath;
 import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.domain.PropertyValue;
-import org.alfresco.repo.security.permissions.ACLCopyMode;
 import org.alfresco.repo.domain.QNameDAO;
-import org.alfresco.repo.domain.QNameEntity;
+import org.alfresco.repo.security.permissions.ACLCopyMode;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.avm.AVMBadArgumentException;
 import org.alfresco.service.cmr.avm.AVMException;
@@ -373,7 +372,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
             Set<Long> aspectQNameEntityIds = newDir.getAspects();
             for (QName aspectQName : aspects)
             {
-                Long qnameEntityId = qnameDAO.getOrCreateQNameEntity(aspectQName).getId();
+                Long qnameEntityId = qnameDAO.getOrCreateQName(aspectQName).getFirst();
                 aspectQNameEntityIds.add(qnameEntityId);
             }
         }
@@ -384,7 +383,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
             Map<Long, PropertyValue> propertiesByQNameEntityId = new HashMap<Long, PropertyValue>(properties.size() * 2 + 1);
             for (Map.Entry<QName, PropertyValue> entry : properties.entrySet())
             {
-                Long qnameEntityId = qnameDAO.getOrCreateQNameEntity(entry.getKey()).getId();
+                Long qnameEntityId = qnameDAO.getOrCreateQName(entry.getKey()).getFirst();
                 propertiesByQNameEntityId.put(qnameEntityId, entry.getValue());
             }
             newDir.getProperties().putAll(propertiesByQNameEntityId);
@@ -524,7 +523,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
             Set<Long> aspectQNameEntityIds = file.getAspects();
             for (QName aspectQName : aspects)
             {
-                Long qnameEntityId = qnameDAO.getOrCreateQNameEntity(aspectQName).getId();
+                Long qnameEntityId = qnameDAO.getOrCreateQName(aspectQName).getFirst();
                 aspectQNameEntityIds.add(qnameEntityId);
             }
         }
@@ -535,7 +534,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
             Map<Long, PropertyValue> propertiesByQNameEntityId = new HashMap<Long, PropertyValue>(properties.size() * 2 + 1);
             for (Map.Entry<QName, PropertyValue> entry : properties.entrySet())
             {
-                Long qnameEntityId = qnameDAO.getOrCreateQNameEntity(entry.getKey()).getId();
+                Long qnameEntityId = qnameDAO.getOrCreateQName(entry.getKey()).getFirst();
                 propertiesByQNameEntityId.put(qnameEntityId, entry.getValue());
             }
             file.getProperties().putAll(propertiesByQNameEntityId);
@@ -1217,9 +1216,9 @@ public class AVMStoreImpl implements AVMStore, Serializable
         {
             throw new AccessDeniedException("Not allowed to write: " + path);
         }
-        QNameEntity qnameEntity = AVMDAOs.Instance().fQNameDAO.getOrCreateQNameEntity(name);
+        Long qnameEntityId = AVMDAOs.Instance().fQNameDAO.getOrCreateQName(name).getFirst();
 
-        node.setProperty(qnameEntity.getId(), value);
+        node.setProperty(qnameEntityId, value);
         node.setGuid(GUID.generate());
     }
 
@@ -1247,7 +1246,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
             Map<Long, PropertyValue> propertiesByQNameEntityId = new HashMap<Long, PropertyValue>(properties.size() * 2 + 1);
             for (Map.Entry<QName, PropertyValue> entry : properties.entrySet())
             {
-                Long qnameEntityId = qnameDAO.getOrCreateQNameEntity(entry.getKey()).getId();
+                Long qnameEntityId = qnameDAO.getOrCreateQName(entry.getKey()).getFirst();
                 propertiesByQNameEntityId.put(qnameEntityId, entry.getValue());
             }
             node.addProperties(propertiesByQNameEntityId);
@@ -1276,15 +1275,15 @@ public class AVMStoreImpl implements AVMStore, Serializable
         }
         // Convert the QName
         QNameDAO qnameDAO = AVMDAOs.Instance().fQNameDAO;
-        QNameEntity qnameEntity = qnameDAO.getOrCreateQNameEntity(name);
-        if (qnameEntity == null)
+        Pair<Long, QName> qnamePair = qnameDAO.getQName(name);
+        if (qnamePair == null)
         {
             // No such QName
             return null;
         }
         else
         {
-            PropertyValue prop = node.getProperty(qnameEntity.getId());
+            PropertyValue prop = node.getProperty(qnamePair.getFirst());
             return prop;
         }
     }
@@ -1335,14 +1334,15 @@ public class AVMStoreImpl implements AVMStore, Serializable
         node.setGuid(GUID.generate());
 
         // convert the QName
-        QNameEntity qnameEntity = AVMDAOs.Instance().fQNameDAO.getQNameEntity(name);
-        if (qnameEntity == null)
+        QNameDAO qnameDAO = AVMDAOs.Instance().fQNameDAO;
+        Pair<Long, QName> qnamePair = qnameDAO.getQName(name);
+        if (qnamePair == null)
         {
             // No such property
         }
         else
         {
-            node.deleteProperty(qnameEntity.getId());
+            node.deleteProperty(qnamePair.getFirst());
         }
     }
 
@@ -1373,10 +1373,10 @@ public class AVMStoreImpl implements AVMStore, Serializable
      */
     public void setProperty(QName name, PropertyValue value)
     {
-        QNameEntity qnameEntity = AVMDAOs.Instance().fQNameDAO.getOrCreateQNameEntity(name);
+        Long qnameEntityId = AVMDAOs.Instance().fQNameDAO.getOrCreateQName(name).getFirst();
         AVMStoreProperty prop = new AVMStorePropertyImpl();
         prop.setStore(this);
-        prop.setName(qnameEntity);
+        prop.setQnameId(qnameEntityId);
         prop.setValue(value);
         AVMDAOs.Instance().fAVMStorePropertyDAO.save(prop);
     }
@@ -1412,16 +1412,21 @@ public class AVMStoreImpl implements AVMStore, Serializable
      * Get all the properties associated with this node.
      * @return A Map of the properties.
      */
+    @SuppressWarnings("unchecked")
     public Map<QName, PropertyValue> getProperties()
     {
-        List<AVMStoreProperty> props =
-            AVMDAOs.Instance().fAVMStorePropertyDAO.get(this);
-        Map<QName, PropertyValue> retVal = new HashMap<QName, PropertyValue>();
+        List<AVMStoreProperty> props = AVMDAOs.Instance().fAVMStorePropertyDAO.get(this);
+
+        Map<Long, PropertyValue> propsIdMap = new HashMap<Long, PropertyValue>(props.size() + 7);
         for (AVMStoreProperty prop : props)
         {
-            retVal.put(prop.getName().getQName(), prop.getValue());
+            propsIdMap.put(prop.getQnameId(), prop.getValue());
         }
-        return retVal;
+        // Mass-convert
+        QNameDAO qnameDAO = AVMDAOs.Instance().fQNameDAO;
+        Map<QName, PropertyValue> propsQNameMap = (Map<QName, PropertyValue>) qnameDAO.convertIdMapToQNameMap(propsIdMap);
+        
+        return propsQNameMap;
     }
 
     /**
@@ -1553,7 +1558,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
         }
         // Convert the aspect QNames to entities
         QNameDAO qnameDAO = AVMDAOs.Instance().fQNameDAO;
-        Long qnameEntityId = qnameDAO.getOrCreateQNameEntity(aspectName).getId();
+        Long qnameEntityId = qnameDAO.getOrCreateQName(aspectName).getFirst();
         // Convert the
         node.getAspects().add(qnameEntityId);
         node.setGuid(GUID.generate());
@@ -1602,18 +1607,19 @@ public class AVMStoreImpl implements AVMStore, Serializable
         }
         QNameDAO qnameDAO = AVMDAOs.Instance().fQNameDAO;
         // Get the persistent ID for the QName and remove from the set
-        QNameEntity qnameEntity = qnameDAO.getQNameEntity(aspectName);
-        if (qnameEntity != null)
+        Pair<Long, QName> qnamePair = qnameDAO.getQName(aspectName);
+        if (qnamePair != null)
         {
-            node.getAspects().remove(qnameEntity.getId());
+            node.getAspects().remove(qnamePair.getFirst());
         }
         AspectDefinition def = RawServices.Instance().getDictionaryService().getAspect(aspectName);
-        Map<QName, PropertyDefinition> properties =
-            def.getProperties();
-        for (QName name : properties.keySet())
+        Map<QName, PropertyDefinition> properties = def.getProperties();
+        Set<Long> propertyQNameIds = qnameDAO.convertQNamesToIds(properties.keySet(), false);
+        
+        Map<Long, PropertyValue> nodeProperties = node.getProperties();
+        for (Long propertyQNameId : propertyQNameIds)
         {
-            QNameEntity propertyQNameEntity = qnameDAO.getQNameEntity(name);
-            node.getProperties().remove(propertyQNameEntity.getId());
+            nodeProperties.remove(propertyQNameId);
         }
         node.setGuid(GUID.generate());
     }
@@ -1639,10 +1645,10 @@ public class AVMStoreImpl implements AVMStore, Serializable
         }
         QNameDAO qnameDAO = AVMDAOs.Instance().fQNameDAO;
         // Get the persistent ID for the QName and remove from the set
-        QNameEntity qnameEntity = qnameDAO.getQNameEntity(aspectName);
-        if (qnameEntity != null)
+        Pair<Long, QName> qnamePair = qnameDAO.getQName(aspectName);
+        if (qnamePair != null)
         {
-            return node.getAspects().contains(qnameEntity.getId());
+            return node.getAspects().contains(qnamePair.getFirst());
         }
         else
         {
@@ -1750,12 +1756,12 @@ public class AVMStoreImpl implements AVMStore, Serializable
         toLink.setVersionID(child.getVersionID() + 1);
         // TODO This really shouldn't be here. Leaking layers.
         QNameDAO qnameDAO = AVMDAOs.Instance().fQNameDAO;
-        QNameEntity revertedQNameEntity = qnameDAO.getOrCreateQNameEntity(WCMModel.ASPECT_REVERTED);
-        toLink.getAspects().add(revertedQNameEntity.getId());
+        Pair<Long, QName> revertedQNamePair = qnameDAO.getOrCreateQName(WCMModel.ASPECT_REVERTED);
+        toLink.getAspects().add(revertedQNamePair.getFirst());
         PropertyValue value = new PropertyValue(null, toRevertTo.getId());
 
-        QNameEntity qnameEntity = AVMDAOs.Instance().fQNameDAO.getOrCreateQNameEntity(WCMModel.PROP_REVERTED_ID);
-        toLink.setProperty(qnameEntity.getId(), value);
+        Pair<Long, QName> qnamePair = AVMDAOs.Instance().fQNameDAO.getOrCreateQName(WCMModel.PROP_REVERTED_ID);
+        toLink.setProperty(qnamePair.getFirst(), value);
     }
 
     /* (non-Javadoc)

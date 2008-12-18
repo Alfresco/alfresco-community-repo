@@ -556,25 +556,17 @@ public abstract class AbstractNodeServiceImpl implements NodeService
     }
 
     /**
-     * Generates a GUID for the node using either the creation properties or just by
-     * generating a value randomly.
+     * Fetches any pre-defined node uuid from the properties, but <b>does not generate a new uuid</b>.
      * 
      * @param preCreationProperties the properties that will be applied to the node
-     * @return Returns the ID to create the node with
+     * @return Returns the ID to create the node with, or <tt>null</tt> if a standard GUID should be used
      */
     protected String generateGuid(Map<QName, Serializable> preCreationProperties)
     {
         String uuid = (String) preCreationProperties.get(ContentModel.PROP_NODE_UUID);
-        if (uuid == null)
+        if (uuid != null && uuid.length() > 50)
         {
-            uuid = GUID.generate();
-        }
-        else
-        {
-            if (uuid.length() > 50)
-            {
-                throw new IllegalArgumentException("Explicit UUID may not be greater than 50 characters: " + uuid);
-            }
+            throw new IllegalArgumentException("Explicit UUID may not be greater than 50 characters: " + uuid);
         }
         // done
         return uuid;

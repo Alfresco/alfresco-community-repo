@@ -41,16 +41,16 @@ public interface QNameDAO
 {
     /**
      * @param id            the unique ID of the entity
-     * @return              the namespace entity (never null)
+     * @return              the namespace pair (id, uri)
      * @throws              AlfrescoRuntimeException if the ID provided is invalid
      */
-    NamespaceEntity getNamespaceEntity(Long id);
+    Pair<Long, String> getNamespace(Long id);
     
     /**
      * @param namespaceUri  the namespace URI to query for
-     * @return              the namespace entity of null if it doesn't exist
+     * @return              the namespace pair (id, uri) or <tt>null</tt> if it doesn't exist
      */
-    NamespaceEntity getNamespaceEntity(String namespaceUri);
+    Pair<Long, String> getNamespace(String namespaceUri);
     
     /**
      * Get an existing instance matching the URI or create one if necessary.
@@ -58,45 +58,38 @@ public interface QNameDAO
      * be used in the context of read-only or query methods.
      * 
      * @param namespaceUri  the namespace URI to create
-     * @return              the existing namespace entity if found or a new one
+     * @return              the existing namespace pair (id, uri) or a new one
      */
-    NamespaceEntity getOrCreateNamespaceEntity(String namespaceUri);
+    Pair<Long, String> getOrCreateNamespace(String namespaceUri);
     
     /**
      * @param namespaceUri  the namespace URI to create
-     * @return              Returns the new instance
+     * @return              the new namespace pair (id, uri)
      */
-    NamespaceEntity newNamespaceEntity(String namespaceUri);
+    Pair<Long, String> newNamespace(String namespaceUri);
     
     /**
      * Modifies an existing namespace URI.  If the new URI already exists, then no
-     * new entity is created and a concurrency 
+     * new entity is created. 
      * 
      * @param oldNamespaceUri           the old namespace URI
      * @param newNamespaceUri           the new namespace URI
      * @throws AlfrescoRuntimeException if the new namespace is in use
      */
-    void updateNamespaceEntity(String oldNamespaceUri, String newNamespaceUri);
+    void updateNamespace(String oldNamespaceUri, String newNamespaceUri);
     
     /**
      * @param id            the unique ID of the entity
-     * @return              the QName entity (never null)
+     * @return              the QName pair (id, qname) (never null)
      * @throws              AlfrescoRuntimeException if the ID provided is invalid
      */
-    QNameEntity getQNameEntity(Long id);
-
-    /**
-     * @param id            the unique ID of the entity
-     * @return              the QName (never null)
-     * @throws              AlfrescoRuntimeException if the ID provided is invalid
-     */
-    QName getQName(Long id);
+    Pair<Long, QName> getQName(Long id);
 
     /**
      * @param qname         the QName to query for
-     * @return              the QName entity of null if it doesn't exist
+     * @return              the QName pair (id, qname) or <tt>null</tt> if it doesn't exist
      */
-    QNameEntity getQNameEntity(QName qname);
+    Pair<Long, QName> getQName(QName qname);
     
     /**
      * Get an existing instance matching the QName or create one if necessary.
@@ -104,17 +97,15 @@ public interface QNameDAO
      * be used in the context of read-only or query methods.
      * 
      * @param qname         the QName to query for
-     * @return              an existing QName entity if found or a new one
+     * @return              the QName pair (id, qname) or a new one
      */
-    QNameEntity getOrCreateQNameEntity(QName qname);
-    
-    Pair<Long, QName> getOrCreateQNamePair(QName qname);
+    Pair<Long, QName> getOrCreateQName(QName qname);
     
     /**
      * @param qname         the QName to create
-     * @return              the new instance
+     * @return              the new QName pair (id, qname)
      */
-    QNameEntity newQNameEntity(QName qname);
+    Pair<Long, QName> newQName(QName qname);
     
     Set<QName> convertIdsToQNames(Set<Long> ids);
     

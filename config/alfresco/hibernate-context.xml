@@ -222,6 +222,9 @@
       <property name="qnameEntityCache">
          <ref bean="qnameEntityCache"/>
       </property>
+      <property name="namespaceEntityCache">
+         <ref bean="namespaceEntityCache"/>
+      </property>
    </bean>
 
    <bean id="versionCounterDaoComponent" class="org.alfresco.repo.domain.hibernate.VersionCounterDaoComponentImpl">

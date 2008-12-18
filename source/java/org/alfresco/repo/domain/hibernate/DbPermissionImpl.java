@@ -25,10 +25,13 @@
 package org.alfresco.repo.domain.hibernate;
 
 import java.io.Serializable;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
 import org.alfresco.repo.domain.DbPermission;
 import org.alfresco.repo.domain.DbPermissionKey;
-import org.alfresco.repo.domain.QNameEntity;
+import org.alfresco.repo.domain.QNameDAO;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
 import org.hibernate.Session;
@@ -44,12 +47,19 @@ public class DbPermissionImpl implements DbPermission, Serializable
 
     private Long id;
     private Long version;
-    private QNameEntity typeQName;
+    private Long typeQNameId;
     private String name;
+
+    private transient ReadLock refReadLock;
+    private transient WriteLock refWriteLock;
+    private transient QName typeQName;
 
     public DbPermissionImpl()
     {
         super();
+        ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+        refReadLock = lock.readLock();
+        refWriteLock = lock.writeLock();
     }
 
     @Override
@@ -59,7 +69,7 @@ public class DbPermissionImpl implements DbPermission, Serializable
         sb.append("DbPermissionImpl")
           .append("[ id=").append(id)
           .append(", version=").append(version)
-          .append(", typeQName=").append(typeQName.getQName())
+          .append(", typeQName=").append(typeQNameId)
           .append(", name=").append(getName())
           .append("]");
         return sb.toString();
@@ -77,13 +87,41 @@ public class DbPermissionImpl implements DbPermission, Serializable
             return false;
         }
         DbPermission other = (DbPermission) o;
-        return (EqualsHelper.nullSafeEquals(typeQName, other.getTypeQName())) && (EqualsHelper.nullSafeEquals(name, other.getName()));
+        return (EqualsHelper.nullSafeEquals(typeQNameId, other.getTypeQNameId()))
+                && (EqualsHelper.nullSafeEquals(name, other.getName())
+                        );
     }
 
     @Override
     public int hashCode()
     {
-        return typeQName.hashCode() + (37 * name.hashCode());
+        return typeQNameId.hashCode() + (37 * name.hashCode());
+    }
+
+    public QName getTypeQName(QNameDAO qnameDAO)
+    {
+        refReadLock.lock();
+        try
+        {
+            if (typeQName != null)
+            {
+                return typeQName;
+            }
+        }
+        finally
+        {
+            refReadLock.unlock();
+        }
+        refWriteLock.lock();
+        try
+        {
+            typeQName = qnameDAO.getQName(typeQNameId).getSecond();
+            return typeQName;
+        }
+        finally
+        {
+            refWriteLock.unlock();
+        }
     }
 
     public Long getId()
@@ -114,14 +152,23 @@ public class DbPermissionImpl implements DbPermission, Serializable
         this.version = version;
     }
 
-    public QNameEntity getTypeQName()
+    public Long getTypeQNameId()
     {
-        return typeQName;
+        return typeQNameId;
     }
 
-    public void setTypeQName(QNameEntity typeQName)
+    public void setTypeQNameId(Long typeQNameId)
     {
-        this.typeQName = typeQName;
+        refWriteLock.lock();
+        try
+        {
+            this.typeQNameId = typeQNameId;
+            this.typeQName = null;
+        }
+        finally
+        {
+            refWriteLock.unlock();
+        }
     }
 
     public String getName()
@@ -136,7 +183,7 @@ public class DbPermissionImpl implements DbPermission, Serializable
 
     public DbPermissionKey getKey()
     {
-        return new DbPermissionKey(typeQName.getQName(), name);
+        return new DbPermissionKey(typeQNameId, name);
     }
 
     /**

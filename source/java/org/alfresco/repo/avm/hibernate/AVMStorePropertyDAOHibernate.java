@@ -29,8 +29,8 @@ import org.alfresco.repo.avm.AVMStore;
 import org.alfresco.repo.avm.AVMStoreProperty;
 import org.alfresco.repo.avm.AVMStorePropertyDAO;
 import org.alfresco.repo.domain.QNameDAO;
-import org.alfresco.repo.domain.QNameEntity;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
 import org.hibernate.Query;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
@@ -67,8 +67,8 @@ class AVMStorePropertyDAOHibernate extends HibernateDaoSupport implements AVMSto
      */
     public AVMStoreProperty get(AVMStore store, QName name)
     {
-        QNameEntity qnameEntity = qnameDAO.getQNameEntity(name);
-        if (qnameEntity == null)
+        Pair<Long, QName> qnamePair = qnameDAO.getQName(name);
+        if (qnamePair == null)
         {
             // No such QName
             return null;
@@ -81,9 +81,9 @@ class AVMStorePropertyDAOHibernate extends HibernateDaoSupport implements AVMSto
                         "from AVMStorePropertyImpl asp " +
                         "where " +
                         "asp.store = :store and " +
-                        "asp.name = :name");
+                        "asp.qnameId = :qnameId");
             query.setEntity("store", store);
-            query.setEntity("name", qnameEntity);
+            query.setLong("qnameId", qnamePair.getFirst());
             return (AVMStoreProperty)query.uniqueResult();
         }
     }
@@ -122,19 +122,20 @@ class AVMStorePropertyDAOHibernate extends HibernateDaoSupport implements AVMSto
         {
             localName = "%";
         }
-        Query query =
-            getSession().createQuery(
-                "select asp " +
-                "from AVMStorePropertyImpl asp " +
-                "join asp.name name " +
-                "join name.namespace namespace " +
-                "where " +
-                "asp.store = :store and " +
-                "namespace.safeUri like :uri and " +
-                "name.localName like :localName");
-        query.setEntity("store", store);
+        Query query = getSession().getNamedQuery("avm.GetStorePropertiesByStoreAndKeyPattern");
+        query.setLong("storeId", store.getId());
         query.setParameter("uri", uri);
         query.setParameter("localName", localName);
+//        Query query =
+//            getSession().createQuery(
+//                "select asp " +
+//                "from AVMStorePropertyImpl asp " +
+//                "join asp.name name " +
+//                "join name.namespace namespace " +
+//                "where " +
+//                "asp.store = :store and " +
+//                "namespace.safeUri like :uri and " +
+//                "name.localName like :localName");
         return (List<AVMStoreProperty>)query.list();
     }
 
@@ -157,17 +158,20 @@ class AVMStorePropertyDAOHibernate extends HibernateDaoSupport implements AVMSto
         {
             localName = "%";
         }
-        Query query =
-            getSession().createQuery(
-                    "select asp " +
-                    "from AVMStorePropertyImpl asp " +
-                    "join asp.name name " +
-                    "join name.namespace namespace " +
-                    "where " +
-                    "namespace.safeUri like :uri and " +
-                    "name.localName like :localName");
-            query.setParameter("uri", uri);
-            query.setParameter("localName", localName);
+        Query query = getSession().getNamedQuery("avm.GetStorePropertiesByKeyPattern");
+        query.setParameter("uri", uri);
+        query.setParameter("localName", localName);
+//        Query query =
+//            getSession().createQuery(
+//                    "select asp " +
+//                    "from AVMStorePropertyImpl asp " +
+//                    "join asp.name name " +
+//                    "join name.namespace namespace " +
+//                    "where " +
+//                    "namespace.safeUri like :uri and " +
+//                    "name.localName like :localName");
+//            query.setParameter("uri", uri);
+//            query.setParameter("localName", localName);
         return (List<AVMStoreProperty>)query.list();
     }
 
@@ -187,14 +191,12 @@ class AVMStorePropertyDAOHibernate extends HibernateDaoSupport implements AVMSto
      */
     public void delete(AVMStore store, QName name)
     {
-        QNameEntity qnameEntity = qnameDAO.getQNameEntity(name);
-        if (qnameEntity != null)
+        Pair<Long, QName> qnamePair = qnameDAO.getQName(name);
+        if (qnamePair != null)
         {
-            Query delete = 
-                getSession().createQuery("delete from AVMStorePropertyImpl asp " +
-                                         "where asp.store = :store and asp.name = :name");
-            delete.setEntity("store", store);
-            delete.setParameter("name", qnameEntity);
+            Query delete = getSession().getNamedQuery("avm.DeleteStorePropertiesByType");
+            delete.setParameter("storeId", store.getId());
+            delete.setParameter("qnameId", qnamePair.getFirst());
             delete.executeUpdate();
         }
     }
@@ -205,9 +207,8 @@ class AVMStorePropertyDAOHibernate extends HibernateDaoSupport implements AVMSto
      */
     public void delete(AVMStore store)
     {
-        Query delete =
-            getSession().createQuery("delete from AVMStorePropertyImpl asp where asp.store = :store");
-        delete.setEntity("store", store);
+        Query delete = getSession().getNamedQuery("avm.DeleteStoreProperties");
+        delete.setParameter("storeId", store.getId());
         delete.executeUpdate();
     }
 }

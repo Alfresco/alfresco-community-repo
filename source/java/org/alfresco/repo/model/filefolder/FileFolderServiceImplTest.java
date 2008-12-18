@@ -36,6 +36,9 @@ import junit.framework.TestCase;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.dictionary.DictionaryDAO;
+import org.alfresco.repo.dictionary.M2Model;
+import org.alfresco.repo.dictionary.M2Type;
 import org.alfresco.repo.node.integrity.IntegrityChecker;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.ServiceRegistry;
@@ -83,6 +86,7 @@ public class FileFolderServiceImplTest extends TestCase
     private TransactionService transactionService;
     private NodeService nodeService;
     private FileFolderService fileFolderService;
+    private DictionaryDAO dictionaryDAO;
     private UserTransaction txn;
     private NodeRef rootNodeRef;
     private NodeRef workingRootNodeRef;
@@ -94,6 +98,7 @@ public class FileFolderServiceImplTest extends TestCase
         transactionService = serviceRegistry.getTransactionService();
         nodeService = serviceRegistry.getNodeService();
         fileFolderService = serviceRegistry.getFileFolderService();
+        dictionaryDAO = (DictionaryDAO) ctx.getBean("dictionaryDAO");
         AuthenticationComponent authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
 
         // start the transaction
@@ -403,6 +408,32 @@ public class FileFolderServiceImplTest extends TestCase
         catch (RuntimeException e)
         {
             // expected
+        }
+        finally
+        {
+            rollbackTxn.rollback();
+        }
+        // Create a cm:folder derived type
+        try
+        {
+            rollbackTxn = transactionService.getNonPropagatingUserTransaction();
+            rollbackTxn.begin();
+            // Create a new model
+            String testNs = "http://www.alfresco.org/model/test111/1.0";
+            M2Model testModel = M2Model.createModel("t111:filefolderserviceimpltest");
+            testModel.createNamespace(testNs, "t111");
+            testModel.createImport(NamespaceService.DICTIONARY_MODEL_1_0_URI, NamespaceService.DICTIONARY_MODEL_PREFIX);
+            testModel.createImport(NamespaceService.SYSTEM_MODEL_1_0_URI, NamespaceService.SYSTEM_MODEL_PREFIX);
+            testModel.createImport(NamespaceService.CONTENT_MODEL_1_0_URI, NamespaceService.CONTENT_MODEL_PREFIX);
+
+            M2Type testType = testModel.createType("t111:subfolder");
+            testType.setParentName("cm:" + ContentModel.TYPE_FOLDER.getLocalName());
+            dictionaryDAO.putModel(testModel);
+            fileFolderService.create(parentFolderRef, "Legal subtype of folder", QName.createQName(testNs, "subfolder"));
+        }
+        catch (Throwable e)
+        {
+            throw new Exception("Legal subtype of cm:folder not allowed.", e);
         }
         finally
         {

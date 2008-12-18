@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.QName;
 
 /**
  * Interface for persistent <b>node</b> objects.
@@ -44,6 +45,22 @@ public interface Node
      * @return Returns the reference to this node
      */
     public NodeRef getNodeRef();
+
+    /**
+     * Convenience method to get the node's type
+     * 
+     * @param qnameDAO          the helper DAO
+     * @return                  the node's type QName
+     */
+    public QName getTypeQName(QNameDAO qnameDAO);
+    
+    /**
+     * Convenience method to set the node's type
+     * 
+     * @param qnameDAO          the helper DAO
+     * @param qname             the node's type QName
+     */
+    public void setTypeQName(QNameDAO qnameDAO, QName qname);
     
     /**
      * @return Returns the auto-generated ID
@@ -71,9 +88,9 @@ public interface Node
 
     public void setDeleted(boolean deleted);
     
-    public QNameEntity getTypeQName();
+    public Long getTypeQNameId();
     
-    public void setTypeQName(QNameEntity typeQName);
+    public void setTypeQNameId(Long typeQNameId);
 
     public DbAccessControlList getAccessControlList();
 

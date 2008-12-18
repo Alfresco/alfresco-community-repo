@@ -26,7 +26,6 @@ package org.alfresco.repo.domain;
 
 import java.io.Serializable;
 
-import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
 
 /**
@@ -38,23 +37,23 @@ public class DbPermissionKey implements Serializable
 {
     private static final long serialVersionUID = -1667797216480779296L;
 
-    private QName typeQname;
+    private Long typeQNameId;
     private String name;
 
     public DbPermissionKey()
     {
     }
     
-    public DbPermissionKey(QName typeQname, String name)
+    public DbPermissionKey(Long typeQNameId, String name)
     {
-        this.typeQname = typeQname;
+        this.typeQNameId = typeQNameId;
         this.name = name;
     }
 	
 	public String toString()
 	{
 		return ("DbPermissionKey" +
-				"[ type=" + typeQname +
+				"[ type=" + typeQNameId +
 				", name=" + name +
 				"]");
 	}
@@ -75,23 +74,23 @@ public class DbPermissionKey implements Serializable
             return false;
         }
         DbPermissionKey that = (DbPermissionKey) obj;
-        return (EqualsHelper.nullSafeEquals(this.typeQname, that.typeQname)
+        return (EqualsHelper.nullSafeEquals(this.typeQNameId, that.typeQNameId)
                 && EqualsHelper.nullSafeEquals(this.name, that.name)
                 );
     }
     
-    public QName getTypeQname()
+    public Long getTypeQNameId()
     {
-        return typeQname;
+        return typeQNameId;
     }
     
     /**
      * Tamper-proof method only to be used by introspectors
      */
     @SuppressWarnings("unused")
-    private void setTypeQname(QName typeQname)
+    private void setTypeQName(Long typeQNameId)
     {
-        this.typeQname = typeQname;
+        this.typeQNameId = typeQNameId;
     }
     
     public String getName()

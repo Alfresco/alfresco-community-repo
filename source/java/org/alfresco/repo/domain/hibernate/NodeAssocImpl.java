@@ -31,8 +31,9 @@ import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
 import org.alfresco.repo.domain.Node;
 import org.alfresco.repo.domain.NodeAssoc;
-import org.alfresco.repo.domain.QNameEntity;
+import org.alfresco.repo.domain.QNameDAO;
 import org.alfresco.service.cmr.repository.AssociationRef;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
 
 /**
@@ -48,11 +49,12 @@ public class NodeAssocImpl implements NodeAssoc, Serializable
     private Long version;
     private Node source;
     private Node target;
-    private QNameEntity typeQName;
+    private Long typeQNameId;
     
     private transient ReadLock refReadLock;
     private transient WriteLock refWriteLock;
     private transient AssociationRef nodeAssocRef;
+    private transient QName typeQName;
 
     public NodeAssocImpl()
     {
@@ -68,7 +70,7 @@ public class NodeAssocImpl implements NodeAssoc, Serializable
         this.setSource(sourceNode);
     }
     
-    public AssociationRef getNodeAssocRef()
+    public AssociationRef getNodeAssocRef(QNameDAO qnameDAO)
     {
         boolean trashReference = false;
         // first check if it is available
@@ -98,15 +100,60 @@ public class NodeAssocImpl implements NodeAssoc, Serializable
         refWriteLock.lock();
         try
         {
+            if (typeQName == null)
+            {
+                typeQName = qnameDAO.getQName(typeQNameId).getSecond();
+            }
             // double check
             if (nodeAssocRef == null || trashReference)
             {
                 nodeAssocRef = new AssociationRef(
                         getSource().getNodeRef(),
-                        this.typeQName.getQName(),
+                        this.typeQName,
                         getTarget().getNodeRef());
             }
             return nodeAssocRef;
+        }
+        finally
+        {
+            refWriteLock.unlock();
+        }
+    }
+
+    public QName getTypeQName(QNameDAO qnameDAO)
+    {
+        refReadLock.lock();
+        try
+        {
+            if (typeQName != null)
+            {
+                return typeQName;
+            }
+        }
+        finally
+        {
+            refReadLock.unlock();
+        }
+        // get write lock
+        refWriteLock.lock();
+        try
+        {
+            typeQName = qnameDAO.getQName(typeQNameId).getSecond();
+            return typeQName;
+        }
+        finally
+        {
+            refWriteLock.unlock();
+        }
+    }
+
+    public void setTypeQName(QNameDAO qnameDAO, QName typeQName)
+    {
+        Long typeQNameId = qnameDAO.getOrCreateQName(typeQName).getFirst();
+        refWriteLock.lock();
+        try
+        {
+            setTypeQNameId(typeQNameId);
         }
         finally
         {
@@ -120,7 +167,7 @@ public class NodeAssocImpl implements NodeAssoc, Serializable
         sb.append("NodeAssoc")
           .append("[ source=").append(source)
           .append(", target=").append(target)
-          .append(", name=").append(getTypeQName())
+          .append(", type=").append(typeQNameId)
           .append("]");
         return sb.toString();
     }
@@ -140,14 +187,22 @@ public class NodeAssocImpl implements NodeAssoc, Serializable
             return false;
         }
         NodeAssoc that = (NodeAssoc) obj;
-        return (EqualsHelper.nullSafeEquals(this.getTypeQName(), that.getTypeQName())
-                && EqualsHelper.nullSafeEquals(this.getTarget(), that.getTarget())
-                && EqualsHelper.nullSafeEquals(this.getSource(), that.getSource()));
+        if (EqualsHelper.nullSafeEquals(this.typeQNameId, that.getId()))
+        {
+            return true;
+        }
+        else
+        {
+            return (EqualsHelper.nullSafeEquals(this.typeQNameId, that.getTypeQNameId())
+                    && EqualsHelper.nullSafeEquals(this.getTarget(), that.getTarget())
+                    && EqualsHelper.nullSafeEquals(this.getSource(), that.getSource())
+                    );
+        }
     }
     
     public int hashCode()
     {
-        return (typeQName == null ? 0 : typeQName.hashCode());
+        return (typeQNameId == null ? 0 : typeQNameId.hashCode());
     }
 
     public Long getId()
@@ -222,18 +277,19 @@ public class NodeAssocImpl implements NodeAssoc, Serializable
         }
     }
 
-    public QNameEntity getTypeQName()
+    public Long getTypeQNameId()
     {
-        return typeQName;
+        return typeQNameId;
     }
 
-    public void setTypeQName(QNameEntity typeQName)
+    public void setTypeQNameId(Long typeQNameId)
     {
         refWriteLock.lock();
         try
         {
-            this.typeQName = typeQName;
+            this.typeQNameId = typeQNameId;
             this.nodeAssocRef = null;
+            this.typeQName = null;
         }
         finally
         {

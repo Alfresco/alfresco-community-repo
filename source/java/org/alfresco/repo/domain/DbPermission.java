@@ -26,6 +26,8 @@ package org.alfresco.repo.domain;
 
 import java.io.Serializable;
 
+import org.alfresco.service.namespace.QName;
+
 /**
  * The interface against which permission references are persisted in hibernate.
  * 
@@ -33,6 +35,14 @@ import java.io.Serializable;
  */
 public interface DbPermission extends Serializable
 {
+    /**
+     * Convenience method to get the type QName of the permission
+     * 
+     * @param qnameDAO          helper DAO
+     * @return                  the permission's type QName
+     */
+    public QName getTypeQName(QNameDAO qnameDAO);
+    
     /**
      * @return Returns the automatically assigned ID
      */
@@ -46,12 +56,12 @@ public interface DbPermission extends Serializable
     /**
      * @return Returns the qualified name of this permission
      */
-    public QNameEntity getTypeQName();
+    public Long getTypeQNameId();
     
     /**
-     * @param qname the entity representing the qname for this instance
+     * @param typeQNameId       the ID of the QName for this instance
      */
-    public void setTypeQName(QNameEntity typeQNameEntity);
+    public void setTypeQNameId(Long typeQNameId);
 
     /**
      * @return Returns the permission name
@@ -64,7 +74,7 @@ public interface DbPermission extends Serializable
     public void setName(String name);
     
     /**
-     * @return Returns a key combining the {@link #getTypeQname() type}
+     * @return Returns a key combining the {@link #getTypeQnameId() type}
      *      and {@link #getName() name}
      */
     public DbPermissionKey getKey();

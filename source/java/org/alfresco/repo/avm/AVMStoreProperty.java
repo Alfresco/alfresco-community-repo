@@ -24,7 +24,6 @@
 package org.alfresco.repo.avm;
 
 import org.alfresco.repo.domain.PropertyValue;
-import org.alfresco.repo.domain.QNameEntity;
 
 /**
  * Arbitrary properties associated with AVMStores.
@@ -45,16 +44,18 @@ public interface AVMStoreProperty
     public AVMStore getStore();
     
     /**
-     * Set the name of the property.
-     * @param qnameEntity The QNameEntity for the property.
+     * Set the property type.
+     * 
+     * @param qnameId       the ID of the property QName
      */
-    public void setName(QNameEntity qnameEntity);
+    public void setQnameId(Long qnameId);
     
     /**
-     * Get the name of this property.
-     * @return The QNameEntity of this property.
+     * Get the property type.
+     * 
+     * @return              returns the ID of the property QName
      */
-    public QNameEntity getName();
+    public Long getQnameId();
     
     /**
      * Set the actual property value.

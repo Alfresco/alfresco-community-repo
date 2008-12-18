@@ -156,6 +156,10 @@ public class OpenOfficeContentTransformer extends AbstractContentTransformer2
         {
             return false;
         }
+        else if (targetMimetype.equals(MimetypeMap.MIMETYPE_FLASH))
+        {
+            return false;
+        }
         
         MimetypeService mimetypeService = getMimetypeService();
         String sourceExtension = mimetypeService.getExtension(sourceMimetype);

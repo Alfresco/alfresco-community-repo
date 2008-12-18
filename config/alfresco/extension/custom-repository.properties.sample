@@ -36,22 +36,22 @@
 #db.url=jdbc:derby:/srv/alfresco/alf_data/derby_data/alfresco;create=true
 
 #
-# HSQL connection
-#
-#db.driver=org.hsqldb.jdbcDriver
-#db.url=jdbc:hsqldb:file:alf_data/hsql_data/alfresco;ifexists=true;shutdown=true;
-
-#
 # MySQL connection (This is default and requires mysql-connector-java-5.0.3-bin.jar, which ships with the Alfresco server)
 #
 #db.driver=org.gjt.mm.mysql.Driver
 #db.url=jdbc:mysql://localhost/alfresco
 
 #
-# PostgreSQL connection (requires postgresql-8.2-504.jdbc3.jar or equivalent)
+# Oracle connection
 #
-#db.driver=org.postgresql.Driver
-#db.url=jdbc:postgresql://localhost:5432/alfresco
+#db.driver=oracle.jdbc.OracleDriver
+#db.url=jdbc:oracle:thin:@localhost:1521:alfresco
+
+#
+# SQLServer connection (note you must enable TCP protocol on fixed port 1433)
+#
+#db.driver=com.microsoft.sqlserver.jdbc.SQLServerDriver
+#db.url=jdbc:sqlserver://localhost:1433;databaseName=alfresco
 
 # The well known RMI registry port is defined in the alfresco-shared.properties file
 # alfresco.rmi.services.port=50500

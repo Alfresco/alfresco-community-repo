@@ -33,8 +33,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Writer;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.DatabaseMetaData;
+import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -47,8 +47,7 @@ import org.alfresco.repo.admin.patch.Patch;
 import org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch;
 import org.alfresco.repo.content.filestore.FileContentWriter;
 import org.alfresco.repo.domain.PropertyValue;
-import org.alfresco.repo.domain.hibernate.dialect.AlfrescoOracle10gDialect;
-import org.alfresco.repo.domain.hibernate.dialect.AlfrescoOracle9iDialect;
+import org.alfresco.repo.domain.hibernate.dialect.AlfrescoOracle9Dialect;
 import org.alfresco.repo.domain.hibernate.dialect.AlfrescoSQLServerDialect;
 import org.alfresco.repo.domain.hibernate.dialect.AlfrescoSybaseAnywhereDialect;
 import org.alfresco.service.ServiceRegistry;
@@ -112,6 +111,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     private static final String WARN_DIALECT_SUBSTITUTING = "schema.update.warn.dialect_substituting";
     private static final String WARN_DIALECT_HSQL = "schema.update.warn.dialect_hsql";
     private static final String WARN_DIALECT_DERBY = "schema.update.warn.dialect_derby";
+    private static final String ERR_DIALECT_SHOULD_USE = "schema.update.err.dialect_should_use";
     private static final String ERR_MULTIPLE_SCHEMAS = "schema.update.err.found_multiple";
     private static final String ERR_PREVIOUS_FAILED_BOOTSTRAP = "schema.update.err.previous_failed";
     private static final String ERR_STATEMENT_FAILED = "schema.update.err.statement_failed";
@@ -974,30 +974,25 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         {
             return;
         }
-        else if (dialectName.equals(Oracle9iDialect.class.getName()))
-        {
-            String subst = AlfrescoOracle9iDialect.class.getName();
-            LogUtil.warn(logger, WARN_DIALECT_SUBSTITUTING, dialectName, subst);
-            cfg.setProperty(Environment.DIALECT, subst);
-        }
-        else if (dialectName.equals(Oracle10gDialect.class.getName()))
-        {
-            String subst = AlfrescoOracle10gDialect.class.getName();
-            LogUtil.warn(logger, WARN_DIALECT_SUBSTITUTING, dialectName, subst);
-            cfg.setProperty(Environment.DIALECT, subst);
-        }
-        else if (dialectName.equals(MySQLDialect.class.getName()))
-        {
-            String subst = MySQLInnoDBDialect.class.getName();
-            LogUtil.warn(logger, WARN_DIALECT_SUBSTITUTING, dialectName, subst);
-            cfg.setProperty(Environment.DIALECT, subst);
-        }
-        else if (dialectName.equals(MySQL5Dialect.class.getName()))
-        {
-            String subst = MySQLInnoDBDialect.class.getName();
-            LogUtil.warn(logger, WARN_DIALECT_SUBSTITUTING, dialectName, subst);
-            cfg.setProperty(Environment.DIALECT, subst);
-        }
+// TODO: https://issues.alfresco.com/jira/browse/ETHREEOH-679
+//        else if (dialectName.equals(Oracle9Dialect.class.getName()))
+//        {
+//            String subst = AlfrescoOracle9Dialect.class.getName();
+//            LogUtil.warn(logger, WARN_DIALECT_SUBSTITUTING, dialectName, subst);
+//            cfg.setProperty(Environment.DIALECT, subst);
+//        }
+//        else if (dialectName.equals(MySQLDialect.class.getName()))
+//        {
+//            String subst = MySQLInnoDBDialect.class.getName();
+//            LogUtil.warn(logger, WARN_DIALECT_SUBSTITUTING, dialectName, subst);
+//            cfg.setProperty(Environment.DIALECT, subst);
+//        }
+//        else if (dialectName.equals(MySQL5Dialect.class.getName()))
+//        {
+//            String subst = MySQLInnoDBDialect.class.getName();
+//            LogUtil.warn(logger, WARN_DIALECT_SUBSTITUTING, dialectName, subst);
+//            cfg.setProperty(Environment.DIALECT, subst);
+//        }
     }
     
     /**
@@ -1010,7 +1005,8 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         LogUtil.info(logger, MSG_DIALECT_USED, dialectClazz.getName());
         if (dialectClazz.equals(MySQLDialect.class) || dialectClazz.equals(MySQL5Dialect.class))
         {
-            LogUtil.warn(logger, WARN_DIALECT_UNSUPPORTED, dialectClazz.getName());
+            LogUtil.error(logger, ERR_DIALECT_SHOULD_USE, dialectClazz.getName(), MySQLInnoDBDialect.class.getName());
+            throw AlfrescoRuntimeException.create(WARN_DIALECT_UNSUPPORTED, dialectClazz.getName());
         }
         else if (dialectClazz.equals(HSQLDialect.class))
         {
@@ -1020,9 +1016,15 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         {
             LogUtil.info(logger, WARN_DIALECT_DERBY);
         }
+        else if (dialectClazz.equals(Oracle9iDialect.class) || dialectClazz.equals(Oracle10gDialect.class))
+        {
+            LogUtil.error(logger, ERR_DIALECT_SHOULD_USE, dialectClazz.getName(), AlfrescoOracle9Dialect.class.getName());
+            throw AlfrescoRuntimeException.create(WARN_DIALECT_UNSUPPORTED, dialectClazz.getName());
+        }
         else if (dialectClazz.equals(OracleDialect.class) || dialectClazz.equals(Oracle9Dialect.class))
         {
-            LogUtil.warn(logger, WARN_DIALECT_UNSUPPORTED, dialectClazz.getName());
+            LogUtil.error(logger, ERR_DIALECT_SHOULD_USE, dialectClazz.getName(), AlfrescoOracle9Dialect.class.getName());
+            throw AlfrescoRuntimeException.create(WARN_DIALECT_UNSUPPORTED, dialectClazz.getName());
         }
         
         int maxStringLength = SchemaBootstrap.DEFAULT_MAX_STRING_LENGTH;
@@ -1057,7 +1059,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             // serializable_value blob,
             maxStringLength = Integer.MAX_VALUE;
         }
-        else if (dialect instanceof OracleDialect)
+        else if (dialect instanceof AlfrescoOracle9Dialect)
         {
             // string_value varchar2(1024 char),
             // serializable_value blob,

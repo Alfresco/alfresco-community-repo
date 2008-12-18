@@ -170,6 +170,11 @@ public class UserUsageTest extends TestCase
 
     public void testCreateUpdatedeleteInTx() throws Exception
     {
+        if(!contentUsageImpl.getEnabled())
+        {
+            return;
+        }
+        
         runAs(TEST_USER);
         
         assertEquals(0, contentUsageImpl.getUserUsage(TEST_USER));
@@ -219,6 +224,11 @@ public class UserUsageTest extends TestCase
     
     public void testCreateUpdatedeleteAcrossTx() throws Exception
     {
+        if(!contentUsageImpl.getEnabled())
+        {
+            return;
+        }
+        
         runAs(TEST_USER);
         
         assertEquals(0, contentUsageImpl.getUserUsage(TEST_USER));
@@ -282,6 +292,11 @@ public class UserUsageTest extends TestCase
     
     public void testCreateCopydeleteInTx() throws Exception
     {
+        if(!contentUsageImpl.getEnabled())
+        {
+            return;
+        }
+        
         runAs(TEST_USER);
         
         assertEquals(0, contentUsageImpl.getUserUsage(TEST_USER));
@@ -323,6 +338,11 @@ public class UserUsageTest extends TestCase
     
     public void testCreateCopydeleteAcrossTx() throws Exception
     {
+        if(!contentUsageImpl.getEnabled())
+        {
+            return;
+        }
+        
         runAs(TEST_USER);
         
         assertEquals(0, contentUsageImpl.getUserUsage(TEST_USER));
@@ -378,6 +398,11 @@ public class UserUsageTest extends TestCase
     
     public void testCreateCopyDeleteFolderWithContentInTx() throws Exception
     {
+        if(!contentUsageImpl.getEnabled())
+        {
+            return;
+        }
+        
         runAs(TEST_USER);
         
         assertEquals(0, contentUsageImpl.getUserUsage(TEST_USER));
@@ -420,6 +445,11 @@ public class UserUsageTest extends TestCase
     
     public void testCreateCopyDeleteFolderWithContentAcrossTx() throws Exception
     {
+        if(!contentUsageImpl.getEnabled())
+        {
+            return;
+        }
+        
         runAs(TEST_USER);
         
         assertEquals(0, contentUsageImpl.getUserUsage(TEST_USER));

@@ -28,6 +28,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 import org.alfresco.repo.domain.hibernate.BulkLoader;
 import org.alfresco.repo.search.MLAnalysisMode;
+import org.springframework.context.ConfigurableApplicationContext;
 
 public interface LuceneConfig
 {
@@ -208,4 +209,10 @@ public interface LuceneConfig
      * @return
      */
     public int getMaxLinkAspectCacheSize();
+  
+    /**
+     * Gets the application context through which events can be broadcast
+     * @return
+     */
+    public ConfigurableApplicationContext getApplicationContext();
 }

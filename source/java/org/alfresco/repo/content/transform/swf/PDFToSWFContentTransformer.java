@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,7 +18,7 @@
  * As a special exception to the terms and conditions of version 2.0 of 
  * the GPL, you may redistribute this Program in connection with Free/Libre 
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
+ * FLOSS exception.  You should have received a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
@@ -53,6 +53,9 @@ public class PDFToSWFContentTransformer extends AbstractContentTransformer2
     
     /** Used to indicate whether the transformaer in available or not */
     private boolean available = false;
+    
+    /** Stores the output from the check command */
+    private String versionString;
     
     /** Check and transform command */
     private RuntimeExec checkCommand;
@@ -130,15 +133,13 @@ public class PDFToSWFContentTransformer extends AbstractContentTransformer2
     {
         ExecutionResult result = getCheckCommand().execute();
         // check the return code
-        this.available = result.getSuccess();
-        if (this.available == false)
+        if (this.available = result.getSuccess())
         {
-            logger.error("Failed to start SWF2PDF transformer: \n" + result);
+            this.versionString = result.getStdOut().trim();
         }
         else
         {
-            // no check - just assume it is available
-            this.available = true;
+            logger.error("Failed to start SWF2PDF transformer: \n" + result);
         }
         
         // call the base class to make sure that it gets registered
@@ -248,5 +249,25 @@ public class PDFToSWFContentTransformer extends AbstractContentTransformer2
         }
         
         return result;
+    }
+    
+    /**
+     * Signals whether this transformer is available.
+     * 
+     * @return true, if is available
+     */
+    public boolean isAvailable()
+    {
+        return this.available;
+    }
+    
+    /**
+     * Gets the version string captured from the check command.
+     * 
+     * @return the version string
+     */
+    public String getVersionString()
+    {
+        return this.versionString;
     }
 }

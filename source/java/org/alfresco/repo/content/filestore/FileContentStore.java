@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,7 +18,7 @@
  * As a special exception to the terms and conditions of version 2.0 of 
  * the GPL, you may redistribute this Program in connection with Free/Libre 
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
+ * FLOSS exception.  You should have received a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
@@ -43,6 +43,10 @@ import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.event.ContextRefreshedEvent;
 
 /**
  * Provides a store of node content directly to the file system.  The writers
@@ -53,7 +57,7 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author Derek Hulley
  */
-public class FileContentStore extends AbstractContentStore
+public class FileContentStore extends AbstractContentStore implements ApplicationListener
 {
     /**
      * <b>store</b> is the new prefix for file content URLs
@@ -69,21 +73,24 @@ public class FileContentStore extends AbstractContentStore
     private boolean readOnly;
 
     /**
-     * @param rootDirectoryStr  the root under which files will be stored.
-     *                          The directory will be created if it does not exist.
-     *                          
+     * Private: for Spring-constructed instances only.
+     * 
+     * @param rootDirectoryStr
+     *            the root under which files will be stored. The directory will be created if it does not exist.
      * @see FileContentStore#FileContentStore(File)
      */
-    public FileContentStore(String rootDirectoryStr)
+    private FileContentStore(String rootDirectoryStr)
     {
         this(new File(rootDirectoryStr));
     }
 
     /**
-     * @param rootDirectory     the root under which files will be stored.
-     *                          The directory will be created if it does not exist.
+     * Private: for Spring-constructed instances only.
+     * 
+     * @param rootDirectory
+     *            the root under which files will be stored. The directory will be created if it does not exist.
      */
-    public FileContentStore(File rootDirectory)
+    private FileContentStore(File rootDirectory)
     {
         if (!rootDirectory.exists())
         {
@@ -97,6 +104,36 @@ public class FileContentStore extends AbstractContentStore
         allowRandomAccess = true;
         readOnly = false;
     }
+    
+    /**
+     * Public constructor for programmatic use.
+     * 
+     * @param context
+     *            application context through which events can be published
+     * @param rootDirectoryStr
+     *            the root under which files will be stored. The directory will be created if it does not exist.
+     * @see FileContentStore#FileContentStore(File)
+     */
+    public FileContentStore(ConfigurableApplicationContext context, String rootDirectoryStr)
+    {
+        this(rootDirectoryStr);
+        publishEvent(context);
+    }
+
+    /**
+     * Public constructor for programmatic use.
+     * 
+     * @param context
+     *            application context through which events can be published
+     * @param rootDirectory
+     *            the root under which files will be stored. The directory will be created if it does not exist.
+     */
+    public FileContentStore(ConfigurableApplicationContext context, File rootDirectory)
+    {
+        this(rootDirectory);        
+        publishEvent(context);
+    }
+    
     
     public String toString()
     {
@@ -159,9 +196,9 @@ public class FileContentStore extends AbstractContentStore
      * @param newContentUrl the specific URL to use, which may not be in use
      * @return Returns a new and unique file
      * @throws IOException
-     *      if the file or parent directories couldn't be created or if the URL is already in use.
+     *             if the file or parent directories couldn't be created or if the URL is already in use.
      * @throws UnsupportedOperationException
-     *      if the store is read-only
+     *             if the store is read-only
      * 
      * @see #setReadOnly(boolean)
      */
@@ -298,7 +335,7 @@ public class FileContentStore extends AbstractContentStore
     }
 
     /**
-     * @return      Returns <tt>true</tt> always
+     * @return Returns <tt>true</tt> always
      */
     public boolean isWriteSupported()
     {
@@ -358,6 +395,12 @@ public class FileContentStore extends AbstractContentStore
     }
     
     /**
+     * Returns a writer onto a location based on the date.
+     * 
+     * @param existingContentReader
+     *            the existing content reader
+     * @param newContentUrl
+     *            the new content url
      * @return Returns a writer onto a location based on the date
      */
     public ContentWriter getWriterInternal(ContentReader existingContentReader, String newContentUrl)
@@ -396,6 +439,17 @@ public class FileContentStore extends AbstractContentStore
         }
     }
 
+    /**
+     * Gets the urls.
+     * 
+     * @param createdAfter
+     *            the created after date
+     * @param createdBefore
+     *            the created before dat6e
+     * @param handler
+     *            the handler
+     * @return the urls
+     */
     public void getUrls(Date createdAfter, Date createdBefore, ContentUrlHandler handler)
     {
         // recursively get all files within the root
@@ -409,11 +463,12 @@ public class FileContentStore extends AbstractContentStore
     }
     
     /**
+     * Returns a list of all files within the given directory and all subdirectories.
      * @param directory the current directory to get the files from
      * @param handler the callback to use for each URL
      * @param createdAfter only get URLs for content create after this date
      * @param createdBefore only get URLs for content created before this date
-     * @return Returns a list of all files within the given directory and all subdirectories
+     * @return a list of all files within the given directory and all subdirectories
      */
     private void getUrls(File directory, ContentUrlHandler handler, Date createdAfter, Date createdBefore)
     {
@@ -515,5 +570,42 @@ public class FileContentStore extends AbstractContentStore
         String newContentUrl = sb.toString();
         // done
         return newContentUrl;
+    }
+
+    /**
+     * Publishes an event to the application context that will notify any interested parties of the existence of this
+     * content store.
+     * 
+     * @param context
+     *            the application context
+     */
+    private void publishEvent(ConfigurableApplicationContext context)
+    {
+        // If the context isn't running yet, we have to wait until the refresh event
+        try
+        {
+            // Neither context.isActive() or context.isRunning() seem to detect whether the refresh() has completed
+            context.publishEvent(new FileContentStoreCreatedEvent(this, rootDirectory));
+        }
+        catch (IllegalStateException e)
+        {
+            context.addApplicationListener(this);
+        }
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see
+     * org.springframework.context.ApplicationListener#onApplicationEvent(org.springframework.context.ApplicationEvent)
+     */
+    public void onApplicationEvent(ApplicationEvent event)
+    {
+        // Once the context has been refreshed, we tell other interested beans about the existence of this content store
+        // (e.g. for monitoring purposes)
+        if (event instanceof ContextRefreshedEvent)
+        {
+            ((ContextRefreshedEvent) event).getApplicationContext().publishEvent(
+                    new FileContentStoreCreatedEvent(this, rootDirectory));
+        }
     }
 }

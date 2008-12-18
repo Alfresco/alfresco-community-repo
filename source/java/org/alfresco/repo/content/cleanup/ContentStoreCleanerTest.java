@@ -29,6 +29,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
+import junit.framework.TestCase;
+
 import org.alfresco.repo.avm.AVMNodeDAO;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.content.filestore.FileContentStore;
@@ -42,9 +44,7 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.TempFileProvider;
-import org.springframework.context.ApplicationContext;
-
-import junit.framework.TestCase;
+import org.springframework.context.ConfigurableApplicationContext;
 
 /**
  * @see org.alfresco.repo.content.cleanup.ContentStoreCleaner
@@ -53,7 +53,7 @@ import junit.framework.TestCase;
  */
 public class ContentStoreCleanerTest extends TestCase
 {
-    private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
+    private static ConfigurableApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
     
     private ContentStoreCleaner cleaner;
     private ContentStore store;
@@ -71,7 +71,7 @@ public class ContentStoreCleanerTest extends TestCase
         ContentUrlDAO contentUrlDAO = (ContentUrlDAO) ctx.getBean("contentUrlDAO");
         
         // we need a store
-        store = new FileContentStore(TempFileProvider.getTempDir().getAbsolutePath());
+        store = new FileContentStore(ctx, TempFileProvider.getTempDir().getAbsolutePath());
         // and a listener
         listener = new DummyCleanerListener();
         // initialise record of deleted URLs

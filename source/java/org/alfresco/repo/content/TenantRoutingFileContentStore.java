@@ -36,18 +36,23 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.Tenant;
 import org.alfresco.repo.tenant.TenantDeployer;
 import org.alfresco.repo.tenant.TenantService;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ConfigurableApplicationContext;
 
 /**
  * Content Store that supports tenant routing, if multi-tenancy is enabled.
  * 
  * Note: Need to initialise before the dictionary service, in the case that models are dynamically loaded for the tenant.
  */
-public class TenantRoutingFileContentStore extends AbstractRoutingContentStore implements TenantDeployer
+public class TenantRoutingFileContentStore extends AbstractRoutingContentStore implements TenantDeployer, ApplicationContextAware
 {
     Map<String, FileContentStore> tenantFileStores = new HashMap<String, FileContentStore>();
     
     private String defaultRootDirectory;
     private TenantService tenantService;
+    private ApplicationContext applicationContext;
 
 
     public void setDefaultRootDir(String defaultRootDirectory)
@@ -58,6 +63,16 @@ public class TenantRoutingFileContentStore extends AbstractRoutingContentStore i
     public void setTenantService(TenantService tenantService)
     {
         this.tenantService = tenantService;
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.
+     * ApplicationContext)
+     */
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
+    {
+        this.applicationContext = applicationContext;
     }
     
     protected ContentStore selectWriteStore(ContentContext ctx)
@@ -114,7 +129,8 @@ public class TenantRoutingFileContentStore extends AbstractRoutingContentStore i
             tenantDomain = tenant.getTenantDomain();
         }
 
-        putTenantFileStore(tenantDomain, new FileContentStore(new File(rootDir)));
+        putTenantFileStore(tenantDomain, new FileContentStore((ConfigurableApplicationContext) this.applicationContext,
+                new File(rootDir)));
     }
     
     public void destroy()

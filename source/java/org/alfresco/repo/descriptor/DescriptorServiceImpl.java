@@ -183,6 +183,8 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean implements Desc
         };
         installedRepoDescriptor = transactionService.getRetryingTransactionHelper().doInTransaction(
                 createDescriptorWork, transactionService.isReadOnly(), false);
+        
+        ((ApplicationContext)event.getSource()).publishEvent(new DescriptorServiceAvailableEvent(this));
     }
 
     /*

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,7 +18,7 @@
  * As a special exception to the terms and conditions of version 2.0 of 
  * the GPL, you may redistribute this Program in connection with Free/Libre 
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
+ * FLOSS exception.  You should have received a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
@@ -26,41 +26,42 @@ package org.alfresco.repo.content.filestore;
 
 import java.io.File;
 
-import org.alfresco.repo.content.AbstractReadOnlyContentStoreTest;
-import org.alfresco.repo.content.AbstractWritableContentStoreTest;
-import org.alfresco.repo.content.ContentStore;
-import org.alfresco.util.TempFileProvider;
+import org.springframework.context.ApplicationEvent;
 
 /**
- * Tests the file-based store when in read-only mode.
+ * A class of event that notifies the listener of the existence of a {@link FileContentStore}. Useful for Monitoring
+ * purposes.
  * 
- * @see org.alfresco.repo.content.filestore.FileContentStore
- * 
- * @since 2.1
- * @author Derek Hulley
+ * @author dward
  */
-public class ReadOnlyFileContentStoreTest extends AbstractReadOnlyContentStoreTest
+public class FileContentStoreCreatedEvent extends ApplicationEvent
 {
-    private FileContentStore store;
-    
-    @Override
-    public void setUp() throws Exception
+    private static final long serialVersionUID = 7090069096441126707L;
+
+    /** The root directory of the store. */
+    private final File rootDirectory;
+
+    /**
+     * The Constructor.
+     * 
+     * @param source
+     *            the source content store
+     * @param rootDirectory
+     *            the root directory
+     */
+    public FileContentStoreCreatedEvent(FileContentStore source, File rootDirectory)
     {
-        super.setUp();
-        
-        // create a store that uses a subdirectory of the temp directory
-        File tempDir = TempFileProvider.getTempDir();
-        store = new FileContentStore(ctx,
-                tempDir.getAbsolutePath() +
-                File.separatorChar +
-                getName());
-        // disallow random access
-        store.setReadOnly(true);
+        super(source);
+        this.rootDirectory = rootDirectory;
     }
-    
-    @Override
-    protected ContentStore getStore()
+
+    /**
+     * Gets the root directory.
+     * 
+     * @return the root directory
+     */
+    public File getRootDirectory()
     {
-        return store;
+        return this.rootDirectory;
     }
 }

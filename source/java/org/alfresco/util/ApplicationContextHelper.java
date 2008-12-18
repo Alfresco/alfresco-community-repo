@@ -24,7 +24,7 @@
  */
 package org.alfresco.util;
 
-import org.springframework.context.ApplicationContext;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
@@ -46,7 +46,7 @@ public class ApplicationContextHelper
      * 
      * @return Returns a new application context
      */
-    public synchronized static ApplicationContext getApplicationContext()
+    public synchronized static ConfigurableApplicationContext getApplicationContext()
     {
         if (instance != null)
         {

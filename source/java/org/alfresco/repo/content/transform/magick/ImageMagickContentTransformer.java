@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,7 +18,7 @@
  * As a special exception to the terms and conditions of version 2.0 of 
  * the GPL, you may redistribute this Program in connection with Free/Libre 
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
+ * FLOSS exception.  You should have received a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
@@ -32,6 +32,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.util.exec.RuntimeExec;
+import org.alfresco.util.exec.RuntimeExec.ExecutionResult;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -53,6 +54,12 @@ public class ImageMagickContentTransformer extends AbstractImageMagickContentTra
 
     /** the system command executer */
     private RuntimeExec executer;
+
+    /** the check command executer */
+    private RuntimeExec checkCommand;
+    
+    /** the output from the check command */
+    private String versionString;
     
     /**
      * Default constructor
@@ -79,6 +86,29 @@ public class ImageMagickContentTransformer extends AbstractImageMagickContentTra
     {
         this.executer = executer;
     }
+    
+
+    /**
+     * Sets the command that must be executed in order to retrieve version information from the converting executable
+     * and thus test that the executable itself is present.
+     * 
+     * @param checkCommand
+     *            command executer to retrieve version information
+     */
+    public void setCheckCommand(RuntimeExec checkCommand)
+    {
+        this.checkCommand = checkCommand;
+    }
+    
+    /**
+     * Gets the version string captured from the check command.
+     * 
+     * @return the version string
+     */
+    public String getVersionString()
+    {
+        return this.versionString;
+    }
 
     /**
      * Checks for the JMagick and ImageMagick dependencies, using the common
@@ -92,6 +122,30 @@ public class ImageMagickContentTransformer extends AbstractImageMagickContentTra
             throw new AlfrescoRuntimeException("System runtime executer not set");
         }
         super.init();
+        if (isAvailable())
+        {
+            try
+            {
+                ExecutionResult result = this.checkCommand.execute();
+                if (result.getSuccess())
+                {
+                    this.versionString = result.getStdOut().trim();
+                }
+                else
+                {
+                    setAvailable(false);
+                }
+            }
+            catch (Throwable e)
+            {
+                setAvailable(false);
+                logger.error(getClass().getSimpleName() + " not available: "
+                        + (e.getMessage() != null ? e.getMessage() : ""));
+                // debug so that we can trace the issue if required
+                logger.debug(e);
+            }
+            
+        }
     }
     
     /**

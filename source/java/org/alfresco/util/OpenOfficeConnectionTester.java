@@ -24,8 +24,12 @@
  */
 package org.alfresco.util;
 
+import java.lang.reflect.Method;
 import java.net.ConnectException;
+import java.util.Map;
+import java.util.TreeMap;
 
+import net.sf.jooreports.openoffice.connection.AbstractOpenOfficeConnection;
 import net.sf.jooreports.openoffice.connection.OpenOfficeConnection;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -37,7 +41,13 @@ import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
+
+import com.sun.star.registry.RegistryValueType;
+import com.sun.star.registry.XRegistryKey;
+import com.sun.star.registry.XSimpleRegistry;
+import com.sun.star.uno.UnoRuntime;
 
 /**
  * A bootstrap class that checks for the presence of a valid <b>OpenOffice</b> connection, as provided by the
@@ -47,6 +57,7 @@ import org.springframework.context.ApplicationEvent;
  */
 public class OpenOfficeConnectionTester extends AbstractLifecycleBean
 {
+    private static final String ATTRIBUTE_AVAILABLE = "available";
     private static final String INFO_CONNECTION_VERIFIED = "system.openoffice.info.connection_verified";
     private static final String ERR_CONNECTION_FAILED = "system.openoffice.err.connection_failed";
     private static final String ERR_CONNECTION_LOST = "system.openoffice.err.connection_lost";
@@ -55,6 +66,7 @@ public class OpenOfficeConnectionTester extends AbstractLifecycleBean
     private static Log logger = LogFactory.getLog(OpenOfficeConnectionTester.class);
     
     private OpenOfficeConnection connection;
+    private Map<String, Object> openOfficeMetadata = new TreeMap<String, Object>();
     private boolean strict;
 
     public OpenOfficeConnectionTester()
@@ -87,6 +99,7 @@ public class OpenOfficeConnectionTester extends AbstractLifecycleBean
     protected void onBootstrap(ApplicationEvent event)
     {
         checkConnection();
+        ((ApplicationContext) event.getSource()).publishEvent(new OpenOfficeConnectionEvent(this.openOfficeMetadata));
     }
 
     /**
@@ -109,7 +122,7 @@ public class OpenOfficeConnectionTester extends AbstractLifecycleBean
      * then a disconnected {@link #setConnection(OpenOfficeConnection) connection} will result in a
      * runtime exception being generated.
      */
-    private synchronized void checkConnection()
+    private void checkConnection()
     {
         String connectedMessage = I18NUtil.getMessage(INFO_CONNECTION_VERIFIED);
         boolean connected = testAndConnect();
@@ -134,24 +147,66 @@ public class OpenOfficeConnectionTester extends AbstractLifecycleBean
     
     public boolean testAndConnect()
     {
-        PropertyCheck.mandatory(this, "connection", connection);
-        if (connection.isConnected())
+        synchronized (this.openOfficeMetadata)
         {
-            // the connection is fine
-            return true;
+            PropertyCheck.mandatory(this, "connection", connection);
+            if (!connection.isConnected())
+            {
+                try
+                {
+                    connection.connect();
+                }
+                catch (ConnectException e)
+                {
+                    // No luck
+                    this.openOfficeMetadata.clear();
+                    this.openOfficeMetadata.put(ATTRIBUTE_AVAILABLE, Boolean.FALSE);
+                    return false;
+                }
+            }
+
+            // Let's try to get at the version metadata
+            Boolean lastAvailability = (Boolean)this.openOfficeMetadata.get(ATTRIBUTE_AVAILABLE);
+            if (lastAvailability == null || !lastAvailability.booleanValue())
+            {
+                this.openOfficeMetadata.put(ATTRIBUTE_AVAILABLE, Boolean.TRUE);
+                try
+                {
+                    // We have to peak inside the connection class to get the service we want!
+                    Method getServiceMethod = AbstractOpenOfficeConnection.class.getDeclaredMethod("getService",
+                            String.class);
+                    getServiceMethod.setAccessible(true);
+                    Object configurationRegistry = getServiceMethod.invoke(connection,
+                            "com.sun.star.configuration.ConfigurationRegistry");
+                    XSimpleRegistry registry = (XSimpleRegistry) UnoRuntime.queryInterface(
+                            com.sun.star.registry.XSimpleRegistry.class, configurationRegistry);
+                    registry.open("org.openoffice.Setup", true, false);
+                    XRegistryKey root = registry.getRootKey();
+                    XRegistryKey product = root.openKey("Product");
+                    for (XRegistryKey key : product.openKeys())
+                    {
+                        switch (key.getValueType().getValue())
+                        {
+                        case RegistryValueType.LONG_value:
+                            openOfficeMetadata.put(key.getKeyName(), key.getLongValue());
+                            break;
+                        case RegistryValueType.ASCII_value:
+                            openOfficeMetadata.put(key.getKeyName(), key.getAsciiValue());
+                            break;
+                        case RegistryValueType.STRING_value:
+                            openOfficeMetadata.put(key.getKeyName(), key.getStringValue());
+                            break;
+                        }
+                    }
+                    registry.close();
+                }
+                catch (Exception e)
+                {
+                    logger.warn("Error trying to query Open Office version information", e);
+                }
+            }
         }
-        // attempt to make the connection
-        try
-        {
-            connection.connect();
-            // that worked
-            return true;
-        }
-        catch (ConnectException e)
-        {
-            // No luck
-            return false;
-        }
+        return true;
     }
 
     /**

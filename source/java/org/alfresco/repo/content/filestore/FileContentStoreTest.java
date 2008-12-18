@@ -52,7 +52,7 @@ public class FileContentStoreTest extends AbstractWritableContentStoreTest
         
         // create a store that uses a subdirectory of the temp directory
         File tempDir = TempFileProvider.getTempDir();
-        store = new FileContentStore(
+        store = new FileContentStore(ctx,
                 tempDir.getAbsolutePath() +
                 File.separatorChar +
                 getName());

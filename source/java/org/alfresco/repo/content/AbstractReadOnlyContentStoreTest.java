@@ -40,7 +40,7 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.context.ApplicationContext;
+import org.springframework.context.ConfigurableApplicationContext;
 
 /**
  * Abstract base class that provides a set of tests for implementations
@@ -54,7 +54,7 @@ import org.springframework.context.ApplicationContext;
  */
 public abstract class AbstractReadOnlyContentStoreTest extends TestCase
 {
-    private static final ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
+    protected static final ConfigurableApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
     
     private static Log logger = LogFactory.getLog(AbstractReadOnlyContentStoreTest.class);
     

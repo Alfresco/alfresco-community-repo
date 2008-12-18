@@ -70,7 +70,11 @@ import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ConfigurableApplicationContext;
 
 /**
  * This class is resource manager LuceneIndexers and LuceneSearchers. It supports two phase commit inside XA
@@ -80,7 +84,8 @@ import org.springframework.beans.factory.InitializingBean;
  * @author andyh
  */
 
-public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneIndexerAndSearcher, XAResource
+public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneIndexerAndSearcher, XAResource,
+        ApplicationContextAware
 {
     private static Log logger = LogFactory.getLog(AbstractLuceneIndexerAndSearcherFactory.class);
 
@@ -180,6 +185,8 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
 
     private boolean cacheEnabled = true;
 
+    private ConfigurableApplicationContext applicationContext;
+
     /**
      * Private constructor for the singleton TODO: FIt in with IOC
      */
@@ -187,6 +194,26 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
     public AbstractLuceneIndexerAndSearcherFactory()
     {
         super();
+    }
+
+    
+    /*
+     * (non-Javadoc)
+     * @seeorg.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.
+     * ApplicationContext)
+     */
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
+    {
+        this.applicationContext = (ConfigurableApplicationContext) applicationContext;
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.repo.search.impl.lucene.LuceneConfig#getApplicationContext()
+     */
+    public ConfigurableApplicationContext getApplicationContext()
+    {
+        return this.applicationContext;
     }
 
     /**
@@ -995,7 +1022,6 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
 
         private Set<LuceneIndexerAndSearcher> factories;
 
-        @SuppressWarnings("unused")
         private NodeService nodeService;
 
         private String targetLocation;

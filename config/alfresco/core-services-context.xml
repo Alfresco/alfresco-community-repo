@@ -53,7 +53,9 @@
 
 
     <!-- Custom MBeanServer -->
-    <bean id="alfrescoMBeanServer" class="org.springframework.jmx.support.MBeanServerFactoryBean"/>
+    <bean id="alfrescoMBeanServer" class="org.springframework.jmx.support.MBeanServerFactoryBean">
+        <property name="locateExistingServerIfPossible" value="true" />
+    </bean>
 
     <bean id="registry"
           class="org.springframework.remoting.rmi.RmiRegistryFactoryBean"
@@ -85,10 +87,7 @@
        <property name="beans">
          <map>
            <!-- MBeans to register with alfrescoMBeanServer -->
-           <entry key="Alfresco:Name=VirtServerRegistry,Type=VirtServerRegistry" value-ref="VirtServerRegistry"/>
-           <entry key="Alfresco:Name=FileServerConfig,Type=FileServerConfig" value-ref="FileServerConfig"/>
            <entry key="Alfresco:Name=Log4jHierarchy,Type=Log4JHierarchy" value-ref="log4jHierarchy"/>
-           <entry key="Alfresco:Name=RepoServerMgmt,Type=RepoServerMgmt" value-ref="RepoServerMgmt"/>
          </map>
        </property>
     </bean>
@@ -131,7 +130,8 @@
     <!-- Log4J Hierarchy -->
     <bean id="log4jHierarchy" class="org.apache.log4j.jmx.HierarchyDynamicMBean"/>
 
-    <bean id="log4JHierarchyInit" class="org.alfresco.repo.admin.Log4JHierarchyInit" init-method="init">
+    <!-- This bean will attempt to export extra beans to log4jHierarchy's MBeanServer, so it's vital that the exporter has been initialised -->
+    <bean id="log4JHierarchyInit" class="org.alfresco.repo.admin.Log4JHierarchyInit" depends-on="exporter" init-method="init">
     	<property name="log4jHierarchy" ref="log4jHierarchy"/>
 
         <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
@@ -196,6 +196,9 @@
 
                 <!--  Installed  AMP modules  -->
                 <value>classpath*:alfresco/module/*/log4j.properties</value>
+
+                <!--  Enterprise extensions  -->
+                <value>classpath*:alfresco/enterprise/*-log4j.properties</value>
 
                 <!--  Other installed extensions  -->
                 <value>classpath*:alfresco/extension/*-log4j.properties</value>

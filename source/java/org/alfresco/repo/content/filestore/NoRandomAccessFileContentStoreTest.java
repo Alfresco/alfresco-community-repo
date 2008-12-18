@@ -49,7 +49,7 @@ public class NoRandomAccessFileContentStoreTest extends AbstractWritableContentS
         
         // create a store that uses a subdirectory of the temp directory
         File tempDir = TempFileProvider.getTempDir();
-        store = new FileContentStore(
+        store = new FileContentStore(ctx,
                 tempDir.getAbsolutePath() +
                 File.separatorChar +
                 getName());

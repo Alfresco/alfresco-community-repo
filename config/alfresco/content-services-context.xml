@@ -383,6 +383,26 @@
             </property>
          </bean>
       </property>
+      <property name="checkCommand">
+         <bean name="transformer.ImageMagick.CheckCommand" class="org.alfresco.util.exec.RuntimeExec">
+            <property name="commandsAndArguments">
+                <map>
+                    <entry key="Windows.*">
+                        <list>
+                            <value>imconvert</value>
+                            <value>-version</value>
+                        </list>
+                    </entry>
+                    <entry key=".*">
+                        <list>
+                            <value>convert</value>
+                            <value>-version</value>
+                        </list>
+                    </entry>
+                </map>
+            </property>
+         </bean>
+      </property>
    </bean>
 
 </beans>

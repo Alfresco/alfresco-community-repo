@@ -69,6 +69,10 @@ import org.alfresco.util.Pair;
 import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ConfigurableApplicationContext;
 
 
 /**
@@ -77,7 +81,7 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author Derek Hulley
  */
-public class RoutingContentService implements ContentService
+public class RoutingContentService implements ContentService, ApplicationContextAware
 {
     private static Log logger = LogFactory.getLog(RoutingContentService.class);
     
@@ -85,6 +89,7 @@ public class RoutingContentService implements ContentService
     private NodeService nodeService;
     private AVMService avmService;
     private RetryingTransactionHelper transactionHelper;
+    private ApplicationContext applicationContext;
     
     /** a registry of all available content transformers */
     private ContentTransformerRegistry transformerRegistry;
@@ -105,14 +110,6 @@ public class RoutingContentService implements ContentService
     ClassPolicyDelegate<ContentServicePolicies.OnContentUpdatePolicy> onContentUpdateDelegate;
     ClassPolicyDelegate<ContentServicePolicies.OnContentReadPolicy> onContentReadDelegate;
     
-    /**
-     * Default constructor sets up a temporary store 
-     */
-    public RoutingContentService()
-    {
-        this.tempStore = new FileContentStore(TempFileProvider.getTempDir().getAbsolutePath());
-    }
-
     /**
      * @deprecated  Replaced by {@link #setRetryingTransactionHelper(RetryingTransactionHelper)}
      */
@@ -161,11 +158,24 @@ public class RoutingContentService implements ContentService
         this.imageMagickContentTransformer = imageMagickContentTransformer;
     }
     
+    
+    /* (non-Javadoc)
+     * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
+     */
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
+    {
+        this.applicationContext = applicationContext;
+    }
+
     /**
      * Service initialise 
      */
     public void init()
     {
+        // Set up a temporary store
+        this.tempStore = new FileContentStore((ConfigurableApplicationContext) this.applicationContext,
+                TempFileProvider.getTempDir().getAbsolutePath());
+
         // Bind on update properties behaviour
         this.policyComponent.bindClassBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateProperties"),

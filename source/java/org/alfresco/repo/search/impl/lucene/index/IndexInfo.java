@@ -46,11 +46,13 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.TreeMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -84,6 +86,10 @@ import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
 import org.apache.lucene.store.RAMDirectory;
 import org.safehaus.uuid.UUID;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.event.ContextRefreshedEvent;
 
 /**
  * The information that makes up an index. IndexInfoVersion Repeated information of the form
@@ -118,7 +124,7 @@ import org.safehaus.uuid.UUID;
  * 
  * @author Andy Hind
  */
-public class IndexInfo
+public class IndexInfo implements IndexMonitor
 {
     public static final String MAIN_READER = "MainReader";
 
@@ -164,6 +170,11 @@ public class IndexInfo
      */
     private File indexDirectory;
 
+    /**
+     * The directory relative to the root path
+     */
+    private String relativePath;
+    
     /**
      * The file holding the index information
      */
@@ -312,7 +323,9 @@ public class IndexInfo
     private ThreadPoolExecutor threadPoolExecutor;
 
     private LuceneConfig config;
-
+    
+    private List<ApplicationListener> applicationListeners = new LinkedList<ApplicationListener>();
+    
     static
     {
         // We do not require any of the lucene in-built locking.
@@ -426,6 +439,17 @@ public class IndexInfo
             throw new AlfrescoRuntimeException("The index must be held in a directory");
         }
 
+        // Work out the relative path of the index
+        try
+        {
+            String indexRoot = new File(config.getIndexRootLocation()).getCanonicalPath();
+            this.relativePath = this.indexDirectory.getCanonicalPath().substring(indexRoot.length() + 1);
+        }
+        catch (IOException e)
+        {
+            throw new AlfrescoRuntimeException("Failed to determine index relative path", e);
+        }
+        
         // Create the info files.
         File indexInfoFile = new File(this.indexDirectory, INDEX_INFO);
         File indexInfoBackupFile = new File(this.indexDirectory, INDEX_INFO_BACKUP);
@@ -628,6 +652,8 @@ public class IndexInfo
                 cleaner.schedule();
             }
         }, 0, 20000);
+        
+        publishDiscoveryEvent();
     }
 
     private class DeleteUnknownGuidDirectories implements LockWork<Object>
@@ -1501,6 +1527,7 @@ public class IndexInfo
             {
                 throw new IndexerException("Invalid transition for " + id + " from " + entry.getStatus() + " to " + TransactionStatus.COMMITTED);
             }
+            notifyListeners("CommittedTransactions", 1);
         }
 
         public boolean requiresFileLock()
@@ -3220,6 +3247,8 @@ public class IndexInfo
                         }
 
                         dumpInfo();
+                        
+                        notifyListeners("MergedDeletions", toDelete.size());
 
                         return null;
                     }
@@ -3230,6 +3259,7 @@ public class IndexInfo
                     }
 
                 });
+                
             }
             finally
             {
@@ -3475,6 +3505,8 @@ public class IndexInfo
 
                         registerReferenceCountingIndexReader(finalMergeTargetId, finalNewReader);
 
+                        notifyListeners("MergedIndexes", toMerge.size());
+                        
                         dumpInfo();
 
                         writeStatus();
@@ -3633,10 +3665,201 @@ public class IndexInfo
         }
         return false;
     }
+        
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.repo.search.impl.lucene.index.IndexMonitor#getRelativePath()
+     */
+    public String getRelativePath()
+    {
+        return this.relativePath;
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.search.impl.lucene.index.IndexMonitor#getStatusSnapshot()
+     */
+    public Map<String, Integer> getStatusSnapshot()
+    {
+        Map<String, Integer> snapShot = new TreeMap<String, Integer>();
+        readWriteLock.writeLock().lock();
+        try
+        {
+            for (IndexEntry entry : indexEntries.values())
+            {
+                String stateKey = entry.getType() + "-" + entry.getStatus();
+                Integer count = snapShot.get(stateKey);
+                snapShot.put(stateKey, count == null ? 1 : count + 1);
+            }
+            return snapShot;
+        }
+        finally
+        {
+            readWriteLock.writeLock().unlock();
+        }        
+    }
+   
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.search.impl.lucene.index.IndexMonitor#getActualSize()
+     */
+    public long getActualSize() throws IOException
+    {
+        getReadLock();
+        try
+        {
+            int size = 0;
+            for (IndexEntry entry : this.indexEntries.values())
+            {
+                File location = new File(this.indexDirectory, entry.getName()).getCanonicalFile();
+                File[] contents = location.listFiles();
+                for (File file : contents)
+                {
+                    if (file.isFile())
+                    {
+                        size += file.length();
+                    }
+                }
+            }
+            return size;
+        }
+        finally
+        {
+            releaseReadLock();
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.search.impl.lucene.index.IndexMonitor#getUsedSize()
+     */
+    public long getUsedSize() throws IOException
+    {
+        getReadLock();
+        try
+        {
+            return sizeRecurse(this.indexDirectory);
+        }
+        finally
+        {
+            releaseReadLock();
+        }
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.search.impl.lucene.index.IndexMonitor#getNumberOfDocuments()
+     */
+    public int getNumberOfDocuments() throws IOException
+    {
+        IndexReader reader = getMainIndexReferenceCountingReadOnlyIndexReader();
+        try
+        {
+            return reader.numDocs();
+        }
+        finally
+        {
+            reader.close();
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.search.impl.lucene.index.IndexMonitor#getNumberOfFields()
+     */
+    public int getNumberOfFields() throws IOException
+    {
+    
+        IndexReader reader = getMainIndexReferenceCountingReadOnlyIndexReader();
+        try
+        {
+            return reader.getFieldNames(IndexReader.FieldOption.ALL).size();
+        }
+        finally
+        {
+            reader.close();
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.search.impl.lucene.index.IndexMonitor#getNumberOfIndexedFields()
+     */
+    public int getNumberOfIndexedFields() throws IOException
+    {
+        IndexReader reader = getMainIndexReferenceCountingReadOnlyIndexReader();
+        try
+        {
+            return reader.getFieldNames(IndexReader.FieldOption.INDEXED).size();
+        }
+        finally
+        {
+            reader.close();
+        }
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.repo.search.impl.lucene.index.IndexMonitor#addApplicationListener(org.springframework.context.
+     * ApplicationListener)
+     */
+    public void addApplicationListener(ApplicationListener listener)
+    {
+        this.applicationListeners.add(listener);
+    }
+
+    private long sizeRecurse(File fileOrDir)
+    {
+        long size = 0;
+        if (fileOrDir.isDirectory())
+        {
+            File[] files = fileOrDir.listFiles();
+            for (File file : files)
+            {
+                size += sizeRecurse(file);
+            }
+        }
+        else
+        {
+            size = fileOrDir.length();
+        }
+        return size;
+    }
+    
+    private void publishDiscoveryEvent()
+    {
+        final IndexEvent discoveryEvent = new IndexEvent(this, "Discovery", 1);
+        final ConfigurableApplicationContext applicationContext = this.config.getApplicationContext();
+        try
+        {
+            applicationContext.publishEvent(discoveryEvent);
+        }
+        catch (IllegalStateException e)
+        {
+            // There's a possibility that the application context hasn't fully refreshed yet, so register a listener
+            // that will fire when it has
+            applicationContext.addApplicationListener(new ApplicationListener()
+            {
+    
+                public void onApplicationEvent(ApplicationEvent event)
+                {
+                    if (event instanceof ContextRefreshedEvent)
+                    {
+                        applicationContext.publishEvent(discoveryEvent);
+                    }
+                }
+            });
+        }
+    }
+
+    private void notifyListeners(String description, int count)
+    {
+        if (!this.applicationListeners.isEmpty())
+        {
+            IndexEvent event = new IndexEvent(this, description, count);
+            for (ApplicationListener listener : this.applicationListeners)
+            {
+                listener.onApplicationEvent(event);
+            }
+        }
+    }
 
     interface Schedulable
     {
         void schedule();
     }
-
 }

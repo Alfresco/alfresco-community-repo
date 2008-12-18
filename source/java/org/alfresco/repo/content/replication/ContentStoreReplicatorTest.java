@@ -30,7 +30,6 @@ import java.util.Set;
 
 import junit.framework.TestCase;
 
-import org.alfresco.repo.content.AbstractContentStore;
 import org.alfresco.repo.content.ContentContext;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.content.ContentStore.ContentUrlHandler;
@@ -38,6 +37,8 @@ import org.alfresco.repo.content.filestore.FileContentStore;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.util.GUID;
 import org.alfresco.util.TempFileProvider;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.StaticApplicationContext;
 
 /**
  * Tests the content store replicator.
@@ -60,13 +61,17 @@ public class ContentStoreReplicatorTest extends TestCase
     {
         super.setUp();
         
+        // Create a dummy context for message broadcasting
+        StaticApplicationContext ctx = new StaticApplicationContext();
+        ctx.refresh();
+        
         File tempDir = TempFileProvider.getTempDir();
         // create the source file store
         String storeDir = tempDir.getAbsolutePath() + File.separatorChar + getName() + File.separatorChar + GUID.generate();
-        sourceStore = new FileContentStore(storeDir);
+        sourceStore = new FileContentStore(ctx, storeDir);
         // create the target file store
         storeDir = tempDir.getAbsolutePath() + File.separatorChar + getName() + File.separatorChar + GUID.generate();
-        targetStore = new FileContentStore(storeDir);
+        targetStore = new FileContentStore(ctx, storeDir);
         
         // create the replicator 
         replicator = new ContentStoreReplicator();

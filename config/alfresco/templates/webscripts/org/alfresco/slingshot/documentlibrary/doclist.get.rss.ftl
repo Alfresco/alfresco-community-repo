@@ -7,9 +7,10 @@
    <lastBuildDate>${xmldate(date)}</lastBuildDate>
    <pubDate>${xmldate(date)}</pubDate>
    <generator>Alfresco ${server.edition} v${server.version}</generator>
+<#assign linkprefix=absurl(url.context)?replace("alfresco", "share/proxy/alfresco-feed")>
    <image>
-      <title>Alfresco - My Documents</title>
-      <url>${absurl(url.context)?replace("alfresco", "share/proxy/alfresco")}/images/logo/AlfrescoLogo200.png</url>
+      <title>Alfresco - Documents</title>
+      <url>${linkprefix}/images/logo/AlfrescoLogo200.png</url>
    </image>
 <#list doclist.items as item>
    <#assign d = item.asset>
@@ -18,13 +19,12 @@
       <#assign isMP3=(d.mimetype="audio/x-mpeg" || d.mimetype="audio/mpeg")>
    <item>
       <title>${d.name?html}</title>
-         <#assign navurl='/navigate/showDocDetails/' + d.nodeRef.storeRef.protocol + '/' + d.nodeRef.storeRef.identifier + '/' + d.nodeRef.id>
-      <link>${absurl(url.context)?replace("alfresco", "share/proxy/alfresco")}/api/node/content/${d.storeType}/${d.storeId}/${d.id}/${d.name?url}</link>
+      <link>${linkprefix}/api/node/content/${d.storeType}/${d.storeId}/${d.id}/${d.name?url}</link>
          <#if isMP3>
       <enclosure url="api/node/content/${d.storeType}/${d.storeId}/${d.id}/${d.name?url}" length="${d.size?string?replace(",","")}" type="audio/mpeg"/>
          </#if>
       <description>
-         <#if isImage || true>&lt;img src=&quot;${absurl(url.context)?replace("alfresco", "share/proxy/alfresco")}/api/node/content/${d.storeType}/${d.storeId}/${d.id}/${d.name?url}&quot;&gt;&lt;br/&gt;</#if>
+         <#if isImage || true>&lt;img src=&quot;${linkprefix}/api/node/content/${d.storeType}/${d.storeId}/${d.id}/${d.name?url}&quot;&gt;&lt;br/&gt;</#if>
          <#if d.properties.description?exists>${d.properties.description?html}</#if>
       </description>
       <pubDate>${xmldate(d.properties.modified)}</pubDate>

@@ -11,7 +11,6 @@
 			   "tagScope" : "${url.serviceContext + "/api/tagscopes/" + site.node.storeType + "/" + site.node.storeId + "/" + site.node.id}",
 			</#if>
 			"isPublic" : ${site.isPublic?string("true", "false")},
-			
 			<#if site.customProperties?size != 0>
 				"customProperties" :
 				{
@@ -27,6 +26,14 @@
 					</#list>	
 				}
 			</#if>
+			"siteManagers" : 
+			[			
+   			<#assign managers = site.listMembers(null, "SiteManager")?keys />
+            <#list managers as manager>              
+               "${manager}"  
+               <#if manager_has_next>,</#if>
+            </#list>
+         ]
 		}
 	</#escape>
 </#macro>

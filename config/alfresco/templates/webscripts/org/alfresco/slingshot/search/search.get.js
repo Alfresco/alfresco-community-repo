@@ -26,7 +26,8 @@ function getSiteData(siteId)
       return siteDataCache[siteId];
    }
    var site = siteService.getSite(siteId);
-   var data = {
+   var data =
+   {
       shortName : siteId,
       title : "unknown"
    };
@@ -368,8 +369,9 @@ function processResults(nodes, maxResults)
       }
    }
    
-   return ({
-         "items": results
+   return (
+   {
+      "items": results
    });
 }
 

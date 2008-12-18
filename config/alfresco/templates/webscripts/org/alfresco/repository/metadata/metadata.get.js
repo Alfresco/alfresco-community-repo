@@ -1,7 +1,7 @@
 var json = "";
 
 // allow for content to be loaded from id
-if(args["nodeRef"] != null)
+if (args["nodeRef"] != null)
 {
 	var nodeRef = args["nodeRef"];
 	node = search.findNode(nodeRef);

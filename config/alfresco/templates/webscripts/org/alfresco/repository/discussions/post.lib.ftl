@@ -1,13 +1,14 @@
 <#-- Renders a person object. -->
 <#macro renderPerson person fieldName>
 <#escape x as jsonUtils.encodeJSONString(x)>
-   "${fieldName}" : {
+   "${fieldName}":
+   {
       <#if person.assocs["cm:avatar"]??>
-      "avatarRef" : "${person.assocs["cm:avatar"][0].nodeRef?string}",
+      "avatarRef": "${person.assocs["cm:avatar"][0].nodeRef?string}",
       </#if>
-      "username" : "${person.properties["cm:userName"]}",
-      "firstName" : "${person.properties["cm:firstName"]}",
-      "lastName" : "${person.properties["cm:lastName"]}"
+      "username": "${person.properties["cm:userName"]}",
+      "firstName": "${person.properties["cm:firstName"]}",
+      "lastName": "${person.properties["cm:lastName"]}"
    },
 </#escape>
 </#macro>
@@ -16,9 +17,9 @@
 <#macro addContent post>
 <#escape x as jsonUtils.encodeJSONString(x)>
    <#if (contentLength?? && contentLength > -1 && (post.content?length > contentLength))>
-      "content" : "${post.content?substring(0, contentLength)}",
+      "content": "${post.content?substring(0, contentLength)}",
    <#else>
-      "content" : "${post.content}",
+      "content": "${post.content}",
    </#if>
 </#escape>
 </#macro>
@@ -43,44 +44,45 @@
 
    <#-- render topic post only data first -->
    <#if postData.isTopicPost>
-      "name" : "${postData.topic.name}",
-      "totalReplyCount" : ${postData.totalReplyCount?c},
+      "name": "${postData.topic.name}",
+      "totalReplyCount": ${postData.totalReplyCount?c},
       <#if postData.lastReply??>
-         "lastReplyOn" : "${postData.lastReply.properties.created?string("MMM dd yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
+         "lastReplyOn": "${postData.lastReply.properties.created?string("MMM dd yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
          <@renderPerson person=postData.lastReplyBy fieldName="lastReplyBy" />
       </#if>
-      "tags" : [<#list postData.tags as x>"${x}"<#if x_has_next>, </#if></#list>],
+      "tags": [<#list postData.tags as x>"${x}"<#if x_has_next>, </#if></#list>],
    </#if>
 
    <#-- data using refNode which might be the topic or the post node -->
-   "url" : "/forum/post/node/${refNode.nodeRef.storeRef.protocol}/${refNode.nodeRef.storeRef.identifier}/${refNode.nodeRef.id}",
-   "repliesUrl" : "/forum/post/node/${refNode.nodeRef.storeRef.protocol}/${refNode.nodeRef.storeRef.identifier}/${refNode.nodeRef.id}/replies",
-   "nodeRef" : "${refNode.nodeRef}",
+   "url": "/forum/post/node/${refNode.nodeRef.storeRef.protocol}/${refNode.nodeRef.storeRef.identifier}/${refNode.nodeRef.id}",
+   "repliesUrl": "/forum/post/node/${refNode.nodeRef.storeRef.protocol}/${refNode.nodeRef.storeRef.identifier}/${refNode.nodeRef.id}/replies",
+   "nodeRef": "${refNode.nodeRef}",
    
    <#-- data coming from the post node -->
-   "title" : "${(post.properties.title!"")}",
-   "createdOn" : "${post.properties.created?string("MMM dd yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
-   "modifiedOn" : "${post.properties.modified?string("MMM dd yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
+   "title": "${(post.properties.title!"")}",
+   "createdOn": "${post.properties.created?string("MMM dd yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
+   "modifiedOn": "${post.properties.modified?string("MMM dd yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
    <#if (post.properties["cm:updated"]??)>
-   "isUpdated" : true,
-   "updatedOn" : "${post.properties["cm:updated"]?string("MMM dd yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
+   "isUpdated": true,
+   "updatedOn": "${post.properties["cm:updated"]?string("MMM dd yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
    <#else>
-   "isUpdated" : false,   
+   "isUpdated": false,   
    </#if>
    <#if postData.author??>
       <@renderPerson person=postData.author fieldName="author" />
    <#else>
-      "author" : {
-         "username" : "${post.properties["cm:creator"]}"
+      "author":
+      {
+         "username": "${post.properties["cm:creator"]}"
       },
    </#if>
    <@addContent post=post />
-   "replyCount" : <#if post.sourceAssocs["cm:references"]??>${post.sourceAssocs["cm:references"]?size?c}<#else>0</#if>,
-   "permissions" :
+   "replyCount": <#if post.sourceAssocs["cm:references"]??>${post.sourceAssocs["cm:references"]?size?c}<#else>0</#if>,
+   "permissions":
    {
       "edit": ${post.hasPermission("Write")?string},
-      "reply" : ${post.parent.hasPermission("CreateChildren")?string},
-      "delete" : ${post.hasPermission("Delete")?string}
+      "reply": ${post.parent.hasPermission("CreateChildren")?string},
+      "delete": ${post.hasPermission("Delete")?string}
    }
 </#escape>
 </#macro>

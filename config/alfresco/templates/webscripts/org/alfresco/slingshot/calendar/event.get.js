@@ -66,7 +66,8 @@ function main()
       return jsonError("Could not find event: " + params.eventname);
    }
    
-   var result = {
+   var result =
+   {
       "name": event.name,
       "what": event.properties["ia:whatEvent"], 
       "description": event.properties["ia:descriptionEvent"],
@@ -77,7 +78,7 @@ function main()
    };
  
    // Figure out if this an all day event
-   if(isAllDayEvent(event))
+   if (isAllDayEvent(event))
    {
       result["allday"] = true;
    }

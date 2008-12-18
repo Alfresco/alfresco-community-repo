@@ -6,7 +6,8 @@
       label: "${v.label}",
       description: "${jsonUtils.encodeJSONString(v.description)}",
       createdDate: "${v.createdDate?string("dd MMM yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
-      creator: {
+      creator:
+      {
          userName: "${v.creator.userName}",
          firstName: "${jsonUtils.encodeJSONString(v.creator.firstName)}",
          lastName: "${jsonUtils.encodeJSONString(v.creator.lastName)}"

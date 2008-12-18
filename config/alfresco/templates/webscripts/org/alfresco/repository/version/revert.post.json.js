@@ -11,7 +11,7 @@ function main()
    var description = json.get("description");
 
    // allow for content to be loaded from id
-   if(nodeRef != null && version != null)
+   if (nodeRef != null && version != null)
    {
 
       var workingCopy = search.findNode(nodeRef);
@@ -30,12 +30,12 @@ function main()
 
          versions = [];
          var versionHistory = workingCopy.versionHistory;
-         if(versionHistory != null)
+         if (versionHistory != null)
          {
             for (i = 0; i < versionHistory.length; i++)
             {
                var v = versionHistory[i];
-               if(v.label.equals(version))
+               if (v.label.equals(version))
                {      
                   if (!workingCopy.hasAspect("cm:workingcopy"))
                   {

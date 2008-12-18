@@ -28,7 +28,8 @@ function getEvents(siteId)
    for (var i=0; i < results.length; i++)
    {
       e = results[i];
-      events.push({
+      events.push(
+      {
          "event": e,
          "fromDate": e.properties["ia:fromDate"],
          "tags": e.tags

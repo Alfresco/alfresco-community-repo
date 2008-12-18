@@ -34,15 +34,23 @@ function getHotTopicPostList(node, index, count)
    // get for each the topic, keeping track of the number of replies and the first occurance
    // of the post.
    var idToData = {};
-   for (var x=0; x < max; x++)
+   for (var x = 0; x < max; x++)
    {
       // get the topic node (which is the direct parent of the post)
       var parent = posts[x].parent;
       var id = parent.nodeRef.id;
-      if (idToData[id] != null) {
+      if (idToData[id] != null)
+      {
          idToData[id].count += 1;
-      } else {
-         idToData[id] = { count: 1, pos: x, node: parent};
+      }
+      else
+      {
+         idToData[id] =
+         {
+            count: 1,
+            pos: x,
+            node: parent
+         };
       }
    }
    
@@ -62,7 +70,8 @@ function getHotTopicPostList(node, index, count)
            // more replies first
            return b.count - a.count
        }
-       else {
+       else
+       {
            // lower pos first
            return a.pos - b.pos;
        }
@@ -71,7 +80,7 @@ function getHotTopicPostList(node, index, count)
 
    // extract now the nodes
    var nodes = Array();
-   for (var x=0; x < dataArr.length; x++)
+   for (var x = 0; x < dataArr.length; x++)
    {
       nodes.push(dataArr[x].node);
    }

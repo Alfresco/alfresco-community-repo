@@ -4,13 +4,15 @@
  * @method POST
  * @param json {string}
  *    {
- *       username : "username",
- *       properties : {
- *          "cm:propname" : "value"
+ *       username: "username",
+ *       properties:
+ *       {
+ *          "cm:propname": "value"
  *          ...
  *       },
- *       content : {
- *          "cm:contentpropname" : "contentstringvalue"
+ *       content:
+ *       {
+ *          "cm:contentpropname": "contentstringvalue"
  *          ...
  *       }
  *    }

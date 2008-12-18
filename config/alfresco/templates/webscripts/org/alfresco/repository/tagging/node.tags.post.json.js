@@ -13,7 +13,7 @@ function main()
    }   
 
    // Get the array of posted tags
-   for(var index = 0; index < json.length; index++)
+   for (var index = 0; index < json.length; index++)
    {
       node.addTag(json.getString(index);
    }

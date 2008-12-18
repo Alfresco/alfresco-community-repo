@@ -227,7 +227,7 @@ function main()
          for (var i = 0; i < thumbnails.length; i++)
          {
             var thumbnailName = thumbnails[i];
-            if(thumbnailName != "" && thumbnailService.isThumbnailNameRegistered(thumbnailName))
+            if (thumbnailName != "" && thumbnailService.isThumbnailNameRegistered(thumbnailName))
             {
                newFile.createThumbnail(thumbnailName, true);
             }

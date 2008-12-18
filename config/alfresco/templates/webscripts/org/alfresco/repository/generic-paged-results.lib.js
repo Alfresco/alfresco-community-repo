@@ -20,14 +20,15 @@ function getPagedResultsData(nodes, index, count, extractDataFn)
    for (i = index; i < nodes.length && added < count; i++) 
    {
       items.push(extractDataFn(nodes[i]));
-	  added++;
+      added++;
    }
    
-   return ({
+   return (
+   {
       "total" : nodes.length,
-	  "pageSize" : count,
-	  "startIndex" : index,
-	  "itemCount" : items.length,
+      "pageSize" : count,
+      "startIndex" : index,
+      "itemCount" : items.length,
       "items": items
    });
 }

@@ -3,13 +3,14 @@
 <#-- Renders a person object. -->
 <#macro renderPerson person fieldName>
 <#escape x as jsonUtils.encodeJSONString(x)>
-   "${fieldName}" : {
+   "${fieldName}":
+   {
       <#if person.assocs["cm:avatar"]??>
-      "avatarRef" : "${person.assocs["cm:avatar"][0].nodeRef?string}",
+      "avatarRef": "${person.assocs["cm:avatar"][0].nodeRef?string}",
       </#if>
-      "username" : "${person.properties["cm:userName"]}",
-      "firstName" : "${person.properties["cm:firstName"]}",
-      "lastName" : "${person.properties["cm:lastName"]}"
+      "username": "${person.properties["cm:userName"]}",
+      "firstName": "${person.properties["cm:firstName"]}",
+      "lastName": "${person.properties["cm:lastName"]}"
    },
 </#escape>
 </#macro>
@@ -18,9 +19,9 @@
 <#macro addContent item>
 <#escape x as jsonUtils.encodeJSONString(x)>
    <#if (contentLength?? && contentLength > -1 && (item.node.content?length > contentLength))>
-      "content" : "${item.node.content?substring(0, contentLength)}",
+      "content": "${item.node.content?substring(0, contentLength)}",
    <#else>
-      "content" : "${item.node.content}",
+      "content": "${item.node.content}",
    </#if>
 </#escape>
 </#macro>
@@ -33,61 +34,67 @@
 <#macro blogpostJSON item>
 <#escape x as jsonUtils.encodeJSONString(x)>
 {
-   "url" : "blog/post/node/${item.node.nodeRef?replace('://','/')}",
-   "commentsUrl" : "/node/${item.node.nodeRef?replace('://','/')}/comments",
-   "nodeRef" : "${item.node.nodeRef}",
-   "name" : "${item.node.properties.name!''}",
-    "title" : "${item.node.properties.title!''}",
+   "url": "blog/post/node/${item.node.nodeRef?replace('://','/')}",
+   "commentsUrl": "/node/${item.node.nodeRef?replace('://','/')}/comments",
+   "nodeRef": "${item.node.nodeRef}",
+   "name": "${item.node.properties.name!''}",
+    "title": "${item.node.properties.title!''}",
    <@addContent item=item />
    <#if item.author??>
    <@renderPerson person=item.author fieldName="author" />
    <#else>
-   "author" : { "username" : "${item.node.properties.creator}" },
-   </#if>
-   "createdOn" : "${item.createdDate?string("MMM dd yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
-   "modifiedOn" : "${item.modifiedDate?string("MMM dd yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
-   "permissions" : {
-      "edit" : ${item.node.hasPermission("Write")?string},
-      "delete" : ${item.node.hasPermission("Delete")?string}
+   "author":
+   {
+      "username": "${item.node.properties.creator}"
    },
-   "commentCount" : ${item.commentCount?c},
-   "tags" : [<#list item.tags as x>"${x}"<#if x_has_next>, </#if></#list>],
+   </#if>
+   "createdOn": "${item.createdDate?string("MMM dd yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
+   "modifiedOn": "${item.modifiedDate?string("MMM dd yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
+   "permissions":
+   {
+      "edit": ${item.node.hasPermission("Write")?string},
+      "delete": ${item.node.hasPermission("Delete")?string}
+   },
+   "commentCount": ${item.commentCount?c},
+   "tags": [<#list item.tags as x>"${x}"<#if x_has_next>, </#if></#list>],
    
    <#-- draft vs internal published -->
-   "isDraft" : ${item.isDraft?string},
+   "isDraft": ${item.isDraft?string},
    <#if (! item.isDraft)>
-      "releasedOn" : "${item.releasedDate?string("MMM dd yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
+      "releasedOn": "${item.releasedDate?string("MMM dd yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
    </#if>
    
    <#-- true if the post has been updated -->
-   "isUpdated" : ${item.isUpdated?string},
+   "isUpdated": ${item.isUpdated?string},
    <#if (item.isUpdated)>
-      "updatedOn" : "${item.updatedDate?string("MMM dd yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
+      "updatedOn": "${item.updatedDate?string("MMM dd yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
    </#if>
    
    <#if (item.node.properties["blg:published"]?? && item.node.properties["blg:published"] == true)>
-   "publishedOn" : "${item.node.properties["blg:posted"]?string("MMM dd yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
-   "updatedOn" : "${item.node.properties["blg:lastUpdate"]?string("MMM dd yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
-   "postId" : "${item.node.properties["blg:postId"]!''}",
-   "postLink" : "${item.node.properties["blg:link"]!''}",
-   "outOfDate" : ${item.outOfDate?string},
+   "publishedOn": "${item.node.properties["blg:posted"]?string("MMM dd yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
+   "updatedOn": "${item.node.properties["blg:lastUpdate"]?string("MMM dd yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
+   "postId": "${item.node.properties["blg:postId"]!''}",
+   "postLink": "${item.node.properties["blg:link"]!''}",
+   "outOfDate": ${item.outOfDate?string},
    </#if>
    
    <#-- external publishing - last to make sure that we correctly end the response without a comma -->
-   "isPublished" : ${(item.node.properties["blg:published"]!'false')?string}
+   "isPublished": ${(item.node.properties["blg:published"]!'false')?string}
 }
 </#escape>
 </#macro>
 
 <#macro renderPostList>
 {
-   "metadata" : {
-      "blogPermissions" : {
-         "create" : ${blog.hasPermission("CreateChildren")?string},
-         "edit" : ${blog.hasPermission("Write")?string},
-         "delete" : ${blog.hasPermission("Delete")?string}
+   "metadata":
+   {
+      "blogPermissions":
+      {
+         "create": ${blog.hasPermission("CreateChildren")?string},
+         "edit": ${blog.hasPermission("Write")?string},
+         "delete": ${blog.hasPermission("Delete")?string}
       },
-      "externalBlogConfig" : ${externalBlogConfig?string}
+      "externalBlogConfig": ${externalBlogConfig?string}
    },
 <@gen.pagedResults data=data ; item>
 	<@blogpostJSON item=item />
@@ -97,9 +104,10 @@
 
 <#macro renderPost>
 {
-   "metadata" : {
-      "externalBlogConfig" : ${externalBlogConfig?string}
+   "metadata":
+   {
+      "externalBlogConfig": ${externalBlogConfig?string}
    },
-   "item" : <@blogpostJSON item=item />
+   "item": <@blogpostJSON item=item />
 }
 </#macro>

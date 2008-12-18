@@ -3,7 +3,8 @@
 <#if result.error?exists>
   "error" : "${result.error}"
 <#else>
-  "event": {
+  "event":
+  {
     "name": "${result.name}",
     "from": "${result.from?string("yyyy-M-dd")}",
     "start": "${result.from?string("HH:mm")}",

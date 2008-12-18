@@ -6,7 +6,7 @@ function main()
    var versions = [];
 
    // allow for content to be loaded from id
-   if(args["nodeRef"] != null)
+   if (args["nodeRef"] != null)
    {
       var nodeRef = args["nodeRef"];
       node = search.findNode(nodeRef);
@@ -14,19 +14,21 @@ function main()
       if (node != null)
       {
          var versionHistory = node.versionHistory;
-         if(versionHistory != null)
+         if (versionHistory != null)
          {
             for (i = 0; i < versionHistory.length; i++)
             {
                var version = versionHistory[i];
                var p = people.getPerson(versionHistory[0].creator);
-               versions[versions.length] = {
+               versions[versions.length] =
+               {
                   nodeRef: version.node.nodeRef.toString(),
                   name: version.node.name,
                   label: version.label,
                   description: version.description,
                   createdDate: version.createdDate,
-                  creator: {
+                  creator:
+                  {
                      userName: p.properties.userName,
                      firstName: p.properties.firstName,
                      lastName: p.properties.lastName
@@ -37,13 +39,15 @@ function main()
          else
          {
             var p = people.getPerson(node.properties.creator);
-            versions[0] = {
+            versions[0] =
+            {
                nodeRef: node.nodeRef.toString(),
                name: node.name,
                label: "1.0",
                description: "",
                createdDate: node.properties.created,
-               creator: {
+               creator:
+               {
                   userName: p.properties.userName,
                   firstName: p.properties.firstName,
                   lastName: p.properties.lastName

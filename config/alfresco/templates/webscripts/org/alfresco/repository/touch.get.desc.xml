@@ -3,6 +3,6 @@
   <description>SSO authentication touch point - return a simple 200 OK status</description>
   <url>/touch</url>
   <format default="">argument</format>
-  <authentication>none</authentication>
+  <authentication>guest</authentication>
   <transaction>none</transaction>
 </webscript>

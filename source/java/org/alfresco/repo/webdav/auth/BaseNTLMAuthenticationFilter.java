@@ -25,19 +25,18 @@
 package org.alfresco.repo.webdav.auth;
 
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
-import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
-import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -46,40 +45,29 @@ import javax.transaction.UserTransaction;
 
 import net.sf.acegisecurity.BadCredentialsException;
 
-import org.alfresco.filesys.ServerConfigurationBean;
 import org.alfresco.jlan.server.auth.PasswordEncryptor;
 import org.alfresco.jlan.server.auth.ntlm.NTLM;
 import org.alfresco.jlan.server.auth.ntlm.NTLMLogonDetails;
+import org.alfresco.jlan.server.auth.ntlm.NTLMMessage;
 import org.alfresco.jlan.server.auth.ntlm.NTLMv2Blob;
 import org.alfresco.jlan.server.auth.ntlm.TargetInfo;
 import org.alfresco.jlan.server.auth.ntlm.Type1NTLMMessage;
 import org.alfresco.jlan.server.auth.ntlm.Type2NTLMMessage;
 import org.alfresco.jlan.server.auth.ntlm.Type3NTLMMessage;
-import org.alfresco.jlan.server.auth.passthru.DomainMapping;
-import org.alfresco.jlan.server.config.SecurityConfigSection;
 import org.alfresco.jlan.util.DataPacker;
-import org.alfresco.jlan.util.IPAddress;
 import org.alfresco.repo.SessionUser;
-import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.MD4PasswordEncoder;
 import org.alfresco.repo.security.authentication.MD4PasswordEncoderImpl;
 import org.alfresco.repo.security.authentication.NTLMMode;
 import org.alfresco.repo.security.authentication.ntlm.NTLMPassthruToken;
-import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.security.AuthenticationService;
-import org.alfresco.service.cmr.security.PersonService;
-import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.logging.Log;
-import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.context.support.WebApplicationContextUtils;
 
 /**
  * Base class with common code and initialisation for NTLM authentication filters.
  */
-public abstract class BaseNTLMAuthenticationFilter implements Filter
+public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthenticationFilter
 {
     // NTLM authentication session object names
     public static final String NTLM_AUTH_SESSION = "_alfNTLMAuthSess";
@@ -109,22 +97,6 @@ public abstract class BaseNTLMAuthenticationFilter implements Filter
     // NTLM flags to send to the client with the allowed logon types
     private int m_ntlmFlags;
     
-    // Servlet context, required to get authentication service
-    protected ServletContext m_context;
-    
-    // File server configuration
-    private ServerConfigurationBean m_srvConfig;
-    
-    // Security configuration section, for domain mappings
-    private SecurityConfigSection m_secConfig;
-    
-    // Various services required by NTLM authenticator
-    protected AuthenticationService m_authService;
-    protected AuthenticationComponent m_authComponent;
-    protected PersonService m_personService;
-    protected NodeService m_nodeService;
-    protected TransactionService m_transactionService;
-    
     // Password encryptor
     private PasswordEncryptor m_encryptor = new PasswordEncryptor();
     
@@ -133,9 +105,6 @@ public abstract class BaseNTLMAuthenticationFilter implements Filter
     
     // MD4 hash decoder
     private MD4PasswordEncoder m_md4Encoder = new MD4PasswordEncoderImpl();
-    
-    // Local server name, from either the file servers config or DNS host name
-    protected String m_srvName;
     
     // Allow guest access
     private boolean m_allowGuest = false;
@@ -155,88 +124,20 @@ public abstract class BaseNTLMAuthenticationFilter implements Filter
      */
     public void init(FilterConfig args) throws ServletException
     {
-        // Save the servlet context, needed to get hold of the authentication service
-        m_context = args.getServletContext();
-        
-        // Setup the authentication context
-        WebApplicationContext ctx = WebApplicationContextUtils.getRequiredWebApplicationContext(m_context);
-        
-        ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
-        m_nodeService = serviceRegistry.getNodeService();
-        m_transactionService = serviceRegistry.getTransactionService();
-        m_authService = serviceRegistry.getAuthenticationService();
-        
-        m_authComponent = (AuthenticationComponent) ctx.getBean("AuthenticationComponent");
-        m_personService = (PersonService) ctx.getBean("personService");
-        
-        m_srvConfig = (ServerConfigurationBean) ctx.getBean(ServerConfigurationBean.SERVER_CONFIGURATION);
-        
-        // Check that the authentication component supports the required mode
+    	// Call the base SSO filter initialization
+    	
+    	super.init( args);
+
+    	// Check that the authentication component supports the required mode
+    	
         if (m_authComponent.getNTLMMode() != NTLMMode.MD4_PROVIDER &&
             m_authComponent.getNTLMMode() != NTLMMode.PASS_THROUGH)
         {
             throw new ServletException("Required authentication mode not available");
         }
         
-        // Get the local server name, try the file server config first
-        if (m_srvConfig != null)
-        {
-            m_srvName = m_srvConfig.getServerName();
-            
-            if (m_srvName != null)
-            {
-                try
-                {
-                    InetAddress resolved = InetAddress.getByName(m_srvName);
-                    if (resolved == null)
-                    {
-                        // failed to resolve the configured name
-                        m_srvName = m_srvConfig.getLocalServerName(true);
-                    }
-                }
-                catch (UnknownHostException ex)
-                {
-                    if (getLogger().isErrorEnabled())
-                        getLogger().error("NTLM filter, error getting resolving host name", ex);
-                }
-            }
-            else
-            {
-                m_srvName = m_srvConfig.getLocalServerName(true);
-            }
-            
-            // Find the security configuration section
-            m_secConfig = (SecurityConfigSection)m_srvConfig.getConfigSection(SecurityConfigSection.SectionName);
-        }
-        else
-        {
-            // Get the host name
-            try
-            {
-                // Get the local host name
-                m_srvName = InetAddress.getLocalHost().getHostName();
-                
-                // Strip any domain name
-                int pos = m_srvName.indexOf(".");
-                if (pos != -1)
-                {
-                    m_srvName = m_srvName.substring(0, pos - 1);
-                }
-            }
-            catch (UnknownHostException ex)
-            {
-                if (getLogger().isErrorEnabled())
-                    getLogger().error("NTLM filter, error getting local host name", ex);
-            }
-        }
-        
-        // Check if the server name is valid
-        if (m_srvName == null || m_srvName.length() == 0)
-        {
-            throw new ServletException("Failed to get local server name");
-        }
-        
         // Check if guest access is to be allowed
+        
         String guestAccess = args.getInitParameter("AllowGuest");
         if (guestAccess != null)
         {
@@ -247,6 +148,7 @@ public abstract class BaseNTLMAuthenticationFilter implements Filter
         }
         
         // Check if unknown users should be mapped to guest access
+        
         String mapUnknownToGuest = args.getInitParameter("MapUnknownUserToGuest");
         if (mapUnknownToGuest != null)
         {
@@ -258,6 +160,7 @@ public abstract class BaseNTLMAuthenticationFilter implements Filter
         
         // Set the NTLM flags depending on the authentication component supporting MD4 passwords,
         // or is using passthru auth
+        
         if (m_authComponent.getNTLMMode() == NTLMMode.MD4_PROVIDER && m_disableNTLMv2 == false)
         {
             // Allow the client to use an NTLMv2 logon
@@ -272,6 +175,179 @@ public abstract class BaseNTLMAuthenticationFilter implements Filter
         }
     }
     
+    /**
+     * Run the filter
+     * 
+     * @param sreq ServletRequest
+     * @param sresp ServletResponse
+     * @param chain FilterChain
+     * @exception IOException
+     * @exception ServletException
+     */
+    public void doFilter(ServletRequest sreq, ServletResponse sresp, FilterChain chain) throws IOException,
+            ServletException
+    {
+        // Get the HTTP request/response/session
+        HttpServletRequest req = (HttpServletRequest) sreq;
+        HttpServletResponse resp = (HttpServletResponse) sresp;
+        HttpSession httpSess = req.getSession(true);
+        
+        // If a filter up the chain has marked the request as not requiring auth then respect it
+        
+        if (req.getAttribute( NO_AUTH_REQUIRED) != null)
+        {
+            if ( getLogger().isDebugEnabled())
+                getLogger().debug("Authentication not required (filter), chaining ...");
+            
+            // Chain to the next filter
+            chain.doFilter(sreq, sresp);
+            return;
+        }
+        
+        // Check if there is an authorization header with an NTLM security blob
+        String authHdr = req.getHeader(AUTHORIZATION);
+        boolean reqAuth = false;
+        
+        // Check if an NTLM authorization header was received
+        
+        if ( authHdr != null)
+        {
+        	// Check for an NTLM authorization header
+        	
+        	if ( authHdr.startsWith(AUTH_NTLM))
+        		reqAuth = true;
+        	else if ( authHdr.startsWith( "Negotiate"))
+        	{
+        		if ( getLogger().isDebugEnabled())
+        			getLogger().debug("Received 'Negotiate' from client, may be SPNEGO/Kerberos logon");
+        		
+        		// Restart the authentication
+        		
+            	restartLoginChallenge(resp, httpSess);
+        		return;
+        	}
+        }
+        
+        // Check if the user is already authenticated
+        SessionUser user = getSessionUser( httpSess);
+        
+        if (user != null && reqAuth == false)
+        {
+            try
+            {
+                if (getLogger().isDebugEnabled())
+                    getLogger().debug("User " + user.getUserName() + " validate ticket");
+                
+                // Validate the user ticket
+                m_authService.validate(user.getTicket());
+                reqAuth = false;
+                
+                // Filter validate hook
+                onValidate( req, httpSess);
+            }
+            catch (AuthenticationException ex)
+            {
+                if (getLogger().isErrorEnabled())
+                    getLogger().error("Failed to validate user " + user.getUserName(), ex);
+                
+                reqAuth = true;
+            }
+        }
+
+        // If the user has been validated and we do not require re-authentication then continue to
+        // the next filter
+        if (reqAuth == false && user != null)
+        {
+            if (getLogger().isDebugEnabled())
+                getLogger().debug("Authentication not required (user), chaining ...");
+            
+            // Chain to the next filter
+            chain.doFilter(sreq, sresp);
+            return;
+        }
+
+        // Check if the login page is being accessed, do not intercept the login page
+        if (hasLoginPage() && req.getRequestURI().endsWith(getLoginPage()) == true)
+        {
+            if (getLogger().isDebugEnabled())
+                getLogger().debug("Login page requested, chaining ...");
+            
+            // Chain to the next filter
+            chain.doFilter( sreq, sresp);
+            return;
+        }
+        
+        // Check if the browser is Opera, if so then display the login page as Opera does not
+        // support NTLM and displays an error page if a request to use NTLM is sent to it
+        String userAgent = req.getHeader("user-agent");
+        if (userAgent != null && userAgent.indexOf("Opera ") != -1)
+        {
+            if (getLogger().isDebugEnabled())
+                getLogger().debug("Opera detected, redirecting to login page");
+
+            // If there is no login page configured (WebDAV) then just keep requesting the user details from the client
+            
+            if ( hasLoginPage())
+            	redirectToLoginPage(req, resp);
+            else
+            	restartLoginChallenge(resp, httpSess);
+            return;
+        }
+        
+        // Check the authorization header
+        if (authHdr == null)
+        {
+            // Check for a ticket based logon, if enabled
+            
+            if ( allowsTicketLogons())
+            {
+            	// Check if the request includes an authentication ticket
+            	
+            	if ( checkForTicketParameter(req, httpSess)) {
+            		
+        		    // Authentication was bypassed using a ticket parameter
+            		
+        		    chain.doFilter(sreq, sresp);
+        		    return;
+            	}
+            }
+            
+            // DEBUG
+            	
+            if (getLogger().isDebugEnabled())
+                getLogger().debug("New NTLM auth request from " + req.getRemoteHost() + " (" +
+                        req.getRemoteAddr() + ":" + req.getRemotePort() + ")");
+                
+            // Send back a request for NTLM authentication
+            restartLoginChallenge(resp, httpSess);
+        }
+        else
+        {
+            // Decode the received NTLM blob and validate
+            final byte[] ntlmByts = Base64.decodeBase64(authHdr.substring(5).getBytes());
+            int ntlmTyp = NTLMMessage.isNTLMType(ntlmByts);
+            if (ntlmTyp == NTLM.Type1)
+            {
+                // Process the type 1 NTLM message
+                Type1NTLMMessage type1Msg = new Type1NTLMMessage(ntlmByts);
+                processType1(type1Msg, req, resp, httpSess);
+            }
+            else if (ntlmTyp == NTLM.Type3)
+            {
+                // Process the type 3 NTLM message
+                Type3NTLMMessage type3Msg = new Type3NTLMMessage(ntlmByts);
+                processType3(type3Msg, req, resp, httpSess, chain);
+            }
+            else
+            {
+                if (getLogger().isDebugEnabled())
+                    getLogger().debug("NTLM blob not handled, redirecting to login page.");
+                
+                redirectToLoginPage(req, resp);
+            }
+        }
+    }
+
     /**
      * Delete the servlet filter
      */
@@ -293,8 +369,8 @@ public abstract class BaseNTLMAuthenticationFilter implements Filter
     {
         Log logger = getLogger();
         
-        if (logger.isDebugEnabled())
-            logger.debug("Received type1 " + type1Msg);
+        if (getLogger().isDebugEnabled())
+            getLogger().debug("Received type1 " + type1Msg);
         
         // Get the existing NTLM details
         NTLMLogonDetails ntlmDetails = null;
@@ -314,8 +390,8 @@ public abstract class BaseNTLMAuthenticationFilter implements Filter
             byte[] type2Bytes = cachedType2.getBytes();
             String ntlmBlob = "NTLM " + new String(Base64.encodeBase64(type2Bytes));
             
-            if (logger.isDebugEnabled())
-                logger.debug("Sending cached NTLM type2 to client - " + cachedType2);
+            if (getLogger().isDebugEnabled())
+                getLogger().debug("Sending cached NTLM type2 to client - " + cachedType2);
             
             // Send back a request for NTLM authentication
             res.setHeader(WWW_AUTHENTICATE, ntlmBlob);
@@ -347,8 +423,8 @@ public abstract class BaseNTLMAuthenticationFilter implements Filter
                     domain = mapClientAddressToDomain(req.getRemoteAddr());
                 }
                 
-                if (logger.isDebugEnabled())
-                    logger.debug("Client domain " + domain);
+                if (getLogger().isDebugEnabled())
+                    getLogger().debug("Client domain " + domain);
                 
                 // Create an authentication token for the new logon
                 authToken = new NTLMPassthruToken(domain);
@@ -380,8 +456,8 @@ public abstract class BaseNTLMAuthenticationFilter implements Filter
             
             session.setAttribute(NTLM_AUTH_DETAILS, ntlmDetails);
             
-            if (logger.isDebugEnabled())
-                logger.debug("Sending NTLM type2 to client - " + type2Msg);
+            if (getLogger().isDebugEnabled())
+                getLogger().debug("Sending NTLM type2 to client - " + type2Msg);
             
             // Send back a request for NTLM authentication
             byte[] type2Bytes = type2Msg.getBytes();
@@ -439,15 +515,7 @@ public abstract class BaseNTLMAuthenticationFilter implements Filter
             
             if (ntlmPwd != null)
             {
-                if (ntlmPwd.length == cachedPwd.length)
-                {
-                    authenticated = true;
-                    for (int i = 0; i < ntlmPwd.length; i++)
-                    {
-                        if (ntlmPwd[i] != cachedPwd[i])
-                            authenticated = false;
-                    }
-                }
+            	authenticated = Arrays.equals( cachedPwd, ntlmPwd);
             }
             
             if (logger.isDebugEnabled())
@@ -487,8 +555,8 @@ public abstract class BaseNTLMAuthenticationFilter implements Filter
                     // Indicate that the user has been authenticated
                     authenticated = true;
                     
-                    if (logger.isDebugEnabled())
-                        logger.debug("Guest logon");
+                    if (getLogger().isDebugEnabled())
+                        getLogger().debug("Guest logon");
                 }
                 else
                 {
@@ -634,46 +702,6 @@ public abstract class BaseNTLMAuthenticationFilter implements Filter
             }
         }
     }
-    
-    /**
-     * Callback to get the specific impl of the Session User for a filter
-     * 
-     * @return User from the session
-     */
-    protected abstract SessionUser getSessionUser(HttpSession session);
-    
-    /**
-     * Callback to create the User environment as appropriate for a filter impl
-     * 
-     * @param session
-     * @param userName
-     * 
-     * @return SessionUser impl
-     * 
-     * @throws IOException
-     * @throws ServletException
-     */
-    protected abstract SessionUser createUserEnvironment(HttpSession session, String userName)
-        throws IOException, ServletException;
-    
-    /**
-     * Callback executed on successful ticket validation during Type3 Message processing
-     */
-    protected abstract void onValidate(HttpServletRequest req, HttpSession session);
-    
-    /**
-     * Callback executed on failed authentication of a user ticket during Type3 Message processing 
-     */
-    protected abstract void onValidateFailed(HttpServletRequest req, HttpServletResponse res, HttpSession session)
-        throws IOException;
-    
-    /**
-     * Callback executed on completion of NTLM login
-     * 
-     * @return true to continue filter chaining, false otherwise
-     */
-    protected abstract boolean onLoginComplete(HttpServletRequest req, HttpServletResponse res)
-        throws IOException;
     
     /**
      * Validate the MD4 hash against local password
@@ -1030,6 +1058,8 @@ public abstract class BaseNTLMAuthenticationFilter implements Filter
     }
     
     /**
+     * Restart the NTLM logon process
+     * 
      * @param resp
      * @param httpSess
      * @throws IOException
@@ -1045,50 +1075,6 @@ public abstract class BaseNTLMAuthenticationFilter implements Filter
         res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         res.flushBuffer();
     }
-    
-    /**
-     * Map a client IP address to a domain
-     * 
-     * @param clientIP String
-     * @return String
-     */
-    protected final String mapClientAddressToDomain(String clientIP)
-    {
-        // Check if there are any domain mappings
-        if (m_secConfig != null && m_secConfig.hasDomainMappings() == false)
-        {
-            return null;
-        }
-        
-        if (m_secConfig != null)
-        {
-            // convert the client IP address to an integer value
-            int clientAddr = IPAddress.parseNumericAddress(clientIP);
-            for (DomainMapping domainMap : m_secConfig.getDomainMappings())
-            {
-                if (domainMap.isMemberOfDomain(clientAddr))
-                {
-                    if (getLogger().isDebugEnabled())
-                        getLogger().debug("Mapped client IP " + clientIP + " to domain " + domainMap.getDomain());
-                
-                    return domainMap.getDomain();
-                }
-            }
-        }
-        
-        if (getLogger().isDebugEnabled())
-            getLogger().debug("Failed to map client IP " + clientIP + " to a domain");
-        
-        // No domain mapping for the client address
-        return null;
-    }
-    
-    /**
-     * Return the logger
-     * 
-     * @return Log
-     */
-    protected abstract Log getLogger();
     
     /**
      * Disable NTLMv2 support, must be called from the implementation constructor

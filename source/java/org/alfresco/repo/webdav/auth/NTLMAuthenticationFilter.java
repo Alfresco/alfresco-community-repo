@@ -26,24 +26,14 @@ package org.alfresco.repo.webdav.auth;
 
 import java.io.IOException;
 
-import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import javax.transaction.UserTransaction;
 
-import org.alfresco.jlan.server.auth.ntlm.NTLM;
-import org.alfresco.jlan.server.auth.ntlm.NTLMMessage;
-import org.alfresco.jlan.server.auth.ntlm.Type1NTLMMessage;
-import org.alfresco.jlan.server.auth.ntlm.Type3NTLMMessage;
-import org.alfresco.model.ContentModel;
 import org.alfresco.repo.SessionUser;
-import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -54,190 +44,35 @@ import org.apache.commons.logging.LogFactory;
  */
 public class NTLMAuthenticationFilter extends BaseNTLMAuthenticationFilter
 {
-    // Authenticated user session object name
-    public final static String AUTHENTICATION_USER = "_alfDAVAuthTicket";
-    
-    // Allow an authenitcation ticket to be passed as part of a request to bypass authentication
-    private static final String ARG_TICKET = "ticket";
-    
     // Debug logging
     private static Log logger = LogFactory.getLog(NTLMAuthenticationFilter.class);
     
-    
     /**
-     * Run the filter
+     * Initialize the filter
      * 
-     * @param sreq ServletRequest
-     * @param sresp ServletResponse
-     * @param chain FilterChain
-     * @exception IOException
+     * @param args FilterConfig
      * @exception ServletException
      */
-    public void doFilter(ServletRequest sreq, ServletResponse sresp, FilterChain chain) throws IOException,
-            ServletException
+    public void init(FilterConfig args) throws ServletException
     {
-        // Get the HTTP request/response/session
-        HttpServletRequest req = (HttpServletRequest) sreq;
-        HttpServletResponse resp = (HttpServletResponse) sresp;
-        HttpSession httpSess = req.getSession(true);
+        super.init(args);
+
+        // Enable ticket based logons
         
-        // Check if there is an authorization header with an NTLM security blob
-        String authHdr = req.getHeader(AUTHORIZATION);
-        boolean reqAuth = (authHdr != null && authHdr.startsWith(AUTH_NTLM));
-        
-        // Check if the user is already authenticated
-        WebDAVUser user = (WebDAVUser) httpSess.getAttribute(AUTHENTICATION_USER);
-        if (user != null && reqAuth == false)
-        {
-            try
-            {
-                if (logger.isDebugEnabled())
-                    logger.debug("User " + user.getUserName() + " validate ticket");
-                
-                // Validate the user ticket
-                m_authService.validate( user.getTicket());
-                reqAuth = false;
-            }
-            catch (AuthenticationException ex)
-            {
-                if (logger.isErrorEnabled())
-                    logger.error("Failed to validate user " + user.getUserName(), ex);
-                
-                reqAuth = true;
-            }
-        }
-
-        // If the user has been validated and we do not require re-authentication then continue to
-        // the next filter
-        if (reqAuth == false && user != null)
-        {
-            if (logger.isDebugEnabled())
-                logger.debug("Authentication not required, chaining ...");
-            
-            // Chain to the next filter
-            chain.doFilter(sreq, sresp);
-            return;
-        }
-
-        // Check the authorization header
-        if (authHdr == null)
-        {
-        	// Check if the request includes an authentication ticket
-        	String ticket = req.getParameter(ARG_TICKET);
-        	if (ticket != null && ticket.length() != 0)
-        	{
-                if (logger.isDebugEnabled())
-                    logger.debug("Logon via ticket from " + req.getRemoteHost() + " (" +
-                            req.getRemoteAddr() + ":" + req.getRemotePort() + ")" + " ticket=" + ticket);
-                
-        		UserTransaction tx = null;
-        		try
-        		{
-        		    // Validate the ticket
-        		    m_authService.validate(ticket);
-        		    
-                    if (user == null)
-                    {
-            		    // Start a transaction
-            		    tx = m_transactionService.getUserTransaction();
-            		    tx.begin();
-            		    
-                        // Need to create the User instance if not already available
-                        String currentUsername = m_authService.getCurrentUserName();
-                        
-            		    NodeRef personRef = m_personService.getPerson(currentUsername);
-            		    user = new WebDAVUser(currentUsername, m_authService.getCurrentTicket(), personRef);
-            		    NodeRef homeRef = (NodeRef)m_nodeService.getProperty(personRef, ContentModel.PROP_HOMEFOLDER);
-            		    user.setHomeNode(homeRef);
-            		    
-            		    tx.commit();
-            		    tx = null; 
-            		    
-            		    // Store the User object in the Session - the authentication servlet will then proceed
-            		    req.getSession().setAttribute(AUTHENTICATION_USER, user);
-                    }
-        		    
-        		    // Chain to the next filter
-        		    chain.doFilter(sreq, sresp);
-        		    return;
-        		}
-        		catch (AuthenticationException authErr)
-            	{
-            		if (logger.isDebugEnabled())
-            		    logger.debug("Failed to authenticate user ticket: " + authErr.getMessage(), authErr);
-            	}
-            	catch (Throwable e)
-            	{
-            		if (logger.isDebugEnabled())
-                        logger.debug("Error during ticket validation and user creation: " + e.getMessage(), e);
-            	}
-            	finally
-            	{
-            		try
-            	    {
-            			if (tx != null)
-            	        {
-            				tx.rollback();
-           	        	}
-            	    }
-            	    catch (Exception tex)
-            	    {
-            	    }
-            	}
-        	}
-        	
-            if (logger.isDebugEnabled())
-                logger.debug("New NTLM auth request from " + req.getRemoteHost() + " (" +
-                        req.getRemoteAddr() + ":" + req.getRemotePort() + ")");
-            
-            // Send back a request for NTLM authentication
-            restartLoginChallenge(resp, httpSess);
-        }
-        else
-        {
-            // Decode the received NTLM blob and validate
-            final byte[] ntlmByts = Base64.decodeBase64(authHdr.substring(5).getBytes());
-            int ntlmTyp = NTLMMessage.isNTLMType(ntlmByts);
-            if (ntlmTyp == NTLM.Type1)
-            {
-                // Process the type 1 NTLM message
-                Type1NTLMMessage type1Msg = new Type1NTLMMessage(ntlmByts);
-                processType1(type1Msg, req, resp, httpSess);
-            }
-            else if (ntlmTyp == NTLM.Type3)
-            {
-                // Process the type 3 NTLM message
-                Type3NTLMMessage type3Msg = new Type3NTLMMessage(ntlmByts);
-                processType3(type3Msg, req, resp, httpSess, chain);
-            }
-            else
-            {
-                if (logger.isDebugEnabled())
-                    logger.debug("NTLM blob not handled, restarting login challenge.");
-                
-                restartLoginChallenge(resp, httpSess);
-            }
-        }
-    }
-    
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.webdav.auth.BaseNTLMAuthenticationFilter#getSessionUser(javax.servlet.http.HttpSession)
-     */
-    @Override
-    protected SessionUser getSessionUser(HttpSession session)
-    {
-        return (SessionUser)session.getAttribute(AUTHENTICATION_USER);
+        setTicketLogons( true);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.webdav.auth.BaseNTLMAuthenticationFilter#onValidate(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpSession)
-     */
-    @Override
-    protected void onValidate(HttpServletRequest req, HttpSession session)
-    {
-        // nothing to do for webdav filter
-    }
-    
+	/* (non-Javadoc)
+	 * @see org.alfresco.repo.webdav.auth.BaseSSOAuthenticationFilter#createUserObject(java.lang.String, java.lang.String, org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
+	 */
+	@Override
+	protected SessionUser createUserObject(String userName, String ticket, NodeRef personNode, String homeSpace) {
+
+		// Create a WebDAV user object
+		
+		return new WebDAVUser( userName, ticket, personNode);
+	}
+	
     /* (non-Javadoc)
      * @see org.alfresco.repo.webdav.auth.BaseNTLMAuthenticationFilter#onValidateFailed(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, javax.servlet.http.HttpSession)
      */
@@ -245,88 +80,11 @@ public class NTLMAuthenticationFilter extends BaseNTLMAuthenticationFilter
     protected void onValidateFailed(HttpServletRequest req, HttpServletResponse res, HttpSession session)
         throws IOException
     {
-        // restart the login challenge process if validation fails
+        // Restart the login challenge process if validation fails
+    	
         restartLoginChallenge(res, session);
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.webdav.auth.BaseNTLMAuthenticationFilter#createUserEnvironment(javax.servlet.http.HttpSession, java.lang.String)
-     */
-    @Override
-    protected SessionUser createUserEnvironment(HttpSession session, String userName)
-        throws IOException, ServletException
-    {
-        SessionUser user = null;
-        
-        UserTransaction tx = m_transactionService.getUserTransaction();
-        
-        try
-        {
-            tx.begin();
-            
-            // Setup User object and Home space ID etc.
-            NodeRef personNodeRef = m_personService.getPerson(userName);
-            
-            // Use the system user context to do the user lookup
-            m_authComponent.setCurrentUser(m_authComponent.getSystemUserName());
-            
-            // User name should match the uid in the person entry found
-            m_authComponent.setSystemUserAsCurrentUser();
-            userName = (String) m_nodeService.getProperty(personNodeRef, ContentModel.PROP_USERNAME);
-            
-            m_authComponent.setCurrentUser(userName);
-            String currentTicket = m_authService.getCurrentTicket();
-            user = new WebDAVUser(userName, currentTicket, personNodeRef);
-            
-            NodeRef homeSpaceRef = (NodeRef) m_nodeService.getProperty(personNodeRef, ContentModel.PROP_HOMEFOLDER);
-            ((WebDAVUser)user).setHomeNode(homeSpaceRef);
-            
-            tx.commit();
-        }
-        catch (Throwable ex)
-        {
-            try
-            {
-                tx.rollback();
-            }
-            catch (Exception ex2)
-            {
-                logger.error("Failed to rollback transaction", ex2);
-            }
-            if (ex instanceof RuntimeException)
-            {
-                throw (RuntimeException)ex;
-            }
-            else if (ex instanceof IOException)
-            {
-                throw (IOException)ex;
-            }
-            else if (ex instanceof ServletException)
-            {
-                throw (ServletException)ex;
-            }
-            else
-            {
-                throw new RuntimeException("Authentication setup failed", ex);
-            }
-        }
-        
-        // Store the user on the session
-        session.setAttribute(AUTHENTICATION_USER, user);
-        
-        return user;
-    }
-    
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.webdav.auth.BaseNTLMAuthenticationFilter#onLoginComplete(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
-     */
-    @Override
-    protected boolean onLoginComplete(HttpServletRequest req, HttpServletResponse res) throws IOException
-    {
-        // no futher processing to do, allow to complete
-        return true;
-    }
-
     /* (non-Javadoc)
      * @see org.alfresco.repo.webdav.auth.BaseNTLMAuthenticationFilter#getLogger()
      */

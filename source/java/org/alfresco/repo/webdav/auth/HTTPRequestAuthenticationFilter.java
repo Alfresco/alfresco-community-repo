@@ -237,6 +237,7 @@ public class HTTPRequestAuthenticationFilter implements Filter
                     tx.begin();
                     // Authenticate the user
 
+                    m_authComponent.clearCurrentSecurityContext();
                     m_authComponent.setCurrentUser(userName);
 
                     // Get the user node and home folder

@@ -89,7 +89,7 @@ public abstract class AbstractQuerySession<RESULTSET, RESULTSETROW> implements Q
     /**
      * {@inheritDoc}
      */
-    public ServerQuery getQuery()
+    public ServerQuery<RESULTSET> getQuery()
     {
         return query;
     }
@@ -156,7 +156,7 @@ public abstract class AbstractQuerySession<RESULTSET, RESULTSETROW> implements Q
         {
             // There isn't an excess of rows remaining, so copy to the last one
             long lastResultIndex = allResultsSize - 1L;
-            long rowCopyCount = lastResultIndex - position;
+            long rowCopyCount = lastResultIndex - position + 1L;
             batchedResults = makeArray((int)rowCopyCount);
             System.arraycopy(allResults, (int)position, batchedResults, 0, (int)rowCopyCount);
             // Position is after last
@@ -185,70 +185,5 @@ public abstract class AbstractQuerySession<RESULTSET, RESULTSETROW> implements Q
                     "   New Position:        " + position);
         }
         return batchedResults;
-//        long allResultsSize = allResults.getTotalRowCount();
-//
-//        ResultSet batchedResults = null;
-//        if (position >= allResultsSize)
-//        {
-//            // We are already past the last result
-//            batchedResults = new ResultSet();
-//            batchedResults.setRows(new ResultSetRow[] {});
-//            batchedResults.setTotalRowCount(0);
-//            batchedResults.setMetaData(allResults.getMetaData());
-//            // Position is after last
-//            position = allResultsSize;
-//        }
-//        else if (position == 0 && batchSize >= allResultsSize)
-//        {
-//            // We can give back the original results
-//            batchedResults = allResults;
-//            // Position is after last
-//            position = allResultsSize;
-//        }
-//        else if ((position + batchSize) >= allResultsSize)
-//        {
-//            // There isn't an excess of rows remaining, so copy to the last one
-//            long lastResultIndex = allResultsSize - 1L;
-//            long rowCopyCount = lastResultIndex - position;
-//            ResultSetRow[] batchedRows = new ResultSetRow[(int)rowCopyCount];
-//            ResultSetRow[] allRows = allResults.getRows();
-//            System.arraycopy(allRows, (int)position, batchedRows, 0, (int)rowCopyCount);
-//            // Build the results
-//            batchedResults = new ResultSet();
-//            batchedResults.setRows(batchedRows);
-//            batchedResults.setTotalRowCount(rowCopyCount);
-//            batchedResults.setMetaData(allResults.getMetaData());
-//            // Position is after last
-//            position = allResultsSize;
-//        }
-//        else
-//        {
-//            // There are an excess of rows remaining
-//            ResultSetRow[] batchedRows = new ResultSetRow[(int)batchSize];
-//            ResultSetRow[] allRows = allResults.getRows();
-//            System.arraycopy(allRows, (int)position, batchedRows, 0, (int)batchSize);
-//            // Build the results
-//            batchedResults = new ResultSet();
-//            batchedResults.setRows(batchedRows);
-//            batchedResults.setTotalRowCount(batchSize);
-//            batchedResults.setMetaData(allResults.getMetaData());
-//            // Position increases by the batch size
-//            position += batchSize;
-//        }
-//        // Keep track of whether we expect more results
-//        if (position >= allResultsSize)
-//        {
-//            expectMoreResults = false;
-//        }
-//        // Done
-//        if (logger.isDebugEnabled())
-//        {
-//            logger.debug("\n" +
-//                    "Fetched net set of results: \n" +
-//                    "   Total results count: " + allResultsSize + "\n" +
-//                    "   Batch size:          " + batchedResults.getTotalRowCount() + "\n" +
-//                    "   New Position:        " + position);
-//        }
-//        return batchedResults;
     }
 }

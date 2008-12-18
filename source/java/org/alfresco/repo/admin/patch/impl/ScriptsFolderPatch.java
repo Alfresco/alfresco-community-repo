@@ -37,6 +37,8 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.importer.ACPImportPackageHandler;
 import org.alfresco.repo.importer.ImporterBootstrap;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.admin.PatchException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -222,16 +224,15 @@ public class ScriptsFolderPatch extends AbstractPatch
             createFolder();
             
             // import the content
-            try
+            RunAsWork<Object> importRunAs = new RunAsWork<Object>()
             {
-               authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
-               
-               importContent();
-            }
-            finally
-            {
-               authenticationComponent.clearCurrentSecurityContext();
-            }
+                public Object doWork() throws Exception
+                {
+                    importContent();
+                    return null;
+                }
+            };
+            AuthenticationUtil.runAs(importRunAs, authenticationComponent.getSystemUserName());
             
             msg = I18NUtil.getMessage(MSG_CREATED, scriptsFolderNodeRef);
         }

@@ -608,7 +608,7 @@ public abstract class AuthenticationUtil
             }
             else
             {
-                if(!AuthenticationUtil.getCurrentRealUserName().equals(realUser))
+                if(!realUser.equals(AuthenticationUtil.getCurrentRealUserName()))
                 {
                     AuthenticationUtil.setCurrentRealUser(realUser);
                     s_logger.warn("Resetting real user which has changed in RunAs block");

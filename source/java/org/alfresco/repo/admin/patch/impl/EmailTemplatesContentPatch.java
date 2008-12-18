@@ -32,6 +32,8 @@ import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.importer.ACPImportPackageHandler;
 import org.alfresco.repo.importer.ImporterBootstrap;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.admin.PatchException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -171,16 +173,15 @@ public class EmailTemplatesContentPatch extends AbstractPatch
         setUp();
         
         // import the content
-        try
+        RunAsWork<Object> importRunAs = new RunAsWork<Object>()
         {
-           authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
-           
-           importContent();
-        }
-        finally
-        {
-           authenticationComponent.clearCurrentSecurityContext();
-        }
+            public Object doWork() throws Exception
+            {
+                importContent();
+                return null;
+            }
+        };
+        AuthenticationUtil.runAs(importRunAs, authenticationComponent.getSystemUserName());
         
         // output a message to describe the result
         return I18NUtil.getMessage(MSG_CREATED);

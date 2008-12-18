@@ -35,6 +35,8 @@ import org.alfresco.repo.policy.ClassPolicyDelegate;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.rule.RuleServiceImpl;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -350,40 +352,33 @@ public class AsynchronousActionExecutionQueueImpl implements AsynchronousActionE
                     throw new ActionServiceException("Cannot execute action asynchronously since run as user is 'null'");              
                 }
                 
-                authenticationComponent.setCurrentUser(userName);
-                
-                try
+                // import the content
+                RunAsWork<Object> actionRunAs = new RunAsWork<Object>()
                 {
-                    RetryingTransactionCallback<Object> actionCallback = new RetryingTransactionCallback<Object>()
+                    public Object doWork() throws Exception
                     {
-                        public Object execute()
-                        {   
-                            // Bind the callback listener
-                            CallbackTransactionListener tl = new CallbackTransactionListener(action, actionedUponNodeRef);
-                            AlfrescoTransactionSupport.bindListener(tl);
-                            
-                            if (ActionExecutionWrapper.this.executedRules != null)
-                            {
-                                AlfrescoTransactionSupport.bindResource("RuleServiceImpl.ExecutedRules", ActionExecutionWrapper.this.executedRules);
-                            }
-                            
-                            // Execute the action
-                            actionService.executeActionImpl(
-                                    action,
-                                    actionedUponNodeRef,
-                                    checkConditions, 
-                                    true,
-                                    actionChain);                            
+                        RetryingTransactionCallback<Object> actionCallback = new RetryingTransactionCallback<Object>()
+                        {
+                            public Object execute()
+                            {   
+                                if (ActionExecutionWrapper.this.executedRules != null)
+                                {
+                                    AlfrescoTransactionSupport.bindResource("RuleServiceImpl.ExecutedRules", ActionExecutionWrapper.this.executedRules);
+                                }
+                                
+                                ActionExecutionWrapper.this.actionService.executeActionImpl(
+                                        ActionExecutionWrapper.this.action,
+                                        ActionExecutionWrapper.this.actionedUponNodeRef,
+                                        ActionExecutionWrapper.this.checkConditions, true,
+                                        ActionExecutionWrapper.this.actionChain);
 
-                            return null;
-                        }
-                    };
-                    transactionService.getRetryingTransactionHelper().doInTransaction(actionCallback);
-                }
-                finally
-                {
-                    authenticationComponent.clearCurrentSecurityContext();
-                }
+                                return null;
+                            }
+                        };
+                        return transactionService.getRetryingTransactionHelper().doInTransaction(actionCallback);
+                    }
+                };
+                AuthenticationUtil.runAs(actionRunAs, userName);
             }
             catch (Throwable exception)
             {

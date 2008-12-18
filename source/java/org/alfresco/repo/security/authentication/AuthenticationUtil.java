@@ -30,17 +30,18 @@ import net.sf.acegisecurity.GrantedAuthorityImpl;
 import net.sf.acegisecurity.UserDetails;
 import net.sf.acegisecurity.context.Context;
 import net.sf.acegisecurity.context.ContextHolder;
-import net.sf.acegisecurity.context.security.SecureContext;
-import net.sf.acegisecurity.context.security.SecureContextImpl;
 import net.sf.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import net.sf.acegisecurity.providers.dao.User;
 
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.NDC;
 
 public abstract class AuthenticationUtil
 {
+    static Log s_logger = LogFactory.getLog(AuthenticationUtil.class);
 
     public interface RunAsWork<Result>
     {
@@ -249,7 +250,8 @@ public abstract class AuthenticationUtil
             }
             authentication.setAuthenticated(true);
             // Sets real and effective
-            sc.setAuthentication(authentication);
+            sc.setRealAuthentication(authentication);
+            sc.setEffectiveAuthentication(authentication);
 
             // Support for logging tenant domain / username (via log4j NDC)
             String userName = SYSTEM_USER_NAME;
@@ -606,7 +608,13 @@ public abstract class AuthenticationUtil
             }
             else
             {
+                if(!AuthenticationUtil.getCurrentRealUserName().equals(realUser))
+                {
+                    AuthenticationUtil.setCurrentRealUser(realUser);
+                    s_logger.warn("Resetting real user which has changed in RunAs block");
+                }
                 AuthenticationUtil.setCurrentEffectiveUser(effectiveUser);
+                
             }
         }
     }

@@ -32,8 +32,11 @@
     -->
     <bean id="shutdownBackstop" class="org.alfresco.repo.shutdown.ShutdownBackstop">
        <property name="timeout">
-       	<value>${shutdown.backstop.timeout}</value>
+       	  <value>${shutdown.backstop.timeout}</value>
        </property>
+       <property name="enabled">
+          <value>${shutdown.backstop.enabled}</value>
+       </property>	
     </bean>  
 
 

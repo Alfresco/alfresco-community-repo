@@ -35,11 +35,11 @@ import net.sf.acegisecurity.context.ContextInvalidException;
  */
 public class AlfrescoSecureContextImpl implements AlfrescoSecureContext
 {
-    Authentication storedAuthentication;
+    private Authentication storedAuthentication;
 
-    Authentication realAuthentication;
+    private Authentication realAuthentication;
 
-    Authentication effectiveAuthentication;
+    private Authentication effectiveAuthentication;
 
     /**
      * ACEGI
@@ -55,7 +55,6 @@ public class AlfrescoSecureContextImpl implements AlfrescoSecureContext
     public void setAuthentication(Authentication newAuthentication)
     {
         setEffectiveAuthentication(newAuthentication);
-        setRealAuthentication(newAuthentication);
     }
 
     /**

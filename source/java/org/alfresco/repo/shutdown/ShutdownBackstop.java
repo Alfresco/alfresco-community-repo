@@ -54,6 +54,11 @@ public class ShutdownBackstop extends AbstractLifecycleBean
 	 */
 	private int timeout = 10000;
 	
+	/**
+	 * is the backstop enabled?
+	 */
+	private boolean enabled = true;
+	
     protected final static Log log = LogFactory.getLog(ShutdownBackstop.class); 
 
 	public void setTimeout(int timeout) {
@@ -79,11 +84,22 @@ public class ShutdownBackstop extends AbstractLifecycleBean
 	@Override
 	protected void onShutdown(ApplicationEvent event) 
 	{
-		log.info("Shutdown backstop timer started");
-		Thread selfDestructThread = new ShutdownBackstopThread(timeout);
-		selfDestructThread.start();
+		if(isEnabled())
+		{
+			log.info("Shutdown backstop timer started");
+			Thread selfDestructThread = new ShutdownBackstopThread(timeout);
+			selfDestructThread.start();
+		}
 	}
 	
+	public void setEnabled(boolean enabled) {
+		this.enabled = enabled;
+	}
+
+	public boolean isEnabled() {
+		return enabled;
+	}
+
 	/**
 	 * This is a dangerous class!   It will kill the JVM after sleeping 
 	 * for timeout ms.

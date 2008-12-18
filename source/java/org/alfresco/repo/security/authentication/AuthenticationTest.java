@@ -48,6 +48,7 @@ import net.sf.acegisecurity.providers.dao.SaltSource;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.SimpleCache;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.authentication.InMemoryTicketComponentImpl.ExpiryMode;
 import org.alfresco.repo.security.authentication.InMemoryTicketComponentImpl.Ticket;
 import org.alfresco.repo.tenant.TenantService;
@@ -58,6 +59,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.DynamicNamespacePrefixResolver;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.NamespaceService;
@@ -109,6 +111,12 @@ public class AuthenticationTest extends TestCase
 
     private AuthenticationComponent authenticationComponentImpl;
 
+    private TransactionService transactionService;
+
+    private PersonService pubPersonService;
+
+    private PersonService personService;
+
     public AuthenticationTest()
     {
         super();
@@ -132,6 +140,8 @@ public class AuthenticationTest extends TestCase
         pubAuthenticationService = (AuthenticationService) ctx.getBean("AuthenticationService");
         authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
         authenticationComponentImpl = (AuthenticationComponent) ctx.getBean("authenticationComponent");
+        pubPersonService =  (PersonService) ctx.getBean("PersonService");
+        personService =  (PersonService) ctx.getBean("personService");
         // permissionServiceSPI = (PermissionServiceSPI)
         // ctx.getBean("permissionService");
         ticketsCache = (SimpleCache<String, Ticket>) ctx.getBean("ticketsCache");
@@ -140,7 +150,7 @@ public class AuthenticationTest extends TestCase
         authenticationManager = (AuthenticationManager) ctx.getBean("authenticationManager");
         saltSource = (SaltSource) ctx.getBean("saltSource");
 
-        TransactionService transactionService = (TransactionService) ctx.getBean(ServiceRegistry.TRANSACTION_SERVICE.getLocalName());
+        transactionService = (TransactionService) ctx.getBean(ServiceRegistry.TRANSACTION_SERVICE.getLocalName());
         userTransaction = transactionService.getUserTransaction();
         userTransaction.begin();
 
@@ -176,6 +186,12 @@ public class AuthenticationTest extends TestCase
         {
             dao.deleteUser("andy");
         }
+        
+        if(personService.personExists("andy"))
+        {
+            personService.deletePerson("andy");
+        }
+        
     }
 
     @Override
@@ -193,6 +209,76 @@ public class AuthenticationTest extends TestCase
         return properties;
     }
 
+    public void testSystemTicket() throws Exception
+    {
+        assertNull(AuthenticationUtil.getCurrentRealAuthentication());
+        assertNull(AuthenticationUtil.getCurrentEffectiveAuthentication());
+        assertNull(AuthenticationUtil.getCurrentStoredAuthentication());
+        
+      
+        authenticationComponent.setSystemUserAsCurrentUser();
+        pubAuthenticationService.createAuthentication("andy", "andy".toCharArray());
+        
+        pubAuthenticationService.clearCurrentSecurityContext();
+        
+        assertNull(AuthenticationUtil.getCurrentRealAuthentication());
+        assertNull(AuthenticationUtil.getCurrentEffectiveAuthentication());
+        assertNull(AuthenticationUtil.getCurrentStoredAuthentication());
+        
+        // Authenticate
+        pubAuthenticationService.authenticate("andy", "andy".toCharArray());
+        
+        // Get current user name
+        String userName = pubAuthenticationService.getCurrentUserName();
+        assertEquals("andy", userName);
+        
+        // Get ticket
+        String ticket = pubAuthenticationService.getCurrentTicket();
+        assertEquals("andy", ticketComponent.getAuthorityForTicket(ticket));
+        
+        // Get logged in user ...
+        // Get userName
+        userName = pubAuthenticationService.getCurrentUserName();
+        assertEquals("andy", userName);
+        // get Person
+        assertFalse(pubPersonService.personExists(userName));
+        
+        AuthenticationUtil.runAs(new RunAsWork() {
+
+            public Object doWork() throws Exception
+            {
+                // TODO Auto-generated method stub
+                assertEquals("andy", ticketComponent.getAuthorityForTicket(pubAuthenticationService.getCurrentTicket()));
+                return null;
+            }}, AuthenticationUtil.getSystemUserName());
+        
+        pubPersonService.getPerson(userName);
+        assertTrue(pubPersonService.personExists(userName));
+        // re-getTicket
+        String newticket = pubAuthenticationService.getCurrentTicket();
+        assertEquals(ticket, newticket);
+        assertEquals("andy", ticketComponent.getAuthorityForTicket(newticket));
+        
+        
+        userName = pubAuthenticationService.getCurrentUserName();
+        assertEquals("andy", userName);
+        
+        // new TX
+        
+        userTransaction.commit();
+        userTransaction = transactionService.getUserTransaction();
+        userTransaction.begin();
+        
+        pubAuthenticationService.validate(ticket);
+        userName = pubAuthenticationService.getCurrentUserName();
+        assertEquals("andy", userName);
+        
+        pubAuthenticationService.validate(newticket);
+        userName = pubAuthenticationService.getCurrentUserName();
+        assertEquals("andy", userName);
+        
+    }
+    
     public void xtestScalability()
     {
         long create = 0;

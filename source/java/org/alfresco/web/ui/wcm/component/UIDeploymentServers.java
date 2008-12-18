@@ -375,8 +375,7 @@ public class UIDeploymentServers extends UIInput
       out.write("<table cellpadding='0' cellspacing='0'>");
       out.write("<tr><td width='100%'><table cellpadding='3' cellspacing='0' class='deployConfigServerDetailsLeftCol'>");
       
-      if (WCMAppModel.CONSTRAINT_FILEDEPLOY.equals(getAddType()) ||
-              (WCMAppModel.CONSTRAINT_FILEDEPLOY.equals(server.getDeployType())))
+      if (WCMAppModel.CONSTRAINT_FILEDEPLOY.equals(server.getDeployType()))
       {
   
     	  out.write("<tr><td align='right'>");
@@ -677,10 +676,8 @@ public class UIDeploymentServers extends UIInput
       Utils.encodeRecursive(context, group);
       out.write("</td></tr>");
 
-      
-      // MER START
-      if (WCMAppModel.CONSTRAINT_FILEDEPLOY.equals(getAddType() ) ||
-              (server != null && WCMAppModel.CONSTRAINT_FILEDEPLOY.equals(server.getDeployType())))
+      if (!edit && WCMAppModel.CONSTRAINT_FILEDEPLOY.equals(getAddType() ) ||
+         (edit && WCMAppModel.CONSTRAINT_FILEDEPLOY.equals(server.getDeployType())))
       {
     	  // for an FSR create the protocol adapter field
     	  out.write("<tr><td align='right'>");
@@ -724,7 +721,6 @@ public class UIDeploymentServers extends UIInput
     	  
     	  out.write("</td></tr>");
       }
-      // MER END
       
       // create the server host field
       out.write("<tr><td align='right'>");

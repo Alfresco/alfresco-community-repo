@@ -288,7 +288,7 @@ public class LoginBean implements Serializable
             NodeRef homeSpaceRef = (NodeRef) this.getNodeService().getProperty(getPersonService().getPerson(this.username), ContentModel.PROP_HOMEFOLDER);
             
             // check that the home space node exists - else user cannot login
-            if (this.getNodeService().exists(homeSpaceRef) == false)
+            if (homeSpaceRef == null || this.getNodeService().exists(homeSpaceRef) == false)
             {
                throw new InvalidNodeRefException(homeSpaceRef);
             }
@@ -353,8 +353,17 @@ public class LoginBean implements Serializable
          }
          catch (InvalidNodeRefException refErr)
          {
+            String msg;
+            if (refErr.getNodeRef() != null)
+            {
+                msg = refErr.getNodeRef().toString();
+            }
+            else
+            {
+                msg = Application.getMessage(fc, MSG_NONE);
+            }
             Utils.addErrorMessage(MessageFormat.format(Application.getMessage(fc,
-                  Repository.ERROR_NOHOME), refErr.getNodeRef().getId()));
+                  Repository.ERROR_NOHOME), msg));
          }
       }
       else
@@ -425,6 +434,7 @@ public class LoginBean implements Serializable
    private static final String MSG_ERROR_UNKNOWN_USER = "error_login_user";
    private static final String MSG_ERROR_LOGIN_DISALLOWED = "error_login_disallowed";
    private static final String MSG_ERROR_LOGIN_MAXUSERS = "error_login_maxusers";
+   private static final String MSG_NONE = "none";
    
    public static final String MSG_USERNAME_LENGTH = "login_err_username_length";
    public static final String MSG_PASSWORD_LENGTH = "login_err_password_length";

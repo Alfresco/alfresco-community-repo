@@ -94,7 +94,7 @@ public class EditUserWizard extends CreateUserWizard
         // calculate home space name and parent space Id from homeFolderId
         this.homeSpaceLocation = null; // default to Company root space
         NodeRef homeFolderRef = (NodeRef) props.get("homeFolder");
-        if (this.getNodeService().exists(homeFolderRef) == true)
+        if (homeFolderRef != null && this.getNodeService().exists(homeFolderRef) == true)
         {
             ChildAssociationRef childAssocRef = this.getNodeService().getPrimaryParent(homeFolderRef);
             NodeRef parentRef = childAssocRef.getParentRef();

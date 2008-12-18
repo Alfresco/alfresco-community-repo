@@ -33,6 +33,7 @@ import java.security.Provider;
 import java.security.Security;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.StringTokenizer;
 
 import javax.transaction.UserTransaction;
 
@@ -45,8 +46,10 @@ import net.sf.acegisecurity.GrantedAuthorityImpl;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.jlan.server.auth.PasswordEncryptor;
+import org.alfresco.jlan.server.auth.passthru.AuthSessionFactory;
 import org.alfresco.jlan.server.auth.passthru.AuthenticateSession;
 import org.alfresco.jlan.server.auth.passthru.PassthruServers;
+import org.alfresco.jlan.smb.Protocol;
 import org.alfresco.jlan.smb.SMBException;
 import org.alfresco.jlan.smb.SMBStatus;
 import org.alfresco.model.ContentModel;
@@ -117,6 +120,10 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
     // Authentication session reaper thread
     
     private PassthruReaperThread m_reaperThread;
+    
+    // Null domain uses any available server option
+    
+    private boolean m_nullDomainUseAnyServer;
     
     /**
      * Passthru Session Reaper Thread
@@ -246,6 +253,8 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
         // Create the passthru authentication server list
         
         m_passthruServers = new PassthruServers();
+        
+        m_passthruServers.setDebug( logger.isDebugEnabled());
         
         // Create the password encryptor for local password hashing
         
@@ -381,6 +390,20 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
     {
         m_allowAuthUserAsGuest = Boolean.parseBoolean(auth);
     }
+
+    /**
+     * Allow null domain passthru logons to use the first available passthru server
+     * 
+     * @param nullDomain String
+     */
+    public void setNullDomainUseAnyServer(String nullDomain)
+    {
+        m_nullDomainUseAnyServer = Boolean.parseBoolean(nullDomain);
+        
+        // Push the setting to the passthru server component
+        
+        m_passthruServers.setNullDomainUseAnyServer( m_nullDomainUseAnyServer);
+    }
     
     /**
      * Set the JCE provider
@@ -460,7 +483,67 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
             throw new AlfrescoRuntimeException("Invalid authenication session timeout value");
         }
     }
-    
+
+    /**
+     * Set the protocol order for passthru connections
+     * 
+     * @param protoOrder String
+     */
+    public void setProtocolOrder(String protoOrder)
+    {
+    	// Parse the protocol order list
+    	
+    	StringTokenizer tokens = new StringTokenizer( protoOrder, ",");
+    	int primaryProto = Protocol.None;
+    	int secondaryProto = Protocol.None;
+
+    	// There should only be one or two tokens
+    	
+    	if ( tokens.countTokens() > 2)
+    		throw new AlfrescoRuntimeException("Invalid protocol order list, " + protoOrder);
+    	
+    	// Get the primary protocol
+    	
+    	if ( tokens.hasMoreTokens())
+    	{
+    		// Parse the primary protocol
+    		
+    		String primaryStr = tokens.nextToken();
+    		
+    		if ( primaryStr.equalsIgnoreCase( "TCPIP"))
+    			primaryProto = Protocol.NativeSMB;
+    		else if ( primaryStr.equalsIgnoreCase( "NetBIOS"))
+    			primaryProto = Protocol.TCPNetBIOS;
+    		else
+    			throw new AlfrescoRuntimeException("Invalid protocol type, " + primaryStr);
+    		
+    		// Check if there is a secondary protocol, and validate
+    		
+    		if ( tokens.hasMoreTokens())
+    		{
+    			// Parse the secondary protocol
+    			
+    			String secondaryStr = tokens.nextToken();
+    			
+    			if ( secondaryStr.equalsIgnoreCase( "TCPIP") && primaryProto != Protocol.NativeSMB)
+    				secondaryProto = Protocol.NativeSMB;
+    			else if ( secondaryStr.equalsIgnoreCase( "NetBIOS") && primaryProto != Protocol.TCPNetBIOS)
+    				secondaryProto = Protocol.TCPNetBIOS;
+    			else
+    				throw new AlfrescoRuntimeException("Invalid secondary protocol, " + secondaryStr);
+    		}
+    	}
+    	
+    	// Set the protocol order used for passthru authentication sessions
+    	
+    	AuthSessionFactory.setProtocolOrder( primaryProto, secondaryProto);
+    	
+    	// DEBUG
+    	
+    	if (logger.isDebugEnabled())
+    		logger.debug("Protocol order primary=" + Protocol.asString(primaryProto) + ", secondary=" + Protocol.asString(secondaryProto));
+    }
+
     /**
      * Return the authentication session timeout, in milliseconds
      * 
@@ -538,8 +621,17 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
                 
                 authSess = m_passthruServers.openSession();
                 
+                // Check fi the passthru session is valid
+                	
                 if ( authSess == null)
+                {
+                    // DEBUG
+                    
+                    if ( logger.isDebugEnabled())
+                    	logger.debug( "Failed to open passthru session, or no valid passthru server available for " + ntlmToken);
+                    	
                 	throw new AuthenticationException("Failed to open session to passthru server");
+                }
                 
                 // Authenticate using the credentials supplied
                     

@@ -1,4 +1,4 @@
-﻿<?xml version='1.0' encoding='UTF-8'?>
+<?xml version='1.0' encoding='UTF-8'?>
 <!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
 
 <beans>
@@ -8,18 +8,6 @@
     <bean id="nodeIndexer" class="java.util.ArrayList" />
     -->
    
-    <bean id="auditableAspect" class="org.alfresco.repo.audit.AuditableAspect">
-        <property name="nodeService">
-            <ref bean="nodeService" />
-        </property>
-        <property name="policyComponent">
-            <ref bean="policyComponent" />
-        </property>
-        <property name="authenticationService">
-            <ref bean="authenticationService" />
-        </property>
-    </bean>
-
    <bean id="integrityChecker" class="org.alfresco.repo.node.integrity.IntegrityChecker">
       <property name="policyComponent">
          <ref bean="policyComponent"/>

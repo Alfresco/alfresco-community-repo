@@ -112,13 +112,6 @@
                     valueChangeListener="#{WizardManager.bean.createContentChanged}">
       <f:selectItems value="#{WizardManager.bean.createMimeTypes}" />
    </h:selectOneMenu>
-   
-   <h:outputText value=""/>
-   <h:outputText value="#{msg.form}:"/>
-   <h:selectOneMenu id="form-name" value="#{WizardManager.bean.formName}" 
-                    onchange="formChanged();">
-      <f:selectItems value="#{WizardManager.bean.formsList}" />
-   </h:selectOneMenu>
 </h:panelGrid>
 
 <h:panelGrid columns="1" cellpadding="3" cellspacing="3" border="0" style="padding-top: 4px;"

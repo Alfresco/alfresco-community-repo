@@ -42,8 +42,9 @@ function main()
       var tags = String(json.get("tags"));
       if (tags !== "")
       {
-         var tagsArray = tags.split(" ");
-         node.tags = tagsArray;
+         // Remove leading, trailing and multiple spaces
+         tags = tags.replace(/^\s+|\s+$/g, '').replace(/\s{2,}/, ' ');
+         node.tags = tags.split(" ");
       }
       else
       {

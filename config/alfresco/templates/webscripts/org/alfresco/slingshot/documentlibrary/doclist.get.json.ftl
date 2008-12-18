@@ -5,7 +5,6 @@
 {
    "totalRecords": ${paging.totalRecords?c},
    "startIndex": ${paging.startIndex?c},
-   "pageSize": 50,
    "metadata":
    {
       "permissions":

@@ -18,7 +18,7 @@ public class DeploymentServerConfigComparator implements java.util.Comparator<De
 		String prop2 = (String)o2.getProperties().get(propertyName);
 		
 		if(prop1 != null) {
-			int result = prop1.compareTo(prop2);
+			int result = prop1.compareTo(prop2 != null ? prop2 : "");
 			return result;
 		} 
 		if(prop2 != null){

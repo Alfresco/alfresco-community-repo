@@ -172,6 +172,7 @@ public class NovellIChainsHTTPRequestAuthenticationFilter extends AbstractAuthen
                 {
 
                     // Set the current locale
+                    authComponent.clearCurrentSecurityContext();
                     authComponent.setCurrentUser(user.getUserName());
                     I18NUtil.setLocale(Application.getLanguage(httpSess));
                     chain.doFilter(sreq, sresp);
@@ -220,6 +221,7 @@ public class NovellIChainsHTTPRequestAuthenticationFilter extends AbstractAuthen
     private void setAuthenticatedUser(HttpServletRequest req, HttpSession httpSess, String userName)
     {
         // Set the authentication
+        authComponent.clearCurrentSecurityContext();
         authComponent.setCurrentUser(userName);
 
        

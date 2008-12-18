@@ -1050,7 +1050,7 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
    private UIActions aquireUIActions(String id, String store)
    {
       UIActions uiActions = null;
-      String componentId = id + '_' + store;
+      String componentId = id + '_' + FacesHelper.makeLegalId(store);
       if (logger.isDebugEnabled())
          logger.debug("Find UIActions component id: " + componentId);
       for (UIComponent component : (List<UIComponent>)getChildren())

@@ -310,15 +310,8 @@ public class AlfrescoCifsAuthenticator extends CifsAuthenticatorBase
             
             // Save the authentication token for the second stage of the authentication
             
-            sess.setAuthenticationContext( new AuthTokenAuthContext( authToken));
-            
-            // Get the challenge from the token
-            
-            if ( authToken.getChallenge() != null)
-            {
-            	authCtx = new NTLanManAuthContext( authToken.getChallenge().getBytes());
-            	sess.setAuthenticationContext( authCtx);
-            }
+            authCtx = new AuthTokenAuthContext( authToken);
+            sess.setAuthenticationContext( authCtx);
         }
 
         // Return the authentication context

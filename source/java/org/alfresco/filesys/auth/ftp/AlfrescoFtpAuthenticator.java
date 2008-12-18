@@ -221,7 +221,7 @@ public class AlfrescoFtpAuthenticator implements FTPAuthenticator {
       
       if ( md4hash != null)
       {
-          // Check if the client has supplied an NTLM hashed password, if not then do not allow access
+          // Check if the client has supplied a password, if not then do not allow access
           
           if ( client.getPassword() == null)
               return false;
@@ -293,4 +293,11 @@ public class AlfrescoFtpAuthenticator implements FTPAuthenticator {
   {
       return m_alfrescoConfig.getTransactionService();
   }
+  
+  /**
+   * Close the authenticator, perform any cleanup
+   */
+   public void closeAuthenticator()
+   {
+   }
 }

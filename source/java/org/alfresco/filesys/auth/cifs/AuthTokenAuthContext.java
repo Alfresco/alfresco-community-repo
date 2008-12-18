@@ -24,7 +24,7 @@
  */
 package org.alfresco.filesys.auth.cifs;
 
-import org.alfresco.jlan.server.auth.AuthContext;
+import org.alfresco.jlan.server.auth.ChallengeAuthContext;
 import org.alfresco.repo.security.authentication.ntlm.NTLMPassthruToken;
 
 /**
@@ -32,7 +32,7 @@ import org.alfresco.repo.security.authentication.ntlm.NTLMPassthruToken;
  * 
  * @author gkspencer
  */
-public class AuthTokenAuthContext extends AuthContext {
+public class AuthTokenAuthContext extends ChallengeAuthContext {
 
     // Passthru authentication token
     
@@ -56,5 +56,14 @@ public class AuthTokenAuthContext extends AuthContext {
     public final NTLMPassthruToken getToken()
     {
         return m_token;
+    }
+    
+    /**
+     * Get the challenge
+     * 
+     * return byte[]
+     */
+    public byte[] getChallenge() {
+        return m_token.getChallenge().getBytes();
     }
 }

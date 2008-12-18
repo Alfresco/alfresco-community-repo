@@ -56,6 +56,7 @@ public class UpdateThumbnailActionExecuter extends ActionExecuterAbstractBase
     /** Action name and parameters */
     public static final String NAME = "update-thumbnail";
     public static final String PARAM_CONTENT_PROPERTY = "content-property";
+    public static final String PARAM_THUMBNAIL_NODE = "thumbnail-node";
     
     /**
      * Set the thumbnail service
@@ -83,10 +84,18 @@ public class UpdateThumbnailActionExecuter extends ActionExecuterAbstractBase
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
-        if (this.nodeService.exists(actionedUponNodeRef) == true)
+        // Get the thumbnail
+        NodeRef thumbnailNodeRef = (NodeRef)action.getParameterValue(PARAM_THUMBNAIL_NODE);
+        if (thumbnailNodeRef == null)
         {
+            thumbnailNodeRef = actionedUponNodeRef;
+        }
+        
+        if (this.nodeService.exists(thumbnailNodeRef) == true &&
+            ContentModel.TYPE_THUMBNAIL.equals(this.nodeService.getType(thumbnailNodeRef)) == true)
+        {            
             // Get the thumbnail Name
-            String thumbnailName = (String)this.nodeService.getProperty(actionedUponNodeRef, ContentModel.PROP_THUMBNAIL_NAME);
+            String thumbnailName = (String)this.nodeService.getProperty(thumbnailNodeRef, ContentModel.PROP_THUMBNAIL_NAME);
             
             // Get the details of the thumbnail
             ThumbnailRegistry registry = this.thumbnailService.getThumbnailRegistry();
@@ -105,7 +114,7 @@ public class UpdateThumbnailActionExecuter extends ActionExecuterAbstractBase
             }
             
             // Create the thumbnail
-            this.thumbnailService.updateThumbnail(actionedUponNodeRef, details.getTransformationOptions());
+            this.thumbnailService.updateThumbnail(thumbnailNodeRef, details.getTransformationOptions());
         }
     }
 
@@ -115,7 +124,8 @@ public class UpdateThumbnailActionExecuter extends ActionExecuterAbstractBase
     @Override
     protected void addParameterDefinitions(List<ParameterDefinition> paramList)
     {
-        paramList.add(new ParameterDefinitionImpl(PARAM_CONTENT_PROPERTY, DataTypeDefinition.QNAME, false, getParamDisplayLabel(PARAM_CONTENT_PROPERTY)));        
+        paramList.add(new ParameterDefinitionImpl(PARAM_CONTENT_PROPERTY, DataTypeDefinition.QNAME, false, getParamDisplayLabel(PARAM_CONTENT_PROPERTY)));
+        paramList.add(new ParameterDefinitionImpl(PARAM_THUMBNAIL_NODE, DataTypeDefinition.QNAME, false, getParamDisplayLabel(PARAM_THUMBNAIL_NODE)));
     }
 
 }

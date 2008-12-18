@@ -406,18 +406,29 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
         if (this.webProjectsRootNodeRef == null)
         {
             // Get the root 'web projects' folder
-            ResultSet resultSet = this.searchService.query(WEBPROJECT_STORE, SearchService.LANGUAGE_LUCENE, "PATH:\""+WCMUtil.getWebProjectsPath()+"\"");
-            if (resultSet.length() == 0)
+            ResultSet resultSet = null;
+            try
             {
-                // No root web projects folder exists
-                throw new AlfrescoRuntimeException("No root 'Web Projects' folder exists (is WCM enabled ?)");
+                resultSet = this.searchService.query(WEBPROJECT_STORE, SearchService.LANGUAGE_LUCENE, "PATH:\""+WCMUtil.getWebProjectsPath()+"\"");
+                if (resultSet.length() == 0)
+                {
+                    // No root web projects folder exists
+                    throw new AlfrescoRuntimeException("No root 'Web Projects' folder exists (is WCM enabled ?)");
+                }
+                else if (resultSet.length() != 1)
+                {
+                    // More than one root web projects folder exits
+                    throw new AlfrescoRuntimeException("More than one root 'Web Projects' folder exists");
+                }
             }
-            else if (resultSet.length() != 1)
+            finally
             {
-                // More than one root web projects folder exits
-                throw new AlfrescoRuntimeException("More than one root 'Web Projects' folder exists");
-            }        
-         
+                if (resultSet != null)
+                {
+                    resultSet.close();
+                }
+            }
+            
             this.webProjectsRootNodeRef = resultSet.getNodeRef(0);
         }
         
@@ -804,11 +815,23 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
         query.append(userName);
         query.append("\"");
    
-        ResultSet resultSet = searchService.query(
-                WEBPROJECT_STORE,
-                SearchService.LANGUAGE_LUCENE,
-                query.toString());            
-        List<NodeRef> nodes = resultSet.getNodeRefs();    
+        ResultSet resultSet = null;
+        List<NodeRef> nodes = null;
+        try
+        {
+            resultSet = searchService.query(
+                    WEBPROJECT_STORE,
+                    SearchService.LANGUAGE_LUCENE,
+                    query.toString());
+            nodes = resultSet.getNodeRefs();   
+        }
+        finally
+        {
+            if (resultSet != null)
+            {
+                resultSet.close();
+            }
+        }
     
         if (nodes.size() == 1)
         {

@@ -29,21 +29,27 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.copy.CopyServicePolicies;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.Behaviour;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.repo.policy.PolicyScope;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
+import org.alfresco.service.cmr.action.CompositeAction;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.thumbnail.ThumbnailService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.EqualsHelper;
 
 /**
@@ -51,7 +57,8 @@ import org.alfresco.util.EqualsHelper;
  * 
  * @author Roy Wetherall
  */
-public class ThumbnailedAspect implements NodeServicePolicies.OnUpdatePropertiesPolicy
+public class ThumbnailedAspect implements NodeServicePolicies.OnUpdatePropertiesPolicy,
+                                          CopyServicePolicies.OnCopyNodePolicy
 {
     /** Services */
     private PolicyComponent policyComponent;
@@ -119,6 +126,10 @@ public class ThumbnailedAspect implements NodeServicePolicies.OnUpdateProperties
                 QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateProperties"), 
                 ContentModel.ASPECT_THUMBNAILED, 
                 new JavaBehaviour(this, "onUpdateProperties", Behaviour.NotificationFrequency.TRANSACTION_COMMIT));
+        this.policyComponent.bindClassBehaviour(
+                QName.createQName(NamespaceService.ALFRESCO_URI, "onCopyNode"), 
+                ContentModel.ASPECT_THUMBNAILED, 
+                new JavaBehaviour(this, "onCopyNode"));
     }
 
     /**
@@ -201,15 +212,48 @@ public class ThumbnailedAspect implements NodeServicePolicies.OnUpdateProperties
         Boolean automaticUpdate = (Boolean)this.nodeService.getProperty(nodeRef, ContentModel.PROP_AUTOMATIC_UPDATE);
         if (automaticUpdate != null && automaticUpdate.booleanValue() == true)
         {
+            CompositeAction compositeAction = actionService.createCompositeAction();
             List<NodeRef> thumbnails = this.thumbnailService.getThumbnails(nodeRef, contentProperty, null, null);
             
             for (NodeRef thumbnail : thumbnails)
             {
                 // Execute the update thumbnail action async for each thumbnail
                 Action action = actionService.createAction(UpdateThumbnailActionExecuter.NAME);
-                action.setParameterValue(CreateThumbnailActionExecuter.PARAM_CONTENT_PROPERTY, contentProperty);
-                actionService.executeAction(action, thumbnail, false, true);
+                action.setParameterValue(UpdateThumbnailActionExecuter.PARAM_CONTENT_PROPERTY, contentProperty);
+                action.setParameterValue(UpdateThumbnailActionExecuter.PARAM_THUMBNAIL_NODE, thumbnail);
+                compositeAction.addAction(action);
             }
+            
+            actionService.executeAction(compositeAction, nodeRef, false, true);
         }
+    }
+
+    /**
+     * @see org.alfresco.repo.copy.CopyServicePolicies.OnCopyNodePolicy#onCopyNode(org.alfresco.service.namespace.QName, org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.StoreRef, boolean, org.alfresco.repo.policy.PolicyScope)
+     */
+    public void onCopyNode( QName classRef, 
+                            NodeRef sourceNodeRef,
+                            StoreRef destinationStoreRef, 
+                            boolean copyToNewNode,
+                            PolicyScope copyDetails)
+    {
+        // Add the automatic update property
+        copyDetails.addProperty(
+                ContentModel.ASPECT_THUMBNAILED, 
+                ContentModel.PROP_AUTOMATIC_UPDATE, 
+                this.nodeService.getProperty(sourceNodeRef, ContentModel.PROP_AUTOMATIC_UPDATE));
+        
+        if (copyToNewNode == true)
+        {
+            List<ChildAssociationRef> assocs = this.nodeService.getChildAssocs(
+                                sourceNodeRef, 
+                                ContentModel.ASSOC_THUMBNAILS, 
+                                RegexQNamePattern.MATCH_ALL);
+            for (ChildAssociationRef assoc : assocs)
+            {
+                copyDetails.addChildAssociation(classRef, assoc);
+            }           
+        }
+        // otherwise we don't care about copying the associations over or we will get duplicates
     }
 }

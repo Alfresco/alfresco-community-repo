@@ -25,6 +25,18 @@
 
 <beans>
 
+    <!-- 
+    The Shutdown Backstop Bean is a special bean which is used to terminate Alfresco if its 
+    normal shutdown does not complete in a reasonable time - it needs to go first so it can 
+    terminate any of the following beans if they misbehave.
+    -->
+    <bean id="shutdownBackstop" class="org.alfresco.repo.shutdown.ShutdownBackstop">
+       <property name="timeout">
+       	<value>${shutdown.backstop.timeout}</value>
+       </property>
+    </bean>  
+
+
     <!-- ensure that the schema is bootstrapped -->
     <bean id="schemaBootstrap" class="org.alfresco.repo.domain.schema.SchemaBootstrap" >
        <property name="localSessionFactory">
@@ -620,5 +632,5 @@
            <ref bean="tenantService"/>
        </property>
     </bean>
-   
+    
 </beans>

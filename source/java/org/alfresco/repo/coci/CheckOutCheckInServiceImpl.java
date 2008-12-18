@@ -31,6 +31,7 @@ import java.util.Map;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.version.VersionableAspect;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.coci.CheckOutCheckInServiceException;
@@ -194,9 +195,9 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
      * @see org.alfresco.service.cmr.coci.CheckOutCheckInService#checkout(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, org.alfresco.service.namespace.QName)
      */
     public NodeRef checkout(
-            NodeRef nodeRef, 
-            NodeRef destinationParentNodeRef,
-            QName destinationAssocTypeQName, 
+            final NodeRef nodeRef, 
+            final NodeRef destinationParentNodeRef,
+            final QName destinationAssocTypeQName, 
             QName destinationAssocQName) 
     {
     	LockType lockType = this.lockService.getLockType(nodeRef);
@@ -242,12 +243,19 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
         }
 
         // Make the working copy
-        destinationAssocQName = QName.createQName(destinationAssocQName.getNamespaceURI(), QName.createValidLocalName(copyName));
-        NodeRef workingCopy = this.copyService.copy(
-                nodeRef,
-                destinationParentNodeRef,
-                destinationAssocTypeQName,
-                destinationAssocQName);
+        final QName copyQName = QName.createQName(destinationAssocQName.getNamespaceURI(), QName.createValidLocalName(copyName));
+        NodeRef workingCopy = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<NodeRef>()
+        {
+            public NodeRef doWork() throws Exception
+            {
+                NodeRef workingCopy = copyService.copy(
+                            nodeRef,
+                            destinationParentNodeRef,
+                            destinationAssocTypeQName,
+                            copyQName);
+                return workingCopy;
+            }
+        }, AuthenticationUtil.getSystemUserName());
         
         // Update the working copy name        
         this.nodeService.setProperty(workingCopy, ContentModel.PROP_NAME, copyName);

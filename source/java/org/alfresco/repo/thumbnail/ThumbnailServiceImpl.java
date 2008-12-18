@@ -49,17 +49,21 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.GUID;
 import org.alfresco.util.ParameterCheck;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * @author Roy Wetherall
  */
 public class ThumbnailServiceImpl implements ThumbnailService
 {
+    /** Logger */
+    private static Log logger = LogFactory.getLog(ThumbnailServiceImpl.class);
+    
     /** Error messages */
     private static final String ERR_NO_CREATE = "Thumbnail could not be created as required transformation is not supported from {0} to {1}";
     private static final String ERR_DUPLICATE_NAME = "Thumbnail could not be created because of a duplicate name";
     private static final String ERR_NO_PARENT = "Thumbnail has no parent so update cannot take place.";
-    private static final String ERR_TOO_PARENT = "Thumbnail has more than one source content node.  This is invalid so update cannot take place.";
     
     /** Node service */
     private NodeService nodeService;
@@ -140,11 +144,21 @@ public class ThumbnailServiceImpl implements ThumbnailService
         ParameterCheck.mandatoryString( "mimetype", mimetype);
         ParameterCheck.mandatory("transformationOptions", transformationOptions);
         
+        if (logger.isDebugEnabled() == true)
+        {
+            logger.debug("Creating thumbnail (node=" + node.toString() + "; contentProperty=" + contentProperty.toString() + "; mimetype=" + mimetype);
+        }
+        
         NodeRef thumbnail = null;
         
         // Check for duplicate names
         if (thumbnailName != null && getThumbnailByName(node, contentProperty, thumbnailName) != null)
         {
+            if (logger.isDebugEnabled() == true)
+            {
+                logger.debug("Creating thumbnail: There is already a thumbnail with the name '" + thumbnail + "' (node=" + node.toString() + "; contentProperty=" + contentProperty.toString() + "; mimetype=" + mimetype);
+            }
+            
             // We can't continue because there is already an thumnail with the given name for that content property
             throw new ThumbnailException(ERR_DUPLICATE_NAME);
         }
@@ -209,6 +223,11 @@ public class ThumbnailServiceImpl implements ThumbnailService
         // Catch the failure to create the thumbnail
         if (this.contentService.isTransformable(reader, writer, transformationOptions) == false)
         {
+            if (logger.isDebugEnabled() == true)
+            {
+                logger.debug("Creating thumbnail: There is no transformer to generate the thumbnail required (node=" + node.toString() + "; contentProperty=" + contentProperty.toString() + "; mimetype=" + mimetype + ")");
+            }
+            
             // Throw exception indicating that the thumbnail could not be created
             throw new ThumbnailException(MessageFormat.format(ERR_NO_CREATE, reader.getMimetype(), writer.getMimetype()));
         }
@@ -239,6 +258,11 @@ public class ThumbnailServiceImpl implements ThumbnailService
      */
     public void updateThumbnail(NodeRef thumbnail, TransformationOptions transformationOptions)
     {
+        if (logger.isDebugEnabled() == true)
+        {
+            logger.debug("Updating thumbnail (thumbnail=" + thumbnail.toString() + ")");
+        }
+        
         // First check that we are dealing with a thumbnail
         if (ContentModel.TYPE_THUMBNAIL.equals(this.nodeService.getType(thumbnail)) == true)
         {         
@@ -247,16 +271,13 @@ public class ThumbnailServiceImpl implements ThumbnailService
             List<ChildAssociationRef> parents = this.nodeService.getParentAssocs(thumbnail, ContentModel.ASSOC_THUMBNAILS, RegexQNamePattern.MATCH_ALL);
             if (parents.size() == 0)
             {
+                if (logger.isDebugEnabled() == true)
+                {
+                    logger.debug("Updating thumbnail: The thumbnails parent cannot be found (thumbnail=" + thumbnail.toString() + ")");
+                }
+                
                 throw new ThumbnailException(ERR_NO_PARENT);
             }
-            // TODO
-            // When a node with thumbnails is checked in the assoc's get doubled up.  This means we get more than one parent.
-            // As a work around simply take the first parent retrieved
-            //
-            //else if (parents.size() != 1)
-            //{
-            //    throw new ThumbnailException(ERR_TOO_PARENT);
-            //}
             else
             {
                 node = parents.get(0).getParentRef();
@@ -278,6 +299,11 @@ public class ThumbnailServiceImpl implements ThumbnailService
             // Catch the failure to create the thumbnail
             if (this.contentService.isTransformable(reader, writer, transformationOptions) == false)
             {
+                if (logger.isDebugEnabled() == true)
+                {
+                    logger.debug("Updating thumbnail: there is not transformer to update the thumbnail with (thumbnail=" + thumbnail.toString() + ")");
+                }
+                
                 // Throw exception indicating that the thumbnail could not be created
                 throw new ThumbnailException(MessageFormat.format(ERR_NO_CREATE, reader.getMimetype(), writer.getMimetype()));
             }
@@ -287,7 +313,13 @@ public class ThumbnailServiceImpl implements ThumbnailService
                 this.contentService.transform(reader, writer, transformationOptions);
             }
         }
-        // TODO else should we throw an exception?
+        else
+        {
+            if (logger.isDebugEnabled() == true)
+            {
+                logger.debug("Updating thumbnail: cannot update a thumbnail node that isn't the correct thumbnail type (thumbnail=" + thumbnail.toString() + ")");
+            }
+        }
     }
 
     /**
@@ -303,6 +335,11 @@ public class ThumbnailServiceImpl implements ThumbnailService
         // Since there is not an easy alternative and for clarity the node service is being used to retrieve the thumbnails.
         // If retrieval performance becomes an issue then this code can be replaced
         //
+        
+        if (logger.isDebugEnabled() == true)
+        {
+            logger.debug("Getting thumbnail by name (nodeRef=" + node.toString() + "; contentProperty=" + contentProperty.toString() + "; thumbnailName=" + thumbnailName + ")");
+        }
         
         // Check that the node has the thumbnailed aspect applied
         if (nodeService.hasAspect(node, ContentModel.ASPECT_THUMBNAILED) == true)
@@ -338,6 +375,11 @@ public class ThumbnailServiceImpl implements ThumbnailService
         // Since there is not an easy alternative and for clarity the node service is being used to retrieve the thumbnails.
         // If retrieval performance becomes an issue then this code can be replaced
         //
+        
+        if (logger.isDebugEnabled() == true)
+        {
+            logger.debug("Getting thumbnails (nodeRef=" + node.toString() + "; contentProperty=" + contentProperty.toString() + "; mimetype=" + mimetype + ")");
+        }
         
         // Check that the node has the thumbnailed aspect applied
         if (nodeService.hasAspect(node, ContentModel.ASPECT_THUMBNAILED) == true)

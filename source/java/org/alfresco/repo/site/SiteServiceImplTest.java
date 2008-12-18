@@ -374,6 +374,20 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         assertTrue(members.containsKey(USER_THREE));
         assertEquals(SiteModel.SITE_COLLABORATOR, members.get(USER_THREE));
         
+        // Get only the site managers
+        members = this.siteService.listMembers("testMembership", null, SiteModel.SITE_MANAGER);
+        assertNotNull(members);
+        assertEquals(1, members.size());
+        assertTrue(members.containsKey(USER_ONE));
+        assertEquals(SiteModel.SITE_MANAGER, members.get(USER_ONE));
+        
+        // Get only user two
+        members = this.siteService.listMembers("testMembership", USER_TWO, null);
+        assertNotNull(members);
+        assertEquals(1, members.size());
+        assertTrue(members.containsKey(USER_TWO));
+        assertEquals(SiteModel.SITE_CONSUMER, members.get(USER_TWO));
+        
         // Change the membership of user two
         this.siteService.setMembership("testMembership", USER_TWO, SiteModel.SITE_COLLABORATOR);
         

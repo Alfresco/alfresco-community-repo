@@ -36,7 +36,7 @@
 #db.url=jdbc:derby:/srv/alfresco/alf_data/derby_data/alfresco;create=true
 
 #
-# MySQL connection (This is default and requires mysql-connector-java-5.0.3-bin.jar, which ships with the Alfresco server)
+# MySQL connection
 #
 #db.driver=org.gjt.mm.mysql.Driver
 #db.url=jdbc:mysql://localhost/alfresco

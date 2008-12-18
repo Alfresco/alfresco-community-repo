@@ -74,7 +74,7 @@ public interface SiteService
     /**
      * List the memebers of the site.
      * <p>
-     * Name and role filters are optional and if not specified all the memebers of the site are returned.
+     * Name and role filters are optional and if not specified all the members of the site are returned.
      * 
      * @param shortName     site short name
      * @param nameFilter    name filter

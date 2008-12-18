@@ -84,7 +84,14 @@ public class TenantInterpreter extends BaseInterpreter
            try
            {
                AuthenticationUtil.setSystemUserAsCurrentUser();
-               return executeCommand(line);
+               RetryingTransactionCallback<String> txnWork = new RetryingTransactionCallback<String>()
+               {
+                   public String execute() throws Exception
+                   {
+                       return executeCommand(line);
+                   }
+               };
+               return transactionService.getRetryingTransactionHelper().doInTransaction(txnWork);
            }
            finally
            {
@@ -321,20 +328,13 @@ public class TenantInterpreter extends BaseInterpreter
             final String tenantAdminUsername = tenantService.getDomainUser(TenantService.ADMIN_BASENAME, tenantDomain);
 
             AuthenticationUtil.runAs(new RunAsWork<Object>()
-                    {
-                        public Object doWork() throws Exception
-                        {
-                            RetryingTransactionCallback<Object> txnWork = new RetryingTransactionCallback<Object>()
-                            {
-                                public Object execute() throws Exception
-                                {
-                                    authenticationService.setAuthentication(tenantAdminUsername, newPassword.toCharArray());
-                                    return null;
-                                }
-                            };
-                            return transactionService.getRetryingTransactionHelper().doInTransaction(txnWork);
-                        }
-                    }, tenantAdminUsername);           
+            {
+                public Object doWork() throws Exception
+                {
+                    authenticationService.setAuthentication(tenantAdminUsername, newPassword.toCharArray());
+                    return null;
+                }
+            }, tenantAdminUsername);
         }
         
         else

@@ -255,7 +255,7 @@ public class AlfrescoRpcAuthenticator implements RpcAuthenticator {
     {
     	// Start a transaction
     	
-      UserTransaction tx = m_alfrescoConfig.getTransactionService().getUserTransaction( true); 
+      UserTransaction tx = m_alfrescoConfig.getTransactionService().getUserTransaction( false); 
 
       try
       {

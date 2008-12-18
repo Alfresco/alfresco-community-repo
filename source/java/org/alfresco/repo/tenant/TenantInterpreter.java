@@ -75,19 +75,28 @@ public class TenantInterpreter extends BaseInterpreter
         // must be super "admin" for tenant administrator
         return ((username != null) && (username.equals(BaseInterpreter.DEFAULT_ADMIN)));
     }
-
+    
     public String interpretCommand(final String line) throws IOException
     {
-        String currentUser = AuthenticationUtil.getCurrentUserName();
-        try
+        String currentUserName = getCurrentUserName();
+        if (hasAuthority(currentUserName))
         {
-            return super.interpretCommand(line);
+           try
+           {
+               AuthenticationUtil.setSystemUserAsCurrentUser();
+               return executeCommand(line);
+           }
+           finally
+           {
+               AuthenticationUtil.setCurrentUser(currentUserName);
+           }
         }
-        finally
+        else
         {
-            AuthenticationUtil.setCurrentUser(currentUser);
+            return("Error: User '"+ currentUserName + "' not authorised");
         }
     }
+    
     /**
      * Execute a single command using the BufferedReader passed in for any data needed.
      *

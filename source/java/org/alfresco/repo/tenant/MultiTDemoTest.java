@@ -255,6 +255,9 @@ public class MultiTDemoTest extends TestCase
                         {
                             String userName = (String)nodeService.getProperty(personRef, ContentModel.PROP_USERNAME); 
                             assertTrue(userName.endsWith(tenantDomain));
+                            
+                            NodeRef homeSpaceRef = (NodeRef)nodeService.getProperty(personRef, ContentModel.PROP_HOMEFOLDER);
+                            assertNotNull(homeSpaceRef);
                         }
                         
                         return null;                      
@@ -579,6 +582,9 @@ public class MultiTDemoTest extends TestCase
             // ensure the user can access their own Person object
             this.permissionService.setPermission(personNodeRef, userName, permissionService.getAllPermission(), true);
             
+            NodeRef checkHomeSpaceRef = (NodeRef)nodeService.getProperty(personNodeRef, ContentModel.PROP_HOMEFOLDER);
+            assertNotNull(checkHomeSpaceRef);
+            
             logger.info("Created user " + userName);
         }
         else
@@ -599,7 +605,8 @@ public class MultiTDemoTest extends TestCase
         // set the user name as stored by the back end 
         username = authenticationService.getCurrentUserName();
         
-        NodeRef homeSpaceRef = (NodeRef)nodeService.getProperty(personService.getPerson(username), ContentModel.PROP_HOMEFOLDER);
+        NodeRef personRef = personService.getPerson(username);
+        NodeRef homeSpaceRef = (NodeRef)nodeService.getProperty(personRef, ContentModel.PROP_HOMEFOLDER);
         
         // check that the home space node exists - else user cannot login
         if (nodeService.exists(homeSpaceRef) == false)

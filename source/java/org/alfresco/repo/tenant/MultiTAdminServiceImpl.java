@@ -725,8 +725,8 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
     {
         // Bootstrap Tenant-Specific System Store
         StoreRef bootstrapStoreRef = systemImporterBootstrap.getStoreRef();
-        bootstrapStoreRef = new StoreRef(bootstrapStoreRef.getProtocol(), tenantService.getName(bootstrapStoreRef.getIdentifier(), tenantDomain));
-        systemImporterBootstrap.setStoreUrl(bootstrapStoreRef.toString());
+        StoreRef tenantBootstrapStoreRef = new StoreRef(bootstrapStoreRef.getProtocol(), tenantService.getName(bootstrapStoreRef.getIdentifier(), tenantDomain));
+        systemImporterBootstrap.setStoreUrl(tenantBootstrapStoreRef.toString());
     
         // override default property (workspace://SpacesStore)        
         List<String> mustNotExistStoreUrls = new ArrayList<String>();
@@ -735,7 +735,10 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
                 
         systemImporterBootstrap.bootstrap();
         
-        logger.debug("Bootstrapped store: " + tenantService.getBaseName(bootstrapStoreRef));
+        // reset since systemImporter is singleton (hence reused)
+        systemImporterBootstrap.setStoreUrl(bootstrapStoreRef.toString());
+        
+        logger.debug("Bootstrapped store: " + tenantService.getBaseName(tenantBootstrapStoreRef));
     }
     
     private void importBootstrapUserTenantStore(String tenantDomain, File directorySource)

@@ -59,7 +59,7 @@
        <property name="personService" ref="PersonService"/>
        <property name="activityService" ref="activityService"/>
        <property name="taggingService" ref="TaggingService"/>
-       <property name="authorityService" ref="AuthorityService"/>
+       <property name="authorityService" ref="authorityService"/>
     </bean>
     
     <bean id="siteServiceScript" parent="baseJavaScriptExtension" class="org.alfresco.repo.site.script.ScriptSiteService">

@@ -108,9 +108,6 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 import net.sf.acegisecurity.AuthenticationManager;
 
@@ -123,7 +120,7 @@ public class ServerConfigurationBean extends ServerConfiguration implements Appl
 
   // Debug logging
 
-  private static final Log logger = LogFactory.getLog("org.alfresco.smb.protocol");
+  protected static final Log logger = LogFactory.getLog("org.alfresco.smb.protocol");
 
   // Filesystem configuration constants
   
@@ -643,7 +640,7 @@ public class ServerConfigurationBean extends ServerConfiguration implements Appl
    * 
    * @param config Config
    */
-  private final void processCIFSServerConfig(Config config)
+  protected void processCIFSServerConfig(Config config)
   {
       // If the configuration section is not valid then CIFS is disabled
       
@@ -1331,9 +1328,10 @@ public class ServerConfigurationBean extends ServerConfiguration implements Appl
             
             if ( cifsConfig.useWinsockNetBIOS() == true && X64.isWindows64())
             {
-                // Log a warning
+                // Debug
                 
-                logger.warn("Using older Netbios() API code");
+            	if ( logger.isDebugEnabled())
+            		logger.debug("Using older Netbios() API code");
                 
                 // Use the older NetBIOS API code
                 
@@ -1592,7 +1590,7 @@ public class ServerConfigurationBean extends ServerConfiguration implements Appl
    * 
    * @param config Config
    */
-  private final void processFTPServerConfig(Config config)
+  protected void processFTPServerConfig(Config config)
   {
       // If the configuration section is not valid then FTP is disabled
       
@@ -1857,7 +1855,7 @@ public class ServerConfigurationBean extends ServerConfiguration implements Appl
    * 
    * @param config Config
    */
-  private final void processNFSServerConfig(Config config)
+  protected void processNFSServerConfig(Config config)
   {
       // If the configuration section is not valid then NFS is disabled
       
@@ -2076,7 +2074,7 @@ public class ServerConfigurationBean extends ServerConfiguration implements Appl
    * 
    * @param config Config
    */
-  private final void processFilesystemsConfig(Config config)
+  protected void processFilesystemsConfig(Config config)
   {
       // Get the top level filesystems configuration element
       
@@ -2284,7 +2282,7 @@ public class ServerConfigurationBean extends ServerConfiguration implements Appl
    * 
    * @param config Config
    */
-  private final void processSecurityConfig(Config config)
+  protected void processSecurityConfig(Config config)
   {
       // Create the security configuration section
     
@@ -2342,6 +2340,8 @@ public class ServerConfigurationBean extends ServerConfiguration implements Appl
 	          ConfigElement classElem = mapperElem.getChild( "class");
 	          if ( classElem == null)
 	            throw new InvalidConfigurationException("Share mapper class not specified");
+	          
+	          mapperClass = classElem.getValue();
           }
           
           //  Initialize the share mapper
@@ -2439,7 +2439,7 @@ public class ServerConfigurationBean extends ServerConfiguration implements Appl
    * @param config Config
    * @exception InvalidConfigurationException
    */
-  private final void processCoreServerConfig(Config config)
+  protected void processCoreServerConfig(Config config)
   	throws InvalidConfigurationException
   {
 		// Create the core server configuration section
@@ -2690,7 +2690,7 @@ public class ServerConfigurationBean extends ServerConfiguration implements Appl
    * @param secConfig SecurityConfigSection
    * @param aclsElem ConfigElement
    */
-  private final AccessControlList processAccessControlList(SecurityConfigSection secConfig, ConfigElement aclsElem)
+  protected AccessControlList processAccessControlList(SecurityConfigSection secConfig, ConfigElement aclsElem)
   {
 
       // Check if there is an access control manager configured
@@ -2782,7 +2782,7 @@ public class ServerConfigurationBean extends ServerConfiguration implements Appl
    * @param deskActionElem ConfigElement
    * @param fileSys DiskSharedDevice
    */
-  private final DesktopActionTable processDesktopActions(ConfigElement deskActionElem, DiskSharedDevice fileSys)
+  protected DesktopActionTable processDesktopActions(ConfigElement deskActionElem, DiskSharedDevice fileSys)
   {
       // Get the desktop action configuration elements
 

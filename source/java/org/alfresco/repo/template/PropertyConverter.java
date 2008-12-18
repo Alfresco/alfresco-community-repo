@@ -25,6 +25,7 @@
 package org.alfresco.repo.template;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.alfresco.service.ServiceRegistry;
@@ -57,10 +58,13 @@ public class PropertyConverter
         {
             // recursively convert each value in the collection
             List<Serializable> list = (List<Serializable>)value;
+            List<Serializable> result = new ArrayList<Serializable>(list.size());
             for (int i=0; i<list.size(); i++)
             {
-                list.set(i, convertProperty(list.get(i), name, services, resolver));
+                // add each item to a new list as the repo can return unmodifiable lists
+                result.add(convertProperty(list.get(i), name, services, resolver));
             }
+            value = (Serializable)result;
         }
         
         return value;

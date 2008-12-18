@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.StringTokenizer;
 
 import javax.transaction.Status;
 import javax.transaction.UserTransaction;
@@ -48,6 +49,7 @@ import org.alfresco.jlan.server.auth.ntlm.TargetInfo;
 import org.alfresco.jlan.server.auth.ntlm.Type1NTLMMessage;
 import org.alfresco.jlan.server.auth.ntlm.Type2NTLMMessage;
 import org.alfresco.jlan.server.auth.ntlm.Type3NTLMMessage;
+import org.alfresco.jlan.server.auth.passthru.AuthSessionFactory;
 import org.alfresco.jlan.server.auth.passthru.AuthenticateSession;
 import org.alfresco.jlan.server.auth.passthru.PassthruDetails;
 import org.alfresco.jlan.server.auth.passthru.PassthruServers;
@@ -55,6 +57,7 @@ import org.alfresco.jlan.server.config.InvalidConfigurationException;
 import org.alfresco.jlan.server.config.ServerConfiguration;
 import org.alfresco.jlan.server.core.SharedDevice;
 import org.alfresco.jlan.smb.Capability;
+import org.alfresco.jlan.smb.Protocol;
 import org.alfresco.jlan.smb.SMBStatus;
 import org.alfresco.jlan.smb.dcerpc.UUID;
 import org.alfresco.jlan.smb.server.SMBServer;
@@ -1263,6 +1266,65 @@ public class PassthruCifsAuthenticator extends CifsAuthenticatorBase implements 
             }
         }
 
+		// Check if a protocol order has been set
+		
+		ConfigElement protoOrderElem = params.getChild("ProtocolOrder");
+
+		if ( protoOrderElem != null && protoOrderElem.getValue().length() > 0)
+		{
+	    	// Parse the protocol order list
+	    	
+	    	StringTokenizer tokens = new StringTokenizer( protoOrderElem.getValue(), ",");
+	    	int primaryProto = Protocol.None;
+	    	int secondaryProto = Protocol.None;
+	
+	    	// There should only be one or two tokens
+	    	
+	    	if ( tokens.countTokens() > 2)
+	    		throw new AlfrescoRuntimeException("Invalid protocol order list, " + protoOrderElem.getValue());
+	    	
+	    	// Get the primary protocol
+	    	
+	    	if ( tokens.hasMoreTokens())
+	    	{
+	    		// Parse the primary protocol
+	    		
+	    		String primaryStr = tokens.nextToken();
+	    		
+	    		if ( primaryStr.equalsIgnoreCase( "TCPIP"))
+	    			primaryProto = Protocol.NativeSMB;
+	    		else if ( primaryStr.equalsIgnoreCase( "NetBIOS"))
+	    			primaryProto = Protocol.TCPNetBIOS;
+	    		else
+	    			throw new AlfrescoRuntimeException("Invalid protocol type, " + primaryStr);
+	    		
+	    		// Check if there is a secondary protocol, and validate
+	    		
+	    		if ( tokens.hasMoreTokens())
+	    		{
+	    			// Parse the secondary protocol
+	    			
+	    			String secondaryStr = tokens.nextToken();
+	    			
+	    			if ( secondaryStr.equalsIgnoreCase( "TCPIP") && primaryProto != Protocol.NativeSMB)
+	    				secondaryProto = Protocol.NativeSMB;
+	    			else if ( secondaryStr.equalsIgnoreCase( "NetBIOS") && primaryProto != Protocol.TCPNetBIOS)
+	    				secondaryProto = Protocol.TCPNetBIOS;
+	    			else
+	    				throw new AlfrescoRuntimeException("Invalid secondary protocol, " + secondaryStr);
+	    		}
+	    	}
+	    	
+	    	// Set the protocol order used for passthru authentication sessions
+	    	
+	    	AuthSessionFactory.setProtocolOrder( primaryProto, secondaryProto);
+	    	
+	    	// DEBUG
+	    	
+	    	if (logger.isDebugEnabled())
+	    		logger.debug("Protocol order primary=" + Protocol.asString(primaryProto) + ", secondary=" + Protocol.asString(secondaryProto));
+		}
+		
         // Check if we have an authentication server
 
         if (m_passthruServers.getTotalServerCount() == 0)

@@ -232,7 +232,7 @@ public class MultiTNodeServiceInterceptor extends DelegatingIntroductionIntercep
                 {
                     if (tenantService.isEnabled())
                     {
-                        String currentUser = AuthenticationUtil.getCurrentUserName();
+                        String currentUser = AuthenticationUtil.getCurrentEffectiveUserName();
 
                         // MT: return tenant stores only (although for super System return all stores - as used by
                         // ConfigurationChecker, IndexRecovery, IndexBackup etc)

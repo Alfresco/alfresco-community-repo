@@ -39,11 +39,11 @@ import java.util.Locale;
 import java.util.Properties;
 import java.util.ResourceBundle;
 
-import net.sf.acegisecurity.Authentication;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -311,33 +311,30 @@ public class ImporterBootstrap extends AbstractLifecycleBean
             }
             return;
         }
-
-        // note: in MT case, this will run in System context of tenant domain
-        Authentication authentication = authenticationComponent.getCurrentAuthentication();
-        if (authenticationComponent.getCurrentUserName() == null)
-        {
-            authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
-        }
-
-        RetryingTransactionCallback<Object> doImportCallback = new RetryingTransactionCallback<Object>()
-        {
-            public Object execute() throws Throwable
-            {
-                doImport();
-                return null;
-            }
-        };
+        
         try
         {
-            transactionService.getRetryingTransactionHelper().doInTransaction(doImportCallback, transactionService.isReadOnly(), false);
+            // import the content - note: in MT case, this will run in System context of tenant domain
+            RunAsWork<Object> importRunAs = new RunAsWork<Object>()
+            {
+                public Object doWork() throws Exception
+                {
+                    RetryingTransactionCallback<Object> doImportCallback = new RetryingTransactionCallback<Object>()
+                    {
+                        public Object execute() throws Throwable
+                        {   
+                            doImport();
+                            return null;
+                        }
+                    };
+                    return transactionService.getRetryingTransactionHelper().doInTransaction(doImportCallback, transactionService.isReadOnly(), false);
+                }
+            };
+            AuthenticationUtil.runAs(importRunAs, authenticationComponent.getSystemUserName());
         }
         catch(Throwable e)
         {
             throw new AlfrescoRuntimeException("Bootstrap failed", e);
-        }
-        finally
-        {
-            try {authenticationComponent.setCurrentAuthentication(authentication); } catch (Throwable ex) {}
         }
     }
     

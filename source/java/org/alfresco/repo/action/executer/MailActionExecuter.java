@@ -24,6 +24,7 @@
  */
 package org.alfresco.repo.action.executer;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -224,6 +225,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
         // Create the mime mail message
         MimeMessagePreparator mailPreparer = new MimeMessagePreparator()
         {
+            @SuppressWarnings("unchecked")
             public void prepare(MimeMessage mimeMessage) throws MessagingException
             {
                 if (logger.isDebugEnabled())
@@ -248,7 +250,21 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                 else
                 {
                     // see if multiple recipients have been supplied - as a list of authorities
-                    List<String> authorities = (List<String>)ruleAction.getParameterValue(PARAM_TO_MANY);
+                    Serializable authoritiesValue = ruleAction.getParameterValue(PARAM_TO_MANY);
+                    List<String> authorities = null;
+                    if (authoritiesValue != null)
+                    {
+                        if (authoritiesValue instanceof String)
+                        {
+                            authorities = new ArrayList<String>(1);
+                            authorities.add((String)authoritiesValue);
+                        }
+                        else
+                        {
+                            authorities = (List<String>)authoritiesValue;
+                        }
+                    }
+                    
                     if (authorities != null && authorities.size() != 0)
                     {
                         List<String> recipients = new ArrayList<String>(authorities.size());
@@ -407,7 +423,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
     protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
     {
         paramList.add(new ParameterDefinitionImpl(PARAM_TO, DataTypeDefinition.TEXT, false, getParamDisplayLabel(PARAM_TO)));
-        paramList.add(new ParameterDefinitionImpl(PARAM_TO_MANY, DataTypeDefinition.TEXT, false, getParamDisplayLabel(PARAM_TO_MANY), true));
+        paramList.add(new ParameterDefinitionImpl(PARAM_TO_MANY, DataTypeDefinition.ANY, false, getParamDisplayLabel(PARAM_TO_MANY), true));
         paramList.add(new ParameterDefinitionImpl(PARAM_SUBJECT, DataTypeDefinition.TEXT, true, getParamDisplayLabel(PARAM_SUBJECT)));
         paramList.add(new ParameterDefinitionImpl(PARAM_TEXT, DataTypeDefinition.TEXT, true, getParamDisplayLabel(PARAM_TEXT)));
         paramList.add(new ParameterDefinitionImpl(PARAM_FROM, DataTypeDefinition.TEXT, false, getParamDisplayLabel(PARAM_FROM)));

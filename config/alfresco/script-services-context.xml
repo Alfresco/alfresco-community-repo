@@ -101,7 +101,10 @@
     <bean id="peopleScript" parent="baseJavaScriptExtension" class="org.alfresco.repo.jscript.People">
         <property name="extensionName">
             <value>people</value>
-        </property>        
+        </property>
+        <property name="storeUrl">
+            <value>${spaces.store}</value>
+        </property>
         <property name="serviceRegistry">
             <ref bean="ServiceRegistry"/>
         </property>

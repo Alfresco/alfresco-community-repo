@@ -565,16 +565,29 @@ public abstract class AuthenticationUtil
         R result = null;
         try
         {
-
-            if ((realUser != null) && (isMtEnabled()))
+            if (isMtEnabled() && uid.equals(AuthenticationUtil.getSystemUserName()))
             {
-                int idx = realUser.indexOf(TenantService.SEPARATOR);
-                if ((idx != -1) && (idx < (realUser.length() - 1)))
+                // Running as System in MT-enabled env - check to see if System should run with MT domain context
+                int effectiveIdx = -1;
+                int realIdx = -1;
+                
+                if (effectiveUser != null)
                 {
-                    if (uid.equals(AuthenticationUtil.getSystemUserName()))
-                    {
-                        uid = uid + TenantService.SEPARATOR + realUser.substring(idx + 1);
-                    }
+                    effectiveIdx = effectiveUser.indexOf(TenantService.SEPARATOR);
+                }
+                
+                if (realUser != null)
+                {
+                    realIdx = realUser.indexOf(TenantService.SEPARATOR);
+                }
+                
+                if ((effectiveIdx != -1) && (effectiveIdx < (effectiveUser.length() - 1)))
+                {
+                    uid = uid + TenantService.SEPARATOR + effectiveUser.substring(effectiveIdx + 1);
+                }
+                else if ((realIdx != -1) && (realIdx < (realUser.length() - 1)))
+                {
+                    uid = uid + TenantService.SEPARATOR + realUser.substring(realIdx + 1);
                 }
             }
 

@@ -25,17 +25,24 @@
 package org.alfresco.repo.jscript;
 
 import java.util.Set;
+import java.util.StringTokenizer;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.search.impl.lucene.QueryParser;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
 import org.alfresco.repo.security.authentication.PasswordGenerator;
 import org.alfresco.repo.security.authentication.UserNameGenerator;
 import org.alfresco.repo.security.authority.AuthorityDAO;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.cmr.search.SearchParameters;
+import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.PropertyMap;
 import org.mozilla.javascript.Context;
@@ -56,6 +63,23 @@ public final class People extends BaseScopableProcessorExtension
     private MutableAuthenticationDao mutableAuthenticationDao;
     private UserNameGenerator usernameGenerator;
     private PasswordGenerator passwordGenerator;
+    private StoreRef storeRef;
+    
+    
+    /**
+     * Set the default store reference
+     * 
+     * @param   storeRef the default store reference
+     */
+    public void setStoreUrl(String storeRef)
+    {
+        // ensure this is not set again by a script instance
+        if (this.storeRef != null)
+        {
+            throw new IllegalStateException("Default store URL can only be set once.");
+        }
+        this.storeRef = new StoreRef(storeRef);
+    }
     
     /**
      * Set the mutable authentication dao
@@ -221,9 +245,12 @@ public final class People extends BaseScopableProcessorExtension
         return person;
     }
     
+        
     /**
      * Get the collection of people stored in the repository.
      * An optional filter query may be provided by which to filter the people collection.
+     * Space separate the query terms i.e. "john bob" will find all users who's first or
+     * second names contain the strings "john" or "bob".
      * 
      * @param filter filter query string by which to filter the collection of people.
      *          If <pre>null</pre> then all people stored in the repository are returned
@@ -232,10 +259,78 @@ public final class People extends BaseScopableProcessorExtension
      */
     public Scriptable getPeople(String filter)
     {
-        Object[] people = personService.getAllPeople().toArray();
+        return getPeople(filter, 0);
+    }
+    
+    /**
+     * Get the collection of people stored in the repository.
+     * An optional filter query may be provided by which to filter the people collection.
+     * Space separate the query terms i.e. "john bob" will find all users who's first or
+     * second names contain the strings "john" or "bob".
+     * 
+     * @param filter filter query string by which to filter the collection of people.
+     *          If <pre>null</pre> then all people stored in the repository are returned
+     * @param maxResults maximum results to return or all if <= 0
+     * 
+     * @return people collection as a JavaScript array
+     */
+    public Scriptable getPeople(String filter, int maxResults)
+    {
+        Object[] people = null;
         
-        // TODO glen.johnson@alfresco.com - if filterQuery parameter provided, then filter the collection
-        // of people
+        if (filter == null)
+        {
+            people = personService.getAllPeople().toArray();
+        }
+        else
+        {
+            filter = filter.trim();
+            if (filter.length() != 0)
+            {
+                // define the query to find people by their first or last name
+                StringBuilder query = new StringBuilder(128);
+                for (StringTokenizer t = new StringTokenizer(filter, " "); t.hasMoreTokens(); /**/)
+                {
+                    String term = QueryParser.escape(t.nextToken());
+                    query.append("@").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:firstName:\"*");
+                    query.append(term);
+                    query.append("*\" @").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:lastName:\"*");
+                    query.append(term);
+                    query.append("*\" ");
+                }
+                
+                // define the search parameters
+                SearchParameters params = new SearchParameters();
+                params.setLanguage(SearchService.LANGUAGE_LUCENE);
+                params.addStore(this.storeRef);
+                params.setQuery(query.toString());
+                
+                ResultSet results = null;
+                try
+                {
+                    results = services.getSearchService().query(params);
+                    people = results.getNodeRefs().toArray();
+                }
+                finally
+                {
+                    if (results != null)
+                    {
+                        results.close();
+                    }
+                }
+            }
+        }
+        
+        if (people == null)
+        {
+            people = new Object[0];
+        }
+        else if (maxResults > 0 && people.length > maxResults)
+        {
+            Object[] copy = new Object[maxResults];
+            System.arraycopy(people, 0, copy, 0, maxResults);
+            people = copy;
+        }
         
         return Context.getCurrentContext().newArray(getScope(), people);
     }

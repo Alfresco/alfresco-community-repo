@@ -32,6 +32,7 @@ import org.alfresco.repo.attributes.AttributeDAO;
 import org.alfresco.repo.attributes.GlobalAttributeEntry;
 import org.alfresco.repo.attributes.GlobalAttributeEntryDAO;
 import org.alfresco.repo.attributes.GlobalAttributeEntryImpl;
+import org.alfresco.repo.domain.hibernate.DirtySessionMethodInterceptor;
 import org.hibernate.Query;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
@@ -94,6 +95,7 @@ public class GlobalAttributeEntryDAOHibernate extends HibernateDaoSupport
     public List<String> getKeys()
     {
         Query query = getSession().createQuery("select gae.name from GlobalAttributeEntryImpl gae");
+        DirtySessionMethodInterceptor.setQueryFlushMode(getSession(), query);
         return (List<String>)query.list();
     }
 }

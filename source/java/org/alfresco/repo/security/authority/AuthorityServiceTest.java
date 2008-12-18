@@ -36,8 +36,11 @@ import junit.framework.TestCase;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
+import org.alfresco.repo.security.permissions.impl.AclDaoComponent;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
@@ -68,6 +71,10 @@ public class AuthorityServiceTest extends TestCase
 
     private UserTransaction tx;
 
+    private AclDaoComponent aclDaoComponent;
+
+    private NodeService nodeService;
+
     public AuthorityServiceTest()
     {
         super();
@@ -83,6 +90,8 @@ public class AuthorityServiceTest extends TestCase
         pubAuthorityService = (AuthorityService) ctx.getBean("AuthorityService");
         personService = (PersonService) ctx.getBean("personService");
         authenticationDAO = (MutableAuthenticationDao) ctx.getBean("authenticationDao");
+        aclDaoComponent = (AclDaoComponent) ctx.getBean("aclDaoComponent");
+        nodeService = (NodeService) ctx.getBean("nodeService");
 
         authenticationComponentImpl.setSystemUserAsCurrentUser();
 
@@ -103,6 +112,13 @@ public class AuthorityServiceTest extends TestCase
             {
                 if (personService.personExists(user))
                 {
+                    NodeRef person = personService.getPerson(user);
+                    NodeRef hf = DefaultTypeConverter.INSTANCE.convert(NodeRef.class, nodeService.getProperty(person, ContentModel.PROP_HOMEFOLDER));
+                    if(hf != null)
+                    {
+                        nodeService.deleteNode(hf);
+                    }
+                    aclDaoComponent.deleteAccessControlEntries(user);
                     personService.deletePerson(user);
                 }
                 if (authenticationDAO.userExists(user))

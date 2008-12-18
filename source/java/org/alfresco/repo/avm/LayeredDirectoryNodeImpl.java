@@ -409,6 +409,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         ChildEntry entry = new ChildEntryImpl(key, node);
         AVMDAOs.Instance().fAVMNodeDAO.flush();
         AVMDAOs.Instance().fChildEntryDAO.save(entry);
+        AVMDAOs.Instance().fAVMNodeDAO.flush();
     }
 
     /**

@@ -63,20 +63,38 @@ INSERT INTO t_alf_store (version, protocol, identifier, root_node_id)
    SELECT 1, protocol, identifier, root_node_id FROM alf_store
 ;
 
+-- Summarize the alf_node_status table
+CREATE TABLE t_summary_nstat
+(
+   node_id BIGINT(20) NOT NULL,
+   transaction_id BIGINT(20) DEFAULT NULL,
+   PRIMARY KEY (node_id)
+) TYPE=InnoDB;
+INSERT INTO t_summary_nstat (node_id, transaction_id) 
+  SELECT node_id, transaction_id FROM alf_node_status WHERE node_id IS NOT NULL;
+
 -- Copy data over
+LOCK TABLES
+   t_alf_node WRITE,
+   alf_node AS n READ,
+   t_summary_nstat AS nstat READ,
+   t_alf_store AS s READ
+;
 INSERT INTO t_alf_node
    (
       id, version, store_id, uuid, transaction_id, node_deleted, type_qname_id, acl_id,
-      audit_creator, audit_created, audit_modifier, audit_modified
+      audit_creator, audit_created, audit_modifier, audit_modified, audit_accessed
    )
-   SELECT
+   SELECT STRAIGHT_JOIN
       n.id, 1, s.id, n.uuid, nstat.transaction_id, false, n.type_qname_id, n.acl_id,
-      null, null, null, null
+      null, null, null, null, null
    FROM
       alf_node n
-      JOIN alf_node_status nstat ON (nstat.node_id = n.id)
-      JOIN t_alf_store s ON (s.protocol = nstat.protocol AND s.identifier = nstat.identifier)
+      JOIN t_summary_nstat nstat ON (nstat.node_id = n.id)
+      JOIN t_alf_store s ON (s.protocol = n.protocol AND s.identifier = n.identifier)
 ;
+UNLOCK TABLES;
+DROP TABLE t_summary_nstat;
 
 -- Hook the store up to the root node
 ALTER TABLE t_alf_store 
@@ -123,8 +141,8 @@ CREATE TABLE t_alf_child_assoc
    version BIGINT NOT NULL,
    parent_node_id BIGINT NOT NULL,
    type_qname_id BIGINT NOT NULL,
-   child_node_name VARCHAR(50) NOT NULL,
    child_node_name_crc BIGINT NOT NULL,
+   child_node_name VARCHAR(50) NOT NULL,
    child_node_id BIGINT NOT NULL,
    qname_ns_id BIGINT NOT NULL,
    qname_localname VARCHAR(100) NOT NULL,
@@ -140,28 +158,35 @@ CREATE TABLE t_alf_child_assoc
    CONSTRAINT fk_alf_cass_tqn foreign key (type_qname_id) REFERENCES alf_qname (id),
    CONSTRAINT fk_alf_cass_qnns foreign key (qname_ns_id) REFERENCES alf_namespace (id),
    PRIMARY KEY (id),
-   UNIQUE (parent_node_id, type_qname_id, child_node_name, child_node_name_crc)
+   UNIQUE (parent_node_id, type_qname_id, child_node_name_crc, child_node_name)
 ) TYPE=InnoDB;
 
+LOCK TABLES
+   t_alf_child_assoc WRITE,
+   alf_child_assoc AS ca READ
+;
 INSERT INTO t_alf_child_assoc
    (
       id, version,
-      parent_node_id, child_node_id,
-      child_node_name, child_node_name_crc,
+      parent_node_id,
       type_qname_id,
+      child_node_name_crc, child_node_name,
+      child_node_id,
       qname_ns_id, qname_localname,
       is_primary, assoc_index
    )
-   SELECT
+   SELECT STRAIGHT_JOIN
       ca.id, 1,
-      ca.parent_node_id, ca.child_node_id,
-      ca.child_node_name, child_node_name_crc,
+      ca.parent_node_id,
       ca.type_qname_id,
+      ca.child_node_name_crc, ca.child_node_name,
+      ca.child_node_id,
       ca.qname_ns_id, ca.qname_localname,
       ca.is_primary, ca.assoc_index
    FROM
       alf_child_assoc ca
 ;
+UNLOCK TABLES;
 
 -- Clean up
 DROP TABLE alf_child_assoc;
@@ -188,19 +213,24 @@ CREATE TABLE t_alf_node_assoc
    UNIQUE (source_node_id, target_node_id, type_qname_id)
 ) TYPE=InnoDB;
 
+LOCK TABLES
+   t_alf_node_assoc WRITE,
+   alf_node_assoc AS na READ
+;
 INSERT INTO t_alf_node_assoc
    (
       id, version,
       source_node_id, target_node_id,
       type_qname_id
    )
-   SELECT
+   SELECT STRAIGHT_JOIN
       na.id, 1,
-      na.source_node_id, na.source_node_id,
+      na.source_node_id, na.target_node_id,
       na.type_qname_id
    FROM
       alf_node_assoc na
 ;
+UNLOCK TABLES;
 
 -- Clean up
 DROP TABLE alf_node_assoc;
@@ -254,6 +284,12 @@ CREATE TABLE t_alf_node_aspects
    PRIMARY KEY (node_id, qname_id)
 ) TYPE=InnoDB;
 
+LOCK TABLES
+   t_alf_node_aspects WRITE,
+   alf_node_aspects AS na READ,
+   alf_qname AS qn READ,
+   alf_namespace AS ns READ
+;
 -- Note the omission of sys:referencable.  This is implicit.
 INSERT INTO t_alf_node_aspects
    (
@@ -270,6 +306,7 @@ INSERT INTO t_alf_node_aspects
       ns.uri != 'http://www.alfresco.org/model/system/1.0' OR
       qn.local_name != 'referenceable'
 ;
+UNLOCK TABLES;
 
 -- Clean up
 DROP TABLE alf_node_aspects;
@@ -353,6 +390,7 @@ ALTER TABLE t_avm_store_properties RENAME TO avm_store_properties;
 CREATE TABLE t_avm_node_properties
 (
    node_id BIGINT NOT NULL,
+   qname_id BIGINT NOT NULL,
    actual_type_n INTEGER NOT NULL,
    persisted_type_n INTEGER NOT NULL,
    multi_valued BIT NOT NULL,
@@ -362,7 +400,6 @@ CREATE TABLE t_avm_node_properties
    double_value DOUBLE PRECISION,
    string_value TEXT,
    serializable_value BLOB,
-   qname_id BIGINT NOT NULL,
    INDEX fk_avm_nprop_n (node_id),
    INDEX fk_avm_nprop_qn (qname_id),
    CONSTRAINT fk_avm_nprop_n FOREIGN KEY (node_id) REFERENCES avm_nodes (id),
@@ -441,16 +478,20 @@ CREATE TABLE t_alf_node_properties
 ) TYPE=InnoDB;
 
 -- Copy values over
+LOCK TABLES
+   t_alf_node_properties WRITE,
+   alf_node_properties AS np READ
+;
 INSERT INTO t_alf_node_properties
    (
-      node_id, qname_id, list_index, locale_id,
+      node_id, qname_id, locale_id, list_index,
       actual_type_n, persisted_type_n,
       boolean_value, long_value, float_value, double_value,
       string_value,
       serializable_value
    )
    SELECT
-      np.node_id, np.qname_id, -1, 1,
+      np.node_id, np.qname_id, 1, -1,
       np.actual_type_n, np.persisted_type_n,
       np.boolean_value, np.long_value, np.float_value, np.double_value,
       np.string_value,
@@ -460,6 +501,7 @@ INSERT INTO t_alf_node_properties
    WHERE
       np.attribute_value IS NULL
 ;
+UNLOCK TABLES;
 -- Update cm:auditable properties on the nodes
 UPDATE t_alf_node n SET audit_creator =
 (
@@ -553,6 +595,7 @@ UPDATE t_alf_node_properties
    SET actual_type_n = 9, persisted_type_n = 9
    WHERE actual_type_n = -1 AND serializable_value IS NOT NULL
 ;
+DELETE FROM t_alf_node_properties WHERE actual_type_n = -1;
 
 -- Delete the node properties and move the fixed values over
 DROP TABLE alf_node_properties;

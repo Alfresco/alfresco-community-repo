@@ -170,8 +170,8 @@
             <column name="parent_node_id" not-null="true" />
          </many-to-one>
          <property name="typeQNameId" column="type_qname_id" type="long" not-null="true" />  <!-- fk_alf_cass_tqn -->
-         <property name="childNodeName" column="child_node_name" type="string" length="50" not-null="true" />
          <property name="childNodeNameCrc" column="child_node_name_crc" type="long" not-null="true" />
+         <property name="childNodeName" column="child_node_name" type="string" length="50" not-null="true" />
       </natural-id>
       <!-- Optimistic locking -->
       <version column="version" name="version" type="long" />
@@ -255,16 +255,6 @@
       where
          node.store.id = :storeId and
          node.uuid = :uuid
-   </query>
-   
-   <query name="node.updateChildAssocName">
-      update
-         org.alfresco.repo.domain.hibernate.ChildAssocImpl assoc
-      set
-         assoc.childNodeName = :newName,
-         assoc.childNodeNameCrc = :newNameCrc
-      where
-         assoc = :childAssoc
    </query>
    
    <query name="node.GetParentAssocs">
@@ -356,8 +346,8 @@
       where
          assoc.parent.id = :parentId and
          assoc.typeQNameId = :typeQNameId and
-         assoc.childNodeName = :childNodeName and
-         assoc.childNodeNameCrc = :childNodeNameCrc
+         assoc.childNodeNameCrc = :childNodeNameCrc and
+         assoc.childNodeName = :childNodeName
       order by
          assoc.index,
          assoc.id

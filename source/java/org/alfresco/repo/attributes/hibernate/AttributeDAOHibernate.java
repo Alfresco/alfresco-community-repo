@@ -43,6 +43,7 @@ import org.alfresco.repo.attributes.MapEntry;
 import org.alfresco.repo.attributes.MapEntryDAO;
 import org.alfresco.repo.attributes.Attribute.Type;
 import org.alfresco.repo.avm.hibernate.SessionCacheChecker;
+import org.alfresco.repo.domain.hibernate.DirtySessionMethodInterceptor;
 import org.alfresco.service.cmr.attributes.AttrQuery;
 import org.alfresco.service.cmr.attributes.AttrQueryHelper;
 import org.alfresco.util.Pair;
@@ -128,6 +129,7 @@ public class AttributeDAOHibernate extends HibernateDaoSupport implements
         {
             hQuery.setParameter(param.getKey(), param.getValue());
         }
+        DirtySessionMethodInterceptor.setQueryFlushMode(getSession(), hQuery);
         List<MapEntry> hits = (List<MapEntry>)hQuery.list();
         List<Pair<String, Attribute>> result = new ArrayList<Pair<String, Attribute>>();
         for (MapEntry entry : hits)

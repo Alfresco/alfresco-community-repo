@@ -32,6 +32,7 @@ import org.alfresco.repo.attributes.ListEntry;
 import org.alfresco.repo.attributes.ListEntryDAO;
 import org.alfresco.repo.attributes.ListEntryImpl;
 import org.alfresco.repo.attributes.ListEntryKey;
+import org.alfresco.repo.domain.hibernate.DirtySessionMethodInterceptor;
 import org.hibernate.Query;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
@@ -76,6 +77,7 @@ public class ListEntryDAOHibernate extends HibernateDaoSupport implements
     {
         Query query = getSession().createQuery("from ListEntryImpl le where le.key.list = :list");
         query.setEntity("list", list);
+        DirtySessionMethodInterceptor.setQueryFlushMode(getSession(), query);
         return (List<ListEntry>)query.list();
     }
 
@@ -94,6 +96,7 @@ public class ListEntryDAOHibernate extends HibernateDaoSupport implements
     {
         Query query = getSession().createQuery("select count(*) from ListEntryImpl le where le.key.list = :list");
         query.setEntity("list", list);
+        DirtySessionMethodInterceptor.setQueryFlushMode(getSession(), query);
         return ((Long)query.uniqueResult()).intValue();
     }
 }

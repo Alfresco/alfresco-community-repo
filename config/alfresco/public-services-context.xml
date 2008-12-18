@@ -833,6 +833,7 @@
         <property name="interceptorNames">
             <list>
                 <value>avmSessionSizeResourceInterceptor</value>
+                <value>checkTxnAdvisor</value>
             </list>
         </property>
     </bean>

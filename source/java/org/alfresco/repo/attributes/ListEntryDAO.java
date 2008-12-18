@@ -27,6 +27,8 @@ package org.alfresco.repo.attributes;
 
 import java.util.List;
 
+import org.alfresco.repo.domain.hibernate.DirtySessionAnnotation;
+
 /**
  * DAO interface for ListEntries.
  * @author britt
@@ -37,6 +39,7 @@ public interface ListEntryDAO
      * Save a new Entry.
      * @param entry
      */
+    @DirtySessionAnnotation(markDirty=true)
     public void save(ListEntry entry);
     
     /**
@@ -45,6 +48,7 @@ public interface ListEntryDAO
      * @param index The index.
      * @return The ListEntry.
      */
+    @DirtySessionAnnotation(markDirty=false)
     public ListEntry get(ListEntryKey key);
     
     /**
@@ -52,18 +56,21 @@ public interface ListEntryDAO
      * @param list The ListAttribute.
      * @return The entries.
      */
+    @DirtySessionAnnotation(markDirty=false)
     public List<ListEntry> get(ListAttribute list);
     
     /**
      * Delete a list entry.
      * @param entry
      */
+    @DirtySessionAnnotation(markDirty=true)
     public void delete(ListEntry entry);
     
     /**
      * Delete all entries from a list.
      * @param list
      */
+    @DirtySessionAnnotation(markDirty=true)
     public void delete(ListAttribute list);
     
     /**
@@ -71,5 +78,6 @@ public interface ListEntryDAO
      * @param list The list.
      * @return The count of entries.
      */
+    @DirtySessionAnnotation(markDirty=false)
     public int size(ListAttribute list);
 }

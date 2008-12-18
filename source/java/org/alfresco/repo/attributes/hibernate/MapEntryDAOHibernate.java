@@ -32,6 +32,7 @@ import org.alfresco.repo.attributes.MapEntry;
 import org.alfresco.repo.attributes.MapEntryDAO;
 import org.alfresco.repo.attributes.MapEntryImpl;
 import org.alfresco.repo.attributes.MapEntryKey;
+import org.alfresco.repo.domain.hibernate.DirtySessionMethodInterceptor;
 import org.hibernate.Query;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
@@ -76,6 +77,7 @@ public class MapEntryDAOHibernate extends HibernateDaoSupport implements
     {
         Query query = getSession().createQuery("from MapEntryImpl me where me.key.map = :map");
         query.setEntity("map", mapAttr);
+        DirtySessionMethodInterceptor.setQueryFlushMode(getSession(), query);
         return (List<MapEntry>)query.list();
     }
 
@@ -94,6 +96,7 @@ public class MapEntryDAOHibernate extends HibernateDaoSupport implements
     {
         Query query = getSession().createQuery("select count(*) from MapEntryImpl me where me.key.map = :map");
         query.setEntity("map", mapAttr);
+        DirtySessionMethodInterceptor.setQueryFlushMode(getSession(), query);
         return ((Long)query.uniqueResult()).intValue();
     }
 

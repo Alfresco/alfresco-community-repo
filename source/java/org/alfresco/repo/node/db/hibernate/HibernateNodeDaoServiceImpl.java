@@ -79,6 +79,8 @@ import org.alfresco.repo.security.permissions.impl.AclDaoComponent;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.TransactionAwareSingleton;
 import org.alfresco.repo.transaction.TransactionalDao;
+import org.alfresco.service.cmr.dictionary.AssociationDefinition;
+import org.alfresco.service.cmr.dictionary.ChildAssociationDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryException;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -1347,6 +1349,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
      * @param cascade               true to cascade delete
      * @param deletedChildAssocIds  previously deleted child associations
      */
+    @SuppressWarnings("unchecked")
     private void deleteNodeInternal(Node node, boolean cascade, Set<Long> deletedChildAssocIds)
     {
         final Long nodeId = node.getId();
@@ -1530,25 +1533,44 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
             Long childNodeId,
             boolean isPrimary,
             QName assocTypeQName,
-            QName assocQName)
+            QName assocQName,
+            String newName)
     {
         Node parentNode = (Node) getSession().get(NodeImpl.class, parentNodeId);
         Node childNode = (Node) getSession().get(NodeImpl.class, childNodeId);
         
-        // assign a random name to the node
-        String name = GUID.generate();
+        final Pair<String, Long> childNameUnique = getChildNameUnique(assocTypeQName, newName);
         
         ChildAssoc assoc = new ChildAssocImpl();
         assoc.setTypeQName(qnameDAO, assocTypeQName);
-        assoc.setChildNodeName(name);
-        assoc.setChildNodeNameCrc(-1L);         // random names compete only with each other
+        assoc.setChildNodeName(childNameUnique.getFirst());
+        assoc.setChildNodeNameCrc(childNameUnique.getSecond());
         assoc.setQName(qnameDAO, assocQName);
         assoc.setIsPrimary(isPrimary);
         assoc.setIndex(-1);
         // maintain inverse sets
         assoc.buildAssociation(parentNode, childNode);
         // persist it
-        Long assocId = (Long) getHibernateTemplate().save(assoc);
+        Long assocId;
+        try
+        {
+            assocId = (Long) getHibernateTemplate().save(assoc);
+        }
+        catch (Throwable e)
+        {
+            // There is already an entity
+            if (isDebugEnabled)
+            {
+                logger.debug(
+                        "Duplicate child association detected: \n" +
+                        "   Parent Node:     " + parentNode.getId() + "\n" +
+                        "   Child Name Used:  " + childNameUnique);
+            }
+            throw new DuplicateChildNodeNameException(
+                    parentNode.getNodeRef(),
+                    assocTypeQName,
+                    childNameUnique.getFirst());
+        }
         // Add it to the cache
         Set<Long> oldParentAssocIds = parentAssocsCache.get(childNode.getId());
         if (oldParentAssocIds != null)
@@ -1599,50 +1621,15 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         final ChildAssoc childAssoc = getChildAssocNotNull(childAssocId);
         final Node parentNode = childAssoc.getParent();
         
-        String childNameNew = null;
-        long crc = -1;
-        if (childName == null)
-        {
-            // If the name assigned is null, then the name that will be assigned will
-            // be random.  Ofcourse, if the association already has a random name assigned
-            // to it then there is no reason to assign a new one.  The update of the child
-            // association is only required if the existing CRC value is not -1.
-            long existingCrc = childAssoc.getChildNodeNameCrc();
-            if (existingCrc == -1L)
-            {
-                if (isDebugEnabled)
-                {
-                    logger.debug(
-                            "Child association name assignment is already random-based (non-clashing): \n" +
-                            "   Parent Node: " + parentNode.getId() + "\n" +
-                            "   Child Assoc: " + childAssoc.getId());
-                }
-                // Shortcut here
-                return;
-            }
-            
-            // random names compete only with each other, i.e. not at all
-            childNameNew = GUID.generate();
-            // The CRC of -1 indicates that the cm:name equivalent is non-clashing, i.e. a GUID
-            crc = -1L;
-        }
-        else
-        {
-            // assigned names compete exactly
-            childNameNew = childName.toLowerCase();
-            crc = getCrc(childNameNew);
-        }
-
-        final String childNameNewShort = getShortName(childNameNew);
-        final long childNameNewCrc = crc;
+        QName childAssocTypeQName = childAssoc.getTypeQName(qnameDAO);
+        final Pair<String, Long> childNameUnique = getChildNameUnique(childAssocTypeQName, childName);
 
         HibernateCallback callback = new HibernateCallback()
         {
             public Object doInHibernate(Session session)
             {
-                // Update the association
-                childAssoc.setChildNodeName(childNameNewShort);
-                childAssoc.setChildNodeNameCrc(childNameNewCrc);
+                childAssoc.setChildNodeName(childNameUnique.getFirst());
+                childAssoc.setChildNodeNameCrc(childNameUnique.getSecond().longValue());
                 // Flush again to force a DB constraint here
                 DirtySessionMethodInterceptor.flushSession(session, true);
                 // Done
@@ -1663,13 +1650,13 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
             {
                 logger.debug(
                         "Duplicate child association detected: \n" +
-                        "   Parent Node: " + parentNode.getId() + "\n" +
-                        "   Child Name:  " + childName);
+                        "   Parent Node:     " + parentNode.getId() + "\n" +
+                        "   Child Name Used:  " + childNameUnique);
             }
             throw new DuplicateChildNodeNameException(
                     parentNode.getNodeRef(),
                     childAssoc.getTypeQName(qnameDAO),
-                    childName);
+                    childNameUnique.getFirst());
         }
         
         // Done
@@ -1681,6 +1668,49 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
                     "   Child Assoc: " + childAssoc);
         }
     }
+
+    /**
+     * Apply the <b>cm:name</b> to the child association.  If the child name is <tt>null</tt> then
+     * a GUID is generated as a substitute.
+     * 
+     * @param childName             the <b>cm:name</b> applying to the association.
+     */
+    private Pair<String, Long> getChildNameUnique(QName assocTypeQName, String childName)
+    {
+        String childNameNewShort;                   // 
+        long childNameNewCrc = -1L;                 // By default, they don't compete
+        
+        if (childName == null)
+        {
+            childNameNewShort = GUID.generate();
+            childNameNewCrc = -1L * getCrc(childNameNewShort);
+        }
+        else
+        {
+            AssociationDefinition assocDef = dictionaryService.getAssociation(assocTypeQName);
+            if (!assocDef.isChild())
+            {
+                childNameNewShort = GUID.generate();
+                childNameNewCrc = -1L * getCrc(childNameNewShort);
+            }
+            else
+            {
+                ChildAssociationDefinition childAssocDef = (ChildAssociationDefinition) assocDef;
+                if (childAssocDef.getDuplicateChildNamesAllowed())
+                {
+                    childNameNewShort = GUID.generate();
+                    childNameNewCrc = -1L * getCrc(childNameNewShort);
+                }
+                else
+                {
+                    String childNameNewLower = childName.toLowerCase();
+                    childNameNewShort = getShortName(childNameNewLower);
+                    childNameNewCrc = getCrc(childNameNewLower);
+                }
+            }
+        }
+        return new Pair<String, Long>(childNameNewShort, childNameNewCrc);
+    }
     
     public Pair<Long, ChildAssociationRef> updateChildAssoc(
             Long childAssocId,
@@ -1688,7 +1718,8 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
             Long childNodeId,
             QName assocTypeQName,
             QName assocQName,
-            int index)
+            int index,
+            String childName)
     {
         final ChildAssoc childAssoc = getChildAssocNotNull(childAssocId);
         final boolean isPrimary = childAssoc.getIsPrimary();
@@ -1700,9 +1731,9 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         final NodeRef newChildNodeRef = newChildNode.getNodeRef();
         
         // Reset the cm:name duplicate handling.  This has to be redone, if required.
-        String name = GUID.generate();
-        childAssoc.setChildNodeName(name);
-        childAssoc.setChildNodeNameCrc(-1L);
+        Pair<String, Long> childNameUnique = getChildNameUnique(assocTypeQName, childName);
+        childAssoc.setChildNodeName(childNameUnique.getFirst());
+        childAssoc.setChildNodeNameCrc(childNameUnique.getSecond());
 
         childAssoc.buildAssociation(newParentNode, newChildNode);
         childAssoc.setTypeQName(qnameDAO, assocTypeQName);
@@ -2170,8 +2201,8 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
                     .getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_CHILD_ASSOC_BY_TYPE_AND_NAME)
                     .setLong("parentId", parentNodeId)
                     .setLong("typeQNameId", assocTypeQNamePair.getFirst())
-                    .setString("childNodeName", childNameShort)
-                    .setLong("childNodeNameCrc", childNameLowerCrc);
+                    .setLong("childNodeNameCrc", childNameLowerCrc)
+                    .setString("childNodeName", childNameShort);
                 DirtySessionMethodInterceptor.setQueryFlushMode(session, query);
                 return query.uniqueResult();
             }
@@ -2904,9 +2935,15 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
             final StoreRef storeRef,
             final ObjectArrayQueryCallback resultsCallback)
     {
-        final Long personTypeQNameEntityId = qnameDAO.getOrCreateQName(ContentModel.TYPE_PERSON).getFirst();
-        final Long usernamePropQNameEntityId = qnameDAO.getOrCreateQName(ContentModel.PROP_USERNAME).getFirst();
-        final Long sizeCurrentPropQNameEntityId = qnameDAO.getOrCreateQName(ContentModel.PROP_SIZE_CURRENT).getFirst();
+        final Pair<Long, QName> usernamePropQNamePair = qnameDAO.getQName(ContentModel.PROP_USERNAME);
+        final Pair<Long, QName> sizeCurrentPropQNamePair = qnameDAO.getQName(ContentModel.PROP_SIZE_CURRENT);
+        final Pair<Long, QName> personTypeQNamePair = qnameDAO.getQName(ContentModel.TYPE_PERSON);
+        
+        // Shortcut the query if the QNames don't exist
+        if (usernamePropQNamePair == null || sizeCurrentPropQNamePair == null || personTypeQNamePair == null)
+        {
+            return;
+        }
         
         HibernateCallback callback = new HibernateCallback()
         {
@@ -2916,9 +2953,9 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
                     .getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_USERS_WITHOUT_USAGE)
                     .setString("storeProtocol", storeRef.getProtocol())
                     .setString("storeIdentifier", storeRef.getIdentifier())
-                    .setParameter("usernamePropQNameID", usernamePropQNameEntityId) // cm:username
-                    .setParameter("sizeCurrentPropQNameID", sizeCurrentPropQNameEntityId) // cm:sizeCurrent
-                    .setParameter("personTypeQNameID", personTypeQNameEntityId) // cm:person
+                    .setParameter("usernamePropQNameID", usernamePropQNamePair.getFirst()) // cm:username
+                    .setParameter("sizeCurrentPropQNameID", sizeCurrentPropQNamePair.getFirst()) // cm:sizeCurrent
+                    .setParameter("personTypeQNameID", personTypeQNamePair.getFirst()) // cm:person
                     ;
                 DirtySessionMethodInterceptor.setQueryFlushMode(session, query);
                 return query.scroll(ScrollMode.FORWARD_ONLY);

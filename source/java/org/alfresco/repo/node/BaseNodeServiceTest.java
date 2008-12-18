@@ -2114,6 +2114,32 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
     }
     
     /**
+     * Create some nodes that have the same <b>cm:name</b> but use associations that don't
+     * enforce uniqueness.
+     */
+    public void testNonDuplicateAssocsWithSuppliedName() throws Throwable
+    {
+        Map<QName, Serializable> properties = Collections.singletonMap(ContentModel.PROP_NAME, (Serializable) getName());
+        NodeRef parentRef = nodeService.createNode(
+                rootNodeRef,
+                ASSOC_TYPE_QNAME_TEST_CHILDREN,
+                QName.createQName("parent_child"),
+                ContentModel.TYPE_CONTAINER).getChildRef();
+        ChildAssociationRef pathARef = nodeService.createNode(
+                parentRef,
+                ASSOC_TYPE_QNAME_TEST_CHILDREN,
+                QName.createQName("pathA"),
+                ContentModel.TYPE_CONTENT,
+                properties);
+        ChildAssociationRef pathBRef = nodeService.createNode(
+                parentRef,
+                ASSOC_TYPE_QNAME_TEST_CHILDREN,
+                QName.createQName("pathB"),
+                ContentModel.TYPE_CONTENT,
+                properties);
+    }
+    
+    /**
      * Checks that the unique constraint doesn't break delete and create within the same
      * transaction.
      */

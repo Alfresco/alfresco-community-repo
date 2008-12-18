@@ -749,6 +749,7 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
             
             // Map the passthru username to an Alfresco person
             
+            clearCurrentSecurityContext();
             setCurrentUser( username);
             
             // Debug
@@ -912,6 +913,7 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
             	
                 // Map the passthru username to an Alfresco person
                 
+                clearCurrentSecurityContext();
                 setCurrentUser( username);
                     
             }

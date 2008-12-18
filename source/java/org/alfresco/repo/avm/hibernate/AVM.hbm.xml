@@ -363,18 +363,18 @@
    <sql-query name="avm.DeleteStorePropertiesByType">
       DELETE
       FROM
-         avm_store_properties asp
+         avm_store_properties
       WHERE
-         asp.avm_store_id = :storeId AND
-         asp.qname_id = :qnameId
+         avm_store_id = :storeId AND
+         qname_id = :qnameId
    </sql-query>
     
    <sql-query name="avm.DeleteStoreProperties">
       DELETE
       FROM
-         avm_store_properties asp
+         avm_store_properties
       WHERE
-         asp.avm_store_id = :storeId
+         avm_store_id = :storeId
    </sql-query>
     
 </hibernate-mapping>

@@ -386,6 +386,21 @@ public class DbNodeServiceImplTest extends BaseNodeServiceTest
         assertEquals("Setting of MLText over String failed.", mlText, mlTextCheck);
     }
     
+    /**
+     * Ensure that plain strings going into MLText properties is handled
+     */
+    @SuppressWarnings("unchecked")
+    public void testSingleStringMLTextProperty() throws Exception
+    {
+        // Set the property with single-value MLText
+        MLText mlText = new MLText();
+        mlText.addValue(Locale.GERMAN, "Sehr gut!");
+        nodeService.setProperty(rootNodeRef, PROP_QNAME_ML_TEXT_VALUE, mlText);
+        // Get it back and check
+        MLText mlTextCheck = (MLText) nodeService.getProperty(rootNodeRef, PROP_QNAME_ML_TEXT_VALUE);
+        assertEquals("Setting of MLText over String failed.", mlText, mlTextCheck);
+    }
+    
     public void testDuplicatePrimaryParentHandling() throws Exception
     {
         Map<QName, ChildAssociationRef> assocRefs = buildNodeGraph();
@@ -403,7 +418,8 @@ public class DbNodeServiceImplTest extends BaseNodeServiceTest
                 n8Pair.getFirst(),
                 true,
                 ContentModel.ASSOC_CONTAINS,
-                QName.createQName(NAMESPACE, "n1pn8"));
+                QName.createQName(NAMESPACE, "n1pn8"),
+                null);
         
         // Now get the node primary parent
         nodeService.getPrimaryParent(n8Ref);

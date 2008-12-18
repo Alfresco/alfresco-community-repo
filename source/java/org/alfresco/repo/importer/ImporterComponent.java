@@ -55,8 +55,6 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.XPathException;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.rule.RuleService;
-import org.alfresco.service.cmr.search.ResultSet;
-import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
@@ -1014,35 +1012,10 @@ public class ImporterComponent
             }
             else if (importedRef.startsWith("/"))
             {
-                // resolve absolute path
-                SearchParameters searchParameters = new SearchParameters();
-                searchParameters.addStore(sourceNodeRef.getStoreRef());
-                searchParameters.setLanguage(SearchService.LANGUAGE_LUCENE);
-                searchParameters.setQuery("PATH:\"" + importedRef + "\"");
-                searchParameters.excludeDataInTheCurrentTransaction((binding == null) ? true : !binding.allowReferenceWithinTransaction());
-                ResultSet resultSet = null;
-                try
+                List<NodeRef> nodeRefs = searchService.selectNodes(sourceNodeRef, importedRef, null, namespaceService, false);
+                if (nodeRefs.size() > 0)
                 {
-                    resultSet = searchService.query(searchParameters);
-                    if (resultSet.length() > 0)
-                    {
-                        nodeRef = resultSet.getNodeRef(0);
-                    }
-                }
-                catch(UnsupportedOperationException e)
-                {
-                    List<NodeRef> nodeRefs = searchService.selectNodes(sourceNodeRef, importedRef, null, namespaceService, false);
-                    if (nodeRefs.size() > 0)
-                    {
-                        nodeRef = nodeRefs.get(0);
-                    }
-                }
-                finally
-                {
-                    if (resultSet != null)
-                    {
-                        resultSet.close();
-                    }
+                    nodeRef = nodeRefs.get(0);
                 }
             }
             else

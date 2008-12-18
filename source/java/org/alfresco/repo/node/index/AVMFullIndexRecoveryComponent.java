@@ -266,10 +266,8 @@ public class AVMFullIndexRecoveryComponent extends AbstractReindexComponent
 
     }
 
-    private void recoverStore(String store, RecoveryMode mode)
+    private void recoverStore(final String store, final RecoveryMode mode)
     {
-        int tracker = -1;
-
         if (mode == RecoveryMode.AUTO)
         {
             logger.info("    Auto recovering index for " + store);
@@ -284,80 +282,43 @@ public class AVMFullIndexRecoveryComponent extends AbstractReindexComponent
             avmSnapShotTriggeredIndexingMethodInterceptor.createIndex(store);
         }
 
-        int latest = avmService.getLatestSnapshotID(store);
-        if (latest <= 0)
-        {
-            return;
-        }
-
-        boolean wasRecovered = false;
-
         if (avmSnapShotTriggeredIndexingMethodInterceptor.getIndexMode(store) != IndexMode.UNINDEXED)
         {
-            for (int i = 0; i <= latest; i++)
+            final int latest = avmService.getLatestSnapshotID(store);
+            if (latest <= 0)
             {
-                if (isShuttingDown())
-                {
-                    return;
-                }
-                wasRecovered = recoverSnapShot(store, i, mode, wasRecovered);
-                if (i * 10l / latest > tracker)
-                {
-                    tracker = (int) (i * 10l / latest);
-                    if (logger.isDebugEnabled())
-                    {
-                        logger.debug("      Store " + store + " " + (tracker * 10) + "% complete");
-                    }
-                }
+                return;
             }
+
+            final int latestIndexed = avmSnapShotTriggeredIndexingMethodInterceptor.getLastIndexedSnapshot(store);
+
+            RetryingTransactionCallback<Object> reindexWork = new RetryingTransactionCallback<Object>()
+            {
+                public Object execute() throws Exception
+                {
+
+                    if (mode == RecoveryMode.AUTO)
+                    {
+                        logger.info("        Rebuilding index for snapshots " + latestIndexed +" to "+latest);
+                        avmSnapShotTriggeredIndexingMethodInterceptor.indexSnapshot(store, latestIndexed, latest);
+
+                    }
+                    else
+                    {
+                        logger.info("        Rebuilding index for snapshots " + 0 +" to "+latest);
+                        avmSnapShotTriggeredIndexingMethodInterceptor.indexSnapshot(store, 0, latest);
+                    }
+                    return null;
+
+                }
+            };
+            transactionService.getRetryingTransactionHelper().doInTransaction(reindexWork, true, true);
+
         }
+
         if (logger.isDebugEnabled())
         {
             logger.debug("    Index updated for " + store);
         }
     }
-
-    private boolean recoverSnapShot(final String store, final int id, final RecoveryMode mode, final boolean wasRecovered)
-    {
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("        Reindexing avm store: " + store + " snapshot id " + id);
-        }
-
-        RetryingTransactionCallback<Boolean> reindexWork = new RetryingTransactionCallback<Boolean>()
-        {
-            public Boolean execute() throws Exception
-            {
-                if (wasRecovered)
-                {
-                    avmSnapShotTriggeredIndexingMethodInterceptor.indexSnapshot(store, id - 1, id);
-                    return true;
-                }
-                else
-                {
-                    if (mode == RecoveryMode.AUTO)
-                    {
-                        if (!avmSnapShotTriggeredIndexingMethodInterceptor.isSnapshotIndexed(store, id))
-                        {
-                            avmSnapShotTriggeredIndexingMethodInterceptor.indexSnapshot(store, id - 1, id);
-                            return true;
-                        }
-                        else
-                        {
-                            return wasRecovered;
-                        }
-                    }
-                    else
-                    {
-                        avmSnapShotTriggeredIndexingMethodInterceptor.indexSnapshot(store, id - 1, id);
-                        return true;
-                    }
-                }
-
-            }
-        };
-        return transactionService.getRetryingTransactionHelper().doInTransaction(reindexWork, true, true);
-        // done
-    }
-
 }

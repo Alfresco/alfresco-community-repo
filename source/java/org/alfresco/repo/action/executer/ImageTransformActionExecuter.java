@@ -35,6 +35,7 @@ import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NoTransformerException;
+import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * Transfor action executer
@@ -74,7 +75,9 @@ public class ImageTransformActionExecuter extends TransformActionExecuter
 	/**
 	 * @see org.alfresco.repo.action.executer.TransformActionExecuter#doTransform(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.ContentReader, org.alfresco.service.cmr.repository.ContentWriter)
 	 */
-	protected void doTransform(Action ruleAction, ContentReader contentReader, ContentWriter contentWriter)
+	protected void doTransform( Action ruleAction, 
+            NodeRef sourceNodeRef, ContentReader contentReader, 
+            NodeRef destinationNodeRef, ContentWriter contentWriter)
 	{
         // check if the transformer is going to work, i.e. is available
         if (!this.imageMagickContentTransformer.isAvailable())

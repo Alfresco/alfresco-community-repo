@@ -283,6 +283,24 @@
         overflowToDisk="false"
         />
     <cache 
+        name="org.alfresco.cache.qnameEntityCache"
+        maxElementsInMemory="1000"
+        eternal="true"
+        overflowToDisk="false"
+        />
+    <cache 
+        name="org.alfresco.cache.namespaceEntityCache"
+        maxElementsInMemory="1000"
+        eternal="true"
+        overflowToDisk="false"
+        />
+    <cache 
+        name="org.alfresco.cache.localeIdCache"
+        maxElementsInMemory="1000"
+        eternal="true"
+        overflowToDisk="false"
+        />
+    <cache 
         name="org.alfresco.cache.storeAndNodeIdCache"
         maxElementsInMemory="10000"
         eternal="true"

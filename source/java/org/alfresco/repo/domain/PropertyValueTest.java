@@ -28,8 +28,11 @@ import java.util.Locale;
 
 import junit.framework.TestCase;
 
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.MLText;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.springframework.context.ApplicationContext;
 
@@ -45,15 +48,27 @@ public class PropertyValueTest extends TestCase
     
     public void testMLText()
     {
-        // single language
-        MLText mlText = new MLText(Locale.FRENCH, "bonjour");
-        PropertyValue propertyValue = new PropertyValue(DataTypeDefinition.MLTEXT, mlText);
-        assertNotNull("MLText not persisted as a string", propertyValue.getStringValue());
+        ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
+        TransactionService txnService = serviceRegistry.getTransactionService();
         
-        // multiple languages
-        mlText = new MLText(Locale.GERMAN, "hallo");
-        mlText.addValue(Locale.ITALIAN, "ciao");
-        propertyValue = new PropertyValue(DataTypeDefinition.MLTEXT, mlText);
-        assertNotNull("MLText not persisted as an attribute", propertyValue.getAttributeValue());
+        RetryingTransactionCallback<Object> doTestCallback = new RetryingTransactionCallback<Object>()
+        {
+            public Object execute() throws Throwable
+            {
+                // single language
+                MLText mlText = new MLText(Locale.FRENCH, "bonjour");
+                PropertyValue propertyValue = new PropertyValue(DataTypeDefinition.MLTEXT, mlText);
+                assertNotNull("MLText not persisted as a string", propertyValue.getStringValue());
+                
+                // multiple languages
+                mlText = new MLText(Locale.GERMAN, "hallo");
+                mlText.addValue(Locale.ITALIAN, "ciao");
+                propertyValue = new PropertyValue(DataTypeDefinition.MLTEXT, mlText);
+                assertNotNull("MLText not persisted as an attribute", propertyValue.getAttributeValue());
+                
+                return null;
+            }
+        };
+        txnService.getRetryingTransactionHelper().doInTransaction(doTestCallback, false);
     }
 }

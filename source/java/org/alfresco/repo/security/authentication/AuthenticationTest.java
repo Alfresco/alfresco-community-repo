@@ -265,9 +265,9 @@ public class AuthenticationTest extends TestCase
         
         // new TX
         
-        userTransaction.commit();
-        userTransaction = transactionService.getUserTransaction();
-        userTransaction.begin();
+        //userTransaction.commit();
+        //userTransaction = transactionService.getUserTransaction();
+        //userTransaction.begin();
         
         pubAuthenticationService.validate(ticket);
         userName = pubAuthenticationService.getCurrentUserName();
@@ -319,6 +319,20 @@ public class AuthenticationTest extends TestCase
         }
     }
 
+    public void testNewTicketOnLogin()
+    {
+        authenticationComponent.setSystemUserAsCurrentUser();
+        pubAuthenticationService.createAuthentication("Andy", "auth1".toCharArray());
+        authenticationComponent.clearCurrentSecurityContext();
+
+        // authenticate with this user details
+        pubAuthenticationService.authenticate("Andy", "auth1".toCharArray());
+        String ticket1 = pubAuthenticationService.getCurrentTicket();
+        pubAuthenticationService.authenticate("Andy", "auth1".toCharArray());
+        assertFalse(ticket1.equals(pubAuthenticationService.getCurrentTicket()));
+        
+    }
+    
     public void testGuest()
     {
         authenticationService.authenticate("GUEST", "".toCharArray());

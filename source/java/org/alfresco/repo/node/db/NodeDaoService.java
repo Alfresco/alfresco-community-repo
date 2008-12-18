@@ -170,7 +170,8 @@ public interface NodeDaoService
     public void deleteNode(Long nodeId);
     
     /**
-     * @return Returns the persisted and filled association's ID
+     * @param name              the <b>cm:name</b> to apply to the association
+     * @return                  Returns the persisted and filled association's ID
      * 
      * @see ChildAssoc
      */
@@ -180,7 +181,8 @@ public interface NodeDaoService
             Long childNodeId,
             boolean isPrimary,
             QName assocTypeQName,
-            QName qname);
+            QName qname,
+            String name);
 
     /**
      * Change the name of the child node.
@@ -201,7 +203,8 @@ public interface NodeDaoService
             Long childNodeId,
             QName assocTypeQName,
             QName qname,
-            int index);
+            int index,
+            String childName);
     
     /**
      * Interface used to iterate over results from child association queries

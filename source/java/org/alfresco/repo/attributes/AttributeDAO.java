@@ -27,6 +27,7 @@ package org.alfresco.repo.attributes;
 
 import java.util.List;
 
+import org.alfresco.repo.domain.hibernate.DirtySessionAnnotation;
 import org.alfresco.service.cmr.attributes.AttrQuery;
 import org.alfresco.util.Pair;
 
@@ -40,12 +41,14 @@ public interface AttributeDAO
      * Save an attribute (recursively).
      * @param attr The attribute to save.
      */
+    @DirtySessionAnnotation(markDirty=true)
     public void save(Attribute attr);
 
     /**
      * Delete an attribute (recursively).
      * @param attr The attribute to delete.
      */
+    @DirtySessionAnnotation(markDirty=true)
     public void delete(Attribute attr);
 
     /**
@@ -54,6 +57,7 @@ public interface AttributeDAO
      * @param query The AttrQuery.
      * @return A List of key, attribute value pairs.
      */
+    @DirtySessionAnnotation(markDirty=false)
     public List<Pair<String,Attribute>> find(MapAttribute map, AttrQuery query);
 
     /**
@@ -61,22 +65,26 @@ public interface AttributeDAO
      * @param map
      * @param query
      */
+    @DirtySessionAnnotation(markDirty=true)
     public void delete(MapAttribute map, AttrQuery query);
 
     /**
      * Evict an Attribute from the session cache.
      * @param attr
      */
+    @DirtySessionAnnotation(markDirty=false)
     public void evict(Attribute attr);
 
     /**
      * Evict an Attribute non-recursively.
      * @param attr
      */
+    @DirtySessionAnnotation(markDirty=false)
     public void evictFlat(Attribute attr);
 
     /**
      * Force a flush.
      */
+    @DirtySessionAnnotation(markDirty=false)
     public void flush();
 }

@@ -363,7 +363,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
         {
             newDir.setAncestor(child);
         }
-        dir.updateModTime();
+        //dir.updateModTime();
         dir.putChild(name, newDir);
         if (aspects != null)
         {
@@ -433,7 +433,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
         {
             newDir.setAncestor(child);
         }
-        dir.updateModTime();
+        //dir.updateModTime();
         dir.putChild(name, newDir);
         // newDir.setVersionID(getNextVersionID());
     }
@@ -464,7 +464,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
         }
         PlainFileNodeImpl file = new PlainFileNodeImpl(this);
         // file.setVersionID(getNextVersionID());
-        dir.updateModTime();
+        //dir.updateModTime();
         dir.putChild(name, file);
         if (child != null)
         {
@@ -506,7 +506,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
         }
         PlainFileNodeImpl file = new PlainFileNodeImpl(this);
         // file.setVersionID(getNextVersionID());
-        dir.updateModTime();
+        //dir.updateModTime();
         dir.putChild(name, file);
         if (child != null)
         {
@@ -578,7 +578,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
         {
             newFile.setAncestor(child);
         }
-        dir.updateModTime();
+        //dir.updateModTime();
         dir.putChild(name, newFile);
         DbAccessControlList acl = dir.getAcl();
         newFile.setAcl(acl != null ? acl.getCopy(acl.getId(), ACLCopyMode.INHERIT) : null);
@@ -754,7 +754,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
             throw new AVMNotFoundException("Does not exist: " + name);
         }
         dir.removeChild(lPath, name);
-        dir.updateModTime();
+        //dir.updateModTime();
     }
 
     /**
@@ -1516,6 +1516,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
             throw new AVMWrongTypeException("File Expected.");
         }
         ((FileNode)node).setContentData(data);
+        node.updateModTime();
     }
 
     /**

@@ -293,18 +293,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         // create the node instance
         Pair<Long, NodeRef> childNodePair = nodeDaoService.newNode(parentStoreRef, newUuid, nodeTypeQName);
 
-        // We now have enough to declare the child association creation
-        invokeBeforeCreateChildAssociation(parentRef, childNodePair.getSecond(), assocTypeQName, assocQName, true);
-        
-        // Create the association
-        Pair<Long, ChildAssociationRef> childAssocPair = nodeDaoService.newChildAssoc(
-                parentNodePair.getFirst(),
-                childNodePair.getFirst(),
-                true,
-                assocTypeQName,
-                assocQName);
-        ChildAssociationRef childAssocRef = childAssocPair.getSecond();
-
         // Add defaults
         addDefaults(childNodePair, nodeTypeQName);
         
@@ -316,11 +304,21 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         
         Map<QName, Serializable> propertiesAfter = nodeDaoService.getNodeProperties(childNodePair.getFirst());
 
+        // We now have enough to declare the child association creation
+        invokeBeforeCreateChildAssociation(parentRef, childNodePair.getSecond(), assocTypeQName, assocQName, true);
+        
         // Ensure child uniqueness
         String newName = extractNameProperty(propertiesAfter);
-        // Ensure uniqueness.  Note that the cm:name may be null, in which case the uniqueness is still 
-        setChildNameUnique(childAssocPair, newName, null);         // ensure uniqueness
-        
+        // Create the association
+        Pair<Long, ChildAssociationRef> childAssocPair = nodeDaoService.newChildAssoc(
+                parentNodePair.getFirst(),
+                childNodePair.getFirst(),
+                true,
+                assocTypeQName,
+                assocQName,
+                newName);
+        ChildAssociationRef childAssocRef = childAssocPair.getSecond();
+
         // Invoke policy behaviour
         invokeOnCreateNode(childAssocRef);
         invokeOnCreateChildAssociation(childAssocRef, true);
@@ -485,8 +483,18 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
                     "   index: " + index,
                     childAssocRef);
         }
+        // Get the child node name
+        Map<QName, Serializable> childNodeProperties = nodeDaoService.getNodeProperties(childNodeId);
+        String childNodeName = extractNameProperty(childNodeProperties);
         // set the index
-        nodeDaoService.updateChildAssoc(assocPair.getFirst(), parentNodeId, childNodeId, assocTypeQName, assocQName, index);
+        nodeDaoService.updateChildAssoc(
+                assocPair.getFirst(),
+                parentNodeId,
+                childNodeId,
+                assocTypeQName,
+                assocQName,
+                index,
+                childNodeName);
     }
 
     public QName getType(NodeRef nodeRef) throws InvalidNodeRefException
@@ -800,8 +808,18 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         // Invoke policy behaviours
         invokeBeforeCreateChildAssociation(parentRef, childRef, assocTypeQName, assocQName, false);
         
+        // Get the node's name, if present
+        Map<QName, Serializable> childNodeProperties = nodeDaoService.getNodeProperties(childNodePair.getFirst());
+        String childNodeName = extractNameProperty(childNodeProperties);
+        
         // make the association
-        Pair<Long, ChildAssociationRef> childAssocPair =  nodeDaoService.newChildAssoc(parentNodeId, childNodeId, false, assocTypeQName, assocQName);
+        Pair<Long, ChildAssociationRef> childAssocPair =  nodeDaoService.newChildAssoc(
+                parentNodeId,
+                childNodeId,
+                false,
+                assocTypeQName,
+                assocQName,
+                childNodeName);
         ChildAssociationRef childAssocRef = childAssocPair.getSecond();
         // ensure name uniqueness
         setChildNameUnique(childAssocPair, childNodePair);
@@ -1889,6 +1907,9 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             }
         }
         
+        // Get the new node's cm:name
+        Map<QName, Serializable> newNodeProperties = nodeDaoService.getNodeProperties(nodeToMoveId);
+        String newNodeChildName = extractNameProperty(newNodeProperties);
         // Modify the association directly.  We do this AFTER the change of the node's store so that
         // the association reference returned is correct.
         Pair<Long, ChildAssociationRef> newParentAssocPair = nodeDaoService.updateChildAssoc(
@@ -1897,7 +1918,8 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
                 nodeToMoveId,
                 assocTypeQName,
                 assocQName,
-                -1);
+                -1,
+                newNodeChildName);
         ChildAssociationRef newParentAssocRef = newParentAssocPair.getSecond();
 
         // Handle indexing differently if it is a store move
@@ -2149,6 +2171,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         List<String> allResults = new ArrayList<String>(100);
         allResults.addAll(moveChildrenResults);
         allResults.addAll(indexChildrenResults);
+        
         // Done
         return allResults;
     }
@@ -2297,5 +2320,16 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             logger.debug(sb.toString());
         }
         return results;
+    }
+
+    /**
+     * Cleans up transactions and deleted nodes that are older than the given minimum age.
+     * 
+     * @param minAge        the minimum age of a transaction or deleted node
+     * @return              Returns log message results
+     */
+    private List<String> cleanUpTransactions(long minAge)
+    {
+        return null;
     }
 }

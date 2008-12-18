@@ -8,9 +8,7 @@ function getCalendarContainer(site)
    }
    else
    {
-      var perms = Array();
-      perms["GROUP_EVERYONE"] = "SiteCollaborator"; 
-      calendar = site.createContainer("calendar", null, perms);
+      calendar = site.createContainer("calendar");
    }
 
    if (!calendar.isTagScope)

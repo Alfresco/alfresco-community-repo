@@ -68,9 +68,7 @@ function getWikiContainer(site)
    }
    else
    {
-      var perms = Array();
-      perms["GROUP_EVERYONE"] = "SiteCollaborator"; 
-      wiki = site.createContainer("wiki", null, perms);
+      wiki = site.createContainer("wiki");
    }
 
    if (!wiki.isTagScope)

@@ -1,15 +1,13 @@
 /**
  * Returns a two digit string if it is a one-digit number
  */
-function getTwoDigitNum(num) {
-   if(num < 10)
+function getTwoDigitNum(num)
+{
+   if (num < 10)
    {
       return "0" + num;
    }
-   else
-   {
-      return num;
-   }
+   return num;
 }
 
 /**
@@ -23,21 +21,14 @@ function getTwoDigitNum(num) {
 function getUniqueChildName(parentNode, prefix)
 {
    // we create a name looking like 
-   var name = prefix + "-";
-   var date = new Date();
-   name += date.getFullYear() + "-";
-   name += getTwoDigitNum(date.getMonth() + 1) + "-";
-   name += getTwoDigitNum(date.getDate()) + "_";
-   name += getTwoDigitNum(date.getHours());
-   name += getTwoDigitNum(date.getMinutes());
-   
+   var date = new Date(), name = prefix + "-" + date.getTime();
+
    // check that no child for the given name exists
-   var finalName = name;
-   var count = 1;
-   while (parentNode.childByNamePath(finalName) !== null)
+   var finalName = name + "_" + Math.floor(Math.random() * 1000), count = 0;
+   while (parentNode.childByNamePath(finalName) !== null || count > 100)
    {
-      count += 1;
-      finalName = name + "_" + count;
+      finalName = name + "_" + Math.floor(Math.random() * 1000);
+      ++count;
    }
    return finalName;
 }

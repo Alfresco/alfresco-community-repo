@@ -15,7 +15,7 @@ function findNodeInSite()
 {
    var siteId = url.templateArgs.site;
    var containerId = url.templateArgs.container;
-   var path = (url.templateArgs.path != undefined) ? url.templateArgs.path : "";
+   var path = (url.templateArgs.path !== null) ? url.templateArgs.path : "";
 
    // fetch site
    var site = siteService.getSite(siteId);
@@ -33,7 +33,7 @@ function findNodeInSite()
       if (node === null)
       {
       	status.setCode(status.STATUS_NOT_FOUND, "Unable to fetch container '" + containerId + "' of site '" + siteId + "'. (No write permission?)");
-     	return null;
+     	   return null;
       }
    }
    
@@ -73,12 +73,12 @@ function getRequestNode()
 {
    // check whether we got a node reference or a site related uri
    var node = null;
-   if (url.templateArgs.store_type != undefined)
+   if (url.templateArgs.store_type !== null)
    {
        node = findFromReference();
    }
    // site related uri
-   else if (url.templateArgs.site != undefined)
+   else if (url.templateArgs.site !== null)
    {
       node = findNodeInSite();
    }

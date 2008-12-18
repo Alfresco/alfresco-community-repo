@@ -9,14 +9,14 @@ function setOrUpdateReleasedAndUpdatedDates(node)
    // make sure the syndication aspect has been added
    if (! node.hasAspect(ASPECT_SYNDICATION))
    {
-      node.addAspect(ASPECT_SYNDICATION, new Array());
+      node.addAspect(ASPECT_SYNDICATION, []);
    }
    
    // (re-)enable permission inheritance which got disable for draft posts
    node.setInheritsPermissions(true);
    
    // check whether the published date has been set
-   if (node.properties[PROP_PUBLISHED] == undefined)
+   if (!node.properties[PROP_PUBLISHED])
    {
       // set the published date
       node.properties[PROP_PUBLISHED] = new Date();
@@ -41,7 +41,7 @@ function getBlogPostData(node)
    data.commentCount = getCommentsCount(node);
    
    // is the post published
-   var isPublished = (node.properties[PROP_PUBLISHED] != undefined);
+   var isPublished = (node.properties[PROP_PUBLISHED] !== null);
    if (isPublished)
    {
       data.releasedDate = node.properties[PROP_PUBLISHED];
@@ -51,7 +51,7 @@ function getBlogPostData(node)
    data.isDraft = ! isPublished;
    
    // set the isUpdated flag
-   var isUpdated = (node.properties[PROP_UPDATED] != undefined);
+   var isUpdated = (node.properties[PROP_UPDATED] !== null);
    data.isUpdated = isUpdated;
    if (isUpdated)
    {
@@ -63,7 +63,7 @@ function getBlogPostData(node)
    data.modifiedDate = node.properties["cm:modified"];
    
    // does the external post require an update?
-   if (isPublished && (node.properties["blg:lastUpdate"] != undefined))
+   if (isPublished && (node.properties["blg:lastUpdate"] !== null))
    {
       // we either use the release or updated date
       var modifiedDate = data.releasedDate;
@@ -87,7 +87,7 @@ function getBlogPostData(node)
    }
    
    // tags
-   if (node.tags != undefined)
+   if (node.tags !== null)
    {
        data.tags = node.tags;
    }
@@ -109,7 +109,7 @@ function getBlogPostData(node)
  */
 function hasExternalBlogConfiguration(node)
 {
-   if (node == null)
+   if (node === null)
    {
       return false;
    }
@@ -119,6 +119,6 @@ function hasExternalBlogConfiguration(node)
    }
    else
    {
-      return hasExternalBlogConfiguration(node.parent)
+      return hasExternalBlogConfiguration(node.parent);
    }
 }

@@ -9,16 +9,16 @@ const COMMENTS_TOPIC_NAME = "Comments";
 function getComments(node)
 {
    var commentsFolder = getCommentsFolder(node);
-   if (commentsFolder != null)
+   if (commentsFolder !== null)
    {
       var elems = commentsFolder.childAssocs["cm:contains"];
-      if (elems != null)
+      if (elems !== null)
       {
          return elems;
       }
    }
    // no comments found, return an empty array
-   return new Array();
+   return [];
 }
 
 /**
@@ -47,7 +47,7 @@ function getCommentsFolder(node)
 function getOrCreateCommentsFolder(node)
 {
    var commentsFolder = getCommentsFolder(node);
-   if (commentsFolder != null)
+   if (commentsFolder !== null)
    {
       return commentsFolder;
    }

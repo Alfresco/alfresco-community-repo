@@ -93,7 +93,7 @@ function main()
       {
          title: model.item.node.properties.title,
          page: json.get("page") + "?postId=" + model.item.node.properties.name
-      }
+      };
       activities.postActivity("org.alfresco.blog.post-created", json.get("site"), "blog", jsonUtils.toJSONString(data));
    }
 }

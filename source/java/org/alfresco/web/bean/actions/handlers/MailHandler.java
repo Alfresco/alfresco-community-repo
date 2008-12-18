@@ -95,7 +95,8 @@ public class MailHandler extends BaseActionHandler
       }
    }
 
-   public void prepareForEdit(Map<String, Serializable> actionProps,
+   @SuppressWarnings("unchecked")
+public void prepareForEdit(Map<String, Serializable> actionProps,
          Map<String, Serializable> repoProps)
    {
       // get hold of the current wizard so we can extract some data from it
@@ -114,10 +115,26 @@ public class MailHandler extends BaseActionHandler
       {
          actionProps.put(PROP_TO, to);
       }
-      else
-      {
-         List<String> recipients = (List<String>)repoProps.get(MailActionExecuter.PARAM_TO_MANY);
-         if (recipients != null && recipients.size() != 0)
+      else 
+      { 
+         Object recipObj = repoProps.get(MailActionExecuter.PARAM_TO_MANY); 
+        
+         List<String> recipients = null; 
+        
+         if ( recipObj != null) 
+         { 
+             if ( recipObj instanceof String) 
+             { 
+                 recipients = new ArrayList<String>(); 
+                 recipients.add((String) recipObj); 
+             } 
+             else if ( recipObj instanceof List) 
+             { 
+                 recipients = (List<String>) recipObj; 
+             } 
+         } 
+
+         if (recipients != null && recipients.size() != 0) 
          {
             // rebuild the list of RecipientWrapper objects from the stored action
             for (String authority : recipients)

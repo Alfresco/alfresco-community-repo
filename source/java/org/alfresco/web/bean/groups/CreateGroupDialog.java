@@ -55,6 +55,7 @@ public class CreateGroupDialog extends BaseDialogBean
    private static final String MSG_ROOT_GROUPS = "root_groups";
    private static final String MSG_BUTTON_NEW_GROUP = "new_group";
 
+   
    // ------------------------------------------------------------------------------
    // Dialog implementation
    
@@ -112,6 +113,7 @@ public class CreateGroupDialog extends BaseDialogBean
       return subtitle;
    }
    
+   
    // ------------------------------------------------------------------------------
    // Bean property getters and setters
    
@@ -135,13 +137,14 @@ public class CreateGroupDialog extends BaseDialogBean
     */
    protected AuthorityService getAuthService()
    {
-     //check for null in cluster environment
       if (authService == null)
       {
          authService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAuthorityService();
       }
       return authService;
    }
+   
+   
    // ------------------------------------------------------------------------------
    // Helpers
 
@@ -149,10 +152,10 @@ public class CreateGroupDialog extends BaseDialogBean
    {
       String name = (String) value;
       
-      if (name.indexOf('\'') != -1 || name.indexOf('"') != -1 || name.indexOf('\\') != -1)
+      if (name.indexOf('"') != -1 || name.indexOf('\\') != -1)
       {
          String err = MessageFormat.format(Application.getMessage(context, MSG_ERR_NAME), 
-                  new Object[] { "', \", \\" });
+                  new Object[] { "\", \\" });
          throw new ValidatorException(new FacesMessage(err));
       }
    }

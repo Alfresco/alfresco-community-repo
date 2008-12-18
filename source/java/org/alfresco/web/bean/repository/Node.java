@@ -109,6 +109,14 @@ public class Node implements Serializable
          for (QName qname: props.keySet())
          {
             Serializable propValue = props.get(qname);
+            
+            // Lists returned from the node service could be unmodifiable,
+            // therefore create copies for modification purposes
+            if (propValue instanceof List)
+            {
+               propValue = new ArrayList((List)propValue);
+            }
+            
             this.properties.put(qname.toString(), propValue);
          }
          

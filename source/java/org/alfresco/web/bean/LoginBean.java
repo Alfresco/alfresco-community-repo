@@ -214,11 +214,11 @@ public class LoginBean implements Serializable
    {
       int minPasswordLength = Application.getClientConfig(context).getMinPasswordLength();
       
-      String pass = (String) value;
-      if (pass.length() < minPasswordLength || pass.length() > 32)
+      String pass = (String)value;
+      if (pass.length() < minPasswordLength || pass.length() > 256)
       {
          String err = MessageFormat.format(Application.getMessage(context, MSG_PASSWORD_LENGTH),
-               new Object[]{minPasswordLength, 32});
+               new Object[]{minPasswordLength, 256});
          throw new ValidatorException(new FacesMessage(err));
       }
    }
@@ -230,20 +230,19 @@ public class LoginBean implements Serializable
          throws ValidatorException
    {
       int minUsernameLength = Application.getClientConfig(context).getMinUsernameLength();
-         
-      String name = (String) value;
-      name = name.trim();
-
+      
+      String name = ((String)value).trim();
+      
       if (name.length() < minUsernameLength || name.length() > 256)
       {
          String err = MessageFormat.format(Application.getMessage(context, MSG_USERNAME_LENGTH),
                new Object[]{minUsernameLength, 256});
          throw new ValidatorException(new FacesMessage(err));
       }
-      if (name.indexOf('\'') != -1 || name.indexOf('"') != -1 || name.indexOf('\\') != -1)
+      if (name.indexOf('"') != -1)
       {
          String err = MessageFormat.format(Application.getMessage(context, MSG_USER_ERR),
-               new Object[]{"', \", \\"});
+               new Object[]{"\""});
          throw new ValidatorException(new FacesMessage(err));
       }
    }
@@ -426,12 +425,11 @@ public class LoginBean implements Serializable
    private static final String MSG_ERROR_UNKNOWN_USER = "error_login_user";
    private static final String MSG_ERROR_LOGIN_DISALLOWED = "error_login_disallowed";
    private static final String MSG_ERROR_LOGIN_MAXUSERS = "error_login_maxusers";
-   private static final String MSG_USERNAME_CHARS = "login_err_username_chars";
-   private static final String MSG_USERNAME_LENGTH = "login_err_username_length";
-   private static final String MSG_PASSWORD_CHARS = "login_err_password_chars";
-   private static final String MSG_PASSWORD_LENGTH = "login_err_password_length";
-   private static final String MSG_USER_ERR = "user_err_user_name";
-
+   
+   public static final String MSG_USERNAME_LENGTH = "login_err_username_length";
+   public static final String MSG_PASSWORD_LENGTH = "login_err_password_length";
+   public static final String MSG_USER_ERR = "user_err_user_name";
+   
    public static final String LOGIN_REDIRECT_KEY = "_alfRedirect";
    public static final String LOGIN_EXTERNAL_AUTH= "_alfExternalAuth";
 

@@ -54,6 +54,7 @@ import org.alfresco.util.Pair;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.UIContextService;
 import org.alfresco.web.app.servlet.FacesHelper;
+import org.alfresco.web.bean.LoginBean;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.spaces.CreateSpaceWizard;
 import org.alfresco.web.bean.wizard.BaseWizardBean;
@@ -113,12 +114,12 @@ public class CreateUserWizard extends BaseWizardBean
     /** ContentUsageService bean reference */
     transient private ContentUsageService contentUsageService;
     
-
     /** ref to the company home space folder */
     private NodeRef companyHomeSpaceRef = null;
 
     /** ref to the default home location */
     private NodeRef defaultHomeSpaceRef;
+
 
     /**
      * @param authenticationService The AuthenticationService to set.
@@ -128,21 +129,17 @@ public class CreateUserWizard extends BaseWizardBean
         this.authenticationService = authenticationService;
     }
 
-    
     /**
      * @return authenticationService
      */
     private AuthenticationService getAuthenticationService()
     {
-     //check for null for cluster environment
         if (authenticationService == null)
         {
            authenticationService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAuthenticationService();
         }
         return authenticationService;
     }
-
-
 
     /**
      * @param personService The person service.
@@ -152,20 +149,17 @@ public class CreateUserWizard extends BaseWizardBean
         this.personService = personService;
     }
     
-    
     /**
      * @return personService
      */
     private PersonService getPersonService()
     {
-     //check for null for cluster environment
         if (personService == null)
         {
            personService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getPersonService(); 
         }
         return personService;
     }
-
 
     /**
      * @param tenantService         The tenantService to set.
@@ -180,7 +174,6 @@ public class CreateUserWizard extends BaseWizardBean
      */
     private TenantService getTenantService()
     {
-     //check for null for cluster environment
         if(tenantService == null)
         {
            tenantService = (TenantService) FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "tenantService");
@@ -201,7 +194,6 @@ public class CreateUserWizard extends BaseWizardBean
      */
     private PermissionService getPermissionService()
     {
-     //check for null for cluster environment
         if (permissionService == null)
         {
            permissionService  = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getPermissionService();
@@ -222,7 +214,6 @@ public class CreateUserWizard extends BaseWizardBean
      */
     private OwnableService getOwnableService()
     {
-     //check for null for cluster environment
         if (ownableService == null)
         {
            ownableService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getOwnableService();
@@ -243,7 +234,6 @@ public class CreateUserWizard extends BaseWizardBean
      */
     private ContentUsageService getContentUsageService()
     {
-       //check for null for cluster environment       
        if (contentUsageService == null)
        {
           contentUsageService = (ContentUsageService) FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "ContentUsageService");
@@ -255,9 +245,9 @@ public class CreateUserWizard extends BaseWizardBean
      * Initialises the wizard
      */
     @Override
-    public void init(Map<String, String> arg0)
+    public void init(Map<String, String> params)
     {
-        super.init(arg0);
+        super.init(params);
 
         // reset all variables
         this.firstName = "";
@@ -606,20 +596,14 @@ public class CreateUserWizard extends BaseWizardBean
      */
     public void validatePassword(FacesContext context, UIComponent component, Object value) throws ValidatorException
     {
-        String pass = (String) value;
-        if (pass.length() < 5 || pass.length() > 12)
+        int minPasswordLength = Application.getClientConfig(context).getMinPasswordLength();
+        
+        String pass = (String)value;
+        if (pass.length() < minPasswordLength || pass.length() > 256)
         {
-            String err = "Password must be between 5 and 12 characters in length.";
+            String err = MessageFormat.format(Application.getMessage(context, LoginBean.MSG_PASSWORD_LENGTH),
+                    new Object[]{minPasswordLength, 256});
             throw new ValidatorException(new FacesMessage(err));
-        }
-
-        for (int i = 0; i < pass.length(); i++)
-        {
-            if (Character.isLetterOrDigit(pass.charAt(i)) == false)
-            {
-                String err = "Password can only contain characters or digits.";
-                throw new ValidatorException(new FacesMessage(err));
-            }
         }
     }
 
@@ -628,20 +612,20 @@ public class CreateUserWizard extends BaseWizardBean
      */
     public void validateUsername(FacesContext context, UIComponent component, Object value) throws ValidatorException
     {
-        String pass = (String) value;
-        if (pass.length() < 5 || pass.length() > 12)
+        int minUsernameLength = Application.getClientConfig(context).getMinUsernameLength();
+        
+        String name = ((String)value).trim();
+        if (name.length() < minUsernameLength || name.length() > 256)
         {
-            String err = "Username must be between 5 and 12 characters in length.";
+            String err = MessageFormat.format(Application.getMessage(context, LoginBean.MSG_USERNAME_LENGTH),
+                    new Object[]{minUsernameLength, 256});
             throw new ValidatorException(new FacesMessage(err));
         }
-
-        for (int i = 0; i < pass.length(); i++)
+        if (name.indexOf('"') != -1 || name.indexOf('\\') != -1)
         {
-            if (Character.isLetterOrDigit(pass.charAt(i)) == false)
-            {
-                String err = "Username can only contain characters or digits.";
-                throw new ValidatorException(new FacesMessage(err));
-            }
+            String err = MessageFormat.format(Application.getMessage(context, LoginBean.MSG_USER_ERR),
+                    new Object[]{"\", \\"});
+            throw new ValidatorException(new FacesMessage(err));
         }
     }
 

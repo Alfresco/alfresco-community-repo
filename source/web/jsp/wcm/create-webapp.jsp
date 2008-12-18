@@ -92,7 +92,7 @@
       </td>
       <td width="85%">
          </f:verbatim>
-         <h:inputText id="name" value="#{DialogManager.bean.name}" size="35" maxlength="1024" 
+         <h:inputText id="name" value="#{DialogManager.bean.name}" size="35" maxlength="150" 
                       onkeyup="javascript:checkButtonState();" onchange="javascript:checkButtonState();" />
          <f:verbatim>
       </td>
@@ -106,7 +106,7 @@
       </td>
       <td>
          </f:verbatim>
-         <h:inputText id="description" value="#{DialogManager.bean.description}" size="35" maxlength="1024" />
+         <h:inputText id="description" value="#{DialogManager.bean.description}" size="35" maxlength="500" />
          <f:verbatim>
       </td>
    </tr>

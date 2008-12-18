@@ -3,38 +3,47 @@
 
 <beans>
 
-    <bean id="authenticationDao" class="org.alfresco.repo.security.authentication.ntlm.NullMutableAuthenticationDao" />
+   <bean id="authenticationDao" class="org.alfresco.repo.security.authentication.DefaultMutableAuthenticationDao" >
+         <property name="allowSetEnabled" value="true" />
+         <property name="allowGetEnabled" value="true" />
+         <property name="allowDeleteUser" value="true" />
+         <property name="allowCreateUser" value="true" />
+   </bean>
 
-    <!-- The authentication component.                                      -->
 
-    <!-- Use the passthru authentication component to authenticate using    -->
-    <!-- user accounts on one or more Windows servers.                      -->
-    
-    <!-- Properties that specify the server(s) to use for passthru          -->
-    <!-- authentication :-                                                  -->
-    <!--   useLocalServer   use the local server for authentication         -->
-    <!--   domain           use domain controllers from the specified domain-->
-    <!--   servers          comma delimted list of server addresses or      -->
-    <!--                    names                                           -->
-       
-    <bean id="authenticationComponent"
-          class="org.alfresco.repo.security.authentication.ntlm.NTLMAuthenticationComponentImpl"
-          parent="authenticationComponentBase">
-        <property name="useLocalServer">
-            <value>true</value>
-        </property>
-        <property name="personService">
-            <ref bean="personService" />
-        </property>
-        <property name="nodeService">
-            <ref bean="nodeService" />
-        </property>
-        <property name="transactionService">
-            <ref bean="transactionComponent" />
-        </property>
-        <property name="guestAccess">
-            <value>false</value>
-        </property>
-    </bean>
-    
+   <!-- The authentication component.                                      -->
+
+   <!-- Use the passthru authentication component to authenticate using    -->
+   <!-- user accounts on one or more Windows servers.                      -->
+
+   <!-- Properties that specify the server(s) to use for passthru          -->
+   <!-- authentication :-                                                  -->
+   <!--   useLocalServer   use the local server for authentication         -->
+   <!--   domain           use domain controllers from the specified domain-->
+   <!--   servers          comma delimted list of server addresses or      -->
+   <!--                    names                                           -->
+
+   <bean id="authenticationComponent"
+         class="org.alfresco.repo.security.authentication.ntlm.NTLMAuthenticationComponentImpl"
+         parent="authenticationComponentBase">
+       <property name="useLocalServer">
+           <value>false</value>
+       </property>
+       <property name="servers">
+           <value>192.168.0.1</value>
+       </property>
+       <property name="personService">
+           <ref bean="personService" />
+       </property>
+       <property name="nodeService">
+           <ref bean="nodeService" />
+       </property>
+       <property name="transactionService">
+           <ref bean="transactionComponent" />
+       </property>
+       <property name="guestAccess">
+           <value>false</value>
+       </property>
+   </bean>
+
 </beans>

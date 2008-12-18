@@ -259,8 +259,16 @@ public class SetPermissionsDialog extends UpdatePermissionsDialog
                 query.append(term);
                 query.append("*");
                 ResultSet resultSet = Repository.getServiceRegistry(context).getSearchService().query(Repository.getStoreRef(), SearchService.LANGUAGE_LUCENE, query.toString());
-                List<NodeRef> nodes = resultSet.getNodeRefs();
-
+                List<NodeRef> nodes;
+                try
+                {
+                   nodes = resultSet.getNodeRefs();
+                }
+                finally
+                {
+                    resultSet.close();
+                }
+                
                 for (int index = 0; index < nodes.size(); index++)
                 {
                     NodeRef personRef = nodes.get(index);

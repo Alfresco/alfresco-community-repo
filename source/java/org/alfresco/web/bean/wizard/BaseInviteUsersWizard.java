@@ -391,8 +391,16 @@ public abstract class BaseInviteUsersWizard extends BaseWizardBean
                searchParams.setLimitBy(LimitBy.FINAL_SIZE);
             }
             
-            ResultSet resultSet = Repository.getServiceRegistry(context).getSearchService().query(searchParams);            
-            List<NodeRef> nodes = resultSet.getNodeRefs();
+            ResultSet resultSet = Repository.getServiceRegistry(context).getSearchService().query(searchParams);
+            List<NodeRef> nodes;
+            try
+            {
+               nodes = resultSet.getNodeRefs();
+            }
+            finally
+            {
+                resultSet.close();
+            }
             
             // set the maximum users returned flag if appropriate
             if (nodes.size() == maxResults)

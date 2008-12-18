@@ -1009,6 +1009,7 @@ public class AdminNodeBrowseBean implements Serializable
             {
                 rows.setWrappedData(resultSet.getChildAssocRefs());
                 length = resultSet.length();
+                resultSet.close();
             }
         }
 

@@ -128,6 +128,7 @@ public abstract class BaseReassignDialog extends BaseDialogBean
       SelectItem[] items;
       
       UserTransaction tx = null;
+      ResultSet resultSet = null;
       try
       {
          tx = Repository.getUserTransaction(context, true);
@@ -143,7 +144,7 @@ public abstract class BaseReassignDialog extends BaseDialogBean
          query.append("*\" @").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:userName:");
          query.append(term);
          query.append("*");
-         ResultSet resultSet = Repository.getServiceRegistry(context).getSearchService().query(
+         resultSet = Repository.getServiceRegistry(context).getSearchService().query(
                  Repository.getStoreRef(), SearchService.LANGUAGE_LUCENE, query.toString());
          List<NodeRef> nodes = resultSet.getNodeRefs();
          
@@ -174,6 +175,13 @@ public abstract class BaseReassignDialog extends BaseDialogBean
          try { if (tx != null) {tx.rollback();} } catch (Exception tex) {}
          
          items = new SelectItem[0];
+      }
+      finally
+      {
+         if (resultSet != null)
+         {
+            resultSet.close();
+         }
       }
       
       return items;

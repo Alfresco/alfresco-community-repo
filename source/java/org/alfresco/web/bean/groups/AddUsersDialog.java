@@ -220,12 +220,20 @@ public class AddUsersDialog extends BaseDialogBean
                query.append("*\" @").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:userName:");
                query.append(term);
                query.append("*");
+               List<NodeRef> nodes;
                ResultSet resultSet = Repository.getServiceRegistry(context).getSearchService().query(
                        Repository.getStoreRef(),
                        SearchService.LANGUAGE_LUCENE,
-                       query.toString());            
-               List<NodeRef> nodes = resultSet.getNodeRefs();
-
+                       query.toString());
+               try
+               {
+                  nodes = resultSet.getNodeRefs();
+               }
+               finally
+               {
+                  resultSet.close();
+               }
+               
                ArrayList<SelectItem> itemList = new ArrayList<SelectItem>(nodes.size());
                for (NodeRef personRef : nodes)
                {

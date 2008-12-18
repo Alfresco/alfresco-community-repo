@@ -492,14 +492,22 @@ public class RegenerateRenditionsWizard
          LOGGER.debug("running query " + query);
       sp.setQuery(query.toString());
       final ResultSet rs = getSearchService().query(sp);
-      final List<FormInstanceData> result = new ArrayList<FormInstanceData>(rs.length());
-      for (final ResultSetRow row : rs)
+      try
       {
-         final String avmPath = AVMNodeConverter.ToAVMVersionPath(row.getNodeRef()).getSecond();
-         final String previewAvmPath = AVMUtil.getCorrespondingPathInPreviewStore(avmPath);
-         result.add(getFormsService().getFormInstanceData(-1, previewAvmPath));
+         final List<FormInstanceData> result = new ArrayList<FormInstanceData>(rs.length());
+         for (final ResultSetRow row : rs)
+         {
+            final String avmPath = AVMNodeConverter.ToAVMVersionPath(row.getNodeRef()).getSecond();
+            final String previewAvmPath = AVMUtil.getCorrespondingPathInPreviewStore(avmPath);
+            result.add(getFormsService().getFormInstanceData(-1, previewAvmPath));
+         }
+         
+         return result;
       }
-      return result;
+      finally
+      {
+         rs.close();
+      }
    }
 
    private List<Rendition> getRelatedRenditions(final WebProject webProject, final RenderingEngineTemplate ret)
@@ -516,14 +524,21 @@ public class RegenerateRenditionsWizard
          LOGGER.debug("running query " + query);
       sp.setQuery(query.toString());
       final ResultSet rs = getSearchService().query(sp);
-      final List<Rendition> result = new ArrayList<Rendition>(rs.length()); 
-      for (final ResultSetRow row : rs)
+      try
       {
-         final String avmPath = AVMNodeConverter.ToAVMVersionPath(row.getNodeRef()).getSecond();
-         final String previewAvmPath = AVMUtil.getCorrespondingPathInPreviewStore(avmPath);
-         result.add(getFormsService().getRendition(-1, previewAvmPath));
+         final List<Rendition> result = new ArrayList<Rendition>(rs.length()); 
+         for (final ResultSetRow row : rs)
+         {
+            final String avmPath = AVMNodeConverter.ToAVMVersionPath(row.getNodeRef()).getSecond();
+            final String previewAvmPath = AVMUtil.getCorrespondingPathInPreviewStore(avmPath);
+            result.add(getFormsService().getRendition(-1, previewAvmPath));
+         }
+         return result;
       }
-      return result;
+      finally
+      {
+         rs.close();
+      }
    }
 
    private List<Rendition> regenerateRenditions()
@@ -596,65 +611,72 @@ public class RegenerateRenditionsWizard
          LOGGER.debug("running query " + query);
       sp.setQuery(query.toString());
       final ResultSet rs = getSearchService().query(sp);
-      if (LOGGER.isDebugEnabled())
-         LOGGER.debug("received " + rs.length() + " results");
-
-      final List<Rendition> result = new ArrayList<Rendition>(rs.length());
-      for (final ResultSetRow row : rs)
+      try
       {
-         final String avmPath = AVMNodeConverter.ToAVMVersionPath(row.getNodeRef()).getSecond();
-         final String previewAvmPath = AVMUtil.getCorrespondingPathInPreviewStore(avmPath);
-         if (this.regenerateScope.equals(REGENERATE_SCOPE_ALL) ||
-             this.regenerateScope.equals(REGENERATE_SCOPE_FORM))
+         if (LOGGER.isDebugEnabled())
+            LOGGER.debug("received " + rs.length() + " results");
+
+         final List<Rendition> result = new ArrayList<Rendition>(rs.length());
+         for (final ResultSetRow row : rs)
          {
-            final FormInstanceData fid = getFormsService().getFormInstanceData(-1, previewAvmPath);
-            try
+            final String avmPath = AVMNodeConverter.ToAVMVersionPath(row.getNodeRef()).getSecond();
+            final String previewAvmPath = AVMUtil.getCorrespondingPathInPreviewStore(avmPath);
+            if (this.regenerateScope.equals(REGENERATE_SCOPE_ALL) ||
+                  this.regenerateScope.equals(REGENERATE_SCOPE_FORM))
             {
-               final List<FormInstanceData.RegenerateResult> regenResults = fid.regenerateRenditions();
-               for (final FormInstanceData.RegenerateResult rr : regenResults)
+               final FormInstanceData fid = this.formsService.getFormInstanceData(-1, previewAvmPath);
+               try
                {
-                  if (rr.getException() != null)
+                  final List<FormInstanceData.RegenerateResult> regenResults = fid.regenerateRenditions();
+                  for (final FormInstanceData.RegenerateResult rr : regenResults)
                   {
-                     Utils.addErrorMessage("error regenerating rendition using " + 
-                                           rr.getRenderingEngineTemplate().getName() + 
-                                           ": " + rr.getException().getMessage(),
-                                           rr.getException());
-                  }
-                  else
-                  {
-                     result.add(rr.getRendition());
-                  }
-                  if (rr.getRendition() != null)
-                  {
-                     getAvmLockingService().removeLock(AVMUtil.getStoreId(rr.getRendition().getPath()),
-                                                       AVMUtil.getStoreRelativePath(rr.getRendition().getPath()));
+                     if (rr.getException() != null)
+                     {
+                        Utils.addErrorMessage("error regenerating rendition using " + 
+                              rr.getRenderingEngineTemplate().getName() + 
+                              ": " + rr.getException().getMessage(),
+                              rr.getException());
+                     }
+                     else
+                     {
+                        result.add(rr.getRendition());
+                     }
+                     if (rr.getRendition() != null)
+                     {
+                        this.avmLockingService.removeLock(AVMUtil.getStoreId(rr.getRendition().getPath()),
+                              AVMUtil.getStoreRelativePath(rr.getRendition().getPath()));
+                     }
                   }
                }
+               catch (FormNotFoundException fnfe)
+               {
+                  Utils.addErrorMessage("error regenerating renditions of " + fid.getPath() + 
+                        ": " + fnfe.getMessage(), 
+                        fnfe);
+               }
             }
-            catch (FormNotFoundException fnfe)
+            else
             {
-               Utils.addErrorMessage("error regenerating renditions of " + fid.getPath() + 
-                                     ": " + fnfe.getMessage(), 
-                                     fnfe);
+               final Rendition r = this.formsService.getRendition(-1, previewAvmPath);
+               try
+               {
+                  r.regenerate();
+                  result.add(r);
+               }
+               catch (Exception e)
+               {
+                  Utils.addErrorMessage("error regenerating rendition using " + 
+                        r.getRenderingEngineTemplate().getName() + 
+                        ": " + e.getMessage(),
+                        e);
+               }
             }
          }
-         else
-         {
-            final Rendition r = getFormsService().getRendition(-1, previewAvmPath);
-            try
-            {
-               r.regenerate();
-               result.add(r);
-            }
-            catch (Exception e)
-            {
-               Utils.addErrorMessage("error regenerating rendition using " + 
-                                     r.getRenderingEngineTemplate().getName() + 
-                                     ": " + e.getMessage(),
-                                     e);
-            }
-         }
+         return result;
       }
-      return result;
+      finally
+      {
+         rs.close();
+      }
    }
 }

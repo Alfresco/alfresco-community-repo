@@ -272,13 +272,20 @@ public class EditFormWizard
        for (WebProject wp: webProjects)
        {
            ResultSet results = searchRenderingEngineTemplateInWebProject(wp, retd.getName());
-           for (int i=0; i<results.length(); i++)
+           try
            {
-               NodeRef webformTemplateNodeRef = results.getNodeRef(i);
-               NodeRef webformNodeRef = getNodeService().getPrimaryParent(webformTemplateNodeRef).getParentRef();
-               getNodeService().removeChild(webformNodeRef, webformTemplateNodeRef);
-               if (LOGGER.isDebugEnabled())
-                  LOGGER.debug(webformNodeRef);
+              for (int i=0; i<results.length(); i++)
+              {
+                  NodeRef webformTemplateNodeRef = results.getNodeRef(i);
+                  NodeRef webformNodeRef = getNodeService().getPrimaryParent(webformTemplateNodeRef).getParentRef();
+                  getNodeService().removeChild(webformNodeRef, webformTemplateNodeRef);
+                  if (LOGGER.isDebugEnabled())
+                     LOGGER.debug(webformNodeRef);
+              }
+           }
+           finally
+           {
+              results.close();
            }
        }
    }
@@ -324,26 +331,33 @@ public class EditFormWizard
 
                ResultSet webforms = getSearchService().query(wp.getNodeRef().getStoreRef(), SearchService.LANGUAGE_LUCENE, query);
                
-               props.clear();
-               props.put(WCMAppModel.PROP_BASE_RENDERING_ENGINE_TEMPLATE_NAME, 
-                         retd.getName());
-               for (int i=0; i<webforms.length(); i++)
+               try
                {
-                   if (LOGGER.isDebugEnabled())
-                      LOGGER.debug("WebForm NodeRef: " + webforms.getNodeRef(i));
-                   
-                   NodeRef templateRef = getNodeService().createNode(webforms.getNodeRef(i),
-                                                                     WCMAppModel.ASSOC_WEBFORMTEMPLATE,
-                                                                     WCMAppModel.ASSOC_WEBFORMTEMPLATE,
-                                                                     WCMAppModel.TYPE_WEBFORMTEMPLATE,
-                                                                     props).getChildRef();
-                   
-                   if (retd.getOutputPathPatternForRendition() != null)
-                   {
-                      props.clear();
-                      props.put(WCMAppModel.PROP_OUTPUT_PATH_PATTERN, retd.getOutputPathPatternForRendition());
-                      getNodeService().addAspect(templateRef, WCMAppModel.ASPECT_OUTPUT_PATH_PATTERN, props);
-                   }
+                  props.clear();
+                  props.put(WCMAppModel.PROP_BASE_RENDERING_ENGINE_TEMPLATE_NAME, 
+                            retd.getName());
+                  for (int i=0; i<webforms.length(); i++)
+                  {
+                      if (LOGGER.isDebugEnabled())
+                         LOGGER.debug("WebForm NodeRef: " + webforms.getNodeRef(i));
+                      
+                      NodeRef templateRef = getNodeService().createNode(webforms.getNodeRef(i),
+                                                                        WCMAppModel.ASSOC_WEBFORMTEMPLATE,
+                                                                        WCMAppModel.ASSOC_WEBFORMTEMPLATE,
+                                                                        WCMAppModel.TYPE_WEBFORMTEMPLATE,
+                                                                        props).getChildRef();
+                      
+                      if (retd.getOutputPathPatternForRendition() != null)
+                      {
+                         props.clear();
+                         props.put(WCMAppModel.PROP_OUTPUT_PATH_PATTERN, retd.getOutputPathPatternForRendition());
+                         getNodeService().addAspect(templateRef, WCMAppModel.ASPECT_OUTPUT_PATH_PATTERN, props);
+                      }
+                  }
+               }
+               finally
+               {
+                  webforms.close();
                }
            }
        }
@@ -380,7 +394,7 @@ public class EditFormWizard
        return result;
    }
 
-/**
+   /**
     * Action handler called when the Remove button is pressed to remove a 
     * rendering engine
     */

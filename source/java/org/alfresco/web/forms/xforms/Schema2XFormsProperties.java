@@ -145,18 +145,25 @@ public class Schema2XFormsProperties
                      searchService.query(Repository.getStoreRef(),
                                          SearchService.LANGUAGE_LUCENE,
                                          "PATH:\"" + name + "\"");
-                  LOGGER.debug("search returned " + results.length() + 
-                               " results");
-                  if (results.length() == 1)
+                  try
                   {
-                     final NodeRef nr = results.getNodeRef(0);
-                     final ContentReader reader =
-                        contentService.getReader(nr, ContentModel.PROP_CONTENT);
-                     return reader.getContentInputStream();
+                     LOGGER.debug("search returned " + results.length() + 
+                                  " results");
+                     if (results.length() == 1)
+                     {
+                        final NodeRef nr = results.getNodeRef(0);
+                        final ContentReader reader =
+                           contentService.getReader(nr, ContentModel.PROP_CONTENT);
+                        return reader.getContentInputStream();
+                     }
+                     else
+                     {
+                        return super.getResourceAsStream(name);
+                     }
                   }
-                  else
+                  finally
                   {
-                     return super.getResourceAsStream(name);
+                     results.close();
                   }
                }
             };

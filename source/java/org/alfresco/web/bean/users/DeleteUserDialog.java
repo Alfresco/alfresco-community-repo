@@ -37,6 +37,7 @@ import javax.transaction.UserTransaction;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthenticationService;
@@ -153,9 +154,18 @@ public class DeleteUserDialog extends BaseDialogBean
             params.setLanguage(SearchService.LANGUAGE_LUCENE);
             params.addStore(Repository.getStoreRef());
             params.setQuery(query);
-
-            List<NodeRef> people = this.getSearchService().query(params).getNodeRefs();
-
+            
+            ResultSet results = this.getSearchService().query(params);
+            List<NodeRef> people;
+            try
+            {
+               people = results.getNodeRefs();
+            }
+            finally
+            {
+               results.close();
+            }
+            
             if (logger.isDebugEnabled())
                logger.debug("Found " + people.size() + " users");
 

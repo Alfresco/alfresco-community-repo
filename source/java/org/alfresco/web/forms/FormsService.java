@@ -218,17 +218,24 @@ public final class FormsService
       final ResultSet rs = this.searchService.query(Repository.getStoreRef(),
                                                     SearchService.LANGUAGE_LUCENE,
                                                     query);
-      if (LOGGER.isDebugEnabled())
-          LOGGER.debug("found " + rs.length() + " form definitions");
-      final Collection<Form> result = new ArrayList<Form>(rs.length());
-      for (final ResultSetRow row : rs)
+      try
       {
-         result.add(this.getForm(row.getNodeRef()));
+         if (LOGGER.isDebugEnabled())
+            LOGGER.debug("found " + rs.length() + " form definitions");
+         final Collection<Form> result = new ArrayList<Form>(rs.length());
+         for (final ResultSetRow row : rs)
+         {
+            result.add(this.getForm(row.getNodeRef()));
+         }
+         QuickSort sorter = new QuickSort((List)result, "name", true, IDataContainer.SORT_CASEINSENSITIVE);
+         sorter.sort();
+         
+         return result;
       }
-      QuickSort sorter = new QuickSort((List)result, "name", true, IDataContainer.SORT_CASEINSENSITIVE);
-      sorter.sort();
-      
-      return result;
+      finally
+      {
+         rs.close();
+      }
    }
    
    /** 
@@ -400,15 +407,22 @@ public final class FormsService
       final ResultSet rs = this.searchService.query(Repository.getStoreRef(),
                                                     SearchService.LANGUAGE_LUCENE,
                                                     query);
-      if (LOGGER.isDebugEnabled())
+      try
       {
-         LOGGER.debug("query " + query + " returned " + rs.length() + " results");
+         if (LOGGER.isDebugEnabled())
+         {
+            LOGGER.debug("query " + query + " returned " + rs.length() + " results");
+         }
+         final List<NodeRef> result = new ArrayList<NodeRef>(rs.length());
+         for (final ResultSetRow row : rs)
+         {
+            result.add(row.getNodeRef());
+         }
+         return result;
       }
-      final List<NodeRef> result = new ArrayList<NodeRef>(rs.length());
-      for (final ResultSetRow row : rs)
+      finally
       {
-         result.add(row.getNodeRef());
+         rs.close();
       }
-      return result;
    }
 }

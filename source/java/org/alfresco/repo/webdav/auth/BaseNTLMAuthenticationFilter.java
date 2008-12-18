@@ -204,6 +204,9 @@ public abstract class BaseNTLMAuthenticationFilter implements Filter
             {
                 m_srvName = m_srvConfig.getLocalServerName(true);
             }
+            
+            // Find the security configuration section
+            m_secConfig = (SecurityConfigSection)m_srvConfig.getConfigSection(SecurityConfigSection.SectionName);
         }
         else
         {
@@ -1057,16 +1060,19 @@ public abstract class BaseNTLMAuthenticationFilter implements Filter
             return null;
         }
         
-        // convert the client IP address to an integer value
-        int clientAddr = IPAddress.parseNumericAddress(clientIP);
-        for (DomainMapping domainMap : m_secConfig.getDomainMappings())
+        if (m_secConfig != null)
         {
-            if (domainMap.isMemberOfDomain(clientAddr))
+            // convert the client IP address to an integer value
+            int clientAddr = IPAddress.parseNumericAddress(clientIP);
+            for (DomainMapping domainMap : m_secConfig.getDomainMappings())
             {
-                if (getLogger().isDebugEnabled())
-                    getLogger().debug("Mapped client IP " + clientIP + " to domain " + domainMap.getDomain());
-            
-                return domainMap.getDomain();
+                if (domainMap.isMemberOfDomain(clientAddr))
+                {
+                    if (getLogger().isDebugEnabled())
+                        getLogger().debug("Mapped client IP " + clientIP + " to domain " + domainMap.getDomain());
+                
+                    return domainMap.getDomain();
+                }
             }
         }
         

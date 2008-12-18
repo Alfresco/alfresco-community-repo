@@ -62,7 +62,7 @@ public class DiscussionServiceTest extends BaseWebScriptTest
     private static final String USER_ADMIN = "admin";
     private static final String USER_ONE = "UserOneThird";
     private static final String USER_TWO = "UserTwoThird";
-    private static final String SITE_SHORT_NAME_DISCUSSION = "DiscussionSiteShortNameTwo";
+    private static final String SITE_SHORT_NAME_DISCUSSION = "DiscussionSiteShortNameThree";
     private static final String COMPONENT_DISCUSSION = "discussion";
 
     private static final String URL_FORUM_POST = "/api/forum/post/site/" + SITE_SHORT_NAME_DISCUSSION + "/" + COMPONENT_DISCUSSION + "/";
@@ -81,7 +81,7 @@ public class DiscussionServiceTest extends BaseWebScriptTest
         this.authenticationService = (AuthenticationService)getServer().getApplicationContext().getBean("AuthenticationService");
         this.authenticationComponent = (AuthenticationComponent)getServer().getApplicationContext().getBean("authenticationComponent");
         this.personService = (PersonService)getServer().getApplicationContext().getBean("PersonService");
-        this.siteService = (SiteService)getServer().getApplicationContext().getBean("siteService");
+        this.siteService = (SiteService)getServer().getApplicationContext().getBean("SiteService");
         
         // Authenticate as user
         this.authenticationComponent.setCurrentUser(USER_ADMIN);

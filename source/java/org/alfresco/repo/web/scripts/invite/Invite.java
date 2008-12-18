@@ -57,6 +57,8 @@ import org.alfresco.web.scripts.DeclarativeWebScript;
 import org.alfresco.web.scripts.Status;
 import org.alfresco.web.scripts.WebScriptException;
 import org.alfresco.web.scripts.WebScriptRequest;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Web Script invoked by a Site Manager (Inviter) to either send
@@ -68,6 +70,8 @@ import org.alfresco.web.scripts.WebScriptRequest;
  */
 public class Invite extends DeclarativeWebScript
 {
+    private static final Log logger = LogFactory.getLog(Invite.class);
+    
     private static final String ACTION_START = "start";
     private static final String ACTION_CANCEL = "cancel";
 
@@ -398,6 +402,9 @@ public class Invite extends DeclarativeWebScript
         // person who doesn't already exist, then throw a web script exception
         if (this.personService.personExists(inviteeUserName))
         {
+            if (logger.isInfoEnabled())
+                logger.info("Failed - unable to generate username for invitee.");
+            
             throw new WebScriptException(Status.STATUS_INTERNAL_SERVER_ERROR,
                     "Failed to generate a user name for invitee, which doesn't already belong to "
                         + "an existing person after " + MAX_NUM_INVITEE_USER_NAME_GEN_TRIES
@@ -446,44 +453,6 @@ public class Invite extends DeclarativeWebScript
     }
     
     /**
-     * Returns whether there is an invite in progress for the given invite user name
-     * and site short name
-     * 
-     * @param inviteeUserName
-     * @param siteShortName
-     * @return whether there is an invite in progress  
-     */
-    /*private boolean isInviteAlreadyInProgress(String inviteeUserName, String siteShortName)
-    {
-        // create workflow task query
-        WorkflowTaskQuery wfTaskQuery = new WorkflowTaskQuery();
-
-        // set query properties to look up task instances of inviteToSite task
-        // in active invite workflow instances 
-        wfTaskQuery.setActive(Boolean.TRUE);
-        wfTaskQuery.setProcessName(InviteWorkflowModel.WF_PROCESS_INVITE);
-        wfTaskQuery.setTaskState(WorkflowTaskState.COMPLETED);
-        wfTaskQuery.setTaskName(InviteWorkflowModel.WF_INVITE_TASK_INVITE_TO_SITE);
-
-        // set query process custom properties
-        HashMap<QName, Object> wfQueryProps = new HashMap<QName, Object>(2, 1.0f);
-        wfQueryProps.put(InviteWorkflowModel.WF_PROP_INVITEE_USER_NAME,
-                inviteeUserName);
-        wfQueryProps.put(InviteWorkflowModel.WF_PROP_SITE_SHORT_NAME,
-                siteShortName);
-        wfTaskQuery.setTaskCustomProps(wfQueryProps);
-        
-        // query for invite workflow tasks in progress for person (having given invitee email address)
-        // and given site short name
-        List<WorkflowTask> inviteTasksInProgress = this.workflowService
-                .queryTasks(wfTaskQuery);
-        
-        // throw web script exception if person (having the given invitee email address) already
-        // has an invitation in progress for the given site short name
-        return (inviteTasksInProgress.size() > 0);
-    }*/
-    
-    /**
      * Starts the Invite workflow
      * 
      * @param model
@@ -516,11 +485,20 @@ public class Invite extends DeclarativeWebScript
         String inviterRole = this.siteService.getMembersRole(siteShortName, inviterUserName);
         if ((inviterRole == null) || (inviterRole.equals(SiteModel.SITE_MANAGER) == false))
         {
+            if (logger.isInfoEnabled())
+                logger.info("Failed - Inviter is not a SiteManager role.");
+            
             throw new WebScriptException(Status.STATUS_FORBIDDEN,
                     "Cannot proceed with invitation. Inviter with user name : '" + inviterUserName
                     + "' is not the Site Manager of site: '" + siteShortName + "'. Inviter's role on that site is: '"
                     + inviterRole + "'");
         }
+        
+        if (logger.isDebugEnabled())
+            logger.debug("startInvite() inviterUserName=" + inviterUserName + " inviteeUserName=" + inviteeUserName + 
+                         " inviteeFirstName=" + inviteeFirstName + " inviteeLastName=" + inviteeLastName +
+                         " inviteeEmail=" + inviteeEmail + 
+                         " siteShortName=" + siteShortName + " inviteeSiteRole=" + inviteeSiteRole);
         
         //
         // if we have not explicitly been passed an existing user's user name then ....
@@ -546,19 +524,28 @@ public class Invite extends DeclarativeWebScript
                 // get invitee user name of that person                
                 Serializable userNamePropertyVal = this.nodeService.getProperty(
                         person, ContentModel.PROP_USERNAME);
-                inviteeUserName = DefaultTypeConverter.INSTANCE.convert(String.class, userNamePropertyVal);                               
+                inviteeUserName = DefaultTypeConverter.INSTANCE.convert(String.class, userNamePropertyVal);
+                
+                if (logger.isDebugEnabled())
+                    logger.debug("not explictly passed username - found matching email, resolved inviteeUserName=" + inviteeUserName);  
             }
             // else there are no existing people who have the given invitee email address
             // so create invitee person
             else
             {
                 inviteeUserName = createInviteePerson(inviteeFirstName, inviteeLastName, inviteeEmail);
+                
+                if (logger.isDebugEnabled())
+                    logger.debug("not explictly passed username - created new person, inviteeUserName=" + inviteeUserName);
             }
         }
         
         // throw web script exception if person is already a member of the given site
         if (this.siteService.isMember(siteShortName, inviteeUserName))
         {
+            if (logger.isInfoEnabled())
+                logger.info("Failed - invitee user is already a member of the site.");
+            
             throw new WebScriptException(Status.STATUS_CONFLICT,
                     "Cannot proceed with invitation. A person with user name: '" + inviteeUserName
                     + "' and invitee email address: '"
@@ -575,6 +562,8 @@ public class Invite extends DeclarativeWebScript
         String inviteePassword = null;
         if (this.mutableAuthenticationDao.userExists(inviteeUserName) == false)
         {
+            if (logger.isDebugEnabled())
+                logger.debug("Invitee user account does not exist, creating disabled account.");
             inviteePassword = createInviteeDisabledAccount(inviteeUserName);
         }
         
@@ -591,44 +580,33 @@ public class Invite extends DeclarativeWebScript
         // handle workflow definition does not exist
         if (wfDefinition == null)
         {
+            if (logger.isInfoEnabled())
+                logger.info("Workflow definition for name " + InviteWorkflowModel.WORKFLOW_DEFINITION_NAME + " does not exist.");
+            
             throw new WebScriptException(Status.STATUS_INTERNAL_SERVER_ERROR,
-                    "Workflow definition " + "for name "
-                            + InviteWorkflowModel.WORKFLOW_DEFINITION_NAME + " does not exist");
+                    "Workflow definition for name " + InviteWorkflowModel.WORKFLOW_DEFINITION_NAME + " does not exist.");
         }
 
         // Get invitee person NodeRef to add as assignee
         NodeRef inviteeNodeRef = this.personService.getPerson(inviteeUserName);
         
         // create workflow properties
-        Map<QName, Serializable> workflowProps = new HashMap<QName, Serializable>(
-                10);
-        workflowProps.put(InviteWorkflowModel.WF_PROP_INVITER_USER_NAME,
-                inviterUserName);
-        workflowProps.put(InviteWorkflowModel.WF_PROP_INVITEE_USER_NAME,
-                inviteeUserName);
+        Map<QName, Serializable> workflowProps = new HashMap<QName, Serializable>(16);
+        workflowProps.put(InviteWorkflowModel.WF_PROP_INVITER_USER_NAME, inviterUserName);
+        workflowProps.put(InviteWorkflowModel.WF_PROP_INVITEE_USER_NAME, inviteeUserName);
         workflowProps.put(WorkflowModel.ASSOC_ASSIGNEE, inviteeNodeRef);
-        workflowProps.put(InviteWorkflowModel.WF_PROP_INVITEE_FIRSTNAME,
-                inviteeFirstName);
-        workflowProps.put(InviteWorkflowModel.WF_PROP_INVITEE_LASTNAME,
-                inviteeLastName);
-        workflowProps.put(InviteWorkflowModel.WF_PROP_INVITEE_GEN_PASSWORD,
-                inviteePassword);
-        workflowProps.put(InviteWorkflowModel.WF_PROP_SITE_SHORT_NAME,
-                siteShortName);
-        workflowProps.put(InviteWorkflowModel.WF_PROP_INVITEE_SITE_ROLE,
-                inviteeSiteRole);
-        workflowProps.put(InviteWorkflowModel.WF_PROP_SERVER_PATH,
-                serverPath);
-        workflowProps.put(InviteWorkflowModel.WF_PROP_ACCEPT_URL,
-                acceptUrl);
-        workflowProps.put(InviteWorkflowModel.WF_PROP_REJECT_URL,
-                rejectUrl);
-        workflowProps.put(InviteWorkflowModel.WF_PROP_INVITE_TICKET,
-                inviteTicket);
+        workflowProps.put(InviteWorkflowModel.WF_PROP_INVITEE_FIRSTNAME, inviteeFirstName);
+        workflowProps.put(InviteWorkflowModel.WF_PROP_INVITEE_LASTNAME, inviteeLastName);
+        workflowProps.put(InviteWorkflowModel.WF_PROP_INVITEE_GEN_PASSWORD, inviteePassword);
+        workflowProps.put(InviteWorkflowModel.WF_PROP_SITE_SHORT_NAME, siteShortName);
+        workflowProps.put(InviteWorkflowModel.WF_PROP_INVITEE_SITE_ROLE, inviteeSiteRole);
+        workflowProps.put(InviteWorkflowModel.WF_PROP_SERVER_PATH, serverPath);
+        workflowProps.put(InviteWorkflowModel.WF_PROP_ACCEPT_URL, acceptUrl);
+        workflowProps.put(InviteWorkflowModel.WF_PROP_REJECT_URL, rejectUrl);
+        workflowProps.put(InviteWorkflowModel.WF_PROP_INVITE_TICKET, inviteTicket);
 
         // start the workflow
-        WorkflowPath wfPath = this.workflowService.startWorkflow(wfDefinition
-                .getId(), workflowProps);
+        WorkflowPath wfPath = this.workflowService.startWorkflow(wfDefinition.getId(), workflowProps);
         
         //
         // complete invite workflow start task to send out the invite email
@@ -642,6 +620,9 @@ public class Invite extends DeclarativeWebScript
         // throw an exception if no tasks where found on the workflow path
         if (wfTasks.size() == 0)
         {
+            if (logger.isInfoEnabled())
+                logger.info("Failed - unable to find workflow tasks on workflow path ID: " + wfPathId);
+            
             throw new WebScriptException(Status.STATUS_INTERNAL_SERVER_ERROR,
                     "No workflow tasks where found on workflow path ID: " + wfPathId);
         }
@@ -657,6 +638,10 @@ public class Invite extends DeclarativeWebScript
         QName inviteToSiteTaskQName = InviteWorkflowModel.WF_INVITE_TASK_INVITE_TO_SITE;
         if (!wfTaskNameQName.equals(inviteToSiteTaskQName))
         {
+            if (logger.isInfoEnabled())
+                logger.info("Failed - first workflow task found on workflow path ID: " + wfPathId + 
+                		     " should be wf:inviteToSiteTask");
+            
             throw new WebScriptException(Status.STATUS_INTERNAL_SERVER_ERROR,
                     "First workflow task found on workflow path ID: " + wfPathId
                   + " should be " + "wf:inviteToSiteTask");
@@ -665,14 +650,30 @@ public class Invite extends DeclarativeWebScript
         // get "inviteToSite" task
         WorkflowTask wfStartTask = wfTasks.get(0);
         
-        // attach empty package to start task, end it and follow transition
-        // thats sends out invite
+        // attach empty package to start task, end it and follow with transition that sends out the invite
+        if (logger.isDebugEnabled())
+            logger.debug("Starting Invite workflow task by attaching empty package...");
         NodeRef wfPackage = this.workflowService.createPackage(null);
         Map<QName, Serializable> wfTaskProps = new HashMap<QName, Serializable>(1, 1.0f);
         wfTaskProps.put(WorkflowModel.ASSOC_PACKAGE, wfPackage);
+        
+        if (logger.isDebugEnabled())
+            logger.debug("Updating Invite workflow task...");
         this.workflowService.updateTask(wfStartTask.id, wfTaskProps, null, null);
-        this.workflowService.endTask(wfStartTask.id, InviteWorkflowModel.WF_TRANSITION_SEND_INVITE);
-
+        
+        if (logger.isDebugEnabled())
+            logger.debug("Transitioning Invite workflow task...");
+        try
+        {
+            this.workflowService.endTask(wfStartTask.id, InviteWorkflowModel.WF_TRANSITION_SEND_INVITE);
+        }
+        catch (RuntimeException err)
+        {
+            if (logger.isInfoEnabled())
+                logger.info("Failed - caught error during Invite workflow transition: " + err.getMessage());
+            throw err;
+        }
+        
         // add model properties for template to render
         model.put(MODEL_PROP_KEY_ACTION, ACTION_START);
         model.put(MODEL_PROP_KEY_INVITE_ID, workflowId);

@@ -72,6 +72,8 @@ public class AuthenticationFilter implements Filter
     // Allow an authentication ticket to be passed as part of a request to bypass authentication
     
     private static final String ARG_TICKET = "ticket";
+    private static final String PPT_EXTN = ".ppt";
+    private static final String VTI_IGNORE = "&vtiIgnore";
     
     // Servlet context
 
@@ -195,11 +197,17 @@ public class AuthenticationFilter implements Filter
             	if ( ticket != null &&  ticket.length() > 0)
             	{
             		// PowerPoint bug fix
-            		if (ticket.endsWith(".ppt"))
+            		if (ticket.endsWith(PPT_EXTN))
             		{
-            			ticket = ticket.substring(0, ticket.length() - 4);
+            			ticket = ticket.substring(0, ticket.length() - PPT_EXTN.length());
             		}
-            		
+
+            		// vtiIgnore argument may find its way onto the ticket due to a double-encoding issue with Office
+            		if (ticket.endsWith(VTI_IGNORE))
+            		{
+            			ticket = ticket.substring(0, ticket.length() - VTI_IGNORE.length());
+            		}
+
                 	// Debug
                     
                     if ( logger.isDebugEnabled())

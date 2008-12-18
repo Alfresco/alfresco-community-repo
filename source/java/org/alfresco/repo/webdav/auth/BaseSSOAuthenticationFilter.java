@@ -78,6 +78,10 @@ public abstract class BaseSSOAuthenticationFilter implements Filter
     // Note: copied from the AbstractAuthenticationFilter to avoid project dependencies
     
     protected static final String NO_AUTH_REQUIRED = "alfNoAuthRequired"; 
+
+    // Attribute used by WebDAV filters for storing the WebDAV user details
+    
+    protected static final String WEBDAV_AUTH_USER    = "_alfDAVAuthTicket";
     
     // Allow an authenitcation ticket to be passed as part of a request to bypass authentication
 
@@ -114,6 +118,10 @@ public abstract class BaseSSOAuthenticationFilter implements Filter
     // Indicate whether ticket based logons are supported
     
     private boolean m_ticketLogons;
+    
+    // User object attribute name
+    
+    private String m_userAttributeName = AUTHENTICATION_USER;
     
     /**
      * Initialize the filter
@@ -236,7 +244,27 @@ public abstract class BaseSSOAuthenticationFilter implements Filter
      */
     protected SessionUser getSessionUser(HttpSession session)
     {
-        return (SessionUser)session.getAttribute( AUTHENTICATION_USER);
+        return (SessionUser)session.getAttribute( getUserAttributeName());
+    }
+    
+    /**
+     * Return the user object session attribute name
+     * 
+     * @return String
+     */
+    protected final String getUserAttributeName()
+    {
+    	return m_userAttributeName;
+    }
+
+    /**
+     * Set the user object attribute name
+     * 
+     * @param userAttr String
+     */
+    protected final void setUserAttributeName( String userAttr)
+    {
+    	m_userAttributeName = userAttr;
     }
     
     /**
@@ -313,7 +341,7 @@ public abstract class BaseSSOAuthenticationFilter implements Filter
         
         // Store the user on the session
         
-        session.setAttribute( AUTHENTICATION_USER, user);
+        session.setAttribute( getUserAttributeName(), user);
         session.setAttribute( LOGIN_EXTERNAL_AUTH, Boolean.TRUE);
         
         return user;
@@ -442,7 +470,7 @@ public abstract class BaseSSOAuthenticationFilter implements Filter
         		    
         		    // Store the User object in the Session - the authentication servlet will then proceed
         		    
-        		    req.getSession().setAttribute(AUTHENTICATION_USER, user);
+        		    req.getSession().setAttribute( getUserAttributeName(), user);
                 }
     		    
     		    // Indicate the ticket parameter was specified, and valid

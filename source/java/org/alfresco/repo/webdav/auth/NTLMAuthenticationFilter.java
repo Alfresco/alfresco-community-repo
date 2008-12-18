@@ -60,6 +60,10 @@ public class NTLMAuthenticationFilter extends BaseNTLMAuthenticationFilter
         // Enable ticket based logons
         
         setTicketLogons( true);
+    	
+    	// Use the WebDAV specific attribute to store the user details
+    	
+    	setUserAttributeName( WEBDAV_AUTH_USER);
     }
 
 	/* (non-Javadoc)

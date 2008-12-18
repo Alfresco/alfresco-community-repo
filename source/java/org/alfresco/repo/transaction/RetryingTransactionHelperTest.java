@@ -24,11 +24,15 @@
  */
 package org.alfresco.repo.transaction;
 
+import javax.transaction.Status;
+import javax.transaction.UserTransaction;
+
 import junit.framework.TestCase;
 
 import org.alfresco.error.ExceptionStackUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
@@ -162,6 +166,61 @@ public class RetryingTransactionHelperTest extends TestCase
         long afterValue = getCheckValue();
         assertEquals("The value must have increased", beforeValue + 1, afterValue);
         assertEquals("The txn value must be the same as the value after", afterValue, txnValue);
+    }
+    
+    /**
+     * Check that the transaction state can be fetched in and around the transaction.
+     * This also checks that any mischievous attempts to manipulate the transaction
+     * (other than setRollback) are detected. 
+     */
+    public void testUserTransactionStatus()
+    {
+        UserTransaction txnBefore = RetryingTransactionHelper.getActiveUserTransaction();
+        assertNull("Did not expect to get an active UserTransaction", txnBefore);
+        
+        RetryingTransactionCallback<Long> callbackOuter = new RetryingTransactionCallback<Long>()
+        {
+            public Long execute() throws Throwable
+            {
+                final UserTransaction txnOuter = RetryingTransactionHelper.getActiveUserTransaction();
+                assertNotNull("Expected an active UserTransaction", txnOuter);
+                assertEquals(
+                        "Should be read-write txn",
+                        TxnReadState.TXN_READ_WRITE, AlfrescoTransactionSupport.getTransactionReadState());
+                assertEquals("Expected state is active", Status.STATUS_ACTIVE, txnOuter.getStatus());
+                RetryingTransactionCallback<Long> callbackInner = new RetryingTransactionCallback<Long>()
+                {
+                    public Long execute() throws Throwable
+                    {
+                        UserTransaction txnInner = RetryingTransactionHelper.getActiveUserTransaction();
+                        assertNotNull("Expected an active UserTransaction", txnInner);
+                        assertEquals(
+                                "Should be read-only txn",
+                                TxnReadState.TXN_READ_ONLY, AlfrescoTransactionSupport.getTransactionReadState());
+                        assertEquals("Expected state is active", Status.STATUS_ACTIVE, txnInner.getStatus());
+                        // Check blow up
+                        try
+                        {
+                            txnInner.commit();
+                            fail("Should not be able to commit the UserTransaction.  It is for info only.");
+                        }
+                        catch (Throwable e)
+                        {
+                            // Expected
+                        }
+                        // Force a rollback
+                        txnInner.setRollbackOnly();
+                        // Done
+                        return null;
+                    }
+                };
+                return txnHelper.doInTransaction(callbackInner, true, true);
+            }
+        };
+        txnHelper.doInTransaction(callbackOuter);
+        
+        UserTransaction txnAfter = RetryingTransactionHelper.getActiveUserTransaction();
+        assertNull("Did not expect to get an active UserTransaction", txnAfter);
     }
     
     /**

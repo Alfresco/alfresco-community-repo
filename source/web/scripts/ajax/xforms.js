@@ -596,11 +596,15 @@ alfresco.xforms.TextField = alfresco.xforms.Widget.extend({
 
     this.widget = this.domNode;
     this.widget.setAttribute("value", initial_value);
-    if (this._maxLength >= 0 || this._length >= 0)
+    if (this._maxLength >= 0)
     {
-      this.widget.setAttribute("maxlength", this._maxLength >= 0 ? this._maxLength : this._length);
+      this.widget.setAttribute("maxlength", this._maxLength);
+    }
+    
+    if (this._length >= 0)
+    {
       this.widget.style.maxWidth = "100%";
-      this.widget.setAttribute("size", this._maxLength >= 0 ? this._maxLength : this._length);
+      this.widget.setAttribute("size", this._length);
     }
     else if (this.getAppearance() == "full")
     {
@@ -1311,13 +1315,24 @@ alfresco.xforms.ListSelect = alfresco.xforms.AbstractSelectWidget.extend({
   /////////////////////////////////////////////////////////////////
 
   _list_changeHandler: function(event) 
-  { 
+  {
+    var target;
+    
+    if (window.ie) 
+    { 
+      target = window.event.srcElement;
+    } 
+    else 
+    { 
+      target = event.target;
+    }
+
     this._selectedValues = [];
-    for (var i = 0; i < event.target.options.length; i++)
+    for (var i = 0; i < target.options.length; i++)
     {
-      if (event.target.options[i].selected)
+      if (target.options[i].selected)
       {
-        this._selectedValues.push(event.target.options[i].getAttribute("value"));
+        this._selectedValues.push(target.options[i].getAttribute("value"));
       }
     }
     this._commitValueChange();
@@ -1407,18 +1422,30 @@ alfresco.xforms.RadioSelect1 = alfresco.xforms.AbstractSelectWidget.extend({
 
   _radio_clickHandler: function(event)
   { 
-    if (!event.target.checked)
+    var target;
+    
+    if (window.ie) 
+    { 
+      target = window.event.srcElement;
+    }
+    else 
+    { 
+      target = event.target;
+    }
+    
+    if (!target.checked)
     {
       var all_radios = this.widget.getElementsByTagName("input");
       for (var i = 0; i < all_radios.length; i++)
       {
-        if (all_radios[i].name == event.target.name)
+        if (all_radios[i].name == target.name)
         {
-          all_radios[i].checked = event.target == all_radios[i];
+          all_radios[i].checked = target == all_radios[i];
         }
       }
     }
-    this._selectedValue = event.target.value;
+    
+    this._selectedValue = target.value;
     this._commitValueChange();
   }
 });
@@ -1499,7 +1526,18 @@ alfresco.xforms.ComboboxSelect1 = alfresco.xforms.AbstractSelectWidget.extend({
 
   _combobox_changeHandler: function(event) 
   { 
-    this._selectedValue = event.target.options[event.target.selectedIndex].value;
+    var target;
+    
+    if (window.ie) 
+    { 
+      target = window.event.srcElement;
+    } 
+    else 
+    { 
+      target = event.target;
+    }
+
+    this._selectedValue = target.options[target.selectedIndex].value;
     this._commitValueChange();
   }
 });

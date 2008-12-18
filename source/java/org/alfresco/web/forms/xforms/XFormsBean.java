@@ -77,6 +77,10 @@ import org.w3c.dom.events.EventListener;
 import org.w3c.dom.events.EventTarget;
 import org.xml.sax.SAXException;
 
+import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.web.bean.repository.Repository;
+
+
 /**
  * Bean for interacting with the chiba processor from the ui using ajax requests.
  * Manages the chiba bean lifecycle.
@@ -537,28 +541,83 @@ public class XFormsBean implements Serializable
       final NodeList nl =
          XMLUtil.combine(schemaDocument.getElementsByTagNameNS(NamespaceConstants.XMLSCHEMA_NS, "include"),
                          schemaDocument.getElementsByTagNameNS(NamespaceConstants.XMLSCHEMA_NS, "import"));
+      
       if (LOGGER.isDebugEnabled())
          LOGGER.debug("rewriting " + nl.getLength() + " includes");
+      
       for (int i = 0; i < nl.getLength(); i++)
       {
          final Element includeEl = (Element)nl.item(i);
          if (includeEl.hasAttribute("schemaLocation"))
          {
-            String uri = includeEl.getAttribute("schemaLocation");
-            if (uri != null && uri.startsWith("http://"))
+            String uri      = includeEl.getAttribute("schemaLocation");
+            String finalURI = null;
+
+            if (uri == null || uri.startsWith("http://") || uri.startsWith("https://"))
             {
                if (LOGGER.isDebugEnabled())
                   LOGGER.debug("not rewriting " + uri);
+               
                continue;
             }
 
-            final String baseURI = (uri.charAt(0) == '/'
-                                    ? AVMUtil.buildStoreUrl(cwdAvmPath)
-                                    : AVMUtil.buildAssetUrl(cwdAvmPath));
-            
+            if (uri.startsWith("webscript://"))
+            {
+               // It's a web script include / import
+               final FacesContext       facesContext    = FacesContext.getCurrentInstance();
+               final ExternalContext    externalContext = facesContext.getExternalContext();
+               final HttpServletRequest request         = (HttpServletRequest)externalContext.getRequest();
+               
+               final String baseURI = (request.getScheme() + "://" +
+                                       request.getServerName() + ':' +
+                                       request.getServerPort() +
+                                       request.getContextPath() + "/wcservice");
+               String rewrittenURI = uri;
+               
+               if (uri.contains("${storeid}"))
+               {
+                  final String storeId = AVMUtil.getStoreName(cwdAvmPath);
+                  rewrittenURI         = uri.replace("${storeid}", storeId);
+               }
+               else
+               {
+                  if (LOGGER.isDebugEnabled())
+                     LOGGER.debug("no store id specified in webscript URI " + uri);
+               }
+               
+               if (uri.contains("${ticket}"))
+               {
+                  AuthenticationService authenticationService = Repository.getServiceRegistry(facesContext).getAuthenticationService();
+                  final String ticket = authenticationService.getCurrentTicket();
+                  rewrittenURI         = rewrittenURI.replace("${ticket}", ticket);
+               }
+               else
+               {
+                  if (LOGGER.isDebugEnabled())
+                     LOGGER.debug("no ticket specified in webscript URI " + uri);
+               }
+               
+               rewrittenURI = rewrittenURI.replaceAll("%26","&");
+               
+               finalURI = baseURI + rewrittenURI.replace("webscript://", "/");
+               
+               if (LOGGER.isDebugEnabled())
+                  LOGGER.debug("Final URI " + finalURI);
+            }
+            else
+            {
+               // It's a web project asset include / import
+               final String baseURI = (uri.charAt(0) == '/'
+                                       ? AVMUtil.buildStoreUrl(cwdAvmPath)
+                                       : AVMUtil.buildAssetUrl(cwdAvmPath));
+
+               finalURI = baseURI + uri;
+            }
+
             if (LOGGER.isDebugEnabled())
-               LOGGER.debug("rewriting " + uri + " as " + (baseURI + uri));
-            includeEl.setAttribute("schemaLocation", baseURI + uri);
+               LOGGER.debug("rewriting " + uri + " as " + finalURI);
+            
+            includeEl.setAttribute("schemaLocation", finalURI);
          }
       }
    }

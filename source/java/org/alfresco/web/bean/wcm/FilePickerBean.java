@@ -872,6 +872,11 @@ public class FilePickerBean implements Serializable
             query = queryElemText.substring(cdataStartDelimIndex
                   + CDATA_START_DELIM.length(), cdataEndDelimIndex);
          }
+         else
+         {
+            // otherwise just use the text as is
+            query = queryElemText;
+         }
       }
 
       // perform the search against the repository

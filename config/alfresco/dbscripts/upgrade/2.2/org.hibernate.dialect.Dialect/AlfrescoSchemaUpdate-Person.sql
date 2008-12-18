@@ -9,9 +9,9 @@
 -- Path was previously unused and unindex - new we use it the index is required.
 
 UPDATE
-      alf_child_assoc c
+      alf_child_assoc
    SET 
-      c.qname_ns_id =
+      qname_ns_id =
       (
          SELECT
             id
@@ -19,7 +19,7 @@ UPDATE
             alf_namespace n
          WHERE
             n.uri = 'http://www.alfresco.org/model/content/1.0'),
-      c.qname_localname =
+      qname_localname =
       (
          SELECT
             p.string_value
@@ -28,7 +28,7 @@ UPDATE
             JOIN alf_qname q on p.qname_id = q.id
             JOIN alf_namespace n on q.ns_id = n.id
          WHERE
-            p.node_id = c.child_node_id AND
+            p.node_id = alf_child_assoc.child_node_id AND
             q.local_name ='userName' AND n.uri = 'http://www.alfresco.org/model/content/1.0'
       )
    WHERE exists
@@ -39,7 +39,7 @@ UPDATE
          JOIN alf_qname qq on pp.qname_id = qq.id
          JOIN alf_namespace nn on qq.ns_id = nn.id
       WHERE
-         pp.node_id = c.child_node_id AND
+         pp.node_id = alf_child_assoc.child_node_id AND
          qq.local_name ='userName' AND
          nn.uri = 'http://www.alfresco.org/model/content/1.0'
     )

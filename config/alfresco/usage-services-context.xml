@@ -40,7 +40,7 @@
       <property name="authorityService" ref="authorityService"/>
       <property name="authenticationService" ref="authenticationService"/>
       <property name="policyComponent" ref="policyComponent"/>
-      <property name="contentUsageService" ref="ContentUsageService"/>
+      <property name="contentUsageService" ref="contentUsageImpl"/>
    </bean>
    
 </beans>

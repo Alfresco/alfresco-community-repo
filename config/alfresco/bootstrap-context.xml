@@ -66,8 +66,7 @@
              <ref bean="patch.db-V2.2-0-CreateMissingTables" />
              <ref bean="patch.db-V2.2-Upgrade-From-2.1" />
              <ref bean="patch.db-V2.2-Upgrade-From-2.2SP1" />
-			 <ref bean="patch.db-V2.2-Person" />
-			 <ref bean="patch.db-V2.2-OrclBLOB" />
+             <ref bean="patch.db-V2.2-Person" />
           </list>
        </property>
        <property name="postUpdateScriptPatches">

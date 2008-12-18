@@ -18,45 +18,45 @@
 
 CREATE TABLE t_alf_store
 (
-   id BIGINT NOT NULL AUTO_INCREMENT,
-   version BIGINT NOT NULL,
-   protocol VARCHAR(50) NOT NULL,
-   identifier VARCHAR(100) NOT NULL,
-   root_node_id BIGINT,
+   id numeric(19,0) identity not null,
+   version numeric(19,0) NOT NULL,
+   protocol nvarchar(50) NOT NULL,
+   identifier nvarchar(100) NOT NULL,
+   root_node_id numeric(19,0) null,
    PRIMARY KEY (id),
    UNIQUE (protocol, identifier)
-) TYPE=InnoDB;
+);
 
 -- --------------------------
 -- Populate the ADM nodes --
 -- --------------------------
 
 CREATE TABLE t_alf_node (
-   id BIGINT NOT NULL AUTO_INCREMENT,
-   version BIGINT NOT NULL,
-   store_id BIGINT NOT NULL,
-   uuid VARCHAR(36) NOT NULL,
-   transaction_id BIGINT NOT NULL,
-   node_deleted bit NOT NULL,
-   type_qname_id BIGINT NOT NULL,
-   acl_id BIGINT,
-   audit_creator VARCHAR(255),
-   audit_created VARCHAR(30),
-   audit_modifier VARCHAR(255),
-   audit_modified VARCHAR(30),
-   audit_accessed VARCHAR(30),
-   INDEX idx_alf_node_del (node_deleted),
-   INDEX fk_alf_node_acl (acl_id),
-   INDEX fk_alf_node_tqn (type_qname_id),
-   INDEX fk_alf_node_txn (transaction_id),
-   INDEX fk_alf_node_store (store_id),
+   id numeric(19,0) identity not null,
+   version numeric(19,0) NOT NULL,
+   store_id numeric(19,0) NOT NULL,
+   uuid nvarchar(36) NOT NULL,
+   transaction_id numeric(19,0) NOT NULL,
+   node_deleted tinyint NOT NULL,
+   type_qname_id numeric(19,0) NOT NULL,
+   acl_id numeric(19,0) null,
+   audit_creator nvarchar(255) null,
+   audit_created nvarchar(30) null,
+   audit_modifier nvarchar(255) null,
+   audit_modified nvarchar(30) null,
+   audit_accessed nvarchar(30) null,
    CONSTRAINT fk_alf_node_acl FOREIGN KEY (acl_id) REFERENCES alf_access_control_list (id), 
    CONSTRAINT fk_alf_node_tqn FOREIGN KEY (type_qname_id) REFERENCES alf_qname (id), 
    CONSTRAINT fk_alf_node_txn FOREIGN KEY (transaction_id) REFERENCES alf_transaction (id), 
    CONSTRAINT fk_alf_node_store FOREIGN KEY (store_id) REFERENCES t_alf_store (id), 
    PRIMARY KEY (id),
    UNIQUE (store_id, uuid)
-) TYPE=InnoDB;
+);
+CREATE INDEX idx_alf_node_del ON t_alf_node (node_deleted);
+CREATE INDEX fk_alf_node_acl ON t_alf_node (acl_id);
+CREATE INDEX fk_alf_node_tqn ON t_alf_node (type_qname_id);
+CREATE INDEX fk_alf_node_txn ON t_alf_node (transaction_id);
+CREATE INDEX fk_alf_node_store ON t_alf_node (store_id);
 
 -- Fill the store table
 INSERT INTO t_alf_store (version, protocol, identifier, root_node_id)
@@ -64,23 +64,25 @@ INSERT INTO t_alf_store (version, protocol, identifier, root_node_id)
 ;
 
 -- Copy data over
+SET IDENTITY_INSERT t_alf_node ON;
 INSERT INTO t_alf_node
    (
       id, version, store_id, uuid, transaction_id, node_deleted, type_qname_id, acl_id,
       audit_creator, audit_created, audit_modifier, audit_modified
    )
    SELECT
-      n.id, 1, s.id, n.uuid, nstat.transaction_id, false, n.type_qname_id, n.acl_id,
+      n.id, 1, s.id, n.uuid, nstat.transaction_id, 0, n.type_qname_id, n.acl_id,
       null, null, null, null
    FROM
       alf_node n
       JOIN alf_node_status nstat ON (nstat.node_id = n.id)
       JOIN t_alf_store s ON (s.protocol = nstat.protocol AND s.identifier = nstat.identifier)
 ;
+SET IDENTITY_INSERT t_alf_node OFF;
 
 -- Hook the store up to the root node
+CREATE INDEX fk_alf_store_root ON t_alf_store (root_node_id); 
 ALTER TABLE t_alf_store 
-   ADD INDEX fk_alf_store_root (root_node_id), 
    ADD CONSTRAINT fk_alf_store_root FOREIGN KEY (root_node_id) REFERENCES t_alf_node (id)
 ;
 
@@ -90,14 +92,13 @@ ALTER TABLE t_alf_store
 
 CREATE TABLE t_alf_version_count
 (
-   id BIGINT NOT NULL AUTO_INCREMENT,
-   version BIGINT NOT NULL,
-   store_id BIGINT NOT NULL UNIQUE,
-   version_count INTEGER NOT NULL,
-   INDEX fk_alf_vc_store (store_id),
+   id numeric(19,0) identity not null,
+   version numeric(19,0) NOT NULL,
+   store_id numeric(19,0) NOT NULL UNIQUE,
+   version_count int NOT NULL,
    CONSTRAINT fk_alf_vc_store FOREIGN KEY (store_id) REFERENCES t_alf_store (id),
    PRIMARY KEY (id)
-) TYPE=InnoDB;
+);
 
 INSERT INTO t_alf_version_count
    (
@@ -111,7 +112,7 @@ INSERT INTO t_alf_version_count
 ;
 
 DROP TABLE alf_version_count;
-ALTER TABLE t_alf_version_count RENAME TO alf_version_count;
+EXEC sp_rename 't_alf_version_count', 'alf_version_count';
 
 -- -----------------------------
 -- Populate the Child Assocs --
@@ -119,30 +120,31 @@ ALTER TABLE t_alf_version_count RENAME TO alf_version_count;
 
 CREATE TABLE t_alf_child_assoc
 (
-   id BIGINT NOT NULL AUTO_INCREMENT,
-   version BIGINT NOT NULL,
-   parent_node_id BIGINT NOT NULL,
-   type_qname_id BIGINT NOT NULL,
-   child_node_name VARCHAR(50) NOT NULL,
-   child_node_name_crc BIGINT NOT NULL,
-   child_node_id BIGINT NOT NULL,
-   qname_ns_id BIGINT NOT NULL,
-   qname_localname VARCHAR(100) NOT NULL,
-   is_primary BIT,
-   assoc_index INTEGER,
-   INDEX idx_alf_cass_qnln (qname_localname),
-   INDEX fk_alf_cass_pnode (parent_node_id),
-   INDEX fk_alf_cass_cnode (child_node_id),
-   INDEX fk_alf_cass_tqn (type_qname_id),
-   INDEX fk_alf_cass_qnns (qname_ns_id),
+   id numeric(19,0) identity not null,
+   version numeric(19,0) NOT NULL,
+   parent_node_id numeric(19,0) NOT NULL,
+   type_qname_id numeric(19,0) NOT NULL,
+   child_node_name nvarchar(50) NOT NULL,
+   child_node_name_crc numeric(19,0) NOT NULL,
+   child_node_id numeric(19,0) NOT NULL,
+   qname_ns_id numeric(19,0) NOT NULL,
+   qname_localname nvarchar(100) NOT NULL,
+   is_primary tinyint null,
+   assoc_index int null,
    CONSTRAINT fk_alf_cass_pnode foreign key (parent_node_id) REFERENCES t_alf_node (id),
    CONSTRAINT fk_alf_cass_cnode foreign key (child_node_id) REFERENCES t_alf_node (id),
    CONSTRAINT fk_alf_cass_tqn foreign key (type_qname_id) REFERENCES alf_qname (id),
    CONSTRAINT fk_alf_cass_qnns foreign key (qname_ns_id) REFERENCES alf_namespace (id),
    PRIMARY KEY (id),
    UNIQUE (parent_node_id, type_qname_id, child_node_name, child_node_name_crc)
-) TYPE=InnoDB;
+);
+CREATE INDEX idx_alf_cass_qnln ON t_alf_child_assoc (qname_localname);
+CREATE INDEX fk_alf_cass_pnode ON t_alf_child_assoc (parent_node_id);
+CREATE INDEX fk_alf_cass_cnode ON t_alf_child_assoc (child_node_id);
+CREATE INDEX fk_alf_cass_tqn ON t_alf_child_assoc (type_qname_id);
+CREATE INDEX fk_alf_cass_qnns ON t_alf_child_assoc (qname_ns_id);
 
+SET IDENTITY_INSERT t_alf_child_assoc ON;
 INSERT INTO t_alf_child_assoc
    (
       id, version,
@@ -162,10 +164,11 @@ INSERT INTO t_alf_child_assoc
    FROM
       alf_child_assoc ca
 ;
+SET IDENTITY_INSERT t_alf_child_assoc OFF;
 
 -- Clean up
 DROP TABLE alf_child_assoc;
-ALTER TABLE t_alf_child_assoc RENAME TO alf_child_assoc;
+EXEC sp_rename 't_alf_child_assoc', 'alf_child_assoc';
 
 -- ----------------------------
 -- Populate the Node Assocs --
@@ -173,21 +176,22 @@ ALTER TABLE t_alf_child_assoc RENAME TO alf_child_assoc;
 
 CREATE TABLE t_alf_node_assoc
 (
-   id BIGINT NOT NULL AUTO_INCREMENT,
-   version BIGINT NOT NULL, 
-   source_node_id BIGINT NOT NULL,
-   target_node_id BIGINT NOT NULL,
-   type_qname_id BIGINT NOT NULL,
-   INDEX fk_alf_nass_snode (source_node_id),
-   INDEX fk_alf_nass_tnode (target_node_id),
-   INDEX fk_alf_nass_tqn (type_qname_id),
+   id numeric(19,0) identity not null,
+   version numeric(19,0) NOT NULL, 
+   source_node_id numeric(19,0) NOT NULL,
+   target_node_id numeric(19,0) NOT NULL,
+   type_qname_id numeric(19,0) NOT NULL,
    CONSTRAINT fk_alf_nass_snode FOREIGN KEY (source_node_id) REFERENCES t_alf_node (id),
    CONSTRAINT fk_alf_nass_tnode FOREIGN KEY (target_node_id) REFERENCES t_alf_node (id),
    CONSTRAINT fk_alf_nass_tqn FOREIGN KEY (type_qname_id) REFERENCES alf_qname (id),
    PRIMARY KEY (id),
    UNIQUE (source_node_id, target_node_id, type_qname_id)
-) TYPE=InnoDB;
+);
+CREATE INDEX fk_alf_nass_snode ON t_alf_node_assoc (source_node_id);
+CREATE INDEX fk_alf_nass_tnode ON t_alf_node_assoc (target_node_id);
+CREATE INDEX fk_alf_nass_tqn ON t_alf_node_assoc (type_qname_id);
 
+SET IDENTITY_INSERT t_alf_node_assoc ON;
 INSERT INTO t_alf_node_assoc
    (
       id, version,
@@ -201,10 +205,11 @@ INSERT INTO t_alf_node_assoc
    FROM
       alf_node_assoc na
 ;
+SET IDENTITY_INSERT t_alf_node_assoc OFF;
 
 -- Clean up
 DROP TABLE alf_node_assoc;
-ALTER TABLE t_alf_node_assoc RENAME TO alf_node_assoc;
+EXEC sp_rename 't_alf_node_assoc', 'alf_node_assoc';
 
 -- ----------------------------
 -- Populate the Usage Deltas --
@@ -212,15 +217,16 @@ ALTER TABLE t_alf_node_assoc RENAME TO alf_node_assoc;
 
 CREATE TABLE t_alf_usage_delta
 (
-   id BIGINT NOT NULL AUTO_INCREMENT,
-   version BIGINT NOT NULL, 
-   node_id BIGINT NOT NULL,
-   delta_size BIGINT NOT NULL,
-   INDEX fk_alf_usaged_n (node_id),
+   id numeric(19,0) identity not null,
+   version numeric(19,0) NOT NULL, 
+   node_id numeric(19,0) NOT NULL,
+   delta_size numeric(19,0) NOT NULL,
    CONSTRAINT fk_alf_usaged_n FOREIGN KEY (node_id) REFERENCES t_alf_node (id),
    PRIMARY KEY (id)
-) TYPE=InnoDB;
+);
+CREATE INDEX fk_alf_usaged_n ON t_alf_usage_delta (node_id);
 
+SET IDENTITY_INSERT t_alf_usage_delta ON;
 INSERT INTO t_alf_usage_delta
    (
       id, version,
@@ -234,10 +240,11 @@ INSERT INTO t_alf_usage_delta
    FROM
       alf_usage_delta ud
 ;                                                          -- (optional)
+SET IDENTITY_INSERT t_alf_usage_delta OFF;
 
 -- Clean up
 DROP TABLE alf_usage_delta;                                -- (optional)
-ALTER TABLE t_alf_usage_delta RENAME TO alf_usage_delta;
+EXEC sp_rename 't_alf_usage_delta', 'alf_usage_delta';
 
 -- -----------------------------
 -- Populate the Node Aspects --
@@ -245,14 +252,14 @@ ALTER TABLE t_alf_usage_delta RENAME TO alf_usage_delta;
 
 CREATE TABLE t_alf_node_aspects
 (
-   node_id BIGINT NOT NULL,
-   qname_id BIGINT NOT NULL,
-   INDEX fk_alf_nasp_n (node_id),
-   INDEX fk_alf_nasp_qn (qname_id),
+   node_id numeric(19,0) NOT NULL,
+   qname_id numeric(19,0) NOT NULL,
    CONSTRAINT fk_alf_nasp_n FOREIGN KEY (node_id) REFERENCES t_alf_node (id),
    CONSTRAINT fk_alf_nasp_qn FOREIGN KEY (qname_id) REFERENCES alf_qname (id),
    PRIMARY KEY (node_id, qname_id)
-) TYPE=InnoDB;
+);
+CREATE INDEX fk_alf_nasp_n ON t_alf_node_aspects (node_id);
+CREATE INDEX fk_alf_nasp_qn ON t_alf_node_aspects (qname_id);
 
 -- Note the omission of sys:referencable.  This is implicit.
 INSERT INTO t_alf_node_aspects
@@ -273,7 +280,7 @@ INSERT INTO t_alf_node_aspects
 
 -- Clean up
 DROP TABLE alf_node_aspects;
-ALTER TABLE t_alf_node_aspects RENAME TO alf_node_aspects;
+EXEC sp_rename 't_alf_node_aspects', 'alf_node_aspects';
 
 -- ---------------------------------
 -- Populate the AVM Node Aspects --
@@ -281,14 +288,14 @@ ALTER TABLE t_alf_node_aspects RENAME TO alf_node_aspects;
 
 CREATE TABLE t_avm_aspects
 (
-   node_id BIGINT NOT NULL,
-   qname_id BIGINT NOT NULL,
-   INDEX fk_avm_nasp_n (node_id),
-   INDEX fk_avm_nasp_qn (qname_id),
+   node_id numeric(19,0) NOT NULL,
+   qname_id numeric(19,0) NOT NULL,
    CONSTRAINT fk_avm_nasp_n FOREIGN KEY (node_id) REFERENCES avm_nodes (id),
    CONSTRAINT fk_avm_nasp_qn FOREIGN KEY (qname_id) REFERENCES alf_qname (id),
    PRIMARY KEY (node_id, qname_id)
-) TYPE=InnoDB;
+);
+CREATE INDEX fk_avm_nasp_n ON t_avm_aspects (node_id);
+CREATE INDEX fk_avm_nasp_qn ON t_avm_aspects (qname_id);
 
 INSERT INTO t_avm_aspects
    (
@@ -304,7 +311,7 @@ INSERT INTO t_avm_aspects
 -- Clean up
 DROP TABLE avm_aspects;
 DROP TABLE avm_aspects_new;
-ALTER TABLE t_avm_aspects RENAME TO avm_aspects;
+EXEC sp_rename 't_avm_aspects', 'avm_aspects';
 
 -- ----------------------------------
 -- Migrate Sundry Property Tables --
@@ -313,24 +320,25 @@ ALTER TABLE t_avm_aspects RENAME TO avm_aspects;
 -- Modify the avm_store_properties table
 CREATE TABLE t_avm_store_properties
 (
-   id BIGINT NOT NULL AUTO_INCREMENT,
-   avm_store_id BIGINT,
-   qname_id BIGINT NOT NULL,
-   actual_type_n integer NOT NULL,
-   persisted_type_n integer NOT NULL,
-   multi_valued bit NOT NULL,
-   boolean_value bit,
-   long_value BIGINT,
-   float_value float,
-   double_value DOUBLE PRECISION,
-   string_value TEXT,
-   serializable_value blob,
-   INDEX fk_avm_sprop_store (avm_store_id),
-   INDEX fk_avm_sprop_qname (qname_id),
+   id numeric(19,0) identity not null,
+   avm_store_id numeric(19,0),
+   qname_id numeric(19,0) NOT NULL,
+   actual_type_n int NOT NULL,
+   persisted_type_n int NOT NULL,
+   multi_valued tinyint NOT NULL,
+   boolean_value tinyint null,
+   long_value numeric(19,0) null,
+   float_value float null,
+   double_value DOUBLE PRECISION null,
+   string_value nvarchar(1024) null,
+   serializable_value image null,
    CONSTRAINT fk_avm_sprop_store FOREIGN KEY (avm_store_id) REFERENCES avm_stores (id),
    CONSTRAINT fk_avm_sprop_qname FOREIGN KEY (qname_id) REFERENCES alf_qname (id),
    PRIMARY KEY (id)
-) TYPE=InnoDB;
+);
+CREATE INDEX fk_avm_sprop_store ON t_avm_store_properties (avm_store_id);
+CREATE INDEX fk_avm_sprop_qname ON t_avm_store_properties (qname_id);
+
 INSERT INTO t_avm_store_properties
    (
       avm_store_id,
@@ -347,28 +355,28 @@ INSERT INTO t_avm_store_properties
       avm_store_properties p
 ;
 DROP TABLE avm_store_properties;
-ALTER TABLE t_avm_store_properties RENAME TO avm_store_properties;
+EXEC sp_rename 't_avm_store_properties', 'avm_store_properties';
 
 -- Modify the avm_node_properties_new table
 CREATE TABLE t_avm_node_properties
 (
-   node_id BIGINT NOT NULL,
-   actual_type_n INTEGER NOT NULL,
-   persisted_type_n INTEGER NOT NULL,
-   multi_valued BIT NOT NULL,
-   boolean_value BIT,
-   long_value BIGINT,
-   float_value FLOAT,
-   double_value DOUBLE PRECISION,
-   string_value TEXT,
-   serializable_value BLOB,
-   qname_id BIGINT NOT NULL,
-   INDEX fk_avm_nprop_n (node_id),
-   INDEX fk_avm_nprop_qn (qname_id),
+   node_id numeric(19,0) NOT NULL,
+   actual_type_n int NOT NULL,
+   persisted_type_n int NOT NULL,
+   multi_valued tinyint NOT NULL,
+   boolean_value tinyint null,
+   long_value numeric(19,0) null,
+   float_value FLOAT null,
+   double_value DOUBLE PRECISION null,
+   string_value nvarchar(1024) null,
+   serializable_value image null,
+   qname_id numeric(19,0) NOT NULL,
    CONSTRAINT fk_avm_nprop_n FOREIGN KEY (node_id) REFERENCES avm_nodes (id),
    CONSTRAINT fk_avm_nprop_qn FOREIGN KEY (qname_id) REFERENCES alf_qname (id),
    PRIMARY KEY (node_id, qname_id)
-) TYPE=InnoDB;
+);
+CREATE INDEX fk_avm_nprop_n ON t_avm_node_properties (node_id);
+CREATE INDEX fk_avm_nprop_qn ON t_avm_node_properties (qname_id);
 INSERT INTO t_avm_node_properties
    (
       node_id,
@@ -387,7 +395,7 @@ INSERT INTO t_avm_node_properties
 
 DROP TABLE avm_node_properties_new;
 DROP TABLE avm_node_properties;
-ALTER TABLE t_avm_node_properties RENAME TO avm_node_properties;
+EXEC sp_rename 't_avm_node_properties', 'avm_node_properties';
 
 
 -- -----------------
@@ -396,14 +404,16 @@ ALTER TABLE t_avm_node_properties RENAME TO avm_node_properties;
 
 CREATE TABLE alf_locale
 (
-   id BIGINT NOT NULL AUTO_INCREMENT,
-   version BIGINT NOT NULL DEFAULT 1,
-   locale_str VARCHAR(20) NOT NULL,
+   id numeric(19,0) identity not null,
+   version numeric(19,0) NOT NULL DEFAULT 1,
+   locale_str nvarchar(20) NOT NULL,
    PRIMARY KEY (id),
    UNIQUE (locale_str)
-) TYPE=InnoDB;
+);
 
+SET IDENTITY_INSERT alf_locale ON;
 INSERT INTO alf_locale (id, locale_str) VALUES (1, '.default');
+SET IDENTITY_INSERT alf_locale OFF;
 
 -- Locales come from the attribute table which was used to support MLText persistence
 INSERT INTO alf_locale (locale_str)
@@ -419,26 +429,26 @@ INSERT INTO alf_locale (locale_str)
 
 CREATE TABLE t_alf_node_properties
 (
-   node_id BIGINT NOT NULL,
-   qname_id BIGINT NOT NULL,
-   locale_id BIGINT NOT NULL,
-   list_index INTEGER NOT NULL,
-   actual_type_n INTEGER NOT NULL,
-   persisted_type_n INTEGER NOT NULL,
-   boolean_value BIT,
-   long_value BIGINT,
-   float_value FLOAT,
-   double_value DOUBLE PRECISION,
-   string_value TEXT,
-   serializable_value BLOB,
-   INDEX fk_alf_nprop_n (node_id),
-   INDEX fk_alf_nprop_qn (qname_id),
-   INDEX fk_alf_nprop_loc (locale_id),
+   node_id numeric(19,0) NOT NULL,
+   qname_id numeric(19,0) NOT NULL,
+   locale_id numeric(19,0) NOT NULL,
+   list_index int NOT NULL,
+   actual_type_n int NOT NULL,
+   persisted_type_n int NOT NULL,
+   boolean_value tinyint null,
+   long_value numeric(19,0) null,
+   float_value FLOAT null,
+   double_value DOUBLE PRECISION null,
+   string_value nvarchar(1024) null,
+   serializable_value image null,
    CONSTRAINT fk_alf_nprop_n FOREIGN KEY (node_id) REFERENCES t_alf_node (id),
    CONSTRAINT fk_alf_nprop_qn FOREIGN KEY (qname_id) REFERENCES alf_qname (id),
    CONSTRAINT fk_alf_nprop_loc FOREIGN KEY (locale_id) REFERENCES alf_locale (id),
    PRIMARY KEY (node_id, qname_id, list_index, locale_id)
-) TYPE=InnoDB;
+);
+CREATE INDEX fk_alf_nprop_n ON t_alf_node_properties (node_id);
+CREATE INDEX fk_alf_nprop_qn ON t_alf_node_properties (qname_id);
+CREATE INDEX fk_alf_nprop_loc ON t_alf_node_properties (locale_id);
 
 -- Copy values over
 INSERT INTO t_alf_node_properties
@@ -461,7 +471,7 @@ INSERT INTO t_alf_node_properties
       np.attribute_value IS NULL
 ;
 -- Update cm:auditable properties on the nodes
-UPDATE t_alf_node n SET audit_creator =
+UPDATE t_alf_node SET audit_creator =
 (
    SELECT
       string_value
@@ -470,11 +480,11 @@ UPDATE t_alf_node n SET audit_creator =
       JOIN alf_qname qn ON (np.qname_id = qn.id)
       JOIN alf_namespace ns ON (qn.ns_id = ns.id)
    WHERE
-      np.node_id = n.id AND
+      np.node_id = t_alf_node.id AND
       ns.uri = 'http://www.alfresco.org/model/content/1.0' AND
       qn.local_name = 'creator'
 );
-UPDATE t_alf_node n SET audit_created =
+UPDATE t_alf_node SET audit_created =
 (
    SELECT
       string_value
@@ -483,11 +493,11 @@ UPDATE t_alf_node n SET audit_created =
       JOIN alf_qname qn ON (np.qname_id = qn.id)
       JOIN alf_namespace ns ON (qn.ns_id = ns.id)
    WHERE
-      np.node_id = n.id AND
+      np.node_id = t_alf_node.id AND
       ns.uri = 'http://www.alfresco.org/model/content/1.0' AND
       qn.local_name = 'created'
 );
-UPDATE t_alf_node n SET audit_modifier =
+UPDATE t_alf_node SET audit_modifier =
 (
    SELECT
       string_value
@@ -496,11 +506,11 @@ UPDATE t_alf_node n SET audit_modifier =
       JOIN alf_qname qn ON (np.qname_id = qn.id)
       JOIN alf_namespace ns ON (qn.ns_id = ns.id)
    WHERE
-      np.node_id = n.id AND
+      np.node_id = t_alf_node.id AND
       ns.uri = 'http://www.alfresco.org/model/content/1.0' AND
       qn.local_name = 'modifier'
 );
-UPDATE t_alf_node n SET audit_modified =
+UPDATE t_alf_node SET audit_modified =
 (
    SELECT
       string_value
@@ -509,7 +519,7 @@ UPDATE t_alf_node n SET audit_modified =
       JOIN alf_qname qn ON (np.qname_id = qn.id)
       JOIN alf_namespace ns ON (qn.ns_id = ns.id)
    WHERE
-      np.node_id = n.id AND
+      np.node_id = t_alf_node.id AND
       ns.uri = 'http://www.alfresco.org/model/content/1.0' AND
       qn.local_name = 'modified'
 );
@@ -535,7 +545,7 @@ INSERT INTO t_alf_node_properties
    SELECT
       np.node_id, np.qname_id, -1, loc.id,
       -1, 0,
-      FALSE, 0, 0, 0,
+      0, 0, 0, 0,
       a2.string_value,
       a2.serializable_value
    FROM
@@ -556,11 +566,11 @@ UPDATE t_alf_node_properties
 
 -- Delete the node properties and move the fixed values over
 DROP TABLE alf_node_properties;
-ALTER TABLE t_alf_node_properties RENAME TO alf_node_properties;
+EXEC sp_rename 't_alf_node_properties', 'alf_node_properties';
 
 CREATE TABLE t_del_attributes
 (
-   id BIGINT NOT NULL,
+   id numeric(19,0) NOT NULL,
    PRIMARY KEY (id)
 );
 INSERT INTO t_del_attributes
@@ -597,18 +607,71 @@ DROP TABLE t_del_attributes;
 -- Final clean up --
 -- ------------------
 DROP TABLE alf_node_status;
-ALTER TABLE alf_store DROP FOREIGN KEY fk_alf_store_rn;
+ALTER TABLE alf_store DROP CONSTRAINT fk_alf_store_rn;
 DROP TABLE alf_node;
-ALTER TABLE t_alf_node RENAME TO alf_node;
+EXEC sp_rename 't_alf_node', 'alf_node';
 DROP TABLE alf_store;
-ALTER TABLE t_alf_store RENAME TO alf_store;
-CREATE INDEX idx_alf_auth_aut ON alf_authority (authority);  -- (optional)
+EXEC sp_rename 't_alf_store', 'alf_store';
 
 -- ----------------
 -- JBPM Differences
 -- ----------------
-ALTER TABLE jbpm_processinstance DROP INDEX key_;  -- (optional)
-CREATE INDEX idx_procin_key ON jbpm_processinstance (key_);  -- (optional)
+
+-- We need to remove a unique index and unfortunately we don't know its name so let's just rebuild the table!
+create table T_JBPM_PROCESSINSTANCE (
+    ID_ numeric(19,0) identity not null,
+    VERSION_ int not null,
+    KEY_ nvarchar(255) null,
+    START_ datetime null,
+    END_ datetime null,
+    ISSUSPENDED_ tinyint null,
+    PROCESSDEFINITION_ numeric(19,0) null,
+    ROOTTOKEN_ numeric(19,0) null,
+    SUPERPROCESSTOKEN_ numeric(19,0) null,
+    primary key (ID_),
+);
+SET IDENTITY_INSERT T_JBPM_PROCESSINSTANCE ON;
+INSERT INTO T_JBPM_PROCESSINSTANCE (ID_, VERSION_, KEY_, START_, END_, ISSUSPENDED_, PROCESSDEFINITION_, ROOTTOKEN_, SUPERPROCESSTOKEN_)
+   SELECT ID_, VERSION_, KEY_, START_, END_, ISSUSPENDED_, PROCESSDEFINITION_, ROOTTOKEN_, SUPERPROCESSTOKEN_
+   FROM JBPM_PROCESSINSTANCE
+;
+SET IDENTITY_INSERT T_JBPM_PROCESSINSTANCE OFF;
+
+alter table JBPM_JOB drop constraint FK_JOB_PRINST;
+alter table JBPM_JOB
+    add constraint FK_JOB_PRINST foreign key (PROCESSINSTANCE_) references T_JBPM_PROCESSINSTANCE
+;
+alter table JBPM_MODULEINSTANCE drop constraint FK_MODINST_PRCINST;
+alter table JBPM_MODULEINSTANCE
+   add constraint FK_MODINST_PRCINST foreign key (PROCESSINSTANCE_) references T_JBPM_PROCESSINSTANCE
+;
+alter table JBPM_RUNTIMEACTION drop constraint FK_RTACTN_PROCINST;
+alter table JBPM_RUNTIMEACTION
+   add constraint FK_RTACTN_PROCINST foreign key (PROCESSINSTANCE_) references T_JBPM_PROCESSINSTANCE;
+alter table JBPM_TASKINSTANCE drop constraint FK_TSKINS_PRCINS;
+alter table JBPM_TASKINSTANCE
+   add constraint FK_TSKINS_PRCINS foreign key (PROCINST_) references T_JBPM_PROCESSINSTANCE;
+alter table JBPM_TOKEN drop constraint FK_TOKEN_PROCINST;
+alter table JBPM_TOKEN
+   add constraint FK_TOKEN_PROCINST foreign key (PROCESSINSTANCE_) references T_JBPM_PROCESSINSTANCE;
+alter table JBPM_VARIABLEINSTANCE drop constraint FK_VARINST_PRCINST;
+alter table JBPM_VARIABLEINSTANCE
+   add constraint FK_VARINST_PRCINST foreign key (PROCESSINSTANCE_) references T_JBPM_PROCESSINSTANCE;
+alter table JBPM_TOKEN drop constraint FK_TOKEN_SUBPI;
+alter table JBPM_TOKEN
+   add constraint FK_TOKEN_SUBPI foreign key (SUBPROCESSINSTANCE_) references T_JBPM_PROCESSINSTANCE;
+
+DROP TABLE JBPM_PROCESSINSTANCE;
+EXEC sp_rename 'T_JBPM_PROCESSINSTANCE', 'JBPM_PROCESSINSTANCE';
+
+ALTER TABLE JBPM_PROCESSINSTANCE ADD
+    constraint FK_PROCIN_PROCDEF foreign key (PROCESSDEFINITION_) references JBPM_PROCESSDEFINITION,
+    constraint FK_PROCIN_ROOTTKN foreign key (ROOTTOKEN_) references JBPM_TOKEN,
+    constraint FK_PROCIN_SPROCTKN foreign key (SUPERPROCESSTOKEN_) references JBPM_TOKEN;
+create index IDX_PROCIN_ROOTTK on JBPM_PROCESSINSTANCE (ROOTTOKEN_);
+create index IDX_PROCIN_SPROCTK on JBPM_PROCESSINSTANCE (SUPERPROCESSTOKEN_);
+create index IDX_PROCIN_KEY on JBPM_PROCESSINSTANCE (KEY_);
+create index IDX_PROCIN_PROCDEF on JBPM_PROCESSINSTANCE (PROCESSDEFINITION_);
 
 --
 -- Record script finish

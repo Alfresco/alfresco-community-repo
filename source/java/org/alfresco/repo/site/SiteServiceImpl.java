@@ -989,6 +989,7 @@ public class SiteServiceImpl implements SiteService, SiteModel
         {
             JSONObject activityData = new JSONObject();
             activityData.put("role", role);
+            activityData.put("memberUserName", userName);
             activityData.put("memberFirstName", memberFN);
             activityData.put("memberLastName", memberLN);
             activityData.put("title", (memberFN + " " + memberLN + " (" + userName + ")").trim());

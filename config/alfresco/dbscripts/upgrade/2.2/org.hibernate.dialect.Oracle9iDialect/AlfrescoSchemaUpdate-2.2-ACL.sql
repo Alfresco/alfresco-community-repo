@@ -77,7 +77,7 @@ ALTER TABLE alf_authority ADD (
 UPDATE alf_authority SET id = hibernate_sequence.nextval;
 ALTER TABLE alf_authority RENAME COLUMN recipient TO authority;
 ALTER TABLE alf_authority MODIFY (
-   authority VARCHAR(100)
+   authority VARCHAR(100 char) NULL
 );
 ALTER TABLE alf_authority ADD PRIMARY KEY (id);
 ALTER TABLE alf_authority ADD UNIQUE (authority, crc);

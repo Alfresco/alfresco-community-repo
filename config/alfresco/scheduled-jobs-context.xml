@@ -327,10 +327,12 @@
         
         <!-- enable this to activate bean -->
         
+		<!--
         <property name="scheduler">
             <ref bean="schedulerFactory" />
         </property>
-                
+        -->    
+			    
         <!-- start after 5 minutes and repeat every 5 minutes -->
         <property name="startDelayMinutes">
             <value>5</value>
@@ -360,9 +362,11 @@
         
         <!-- enable this to activate bean -->
         
+		<!--
         <property name="scheduler">
             <ref bean="schedulerFactory" />
         </property>
+		-->
                 
         <!-- start after bootstrap (0 minutes) and run once -->
         <property name="startDelayMinutes">

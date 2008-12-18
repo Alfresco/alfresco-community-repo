@@ -12,8 +12,8 @@
 
 -- Fix alf_audit_date column names
 
-ALTER TABLE alf_audit_date RENAME COLUMN halfYear TO half_year;
-ALTER TABLE alf_audit_date RENAME COLUMN year TO full_year;
+alter table alf_audit_date RENAME COLUMN halfyear to half_year;
+alter table alf_audit_date RENAME COLUMN year to full_year;
 
 -- create other new tables
 
@@ -22,21 +22,21 @@ ALTER TABLE alf_audit_date RENAME COLUMN year TO full_year;
         node_id number(19,0),
         qname varchar2(200 char),
         primary key (id)
-    );                                                -- (optional)
+    );                                    -- (optional)
 
     create table avm_aspects_new (
         id number(19,0) not null,
         name varchar2(200 char) not null,
         primary key (id, name)
-    );                                                -- (optional)
+    );                                    -- (optional)
 
     create table avm_node_properties (
         id number(19,0) not null,
         node_id number(19,0),
         qname varchar2(200 char),
-        actual_type_n number(10,0) not null,
-        persisted_type_n number(10,0) not null,
+        actual_type varchar2(15 char) not null,
         multi_valued number(1,0) not null,
+        persisted_type varchar2(15 char) not null,
         boolean_value number(1,0),
         long_value number(19,0),
         float_value float,
@@ -44,13 +44,13 @@ ALTER TABLE alf_audit_date RENAME COLUMN year TO full_year;
         string_value varchar2(1024 char),
         serializable_value long raw,
         primary key (id)
-    );                                                -- (optional)
+    );                                    -- (optional)
 
     create table avm_node_properties_new (
         node_id number(19,0) not null,
-        actual_type_n number(10,0) not null,
-        persisted_type_n number(10,0) not null,
+        actual_type varchar2(15 char) not null,
         multi_valued number(1,0) not null,
+        persisted_type varchar2(15 char) not null,
         boolean_value number(1,0),
         long_value number(19,0),
         float_value float,
@@ -59,15 +59,15 @@ ALTER TABLE alf_audit_date RENAME COLUMN year TO full_year;
         serializable_value long raw,
         qname varchar2(200 char) not null,
         primary key (node_id, qname)
-    );                                                -- (optional)
+    );                                    -- (optional)
 
     create table avm_store_properties (
         id number(19,0) not null,
         avm_store_id number(19,0),
-        qname varchar2(200 char) not null,
-        actual_type_n number(10,0) not null,
-        persisted_type_n number(10,0) not null,
+        qname varchar2(200 char),
+        actual_type varchar2(15 char) not null,
         multi_valued number(1,0) not null,
+        persisted_type varchar2(15 char) not null,
         boolean_value number(1,0),
         long_value number(19,0),
         float_value float,
@@ -75,7 +75,11 @@ ALTER TABLE alf_audit_date RENAME COLUMN year TO full_year;
         string_value varchar2(1024 char),
         serializable_value long raw,
         primary key (id)
-    );                                                -- (optional)
+    );                                    -- (optional)
+
+-- Add ACL column for AVM tables
+ALTER TABLE avm_stores
+   ADD (acl_id number(19,0));
 
 --
 -- Record script finish

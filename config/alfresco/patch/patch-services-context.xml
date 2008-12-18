@@ -1521,23 +1521,7 @@
         </property>
     </bean>
 
-	<bean id="patch.db-V2.2-OrclBLOB" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
-        <property name="id"><value>patch.db-V2.2-OrclBLOB</value></property>
-        <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
-        <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>134</value></property>
-        <property name="targetSchema"><value>135</value></property>
-        <property name="scriptUrl">
-            <value>classpath:alfresco/dbscripts/upgrade/2.2/${db.script.dialect}/AlfrescoSchemaUpdate-OrclBLOB.sql</value>
-        </property>
-        <property name="dependsOn" >
-            <list>
-                <ref bean="patch.db-V2.2-Person" />
-            </list>
-        </property>
-    </bean>
-
-    <bean id="patch.redeploySubmitProcess4" class="org.alfresco.repo.admin.patch.impl.GenericWorkflowPatch" parent="basePatch" >
+   <bean id="patch.redeploySubmitProcess4" class="org.alfresco.repo.admin.patch.impl.GenericWorkflowPatch" parent="basePatch" >
         <property name="id"><value>patch.redeploySubmitProcess4</value></property>
         <property name="description"><value>patch.redeploySubmitProcess.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>

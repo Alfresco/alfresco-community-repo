@@ -86,9 +86,6 @@ public final class AuthenticationHelper
    /** cookie names */
    private static final String COOKIE_ALFUSER = "alfUser";
    
-   /** portal mode key name */
-   private static ThreadLocal<String> portalUserKeyName = new ThreadLocal<String>();
-   
    private static Log logger = LogFactory.getLog(AuthenticationHelper.class);
    
    
@@ -434,23 +431,15 @@ public final class AuthenticationHelper
          // naff solution as we need to enumerate all session keys until we find the one that
          // should match our User objects - this is weak but we don't know how the underlying
          // Portal vendor has decided to encode the objects in the session
-         if (portalUserKeyName.get() == null)
+         Enumeration enumNames = session.getAttributeNames();
+         while (enumNames.hasMoreElements())
          {
-            Enumeration enumNames = session.getAttributeNames();
-            while (enumNames.hasMoreElements())
+            String name = (String)enumNames.nextElement();
+            if (name.endsWith(AUTHENTICATION_USER))
             {
-               String name = (String)enumNames.nextElement();
-               if (name.endsWith(AUTHENTICATION_USER))
-               {
-                  // cache the key value once found!
-                  portalUserKeyName.set(name);
-                  break;
-               }
+               user = (User)session.getAttribute(name);
+               break;
             }
-         }
-         if (portalUserKeyName.get() != null)
-         {
-            user = (User)session.getAttribute(portalUserKeyName.get());
          }
       }
       

@@ -406,7 +406,7 @@ public final class Utils extends StringUtils
                   NodeRef rootNode = contentCtx.getRootNode();
                   try
                   {
-                     url = Repository.getNamePath(nodeService, node.getNodePath(), rootNode, "\\", 
+                     url = Repository.getNamePathEx(context, node.getNodePath(), rootNode, "\\", 
                            "file:///" + navBean.getCIFSServerPath(diskShare));
                   }
                   catch (AccessDeniedException e)

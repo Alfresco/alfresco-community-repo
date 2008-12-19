@@ -46,6 +46,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.lock.LockService;
@@ -474,6 +475,36 @@ public final class Repository
             break;
          }
       }
+   }
+
+   /**
+    * Resolve a Path by converting each element into its display NAME attribute.
+    * Note: This method resolves path regardless access permissions.
+    * Fixes the UI part of the ETWOONE-214 and ETWOONE-238 issues
+    * 
+    * @param path       Path to convert
+    * @param separator  Separator to user between path elements
+    * @param prefix     To prepend to the path
+    * 
+    * @return Path converted using NAME attribute on each element
+    */
+   public static String getNamePathEx(FacesContext context, final Path path, final NodeRef rootNode, final String separator, final String prefix)
+   {
+       String result = null;
+       
+       RetryingTransactionHelper transactionHelper = getRetryingTransactionHelper(context);
+       transactionHelper.setMaxRetries(1);
+       final NodeService runtimeNodeService = (NodeService)FacesContextUtils.getRequiredWebApplicationContext(context).getBean("nodeService");
+       result = transactionHelper.doInTransaction(
+            new RetryingTransactionCallback<String>()
+            {
+                 public String execute() throws Throwable
+                 {
+                     return getNamePath(runtimeNodeService, path, rootNode, separator, prefix);
+                 }
+            });
+       
+       return result;
    }
 
    /**

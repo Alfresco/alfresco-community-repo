@@ -251,7 +251,7 @@ DesktopResponse AlfrescoInterface::runAction(AlfrescoActionInfo& action, Desktop
 	// Build the run action I/O control request
 
 	DataBuffer reqbuf( 1024);
-	DataBuffer respbuf( 4096);
+	DataBuffer respbuf( 16384);
 
 	reqbuf.putFixedString( IOSignature, IOSignatureLen);
 	reqbuf.putString( action.getName());
@@ -411,7 +411,7 @@ bool AlfrescoInterface::setRootPath( const wchar_t* rootPath) {
 
 			// Open the path
 
-			m_handle = CreateFile(m_uncPath, FILE_WRITE_DATA, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
+			m_handle = CreateFile(m_uncPath, FILE_WRITE_DATA, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
 		}
 
 		// Set the root path

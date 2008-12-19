@@ -204,7 +204,7 @@ public class ContentIOControlHandler implements IOControlHandler
         if ( dataBuf.getLength() < IOControl.Signature.length())
             throw new IOControlNotImplementedException("Bad request length");
         
-        String sig = dataBuf.getString(IOControl.Signature.length(), false);
+        String sig = dataBuf.getFixedString(IOControl.Signature.length(), false);
         
         if ( sig == null || sig.compareTo(IOControl.Signature) != 0)
             throw new IOControlNotImplementedException("Bad request signature");

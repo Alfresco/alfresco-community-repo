@@ -104,8 +104,8 @@ public class MultiTNodeServiceInterceptor extends DelegatingIntroductionIntercep
     @SuppressWarnings("unchecked")
     public Object invoke(MethodInvocation invocation) throws Throwable
     {
-        // See if we can shortcut
-        if (AuthenticationUtil.isRunAsUserTheSystemUser() || !AuthenticationUtil.isMtEnabled())
+        // See if we can shortcut (for super 'System' only)
+        if (AuthenticationUtil.getSystemUserName().equals(AuthenticationUtil.getRunAsUser()) || !AuthenticationUtil.isMtEnabled())
         {
             return invocation.proceed();
         }

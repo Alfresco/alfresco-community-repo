@@ -38,7 +38,6 @@
    
    <bean id="usageQuotaProtector" class="org.alfresco.repo.usage.UsageQuotaProtector" init-method="init">
       <property name="authorityService" ref="authorityService"/>
-      <property name="authenticationService" ref="authenticationService"/>
       <property name="policyComponent" ref="policyComponent"/>
       <property name="contentUsageService" ref="contentUsageImpl"/>
    </bean>

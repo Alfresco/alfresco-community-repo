@@ -334,6 +334,15 @@ public abstract class AuthenticationUtil
     public static boolean isRunAsUserTheSystemUser()
     {
         String runAsUser = getRunAsUser();
+        if ((runAsUser != null) && isMtEnabled())
+        {
+            // get base username
+            int idx = runAsUser.indexOf(TenantService.SEPARATOR);
+            if (idx != -1)
+            {
+                runAsUser = runAsUser.substring(0, idx);
+            }
+        }
         return EqualsHelper.nullSafeEquals(runAsUser, AuthenticationUtil.SYSTEM_USER_NAME);
     }
     
@@ -411,79 +420,47 @@ public abstract class AuthenticationUtil
             }
             else
             {
+                if ((originalRunAsAuthentication != null) && (isMtEnabled()))
+                {
+                    String originalRunAsUserName = getUserName(originalRunAsAuthentication);
+                    int idx = originalRunAsUserName.indexOf(TenantService.SEPARATOR);
+                    if ((idx != -1) && (idx < (originalRunAsUserName.length() - 1)))
+                    {
+                        if (uid.equals(AuthenticationUtil.getSystemUserName()))
+                        {
+                            uid = uid + TenantService.SEPARATOR + originalRunAsUserName.substring(idx + 1);
+                        }
+                    }
+                }
                 AuthenticationUtil.setRunAsUser(uid);
             }
             result = runAsWork.doWork();
             return result;
-      }
-      catch (Throwable exception)
-      {
-          // Re-throw the exception
-          if (exception instanceof RuntimeException)
-          {
-              throw (RuntimeException) exception;
-          }
-          else
-          {
-              throw new RuntimeException("Error during run as.", exception);
-          }
-      }
-      finally
-      {
-          if (originalFullAuthentication == null)
-          {
-              AuthenticationUtil.clearCurrentSecurityContext();
-          }
-          else
-          {
-              AuthenticationUtil.setFullAuthentication(originalFullAuthentication);
-              AuthenticationUtil.setRunAsAuthentication(originalRunAsAuthentication);
-          }
-      }
-//        String effectiveUser = AuthenticationUtil.getCurrentEffectiveUserName();
-//        String realUser = AuthenticationUtil.getCurrentRealUserName();
-//
-//        R result = null;
-//        try
-//        {
-//            if(realUser == null)
-//            {
-//                AuthenticationUtil.setCurrentRealUser(uid); 
-//            }
-//            AuthenticationUtil.setCurrentEffectiveUser(uid);
-//            result = runAsWork.doWork();
-//            return result;
-//        }
-//        catch (Throwable exception)
-//        {
-//
-//            // Re-throw the exception
-//            if (exception instanceof RuntimeException)
-//            {
-//                throw (RuntimeException) exception;
-//            }
-//            else
-//            {
-//                throw new RuntimeException("Error during run as.", exception);
-//            }
-//        }
-//        finally
-//        {
-//            if(realUser == null)
-//            {
-//                AuthenticationUtil.clearCurrentSecurityContext();
-//            }
-//            else 
-//            {
-//                if(!realUser.equals(AuthenticationUtil.getCurrentRealUserName()))
-//                {
-//                    AuthenticationUtil.setCurrentRealUser(realUser);
-//                    s_logger.warn("Resetting real user which has changed in RunAs block");
-//                }
-//                AuthenticationUtil.setCurrentEffectiveUser(effectiveUser);
-//                
-//            }
-//        }
+        }
+        catch (Throwable exception)
+        {
+            // Re-throw the exception
+            if (exception instanceof RuntimeException)
+            {
+                throw (RuntimeException) exception;
+            }
+            else
+            {
+                throw new RuntimeException("Error during run as.", exception);
+            }
+        }
+        finally
+        {
+            if (originalFullAuthentication == null)
+            {
+                AuthenticationUtil.clearCurrentSecurityContext();
+            }
+            else
+            {
+                AuthenticationUtil.setFullAuthentication(originalFullAuthentication);
+                AuthenticationUtil.setRunAsAuthentication(originalRunAsAuthentication);
+            }   
+        }
     }
     
     private static ThreadLocal<Stack<Authentication>> threadLocalFullAuthenticationStack;

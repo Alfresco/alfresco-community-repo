@@ -486,8 +486,10 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
             String realUserName = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(personNode, ContentModel.PROP_USERNAME));
             properties.put(ContentModel.PROP_USERNAME, realUserName);
         }
-
-        nodeService.setProperties(personNode, properties);
+        Map<QName, Serializable> update = nodeService.getProperties(personNode);
+        update.putAll(properties);
+        
+        nodeService.setProperties(personNode, update);
     }
 
     public boolean isMutable()

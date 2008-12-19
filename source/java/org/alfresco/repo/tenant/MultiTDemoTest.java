@@ -93,7 +93,8 @@ public class MultiTDemoTest extends TestCase
     
     public static List<String> tenants;
     
-    static {
+    static 
+    {
         tenants = new ArrayList<String>(NUM_TENANTS);
         for (int i = 1; i <= NUM_TENANTS; i++)
         {
@@ -103,8 +104,8 @@ public class MultiTDemoTest extends TestCase
     
     public static final String ROOT_DIR = "./tenantstores";
 
-    public static final String TEST_ADMIN_BASENAME = "admin";
-    public static final String TEST_ADMIN_PASSWORD = "admin";
+    public static final String DEFAULT_ADMIN_UN = "admin";
+    public static final String DEFAULT_ADMIN_PW = "admin";
     
     public static final String TEST_USER1 = "alice";
     public static final String TEST_USER2 = "bob";
@@ -137,8 +138,6 @@ public class MultiTDemoTest extends TestCase
         ownableService = (OwnableService) ctx.getBean("OwnableService");
         authorityService = (AuthorityService) ctx.getBean("AuthorityService");
         categoryService = (CategoryService) ctx.getBean("CategoryService");
-        
-//        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName()); // force, to clear real user from previous test (runAs issue ?)
     }
 
     @Override
@@ -150,6 +149,8 @@ public class MultiTDemoTest extends TestCase
     
     public void testCreateTenants() throws Throwable
     {   
+        AuthenticationUtil.setFullyAuthenticatedUser(DEFAULT_ADMIN_UN); // authenticate as super-admin
+        
         logger.info("Create tenants");
         
         Set<NodeRef> personRefs = personService.getAllPeople();
@@ -174,8 +175,8 @@ public class MultiTDemoTest extends TestCase
                     {
                         if (! tenantAdminService.existsTenant(tenantDomain))
                         {
-                            //tenantAdminService.createTenant(tenantDomain, TEST_ADMIN_PASSWORD.toCharArray(), ROOT_DIR + "/" + tenantDomain);
-                            tenantAdminService.createTenant(tenantDomain, TEST_ADMIN_PASSWORD.toCharArray(), null); // use default root dir
+                            //tenantAdminService.createTenant(tenantDomain, DEFAULT_ADMIN_PW.toCharArray(), ROOT_DIR + "/" + tenantDomain);
+                            tenantAdminService.createTenant(tenantDomain, DEFAULT_ADMIN_PW.toCharArray(), null); // use default root dir
                             
                             logger.info("Created tenant " + tenantDomain);
                         }
@@ -242,6 +243,17 @@ public class MultiTDemoTest extends TestCase
                     {
                         Set<NodeRef> personRefs = personService.getAllPeople();
                         
+                        for (NodeRef personRef : personRefs)
+                        {
+                            String userName = (String)nodeService.getProperty(personRef, ContentModel.PROP_USERNAME); 
+                            assertTrue(userName.endsWith(tenantDomain));
+                            
+                            logger.info("Create users: get all people - found user: "+userName);
+                            
+                            NodeRef homeSpaceRef = (NodeRef)nodeService.getProperty(personRef, ContentModel.PROP_HOMEFOLDER);
+                            assertNotNull(homeSpaceRef);
+                        }
+                        
                         if (tenantDomain.equals(TEST_TENANT_DOMAIN2))
                         {
                             assertEquals(5, personRefs.size()); // admin@tenant, guest@tenant, alice@tenant, bob@tenant, eve@tenant
@@ -251,14 +263,7 @@ public class MultiTDemoTest extends TestCase
                             assertEquals(4, personRefs.size()); // admin@tenant, guest@tenant, alice@tenant, bob@tenant
                         }
                         
-                        for (NodeRef personRef : personRefs)
-                        {
-                            String userName = (String)nodeService.getProperty(personRef, ContentModel.PROP_USERNAME); 
-                            assertTrue(userName.endsWith(tenantDomain));
-                            
-                            NodeRef homeSpaceRef = (NodeRef)nodeService.getProperty(personRef, ContentModel.PROP_HOMEFOLDER);
-                            assertNotNull(homeSpaceRef);
-                        }
+                        
                         
                         return null;                      
                     }
@@ -470,9 +475,7 @@ public class MultiTDemoTest extends TestCase
                 assertTrue("Super admin: ", (nodeService.getStores().size() >= DEFAULT_DM_STORE_COUNT));
                 return null;                      
             }
-        }, TenantService.ADMIN_BASENAME);
-        
-        assertTrue("Super tenant: ", (nodeService.getStores().size() >= DEFAULT_DM_STORE_COUNT));
+        }, DEFAULT_ADMIN_UN);
         
         for (final String tenantDomain : tenants)
         {        

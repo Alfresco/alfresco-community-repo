@@ -42,6 +42,7 @@ import org.alfresco.repo.dictionary.M2Aspect;
 import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.dictionary.M2Property;
 import org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexer;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -143,6 +144,8 @@ public class ADMLuceneCategoryTest extends TestCase
         categoryService = (CategoryService) ctx.getBean("categoryService");
         serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
         tenantService = (TenantService) ctx.getBean("tenantService");
+
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
         
         createTestTypes();
         
@@ -246,6 +249,14 @@ public class ADMLuceneCategoryTest extends TestCase
         tx.commit();
     }
     
+    @Override
+    protected void tearDown() throws Exception
+    {
+        // TODO Auto-generated method stub
+        AuthenticationUtil.clearCurrentSecurityContext();
+        super.tearDown();
+    }
+
     private HashMap<QName, Serializable> createMap(String name, NodeRef[] nodeRefs)
     {
         HashMap<QName, Serializable> map = new HashMap<QName, Serializable>();

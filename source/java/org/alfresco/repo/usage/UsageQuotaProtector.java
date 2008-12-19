@@ -32,8 +32,8 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.usage.ContentUsageService;
 import org.alfresco.service.namespace.NamespaceService;
@@ -46,18 +46,12 @@ import org.alfresco.service.namespace.QName;
 public class UsageQuotaProtector implements NodeServicePolicies.OnUpdatePropertiesPolicy
 {
     private AuthorityService authorityService;
-    private AuthenticationService authenticationService;
     private PolicyComponent policyComponent;
     private ContentUsageService contentUsageService;
     
     public void setAuthorityService(AuthorityService authorityService)
     {
         this.authorityService = authorityService;
-    }
-    
-    public void setAuthenticationService(AuthenticationService authenticationService)
-    {
-        this.authenticationService = authenticationService;
     }
     
     public void setContentUsageService(ContentUsageService contentUsageService)
@@ -105,14 +99,14 @@ public class UsageQuotaProtector implements NodeServicePolicies.OnUpdateProperti
         
         // Check for change in sizeCurrent
         if ((sizeCurrentBefore != sizeCurrentAfter) && (sizeCurrentBefore != null) &&
-            (! (authorityService.hasAdminAuthority() || authenticationService.isCurrentUserTheSystemUser())))
+            (! (authorityService.hasAdminAuthority() || AuthenticationUtil.isRunAsUserTheSystemUser())))
         {
             throw new AlfrescoRuntimeException("Update failed: protected property 'sizeCurrent'");
         }
         
         // Check for change in sizeQuota
         if ((sizeQuotaBefore != sizeQuotaAfter) && (sizeQuotaBefore != null) &&
-            (! (authorityService.hasAdminAuthority() || authenticationService.isCurrentUserTheSystemUser())))
+            (! (authorityService.hasAdminAuthority() || AuthenticationUtil.isRunAsUserTheSystemUser())))
         {
             throw new AlfrescoRuntimeException("Update failed: protected property 'sizeQuota'");
         }

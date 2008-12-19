@@ -394,6 +394,16 @@ public class IndexInfo implements IndexMonitor
             this.mergerMaxMergeDocs = config.getMergerMaxMergeDocs();
             this.termIndexInterval = config.getTermIndexInterval();
             this.mergerTargetOverlays = config.getMergerTargetOverlayCount();
+            // Work out the relative path of the index
+            try
+            {
+                String indexRoot = new File(config.getIndexRootLocation()).getCanonicalPath();
+                this.relativePath = this.indexDirectory.getCanonicalPath().substring(indexRoot.length() + 1);
+            }
+            catch (IOException e)
+            {
+                throw new AlfrescoRuntimeException("Failed to determine index relative path", e);
+            }            
         }
         else
         {
@@ -403,6 +413,29 @@ public class IndexInfo implements IndexMonitor
             threadFactory.setThreadPriority(5);
 
             threadPoolExecutor = new ThreadPoolExecutor(10, 10, 90, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(), threadFactory, new ThreadPoolExecutor.CallerRunsPolicy());
+
+            // Create a 'fake' relative path
+            try
+            {
+                this.relativePath = this.indexDirectory.getCanonicalPath();
+                int sepIndex = this.relativePath.indexOf(File.separator);
+                if (sepIndex != -1)
+                {
+                    if (this.relativePath.length() > sepIndex + 1)
+                    {
+                        this.relativePath = this.relativePath.substring(sepIndex + 1);
+                    }
+                    else
+                    {
+                        this.relativePath = "";
+                    }
+                }
+            }
+            catch (IOException e)
+            {
+                throw new AlfrescoRuntimeException("Failed to determine index relative path", e);
+            }
+            
         }
 
         // Create an empty in memory index
@@ -437,17 +470,6 @@ public class IndexInfo implements IndexMonitor
         if (!this.indexDirectory.isDirectory())
         {
             throw new AlfrescoRuntimeException("The index must be held in a directory");
-        }
-
-        // Work out the relative path of the index
-        try
-        {
-            String indexRoot = new File(config.getIndexRootLocation()).getCanonicalPath();
-            this.relativePath = this.indexDirectory.getCanonicalPath().substring(indexRoot.length() + 1);
-        }
-        catch (IOException e)
-        {
-            throw new AlfrescoRuntimeException("Failed to determine index relative path", e);
         }
         
         // Create the info files.

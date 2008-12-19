@@ -163,16 +163,24 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
         return params;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
      * @see org.alfresco.web.scripts.AbstractRuntimeContainer#getTemplateParameters()
      */
     public Map<String, Object> getTemplateParameters()
     {
-        Map<String, Object> params = new HashMap<String, Object>();
-        params.putAll(super.getTemplateParameters());
-        params.put(TemplateService.KEY_IMAGE_RESOLVER, imageResolver.getImageResolver());
-        addRepoParameters(params);
-        return params;
+        // This must be in an isolated read-only transaction, in case we are handling failure of another transaction
+        return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Map<String, Object>>()
+        {
+            public Map<String, Object> execute() throws Throwable
+            {
+                Map<String, Object> params = new HashMap<String, Object>();
+                params.putAll(RepositoryContainer.super.getTemplateParameters());
+                params.put(TemplateService.KEY_IMAGE_RESOLVER, imageResolver.getImageResolver());
+                addRepoParameters(params);
+                return params;
+            }
+        }, true, true);
     }
 
     /**

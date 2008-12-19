@@ -42,34 +42,27 @@ function main()
    }
    
    // Finally, now we can do what we are supposed to do
-   try 
+   var currentName = new String(page.name);
+   
+   page.name = newName;
+   page.properties["cm:title"] = new String(newName).replace(/_/g, " ");
+   page.save();
+   
+   var placeholder = createWikiPage(currentName, wiki,
    {
-      var currentName = new String(page.name);
+      content: "This page has been moved [["  + newName + "|here]]."
+   });
       
-      page.name = newName;
-      page.properties["cm:title"] = new String(newName).replace(/_/g, " ");
-      page.save();
-      
-      var placeholder = createWikiPage(currentName, wiki,
-      {
-         content: "This page has been moved [["  + newName + "|here]]."
-      });
-         
-      var data =
-      {
-         title: newName.replace(/_/g, " "),
-         page: json.get("page") + "?title=" + newName,
-         custom0: currentName.replace(/_/g, " ")
-      }
-
-      activities.postActivity("org.alfresco.wiki.page-renamed", params.siteId, "wiki", jsonUtils.toJSONString(data));
-      
-      return {
-         name: newName // Return the new name to the client (?)
-      }
+   var data =
+   {
+      title: newName.replace(/_/g, " "),
+      page: json.get("page") + "?title=" + newName,
+      custom0: currentName.replace(/_/g, " ")
    }
-   catch (e)
-   {
-      return jsonError(e.toString());
+
+   activities.postActivity("org.alfresco.wiki.page-renamed", params.siteId, "wiki", jsonUtils.toJSONString(data));
+   
+   return {
+      name: newName // Return the new name to the client (?)
    }
 }

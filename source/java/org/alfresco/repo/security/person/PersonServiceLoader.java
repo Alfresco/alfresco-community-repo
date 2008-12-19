@@ -154,7 +154,7 @@ public class PersonServiceLoader
 
         public void run()
         {
-            AuthenticationUtil.setSystemUserAsCurrentUser();
+            AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.SYSTEM_USER_NAME);
             if (waiter != null)
             {
                 waiter.start();
@@ -215,6 +215,5 @@ public class PersonServiceLoader
                 }
             }
         }
-
     }
 }

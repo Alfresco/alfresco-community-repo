@@ -316,7 +316,7 @@ public class AVMServicePermissionsTest extends TestCase
 
     private boolean checkPermission(String user, String path, String permission, boolean allowed)
     {
-        String curentUser = AuthenticationUtil.getCurrentUserName();
+        String curentUser = AuthenticationUtil.getRunAsUser();
         try
         {
             runAs(user);
@@ -335,7 +335,7 @@ public class AVMServicePermissionsTest extends TestCase
 
     private boolean checkCanPerformance(String user, String path, String permission, boolean allowed, int count)
     {
-        String curentUser = AuthenticationUtil.getCurrentUserName();
+        String curentUser = AuthenticationUtil.getRunAsUser();
         try
         {
             runAs(user);
@@ -362,7 +362,7 @@ public class AVMServicePermissionsTest extends TestCase
 
     private boolean checkHasPermissionsPerformance(String user, String path, String permission, boolean allowed, int count)
     {
-        String curentUser = AuthenticationUtil.getCurrentUserName();
+        String curentUser = AuthenticationUtil.getRunAsUser();
         try
         {
             runAs(user);
@@ -386,7 +386,7 @@ public class AVMServicePermissionsTest extends TestCase
 
     public boolean checkHasPermission(String user, NodeRef nodeRef, String permission, boolean allowed)
     {
-        String curentUser = AuthenticationUtil.getCurrentUserName();
+        String curentUser = AuthenticationUtil.getRunAsUser();
         try
         {
             runAs(user);
@@ -2184,18 +2184,6 @@ public class AVMServicePermissionsTest extends TestCase
         }
     }
 
-    private void checkHeadPermissionForNode(String path, String authority, String permission, boolean allow)
-    {
-        AVMNodeDescriptor desc = avmService.lookup(-1, path);
-        checkHeadPermission(desc, authority, permission, allow);
-    }
-
-    private void checkHeadPermissionNotSetForNode(String path, String authority, String permission, boolean allow)
-    {
-        AVMNodeDescriptor desc = avmService.lookup(-1, path);
-        checkHeadPermissionNotSet(desc, authority, permission, allow);
-    }
-
     private void checkHeadPermission(AVMNodeDescriptor desc, String authority, String permission, boolean allow)
     {
         NodeRef nodeRef = AVMNodeConverter.ToNodeRef(-1, desc.getPath());
@@ -2775,6 +2763,7 @@ public class AVMServicePermissionsTest extends TestCase
         }
     }
 
+    @SuppressWarnings("unused")
     public void testWCMStyleTemplateAsBranch()
     {
         runAs("admin");

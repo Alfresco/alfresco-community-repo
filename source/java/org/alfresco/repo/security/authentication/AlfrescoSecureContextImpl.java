@@ -35,7 +35,7 @@ import net.sf.acegisecurity.context.ContextInvalidException;
  */
 public class AlfrescoSecureContextImpl implements AlfrescoSecureContext
 {
-    private Authentication storedAuthentication;
+    private static final long serialVersionUID = -8893133731693272549L;
 
     private Authentication realAuthentication;
 
@@ -78,11 +78,6 @@ public class AlfrescoSecureContextImpl implements AlfrescoSecureContext
         return realAuthentication;
     }
 
-    public Authentication getStoredAuthentication()
-    {
-        return storedAuthentication;
-    }
-
     public void setEffectiveAuthentication(Authentication effictiveAuthentication)
     {
         this.effectiveAuthentication = effictiveAuthentication;
@@ -93,11 +88,6 @@ public class AlfrescoSecureContextImpl implements AlfrescoSecureContext
         this.realAuthentication = realAuthentication;
     }
 
-    public void setStoredAuthentication(Authentication storedAuthentication)
-    {
-        this.storedAuthentication = storedAuthentication;
-    }
-
     @Override
     public int hashCode()
     {
@@ -105,7 +95,6 @@ public class AlfrescoSecureContextImpl implements AlfrescoSecureContext
         int result = 1;
         result = PRIME * result + ((effectiveAuthentication == null) ? 0 : effectiveAuthentication.hashCode());
         result = PRIME * result + ((realAuthentication == null) ? 0 : realAuthentication.hashCode());
-        result = PRIME * result + ((storedAuthentication == null) ? 0 : storedAuthentication.hashCode());
         return result;
     }
 
@@ -132,13 +121,6 @@ public class AlfrescoSecureContextImpl implements AlfrescoSecureContext
                 return false;
         }
         else if (!realAuthentication.equals(other.realAuthentication))
-            return false;
-        if (storedAuthentication == null)
-        {
-            if (other.storedAuthentication != null)
-                return false;
-        }
-        else if (!storedAuthentication.equals(other.storedAuthentication))
             return false;
         return true;
     }
@@ -168,15 +150,6 @@ public class AlfrescoSecureContextImpl implements AlfrescoSecureContext
         }
         builder.append(", ");
         
-        if (storedAuthentication == null)
-        {
-            builder.append("Stored authenticaion = null");
-        }
-        else
-        {
-            builder.append("Stored authenticaion = " + storedAuthentication.toString());
-        }
-       
         return builder.toString();
     }
 

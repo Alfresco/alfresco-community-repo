@@ -187,6 +187,7 @@ public class AlfrescoJavaScript extends JBPMSpringActionHandler
      * @param services
      * @return
      */
+    @SuppressWarnings("unchecked")
     private static Object convertForJBPM(Object value, ServiceRegistry services)
     {
         if (value == null)
@@ -255,7 +256,7 @@ public class AlfrescoJavaScript extends JBPMSpringActionHandler
         Map<String, Object> inputMap = new HashMap<String, Object>();
 
         // initialise global script variables
-        String userName = AuthenticationUtil.getCurrentUserName();
+        String userName = AuthenticationUtil.getFullyAuthenticatedUser();
         NodeRef person = services.getPersonService().getPerson(userName);
         if (person != null)
         {

@@ -504,8 +504,8 @@ public class WorkflowInterpreter extends BaseInterpreter
                 
                 if (command[2].equals("tasks"))
                 {
-                    out.println(AuthenticationUtil.getCurrentUserName() + ":");
-                    List<WorkflowTask> tasks = workflowService.getAssignedTasks(AuthenticationUtil.getCurrentUserName(), WorkflowTaskState.IN_PROGRESS);
+                    out.println(AuthenticationUtil.getRunAsUser() + ":");
+                    List<WorkflowTask> tasks = workflowService.getAssignedTasks(AuthenticationUtil.getRunAsUser(), WorkflowTaskState.IN_PROGRESS);
                     for (WorkflowTask task : tasks)
                     {
                         out.println("id: " + task.id + " , name: " + task.name + " , properties: " + task.properties.size() + " , workflow: " + task.path.instance.id + " , path: " + task.path.id);
@@ -514,8 +514,8 @@ public class WorkflowInterpreter extends BaseInterpreter
                 
                 else if (command[2].equals("completed"))
                 {
-                    out.println(AuthenticationUtil.getCurrentUserName() + ":");
-                    List<WorkflowTask> tasks = workflowService.getAssignedTasks(AuthenticationUtil.getCurrentUserName(), WorkflowTaskState.COMPLETED);
+                    out.println(AuthenticationUtil.getRunAsUser() + ":");
+                    List<WorkflowTask> tasks = workflowService.getAssignedTasks(AuthenticationUtil.getRunAsUser(), WorkflowTaskState.COMPLETED);
                     for (WorkflowTask task : tasks)
                     {
                         out.println("id: " + task.id + " , name " + task.name + " , properties: " + task.properties.size() + " , workflow: " + task.path.instance.id + " , path: " + task.path.id);
@@ -524,8 +524,8 @@ public class WorkflowInterpreter extends BaseInterpreter
                 
                 else if (command[2].equals("pooled"))
                 {
-                    out.println(AuthenticationUtil.getCurrentUserName() + ":");
-                    List<WorkflowTask> tasks = workflowService.getPooledTasks(AuthenticationUtil.getCurrentUserName());
+                    out.println(AuthenticationUtil.getRunAsUser() + ":");
+                    List<WorkflowTask> tasks = workflowService.getPooledTasks(AuthenticationUtil.getRunAsUser());
                     for (WorkflowTask task : tasks)
                     {
                         out.println("id: " + task.id + " , name " + task.name + " , properties: " + task.properties.size() + " , workflow: " + task.path.instance.id + " , path: " + task.path.id);

@@ -62,12 +62,6 @@ public interface AlfrescoSecureContext extends SecureContext
     public Authentication getRealAuthentication();
     
     /**
-     * Get the store authentication - used for setuid scripts and methods
-     * @return
-     */
-    public Authentication getStoredAuthentication();
-    
-    /**
      * Set the effective authentication held by the context
      * 
      * @param effictiveAuthentication
@@ -80,12 +74,5 @@ public interface AlfrescoSecureContext extends SecureContext
      * @param realAuthentication
      */
     public void setRealAuthentication(Authentication realAuthentication);
-    
-    /**
-     * Set the stored authentication held by the context
-     * 
-     * @param storedAuthentication
-     */
-    public void setStoredAuthentication(Authentication storedAuthentication);
     
 }

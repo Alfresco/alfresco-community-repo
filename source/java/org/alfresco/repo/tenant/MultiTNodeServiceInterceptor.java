@@ -105,11 +105,7 @@ public class MultiTNodeServiceInterceptor extends DelegatingIntroductionIntercep
     public Object invoke(MethodInvocation invocation) throws Throwable
     {
         // See if we can shortcut
-        if (EqualsHelper.nullSafeEquals(
-                AuthenticationUtil.SYSTEM_USER_NAME,
-                AuthenticationUtil.getCurrentEffectiveUserName())
-                ||
-                !AuthenticationUtil.isMtEnabled())
+        if (AuthenticationUtil.isRunAsUserTheSystemUser() || !AuthenticationUtil.isMtEnabled())
         {
             return invocation.proceed();
         }
@@ -232,11 +228,9 @@ public class MultiTNodeServiceInterceptor extends DelegatingIntroductionIntercep
                 {
                     if (tenantService.isEnabled())
                     {
-                        String currentUser = AuthenticationUtil.getCurrentEffectiveUserName();
-
                         // MT: return tenant stores only (although for super System return all stores - as used by
                         // ConfigurationChecker, IndexRecovery, IndexBackup etc)
-                        if ((currentUser == null) || (!currentUser.equals(AuthenticationUtil.getSystemUserName())))
+                        if (!AuthenticationUtil.isRunAsUserTheSystemUser())
                         {
                             tenantService.checkDomain(storeRef.getIdentifier());
                             storeRef = tenantService.getBaseName(storeRef);

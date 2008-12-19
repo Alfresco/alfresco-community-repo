@@ -50,16 +50,20 @@
     <bean id="SiteService_security" class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
     
     
-    <bean id="siteService" class="org.alfresco.repo.site.SiteServiceImpl">
+    <bean id="siteService" class="org.alfresco.repo.site.SiteServiceImpl" init-method="init">
        <property name="nodeService" ref="NodeService"/>
        <property name="fileFolderService" ref="FileFolderService"/>
        <property name="searchService" ref="SearchService"/>
+       <property name="namespaceService" ref="NamespaceService"/>
        <property name="permissionService" ref="PermissionService" />
        <property name="authenticationComponent" ref="authenticationComponent"/>      
        <property name="personService" ref="PersonService"/>
        <property name="activityService" ref="activityService"/>
        <property name="taggingService" ref="TaggingService"/>
        <property name="authorityService" ref="authorityService"/>
+       <property name="sitesXPath">
+           <value>./${spaces.company_home.childname}/st:sites</value>
+       </property>
     </bean>
     
     <bean id="siteServiceScript" parent="baseJavaScriptExtension" class="org.alfresco.repo.site.script.ScriptSiteService">

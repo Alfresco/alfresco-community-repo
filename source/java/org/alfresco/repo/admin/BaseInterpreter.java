@@ -197,7 +197,7 @@ public abstract class BaseInterpreter extends AbstractLifecycleBean
     {
         if (username == null)
         {
-            return AuthenticationUtil.getCurrentUserName();
+            return AuthenticationUtil.getFullyAuthenticatedUser();
         }
         return username;
     }

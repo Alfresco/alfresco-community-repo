@@ -30,6 +30,7 @@ import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.PermissionServiceSPI;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -39,6 +40,8 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * The default implementation of the authority service.
@@ -47,6 +50,8 @@ import org.alfresco.service.cmr.security.PersonService;
  */
 public class AuthorityServiceImpl implements AuthorityService
 {
+    private static Log logger = LogFactory.getLog(AuthorityServiceImpl.class);
+    
     private PersonService personService;
 
     private NodeService nodeService;
@@ -65,8 +70,6 @@ public class AuthorityServiceImpl implements AuthorityService
 
     private Set<String> adminUsers;
 
-    private AuthenticationComponent authenticationComponent;
-    
     public AuthorityServiceImpl()
     {
         super();
@@ -97,21 +100,27 @@ public class AuthorityServiceImpl implements AuthorityService
         this.permissionServiceSPI = permissionServiceSPI;
     }
     
+    public void setAuthenticationComponent(AuthenticationComponent authenticationComponent)
+    {
+        logger.warn("Bean property 'authenticationService' no longer required on 'AuthorityServiceImpl'.");
+    }
+
+    public void setAdminUsers(Set<String> adminUsers)
+    {
+        this.adminUsers = adminUsers;
+    }
+
     /**
-     * Currently the admin authority is granted only to the ALFRESCO_ADMIN_USER
-     * user.
+     * Currently the admin authority is granted only to the ALFRESCO_ADMIN_USER user.
      */
     public boolean hasAdminAuthority()
     {
-        String currentUserName = authenticationComponent.getCurrentUserName();
+        String currentUserName = AuthenticationUtil.getRunAsUser();
         
         // for MT, see note for getAuthoritiesForUser
         return ((currentUserName != null) && (adminUsers.contains(currentUserName) || adminUsers.contains(tenantService.getBaseNameUser(currentUserName))));
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.security.AuthorityService#isAdminAuthority(java.lang.String)
-     */
     public boolean isAdminAuthority(String authorityName)
     {
         String canonicalName = personService.getUserIdentifier(authorityName);
@@ -123,21 +132,9 @@ public class AuthorityServiceImpl implements AuthorityService
         return (adminUsers.contains(canonicalName) || adminUsers.contains(tenantService.getBaseNameUser(canonicalName)));
     }
 
-    // IOC
-
-    public void setAuthenticationComponent(AuthenticationComponent authenticationComponent)
-    {
-        this.authenticationComponent = authenticationComponent;
-    }
-
-    public void setAdminUsers(Set<String> adminUsers)
-    {
-        this.adminUsers = adminUsers;
-    }
-
     public Set<String> getAuthorities()
     {
-        String currentUserName = authenticationComponent.getCurrentUserName();
+        String currentUserName = AuthenticationUtil.getRunAsUser();
         return getAuthoritiesForUser(currentUserName);
     }
 

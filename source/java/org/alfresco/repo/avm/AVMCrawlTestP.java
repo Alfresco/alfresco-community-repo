@@ -77,7 +77,7 @@ public class AVMCrawlTestP extends AVMServiceTestBase
     {
         try
         {
-            Authentication authentication = AuthenticationUtil.setCurrentUser(AuthenticationUtil.SYSTEM_USER_NAME);
+            Authentication authentication = AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.SYSTEM_USER_NAME);
             try
             {
                 if (m < 1)

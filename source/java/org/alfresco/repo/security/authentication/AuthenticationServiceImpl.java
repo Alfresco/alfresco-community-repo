@@ -74,14 +74,15 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService
     public void updateAuthentication(String userName, char[] oldPassword, char[] newPassword)
             throws AuthenticationException
     {
-        String currentUser = AuthenticationUtil.getCurrentUserName();
+        // Need to preserve the run-as user
+        String currentUser = AuthenticationUtil.getRunAsUser();
         try
         {
             authenticate(userName, oldPassword);
         }
         finally
         {
-            AuthenticationUtil.setCurrentUser(currentUser);
+            AuthenticationUtil.setRunAsUser(currentUser);
         }
         authenticationDao.updateUser(userName, newPassword);
     }

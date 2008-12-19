@@ -35,7 +35,6 @@ import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -63,18 +62,12 @@ public class RegistryServiceImpl implements RegistryService
 {
     private static Log logger = LogFactory.getLog(RegistryServiceImpl.class);
     
-    private AuthenticationComponent authenticationComponent;
     private NamespaceService namespaceService;
     private NodeService nodeService;
     private SearchService searchService;
     private StoreRef registryStoreRef;
     private String registryRootPath;
     
-    public void setAuthenticationComponent(AuthenticationComponent authenticationComponent)
-    {
-        this.authenticationComponent = authenticationComponent;
-    }
-
     public void setNamespaceService(NamespaceService namespaceService)
     {
         this.namespaceService = namespaceService;
@@ -119,7 +112,6 @@ public class RegistryServiceImpl implements RegistryService
     public void init()
     {
         // Check the properties
-        PropertyCheck.mandatory(this, "authenticationComponent", authenticationComponent);
         PropertyCheck.mandatory(this, "namespaceService", namespaceService);
         PropertyCheck.mandatory(this, "nodeService", nodeService);
         PropertyCheck.mandatory(this, "registryRootPath", searchService);

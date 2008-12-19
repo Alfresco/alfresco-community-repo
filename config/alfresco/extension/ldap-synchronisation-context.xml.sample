@@ -285,9 +285,6 @@
         <property name="transactionService">
             <ref bean="transactionComponent"/>
         </property>
-        <property name="authenticationComponent">
-            <ref bean="authenticationComponent"/>
-        </property>
         <property name="exportSource">
             <ref bean="ldapPeopleExportSource"/>
         </property>
@@ -332,9 +329,6 @@
         </property>
         <property name="transactionService">
             <ref bean="transactionComponent"/>
-        </property>
-        <property name="authenticationComponent">
-            <ref bean="authenticationComponent"/>
         </property>
         <property name="exportSource">
             <ref bean="ldapGroupExportSource"/>

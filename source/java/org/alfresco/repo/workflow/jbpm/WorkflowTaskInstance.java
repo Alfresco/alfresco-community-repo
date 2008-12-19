@@ -114,7 +114,7 @@ public class WorkflowTaskInstance extends TaskInstance
         // Force assignment of task if transition is taken, but no owner has yet been assigned
         if (actorId == null)
         {
-            actorId = AuthenticationUtil.getCurrentUserName();
+            actorId = AuthenticationUtil.getFullyAuthenticatedUser();
         }
         
         // Set task properties on completion of task

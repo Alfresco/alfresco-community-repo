@@ -37,7 +37,6 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.admin.registry.RegistryKey;
 import org.alfresco.repo.admin.registry.RegistryService;
-import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.Tenant;
@@ -89,7 +88,6 @@ public class ModuleComponentHelper
     
     private ServiceRegistry serviceRegistry;
     private DescriptorService descriptorService;
-    private AuthenticationComponent authenticationComponent;
     private RegistryService registryService;
     private ModuleService moduleService;
     private TenantAdminService tenantAdminService;
@@ -115,14 +113,6 @@ public class ModuleComponentHelper
     public void setDescriptorService(DescriptorService descriptorService)
     {
         this.descriptorService = descriptorService;
-    }
-
-    /**
-     * @param authenticationComponent allows execution as system user.
-     */
-    public void setAuthenticationComponent(AuthenticationComponent authenticationComponent)
-    {
-        this.authenticationComponent = authenticationComponent;
     }
 
     /**
@@ -203,7 +193,7 @@ public class ModuleComponentHelper
     {
         // Check properties
         PropertyCheck.mandatory(this, "serviceRegistry", serviceRegistry);
-        PropertyCheck.mandatory(this, "authenticationComponent", authenticationComponent);
+//        PropertyCheck.mandatory(this, "authenticationComponent", authenticationComponent);
         PropertyCheck.mandatory(this, "registryService", registryService);
         PropertyCheck.mandatory(this, "moduleService", moduleService);
         PropertyCheck.mandatory(this, "tenantAdminService", tenantAdminService);

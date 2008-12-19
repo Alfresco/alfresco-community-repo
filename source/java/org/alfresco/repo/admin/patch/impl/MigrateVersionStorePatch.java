@@ -95,7 +95,7 @@ public class MigrateVersionStorePatch extends AbstractPatch
     	{
     		// bootstrap new version store
             StoreRef bootstrapStoreRef = version2ImporterBootstrap.getStoreRef();
-            bootstrapStoreRef = tenantService.getName(AuthenticationUtil.getCurrentEffectiveUserName(),  bootstrapStoreRef);
+            bootstrapStoreRef = tenantService.getName(AuthenticationUtil.getRunAsUser(),  bootstrapStoreRef);
             version2ImporterBootstrap.setStoreUrl(bootstrapStoreRef.toString());
         
             version2ImporterBootstrap.bootstrap();

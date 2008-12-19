@@ -64,6 +64,7 @@ import org.alfresco.repo.avm.PurgeStoreTxnListener;
 import org.alfresco.repo.avm.PurgeVersionTxnListener;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.sandbox.SandboxConstants;
 import org.alfresco.service.cmr.avm.AVMBadArgumentException;
 import org.alfresco.service.cmr.avm.AVMExistsException;
@@ -287,10 +288,10 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
     {
         // Use the system user as the authenticated context for the filesystem initialization
 
-        String currentUser = m_authComponent.getCurrentUserName();
         try
         {
-            m_authComponent.setCurrentUser(m_authComponent.getSystemUserName());
+            AuthenticationUtil.pushAuthentication();
+            AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
 
             // Wrap the initialization in a transaction
 
@@ -571,7 +572,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
         }
         finally
         {
-            m_authComponent.setCurrentUser(currentUser);
+            AuthenticationUtil.popAuthentication();
         }
 
     }

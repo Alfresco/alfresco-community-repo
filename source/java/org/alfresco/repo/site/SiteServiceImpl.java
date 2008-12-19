@@ -44,7 +44,6 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
@@ -56,6 +55,7 @@ import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.PropertyMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -73,16 +73,18 @@ public class SiteServiceImpl implements SiteService, SiteModel
     private static Log logger = LogFactory.getLog(SiteServiceImpl.class);
 
     /** The DM store where site's are kept */
-    public static final StoreRef SITE_STORE = new StoreRef(
-            "workspace://SpacesStore");
+    public static final StoreRef SITE_STORE = new StoreRef("workspace://SpacesStore");
 
     /** Activiti tool */
     private static final String ACTIVITY_TOOL = "siteService";
 
-    /** Services */
+    private String sitesXPath;
+
+    /* Services */
     private NodeService nodeService;
     private FileFolderService fileFolderService;
     private SearchService searchService;
+    private NamespaceService namespaceService;
     private PermissionService permissionService;
     private ActivityService activityService;
     private PersonService personService;
@@ -91,10 +93,19 @@ public class SiteServiceImpl implements SiteService, SiteModel
     private AuthorityService authorityService;
 
     /**
+     * Set the path to the location of the sites root folder.  For example:
+     * <pre>
+     * ./app:company_home/st:sites
+     * </pre>
+     * @param sitesXPath            a valid XPath
+     */
+    public void setSitesXPath(String sitesXPath)
+    {
+        this.sitesXPath = sitesXPath;
+    }
+
+    /**
      * Set node service
-     * 
-     * @param nodeService
-     *            node service
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -103,9 +114,6 @@ public class SiteServiceImpl implements SiteService, SiteModel
 
     /**
      * Set file folder service
-     * 
-     * @param fileFolderService
-     *            file folder service
      */
     public void setFileFolderService(FileFolderService fileFolderService)
     {
@@ -114,9 +122,6 @@ public class SiteServiceImpl implements SiteService, SiteModel
 
     /**
      * Set search service
-     * 
-     * @param searchService
-     *            search service
      */
     public void setSearchService(SearchService searchService)
     {
@@ -124,10 +129,15 @@ public class SiteServiceImpl implements SiteService, SiteModel
     }
 
     /**
+     * Set Namespace service
+     */
+    public void setNamespaceService(NamespaceService namespaceService)
+    {
+        this.namespaceService = namespaceService;
+    }
+
+    /**
      * Set permission service
-     * 
-     * @param permissionService
-     *            permission service
      */
     public void setPermissionService(PermissionService permissionService)
     {
@@ -136,9 +146,6 @@ public class SiteServiceImpl implements SiteService, SiteModel
 
     /**
      * Set activity service
-     * 
-     * @param activityService
-     *            activity service
      */
     public void setActivityService(ActivityService activityService)
     {
@@ -147,9 +154,6 @@ public class SiteServiceImpl implements SiteService, SiteModel
 
     /**
      * Set person service
-     * 
-     * @param personService
-     *            person service
      */
     public void setPersonService(PersonService personService)
     {
@@ -158,9 +162,6 @@ public class SiteServiceImpl implements SiteService, SiteModel
 
     /**
      * Set authentication component
-     * 
-     * @param authenticationComponent
-     *            authententication component
      */
     public void setAuthenticationComponent(
             AuthenticationComponent authenticationComponent)
@@ -170,9 +171,6 @@ public class SiteServiceImpl implements SiteService, SiteModel
 
     /**
      * Set the taggin service
-     * 
-     * @param taggingService
-     *            tagging service
      */
     public void setTaggingService(TaggingService taggingService)
     {
@@ -181,18 +179,32 @@ public class SiteServiceImpl implements SiteService, SiteModel
 
     /**
      * Set the authority service
-     * 
-     * @param authorityService
-     *            authority service
      */
     public void setAuthorityService(AuthorityService authorityService)
     {
         this.authorityService = authorityService;
     }
+    
+    /**
+     * Checks that all necessary properties and services have been provided.
+     */
+    public void init()
+    {
+        PropertyCheck.mandatory(this, "nodeService", nodeService);
+        PropertyCheck.mandatory(this, "fileFolderService", fileFolderService);
+        PropertyCheck.mandatory(this, "searchService", searchService);
+        PropertyCheck.mandatory(this, "namespaceService", namespaceService);
+        PropertyCheck.mandatory(this, "permissionService", permissionService);
+        PropertyCheck.mandatory(this, "authenticationComponent", authenticationComponent);
+        PropertyCheck.mandatory(this, "personService", personService);
+        PropertyCheck.mandatory(this, "activityService", activityService);
+        PropertyCheck.mandatory(this, "taggingService", taggingService);
+        PropertyCheck.mandatory(this, "authorityService", authorityService);
+        PropertyCheck.mandatory(this, "sitesXPath", sitesXPath);
+    }
 
     /**
-     * @see org.alfresco.repo.site.SiteService#createSite(java.lang.String,
-     *      java.lang.String, java.lang.String, java.lang.String, boolean)
+     * {@inheritDoc}
      */
     public SiteInfo createSite(final String sitePreset, String passedShortName,
             final String title, final String description, final boolean isPublic)
@@ -220,6 +232,7 @@ public class SiteServiceImpl implements SiteService, SiteModel
         properties.put(SiteModel.PROP_SITE_PRESET, sitePreset);
         properties.put(ContentModel.PROP_TITLE, title);
         properties.put(ContentModel.PROP_DESCRIPTION, description);
+        
         final NodeRef siteNodeRef = this.nodeService.createNode(
                 siteParent,
                 ContentModel.ASSOC_CONTAINS,
@@ -384,20 +397,26 @@ public class SiteServiceImpl implements SiteService, SiteModel
     private NodeRef getSiteRoot()
     {
         // Get the root 'sites' folder
-        ResultSet resultSet = this.searchService.query(SITE_STORE,
-                SearchService.LANGUAGE_LUCENE, "TYPE:\"st:sites\"");
-        if (resultSet.length() == 0)
+        NodeRef rootNodeRef = this.nodeService.getRootNode(SITE_STORE);
+        List<NodeRef> results = this.searchService.selectNodes(
+                rootNodeRef,
+                sitesXPath,
+                null,
+                namespaceService,
+                false,
+                SearchService.LANGUAGE_XPATH);
+        if (results.size() == 0)
         {
             // No root site folder exists
             throw new AlfrescoRuntimeException("No root sites folder exists");
-        } else if (resultSet.length() != 1)
+        }
+        else if (results.size() != 1)
         {
             // More than one root site folder exits
-            throw new AlfrescoRuntimeException(
-                    "More than one root sites folder exists");
+            logger.warn("More than one root sites folder exists: \n" + results);
         }
 
-        return resultSet.getNodeRef(0);
+        return results.get(0);
     }
 
     /**
@@ -730,7 +749,7 @@ public class SiteServiceImpl implements SiteService, SiteModel
         boolean isPublic = isSitePublic(siteNodeRef);
 
         // Get the current user
-        String currentUserName = AuthenticationUtil.getCurrentUserName();
+        String currentUserName = AuthenticationUtil.getFullyAuthenticatedUser();
 
         // Get the user current role
         final String role = getMembersRole(shortName, userName);
@@ -845,8 +864,7 @@ public class SiteServiceImpl implements SiteService, SiteModel
             // -- the user being added is ourselves and
             // -- the member does not already have permissions
             // ... then we can set the permissions as system user
-            final String currentUserName = AuthenticationUtil
-                    .getCurrentUserName();
+            final String currentUserName = AuthenticationUtil.getFullyAuthenticatedUser();
             if ((permissionService.hasPermission(siteNodeRef,
                     PermissionService.CHANGE_PERMISSIONS) == AccessStatus.ALLOWED)
                     || (isPublic == true

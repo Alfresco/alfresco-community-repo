@@ -320,7 +320,7 @@ public final class SandboxFactory extends WCMUtil
       NodeRef dirRef = AVMNodeConverter.ToNodeRef(-1, WCMUtil.buildStoreRootPath(storeName));
       
       // Set store permission masks
-      String currentUser = AuthenticationUtil.getCurrentUserName();
+      String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
       permissionService.setPermission(dirRef.getStoreRef(), currentUser, PermissionService.CHANGE_PERMISSIONS, true);
       permissionService.setPermission(dirRef.getStoreRef(), currentUser, PermissionService.READ_PERMISSIONS, true);
       permissionService.setPermission(dirRef.getStoreRef(), PermissionService.ALL_AUTHORITIES, PermissionService.READ, true);
@@ -411,7 +411,7 @@ public final class SandboxFactory extends WCMUtil
       // Apply access mask to the store (ACls are applie to the staging area)
       
       // apply the user role permissions to the sandbox
-      String currentUser = AuthenticationUtil.getCurrentUserName();
+      String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
       permissionService.setPermission(dirRef.getStoreRef(), currentUser, WCMUtil.ROLE_CONTENT_MANAGER, true);
       permissionService.setPermission(dirRef.getStoreRef(), username, PermissionService.ALL_PERMISSIONS, true);
       permissionService.setPermission(dirRef.getStoreRef(), PermissionService.ALL_AUTHORITIES, PermissionService.READ, true);

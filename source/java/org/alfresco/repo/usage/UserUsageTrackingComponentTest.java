@@ -88,7 +88,7 @@ public class UserUsageTrackingComponentTest extends TestCase
         
         userUsageTrackingComponent = (UserUsageTrackingComponent)applicationContext.getBean("userUsageTrackingComponent");
         
-        AuthenticationUtil.setSystemUserAsCurrentUser();
+        AuthenticationUtil.setRunAsUserSystem();
         
         createUsersAndContent();
     }
@@ -147,13 +147,13 @@ public class UserUsageTrackingComponentTest extends TestCase
                         sb.append(k);
                     }
                     
-                    AuthenticationUtil.setCurrentUser(userName);
+                    AuthenticationUtil.setFullyAuthenticatedUser(userName);
                     
                     addTextContent(homeFolder, "a-"+userName+".txt", sb.toString());
                     addTextContent(homeFolder, "b-"+userName+".txt", sb.toString());
                 }
                 
-                AuthenticationUtil.setSystemUserAsCurrentUser();
+                AuthenticationUtil.setRunAsUserSystem();
                 
                 if ((count == BATCH_SIZE) || (i == MAX_USERS))
                 {
@@ -205,7 +205,7 @@ public class UserUsageTrackingComponentTest extends TestCase
 
             NodeRef homeFolder = getHomeSpaceFolderNode(userName);
             
-            AuthenticationUtil.setCurrentUser(userName);
+            AuthenticationUtil.setFullyAuthenticatedUser(userName);
             
             StringBuilder sb = new StringBuilder();
             for (int j = 1; j <= i; j++)
@@ -217,7 +217,7 @@ public class UserUsageTrackingComponentTest extends TestCase
             addTextContent(homeFolder, "c-"+userName+".txt", sb.toString());
             addTextContent(homeFolder, "d-"+userName+".txt", sb.toString());
         
-            AuthenticationUtil.setSystemUserAsCurrentUser();
+            AuthenticationUtil.setRunAsUserSystem();
         }
         
         System.out.println("Added content");
@@ -237,7 +237,7 @@ public class UserUsageTrackingComponentTest extends TestCase
 
             NodeRef homeFolder = getHomeSpaceFolderNode(userName);
             
-            AuthenticationUtil.setCurrentUser(userName);
+            AuthenticationUtil.setFullyAuthenticatedUser(userName);
             
             NodeRef childNodeRef = nodeService.getChildByName(homeFolder, ContentModel.ASSOC_CONTAINS, "a-"+userName+".txt");
             nodeService.deleteNode(childNodeRef);
@@ -245,7 +245,7 @@ public class UserUsageTrackingComponentTest extends TestCase
             childNodeRef = nodeService.getChildByName(homeFolder, ContentModel.ASSOC_CONTAINS, "b-"+userName+".txt");
             nodeService.deleteNode(childNodeRef);
         
-            AuthenticationUtil.setSystemUserAsCurrentUser();
+            AuthenticationUtil.setRunAsUserSystem();
         }
         
         System.out.println("Deleted content");

@@ -123,7 +123,7 @@ public class SandboxServiceImplTest extends TestCase
         avmNonLockingAwareService = (AVMService)ctx.getBean("AVMService");
        
         // By default run as Admin
-        AuthenticationUtil.setCurrentUser(USER_ADMIN);
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_ADMIN);
         
         createUser(USER_ONE);
         createUser(USER_TWO);
@@ -136,7 +136,7 @@ public class SandboxServiceImplTest extends TestCase
         if (CLEAN)
         {
             // Switch back to Admin
-            AuthenticationUtil.setCurrentUser(USER_ADMIN);
+            AuthenticationUtil.setFullyAuthenticatedUser(USER_ADMIN);
             
             List<WebProjectInfo> webProjects = wpService.listWebProjects();
             for (WebProjectInfo wpInfo : webProjects)
@@ -239,13 +239,13 @@ public class SandboxServiceImplTest extends TestCase
         assertNull(sbInfo1);
         
         // Switch to USER_ONE
-        AuthenticationUtil.setCurrentUser(USER_ONE);
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_ONE);
         
         sbInfo1 = sbService.getAuthorSandbox(wpInfo1.getStoreId());
         assertNull(sbInfo1);
         
         // Switch back to admin
-        AuthenticationUtil.setCurrentUser(USER_ADMIN);
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_ADMIN);
         
         // Invite web user
         wpService.inviteWebUser(wpInfo1.getStoreId(), USER_ONE, WCMUtil.ROLE_CONTENT_MANAGER);
@@ -259,7 +259,7 @@ public class SandboxServiceImplTest extends TestCase
         checkSandboxInfo(sbInfo1, expectedUserSandboxId, USER_ONE, USER_ADMIN, expectedUserSandboxId, SandboxConstants.PROP_SANDBOX_AUTHOR_MAIN);
         
         // Switch to USER_ONE
-        AuthenticationUtil.setCurrentUser(USER_ONE);
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_ONE);
         
         // Get author sandbox
         sbInfo1 = sbService.getAuthorSandbox(wpInfo1.getStoreId());
@@ -276,7 +276,7 @@ public class SandboxServiceImplTest extends TestCase
         checkSandboxInfo(sbInfo1, expectedUserSandboxId, USER_ONE, USER_ADMIN, expectedUserSandboxId, SandboxConstants.PROP_SANDBOX_AUTHOR_MAIN);
         
         // Switch to USER_TWO
-        AuthenticationUtil.setCurrentUser(USER_TWO);
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_TWO);
         
         try
         {
@@ -290,13 +290,13 @@ public class SandboxServiceImplTest extends TestCase
         }
         
         // Switch back to admin
-        AuthenticationUtil.setCurrentUser(USER_ADMIN);
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_ADMIN);
         
         // Invite web user
         wpService.inviteWebUser(wpInfo1.getStoreId(), USER_TWO, WCMUtil.ROLE_CONTENT_REVIEWER);
         
         // Switch to USER_TWO
-        AuthenticationUtil.setCurrentUser(USER_TWO);
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_TWO);
         
         // Get author sandbox
         sbInfo1 = sbService.getAuthorSandbox(wpInfo1.getStoreId());
@@ -445,7 +445,7 @@ public class SandboxServiceImplTest extends TestCase
         assertEquals(4, sbService.listSandboxes(wpStoreId).size());
         
         // Switch to USER_TWO
-        AuthenticationUtil.setCurrentUser(USER_TWO);
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_TWO);
         
         // NOTE: content publisher can list other sandboxes
         assertEquals(4, sbService.listSandboxes(wpStoreId).size());
@@ -474,7 +474,7 @@ public class SandboxServiceImplTest extends TestCase
         }  
         
         // Switch to USER_ONE
-        AuthenticationUtil.setCurrentUser(USER_ONE);
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_ONE);
         
         assertEquals(3, sbService.listSandboxes(wpStoreId).size());
         
@@ -502,7 +502,7 @@ public class SandboxServiceImplTest extends TestCase
         sbService.createAuthorSandbox(wpStoreId, USER_ONE);
         
         // Switch to USER_ONE
-        AuthenticationUtil.setCurrentUser(USER_ONE);
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_ONE);
         
         SandboxInfo sbInfo = sbService.getAuthorSandbox(wpStoreId);
         String sbStoreId = sbInfo.getSandboxId();
@@ -591,7 +591,7 @@ public class SandboxServiceImplTest extends TestCase
         wpService.inviteWebUser(wpStoreId, USER_TWO, WCMUtil.ROLE_CONTENT_CONTRIBUTOR, true);
         
         // Switch to USER_ONE
-        AuthenticationUtil.setCurrentUser(USER_ONE);
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_ONE);
         
         SandboxInfo sbInfo1 = sbService.getAuthorSandbox(wpStoreId);
         String sbStoreId = sbInfo1.getSandboxId();
@@ -608,7 +608,7 @@ public class SandboxServiceImplTest extends TestCase
         assertEquals("myFile1", assets.get(0).getName());
         
         // Switch to USER_TWO
-        AuthenticationUtil.setCurrentUser(USER_TWO);
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_TWO);
         
         SandboxInfo sbInfo2 = sbService.getAuthorSandbox(wpStoreId);
         sbStoreId = sbInfo2.getSandboxId();
@@ -641,7 +641,7 @@ public class SandboxServiceImplTest extends TestCase
         }
         
         // Switch back to admin
-        AuthenticationUtil.setCurrentUser(USER_ADMIN);
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_ADMIN);
         
         sbInfo1 = sbService.getAuthorSandbox(wpStoreId, USER_ONE);
         sbInfo2 = sbService.getAuthorSandbox(wpStoreId, USER_TWO);
@@ -681,7 +681,7 @@ public class SandboxServiceImplTest extends TestCase
         wpService.inviteWebUser(wpStoreId, USER_TWO, WCMUtil.ROLE_CONTENT_CONTRIBUTOR, true);
         
         // Switch to USER_ONE
-        AuthenticationUtil.setCurrentUser(USER_ONE);
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_ONE);
         
         SandboxInfo sbInfo1 = sbService.getAuthorSandbox(wpStoreId);
         String sbStoreId = sbInfo1.getSandboxId();
@@ -698,7 +698,7 @@ public class SandboxServiceImplTest extends TestCase
         assertEquals("myFile1", assets.get(0).getName());
         
         // Switch to USER_TWO
-        AuthenticationUtil.setCurrentUser(USER_TWO);
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_TWO);
         
         SandboxInfo sbInfo2 = sbService.getAuthorSandbox(wpStoreId);
         sbStoreId = sbInfo2.getSandboxId();
@@ -736,7 +736,7 @@ public class SandboxServiceImplTest extends TestCase
         }
         
         // Switch back to admin
-        AuthenticationUtil.setCurrentUser(USER_ADMIN);
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_ADMIN);
         
         sbInfo1 = sbService.getAuthorSandbox(wpStoreId, USER_ONE);
         sbInfo2 = sbService.getAuthorSandbox(wpStoreId, USER_TWO);
@@ -782,7 +782,7 @@ public class SandboxServiceImplTest extends TestCase
         wpService.inviteWebUser(wpStoreId, USER_ONE, WCMUtil.ROLE_CONTENT_CONTRIBUTOR, true);
         
         // Switch to USER_ONE
-        AuthenticationUtil.setCurrentUser(USER_ONE);
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_ONE);
         
         SandboxInfo sbInfo = sbService.getAuthorSandbox(wpStoreId);
         String authorSandboxId = sbInfo.getSandboxId();
@@ -849,7 +849,7 @@ public class SandboxServiceImplTest extends TestCase
         wpService.inviteWebUser(wpStoreId, USER_TWO, WCMUtil.ROLE_CONTENT_PUBLISHER, true);
         
         // Switch to USER_ONE
-        AuthenticationUtil.setCurrentUser(USER_ONE);
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_ONE);
         
         SandboxInfo sbInfo = sbService.getAuthorSandbox(wpStoreId);
         String authorSandboxId = sbInfo.getSandboxId();
@@ -892,7 +892,7 @@ public class SandboxServiceImplTest extends TestCase
         assertEquals(2, listing.size());
         
         // Switch to USER_TWO
-        AuthenticationUtil.setCurrentUser(USER_TWO);
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_TWO);
         
         sbInfo = sbService.getAuthorSandbox(wpStoreId);
         authorSandboxId = sbInfo.getSandboxId();
@@ -967,7 +967,7 @@ public class SandboxServiceImplTest extends TestCase
         wpService.inviteWebUser(wpStoreId, USER_TWO, WCMUtil.ROLE_CONTENT_MANAGER, true); // note: publisher does not have permission to delete
         
         // Switch to USER_ONE
-        AuthenticationUtil.setCurrentUser(USER_ONE);
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_ONE);
         
         SandboxInfo sbInfo = sbService.getAuthorSandbox(wpStoreId);
         String authorSandboxId = sbInfo.getSandboxId();
@@ -1011,7 +1011,7 @@ public class SandboxServiceImplTest extends TestCase
         assertEquals(2, listing.size());
         
         // Switch to USER_TWO
-        AuthenticationUtil.setCurrentUser(USER_TWO);
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_TWO);
         
         sbInfo = sbService.getAuthorSandbox(wpStoreId);
         authorSandboxId = sbInfo.getSandboxId();
@@ -1073,7 +1073,7 @@ public class SandboxServiceImplTest extends TestCase
         wpService.inviteWebUser(wpStoreId, USER_TWO, WCMUtil.ROLE_CONTENT_MANAGER, true);
         
         // Switch to USER_ONE
-        AuthenticationUtil.setCurrentUser(USER_ONE);
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_ONE);
         
         SandboxInfo sbInfo = sbService.getAuthorSandbox(wpStoreId);
         String authorSandboxId = sbInfo.getSandboxId();
@@ -1116,7 +1116,7 @@ public class SandboxServiceImplTest extends TestCase
         assertEquals(2, listing.size());
         
         // Switch to USER_TWO
-        AuthenticationUtil.setCurrentUser(USER_TWO);
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_TWO);
         
         sbInfo = sbService.getAuthorSandbox(wpStoreId);
         authorSandboxId = sbInfo.getSandboxId();
@@ -1191,7 +1191,7 @@ public class SandboxServiceImplTest extends TestCase
         wpService.inviteWebUser(wpStoreId, USER_ONE, WCMUtil.ROLE_CONTENT_MANAGER, true);
         
         // Switch to USER_ONE
-        AuthenticationUtil.setCurrentUser(USER_ONE);
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_ONE);
         
         SandboxInfo sbInfo = sbService.getAuthorSandbox(wpStoreId);
         String authorSandboxId = sbInfo.getSandboxId();
@@ -1259,7 +1259,7 @@ public class SandboxServiceImplTest extends TestCase
         wpService.inviteWebUser(wpStoreId, USER_ONE, WCMUtil.ROLE_CONTENT_MANAGER, true);
         
         // Switch to USER_ONE
-        AuthenticationUtil.setCurrentUser(USER_ONE);
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_ONE);
         
         // Finish: Test ETWOTWO-817
         
@@ -1463,10 +1463,10 @@ public class SandboxServiceImplTest extends TestCase
             
             for (int j = 1; j <= SCALE_USERS; j++)
             {
-                AuthenticationUtil.setCurrentUser(TEST_USER+"-"+j);
+                AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER+"-"+j);
                 assertEquals(SCALE_USERS+2, sbService.listSandboxes(wpInfo.getStoreId()).size()); // including staging sandbox and admin sandbox (web project creator)
             }
-            AuthenticationUtil.setCurrentUser(USER_ADMIN);
+            AuthenticationUtil.setFullyAuthenticatedUser(USER_ADMIN);
         } 
         
         System.out.println("testPseudoScaleTest: list sandboxes for "+SCALE_USERS+" content managers for each of "+SCALE_WEBPROJECTS+" web projects in "+(System.currentTimeMillis()-split)+" msecs");
@@ -1479,10 +1479,10 @@ public class SandboxServiceImplTest extends TestCase
             
             for (int j = 1; j <= SCALE_USERS; j++)
             {
-                AuthenticationUtil.setCurrentUser(TEST_USER+"-"+j);
+                AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER+"-"+j);
                 assertEquals(SCALE_USERS+1, wpService.listWebUsers(wpInfo.getStoreId()).size()); // including admin user (web project creator)
             }
-            AuthenticationUtil.setCurrentUser(USER_ADMIN);
+            AuthenticationUtil.setFullyAuthenticatedUser(USER_ADMIN);
         }
         
         System.out.println("testPseudoScaleTest: list web users for "+SCALE_USERS+" content managers for each of "+SCALE_WEBPROJECTS+" web projects in "+(System.currentTimeMillis()-split)+" msecs");

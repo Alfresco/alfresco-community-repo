@@ -38,7 +38,6 @@ import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
-import org.alfresco.util.EqualsHelper;
 
 /**
  * Patch's the site permission model to use groups to contain users.
@@ -92,11 +91,7 @@ public class SitePermissionRefactorPatch extends AbstractPatch
     protected String applyInternal() throws Exception
     {
     	// NOTE: SiteService is not currently MT-enabled (eg. getSiteRoot) so skip if applied to tenant
-        if (EqualsHelper.nullSafeEquals(
-                AuthenticationUtil.SYSTEM_USER_NAME,
-                AuthenticationUtil.getCurrentEffectiveUserName())
-                ||
-                !AuthenticationUtil.isMtEnabled())
+        if (AuthenticationUtil.isRunAsUserTheSystemUser() || !AuthenticationUtil.isMtEnabled())
         {
 	        // Set all the sites in the repository
 	        List<SiteInfo> sites = this.siteService.listSites(null, null);

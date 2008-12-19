@@ -26,7 +26,6 @@ package org.alfresco.repo.model;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -271,7 +270,7 @@ public class Repository implements ApplicationContextAware, ApplicationListener,
     public NodeRef getPerson()
     {
         NodeRef person = null;
-        String currentUserName = AuthenticationUtil.getCurrentEffectiveUserName();
+        String currentUserName = AuthenticationUtil.getRunAsUser();
         if (personService.personExists(currentUserName))
         {
             person = personService.getPerson(currentUserName);

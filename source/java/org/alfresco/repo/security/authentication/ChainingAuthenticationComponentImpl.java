@@ -29,7 +29,6 @@ import java.util.List;
 
 import net.sf.acegisecurity.Authentication;
 
-import org.alfresco.repo.security.authentication.AuthenticationComponent.UserNameValidationMode;
 import org.alfresco.service.cmr.security.PermissionService;
 
 /**
@@ -186,7 +185,7 @@ public class ChainingAuthenticationComponentImpl implements AuthenticationCompon
      */
     public Authentication getCurrentAuthentication() throws AuthenticationException
     {
-        return AuthenticationUtil.getCurrentAuthentication();
+        return AuthenticationUtil.getFullAuthentication();
     }
 
     /**
@@ -194,7 +193,7 @@ public class ChainingAuthenticationComponentImpl implements AuthenticationCompon
      */
     public String getCurrentUserName() throws AuthenticationException
     {
-        return AuthenticationUtil.getCurrentUserName();
+        return AuthenticationUtil.getFullyAuthenticatedUser();
     }
 
     /**
@@ -341,7 +340,7 @@ public class ChainingAuthenticationComponentImpl implements AuthenticationCompon
      */
     public Authentication setCurrentAuthentication(Authentication authentication)
     {
-        return AuthenticationUtil.setCurrentAuthentication(authentication);
+        return AuthenticationUtil.setFullAuthentication(authentication);
     }
 
     

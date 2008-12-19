@@ -115,11 +115,6 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
     private DictionaryService dictionaryService;
 
     /*
-     * Access to the authentication component
-     */
-    private AuthenticationComponent authenticationComponent;
-
-    /*
      * Access to the authority component
      */
     private AuthorityService authorityService;
@@ -196,13 +191,11 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
     }
 
     /**
-     * Set the authentication component.
-     * 
-     * @param authenticationComponent
+     * @deprecated
      */
     public void setAuthenticationComponent(AuthenticationComponent authenticationComponent)
     {
-        this.authenticationComponent = authenticationComponent;
+        log.warn("Bean property 'authenticationComponent' no longer required for 'PermissionServiceImpl'.");
     }
 
     /**
@@ -285,10 +278,6 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
         {
             throw new IllegalArgumentException("Property 'permissionsDAO' has not been set");
         }
-        if (authenticationComponent == null)
-        {
-            throw new IllegalArgumentException("Property 'authenticationComponent' has not been set");
-        }
         if (authorityService == null)
         {
             throw new IllegalArgumentException("Property 'authorityService' has not been set");
@@ -360,7 +349,7 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
 
     private Set<AccessPermission> getAllPermissionsImpl(NodeRef nodeRef, boolean includeTrue, boolean includeFalse)
     {
-        String userName = authenticationComponent.getCurrentUserName();
+        String userName = AuthenticationUtil.getRunAsUser();
         HashSet<AccessPermission> accessPermissions = new HashSet<AccessPermission>();
         for (PermissionReference pr : getSettablePermissionReferences(nodeRef))
         {
@@ -463,12 +452,12 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
             perm = permIn;
         }
         
-        if (AuthenticationUtil.getCurrentEffectiveUserName() == null)
+        if (AuthenticationUtil.getRunAsUser() == null)
         {
             return AccessStatus.DENIED;
         }
 
-        if (AuthenticationUtil.getCurrentEffectiveUserName().equals(AuthenticationUtil.getSystemUserName()))
+        if (AuthenticationUtil.isRunAsUserTheSystemUser())
         {
             return AccessStatus.ALLOWED;
         }
@@ -482,8 +471,8 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
             Set<QName> aspectQNames = nodeService.getAspects(nodeRef);
             PermissionContext context = new PermissionContext(typeQname);
             context.getAspects().addAll(aspectQNames);
-            Authentication auth = AuthenticationUtil.getCurrentEffectiveAuthentication();
-            String user = AuthenticationUtil.getCurrentEffectiveUserName();
+            Authentication auth = AuthenticationUtil.getRunAsAuthentication();
+            String user = AuthenticationUtil.getRunAsUser();
             for (String dynamicAuthority : getDynamicAuthorities(auth, nodeRef, perm))
             {
                 context.addDynamicAuthorityAssignment(user, dynamicAuthority);
@@ -493,7 +482,7 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
 
         // Get the current authentications
         // Use the smart authentication cache to improve permissions performance
-        Authentication auth = AuthenticationUtil.getCurrentEffectiveAuthentication();
+        Authentication auth = AuthenticationUtil.getRunAsAuthentication();
         final Set<String> authorisations = getAuthorisations(auth, nodeRef, perm);
 
         // If the node does not support the given permission there is no point
@@ -517,7 +506,7 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
             return AccessStatus.DENIED;
         }
 
-        if (authenticationComponent.getCurrentUserName().equals(authenticationComponent.getSystemUserName()))
+        if (AuthenticationUtil.isRunAsUserTheSystemUser())
         {
             return AccessStatus.ALLOWED;
         }
@@ -550,7 +539,7 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
                 if (log.isDebugEnabled())
                 {
                     log.debug("Permission <"
-                            + perm + "> is " + (result ? "allowed" : "denied") + " for " + authenticationComponent.getCurrentUserName() + " on node "
+                            + perm + "> is " + (result ? "allowed" : "denied") + " for " + AuthenticationUtil.getRunAsUser() + " on node "
                             + nodeService.getPath(nodeRef));
                 }
 
@@ -595,12 +584,12 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
             }
             else
             {
-                if (AuthenticationUtil.getSystemUserName().equals(AuthenticationUtil.getCurrentEffectiveUserName()))
+                if (AuthenticationUtil.isRunAsUserTheSystemUser())
                 {
                     return AccessStatus.ALLOWED;
                 }
                 
-                Authentication auth = AuthenticationUtil.getCurrentEffectiveAuthentication();
+                Authentication auth = AuthenticationUtil.getRunAsAuthentication();
                 if (auth == null)
                 {
                     throw new IllegalStateException("Unauthenticated");
@@ -620,19 +609,19 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
             return AccessStatus.DENIED;
         }
 
-        if (AuthenticationUtil.getCurrentEffectiveUserName() == null)
+        if (AuthenticationUtil.getRunAsUser() == null)
         {
             return AccessStatus.DENIED;
         }
 
-        if (AuthenticationUtil.getCurrentEffectiveUserName().equals(AuthenticationUtil.getSystemUserName()))
+        if (AuthenticationUtil.getRunAsUser().equals(AuthenticationUtil.getSystemUserName()))
         {
             return AccessStatus.ALLOWED;
         }
 
         // Get the current authentications
         // Use the smart authentication cache to improve permissions performance
-        Authentication auth = AuthenticationUtil.getCurrentEffectiveAuthentication();
+        Authentication auth = AuthenticationUtil.getRunAsAuthentication();
         if (auth == null)
         {
             throw new IllegalStateException("Unauthenticated");
@@ -662,7 +651,7 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
             return AccessStatus.DENIED;
         }
 
-        if (authenticationComponent.getCurrentUserName().equals(authenticationComponent.getSystemUserName()))
+        if (AuthenticationUtil.isRunAsUserTheSystemUser())
         {
             return AccessStatus.ALLOWED;
         }
@@ -1833,6 +1822,7 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
             return b;
         }
 
+        @SuppressWarnings("unchecked")
         @Override
         public boolean equals(Object o)
         {
@@ -1878,7 +1868,7 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
 
     public Map<NodeRef, Set<AccessPermission>> getAllSetPermissionsForCurrentUser()
     {
-        String currentUser = authenticationComponent.getCurrentUserName();
+        String currentUser = AuthenticationUtil.getRunAsUser();
         return getAllSetPermissionsForAuthority(currentUser);
     }
 
@@ -1889,7 +1879,7 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
 
     public Set<NodeRef> findNodesByAssignedPermissionForCurrentUser(String permission, boolean allow, boolean includeContainingAuthorities, boolean exactPermissionMatch)
     {
-        String currentUser = authenticationComponent.getCurrentUserName();
+        String currentUser = AuthenticationUtil.getRunAsUser();
         return findNodesByAssignedPermission(currentUser, permission, allow, includeContainingAuthorities, exactPermissionMatch);
     }
 

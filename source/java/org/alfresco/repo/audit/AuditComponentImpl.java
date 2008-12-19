@@ -432,7 +432,7 @@ public class AuditComponentImpl implements AuditComponent
 
         if (auditInfo.getUserIdentifier() == null)
         {
-            auditInfo.setUserIdentifier(AuthenticationUtil.getCurrentUserName());
+            auditInfo.setUserIdentifier(AuthenticationUtil.getFullyAuthenticatedUser());
         }
 
         return auditMode;
@@ -589,7 +589,7 @@ public class AuditComponentImpl implements AuditComponent
             auditInfo.setSessionId(null);
             auditInfo.setThrowable(null);
             auditInfo.setTxId(AlfrescoTransactionSupport.getTransactionId());
-            auditInfo.setUserIdentifier(AuthenticationUtil.getCurrentUserName());
+            auditInfo.setUserIdentifier(AuthenticationUtil.getFullyAuthenticatedUser());
         }
 
         return effectiveAuditMode;
@@ -716,7 +716,7 @@ public class AuditComponentImpl implements AuditComponent
             auditInfo.setSessionId(null);
             auditInfo.setThrowable(null);
             auditInfo.setTxId(AlfrescoTransactionSupport.getTransactionId());
-            auditInfo.setUserIdentifier(AuthenticationUtil.getCurrentUserName());
+            auditInfo.setUserIdentifier(AuthenticationUtil.getFullyAuthenticatedUser());
         }
 
         return effectiveAuditMode;

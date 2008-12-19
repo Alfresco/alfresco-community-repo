@@ -164,7 +164,7 @@ public class AuditServiceTest extends BaseSpringTest
 
     public void testApplicationAudit()
     {
-        AuthenticationUtil.setSystemUserAsCurrentUser();
+        AuthenticationUtil.setRunAsUserSystem();
         try
         {
 
@@ -196,7 +196,7 @@ public class AuditServiceTest extends BaseSpringTest
 
     public void testNodeServiceAudit()
     {
-        AuthenticationUtil.setSystemUserAsCurrentUser();
+        AuthenticationUtil.setRunAsUserSystem();
         try
         {
             int start = auditService.getAuditTrail(typesNodeRef).size();
@@ -238,7 +238,7 @@ public class AuditServiceTest extends BaseSpringTest
     public void xtestCreateStore()
     {
 
-        AuthenticationUtil.setSystemUserAsCurrentUser();
+        AuthenticationUtil.setRunAsUserSystem();
         try
         {
             serviceRegistry.getNodeService()
@@ -255,7 +255,7 @@ public class AuditServiceTest extends BaseSpringTest
     public void xtestAuthenticartionDoesNotReportPasswords()
     {
         // Should have a query to support this - check direct in the DB
-        AuthenticationUtil.setSystemUserAsCurrentUser();
+        AuthenticationUtil.setRunAsUserSystem();
         try
         {
             serviceRegistry.getAuthenticationService().createAuthentication("cabbage", "cabbage".toCharArray());
@@ -281,7 +281,7 @@ public class AuditServiceTest extends BaseSpringTest
     public void xtestAuthenticartionFailure()
     {
         // Should have a query to support this - check direct in the DB
-        AuthenticationUtil.setSystemUserAsCurrentUser();
+        AuthenticationUtil.setRunAsUserSystem();
 
         serviceRegistry.getAuthenticationService().createAuthentication("woof", "cabbage".toCharArray());
         serviceRegistry.getAuthenticationService().authenticate("woof", "red".toCharArray());

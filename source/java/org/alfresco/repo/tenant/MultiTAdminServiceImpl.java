@@ -1004,10 +1004,9 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
                 throw new AlfrescoRuntimeException("Failed to get tenants", e);
             }
                            
-            String currentUser = AuthenticationUtil.getCurrentUserName();
-            
             try 
             {
+                AuthenticationUtil.pushAuthentication();
                 for (Tenant tenant : tenants)
                 { 
                     if (tenant.isEnabled()) 
@@ -1041,8 +1040,8 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
                 }
             }
             finally
-            {    
-                if (currentUser != null) { AuthenticationUtil.setCurrentUser(currentUser); }
+            { 
+                AuthenticationUtil.popAuthentication();
             }
         }
     }   

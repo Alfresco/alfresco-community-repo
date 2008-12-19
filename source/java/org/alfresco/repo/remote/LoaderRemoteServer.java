@@ -28,8 +28,6 @@ import java.io.ByteArrayInputStream;
 import java.nio.charset.Charset;
 import java.util.List;
 
-import net.sf.acegisecurity.Authentication;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.encoding.ContentCharsetFinder;
 import org.alfresco.repo.node.db.NodeDaoService;
@@ -131,7 +129,7 @@ public class LoaderRemoteServer implements LoaderRemote
     public String authenticate(String username, String password)
     {
         // We need to authenticate
-        Authentication authentication = AuthenticationUtil.getCurrentAuthentication();
+        AuthenticationUtil.pushAuthentication();
         try
         {
             authenticationService.authenticate(username, password.toCharArray());
@@ -145,7 +143,7 @@ public class LoaderRemoteServer implements LoaderRemote
         }
         finally
         {
-            AuthenticationUtil.setCurrentAuthentication(authentication);
+            AuthenticationUtil.popAuthentication();
         }
     }
 
@@ -154,7 +152,7 @@ public class LoaderRemoteServer implements LoaderRemote
      */
     public NodeRef getOrCreateWorkingRoot(String ticket, final StoreRef storeRef)
     {
-        Authentication authentication = AuthenticationUtil.getCurrentAuthentication();
+        AuthenticationUtil.pushAuthentication();
         try
         {
             authenticationService.validate(ticket);
@@ -208,7 +206,7 @@ public class LoaderRemoteServer implements LoaderRemote
         }
         finally
         {
-            AuthenticationUtil.setCurrentAuthentication(authentication);
+            AuthenticationUtil.popAuthentication();
         }
     }
 
@@ -239,7 +237,7 @@ public class LoaderRemoteServer implements LoaderRemote
             throw new IllegalArgumentException("The number of files must match the number of binary byte arrays given.");
         }
         
-        Authentication authentication = AuthenticationUtil.getCurrentAuthentication();
+        AuthenticationUtil.pushAuthentication();
         try
         {
             authenticationService.validate(ticket);
@@ -284,7 +282,7 @@ public class LoaderRemoteServer implements LoaderRemote
         }
         finally
         {
-            AuthenticationUtil.setCurrentAuthentication(authentication);
+            AuthenticationUtil.popAuthentication();
         }
     }
 }

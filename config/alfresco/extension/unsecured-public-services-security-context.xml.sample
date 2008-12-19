@@ -52,9 +52,6 @@
         <property name="modelDAO">
             <ref bean="permissionsModelDAO" />
         </property>
-        <property name="authenticationComponent">
-            <ref bean="authenticationComponent" />
-        </property>
         <property name="authorityService">
             <ref bean="authorityService" />
         </property>
@@ -163,9 +160,6 @@
        <property name="nodeService">
            <ref bean="nodeService"></ref>
        </property>
-       <property name="authenticationService">
-            <ref bean="authenticationService" />
-       </property>
        <property name="authorityService">
             <ref bean="authorityService" />
        </property>
@@ -204,9 +198,6 @@
         </property>
         <property name="nodeService">
             <ref bean="nodeService"></ref>
-        </property>
-        <property name="authenticationService">
-             <ref bean="authenticationService" />
         </property>
         <property name="maxPermissionCheckTimeMillis">
             <value>${system.acl.maxPermissionCheckTimeMillis}</value>

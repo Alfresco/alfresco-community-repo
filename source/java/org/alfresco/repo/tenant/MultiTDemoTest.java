@@ -138,7 +138,7 @@ public class MultiTDemoTest extends TestCase
         authorityService = (AuthorityService) ctx.getBean("AuthorityService");
         categoryService = (CategoryService) ctx.getBean("CategoryService");
         
-        AuthenticationUtil.setCurrentUser(AuthenticationUtil.getSystemUserName()); // force, to clear real user from previous test (runAs issue ?)
+//        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName()); // force, to clear real user from previous test (runAs issue ?)
     }
 
     @Override

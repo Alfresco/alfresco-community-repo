@@ -29,8 +29,6 @@ import java.io.ByteArrayOutputStream;
 import java.nio.charset.Charset;
 import java.util.List;
 
-import net.sf.acegisecurity.Authentication;
-
 import org.alfresco.repo.content.encoding.ContentCharsetFinder;
 import org.alfresco.repo.model.filefolder.FileFolderServiceImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -102,7 +100,7 @@ public class FileFolderRemoteServer implements FileFolderRemote
      */
     public List<FileInfo> list(String ticket, final NodeRef contextNodeRef)
     {
-        Authentication authentication = AuthenticationUtil.getCurrentAuthentication();
+        AuthenticationUtil.pushAuthentication();
         try
         {
             authenticationService.validate(ticket);
@@ -118,7 +116,7 @@ public class FileFolderRemoteServer implements FileFolderRemote
         }
         finally
         {
-            AuthenticationUtil.setCurrentAuthentication(authentication);
+            AuthenticationUtil.popAuthentication();
         }
     }
     
@@ -127,7 +125,7 @@ public class FileFolderRemoteServer implements FileFolderRemote
      */
     public List<FileInfo> listFiles(String ticket, final NodeRef folderNodeRef)
     {
-        Authentication authentication = AuthenticationUtil.getCurrentAuthentication();
+        AuthenticationUtil.pushAuthentication();
         try
         {
             authenticationService.validate(ticket);
@@ -143,7 +141,7 @@ public class FileFolderRemoteServer implements FileFolderRemote
         }
         finally
         {
-            AuthenticationUtil.setCurrentAuthentication(authentication);
+            AuthenticationUtil.popAuthentication();
         }
     }
     
@@ -152,7 +150,7 @@ public class FileFolderRemoteServer implements FileFolderRemote
      */
     public List<FileInfo> listFolders(String ticket, final NodeRef contextNodeRef)
     {
-        Authentication authentication = AuthenticationUtil.getCurrentAuthentication();
+        AuthenticationUtil.pushAuthentication();
         try
         {
             authenticationService.validate(ticket);
@@ -168,7 +166,7 @@ public class FileFolderRemoteServer implements FileFolderRemote
         }
         finally
         {
-            AuthenticationUtil.setCurrentAuthentication(authentication);
+            AuthenticationUtil.popAuthentication();
         }
     }
 
@@ -177,7 +175,7 @@ public class FileFolderRemoteServer implements FileFolderRemote
      */
     public NodeRef searchSimple(String ticket, final NodeRef contextNodeRef, final String name)
     {
-        Authentication authentication = AuthenticationUtil.getCurrentAuthentication();
+        AuthenticationUtil.pushAuthentication();
         try
         {
             authenticationService.validate(ticket);
@@ -193,7 +191,7 @@ public class FileFolderRemoteServer implements FileFolderRemote
         }
         finally
         {
-            AuthenticationUtil.setCurrentAuthentication(authentication);
+            AuthenticationUtil.popAuthentication();
         }
     }
 
@@ -206,7 +204,7 @@ public class FileFolderRemoteServer implements FileFolderRemote
             final String namePattern,
             final boolean includeSubFolders)
     {
-        Authentication authentication = AuthenticationUtil.getCurrentAuthentication();
+        AuthenticationUtil.pushAuthentication();
         try
         {
             authenticationService.validate(ticket);
@@ -222,7 +220,7 @@ public class FileFolderRemoteServer implements FileFolderRemote
         }
         finally
         {
-            AuthenticationUtil.setCurrentAuthentication(authentication);
+            AuthenticationUtil.popAuthentication();
         }
     }
     
@@ -237,7 +235,7 @@ public class FileFolderRemoteServer implements FileFolderRemote
             final boolean folderSearch,
             final boolean includeSubFolders)
     {
-        Authentication authentication = AuthenticationUtil.getCurrentAuthentication();
+        AuthenticationUtil.pushAuthentication();
         try
         {
             authenticationService.validate(ticket);
@@ -253,7 +251,7 @@ public class FileFolderRemoteServer implements FileFolderRemote
         }
         finally
         {
-            AuthenticationUtil.setCurrentAuthentication(authentication);
+            AuthenticationUtil.popAuthentication();
         }
     }
     
@@ -262,7 +260,7 @@ public class FileFolderRemoteServer implements FileFolderRemote
      */
     public FileInfo rename(String ticket, final NodeRef fileFolderRef, final String newName) throws FileExistsException, FileNotFoundException
     {
-        Authentication authentication = AuthenticationUtil.getCurrentAuthentication();
+        AuthenticationUtil.pushAuthentication();
         try
         {
             authenticationService.validate(ticket);
@@ -278,7 +276,7 @@ public class FileFolderRemoteServer implements FileFolderRemote
         }
         finally
         {
-            AuthenticationUtil.setCurrentAuthentication(authentication);
+            AuthenticationUtil.popAuthentication();
         }
     }
     
@@ -288,7 +286,7 @@ public class FileFolderRemoteServer implements FileFolderRemote
     public FileInfo move(String ticket, final NodeRef sourceNodeRef, final NodeRef targetParentRef, final String newName)
             throws FileExistsException, FileNotFoundException
     {
-        Authentication authentication = AuthenticationUtil.getCurrentAuthentication();
+        AuthenticationUtil.pushAuthentication();
         try
         {
             authenticationService.validate(ticket);
@@ -304,7 +302,7 @@ public class FileFolderRemoteServer implements FileFolderRemote
         }
         finally
         {
-            AuthenticationUtil.setCurrentAuthentication(authentication);
+            AuthenticationUtil.popAuthentication();
         }
     }
 
@@ -314,7 +312,7 @@ public class FileFolderRemoteServer implements FileFolderRemote
     public FileInfo copy(String ticket, final NodeRef sourceNodeRef, final NodeRef targetParentRef, final String newName)
             throws FileExistsException, FileNotFoundException
     {
-        Authentication authentication = AuthenticationUtil.getCurrentAuthentication();
+        AuthenticationUtil.pushAuthentication();
         try
         {
             authenticationService.validate(ticket);
@@ -330,7 +328,7 @@ public class FileFolderRemoteServer implements FileFolderRemote
         }
         finally
         {
-            AuthenticationUtil.setCurrentAuthentication(authentication);
+            AuthenticationUtil.popAuthentication();
         }
     }
 
@@ -339,7 +337,7 @@ public class FileFolderRemoteServer implements FileFolderRemote
      */
     public FileInfo create(String ticket, final NodeRef parentNodeRef, final String name, final QName typeQName) throws FileExistsException
     {
-        Authentication authentication = AuthenticationUtil.getCurrentAuthentication();
+        AuthenticationUtil.pushAuthentication();
         try
         {
             authenticationService.validate(ticket);
@@ -355,7 +353,7 @@ public class FileFolderRemoteServer implements FileFolderRemote
         }
         finally
         {
-            AuthenticationUtil.setCurrentAuthentication(authentication);
+            AuthenticationUtil.popAuthentication();
         }
     }
     
@@ -364,7 +362,7 @@ public class FileFolderRemoteServer implements FileFolderRemote
      */
     public void delete(String ticket, final NodeRef nodeRef)
     {
-        Authentication authentication = AuthenticationUtil.getCurrentAuthentication();
+        AuthenticationUtil.pushAuthentication();
         try
         {
             authenticationService.validate(ticket);
@@ -381,7 +379,7 @@ public class FileFolderRemoteServer implements FileFolderRemote
         }
         finally
         {
-            AuthenticationUtil.setCurrentAuthentication(authentication);
+            AuthenticationUtil.popAuthentication();
         }
     }
     
@@ -390,7 +388,7 @@ public class FileFolderRemoteServer implements FileFolderRemote
      */
     public FileInfo makeFolders(String ticket, final NodeRef parentNodeRef, final List<String> pathElements, final QName folderTypeQName)
     {
-        Authentication authentication = AuthenticationUtil.getCurrentAuthentication();
+        AuthenticationUtil.pushAuthentication();
         try
         {
             authenticationService.validate(ticket);
@@ -406,7 +404,7 @@ public class FileFolderRemoteServer implements FileFolderRemote
         }
         finally
         {
-            AuthenticationUtil.setCurrentAuthentication(authentication);
+            AuthenticationUtil.popAuthentication();
         }
     }
     
@@ -415,7 +413,7 @@ public class FileFolderRemoteServer implements FileFolderRemote
      */
     public List<FileInfo> getNamePath(String ticket, final NodeRef rootNodeRef, final NodeRef nodeRef) throws FileNotFoundException
     {
-        Authentication authentication = AuthenticationUtil.getCurrentAuthentication();
+        AuthenticationUtil.pushAuthentication();
         try
         {
             authenticationService.validate(ticket);
@@ -431,7 +429,7 @@ public class FileFolderRemoteServer implements FileFolderRemote
         }
         finally
         {
-            AuthenticationUtil.setCurrentAuthentication(authentication);
+            AuthenticationUtil.popAuthentication();
         }
     }
     
@@ -440,7 +438,7 @@ public class FileFolderRemoteServer implements FileFolderRemote
      */
     public FileInfo resolveNamePath(String ticket, final NodeRef rootNodeRef, final List<String> pathElements) throws FileNotFoundException
     {
-        Authentication authentication = AuthenticationUtil.getCurrentAuthentication();
+        AuthenticationUtil.pushAuthentication();
         try
         {
             authenticationService.validate(ticket);
@@ -456,7 +454,7 @@ public class FileFolderRemoteServer implements FileFolderRemote
         }
         finally
         {
-            AuthenticationUtil.setCurrentAuthentication(authentication);
+            AuthenticationUtil.popAuthentication();
         }
     }
     
@@ -465,7 +463,7 @@ public class FileFolderRemoteServer implements FileFolderRemote
      */
     public FileInfo getFileInfo(String ticket, final NodeRef nodeRef)
     {
-        Authentication authentication = AuthenticationUtil.getCurrentAuthentication();
+        AuthenticationUtil.pushAuthentication();
         try
         {
             authenticationService.validate(ticket);
@@ -481,7 +479,7 @@ public class FileFolderRemoteServer implements FileFolderRemote
         }
         finally
         {
-            AuthenticationUtil.setCurrentAuthentication(authentication);
+            AuthenticationUtil.popAuthentication();
         }
     }
     
@@ -494,7 +492,7 @@ public class FileFolderRemoteServer implements FileFolderRemote
             final byte[] bytes,
             final String filename)
     {
-        Authentication authentication = AuthenticationUtil.getCurrentAuthentication();
+        AuthenticationUtil.pushAuthentication();
         try
         {
             authenticationService.validate(ticket);
@@ -530,7 +528,7 @@ public class FileFolderRemoteServer implements FileFolderRemote
         }
         finally
         {
-            AuthenticationUtil.setCurrentAuthentication(authentication);
+            AuthenticationUtil.popAuthentication();
         }
     }
     
@@ -539,7 +537,7 @@ public class FileFolderRemoteServer implements FileFolderRemote
      */
     public byte[] getContent(String ticket, final NodeRef nodeRef)
     {
-        Authentication authentication = AuthenticationUtil.getCurrentAuthentication();
+        AuthenticationUtil.pushAuthentication();
         try
         {
             authenticationService.validate(ticket);
@@ -569,7 +567,7 @@ public class FileFolderRemoteServer implements FileFolderRemote
         }
         finally
         {
-            AuthenticationUtil.setCurrentAuthentication(authentication);
+            AuthenticationUtil.popAuthentication();
         }
     }
 

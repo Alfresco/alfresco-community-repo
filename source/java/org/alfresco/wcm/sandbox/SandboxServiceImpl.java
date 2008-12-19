@@ -144,7 +144,7 @@ public class SandboxServiceImpl extends WCMUtil implements SandboxService
     {
         ParameterCheck.mandatoryString("wpStoreId", wpStoreId);
         
-        String currentUserName = AuthenticationUtil.getCurrentEffectiveUserName();
+        String currentUserName = AuthenticationUtil.getRunAsUser();
         SandboxInfo sbInfo = null;
         
         if (! wpService.isWebUser(wpStoreId, currentUserName))
@@ -228,7 +228,7 @@ public class SandboxServiceImpl extends WCMUtil implements SandboxService
     {
         ParameterCheck.mandatoryString("wpStoreId", wpStoreId);
         
-        return sandboxFactory.listSandboxes(wpStoreId, AuthenticationUtil.getCurrentEffectiveUserName());
+        return sandboxFactory.listSandboxes(wpStoreId, AuthenticationUtil.getRunAsUser());
     }
     
     /* (non-Javadoc)
@@ -280,7 +280,7 @@ public class SandboxServiceImpl extends WCMUtil implements SandboxService
     {
         ParameterCheck.mandatoryString("wpStoreId", wpStoreId);
         
-        String currentUserName = AuthenticationUtil.getCurrentEffectiveUserName();
+        String currentUserName = AuthenticationUtil.getRunAsUser();
         return getSandbox(WCMUtil.buildUserMainStoreName(WCMUtil.buildStagingStoreName(wpStoreId), currentUserName));
     }
     
@@ -319,7 +319,7 @@ public class SandboxServiceImpl extends WCMUtil implements SandboxService
         
         String wpStoreId = WCMUtil.getWebProjectStoreId(sbStoreId);
         
-        String currentUserName = AuthenticationUtil.getCurrentEffectiveUserName();
+        String currentUserName = AuthenticationUtil.getRunAsUser();
         if (sbStoreId.equals(WCMUtil.buildUserMainStoreName(wpStoreId, currentUserName)))
         {
             // author may delete their own sandbox

@@ -25,9 +25,6 @@
       <property name="threadPoolExecutor">
          <ref bean="indexTrackerThreadPoolExecutor" />
       </property>
-      <property name="authenticationComponent">
-         <ref bean="authenticationComponent" />
-      </property>
       <property name="transactionService">
          <ref bean="transactionService" />
       </property>

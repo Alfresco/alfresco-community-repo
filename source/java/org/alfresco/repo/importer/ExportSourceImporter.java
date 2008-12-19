@@ -38,6 +38,7 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -50,16 +51,18 @@ import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.TempFileProvider;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
 
 public class ExportSourceImporter implements ImporterJobSPI
 {
+    private static Log logger = LogFactory.getLog(ExportSourceImporter.class);
+    
     private ImporterService importerService;
 
     private ExportSource exportSource;
-
-    private AuthenticationComponent authenticationComponent;
 
     private StoreRef storeRef;
 
@@ -129,7 +132,7 @@ public class ExportSourceImporter implements ImporterJobSPI
 
     public void setAuthenticationComponent(AuthenticationComponent authenticationComponent)
     {
-        this.authenticationComponent = authenticationComponent;
+        logger.warn("Bearn property 'authenticationComponent' no longer used on 'ExportSourceImporter'.");
     }
 
     public void setSearchService(SearchService searchService)
@@ -143,9 +146,10 @@ public class ExportSourceImporter implements ImporterJobSPI
         UserTransaction userTransaction = null;
         try
         {
+            AuthenticationUtil.pushAuthentication();
             userTransaction = transactionService.getUserTransaction();
             userTransaction.begin();
-            authenticationComponent.setSystemUserAsCurrentUser();
+            AuthenticationUtil.setRunAsUserSystem();
             if (clearAllChildren)
             {
                 List<NodeRef> refs = searchService.selectNodes(nodeService.getRootNode(storeRef), path, null,
@@ -204,18 +208,11 @@ public class ExportSourceImporter implements ImporterJobSPI
             catch (Exception ex)
             {
             }
-            try
-            {
-                authenticationComponent.clearCurrentSecurityContext();
-            }
-            catch (Exception ex)
-            {
-            }
             throw new ExportSourceImporterException("Failed to import", t);
         }
         finally
         {
-            authenticationComponent.clearCurrentSecurityContext();
+            AuthenticationUtil.popAuthentication();
         }
     }
 

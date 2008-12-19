@@ -123,7 +123,7 @@ class AVMCrawler implements Runnable
     {
         try
         {
-            AuthenticationUtil.setCurrentAuthentication(authentication);
+            AuthenticationUtil.setFullAuthentication(authentication);
             while (!fDone)
             {
                 doCrawl();

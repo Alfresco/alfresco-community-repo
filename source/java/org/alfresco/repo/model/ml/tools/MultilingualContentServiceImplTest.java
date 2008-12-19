@@ -35,6 +35,7 @@ import net.sf.acegisecurity.Authentication;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
@@ -240,7 +241,7 @@ public class MultilingualContentServiceImplTest extends AbstractMultilingualTest
                 PermissionService.ALL_PERMISSIONS,
                 true);
         // Get the current authentication
-        Authentication authentication = authenticationComponent.getCurrentAuthentication();
+        AuthenticationUtil.pushAuthentication();
         try
         {
             authenticationComponent.setGuestUserAsCurrentUser();
@@ -252,7 +253,7 @@ public class MultilingualContentServiceImplTest extends AbstractMultilingualTest
         }
         finally
         {
-            try { authenticationComponent.setCurrentAuthentication(authentication); } catch (Throwable e) {}
+            AuthenticationUtil.popAuthentication();
         }
     }
 
@@ -269,8 +270,8 @@ public class MultilingualContentServiceImplTest extends AbstractMultilingualTest
                 PermissionService.GUEST_AUTHORITY,
                 PermissionService.ALL_PERMISSIONS,
                 true);
-        // Get the current authentication
-        Authentication authentication = authenticationComponent.getCurrentAuthentication();
+        // Push the current authentication
+        AuthenticationUtil.pushAuthentication();
         try
         {
             authenticationComponent.setGuestUserAsCurrentUser();
@@ -284,7 +285,7 @@ public class MultilingualContentServiceImplTest extends AbstractMultilingualTest
         }
         finally
         {
-            try { authenticationComponent.setCurrentAuthentication(authentication); } catch (Throwable e) {}
+            AuthenticationUtil.popAuthentication();
         }
     }
 

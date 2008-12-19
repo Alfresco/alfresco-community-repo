@@ -75,7 +75,6 @@ public class ModuleServiceImpl implements ModuleService
     private static Log logger = LogFactory.getLog(ModuleServiceImpl.class);
 
     private ServiceRegistry serviceRegistry;
-    private AuthenticationComponent authenticationComponent;
     private ModuleComponentHelper moduleComponentHelper;
     /** A cache of module details by module ID */
     private Map<String, ModuleDetails> moduleDetailsById;    
@@ -99,12 +98,12 @@ public class ModuleServiceImpl implements ModuleService
     }
 
     /**
-     * @param authenticationComponent allows execution as system user.
+     * No longer used
+     * @deprecated
      */
     public void setAuthenticationComponent(AuthenticationComponent authenticationComponent)
     {
-        this.authenticationComponent = authenticationComponent;
-        this.moduleComponentHelper.setAuthenticationComponent(this.authenticationComponent);
+        logger.warn("Bean property 'authenticationComponent' is no longer required for 'ModuleServiceImpl'.");
     }
 
     /**

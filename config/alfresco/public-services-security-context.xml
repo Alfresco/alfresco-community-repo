@@ -55,9 +55,6 @@
         <property name="modelDAO">
             <ref bean="permissionsModelDAO" />
         </property>
-        <property name="authenticationComponent">
-            <ref bean="authenticationComponent" />
-        </property>
         <property name="authorityService">
             <ref bean="authorityService" />
         </property>
@@ -79,42 +76,6 @@
     </bean>
     
     
-    
-    <!--
-    <bean id="permissionServiceImpl" class="org.alfresco.repo.security.permissions.impl.PermissionServiceImpl">
-        <property name="nodeService">
-            <ref bean="nodeService" />
-        </property>
-        <property name="dictionaryService">
-            <ref bean="dictionaryService" />
-        </property>
-        <property name="permissionsDaoComponent">
-            <ref bean="permissionsDaoComponent" />
-        </property>
-        <property name="modelDAO">
-            <ref bean="permissionsModelDAO" />
-        </property>
-        <property name="authenticationComponent">
-            <ref bean="authenticationComponent" />
-        </property>
-        <property name="authorityService">
-            <ref bean="authorityService" />
-        </property>
-        <property name="accessCache">
-            <ref bean="permissionsAccessCache" />
-        </property>
-        <property name="policyComponent">
-            <ref bean="policyComponent" />
-        </property>
-        <property name="dynamicAuthorities">
-            <list>
-                <ref bean="ownerDynamicAuthority" />
-                <ref bean="lockOwnerDynamicAuthority" />
-            </list>
-        </property>
-    </bean>
-    -->
-
     <!-- =================== -->
     <!-- Dynamic Authorities -->
     <!-- =================== -->

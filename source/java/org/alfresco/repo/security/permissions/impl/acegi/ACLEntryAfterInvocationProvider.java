@@ -40,6 +40,7 @@ import net.sf.acegisecurity.ConfigAttributeDefinition;
 import net.sf.acegisecurity.afterinvocation.AfterInvocationProvider;
 
 import org.alfresco.repo.search.SimpleResultSetMetaData;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.impl.SimplePermissionReference;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -76,7 +77,6 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
     private PermissionService permissionService;
     private NamespacePrefixResolver nspr;
     private NodeService nodeService;
-    private AuthenticationService authenticationService;
     private int maxPermissionChecks;
     private long maxPermissionCheckTimeMillis;
 
@@ -145,22 +145,13 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
         this.nodeService = nodeService;
     }
 
-    /**
-     * Get the authentication service
-     * @return the authentication service
-     */
-    public AuthenticationService getAuthenticationService()
-    {
-        return authenticationService;
-    }
-
     /** 
      * Set the authentication service
      * @param authenticationService
      */
     public void setAuthenticationService(AuthenticationService authenticationService)
     {
-        this.authenticationService = authenticationService;
+        log.warn("Bean property 'authenticationService' no longer required.");
     }
     
     /**
@@ -195,11 +186,6 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
         {
             throw new IllegalArgumentException("There must be a node service");
         }
-        if (authenticationService == null)
-        {
-            throw new IllegalArgumentException("There must be an authentication service");
-        }
-
     }
 
     public Object decide(Authentication authentication, Object object, ConfigAttributeDefinition config,
@@ -212,7 +198,7 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
         }
         try
         {
-            if (authenticationService.isCurrentUserTheSystemUser())
+            if (AuthenticationUtil.isRunAsUserTheSystemUser())
             {
                 if (log.isDebugEnabled())
                 {

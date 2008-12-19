@@ -91,7 +91,7 @@ public class AuditServiceImpl implements AuditService
         UserTransaction tx = txs.getUserTransaction();
         tx.begin();
 
-        AuthenticationUtil.setSystemUserAsCurrentUser();
+        AuthenticationUtil.setRunAsUserSystem();
         try
         {
 

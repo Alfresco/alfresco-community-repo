@@ -52,6 +52,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.authentication.InMemoryTicketComponentImpl.ExpiryMode;
 import org.alfresco.repo.security.authentication.InMemoryTicketComponentImpl.Ticket;
 import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -211,19 +212,16 @@ public class AuthenticationTest extends TestCase
 
     public void testSystemTicket() throws Exception
     {
-        assertNull(AuthenticationUtil.getCurrentRealAuthentication());
-        assertNull(AuthenticationUtil.getCurrentEffectiveAuthentication());
-        assertNull(AuthenticationUtil.getCurrentStoredAuthentication());
-        
+        assertNull(AuthenticationUtil.getFullAuthentication());
+        assertNull(AuthenticationUtil.getRunAsAuthentication());
       
         authenticationComponent.setSystemUserAsCurrentUser();
         pubAuthenticationService.createAuthentication("andy", "andy".toCharArray());
         
         pubAuthenticationService.clearCurrentSecurityContext();
         
-        assertNull(AuthenticationUtil.getCurrentRealAuthentication());
-        assertNull(AuthenticationUtil.getCurrentEffectiveAuthentication());
-        assertNull(AuthenticationUtil.getCurrentStoredAuthentication());
+        assertNull(AuthenticationUtil.getFullAuthentication());
+        assertNull(AuthenticationUtil.getRunAsAuthentication());
         
         // Authenticate
         pubAuthenticationService.authenticate("andy", "andy".toCharArray());
@@ -540,6 +538,56 @@ public class AuthenticationTest extends TestCase
 
         dao.deleteUser("Andy");
         // assertNull(dao.getUserOrNull("Andy"));
+    }
+
+    public void testCreateAuthenticationWhileRunningAsSystem() throws Exception
+    {
+        RunAsWork<Object> authWorkAsMuppet = new RunAsWork<Object>()
+        {
+            public Object doWork() throws Exception
+            {
+                RunAsWork<Object> authWorkAsSystem = new RunAsWork<Object>()
+                {
+                    public Object doWork() throws Exception
+                    {
+                        RetryingTransactionCallback<Object> txnWork = new RetryingTransactionCallback<Object>()
+                        {
+                            public Object execute() throws Throwable
+                            {
+                                pubAuthenticationService.createAuthentication("blah", "pwd".toCharArray());
+                                pubAuthenticationService.deleteAuthentication("blah");
+                                return null;
+                            }
+                        };
+                        return transactionService.getRetryingTransactionHelper().doInTransaction(txnWork, false, true);
+                    }
+                };
+                return AuthenticationUtil.runAs(authWorkAsSystem, AuthenticationUtil.getSystemUserName());
+            }
+        };
+        AuthenticationUtil.runAs(authWorkAsMuppet, "muppet");
+    }
+    
+    public void testPushAndPopAuthentication() throws Exception
+    {
+        AuthenticationUtil.setFullyAuthenticatedUser("user1");
+        assertEquals("user1", AuthenticationUtil.getFullyAuthenticatedUser());
+        assertEquals("user1", AuthenticationUtil.getRunAsUser());
+        
+        AuthenticationUtil.setRunAsUser("user2");
+        assertEquals("user1", AuthenticationUtil.getFullyAuthenticatedUser());
+        assertEquals("user2", AuthenticationUtil.getRunAsUser());
+        
+        AuthenticationUtil.pushAuthentication();
+
+        AuthenticationUtil.setFullyAuthenticatedUser("user3");
+        AuthenticationUtil.setRunAsUser("user4");
+        assertEquals("user3", AuthenticationUtil.getFullyAuthenticatedUser());
+        assertEquals("user4", AuthenticationUtil.getRunAsUser());
+
+        AuthenticationUtil.popAuthentication();
+        assertEquals("user1", AuthenticationUtil.getFullyAuthenticatedUser());
+        assertEquals("user2", AuthenticationUtil.getRunAsUser());
     }
 
     public void testAuthenticationFailure()

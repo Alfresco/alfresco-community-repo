@@ -43,7 +43,6 @@ import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
-import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.TransactionListener;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
@@ -62,7 +61,6 @@ import org.alfresco.service.cmr.tagging.TagScope;
 import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ISO9075;
 
 /**
@@ -95,15 +93,11 @@ public class TaggingServiceImpl implements TaggingService,
     /** Policy componenet */
     private PolicyComponent policyComponent;
     
-    private TransactionService transactionService;
-    
     /** Tag Details Delimiter */
     private static final String TAG_DETAILS_DELIMITER = "|";
     
     /**
      * Set the cateogry service
-     * 
-     * @param categoryService       trhe category service
      */
     public void setCategoryService(CategoryService categoryService)
     {
@@ -112,8 +106,6 @@ public class TaggingServiceImpl implements TaggingService,
 
     /**
      * Set the node service
-     * 
-     * @param nodeService       the node service
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -122,8 +114,6 @@ public class TaggingServiceImpl implements TaggingService,
     
     /**
      * Set the search service
-     * 
-     * @param searchService     the search service
      */
     public void setSearchService(SearchService searchService)
     {
@@ -132,8 +122,6 @@ public class TaggingServiceImpl implements TaggingService,
     
     /**
      * Set the action service
-     * 
-     * @return  ActionService   action service
      */
     public void setActionService(ActionService actionService)
     {
@@ -142,8 +130,6 @@ public class TaggingServiceImpl implements TaggingService,
 
     /**
      * Set the content service
-     * 
-     * @param contentService    content service
      */
     public void setContentService(ContentService contentService)
     {
@@ -152,8 +138,6 @@ public class TaggingServiceImpl implements TaggingService,
     
     /**
      * Set the namespace service
-     * 
-     * @param namespaceService  namespace service
      */
     public void setNamespaceService(NamespaceService namespaceService)
     {
@@ -162,17 +146,10 @@ public class TaggingServiceImpl implements TaggingService,
     
     /**
      * Policy component
-     * 
-     * @param policyComponent
      */
     public void setPolicyComponent(PolicyComponent policyComponent)
     {
         this.policyComponent = policyComponent;
-    }
-    
-    public void setTransactionService(TransactionService transactionService)
-    {
-        this.transactionService = transactionService;
     }
     
     /**
@@ -289,6 +266,7 @@ public class TaggingServiceImpl implements TaggingService,
     /**
      * @see org.alfresco.service.cmr.tagging.TaggingService#addTag(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
      */
+    @SuppressWarnings("unchecked")
     public void addTag(final NodeRef nodeRef, final String tagName)
     {        
         // Lower the case of the tag
@@ -302,7 +280,7 @@ public class TaggingServiceImpl implements TaggingService,
             newTagNodeRef = categoryService.createRootCategory(nodeRef.getStoreRef(), ContentModel.ASPECT_TAGGABLE, tag);
         }        
         
-        List<NodeRef> tagNodeRefs = new ArrayList(5);
+        List<NodeRef> tagNodeRefs = new ArrayList<NodeRef>(5);
         if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TAGGABLE) == false)
         {
             // Add the aspect
@@ -363,6 +341,7 @@ public class TaggingServiceImpl implements TaggingService,
     /**
      * @see org.alfresco.service.cmr.tagging.TaggingService#removeTag(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
      */
+    @SuppressWarnings("unchecked")
     public void removeTag(NodeRef nodeRef, String tag)
     {
         // Lower the case of the tag
@@ -403,6 +382,7 @@ public class TaggingServiceImpl implements TaggingService,
     /**
      * @see org.alfresco.service.cmr.tagging.TaggingService#getTags(org.alfresco.service.cmr.repository.NodeRef)
      */
+    @SuppressWarnings("unchecked")
     public List<String> getTags(NodeRef nodeRef)
     {
         List<String> result = new ArrayList<String>(10);
@@ -430,7 +410,7 @@ public class TaggingServiceImpl implements TaggingService,
      */
     public void setTags(NodeRef nodeRef, List<String> tags)
     {       
-        List<NodeRef> tagNodeRefs = new ArrayList(tags.size());
+        List<NodeRef> tagNodeRefs = new ArrayList<NodeRef>(tags.size());
         if (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TAGGABLE) == false)
         {
             // Add the aspect
@@ -486,7 +466,7 @@ public class TaggingServiceImpl implements TaggingService,
      */
     public void clearTags(NodeRef nodeRef)
     {
-        setTags(nodeRef, Collections.EMPTY_LIST);
+        setTags(nodeRef, Collections.<String>emptyList());
     }
     
     /**
@@ -746,6 +726,7 @@ public class TaggingServiceImpl implements TaggingService,
         }
     }
     
+    @SuppressWarnings("unchecked")
     private void queueTagUpdate(NodeRef nodeRef, String tag, boolean add)
     {
         // Get the updates map        
@@ -805,6 +786,7 @@ public class TaggingServiceImpl implements TaggingService,
     /**
      * @see org.alfresco.repo.transaction.TransactionListener#beforeCommit(boolean)
      */
+    @SuppressWarnings("unchecked")
     public void beforeCommit(boolean readOnly)
     {
         Map<NodeRef, Map<String, Boolean>> updates = (Map<NodeRef, Map<String, Boolean>>)AlfrescoTransactionSupport.getResource(TAG_UPDATES);

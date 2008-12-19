@@ -67,8 +67,8 @@ import org.alfresco.jlan.smb.server.SMBServer;
 import org.alfresco.jlan.smb.server.SMBSrvSession;
 import org.alfresco.jlan.util.WildCard;
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.lock.NodeLockedException;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -326,10 +326,6 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
      */
     public DeviceContext createContext(String shareName, ConfigElement cfg) throws DeviceContextException
     {
-        // Use the system user as the authenticated context for the filesystem initialization
-        
-        authComponent.setCurrentUser( authComponent.getSystemUserName());
-        
         // Wrap the initialization in a transaction
         
         UserTransaction tx = getTransactionService().getUserTransaction(true);
@@ -338,6 +334,11 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         
         try
         {
+            // Use the system user as the authenticated context for the filesystem initialization
+            
+            AuthenticationUtil.pushAuthentication();
+            AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
+            
             // Start the transaction
             
             if ( tx != null)
@@ -439,6 +440,10 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         }
         finally
         {
+            // Restore authentication context
+            
+            AuthenticationUtil.popAuthentication();
+            
             // If there is an active transaction then roll it back
             
             if ( tx != null)

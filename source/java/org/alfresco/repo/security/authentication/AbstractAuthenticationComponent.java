@@ -242,7 +242,7 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
      */
     public Authentication setCurrentAuthentication(Authentication authentication)
     {
-        return AuthenticationUtil.setCurrentAuthentication(authentication);
+        return AuthenticationUtil.setFullAuthentication(authentication);
     }
 
     /**
@@ -253,7 +253,7 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
      */
     public Authentication getCurrentAuthentication() throws AuthenticationException
     {
-        return AuthenticationUtil.getCurrentAuthentication();
+        return AuthenticationUtil.getFullAuthentication();
     }
 
     /**
@@ -264,7 +264,7 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
      */
     public String getCurrentUserName() throws AuthenticationException
     {
-        return AuthenticationUtil.getCurrentUserName();
+        return AuthenticationUtil.getFullyAuthenticatedUser();
     }
 
     /**

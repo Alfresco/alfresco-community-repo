@@ -670,7 +670,7 @@ public class JBPMEngine extends BPMEngine
                 public Object doInJbpm(JbpmContext context)
                 {
                     // initialise jBPM actor (for any processes that wish to record the initiator)
-                    String currentUserName = AuthenticationUtil.getCurrentUserName();
+                    String currentUserName = AuthenticationUtil.getFullyAuthenticatedUser();
                     context.setActorId(currentUserName);
 
                     // construct a new process

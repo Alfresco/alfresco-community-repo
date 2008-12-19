@@ -258,21 +258,20 @@ public class PermissionServiceTest extends AbstractPermissionTest
         runAs("andy");
         assertTrue(permissionService.hasPermission(n1, getPermission(PermissionService.CONTRIBUTOR)) == AccessStatus.DENIED);
 
-        assertEquals("andy", AuthenticationUtil.getCurrentRealUserName());
-        assertEquals("andy", AuthenticationUtil.getCurrentEffectiveUserName());
+        assertEquals("andy", AuthenticationUtil.getFullyAuthenticatedUser());
+        assertEquals("andy", AuthenticationUtil.getRunAsUser());
 
         AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
         {
-
             public Object doWork() throws Exception
             {
-                assertEquals("andy", AuthenticationUtil.getCurrentRealUserName());
-                assertEquals("admin", AuthenticationUtil.getCurrentEffectiveUserName());
+                assertEquals("andy", AuthenticationUtil.getFullyAuthenticatedUser());
+                assertEquals("admin", AuthenticationUtil.getRunAsUser());
 
                 assertTrue(permissionService.hasPermission(n1, getPermission(PermissionService.CONTRIBUTOR)) == AccessStatus.ALLOWED);
 
-                assertEquals("andy", AuthenticationUtil.getCurrentRealUserName());
-                assertEquals("admin", AuthenticationUtil.getCurrentEffectiveUserName());
+                assertEquals("andy", AuthenticationUtil.getFullyAuthenticatedUser());
+                assertEquals("admin", AuthenticationUtil.getRunAsUser());
 
                 AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
                 {
@@ -281,8 +280,8 @@ public class PermissionServiceTest extends AbstractPermissionTest
                     {
                         assertTrue(permissionService.hasPermission(n1, getPermission(PermissionService.CONTRIBUTOR)) == AccessStatus.DENIED);
 
-                        assertEquals("andy", AuthenticationUtil.getCurrentRealUserName());
-                        assertEquals("lemur", AuthenticationUtil.getCurrentEffectiveUserName());
+                        assertEquals("andy", AuthenticationUtil.getFullyAuthenticatedUser());
+                        assertEquals("lemur", AuthenticationUtil.getRunAsUser());
 
                         AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
                         {
@@ -291,8 +290,8 @@ public class PermissionServiceTest extends AbstractPermissionTest
                             {
                                 assertTrue(permissionService.hasPermission(n1, getPermission(PermissionService.CONTRIBUTOR)) == AccessStatus.ALLOWED);
 
-                                assertEquals("andy", AuthenticationUtil.getCurrentRealUserName());
-                                assertEquals("admin", AuthenticationUtil.getCurrentEffectiveUserName());
+                                assertEquals("andy", AuthenticationUtil.getFullyAuthenticatedUser());
+                                assertEquals("admin", AuthenticationUtil.getRunAsUser());
 
                                 AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
                                 {
@@ -301,36 +300,36 @@ public class PermissionServiceTest extends AbstractPermissionTest
                                     {
                                         assertTrue(permissionService.hasPermission(n1, getPermission(PermissionService.CONTRIBUTOR)) == AccessStatus.DENIED);
 
-                                        assertEquals("andy", AuthenticationUtil.getCurrentRealUserName());
-                                        assertEquals("andy", AuthenticationUtil.getCurrentEffectiveUserName());
+                                        assertEquals("andy", AuthenticationUtil.getFullyAuthenticatedUser());
+                                        assertEquals("andy", AuthenticationUtil.getRunAsUser());
 
                                         return null;
                                     }
                                 }, "andy");
 
-                                assertEquals("andy", AuthenticationUtil.getCurrentRealUserName());
-                                assertEquals("admin", AuthenticationUtil.getCurrentEffectiveUserName());
+                                assertEquals("andy", AuthenticationUtil.getFullyAuthenticatedUser());
+                                assertEquals("admin", AuthenticationUtil.getRunAsUser());
 
                                 return null;
                             }
                         }, "admin");
 
-                        assertEquals("andy", AuthenticationUtil.getCurrentRealUserName());
-                        assertEquals("lemur", AuthenticationUtil.getCurrentEffectiveUserName());
+                        assertEquals("andy", AuthenticationUtil.getFullyAuthenticatedUser());
+                        assertEquals("lemur", AuthenticationUtil.getRunAsUser());
 
                         return null;
                     }
                 }, "lemur");
 
-                assertEquals("andy", AuthenticationUtil.getCurrentRealUserName());
-                assertEquals("admin", AuthenticationUtil.getCurrentEffectiveUserName());
+                assertEquals("andy", AuthenticationUtil.getFullyAuthenticatedUser());
+                assertEquals("admin", AuthenticationUtil.getRunAsUser());
 
                 return null;
             }
         }, "admin");
 
-        assertEquals("andy", AuthenticationUtil.getCurrentRealUserName());
-        assertEquals("andy", AuthenticationUtil.getCurrentEffectiveUserName());
+        assertEquals("andy", AuthenticationUtil.getFullyAuthenticatedUser());
+        assertEquals("andy", AuthenticationUtil.getRunAsUser());
 
     }
 
@@ -343,8 +342,8 @@ public class PermissionServiceTest extends AbstractPermissionTest
         runAs("andy");
         assertTrue(permissionService.hasPermission(n1, getPermission(PermissionService.CONTRIBUTOR)) == AccessStatus.DENIED);
 
-        assertEquals("andy", AuthenticationUtil.getCurrentRealUserName());
-        assertEquals("andy", AuthenticationUtil.getCurrentEffectiveUserName());
+        assertEquals("andy", AuthenticationUtil.getFullyAuthenticatedUser());
+        assertEquals("andy", AuthenticationUtil.getRunAsUser());
 
         AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
         {
@@ -353,8 +352,8 @@ public class PermissionServiceTest extends AbstractPermissionTest
             {
                 assertTrue(permissionService.hasPermission(n1, getPermission(PermissionService.CONTRIBUTOR)) == AccessStatus.ALLOWED);
 
-                assertEquals("andy", AuthenticationUtil.getCurrentRealUserName());
-                assertEquals("admin", AuthenticationUtil.getCurrentEffectiveUserName());
+                assertEquals("andy", AuthenticationUtil.getFullyAuthenticatedUser());
+                assertEquals("admin", AuthenticationUtil.getRunAsUser());
 
                 AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
                 {
@@ -363,8 +362,8 @@ public class PermissionServiceTest extends AbstractPermissionTest
                     {
                         assertTrue(permissionService.hasPermission(n1, getPermission(PermissionService.CONTRIBUTOR)) == AccessStatus.DENIED);
 
-                        assertEquals("andy", AuthenticationUtil.getCurrentRealUserName());
-                        assertEquals("lemur", AuthenticationUtil.getCurrentEffectiveUserName());
+                        assertEquals("andy", AuthenticationUtil.getFullyAuthenticatedUser());
+                        assertEquals("lemur", AuthenticationUtil.getRunAsUser());
 
                         AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
                         {
@@ -373,8 +372,8 @@ public class PermissionServiceTest extends AbstractPermissionTest
                             {
                                 assertTrue(permissionService.hasPermission(n1, getPermission(PermissionService.CONTRIBUTOR)) == AccessStatus.ALLOWED);
 
-                                assertEquals("andy", AuthenticationUtil.getCurrentRealUserName());
-                                assertEquals("admin", AuthenticationUtil.getCurrentEffectiveUserName());
+                                assertEquals("andy", AuthenticationUtil.getFullyAuthenticatedUser());
+                                assertEquals("admin", AuthenticationUtil.getRunAsUser());
 
                                 AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
                                 {
@@ -383,36 +382,36 @@ public class PermissionServiceTest extends AbstractPermissionTest
                                     {
                                         assertTrue(permissionService.hasPermission(n1, getPermission(PermissionService.CONTRIBUTOR)) == AccessStatus.DENIED);
 
-                                        assertEquals("andy", AuthenticationUtil.getCurrentRealUserName());
-                                        assertEquals("andy", AuthenticationUtil.getCurrentEffectiveUserName());
+                                        assertEquals("andy", AuthenticationUtil.getFullyAuthenticatedUser());
+                                        assertEquals("andy", AuthenticationUtil.getRunAsUser());
 
                                         return null;
                                     }
                                 }, "andy");
 
-                                assertEquals("andy", AuthenticationUtil.getCurrentRealUserName());
-                                assertEquals("admin", AuthenticationUtil.getCurrentEffectiveUserName());
+                                assertEquals("andy", AuthenticationUtil.getFullyAuthenticatedUser());
+                                assertEquals("admin", AuthenticationUtil.getRunAsUser());
 
                                 return null;
                             }
                         }, "admin");
 
-                        assertEquals("andy", AuthenticationUtil.getCurrentRealUserName());
-                        assertEquals("lemur", AuthenticationUtil.getCurrentEffectiveUserName());
+                        assertEquals("andy", AuthenticationUtil.getFullyAuthenticatedUser());
+                        assertEquals("lemur", AuthenticationUtil.getRunAsUser());
 
                         return null;
                     }
                 }, "lemur");
 
-                assertEquals("andy", AuthenticationUtil.getCurrentRealUserName());
-                assertEquals("admin", AuthenticationUtil.getCurrentEffectiveUserName());
+                assertEquals("andy", AuthenticationUtil.getFullyAuthenticatedUser());
+                assertEquals("admin", AuthenticationUtil.getRunAsUser());
 
                 return null;
             }
         }, "admin");
 
-        assertEquals("andy", AuthenticationUtil.getCurrentRealUserName());
-        assertEquals("andy", AuthenticationUtil.getCurrentEffectiveUserName());
+        assertEquals("andy", AuthenticationUtil.getFullyAuthenticatedUser());
+        assertEquals("andy", AuthenticationUtil.getRunAsUser());
 
     }
 
@@ -424,8 +423,8 @@ public class PermissionServiceTest extends AbstractPermissionTest
 
         AuthenticationUtil.clearCurrentSecurityContext();
 
-        assertNull(AuthenticationUtil.getCurrentRealUserName());
-        assertNull(AuthenticationUtil.getCurrentEffectiveUserName());
+        assertNull(AuthenticationUtil.getFullyAuthenticatedUser());
+        assertNull(AuthenticationUtil.getRunAsUser());
 
         AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
         {
@@ -434,14 +433,14 @@ public class PermissionServiceTest extends AbstractPermissionTest
             {
                 assertTrue(permissionService.hasPermission(n1, getPermission(PermissionService.CONTRIBUTOR)) == AccessStatus.ALLOWED);
 
-                assertEquals("admin", AuthenticationUtil.getCurrentRealUserName());
-                assertEquals("admin", AuthenticationUtil.getCurrentEffectiveUserName());
+                assertEquals("admin", AuthenticationUtil.getFullyAuthenticatedUser());
+                assertEquals("admin", AuthenticationUtil.getRunAsUser());
                 return null;
             }
         }, "admin");
 
-        assertNull(AuthenticationUtil.getCurrentRealUserName());
-        assertNull(AuthenticationUtil.getCurrentEffectiveUserName());
+        assertNull(AuthenticationUtil.getFullyAuthenticatedUser());
+        assertNull(AuthenticationUtil.getRunAsUser());
     }
 
     public void testNestedRunAsRealAndEffectiveUsersWithNoPriorAuthentication()
@@ -452,8 +451,8 @@ public class PermissionServiceTest extends AbstractPermissionTest
 
         AuthenticationUtil.clearCurrentSecurityContext();
 
-        assertNull(AuthenticationUtil.getCurrentRealUserName());
-        assertNull(AuthenticationUtil.getCurrentEffectiveUserName());
+        assertNull(AuthenticationUtil.getFullyAuthenticatedUser());
+        assertNull(AuthenticationUtil.getRunAsUser());
 
         AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
         {
@@ -462,8 +461,8 @@ public class PermissionServiceTest extends AbstractPermissionTest
             {
                 assertTrue(permissionService.hasPermission(n1, getPermission(PermissionService.CONTRIBUTOR)) == AccessStatus.ALLOWED);
 
-                assertEquals("admin", AuthenticationUtil.getCurrentRealUserName());
-                assertEquals("admin", AuthenticationUtil.getCurrentEffectiveUserName());
+                assertEquals("admin", AuthenticationUtil.getFullyAuthenticatedUser());
+                assertEquals("admin", AuthenticationUtil.getRunAsUser());
 
                 AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
                 {
@@ -472,8 +471,8 @@ public class PermissionServiceTest extends AbstractPermissionTest
                     {
                         assertTrue(permissionService.hasPermission(n1, getPermission(PermissionService.CONTRIBUTOR)) == AccessStatus.DENIED);
 
-                        assertEquals("admin", AuthenticationUtil.getCurrentRealUserName());
-                        assertEquals("lemur", AuthenticationUtil.getCurrentEffectiveUserName());
+                        assertEquals("admin", AuthenticationUtil.getFullyAuthenticatedUser());
+                        assertEquals("lemur", AuthenticationUtil.getRunAsUser());
 
                         AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
                         {
@@ -482,8 +481,8 @@ public class PermissionServiceTest extends AbstractPermissionTest
                             {
                                 assertTrue(permissionService.hasPermission(n1, getPermission(PermissionService.CONTRIBUTOR)) == AccessStatus.ALLOWED);
 
-                                assertEquals("admin", AuthenticationUtil.getCurrentRealUserName());
-                                assertEquals("admin", AuthenticationUtil.getCurrentEffectiveUserName());
+                                assertEquals("admin", AuthenticationUtil.getFullyAuthenticatedUser());
+                                assertEquals("admin", AuthenticationUtil.getRunAsUser());
 
                                 AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
                                 {
@@ -492,36 +491,36 @@ public class PermissionServiceTest extends AbstractPermissionTest
                                     {
                                         assertTrue(permissionService.hasPermission(n1, getPermission(PermissionService.CONTRIBUTOR)) == AccessStatus.DENIED);
 
-                                        assertEquals("admin", AuthenticationUtil.getCurrentRealUserName());
-                                        assertEquals("andy", AuthenticationUtil.getCurrentEffectiveUserName());
+                                        assertEquals("admin", AuthenticationUtil.getFullyAuthenticatedUser());
+                                        assertEquals("andy", AuthenticationUtil.getRunAsUser());
 
                                         return null;
                                     }
                                 }, "andy");
 
-                                assertEquals("admin", AuthenticationUtil.getCurrentRealUserName());
-                                assertEquals("admin", AuthenticationUtil.getCurrentEffectiveUserName());
+                                assertEquals("admin", AuthenticationUtil.getFullyAuthenticatedUser());
+                                assertEquals("admin", AuthenticationUtil.getRunAsUser());
 
                                 return null;
                             }
                         }, "admin");
 
-                        assertEquals("admin", AuthenticationUtil.getCurrentRealUserName());
-                        assertEquals("lemur", AuthenticationUtil.getCurrentEffectiveUserName());
+                        assertEquals("admin", AuthenticationUtil.getFullyAuthenticatedUser());
+                        assertEquals("lemur", AuthenticationUtil.getRunAsUser());
 
                         return null;
                     }
                 }, "lemur");
 
-                assertEquals("admin", AuthenticationUtil.getCurrentRealUserName());
-                assertEquals("admin", AuthenticationUtil.getCurrentEffectiveUserName());
+                assertEquals("admin", AuthenticationUtil.getFullyAuthenticatedUser());
+                assertEquals("admin", AuthenticationUtil.getRunAsUser());
 
                 return null;
             }
         }, "admin");
 
-        assertNull(AuthenticationUtil.getCurrentRealUserName());
-        assertNull(AuthenticationUtil.getCurrentEffectiveUserName());
+        assertNull(AuthenticationUtil.getFullyAuthenticatedUser());
+        assertNull(AuthenticationUtil.getRunAsUser());
 
     }
 
@@ -545,7 +544,7 @@ public class PermissionServiceTest extends AbstractPermissionTest
 
     public void testSystemUserPermissions()
     {
-        AuthenticationUtil.setSystemUserAsCurrentUser();
+        AuthenticationUtil.setRunAsUserSystem();
         try
         {
             assertTrue(serviceRegistry.getPermissionService().hasPermission(rootNodeRef, PermissionService.CONSUMER) == AccessStatus.ALLOWED);

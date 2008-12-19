@@ -35,6 +35,7 @@ import net.sf.acegisecurity.ConfigAttribute;
 import net.sf.acegisecurity.ConfigAttributeDefinition;
 import net.sf.acegisecurity.vote.AccessDecisionVoter;
 
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.impl.SimplePermissionReference;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -72,8 +73,6 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
     private NamespacePrefixResolver nspr;
 
     private NodeService nodeService;
-
-    private AuthenticationService authenticationService;
 
     private AuthorityService authorityService;
 
@@ -144,21 +143,12 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
     }
 
     /**
-     * Get the authentication service
-     * @return the authentication service
-     */
-    public AuthenticationService getAuthenticationService()
-    {
-        return authenticationService;
-    }
-
-    /**
      * Set the authentication service
      * @param authenticationService
      */
     public void setAuthenticationService(AuthenticationService authenticationService)
     {
-        this.authenticationService = authenticationService;
+        log.warn("Bean property 'authenticationService' no longer required on 'ACLEntryVoter'.");
     }
 
     /**
@@ -183,10 +173,6 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
         if (nodeService == null)
         {
             throw new IllegalArgumentException("There must be a node service");
-        }
-        if (authenticationService == null)
-        {
-            throw new IllegalArgumentException("There must be an authentication service");
         }
         if (authorityService == null)
         {
@@ -230,7 +216,7 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
             MethodInvocation mi = (MethodInvocation) object;
             log.debug("Method: " + mi.getMethod().toString());
         }
-        if (authenticationService.isCurrentUserTheSystemUser())
+        if (AuthenticationUtil.isRunAsUserTheSystemUser())
         {
             if (log.isDebugEnabled())
             {
@@ -268,7 +254,7 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
                     hasMethodEntry = Boolean.FALSE;
                 }
                 
-                if (authenticationService.getCurrentUserName().equals(cad.authority))
+                if (cad.authority.equals(AuthenticationUtil.getRunAsUser()))
                 {
                     hasMethodEntry = Boolean.TRUE;
                 }

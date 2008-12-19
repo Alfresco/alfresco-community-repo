@@ -37,6 +37,7 @@ import javax.transaction.UserTransaction;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.domain.Store;
 import org.alfresco.repo.node.BaseNodeServiceTest;
 import org.alfresco.repo.node.StoreArchiveMap;
 import org.alfresco.repo.node.cleanup.NodeCleanupRegistry;

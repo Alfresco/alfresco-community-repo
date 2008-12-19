@@ -35,12 +35,11 @@ import java.util.Locale;
 
 import javax.servlet.http.HttpServletResponse;
 
-import net.sf.acegisecurity.Authentication;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.content.AbstractContentReader;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -131,15 +130,26 @@ public class HttpAlfrescoContentReader extends AbstractContentReader
     
     private void getInfo()
     {
+        RunAsWork<Object> getInfoRunAs = new RunAsWork<Object>()
+        {
+            public Object doWork() throws Exception
+            {
+                getInfoImpl();
+                return null;
+            }
+        };
+        AuthenticationUtil.runAs(getInfoRunAs, AuthenticationUtil.SYSTEM_USER_NAME);
+    }
+    
+    private void getInfoImpl()
+    {
         String contentUrl = getContentUrl();
         // Info will be cached
         isInfoCached = true;
         // Authenticate as the system user for the call
-        Authentication authentication = null;
         GetMethod method = null;
         try
         {
-            authentication = AuthenticationUtil.setCurrentUser(AuthenticationUtil.SYSTEM_USER_NAME);
             String ticket = transactionService.getRetryingTransactionHelper().doInTransaction(ticketCallback, false, true);
             String url = HttpAlfrescoContentReader.generateURL(baseHttpUrl, contentUrl, ticket, true);
 
@@ -214,7 +224,6 @@ public class HttpAlfrescoContentReader extends AbstractContentReader
             {
                 try { method.releaseConnection(); } catch (Throwable e) {}
             }
-            AuthenticationUtil.setCurrentAuthentication(authentication);
         }
     }
     
@@ -253,16 +262,26 @@ public class HttpAlfrescoContentReader extends AbstractContentReader
     @Override
     protected ReadableByteChannel getDirectReadableChannel() throws ContentIOException
     {
+        RunAsWork<ReadableByteChannel> getChannelRunAs = new RunAsWork<ReadableByteChannel>()
+        {
+            public ReadableByteChannel doWork() throws Exception
+            {
+                return getDirectReadableChannelImpl();
+            }            
+        };
+        return AuthenticationUtil.runAs(getChannelRunAs, AuthenticationUtil.SYSTEM_USER_NAME);
+    }
+    
+    private ReadableByteChannel getDirectReadableChannelImpl() throws ContentIOException
+    {
         String contentUrl = getContentUrl();
         
-        Authentication authentication = null;
         try
         {
             if (!exists())
             {
                 throw new IOException("Content doesn't exist");
             }
-            authentication = AuthenticationUtil.setCurrentUser(AuthenticationUtil.SYSTEM_USER_NAME);
             String ticket = transactionService.getRetryingTransactionHelper().doInTransaction(ticketCallback, false, true);
             String url = HttpAlfrescoContentReader.generateURL(baseHttpUrl, contentUrl, ticket, false);
 
@@ -297,10 +316,6 @@ public class HttpAlfrescoContentReader extends AbstractContentReader
                     "   Reader:        " + this + "\n" +
                     "   Remote server: " + baseHttpUrl,
                     e);
-        }
-        finally
-        {
-            AuthenticationUtil.setCurrentAuthentication(authentication);
         }
     }
     

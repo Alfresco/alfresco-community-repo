@@ -24,7 +24,6 @@
  */
 package org.alfresco.repo.node.index;
 
-import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Iterator;
@@ -34,8 +33,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
-
-import net.sf.acegisecurity.Authentication;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -82,7 +79,6 @@ public abstract class AbstractReindexComponent implements IndexRecovery
     /** kept to notify the thread that it should quit */
     private static VmShutdownListener vmShutdownListener = new VmShutdownListener("IndexRecovery");
     
-    private AuthenticationComponent authenticationComponent;
     /** provides transactions to atomically index each missed transaction */
     protected TransactionServiceImpl transactionService;
     /** the component to index the node hierarchy */
@@ -138,11 +134,11 @@ public abstract class AbstractReindexComponent implements IndexRecovery
     }
 
     /**
-     * @param authenticationComponent ensures that reindexing operates as system user
+     * No longer required
      */
     public void setAuthenticationComponent(AuthenticationComponent authenticationComponent)
     {
-        this.authenticationComponent = authenticationComponent;
+        logger.warn("Bean property 'authenticationComponent' is no longer required on 'AbstractReindexComponent'.");
     }
 
     /**
@@ -232,7 +228,7 @@ public abstract class AbstractReindexComponent implements IndexRecovery
      */
     public final void reindex()
     {
-        PropertyCheck.mandatory(this, "authenticationComponent", this.authenticationComponent);
+//        PropertyCheck.mandatory(this, "authenticationComponent", this.authenticationComponent);
         PropertyCheck.mandatory(this, "ftsIndexer", this.ftsIndexer);
         PropertyCheck.mandatory(this, "indexer", this.indexer);
         PropertyCheck.mandatory(this, "searcher", this.searcher);
@@ -242,12 +238,11 @@ public abstract class AbstractReindexComponent implements IndexRecovery
         
         if (indexerWriteLock.tryLock())
         {
-            Authentication auth = null;
             try
             {
-                auth = AuthenticationUtil.getCurrentAuthentication();
+                AuthenticationUtil.pushAuthentication();
                 // authenticate as the system user
-                authenticationComponent.setSystemUserAsCurrentUser();
+                AuthenticationUtil.setRunAsUserSystem();
                 RetryingTransactionCallback<Object> reindexWork = new RetryingTransactionCallback<Object>()
                 {
                     public Object execute() throws Exception
@@ -272,10 +267,7 @@ public abstract class AbstractReindexComponent implements IndexRecovery
             finally
             {
                 try { indexerWriteLock.unlock(); } catch (Throwable e) {}
-                if (auth != null)
-                {
-                    authenticationComponent.setCurrentAuthentication(auth);
-                }
+                AuthenticationUtil.popAuthentication();
             }
             // done
             if (logger.isDebugEnabled())

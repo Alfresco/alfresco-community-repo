@@ -81,22 +81,21 @@ public class TenantInterpreter extends BaseInterpreter
         String currentUserName = getCurrentUserName();
         if (hasAuthority(currentUserName))
         {
-           try
+           RunAsWork<String> executeWork = new RunAsWork<String>()
            {
-               AuthenticationUtil.setSystemUserAsCurrentUser();
-               RetryingTransactionCallback<String> txnWork = new RetryingTransactionCallback<String>()
+               public String doWork() throws Exception
                {
-                   public String execute() throws Exception
+                   RetryingTransactionCallback<String> txnWork = new RetryingTransactionCallback<String>()
                    {
-                       return executeCommand(line);
-                   }
-               };
-               return transactionService.getRetryingTransactionHelper().doInTransaction(txnWork);
-           }
-           finally
-           {
-               AuthenticationUtil.setCurrentUser(currentUserName);
-           }
+                       public String execute() throws Exception
+                       {
+                           return executeCommand(line);
+                       }
+                   };
+                   return transactionService.getRetryingTransactionHelper().doInTransaction(txnWork);
+               }
+           };
+           return AuthenticationUtil.runAs(executeWork, AuthenticationUtil.SYSTEM_USER_NAME);
         }
         else
         {

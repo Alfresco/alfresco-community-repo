@@ -1167,9 +1167,6 @@
 
     <!-- Registry service -->
     <bean id="registryService" class="org.alfresco.repo.admin.registry.RegistryServiceImpl" init-method="init">
-        <property name="authenticationComponent">
-            <ref bean="authenticationComponent" />
-        </property>
         <property name="namespaceService">
             <ref bean="namespaceService" />
         </property>

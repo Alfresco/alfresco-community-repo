@@ -84,7 +84,7 @@ public class TenantRoutingFileContentStore extends AbstractRoutingContentStore i
     {
         if (tenantService.isEnabled())
         {
-            String currentUser = AuthenticationUtil.getCurrentUserName();
+            String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
             if ((currentUser == null) || (tenantService.getBaseNameUser(currentUser).equals(AuthenticationUtil.getSystemUserName())))
             {
                 // return enabled stores across all tenants, if running as system/null user, for example, ContentStoreCleaner scheduled job      

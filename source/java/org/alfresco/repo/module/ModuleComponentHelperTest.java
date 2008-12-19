@@ -103,7 +103,6 @@ public class ModuleComponentHelperTest extends BaseAlfrescoTestCase
         
         moduleService = new DummyModuleService();
         helper = new ModuleComponentHelper();
-        helper.setAuthenticationComponent(super.authenticationComponent);
         helper.setModuleService(moduleService);
         helper.setRegistryService(registryService);
         helper.setServiceRegistry(serviceRegistry);

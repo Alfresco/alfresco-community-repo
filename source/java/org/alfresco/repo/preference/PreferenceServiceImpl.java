@@ -224,7 +224,7 @@ public class PreferenceServiceImpl implements PreferenceService
         
         // Can only set preferences if the currently logged in user matches the user name being updated or
         // the user already has write permissions on the person node
-        String currentUserName = AuthenticationUtil.getCurrentUserName();
+        String currentUserName = AuthenticationUtil.getFullyAuthenticatedUser();
         if (authenticationComponent.isSystemUserName(currentUserName) == true ||
             permissionService.hasPermission(personNodeRef, PermissionService.WRITE) == AccessStatus.ALLOWED || 
             userName.equals(currentUserName) == true)
@@ -300,7 +300,7 @@ public class PreferenceServiceImpl implements PreferenceService
         
         // Can only set preferences if the currently logged in user matches the user name being updated or
         // the user already has write permissions on the person node
-        String currentUserName = AuthenticationUtil.getCurrentUserName();
+        String currentUserName = AuthenticationUtil.getFullyAuthenticatedUser();
         if (authenticationComponent.isSystemUserName(currentUserName) == true ||
             permissionService.hasPermission(personNodeRef, PermissionService.WRITE) == AccessStatus.ALLOWED || 
             userName.equals(currentUserName) == true)

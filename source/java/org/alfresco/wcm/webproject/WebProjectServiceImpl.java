@@ -248,7 +248,7 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
         
         // TODO: Currently auto-creates author sandbox for creator of web project (eg. an admin or a DM contributor to web projects root space)
         // NOTE: JSF client does not yet allow explicit creation of author sandboxes 
-        inviteWebUser(wpNodeRef, AuthenticationUtil.getCurrentEffectiveUserName(), WCMUtil.ROLE_CONTENT_MANAGER, true);
+        inviteWebUser(wpNodeRef, AuthenticationUtil.getRunAsUser(), WCMUtil.ROLE_CONTENT_MANAGER, true);
         
         // Bind the post-commit transaction listener with data required for virtualization server notification
         CreateWebProjectTransactionListener tl = new CreateWebProjectTransactionListener(wpStoreId);
@@ -670,7 +670,7 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
      */
     public boolean isContentManager(String storeName)
     {
-        return isContentManager(storeName, AuthenticationUtil.getCurrentEffectiveUserName());
+        return isContentManager(storeName, AuthenticationUtil.getRunAsUser());
     }
     
     /* (non-Javadoc)
@@ -697,7 +697,7 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
      */
     public boolean isContentManager(NodeRef wpNodeRef)
     {
-        return isContentManager(wpNodeRef, AuthenticationUtil.getCurrentEffectiveUserName());
+        return isContentManager(wpNodeRef, AuthenticationUtil.getRunAsUser());
     }
     
     /* (non-Javadoc)
@@ -759,7 +759,7 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
     public Map<String, String> listWebUsers(NodeRef wpNodeRef)
     {
         // special case: allow System - eg. to allow user to create their own sandbox on-demand (createAuthorSandbox)
-        if (isContentManager(wpNodeRef) || (AuthenticationUtil.getCurrentEffectiveUserName().equals(AuthenticationUtil.getSystemUserName())))
+        if (isContentManager(wpNodeRef) || (AuthenticationUtil.getRunAsUser().equals(AuthenticationUtil.getSystemUserName())))
         {
             return WCMUtil.listWebUsers(nodeService, wpNodeRef);
         }

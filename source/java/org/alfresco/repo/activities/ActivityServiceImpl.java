@@ -168,7 +168,7 @@ public class ActivityServiceImpl implements ActivityService
     
     private void postActivity(String activityType, String siteNetwork, String appTool, String activityData, ActivityPostDAO.STATUS status)
     {
-        String currentUser = AuthenticationUtil.getCurrentUserName();
+        String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
         
         try
         {
@@ -379,7 +379,7 @@ public class ActivityServiceImpl implements ActivityService
     {
         ParameterCheck.mandatory("feedControl", feedControl);
         
-        String userId = AuthenticationUtil.getCurrentUserName();
+        String userId = AuthenticationUtil.getFullyAuthenticatedUser();
         if (! userNamesAreCaseSensitive)
         {
             userId = userId.toLowerCase();
@@ -405,7 +405,7 @@ public class ActivityServiceImpl implements ActivityService
      */
     public List<FeedControl> getFeedControls()
     {
-        String userId = AuthenticationUtil.getCurrentUserName();
+        String userId = AuthenticationUtil.getFullyAuthenticatedUser();
         return getFeedControlsImpl(userId);
     }
     
@@ -415,7 +415,7 @@ public class ActivityServiceImpl implements ActivityService
     public List<FeedControl> getFeedControls(String userId)
     {
         ParameterCheck.mandatoryString("userId", userId);
-        String currentUser = AuthenticationUtil.getCurrentUserName();
+        String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
         
         if ((currentUser == null) || ((! currentUser.equals(AuthenticationUtil.getSystemUserName())) && (! currentUser.equals(userId)) && (! authorityService.isAdminAuthority(currentUser))))
         {
@@ -460,7 +460,7 @@ public class ActivityServiceImpl implements ActivityService
     {
         ParameterCheck.mandatory("feedControl", feedControl);
         
-        String userId = AuthenticationUtil.getCurrentUserName();
+        String userId = AuthenticationUtil.getFullyAuthenticatedUser();
         if (! userNamesAreCaseSensitive)
         {
             userId = userId.toLowerCase();
@@ -485,7 +485,7 @@ public class ActivityServiceImpl implements ActivityService
     {
         ParameterCheck.mandatory("feedControl", feedControl);
         
-        String userId = AuthenticationUtil.getCurrentUserName();
+        String userId = AuthenticationUtil.getFullyAuthenticatedUser();
         
         if (! userNamesAreCaseSensitive)
         {

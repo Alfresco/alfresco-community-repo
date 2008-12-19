@@ -819,7 +819,7 @@ public class DeploymentServiceImpl implements DeploymentService
         List<DeploymentTransportOutputFilter>transformers = null;
         String ticket = null;
         
-        String currentEffectiveUser = AuthenticationUtil.getCurrentEffectiveUserName();
+        String currentEffectiveUser = AuthenticationUtil.getRunAsUser();
 
         try
         {       
@@ -1291,8 +1291,7 @@ public class DeploymentServiceImpl implements DeploymentService
 		
 		public void run()
 		{
-		    AuthenticationUtil.setCurrentEffectiveUser(userName);
-		    AuthenticationUtil.setCurrentUser(userName);
+		    AuthenticationUtil.setFullyAuthenticatedUser(userName);
 		    
 			while (true)
 			{
@@ -1374,8 +1373,7 @@ public class DeploymentServiceImpl implements DeploymentService
 		
 		public void run()
 		{
-		    AuthenticationUtil.setCurrentEffectiveUser(userName);
-		    AuthenticationUtil.setCurrentUser(userName);
+		    AuthenticationUtil.setFullyAuthenticatedUser(userName);
             
 			while (errors.size() <= 0)
 			{

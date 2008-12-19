@@ -753,7 +753,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     private static final String UNKOWN_USER = "unkown";
     private String getCurrentUser()
     {
-        String user = AuthenticationUtil.getCurrentUserName();
+        String user = AuthenticationUtil.getFullyAuthenticatedUser();
         return (user == null) ? UNKOWN_USER : user;
     }
     

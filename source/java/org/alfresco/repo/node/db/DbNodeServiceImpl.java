@@ -1745,7 +1745,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         
         // add the aspect
         newAspects.add(ContentModel.ASPECT_ARCHIVED);
-        newProperties.put(ContentModel.PROP_ARCHIVED_BY, AuthenticationUtil.getCurrentUserName());
+        newProperties.put(ContentModel.PROP_ARCHIVED_BY, AuthenticationUtil.getFullyAuthenticatedUser());
         newProperties.put(ContentModel.PROP_ARCHIVED_DATE, new Date());
         newProperties.put(ContentModel.PROP_ARCHIVED_ORIGINAL_PARENT_ASSOC, primaryParentAssocPair.getSecond());
         Serializable originalOwner = existingProperties.get(ContentModel.PROP_OWNER);
@@ -1759,7 +1759,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         
         // change the node ownership
         newAspects.add(ContentModel.ASPECT_OWNABLE);
-        newProperties.put(ContentModel.PROP_OWNER, AuthenticationUtil.getCurrentUserName());
+        newProperties.put(ContentModel.PROP_OWNER, AuthenticationUtil.getFullyAuthenticatedUser());
         
         // Set the aspects and properties
         nodeDaoService.addNodeProperties(nodeId, newProperties);

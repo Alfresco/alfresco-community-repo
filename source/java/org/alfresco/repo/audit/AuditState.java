@@ -174,7 +174,7 @@ public class AuditState
     {
         super();
         // Add default information
-        userIdentifier = AuthenticationUtil.getCurrentUserName();
+        userIdentifier = AuthenticationUtil.getFullyAuthenticatedUser();
         date = new Date();
         txId = AlfrescoTransactionSupport.getTransactionId();
         sessionId = "Unavailable";

@@ -432,7 +432,7 @@ public class MultiTServiceImpl implements TenantService
         ParameterCheck.mandatory("RootPath", rootPath);  
         ParameterCheck.mandatory("RootNodeRef", rootNodeRef); 
 
-        String username = AuthenticationUtil.getCurrentUserName();
+        String username = AuthenticationUtil.getFullyAuthenticatedUser();
         StoreRef storeRef = getName(username, rootNodeRef.getStoreRef());
         
         AuthenticationUtil.RunAsWork<NodeRef> action = new GetRootNode(nodeService, searchService, namespaceService, rootPath, rootNodeRef, storeRef);
@@ -500,7 +500,7 @@ public class MultiTServiceImpl implements TenantService
      */
     public boolean isTenantUser()
     {
-        return isTenantUser(AuthenticationUtil.getCurrentEffectiveUserName());
+        return isTenantUser(AuthenticationUtil.getRunAsUser());
     }
     
     /* (non-Javadoc)
@@ -567,7 +567,7 @@ public class MultiTServiceImpl implements TenantService
      */
     public String getCurrentUserDomain()
     {
-    	String user = AuthenticationUtil.getCurrentEffectiveUserName();
+    	String user = AuthenticationUtil.getRunAsUser();
         return getUserDomain(user);
     }
     
@@ -629,12 +629,9 @@ public class MultiTServiceImpl implements TenantService
     protected void checkTenantEnabled(String tenantDomain)
     {
         // note: System user can access disabled tenants
-        if (! (AuthenticationUtil.getSystemUserName().equals(getBaseNameUser(AuthenticationUtil.getCurrentUserName()))))
+        if (!AuthenticationUtil.isRunAsUserTheSystemUser() && !(getTenant(tenantDomain).isEnabled()))
         {
-            if (getTenant(tenantDomain).isEnabled() == false)
-            {
-                throw new AlfrescoRuntimeException("Tenant is not enabled: " + tenantDomain);
-            }
+            throw new AlfrescoRuntimeException("Tenant is not enabled: " + tenantDomain);
         }
     }
 

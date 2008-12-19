@@ -29,6 +29,7 @@ import java.io.InputStream;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.model.Repository;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
@@ -68,6 +69,8 @@ public class ThumbnailServiceTest extends BaseWebScriptTest
         this.fileFolderService = (FileFolderService)getServer().getApplicationContext().getBean("FileFolderService");
         this.contentService = (ContentService)getServer().getApplicationContext().getBean("ContentService");
         this.repositoryHelper = (Repository)getServer().getApplicationContext().getBean("repositoryHelper");
+        
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
         
         this.testRoot = this.repositoryHelper.getCompanyHome();
         

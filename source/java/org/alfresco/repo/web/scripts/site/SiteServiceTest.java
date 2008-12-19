@@ -84,6 +84,8 @@ public class SiteServiceTest extends BaseWebScriptTest
         this.siteService = (SiteService)getServer().getApplicationContext().getBean("SiteService");
         this.nodeService = (NodeService)getServer().getApplicationContext().getBean("NodeService");
         
+        this.authenticationComponent.setSystemUserAsCurrentUser();
+        
         // Create users
         createUser(USER_ONE);
         createUser(USER_TWO);

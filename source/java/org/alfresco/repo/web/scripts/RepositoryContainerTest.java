@@ -25,6 +25,7 @@
 package org.alfresco.repo.web.scripts;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.util.PropertyMap;
@@ -54,6 +55,8 @@ public class RepositoryContainerTest extends BaseWebScriptTest
                 "AuthenticationService");
         this.personService = (PersonService) getServer().getApplicationContext().getBean("PersonService");
 
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
+        
         // Create users
         createUser(USER_ONE);
     }
@@ -78,6 +81,7 @@ public class RepositoryContainerTest extends BaseWebScriptTest
     @Override
     protected void tearDown() throws Exception
     {
+        AuthenticationUtil.clearCurrentSecurityContext();
         super.tearDown();
     }
 

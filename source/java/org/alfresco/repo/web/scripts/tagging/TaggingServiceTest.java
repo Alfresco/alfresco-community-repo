@@ -80,6 +80,8 @@ public class TaggingServiceTest extends BaseWebScriptTest
         this.repositoryHelper = (Repository)getServer().getApplicationContext().getBean("repositoryHelper");
         this.nodeService = (NodeService)getServer().getApplicationContext().getBean("NodeService");
         
+        this.authenticationComponent.setSystemUserAsCurrentUser();
+        
         // Add a load of tags ready to use
         this.taggingService.createTag(new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore"), TAG_1);
         this.taggingService.createTag(new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore"), TAG_2);

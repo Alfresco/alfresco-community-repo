@@ -52,6 +52,7 @@
 #
 #db.driver=com.microsoft.sqlserver.jdbc.SQLServerDriver
 #db.url=jdbc:sqlserver://localhost:1433;databaseName=alfresco
+#db.txn.isolation=4096
 
 # The well known RMI registry port is defined in the alfresco-shared.properties file
 # alfresco.rmi.services.port=50500

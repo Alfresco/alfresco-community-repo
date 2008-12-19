@@ -241,6 +241,9 @@
         <property name="defaultAutoCommit" >
             <value>false</value>
         </property>
+        <property name="defaultTransactionIsolation" >
+            <value>${db.txn.isolation}</value>
+        </property>
     </bean>
 
     <!-- Characterset decoder -->

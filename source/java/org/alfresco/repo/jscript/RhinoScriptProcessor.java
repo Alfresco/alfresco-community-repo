@@ -57,6 +57,8 @@ import org.mozilla.javascript.ImporterTopLevel;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 import org.mozilla.javascript.WrapFactory;
+import org.mozilla.javascript.WrappedException;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.FileCopyUtils;
 
 /**
@@ -64,7 +66,7 @@ import org.springframework.util.FileCopyUtils;
  * 
  * @author Kevin Roast
  */
-public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcessor, ScriptResourceLoader
+public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcessor, ScriptResourceLoader, InitializingBean
 {
     private static final Log    logger = LogFactory.getLog(RhinoScriptProcessor.class);
     
@@ -81,6 +83,12 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
     
     /** Store root path to resolve cm:name based scripts path from */
     private String storePath;
+    
+    /** Pre initialized secure scope object. */
+    private Scriptable secureScope;
+    
+    /** Pre initialized non secure scope object. */
+    private Scriptable nonSecureScope;
     
     /**
      * Set the default store reference
@@ -340,27 +348,12 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
         Context cx = Context.enter();
         try
         {
-            // The easiest way to embed Rhino is just to create a new scope this way whenever
-            // you need one. However, initStandardObjects is an expensive method to call and it
-            // allocates a fair amount of memory.
+            // Create a thread-specific scope from one of the shared scopes. See http://www.mozilla.org/rhino/scopes.html
             cx.setWrapFactory(wrapFactory);
-            Scriptable scope;
-            if (!secure)
-            {
-                scope = cx.initStandardObjects();
-                // remove security issue related objects - this ensures the script may not access
-                // unsecure java.* libraries or import any other classes for direct access - only
-                // the configured root host objects will be available to the script writer
-                scope.delete("Packages");
-                scope.delete("getClass");
-                scope.delete("java");
-            }
-            else
-            {
-                // allow access to all libraries and objects, including the importer
-                // @see http://www.mozilla.org/rhino/ScriptingJava.html
-                scope = new ImporterTopLevel(cx);
-            }
+            Scriptable sharedScope = secure ? this.nonSecureScope : this.secureScope;
+            Scriptable scope = cx.newObject(sharedScope);
+            scope.setPrototype(sharedScope);
+            scope.setParentScope(null);
             
             // there's always a model, if only to hold the util objects
             if (model == null)
@@ -397,6 +390,15 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
             
             // extract java object result if wrapped by Rhino 
             return valueConverter.convertValueForRepo((Serializable)result);
+        }
+        catch (WrappedException w)
+        {
+            Throwable err = w.getWrappedException();
+            if (err instanceof RuntimeException)
+            {
+                throw (RuntimeException) err;
+            }
+            throw new AlfrescoRuntimeException(err.getMessage(), err);
         }
         catch (Throwable err)
         {
@@ -462,6 +464,52 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
                 return new NativeMap(scope, (Map)javaObject);
             }
             return super.wrapAsJavaObject(cx, scope, javaObject, staticType);
+        }
+    }
+
+
+    /**
+     * Pre initializes two scope objects (one secure and one not) with the standard objects preinitialised. This saves
+     * on very expensive calls to reinitialize a new scope on every web script execution. See
+     * http://www.mozilla.org/rhino/scopes.html
+     * 
+     * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
+     */
+    public void afterPropertiesSet() throws Exception
+    {
+        // Initialise the secure scope
+        Context cx = Context.enter();
+        try
+        {
+            cx.setWrapFactory(wrapFactory);
+            this.secureScope = cx.initStandardObjects();
+
+            // remove security issue related objects - this ensures the script may not access
+            // unsecure java.* libraries or import any other classes for direct access - only
+            // the configured root host objects will be available to the script writer
+            this.secureScope.delete("Packages");
+            this.secureScope.delete("getClass");
+            this.secureScope.delete("java");
+        }
+        finally
+        {
+            Context.exit();
+        }
+
+        // Initialise the non-secure scope
+        cx = Context.enter();
+        try
+        {
+            cx.setWrapFactory(wrapFactory);
+
+            // allow access to all libraries and objects, including the importer
+            // @see http://www.mozilla.org/rhino/ScriptingJava.html
+            this.nonSecureScope = new ImporterTopLevel(cx);
+
+        }
+        finally
+        {
+            Context.exit();
         }
     }
 }

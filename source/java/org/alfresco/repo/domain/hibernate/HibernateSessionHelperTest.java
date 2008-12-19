@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.domain.AuditableProperties;
 import org.alfresco.repo.domain.Node;
 import org.alfresco.repo.domain.QNameDAO;
 import org.alfresco.repo.domain.Server;
@@ -549,7 +550,9 @@ public class HibernateSessionHelperTest extends BaseSpringTest
         node.setTypeQNameId(typeQNameId);
         node.setTransaction(transaction);
         node.setDeleted(false);
-        node.getAuditableProperties().setAuditValues("system", new Date(), false);
+        AuditableProperties ap = new AuditableProperties();
+        node.setAuditableProperties(ap);
+        ap.setAuditValues("system", new Date(), false);
         getSession().save(node);
         
         return node;

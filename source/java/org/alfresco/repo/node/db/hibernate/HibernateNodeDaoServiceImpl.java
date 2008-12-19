@@ -114,6 +114,7 @@ import org.hibernate.ScrollableResults;
 import org.hibernate.Session;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
+import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.orm.hibernate3.HibernateCallback;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
@@ -765,7 +766,8 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         {
             String currentUser = getCurrentUser();
             Date currentDate = new Date();
-            AuditableProperties auditableProperties = node.getAuditableProperties();
+            AuditableProperties auditableProperties = new AuditableProperties();
+            node.setAuditableProperties(auditableProperties);
             auditableProperties.setAuditValues(currentUser, currentDate, false);
         }
     }
@@ -779,6 +781,11 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
             String currentUser = getCurrentUser();
             Date currentDate = new Date();
             AuditableProperties auditableProperties = node.getAuditableProperties();
+            if (auditableProperties == null)
+            {
+                auditableProperties = new AuditableProperties();
+                node.setAuditableProperties(auditableProperties);                
+            }
             auditableProperties.setAuditValues(currentUser, currentDate, false);
         }
     }
@@ -792,6 +799,11 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
             String currentUser = getCurrentUser();
             Date currentDate = new Date();
             AuditableProperties auditableProperties = node.getAuditableProperties();
+            if (auditableProperties == null)
+            {
+                auditableProperties = new AuditableProperties();
+                node.setAuditableProperties(auditableProperties);                
+            }
             auditableProperties.setAuditValues(currentUser, currentDate, false);
         }
     }
@@ -810,8 +822,8 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         Node node = null;
         if (uuid != null)
         {
-            // Get any existing Node.  A node with this UUID may have existed before, but must be marked
-            // deleted; otherwise it will be considered live and valid
+        // Get any existing Node.  A node with this UUID may have existed before, but must be marked
+        // deleted; otherwise it will be considered live and valid
             node = getNodeOrNull(store, uuid);
         }
         else
@@ -1025,12 +1037,12 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         {
             Long nodeTypeQNameId = qnameDAO.getOrCreateQName(nodeTypeQName).getFirst();
             if (!nodeTypeQNameId.equals(node.getTypeQNameId()))
-            {
+        {
                 node.setTypeQNameId(nodeTypeQNameId);
-                // We will need to record the change
-                recordNodeUpdate(node);
-            }
+            // We will need to record the change
+            recordNodeUpdate(node);
         }
+    }
     }
 
     public Serializable getNodeProperty(Long nodeId, QName propertyQName)
@@ -1044,7 +1056,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
             if (hasNodeAspect(node, ContentModel.ASPECT_AUDITABLE))
             {
                 AuditableProperties auditableProperties = node.getAuditableProperties();
-                return auditableProperties.getAuditableProperty(propertyQName);
+                return auditableProperties == null ? null : auditableProperties.getAuditableProperty(propertyQName);
             }
             else
             {
@@ -1082,6 +1094,10 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         if (hasNodeAspect(node, ContentModel.ASPECT_AUDITABLE))
         {
             AuditableProperties auditableProperties = node.getAuditableProperties();
+            if (auditableProperties == null)
+            {
+                auditableProperties = new AuditableProperties();
+            }
             converted.putAll(auditableProperties.getAuditableProperties());
         }
         
@@ -1272,14 +1288,14 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         aspectQNames = new HashSet<QName>(aspectQNames);
         // Remove sys:referenceable
         aspectQNames.remove(ContentModel.ASPECT_REFERENCEABLE);
-        
+
         // Convert
         Set<Long> aspectQNameIds = qnameDAO.convertQNamesToIds(aspectQNames, true);
 
         // Add them
         Set<Long> nodeAspects = node.getAspects();
         nodeAspects.addAll(aspectQNameIds);
-        
+
         // Record change ID
         recordNodeUpdate(node);
     }
@@ -1300,7 +1316,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         // Remove them
         Set<Long> nodeAspects = node.getAspects();
         nodeAspects.removeAll(aspectQNameIds);
-        
+
         // Record change ID
         recordNodeUpdate(node);
     }
@@ -1549,16 +1565,16 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
             Long parentNodeId,
             Long childNodeId,
             boolean isPrimary,
-            QName assocTypeQName,
+            final QName assocTypeQName,
             QName assocQName,
             String newName)
     {
-        Node parentNode = (Node) getSession().get(NodeImpl.class, parentNodeId);
+        final Node parentNode = (Node) getSession().get(NodeImpl.class, parentNodeId);
         Node childNode = (Node) getSession().get(NodeImpl.class, childNodeId);
         
         final Pair<String, Long> childNameUnique = getChildNameUnique(assocTypeQName, newName);
         
-        ChildAssoc assoc = new ChildAssocImpl();
+        final ChildAssoc assoc = new ChildAssocImpl();
         assoc.setTypeQName(qnameDAO, assocTypeQName);
         assoc.setChildNodeName(childNameUnique.getFirst());
         assoc.setChildNodeNameCrc(childNameUnique.getSecond());
@@ -1567,27 +1583,33 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         assoc.setIndex(-1);
         // maintain inverse sets
         assoc.buildAssociation(parentNode, childNode);
-        // persist it
-        Long assocId;
-        try
+        // Make sure that all changes to the session are persisted so that we know if any
+        // failures are from the constraint or not
+        DirtySessionMethodInterceptor.flushSession(getSession(false));
+        Long assocId = (Long) getHibernateTemplate().execute(new HibernateCallback()
         {
-            assocId = (Long) getHibernateTemplate().save(assoc);
-        }
-        catch (Throwable e)
-        {
-            // There is already an entity
-            if (isDebugEnabled)
+            public Object doInHibernate(Session session)
             {
-                logger.debug(
-                        "Duplicate child association detected: \n" +
-                        "   Parent Node:     " + parentNode.getId() + "\n" +
-                        "   Child Name Used:  " + childNameUnique);
+                try
+                {
+                    Object result = session.save(assoc);
+                    DirtySessionMethodInterceptor.flushSession(session);
+                    return result;
+                }
+                catch (ConstraintViolationException e)
+                {
+                    // There is already an entity
+                    if (isDebugEnabled)
+                    {
+                        logger.debug("Duplicate child association detected: \n" + "   Parent Node:     "
+                                + parentNode.getId() + "\n" + "   Child Name Used:  " + childNameUnique, e);
+                    }
+                    throw new DuplicateChildNodeNameException(parentNode.getNodeRef(), assocTypeQName, childNameUnique
+                            .getFirst());
+                }
             }
-            throw new DuplicateChildNodeNameException(
-                    parentNode.getNodeRef(),
-                    assocTypeQName,
-                    childNameUnique.getFirst());
-        }
+        });
+        
         // Add it to the cache
         Set<Long> oldParentAssocIds = parentAssocsCache.get(childNode.getId());
         if (oldParentAssocIds != null)
@@ -1629,7 +1651,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         return new Pair<Long, ChildAssociationRef>(assocId, assoc.getChildAssocRef(qnameDAO));
     }
     
-    public void setChildNameUnique(final Long childAssocId, String childName)
+    public void setChildNameUnique(final Long childAssocId, final String childName)
     {
         /*
          * Work out if there has been any change in the name
@@ -1648,33 +1670,31 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
                 childAssoc.setChildNodeName(childNameUnique.getFirst());
                 childAssoc.setChildNodeNameCrc(childNameUnique.getSecond().longValue());
                 // Flush again to force a DB constraint here
-                DirtySessionMethodInterceptor.flushSession(session, true);
-                // Done
-                return null;
+                try
+                {
+                    DirtySessionMethodInterceptor.flushSession(session, true);
+                    // Done
+                    return null;
+                }
+                catch (ConstraintViolationException e)
+                {
+                    // There is already an entity
+                    if (isDebugEnabled)
+                    {
+                        logger.debug("Duplicate child association detected: \n" + "   Parent Node:     "
+                                + parentNode.getId() + "\n" + "   Child Name Used:  " + childNameUnique, e);
+                    }
+
+                    throw new DuplicateChildNodeNameException(parentNode.getNodeRef(), childAssoc
+                            .getTypeQName(qnameDAO), childNameUnique.getFirst());
+                }
             }
         };
+        
         // Make sure that all changes to the session are persisted so that we know if any
         // failures are from the constraint or not
         DirtySessionMethodInterceptor.flushSession(getSession(false));
-        try
-        {
-            getHibernateTemplate().execute(callback);
-        }
-        catch (Throwable e)
-        {
-            // There is already an entity
-            if (isDebugEnabled)
-            {
-                logger.debug(
-                        "Duplicate child association detected: \n" +
-                        "   Parent Node:     " + parentNode.getId() + "\n" +
-                        "   Child Name Used:  " + childNameUnique);
-            }
-            throw new DuplicateChildNodeNameException(
-                    parentNode.getNodeRef(),
-                    childAssoc.getTypeQName(qnameDAO),
-                    childNameUnique.getFirst());
-        }
+        getHibernateTemplate().execute(callback);
         
         // Done
         if (isDebugEnabled)
@@ -1685,7 +1705,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
                     "   Child Assoc: " + childAssoc);
         }
     }
-
+    
     /**
      * Apply the <b>cm:name</b> to the child association.  If the child name is <tt>null</tt> then
      * a GUID is generated as a substitute.
@@ -2973,12 +2993,12 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
             {
                 Query query = session
                     .getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_USERS_WITHOUT_USAGE)
-                    .setString("storeProtocol", storeRef.getProtocol())
-                    .setString("storeIdentifier", storeRef.getIdentifier())
+                  .setString("storeProtocol", storeRef.getProtocol())
+                  .setString("storeIdentifier", storeRef.getIdentifier())
                     .setParameter("usernamePropQNameID", usernamePropQNamePair.getFirst()) // cm:username
                     .setParameter("sizeCurrentPropQNameID", sizeCurrentPropQNamePair.getFirst()) // cm:sizeCurrent
                     .setParameter("personTypeQNameID", personTypeQNamePair.getFirst()) // cm:person
-                    ;
+                  ;
                 DirtySessionMethodInterceptor.setQueryFlushMode(session, query);
                 return query.scroll(ScrollMode.FORWARD_ONLY);
             }
@@ -3009,7 +3029,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
 
         // Done
     }
-    
+
     public void getUsersWithUsage(
             final StoreRef storeRef,
             final ObjectArrayQueryCallback resultsCallback)
@@ -3094,7 +3114,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
                 Map<PropertyMapKey, NodePropertyValue> properties = node.getProperties();
                 for (Map.Entry<PropertyMapKey, NodePropertyValue> entry : properties.entrySet())
                 {
-				    PropertyMapKey propertyKey = entry.getKey();
+                    PropertyMapKey propertyKey = entry.getKey();
 					Long propertyQNameId = propertyKey.getQnameId();
                     QName propertyQName = qnameDAO.getQName(propertyQNameId).getSecond();
                     NodePropertyValue propertyValue = entry.getValue();
@@ -3190,7 +3210,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         }
         // Done
     }
-
+    
     /*
      * Queries for transactions
      */

@@ -28,8 +28,6 @@ CREATE INDEX fk_alf_autha_ali ON alf_authority_alias (alias_id);
 CREATE INDEX fk_alf_autha_aut ON alf_authority_alias (auth_id);
 
 CREATE INDEX fk_alf_cass_pnode ON alf_child_assoc (parent_node_id);
-CREATE INDEX fk_alf_cass_tqn ON alf_child_assoc (type_qname_id);
-CREATE INDEX fk_alf_cass_qnns ON alf_child_assoc (qname_ns_id);
 CREATE INDEX fk_alf_cass_cnode ON alf_child_assoc (child_node_id);
 
 -- alf_global_attributes.attribute is declared unique.  Indexes may automatically have been created.
@@ -42,19 +40,15 @@ CREATE INDEX fk_alf_matt_matt ON alf_map_attribute_entries (map_id);
 CREATE INDEX fk_alf_matt_att ON alf_map_attribute_entries (attribute_id);
 
 CREATE INDEX fk_alf_node_acl ON alf_node (acl_id);
-CREATE INDEX fk_alf_node_tqn ON alf_node (type_qname_id);
 CREATE INDEX fk_alf_node_txn ON alf_node (transaction_id);
 CREATE INDEX fk_alf_node_store ON alf_node (store_id);
 
 CREATE INDEX fk_alf_nasp_n ON alf_node_aspects (node_id);
 
 CREATE INDEX fk_alf_nass_snode ON alf_node_assoc (source_node_id);
-CREATE INDEX fk_alf_nass_tqn ON alf_node_assoc (type_qname_id);
 CREATE INDEX fk_alf_nass_tnode ON alf_node_assoc (target_node_id);
 
 CREATE INDEX fk_alf_nprop_n ON alf_node_properties (node_id);
-
-CREATE INDEX fk_alf_perm_tqn ON alf_permission (type_qname_id);
 
 CREATE INDEX fk_alf_qname_ns ON alf_qname (ns_id);
 
@@ -80,7 +74,6 @@ CREATE INDEX fk_avm_nprop_n ON avm_node_properties (node_id);
 CREATE INDEX fk_avm_n_acl ON avm_nodes (acl_id);
 CREATE INDEX fk_avm_n_store ON avm_nodes (store_new_id);
 
-CREATE INDEX fk_avm_sprop_qname ON avm_store_properties (qname_id);
 CREATE INDEX fk_avm_sprop_store ON avm_store_properties (avm_store_id);
 
 CREATE INDEX fk_avm_s_acl ON avm_stores (acl_id);

@@ -82,7 +82,8 @@ public class NodeImpl extends LifecycleAdapter implements Node, Serializable
 
         aspects = new HashSet<Long>(5);
         properties = new HashMap<PropertyMapKey, NodePropertyValue>(5);
-        auditableProperties = new AuditableProperties();
+        // Note auditableProperties starts null, as hibernate maps a component containing nulls to null and this would
+        // cause a lot of dirty checks to fail!
     }
 
     /**
@@ -355,6 +356,6 @@ public class NodeImpl extends LifecycleAdapter implements Node, Serializable
 
     public void setAuditableProperties(AuditableProperties auditableProperties)
     {
-        this.auditableProperties = (auditableProperties == null ? new AuditableProperties() : auditableProperties);
+        this.auditableProperties = auditableProperties;
     }
 }

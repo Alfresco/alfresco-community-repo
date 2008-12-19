@@ -52,7 +52,7 @@ public abstract class AbstractFeedGenerator implements FeedGenerator
 
     private RepoCtx ctx = null;
     
-    private boolean busy;
+    private volatile boolean busy;
     
     public void setPostDaoService(ActivityPostDaoService postDaoService)
     {
@@ -124,15 +124,13 @@ public abstract class AbstractFeedGenerator implements FeedGenerator
             return;
         }
         
-        checkProperties();
+        busy = true;
         try
         {
-            // run at least one job cycle
-            boolean moreWork = true;
-            while (moreWork)
-            {
-                moreWork = generate();
-            }
+            checkProperties();
+
+            // run one job cycle
+            generate();
         }
         catch (Throwable e)
         {

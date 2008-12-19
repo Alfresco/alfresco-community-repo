@@ -38,12 +38,14 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import org.alfresco.repo.activities.feed.control.FeedControlDAO;
 import org.alfresco.repo.activities.post.ActivityPostDAO;
@@ -106,6 +108,10 @@ public abstract class FeedTaskProcessor
             Configuration cfg = getFreemarkerConfiguration(ctx);
             
             Map<String, List<String>> activityTemplates = new HashMap<String, List<String>>(10);
+            
+            Map<String, Set<String>> siteConnectedUsers = new TreeMap<String, Set<String>>();
+            
+            Map<String, Template> templateCache = new TreeMap<String, Template>();
                 
             // for each activity post ...
             for (ActivityPostDAO activityPost : activityPosts)
@@ -192,28 +198,37 @@ public abstract class FeedTaskProcessor
                 model.put("xmldate", new ISO8601DateFormatMethod());
                 model.put("repoEndPoint", ctx.getRepoEndPoint());
                 
-                Set<String> connectedUsers = null;
-                if ((activityPost.getSiteNetwork() == null) || (activityPost.getSiteNetwork().length() == 0))
+                // Get the members of this site
+                String thisSite = activityPost.getSiteNetwork();
+
+                // Save hammering the repository by reusing cached site members
+                Set<String> connectedUsers = siteConnectedUsers.get(thisSite);
+                if (connectedUsers == null)
                 {
-                    connectedUsers = new HashSet<String>(1);
-                }
-                else
-                {
-                    try
+                    if ((thisSite == null) || (thisSite.length() == 0))
                     {
-                        // Repository callback to get site members
-                        connectedUsers = getSiteMembers(ctx, activityPost.getSiteNetwork());
+                        connectedUsers = Collections.singleton(""); // add empty posting userid - to represent site feed !
                     }
-                    catch(Exception e)
+                    else
                     {
-                        logger.error(">>> Skipping activity post " + activityPost.getId() + " since failed to get site members: " + e);
-                        updatePostStatus(activityPost.getId(), ActivityPostDAO.STATUS.ERROR);
-                        continue;
+                        try
+                        {
+                            // Repository callback to get site members
+                            connectedUsers = getSiteMembers(ctx, thisSite);
+                            connectedUsers.add(""); // add empty posting userid - to represent site feed !
+                            
+                            // Cache them for future use in this same invocation
+                            siteConnectedUsers.put(thisSite, connectedUsers);
+                        }
+                        catch(Exception e)
+                        {
+                            logger.error(">>> Skipping activity post " + activityPost.getId() + " since failed to get site members: " + e);
+                            updatePostStatus(activityPost.getId(), ActivityPostDAO.STATUS.ERROR);
+                            continue;
+                        }
                     }
                 }
-                
-                connectedUsers.add(""); // add empty posting userid - to represent site feed !
-                
+                                
                 try 
                 { 
                     startTransaction();
@@ -272,12 +287,12 @@ public abstract class FeedTaskProcessor
         	                        model.put("activityData", activityPost.getActivityData());
         	                    }
         	                    
-        	                    String activitySummary = processFreemarker(fmTemplate, cfg, model);   
+        	                    String activitySummary = processFreemarker(templateCache, fmTemplate, cfg, model);   
         	                    if (! activitySummary.equals(""))
         	                    {
             	                    feed.setActivitySummary(activitySummary);
             	                    feed.setActivitySummaryFormat(formatFound);
-            	                    feed.setSiteNetwork(activityPost.getSiteNetwork());
+            	                    feed.setSiteNetwork(thisSite);
             	                    feed.setAppTool(activityPost.getAppTool());
             	                    feed.setPostDate(activityPost.getPostDate());
             	                    feed.setPostId(activityPost.getId());
@@ -502,9 +517,15 @@ public abstract class FeedTaskProcessor
         return cfg;   
     }
     
-    protected String processFreemarker(String fmTemplate, Configuration cfg, Map<String, Object> model) throws IOException, TemplateException, Exception
+    protected String processFreemarker(Map<String, Template> templateCache, String fmTemplate, Configuration cfg, Map<String, Object> model) throws IOException, TemplateException, Exception
     {
-        Template myTemplate = cfg.getTemplate(fmTemplate);
+        // Save on lots of modification date checking by caching templates locally
+        Template myTemplate = templateCache.get(fmTemplate);
+        if (myTemplate == null)
+        {
+            myTemplate = cfg.getTemplate(fmTemplate);
+            templateCache.put(fmTemplate, myTemplate);
+        }
         
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         Writer out = new OutputStreamWriter(bos);

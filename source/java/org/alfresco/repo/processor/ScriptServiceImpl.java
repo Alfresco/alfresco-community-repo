@@ -113,6 +113,10 @@ public class ScriptServiceImpl implements ScriptService
             ScriptProcessor scriptProcessor = getScriptProcessor(scriptClasspath);
             return scriptProcessor.execute(scriptClasspath, model);
         }
+        catch (ScriptException err)
+        {
+            throw err;
+        }
         catch (Throwable err)
         {
             throw new ScriptException("Failed to execute script '" + scriptClasspath + "': " + err.getMessage(), err);
@@ -139,6 +143,10 @@ public class ScriptServiceImpl implements ScriptService
         {
             ScriptProcessor scriptProcessor = lookupScriptProcessor(engine);
             return scriptProcessor.execute(scriptClasspath, model);
+        }
+        catch (ScriptException err)
+        {
+            throw err;
         }
         catch (Throwable err)
         {
@@ -167,6 +175,10 @@ public class ScriptServiceImpl implements ScriptService
             ScriptProcessor scriptProcessor = getScriptProcessor(scriptRef);
             return scriptProcessor.execute(scriptRef, contentProp, model);
         }
+        catch (ScriptException err)
+        {
+            throw err;
+        }
         catch (Throwable err)
         {
             throw new ScriptException("Failed to execute script '" + scriptRef.toString() + "': " + err.getMessage(), err);
@@ -194,6 +206,10 @@ public class ScriptServiceImpl implements ScriptService
             ScriptProcessor scriptProcessor = lookupScriptProcessor(engine);
             return scriptProcessor.execute(scriptRef, contentProp, model);
         }
+        catch (ScriptException err)
+        {
+            throw err;
+        }
         catch (Throwable err)
         {
             throw new ScriptException("Failed to execute script '" + scriptRef.toString() + "': " + err.getMessage(), err);
@@ -218,6 +234,10 @@ public class ScriptServiceImpl implements ScriptService
             ScriptProcessor scriptProcessor = getScriptProcessor(location.toString());
             return scriptProcessor.execute(location, model);
         }
+        catch (ScriptException err)
+        {
+            throw err;
+        }
         catch (Throwable err)
         {
             throw new ScriptException("Failed to execute script '" + location.toString() + "': " + err.getMessage(), err);
@@ -241,6 +261,10 @@ public class ScriptServiceImpl implements ScriptService
         { 
             ScriptProcessor scriptProcessor = lookupScriptProcessor(engine);
             return scriptProcessor.execute(location, model);
+        }
+        catch (ScriptException err)
+        {
+            throw err;
         }
         catch (Throwable err)
         {
@@ -277,6 +301,10 @@ public class ScriptServiceImpl implements ScriptService
         {
             ScriptProcessor scriptProcessor = lookupScriptProcessor(engine);
             return scriptProcessor.executeString(script, model);
+        }
+        catch (ScriptException err)
+        {
+            throw err;
         }
         catch (Throwable err)
         {

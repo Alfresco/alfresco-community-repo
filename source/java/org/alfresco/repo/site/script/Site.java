@@ -69,7 +69,7 @@ public class Site implements Serializable
     private ScriptableQNameMap<String, CustomProperty> customProperties = null;
     
     /** Services Registry */
-    private ServiceRegistry services;
+    private ServiceRegistry serviceRegistry;
     
     /** Site service */
     private SiteService siteService;
@@ -87,7 +87,7 @@ public class Site implements Serializable
      */
     /*package*/ Site(SiteInfo siteInfo, ServiceRegistry serviceRegistry, SiteService siteService, Scriptable scope)
     {
-    	this.services = serviceRegistry;
+    	this.serviceRegistry = serviceRegistry;
         this.siteService = siteService;
         this.siteInfo = siteInfo;
         this.scope = scope;
@@ -186,7 +186,7 @@ public class Site implements Serializable
         ScriptNode node = null;
         if (this.siteInfo.getNodeRef() != null)
         {
-            node = new ScriptNode(this.siteInfo.getNodeRef(), this.services, this.scope);
+            node = new ScriptNode(this.siteInfo.getNodeRef(), this.serviceRegistry, this.scope);
         }
         
         return node;
@@ -336,19 +336,11 @@ public class Site implements Serializable
     public ScriptNode getContainer(String componentId)
     {
     	ScriptNode container = null;
-    	try
+		NodeRef containerNodeRef = this.siteService.getContainer(getShortName(), componentId);
+		if (containerNodeRef != null)
 		{
-    		NodeRef containerNodeRef = this.siteService.getContainer(getShortName(), componentId);
-    		if (containerNodeRef != null)
-    		{
-    		    container = new ScriptNode(containerNodeRef, this.services, this.scope);
-    		}
+		    container = new ScriptNode(containerNodeRef, this.serviceRegistry, this.scope);
 		}
-    	catch(AlfrescoRuntimeException e)
-    	{
-    		// NOTE: not good practice to catch all, but in general we're not throwing exceptions
-    		//       into the script layer
-    	}
     	return container;
     }
     
@@ -385,56 +377,48 @@ public class Site implements Serializable
     public ScriptNode createContainer(final String componentId, final String folderType, final Object permissions)
     {
         ScriptNode container = null;
-        try
+        NodeRef containerNodeRef = AuthenticationUtil.runAs(new RunAsWork<NodeRef>()
         {
-            NodeRef containerNodeRef = AuthenticationUtil.runAs(new RunAsWork<NodeRef>()
+            public NodeRef doWork() throws Exception
             {
-                public NodeRef doWork() throws Exception
+                // Get the container type
+                QName folderQName = (folderType == null) ? null : QName.createQName(folderType, serviceRegistry.getNamespaceService());
+                
+                // Create the container node
+                NodeRef containerNodeRef = Site.this.siteService.createContainer(getShortName(), componentId, folderQName, null);
+                
+                // Set any permissions that might have been provided for the container
+                if (permissions != null && permissions instanceof ScriptableObject)
                 {
-                    // Get the container type
-                    QName folderQName = (folderType == null) ? null : QName.createQName(folderType, services.getNamespaceService());
-                    
-                    // Create the container node
-                    NodeRef containerNodeRef = Site.this.siteService.createContainer(getShortName(), componentId, folderQName, null);
-                    
-                    // Set any permissions that might have been provided for the container
-                    if (permissions != null && permissions instanceof ScriptableObject)
+                    ScriptableObject scriptable = (ScriptableObject)permissions;
+                    Object[] propIds = scriptable.getIds();
+                    for (int i = 0; i < propIds.length; i++)
                     {
-                        ScriptableObject scriptable = (ScriptableObject)permissions;
-                        Object[] propIds = scriptable.getIds();
-                        for (int i = 0; i < propIds.length; i++)
+                        // work on each key in turn
+                        Object propId = propIds[i];
+                        
+                        // we are only interested in keys that are formed of Strings
+                        if (propId instanceof String)
                         {
-                            // work on each key in turn
-                            Object propId = propIds[i];
-                            
-                            // we are only interested in keys that are formed of Strings
-                            if (propId instanceof String)
-                            {
-                                // get the value out for the specified key - it must be String
-                                final String key = (String)propId;
-                                final Object value = scriptable.get(key, scriptable);
-                                if (value instanceof String)
-                                {                                   
-                                    // Set the permission on the container
-                                    Site.this.services.getPermissionService().setPermission(containerNodeRef, key, (String)value, true);
-                                }
+                            // get the value out for the specified key - it must be String
+                            final String key = (String)propId;
+                            final Object value = scriptable.get(key, scriptable);
+                            if (value instanceof String)
+                            {                                   
+                                // Set the permission on the container
+                                Site.this.serviceRegistry.getPermissionService().setPermission(containerNodeRef, key, (String)value, true);
                             }
                         }
-                    }            
-            
-                    return containerNodeRef;
-                }
-            }, AuthenticationUtil.SYSTEM_USER_NAME);
-            
-            // Create the script node for the container
-            container = new ScriptNode(containerNodeRef, this.services, this.scope); 
-        }
-        catch(AlfrescoRuntimeException e)
-        {
-            // NOTE: not good practice to catch all, but in general we're not throwing exceptions
-            //       into the script layer
-        }
-        return container;        
+                    }
+                }            
+        
+                return containerNodeRef;
+            }
+        }, AuthenticationUtil.SYSTEM_USER_NAME);
+        
+        // Create the script node for the container
+        container = new ScriptNode(containerNodeRef, this.serviceRegistry, this.scope); 
+        return container;       
     }
     
     /**
@@ -445,17 +429,7 @@ public class Site implements Serializable
      */
     public boolean hasContainer(String componentId)
     {
-    	boolean hasContainer = false;
-    	try
-    	{
-    		hasContainer = this.siteService.hasContainer(getShortName(), componentId);
-    	}
-    	catch(AlfrescoRuntimeException e)
-    	{
-    		// NOTE: not good practice to catch all, but in general we're not throwing exceptions
-    		//       into the script layer
-    	}
-    	return hasContainer;
+    	return this.siteService.hasContainer(getShortName(), componentId);
     }
     
     /**
@@ -470,7 +444,7 @@ public class Site implements Serializable
         if (permissions != null && permissions instanceof ScriptableObject)
         {
             // Get the permission service
-            final PermissionService permissionService = this.services.getPermissionService();
+            final PermissionService permissionService = this.serviceRegistry.getPermissionService();
             
             if (!permissionService.getInheritParentPermissions(nodeRef))
             {
@@ -525,7 +499,7 @@ public class Site implements Serializable
     {
         final NodeRef nodeRef = node.getNodeRef();
         
-        PermissionService permissionService = services.getPermissionService();
+        PermissionService permissionService = serviceRegistry.getPermissionService();
         try
         {
             // Ensure node isn't inheriting permissions from an ancestor before deleting
@@ -562,8 +536,8 @@ public class Site implements Serializable
         if (this.customProperties == null)
         {
             // create the custom properties map
-            ScriptNode siteNode = new ScriptNode(this.siteInfo.getNodeRef(), this.services);
-            this.customProperties = new ContentAwareScriptableQNameMap<String, CustomProperty>(siteNode, this.services);
+            ScriptNode siteNode = new ScriptNode(this.siteInfo.getNodeRef(), this.serviceRegistry);
+            this.customProperties = new ContentAwareScriptableQNameMap<String, CustomProperty>(siteNode, this.serviceRegistry);
             
             Map<QName, Serializable> props = siteInfo.getCustomProperties();
             for (QName qname : props.keySet())
@@ -578,7 +552,7 @@ public class Site implements Serializable
                 // get the type and label information from the dictionary
                 String title = null;
                 String type = null;
-                PropertyDefinition propDef = this.services.getDictionaryService().getProperty(qname);
+                PropertyDefinition propDef = this.serviceRegistry.getDictionaryService().getProperty(qname);
                 if (propDef != null)
                 {
                     type = propDef.getDataType().getName().toString();

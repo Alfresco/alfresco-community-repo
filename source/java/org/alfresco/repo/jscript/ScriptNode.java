@@ -55,7 +55,6 @@ import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.lock.LockStatus;
-import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.AssociationRef;
@@ -347,10 +346,6 @@ public class ScriptNode implements Serializable, Scopeable
                 try
                 {
                    this.services.getFileFolderService().rename(this.nodeRef, name);
-                }
-                catch (FileExistsException e)
-                {
-                    throw new AlfrescoRuntimeException("Failed to rename node " + nodeRef + " to " + name, e);
                 }
                 catch (FileNotFoundException e)
                 {

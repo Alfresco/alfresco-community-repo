@@ -28,6 +28,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.descriptor.Descriptor;
 import org.alfresco.service.descriptor.DescriptorService;
@@ -162,7 +164,7 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean implements Desc
     {
         // initialise the repository descriptor
         // note: this requires that the repository schema has already been initialised
-        RetryingTransactionCallback<Descriptor> createDescriptorWork = new RetryingTransactionCallback<Descriptor>()
+        final RetryingTransactionCallback<Descriptor> createDescriptorWork = new RetryingTransactionCallback<Descriptor>()
         {
             public Descriptor execute()
             {
@@ -181,8 +183,14 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean implements Desc
                 return installed == null ? new UnknownDescriptor() : installed;
             }
         };
-        installedRepoDescriptor = transactionService.getRetryingTransactionHelper().doInTransaction(
-                createDescriptorWork, transactionService.isReadOnly(), false);
+        this.installedRepoDescriptor = AuthenticationUtil.runAs(new RunAsWork<Descriptor>()
+        {
+            public Descriptor doWork() throws Exception
+            {
+                return transactionService.getRetryingTransactionHelper().doInTransaction(createDescriptorWork,
+                        transactionService.isReadOnly(), false);
+            }
+        }, AuthenticationUtil.getSystemUserName());         
         
         ((ApplicationContext)event.getSource()).publishEvent(new DescriptorServiceAvailableEvent(this));
     }

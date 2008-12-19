@@ -30,13 +30,13 @@ import java.util.Map;
 
 import javax.faces.context.FacesContext;
 import javax.servlet.ServletContext;
-import javax.transaction.UserTransaction;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.SessionUser;
 import org.alfresco.repo.configuration.ConfigurableService;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -214,66 +214,55 @@ public final class User implements SessionUser
     * Utilises the 'configurable' aspect on the Person linked to this user.
     */
    synchronized NodeRef getUserPreferencesRef(WebApplicationContext context)
-   {
-      ServiceRegistry registry = (ServiceRegistry)context.getBean("ServiceRegistry");
-      NodeService nodeService = registry.getNodeService();
-      SearchService searchService = registry.getSearchService();
-      NamespaceService namespaceService = registry.getNamespaceService();
-      ConfigurableService configurableService = (ConfigurableService)context.getBean("ConfigurableService");
-      UserTransaction txn = registry.getTransactionService().getUserTransaction();
-      
-      NodeRef prefRef = null;
-      try
-      {
-         txn.begin();
-         
-         NodeRef person = getPerson();
-         if (nodeService.hasAspect(person, ApplicationModel.ASPECT_CONFIGURABLE) == false)
-         {
-            // create the configuration folder for this Person node
-        	   configurableService.makeConfigurable(person);
-         }
-         
-         // target of the assoc is the configurations folder ref
-         NodeRef configRef = configurableService.getConfigurationFolder(person);
-         if (configRef == null)
-         {
-            throw new IllegalStateException("Unable to find associated 'configurations' folder for node: " + person);
-         }
-         
-         String xpath = NamespaceService.APP_MODEL_PREFIX + ":" + "preferences";
-         List<NodeRef> nodes = searchService.selectNodes(
-               configRef,
-               xpath,
-               null,
-               namespaceService,
-               false);
-         
-         if (nodes.size() == 1)
-         {
-            prefRef = nodes.get(0);
-         }
-         else
-         {
-            // create the preferences Node for this user
-            ChildAssociationRef childRef = nodeService.createNode(
-                  configRef,
-                  ContentModel.ASSOC_CONTAINS,
-                  QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "preferences"),
-                  ContentModel.TYPE_CMOBJECT);
-            
-            prefRef = childRef.getChildRef();
-         }
-         txn.commit();
-      }
-      catch (Throwable err)
-      {
-         try { txn.rollback(); } catch (Exception tex) {}
-         throw new AlfrescoRuntimeException("Error during getUserPreferencesRef(): " + err.getMessage(), err);
-      }
-      
-      return prefRef;
-   }
+    {
+        final ServiceRegistry registry = (ServiceRegistry) context.getBean("ServiceRegistry");
+        final NodeService nodeService = registry.getNodeService();
+        final SearchService searchService = registry.getSearchService();
+        final NamespaceService namespaceService = registry.getNamespaceService();
+        final ConfigurableService configurableService = (ConfigurableService) context.getBean("ConfigurableService");
+        RetryingTransactionHelper txnHelper = registry.getRetryingTransactionHelper();
+        return txnHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>()
+        {
+
+            public NodeRef execute() throws Throwable
+            {
+                NodeRef prefRef = null;
+                NodeRef person = getPerson();
+                if (nodeService.hasAspect(person, ApplicationModel.ASPECT_CONFIGURABLE) == false)
+                {
+                    // create the configuration folder for this Person node
+                    configurableService.makeConfigurable(person);
+                }
+
+                // target of the assoc is the configurations folder ref
+                NodeRef configRef = configurableService.getConfigurationFolder(person);
+                if (configRef == null)
+                {
+                    throw new IllegalStateException("Unable to find associated 'configurations' folder for node: "
+                            + person);
+                }
+
+                String xpath = NamespaceService.APP_MODEL_PREFIX + ":" + "preferences";
+                List<NodeRef> nodes = searchService.selectNodes(configRef, xpath, null, namespaceService, false);
+
+                if (nodes.size() == 1)
+                {
+                    prefRef = nodes.get(0);
+                }
+                else
+                {
+                    // create the preferences Node for this user
+                    ChildAssociationRef childRef = nodeService
+                            .createNode(configRef, ContentModel.ASSOC_CONTAINS, QName.createQName(
+                                    NamespaceService.APP_MODEL_1_0_URI, "preferences"), ContentModel.TYPE_CMOBJECT);
+
+                    prefRef = childRef.getChildRef();
+
+                }
+                return prefRef;
+            }
+        });
+    }
    
    /**
     * Returns the full name of the user represented by the given NodeRef

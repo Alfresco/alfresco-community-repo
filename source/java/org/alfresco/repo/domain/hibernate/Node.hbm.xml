@@ -249,9 +249,11 @@
    
    <query name="node.GetNodeByStoreIdAndUuid">
       select
-         node
+         node,
+         acl
       from 
          org.alfresco.repo.domain.hibernate.NodeImpl as node
+         left outer join node.accessControlList as acl
       where
          node.store.id = :storeId and
          node.uuid = :uuid
@@ -531,7 +533,7 @@
          assoc.id
    </query>
    
-   <query name="node.GetNodesWithChildrenInDifferentStores">
+   <query name="node.GetNodesWithChildrenInDifferentStore">
       select
          parent.id,
          parentStore.protocol,
@@ -542,8 +544,10 @@
          join assoc.parent as parent
          join parent.store as parentStore
          join assoc.child as child
+         join child.store as childStore
       where
-         child.store.id != parent.store.id and
+         parentStore.id = :parentStoreId and
+         childStore.id != :parentStoreId and
          parent.id > :minNodeId and
          assoc.isPrimary = true
       order by
@@ -702,6 +706,25 @@
 	     join node.properties as props
       where
          props.serializableValue is not null
+   </query>
+
+   <query name="node.GetDeletedNodesByMaxTxnId">
+      <![CDATA[
+      select
+         node.id,
+         node.store.protocol,
+         node.store.identifier,
+         node.uuid
+      from
+         org.alfresco.repo.domain.hibernate.NodeImpl as node
+         join node.transaction as txn
+      where
+         node.id >= :minNodeId and
+         node.deleted = true and
+         txn.id <= :maxTxnId
+      order by
+         node.id asc
+      ]]>
    </query>
 
 </hibernate-mapping>

@@ -39,6 +39,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.node.BaseNodeServiceTest;
 import org.alfresco.repo.node.StoreArchiveMap;
+import org.alfresco.repo.node.cleanup.NodeCleanupRegistry;
 import org.alfresco.repo.node.db.NodeDaoService.NodePropertyHandler;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -476,8 +477,14 @@ public class DbNodeServiceImplTest extends BaseNodeServiceTest
         setComplete();
         endTransaction();
         
+        NodeCleanupRegistry nodeCleanupRegistry = new NodeCleanupRegistry();
+        DbNodeServiceImpl.MoveChildrenToCorrectStore worker = new DbNodeServiceImpl.MoveChildrenToCorrectStore();
+        worker.setTransactionService(transactionService);
+        worker.setDbNodeService(ns);
+        worker.setNodeDaoService(nodeDaoService);
+        
         // Run cleanup
-        ns.cleanup();
+        worker.doClean();
     }
     
     /**

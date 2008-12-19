@@ -63,20 +63,6 @@ import org.alfresco.service.namespace.QNamePattern;
 public interface NodeService
 {
     /**
-     * Kick off any cleanup processes relating to the the particular implementation.
-     * <p>
-     * This must cover cleanup of orphaned data and other housekeeping tasks that may
-     * be required.
-     * <p>
-     * <b>NB:</b> Implementations should guard against multithreaded entry without
-     *            blocking.
-     * 
-     * @return      Returns a list of messages detailing what was done.
-     */
-    @Auditable(key = Auditable.Key.NO_KEY)
-    public List<String> cleanup();
-    
-    /**
      * Gets a list of all available node store references
      * 
      * @return Returns a list of store references

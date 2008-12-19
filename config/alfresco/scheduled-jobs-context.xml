@@ -153,12 +153,12 @@
 
     <bean id="nodeServiceCleanupJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
         <property name="jobClass">
-            <value>org.alfresco.repo.node.db.NodeServiceCleanupJob</value>
+            <value>org.alfresco.repo.node.cleanup.NodeCleanupJob</value>
         </property>
         <property name="jobDataAsMap">
             <map>
-                <entry key="nodeService">
-                    <ref bean="nodeService" />
+                <entry key="nodeCleanupWorker">
+                    <ref bean="nodeCleanupRegistry" />
                 </entry>
             </map>
         </property>
@@ -170,9 +170,8 @@
         <property name="scheduler">
             <ref bean="schedulerFactory" />
         </property>
-        <!-- trigger hourly -->
         <property name="cronExpression">
-            <value>0 15 * * * ?</value>
+            <value>0 0 21 * * ?</value>
         </property>
     </bean>
 

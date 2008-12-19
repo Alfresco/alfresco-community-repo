@@ -54,7 +54,6 @@ import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.CopyService;
 import org.alfresco.service.cmr.repository.CopyServiceException;
-import org.alfresco.service.cmr.repository.DuplicateChildNodeNameException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -71,9 +70,6 @@ import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.ParameterCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.tools.ant.taskdefs.War;
-
-import freemarker.log.Logger;
 
 /**
  * Node operations service implmentation.
@@ -224,6 +220,9 @@ public class CopyServiceImpl implements CopyService
 				new JavaBehaviour(this, "onCopyComplete"));	
 	}
 	
+	/**
+	 * @see org.alfresco.service.cmr.repository.CopyService#copy(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, org.alfresco.service.namespace.QName, boolean)
+	 */
     public NodeRef copy(
             NodeRef sourceNodeRef,
             NodeRef destinationParentRef, 
@@ -267,29 +266,36 @@ public class CopyServiceImpl implements CopyService
         return copy;
     }
 	
+    /**
+     * @see org.alfresco.service.cmr.repository.CopyService#copyAndRename(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, org.alfresco.service.namespace.QName, boolean)
+     */
     public NodeRef copyAndRename(NodeRef sourceNodeRef, NodeRef destinationParent, QName destinationAssocTypeQName, QName destinationQName, boolean copyChildren) 
     {
-    	// Make a note of the source name and do the copy
+    	// To fix ETWOONE-224 issue it is necessary to change a QName of the new node accordingly to its name.
+    	NodeRef result = null;
     	String sourceName = (String)this.internalNodeService.getProperty(sourceNodeRef, ContentModel.PROP_NAME);
-		NodeRef copy = copy(sourceNodeRef, destinationParent, destinationAssocTypeQName, destinationQName, copyChildren);
-		
-		// Do the rename, iterating until a non-duplicate name is found
-		boolean bDone = false;
-		while (bDone == false)
-		{
-			try
-			{
-				this.internalNodeService.setProperty(copy, ContentModel.PROP_NAME, sourceName);
-				bDone = true;
-			}
-			catch(DuplicateChildNodeNameException exception)
-			{
-				sourceName = I18NUtil.getMessage(COPY_OF_LABEL, sourceName);
-			}
-		}		
-		
-		// Return the copy
-		return copy;
+    	        
+    	// Find a non-duplicate name
+    	String newName = sourceName;
+    	while (this.internalNodeService.getChildByName(destinationParent, destinationAssocTypeQName, newName) != null)
+    	{
+    		newName = I18NUtil.getMessage(COPY_OF_LABEL, newName);    		        	
+    	}
+    	    	
+    	if (destinationQName == null)
+    	{
+    		// Change a QName of the new node accordingly to its name
+    		destinationQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName(newName));
+    	}
+    	
+    	// Make a copy
+    	result = copy(sourceNodeRef, destinationParent, destinationAssocTypeQName, destinationQName, copyChildren);
+    	
+    	// Set name property
+    	this.internalNodeService.setProperty(result, ContentModel.PROP_NAME, newName);
+    	
+    	// Return new NodeRef
+    	return result;    
 	}
 	
     /**

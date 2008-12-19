@@ -57,6 +57,9 @@
         <property name="avmService">
             <ref bean="indexingAVMService"/>
         </property>
+        <property name="transactionService">
+            <ref bean="transactionService"/>
+        </property>
         
         <!-- how many files to send in parallel -->
         <property name="numberOfSendingThreads">

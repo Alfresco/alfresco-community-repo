@@ -1409,7 +1409,7 @@ public class ScriptNode implements Serializable, Scopeable
         if (destination.getNodeRef().getStoreRef().getProtocol().equals(StoreRef.PROTOCOL_WORKSPACE))
         {
             NodeRef copyRef = this.services.getCopyService().copyAndRename(this.nodeRef, destination.getNodeRef(),
-                    ContentModel.ASSOC_CONTAINS, getPrimaryParentAssoc().getQName(), deepCopy);
+                    ContentModel.ASSOC_CONTAINS, null, deepCopy);
             copy = newInstance(copyRef, this.services, this.scope);
         }
         else

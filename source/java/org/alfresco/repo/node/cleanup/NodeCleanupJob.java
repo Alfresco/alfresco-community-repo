@@ -22,36 +22,50 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.repo.node.db;
+package org.alfresco.repo.node.cleanup;
+
+import java.util.List;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.service.cmr.repository.NodeService;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
 /**
- * Prompts the Node Service to perform regular cleanup operations.
- * 
- * @see NodeService#cleanup()
+ * Scheduled job to call a {@link NodeCleanupWorker}.
+ * <p>
+ * Job data is: <b>nodeCleanupWorker</b>
  * 
  * @author Derek Hulley
- * @since 2.1.6
+ * @since 2.2SP2
  */
-public class NodeServiceCleanupJob implements Job
+public class NodeCleanupJob implements Job
 {
+    private static Log logger = LogFactory.getLog(NodeCleanupJob.class);
+    
     public void execute(JobExecutionContext context) throws JobExecutionException
     {
         JobDataMap jobData = context.getJobDetail().getJobDataMap();
-        // extract the content cleaner to use
-        Object nodeServiceObj = jobData.get("nodeService");
-        if (nodeServiceObj == null || !(nodeServiceObj instanceof NodeService))
+        // extract the content Cleanup to use
+        Object nodeCleanupWorkerObj = jobData.get("nodeCleanupWorker");
+        if (nodeCleanupWorkerObj == null || !(nodeCleanupWorkerObj instanceof NodeCleanupWorker))
         {
             throw new AlfrescoRuntimeException(
-                    "NodeServiceCleanupJob data must contain valid 'nodeService' reference");
+                    "NodeCleanupJob data must contain valid 'nodeCleanupWorker' reference");
         }
-        NodeService nodeService = (NodeService) nodeServiceObj;
-        nodeService.cleanup();
+        NodeCleanupWorker nodeCleanupWorker = (NodeCleanupWorker) nodeCleanupWorkerObj;
+        List<String> cleanupLog = nodeCleanupWorker.doClean();
+        // Done
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Node cleanup log:");
+            for (String log : cleanupLog)
+            {
+                logger.debug(log);
+            }
+        }
     }
 }

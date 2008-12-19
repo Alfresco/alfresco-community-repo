@@ -661,6 +661,35 @@ public class CopyServiceImplTest extends BaseSpringTest
 	}
 	
 	/**
+	 * https://issues.alfresco.com/jira/browse/ETWOONE-224
+	 */
+	public void testETWOONE_244()
+	{
+		// Create a folder and content node		
+		Map<QName, Serializable> propsFolder = new HashMap<QName, Serializable>(1);
+		propsFolder.put(ContentModel.PROP_NAME, "tempFolder");
+		NodeRef folderNode = this.nodeService.createNode(this.rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "tempFolder"), ContentModel.TYPE_FOLDER, propsFolder).getChildRef();		
+		Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
+		props.put(ContentModel.PROP_NAME, "myDoc.txt");
+		NodeRef contentNode = this.nodeService.createNode(folderNode, ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,  "myDoc.txt"), ContentModel.TYPE_CONTENT, props).getChildRef();
+		
+		NodeRef copy = this.copyService.copyAndRename(contentNode, folderNode, ContentModel.ASSOC_CONTAINS, null, false);
+		assertEquals("Copy of myDoc.txt", this.nodeService.getProperty(copy, ContentModel.PROP_NAME));
+		QName copyQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "Copy of myDoc.txt");
+		assertEquals(copyQName, this.nodeService.getPrimaryParent(copy).getQName());
+		
+		copy = this.copyService.copyAndRename(contentNode, folderNode, ContentModel.ASSOC_CONTAINS, null, false);
+		assertEquals("Copy of Copy of myDoc.txt", this.nodeService.getProperty(copy, ContentModel.PROP_NAME));
+		copyQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "Copy of Copy of myDoc.txt");
+		assertEquals(copyQName, this.nodeService.getPrimaryParent(copy).getQName());		
+
+		copy = this.copyService.copyAndRename(contentNode, folderNode, ContentModel.ASSOC_CONTAINS, null, false);
+		assertEquals("Copy of Copy of Copy of myDoc.txt", this.nodeService.getProperty(copy, ContentModel.PROP_NAME));
+		copyQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "Copy of Copy of Copy of myDoc.txt");
+		assertEquals(copyQName, this.nodeService.getPrimaryParent(copy).getQName());
+	}
+	
+	/**
 	 * Check that the copied node contains the state we are expecting
 	 * 
 	 * @param sourceNodeRef       the source node reference

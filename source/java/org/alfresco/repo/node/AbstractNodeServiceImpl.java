@@ -30,7 +30,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.locks.ReentrantLock;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeAddAspectPolicy;
@@ -59,8 +58,6 @@ import org.alfresco.repo.policy.AssociationPolicyDelegate;
 import org.alfresco.repo.policy.ClassPolicyDelegate;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.search.Indexer;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -647,48 +644,5 @@ public abstract class AbstractNodeServiceImpl implements NodeService
             properties.put(entry.getKey(), value);
         }
         return properties;
-    }
-
-    /**
-     * Override to implement cleanup processes.  The default does nothing.
-     * <p>
-     * This method will be called as the <b>system</b> user but without any
-     * additional transactions.
-     */
-    protected List<String> cleanupImpl()
-    {
-        // No operation
-        return Collections.emptyList();
-    }
-    
-    /** Prevent multiple executions of the implementation method */
-    private ReentrantLock cleanupLock = new ReentrantLock();
-    public final List<String> cleanup()
-    {
-        boolean locked = cleanupLock.tryLock();
-        if (locked)
-        {
-            try
-            {
-                // Authenticate as system
-                RunAsWork<List<String>> cleanupWork = new RunAsWork<List<String>>()
-                {
-                    public List<String> doWork() throws Exception
-                    {
-                        // The current thread got the lock
-                        return cleanupImpl();
-                    }
-                };
-                return AuthenticationUtil.runAs(cleanupWork, AuthenticationUtil.SYSTEM_USER_NAME);
-            }
-            finally
-            {
-                cleanupLock.unlock();
-            }
-        }
-        else
-        {
-            return Collections.emptyList();
-        }
     }
 }

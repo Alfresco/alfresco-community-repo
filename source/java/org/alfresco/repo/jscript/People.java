@@ -413,7 +413,7 @@ public final class People extends BaseScopableProcessorExtension
         ScriptNode group = null;
         
         String actualName = services.getAuthorityService().getName(AuthorityType.GROUP, groupName);
-        if (authorityService.authorityExists(groupName) == false)
+        if (authorityService.authorityExists(actualName) == false)
         {
             String parentGroupName = null;
             if (parentGroup != null)

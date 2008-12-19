@@ -57,6 +57,8 @@ import org.alfresco.repo.remote.AVMSyncServiceRemote;
 import org.alfresco.repo.remote.ClientTicketHolder;
 import org.alfresco.repo.remote.ClientTicketHolderThread;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.action.ActionServiceTransport;
 import org.alfresco.service.cmr.avm.AVMException;
@@ -76,6 +78,7 @@ import org.alfresco.service.cmr.remote.AVMSyncServiceTransport;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.NameMatcher;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
@@ -100,6 +103,11 @@ public class DeploymentServiceImpl implements DeploymentService
      */
     private AVMService fAVMService;
 
+    /**
+     * The local Transaction Service Instance
+     */
+    TransactionService trxService;
+    
     /**
      * The Ticket holder.
      */
@@ -128,6 +136,15 @@ public class DeploymentServiceImpl implements DeploymentService
         fAVMService = service;
     }
 
+    /**
+     * Setter.
+     * @param trxService The instance to set.
+     */
+    public void setTransactionService(TransactionService trxService)
+    {
+        this.trxService = trxService;
+    }
+    
     /* 
      * Deploy differences to an ASR 
      * (non-Javadoc)
@@ -848,7 +865,7 @@ public class DeploymentServiceImpl implements DeploymentService
                 SendQueueWorker[] workers = new SendQueueWorker[numberOfSendingThreads];
                 for(int i = 0; i < numberOfSendingThreads; i++)
                 {
-       				workers[i] = new SendQueueWorker(currentEffectiveUser, service, fAVMService, errors, eventQueue, sendQueue, transformers);
+       				workers[i] = new SendQueueWorker(currentEffectiveUser, service, fAVMService, trxService, errors, eventQueue, sendQueue, transformers);
        			    workers[i].setName(workers[i].getClass().getName());
        			    workers[i].setPriority(Thread.currentThread().getPriority());
                 }
@@ -1329,6 +1346,7 @@ public class DeploymentServiceImpl implements DeploymentService
 		private DeploymentReceiverService service;
 		private String userName;
 		private AVMService avmService;
+		private TransactionService trxService;
 		List<Exception> errors;
 		List<DeploymentTransportOutputFilter> transformers;
 		
@@ -1337,6 +1355,7 @@ public class DeploymentServiceImpl implements DeploymentService
 		SendQueueWorker(String userName,
 				DeploymentReceiverService service,
 				AVMService avmService,
+				TransactionService trxService,
 				List<Exception> errors,
 				BlockingQueue<DeploymentEvent> eventQueue, 
 				BlockingQueue<DeploymentWork> sendQueue,
@@ -1347,11 +1366,10 @@ public class DeploymentServiceImpl implements DeploymentService
 			this.sendQueue = sendQueue;
 			this.service = service;
 			this.avmService = avmService;
+			this.trxService = trxService;
 			this.errors = errors;
 			this.transformers = transformers;
 			this.userName = userName;
-
-			
 		}
 		
 		public void run()
@@ -1434,31 +1452,41 @@ public class DeploymentServiceImpl implements DeploymentService
 	     * @param dstPath where to copy the file
 	     */
 	    private void copyFileToFSR(
-	            AVMNodeDescriptor src, 
-	            String dstPath,
-	            String ticket)
+	            final AVMNodeDescriptor src, 
+	            final String dstPath,
+	            final String ticket)
 	    {
 	        try
 	        {
-	        	InputStream in = avmService.getFileInputStream(src);
-	        
-	        	OutputStream out = service.send(ticket, dstPath, src.getGuid());
-	        	OutputStream baseStream = out; // finish send needs out, not a decorated stream
-	        
-	        	// Buffer the output, we don't want to send lots of small packets
-	        	out = new BufferedOutputStream(out, 10000);
-	        
-	        	// Call content transformers here to transform from local to network format
-	        	if(transformers != null && transformers.size() > 0) {
-	        		// yes we have pay-load transformers
-	        		for(DeploymentTransportOutputFilter transformer : transformers) 
-	        		{
-	        			out = transformer.addFilter(out, src.getPath());
-	        		}
-	        	}
-	        		        
-	            copyStream(in, out);
-	            service.finishSend(ticket, baseStream);
+	            // Perform copy within 'read only' transaction
+	            RetryingTransactionHelper trx = trxService.getRetryingTransactionHelper();
+	            trx.setMaxRetries(1);
+	            trx.doInTransaction(new RetryingTransactionCallback<Boolean>()
+                {
+                    public Boolean execute() throws Exception
+                    {
+        	        	InputStream in = avmService.getFileInputStream(src);
+        	        
+        	        	OutputStream out = service.send(ticket, dstPath, src.getGuid());
+        	        	OutputStream baseStream = out; // finish send needs out, not a decorated stream
+        	        
+        	        	// Buffer the output, we don't want to send lots of small packets
+        	        	out = new BufferedOutputStream(out, 10000);
+        	        
+        	        	// Call content transformers here to transform from local to network format
+        	        	if(transformers != null && transformers.size() > 0) {
+        	        		// yes we have pay-load transformers
+        	        		for(DeploymentTransportOutputFilter transformer : transformers) 
+        	        		{
+        	        			out = transformer.addFilter(out, src.getPath());
+        	        		}
+        	        	}
+        	        		        
+        	            copyStream(in, out);
+                        service.finishSend(ticket, baseStream);
+                        return true;
+                    }
+                }, true);
 	        }
 	        catch (Exception e)
 	        {

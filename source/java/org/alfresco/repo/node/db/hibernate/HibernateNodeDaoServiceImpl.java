@@ -107,6 +107,7 @@ import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Criteria;
+import org.hibernate.ObjectNotFoundException;
 import org.hibernate.Query;
 import org.hibernate.ScrollMode;
 import org.hibernate.ScrollableResults;
@@ -137,7 +138,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     private static final String QUERY_GET_CHILD_ASSOC_REFS_BY_CHILD_TYPEQNAME = "node.GetChildAssocRefsByChildTypeQName";
     private static final String QUERY_GET_PRIMARY_CHILD_ASSOCS = "node.GetPrimaryChildAssocs";
     private static final String QUERY_GET_PRIMARY_CHILD_ASSOCS_NOT_IN_SAME_STORE = "node.GetPrimaryChildAssocsNotInSameStore";
-    private static final String QUERY_GET_NODES_WITH_CHILDREN_IN_DIFFERENT_STORES ="node.GetNodesWithChildrenInDifferentStores";
+    private static final String QUERY_GET_NODES_WITH_CHILDREN_IN_DIFFERENT_STORE ="node.GetNodesWithChildrenInDifferentStore";
     private static final String QUERY_GET_NODES_WITH_ASPECT ="node.GetNodesWithAspect";
     private static final String QUERY_GET_PARENT_ASSOCS = "node.GetParentAssocs";
     private static final String QUERY_GET_NODE_ASSOC = "node.GetNodeAssoc";
@@ -149,6 +150,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     private static final String QUERY_GET_USERS_WITHOUT_USAGE = "node.GetUsersWithoutUsage";
     private static final String QUERY_GET_USERS_WITH_USAGE = "node.GetUsersWithUsage";
     private static final String QUERY_GET_NODES_WITH_PROPERTY_VALUES_BY_ACTUAL_TYPE = "node.GetNodesWithPropertyValuesByActualType";
+    private static final String QUERY_GET_DELETED_NODES_BY_MAX_TXNID = "node.GetDeletedNodesByMaxTxnId";
     private static final String QUERY_GET_SERVER_BY_IPADDRESS = "server.getServerByIpAddress";
     
     private static final Long NULL_CACHE_VALUE = new Long(-1);
@@ -521,14 +523,14 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
      * 
      * @param nodeId        the node's ID
      * @return              the node
-     * @throws              AlfrescoRuntimeException if the ID doesn't refer to a node.
+     * @throws              ObjectNotFoundException if the ID doesn't refer to a node.
      */
     private Node getNodeNotNull(Long nodeId)
     {
         Node node = (Node) getHibernateTemplate().get(NodeImpl.class, nodeId);
         if (node == null)
         {
-            throw new AlfrescoRuntimeException("Node ID " + nodeId + " is invalid");
+            throw new ObjectNotFoundException(nodeId, NodeImpl.class.getName());
         }
         return node;
     }
@@ -573,7 +575,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
      * @see #QUERY_GET_ALL_STORES
      */
     @SuppressWarnings("unchecked")
-    public List<StoreRef> getStoreRefs()
+    public List<Pair<Long, StoreRef>> getStores()
     {
         HibernateCallback callback = new HibernateCallback()
         {
@@ -585,10 +587,11 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
             }
         };
         List<Store> stores = (List) getHibernateTemplate().execute(callback);
-        List<StoreRef> storeRefs = new ArrayList<StoreRef>(stores.size());
+        List<Pair<Long, StoreRef>> storeRefs = new ArrayList<Pair<Long, StoreRef>>(stores.size());
         for (Store store : stores)
         {
-            storeRefs.add(store.getStoreRef());
+            Pair<Long, StoreRef> storePair = new Pair<Long, StoreRef>(store.getId(), store.getStoreRef());
+            storeRefs.add(storePair);
         }
         // done
         return storeRefs;
@@ -714,17 +717,19 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
                 return query.uniqueResult();
             }
         };
-        Node node = (Node) getHibernateTemplate().execute(callback);
+        Object[] result = (Object[]) getHibernateTemplate().execute(callback);
         // Cache the value
-        if (node == null)
+        final Node node;
+        if (result == null)
         {
+            node = null;
             storeAndNodeIdCache.put(nodeRef, NULL_CACHE_VALUE);
         }
         else
         {
+            node = (Node) result[0];
             storeAndNodeIdCache.put(nodeRef, node.getId());
         }
-        // TODO: Fill cache here
         return node;
     }
     
@@ -1334,6 +1339,18 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         
         // Record change ID
         recordNodeDelete(node);
+    }
+
+    /**
+     * Final purge of the node entry.  No transaction recording is done for this.
+     */
+    public void purgeNode(Long nodeId)
+    {
+        Node node = (Node) getSession().get(NodeImpl.class, nodeId);
+        if (node != null)
+        {
+            getHibernateTemplate().delete(node);
+        }
     }
 
     private static final String QUERY_DELETE_PARENT_ASSOCS = "node.DeleteParentAssocs";
@@ -2364,14 +2381,19 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         // Done
     }
 
-    public void getNodesWithChildrenInDifferentStores(final Long minNodeId, final int count, NodeRefQueryCallback resultsCallback)
+    public void getNodesWithChildrenInDifferentStore(
+            final Long storeId,
+            final Long minNodeId,
+            final int count,
+            NodeRefQueryCallback resultsCallback)
     {
         HibernateCallback callback = new HibernateCallback()
         {
             public Object doInHibernate(Session session)
             {
                 Query query = session
-                    .getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_NODES_WITH_CHILDREN_IN_DIFFERENT_STORES)
+                    .getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_NODES_WITH_CHILDREN_IN_DIFFERENT_STORE)
+                    .setLong("parentStoreId", storeId)
                     .setLong("minNodeId", minNodeId)
                     .setMaxResults(count);
                 DirtySessionMethodInterceptor.setQueryFlushMode(session, query);
@@ -2397,10 +2419,10 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     
     /**
      * <pre>
-            Long parentId = (Long) row[0];
-            String parentProtocol = (String) row[1];
-            String parentIdentifier = (String) row[2];
-            String parentUuid = (String) row[3];
+            Node ID = (Long) row[0];
+            Node Protocol = (String) row[1];
+            Node Identifier = (String) row[2];
+            Node Uuid = (String) row[3];
      * </pre>
      */
     private void processNodeResults(ScrollableResults queryResults, NodeRefQueryCallback resultsCallback)
@@ -3125,12 +3147,57 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         }
     }
     
+    @SuppressWarnings("unchecked")
+    public void getNodesDeletedInOldTxns(
+            final Long minNodeId,
+            long maxCommitTime,
+            final int count,
+            NodeRefQueryCallback resultsCallback)
+    {
+        // Get the max transaction ID
+        final Long maxTxnId = getMaxTxnIdByCommitTime(maxCommitTime);
+        
+        // Shortcut
+        if (maxTxnId == null)
+        {
+            return;
+        }
+        
+        HibernateCallback callback = new HibernateCallback()
+        {
+            public Object doInHibernate(Session session)
+            {
+                Query query = session.getNamedQuery(QUERY_GET_DELETED_NODES_BY_MAX_TXNID);
+                query.setLong("minNodeId", minNodeId);
+                query.setLong("maxTxnId", maxTxnId);
+                query.setMaxResults(count);
+                query.setReadOnly(true);
+                return query.scroll(ScrollMode.FORWARD_ONLY);
+            }
+        };
+        ScrollableResults queryResults = null;
+        try
+        {
+            queryResults = (ScrollableResults) getHibernateTemplate().execute(callback);
+            processNodeResults(queryResults, resultsCallback);
+        }
+        finally
+        {
+            if (queryResults != null)
+            {
+                queryResults.close();
+            }
+        }
+        // Done
+    }
+
     /*
      * Queries for transactions
      */
     private static final String QUERY_GET_TXN_BY_ID = "txn.GetTxnById";
     private static final String QUERY_GET_MIN_COMMIT_TIME = "txn.GetMinCommitTime";
     private static final String QUERY_GET_MAX_COMMIT_TIME = "txn.GetMaxCommitTime";
+    private static final String QUERY_GET_MAX_ID_BY_COMMIT_TIME = "txn.GetMaxIdByCommitTime";
     private static final String QUERY_GET_TXNS_BY_COMMIT_TIME_ASC = "txn.GetTxnsByCommitTimeAsc";
     private static final String QUERY_GET_TXNS_BY_COMMIT_TIME_DESC = "txn.GetTxnsByCommitTimeDesc";
     private static final String QUERY_GET_SELECTED_TXNS_BY_COMMIT_TIME_ASC = "txn.GetSelectedTxnsByCommitAsc";
@@ -3139,6 +3206,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     private static final String QUERY_COUNT_TRANSACTIONS = "txn.CountTransactions";
     private static final String QUERY_GET_TXN_CHANGES_FOR_STORE = "txn.GetTxnChangesForStore";
     private static final String QUERY_GET_TXN_CHANGES = "txn.GetTxnChanges";
+    private static final String QUERY_GET_TXNS_UNUSED = "txn.GetTxnsUnused";
     
     public Transaction getTxnById(final long txnId)
     {
@@ -3188,6 +3256,23 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         Long commitTime = (Long) getHibernateTemplate().execute(callback);
         // done
         return (commitTime == null) ? 0L : commitTime;
+    }
+    
+    public Long getMaxTxnIdByCommitTime(final long maxCommitTime)
+    {
+        HibernateCallback callback = new HibernateCallback()
+        {
+            public Object doInHibernate(Session session)
+            {
+                Query query = session.getNamedQuery(QUERY_GET_MAX_ID_BY_COMMIT_TIME);
+                query.setLong("maxCommitTime", maxCommitTime);
+                query.setReadOnly(true);
+                return query.uniqueResult();
+            }
+        };
+        Long txnId = (Long) getHibernateTemplate().execute(callback);
+        // done
+        return txnId;
     }
     
     @SuppressWarnings("unchecked")
@@ -3518,6 +3603,36 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         return nodeRefs;
     }
     
+    @SuppressWarnings("unchecked")
+    public List<Long> getTxnsUnused(final Long minTxnId, final long maxCommitTime, final int count)
+    {
+        HibernateCallback callback = new HibernateCallback()
+        {
+            public Object doInHibernate(Session session)
+            {
+                Query query = session.getNamedQuery(QUERY_GET_TXNS_UNUSED);
+                query.setReadOnly(true)
+                     .setMaxResults(count)
+                     .setLong("minTxnId", minTxnId)
+                     .setLong("maxCommitTime", maxCommitTime);
+                DirtySessionMethodInterceptor.setQueryFlushMode(session, query);
+                return query.list();
+            }
+        };
+        List<Long> results = (List<Long>) getHibernateTemplate().execute(callback);
+        // done
+        return results;
+    }
+
+    public void purgeTxn(Long txnId)
+    {
+        Transaction txn = (Transaction) getSession().get(TransactionImpl.class, txnId);
+        if (txn != null)
+        {
+            getHibernateTemplate().delete(txn);
+        }
+    }
+
     //============ PROPERTY HELPER METHODS =================//
     
     public static Map<PropertyMapKey, NodePropertyValue> convertToPersistentProperties(

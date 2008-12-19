@@ -24,6 +24,9 @@
  */
 package org.alfresco.repo.node.index;
 
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -785,6 +788,7 @@ public abstract class AbstractReindexComponent implements IndexRecovery
                         id,
                         e.getMessage());
                 loggerOnThread.warn(msg);
+                loggerOnThread.warn(getStackTrace(e));
             }
             catch (Throwable e)
             {
@@ -793,6 +797,7 @@ public abstract class AbstractReindexComponent implements IndexRecovery
                         id,
                         e.getMessage());
                 loggerOnThread.error(msg);
+                loggerOnThread.warn(getStackTrace(e));
             }
             finally
             {
@@ -800,6 +805,18 @@ public abstract class AbstractReindexComponent implements IndexRecovery
                 removeFromQueueAndProdHead();
             }
         }
+        
+        public String getStackTrace(Throwable t)
+        {
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw, true);
+            t.printStackTrace(pw);
+            pw.flush();
+            sw.flush();
+            return sw.toString();
+        }
+
+        
         public synchronized void reindexedNode(NodeRef nodeRef)
         {
             // Check for forced kill

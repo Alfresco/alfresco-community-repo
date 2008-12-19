@@ -176,6 +176,36 @@
       </property>
    </bean>
 
+   <!-- Node cleanup -->
+   <bean id="nodeCleanupRegistry" class="org.alfresco.repo.node.cleanup.NodeCleanupRegistry" />
+   <bean id="nodeCleanupBase" abstract="true" init-method="register">
+      <property name="registry">
+         <ref bean="nodeCleanupRegistry" />
+      </property>
+      <property name="transactionService">
+         <ref bean="transactionService" />
+      </property>
+      <property name="dbNodeService">
+         <ref bean="dbNodeServiceImpl" />
+      </property>
+      <property name="nodeDaoService">
+         <ref bean="nodeDaoService" />
+      </property>
+   </bean>
+   <bean id="nodeCleanup.moveChildrenToCorrectStore"
+         class="org.alfresco.repo.node.db.DbNodeServiceImpl$MoveChildrenToCorrectStore"
+         parent="nodeCleanupBase"/>
+   <bean id="nodeCleanup.indexChildrenWhereRequired"
+         class="org.alfresco.repo.node.db.IndexChildrenWhereRequiredWorker"
+         parent="nodeCleanupBase"/>
+   <bean id="nodeCleanup.deleteNodeCleanup"
+         class="org.alfresco.repo.node.db.DeletedNodeCleanupWorker"
+         parent="nodeCleanupBase">
+      <property name="minPurgeAgeDays">
+         <value>${index.tracking.minRecordPurgeAgeDays}</value>
+      </property>
+   </bean>
+
    <!-- NodeService implemented to persist to Database.  Resource management enabled. -->
    <bean id="dbNodeService" class="org.springframework.aop.framework.ProxyFactoryBean">
       <property name="proxyInterfaces">

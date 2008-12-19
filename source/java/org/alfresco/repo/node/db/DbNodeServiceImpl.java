@@ -42,6 +42,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.Node;
 import org.alfresco.repo.node.AbstractNodeServiceImpl;
 import org.alfresco.repo.node.StoreArchiveMap;
+import org.alfresco.repo.node.cleanup.AbstractNodeCleanupWorker;
 import org.alfresco.repo.node.db.NodeDaoService.NodeRefQueryCallback;
 import org.alfresco.repo.node.index.NodeIndexer;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -185,7 +186,12 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     public List<StoreRef> getStores()
     {
         // Get the ADM stores
-        List<StoreRef> storeRefs = nodeDaoService.getStoreRefs();
+        List<Pair<Long, StoreRef>> stores = nodeDaoService.getStores();
+        List<StoreRef> storeRefs = new ArrayList<StoreRef>(50);
+        for (Pair<Long, StoreRef> pair : stores)
+        {
+            storeRefs.add(pair.getSecond());
+        }
         // Now get the AVMStores.
         List<StoreRef> avmStores = avmNodeService.getStores();
         storeRefs.addAll(avmStores);
@@ -2059,7 +2065,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         }
     }
     
-    private void indexChildren(Pair<Long, NodeRef> nodePair, boolean cascade)
+    public void indexChildren(Pair<Long, NodeRef> nodePair, boolean cascade)
     {
         Long nodeId = nodePair.getFirst();
         // Get the node's children, but only one's that aren't in the same store
@@ -2162,21 +2168,29 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         }
     }
 
-    @Override
-    protected List<String> cleanupImpl()
+    public static class MoveChildrenToCorrectStore extends AbstractNodeCleanupWorker
     {
-        List<String> moveChildrenResults = moveChildrenToCorrectStore();
-        List<String> indexChildrenResults = indexChildrenWhereRequired();
-        
-        List<String> allResults = new ArrayList<String>(100);
-        allResults.addAll(moveChildrenResults);
-        allResults.addAll(indexChildrenResults);
-        
-        // Done
-        return allResults;
-    }
+        @Override
+        protected List<String> doCleanInternal() throws Throwable
+        {
+            return dbNodeService.moveChildrenToCorrectStore();
+        }
+    };
     
     private List<String> moveChildrenToCorrectStore()
+    {
+        List<String> results = new ArrayList<String>(1000);
+        // Repeat the process for each store
+        List<Pair<Long, StoreRef>> storePairs = nodeDaoService.getStores();
+        for (Pair<Long, StoreRef> storePair : storePairs)
+        {
+            List<String> storeResults = moveChildrenToCorrectStore(storePair.getFirst());
+            results.addAll(storeResults);
+        }
+        return results;
+    }
+    
+    private List<String> moveChildrenToCorrectStore(final Long storeId)
     {
         final List<Pair<Long, NodeRef>> parentNodePairs = new ArrayList<Pair<Long, NodeRef>>(100);
         final NodeRefQueryCallback callback = new NodeRefQueryCallback()
@@ -2191,7 +2205,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         {
             public Object execute() throws Throwable
             {
-                nodeDaoService.getNodesWithChildrenInDifferentStores(Long.MIN_VALUE, 100, callback);
+                nodeDaoService.getNodesWithChildrenInDifferentStore(storeId, Long.MIN_VALUE, 100, callback);
                 // Done
                 return null;
             }
@@ -2226,11 +2240,19 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             catch (Throwable e)
             {
                 String msg = 
-                    "Failed to move child nodes to parent node's store: \n" +
+                    "Failed to move child nodes to parent node's store." +
+                    "  Set log level to WARN for this class to get exception log: \n" +
                     "   Parent node: " + parentNodePair.getFirst() + "\n" +
                     "   Error:       " + e.getMessage();
-                // It failed, which is not an error to consider here
-                logger.warn(msg, e);
+                // It failed; do a full log in WARN mode
+                if (logger.isWarnEnabled())
+                {
+                    logger.warn(msg, e);
+                }
+                else
+                {
+                    logger.error(msg);
+                }
                 results.add(msg);
             }
         }
@@ -2247,89 +2269,5 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             logger.debug(sb.toString());
         }
         return results;
-    }
-    
-    private List<String> indexChildrenWhereRequired()
-    {
-        final List<Pair<Long, NodeRef>> parentNodePairs = new ArrayList<Pair<Long, NodeRef>>(100);
-        final NodeRefQueryCallback callback = new NodeRefQueryCallback()
-        {
-            public boolean handle(Pair<Long, NodeRef> nodePair)
-            {
-                parentNodePairs.add(nodePair);
-                return true;
-            }
-        };
-        RetryingTransactionCallback<Object> getNodesCallback = new RetryingTransactionCallback<Object>()
-        {
-            public Object execute() throws Throwable
-            {
-                nodeDaoService.getNodesWithAspect(ContentModel.ASPECT_INDEX_CHILDREN, Long.MIN_VALUE, 100, callback);
-                // Done
-                return null;
-            }
-        };
-        transactionService.getRetryingTransactionHelper().doInTransaction(getNodesCallback, true, true);
-        // Process the nodes in random order
-        Collections.shuffle(parentNodePairs);
-        // Iterate and operate
-        List<String> results = new ArrayList<String>(100);
-        for (final Pair<Long, NodeRef> parentNodePair : parentNodePairs)
-        {
-            RetryingTransactionCallback<String> indexChildrenCallback = new RetryingTransactionCallback<String>()
-            {
-                public String execute() throws Throwable
-                {
-                    // Index children without full cascade
-                    indexChildren(parentNodePair, true);
-                    // Done
-                    return null;
-                }
-            };
-            RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
-            txnHelper.setMaxRetries(1);
-            try
-            {
-                txnHelper.doInTransaction(indexChildrenCallback, false, true);
-                String msg = 
-                    "Indexed child nodes: \n" +
-                    "   Parent node: " + parentNodePair.getFirst();
-                results.add(msg);
-            }
-            catch (Throwable e)
-            {
-                String msg = 
-                    "Failed to index child nodes: \n" +
-                    "   Parent node: " + parentNodePair.getFirst() + "\n" +
-                    "   Error:       " + e.getMessage();
-                // It failed, which is not an error to consider here
-                logger.warn(msg, e);
-                results.add(msg);
-            }
-        }
-        // Done
-        if (logger.isDebugEnabled())
-        {
-            StringBuilder sb = new StringBuilder(256);
-            sb.append("Indexed child nodes: \n")
-              .append("  Results:\n");
-            for (String msg : results)
-            {
-                sb.append("  ").append(msg).append("\n");
-            }
-            logger.debug(sb.toString());
-        }
-        return results;
-    }
-
-    /**
-     * Cleans up transactions and deleted nodes that are older than the given minimum age.
-     * 
-     * @param minAge        the minimum age of a transaction or deleted node
-     * @return              Returns log message results
-     */
-    private List<String> cleanUpTransactions(long minAge)
-    {
-        return null;
     }
 }

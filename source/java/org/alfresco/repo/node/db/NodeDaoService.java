@@ -69,7 +69,7 @@ public interface NodeDaoService
      * @return Returns a list of stores
      */
     @DirtySessionAnnotation(markDirty=false)
-    public List<StoreRef> getStoreRefs();
+    public List<Pair<Long, StoreRef>> getStores();
     
     @DirtySessionAnnotation(markDirty=false)
     public Pair<Long, NodeRef> getRootNode(StoreRef storeRef);
@@ -164,10 +164,18 @@ public interface NodeDaoService
     public boolean hasNodeAspect(Long nodeId, QName aspectQName);
     
     /**
-     * Deletes the node and all entities
+     * Deletes the node and all entities.  Note that the node entry will still exist and be
+     * associated with a live transaction.
      */
     @DirtySessionAnnotation(markDirty=true)
     public void deleteNode(Long nodeId);
+    
+    /**
+     * Remove all traces of the node.  This assumes that the node has been marked
+     * for deletion using {@link #deleteNode(Long)}.
+     */
+    @DirtySessionAnnotation(markDirty=true)
+    public void purgeNode(Long nodeId);
     
     /**
      * @param name              the <b>cm:name</b> to apply to the association
@@ -286,8 +294,21 @@ public interface NodeDaoService
         boolean handle(Pair<Long, NodeRef> nodePair);
     }
     
+    /**
+     * Gets a set of nodes that have parents in the given store, but are themselves located in a different
+     * store.
+     * 
+     * @param storeId               the store of the parent nodes
+     * @param minNodeId             the min node ID to return
+     * @param count                 the maximum number of results
+     * @param resultsCallback       the node callback
+     */
     @DirtySessionAnnotation(markDirty=false)
-    public void getNodesWithChildrenInDifferentStores(Long minNodeId, int count, NodeRefQueryCallback resultsCallback);
+    public void getNodesWithChildrenInDifferentStore(
+            Long storeId,
+            Long minNodeId,
+            int count,
+            NodeRefQueryCallback resultsCallback);
     
     @DirtySessionAnnotation(markDirty=false)
     public void getNodesWithAspect(QName aspectQName, Long minNodeId, int count, NodeRefQueryCallback resultsCallback);
@@ -455,6 +476,17 @@ public interface NodeDaoService
     public void getPropertyValuesByActualType(DataTypeDefinition actualDataTypeDefinition, NodePropertyHandler handler);
     
     /**
+     * Gets a batch of deleted nodes in old transactions.
+     * 
+     * @param minNodeId                     the minimum node ID
+     * @param maxCommitTime                 the maximum commit time (to set a minimum transaction age)
+     * @param count                         the maximum number of results (for batching)
+     * @param resultsCallback               the callback to pass results back
+     */
+    @DirtySessionAnnotation(markDirty=false)
+    public void getNodesDeletedInOldTxns(Long minNodeId, long maxCommitTime, int count, NodeRefQueryCallback resultsCallback);
+    
+    /**
      * Iterface to handle callbacks when iterating over properties
      * 
      * @author Derek Hulley
@@ -465,6 +497,20 @@ public interface NodeDaoService
         void handle(NodeRef nodeRef, QName nodeTypeQName, QName propertyQName, Serializable value);
     }
     
+    /**
+     * Retrieves the maximum transaction ID for which the commit time is less than the given time.
+     * 
+     * @param maxCommitTime         the max commit time (ms)
+     * @return                      the last transaction <i>on or before</i> the given time
+     */
+    @DirtySessionAnnotation(markDirty=true)
+    public Long getMaxTxnIdByCommitTime(final long maxCommitTime);
+    /**
+     * Retrieves a specific transaction.
+     * 
+     * @param txnId                 the unique transaction ID.
+     * @return                      the requested transaction or <tt>null</tt>
+     */
     @DirtySessionAnnotation(markDirty=true)
     public Transaction getTxnById(long txnId);
     /**
@@ -518,4 +564,10 @@ public interface NodeDaoService
     
     @DirtySessionAnnotation(markDirty=false)
     public List<NodeRef> getTxnChanges(final long txnId);
+    
+    @DirtySessionAnnotation(markDirty=false)
+    public List<Long> getTxnsUnused(Long minTxnId, long maxCommitTime, int count);
+    
+    @DirtySessionAnnotation(markDirty=true)
+    public void purgeTxn(Long txnId);
 }

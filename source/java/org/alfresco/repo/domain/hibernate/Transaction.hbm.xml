@@ -88,6 +88,17 @@
          org.alfresco.repo.domain.hibernate.TransactionImpl as txn
    </query>
 
+   <query name="txn.GetMaxIdByCommitTime">
+      <![CDATA[
+      select
+         max(txn.id)
+      from
+         org.alfresco.repo.domain.hibernate.TransactionImpl as txn
+      where
+         txn.commitTimeMs <= :maxCommitTime
+      ]]>
+   </query>
+
    <query name="txn.GetTxnsByCommitTimeAsc">
       <![CDATA[
       select
@@ -183,6 +194,22 @@
          org.alfresco.repo.domain.hibernate.NodeImpl as node
       where
          node.transaction.id = :txnId
+   </query>
+
+   <query name="txn.GetTxnsUnused">
+      <![CDATA[
+      select
+         txn.id
+      from
+         org.alfresco.repo.domain.hibernate.NodeImpl as node
+         right join node.transaction as txn
+      where
+         node.id is null and
+         txn.id >= :minTxnId and
+         txn.commitTimeMs <= :maxCommitTime
+      order by
+         txn.id asc
+      ]]>
    </query>
 
 </hibernate-mapping>

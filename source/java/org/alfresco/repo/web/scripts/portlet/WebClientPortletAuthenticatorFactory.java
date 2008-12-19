@@ -137,7 +137,7 @@ public class WebClientPortletAuthenticatorFactory implements PortletAuthenticato
                     logger.debug("Authenticating as Guest");
                 
                 // authenticate as guest
-                AuthenticationUtil.setCurrentUser(AuthenticationUtil.getGuestUserName());
+                AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getGuestUserName());
     
                 if (logger.isDebugEnabled())
                     logger.debug("Setting Web Client authentication context for guest");
@@ -150,7 +150,7 @@ public class WebClientPortletAuthenticatorFactory implements PortletAuthenticato
                 if (logger.isDebugEnabled())
                     logger.debug("Authenticating as user " + portalUser);
                 
-                AuthenticationUtil.setCurrentUser(portalUser);
+                AuthenticationUtil.setFullyAuthenticatedUser(portalUser);
     
                 // determine if Web Client context needs to be updated
                 User user = getWebClientUser(session);

@@ -74,7 +74,7 @@ public class MTWebScriptAuthenticationFilter implements Filter
    {
        if (AuthenticationUtil.isMtEnabled())
        {
-           String currentUser = AuthenticationUtil.getCurrentUserName();
+           String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
            if (currentUser == null)
            {
                // retrieve authenticator factory  

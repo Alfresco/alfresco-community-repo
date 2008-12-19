@@ -50,7 +50,6 @@ import org.springframework.context.ApplicationEvent;
  */
 public class DescriptorServiceImpl extends AbstractLifecycleBean implements DescriptorService, InitializingBean
 {
-
     /** The server descriptor DAO. */
     private DescriptorDAO serverDescriptorDAO;
 
@@ -64,8 +63,12 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean implements Desc
     private TransactionService transactionService;
 
     /** The license service. */
-    private LicenseService licenseService = null;
+    private LicenseService licenseService;
 
+    /** The heart beat service. */
+    @SuppressWarnings("unused")
+    private Object heartBeat;
+    
     /** The server descriptor. */
     private Descriptor serverDescriptor;
 
@@ -166,13 +169,38 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean implements Desc
         // note: this requires that the repository schema has already been initialised
         final RetryingTransactionCallback<Descriptor> createDescriptorWork = new RetryingTransactionCallback<Descriptor>()
         {
-            public Descriptor execute()
+            public Descriptor execute() throws ClassNotFoundException
             {
+                boolean initialiseHeartBeat = false;
+                
                 // initialise license service (if installed)
-                initialiseLicenseService();
+                try
+                {
+                    DescriptorServiceImpl.this.licenseService = (LicenseService) constructSpecialService("org.alfresco.license.LicenseComponent");
+                }
+                catch (ClassNotFoundException e)
+                {
+                    DescriptorServiceImpl.this.licenseService = new NOOPLicenseService();
+                    initialiseHeartBeat = true;
+                }
 
                 // verify license, but only if license component is installed
-                licenseService.verifyLicense();
+                try
+                {
+                    licenseService.verifyLicense();
+                    LicenseDescriptor l = licenseService.getLicense();
+                    // Initialise the heartbeat unless it is disabled by the license
+                    if (initialiseHeartBeat || l == null || !l.isHeartBeatDisabled())
+                    {
+                        DescriptorServiceImpl.this.heartBeat = constructSpecialService("org.alfresco.heartbeat.HeartBeat");
+                    }
+                }
+                catch (LicenseException e)
+                {
+                    // Initialise heart beat anyway
+                    DescriptorServiceImpl.this.heartBeat = constructSpecialService("org.alfresco.heartbeat.HeartBeat");
+                    throw e;
+                }
 
                 // persist the server descriptor values
                 currentRepoDescriptor = DescriptorServiceImpl.this.currentRepoDescriptorDAO
@@ -221,51 +249,40 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean implements Desc
     }
 
     /**
-     * Initialise License Service.
+     * Constructs a special service whose dependencies cannot or should not be injected declaratively. Examples include
+     * the license component and heartbeat service that are intentionally left unconfigurable.
+     * 
+     * @param className
+     *            the class name
+     * @return the object
+     * @throws ClassNotFoundException
+     *             the class not found exception
      */
-    private void initialiseLicenseService()
+    private Object constructSpecialService(String className) throws ClassNotFoundException
     {
         try
         {
-            // NOTE: We could tie in the License Component via Spring configuration, but then it could
-            // be declaratively taken out in an installed environment.
-            Class<?> licenseComponentClass = Class.forName("org.alfresco.license.LicenseComponent");
-            Constructor<?> constructor = licenseComponentClass.getConstructor(new Class[]
+            Class<?> componentClass = Class.forName(className);
+            Constructor<?> constructor = componentClass.getConstructor(new Class[]
             {
                 ApplicationContext.class
             });
-            licenseService = (LicenseService) constructor.newInstance(new Object[]
+            return constructor.newInstance(new Object[]
             {
                 getApplicationContext()
             });
         }
         catch (ClassNotFoundException e)
         {
-            licenseService = new NOOPLicenseService();
+            throw e;
         }
-        catch (SecurityException e)
+        catch (RuntimeException e)
         {
-            throw new AlfrescoRuntimeException("Failed to initialise license service", e);
+            throw e;
         }
-        catch (IllegalArgumentException e)
+        catch (Exception e)
         {
-            throw new AlfrescoRuntimeException("Failed to initialise license service", e);
-        }
-        catch (NoSuchMethodException e)
-        {
-            throw new AlfrescoRuntimeException("Failed to initialise license service", e);
-        }
-        catch (InvocationTargetException e)
-        {
-            throw new AlfrescoRuntimeException("Failed to initialise license service", e);
-        }
-        catch (InstantiationException e)
-        {
-            throw new AlfrescoRuntimeException("Failed to initialise license service", e);
-        }
-        catch (IllegalAccessException e)
-        {
-            throw new AlfrescoRuntimeException("Failed to initialise license service", e);
+            throw new AlfrescoRuntimeException("Failed to initialise " + className, e);
         }
     }
 

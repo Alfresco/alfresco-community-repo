@@ -27,7 +27,6 @@ package org.alfresco.service.license;
 import java.security.Principal;
 import java.util.Date;
 
-
 /**
  * Provides access to License information.
  * 
@@ -39,50 +38,56 @@ public interface LicenseDescriptor
     /**
      * Gets the date license was issued
      * 
-     * @return  issue date
+     * @return issue date
      */
     public Date getIssued();
-    
+
     /**
      * Gets the date license is valid till
      * 
-     * @return  valid until date (or null, if no time limit)
+     * @return valid until date (or null, if no time limit)
      */
     public Date getValidUntil();
 
     /**
      * Gets the length (in days) of license validity
-     *  
-     * @return  length in days of license validity (or null, if no time limit)
+     * 
+     * @return length in days of license validity (or null, if no time limit)
      */
     public Integer getDays();
-    
+
     /**
      * Ges the number of remaining days left on license
      * 
-     * @return  remaining days (or null, if no time limit)
+     * @return remaining days (or null, if no time limit)
      */
     public Integer getRemainingDays();
 
     /**
      * Gets the subject of the license
      * 
-     * @return  the subject
+     * @return the subject
      */
     public String getSubject();
-    
+
     /**
      * Gets the holder of the license
      * 
-     * @return  the holder
+     * @return the holder
      */
     public Principal getHolder();
-    
+
     /**
      * Gets the issuer of the license
      * 
-     * @return  the issuer
+     * @return the issuer
      */
     public Principal getIssuer();
-    
+
+    /**
+     * Does this license allow the heartbeat to be disabled?
+     * 
+     * @return <code>true</code> if this license allow the heartbeat to be disabled
+     */
+    public boolean isHeartBeatDisabled();
 }

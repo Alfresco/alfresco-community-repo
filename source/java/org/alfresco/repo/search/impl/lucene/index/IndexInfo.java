@@ -398,7 +398,7 @@ public class IndexInfo implements IndexMonitor
             try
             {
                 String indexRoot = new File(config.getIndexRootLocation()).getCanonicalPath();
-                this.relativePath = this.indexDirectory.getCanonicalPath().substring(indexRoot.length() + 1);
+                this.relativePath = indexDirectory.getCanonicalPath().substring(indexRoot.length() + 1);
             }
             catch (IOException e)
             {
@@ -417,7 +417,7 @@ public class IndexInfo implements IndexMonitor
             // Create a 'fake' relative path
             try
             {
-                this.relativePath = this.indexDirectory.getCanonicalPath();
+                this.relativePath = indexDirectory.getCanonicalPath();
                 int sepIndex = this.relativePath.indexOf(File.separator);
                 if (sepIndex != -1)
                 {
@@ -3844,6 +3844,10 @@ public class IndexInfo implements IndexMonitor
     
     private void publishDiscoveryEvent()
     {
+        if (this.config == null)
+        {
+            return;
+        }
         final IndexEvent discoveryEvent = new IndexEvent(this, "Discovery", 1);
         final ConfigurableApplicationContext applicationContext = this.config.getApplicationContext();
         try

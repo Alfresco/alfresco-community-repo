@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.activities.ActivityService;
 import org.alfresco.service.cmr.security.AuthorityService;
@@ -95,10 +94,10 @@ public class UserFeedRetrieverWebScript extends DeclarativeWebScript
         
         if ((feedUserId == null) || (feedUserId.length() == 0))
         {
-           feedUserId = AuthenticationUtil.getCurrentUserName();
+           feedUserId = AuthenticationUtil.getFullyAuthenticatedUser();
         }
         
-        String currentUser = AuthenticationUtil.getCurrentUserName();
+        String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
         if (! ((currentUser == null) || 
                (currentUser.equals(AuthenticationUtil.getSystemUserName())) ||
                (authorityService.isAdminAuthority(currentUser)) ||

@@ -82,7 +82,7 @@ public class CancelInviteAction extends JBPMSpringActionHandler
         
         // throw http status 'forbidden' Web Script Exception if current user is not a Site Manager of the site
         // associated with the invite (identified by inviteID)
-        String currentUserName = AuthenticationUtil.getCurrentUserName();
+        String currentUserName = AuthenticationUtil.getFullyAuthenticatedUser();
         String currentUserSiteRole = this.siteService.getMembersRole(siteShortName, currentUserName);
         if ((currentUserSiteRole == null) || (currentUserSiteRole.equals(SiteModel.SITE_MANAGER) == false))
         {

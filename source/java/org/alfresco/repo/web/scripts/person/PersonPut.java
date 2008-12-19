@@ -93,7 +93,7 @@ public class PersonPut extends DeclarativeWebScript
             catch (AccessDeniedException err)
             {
                 // catch security exception if the user does not have permissions
-                String currentUserName = AuthenticationUtil.getCurrentUserName();
+                String currentUserName = AuthenticationUtil.getFullyAuthenticatedUser();
                 String personUserName = (String)nodeService.getProperty(person, ContentModel.PROP_USERNAME);
                 throw new WebScriptException(Status.STATUS_INTERNAL_SERVER_ERROR, "Current user: "
                         + currentUserName + " does not have the appropriate permissons to update "

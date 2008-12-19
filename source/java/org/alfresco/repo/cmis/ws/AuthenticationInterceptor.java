@@ -52,7 +52,7 @@ public class AuthenticationInterceptor extends AbstractSoapInterceptor
         WSUsernameTokenPrincipal principal = (WSUsernameTokenPrincipal) secRes.get(WSSecurityEngineResult.TAG_PRINCIPAL);
 
         // Authenticate
-        AuthenticationUtil.setCurrentUser(principal.getName());
+        AuthenticationUtil.setFullyAuthenticatedUser(principal.getName());
     }
 
 }

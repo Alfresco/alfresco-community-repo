@@ -46,6 +46,8 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.SessionUser;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationException;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -289,16 +291,17 @@ public abstract class BaseSSOAuthenticationFilter implements Filter
             
             // Setup User object and Home space ID etc.
             
-            NodeRef personNodeRef = m_personService.getPerson(userName);
+            final NodeRef personNodeRef = m_personService.getPerson(userName);
             
             // Use the system user context to do the user lookup
-            
-            m_authComponent.setCurrentUser(m_authComponent.getSystemUserName());
-            
-            // User name should match the uid in the person entry found
-            
-            m_authComponent.setSystemUserAsCurrentUser();
-            userName = (String) m_nodeService.getProperty(personNodeRef, ContentModel.PROP_USERNAME);
+            RunAsWork<String> getUserNameRunAsWork = new RunAsWork<String>()
+            {
+                public String doWork() throws Exception
+                {
+                    return (String) m_nodeService.getProperty(personNodeRef, ContentModel.PROP_USERNAME);
+                }
+            };
+            userName = AuthenticationUtil.runAs(getUserNameRunAsWork, AuthenticationUtil.SYSTEM_USER_NAME);
             
             m_authComponent.setCurrentUser(userName);
             String currentTicket = m_authService.getCurrentTicket();

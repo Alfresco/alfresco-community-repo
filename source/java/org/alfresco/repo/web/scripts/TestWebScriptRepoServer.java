@@ -74,7 +74,7 @@ public class TestWebScriptRepoServer extends TestWebScriptServer
         try
         {
             TestWebScriptServer testServer = getTestServer();
-            AuthenticationUtil.setSystemUserAsCurrentUser();
+            AuthenticationUtil.setRunAsUserSystem();
             testServer.rep();
         }
         catch(Throwable e)

@@ -142,7 +142,7 @@ public class FacebookAuthenticatorFactory implements ServletAuthenticatorFactory
         		logger.debug("Facebook session established; authenticating as user " + user);
     
         	// session has been established, authenticate as Facebook user id
-            AuthenticationUtil.setCurrentUser(user);
+            AuthenticationUtil.setFullyAuthenticatedUser(user);
         	return true;
         }
     }

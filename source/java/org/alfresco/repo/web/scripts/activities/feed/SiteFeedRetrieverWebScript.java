@@ -103,7 +103,7 @@ public class SiteFeedRetrieverWebScript extends DeclarativeWebScript
         SiteInfo siteInfo = siteService.getSite(siteId);
         if (siteInfo == null)
         {   
-            String currentUser = AuthenticationUtil.getCurrentUserName();
+            String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
             status.setCode(Status.STATUS_UNAUTHORIZED);
             logger.warn("Unable to get site feed entries for '" + siteId + "' (site does not exist or is private) - currently logged in as '" + currentUser +"'");
             

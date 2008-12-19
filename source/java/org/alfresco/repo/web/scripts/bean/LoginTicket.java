@@ -79,7 +79,7 @@ public class LoginTicket extends DeclarativeWebScript
             String ticketUser = ticketComponent.validateTicket(ticket);
 
             // do not go any further if tickets are different
-            if (!AuthenticationUtil.getCurrentUserName().equals(ticketUser))
+            if (!AuthenticationUtil.getFullyAuthenticatedUser().equals(ticketUser))
             {
                 status.setRedirect(true);
                 status.setCode(HttpServletResponse.SC_NOT_FOUND);

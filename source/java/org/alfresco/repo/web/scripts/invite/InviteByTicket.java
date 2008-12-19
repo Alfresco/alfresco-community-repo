@@ -91,7 +91,7 @@ public class InviteByTicket extends DeclarativeWebScript
         String inviteTicket = req.getServiceMatch().getTemplateVars().get("inviteTicket");
         
         // authenticate as system for the rest of the webscript
-        AuthenticationUtil.setSystemUserAsCurrentUser();
+        AuthenticationUtil.setRunAsUserSystem();
         
         // find the workflow for the given id
         WorkflowTask workflowTask = InviteHelper.findInviteStartTask(inviteId, workflowService);

@@ -183,7 +183,7 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
     private void addRepoParameters(Map<String, Object> params)
     {
         if (AlfrescoTransactionSupport.getTransactionId() != null &&
-            AuthenticationUtil.getCurrentAuthentication() != null)
+            AuthenticationUtil.getFullAuthentication() != null)
         {
             NodeRef rootHome = repository.getRootHome();
             if (rootHome != null)
@@ -239,10 +239,11 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
 
             try
             {
+                AuthenticationUtil.pushAuthentication();
                 //
                 // Determine if user already authenticated
                 //
-                currentUser = AuthenticationUtil.getCurrentUserName();
+                currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
                 if (logger.isDebugEnabled())
                 {
                     logger.debug("Current authentication: " + (currentUser == null ? "unauthenticated" : "authenticated as " + currentUser));
@@ -255,7 +256,7 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
                 //
                 if (auth == null || auth.authenticate(required, isGuest))
                 {
-                    if (required == RequiredAuthentication.admin && !(authorityService.hasAdminAuthority() || AuthenticationUtil.getCurrentUserName().equals(AuthenticationUtil.getSystemUserName())))
+                    if (required == RequiredAuthentication.admin && !(authorityService.hasAdminAuthority() || AuthenticationUtil.getFullyAuthenticatedUser().equals(AuthenticationUtil.getSystemUserName())))
                     {
                         throw new WebScriptException(HttpServletResponse.SC_UNAUTHORIZED, "Web Script " + desc.getId() + " requires admin authentication; however, a non-admin has attempted access.");
                     }
@@ -269,14 +270,13 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
                 //
                 // Reset authentication for current thread
                 //
-                AuthenticationUtil.clearCurrentSecurityContext();
-                if (currentUser != null)
-                {
-                    AuthenticationUtil.setCurrentUser(currentUser);
-                }
+                AuthenticationUtil.popAuthentication();
                 
                 if (logger.isDebugEnabled())
-                    logger.debug("Authentication reset: " + (currentUser == null ? "unauthenticated" : "authenticated as " + currentUser));                
+                {
+                    String user = AuthenticationUtil.getFullyAuthenticatedUser();
+                    logger.debug("Authentication reset: " + (user == null ? "unauthenticated" : "authenticated as " + user));                
+                }
             }
         }
     }

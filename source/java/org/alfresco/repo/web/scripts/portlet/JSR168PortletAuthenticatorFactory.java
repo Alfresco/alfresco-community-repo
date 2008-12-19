@@ -127,7 +127,7 @@ public class JSR168PortletAuthenticatorFactory implements PortletAuthenticatorFa
                     logger.debug("Authenticating as Guest");
                 
                 // authenticate as guest
-                AuthenticationUtil.setCurrentUser(AuthenticationUtil.getGuestUserName());
+                AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getGuestUserName());
             }
             else
             {
@@ -144,7 +144,7 @@ public class JSR168PortletAuthenticatorFactory implements PortletAuthenticatorFa
                 	{
                 		throw new WebScriptException(HttpServletResponse.SC_FORBIDDEN, "User " + portalUser + " is not a known Alfresco user");
                 	}
-                	AuthenticationUtil.setCurrentUser(portalUser);
+                	AuthenticationUtil.setFullyAuthenticatedUser(portalUser);
                 }
                 catch (Throwable err)
                 {

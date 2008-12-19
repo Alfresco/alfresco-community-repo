@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -112,6 +112,12 @@ public class InviteServiceTest extends BaseWebScriptTest
     protected void setUp() throws Exception
     {
         super.setUp();
+        
+        /**
+         * We don't want to be authenticated as 'system' but run as 'InviterUser', because then
+         * 'system' will be the creator for the sites and 'inviterUser' will be a nobody.
+         */
+        AuthenticationUtil.clearCurrentSecurityContext();
 
         // get references to services
         this.authorityService = (AuthorityService) getServer().getApplicationContext().getBean("AuthorityService");
@@ -140,7 +146,7 @@ public class InviteServiceTest extends BaseWebScriptTest
         
         // Create new invitee email address list
         this.inviteeEmailAddrs = new ArrayList<String>();
-
+        
         //
         // various setup operations which need to be run as system user
         //
@@ -158,6 +164,16 @@ public class InviteServiceTest extends BaseWebScriptTest
             }
         }, AuthenticationUtil.getSystemUserName());
         
+        // The creation of sites is heavily dependent on the authenticated user.  We must ensure that,
+        // when doing the runAs below, the user both 'runAs' and 'fullyAuthenticated'.  In order for
+        // this to be the case, the security context MUST BE EMPTY now.  We could do the old
+        // "defensive clear", but really there should not be any lurking authentications on this thread
+        // after the context starts up.  If there are, that is a bug, and we fail explicitly here.
+        String residuallyAuthenticatedUser = AuthenticationUtil.getFullyAuthenticatedUser();
+        assertNull(
+                "Residual authentication on context-initiating thread (this thread):" + residuallyAuthenticatedUser,
+                residuallyAuthenticatedUser);
+
         //
         // various setup operations which need to be run as inviter user
         //
@@ -704,7 +720,7 @@ public class InviteServiceTest extends BaseWebScriptTest
     public void testStartInviteForbiddenWhenInviterNotSiteManager() throws Exception
     {
         // inviter2 starts invite workflow, but he/she is not the site manager of the given site
-        AuthenticationUtil.setCurrentUser(USER_INVITER_2);
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_INVITER_2);
         startInvite(INVITEE_FIRSTNAME,
                 INVITEE_LASTNAME, INVITEE_SITE_ROLE, SITE_SHORT_NAME_INVITE_3, Status.STATUS_FORBIDDEN);
     }
@@ -720,7 +736,7 @@ public class InviteServiceTest extends BaseWebScriptTest
         
         // when inviter 2 (who is not Site Manager of the given site) tries to cancel invite
         // http status FORBIDDEN must be returned
-        AuthenticationUtil.setCurrentUser(USER_INVITER_2);
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_INVITER_2);
         cancelInvite(inviteId, Status.STATUS_FORBIDDEN);
     }
     

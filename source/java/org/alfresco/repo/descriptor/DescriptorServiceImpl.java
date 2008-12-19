@@ -172,13 +172,10 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean implements Desc
             public Descriptor execute() throws ClassNotFoundException
             {
                 boolean initialiseHeartBeat = false;
-                
+
                 // initialise license service (if installed)
-                try
-                {
-                    DescriptorServiceImpl.this.licenseService = (LicenseService) constructSpecialService("org.alfresco.license.LicenseComponent");
-                }
-                catch (ClassNotFoundException e)
+                DescriptorServiceImpl.this.licenseService = (LicenseService) constructSpecialService("org.alfresco.enterprise.license.LicenseComponent");
+                if (DescriptorServiceImpl.this.licenseService == null)
                 {
                     DescriptorServiceImpl.this.licenseService = new NOOPLicenseService();
                     initialiseHeartBeat = true;
@@ -192,13 +189,13 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean implements Desc
                     // Initialise the heartbeat unless it is disabled by the license
                     if (initialiseHeartBeat || l == null || !l.isHeartBeatDisabled())
                     {
-                        DescriptorServiceImpl.this.heartBeat = constructSpecialService("org.alfresco.heartbeat.HeartBeat");
+                        DescriptorServiceImpl.this.heartBeat = constructSpecialService("org.alfresco.enterprise.heartbeat.HeartBeat");
                     }
                 }
                 catch (LicenseException e)
                 {
                     // Initialise heart beat anyway
-                    DescriptorServiceImpl.this.heartBeat = constructSpecialService("org.alfresco.heartbeat.HeartBeat");
+                    DescriptorServiceImpl.this.heartBeat = constructSpecialService("org.alfresco.enterprise.heartbeat.HeartBeat");
                     throw e;
                 }
 
@@ -255,10 +252,8 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean implements Desc
      * @param className
      *            the class name
      * @return the object
-     * @throws ClassNotFoundException
-     *             the class not found exception
      */
-    private Object constructSpecialService(String className) throws ClassNotFoundException
+    private Object constructSpecialService(String className)
     {
         try
         {
@@ -274,7 +269,7 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean implements Desc
         }
         catch (ClassNotFoundException e)
         {
-            throw e;
+            return null;
         }
         catch (RuntimeException e)
         {

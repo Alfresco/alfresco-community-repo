@@ -24,7 +24,7 @@
 						}
 						<#if prop_has_next>,</#if>
 					</#list>	
-				}
+				},
 			</#if>
 			"siteManagers" : 
 			[			

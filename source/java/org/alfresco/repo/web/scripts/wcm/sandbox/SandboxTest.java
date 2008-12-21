@@ -40,7 +40,6 @@ import org.alfresco.web.scripts.Status;
 import org.alfresco.web.scripts.TestWebScriptServer.DeleteRequest;
 import org.alfresco.web.scripts.TestWebScriptServer.GetRequest;
 import org.alfresco.web.scripts.TestWebScriptServer.PostRequest;
-import org.alfresco.web.scripts.TestWebScriptServer.PutRequest;
 import org.alfresco.web.scripts.TestWebScriptServer.Response;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -84,6 +83,8 @@ public class SandboxTest  extends BaseWebScriptTest {
         this.authenticationService = (AuthenticationService)getServer().getApplicationContext().getBean("AuthenticationService");
         this.authenticationComponent = (AuthenticationComponent)getServer().getApplicationContext().getBean("authenticationComponent");
         this.personService = (PersonService)getServer().getApplicationContext().getBean("PersonService");
+        
+        this.authenticationComponent.setSystemUserAsCurrentUser();
         
         // Create users
         createUser(USER_ONE);

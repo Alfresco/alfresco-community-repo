@@ -80,6 +80,8 @@ public class WebProjectTest extends BaseWebScriptTest
         this.authenticationComponent = (AuthenticationComponent)getServer().getApplicationContext().getBean("authenticationComponent");
         this.personService = (PersonService)getServer().getApplicationContext().getBean("PersonService");
         
+        this.authenticationComponent.setSystemUserAsCurrentUser();
+        
         // Create users
         createUser(USER_ONE);
         createUser(USER_TWO);

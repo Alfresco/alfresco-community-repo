@@ -35,13 +35,11 @@ import org.alfresco.repo.web.scripts.BaseWebScriptTest;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
-import org.alfresco.util.ISO8601DateFormat;
 import org.alfresco.util.PropertyMap;
 import org.alfresco.web.scripts.Status;
 import org.alfresco.web.scripts.TestWebScriptServer.DeleteRequest;
 import org.alfresco.web.scripts.TestWebScriptServer.GetRequest;
 import org.alfresco.web.scripts.TestWebScriptServer.PostRequest;
-import org.alfresco.web.scripts.TestWebScriptServer.PutRequest;
 import org.alfresco.web.scripts.TestWebScriptServer.Response;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -99,6 +97,8 @@ public class AssetTest  extends BaseWebScriptTest {
         // TODO - Replace the use of these two services as and when the REST API is available
         this.avmNonLockingAwareService = (AVMService)getServer().getApplicationContext().getBean("AVMService");
         this.avmLockingAwareService = (AVMService)getServer().getApplicationContext().getBean("AVMLockingAwareService");
+        
+        this.authenticationComponent.setSystemUserAsCurrentUser();
         
         // Create users
         createUser(USER_ONE);

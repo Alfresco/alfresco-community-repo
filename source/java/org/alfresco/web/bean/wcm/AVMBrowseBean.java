@@ -1341,6 +1341,22 @@ public class AVMBrowseBean implements IContextListener
       return AVMUtil.isMainStore(this.sandbox);
    }
    
+   /**
+    *  Indicates whether link validation is available (virtualization server is accessible).
+    *  It can be used in the 'rendered' attribute in some tags. 
+    *  @see org.alfresco.linkvalidation.LinkValidationServiceImpl#isLinkValidationDisabled()
+    *  
+    *  @return TRUE if link validation is ENABLED (virtualization server IS ACCESSIBLE)
+    */
+   public boolean getLinkValidationEnabled()
+   {
+       boolean enabled = !linkValidationService.isLinkValidationDisabled();
+       if (logger.isDebugEnabled())
+       {
+           logger.debug("Link validation enabled:" + String.valueOf(enabled).toUpperCase());
+       }
+       return enabled;
+   }
    
    // ------------------------------------------------------------------------------
    // Action event handlers

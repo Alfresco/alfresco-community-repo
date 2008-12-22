@@ -90,7 +90,7 @@
 </h:panelGrid>
 
 <h:panelGrid columns="2" cellspacing="0" cellpadding="2" style="margin-left: 20px; margin-top: 6px;"
-             rendered="#{DialogManager.bean.workflowListSize != 0}">
+             rendered="#{DialogManager.bean.workflowListSize != 0 && DialogManager.bean.linkValidationEnabled == true}">
    <h:selectBooleanCheckbox id="links-chkbox" value="#{DialogManager.bean.validateLinks}" />
    <h:outputText value="#{msg.check_links}&nbsp;(#{msg.check_links_info})" escape="false" />
 </h:panelGrid>

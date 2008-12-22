@@ -63,7 +63,14 @@ function handleErrorYahoo(e)
  */
 function setContextPath(contextPath)
 {
-   _alfContextPath = contextPath;
+   if (window.location.pathname.indexOf(contextPath) == 0 ) 
+   { 
+      _alfContextPath = contextPath; 
+   } 
+   else 
+   { 
+      _alfContextPath = ""; 
+   } 
 }
 
 /**

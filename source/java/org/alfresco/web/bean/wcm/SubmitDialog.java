@@ -102,7 +102,7 @@ public class SubmitDialog extends BaseDialogBean
    private String[] workflowSelectedValue;
    private boolean enteringExpireDate = false;
    private boolean loadSelectedNodesFromBrowseBean = false;
-   private boolean validateLinks = true;
+   private boolean validateLinks = false;
    private boolean autoDeploy = false;
    private Date defaultExpireDate;
    private Date launchDate;
@@ -289,7 +289,7 @@ public class SubmitDialog extends BaseDialogBean
       this.defaultExpireDate = new Date();
       this.workflowSelectedValue = null;
       this.launchDate = null;
-      this.validateLinks = true;
+      this.validateLinks = this.avmBrowseBean.getLinkValidationEnabled();
       this.autoDeploy = false;
       this.workflowParams = null;
       this.sandboxInfo = null;
@@ -826,6 +826,17 @@ public class SubmitDialog extends BaseDialogBean
       this.autoDeploy = autoDeploy;
    }
 
+   /**
+    * 
+    * @return linkValidationEnabled flag to indicate whether link validation is turned on
+    *         and virtualization server is available.
+    *  
+    */
+   public boolean getLinkValidationEnabled()
+   {
+       return this.avmBrowseBean.getLinkValidationEnabled();
+   }
+   
    /**
     * @return List of UIListItem object representing the available workflows for the website
     */

@@ -38,6 +38,7 @@ import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.importer.view.NodeContext;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ChildAssociationDefinition;
@@ -966,6 +967,27 @@ public class ImporterComponent
             
             return boundProperties;
         }
+        
+        /**
+         * Bind permissions - binds authorities
+         * 
+         * @param properties
+         * @return
+         */
+        private List<AccessPermission> bindPermissions(List<AccessPermission> permissions)
+        {
+            List<AccessPermission> boundPermissions = new ArrayList<AccessPermission>(permissions.size());
+            
+            for (AccessPermission permission : permissions)
+            {
+                AccessPermission ace = new NodeContext.ACE(permission.getAccessStatus(),
+                                                           bindPlaceHolder(permission.getAuthority(), binding),
+                                                           permission.getPermission());
+                boundPermissions.add(ace);
+            }
+            
+            return boundPermissions;
+        }
 
         /**
          * Bind property value
@@ -1249,7 +1271,8 @@ public class ImporterComponent
                 AccessStatus writePermission = permissionService.hasPermission(nodeRef, PermissionService.CHANGE_PERMISSIONS);
                 if (authenticationService.isCurrentUserTheSystemUser() || writePermission.equals(AccessStatus.ALLOWED))
                 {
-                    permissions = node.getAccessControlEntries();
+                    permissions = bindPermissions(node.getAccessControlEntries());
+                    
                     for (AccessPermission permission : permissions)
                     {
                         permissionService.setPermission(nodeRef, permission.getAuthority(), permission.getPermission(), permission.getAccessStatus().equals(AccessStatus.ALLOWED));
@@ -1433,7 +1456,9 @@ public class ImporterComponent
                             {
                                 permissionService.setInheritParentPermissions(existingNodeRef, false);
                             }
-                            permissions = node.getAccessControlEntries();
+                            
+                            permissions = bindPermissions(node.getAccessControlEntries());
+                            
                             for (AccessPermission permission : permissions)
                             {
                                 permissionService.setPermission(existingNodeRef, permission.getAuthority(), permission.getPermission(), permission.getAccessStatus().equals(AccessStatus.ALLOWED));
@@ -1584,5 +1609,4 @@ public class ImporterComponent
         {
         }
     }
-    
 }

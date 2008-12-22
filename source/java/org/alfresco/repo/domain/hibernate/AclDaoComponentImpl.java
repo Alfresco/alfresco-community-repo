@@ -44,7 +44,6 @@ import org.alfresco.repo.domain.DbAuthority;
 import org.alfresco.repo.domain.DbPermission;
 import org.alfresco.repo.domain.Node;
 import org.alfresco.repo.domain.QNameDAO;
-import org.alfresco.repo.node.db.hibernate.HibernateNodeDaoServiceImpl;
 import org.alfresco.repo.security.permissions.ACEType;
 import org.alfresco.repo.security.permissions.ACLCopyMode;
 import org.alfresco.repo.security.permissions.ACLType;
@@ -80,7 +79,7 @@ import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
  */
 public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoComponent
 {
-    private static Log logger = LogFactory.getLog(HibernateNodeDaoServiceImpl.class);
+    private static Log logger = LogFactory.getLog(AclDaoComponentImpl.class);
 
     static String QUERY_GET_PERMISSION = "permission.GetPermission";
 

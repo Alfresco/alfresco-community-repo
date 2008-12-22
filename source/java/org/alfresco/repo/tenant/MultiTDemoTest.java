@@ -107,6 +107,9 @@ public class MultiTDemoTest extends TestCase
     public static final String DEFAULT_ADMIN_UN = "admin";
     public static final String DEFAULT_ADMIN_PW = "admin";
     
+    public static final String DEFAULT_GUEST_UN = "guest";
+    public static final String DEFAULT_GUEST_PW = "thiscanbeanything";
+    
     public static final String TEST_USER1 = "alice";
     public static final String TEST_USER2 = "bob";
     public static final String TEST_USER3 = "eve";
@@ -176,7 +179,7 @@ public class MultiTDemoTest extends TestCase
                         if (! tenantAdminService.existsTenant(tenantDomain))
                         {
                             //tenantAdminService.createTenant(tenantDomain, DEFAULT_ADMIN_PW.toCharArray(), ROOT_DIR + "/" + tenantDomain);
-                            tenantAdminService.createTenant(tenantDomain, DEFAULT_ADMIN_PW.toCharArray(), null); // use default root dir
+                            tenantAdminService.createTenant(tenantDomain, (DEFAULT_ADMIN_PW+" "+tenantDomain).toCharArray(), null); // use default root dir
                             
                             logger.info("Created tenant " + tenantDomain);
                         }
@@ -220,12 +223,12 @@ public class MultiTDemoTest extends TestCase
                 {
                     public Object doWork() throws Exception
                     {
-                        createUser(TEST_USER1, tenantDomain, "welcome");
-                        createUser(TEST_USER2, tenantDomain, "welcome");
+                        createUser(TEST_USER1, tenantDomain, TEST_USER1+" "+tenantDomain);
+                        createUser(TEST_USER2, tenantDomain, TEST_USER2+" "+tenantDomain);
                         
                         if (tenantDomain.equals(TEST_TENANT_DOMAIN2))
                         {
-                            createUser(TEST_USER3, tenantDomain, "welcome");
+                            createUser(TEST_USER3, tenantDomain, TEST_USER3+" "+tenantDomain);
                         }
                         
                         return null;                      
@@ -279,9 +282,9 @@ public class MultiTDemoTest extends TestCase
         } 
     }
     
-    public void testLoginUsers() throws Throwable
+    public void testLoginTenantUsers() throws Throwable
     {
-        logger.info("Login demo users");
+        logger.info("Login tenant users");
         
         try
         {
@@ -289,14 +292,58 @@ public class MultiTDemoTest extends TestCase
             
             for (final String tenantDomain : tenants)
             {
-                loginLogoutUser(tenantService.getDomainUser(TEST_USER1, tenantDomain), "welcome");
+                loginLogoutUser(tenantService.getDomainUser(TEST_USER1, tenantDomain), TEST_USER1+" "+tenantDomain);
                 
-                loginLogoutUser(tenantService.getDomainUser(TEST_USER2, tenantDomain), "welcome");
+                loginLogoutUser(tenantService.getDomainUser(TEST_USER2, tenantDomain), TEST_USER2+" "+tenantDomain);
                 
                 if (tenantDomain.equals(TEST_TENANT_DOMAIN2))
                 {
-                    loginLogoutUser(tenantService.getDomainUser(TEST_USER3, tenantDomain), "welcome");
+                    loginLogoutUser(tenantService.getDomainUser(TEST_USER3, tenantDomain), TEST_USER3+" "+tenantDomain);
                 }
+            }
+        }   
+        catch (Throwable t)
+        {
+            StringWriter stackTrace = new StringWriter();
+            t.printStackTrace(new PrintWriter(stackTrace));
+            System.err.println(stackTrace.toString());
+            throw t;
+        }
+    }
+    
+    public void testLoginTenantGuests() throws Throwable
+    {
+        logger.info("Login tenant guests");
+        
+        try
+        {
+            AuthenticationUtil.clearCurrentSecurityContext();
+            
+            for (final String tenantDomain : tenants)
+            {
+                loginLogoutUser(tenantService.getDomainUser(DEFAULT_GUEST_UN, tenantDomain), DEFAULT_GUEST_UN);
+            }
+        }   
+        catch (Throwable t)
+        {
+            StringWriter stackTrace = new StringWriter();
+            t.printStackTrace(new PrintWriter(stackTrace));
+            System.err.println(stackTrace.toString());
+            throw t;
+        }
+    }
+    
+    public void testLoginTenantAdmin() throws Throwable
+    {
+        logger.info("Login tenant admins");
+        
+        try
+        {
+            AuthenticationUtil.clearCurrentSecurityContext();
+            
+            for (final String tenantDomain : tenants)
+            {
+                loginLogoutUser(tenantService.getDomainUser(TenantService.ADMIN_BASENAME, tenantDomain), DEFAULT_ADMIN_PW+" "+tenantDomain);
             }
         }   
         catch (Throwable t)
@@ -314,7 +361,7 @@ public class MultiTDemoTest extends TestCase
 
         for (final String tenantDomain : tenants)
         {        
-            String tenantAdminName = tenantService.getDomainUser("admin", tenantDomain);
+            String tenantAdminName = tenantService.getDomainUser(TenantService.ADMIN_BASENAME, tenantDomain);
             
             AuthenticationUtil.runAs(new RunAsWork<Object>()
                     {
@@ -505,7 +552,7 @@ public class MultiTDemoTest extends TestCase
             {
                 public Object doWork() throws Exception
                 {
-                    NodeRef personNodeRef = createUser(TEST_USER4, tenantDomain, "welcome");
+                    NodeRef personNodeRef = createUser(TEST_USER4, tenantDomain, TEST_USER4+" "+tenantDomain);
                     
                     // Test nodeRef property
                     NodeRef homeFolderNodeRef = (NodeRef)nodeService.getProperty(personNodeRef, ContentModel.PROP_HOMEFOLDER);

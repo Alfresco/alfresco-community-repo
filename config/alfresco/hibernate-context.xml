@@ -302,7 +302,7 @@
             <ref bean="hibernateSessionHelper"/>
         </property>
 		<property name="nodeService">
-            <ref bean="nodeService"/>
+            <ref bean="dbNodeService"/>
         </property>
     </bean>
     

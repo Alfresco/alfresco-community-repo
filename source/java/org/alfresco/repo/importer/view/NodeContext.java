@@ -375,10 +375,7 @@ public class NodeContext extends ElementContext
            permission = PermissionService.CONSUMER;
        }
       
-       ACE ace = new ACE();
-       ace.accessStatus = accessStatus;
-       ace.authority = authority;
-       ace.permission = permission;
+       ACE ace = new ACE(accessStatus, authority, permission);
        accessControlEntries.add(ace);
     }
 
@@ -502,12 +499,18 @@ public class NodeContext extends ElementContext
     /**
      * Access Control Entry
      */
-    private class ACE implements AccessPermission
+    public static class ACE implements AccessPermission
     {
         private AccessStatus accessStatus;
         private String authority;
         private String permission;
-        private int position;
+        
+        public ACE(AccessStatus accessStatus, String authority, String permission)
+        {
+            this.accessStatus = accessStatus;
+            this.authority = authority;
+            this.permission = permission;
+        }
 
         /*
          *  (non-Javadoc)

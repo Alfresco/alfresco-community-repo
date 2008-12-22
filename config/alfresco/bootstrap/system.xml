@@ -14,7 +14,7 @@
         <!-- Apply Read access to Guest on root node of Spaces Store -->
         <view:acl>
             <view:ace view:access="ALLOWED">
-                <view:authority>guest</view:authority>
+                <view:authority>${alfresco_user_store.guestusername}</view:authority>
                 <view:permission>Read</view:permission>
             </view:ace>
         </view:acl>
@@ -44,7 +44,7 @@
                     <cm:person view:childName="cm:${alfresco_user_store.guestusername}">
                         <view:acl>
                            <view:ace view:access="ALLOWED">
-                              <view:authority>guest</view:authority>
+                              <view:authority>${alfresco_user_store.guestusername}</view:authority>
                               <view:permission>Read</view:permission>
                            </view:ace>
                         </view:acl>

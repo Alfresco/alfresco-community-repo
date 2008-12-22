@@ -85,7 +85,7 @@
 						view:childName="${spaces.templates.rss.childname}">
 						<view:acl>
 							<view:ace view:access="ALLOWED">
-								<view:authority>guest</view:authority>
+								<view:authority>${alfresco_user_store.guestusername}</view:authority>
 								<view:permission>Consumer</view:permission>
 							</view:ace>
 						</view:acl>
@@ -121,7 +121,7 @@
 			<cm:folder view:childName="${spaces.guest_home.childname}">
 				<view:acl view:inherit="false">
 					<view:ace view:access="ALLOWED">
-						<view:authority>guest</view:authority>
+						<view:authority>${alfresco_user_store.guestusername}</view:authority>
 						<view:permission>Consumer</view:permission>
 					</view:ace>
 					<view:ace view:access="ALLOWED">

@@ -159,7 +159,7 @@ public class AVMEditBean extends BaseDialogBean
    public String getFileUploadSuccessMsg()
    {
       final String msg = Application.getMessage(FacesContext.getCurrentInstance(), MSG_UPLOAD_SUCCESS);
-      return MessageFormat.format(msg, new Object[] { this.getFileName() });
+      return MessageFormat.format(msg, new Object[] { Utils.encode(this.getFileName()) });
    }
 
    // ------------------------------------------------------------------------------

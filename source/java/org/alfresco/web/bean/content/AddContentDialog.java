@@ -51,6 +51,7 @@ import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.FileUploadBean;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.ui.common.Utils;
 
 /**
  * Bean implementation for the "Add Content" dialog
@@ -183,7 +184,7 @@ public class AddContentDialog extends BaseContentWizard
       
       // get the file upload message
       String msg = Application.getMessage(FacesContext.getCurrentInstance(), "file_upload_success");
-      return MessageFormat.format(msg, new Object[] {getFileName()});
+      return MessageFormat.format(msg, new Object[] {Utils.encode(getFileName())});
    }
    
    /**

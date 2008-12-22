@@ -258,11 +258,11 @@ public class UIPendingSubmissions extends SelfRenderingComponent
                requestMap.remove(REQUEST_TASKTYPE);
                
                out.write("</td><td>");
-               out.write(label);
+               out.write(Utils.encode(label));
                out.write("</td><td>");
                out.write(submitted);
                out.write("</td><td>");
-               out.write(username);
+               out.write(Utils.encode(username));
                out.write("</td><td>");
                out.write(launch);
                out.write("</td><td><nobr>");

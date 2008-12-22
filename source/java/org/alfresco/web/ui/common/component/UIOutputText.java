@@ -27,13 +27,13 @@ package org.alfresco.web.ui.common.component;
 import java.io.IOException;
 
 import javax.faces.component.UIOutput;
-import javax.faces.component.ValueHolder;
 import javax.faces.context.FacesContext;
 import javax.faces.context.ResponseWriter;
 import javax.faces.convert.Converter;
 import javax.faces.el.ValueBinding;
 
 import org.alfresco.util.URLEncoder;
+import org.alfresco.web.ui.common.Utils;
 
 /**
  * Component that simply renders text
@@ -161,12 +161,12 @@ public class UIOutputText extends UIOutput
                   out.write(styleClass);
                }
                out.write('>');
-               out.write(value.toString());
+               out.write(Utils.encode(value.toString()));
                out.write("</span>");
             }
             else
             {
-               out.write(value.toString());
+               out.write(Utils.encode(value.toString()));
             }
          }
       }

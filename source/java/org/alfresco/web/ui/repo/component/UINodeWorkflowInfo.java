@@ -245,7 +245,7 @@ public class UINodeWorkflowInfo extends SelfRenderingComponent
             actionPattern = Application.getMessage(FacesContext.getCurrentInstance(), "space_action");
          }
          Object[] params = new Object[] {action, approveFolderName, Utils.encode(approveStepName)};
-         out.write(MessageFormat.format(actionPattern, params));
+         out.write(Utils.encode(MessageFormat.format(actionPattern, params)));
          
          // add details of the reject step if there is one
          if (rejectStepName != null && rejectMove != null && rejectFolderName != null)
@@ -261,7 +261,7 @@ public class UINodeWorkflowInfo extends SelfRenderingComponent
             
             out.write("&nbsp;");
             params = new Object[] {action, rejectFolderName, Utils.encode(rejectStepName)};
-            out.write(MessageFormat.format(actionPattern, params));
+            out.write(Utils.encode(MessageFormat.format(actionPattern, params)));
          }
       }
       else

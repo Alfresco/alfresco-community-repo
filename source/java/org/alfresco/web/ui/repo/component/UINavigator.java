@@ -292,7 +292,7 @@ public class UINavigator extends SelfRenderingComponent
       out.write("<a class='sidebarButtonSelectedLink' onclick=\"");
       out.write(Utils.generateFormSubmit(context, this, getClientId(context), PANEL_ACTION + area));
       out.write("\" href=\"#\">");
-      out.write(areaTitle);
+      out.write(Utils.encode(areaTitle));
       out.write("</a></div>");
       
       // generate the javascript method to capture the tree node click events

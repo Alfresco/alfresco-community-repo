@@ -301,7 +301,7 @@ public abstract class AbstractItemSelector extends UIInput
                {
                   // build a comma separated list of node names
                   List nodes = (List)val;
-                  StringBuilder buffer = new StringBuilder();
+                  StringBuilder buffer = new StringBuilder(64);
                   for (Object obj : nodes)
                   {
                      if (buffer.length() != 0)
@@ -311,7 +311,7 @@ public abstract class AbstractItemSelector extends UIInput
                      
                      if (obj instanceof NodeRef)
                      {
-                        buffer.append(Repository.getNameForNode(service, (NodeRef)obj));
+                        buffer.append(Utils.encode(Repository.getNameForNode(service, (NodeRef)obj)));
                      }
                      else
                      {
@@ -327,7 +327,7 @@ public abstract class AbstractItemSelector extends UIInput
             // if there is a value show it's name
             if (nodeRef != null)
             {
-               out.write(Repository.getNameForNode(service, nodeRef));
+               out.write(Utils.encode(Repository.getNameForNode(service, nodeRef)));
             }
          }
          else
@@ -447,7 +447,7 @@ public abstract class AbstractItemSelector extends UIInput
                         .append(attrs.get("nodeStyleClass"));
                   }
                   buf.append(">")
-                     .append(label)
+                     .append(Utils.encode(label))
                      .append("</a></span>");
                      
                   break;

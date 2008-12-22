@@ -192,7 +192,7 @@ public class UIWorkflowHistory extends SelfRenderingComponent
                out.write("<tr><td>");
                out.write(desc == null ? "" : Utils.encode(desc));
                out.write("</td><td>");
-               out.write(task.title);
+               out.write(Utils.encode(task.title));
                out.write("</td><td>");
                out.write(id.toString());
                out.write("</td><td>");

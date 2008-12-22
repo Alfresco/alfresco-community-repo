@@ -375,7 +375,7 @@ public class DatePickerRenderer extends BaseRenderer
             outputAttribute(out, "selected", "selected");
          }
          out.write(">");
-         out.write(item.getLabel());
+         out.write(Utils.encode(item.getLabel()));
          out.write("</option>");
       }
       out.write("</select>");

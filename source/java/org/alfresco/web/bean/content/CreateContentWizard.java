@@ -300,7 +300,7 @@ public class CreateContentWizard extends BaseContentWizard
             new String[] {bundle.getString("file_name"), 
                           bundle.getString("type"), 
                           bundle.getString("content_type")},
-            new String[] {this.fileName, getSummaryObjectType(), 
+            new String[] {Utils.encode(this.fileName), getSummaryObjectType(), 
                           getSummaryMimeType(this.mimeType)});
    }
    

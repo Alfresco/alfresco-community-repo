@@ -494,9 +494,9 @@ public class UILinkValidationReport extends AbstractLinkValidationReportComponen
       List<String> brokenFiles = linkState.getBrokenFilesByForm(file);
       
       out.write("<div class='linkValItemDetails'><div class='linkValFormName'>");
-      out.write(formName);
+      out.write(Utils.encode(formName));
       out.write("</div><div class='linkValFormPath'>");
-      out.write(formPath);
+      out.write(Utils.encode(formPath));
       out.write("</div><div class='linkValToggle'><img src='");
       out.write(context.getExternalContext().getRequestContextPath());
       if (generatedFilesExpanded)
@@ -719,9 +719,9 @@ public class UILinkValidationReport extends AbstractLinkValidationReportComponen
       String fileId = "file" + Integer.toString((filePath + fileName).hashCode());
       
       out.write("<div class='linkValItemDetails'><div class='linkValFileName'>");
-      out.write(fileName);
+      out.write(Utils.encode(fileName));
       out.write("</div><div class='linkValFilePath'>");
-      out.write(filePath);
+      out.write(Utils.encode(filePath));
       out.write("</div>");
       
       if (brokenLinks != null && brokenLinks.length() > 0)

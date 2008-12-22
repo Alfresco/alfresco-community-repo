@@ -108,7 +108,7 @@ public class UISortLink extends UICommand
       buf.append('>');
       
       // output column label
-      buf.append((String)getAttributes().get("label"));
+      buf.append(Utils.encode((String)getAttributes().get("label")));
       
       if (bPreviouslySorted == true)
       {

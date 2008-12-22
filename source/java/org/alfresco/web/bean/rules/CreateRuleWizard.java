@@ -206,7 +206,7 @@ public class CreateRuleWizard extends BaseActionWizard
       StringBuilder conditionsSummary = new StringBuilder();
       for (Map<String, Serializable> props : this.allConditionsProperties)
       {
-         conditionsSummary.append(props.get(PROP_CONDITION_SUMMARY));
+         conditionsSummary.append(Utils.encode((String)props.get(PROP_CONDITION_SUMMARY)));
          conditionsSummary.append("<br>");
       }
       
@@ -214,7 +214,7 @@ public class CreateRuleWizard extends BaseActionWizard
       StringBuilder actionsSummary = new StringBuilder();
       for (Map<String, Serializable> props : this.allActionsProperties)
       {
-         actionsSummary.append(props.get(PROP_ACTION_SUMMARY));
+         actionsSummary.append(Utils.encode((String)props.get(PROP_ACTION_SUMMARY)));
          actionsSummary.append("<br>");
       }
       

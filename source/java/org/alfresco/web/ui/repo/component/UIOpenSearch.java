@@ -39,6 +39,7 @@ import org.alfresco.repo.web.scripts.bean.SearchProxy;
 import org.alfresco.repo.web.scripts.config.OpenSearchConfigElement;
 import org.alfresco.repo.web.scripts.config.OpenSearchConfigElement.EngineConfig;
 import org.alfresco.web.app.Application;
+import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.SelfRenderingComponent;
 import org.springframework.web.jsf.FacesContextUtils;
 
@@ -239,7 +240,7 @@ public class UIOpenSearch extends SelfRenderingComponent
          out.write(engine.getId());
          out.write("-engine-enabled' type='checkbox' checked='checked' />");
          out.write("</td><td>");
-         out.write(engine.getLabel());
+         out.write(Utils.encode(engine.getLabel()));
          out.write("</td></tr>");
       }
       out.write("</table></div></div>\n");

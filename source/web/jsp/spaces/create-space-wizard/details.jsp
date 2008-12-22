@@ -84,7 +84,7 @@
       {
          finishButtonPressed = false;
          return validateName(document.getElementById("wizard:wizard-body:name"), 
-                             '</f:verbatim><a:outputText value="#{msg.validation_invalid_character}" /><f:verbatim>',
+                             decodeURI('</f:verbatim><a:outputText value="#{msg.validation_invalid_character}" encodeForJavaScript="true" /><f:verbatim>'),
                              true);
       }
       else

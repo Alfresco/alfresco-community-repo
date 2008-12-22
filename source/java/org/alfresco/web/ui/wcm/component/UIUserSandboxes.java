@@ -435,7 +435,7 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
                      out.write("<b>");
                      out.write(bundle.getString(MSG_USERNAME));
                      out.write(":</b>&nbsp;");
-                     out.write(username);
+                     out.write(Utils.encode(username));
                   }
                   else
                   {
@@ -813,7 +813,7 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
                   out.write(Utils.buildImageTag(fc, FileTypeImageUtils.getFileTypeImage(fc, name, true), ""));
                   out.write("</a></td><td>");
                   out.write(linkPrefix);
-                  out.write(name);
+                  out.write(Utils.encode(name));
                   UIAVMLockIcon lockIcon = (UIAVMLockIcon)fc.getApplication().createComponent(
                         UIAVMLockIcon.ALFRESCO_FACES_AVMLOCKICON);
                   lockIcon.setId("avmlock_" + Integer.toString(rowIndex));
@@ -825,7 +825,7 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
                {
                   out.write(Utils.buildImageTag(fc, SPACE_ICON, 16, 16, ""));
                   out.write("</td><td>");
-                  out.write(name);
+                  out.write(Utils.encode(name));
                }
                out.write("</td><td>");
                
@@ -871,14 +871,14 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
                {
                   out.write(Utils.buildImageTag(fc, FileTypeImageUtils.getFileTypeImage(fc, name, true), ""));
                   out.write("</td><td style='color:#aaaaaa'>");
-                  out.write(name + " [" + bundle.getString(MSG_DELETED_ITEM) + "]");
+                  out.write(Utils.encode(name) + " [" + bundle.getString(MSG_DELETED_ITEM) + "]");
                   out.write("</a>");
                }
                else
                {
                   out.write(Utils.buildImageTag(fc, SPACE_ICON, 16, 16, ""));
                   out.write("</td><td style='color:#aaaaaa'>");
-                  out.write(name + " [" + bundle.getString(MSG_DELETED_ITEM) + "]");
+                  out.write(Utils.encode(name) + " [" + bundle.getString(MSG_DELETED_ITEM) + "]");
                }
                out.write("</td><td style='color:#aaaaaa'>");
                
@@ -959,10 +959,10 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
          {
             out.write("<tr><td>");
             String title = (String)f.getTitle();
-            out.write(title != null ? title : "");
+            out.write(title != null ? Utils.encode(title) : "");
             out.write("</td><td>");
             String desc = (String)f.getDescription();
-            out.write(desc != null ? desc : "");
+            out.write(desc != null ? Utils.encode(desc) : "");
             out.write("</td><td>");
             
             // set the form-id into the request scope for actions data binding

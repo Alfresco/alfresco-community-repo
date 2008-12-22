@@ -307,7 +307,7 @@ public class UIGenericPicker extends UICommand
                {
                   out.write("\" selected=\"true\">");
                }
-               out.write(items[i].getLabel());
+               out.write(Utils.encode(items[i].getLabel()));
                out.write("</option>");
             }
          }

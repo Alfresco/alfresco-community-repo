@@ -142,8 +142,17 @@ public class DeleteContentDialog extends BaseDialogBean
       }
       else
       {
-          fileConfirmMsg = Application.getMessage(FacesContext.getCurrentInstance(),
-              "delete_file_confirm");
+          String strHasMultipleParents = this.parameters.get("hasMultipleParents");
+          if (strHasMultipleParents != null && "true".equals(strHasMultipleParents))
+          {
+             fileConfirmMsg = Application.getMessage(FacesContext.getCurrentInstance(),
+                "delete_file_multiple_parents_confirm");
+          }
+          else
+          {
+             fileConfirmMsg = Application.getMessage(FacesContext.getCurrentInstance(),
+                 "delete_file_confirm");
+          }
       }
 
       return MessageFormat.format(fileConfirmMsg,

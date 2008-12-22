@@ -37,7 +37,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-import javax.faces.application.NavigationHandler;
 import javax.faces.context.FacesContext;
 import javax.faces.context.ResponseWriter;
 import javax.faces.event.ActionEvent;
@@ -69,6 +68,7 @@ import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.IContextListener;
 import org.alfresco.web.app.context.UIContextService;
@@ -2140,7 +2140,6 @@ public class BrowseBean implements IContextListener, Serializable
     * 
     * @param event The event
     */
-   
    public void deleteFile(ActionEvent event)
    {
       setupContentAction(event);
@@ -2187,12 +2186,103 @@ public class BrowseBean implements IContextListener, Serializable
          }
          
          // if there isn't a working copy go to normal delete dialog
+         boolean hasMultipleParents = false;
+         boolean showDeleteAssocDialog = false;
+         
+         // get type of node being deleted
+         Node node = this.getDocument();
+         QName type = node.getType();
+         TypeDefinition typeDef = this.dictionaryService.getType(type);
+         
+         // determine if the node being delete has multiple parents
+         if (!type.equals(ContentModel.TYPE_MULTILINGUAL_CONTAINER) &&
+             !node.hasAspect(ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION) &&
+             !node.hasAspect(ContentModel.ASPECT_MULTILINGUAL_DOCUMENT) &&
+             !type.equals(ContentModel.TYPE_LINK) &&
+             !this.dictionaryService.isSubClass(typeDef.getName(), ContentModel.TYPE_LINK))
+         {
+            List<ChildAssociationRef> parents = this.nodeService.getParentAssocs(node.getNodeRef(), 
+                     ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
+            if (parents != null && parents.size() > 1)
+            {
+               hasMultipleParents = true;
+            }
+         }
+         
+         // determine which delete dialog to display
+         if (this.navigator.getSearchContext() == null && hasMultipleParents)
+         {
+            // if we are not in a search and the node has multiple parents
+            // see if the current node has the primary parent association
+            NodeRef parentSpace = this.navigator.getCurrentNode().getNodeRef();
+            ChildAssociationRef assoc = this.nodeService.getPrimaryParent(node.getNodeRef());
+            
+            // show delete assoc dialog if the current space is not the primary parent for the node
+            showDeleteAssocDialog = !parentSpace.equals(assoc.getParentRef());
+         }
+         
+         // show the appropriate dialog
          FacesContext fc = FacesContext.getCurrentInstance();
-         NavigationHandler navigationHandler = fc.getApplication().getNavigationHandler();
-         navigationHandler.handleNavigation(fc, null, "dialog:deleteFile");
+         if (showDeleteAssocDialog)
+         {
+            fc.getApplication().getNavigationHandler().handleNavigation(fc, null, "dialog:deleteFileAssoc");
+         }
+         else
+         {
+            final Map<String, String> dialogParams = new HashMap<String, String>(1);
+            dialogParams.put("hasMultipleParents", Boolean.toString(hasMultipleParents));
+            Application.getDialogManager().setupParameters(dialogParams);
+            fc.getApplication().getNavigationHandler().handleNavigation(fc, null, "dialog:deleteFile");
+         }
       }
    }
 
+   /**
+    * Handles the deleteSpace action by deciding which delete dialog to display
+    */
+   public void deleteSpace(ActionEvent event)
+   {
+      setupDeleteAction(event);
+      
+      boolean hasMultipleParents = false;
+      boolean showDeleteAssocDialog = false;
+      
+      // determine if the node being delete has multiple parents
+      Node node = this.getActionSpace();
+      List<ChildAssociationRef> parents = this.nodeService.getParentAssocs(node.getNodeRef(), 
+               ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
+      if (parents != null && parents.size() > 1)
+      {
+         hasMultipleParents = true;
+      }
+      
+      // determine which delete dialog to display
+      if (this.navigator.getSearchContext() == null && hasMultipleParents)
+      {
+         // if we are not in a search and the node has multiple parents
+         // see if the current node has the primary parent association
+         NodeRef parentSpace = this.navigator.getCurrentNode().getNodeRef();
+         ChildAssociationRef assoc = this.nodeService.getPrimaryParent(node.getNodeRef());
+         
+         // show delete assoc dialog if the current space is not the primary parent for the node
+         showDeleteAssocDialog = !parentSpace.equals(assoc.getParentRef());
+      }
+      
+      // show the appropriate dialog
+      FacesContext fc = FacesContext.getCurrentInstance();
+      if (showDeleteAssocDialog)
+      {
+         fc.getApplication().getNavigationHandler().handleNavigation(fc, null, "dialog:deleteSpaceAssoc");
+      }
+      else
+      {
+         final Map<String, String> dialogParams = new HashMap<String, String>(1);
+         dialogParams.put("hasMultipleParents", Boolean.toString(hasMultipleParents));
+         Application.getDialogManager().setupParameters(dialogParams);
+         fc.getApplication().getNavigationHandler().handleNavigation(fc, null, "dialog:deleteSpace");
+      }
+   }
+   
    // ------------------------------------------------------------------------------
    // Inner classes
 

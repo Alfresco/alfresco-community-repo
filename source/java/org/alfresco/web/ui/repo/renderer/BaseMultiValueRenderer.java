@@ -262,7 +262,7 @@ public abstract class BaseMultiValueRenderer extends BaseRenderer
       
       if (value instanceof NodeRef)
       {
-         out.write(Repository.getNameForNode(nodeService, (NodeRef)value));
+         out.write(Utils.encode(Repository.getNameForNode(nodeService, (NodeRef)value)));
       }
       else if (value instanceof Date)
       {
@@ -290,7 +290,7 @@ public abstract class BaseMultiValueRenderer extends BaseRenderer
       }
       else
       {
-         out.write(value.toString());
+         out.write(Utils.encode(value.toString()));
       }
 
       out.write("&nbsp;&nbsp;");

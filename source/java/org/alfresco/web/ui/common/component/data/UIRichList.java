@@ -456,15 +456,22 @@ public class UIRichList extends UIComponentBase implements IDataContainer,Serial
       int pageSize = getPageSize();
       if (pageSize != -1 && pageSize != 0)
       {
-         // calc start row index based on current page index
-         this.rowIndex = (this.currentPage * pageSize) - 1;
-         
          // calc total number of pages available
          this.pageCount = (rowCount / this.pageSize) + 1;
+         
          if (rowCount % pageSize == 0 && this.pageCount != 1)
          {
             this.pageCount--;
          }
+         
+         // set currentPage as lastPage if input digit in UIDataPager > pageCount
+         if (this.currentPage >= this.pageCount)
+         {
+            this.currentPage = this.pageCount - 1;
+         }
+         
+         // calc start row index based on current page index
+         this.rowIndex = (this.currentPage * pageSize) - 1;
          
          // calc the maximum row index that can be returned
          this.maxRowIndex = this.rowIndex + pageSize;

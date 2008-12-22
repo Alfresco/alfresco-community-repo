@@ -272,8 +272,7 @@
             </permissions>
             <label-id>delete</label-id>
             <image>/images/icons/delete.gif</image>
-            <action-listener>#{BrowseBean.setupDeleteAction}</action-listener>
-            <action>dialog:deleteSpace</action>
+            <action-listener>#{BrowseBean.deleteSpace}</action-listener>
             <params>
                <param name="id">#{actionContext.id}</param>
             </params>

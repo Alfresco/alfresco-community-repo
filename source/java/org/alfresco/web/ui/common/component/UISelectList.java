@@ -350,7 +350,7 @@ public class UISelectList extends UIInput implements NamingContainer
          out.write("' id='");
          out.write(id);
          out.write("' value='");
-         out.write(itemValue);
+         out.write(Utils.encode(itemValue));
          out.write("'");
          if (this.onchange != null)
          {
@@ -399,12 +399,12 @@ public class UISelectList extends UIInput implements NamingContainer
       Utils.outputAttribute(out, getAttributes().get("itemStyle"), "style");
       Utils.outputAttribute(out, getAttributes().get("itemStyleClass"), "class");
       out.write("><div style='padding:2px'>");
-      out.write(item.getLabel());
+      out.write(Utils.encode(item.getLabel()));
       out.write("</div>");
       if (description != null)
       {
          out.write("<div style='padding:2px'>");
-         out.write(description);
+         out.write(Utils.encode(description));
          out.write("</div>");
       }
       out.write("</td>");

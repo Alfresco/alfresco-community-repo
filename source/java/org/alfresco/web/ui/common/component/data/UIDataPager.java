@@ -45,6 +45,7 @@ import org.alfresco.web.app.Application;
 import org.alfresco.web.data.IDataContainer;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.WebResources;
+import org.springframework.util.StringUtils;
 
 /**
  * @author Kevin Roast
@@ -59,7 +60,9 @@ public class UIDataPager extends UICommand
    private static final String FIRST_PAGE = "first_page";
    private static final String MSG_PAGEINFO = "page_info";
    
-   
+   private static final int VISIBLE_PAGE_RANGE = 3;
+   private static final int AMOUNT_FIRST_PAGES = 7;
+  
    // ------------------------------------------------------------------------------
    // Construction 
    
@@ -100,11 +103,45 @@ public class UIDataPager extends UICommand
       int currentPage = dataContainer.getCurrentPage();
       int pageCount = dataContainer.getPageCount();
       
-      buf.append("<span");
+      Object displayInput = getAttributes().get("displayInput");
+
+      String beginTag = "<span";
+      String endTag = "</span>";
+      String divStyle = "";
+      String inputStyle = "height:18px;";
+      String imageVericalAlign = null;
+      String imageStyle = "margin-top:0px;";
+      StringBuilder inputPageNumber = new StringBuilder(128);
+
+      if (displayInput != null && ((Boolean) displayInput) == false)
+      {
+         imageStyle = null;
+         inputPageNumber.append(currentPage + 1);
+      }
+      else
+      {
+         final boolean isIE = Utils.USER_AGENT_MSIE.equals(Utils.getUserAgent(context));
+         if (isIE)
+         {
+            beginTag = "<div";
+            endTag = "</div>";
+            divStyle = "padding:1px;";
+            inputStyle = "height:18px; vertical-align:middle;";
+            imageVericalAlign = "middle";
+            imageStyle = "margin-top:0px;";
+         }
+         inputPageNumber.append("<input type=\"text\" maxlength=\"3\" value=\"").append(currentPage + 1).append("\" style=\"width: 24px; margin-left: 4px;").append(inputStyle).append("\" ");
+         inputPageNumber.append("onkeyup=\"").append(generateInputOnkeyupScript()).append("\" ");
+         inputPageNumber.append("onkeydown=\"").append(generateInputOnkeydownScript()).append("\" ");
+         inputPageNumber.append("id=\"").append(getPageInputId()).append("\" />");
+      }
+      
+      buf.append(beginTag);
       if (getAttributes().get("style") != null)
       {
          buf.append(" style=\"")
             .append(getAttributes().get("style"))
+            .append(divStyle)
             .append('"');
       }
       if (getAttributes().get("styleClass") != null)
@@ -113,10 +150,10 @@ public class UIDataPager extends UICommand
             .append(getAttributes().get("styleClass"));
       }
       buf.append('>');
-      
+
       // output Page X of Y text
       buf.append(MessageFormat.format(bundle.getString(MSG_PAGEINFO), new Object[] {
-            Integer.toString(currentPage + 1),  // current page can be zero if no data present
+            inputPageNumber.toString(),  // current page can be zero if no data present
             Integer.toString(pageCount)
             }));
       
@@ -129,12 +166,12 @@ public class UIDataPager extends UICommand
          buf.append("<a href='#' onclick=\"");
          buf.append(generateEventScript(0));
          buf.append("\">");
-         buf.append(Utils.buildImageTag(context, WebResources.IMAGE_FIRSTPAGE, 16, 16, bundle.getString(FIRST_PAGE)));
+         buf.append(Utils.buildImageTag(context, WebResources.IMAGE_FIRSTPAGE, 16, 16, bundle.getString(FIRST_PAGE), null, imageVericalAlign, imageStyle));
          buf.append("</a>");
       }
       else
       {
-         buf.append(Utils.buildImageTag(context, WebResources.IMAGE_FIRSTPAGE_NONE, 16, 16, null));
+         buf.append(Utils.buildImageTag(context, WebResources.IMAGE_FIRSTPAGE_NONE, 16, 16, null, null, imageVericalAlign, imageStyle));
       }
       
       buf.append("&nbsp;");
@@ -145,84 +182,44 @@ public class UIDataPager extends UICommand
          buf.append("<a href='#' onclick=\"");
          buf.append(generateEventScript(currentPage - 1));
          buf.append("\">");
-         buf.append(Utils.buildImageTag(context, WebResources.IMAGE_PREVIOUSPAGE, 16, 16, bundle.getString(PREVIOUS_PAGE)));
+         buf.append(Utils.buildImageTag(context, WebResources.IMAGE_PREVIOUSPAGE, 16, 16, bundle.getString(PREVIOUS_PAGE), null, imageVericalAlign, imageStyle));
          buf.append("</a>");
       }
       else
       {
-         buf.append(Utils.buildImageTag(context, WebResources.IMAGE_PREVIOUSPAGE_NONE, 16, 16, null));
+         buf.append(Utils.buildImageTag(context, WebResources.IMAGE_PREVIOUSPAGE_NONE, 16, 16, null, null, imageVericalAlign, imageStyle));
       }
       
       buf.append("&nbsp;");
       
-      // clickable digits for pages 1 to 10
-      int totalIndex = (pageCount < 10 ? pageCount : 10);
-      for (int i=0; i<totalIndex; i++)
+      Object objType = getAttributes().get("dataPagerType");
+      
+      PagerType type = PagerType.TRACKPAGE;
+      if (objType instanceof String)
       {
-         if (i != currentPage)
+         try
          {
-            buf.append("<a href='#' onclick=\"")
-               .append(generateEventScript(i))
-               .append("\">")
-               .append(i + 1)
-               .append("</a>&nbsp;");
+             type = PagerType.valueOf((String)objType);
          }
-         else
+         catch (Throwable ex)
          {
-            buf.append("<b>")
-               .append(i + 1)
-               .append("</b>&nbsp;");
+             s_logger.warn("DataPager id:" + this.getId() + " with incorrect 'numberPageType' attribute");
          }
       }
-      // clickable digits for pages 20 to 100 (in jumps of 10)
-      if (pageCount >= 20)
+      
+      switch (type)
       {
-         buf.append("...&nbsp;");
-         totalIndex = (pageCount / 10) * 10;
-         totalIndex = (totalIndex < 100 ? totalIndex : 100);
-         for (int i=19; i<totalIndex; i += 10)
-         {
-            if (i != currentPage)
-            {
-               buf.append("<a href='#' onclick=\"")
-                  .append(generateEventScript(i))
-                  .append("\">")
-                  .append(i + 1)
-                  .append("</a>&nbsp;");
-            }
-            else
-            {
-               buf.append("<b>")
-                  .append(i + 1)
-                  .append("</b>&nbsp;");
-            }
-         }
-      }
-      // clickable digits for last page if > 10 and not already shown
-      if ((pageCount > 10) && (pageCount % 10 != 0))
-      {
-         if (pageCount-1 != currentPage)
-         {
-            if (pageCount < 20)
-            {
-               buf.append("...&nbsp;");
-            }
-            buf.append("<a href='#' onclick=\"")
-               .append(generateEventScript(pageCount-1))
-               .append("\">")
-               .append(pageCount)
-               .append("</a>&nbsp;");
-         }
-         else
-         {
-            if (pageCount < 20)
-            {
-               buf.append("...&nbsp;");
-            }
-            buf.append("<b>")
-               .append(pageCount)
-               .append("</b>&nbsp;");
-         }
+         case STANDARD:
+            encodeType0(buf, currentPage, pageCount);
+            break;
+         case DECADES:
+            encodeType1(buf, currentPage, pageCount);
+            break;
+         case TRACKPAGE:
+            encodeType2(buf, currentPage, pageCount);
+            break;
+         default:
+            encodeType2(buf, currentPage, pageCount);
       }
       
       // next page
@@ -231,12 +228,12 @@ public class UIDataPager extends UICommand
          buf.append("<a href='#' onclick=\"");
          buf.append(generateEventScript(currentPage + 1));
          buf.append("\">");
-         buf.append(Utils.buildImageTag(context, WebResources.IMAGE_NEXTPAGE, 16, 16, bundle.getString(NEXT_PAGE)));
+         buf.append(Utils.buildImageTag(context, WebResources.IMAGE_NEXTPAGE, 16, 16, bundle.getString(NEXT_PAGE), null, imageVericalAlign, imageStyle));
          buf.append("</a>");
       }
       else
       {
-         buf.append(Utils.buildImageTag(context, WebResources.IMAGE_NEXTPAGE_NONE, 16, 16, null));
+         buf.append(Utils.buildImageTag(context, WebResources.IMAGE_NEXTPAGE_NONE, 16, 16, null, null, imageVericalAlign, imageStyle));
       }
       
       buf.append("&nbsp;");
@@ -247,17 +244,255 @@ public class UIDataPager extends UICommand
          buf.append("<a href='#' onclick=\"");
          buf.append(generateEventScript(dataContainer.getPageCount() - 1));
          buf.append("\">");
-         buf.append(Utils.buildImageTag(context, WebResources.IMAGE_LASTPAGE, 16, 16, bundle.getString(LAST_PAGE)));
+         buf.append(Utils.buildImageTag(context, WebResources.IMAGE_LASTPAGE, 16, 16, bundle.getString(LAST_PAGE), null, imageVericalAlign, imageStyle));
          buf.append("</a>");
       }
       else
       {
-         buf.append(Utils.buildImageTag(context, WebResources.IMAGE_LASTPAGE_NONE, 16, 16, null));
+         buf.append(Utils.buildImageTag(context, WebResources.IMAGE_LASTPAGE_NONE, 16, 16, null, null, imageVericalAlign, imageStyle));
       }
       
-      buf.append("</span>");
+      buf.append(endTag);
       
       out.write(buf.toString());
+   }
+   
+   private void createClicableDigitForPage(int num, StringBuilder buf)
+   {
+	   buf.append("<a href='#' onclick=\"")
+         .append(generateEventScript(num))
+         .append("\">")
+         .append(num + 1)
+         .append("</a>&nbsp;");
+   }
+   
+   private void createDigitForPage(int num, StringBuilder buf)
+   {
+	   buf.append("<b>")
+         .append(num + 1)
+         .append("</b>&nbsp;");
+   }
+   
+   private void encodeType0(StringBuilder buf, int currentPage, int pageCount)
+   {
+	   int totalIndex = (pageCount < 10 ? pageCount : 10);
+	   for (int i=0; i<totalIndex; i++)
+	   {
+	      if (i != currentPage)
+	      {
+	         createClicableDigitForPage(i, buf);
+	      }
+	      else
+	      {
+	         createDigitForPage(i, buf);
+	      }
+	   }
+	   // clickable digits for pages 20 to 100 (in jumps of 10)
+	   if (pageCount >= 20)
+	   {
+	      buf.append("...&nbsp;");
+	      totalIndex = (pageCount / 10) * 10;
+	      totalIndex = (totalIndex < 100 ? totalIndex : 100);
+	      for (int i=19; i<totalIndex; i += 10)
+	      {
+	         if (i != currentPage)
+	         {
+	            createClicableDigitForPage(i, buf);
+	         }
+	         else
+	         {
+	            createDigitForPage(i, buf);
+	         }
+	      }
+	   }
+	   // clickable digits for last page if > 10 and not already shown
+	   if ((pageCount > 10) && (pageCount % 10 != 0))
+	   {
+	      if (pageCount-1 != currentPage)
+	      {
+	         if (pageCount < 20)
+	         {
+	            buf.append("...&nbsp;");
+	         }
+
+	         createClicableDigitForPage(pageCount - 1, buf);
+	      }
+	      else
+	      {
+	         if (pageCount < 20)
+	         {
+	            buf.append("...&nbsp;");
+	         }
+	         createDigitForPage(pageCount - 1, buf);
+	      }
+	   }
+   }
+   
+   private void encodeType1(StringBuilder buf, int currentPage, int pageCount)
+   {
+      // clickable digits for pages 1 to 10
+      int totalIndex = (pageCount < 10 ? pageCount : 10);
+      int number = -1;
+      if (currentPage == 0)
+      {
+         number = generateClickableDigitForPageCurrent(currentPage, pageCount, buf, false, currentPage + VISIBLE_PAGE_RANGE + 1 < pageCount);
+      }
+      
+      if (currentPage > VISIBLE_PAGE_RANGE + 1)
+      {
+         createClicableDigitForPage(0, buf);
+      }
+      
+      if (currentPage <= 9 && currentPage != 0)
+      {
+         number = generateClickableDigitForPageCurrent(currentPage, pageCount, buf, currentPage > VISIBLE_PAGE_RANGE + 1, currentPage + VISIBLE_PAGE_RANGE + 1 < pageCount);
+      }
+      
+      // clickable digits for pages 20 to 100, 101 to 200, ...  (in jumps of 10)
+      if (number <= 9 && currentPage < 100 && pageCount > 9)
+      {
+         createClicableDigitForPage(9, buf);
+      }
+      
+      // clickable digits for pages 20 to 100 (in jumps of 10)
+      if (pageCount >= 10)
+      {
+         int i = 19;
+         totalIndex = (pageCount / 10) * 10;
+         totalIndex = (totalIndex < 100 ? totalIndex : 100);
+         int stepIndex = (currentPage + 1) / 100;
+         if (stepIndex > 0)
+         {
+            i = (100 * stepIndex);
+            totalIndex = i + 100;
+            i--;
+            if (pageCount < totalIndex)
+            {
+               totalIndex = pageCount;
+            }
+         }
+         for (; i < totalIndex; i += 10)
+         {
+            if (i <= currentPage && currentPage <= (i + VISIBLE_PAGE_RANGE))
+            {
+               generateClickableDigitForPageCurrent(currentPage, pageCount, buf, true, (currentPage + 1 + VISIBLE_PAGE_RANGE) < totalIndex);
+               continue;
+            }
+            if (currentPage < i && currentPage > (i-10 + VISIBLE_PAGE_RANGE))
+            {
+               number = generateClickableDigitForPageCurrent(currentPage, pageCount, buf, true, (currentPage + VISIBLE_PAGE_RANGE + 2) < totalIndex);
+               if (number + 1 < pageCount)
+               {
+                  buf.append("...&nbsp;");
+               }
+               if (currentPage + VISIBLE_PAGE_RANGE >= i)
+               {
+                  continue;
+               }
+            }
+            if (i != currentPage)
+            {
+               createClicableDigitForPage(i, buf);
+            }
+            else
+            {
+               createDigitForPage(i, buf);
+            }
+         }
+      }
+      
+      // clickable digits for last page
+      if (number != pageCount && totalIndex < pageCount)
+      {
+         if (pageCount > number)
+         {
+            createClicableDigitForPage(pageCount - 1, buf);
+         }
+         else
+         {
+            createDigitForPage(pageCount - 1, buf);
+         }
+      }
+   }
+   
+   private void encodeType2(StringBuilder buf, int currentPage, int pageCount)
+   {
+	   int number = AMOUNT_FIRST_PAGES;
+	   if (currentPage + VISIBLE_PAGE_RANGE < AMOUNT_FIRST_PAGES)
+	   {
+	      int totalIndex = AMOUNT_FIRST_PAGES < pageCount ? AMOUNT_FIRST_PAGES : pageCount;
+	      for (int i = 0; i < totalIndex; i++)
+	      {
+	         if (i != currentPage)
+	         {
+	            createClicableDigitForPage(i, buf);
+	         }
+	         else
+	         {
+	            createDigitForPage(i, buf);
+	         }
+	      }
+	      if (currentPage + VISIBLE_PAGE_RANGE + 1 < pageCount)
+         {
+	         buf.append("...&nbsp;");
+         }
+	   }
+	   else
+	   {
+	      createClicableDigitForPage(0, buf);
+	      number = generateClickableDigitForPageCurrent(currentPage, pageCount, buf, currentPage > VISIBLE_PAGE_RANGE + 1, (currentPage + 1 + VISIBLE_PAGE_RANGE) < pageCount);
+	   }
+	   
+	   if (number < pageCount)
+	   {
+	      if (pageCount > number)
+	      {
+	         createClicableDigitForPage(pageCount - 1, buf);
+	      }
+	      else
+	      {
+	         createDigitForPage(pageCount - 1, buf);
+	      }
+	   }
+   }
+   
+   //clickable digits for pages current page - 3 and current page + 3
+   private int generateClickableDigitForPageCurrent(int currentPage, int pageCount, StringBuilder buf, boolean startDivider, boolean finishDivider)
+   {
+      int startPage = currentPage - VISIBLE_PAGE_RANGE;
+      if (startPage < 0)
+      {
+         startPage = 0;
+      }
+      if (startDivider)
+      {
+         buf.append("...&nbsp;");
+      }
+      for (int i = startPage; i < currentPage; i++)
+      {
+         createClicableDigitForPage(i, buf);
+      }
+      
+      buf.append("<b>")
+         .append(currentPage + 1)
+         .append("</b>&nbsp;");
+      
+      int i = currentPage + 1;
+      int finishPage = currentPage + VISIBLE_PAGE_RANGE;
+      if (finishPage >= pageCount)
+      {
+         finishPage = pageCount - 1;
+      }
+      for (; i <= finishPage; i++)
+      {
+         createClicableDigitForPage(i, buf);
+      }
+      if (finishDivider)
+      {
+         buf.append("...&nbsp;");
+      }
+      
+      return i;
    }
 
    /**
@@ -332,6 +567,63 @@ public class UIDataPager extends UICommand
       return dataContainer.getClientId(getFacesContext()) + NamingContainer.SEPARATOR_CHAR + "pager";
    }
    
+   /**
+    * Output the JavaScript event script to handle onkeyup event in the Page Number input.
+    * It validates and sends appropriate page number on 'Enter'.
+    * 
+    * @return JavaScript code
+    */
+   private String generateInputOnkeyupScript()
+   {
+       final String formClientId = Utils.getParentForm(getFacesContext(), this).getClientId(getFacesContext());
+       final StringBuilder script = new StringBuilder(128);
+       script.append("function validateAndSubmit(e)");
+       script.append("{");
+       script.append("  var keycode;");
+       script.append("  if (window.event) keycode = window.event.keyCode;");
+       script.append("  else if (e) keycode = e.which;");
+       script.append("  if (keycode == 13)");
+       script.append("  {");
+       script.append("      var inputControl = document.getElementById('").append(getPageInputId()).append("');");
+       script.append("      var val = parseInt(inputControl.value);");
+       script.append("      if (val == 'NaN' || document.forms['").append(formClientId).append("']['").append(getHiddenFieldName()).append("']==undefined)");
+       script.append("      { inputControl.value = 1; return false; }");
+       script.append("      else");
+       script.append("      {   val = (val-1)>=0 ? val-1 : 0; ");
+       script.append("          document.forms['").append(formClientId).append("']['").append(getHiddenFieldName()).append("'].value=val;");
+       script.append("          document.forms['").append(formClientId).append("'].submit(); return false;");
+       script.append("      }");
+       script.append("  }");
+       script.append("  return true;");
+       script.append("}; return validateAndSubmit(event);");
+       return script.toString();
+   }
+   
+   /**
+    * Output the JavaScript event script to handle onkeydown event in the Page Number input.
+    * It handles only digits and some 'useful' keys.
+    * @return JavaScript code
+    */
+   private String generateInputOnkeydownScript()
+   {
+       final StringBuilder script = new StringBuilder(128);
+       script.append("function onlyDigits(e)");
+       script.append("{");
+       script.append("  var keycode;");
+       script.append("  if (window.event) keycode = window.event.keyCode;");
+       script.append("  else if (e) keycode = e.which;");
+       script.append("  var keychar = String.fromCharCode(keycode);");
+       script.append("  var numcheck = /\\d/;");
+       script.append("  return keycode==13 || keycode==8 || keycode==37 || keycode==39 || keycode==46 || (keycode>=96 && keycode<=105) || numcheck.test(keychar);");
+       script.append("}; return onlyDigits(event);");
+       return script.toString();
+   }
+   
+   private String getPageInputId()
+   {
+       return getHiddenFieldName() + NamingContainer.SEPARATOR_CHAR + "pageNamber";
+   }
+   
    
    // ------------------------------------------------------------------------------
    // Inner classes
@@ -341,12 +633,22 @@ public class UIDataPager extends UICommand
     */
    private static class PageEvent extends ActionEvent
    {
-      public PageEvent(UIComponent component, int page)
-      {
-         super(component);
-         Page = page;
-      }
-      
-      public int Page = 0;
+       private static final long serialVersionUID = -5338654505243607790L;
+
+       public PageEvent(UIComponent component, int page)
+       {
+           super(component);
+           Page = page;
+       }
+       public int Page = 0;
+   }
+   
+   
+   /**
+    * Enumeration of the available Data Pager display types see ETWOONE-389
+    */
+   private enum PagerType
+   {
+      STANDARD, DECADES, TRACKPAGE
    }
 }

@@ -35,6 +35,7 @@ import javax.servlet.jsp.tagext.TagSupport;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.coci.CCProperties;
+import org.alfresco.web.ui.common.Utils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -228,11 +229,11 @@ public class PageTag extends TagSupport
             out.write("<html><head><title>");
             if (this.titleId != null && this.titleId.length() != 0)
             {
-               out.write(Application.getMessage(pageContext.getSession(), this.titleId));
+               out.write(Utils.encode(Application.getMessage(pageContext.getSession(), this.titleId)));
             }
             else if (this.title != null && this.title.length() != 0)
             {
-               out.write(this.title);
+               out.write(Utils.encode(this.title));
             }
             else
             {

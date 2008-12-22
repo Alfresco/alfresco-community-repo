@@ -196,7 +196,7 @@ public class UIAssociationEditor extends BaseAssociationEditor
             	   displayString = Application.getMessage(context, MSG_WARN_CANNOT_VIEW_TARGET_DETAILS);
                }
             
-               out.write(displayString);
+               out.write(Utils.encode(displayString));
             }
             out.write("</td></tr>");
          }

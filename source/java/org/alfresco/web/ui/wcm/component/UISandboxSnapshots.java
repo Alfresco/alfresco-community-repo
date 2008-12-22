@@ -256,13 +256,13 @@ public class UISandboxSnapshots extends SelfRenderingComponent
                     int version = item.getVersionID();
 
                     out.write("<tr><td>");
-                    out.write(item.getTag());
+                    out.write(Utils.encode(item.getTag()));
                     out.write("</td><td>");
-                    out.write(item.getDescription() != null ? item.getDescription() : "");
+                    out.write(item.getDescription() != null ? Utils.encode(item.getDescription()) : "");
                     out.write("</td><td>");
                     out.write(df.format(new Date(item.getCreateDate())));
                     out.write("</td><td>");
-                    out.write(item.getCreator());
+                    out.write(Utils.encode(item.getCreator()));
                     out.write("</td><td>");
                     out.write(Integer.toString(version));
                     out.write("</td><td>");
@@ -286,7 +286,6 @@ public class UISandboxSnapshots extends SelfRenderingComponent
                         params.put("sandbox", sandbox);
                         params.put("version", "#{" + REQUEST_SNAPVERSION + "}");
                         action = createAction(context, sandbox, ACT_SNAPSHOT_REVERT, "/images/icons/revert.gif", "#{AVMBrowseBean.revertSnapshot}", null, null, params);
-
                     }
 
                     requestMap.put(REQUEST_SNAPVERSION, Integer.toString(item.getVersionID()));
@@ -323,11 +322,10 @@ public class UISandboxSnapshots extends SelfRenderingComponent
                         out.write("&nbsp;&nbsp;");
 
                         // Compare To Current Snapshot
-
                         action = findAction(ACT_SNAPSHOT_COMPARE_TO_CURRENT, sandbox);
                         if (action == null)
                         {
-                            Map<String, String> params = new HashMap<String, String>(2, 1.0f);
+                            Map<String, String> params = new HashMap<String, String>(4, 1.0f);
                             params.put("sandbox", sandbox);
                             params.put("store", sandbox);
                             params.put("version", "#{" + REQUEST_SNAPVERSION + "}");
@@ -357,7 +355,7 @@ public class UISandboxSnapshots extends SelfRenderingComponent
                         Utils.encodeRecursive(context, action);
                     }
                     out.write("&nbsp;&nbsp;");
-                    // //Compare To Any Snapshot
+                    // Compare To Any Snapshot
                     action = findAction(ACT_SNAPSHOT_COMPARE_TO_ANY, sandbox);
                     if (action == null)
                     {

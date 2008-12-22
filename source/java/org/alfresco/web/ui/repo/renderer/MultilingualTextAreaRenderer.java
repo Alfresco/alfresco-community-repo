@@ -51,7 +51,11 @@ public class MultilingualTextAreaRenderer extends HtmlTextareaRenderer
       // to workaround a bug in MyFaces where it appears a new line gets removed 
       // in the process view/edit process add it back (ETWOONE-91)
       Object value = ((ValueHolder) uiComponent).getValue();
-      String valueStr = "\r\n" + (String)value;
+      String valueStr = null;
+      if (value != null)
+      {
+         valueStr = "\r\n" + (String)value;
+      }
       ((ValueHolder) uiComponent).setValue(valueStr);
       super.encodeTextArea(facesContext, uiComponent);
 }

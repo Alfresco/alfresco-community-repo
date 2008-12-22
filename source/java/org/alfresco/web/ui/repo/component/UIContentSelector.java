@@ -329,9 +329,9 @@ public class UIContentSelector extends UIInput
             out.write("<option value='");
             out.write(item.toString());
             out.write("'>");
-            out.write(Repository.getDisplayPath(nodeService.getPath(item)));
+            out.write(Utils.encode(Repository.getDisplayPath(nodeService.getPath(item))));
             out.write("/");
-            out.write(Repository.getNameForNode(nodeService, item));
+            out.write(Utils.encode(Repository.getNameForNode(nodeService, item)));
             out.write("</option>");
          }
       }

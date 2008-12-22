@@ -53,8 +53,15 @@ function handleErrorDojo(type, errObj)
  */
 function handleErrorYahoo(e)
 {
-	// TODO: Show a nicer error page, an alert will do for now!
-   alert(e.status + " : " + e.statusText);
+   if (e.status == 401)
+   {
+      document.location = window.location.protocol + "//" + window.location.host + getContextPath();
+   }
+   else
+   {
+      // TODO: Show a nicer error page, an alert will do for now!
+      alert(e.status + " : " + e.statusText);
+   }
 }
 
 /**

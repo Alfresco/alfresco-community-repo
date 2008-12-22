@@ -62,10 +62,17 @@ function loadDataForNode(node, onCompleteCallback)
       },
       failure: function(o)
       {
-         handleErrorYahoo("Error: Failed to retrieve children for node: " + o.argument[0].data.nodeRef);
-         
-         // execute the callback method
-         o.argument[1]();
+         if (o.status == 401)
+         {
+            document.location = window.location.protocol + "//" + window.location.host + getContextPath();
+         }
+         else
+         {
+            handleErrorYahoo("Error: Failed to retrieve children for node: " + o.argument[0].data.nodeRef);
+
+            // execute the callback method
+            o.argument[1]();
+         }
       },
       argument: [node, onCompleteCallback]
    }

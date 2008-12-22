@@ -754,7 +754,7 @@ public class TrashcanDialog extends BaseDialogBean implements IContextListener
          }
          buf.append("<img width=16 height=16 alt='' src='").append(contextPath).append(img).append("'>");
          buf.append("</td><td>");
-         buf.append(node.getName());
+         buf.append(Utils.encode(node.getName()));
          buf.append("</td>");
          
          if (report)
@@ -790,12 +790,12 @@ public class TrashcanDialog extends BaseDialogBean implements IContextListener
                ChildAssociationRef childRef = (ChildAssociationRef)node.getProperties().get(ContentModel.PROP_ARCHIVED_ORIGINAL_PARENT_ASSOC);
                if (getNodeService().exists(childRef.getParentRef()))
                {
-                  buf.append(Repository.getNamePath(getNodeService(), getNodeService().getPath(childRef.getParentRef()), null, "/", null));
+                  buf.append(Utils.encode(Repository.getNamePath(getNodeService(), getNodeService().getPath(childRef.getParentRef()), null, "/", null)));
                }
             }
             else
             {
-               buf.append(Repository.getNamePath(getNodeService(), getNodeService().getPath(node.getNodeRef()), null, "/", null));
+               buf.append(Utils.encode(Repository.getNamePath(getNodeService(), getNodeService().getPath(node.getNodeRef()), null, "/", null)));
             }
             buf.append("</td>");
          }

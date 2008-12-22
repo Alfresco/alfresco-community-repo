@@ -86,6 +86,8 @@ import org.springframework.web.jsf.FacesContextUtils;
  */
 public final class Utils extends StringUtils
 {
+   public static final String USER_AGENT_FIREFOX = "Firefox";
+   public static final String USER_AGENT_MSIE = "MSIE";
    private static final String MSG_TIME_PATTERN = "time_pattern";
    private static final String MSG_DATE_PATTERN = "date_pattern";
    private static final String MSG_DATE_TIME_PATTERN = "date_time_pattern";
@@ -507,6 +509,26 @@ public final class Utils extends StringUtils
    {
       return buildImageTag(context, image, width, height, alt, onclick, null);
    }
+
+   /**
+    * Build a context path safe image tag for the supplied image path.
+    * Image path should be supplied with a leading slash '/'.
+    * 
+    * @param context       FacesContext
+    * @param image         The local image path from the web folder with leading slash '/'
+    * @param width         Width in pixels
+    * @param height        Height in pixels
+    * @param alt           Optional alt/title text
+    * @param onclick       JavaScript onclick event handler code
+    * @param verticalAlign Optional HTML alignment value
+    * 
+    * @return Populated <code>img</code> tag
+    */
+   public static String buildImageTag(FacesContext context, String image, int width, int height,
+                                      String alt, String onclick, String verticalAlign)
+   {
+       return buildImageTag(context, image, width, height, alt, onclick, verticalAlign, null);
+   }
    
    /**
     * Build a context path safe image tag for the supplied image path.
@@ -518,16 +540,17 @@ public final class Utils extends StringUtils
     * @param height        Height in pixels
     * @param alt           Optional alt/title text
     * @param onclick       JavaScript onclick event handler code
-    * @param verticalAlign         Optional HTML alignment value
+    * @param verticalAlign Optional HTML alignment value
+    * @param style         Optional inline CSS styling
     * 
     * @return Populated <code>img</code> tag
     */
    public static String buildImageTag(FacesContext context, String image, int width, int height,
-                                      String alt, String onclick, String verticalAlign)
+                                      String alt, String onclick, String verticalAlign, String style)
    {
       StringBuilder buf = new StringBuilder(200);
       
-      String style = "border-width:0px;";
+      style = style != null ? "border-width:0px; " + style : "border-width:0px;";
       buf.append("<img src='")
          .append(context.getExternalContext().getRequestContextPath())
          .append(image)
@@ -991,5 +1014,25 @@ public final class Utils extends StringUtils
       }
       
       return description;
+   }
+
+   /**
+    * @return the browser User-Agent header value trimmed to either "Firefox" or "MSIE" as appropriate.
+    */
+   public static String getUserAgent(FacesContext context)
+   {
+      final String userAgent = context.getExternalContext().getRequestHeaderMap().get("User-Agent").toString();
+      if (userAgent != null)
+      {
+         if (userAgent.indexOf("Firefox/") != -1)
+         {
+            return USER_AGENT_FIREFOX;
+         }
+         else if (userAgent.indexOf("MSIE") != -1)
+         {
+            return USER_AGENT_MSIE;
+         }
+      }
+      return userAgent;
    }
 }

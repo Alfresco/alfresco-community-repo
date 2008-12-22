@@ -174,7 +174,7 @@ public class UIStatusMessage extends SelfRenderingComponent implements Serializa
       out.write("&nbsp;<span class='");
       out.write(style);
       out.write("'>");
-      out.write(msg.getSummary());
+      out.write(Utils.encode(msg.getSummary()));
       out.write(" - ");
       out.write(Utils.encode(msg.getDetail()));
       out.write("</span>");

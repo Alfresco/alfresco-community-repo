@@ -194,7 +194,7 @@ public class ImportDialog extends BaseDialogBean
    public String getFileUploadSuccessMsg()
    {
       String msg = Application.getMessage(FacesContext.getCurrentInstance(), "file_upload_success");
-      return MessageFormat.format(msg, new Object[] {getFileName()});
+      return MessageFormat.format(msg, new Object[] {Utils.encode(getFileName())});
    }
    
    /**

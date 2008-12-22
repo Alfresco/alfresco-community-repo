@@ -27,6 +27,7 @@ package org.alfresco.web.bean.spaces;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.faces.context.FacesContext;
 import javax.transaction.UserTransaction;
@@ -65,9 +66,24 @@ public class DeleteSpaceDialog extends BaseDialogBean
    
    private String deleteMode = DELETE_ALL; 
    
+   protected boolean hasMultipleParents = false;
 
    // ------------------------------------------------------------------------------
    // Dialog implementation
+   
+   @Override
+   public void init(Map<String, String> parameters)
+   {
+      super.init(parameters);
+      
+      this.hasMultipleParents = false;
+      
+      String strHasMultipleParents = this.parameters.get("hasMultipleParents");
+      if (strHasMultipleParents != null && "true".equals(strHasMultipleParents))
+      {
+         this.hasMultipleParents = true;
+      }
+   }
    
    @Override
    protected String finishImpl(FacesContext context, String outcome)
@@ -248,5 +264,13 @@ public class DeleteSpaceDialog extends BaseDialogBean
    public void setDeleteMode(String deleteMode)
    {
       this.deleteMode = deleteMode;
+   }
+
+   /**
+    * @return true if the space has multiple parents
+    */
+   public boolean getHasMultipleParents()
+   {
+      return this.hasMultipleParents;
    }
 }

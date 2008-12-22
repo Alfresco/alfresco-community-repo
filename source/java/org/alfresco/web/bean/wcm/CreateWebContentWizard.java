@@ -866,8 +866,19 @@ public class CreateWebContentWizard extends CreateContentWizard
       final ResourceBundle bundle = Application.getBundle(FacesContext.getCurrentInstance());
 
       // TODO: show first few lines of content here?
-      return this.buildSummary(new String[] { bundle.getString("file_name"), bundle.getString("type"), bundle.getString("content_type") }, new String[] { this.getFileName(),
-            this.getSummaryObjectType(), this.getSummaryMimeType(this.mimeType) });
+      return this.buildSummary(
+            new String[] 
+            {
+               bundle.getString("file_name"), 
+               bundle.getString("type"), 
+               bundle.getString("content_type")
+            },
+            new String[] 
+            {
+               Utils.encode(this.getFileName()), 
+               this.getSummaryObjectType(), 
+               this.getSummaryMimeType(this.mimeType)
+            });
    }
 
    public boolean getEditMode()

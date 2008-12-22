@@ -127,6 +127,11 @@
        </property>
     </bean>
 
+    <!-- Bootstrap MT (multi-tenancy) if applicable -->
+    <bean id="multiTenantBootstrap" class="org.alfresco.repo.tenant.MultiTenantBootstrap" >
+        <property name="tenantAdminService" ref="tenantAdminService" />
+    </bean>
+    
     <!-- Load models -->
    <bean id="dictionaryRepositoryBootstrap" class="org.alfresco.repo.dictionary.DictionaryRepositoryBootstrap">
 
@@ -332,11 +337,7 @@
             <value>alfresco</value>
         </property>
     </bean>
-
-    <bean id="multiTenantBootstrap" class="org.alfresco.repo.tenant.MultiTenantBootstrap" >
-        <property name="tenantAdminService" ref="tenantAdminService" />
-    </bean>
-
+	
     <bean id="workflowBootstrap" parent="workflowDeployer">
         <property name="workflowDefinitions">
             <list>

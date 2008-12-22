@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -34,6 +34,11 @@ import java.util.Collections;
 import java.util.List;
 
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
+import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.service.cmr.repository.AssociationRef;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
 
 
 /**
@@ -58,6 +63,9 @@ import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
     // Transaction Invocation Handler Factory
     private static TransactionInvocationHandlerFactory transactionHandlerFactory = null;
     
+    // Tenant Service
+    private static TenantService tenantService = null;
+    
     
     /**
      * Construct.
@@ -80,6 +88,16 @@ import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
     protected static void setTransactionInvocationHandlerFactory(TransactionInvocationHandlerFactory factory)
     {
         transactionHandlerFactory = factory;
+    }
+    
+    /**
+     * Sets the Tenant Service
+     * 
+     * @param service
+     */
+    protected static void setTenantService(TenantService service)
+    {
+        tenantService = service;
     }
 
     
@@ -222,6 +240,43 @@ import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
          */
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable
         {
+            if ((tenantService != null) && (tenantService.isEnabled()) && (args != null))
+            {
+                // Convert each of the arguments to the spoofed (no tenant prefix) reference
+                for (int i = 0; i < args.length; i++)
+                {
+                    Object arg = args[i];
+                    Object newArg = arg;
+                    if (arg == null)
+                    {
+                        // No conversion possible
+                    }
+                    if (arg instanceof StoreRef)
+                    {
+                        StoreRef ref = (StoreRef) arg;
+                        newArg = tenantService.getBaseName(ref);
+                    }
+                    else if (arg instanceof NodeRef)
+                    {
+                        NodeRef ref = (NodeRef) arg;
+                        newArg = tenantService.getBaseName(ref);
+                    }
+                    else if (arg instanceof ChildAssociationRef)
+                    {
+                        ChildAssociationRef ref = (ChildAssociationRef) arg;
+                        newArg = tenantService.getBaseName(ref);
+                    }
+                    else if (arg instanceof AssociationRef)
+                    {
+                        AssociationRef ref = (AssociationRef) arg;
+                        newArg = tenantService.getBaseName(ref);
+                    }
+                    
+                    // Substitute the new value
+                    args[i] = newArg;
+                }
+            }
+            
             // Handle PolicyList level methods
             if (method.getDeclaringClass().equals(PolicyList.class))
             {

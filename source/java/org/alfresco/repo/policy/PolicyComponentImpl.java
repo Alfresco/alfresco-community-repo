@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.repo.policy.Policy.Arg;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -101,6 +102,16 @@ public class PolicyComponentImpl implements PolicyComponent
     public void setBehaviourFilter(BehaviourFilter filter)
     {
         this.behaviourFilter = filter;
+    }
+    
+    /**
+     * Sets the tenant service
+     * 
+     * @param tenantService
+     */
+    public void setTenantService(TenantService tenantService)
+    {
+        PolicyFactory.setTenantService(tenantService);
     }
     
     

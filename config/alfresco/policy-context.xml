@@ -38,6 +38,9 @@
         <property name="behaviourFilter">
             <ref bean="policyBehaviourFilter"/>
         </property>
+        <property name="tenantService">
+            <ref bean="tenantService"/>
+        </property>
         <property name="transactionInvocationHandlerFactory">
         	<ref bean="policyTransactionHandlerFactory"/>
         </property>

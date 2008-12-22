@@ -463,13 +463,20 @@ public abstract class AuthenticationUtil
         }
     }
     
-    private static ThreadLocal<Stack<Authentication>> threadLocalFullAuthenticationStack;
-    private static ThreadLocal<Stack<Authentication>> threadLocalRunAsAuthenticationStack;
-    static
-    {
-        threadLocalFullAuthenticationStack = new ThreadLocal<Stack<Authentication>>();
-        threadLocalRunAsAuthenticationStack = new ThreadLocal<Stack<Authentication>>();
-    }
+    static class ThreadLocalStack extends ThreadLocal<Stack<Authentication>> {
+
+        /* (non-Javadoc)
+         * @see java.lang.ThreadLocal#initialValue()
+         */
+        @Override
+        protected Stack<Authentication> initialValue()
+        {
+            return new Stack<Authentication>();
+        }
+        
+    }    
+    private static ThreadLocal<Stack<Authentication>> threadLocalFullAuthenticationStack = new ThreadLocalStack();
+    private static ThreadLocal<Stack<Authentication>> threadLocalRunAsAuthenticationStack = new ThreadLocalStack();
     
     /**
      * Push the current authentication context onto a threadlocal stack.
@@ -478,21 +485,8 @@ public abstract class AuthenticationUtil
     {
         Authentication originalFullAuthentication = AuthenticationUtil.getFullAuthentication();
         Authentication originalRunAsAuthentication = AuthenticationUtil.getRunAsAuthentication();
-        
-        Stack<Authentication> fullAuthenticationStack = threadLocalFullAuthenticationStack.get();
-        if (fullAuthenticationStack == null)
-        {
-            fullAuthenticationStack = new Stack<Authentication>();
-            threadLocalFullAuthenticationStack.set(fullAuthenticationStack);
-        }
-        Stack<Authentication> runAsAuthenticationStack = threadLocalRunAsAuthenticationStack.get();
-        if (runAsAuthenticationStack == null)
-        {
-            runAsAuthenticationStack = new Stack<Authentication>();
-            threadLocalRunAsAuthenticationStack.set(runAsAuthenticationStack);
-        }
-        fullAuthenticationStack.push(originalFullAuthentication);
-        runAsAuthenticationStack.push(originalRunAsAuthentication);
+        threadLocalFullAuthenticationStack.get().push(originalFullAuthentication);
+        threadLocalRunAsAuthenticationStack.get().push(originalRunAsAuthentication);
     }
     
     /**
@@ -500,21 +494,8 @@ public abstract class AuthenticationUtil
      */
     public static void popAuthentication()
     {
-        Stack<Authentication> fullAuthenticationStack = threadLocalFullAuthenticationStack.get();
-        if (fullAuthenticationStack == null)
-        {
-            fullAuthenticationStack = new Stack<Authentication>();
-            threadLocalFullAuthenticationStack.set(fullAuthenticationStack);
-        }
-        Stack<Authentication> runAsAuthenticationStack = threadLocalRunAsAuthenticationStack.get();
-        if (runAsAuthenticationStack == null)
-        {
-            runAsAuthenticationStack = new Stack<Authentication>();
-            threadLocalRunAsAuthenticationStack.set(runAsAuthenticationStack);
-        }
-        
-        Authentication originalFullAuthentication = fullAuthenticationStack.pop();
-        Authentication originalRunAsAuthentication = runAsAuthenticationStack.pop();
+        Authentication originalFullAuthentication = threadLocalFullAuthenticationStack.get().pop();
+        Authentication originalRunAsAuthentication = threadLocalRunAsAuthenticationStack.get().pop();
         if (originalFullAuthentication == null)
         {
             AuthenticationUtil.clearCurrentSecurityContext();

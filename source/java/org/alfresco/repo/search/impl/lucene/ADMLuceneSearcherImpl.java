@@ -26,9 +26,7 @@ package org.alfresco.repo.search.impl.lucene;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.io.StringReader;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -48,8 +46,6 @@ import org.alfresco.repo.search.SearcherException;
 import org.alfresco.repo.search.impl.NodeSearcher;
 import org.alfresco.repo.search.impl.lucene.QueryParser.Operator;
 import org.alfresco.repo.search.impl.lucene.analysis.DateTimeAnalyser;
-import org.alfresco.repo.search.impl.lucene.analysis.MLTokenDuplicator;
-import org.alfresco.repo.search.impl.lucene.analysis.VerbatimAnalyser;
 import org.alfresco.repo.search.results.SortedResultSet;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -391,7 +387,7 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
 
                 Path[] paths = searchParameters.getAttributePaths().toArray(new Path[0]);
                 ResultSet rs = new LuceneResultSet(hits, searcher, nodeService, tenantService, paths, searchParameters, getLuceneConfig());
-                if (requiresPostSort)
+                if(getLuceneConfig().getPostSortDateTime() && requiresPostSort)
                 {
                     ResultSet sorted = new SortedResultSet(rs, nodeService, searchParameters, namespacePrefixResolver);
                     return sorted;

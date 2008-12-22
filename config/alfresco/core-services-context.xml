@@ -559,8 +559,12 @@
 		<property name="threadPoolExecutor">
 			<ref bean="indexThreadPoolExecutor"></ref>
 		</property>
-      <property name="bulkLoader">
+        <property name="bulkLoader">
 			<ref bean="hibernateL1CacheBulkLoader"></ref>
+		</property>
+		<!-- over-ride to false for pre 3.0 behaviour -->
+		<property name="postSortDateTime">
+			<value>true</value>
 		</property>
     </bean>
 	
@@ -689,6 +693,10 @@
         </property>
         <property name="threadPoolExecutor">
 			<ref bean="indexThreadPoolExecutor"></ref>
+		</property>
+		<!-- over-ride to false for pre 3.0 behaviour -->
+		<property name="postSortDateTime">
+			<value>true</value>
 		</property>
     </bean>
 

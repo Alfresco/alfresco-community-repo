@@ -209,7 +209,20 @@ public interface LuceneConfig
      * @return
      */
     public int getMaxLinkAspectCacheSize();
-  
+
+    /**
+     * If we are using the DateAnalyser then lucene sort is only to the date, as that is all that is in the index.
+     * If this is true, a query that defines a sort on a datetime field will do a post sort in Java.
+     * 
+     * For the DateTimeAnalyser no post sort is done.
+     * (The default config does do a post sort)
+     * 
+     * In the future, this behaviour may also be set per query on the SearchParameters object.
+     * 
+     * @return
+     */
+    public boolean getPostSortDateTime();
+
     /**
      * Gets the application context through which events can be broadcast
      * @return

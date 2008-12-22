@@ -185,6 +185,8 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
 
     private boolean cacheEnabled = true;
 
+    private boolean postSortDateTime;
+
     private ConfigurableApplicationContext applicationContext;
 
     /**
@@ -1715,6 +1717,16 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
     public void setCacheEnabled(boolean cacheEnabled)
     {
         this.cacheEnabled = cacheEnabled;
+    }
+    
+    public boolean getPostSortDateTime()
+    {
+       return postSortDateTime;
+    }
+    
+    public void setPostSortDateTime(boolean postSortDateTime)
+    {
+       this.postSortDateTime = postSortDateTime;
     }
 
     protected abstract List<StoreRef> getAllStores();

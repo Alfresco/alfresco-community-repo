@@ -33,6 +33,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.view.ImporterService;
 import org.alfresco.service.cmr.view.Location;
+import org.alfresco.service.cmr.view.ImporterBinding.UUID_BINDING;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.debug.NodeStoreInspector;
 
@@ -80,6 +81,54 @@ public class ImporterComponentTest extends BaseSpringTest
         System.out.println(NodeStoreInspector.dumpNodeStore(nodeService, storeRef));
     }
     
+    public void testImportWithUuidBinding() throws Exception
+    {
+        Location location = new Location(storeRef);
+
+        // First pass must succeed
+        InputStream test1 = getClass().getClassLoader().getResourceAsStream("org/alfresco/repo/importer/importercomponent_test.xml");
+        InputStreamReader testReader1 = new InputStreamReader(test1, "UTF-8");
+        try
+        {
+            importerService.importView(testReader1, location, null, new ImportTimerProgress());
+        }
+        finally
+        {
+            testReader1.close();
+        }
+        // Second pass must succeed (defaults to CREATE_NEW)
+        InputStream test2 = getClass().getClassLoader().getResourceAsStream("org/alfresco/repo/importer/importercomponent_test.xml");
+        InputStreamReader testReader2 = new InputStreamReader(test2, "UTF-8");
+        try
+        {
+            importerBootstrap.setUuidBinding(UUID_BINDING.CREATE_NEW_WITH_UUID);
+            importerService.importView(testReader2, location, null, new ImportTimerProgress());
+        }
+        finally
+        {
+            testReader2.close();
+        }
+        // Set the UUID binding to guarantee a failure
+        InputStream test3 = getClass().getClassLoader().getResourceAsStream("org/alfresco/repo/importer/importercomponent_test.xml");
+        InputStreamReader testReader3 = new InputStreamReader(test3, "UTF-8");
+        try
+        {
+            importerBootstrap.setUuidBinding(UUID_BINDING.THROW_ON_COLLISION);
+            importerService.importView(testReader3, location, null, new ImportTimerProgress());
+            fail("Failed to detected collision of UUID on import with THROW_ON_COLLISION");
+        }
+        catch (Throwable e)
+        {
+            // Expected
+        }
+        finally
+        {
+            importerBootstrap.setUuidBinding(UUID_BINDING.CREATE_NEW_WITH_UUID);
+            testReader3.close();
+        }
+        System.out.println(NodeStoreInspector.dumpNodeStore(nodeService, storeRef));
+    }
+
     public void testBootstrap()
     {
         StoreRef bootstrapStoreRef = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.currentTimeMillis());

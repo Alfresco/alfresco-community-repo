@@ -22,6 +22,7 @@
             	<cm:auditable/>
             </view:aspects>
             <view:properties>
+                <sys:node-uuid>05efa5db-2817-4ada-a0dc-657db2b2a0ac</sys:node-uuid>
             	<cm:name>`Â¬Â¦!Â£$%^&amp;()-_=+tnu0000[]{};'#@~,</cm:name>
             	<cm:creator>testuser</cm:creator>
             	<cm:modifier>testuser</cm:modifier>

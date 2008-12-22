@@ -25,11 +25,14 @@
 package org.alfresco.repo.node;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
+import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.node.db.DbNodeServiceImpl;
 import org.alfresco.service.cmr.repository.MLText;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.QName;
@@ -130,6 +133,75 @@ public class FullNodeServiceTest extends BaseNodeServiceTest
         Serializable mlTextSer = nodeService.getProperty(rootNodeRef, BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE);
         MLText mlText = DefaultTypeConverter.INSTANCE.convert(MLText.class, mlTextSer);
         assertNull("Value returned is not null", mlText);
+    }
+
+    public void testMLValuesOnCreate() throws Exception
+    {
+        Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
+        fillProperties(BaseNodeServiceTest.TYPE_QNAME_TEST_MANY_PROPERTIES, properties);
+        // Replace the MLText value with a plain string
+        properties.put(BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE, "Bonjour");
+        // Now switch to French
+        I18NUtil.setContentLocale(Locale.FRENCH);
+        // Create a node with the value
+        NodeRef nodeRef = nodeService.createNode(
+                rootNodeRef,
+                BaseNodeServiceTest.ASSOC_TYPE_QNAME_TEST_CHILDREN,
+                QName.createQName(BaseNodeServiceTest.NAMESPACE, getName()),
+                BaseNodeServiceTest.TYPE_QNAME_TEST_MANY_PROPERTIES,
+                properties).getChildRef();
+        // Now switch to English
+        I18NUtil.setContentLocale(Locale.ENGLISH);
+        // Set the english property
+        nodeService.setProperty(nodeRef, BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE, "Hello");
+        
+        // Switch back to French and get the value
+        I18NUtil.setContentLocale(Locale.FRENCH);
+        assertEquals(
+                "Expected French value property",
+                "Bonjour",
+                nodeService.getProperty(nodeRef, BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE));
+        
+        // Switch back to English and get the value
+        I18NUtil.setContentLocale(Locale.ENGLISH);
+        assertEquals(
+                "Expected English value property",
+                "Hello",
+                nodeService.getProperty(nodeRef, BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE));
+    }
+
+    public void testMLValuesOnAddAspect() throws Exception
+    {
+        Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
+        fillProperties(BaseNodeServiceTest.TYPE_QNAME_TEST_MANY_PROPERTIES, properties);
+        // Replace the MLText value with a plain string
+        properties.put(BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE, "Bonjour");
+        // Now switch to French
+        I18NUtil.setContentLocale(Locale.FRENCH);
+        // Add an aspect
+        NodeRef nodeRef = rootNodeRef;
+        nodeService.addAspect(
+                nodeRef,
+                BaseNodeServiceTest.ASPECT_QNAME_TEST_TITLED,
+                properties);
+        // Now switch to English
+        I18NUtil.setContentLocale(Locale.ENGLISH);
+        // Set the english property
+        nodeService.setProperty(nodeRef, BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE, "Hello");
+        
+        // Switch back to French and get the value
+        I18NUtil.setContentLocale(Locale.FRENCH);
+        assertEquals(
+                "Expected French value property",
+                "Bonjour",
+                nodeService.getProperty(nodeRef, BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE));
+        
+        // Switch back to English and get the value
+        I18NUtil.setContentLocale(Locale.ENGLISH);
+        assertEquals(
+                "Expected English value property",
+                "Hello",
+                nodeService.getProperty(nodeRef, BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE));
     }
 
     /**

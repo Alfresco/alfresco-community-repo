@@ -83,9 +83,10 @@ public class ImporterBootstrap extends AbstractLifecycleBean
     private static final Log logger = LogFactory.getLog(ImporterBootstrap.class);
     private boolean logEnabled = false;
 
-    // Dependencies
     private boolean allowWrite = true;
     private boolean useExistingStore = false;
+    private UUID_BINDING uuidBinding = null;
+    // Dependencies
     private TransactionService transactionService;
     private NamespaceService namespaceService;
     private NodeService nodeService;
@@ -123,6 +124,19 @@ public class ImporterBootstrap extends AbstractLifecycleBean
     public void setUseExistingStore(boolean useExistingStore)
     {
         this.useExistingStore = useExistingStore;
+    }
+
+    /**
+     * Set the behaviour for generating UUIDs in the import.  Values are set by the
+     * {@link UUID_BINDING} enum and default to {@link UUID_BINDING#CREATE_NEW_WITH_UUID}.
+     * <p/>
+     * This setting overrides the UUID binding behaviour specified in the view properties.
+     * 
+     * @param uuidBinding       the UUID generation behaviour
+     */
+    public void setUuidBinding(UUID_BINDING uuidBinding)
+    {
+        this.uuidBinding = uuidBinding;
     }
 
     /**
@@ -420,18 +434,23 @@ public class ImporterBootstrap extends AbstractLifecycleBean
                         binding.setResourceBundle(bundle);
                     }
                         
-                    String uuidBinding = bootstrapView.getProperty(VIEW_UUID_BINDING);
-                    if (uuidBinding != null && uuidBinding.length() > 0)
+                    String viewUuidBinding = bootstrapView.getProperty(VIEW_UUID_BINDING);
+                    if (viewUuidBinding != null && viewUuidBinding.length() > 0)
                     {
                         try
                         {
-                        	binding.setUUIDBinding(UUID_BINDING.valueOf(UUID_BINDING.class, uuidBinding));
+                        	binding.setUUIDBinding(UUID_BINDING.valueOf(UUID_BINDING.class, viewUuidBinding));
                         }
                         catch(IllegalArgumentException e)
                         {
-                            throw new ImporterException("The value " + uuidBinding + " is an invalid uuidBinding");
+                            throw new ImporterException("The value " + viewUuidBinding + " is an invalid uuidBinding");
                         }
-                    }                         
+                    }
+                    // Override the UUID binding with the bean's
+                    if (this.uuidBinding != null)
+                    {
+                        binding.setUUIDBinding(this.uuidBinding);
+                    }
 
                     // Now import...
                     ImporterProgress importProgress = null;
@@ -539,13 +558,12 @@ public class ImporterBootstrap extends AbstractLifecycleBean
         private Properties configuration = null;
         private ResourceBundle resourceBundle = null;
         private Location bootstrapLocation = null;
+        /** by default, use create new strategy for bootstrap import */
+        private UUID_BINDING uuidBinding = UUID_BINDING.CREATE_NEW_WITH_UUID;
         
         private static final String IMPORT_LOCATION_UUID = "bootstrap.location.uuid";
         private static final String IMPORT_LOCATION_NODEREF = "bootstrap.location.noderef";
         private static final String IMPORT_LOCATION_PATH = "bootstrap.location.path";
-        
-        // by default, use create new strategy for bootstrap import
-        private UUID_BINDING uuidBinding = UUID_BINDING.CREATE_NEW_WITH_UUID;
         
         /**
          * Set Import Configuration
@@ -620,10 +638,6 @@ public class ImporterBootstrap extends AbstractLifecycleBean
             return value;
         }
 
-        /*
-         *  (non-Javadoc)
-         * @see org.alfresco.service.cmr.view.ImporterBinding#getUUIDBinding()
-         */
         public UUID_BINDING getUUIDBinding()
         {
         	return uuidBinding;
@@ -639,19 +653,11 @@ public class ImporterBootstrap extends AbstractLifecycleBean
         	this.uuidBinding = uuidBinding;
         }
 
-        /*
-         *  (non-Javadoc)
-         * @see org.alfresco.service.cmr.view.ImporterBinding#searchWithinTransaction()
-         */
         public boolean allowReferenceWithinTransaction()
         {
             return true;
         }
 
-        /*
-         *  (non-Javadoc)
-         * @see org.alfresco.service.cmr.view.ImporterBinding#getExcludedClasses()
-         */
         public QName[] getExcludedClasses()
         {
             // Note: Do not exclude any classes, we want to import all

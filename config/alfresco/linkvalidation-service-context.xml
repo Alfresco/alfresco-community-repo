@@ -266,7 +266,16 @@
 
         <!-- Poll interval to check getLatestSnapshotID (in milliseconds).  -->
         <!-- Note:  If pollInterval is 0, link validation is disabled.      -->
-        <property name="pollInterval"         value="5000"/>
+        <property name="pollInterval">
+        	<value>${linkvalidation.pollInterval}</value>
+        </property>
+        
+        <property name="retryInterval">
+        	<value>${linkvalidation.retryInterval}</value>
+        </property>
+        <property name="disableOnFail">
+        	<value>${linkvalidation.disableOnFail}</value>
+        </property>
 
         <!-- Timeouts  (in milliseconds) -->
         <property name="localConnectTimeout"  value="10000"/>

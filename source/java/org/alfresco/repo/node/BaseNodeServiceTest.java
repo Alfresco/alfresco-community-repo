@@ -588,6 +588,26 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
             {
                 value = new ContentData(null, MimetypeMap.EXTENSION_BINARY, 0L, "UTF-8");
             }
+            else if (propertyTypeQName.equals(DataTypeDefinition.LOCALE))
+            {
+                value = Locale.CHINESE;
+            }
+            else if (propertyTypeQName.equals(DataTypeDefinition.BOOLEAN))
+            {
+                value = Boolean.TRUE;
+            }
+            else if (propertyTypeQName.equals(DataTypeDefinition.PATH))
+            {
+                value = new Path();
+            }
+            else if (propertyTypeQName.equals(DataTypeDefinition.QNAME))
+            {
+                value = TYPE_QNAME_EXTENDED_CONTENT;
+            }
+            else if (propertyTypeQName.equals(DataTypeDefinition.CATEGORY) || propertyTypeQName.equals(DataTypeDefinition.NODE_REF))
+            {
+                value = new NodeRef("workspace://SpacesStore/12345");
+            }
             else
             {
                 value = new Long(System.currentTimeMillis());

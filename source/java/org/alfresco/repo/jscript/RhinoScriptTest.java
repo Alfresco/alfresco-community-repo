@@ -141,16 +141,11 @@ public class RhinoScriptTest extends TestCase
                         
                         // try another script eval - this time a function call returning a result
                         result = cx.evaluateString(scope, "function f(x) {return x+1} f(7)", "TestJS2", 1, null);
-                        assertEquals(8.0, cx.toNumber(result));
-                    }
-                    catch (Throwable err)
-                    {
-                        err.printStackTrace();
-                        fail(err.getMessage());
+                        assertEquals(8.0, Context.toNumber(result));
                     }
                     finally
                     {
-                        cx.exit();
+                        Context.exit();
                     }
                     
                     return null;
@@ -186,7 +181,7 @@ public class RhinoScriptTest extends TestCase
                         
                         // evaluate script that touches the wrapped NodeRef
                         Object result = cx.evaluateString(scope, "obj = rootref.getId()", "TestJS3", 1, null);
-                        assertEquals(ref1.getId(), cx.toString(result));
+                        assertEquals(ref1.getId(), Context.toString(result));
                         
                         // wrap a scriptable Alfresco Node object - the Node object is a wrapper like TemplateNode
                         ScriptNode node1 = new ScriptNode(root, serviceRegistry, scope);
@@ -196,14 +191,9 @@ public class RhinoScriptTest extends TestCase
                         // evaluate scripts that perform methods on the wrapped Node
                         result = cx.evaluateString(scope, TESTSCRIPT1, "TestJS4", 1, null);
                     }
-                    catch (Throwable err)
-                    {
-                        err.printStackTrace();
-                        fail(err.getMessage());
-                    }
                     finally
                     {
-                        cx.exit();
+                        Context.exit();
                     }
                     
                     return null;
@@ -258,10 +248,8 @@ public class RhinoScriptTest extends TestCase
                         // test executing a script directly as a String
                         scriptService.executeScriptString("javascript", TESTSCRIPT1, model);
                     }
-                    catch (Throwable err)
+                    finally
                     {
-                        err.printStackTrace();
-                        fail(err.getMessage());
                     }
                     
                     return null;
@@ -311,10 +299,8 @@ public class RhinoScriptTest extends TestCase
                         // ensure aspect has been added via script
                         assertTrue(nodeService.hasAspect(childRef.getChildRef(), ContentModel.ASPECT_LOCKABLE));
                     }
-                    catch (Throwable err)
+                    finally
                     {
-                        err.printStackTrace();
-                        fail(err.getMessage());
                     }
                     
                     return null;
@@ -361,10 +347,8 @@ public class RhinoScriptTest extends TestCase
                         System.out.println("Result from TESTSCRIPT_CLASSPATH3: " + result.toString());
                         assertTrue((Boolean)result);    // we know the result is a boolean
                     }
-                    catch (Throwable err)
+                    finally
                     {
-                        err.printStackTrace();
-                        fail(err.getMessage());
                     }
                     
                     return null;

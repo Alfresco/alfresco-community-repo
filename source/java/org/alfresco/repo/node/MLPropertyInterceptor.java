@@ -25,6 +25,7 @@
 package org.alfresco.repo.node;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
@@ -196,26 +197,20 @@ public class MLPropertyInterceptor implements MethodInterceptor
         else if (methodName.equals("setProperties"))
         {
             NodeRef nodeRef = (NodeRef) args[0];
+            Map<QName, Serializable> newProperties =(Map<QName, Serializable>) args[1];
             
             // Get the pivot translation, if appropriate
             NodeRef pivotNodeRef = getPivotNodeRef(nodeRef);
 
-            Map<QName, Serializable> newProperties =(Map<QName, Serializable>) args[1];
             // Get the current properties for the node
             Map<QName, Serializable> currentProperties = nodeService.getProperties(nodeRef);
             // Convert all properties
-            Map<QName, Serializable> convertedProperties = new HashMap<QName, Serializable>(newProperties.size() * 2);              
-            for (Map.Entry<QName, Serializable> entry : newProperties.entrySet())
-            {
-                 QName propertyQName = entry.getKey();
-                 Serializable inboundValue = entry.getValue();
-                 // Get the current property value
-                 Serializable currentValue = currentProperties.get(propertyQName);
-                 // Convert the inbound property value
-                 inboundValue = convertInboundProperty(contentLocale, nodeRef, pivotNodeRef, propertyQName, inboundValue, currentValue);
-                 // Put the value into the map
-                 convertedProperties.put(propertyQName, inboundValue);
-            }
+            Map<QName, Serializable> convertedProperties = convertInboundProperties(
+                    currentProperties,
+                    newProperties,
+                    contentLocale,
+                    nodeRef,
+                    pivotNodeRef);
             // Now complete the call by passing the converted properties
             nodeService.setProperties(nodeRef, convertedProperties);
             // Done
@@ -234,6 +229,55 @@ public class MLPropertyInterceptor implements MethodInterceptor
             
             // Pass this through to the node service
             nodeService.setProperty(nodeRef, propertyQName, inboundValue);
+            // Done
+        }
+        else if (methodName.equals("createNode") && args.length > 4)
+        {
+            NodeRef parentNodeRef = (NodeRef) args[0];
+            QName assocTypeQName = (QName) args[1];
+            QName assocQName = (QName) args[2];
+            QName nodeTypeQName = (QName) args[3];
+            Map<QName, Serializable> newProperties =(Map<QName, Serializable>) args[4];
+            if (newProperties == null)
+            {
+                newProperties = Collections.emptyMap();
+            }
+            NodeRef nodeRef = null;                 // Not created yet
+            
+            // No pivot
+            NodeRef pivotNodeRef = null;
+
+            // Convert all properties
+            Map<QName, Serializable> convertedProperties = convertInboundProperties(
+                    null,
+                    newProperties,
+                    contentLocale,
+                    nodeRef,
+                    pivotNodeRef);
+            // Now complete the call by passing the converted properties
+            ret = nodeService.createNode(parentNodeRef, assocTypeQName, assocQName, nodeTypeQName, convertedProperties);
+            // Done
+        }
+        else if (methodName.equals("addAspect") && args[2] != null)
+        {
+            NodeRef nodeRef = (NodeRef) args[0];
+            QName aspectTypeQName = (QName) args[1];
+            
+            // Get the pivot translation, if appropriate
+            NodeRef pivotNodeRef = getPivotNodeRef(nodeRef);
+
+            Map<QName, Serializable> newProperties =(Map<QName, Serializable>) args[2];
+            // Get the current properties for the node
+            Map<QName, Serializable> currentProperties = nodeService.getProperties(nodeRef);
+            // Convert all properties
+            Map<QName, Serializable> convertedProperties = convertInboundProperties(
+                    currentProperties,
+                    newProperties,
+                    contentLocale,
+                    nodeRef,
+                    pivotNodeRef);
+            // Now complete the call by passing the converted properties
+            nodeService.addAspect(nodeRef, aspectTypeQName, convertedProperties);
             // Done
         }
         else
@@ -328,6 +372,28 @@ public class MLPropertyInterceptor implements MethodInterceptor
         return ret;
     }
     
+    private Map<QName, Serializable> convertInboundProperties(
+            Map<QName, Serializable> currentProperties,
+            Map<QName, Serializable> newProperties,
+            Locale contentLocale,
+            NodeRef nodeRef,
+            NodeRef pivotNodeRef)
+    {
+        Map<QName, Serializable> convertedProperties = new HashMap<QName, Serializable>(newProperties.size() * 2);
+        for (Map.Entry<QName, Serializable> entry : newProperties.entrySet())
+        {
+             QName propertyQName = entry.getKey();
+             Serializable inboundValue = entry.getValue();
+             // Get the current property value
+             Serializable currentValue = currentProperties == null ? null : currentProperties.get(propertyQName);
+             // Convert the inbound property value
+             inboundValue = convertInboundProperty(contentLocale, nodeRef, pivotNodeRef, propertyQName, inboundValue, currentValue);
+             // Put the value into the map
+             convertedProperties.put(propertyQName, inboundValue);
+        }
+        return convertedProperties;
+    }
+    
     /**
      * 
      * @param inboundValue      The value that must be set
@@ -360,7 +426,7 @@ public class MLPropertyInterceptor implements MethodInterceptor
             {
                 // This is a multilingual single-valued property
                 // Get the current value from the node service, if not provided
-                if (currentValue == null)
+                if (currentValue == null && nodeRef != null)
                 {
                     currentValue = nodeService.getProperty(nodeRef, propertyQName);
                 }

@@ -28,7 +28,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -53,6 +52,8 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.wcm.asset.AssetInfo;
+import org.alfresco.wcm.asset.AssetInfoImpl;
 import org.alfresco.wcm.sandbox.SandboxConstants;
 import org.alfresco.wcm.sandbox.SandboxInfo;
 import org.alfresco.wcm.sandbox.SandboxService;
@@ -720,9 +721,9 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
       
       // compare user sandbox to staging sandbox - filter by current webapp, include deleted items
       String userStore = AVMUtil.buildUserMainStoreName(storeRoot, username);
-      List<AVMNodeDescriptor> nodes = sandboxService.listChangedWebApp(userStore, getWebapp(), true);
+      List<AssetInfo> assets = sandboxService.listChangedWebApp(userStore, getWebapp(), true);
       
-      if (nodes.size() != 0)
+      if (assets.size() != 0)
       {
          // info we need to calculate preview paths for assets
          int rootPathIndex = AVMUtil.buildSandboxRootPath(userStore).length();
@@ -735,6 +736,13 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
          
          String id = getClientId(fc);
          
+         // TODO - refactor to AssetInfo and getSelected calls ... etc
+         List<AVMNodeDescriptor> nodes = new ArrayList<AVMNodeDescriptor>(assets.size());
+         for (AssetInfo asset : assets)
+         {
+             // TODO
+             nodes.add(((AssetInfoImpl)asset).getAVMNodeDescriptor());
+         }
          // store lookup of username to list of modified nodes
          this.userNodes.put(username, nodes);
          
@@ -781,11 +789,11 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
          
          // output each of the modified files as a row in the table
          int rowIndex = 0;
-         for (AVMNodeDescriptor node : nodes)
+         for (AssetInfo node : assets)
          {
             // TODO: different display cases for diff.getDifferenceCode()?
             boolean isGhost = node.isDeleted();
-            String sourcePath = node.getPath();
+            String sourcePath = node.getAvmPath();
             
             // output multi-select checkbox
             out.write("<tr><td><input type='checkbox' name='");
@@ -830,11 +838,11 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
                out.write("</td><td>");
                
                // created date
-               out.write(df.format(new Date(node.getCreateDate())));
+               out.write(df.format(node.getCreatedDate()));
                out.write("</td><td>");
                
                // modified date
-               out.write(df.format(new Date(node.getModDate())));
+               out.write(df.format(node.getModifiedDate()));
                out.write("</td><td>");
                
                // build node context required for actions
@@ -846,7 +854,7 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
                // size of files
                if (node.isFile())
                {
-                  out.write(getSizeConverter().getAsString(fc, this, node.getLength()));
+                  out.write(getSizeConverter().getAsString(fc, this, node.getFileSize()));
                   out.write("</td><td>");
                
                   // add UI actions for this item
@@ -867,7 +875,7 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
                // must have been deleted from this sandbox - show as ghosted
                String name = node.getName();
                out.write("<td width=16>");
-               if (node.isDeletedFile())
+               if (node.isFile() && node.isDeleted())
                {
                   out.write(Utils.buildImageTag(fc, FileTypeImageUtils.getFileTypeImage(fc, name, true), ""));
                   out.write("</td><td style='color:#aaaaaa'>");
@@ -883,17 +891,17 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
                out.write("</td><td style='color:#aaaaaa'>");
                
                // created date
-               out.write(df.format(new Date(node.getCreateDate())));
+               out.write(df.format(node.getCreatedDate()));
                out.write("</td><td style='color:#aaaaaa'>");
                
                // modified date
-               out.write(df.format(new Date(node.getModDate())));
+               out.write(df.format(node.getModifiedDate()));
                out.write("</td><td style='color:#aaaaaa'>");
                
                // size of files
                if (node.isFile())
                {
-                  out.write(getSizeConverter().getAsString(fc, this, node.getLength()));
+                  out.write(getSizeConverter().getAsString(fc, this, node.getFileSize()));
                }
                out.write("</td><td style='color:#aaaaaa'>");
                

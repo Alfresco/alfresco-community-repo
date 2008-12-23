@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -24,22 +24,17 @@
  */
 package org.alfresco.web.bean.wcm;
 
+import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.faces.context.FacesContext;
 
-import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.avm.AVMNodeConverter;
-import org.alfresco.repo.domain.PropertyValue;
-import org.alfresco.service.cmr.avm.AVMService;
-import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.namespace.QName;
+import org.alfresco.wcm.asset.AssetService;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.repository.Repository;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Bean implementation for the AVM "Create Folder" dialog.
@@ -50,9 +45,9 @@ public class CreateFolderDialog extends BaseDialogBean
 {
    private static final long serialVersionUID = 5501238017264037644L;
 
-   private static final Log logger = LogFactory.getLog(CreateFolderDialog.class);
+   //private static final Log logger = LogFactory.getLog(CreateFolderDialog.class);
    
-   transient private AVMService avmService;
+   transient private AssetService assetService;
    protected AVMBrowseBean avmBrowseBean;
    
    protected String name;
@@ -80,20 +75,20 @@ public class CreateFolderDialog extends BaseDialogBean
    }
 
    /**
-    * @param avmService    The avmService to set.
+    * @param assetService    The assetService to set.
     */
-   public void setAvmService(AVMService avmService)
+   public void setAssetService(AssetService assetService)
    {
-      this.avmService = avmService;
+      this.assetService = assetService;
    }
    
-   protected AVMService getAvmService()
+   protected AssetService getAssetService()
    {
-      if (avmService == null)
+      if (assetService == null)
       {
-         avmService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAVMService();
+          assetService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAssetService();
       }
-      return avmService;
+      return assetService;
    }
    
    /**
@@ -155,21 +150,22 @@ public class CreateFolderDialog extends BaseDialogBean
    protected String finishImpl(FacesContext context, String outcome) throws Exception
    {
       String parent = this.avmBrowseBean.getCurrentPath();
-      this.getAvmService().createDirectory(parent, this.name);
       
-      String path = parent + '/' + this.name;
-      NodeRef nodeRef = AVMNodeConverter.ToNodeRef(-1, path);
-      this.getNodeService().addAspect(nodeRef, ApplicationModel.ASPECT_UIFACETS, null);
-      if (this.title != null && this.title.length() != 0)
+      Map<QName, Serializable> properties = new HashMap<QName, Serializable>(2);
+      if (title != null && title.length() != 0)
       {
-         this.getAvmService().setNodeProperty(path, ContentModel.PROP_TITLE, 
-                  new PropertyValue(DataTypeDefinition.TEXT, this.title));
+          properties.put(ContentModel.PROP_TITLE, title);
       }
-      if (this.description != null && this.description.length() != 0)
+      if (description != null && description.length() != 0)
       {
-         this.getAvmService().setNodeProperty(path, ContentModel.PROP_DESCRIPTION, 
-                  new PropertyValue(DataTypeDefinition.TEXT, this.description));
+          properties.put(ContentModel.PROP_DESCRIPTION, description);
       }
+      
+      String[] parts = parent.split(":");
+      String sbStoreId = parts[0];
+      String path = parts[1];
+      
+      this.getAssetService().createFolder(sbStoreId, path, this.name, properties);
       
       return outcome;
    }

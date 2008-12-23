@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -34,16 +34,12 @@ import javax.faces.model.SelectItem;
 
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
-import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
+import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.search.ResultSet;
-import org.alfresco.service.cmr.search.ResultSetRow;
-import org.alfresco.service.cmr.search.SearchService;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.wcm.webproject.WebProjectInfo;
 import org.alfresco.wcm.webproject.WebProjectService;
 import org.alfresco.web.app.Application;
@@ -70,6 +66,7 @@ public class CreateLayeredFolderDialog extends CreateFolderDialog
    protected List<SelectItem> webProjects;
    
    transient protected WebProjectService wpService;
+   transient protected AVMService avmService;
    
    /**
     * @param wpService The WebProjectService to set.
@@ -86,6 +83,23 @@ public class CreateLayeredFolderDialog extends CreateFolderDialog
           wpService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getWebProjectService();
       }
       return wpService;
+   }
+   
+   /**
+    * @param avmService    The avmService to set.
+    */
+   public void setAvmService(AVMService avmService)
+   {
+      this.avmService = avmService;
+   }
+   
+   protected AVMService getAvmService()
+   {
+      if (avmService == null)
+      {
+         avmService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAVMService();
+      }
+      return avmService;
    }
    
    // ------------------------------------------------------------------------------

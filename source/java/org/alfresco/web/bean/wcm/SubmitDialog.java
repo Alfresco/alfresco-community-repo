@@ -478,11 +478,11 @@ public class SubmitDialog extends BaseDialogBean
       // direct submit to the staging area without workflow
       List<ItemWrapper> items = getSubmitItems();
       
-      List<AVMNodeDescriptor> nodes = new ArrayList<AVMNodeDescriptor>(items.size());
+      List<String> relativePaths = new ArrayList<String>(items.size());
       
       for (ItemWrapper wrapper : items)
       {
-          nodes.add(wrapper.getDescriptor());
+          relativePaths.add(AVMUtil.getStoreRelativePath(wrapper.getDescriptor().getPath()));
       }
 
       String sbStoreId = this.avmBrowseBean.getSandbox();
@@ -490,7 +490,7 @@ public class SubmitDialog extends BaseDialogBean
       String submitLabel = this.label;
       String submitComment = this.comment;
       
-      getSandboxService().submitListNodes(sbStoreId, nodes, this.expirationDates, submitLabel, submitComment);
+      getSandboxService().submitList(sbStoreId, relativePaths, this.expirationDates, submitLabel, submitComment);
     
       // if we get this far return the default outcome
       return this.getDefaultFinishOutcome();

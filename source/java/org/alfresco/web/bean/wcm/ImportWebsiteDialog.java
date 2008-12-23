@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -24,40 +24,14 @@
  */
 package org.alfresco.web.bean.wcm;
 
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.Serializable;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
-import javax.transaction.UserTransaction;
 
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.model.ApplicationModel;
-import org.alfresco.model.ContentModel;
-import org.alfresco.repo.action.executer.ImporterActionExecuter;
-import org.alfresco.repo.avm.AVMNodeConverter;
-import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.avm.AVMService;
-import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
-import org.alfresco.service.cmr.model.FileExistsException;
-import org.alfresco.service.cmr.model.FileFolderService;
-import org.alfresco.service.cmr.repository.ContentService;
-import org.alfresco.service.cmr.repository.MimetypeService;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.namespace.QName;
-import org.alfresco.util.TempFileProvider;
+import org.alfresco.wcm.asset.AssetService;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.UIContextService;
@@ -65,9 +39,6 @@ import org.alfresco.web.bean.FileUploadBean;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.ui.common.Utils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.tools.zip.ZipFile;
 
 /**
  * Backing bean for the Import Website Content dialog.
@@ -81,56 +52,16 @@ public class ImportWebsiteDialog extends BaseDialogBean
 {
    private static final long serialVersionUID = -432986732265292504L;
 
-   private static final int BUFFER_SIZE = 16384;
-   private static Log logger = LogFactory.getLog(ImportWebsiteDialog.class);
+   //private static Log logger = LogFactory.getLog(ImportWebsiteDialog.class);
 
    protected File file;
    protected String fileName;
    protected boolean isFinished = false;
    protected boolean highByteZip = false;
 
-   transient private FileFolderService fileFolderService;
-   transient private ContentService contentService;
-   
    protected AVMBrowseBean avmBrowseBean;
-   
-   transient private AVMService avmService;
-   transient private NodeService nodeService;
-   
-   
-   /**
-    * @param contentService      The ContentService to set.
-    */
-   public void setContentService(ContentService contentService)
-   {
-      this.contentService = contentService;
-   }
-   
-   protected ContentService getContentService()
-   {
-      if (this.contentService == null)
-      {
-         this.contentService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getContentService();
-      }
-      return this.contentService;
-   }
+   transient private AssetService assetService;
 
-   /**
-    * @param fileFolderService   The FileFolderService to set.
-    */
-   public void setFileFolderService(FileFolderService fileFolderService)
-   {
-      this.fileFolderService = fileFolderService;
-   }
-
-   protected FileFolderService getFileFolderService()
-   {
-      if (this.fileFolderService == null)
-      {
-         this.fileFolderService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getFileFolderService();
-      }
-      return this.fileFolderService;
-   }
 
    /**
     * @param avmBrowseBean       The AVMBrowseBean to set.
@@ -141,37 +72,20 @@ public class ImportWebsiteDialog extends BaseDialogBean
    }
 
    /**
-    * @param avmService          The AVMService to set.
+    * @param avmService          The AssetService to set.
     */
-   public void setAvmService(AVMService avmService)
+   public void setAssetService(AssetService assetService)
    {
-      this.avmService = avmService;
+      this.assetService = assetService;
    }
 
-   protected AVMService getAvmService()
+   protected AssetService getAssetService()
    {
-      if (this.avmService == null)
+      if (this.assetService == null)
       {
-         this.avmService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAVMLockingAwareService();
+         this.assetService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAssetService();
       }
-      return this.avmService;
-   }
-
-   /**
-    * @param nodeService         The NodeService to set.
-    */
-   public void setNodeService(NodeService nodeService)
-   {
-      this.nodeService = nodeService;
-   }
-   
-   protected NodeService getNodeService()
-   {
-      if (this.nodeService == null)
-      {
-         this.nodeService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getNodeService();
-      }
-      return this.nodeService;
+      return this.assetService;
    }
 
    /**
@@ -257,35 +171,28 @@ public class ImportWebsiteDialog extends BaseDialogBean
       {
          this.isFinished = true;
 
-         UserTransaction tx = null;
-
          try
          {
             FacesContext context = FacesContext.getCurrentInstance();
-            RetryingTransactionHelper.RetryingTransactionCallback<String> cb =
-            new RetryingTransactionHelper.RetryingTransactionCallback<String>()
+            RetryingTransactionHelper.RetryingTransactionCallback<Object> cb =
+            new RetryingTransactionHelper.RetryingTransactionCallback<Object>()
             {
-               public String execute()
+               public Object execute()
                {
                   // get the AVM path that will contain the imported content
                   String rootPath = avmBrowseBean.getCurrentPath();
+                  
+                  String[] parts = rootPath.split(":");
+                  String sbStoreId = parts[0];
+                  String parentFolderPath = parts[1];
    
-                  // convert the AVM path to a NodeRef so we can use the NodeService to perform import
-                  NodeRef importRef = AVMNodeConverter.ToNodeRef(-1, rootPath);
-                  processZipImport(file, importRef);
-   
-                  // After a bulk import it's a good idea to snapshot the store
-                  getAvmService().createSnapshot(
-                        AVMUtil.getStoreName(rootPath),
-                        "Import of file: " + fileName, null);
-   
-                  return rootPath;
+                  getAssetService().bulkImport(sbStoreId, parentFolderPath, file, isHighByteZip());
+
+                  return null;
                }
             };
-            String rootPath = Repository.getRetryingTransactionHelper(context).doInTransaction(cb);
-
-            // Reload virtualisation server as required
-            AVMUtil.updateVServerWebapp(rootPath, true);
+            
+            Repository.getRetryingTransactionHelper(context).doInTransaction(cb);
 
             UIContextService.getInstance(context).notifyBeans();
 
@@ -351,130 +258,6 @@ public class ImportWebsiteDialog extends BaseDialogBean
       // remove the file upload bean from the session
       FacesContext ctx = FacesContext.getCurrentInstance();
       ctx.getExternalContext().getSessionMap().remove(FileUploadBean.FILE_UPLOAD_BEAN_NAME);
-   }
-
-   /**
-    * Process ZIP file for import into an AVM repository store location
-    *
-    * @param file       ZIP format file
-    * @param rootRef    Root reference of the AVM location to import into
-    */
-   public void processZipImport(File file, NodeRef rootRef)
-   {
-      try
-      {
-         // NOTE: This encoding allows us to workaround bug:
-         //       http://bugs.sun.com/bugdatabase/view_bug.do;:WuuT?bug_id=4820807
-         ZipFile zipFile = new ZipFile(file, this.highByteZip ? "Cp437" : null);
-         File alfTempDir = TempFileProvider.getTempDir();
-         // build a temp dir name based on the name of the file we are importing
-         File tempDir = new File(alfTempDir.getPath() + File.separatorChar + file.getName() + "_unpack");
-         try
-         {
-            ImporterActionExecuter.extractFile(zipFile, tempDir.getPath());
-            importDirectory(tempDir.getPath(), rootRef);
-         }
-         finally
-         {
-            if (tempDir.exists())
-            {
-               ImporterActionExecuter.deleteDir(tempDir);
-            }
-         }
-      }
-      catch (IOException e)
-      {
-         throw new AlfrescoRuntimeException("Unable to process Zip file. File may not be of the expected format.", e);
-      }
-   }
-
-   /**
-    * Recursively import a directory structure into the specified root node
-    *
-    * @param dir     The directory of files and folders to import
-    * @param root    The root node to import into
-    */
-   private void importDirectory(String dir, NodeRef root)
-   {
-      ServiceRegistry services = Repository.getServiceRegistry(FacesContext.getCurrentInstance());
-      MimetypeService mimetypeService = services.getMimetypeService();
-      File topdir = new File(dir);
-      if (!topdir.exists()) return;
-      for (File file : topdir.listFiles())
-      {
-         try
-         {
-            if (file.isFile())
-            {
-               // Create a file in the AVM store
-               String avmPath = AVMNodeConverter.ToAVMVersionPath(root).getSecond();
-               String fileName = file.getName();
-               List<QName> aspects = new ArrayList<QName>();
-               aspects.add(ContentModel.ASPECT_TITLED);
-               Map<QName, PropertyValue> properties = new HashMap<QName, PropertyValue>();
-               properties.put(ContentModel.PROP_TITLE,
-                              new PropertyValue(DataTypeDefinition.TEXT, fileName));
-               this.getAvmService().createFile(
-                     avmPath, fileName,new BufferedInputStream(new FileInputStream(file), BUFFER_SIZE),
-                     aspects, properties);
-
-               // TODO: restore this code once performance is acceptable
-               // NodeRef fileRef = AVMNodeConverter.ToNodeRef(-1, filePath);
-               //       see AVMBrowseBean.setAVMNodeDescriptor
-               // add titled aspect for the read/edit properties screens
-               // Map<QName, Serializable> titledProps = new HashMap<QName, Serializable>(1, 1.0f);
-               // titledProps.put(ContentModel.PROP_TITLE, fileName);
-               // this.nodeService.addAspect(fileRef, ContentModel.ASPECT_TITLED, titledProps);
-
-               // for now use the avm service directly
-               // String filePath = avmPath + '/' + fileName;
-               // this.avmService.addAspect(filePath, ContentModel.ASPECT_TITLED);
-               // this.avmService.setNodeProperty(filePath, ContentModel.PROP_TITLE,
-               //                                 new PropertyValue(DataTypeDefinition.TEXT, fileName));
-
-               // create content node based on the filename
-               /*FileInfo contentFile = fileFolderService.create(root, fileName, ContentModel.TYPE_AVM_PLAIN_CONTENT);
-               NodeRef content = contentFile.getNodeRef();
-
-               InputStream contentStream = new BufferedInputStream(new FileInputStream(file), BUFFER_SIZE);
-
-               ContentWriter writer = contentService.getWriter(content, ContentModel.PROP_CONTENT, true);
-               writer.setMimetype(mimetypeService.guessMimetype(file.getAbsolutePath()));
-               // TODO: what should we set this too? (definitely not Cp437...!)
-               //writer.setEncoding("Cp437");
-               writer.putContent(contentStream);*/
-            }
-            else
-            {
-               //FileInfo fileInfo = fileFolderService.create(root, file.getName(), ContentModel.TYPE_AVM_PLAIN_FOLDER);
-
-               // Create a directory in the AVM store
-               String avmPath = AVMNodeConverter.ToAVMVersionPath(root).getSecond();
-               List<QName> aspects = new ArrayList<QName>();
-               aspects.add(ApplicationModel.ASPECT_UIFACETS);
-               this.getAvmService().createDirectory(avmPath, file.getName(), aspects, null);
-
-               String folderPath = avmPath + '/' + file.getName();
-               NodeRef folderRef = AVMNodeConverter.ToNodeRef(-1, folderPath);
-               importDirectory(file.getPath(), folderRef);
-
-               // TODO: restore this code once performance is acceptable
-               //       see AVMBrowseBean.setAVMNodeDescriptor
-               // add the uifacets aspect for the read/edit properties screens
-               // this.nodeService.addAspect(folderRef, ContentModel.ASPECT_UIFACETS, null);
-            }
-         }
-         catch (FileNotFoundException e)
-         {
-            // TODO: add failed file info to status message?
-            throw new AlfrescoRuntimeException("Failed to process ZIP file.", e);
-         }
-         catch (FileExistsException e)
-         {
-            // TODO: add failed file info to status message?
-            throw new AlfrescoRuntimeException("Failed to process ZIP file.", e);
-         }
-      }
    }
 
    @Override

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -29,8 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.faces.context.FacesContext;
-
 import org.alfresco.model.WCMModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.domain.PropertyValue;
@@ -41,11 +39,11 @@ import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
-import org.alfresco.web.app.Application;
+import org.alfresco.wcm.asset.AssetInfo;
+import org.alfresco.wcm.asset.AssetInfoImpl;
 import org.alfresco.web.bean.BrowseBean;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.NodePropertyResolver;
-import org.alfresco.web.config.ClientConfigElement;
 
 /**
  * Node class representing an AVM specific Node.
@@ -169,6 +167,18 @@ public class AVMNode extends Node implements Map<String, Object>
    private WebProject webProject;
    private Boolean workflowInFlight;
 
+   public AVMNode(final AssetInfo asset)
+   {
+      super(AVMNodeConverter.ToNodeRef(-1, asset.getAvmPath()));
+      
+      // TODO - refactor !!
+      this.avmRef = ((AssetInfoImpl)asset).getAVMNodeDescriptor();
+      
+      this.version = -1;      // TODO: always -1 for now...
+      this.id = asset.getAvmPath();
+      this.deleted = asset.isDeleted();
+   }
+   
    /**
     * Constructor
     * 

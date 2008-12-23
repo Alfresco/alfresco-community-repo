@@ -29,7 +29,9 @@
                mail.parameters.to = inviteePerson.properties["cm:email"];
                mail.parameters.subject = "Invitation to join '" + siteName + "' site";
 
-               var template = companyhome.childByNamePath("Data Dictionary/Email Templates/invite/invite-email.ftl");
+               var results = search.luceneSearch(" PATH:\"app:company_home/app:dictionary/app:email_templates/cm:invite/cm:invite-email.ftl\"");
+               var template = results[0];
+               
                var args = [];
                args["inviteePersonRef"] = inviteePerson.nodeRef.toString();
                args["inviterPersonRef"] = inviterPerson.nodeRef.toString();

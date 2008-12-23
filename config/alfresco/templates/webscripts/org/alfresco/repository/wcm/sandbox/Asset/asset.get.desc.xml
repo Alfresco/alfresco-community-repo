@@ -1,0 +1,20 @@
+<webscript>
+  <shortname>Get the details of the specified asset within the specified sandbox.</shortname>
+  <description>
+  <![CDATA[
+  Get the details of the specified asset.    
+  <BR>
+  If the asset is a folder, lists the children. 
+  <BR>
+  If the optional webApp argument is specified then returns the modified assets relative to that web app.
+  ]]>
+  </description>
+  <url>/api/wcm/webprojects/{webprojectref}/sandboxes/{sandboxref}/assets/{path}</url>
+  <!-- TEMP COMMENTING OUT - FRAMEWORK BARFS
+  <url>/api/wcm/webprojects/{webprojectref}/sandboxes/{sandboxref}/assets/(path}?webApp={webApp?}</url>
+  -->
+  <format default="json"/>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+  <family>WCM Service</family>
+</webscript>

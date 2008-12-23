@@ -1,0 +1,16 @@
+<webscript>
+  <shortname>Create a new WCM asset.</shortname>
+  <description>
+  <![CDATA[
+  Create a new WCM Asset
+   ]]>
+  </description>
+  <url>/api/wcm/webprojects/{webprojectref}/sandboxes/{sandboxref}/assets/{path}</url>
+   <!-- TEMP COMMENTING OUT - FRAMEWORK BARFS
+  <url>/api/wcm/webprojects/{webprojectref}/sandboxes/{sandboxref}/assets/(path}?webApp={webApp?}</url>
+  -->
+  <format default="json"/>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+  <family>WCM Service</family>
+</webscript>

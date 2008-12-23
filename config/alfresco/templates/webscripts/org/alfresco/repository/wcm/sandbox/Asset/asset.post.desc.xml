@@ -1,0 +1,19 @@
+<webscript>
+  <shortname>Update a new WCM Asset.</shortname>
+  <description>
+  <![CDATA[
+  Update a new WCM Asset.
+  Can rename a folder or directory.
+  name
+  ]]>
+  </description>
+  
+  <url>/api/wcm/webprojects/{webprojectref}/sandboxes/{sandboxref}/assets/{path}</url>
+    <!-- TEMP COMMENTING OUT - FRAMEWORK BARFS
+  <url>/api/wcm/webprojects/{webprojectref}/sandboxes/{sandboxref}/assets/(path}?webApp={webApp?}</url>
+  -->
+  <format default="json"/>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+  <family>WCM Service</family>
+</webscript>

@@ -43,6 +43,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowException;
@@ -100,6 +101,7 @@ public class Invite extends DeclarativeWebScript
     private WorkflowService workflowService;
     private PersonService personService;
     private AuthenticationService authenticationService;
+    private PermissionService permissionService;
     private MutableAuthenticationDao mutableAuthenticationDao;
     private SiteService siteService;
     private NodeService nodeService;
@@ -212,6 +214,16 @@ public class Invite extends DeclarativeWebScript
     public void setNamespaceService(NamespaceService namespaceService)
     {
         this.namespaceService = namespaceService;
+    }
+    
+    /**
+     * Set the permission service
+     * 
+     * @param permissionService   the permission service
+     */
+    public void setPermissionService(PermissionService permissionService)
+    {
+        this.permissionService = permissionService;
     }
     
     /*
@@ -419,11 +431,13 @@ public class Invite extends DeclarativeWebScript
         properties.put(ContentModel.PROP_LASTNAME, inviteeLastName);
         properties.put(ContentModel.PROP_EMAIL, inviteeEmail);
         
+        final String finalUserName = inviteeUserName;
         AuthenticationUtil.runAs(new RunAsWork<Object>()
         {
             public Object doWork() throws Exception
             {
-                personService.createPerson(properties);
+                NodeRef person = personService.createPerson(properties);
+                permissionService.setPermission(person, finalUserName, PermissionService.ALL_PERMISSIONS, true);
                 
                 return null;
             }

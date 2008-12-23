@@ -351,6 +351,7 @@
          parent="webscript">
       <property name="workflowService" ref="WorkflowService"/>
       <property name="personService" ref="PersonService"/>
+      <property name="permissionService" ref="PermissionService"/>
       <property name="authenticationService" ref="AuthenticationService"/>
       <property name="mutableAuthenticationDao" ref="authenticationDao"/>
       <property name="siteService" ref="SiteService"/>

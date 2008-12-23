@@ -24,12 +24,15 @@ function getTemplateArgs(params)
 /* Format and return error object */
 function jsonError(errorString)
 {
+/*
    var obj =
    {
       "error": errorString
    };
    
    return obj;
+*/
+   status.setCode(status.STATUS_BAD_REQUEST, errorString);
 }
 
 // NOTE: may need a custom content type for a wiki entry

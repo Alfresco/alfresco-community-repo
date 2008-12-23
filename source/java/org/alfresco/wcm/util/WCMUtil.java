@@ -35,6 +35,7 @@ import org.alfresco.config.JNDIConstants;
 import org.alfresco.mbeans.VirtServerRegistry;
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.service.cmr.avm.AVMBadArgumentException;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -63,7 +64,7 @@ public class WCMUtil
     * 
     * @return the sandbox store id
     */
-   protected static String getSandboxStoreId(final String avmPath)
+   public static String getSandboxStoreId(final String avmPath)
    {
       final int i = avmPath.indexOf(AVM_STORE_SEPARATOR);
       if (i == -1)
@@ -85,7 +86,7 @@ public class WCMUtil
     * 
     * @return the web project store id
     */
-   protected static String getWebProjectStoreId(final String storeName)
+   public static String getWebProjectStoreId(final String storeName)
    {
       final int index = storeName.indexOf(WCMUtil.STORE_SEPARATOR);
       return (index == -1
@@ -102,7 +103,7 @@ public class WCMUtil
     * 
     * @return the web project store id.
     */
-   protected static String getWebProjectStoreIdFromPath(final String avmPath)
+   public static String getWebProjectStoreIdFromPath(final String avmPath)
    {
        return getWebProjectStoreId(getSandboxStoreId(avmPath));
    }
@@ -143,7 +144,7 @@ public class WCMUtil
     * 
     * @return <tt>true</tt> if the store is a user store, <tt>false</tt> otherwise.
     */
-   protected static boolean isUserStore(String storeName)
+   public static boolean isUserStore(String storeName)
    {
       if (WCMUtil.isPreviewStore(storeName))
       {
@@ -159,7 +160,7 @@ public class WCMUtil
     * 
     * @return <tt>true</tt> if the store is a main store, <tt>false</tt> otherwise.
     */
-   protected static boolean isStagingStore(String storeName)
+   public static boolean isStagingStore(String storeName)
    {
       return ((storeName != null) && (storeName.indexOf(WCMUtil.STORE_SEPARATOR) == -1));
    }
@@ -397,7 +398,7 @@ public class WCMUtil
     * 
     * @return root sandbox path for the specified store name
     */
-   protected static String buildSandboxRootPath(final String storeName)
+   public static String buildSandboxRootPath(final String storeName)
    {
        ParameterCheck.mandatoryString("storeName", storeName);
        return storeName + AVM_STORE_SEPARATOR + JNDIConstants.DIR_DEFAULT_WWW_APPBASE;
@@ -411,7 +412,7 @@ public class WCMUtil
     * 
     * @return the root webapp path for the specified store and webapp name
     */
-   protected static String buildStoreWebappPath(final String storeName, String webApp)
+   public static String buildStoreWebappPath(final String storeName, String webApp)
    {
        ParameterCheck.mandatoryString("webApp", webApp);
        return WCMUtil.buildSandboxRootPath(storeName) + '/' + webApp;
@@ -522,7 +523,7 @@ public class WCMUtil
     * @param absoluteAVMPath an absolute path within the avm
     * @return the path without the store prefix.
     */
-   protected static String getStoreRelativePath(final String absoluteAVMPath)
+   public static String getStoreRelativePath(final String absoluteAVMPath)
    {
        ParameterCheck.mandatoryString("absoluteAVMPath", absoluteAVMPath);
        return absoluteAVMPath.substring(absoluteAVMPath.indexOf(AVM_STORE_SEPARATOR) + 1);
@@ -654,7 +655,7 @@ public class WCMUtil
      * @param path    Path to match against
      * @param force   True to force update of server even if path does not match
      */
-    protected static void updateVServerWebapp(VirtServerRegistry vServerRegistry, String path, boolean force)
+    public static void updateVServerWebapp(VirtServerRegistry vServerRegistry, String path, boolean force)
     {
         if (force || VirtServerUtils.requiresUpdateNotification(path))
         {
@@ -714,18 +715,20 @@ public class WCMUtil
       }
    }
    
-   protected static String getWebProjectsPath()
+   public static String[] splitPath(String path)
    {
-      return "/"+SPACES_COMPANY_HOME_CHILDNAME+"/"+SPACES_WCM_CHILDNAME;
+       String[] storePath = path.split(AVM_STORE_SEPARATOR);
+       if (storePath.length != 2)
+       {
+           throw new AVMBadArgumentException("Invalid Path: " + path);
+       }
+       return storePath;
    }
-   
-   private static final String SPACES_COMPANY_HOME_CHILDNAME = "app:company_home"; // should match repository property: spaces.company_home.childname
-   private static final String SPACES_WCM_CHILDNAME          = "app:wcm";          // should match repository property: spaces.wcm.childname
    
    // Component Separator.
    protected static final String STORE_SEPARATOR = "--";
    
-   protected static final char AVM_STORE_SEPARATOR = ':';
+   public static final String AVM_STORE_SEPARATOR = ":";
    
    // names of the stores representing the layers for an AVM website
    //XXXarielb this should be private

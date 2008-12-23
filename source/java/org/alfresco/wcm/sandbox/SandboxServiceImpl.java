@@ -61,6 +61,8 @@ import org.alfresco.util.NameMatcher;
 import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.VirtServerUtils;
+import org.alfresco.wcm.asset.AssetInfo;
+import org.alfresco.wcm.asset.AssetService;
 import org.alfresco.wcm.util.WCMUtil;
 import org.alfresco.wcm.util.WCMWorkflowUtil;
 import org.alfresco.wcm.webproject.WebProjectInfo;
@@ -76,7 +78,7 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author janv
  */
-public class SandboxServiceImpl extends WCMUtil implements SandboxService
+public class SandboxServiceImpl implements SandboxService
 {
     /** Logger */
     private static Log logger = LogFactory.getLog(SandboxServiceImpl.class);
@@ -90,6 +92,7 @@ public class SandboxServiceImpl extends WCMUtil implements SandboxService
     private VirtServerRegistry virtServerRegistry;
     private ActionService actionService;
     private WorkflowService workflowService;
+    private AssetService assetService;
     
     public void setWebProjectService(WebProjectService wpService)
     {
@@ -135,7 +138,11 @@ public class SandboxServiceImpl extends WCMUtil implements SandboxService
     {
         this.workflowService = workflowService;
     }
-    
+
+    public void setAssetService(AssetService assetService)
+    {
+        this.assetService = assetService;
+    }
  
     /* (non-Javadoc)
      * @see org.alfresco.wcm.sandbox.SandboxService#createAuthorSandbox(java.lang.String)
@@ -350,7 +357,7 @@ public class SandboxServiceImpl extends WCMUtil implements SandboxService
     /* (non-Javadoc)
      * @see org.alfresco.wcm.sandbox.SandboxService#listChangedAll(java.lang.String, boolean)
      */
-    public List<AVMNodeDescriptor> listChangedAll(String sbStoreId, boolean includeDeleted)
+    public List<AssetInfo> listChangedAll(String sbStoreId, boolean includeDeleted)
     {
         ParameterCheck.mandatoryString("sbStoreId", sbStoreId);
         
@@ -361,7 +368,7 @@ public class SandboxServiceImpl extends WCMUtil implements SandboxService
     /* (non-Javadoc)
      * @see org.alfresco.wcm.sandbox.SandboxService#listChangedWebApp(java.lang.String, java.lang.String, boolean)
      */
-    public List<AVMNodeDescriptor> listChangedWebApp(String sbStoreId, String webApp, boolean includeDeleted)
+    public List<AssetInfo> listChangedWebApp(String sbStoreId, String webApp, boolean includeDeleted)
     {
         ParameterCheck.mandatoryString("sbStoreId", sbStoreId);
         ParameterCheck.mandatoryString("webApp", webApp);
@@ -374,7 +381,7 @@ public class SandboxServiceImpl extends WCMUtil implements SandboxService
     /* (non-Javadoc)
      * @see org.alfresco.wcm.sandbox.SandboxService#listChanged(java.lang.String, java.lang.String, boolean)
      */
-    public List<AVMNodeDescriptor> listChanged(String sbStoreId, String relativePath, boolean includeDeleted)
+    public List<AssetInfo> listChanged(String sbStoreId, String relativePath, boolean includeDeleted)
     {
         ParameterCheck.mandatoryString("sbStoreId", sbStoreId);
         ParameterCheck.mandatoryString("relativePath", relativePath);
@@ -395,7 +402,7 @@ public class SandboxServiceImpl extends WCMUtil implements SandboxService
     /* (non-Javadoc)
      * @see org.alfresco.wcm.sandbox.SandboxService#listChanged(java.lang.String, java.lang.String, java.lang.String, java.lang.String, boolean)
      */
-    public List<AVMNodeDescriptor> listChanged(String srcSandboxStoreId, String srcRelativePath, String dstSandboxStoreId, String dstRelativePath, boolean includeDeleted)
+    public List<AssetInfo> listChanged(String srcSandboxStoreId, String srcRelativePath, String dstSandboxStoreId, String dstRelativePath, boolean includeDeleted)
     {
         ParameterCheck.mandatoryString("srcSandboxStoreId", srcSandboxStoreId);
         ParameterCheck.mandatoryString("srcRelativePath", srcRelativePath);
@@ -403,28 +410,30 @@ public class SandboxServiceImpl extends WCMUtil implements SandboxService
         ParameterCheck.mandatoryString("dstSandboxStoreId", dstSandboxStoreId);
         ParameterCheck.mandatoryString("dstRelativePath", dstRelativePath);
         
-        String avmSrcPath = srcSandboxStoreId + AVM_STORE_SEPARATOR + srcRelativePath;
-        String avmDstPath = dstSandboxStoreId + AVM_STORE_SEPARATOR + dstRelativePath;
+        String avmSrcPath = srcSandboxStoreId + WCMUtil.AVM_STORE_SEPARATOR + srcRelativePath;
+        String avmDstPath = dstSandboxStoreId + WCMUtil.AVM_STORE_SEPARATOR + dstRelativePath;
         
         return listChanged(-1, avmSrcPath, -1, avmDstPath, includeDeleted);
     }
     
-    private List<AVMNodeDescriptor> listChanged(int srcVersion, String srcPath, int dstVersion, String dstPath, boolean includeDeleted)
+    private List<AssetInfo> listChanged(int srcVersion, String srcPath, int dstVersion, String dstPath, boolean includeDeleted)
     {
         long start = System.currentTimeMillis();
         
         List<AVMDifference> diffs = avmSyncService.compare(srcVersion, srcPath, dstVersion, dstPath, nameMatcher);
         
-        List<AVMNodeDescriptor> assets = new ArrayList<AVMNodeDescriptor>(diffs.size());
+        List<AssetInfo> assets = new ArrayList<AssetInfo>(diffs.size());
         
         for (AVMDifference diff : diffs)
         {
             // convert each diff record into an AVM node descriptor
             String sourcePath = diff.getSourcePath();
-            AVMNodeDescriptor node = avmService.lookup(-1, sourcePath, includeDeleted);
-            if (node != null)
+            
+            String[] parts = WCMUtil.splitPath(sourcePath);
+            AssetInfo asset = assetService.getAsset(parts[0], -1, parts[1], includeDeleted);
+            if (asset != null)
             {
-                assets.add(node);
+                assets.add(asset);
             }
         }
         
@@ -467,9 +476,9 @@ public class SandboxServiceImpl extends WCMUtil implements SandboxService
         ParameterCheck.mandatoryString("sbStoreId", sbStoreId);
         ParameterCheck.mandatoryString("relativePath", relativePath);
         
-        List<AVMNodeDescriptor> assets = listChanged(sbStoreId, relativePath, true);
+        List<AssetInfo> assets = listChanged(sbStoreId, relativePath, true);
         
-        submitListNodes(sbStoreId, assets, submitLabel, submitComment);
+        submitListAssets(sbStoreId, assets, submitLabel, submitComment);
     }
     
     /* (non-Javadoc)
@@ -479,35 +488,42 @@ public class SandboxServiceImpl extends WCMUtil implements SandboxService
     {
         ParameterCheck.mandatoryString("sbStoreId", sbStoreId);
         
-        List<AVMNodeDescriptor> assets = new ArrayList<AVMNodeDescriptor>(relativePaths.size());
-        
-        for (String relativePath : relativePaths)
-        {
-            // convert each path into an AVM node descriptor
-            AVMNodeDescriptor node = avmService.lookup(-1, sbStoreId + WCMUtil.AVM_STORE_SEPARATOR + relativePath, true);
-            if (node != null)
-            {
-                assets.add(node);
-            }
-        }
-        
-        submitListNodes(sbStoreId, assets, null, submitLabel, submitComment);
+        submitList(sbStoreId, relativePaths, null, submitLabel, submitComment);
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.wcm.sandbox.SandboxService#submitListNodes(java.lang.String, java.util.List, java.lang.String, java.lang.String)
-     */
-    public void submitListNodes(String sbStoreId, List<AVMNodeDescriptor> assets, String submitLabel, String submitComment)
+    public void submitList(String sbStoreId, List<String> relativePaths, Map<String, Date> expirationDates, String submitLabel, String submitComment)
     {
         ParameterCheck.mandatoryString("sbStoreId", sbStoreId);
         
-        submitListNodes(sbStoreId, assets, null, submitLabel, submitComment);
+        List<AssetInfo> assets = new ArrayList<AssetInfo>(relativePaths.size());
+        
+        for (String relativePath : relativePaths)
+        {
+            // convert each path into an asset
+            AssetInfo asset = assetService.getAsset(sbStoreId, -1, relativePath, true);
+            if (asset != null)
+            {
+                assets.add(asset);
+            }
+        }
+        
+        submitListAssets(sbStoreId, assets, expirationDates, submitLabel, submitComment);
     }
     
     /* (non-Javadoc)
-     * @see org.alfresco.wcm.sandbox.SandboxService#submitListNodes(java.lang.String, java.util.List, java.util.Map, java.lang.String, java.lang.String)
+     * @see org.alfresco.wcm.sandbox.SandboxService#submitListAssets(java.lang.String, java.util.List, java.lang.String, java.lang.String)
      */
-    public void submitListNodes(String sbStoreId, List<AVMNodeDescriptor> assets, Map<String, Date> expirationDates, final String submitLabel, final String submitComment)
+    public void submitListAssets(String sbStoreId, List<AssetInfo> assets, String submitLabel, String submitComment)
+    {
+        ParameterCheck.mandatoryString("sbStoreId", sbStoreId);
+        
+        submitListAssets(sbStoreId, assets, null, submitLabel, submitComment);
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.wcm.sandbox.SandboxService#submitListAssets(java.lang.String, java.util.List, java.util.Map, java.lang.String, java.lang.String)
+     */
+    public void submitListAssets(String sbStoreId, List<AssetInfo> assets, Map<String, Date> expirationDates, final String submitLabel, final String submitComment)
     {
         ParameterCheck.mandatoryString("sbStoreId", sbStoreId);
         
@@ -525,12 +541,12 @@ public class SandboxServiceImpl extends WCMUtil implements SandboxService
         
         final List<AVMDifference> diffs = new ArrayList<AVMDifference>(assets.size());
         
-        for (AVMNodeDescriptor item : assets)
+        for (AssetInfo asset : assets)
         {
-            String relativePath = WCMUtil.getStoreRelativePath(item.getPath());
+            String relativePath = WCMUtil.getStoreRelativePath(asset.getAvmPath());
             
-            String srcPath = sbStoreId + AVM_STORE_SEPARATOR + relativePath;
-            String dstPath = stagingSandboxId + AVM_STORE_SEPARATOR + relativePath;         
+            String srcPath = sbStoreId + WCMUtil.AVM_STORE_SEPARATOR + relativePath;
+            String dstPath = stagingSandboxId + WCMUtil.AVM_STORE_SEPARATOR + relativePath;         
  
             AVMDifference diff = new AVMDifference(-1, srcPath, -1, dstPath, AVMDifference.NEWER);
             diffs.add(diff);
@@ -607,7 +623,7 @@ public class SandboxServiceImpl extends WCMUtil implements SandboxService
         ParameterCheck.mandatoryString("sbStoreId", sbStoreId);
         ParameterCheck.mandatoryString("relativePath", relativePath);
         
-        List<AVMNodeDescriptor> assets = listChanged(sbStoreId, relativePath, true);
+        List<AssetInfo> assets = listChanged(sbStoreId, relativePath, true);
         
         revertListNodes(sbStoreId, assets);
     }
@@ -619,15 +635,15 @@ public class SandboxServiceImpl extends WCMUtil implements SandboxService
     {
         ParameterCheck.mandatoryString("sbStoreId", sbStoreId);
         
-        List<AVMNodeDescriptor> assets = new ArrayList<AVMNodeDescriptor>(relativePaths.size());
+        List<AssetInfo> assets = new ArrayList<AssetInfo>(relativePaths.size());
         
         for (String relativePath : relativePaths)
         {
-            // convert each path into an AVM node descriptor
-            AVMNodeDescriptor node = avmService.lookup(-1, sbStoreId + WCMUtil.AVM_STORE_SEPARATOR + relativePath, true);
-            if (node != null)
+            // convert each path into an asset
+            AssetInfo asset = assetService.getAsset(sbStoreId, -1, relativePath, true);
+            if (asset != null)
             {
-                assets.add(node);
+                assets.add(asset);
             }
         }
         
@@ -637,22 +653,26 @@ public class SandboxServiceImpl extends WCMUtil implements SandboxService
     /* (non-Javadoc)
      * @see org.alfresco.wcm.sandbox.SandboxService#revertListNodes(java.lang.String, java.util.List)
      */
-    public void revertListNodes(String sbStoreId, List<AVMNodeDescriptor> assets)
+    public void revertListNodes(String sbStoreId, List<AssetInfo> assets)
     {
         ParameterCheck.mandatoryString("sbStoreId", sbStoreId);
         
         List<Pair<Integer, String>> versionPaths = new ArrayList<Pair<Integer, String>>(assets.size());
         
         List<WorkflowTask> tasks = null;
-        for (AVMNodeDescriptor node : assets)
+        for (AssetInfo asset : assets)
         {
            if (tasks == null)
            {
-              tasks = WCMWorkflowUtil.getAssociatedTasksForSandbox(workflowService, WCMUtil.getSandboxStoreId(node.getPath()));
+              tasks = WCMWorkflowUtil.getAssociatedTasksForSandbox(workflowService, WCMUtil.getSandboxStoreId(asset.getAvmPath()));
            }
+           
+           // TODO ... extra lookup ... either return AVMNodeDescriptor or change getAssociatedTasksForNode ...
+           AVMNodeDescriptor node = avmService.lookup(-1, asset.getAvmPath());
+           
            if (WCMWorkflowUtil.getAssociatedTasksForNode(avmService, node, tasks).size() == 0)
            {
-              String revertPath = node.getPath();
+              String revertPath = asset.getAvmPath();
               versionPaths.add(new Pair<Integer, String>(-1, revertPath));
               
               if (VirtServerUtils.requiresUpdateNotification(revertPath))
@@ -747,7 +767,7 @@ public class SandboxServiceImpl extends WCMUtil implements SandboxService
                 Map<String, Serializable> args = new HashMap<String, Serializable>(1, 1.0f);
                 args.put(AVMRevertStoreAction.PARAM_VERSION, version);
                 Action action = actionService.createAction(AVMRevertStoreAction.NAME, args);
-                actionService.executeAction(action, AVMNodeConverter.ToNodeRef(-1, sbStoreId + AVM_STORE_SEPARATOR + "/"));
+                actionService.executeAction(action, AVMNodeConverter.ToNodeRef(-1, sbStoreId + WCMUtil.AVM_STORE_SEPARATOR + "/"));
                 return diffs;
             }
         }, AuthenticationUtil.getSystemUserName());

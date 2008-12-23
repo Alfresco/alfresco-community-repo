@@ -22,37 +22,42 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.wcm;
+package org.alfresco.wcm.asset;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
-
-import org.alfresco.wcm.asset.AssetServiceImplTest;
-import org.alfresco.wcm.sandbox.SandboxServiceImplTest;
-import org.alfresco.wcm.webproject.WebProjectServiceImplTest;
-import org.alfresco.wcm.webproject.script.ScriptWebProjectsTest;
+import java.util.Date;
 
 /**
- * WCM test suite
- * 
- * @author janv
- */
-public class WCMTestSuite extends TestSuite
+*  Provides basic information about a WCM asset
+*/
+public interface AssetInfo
 {
-    /**
-     * Creates the test suite
-     * 
-     * @return  the test suite
-     */
-    public static Test suite() 
-    {
-        TestSuite suite = new TestSuite();
-        
-        suite.addTestSuite(WebProjectServiceImplTest.class);
-        suite.addTestSuite(AssetServiceImplTest.class);
-        suite.addTestSuite(SandboxServiceImplTest.class);
-        suite.addTestSuite(ScriptWebProjectsTest.class);
-
-        return suite;
-    }
+    public String getName();
+    
+    public String getSandboxId();
+    
+    public int getSandboxVersion();
+    
+    public String getPath(); // full path, eg. include /www/avm_webapps/...
+    
+    public boolean isFile();
+    
+    public boolean isFolder();
+    
+    public boolean isDeleted();
+    
+    public boolean isLocked(); // files only, false for folder
+    
+    public long getFileSize(); // files only, -1 for folder
+    
+    public String getLockOwner(); // files only, null if no lock (or folder)
+    
+    public String getCreator();
+    
+    public Date getCreatedDate();
+    
+    public String getModifier();
+    
+    public Date getModifiedDate();
+    
+    public String getAvmPath(); // absolute AVM path, eg. <avmStore>:<path>
 }

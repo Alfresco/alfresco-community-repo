@@ -32,6 +32,7 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.util.ParameterCheck;
+import org.alfresco.wcm.asset.AssetInfo;
 import org.alfresco.wcm.sandbox.SandboxService;
 import org.alfresco.wcm.util.WCMUtil;
 
@@ -144,14 +145,14 @@ public class AVM extends BaseTemplateProcessorExtension
         SandboxService sbService = this.services.getSandboxService();
         
         // get modified items - not including deleted
-        List<AVMNodeDescriptor> nodes = sbService.listChangedWebApp(storeId, webapp, false);
+        List<AssetInfo> assets = sbService.listChangedWebApp(storeId, webapp, false);
         
-        List<AVMTemplateNode> items = new ArrayList<AVMTemplateNode>(nodes.size());
+        List<AVMTemplateNode> items = new ArrayList<AVMTemplateNode>(assets.size());
         
-        for (AVMNodeDescriptor node : nodes)
+        for (AssetInfo asset : assets)
         {
             // convert each diff/node record into an AVM Node template wrapper
-            items.add(new AVMTemplateNode(node, this.services, getTemplateImageResolver()));
+            items.add(new AVMTemplateNode(asset.getAvmPath(), -1, this.services, getTemplateImageResolver()));
         }
 
         return items;

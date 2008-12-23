@@ -30,6 +30,7 @@ import org.alfresco.repo.jscript.BaseScopableProcessorExtension;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.wcm.asset.AssetService;
 import org.alfresco.wcm.sandbox.SandboxService;
 import org.alfresco.wcm.webproject.WebProjectInfo;
 import org.alfresco.wcm.webproject.WebProjectService;
@@ -50,6 +51,9 @@ public class WebProjects extends BaseScopableProcessorExtension
 
     /** The sandbox service */
     private SandboxService sandboxService;
+    
+    /** The asset service */
+    private AssetService assetService;
     
     /**
      * Sets the Service Registry
@@ -89,6 +93,21 @@ public class WebProjects extends BaseScopableProcessorExtension
     public SandboxService getSandboxService()
     {
     	return this.sandboxService;
+    }
+    
+    /**
+     * Set the wcm asset service 
+     * 
+     * @param assetService   the wcm asset service
+     */
+    public void setAssetService(AssetService assetService)
+    {
+        this.assetService = assetService;
+    }
+    
+    public AssetService getAssetService()
+    {
+    	return this.assetService;
     }
     
     /**

@@ -30,7 +30,6 @@ import org.apache.commons.logging.LogFactory;
  */
 public class AVMUndoSandboxListAction extends ActionExecuterAbstractBase 
 {
-    @SuppressWarnings("unused")
     private static Log    fgLogger = LogFactory.getLog(AVMUndoSandboxListAction.class);
     
     public static final String NAME = "avm-undo-list";
@@ -85,22 +84,25 @@ public class AVMUndoSandboxListAction extends ActionExecuterAbstractBase
                 fAVMService.makeTransparent(parentChild[0], parentChild[1]);
             }
 
-            final Map<QName, PropertyValue> dnsProperties = fAVMService.queryStorePropertyKey(item.getSecond().split(":")[0], QName.createQName(null, ".dns%"));
-            if (dnsProperties.size() == 1)
+            if (desc.isFile() || desc.isDeletedFile())
             {
-                String webProject = dnsProperties.keySet().iterator().next().getLocalName();
-                webProject = webProject.substring(webProject.lastIndexOf('.') + 1, webProject.length());
-                String path = item.getSecond().substring(item.getSecond().indexOf(":") + 1);
-                if (fgLogger.isDebugEnabled())
-                    fgLogger.debug("unlocking file " + path + " in web project " + webProject);
-
-                if (fAVMLockingService.getLock(webProject, path) != null)
+                final Map<QName, PropertyValue> dnsProperties = fAVMService.queryStorePropertyKey(item.getSecond().split(":")[0], QName.createQName(null, ".dns%"));
+                if (dnsProperties.size() == 1)
                 {
-                    fAVMLockingService.removeLock(webProject, path);
-                }
-                else
-                {
-                    fgLogger.warn("expected file " + path + " in " + webProject + " to be locked");
+                    String webProject = dnsProperties.keySet().iterator().next().getLocalName();
+                    webProject = webProject.substring(webProject.lastIndexOf('.') + 1, webProject.length());
+                    String path = item.getSecond().substring(item.getSecond().indexOf(":") + 1);
+                    if (fgLogger.isDebugEnabled())
+                        fgLogger.debug("unlocking file " + path + " in web project " + webProject);
+    
+                    if (fAVMLockingService.getLock(webProject, path) != null)
+                    {
+                        fAVMLockingService.removeLock(webProject, path);
+                    }
+                    else
+                    {
+                        fgLogger.warn("expected file " + path + " in " + webProject + " to be locked");
+                    }
                 }
             }
         }

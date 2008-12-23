@@ -1,0 +1,771 @@
+/*
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+
+ * As a special exception to the terms and conditions of version 2.0 of 
+ * the GPL, you may redistribute this Program in connection with Free/Libre 
+ * and Open Source Software ("FLOSS") applications as described in Alfresco's 
+ * FLOSS exception.  You should have recieved a copy of the text describing 
+ * the FLOSS exception, and it is also available here: 
+ * http://www.alfresco.com/legal/licensing"
+ */
+package org.alfresco.wcm.asset;
+
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.mbeans.VirtServerRegistry;
+import org.alfresco.model.ApplicationModel;
+import org.alfresco.model.ContentModel;
+import org.alfresco.repo.action.executer.ImporterActionExecuter;
+import org.alfresco.repo.avm.AVMNodeConverter;
+import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.TransactionListenerAdapter;
+import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
+import org.alfresco.service.cmr.avm.AVMService;
+import org.alfresco.service.cmr.avm.locking.AVMLock;
+import org.alfresco.service.cmr.avm.locking.AVMLockingService;
+import org.alfresco.service.cmr.model.FileExistsException;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.namespace.QName;
+import org.alfresco.util.ParameterCheck;
+import org.alfresco.util.TempFileProvider;
+import org.alfresco.wcm.sandbox.SandboxConstants;
+import org.alfresco.wcm.util.WCMUtil;
+import org.apache.tools.zip.ZipFile;
+
+/**
+ * Asset Service fundamental API.
+ * <p>
+ * This service API is designed to support the public facing Asset APIs. 
+ * 
+ * @author janv
+ */
+public class AssetServiceImpl implements AssetService
+{
+    /** Logger */
+    //private static Log logger = LogFactory.getLog(AssetServiceImpl.class);
+    
+    private static char PATH_SEPARATOR = '/';
+    
+    private static final int BUFFER_SIZE = 16384;
+    
+    private AVMService avmService;
+    private AVMLockingService avmLockingService;
+    private NodeService avmNodeService; // AVM node service (ML-aware)
+    private VirtServerRegistry virtServerRegistry;
+    
+    public void setAvmService(AVMService avmService)
+    {
+        this.avmService = avmService;
+    }
+    
+    public void setAvmLockingService(AVMLockingService avmLockingService)
+    {
+        this.avmLockingService = avmLockingService;
+    }
+    
+    public void setNodeService(NodeService avmNodeService)
+    {
+        this.avmNodeService = avmNodeService;
+    }
+    
+    public void setVirtServerRegistry(VirtServerRegistry virtServerRegistry)
+    {
+        this.virtServerRegistry = virtServerRegistry;
+    }
+    
+    
+    private String addLeadingSlash(String path)
+    {
+        if (path.charAt(0) != PATH_SEPARATOR)
+        {
+            path = PATH_SEPARATOR + path;
+        }
+        
+        return path;
+    }
+    
+    private void checkMandatoryPath(String path)
+    {
+        ParameterCheck.mandatoryString("path", path);
+        
+        if (path.indexOf(WCMUtil.AVM_STORE_SEPARATOR) != -1)
+        {
+            throw new IllegalArgumentException("Unexpected path '"+path+"' - should not contain '"+WCMUtil.AVM_STORE_SEPARATOR+"'");
+        }
+    }
+    
+    private boolean isWebProjectStagingSandbox(String sbStoreId)
+    {
+        PropertyValue propVal = avmService.getStoreProperty(sbStoreId, SandboxConstants.PROP_WEB_PROJECT_NODE_REF);
+        return ((propVal != null) && (WCMUtil.isStagingStore(sbStoreId)));
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.wcm.asset.AssetService#createFolderWebApp(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
+     */
+    public void createFolderWebApp(String sbStoreId, String webApp, String parentFolderPathRelativeToWebApp, String name)
+    {
+        ParameterCheck.mandatoryString("sbStoreId", sbStoreId);
+        ParameterCheck.mandatoryString("webApp", webApp);
+        checkMandatoryPath(parentFolderPathRelativeToWebApp);
+        ParameterCheck.mandatoryString("name", name);
+        
+        if (! isWebProjectStagingSandbox(sbStoreId))
+        {
+            parentFolderPathRelativeToWebApp = addLeadingSlash(parentFolderPathRelativeToWebApp);
+            
+            String avmParentPath = WCMUtil.buildStoreWebappPath(sbStoreId, webApp) + parentFolderPathRelativeToWebApp;
+            
+            createFolderAVM(avmParentPath, name, null);
+        }
+        else
+        {
+            throw new AccessDeniedException("Not allowed to write in: " + sbStoreId);
+        }
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.wcm.asset.AssetService#createFolder(java.lang.String, java.lang.String, java.lang.String, java.util.Map)
+     */
+    public void createFolder(String sbStoreId, String parentFolderPath, String name, Map<QName, Serializable> properties)
+    {
+        ParameterCheck.mandatoryString("sbStoreId", sbStoreId);
+        ParameterCheck.mandatoryString("parentFolderPath", parentFolderPath);
+        ParameterCheck.mandatoryString("name", name);
+        
+        parentFolderPath = addLeadingSlash(parentFolderPath);
+        
+        String avmParentPath = sbStoreId + WCMUtil.AVM_STORE_SEPARATOR + parentFolderPath;
+        
+        createFolderAVM(avmParentPath, name, properties);
+    }
+    
+    private void createFolderAVM(String avmParentPath, String name, Map<QName, Serializable> properties)
+    {
+        ParameterCheck.mandatoryString("avmParentPath", avmParentPath);
+        ParameterCheck.mandatoryString("name", name);
+        
+        String sbStoreId = WCMUtil.getSandboxStoreId(avmParentPath);
+        if (! isWebProjectStagingSandbox(sbStoreId))
+        {
+            avmService.createDirectory(avmParentPath, name);
+            
+            String avmPath = avmParentPath + PATH_SEPARATOR + name;
+            
+            // for WCM Web Client (Alfresco Explorer)
+            avmService.addAspect(avmPath, ApplicationModel.ASPECT_UIFACETS);
+            
+            if ((properties != null) && (properties.size() > 0))
+            {
+                setProperties(avmPath, properties);
+            }
+        }
+        else
+        {
+            throw new AccessDeniedException("Not allowed to write in: " + sbStoreId);
+        }
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.wcm.asset.AssetService#createFileWebApp(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
+     */
+    public ContentWriter createFileWebApp(String sbStoreId, String webApp, String parentFolderPathRelativeToWebApp, String name)
+    {
+        ParameterCheck.mandatoryString("sbStoreId", sbStoreId);
+        ParameterCheck.mandatoryString("webApp", webApp);
+        ParameterCheck.mandatoryString("parentFolderPathRelativeToWebApp", parentFolderPathRelativeToWebApp);
+        ParameterCheck.mandatoryString("name", name);
+        
+        parentFolderPathRelativeToWebApp = addLeadingSlash(parentFolderPathRelativeToWebApp);
+        
+        String avmParentPath = WCMUtil.buildStoreWebappPath(sbStoreId, webApp) + parentFolderPathRelativeToWebApp;
+        
+        createFileAVM(avmParentPath, name);
+        
+        String avmPath = avmParentPath + PATH_SEPARATOR + name;
+        
+        return avmService.getContentWriter(avmPath);
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.wcm.asset.AssetService#createFile(java.lang.String, java.lang.String, java.lang.String, java.util.Map)
+     */
+    public ContentWriter createFile(String sbStoreId, String parentFolderPath, String name, Map<QName, Serializable> properties)
+    {
+        ParameterCheck.mandatoryString("sbStoreId", sbStoreId);
+        ParameterCheck.mandatoryString("parentFolderPath", parentFolderPath);
+        ParameterCheck.mandatoryString("name", name);
+        
+        parentFolderPath = addLeadingSlash(parentFolderPath);
+        
+        String avmParentPath = sbStoreId + WCMUtil.AVM_STORE_SEPARATOR + parentFolderPath;
+        
+        createFileAVM(avmParentPath, name);
+        
+        String avmPath = avmParentPath + PATH_SEPARATOR + name;
+        
+        if ((properties != null) && (properties.size() > 0))
+        {
+            setProperties(avmPath, properties);
+        }
+        
+        return avmService.getContentWriter(avmPath);
+    }
+    
+    private void createFileAVM(String avmParentPath, String name)
+    {
+        ParameterCheck.mandatoryString("avmParentPath", avmParentPath);
+        ParameterCheck.mandatoryString("name", name);
+        
+        String sbStoreId = WCMUtil.getSandboxStoreId(avmParentPath);
+        if (! isWebProjectStagingSandbox(sbStoreId))
+        {
+            avmService.createFile(avmParentPath, name);            
+        }
+        else
+        {
+            throw new AccessDeniedException("Not allowed to write in: " + sbStoreId);
+        }
+    }
+    
+    private void createFileAVM(String avmParentPath, String name, InputStream in)
+    {
+        ParameterCheck.mandatoryString("avmParentPath", avmParentPath);
+        
+        String sbStoreId = WCMUtil.getSandboxStoreId(avmParentPath);
+        if (! isWebProjectStagingSandbox(sbStoreId))
+        {
+            avmService.createFile(avmParentPath, name,  in, null, null);
+        }
+        else
+        {
+            throw new AccessDeniedException("Not allowed to write in: " + sbStoreId);
+        }
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.wcm.asset.AssetService#getContentWriter(org.alfresco.wcm.asset.AssetInfo)
+     */
+    public ContentWriter getContentWriter(AssetInfo asset)
+    {
+        ParameterCheck.mandatory("asset", asset);
+        
+        if (! isWebProjectStagingSandbox(asset.getSandboxId()))
+        {
+            return avmService.getContentWriter(asset.getAvmPath());
+        }
+        else
+        {
+            throw new AccessDeniedException("Not allowed to write in: " + asset.getSandboxId());
+        }
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.wcm.asset.AssetService#getContentReader(org.alfresco.wcm.asset.AssetInfo)
+     */
+    public ContentReader getContentReader(AssetInfo asset)
+    {
+        ParameterCheck.mandatory("asset", asset);
+        
+        return avmService.getContentReader(asset.getSandboxVersion(), asset.getAvmPath());
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.wcm.asset.AssetService#getAssetWebApp(java.lang.String, java.lang.String, java.lang.String)
+     */
+    public AssetInfo getAssetWebApp(String sbStoreId, String webApp, String pathRelativeToWebApp)
+    {
+        return getAssetWebApp(sbStoreId, webApp, pathRelativeToWebApp, false);
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.wcm.asset.AssetService#getAssetWebApp(java.lang.String, java.lang.String, java.lang.String, boolean)
+     */
+    public AssetInfo getAssetWebApp(String sbStoreId, String webApp, String pathRelativeToWebApp, boolean includeDeleted)
+    {
+        ParameterCheck.mandatoryString("sbStoreId", sbStoreId);
+        ParameterCheck.mandatoryString("webApp", webApp);
+        ParameterCheck.mandatoryString("pathRelativeToWebApp", pathRelativeToWebApp);
+        
+        pathRelativeToWebApp = addLeadingSlash(pathRelativeToWebApp);
+        
+        String avmPath = WCMUtil.buildStoreWebappPath(sbStoreId, webApp) + pathRelativeToWebApp;
+        
+        return getAssetAVM(-1, avmPath, includeDeleted);
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.wcm.asset.AssetService#getAsset(java.lang.String, java.lang.String)
+     */
+    public AssetInfo getAsset(String sbStoreId, String path)
+    {
+        return getAsset(sbStoreId, -1, path, false);
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.wcm.asset.AssetService#getAsset(java.lang.String, int, java.lang.String, boolean)
+     */
+    public AssetInfo getAsset(String sbStoreId, int version, String path, boolean includeDeleted)
+    {
+        ParameterCheck.mandatoryString("sbStoreId", sbStoreId);
+        ParameterCheck.mandatoryString("path", path);
+        
+        path = addLeadingSlash(path);
+        
+        String avmPath = sbStoreId + WCMUtil.AVM_STORE_SEPARATOR + path;
+        
+        return getAssetAVM(version, avmPath, includeDeleted);
+    }
+    
+    private AssetInfo getAssetAVM(int version, String avmPath, boolean includeDeleted)
+    {
+        ParameterCheck.mandatoryString("avmPath", avmPath);
+        
+        AVMNodeDescriptor node = avmService.lookup(version, avmPath, includeDeleted);
+        
+        AssetInfo asset = null;
+        
+        if (node != null)
+        {
+            String lockOwner = null;
+            if (avmLockingService != null)
+            {
+                String wpStoreId = WCMUtil.getWebProjectStoreIdFromPath(avmPath);
+                String[] parts = WCMUtil.splitPath(avmPath);
+                lockOwner = getLockOwner(wpStoreId, parts[1]);
+            }
+            
+            asset = new AssetInfoImpl(version, node, lockOwner);
+        }
+        
+        return asset;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.wcm.asset.AssetService#getLockOwner(org.alfresco.wcm.asset.AssetInfo)
+     */
+    public String getLockOwner(AssetInfo asset)
+    {
+        ParameterCheck.mandatory("asset", asset);
+        
+        return getLockOwner(WCMUtil.getWebProjectStoreId(asset.getSandboxId()), asset.getPath());
+    }
+    
+    private String getLockOwner(String wpStoreId, String filePath)
+    {
+        String lockOwner = null;
+        
+        if (avmLockingService != null)
+        {
+            AVMLock lock = avmLockingService.getLock(wpStoreId, filePath);
+    
+            if (lock != null)
+            {
+                // for now assume single lock owner (if more than one, then return first in list)
+                List<String> lockUsers = lock.getOwners();
+                if (lockUsers.size() > 0)
+                {
+                    lockOwner = lockUsers.get(0);
+                }
+            }
+        }
+        
+        return lockOwner;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.wcm.asset.AssetService#hasLockAccess(org.alfresco.wcm.asset.AssetInfo)
+     */
+    public boolean hasLockAccess(AssetInfo asset)
+    {
+        ParameterCheck.mandatory("asset", asset);
+        
+        return avmLockingService.hasAccess(WCMUtil.getWebProjectStoreId(asset.getSandboxId()), asset.getAvmPath(), AuthenticationUtil.getFullyAuthenticatedUser());
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.wcm.asset.AssetService#updateAssetProperties(org.alfresco.wcm.asset.AssetInfo, java.util.Map)
+     */
+    public void updateAssetProperties(AssetInfo asset, Map<QName, Serializable> properties)
+    {
+        ParameterCheck.mandatory("asset", asset);
+        ParameterCheck.mandatory("properties", properties);
+        
+        NodeRef avmNodeRef = AVMNodeConverter.ToNodeRef(-1, asset.getAvmPath());
+        for (Map.Entry<QName, Serializable> prop : properties.entrySet())
+        {
+            avmNodeService.setProperty(avmNodeRef, prop.getKey(), prop.getValue());
+        }
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.wcm.asset.AssetService#setAssetProperties(org.alfresco.wcm.asset.AssetInfo, java.util.Map)
+     */
+    public void setAssetProperties(AssetInfo asset, Map<QName, Serializable> properties)
+    {
+        ParameterCheck.mandatory("asset", asset);
+        ParameterCheck.mandatory("properties", properties);
+         
+        setProperties(asset.getAvmPath(), properties);
+    }
+    
+    private void setProperties(String avmPath, Map<QName, Serializable> properties)
+    {
+        NodeRef avmNodeRef = AVMNodeConverter.ToNodeRef(-1, avmPath);
+        avmNodeService.setProperties(avmNodeRef, properties); // note: assumes lock, if applicable, is taken by caller
+    }
+    
+    private void addAspect(String avmPath, QName aspect, Map<QName, Serializable> properties)
+    {
+        NodeRef avmNodeRef = AVMNodeConverter.ToNodeRef(-1, avmPath);
+        avmNodeService.addAspect(avmNodeRef, aspect, properties); // note: assumes lock, if applicable, is taken by caller
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.wcm.asset.AssetService#getAssetProperties(org.alfresco.wcm.asset.AssetInfo)
+     */
+    public Map<QName, Serializable> getAssetProperties(AssetInfo asset)
+    {
+        ParameterCheck.mandatory("asset", asset);
+        
+        return getProperties(asset.getSandboxVersion(), asset.getAvmPath());
+    }
+    
+    private Map<QName, Serializable> getProperties(int version, String avmPath)
+    {
+        NodeRef avmNodeRef = AVMNodeConverter.ToNodeRef(version, avmPath);
+        return avmNodeService.getProperties(avmNodeRef); // note: includes built-in properties
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.wcm.asset.AssetService#listAssetsWebApp(java.lang.String, java.lang.String, java.lang.String, boolean)
+     */
+    public List<AssetInfo> listAssetsWebApp(String sbStoreId, String webApp, String parentFolderPathRelativeToWebApp, boolean includeDeleted)
+    {
+        ParameterCheck.mandatoryString("sbStoreId", sbStoreId);
+        ParameterCheck.mandatoryString("webApp", webApp);
+        ParameterCheck.mandatoryString("parentFolderPathRelativeToWebApp", parentFolderPathRelativeToWebApp);
+        
+        parentFolderPathRelativeToWebApp = addLeadingSlash(parentFolderPathRelativeToWebApp);
+        
+        String avmPath = WCMUtil.buildStoreWebappPath(sbStoreId, webApp) + parentFolderPathRelativeToWebApp;
+        
+        return listAssetsAVM(-1, avmPath, includeDeleted);
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.wcm.asset.AssetService#listAssets(java.lang.String, java.lang.String, boolean)
+     */
+    public List<AssetInfo> listAssets(String sbStoreId, String parentFolderPath, boolean includeDeleted)
+    {
+        ParameterCheck.mandatoryString("sbStoreId", sbStoreId);
+        ParameterCheck.mandatoryString("parentFolderPath", parentFolderPath);
+        
+        parentFolderPath = addLeadingSlash(parentFolderPath);
+        
+        String avmPath = sbStoreId + WCMUtil.AVM_STORE_SEPARATOR + parentFolderPath;
+        
+        return listAssetsAVM(-1, avmPath, includeDeleted);
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.wcm.asset.AssetService#listAssets(java.lang.String, int, java.lang.String, boolean)
+     */
+    public List<AssetInfo> listAssets(String sbStoreId, int version, String parentFolderPath, boolean includeDeleted)
+    {
+        ParameterCheck.mandatoryString("sbStoreId", sbStoreId);
+        ParameterCheck.mandatoryString("parentFolderPath", parentFolderPath);
+        
+        parentFolderPath = addLeadingSlash(parentFolderPath);
+        
+        String avmPath = sbStoreId + WCMUtil.AVM_STORE_SEPARATOR + parentFolderPath;
+        
+        return listAssetsAVM(version, avmPath, includeDeleted);
+    }
+    
+    private List<AssetInfo> listAssetsAVM(int version, String avmPath, boolean includeDeleted)
+    {
+        ParameterCheck.mandatoryString("avmPath", avmPath);
+        
+        Map<String, AVMNodeDescriptor> nodes = avmService.getDirectoryListing(version, avmPath, includeDeleted);
+        
+        List<AssetInfo> assets = new ArrayList<AssetInfo>(nodes.size());
+
+        for (AVMNodeDescriptor node : nodes.values())
+        { 
+            String lockOwner = null;
+            if (avmLockingService != null)
+            {
+                String wpStoreId = WCMUtil.getWebProjectStoreIdFromPath(avmPath);
+                String[] parts = WCMUtil.splitPath(avmPath);
+                lockOwner = getLockOwner(wpStoreId, parts[1]);
+            }
+            
+            assets.add(new AssetInfoImpl(version, node, lockOwner));
+        }
+        
+        return assets;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.wcm.asset.AssetService#deleteAsset(org.alfresco.wcm.asset.AssetInfo)
+     */
+    public void deleteAsset(AssetInfo asset)
+    {
+        ParameterCheck.mandatory("asset", asset);
+        
+        if (! isWebProjectStagingSandbox(asset.getSandboxId()))
+        {
+            avmService.removeNode(asset.getAvmPath());
+        }
+        else
+        {
+            throw new AccessDeniedException("Not allowed to write in: " + asset.getSandboxId());
+        }
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.wcm.asset.AssetService#renameAsset(org.alfresco.wcm.asset.AssetInfo, java.lang.String)
+     */
+    public AssetInfo renameAsset(AssetInfo asset, String newName)
+    {
+        ParameterCheck.mandatory("asset", asset);
+        
+        if (! isWebProjectStagingSandbox(asset.getSandboxId()))
+        {
+            String avmParentPath = AVMNodeConverter.SplitBase(asset.getAvmPath())[0];
+            String oldName = asset.getName();
+            
+            avmService.rename(avmParentPath, oldName, avmParentPath, newName);
+            
+            return getAsset(asset.getSandboxId(), WCMUtil.getStoreRelativePath(avmParentPath)+"/"+newName);
+        }
+        else
+        {
+            throw new AccessDeniedException("Not allowed to write in: " + asset.getSandboxId());
+        }
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.wcm.asset.AssetService#moveAsset(org.alfresco.wcm.asset.AssetInfo, java.lang.String)
+     */
+    public AssetInfo moveAsset(AssetInfo asset, String parentFolderPath)
+    {
+        ParameterCheck.mandatory("asset", asset);
+        
+        if (! isWebProjectStagingSandbox(asset.getSandboxId()))
+        {
+            parentFolderPath = addLeadingSlash(parentFolderPath);
+            
+            String avmDstPath = asset.getSandboxId() + WCMUtil.AVM_STORE_SEPARATOR + parentFolderPath;
+            
+            String avmSrcPath = AVMNodeConverter.SplitBase(asset.getAvmPath())[0];
+            String name = asset.getName();
+            
+            avmService.rename(avmSrcPath, name, avmDstPath, name);
+            
+            return getAsset(asset.getSandboxId(), WCMUtil.getStoreRelativePath(avmDstPath)+"/"+name);
+        }
+        else
+        {
+            throw new AccessDeniedException("Not allowed to write in: " + asset.getSandboxId());
+        }
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.wcm.asset.AssetService#copyAsset(org.alfresco.wcm.asset.AssetInfo, java.lang.String)
+     */
+    public AssetInfo copyAsset(AssetInfo asset, String parentFolderPath)
+    {
+        ParameterCheck.mandatory("asset", asset);
+        
+        if (! isWebProjectStagingSandbox(asset.getSandboxId()))
+        {
+            parentFolderPath = addLeadingSlash(parentFolderPath);
+            
+            String avmDstParentPath = asset.getSandboxId() + WCMUtil.AVM_STORE_SEPARATOR + parentFolderPath;
+            
+            String avmSrcPath = asset.getAvmPath();
+            String name = asset.getName();
+            
+            avmService.copy(-1, avmSrcPath, avmDstParentPath, name);
+            
+            return getAsset(asset.getSandboxId(), WCMUtil.getStoreRelativePath(avmDstParentPath+"/"+name));
+        }
+        else
+        {
+            throw new AccessDeniedException("Not allowed to write in: " + asset.getSandboxId());
+        }
+    }
+    
+    // TODO should this be in sandbox service ?
+    public void bulkImport(String sbStoreId, String parentFolderPath, File zipFile, boolean isHighByteZip)
+    {
+        if (! isWebProjectStagingSandbox(sbStoreId))
+        {
+            parentFolderPath = addLeadingSlash(parentFolderPath);
+            
+            String avmDstPath = sbStoreId + WCMUtil.AVM_STORE_SEPARATOR + parentFolderPath;
+        
+            // convert the AVM path to a NodeRef so we can use the NodeService to perform import
+            NodeRef importRef = AVMNodeConverter.ToNodeRef(-1, avmDstPath);
+            processZipImport(zipFile, isHighByteZip, importRef);
+        
+            // After a bulk import, snapshot the store
+            avmService.createSnapshot(sbStoreId, "Import of file: " + zipFile.getName(), null);
+            
+            // Bind the post-commit transaction listener with data required for virtualization server notification
+            UpdateSandboxTransactionListener tl = new UpdateSandboxTransactionListener(avmDstPath);
+            AlfrescoTransactionSupport.bindListener(tl);
+        }
+        else
+        {
+            throw new AccessDeniedException("Not allowed to write in: " + sbStoreId);
+        }
+        
+    }
+    
+    /**
+     * Process ZIP file for import into an AVM repository store location
+     *
+     * @param file       ZIP format file
+     * @param rootRef    Root reference of the AVM location to import into
+     */
+    private void processZipImport(File file, boolean isHighByteZip, NodeRef rootRef)
+    {
+       try
+       {
+          // NOTE: This encoding allows us to workaround bug:
+          //       http://bugs.sun.com/bugdatabase/view_bug.do;:WuuT?bug_id=4820807
+          ZipFile zipFile = new ZipFile(file, isHighByteZip ? "Cp437" : null);
+          File alfTempDir = TempFileProvider.getTempDir();
+          // build a temp dir name based on the name of the file we are importing
+          File tempDir = new File(alfTempDir.getPath() + File.separatorChar + file.getName() + "_unpack");
+          try
+          {
+             ImporterActionExecuter.extractFile(zipFile, tempDir.getPath());
+             importDirectory(tempDir.getPath(), rootRef);
+          }
+          finally
+          {
+             if (tempDir.exists())
+             {
+                ImporterActionExecuter.deleteDir(tempDir);
+             }
+          }
+       }
+       catch (IOException e)
+       {
+          throw new AlfrescoRuntimeException("Unable to process Zip file. File may not be of the expected format.", e);
+       }
+    }
+    
+    /**
+     * Recursively import a directory structure into the specified root node
+     *
+     * @param dir     The directory of files and folders to import
+     * @param root    The root node to import into
+     */
+    private void importDirectory(String dir, NodeRef root)
+    {
+       File topdir = new File(dir);
+       if (!topdir.exists()) return;
+       for (File file : topdir.listFiles())
+       {
+          try
+          {
+             if (file.isFile())
+             {
+                // Create a file in the AVM store
+                String avmPath = AVMNodeConverter.ToAVMVersionPath(root).getSecond();
+                String fileName = file.getName();
+
+                Map<QName, Serializable> titledProps = new HashMap<QName, Serializable>();
+                titledProps.put(ContentModel.PROP_TITLE, fileName);
+                
+                createFileAVM(avmPath, fileName, new BufferedInputStream(new FileInputStream(file), BUFFER_SIZE));
+                
+                addAspect(avmPath, ContentModel.ASPECT_TITLED, titledProps);
+             }
+             else
+             {
+                // Create a directory in the AVM store
+                String avmPath = AVMNodeConverter.ToAVMVersionPath(root).getSecond();
+
+                createFolderAVM(avmPath, file.getName(), null);
+
+                String folderPath = avmPath + '/' + file.getName();
+                NodeRef folderRef = AVMNodeConverter.ToNodeRef(-1, folderPath);
+                importDirectory(file.getPath(), folderRef);
+             }
+          }
+          catch (FileNotFoundException e)
+          {
+             // TODO: add failed file info to status message?
+             throw new AlfrescoRuntimeException("Failed to process ZIP file.", e);
+          }
+          catch (FileExistsException e)
+          {
+             // TODO: add failed file info to status message?
+             throw new AlfrescoRuntimeException("Failed to process ZIP file.", e);
+          }
+       }
+    }
+    
+    /**
+     * Update Sandbox Transaction listener - invoked after bulk import
+     */
+    private class UpdateSandboxTransactionListener extends TransactionListenerAdapter
+    {
+        private String virtUpdatePath;
+        
+        public UpdateSandboxTransactionListener(String virtUpdatePath)
+        {
+            this.virtUpdatePath = virtUpdatePath;
+        }
+
+        /**
+         * @see org.alfresco.repo.transaction.TransactionListenerAdapter#afterCommit()
+         */
+        @Override
+        public void afterCommit()
+        {
+            // Reload virtualisation server as required
+            if (this.virtUpdatePath != null)
+            {
+               WCMUtil.updateVServerWebapp(virtServerRegistry, this.virtUpdatePath, true);
+            }
+        }
+    }
+}

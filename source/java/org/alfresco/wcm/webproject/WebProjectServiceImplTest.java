@@ -295,7 +295,7 @@ public class WebProjectServiceImplTest extends TestCase
             wpInfo = wpService.createWebProject(dnsName, name, TEST_TITLE, TEST_DESCRIPTION, TEST_DEFAULT_WEBAPP, TEST_USE_AS_TEMPLATE, null);
             fail("Shouldn't be able to create web project with '--'");
         }
-        catch (AlfrescoRuntimeException exception)
+        catch (IllegalArgumentException exception)
         {
             // Expected
         }
@@ -309,7 +309,7 @@ public class WebProjectServiceImplTest extends TestCase
             wpInfo = wpService.createWebProject(dnsName, name, TEST_TITLE, TEST_DESCRIPTION, TEST_DEFAULT_WEBAPP, TEST_USE_AS_TEMPLATE, null);
             fail("Shouldn't be able to create web project with '--'");
         }
-        catch (AlfrescoRuntimeException exception)
+        catch (IllegalArgumentException exception)
         {
             // Expected
         }

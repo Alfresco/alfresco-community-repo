@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -28,8 +28,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.util.ISO8601DateFormat;
+import org.alfresco.wcm.asset.AssetInfo;
 import org.alfresco.wcm.sandbox.SandboxService;
 
 /**
@@ -39,13 +39,13 @@ import org.alfresco.wcm.sandbox.SandboxService;
  */
 public class Asset 
 {
-	private AVMNodeDescriptor desc;
+	private AssetInfo asset;
 	private Sandbox sandbox;
 	
-	public Asset(Sandbox sandbox, AVMNodeDescriptor desc) 
+	public Asset(Sandbox sandbox, AssetInfo asset) 
 	{
 		this.sandbox = sandbox;
-		this.desc = desc;
+		this.asset = asset;
 	}
 	
 	/**
@@ -54,12 +54,12 @@ public class Asset
 	 */
 	public String getCreator()
 	{
-		return desc.getCreator();
+		return asset.getCreator();
 	}
 	
 	public Date getCreatedDate()
 	{
-		return new Date(desc.getCreateDate());
+		return asset.getCreatedDate();
 	}
 	
 	public String getCreatedDateAsISO8601()
@@ -69,12 +69,12 @@ public class Asset
 	
 	public String getModifier()
 	{
-		return desc.getLastModifier();	
+		return asset.getModifier();	
 	}
 	
 	public Date getModifiedDate()
 	{
-		return new Date(desc.getModDate());
+		return asset.getModifiedDate();
 	}
 
 	public String getModifiedDateAsISO8601()
@@ -82,14 +82,16 @@ public class Asset
 		return ISO8601DateFormat.format(getModifiedDate());
 	}
 	
+	/*
 	public String getAssetRef()
 	{
-		return desc.getGuid();
+		return asset.getGuid();
 	}
+	*/
 	
 	public String getName()
 	{
-		return desc.getName();
+		return asset.getName();
 	}
 	
 	/**
@@ -98,39 +100,35 @@ public class Asset
 	 */
 	public String getPath()
 	{
-		String path = desc.getPath();
-		
-		if (path != null)
-		{
-			String[] splits = path.split(":");
-			return splits[1];
-		}
-		else
-		{
-			return path;
-		}
+		return asset.getPath();
 	}
 	
 	public boolean isFile()
 	{
-		return desc.isFile();
+		return asset.isFile();
 	}
 	
 	public boolean isDirectory()
 	{
-		return desc.isDirectory();
+		return asset.isFolder();
 	}
 	
 	public boolean isDeleted()
 	{
-		return desc.isDeleted();
+		return asset.isDeleted();
 	}
 	
+	public boolean isLocked()
+	{
+		return asset.isLocked();
+	}
 	
+	/* TODO review
 	public int getVersion()
 	{
-		return desc.getVersionID();
+		return asset.getVersion();
 	}
+	*/
 	
 	/**
 	 * Submit this asset to staging

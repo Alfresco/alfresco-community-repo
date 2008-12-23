@@ -31,6 +31,8 @@ import java.util.List;
 
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.util.ISO8601DateFormat;
+import org.alfresco.wcm.asset.AssetInfo;
+import org.alfresco.wcm.asset.AssetService;
 import org.alfresco.wcm.sandbox.SandboxInfo;
 import org.alfresco.wcm.sandbox.SandboxConstants;
 import org.alfresco.wcm.sandbox.SandboxService;
@@ -138,6 +140,7 @@ public class Sandbox implements Serializable
 		
 		getSandboxService().submitList(getSandboxRef(), items, submitLabel, submitComment);
 	}
+	
 	/**
 	 * Submit the specified files and directories modified contents of this sandbox
 	 */
@@ -260,15 +263,42 @@ public class Sandbox implements Serializable
 	 */
 	public Asset[] getModifiedAssets()
 	{
-		List<AVMNodeDescriptor> items = getSandboxService().listChangedAll(getSandboxRef(), true);
+		List<AssetInfo> items = getSandboxService().listChangedAll(getSandboxRef(), true);
         Asset[] ret = new Asset[items.size()];
 		
         int i = 0;
-		for(AVMNodeDescriptor item : items)
+		for(AssetInfo item : items)
 		{
 			ret[i++] = new Asset(this, item);
 		}
 		return ret;	
+	}
+	
+	/**
+	 * Get the specified asset (Either folder or file)
+	 * @param path the full path e.g. /www/web_apps/ROOT/index.html
+	 * @return the asset
+	 */
+	public Asset getAsset(String path)
+	{
+		AssetService as = getAssetService();
+		AssetInfo item = as.getAsset(getSandboxRef(), path);
+		Asset newAsset = new Asset(this, item);
+		return newAsset;
+	}
+	
+	/**
+	 * Get the specified asset with a path relative to the specified web app.
+	 * @param path e.g. index.html
+	 * @param webApp e.g. ROOT 
+	 * @return the asset
+	 */
+	public Asset getAssetWebApp(String webApp, String path)
+	{
+		AssetService as = getAssetService();
+		AssetInfo item = as.getAssetWebApp(getSandboxRef(), webApp, path);
+		Asset newAsset = new Asset(this, item);
+		return newAsset;
 	}
 	
 	/**
@@ -277,11 +307,11 @@ public class Sandbox implements Serializable
 	 */
 	public Asset[] getModifiedAssetsWebApp(String webApp)
 	{
-		List<AVMNodeDescriptor> items = getSandboxService().listChangedWebApp(getSandboxRef(), webApp, true);
+		List<AssetInfo> items = getSandboxService().listChangedWebApp(getSandboxRef(), webApp, true);
         Asset[] ret = new Asset[items.size()];
         
         int i = 0;
-		for(AVMNodeDescriptor item : items)
+		for(AssetInfo item : items)
 		{
 			ret[i++] = new Asset(this, item);
 		}
@@ -304,5 +334,14 @@ public class Sandbox implements Serializable
 	private SandboxService getSandboxService()
 	{
 	    return webproject.getWebProjects().getSandboxService();
+	}
+	
+	/**
+	 * Get the asset service
+	 * @return the asset service
+	 */
+	private AssetService getAssetService()
+	{
+	    return webproject.getWebProjects().getAssetService();
 	}
 }

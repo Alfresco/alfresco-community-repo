@@ -69,6 +69,7 @@ import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.wcm.asset.AssetService;
 import org.alfresco.wcm.sandbox.SandboxService;
 import org.alfresco.wcm.webproject.WebProjectService;
 
@@ -132,6 +133,7 @@ public interface ServiceRegistry
     static final QName DEPLOYMENT_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "DeploymentService");
     static final QName WEBPROJECT_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "WebProjectService");
     static final QName SANDBOX_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "SandboxService");
+    static final QName ASSET_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "AssetService");
     static final QName FORM_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "FormService");
 
     /**
@@ -428,18 +430,25 @@ public interface ServiceRegistry
     DeploymentService getDeploymentService();
     
     /**
-     * Get the WebProject Service
+     * Get the WCM WebProject Service
      * @return
      */
     @NotAuditable
     WebProjectService getWebProjectService();
     
     /**
-     * Get the Sandbox Service
+     * Get the WCM Sandbox Service
      * @return
      */
     @NotAuditable
     SandboxService getSandboxService();
+    
+    /**
+     * Get the WCM Asset Service
+     * @return
+     */
+    @NotAuditable
+    AssetService getAssetService();
     
     /**
      * Get the form service (or null if one is not provided)

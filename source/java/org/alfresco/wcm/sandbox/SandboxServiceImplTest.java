@@ -26,7 +26,6 @@ package org.alfresco.wcm.sandbox;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -36,17 +35,21 @@ import junit.framework.TestCase;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
-import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMNotFoundException;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.VersionDescriptor;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.PropertyMap;
+import org.alfresco.wcm.asset.AssetInfo;
+import org.alfresco.wcm.asset.AssetService;
 import org.alfresco.wcm.util.WCMUtil;
 import org.alfresco.wcm.webproject.WebProjectInfo;
 import org.alfresco.wcm.webproject.WebProjectService;
@@ -60,8 +63,6 @@ import org.springframework.context.ApplicationContext;
 public class SandboxServiceImplTest extends TestCase 
 {
     private static final ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
-    
-    private char AVM_STORE_SEPARATOR = ':';
     
     //
     // test data
@@ -100,11 +101,15 @@ public class SandboxServiceImplTest extends TestCase
     
     private WebProjectService wpService;
     private SandboxService sbService;
+    private AssetService assetService;
+    
     private AuthenticationService authenticationService;
     private PersonService personService;
     
-    private AVMService avmLockingAwareService;
-    private AVMService avmNonLockingAwareService;
+    private AVMService avmService; // non-locking-aware
+    
+    //private AVMService avmLockingAwareService;
+    //private AVMService avmNonLockingAwareService;
 
     
     @Override
@@ -113,14 +118,18 @@ public class SandboxServiceImplTest extends TestCase
         // Get the required services
         wpService = (WebProjectService)ctx.getBean("WebProjectService");
         sbService = (SandboxService)ctx.getBean("SandboxService");
+        assetService = (AssetService)ctx.getBean("AssetService");
+        
         authenticationService = (AuthenticationService)ctx.getBean("AuthenticationService");
         personService = (PersonService)ctx.getBean("PersonService");
         
+        avmService = (AVMService)ctx.getBean("AVMService");
+        
         // WCM locking
-        avmLockingAwareService = (AVMService)ctx.getBean("AVMLockingAwareService");
+        //avmLockingAwareService = (AVMService)ctx.getBean("AVMLockingAwareService");
         
         // without WCM locking
-        avmNonLockingAwareService = (AVMService)ctx.getBean("AVMService");
+        //avmNonLockingAwareService = (AVMService)ctx.getBean("AVMService");
        
         // By default run as Admin
         AuthenticationUtil.setFullyAuthenticatedUser(USER_ADMIN);
@@ -184,7 +193,7 @@ public class SandboxServiceImplTest extends TestCase
     
     public void testSimple()
     {
-        int storeCnt = avmLockingAwareService.getStores().size();
+        int storeCnt = avmService.getStores().size();
         
         // create web project (also creates staging sandbox and admin's author sandbox)
         WebProjectInfo wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-simple", TEST_WEBPROJ_NAME+"-simple", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION, TEST_WEBPROJ_DEFAULT_WEBAPP, TEST_WEBPROJ_DONT_USE_AS_TEMPLATE, null);
@@ -194,7 +203,7 @@ public class SandboxServiceImplTest extends TestCase
         assertEquals(2, sbService.listSandboxes(wpStoreId).size());
         
         // list 4 extra AVM stores (2 per sandbox)
-        assertEquals(storeCnt+4, avmLockingAwareService.getStores().size()); // 2x stating (main,preview), 2x admin author (main, preview)
+        assertEquals(storeCnt+4, avmService.getStores().size()); // 2x stating (main,preview), 2x admin author (main, preview)
         
         // get admin's sandbox
         SandboxInfo sbInfo = sbService.getAuthorSandbox(wpStoreId);
@@ -222,7 +231,7 @@ public class SandboxServiceImplTest extends TestCase
         // delete web project (also deletes staging sandbox)
         wpService.deleteWebProject(wpStoreId);
         
-        assertEquals(storeCnt, avmLockingAwareService.getStores().size());
+        assertEquals(storeCnt, avmService.getStores().size());
     }
 	
     public void testCreateAuthorSandbox()
@@ -508,38 +517,35 @@ public class SandboxServiceImplTest extends TestCase
         String sbStoreId = sbInfo.getSandboxId();
         
         // no changes yet
-        List<AVMNodeDescriptor> assets = sbService.listChangedAll(sbStoreId, true);
+        List<AssetInfo> assets = sbService.listChangedAll(sbStoreId, true);
         assertEquals(0, assets.size());
       
         String authorSandboxMyWebAppRelativePath = sbInfo.getSandboxRootPath() + "/" + myWebApp; // in this case, my web app is 'myWebApp'
-        String authorSandboxMyWebAppPath = sbStoreId + AVM_STORE_SEPARATOR + authorSandboxMyWebAppRelativePath;
-        
         String authorSandboxDefaultWebAppRelativePath = sbInfo.getSandboxRootPath() + "/" + wpInfo.getDefaultWebApp(); // in this case, default web app is 'ROOT'
-        String authorSandboxDefaultWebAppPath = sbStoreId + AVM_STORE_SEPARATOR + authorSandboxDefaultWebAppRelativePath;
 
-        avmLockingAwareService.createFile(authorSandboxMyWebAppPath, "myFile1");
+        assetService.createFile(sbStoreId, authorSandboxMyWebAppRelativePath, "myFile1", null);
         
         assets = sbService.listChangedAll(sbStoreId, false);
         assertEquals(1, assets.size());
         assertEquals("myFile1", assets.get(0).getName());
         
-        avmLockingAwareService.createDirectory(authorSandboxDefaultWebAppPath, "myDir1");
-        avmLockingAwareService.createFile(authorSandboxDefaultWebAppPath+"/myDir1", "myFile2");
-        avmLockingAwareService.createDirectory(authorSandboxDefaultWebAppPath+"/myDir1", "myDir2");
-        avmLockingAwareService.createFile(authorSandboxDefaultWebAppPath+"/myDir1/myDir2", "myFile3");
-        avmLockingAwareService.createFile(authorSandboxDefaultWebAppPath+"/myDir1/myDir2", "myFile4");
-        avmLockingAwareService.createDirectory(authorSandboxDefaultWebAppPath+"/myDir1", "myDir3");
+        assetService.createFolder(sbStoreId, authorSandboxDefaultWebAppRelativePath, "myDir1", null);
+        assetService.createFile(sbStoreId, authorSandboxDefaultWebAppRelativePath+"/myDir1", "myFile2", null);
+        assetService.createFolder(sbStoreId, authorSandboxDefaultWebAppRelativePath+"/myDir1", "myDir2", null);
+        assetService.createFile(sbStoreId, authorSandboxDefaultWebAppRelativePath+"/myDir1/myDir2", "myFile3", null);
+        assetService.createFile(sbStoreId, authorSandboxDefaultWebAppRelativePath+"/myDir1/myDir2", "myFile4", null);
+        assetService.createFolder(sbStoreId, authorSandboxDefaultWebAppRelativePath+"/myDir1", "myDir3", null);
         
         assets = sbService.listChangedAll(sbStoreId, false);
         assertEquals(2, assets.size()); // new dir with new dirs/files is returned as single change
         
-        for (AVMNodeDescriptor asset : assets)
+        for (AssetInfo asset : assets)
         {
             if (asset.getName().equals("myFile1") && asset.isFile())
             {
                 continue;
             }
-            else if (asset.getName().equals("myDir1") && asset.isDirectory())
+            else if (asset.getName().equals("myDir1") && asset.isFolder())
             {
                 continue;
             }
@@ -552,9 +558,9 @@ public class SandboxServiceImplTest extends TestCase
         assets = sbService.listChangedWebApp(sbStoreId, wpInfo.getDefaultWebApp(), false);
         assertEquals(1, assets.size());
         
-        for (AVMNodeDescriptor asset : assets)
+        for (AssetInfo asset : assets)
         {
-            if (asset.getName().equals("myDir1") && asset.isDirectory())
+            if (asset.getName().equals("myDir1") && asset.isFolder())
             {
                 continue;
             }
@@ -567,9 +573,9 @@ public class SandboxServiceImplTest extends TestCase
         assets = sbService.listChanged(sbStoreId, authorSandboxDefaultWebAppRelativePath+"/myDir1", false);
         assertEquals(1, assets.size());
         
-        for (AVMNodeDescriptor asset : assets)
+        for (AssetInfo asset : assets)
         {
-            if (asset.getName().equals("myDir1") && asset.isDirectory())
+            if (asset.getName().equals("myDir1") && asset.isFolder())
             {
                 continue;
             }
@@ -596,12 +602,10 @@ public class SandboxServiceImplTest extends TestCase
         SandboxInfo sbInfo1 = sbService.getAuthorSandbox(wpStoreId);
         String sbStoreId = sbInfo1.getSandboxId();
         
-        List<AVMNodeDescriptor> assets = sbService.listChangedAll(sbStoreId, true);
+        List<AssetInfo> assets = sbService.listChangedAll(sbStoreId, true);
         assertEquals(0, assets.size());
-      
-        String authorSandboxRootPath = sbStoreId + AVM_STORE_SEPARATOR + sbInfo1.getSandboxRootPath();
-
-        avmLockingAwareService.createFile(authorSandboxRootPath, "myFile1");
+        
+        assetService.createFile(sbStoreId, sbInfo1.getSandboxRootPath(), "myFile1", null);
         
         assets = sbService.listChangedAll(sbStoreId, false);
         assertEquals(1, assets.size());
@@ -615,16 +619,14 @@ public class SandboxServiceImplTest extends TestCase
         
         assets = sbService.listChangedAll(sbStoreId, true);
         assertEquals(0, assets.size());
-      
-        authorSandboxRootPath = sbStoreId + AVM_STORE_SEPARATOR + sbInfo2.getSandboxRootPath();
-
-        avmLockingAwareService.createFile(authorSandboxRootPath, "myFile2");
-        avmLockingAwareService.createFile(authorSandboxRootPath, "myFile3");
+        
+        assetService.createFile(sbStoreId, sbInfo2.getSandboxRootPath(), "myFile2", null);
+        assetService.createFile(sbStoreId, sbInfo2.getSandboxRootPath(), "myFile3", null);
         
         assets = sbService.listChangedAll(sbStoreId, false);
         assertEquals(2, assets.size());
 
-        for (AVMNodeDescriptor asset : assets)
+        for (AssetInfo asset : assets)
         {
             if (asset.getName().equals("myFile2") && asset.isFile())
             {
@@ -650,10 +652,10 @@ public class SandboxServiceImplTest extends TestCase
         assertEquals(1, assets.size());
         assertEquals("myFile1", assets.get(0).getName());
         
-        assets = sbService.listChanged(sbInfo2.getSandboxId(), sbInfo1.getSandboxRootPath(), sbInfo1.getSandboxId(), sbInfo2.getSandboxRootPath(), false);
+        assets = sbService.listChanged(sbInfo2.getSandboxId(), sbInfo2.getSandboxRootPath(), sbInfo1.getSandboxId(), sbInfo1.getSandboxRootPath(), false);
         assertEquals(2, assets.size());
         
-        for (AVMNodeDescriptor asset : assets)
+        for (AssetInfo asset : assets)
         {
             if (asset.getName().equals("myFile2") && asset.isFile())
             {
@@ -670,6 +672,7 @@ public class SandboxServiceImplTest extends TestCase
         }
     }
     
+    /*
     // list changed (in this test, new) assets in two different user sandboxes compared to each other - without locking
     public void testListNewItems3()
     {
@@ -686,7 +689,7 @@ public class SandboxServiceImplTest extends TestCase
         SandboxInfo sbInfo1 = sbService.getAuthorSandbox(wpStoreId);
         String sbStoreId = sbInfo1.getSandboxId();
         
-        List<AVMNodeDescriptor> assets = sbService.listChangedAll(sbStoreId, true);
+        List<AssetInfo> assets = sbService.listChangedAll(sbStoreId, true);
         assertEquals(0, assets.size());
       
         String authorSandboxRootPath = sbStoreId + AVM_STORE_SEPARATOR + sbInfo1.getSandboxRootPath();
@@ -715,7 +718,7 @@ public class SandboxServiceImplTest extends TestCase
         assets = sbService.listChangedAll(sbStoreId, false);
         assertEquals(3, assets.size());
 
-        for (AVMNodeDescriptor asset : assets)
+        for (AssetInfo asset : assets)
         {
             if (asset.getName().equals("myFile1") && asset.isFile())
             {
@@ -748,7 +751,7 @@ public class SandboxServiceImplTest extends TestCase
         assets = sbService.listChanged(sbInfo2.getSandboxId(), sbInfo1.getSandboxRootPath(), sbInfo1.getSandboxId(), sbInfo2.getSandboxRootPath(), false);
         assertEquals(3, assets.size());
         
-        for (AVMNodeDescriptor asset : assets)
+        for (AssetInfo asset : assets)
         {
             if (asset.getName().equals("myFile1") && asset.isFile())
             {
@@ -768,6 +771,7 @@ public class SandboxServiceImplTest extends TestCase
             }
         }
     }
+    */
     
     // submit new assets in user sandbox to staging sandbox
     public void testSubmitNewItems1()
@@ -788,25 +792,25 @@ public class SandboxServiceImplTest extends TestCase
         String authorSandboxId = sbInfo.getSandboxId();
         
         // no changes yet
-        List<AVMNodeDescriptor> assets = sbService.listChangedAll(authorSandboxId, true);
+        List<AssetInfo> assets = sbService.listChangedAll(authorSandboxId, true);
         assertEquals(0, assets.size());
       
-        String authorSandboxWebppPath = authorSandboxId + AVM_STORE_SEPARATOR + sbInfo.getSandboxRootPath() + "/" + webApp;
+        String authorSandboxPath = sbInfo.getSandboxRootPath() + "/" + webApp;
         
-        avmLockingAwareService.createFile(authorSandboxWebppPath, "myFile1");
-        avmLockingAwareService.createDirectory(authorSandboxWebppPath, "myDir1");
-        avmLockingAwareService.createFile(authorSandboxWebppPath+"/myDir1", "myFile2");
-        avmLockingAwareService.createDirectory(authorSandboxWebppPath+"/myDir1", "myDir2");
-        avmLockingAwareService.createFile(authorSandboxWebppPath+"/myDir1/myDir2", "myFile3");
-        avmLockingAwareService.createFile(authorSandboxWebppPath+"/myDir1/myDir2", "myFile4");
-        avmLockingAwareService.createDirectory(authorSandboxWebppPath+"/myDir1", "myDir3");
+        assetService.createFile(authorSandboxId, authorSandboxPath, "myFile1", null);
+        assetService.createFolder(authorSandboxId, authorSandboxPath, "myDir1", null);
+        assetService.createFile(authorSandboxId, authorSandboxPath+"/myDir1", "myFile2", null);
+        assetService.createFolder(authorSandboxId, authorSandboxPath+"/myDir1", "myDir2", null);
+        assetService.createFile(authorSandboxId, authorSandboxPath+"/myDir1/myDir2", "myFile3", null);
+        assetService.createFile(authorSandboxId, authorSandboxPath+"/myDir1/myDir2", "myFile4", null);
+        assetService.createFolder(authorSandboxId, authorSandboxPath+"/myDir1", "myDir3", null);
         
         assets = sbService.listChangedWebApp(authorSandboxId, webApp, false);
         assertEquals(2, assets.size()); // new dir with new dirs/files is returned as single change
         
         // check staging before
-        String stagingSandboxWebppPath = stagingSandboxId + AVM_STORE_SEPARATOR + sbInfo.getSandboxRootPath() + "/" + webApp;
-        assertEquals(0, avmLockingAwareService.getDirectoryListing(-1, stagingSandboxWebppPath, false).size());
+        String stagingSandboxPath = sbInfo.getSandboxRootPath() + "/" + webApp;
+        assertEquals(0, assetService.listAssets(stagingSandboxId, -1, stagingSandboxPath, false).size());
         
         // submit (new assets) !
         sbService.submitWebApp(authorSandboxId, webApp, "a submit label", "a submit comment");
@@ -815,16 +819,16 @@ public class SandboxServiceImplTest extends TestCase
         assertEquals(0, assets.size());
         
         // check staging after
-        Map<String, AVMNodeDescriptor> listing = avmLockingAwareService.getDirectoryListing(-1, stagingSandboxWebppPath, false);
+        List<AssetInfo> listing = assetService.listAssets(stagingSandboxId, -1, stagingSandboxPath, false);
         assertEquals(2, listing.size());
         
-        for (AVMNodeDescriptor asset : listing.values())
+        for (AssetInfo asset : listing)
         {
             if (asset.getName().equals("myFile1") && asset.isFile())
             {
                 continue;
             }
-            else if (asset.getName().equals("myDir1") && asset.isDirectory())
+            else if (asset.getName().equals("myDir1") && asset.isFolder())
             {
                 continue;
             }
@@ -855,31 +859,31 @@ public class SandboxServiceImplTest extends TestCase
         String authorSandboxId = sbInfo.getSandboxId();
         
         // no changes yet
-        List<AVMNodeDescriptor> assets = sbService.listChangedAll(authorSandboxId, true);
+        List<AssetInfo> assets = sbService.listChangedAll(authorSandboxId, true);
         assertEquals(0, assets.size());
       
-        String authorSandboxWebppPath = authorSandboxId + AVM_STORE_SEPARATOR + sbInfo.getSandboxRootPath() + "/" + webApp;
+        //String authorSandboxWebppPath = authorSandboxId + AVM_STORE_SEPARATOR + sbInfo.getSandboxRootPath() + "/" + webApp;
         
         final String MYFILE1 = "This is myFile1";
-        OutputStream out = avmLockingAwareService.createFile(authorSandboxWebppPath, "myFile1");
-        byte [] buff = MYFILE1.getBytes();
-        out.write(buff);
-        out.close();
+        ContentWriter writer = assetService.createFileWebApp(authorSandboxId, webApp, "/", "myFile1");
+        writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+        writer.setEncoding("UTF-8");
+        writer.putContent(MYFILE1);
         
-        avmLockingAwareService.createDirectory(authorSandboxWebppPath, "myDir1");
+        assetService.createFolderWebApp(authorSandboxId, webApp, "/", "myDir1");
         
         final String MYFILE2 = "This is myFile2";
-        out = avmLockingAwareService.createFile(authorSandboxWebppPath+"/myDir1", "myFile2");
-        buff = MYFILE2.getBytes();
-        out.write(buff);
-        out.close();
+        writer = assetService.createFileWebApp(authorSandboxId, webApp, "/myDir1", "myFile2");
+        writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+        writer.setEncoding("UTF-8");
+        writer.putContent(MYFILE2);
                 
         assets = sbService.listChangedWebApp(authorSandboxId, webApp, false);
         assertEquals(2, assets.size());
         
         // check staging before
-        String stagingSandboxWebppPath = stagingSandboxId + ":" + sbInfo.getSandboxRootPath() + "/" + webApp;
-        assertEquals(0, avmLockingAwareService.getDirectoryListing(-1, stagingSandboxWebppPath, false).size());
+        String stagingSandboxPath = sbInfo.getSandboxRootPath() + "/" + webApp;
+        assertEquals(0, assetService.listAssets(stagingSandboxId, -1, stagingSandboxPath, false).size());
         
         // submit (new assets) !
         sbService.submitWebApp(authorSandboxId, webApp, "a submit label", "a submit comment");
@@ -888,7 +892,7 @@ public class SandboxServiceImplTest extends TestCase
         assertEquals(0, assets.size());
         
         // check staging after
-        Map<String, AVMNodeDescriptor> listing = avmLockingAwareService.getDirectoryListing(-1, stagingSandboxWebppPath, false);
+        List<AssetInfo> listing = assetService.listAssets(stagingSandboxId, -1, stagingSandboxPath, false);
         assertEquals(2, listing.size());
         
         // Switch to USER_TWO
@@ -900,34 +904,35 @@ public class SandboxServiceImplTest extends TestCase
         // no changes yet
         assets = sbService.listChangedAll(authorSandboxId, true);
         assertEquals(0, assets.size());
-      
-        authorSandboxWebppPath = authorSandboxId + AVM_STORE_SEPARATOR + sbInfo.getSandboxRootPath() + "/" + webApp;
         
         final String MYFILE1_MODIFIED = "This is myFile1 ... modified by "+USER_TWO;
-        out = avmLockingAwareService.getFileOutputStream(authorSandboxWebppPath+"/myFile1");
-        buff = (MYFILE1_MODIFIED).getBytes();
-        out.write(buff);
-        out.close();
+        
+        writer = assetService.getContentWriter(assetService.getAssetWebApp(authorSandboxId, webApp, "/myFile1"));
+        writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+        writer.setEncoding("UTF-8");
+        writer.putContent(MYFILE1_MODIFIED);
 
         final String MYFILE2_MODIFIED = "This is myFile2 ... modified by "+USER_TWO;
-        out = avmLockingAwareService.getFileOutputStream(authorSandboxWebppPath+"/myDir1/myFile2");
-        buff = (MYFILE2_MODIFIED).getBytes();
-        out.write(buff);
-        out.close();
+        writer = assetService.getContentWriter(assetService.getAssetWebApp(authorSandboxId, webApp, "/myDir1/myFile2"));
+        writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+        writer.setEncoding("UTF-8");
+        writer.putContent(MYFILE2_MODIFIED);
                 
         assets = sbService.listChangedWebApp(authorSandboxId, webApp, false);
         assertEquals(2, assets.size());
         
         // check staging before
-        stagingSandboxWebppPath = stagingSandboxId + ":" + sbInfo.getSandboxRootPath() + "/" + webApp;
+        stagingSandboxPath = sbInfo.getSandboxRootPath() + "/" + webApp;
         
-        InputStream in = avmLockingAwareService.getFileInputStream(-1, stagingSandboxWebppPath+"/myFile1");
-        buff = new byte[1024];
+        ContentReader reader = assetService.getContentReader(assetService.getAsset(stagingSandboxId, -1, stagingSandboxPath+"/myFile1", false));
+        InputStream in = reader.getContentInputStream();
+        byte[] buff = new byte[1024];
         in.read(buff);
         in.close();
         assertEquals(MYFILE1, new String(buff, 0, MYFILE1.length())); // assumes 1byte=1char
         
-        in = avmLockingAwareService.getFileInputStream(-1, stagingSandboxWebppPath+"/myDir1/myFile2");
+        reader = assetService.getContentReader(assetService.getAsset(stagingSandboxId, -1, stagingSandboxPath+"/myDir1/myFile2", false));
+        in = reader.getContentInputStream();
         buff = new byte[1024];
         in.read(buff);
         in.close();
@@ -940,13 +945,15 @@ public class SandboxServiceImplTest extends TestCase
         assertEquals(0, assets.size());
         
         // check staging after
-        in = avmLockingAwareService.getFileInputStream(-1, stagingSandboxWebppPath+"/myFile1");
+        reader = assetService.getContentReader(assetService.getAsset(stagingSandboxId, -1, stagingSandboxPath+"/myFile1", false));
+        in = reader.getContentInputStream();
         buff = new byte[1024];
         in.read(buff);
         in.close();
         assertEquals(MYFILE1_MODIFIED, new String(buff, 0, MYFILE1_MODIFIED.length()));
         
-        in = avmLockingAwareService.getFileInputStream(-1, stagingSandboxWebppPath+"/myDir1/myFile2");
+        reader = assetService.getContentReader(assetService.getAsset(stagingSandboxId, -1, stagingSandboxPath+"/myDir1/myFile2", false));
+        in = reader.getContentInputStream();
         buff = new byte[1024];
         in.read(buff);
         in.close();
@@ -973,32 +980,32 @@ public class SandboxServiceImplTest extends TestCase
         String authorSandboxId = sbInfo.getSandboxId();
         
         // no changes yet
-        List<AVMNodeDescriptor> assets = sbService.listChangedAll(authorSandboxId, true);
+        List<AssetInfo> assets = sbService.listChangedAll(authorSandboxId, true);
         assertEquals(0, assets.size());
       
-        String authorSandboxWebppPath = authorSandboxId + AVM_STORE_SEPARATOR + sbInfo.getSandboxRootPath() + "/" + webApp;
+        String authorSandboxPath = sbInfo.getSandboxRootPath() + "/" + webApp;
         
         final String MYFILE1 = "This is myFile1";
-        OutputStream out = avmLockingAwareService.createFile(authorSandboxWebppPath, "myFile1");
-        byte [] buff = MYFILE1.getBytes();
-        out.write(buff);
-        out.close();
+        ContentWriter writer = assetService.createFile(authorSandboxId, authorSandboxPath, "myFile1", null);
+        writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+        writer.setEncoding("UTF-8");
+        writer.putContent(MYFILE1);
         
-        avmLockingAwareService.createDirectory(authorSandboxWebppPath, "myDir1");
-        avmLockingAwareService.createDirectory(authorSandboxWebppPath+"/myDir1", "myDir2");
+        assetService.createFolder(authorSandboxId, authorSandboxPath, "myDir1", null);
+        assetService.createFolder(authorSandboxId, authorSandboxPath+"/myDir1", "myDir2", null);
         
         final String MYFILE2 = "This is myFile2";
-        out = avmLockingAwareService.createFile(authorSandboxWebppPath+"/myDir1", "myFile2");
-        buff = MYFILE2.getBytes();
-        out.write(buff);
-        out.close();
+        writer = assetService.createFile(authorSandboxId, authorSandboxPath+"/myDir1", "myFile2", null);
+        writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+        writer.setEncoding("UTF-8");
+        writer.putContent(MYFILE2);
                 
         assets = sbService.listChangedWebApp(authorSandboxId, webApp, false);
         assertEquals(2, assets.size());
         
         // check staging before
-        String stagingSandboxWebppPath = stagingSandboxId + AVM_STORE_SEPARATOR + sbInfo.getSandboxRootPath() + "/" + webApp;
-        assertEquals(0, avmLockingAwareService.getDirectoryListing(-1, stagingSandboxWebppPath, false).size());
+        String stagingSandboxPath = sbInfo.getSandboxRootPath() + "/" + webApp;
+        assertEquals(0, assetService.listAssets(stagingSandboxId, -1, stagingSandboxPath, false).size());
         
         // submit (new assets) !
         sbService.submitWebApp(authorSandboxId, webApp, "a submit label", "a submit comment");
@@ -1007,7 +1014,7 @@ public class SandboxServiceImplTest extends TestCase
         assertEquals(0, assets.size());
         
         // check staging after
-        Map<String, AVMNodeDescriptor> listing = avmLockingAwareService.getDirectoryListing(-1, stagingSandboxWebppPath, false);
+        List<AssetInfo> listing = assetService.listAssets(stagingSandboxId, -1, stagingSandboxPath, false);
         assertEquals(2, listing.size());
         
         // Switch to USER_TWO
@@ -1020,10 +1027,11 @@ public class SandboxServiceImplTest extends TestCase
         assets = sbService.listChangedAll(authorSandboxId, true);
         assertEquals(0, assets.size());
       
-        authorSandboxWebppPath = authorSandboxId + AVM_STORE_SEPARATOR + sbInfo.getSandboxRootPath() + "/" + webApp;
+        //authorSandboxWebppPath = authorSandboxId + AVM_STORE_SEPARATOR + sbInfo.getSandboxRootPath() + "/" + webApp;
         
-        avmLockingAwareService.removeNode(authorSandboxWebppPath+"/myFile1");
-        avmLockingAwareService.removeNode(authorSandboxWebppPath+"/myDir1/myDir2");
+        
+        assetService.deleteAsset(assetService.getAssetWebApp(authorSandboxId, webApp, "myFile1"));
+        assetService.deleteAsset(assetService.getAssetWebApp(authorSandboxId, webApp, "/myDir1/myDir2"));
                 
         // do not list deleted
         assets = sbService.listChangedWebApp(authorSandboxId, webApp, false);
@@ -1034,12 +1042,12 @@ public class SandboxServiceImplTest extends TestCase
         assertEquals(2, assets.size());
         
         // check staging before
-        stagingSandboxWebppPath = stagingSandboxId + AVM_STORE_SEPARATOR + sbInfo.getSandboxRootPath() + "/" + webApp;
+        //stagingSandboxWebppPath = stagingSandboxId + AVM_STORE_SEPARATOR + sbInfo.getSandboxRootPath() + "/" + webApp;
         
-        assertNotNull(avmLockingAwareService.lookup(-1, stagingSandboxWebppPath+"/myFile1"));
-        assertNotNull(avmLockingAwareService.lookup(-1, stagingSandboxWebppPath+"/myDir1"));
-        assertNotNull(avmLockingAwareService.lookup(-1, stagingSandboxWebppPath+"/myDir1/myDir2"));
-        assertNotNull(avmLockingAwareService.lookup(-1, stagingSandboxWebppPath+"/myDir1/myFile2"));
+        assertNotNull(assetService.getAssetWebApp(stagingSandboxId, webApp, "/myFile1"));
+        assertNotNull(assetService.getAssetWebApp(stagingSandboxId, webApp, "/myDir1"));
+        assertNotNull(assetService.getAssetWebApp(stagingSandboxId, webApp, "/myDir1/myDir2"));
+        assertNotNull(assetService.getAssetWebApp(stagingSandboxId, webApp, "/myDir1/myFile2"));
         
         // submit (deleted assets) !
         sbService.submitWebApp(authorSandboxId, webApp, null, null);
@@ -1048,11 +1056,11 @@ public class SandboxServiceImplTest extends TestCase
         assertEquals(0, assets.size());
         
         // check staging after
-        assertNull(avmLockingAwareService.lookup(-1, stagingSandboxWebppPath+"/myFile1"));
-        assertNull(avmLockingAwareService.lookup(-1, stagingSandboxWebppPath+"/myDir1/myDir2"));
+        assertNull(assetService.getAssetWebApp(stagingSandboxId, webApp, "/myFile1"));
+        assertNull(assetService.getAssetWebApp(stagingSandboxId, webApp, "/myDir1/myDir2"));
         
-        assertNotNull(avmLockingAwareService.lookup(-1, stagingSandboxWebppPath+"/myDir1"));
-        assertNotNull(avmLockingAwareService.lookup(-1, stagingSandboxWebppPath+"/myDir1/myFile2"));
+        assertNotNull(assetService.getAssetWebApp(stagingSandboxId, webApp, "/myDir1"));
+        assertNotNull(assetService.getAssetWebApp(stagingSandboxId, webApp, "/myDir1/myFile2"));
     }
     
     // revert all (changed) assets in user sandbox
@@ -1079,31 +1087,31 @@ public class SandboxServiceImplTest extends TestCase
         String authorSandboxId = sbInfo.getSandboxId();
         
         // no changes yet
-        List<AVMNodeDescriptor> assets = sbService.listChangedAll(authorSandboxId, true);
+        List<AssetInfo> assets = sbService.listChangedAll(authorSandboxId, true);
         assertEquals(0, assets.size());
       
-        String authorSandboxWebppPath = authorSandboxId + AVM_STORE_SEPARATOR + sbInfo.getSandboxRootPath() + "/" + webApp;
+        String authorSandboxPath = sbInfo.getSandboxRootPath() + "/" + webApp;
         
         final String MYFILE1 = "This is myFile1";
-        OutputStream out = avmLockingAwareService.createFile(authorSandboxWebppPath, "myFile1");
-        byte [] buff = MYFILE1.getBytes();
-        out.write(buff);
-        out.close();
+        ContentWriter writer = assetService.createFile(authorSandboxId, authorSandboxPath, "myFile1", null);
+        writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+        writer.setEncoding("UTF-8");
+        writer.putContent(MYFILE1);
         
-        avmLockingAwareService.createDirectory(authorSandboxWebppPath, "myDir1");
+        assetService.createFolder(authorSandboxId, authorSandboxPath, "myDir1", null);
         
         final String MYFILE2 = "This is myFile2";
-        out = avmLockingAwareService.createFile(authorSandboxWebppPath+"/myDir1", "myFile2");
-        buff = MYFILE2.getBytes();
-        out.write(buff);
-        out.close();
+        writer = assetService.createFile(authorSandboxId, authorSandboxPath+"/myDir1", "myFile2", null);
+        writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+        writer.setEncoding("UTF-8");
+        writer.putContent(MYFILE2);
                 
         assets = sbService.listChangedWebApp(authorSandboxId, webApp, false);
         assertEquals(2, assets.size());
         
         // check staging before
-        String stagingSandboxWebppPath = stagingSandboxId + AVM_STORE_SEPARATOR + sbInfo.getSandboxRootPath() + "/" + webApp;
-        assertEquals(0, avmLockingAwareService.getDirectoryListing(-1, stagingSandboxWebppPath, false).size());
+        String stagingSandboxPath = sbInfo.getSandboxRootPath() + "/" + webApp;
+        assertEquals(0, assetService.listAssets(stagingSandboxId, -1, stagingSandboxPath, false).size());
         
         // submit (new assets) !
         sbService.submitWebApp(authorSandboxId, webApp, "a submit label", "a submit comment");
@@ -1112,7 +1120,7 @@ public class SandboxServiceImplTest extends TestCase
         assertEquals(0, assets.size());
         
         // check staging after
-        Map<String, AVMNodeDescriptor> listing = avmLockingAwareService.getDirectoryListing(-1, stagingSandboxWebppPath, false);
+        List<AssetInfo> listing = assetService.listAssets(stagingSandboxId, -1, stagingSandboxPath, false);
         assertEquals(2, listing.size());
         
         // Switch to USER_TWO
@@ -1125,33 +1133,35 @@ public class SandboxServiceImplTest extends TestCase
         assets = sbService.listChangedAll(authorSandboxId, true);
         assertEquals(0, assets.size());
       
-        authorSandboxWebppPath = authorSandboxId + AVM_STORE_SEPARATOR + sbInfo.getSandboxRootPath() + "/" + webApp;
+        //authorSandboxWebppPath = authorSandboxId + AVM_STORE_SEPARATOR + sbInfo.getSandboxRootPath() + "/" + webApp;
         
         final String MYFILE1_MODIFIED = "This is myFile1 ... modified by "+USER_TWO;
-        out = avmLockingAwareService.getFileOutputStream(authorSandboxWebppPath+"/myFile1");
-        buff = (MYFILE1_MODIFIED).getBytes();
-        out.write(buff);
-        out.close();
+        writer = assetService.getContentWriter(assetService.getAssetWebApp(authorSandboxId, webApp, "/myFile1"));
+        writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+        writer.setEncoding("UTF-8");
+        writer.putContent(MYFILE1_MODIFIED);
 
         final String MYFILE2_MODIFIED = "This is myFile2 ... modified by "+USER_TWO;
-        out = avmLockingAwareService.getFileOutputStream(authorSandboxWebppPath+"/myDir1/myFile2");
-        buff = (MYFILE2_MODIFIED).getBytes();
-        out.write(buff);
-        out.close();
+        writer = assetService.getContentWriter(assetService.getAssetWebApp(authorSandboxId, webApp, "/myDir1/myFile2"));
+        writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+        writer.setEncoding("UTF-8");
+        writer.putContent(MYFILE2_MODIFIED);
                 
         assets = sbService.listChangedWebApp(authorSandboxId, webApp, false);
         assertEquals(2, assets.size());
         
         // check staging before
-        stagingSandboxWebppPath = stagingSandboxId + AVM_STORE_SEPARATOR + sbInfo.getSandboxRootPath() + "/" + webApp;
+        stagingSandboxPath = sbInfo.getSandboxRootPath() + "/" + webApp;
         
-        InputStream in = avmLockingAwareService.getFileInputStream(-1, stagingSandboxWebppPath+"/myFile1");
-        buff = new byte[1024];
+        ContentReader reader = assetService.getContentReader(assetService. getAsset(stagingSandboxId, -1, stagingSandboxPath+"/myFile1", false));
+        InputStream in = reader.getContentInputStream();
+        byte[] buff = new byte[1024];
         in.read(buff);
         in.close();
         assertEquals(MYFILE1, new String(buff, 0, MYFILE1.length())); // assumes 1byte = 1char
         
-        in = avmLockingAwareService.getFileInputStream(-1, stagingSandboxWebppPath+"/myDir1/myFile2");
+        reader = assetService.getContentReader(assetService. getAsset(stagingSandboxId, -1, stagingSandboxPath+"/myDir1/myFile2", false));
+        in = reader.getContentInputStream();
         buff = new byte[1024];
         in.read(buff);
         in.close();
@@ -1164,13 +1174,15 @@ public class SandboxServiceImplTest extends TestCase
         assertEquals(0, assets.size());
         
         // check staging after
-        in = avmLockingAwareService.getFileInputStream(-1, stagingSandboxWebppPath+"/myFile1");
+        reader = assetService.getContentReader(assetService.getAsset(stagingSandboxId, -1, stagingSandboxPath+"/myFile1", false));
+        in = reader.getContentInputStream();
         buff = new byte[1024];
         in.read(buff);
         in.close();
         assertEquals(MYFILE1, new String(buff, 0, MYFILE1.length()));
         
-        in = avmLockingAwareService.getFileInputStream(-1, stagingSandboxWebppPath+"/myDir1/myFile2");
+        reader = assetService.getContentReader(assetService.getAsset(stagingSandboxId, -1, stagingSandboxPath+"/myDir1/myFile2", false));
+        in = reader.getContentInputStream();
         buff = new byte[1024];
         in.read(buff);
         in.close();
@@ -1197,21 +1209,19 @@ public class SandboxServiceImplTest extends TestCase
         String authorSandboxId = sbInfo.getSandboxId();
         
         // no changes yet
-        List<AVMNodeDescriptor> assets = sbService.listChangedAll(authorSandboxId, true);
+        List<AssetInfo> assets = sbService.listChangedAll(authorSandboxId, true);
         assertEquals(0, assets.size());
       
-        String authorSandboxWebppPath = authorSandboxId + AVM_STORE_SEPARATOR + sbInfo.getSandboxRootPath() + "/" + webApp;
-        
-        avmLockingAwareService.createDirectory(authorSandboxWebppPath, "myDir1");
-        avmLockingAwareService.createDirectory(authorSandboxWebppPath, "myDir2");
-        avmLockingAwareService.createDirectory(authorSandboxWebppPath, "myDir3");
+        assetService.createFolderWebApp(authorSandboxId, webApp, "/", "myDir1");
+        assetService.createFolderWebApp(authorSandboxId, webApp, "/", "myDir2");
+        assetService.createFolderWebApp(authorSandboxId, webApp, "/", "myDir3");
         
         assets = sbService.listChangedWebApp(authorSandboxId, webApp, false);
         assertEquals(3, assets.size());
         
         // check staging before
-        String stagingSandboxWebppPath = stagingSandboxId + AVM_STORE_SEPARATOR + sbInfo.getSandboxRootPath() + "/" + webApp;
-        assertEquals(0, avmLockingAwareService.getDirectoryListing(-1, stagingSandboxWebppPath, false).size());
+        String stagingSandboxPath = sbInfo.getSandboxRootPath() + "/" + webApp;
+        assertEquals(0, assetService.listAssets(stagingSandboxId, -1, stagingSandboxPath, false).size());
         
         List<VersionDescriptor> sbVersions = sbService.listSnapshots(stagingSandboxId, fromDate, new Date(), false);
         assertEquals(0, sbVersions.size());
@@ -1223,20 +1233,20 @@ public class SandboxServiceImplTest extends TestCase
         assertEquals(0, assets.size());
         
         // check staging after
-        Map<String, AVMNodeDescriptor> listing = avmLockingAwareService.getDirectoryListing(-1, stagingSandboxWebppPath, false);
+        List<AssetInfo> listing = assetService.listAssets(stagingSandboxId, -1, stagingSandboxPath, false);
         assertEquals(3, listing.size());
         
         sbVersions = sbService.listSnapshots(stagingSandboxId, fromDate, new Date(), false);
         assertEquals(1, sbVersions.size());
         
         // more changes ...
-        avmLockingAwareService.createDirectory(authorSandboxWebppPath, "myDir4");
+        assetService.createFolderWebApp(authorSandboxId, webApp, "/", "myDir4");
 
         // submit (new assets) !
         sbService.submitWebApp(authorSandboxId, webApp, "a submit label", "a submit comment");
         
         // check staging after
-        listing = avmLockingAwareService.getDirectoryListing(-1, stagingSandboxWebppPath, false);
+        listing = assetService.listAssets(stagingSandboxId, -1, stagingSandboxPath, false);
         assertEquals(4, listing.size());
         
         sbVersions = sbService.listSnapshots(stagingSandboxId, fromDate, new Date(), false);
@@ -1267,19 +1277,19 @@ public class SandboxServiceImplTest extends TestCase
         String authorSandboxId = sbInfo.getSandboxId();
         
         // no changes yet
-        List<AVMNodeDescriptor> assets = sbService.listChangedAll(authorSandboxId, true);
+        List<AssetInfo> assets = sbService.listChangedAll(authorSandboxId, true);
         assertEquals(0, assets.size());
       
-        String authorSandboxWebppPath = authorSandboxId + AVM_STORE_SEPARATOR + sbInfo.getSandboxRootPath() + "/" + webApp;
+        String authorSandboxPath = sbInfo.getSandboxRootPath() + "/" + webApp;
         
-        avmLockingAwareService.createDirectory(authorSandboxWebppPath, "myDir1");
+        assetService.createFolder(authorSandboxId, authorSandboxPath, "myDir1", null);
         
         assets = sbService.listChangedWebApp(authorSandboxId, webApp, false);
         assertEquals(1, assets.size());
         
         // check staging before
-        String stagingSandboxWebppPath = stagingSandboxId + AVM_STORE_SEPARATOR + sbInfo.getSandboxRootPath() + "/" + webApp;
-        assertEquals(0, avmLockingAwareService.getDirectoryListing(-1, stagingSandboxWebppPath, false).size());
+        String stagingSandboxPath = sbInfo.getSandboxRootPath() + "/" + webApp;
+        assertEquals(0, assetService.listAssets(stagingSandboxId, -1, stagingSandboxPath, false).size());
         
         List<VersionDescriptor> sbVersions = sbService.listSnapshots(stagingSandboxId, fromDate, new Date(), false);
         assertEquals(0, sbVersions.size());
@@ -1291,11 +1301,11 @@ public class SandboxServiceImplTest extends TestCase
         assertEquals(0, assets.size());
         
         // check staging after
-        Map<String, AVMNodeDescriptor> listing = avmLockingAwareService.getDirectoryListing(-1, stagingSandboxWebppPath, false);
+        List<AssetInfo> listing = assetService.listAssets(stagingSandboxId, -1, stagingSandboxPath, false);
         assertEquals(1, listing.size());
-        for (AVMNodeDescriptor asset : listing.values())
+        for (AssetInfo asset : listing)
         {
-            if (asset.getName().equals("myDir1") && asset.isDirectory())
+            if (asset.getName().equals("myDir1") && asset.isFolder())
             {
                 continue;
             }
@@ -1309,21 +1319,21 @@ public class SandboxServiceImplTest extends TestCase
         assertEquals(1, sbVersions.size());
         
         // more changes ...
-        avmLockingAwareService.createDirectory(authorSandboxWebppPath, "myDir2");
+        assetService.createFolder(authorSandboxId, authorSandboxPath, "myDir2", null);
 
         // submit (new assets) !
         sbService.submitWebApp(authorSandboxId, webApp, "a submit label", "a submit comment");
         
         // check staging after
-        listing = avmLockingAwareService.getDirectoryListing(-1, stagingSandboxWebppPath, false);
+        listing = assetService.listAssets(stagingSandboxId, -1, stagingSandboxPath, false);
         assertEquals(2, listing.size());
-        for (AVMNodeDescriptor asset : listing.values())
+        for (AssetInfo asset : listing)
         {
-            if (asset.getName().equals("myDir1") && asset.isDirectory())
+            if (asset.getName().equals("myDir1") && asset.isFolder())
             {
                 continue;
             }
-            else if (asset.getName().equals("myDir2") && asset.isDirectory())
+            else if (asset.getName().equals("myDir2") && asset.isFolder())
             {
                 continue;
             }
@@ -1337,25 +1347,25 @@ public class SandboxServiceImplTest extends TestCase
         assertEquals(2, sbVersions.size());
         
         // more changes ...
-        avmLockingAwareService.createDirectory(authorSandboxWebppPath, "myDir3");
+        assetService.createFolderWebApp(authorSandboxId, webApp, "/", "myDir3");
 
         // submit (new assets) !
         sbService.submitWebApp(authorSandboxId, webApp, "a submit label", "a submit comment");
         
         // check staging after
-        listing = avmLockingAwareService.getDirectoryListing(-1, stagingSandboxWebppPath, false);
+        listing = assetService.listAssets(stagingSandboxId, -1, stagingSandboxPath, false);
         assertEquals(3, listing.size());
-        for (AVMNodeDescriptor asset : listing.values())
+        for (AssetInfo asset : listing)
         {
-            if (asset.getName().equals("myDir1") && asset.isDirectory())
+            if (asset.getName().equals("myDir1") && asset.isFolder())
             {
                 continue;
             }
-            else if (asset.getName().equals("myDir2") && asset.isDirectory())
+            else if (asset.getName().equals("myDir2") && asset.isFolder())
             {
                 continue;
             }
-            else if (asset.getName().equals("myDir3") && asset.isDirectory())
+            else if (asset.getName().equals("myDir3") && asset.isFolder())
             {
                 continue;
             }
@@ -1379,15 +1389,15 @@ public class SandboxServiceImplTest extends TestCase
         assertEquals(4, sbVersions.size());
         
         // check staging after
-        listing = avmLockingAwareService.getDirectoryListing(-1, stagingSandboxWebppPath, false);
+        listing = assetService.listAssets(stagingSandboxId, -1, stagingSandboxPath, false);
         assertEquals(2, listing.size());
-        for (AVMNodeDescriptor asset : listing.values())
+        for (AssetInfo asset : listing)
         {
-            if (asset.getName().equals("myDir1") && asset.isDirectory())
+            if (asset.getName().equals("myDir1") && asset.isFolder())
             {
                 continue;
             }
-            else if (asset.getName().equals("myDir2") && asset.isDirectory())
+            else if (asset.getName().equals("myDir2") && asset.isFolder())
             {
                 continue;
             }

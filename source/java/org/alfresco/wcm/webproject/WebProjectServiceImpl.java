@@ -53,8 +53,8 @@ import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthorityService;
@@ -173,12 +173,12 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
         
         if (wpStoreId.indexOf(WCMUtil.STORE_SEPARATOR) != -1)
         {
-            throw new AlfrescoRuntimeException("Unexpected store id '"+wpStoreId+"' - should not contain '"+WCMUtil.STORE_SEPARATOR+"'");
+            throw new IllegalArgumentException("Unexpected store id '"+wpStoreId+"' - should not contain '"+WCMUtil.STORE_SEPARATOR+"'");
         }
         
-        if (wpStoreId.indexOf(":") != -1)
+        if (wpStoreId.indexOf(WCMUtil.AVM_STORE_SEPARATOR) != -1)
         {
-            throw new AlfrescoRuntimeException("Unexpected store id '"+wpStoreId+"' - should not contain ':'");
+            throw new IllegalArgumentException("Unexpected store id '"+wpStoreId+"' - should not contain '"+WCMUtil.AVM_STORE_SEPARATOR+"'");
         }
         
         // create the website space in the correct parent folder
@@ -409,7 +409,7 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
             ResultSet resultSet = null;
             try
             {
-                resultSet = this.searchService.query(WEBPROJECT_STORE, SearchService.LANGUAGE_LUCENE, "PATH:\""+WCMUtil.getWebProjectsPath()+"\"");
+                resultSet = this.searchService.query(WEBPROJECT_STORE, SearchService.LANGUAGE_LUCENE, "PATH:\""+getWebProjectsPath()+"\"");
                 if (resultSet.length() == 0)
                 {
                     // No root web projects folder exists
@@ -874,16 +874,16 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
        
        if (wpStoreId.indexOf(WCMUtil.STORE_SEPARATOR) != -1)
        {
-           throw new AlfrescoRuntimeException("Unexpected web project store id '"+wpStoreId+"' - should not contain '"+WCMUtil.STORE_SEPARATOR+"'");
+           throw new IllegalArgumentException("Unexpected web project store id '"+wpStoreId+"' - should not contain '"+WCMUtil.STORE_SEPARATOR+"'");
        }
        
        if (wpStoreId.indexOf(":") != -1)
        {
-           throw new AlfrescoRuntimeException("Unexpected web project store id '"+wpStoreId+"' - should not contain ':'");
+           throw new IllegalArgumentException("Unexpected web project store id '"+wpStoreId+"' - should not contain ':'");
        }
        
        // construct the query
-       String path = WCMUtil.getWebProjectsPath() + "/*";
+       String path = getWebProjectsPath() + "/*";
        String query = "PATH:\"/" + path + "\" AND @wca\\:avmstore:\"" + wpStoreId + "\"";
        
        NodeRef webProjectNode = null;
@@ -1296,6 +1296,15 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
        
        return users;
     }
+    
+    private String getWebProjectsPath()
+    {
+       return "/"+SPACES_COMPANY_HOME_CHILDNAME+"/"+SPACES_WCM_CHILDNAME;
+    }
+    
+    private static final String SPACES_COMPANY_HOME_CHILDNAME = "app:company_home"; // should match repository property: spaces.company_home.childname
+    private static final String SPACES_WCM_CHILDNAME          = "app:wcm";          // should match repository property: spaces.wcm.childname
+    
     
     /**
      * Transaction listener - invoked after commit

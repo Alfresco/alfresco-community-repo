@@ -28,9 +28,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.VersionDescriptor;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.wcm.asset.AssetInfo;
 
 
 /**
@@ -156,7 +156,7 @@ public interface SandboxService
      * @param  includeDeleted           if true, include deleted assets as well as new/modified assets
      * @return List<AVMNodeDescriptor>  list of all changed assets
      */
-    public List<AVMNodeDescriptor> listChangedAll(String sbStoreId, boolean includeDeleted);
+    public List<AssetInfo> listChangedAll(String sbStoreId, boolean includeDeleted);
     
     /**
      * List changed assets for given sandbox and web app (eg. in user sandbox)
@@ -168,7 +168,7 @@ public interface SandboxService
      * @param  includeDeleted           if true, include deleted assets as well as new/modified assets
      * @return List<AVMNodeDescriptor>  list of changed assets
      */
-    public List<AVMNodeDescriptor> listChangedWebApp(String sbStoreId, String webApp, boolean includeDeleted);
+    public List<AssetInfo> listChangedWebApp(String sbStoreId, String webApp, boolean includeDeleted);
     
     /**
      * List changed assets for given sandbox path (eg. between user sandbox and staging sandbox)
@@ -180,7 +180,7 @@ public interface SandboxService
      * @param  includeDeleted           if true, include deleted assets as well as new/modified assets
      * @return List<AVMNodeDescriptor>  list of changed assets
      */
-    public List<AVMNodeDescriptor> listChanged(String sbStoreId, String relativePath, boolean includeDeleted);
+    public List<AssetInfo> listChanged(String sbStoreId, String relativePath, boolean includeDeleted);
     
     /**
      * List changed (new/modified/deleted) assets between any two sandbox paths
@@ -192,7 +192,7 @@ public interface SandboxService
      * @param  includeDeleted           if true, include deleted assets as well as new/modified assets
      * @return List<AVMNodeDescriptor>  list of changed assets
      */
-    public List<AVMNodeDescriptor> listChanged(String srcSandboxStoreId, String srcRelativePath, String dstSandboxStoreId, String dstRelativePath, boolean includeDeleted);
+    public List<AssetInfo> listChanged(String srcSandboxStoreId, String srcRelativePath, String dstSandboxStoreId, String dstRelativePath, boolean includeDeleted);
     
     /**
      * Submit all changed assets for given sandbox (eg. from user sandbox to staging sandbox)
@@ -239,15 +239,16 @@ public interface SandboxService
      */
     public void submitList(String sbStoreId, List<String> relativePaths, String submitLabel, String submitComment);
     
+    public void submitList(String sbStoreId, List<String> relativePaths, Map<String, Date> expirationDates, String submitLabel, String submitComment);
     /**
      * Submit list of changed assets for given sandbox (eg. from user sandbox to staging sandbox)
      * 
      * @param sbStoreId      sandbox store id
-     * @param assetNodes      list of assets, as AVM node descriptors
+     * @param assetNodes     list of assets, as AVM node descriptors
      * @param submitLabel    label for submitted snapshot
      * @param submitComment  comment for submitted snapshot
      */
-    public void submitListNodes(String sbStoreId, List<AVMNodeDescriptor> assets, String submitLabel, String submitComment);
+    public void submitListAssets(String sbStoreId, List<AssetInfo> assets, String submitLabel, String submitComment);
     
     /**
      * Submit list of changed assets for given sandbox (eg. from user sandbox to staging sandbox)
@@ -258,7 +259,7 @@ public interface SandboxService
      * @param submitLabel      label for submitted snapshot
      * @param submitComment    comment for submitted snapshot
      */
-    public void submitListNodes(String sbStoreId, List<AVMNodeDescriptor> assets, Map<String, Date> expirationDates, String submitLabel, String submitComment);
+    public void submitListAssets(String sbStoreId, List<AssetInfo> assets, Map<String, Date> expirationDates, String submitLabel, String submitComment);
     
     /**
      * Revert all changed assets for given sandbox (eg. in user sandbox)
@@ -302,7 +303,7 @@ public interface SandboxService
      * 
      * @param assets             list of AVM node descriptors
      */
-    public void revertListNodes(String sbStoreId, List<AVMNodeDescriptor> assets);
+    public void revertListNodes(String sbStoreId, List<AssetInfo> assets);
     
     /**
      * Revert sandbox to a specific snapshot version ID (ie. for staging sandbox)

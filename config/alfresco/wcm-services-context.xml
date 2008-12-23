@@ -56,7 +56,99 @@
     </bean>
 
 
+    <!-- Asset Service -->
+   
+    <!-- Asset service bean -->
+    <bean id="AssetService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.wcm.asset.AssetService</value>
+        </property>
+        <property name="target">
+            <ref bean="assetService"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref local="AssetService_transaction"/>
+                <idref bean="AuditMethodInterceptor"/>
+                <idref bean="exceptionTranslator"/>
+                <idref local="AssetService_security"/>
+            </list>
+        </property>
+    </bean>
+
+    <!-- Asset service transaction bean -->
+    <bean id="AssetService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+        <property name="transactionManager">
+            <ref bean="transactionManager"/>
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="get*">${server.transaction.mode.readOnly}</prop>
+                <prop key="getContentWriter">${server.transaction.mode.default}</prop>
+                <prop key="getContentReader">${server.transaction.mode.default}</prop>
+                <prop key="list*">${server.transaction.mode.readOnly}</prop>
+                <prop key="is*">${server.transaction.mode.readOnly}</prop>
+                <prop key="find*">${server.transaction.mode.readOnly}</prop>
+                <prop key="*">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
     
+    <!-- Asset service security bean -->
+    <bean id="AssetService_security" class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
+    
+    
+    <bean id="assetService" class="org.alfresco.wcm.asset.AssetServiceImpl">
+       <property name="avmService" ref="AVMLockingAwareService"/>
+       <property name="avmLockingService" ref="AVMLockingService"/>
+       <property name="nodeService" ref="avmLockingAwareNodeService"/> <!-- locking-aware AVMNodeService -->
+       <property name="virtServerRegistry" ref="VirtServerRegistry"/>
+    </bean>
+    
+    <!-- or can make avmNodeService locking-aware by default (and then inject NodeService above) -->
+    
+    <bean id="mlPropertyInterceptorLockingAware" class="org.alfresco.repo.node.MLPropertyInterceptor">
+      <property name="nodeService">
+         <ref bean="mlAwareLockingAwareNodeService" />
+      </property>
+      <property name="multilingualContentService">
+         <ref bean="multilingualContentService" />
+      </property>
+      <property name="dictionaryService">
+         <ref bean="dictionaryService" />
+      </property>
+   </bean>
+   
+    <bean id="avmLockingAwareNodeService" class="org.springframework.aop.framework.ProxyFactoryBean" >
+      <property name="targetName">
+         <value>mlAwareLockingAwareNodeService</value>
+      </property>
+      <property name="proxyInterfaces">
+         <list>
+            <value>org.alfresco.service.cmr.repository.NodeService</value>
+         </list>
+      </property>
+      <property name="interceptorNames">
+         <list>
+            <value>mlPropertyInterceptorLockingAware</value>
+         </list>
+      </property>
+   </bean>
+   
+   <bean id="mlAwareLockingAwareNodeService" class="org.alfresco.repo.avm.AVMNodeService" init-method="init">
+		<property name="dictionaryService">
+			<ref bean="dictionaryService"/>
+		</property>
+		<property name="avmService">
+			<ref bean="AVMLockingAwareService"/>
+		</property>
+		<property name="policyComponent">
+			<ref bean="policyComponent"/>
+		</property>
+	</bean>
+    
+
+    <!-- Sandbox Service -->
    
     <!-- Sandbox service bean -->
     <bean id="SandboxService" class="org.springframework.aop.framework.ProxyFactoryBean">
@@ -98,6 +190,7 @@
 	
     <bean id="sandboxService" class="org.alfresco.wcm.sandbox.SandboxServiceImpl">
        <property name="webProjectService" ref="WebProjectService"/>
+       <property name="assetService" ref="AssetService"/>
        <property name="sandboxFactory" ref="sandboxFactory"/>
        <property name="avmService" ref="AVMService"/>
        <property name="avmSyncService" ref="AVMSyncService"/>
@@ -135,6 +228,7 @@
         <property name="serviceRegistry" ref="ServiceRegistry"/>
         <property name="webProjectService" ref="WebProjectService"/>
         <property name="sandboxService" ref="SandboxService"/>
+        <property name="assetService" ref="AssetService"/>
     </bean>
     
 </beans>

@@ -227,7 +227,7 @@ public final class SandboxFactory extends WCMUtil
     * @param sandboxId
     * @return SandboxInfo returns sandbox info or null if sandbox does not exist or is not visible
     */
-   public SandboxInfo getSandbox(String sandboxId)
+   /* package */ SandboxInfo getSandbox(String sandboxId)
    {
        AVMStoreDescriptor storeDesc = avmService.getStore(sandboxId);
        if (storeDesc == null)
@@ -680,6 +680,12 @@ public final class SandboxFactory extends WCMUtil
        this.avmService.setStoreProperty(workflowStoreName, QName.createQName(null, dnsProp),
                 new PropertyValue(DataTypeDefinition.TEXT, path));
        
+       // TODO review above and replace with common call to ...
+       /*
+       // tag the store with the DNS name property
+       tagStoreDNSPath(avmService, workflowStoreName, storeId, packageName);
+       */
+       
        // the main workflow store depends on the main user store (dist=1)
        String prop_key = SandboxConstants.PROP_BACKGROUND_LAYER + userStore;
        this.avmService.setStoreProperty(workflowStoreName, QName.createQName(null, prop_key),
@@ -721,6 +727,12 @@ public final class SandboxFactory extends WCMUtil
        dnsProp = SandboxConstants.PROP_DNS + DNSNameMangler.MakeDNSName(userStore, packageName, "preview");
        this.avmService.setStoreProperty(previewStoreName, QName.createQName(null, dnsProp),
                 new PropertyValue(DataTypeDefinition.TEXT, path));
+       
+       // TODO review above and replace with common call to ...
+       /*
+       // tag the store with the DNS name property
+       tagStoreDNSPath(avmService, previewStoreName, storeId, packageName, "preview");
+       */
 
        // The preview worfkflow store depends on the main workflow store (dist=1)
        prop_key = SandboxConstants.PROP_BACKGROUND_LAYER + workflowStoreName;

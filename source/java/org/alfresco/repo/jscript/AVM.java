@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -33,6 +33,7 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.util.ParameterCheck;
+import org.alfresco.wcm.asset.AssetInfo;
 import org.alfresco.wcm.sandbox.SandboxService;
 import org.alfresco.wcm.util.WCMUtil;
 import org.mozilla.javascript.Context;
@@ -154,14 +155,14 @@ public final class AVM extends BaseScopableProcessorExtension
         SandboxService sbService = this.services.getSandboxService();
         
         // get modified items - not including deleted
-        List<AVMNodeDescriptor> nodes = sbService.listChangedWebApp(storeId, webapp, false);
+        List<AssetInfo> assets = sbService.listChangedWebApp(storeId, webapp, false);
         
-        List<AVMNode> items = new ArrayList<AVMNode>(nodes.size());
+        List<AVMNode> items = new ArrayList<AVMNode>(assets.size());
         
-        for (AVMNodeDescriptor node : nodes)
+        for (AssetInfo asset : assets)
         {
             // convert each diff/node record into an AVM Node wrapper
-            items.add(new AVMNode(node.getPath(), -1, this.services, getScope()));
+            items.add(new AVMNode(asset.getAvmPath(), -1, this.services, getScope()));
         }
 
         return items;

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -83,16 +83,7 @@ public class AVMLock implements Serializable
     {
         fWebProject = webProject;
         fStore = store;
-        fPath = path;
-        while (fPath.startsWith("/"))
-        {
-            fPath = fPath.substring(1);
-        }
-        while (fPath.endsWith("/"))
-        {
-            fPath = fPath.substring(0, fPath.length() - 1);
-        }
-        fPath = fPath.replaceAll("/+", "/");
+        fPath = normalizePath(path);
         fType = type;
         fOwners = owners;
     }
@@ -148,7 +139,7 @@ public class AVMLock implements Serializable
      */
     public void setPath(String path)
     {
-        fPath = path;
+        fPath = normalizePath(path);
     }
 
     /**
@@ -193,5 +184,23 @@ public class AVMLock implements Serializable
        buffer.append(" type=").append(this.fType);
        buffer.append(" owners=").append(this.fOwners).append(")");
        return buffer.toString();
+    }
+    
+    /**
+     * Utility to get relative paths into canonical form.
+     * @param path The incoming path.
+     * @return The normalized path.
+     */
+    private String normalizePath(String path)
+    {
+        while (path.startsWith("/"))
+        {
+            path = path.substring(1);
+        }
+        while (path.endsWith("/"))
+        {
+            path = path.substring(0, path.length() - 1);
+        }
+        return path.replaceAll("/+", "/");
     }
 }

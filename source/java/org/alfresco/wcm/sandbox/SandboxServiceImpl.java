@@ -341,7 +341,7 @@ public class SandboxServiceImpl implements SandboxService
             
             if (sbStoreId.equals(wpStoreId))
             {
-                throw new AlfrescoRuntimeException("Cannot delete staging sandbox '"+sbStoreId+"' (web project id: "+wpStoreId+")");
+                throw new AccessDeniedException("Cannot delete staging sandbox '"+sbStoreId+"' (web project id: "+wpStoreId+")");
             }
             
             // content manager may delete sandboxes, except staging sandbox

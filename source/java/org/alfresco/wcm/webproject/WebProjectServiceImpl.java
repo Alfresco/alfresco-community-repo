@@ -66,7 +66,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.DNSNameMangler;
 import org.alfresco.util.ParameterCheck;
-import org.alfresco.wcm.sandbox.SandboxConstants;
 import org.alfresco.wcm.sandbox.SandboxFactory;
 import org.alfresco.wcm.sandbox.SandboxInfo;
 import org.alfresco.wcm.util.WCMUtil;
@@ -269,7 +268,7 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
      */
     public void createWebApp(String wpStoreId, String webAppName, String webAppDescription)
     {
-        createWebApp(findWebProjectNodeFromStore(wpStoreId), webAppName, webAppDescription);
+        createWebApp(getWebProjectNodeFromStore(wpStoreId), webAppName, webAppDescription);
     }
     
     /* (non-Javadoc)
@@ -326,7 +325,7 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
      */
     public List<String> listWebApps(String wpStoreId)
     {
-        return listWebApps(findWebProjectNodeFromStore(wpStoreId));
+        return listWebApps(getWebProjectNodeFromStore(wpStoreId));
     }
     
     /* (non-Javadoc)
@@ -349,7 +348,7 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
      */
     public void deleteWebApp(String wpStoreId, String webAppName)
     {
-        deleteWebApp(findWebProjectNodeFromStore(wpStoreId), webAppName);
+        deleteWebApp(getWebProjectNodeFromStore(wpStoreId), webAppName);
     }
     
     /* (non-Javadoc)
@@ -477,7 +476,7 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
      */
     public boolean isWebProject(String wpStoreId)
     {
-        NodeRef wpNodeRef = findWebProjectNodeFromStore(wpStoreId);
+        NodeRef wpNodeRef = getWebProjectNodeFromStore(wpStoreId);
         if (wpNodeRef == null)
         {
             return false;
@@ -513,7 +512,7 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
         WebProjectInfo result = null;
         
         // Get the web project node
-        NodeRef wpNodeRef = findWebProjectNodeFromStore(wpStoreId);
+        NodeRef wpNodeRef = getWebProjectNodeFromStore(wpStoreId);
         if (wpNodeRef != null)
         {
             // Create the web project info
@@ -554,7 +553,7 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
      */
     public void updateWebProject(WebProjectInfo wpInfo)
     {
-        NodeRef wpNodeRef = findWebProjectNodeFromStore(wpInfo.getStoreId());
+        NodeRef wpNodeRef = getWebProjectNodeFromStore(wpInfo.getStoreId());
         if (wpNodeRef == null)
         {
             throw new AlfrescoRuntimeException("Cannot update web project '" + wpInfo.getStoreId() + "' because it does not exist.");
@@ -584,7 +583,7 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
      */
     public void deleteWebProject(String wpStoreId)
     {
-        NodeRef wpNodeRef = findWebProjectNodeFromStore(wpStoreId);
+        NodeRef wpNodeRef = getWebProjectNodeFromStore(wpStoreId);
         if (wpNodeRef != null)
         {
             deleteWebProject(wpNodeRef);
@@ -676,20 +675,9 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
     /* (non-Javadoc)
      * @see org.alfresco.wcm.WebProjectService#isContentManager(java.lang.String, java.lang.String)
      */
-    public boolean isContentManager(String storeName, String userName)
+    public boolean isContentManager(String wpStoreId, String userName)
     {
-        String wpStoreId = WCMUtil.getWebProjectStoreId(storeName);
-        PropertyValue pValue = avmService.getStoreProperty(wpStoreId, SandboxConstants.PROP_WEB_PROJECT_NODE_REF);
-        
-        if (pValue != null)
-        {
-            NodeRef wpNodeRef = (NodeRef) pValue.getValue(DataTypeDefinition.NODE_REF);
-            return isContentManager(wpNodeRef, userName);
-        }
-        else
-        {
-            return false;
-        }
+        return isContentManager(getWebProjectNodeFromStore(wpStoreId), userName);
     }
     
     /* (non-Javadoc)
@@ -712,20 +700,11 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
     /* (non-Javadoc)
      * @see org.alfresco.wcm.webproject.WebProjectService#isWebUser(java.lang.String, java.lang.String)
      */
-    public boolean isWebUser(String storeName, String username)
+    public boolean isWebUser(String wpStoreId, String username)
     {
-        String wpStoreId = WCMUtil.getWebProjectStoreId(storeName);
-        PropertyValue pValue = avmService.getStoreProperty(wpStoreId, SandboxConstants.PROP_WEB_PROJECT_NODE_REF);
+        ParameterCheck.mandatoryString("username", username);
         
-        if (pValue != null)
-        {
-            NodeRef wpNodeRef = (NodeRef) pValue.getValue(DataTypeDefinition.NODE_REF);
-            return isWebUser(wpNodeRef, username);
-        }
-        else
-        {
-            return false;
-        }
+        return isWebUser(getWebProjectNodeFromStore(wpStoreId), username);
     }
     
     /* (non-Javadoc)
@@ -733,8 +712,9 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
      */
     public boolean isWebUser(NodeRef wpNodeRef, String userName)
     {
-       String userRole = getWebUserRoleImpl(wpNodeRef, userName);
-       return (userRole != null);
+        ParameterCheck.mandatoryString("userName", userName);
+        
+        return (getWebUserRoleImpl(wpNodeRef, userName) != null);
     }
     
     /* (non-Javadoc)
@@ -750,7 +730,7 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
      */
     public Map<String, String> listWebUsers(String wpStoreId)
     {
-        return listWebUsers(findWebProjectNodeFromStore(wpStoreId));
+        return listWebUsers(getWebProjectNodeFromStore(wpStoreId));
     }
     
     /* (non-Javadoc)
@@ -774,7 +754,7 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
      */
     public String getWebUserRole(String wpStoreId, String userName)
     {
-        return getWebUserRole(findWebProjectNodeFromStore(wpStoreId), userName);
+        return getWebUserRole(getWebProjectNodeFromStore(wpStoreId), userName);
     }
     
     /* (non-Javadoc)
@@ -782,6 +762,8 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
      */
     public String getWebUserRole(NodeRef wpNodeRef, String userName)
     {
+        ParameterCheck.mandatoryString("userName", userName);
+        
         String userRole = null;
    
         if (! isWebProject(wpNodeRef))
@@ -860,72 +842,19 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
     /* (non-Javadoc)
      * @see org.alfresco.wcm.webproject.WebProjectService#findWebProjectNodeFromPath(java.lang.String)
      */
-    public NodeRef findWebProjectNodeFromPath(String absoluteAVMPath)
+    public NodeRef getWebProjectNodeFromPath(String absoluteAVMPath)
     {
-        return findWebProjectNodeFromStore(WCMUtil.getWebProjectStoreIdFromPath(absoluteAVMPath));
+        return getWebProjectNodeFromStore(WCMUtil.getWebProjectStoreIdFromPath(absoluteAVMPath));
     }
     
     /*(non-Javadoc)
-     * @see org.alfresco.wcm.webproject.WebProjectService#findWebProjectNodeFromStore(java.lang.String)
+     * @see org.alfresco.wcm.webproject.WebProjectService#getWebProjectNodeFromStore(java.lang.String)
      */
-    public NodeRef findWebProjectNodeFromStore(String wpStoreId)
+    public NodeRef getWebProjectNodeFromStore(String wpStoreId)
     {
        ParameterCheck.mandatoryString("wpStoreId", wpStoreId);
        
-       if (wpStoreId.indexOf(WCMUtil.STORE_SEPARATOR) != -1)
-       {
-           throw new IllegalArgumentException("Unexpected web project store id '"+wpStoreId+"' - should not contain '"+WCMUtil.STORE_SEPARATOR+"'");
-       }
-       
-       if (wpStoreId.indexOf(":") != -1)
-       {
-           throw new IllegalArgumentException("Unexpected web project store id '"+wpStoreId+"' - should not contain ':'");
-       }
-       
-       // construct the query
-       String path = getWebProjectsPath() + "/*";
-       String query = "PATH:\"/" + path + "\" AND @wca\\:avmstore:\"" + wpStoreId + "\"";
-       
-       NodeRef webProjectNode = null;
-       ResultSet results = null;
-       try
-       {
-          // execute the query
-          results = searchService.query(WEBPROJECT_STORE, SearchService.LANGUAGE_LUCENE, query);
-          
-          // WCM-810:
-          // the 'avmstore' property was not defined as an identifier in the model (before 2.2)
-          // which means it may get tokenised which in turn means that 'test' and 'test-site' 
-          // would get returned by the query above even though it's an exact match query,
-          // we therefore need to go through the results and check names if there is more 
-          // than one result although this shouldn't happen anymore as the 
-          // AVMStorePropertyTokenisationPatch will have reindexed the wca:avmstore property
-          if (results.length() == 1)
-          {
-             webProjectNode = results.getNodeRef(0);
-          }
-          else if (results.length() > 1)
-          {
-             for (NodeRef node : results.getNodeRefs())
-             {
-                String nodeStoreName = (String)nodeService.getProperty(node, WCMAppModel.PROP_AVMSTORE);
-                if (nodeStoreName.equals(wpStoreId))
-                {
-                   webProjectNode = node;
-                   break;
-                }
-             }
-          }
-       }
-       finally
-       {
-          if (results != null)
-          {
-             results.close();
-          }
-       }
-       
-       return webProjectNode;
+       return WCMUtil.getWebProjectNodeFromWebProjectStore(avmService, wpStoreId);
     }
     
     /* (non-Javadoc)
@@ -933,7 +862,7 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
      */
     public void inviteWebUsersGroups(String wpStoreId, Map<String, String> userGroupRoles)
     {
-        inviteWebUsersGroups(findWebProjectNodeFromStore(wpStoreId), userGroupRoles, false);
+        inviteWebUsersGroups(getWebProjectNodeFromStore(wpStoreId), userGroupRoles, false);
     }
     
     /* (non-Javadoc)
@@ -941,7 +870,7 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
      */
     public void inviteWebUsersGroups(String wpStoreId, Map<String, String> userGroupRoles, boolean autoCreateAuthorSandbox)
     {
-        inviteWebUsersGroups(findWebProjectNodeFromStore(wpStoreId), userGroupRoles, autoCreateAuthorSandbox);
+        inviteWebUsersGroups(getWebProjectNodeFromStore(wpStoreId), userGroupRoles, autoCreateAuthorSandbox);
     }
     
     public void inviteWebUsersGroups(NodeRef wpNodeRef, Map<String, String> userGroupRoles, boolean autoCreateAuthorSandbox)
@@ -1069,7 +998,7 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
      */
     public void inviteWebUser(String wpStoreId, String userAuth, String role)
     {
-        inviteWebUser(findWebProjectNodeFromStore(wpStoreId), userAuth, role, false);
+        inviteWebUser(getWebProjectNodeFromStore(wpStoreId), userAuth, role, false);
     }
     
     /* (non-Javadoc)
@@ -1077,7 +1006,7 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
      */
     public void inviteWebUser(String wpStoreId, String userAuth, String role, boolean autoCreateAuthorSandbox)
     {
-        inviteWebUser(findWebProjectNodeFromStore(wpStoreId), userAuth, role, autoCreateAuthorSandbox);
+        inviteWebUser(getWebProjectNodeFromStore(wpStoreId), userAuth, role, autoCreateAuthorSandbox);
     }
     
     /* (non-Javadoc)
@@ -1183,7 +1112,7 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
      */
     public void uninviteWebUser(String wpStoreId, String userAuth)
     {
-        uninviteWebUser(findWebProjectNodeFromStore(wpStoreId), userAuth, false);
+        uninviteWebUser(getWebProjectNodeFromStore(wpStoreId), userAuth, false);
     }
     
     /* (non-Javadoc)
@@ -1191,7 +1120,7 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
      */
     public void uninviteWebUser(String wpStoreId, String userAuth, boolean autoDeleteAuthorSandbox)
     {
-        uninviteWebUser(findWebProjectNodeFromStore(wpStoreId), userAuth, autoDeleteAuthorSandbox);
+        uninviteWebUser(getWebProjectNodeFromStore(wpStoreId), userAuth, autoDeleteAuthorSandbox);
     }
     
     /* (non-Javadoc)

@@ -28,6 +28,7 @@ import java.io.File;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -176,13 +177,47 @@ public interface AssetService
     public void updateAssetProperties(AssetInfo asset, Map<QName, Serializable> properties);
     
     /**
+     * Apply aspect to asset, with given properties (can be null)
+     * 
+     * @param asset
+     * @param aspectName
+     * @param properties
+     */
+    public void addAspect(AssetInfo asset, QName aspectName, Map<QName, Serializable> properties);
+    
+    /**
+     * Remove aspect from asset, and any related properties
+     * 
+     * @param asset
+     * @param aspectName
+     */
+    public void removeAspect(AssetInfo asset, QName aspectName);
+    
+    /**
+     * Get set of aspects applied to asset
+     * 
+     * @param asset
+     * @return list of aspects
+     */
+    public Set<QName> getAspects(AssetInfo asset);
+    
+    /**
+     * True, if asset has given aspect applied
+     * 
+     * @param asset
+     * @param aspectName
+     * @return
+     */
+    public boolean hasAspect(AssetInfo asset, QName aspectName);
+    
+    /**
      * List assets within given sandbox and webApp and path (within webApp), optionally include deleted
      * 
      * @param sbStoreId
      * @param webApp
      * @param parentFolderPathRelativeToWebApp
      * @param includeDeleted
-     * @return
+     * @return list of assets
      */
     public List<AssetInfo> listAssetsWebApp(String sbStoreId, String webApp, String parentFolderPathRelativeToWebApp, boolean includeDeleted);
     
@@ -192,7 +227,7 @@ public interface AssetService
      * @param sbStoreId
      * @param parentFolderPath
      * @param includeDeleted
-     * @return
+     * @return list of assets
      */
     public List<AssetInfo> listAssets(String sbStoreId, String parentFolderPath, boolean includeDeleted);
     
@@ -203,7 +238,7 @@ public interface AssetService
      * @param version
      * @param parentFolderPath
      * @param includeDeleted
-     * @return
+     * @return list of assets
      */
     public List<AssetInfo> listAssets(String sbStoreId, int version, String parentFolderPath, boolean includeDeleted);
     

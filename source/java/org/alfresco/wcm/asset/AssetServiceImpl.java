@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.mbeans.VirtServerRegistry;
@@ -443,13 +444,54 @@ public class AssetServiceImpl implements AssetService
     private void setProperties(String avmPath, Map<QName, Serializable> properties)
     {
         NodeRef avmNodeRef = AVMNodeConverter.ToNodeRef(-1, avmPath);
-        avmNodeService.setProperties(avmNodeRef, properties); // note: assumes lock, if applicable, is taken by caller
+        avmNodeService.setProperties(avmNodeRef, properties);
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.wcm.asset.AssetService#addAspect(org.alfresco.wcm.asset.AssetInfo, org.alfresco.service.namespace.QName, java.util.Map)
+     */
+    public void addAspect(AssetInfo asset, QName aspectName, Map<QName, Serializable> properties)
+    {
+        addAspect(asset.getAvmPath(), aspectName, properties);
     }
     
     private void addAspect(String avmPath, QName aspect, Map<QName, Serializable> properties)
     {
         NodeRef avmNodeRef = AVMNodeConverter.ToNodeRef(-1, avmPath);
-        avmNodeService.addAspect(avmNodeRef, aspect, properties); // note: assumes lock, if applicable, is taken by caller
+        avmNodeService.addAspect(avmNodeRef, aspect, properties);
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.wcm.asset.AssetService#removeAspect(org.alfresco.wcm.asset.AssetInfo, org.alfresco.service.namespace.QName)
+     */
+    public void removeAspect(AssetInfo asset, QName aspectName)
+    {
+        ParameterCheck.mandatory("asset", asset);
+        
+        NodeRef avmNodeRef = AVMNodeConverter.ToNodeRef(-1, asset.getAvmPath());
+        avmNodeService.removeAspect(avmNodeRef, aspectName);
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.wcm.asset.AssetService#getAspects(org.alfresco.wcm.asset.AssetInfo)
+     */
+    public Set<QName> getAspects(AssetInfo asset)
+    {
+        ParameterCheck.mandatory("asset", asset);
+        
+        NodeRef avmNodeRef = AVMNodeConverter.ToNodeRef(asset.getSandboxVersion(), asset.getAvmPath());
+        return avmNodeService.getAspects(avmNodeRef);
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.wcm.asset.AssetService#hasAspect(org.alfresco.wcm.asset.AssetInfo, org.alfresco.service.namespace.QName)
+     */
+    public boolean hasAspect(AssetInfo asset, QName aspectName)
+    {
+        ParameterCheck.mandatory("asset", asset);
+        
+        NodeRef avmNodeRef = AVMNodeConverter.ToNodeRef(asset.getSandboxVersion(), asset.getAvmPath());
+        return avmNodeService.hasAspect(avmNodeRef, aspectName);
     }
     
     /* (non-Javadoc)

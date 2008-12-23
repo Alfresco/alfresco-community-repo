@@ -33,12 +33,10 @@ import java.util.Map;
 
 import junit.framework.TestCase;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
-import org.alfresco.service.cmr.avm.AVMNotFoundException;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.VersionDescriptor;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -419,7 +417,7 @@ public class SandboxServiceImplTest extends TestCase
             sbService.deleteSandbox(sbInfo.getSandboxId());
             fail("Shouldn't be able to delete staging sandbox");
         }
-        catch (AlfrescoRuntimeException exception)
+        catch (AccessDeniedException exception)
         {
             // Expected
         }
@@ -430,7 +428,7 @@ public class SandboxServiceImplTest extends TestCase
             sbService.deleteSandbox("some-random-staging-sandbox");
             fail("Shouldn't be able to delete non-existant sandbox");
         }
-        catch (AVMNotFoundException exception)
+        catch (AccessDeniedException exception)
         {
             // Expected
         }

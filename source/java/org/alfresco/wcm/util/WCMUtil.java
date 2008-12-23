@@ -36,7 +36,9 @@ import org.alfresco.mbeans.VirtServerRegistry;
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.cmr.avm.AVMBadArgumentException;
+import org.alfresco.service.cmr.avm.AVMNotFoundException;
 import org.alfresco.service.cmr.avm.AVMService;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -45,6 +47,8 @@ import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.VirtServerUtils;
 import org.alfresco.wcm.sandbox.SandboxConstants;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 
 /**
@@ -57,6 +61,8 @@ import org.alfresco.wcm.sandbox.SandboxConstants;
  */
 public class WCMUtil
 {
+    private static Log logger = LogFactory.getLog(WCMUtil.class);
+    
    /**
     * Extracts the sandbox store id from the avm path
     *
@@ -476,6 +482,29 @@ public class WCMUtil
        return (props.size() == 1
               ? props.keySet().iterator().next().getLocalName().substring(SandboxConstants.PROP_DNS.length())
               : null);
+   }
+   
+   public static NodeRef getWebProjectNodeFromWebProjectStore(AVMService avmService, String wpStoreId)
+   {
+       NodeRef wpNodeRef = null;
+       
+       String stagingStoreId = wpStoreId; // note: equivalent to WCMUtil.buildStagingStoreName(wpStoreId)
+       
+       try
+       {
+           PropertyValue pValue = avmService.getStoreProperty(stagingStoreId, SandboxConstants.PROP_WEB_PROJECT_NODE_REF);
+           
+           if (pValue != null)
+           {
+               wpNodeRef = (NodeRef)pValue.getValue(DataTypeDefinition.NODE_REF);
+           }
+       }
+       catch (AVMNotFoundException nfe)
+       {
+           logger.warn(wpStoreId + " is not a web project: " + nfe);
+       }
+       
+       return wpNodeRef;
    }
    
    /**

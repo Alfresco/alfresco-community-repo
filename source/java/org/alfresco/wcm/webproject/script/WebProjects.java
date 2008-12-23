@@ -30,6 +30,7 @@ import org.alfresco.repo.jscript.BaseScopableProcessorExtension;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.wcm.asset.AssetService;
 import org.alfresco.wcm.sandbox.SandboxService;
 import org.alfresco.wcm.webproject.WebProjectInfo;
@@ -54,6 +55,9 @@ public class WebProjects extends BaseScopableProcessorExtension
     
     /** The asset service */
     private AssetService assetService;
+    
+    /** The namespace service */
+    private NamespaceService namespaceService;
     
     /**
      * Sets the Service Registry
@@ -108,6 +112,21 @@ public class WebProjects extends BaseScopableProcessorExtension
     public AssetService getAssetService()
     {
     	return this.assetService;
+    }
+    
+    /**
+     * Set the alfresco namespace service 
+     * 
+     * @param namespace service
+     */
+    public void setNamespaceService(NamespaceService namespaceService)
+    {
+        this.namespaceService = namespaceService;
+    }
+    
+    public NamespaceService getNamespaceService()
+    {
+    	return this.namespaceService;
     }
     
     /**

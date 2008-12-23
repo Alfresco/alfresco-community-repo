@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.util.ISO8601DateFormat;
 import org.alfresco.wcm.asset.AssetInfo;
 import org.alfresco.wcm.asset.AssetService;
@@ -277,28 +276,37 @@ public class Sandbox implements Serializable
 	/**
 	 * Get the specified asset (Either folder or file)
 	 * @param path the full path e.g. /www/web_apps/ROOT/index.html
-	 * @return the asset
+	 * @return the asset or null if it does not exist
 	 */
 	public Asset getAsset(String path)
 	{
 		AssetService as = getAssetService();
 		AssetInfo item = as.getAsset(getSandboxRef(), path);
-		Asset newAsset = new Asset(this, item);
-		return newAsset;
+		if (item != null)
+		{
+			Asset newAsset = new Asset(this, item);
+			return newAsset;
+		}
+		return null;
 	}
 	
 	/**
 	 * Get the specified asset with a path relative to the specified web app.
 	 * @param path e.g. index.html
 	 * @param webApp e.g. ROOT 
-	 * @return the asset
+	 * @return the asset or null if it does not exist
 	 */
 	public Asset getAssetWebApp(String webApp, String path)
 	{
 		AssetService as = getAssetService();
 		AssetInfo item = as.getAssetWebApp(getSandboxRef(), webApp, path);
-		Asset newAsset = new Asset(this, item);
-		return newAsset;
+		if (item != null)
+		{
+			Asset newAsset = new Asset(this, item);
+			return newAsset;
+		}
+		return null;
+
 	}
 	
 	/**

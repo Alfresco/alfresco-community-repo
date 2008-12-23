@@ -199,7 +199,7 @@ public class AssetServiceImplTest extends TestCase
         assetService.createFolder(sbStoreId, path, "myFolder1", null);
         
         // create (empty) file
-        assetService.createFile(sbStoreId, path+"/myFolder1", "myFile1", null);
+        assetService.createFile(sbStoreId, path+"/myFolder1", "myFile1", null); // ignore return
         
         // get assets
         
@@ -502,12 +502,6 @@ public class AssetServiceImplTest extends TestCase
         checkAssetInfo(myFile1Asset, "myFile1Renamed", path+"/myFolder1/myFolder2/myFile1Renamed", USER_ONE, true, false, false, true, USER_ONE);
     }
     
-    /*
-        // TODO lock issue ...
-        // org.alfresco.service.cmr.avm.AVMNotFoundException: Lock not found for testAsset-1228476617644-rename:/www/avm_webapps/ROOT/myFolder1
-        // at org.alfresco.repo.avm.locking.AVMLockingServiceImpl.modifyLock(AVMLockingServiceImpl.java:490)
-        // at org.alfresco.repo.avm.AVMLockingAwareService.rename(AVMLockingAwareService.java:712)
-
     public void testRenameFolder()
     {
         // create web project (also creates staging sandbox and admin's author sandbox)
@@ -536,20 +530,18 @@ public class AssetServiceImplTest extends TestCase
         AssetInfo myFolder2Asset = assetService.getAsset(sbStoreId, path+"/myFolder1/myFolder2");
         checkAssetInfo(myFolder2Asset, "myFolder2", path+"/myFolder1/myFolder2", USER_ONE, false, true, false, false, null);
         
-        // TODO lock issue ...
-        // org.alfresco.service.cmr.avm.AVMNotFoundException: Lock not found for testAsset-1228476617644-rename:/www/avm_webapps/ROOT/myFolder1
-        // at org.alfresco.repo.avm.locking.AVMLockingServiceImpl.modifyLock(AVMLockingServiceImpl.java:490)
-        //at org.alfresco.repo.avm.AVMLockingAwareService.rename(AVMLockingAwareService.java:712)
-
-        // rename folder
+        // rename folder 1
         myFolder1Asset = assetService.renameAsset(myFolder1Asset, "myFolder1Renamed");
         checkAssetInfo(myFolder1Asset, "myFolder1Renamed", path+"/myFolder1Renamed", USER_ONE, false, true, false, false, null);
         
-        // rename folder
+        // rename folder 2
+        myFolder2Asset = assetService.getAsset(sbStoreId, path+"/myFolder1Renamed/myFolder2");
+        checkAssetInfo(myFolder2Asset, "myFolder2", path+"/myFolder1Renamed/myFolder2", USER_ONE, false, true, false, false, null);
+        
         myFolder2Asset = assetService.renameAsset(myFolder2Asset, "myFolder2Renamed");
-        checkAssetInfo(myFolder2Asset, "myFolder2Renamed", path+"/myFolder1/myFolder2Renamed", USER_ONE, false, true, false, false, null);
+        checkAssetInfo(myFolder2Asset, "myFolder2Renamed", path+"/myFolder1Renamed/myFolder2Renamed", USER_ONE, false, true, false, false, null);
     }
-    */
+    
     
     public void testCopyFile()
     {
@@ -573,7 +565,7 @@ public class AssetServiceImplTest extends TestCase
         assetService.createFolder(sbStoreId, path, "myFolder1", null);
         assetService.createFolder(sbStoreId, path+"/myFolder1", "myFolder2", null);
         
-        // create (nn-empty) file
+        // create (non-empty) file
         final String MYFILE1 = "This is myFile1";
         ContentWriter writer = assetService.createFile(sbStoreId, path+"/myFolder1/myFolder2", "myFile1", null);
         writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
@@ -584,9 +576,8 @@ public class AssetServiceImplTest extends TestCase
         AssetInfo myFile1Asset = assetService.getAsset(sbStoreId, path+"/myFolder1/myFolder2/myFile1");
         checkAssetInfo(myFile1Asset, "myFile1", path+"/myFolder1/myFolder2/myFile1", USER_ONE, true, false, false, true, USER_ONE);
         
-        myFile1Asset = assetService.copyAsset(myFile1Asset, path+"/myFolder1");
-        
         // TODO review - copied files are not locked ?
+        myFile1Asset = assetService.copyAsset(myFile1Asset, path+"/myFolder1");
         //checkAssetInfo(myFile1Asset, "myFile1", path+"/myFolder1/myFile1", USER_ONE, true, false, false, true, USER_ONE);
         checkAssetInfo(myFile1Asset, "myFile1", path+"/myFolder1/myFile1", USER_ONE, true, false, false, false, null);
     }
@@ -664,7 +655,7 @@ public class AssetServiceImplTest extends TestCase
         assetService.createFolder(sbStoreId, path+"/myFolder1", "myFolder2", null);
         
         // create (empty) file
-        assetService.createFile(sbStoreId, path+"/myFolder1/myFolder2", "myFile1", null);
+        assetService.createFile(sbStoreId, path+"/myFolder1/myFolder2", "myFile1", null); // ignore return
         
         // move file
         AssetInfo myFile1Asset = assetService.getAsset(sbStoreId, path+"/myFolder1/myFolder2/myFile1");
@@ -682,7 +673,7 @@ public class AssetServiceImplTest extends TestCase
         // org.alfresco.service.cmr.avm.AVMNotFoundException: Lock not found for testAsset-1228830920248-movefolder:/www/avm_webapps/ROOT/myFolder1/myFolder2
         // at org.alfresco.repo.avm.locking.AVMLockingServiceImpl.modifyLock(AVMLockingServiceImpl.java:490)
         // at org.alfresco.repo.avm.AVMLockingAwareService.rename(AVMLockingAwareService.java:712)
-
+    */
     public void testMoveFolder()
     {
         // create web project (also creates staging sandbox and admin's author sandbox)
@@ -705,12 +696,8 @@ public class AssetServiceImplTest extends TestCase
         assetService.createFolder(sbStoreId, path, "myFolder1", null);
         assetService.createFolder(sbStoreId, path+"/myFolder1", "myFolder2", null);
         
-        // create (non-empty) file
-        //final String MYFILE1 = "This is myFile1";
-        ContentWriter writer = assetService.createFile(sbStoreId, path+"/myFolder1/myFolder2", "myFile1", null);
-        //writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
-        //writer.setEncoding("UTF-8");
-        //writer.putContent(MYFILE1);
+        // create (empty) file
+        assetService.createFile(sbStoreId, path+"/myFolder1/myFolder2", "myFile1", null); // ignore return
         
         AssetInfo myFile1Asset = assetService.getAsset(sbStoreId, path+"/myFolder1/myFolder2/myFile1");
         checkAssetInfo(myFile1Asset, "myFile1", path+"/myFolder1/myFolder2/myFile1", USER_ONE, true, false, false, true, USER_ONE);
@@ -729,10 +716,9 @@ public class AssetServiceImplTest extends TestCase
         AssetInfo myMovedFile1Asset = assetService.getAsset(sbStoreId, path+"/myFolder2/myFile1");
         
         // TODO review - moved files are not locked ?
-        checkAssetInfo(myMovedFile1Asset, "myFile1", path+"/myFolder2/myFile1", USER_ONE, true, false, false, true, USER_ONE);
-        //checkAssetInfo(myMovedFile1Asset, "myFile1", path+"/myFolder2/myFile1", USER_ONE, true, false, false, false, null);
+        //checkAssetInfo(myMovedFile1Asset, "myFile1", path+"/myFolder2/myFile1", USER_ONE, true, false, false, true, USER_ONE);
+        checkAssetInfo(myMovedFile1Asset, "myFile1", path+"/myFolder2/myFile1", USER_ONE, true, false, false, false, null);
     }
-    */
     
     public void testProperties()
     {
@@ -816,6 +802,76 @@ public class AssetServiceImplTest extends TestCase
         
         assertEquals(USER_ONE, assetService.getLockOwner(myFile1Asset));
     }
+    
+    public void testAspects()
+    {
+        // create web project (also creates staging sandbox and admin's author sandbox)
+        WebProjectInfo wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-aspects", TEST_WEBPROJ_NAME+"-aspects", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION, TEST_WEBPROJ_DEFAULT_WEBAPP, TEST_WEBPROJ_DONT_USE_AS_TEMPLATE, null);
+        String defaultWebApp = wpInfo.getDefaultWebApp();
+        
+        // invite web user and auto-create their (author) sandbox
+        wpService.inviteWebUser(wpInfo.getStoreId(), USER_ONE, WCMUtil.ROLE_CONTENT_CONTRIBUTOR, true);
+        
+        // switch to user
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_ONE);
+        
+        // get user's author sandbox
+        SandboxInfo sbInfo = sbService.getAuthorSandbox(wpInfo.getStoreId());
+        String sbStoreId = sbInfo.getSandboxId();
+        
+        String path = sbInfo.getSandboxRootPath() + "/" + defaultWebApp;
+        
+        // create folder
+        assetService.createFolderWebApp(sbStoreId, defaultWebApp, "/", "myFolder1");
+        AssetInfo myFolder1Asset = assetService.getAssetWebApp(sbStoreId, defaultWebApp, "/myFolder1");
+        checkAssetInfo(myFolder1Asset, "myFolder1", path+"/myFolder1", USER_ONE, false, true, false, false, null);
+        
+        int folderAspectCnt = assetService.getAspects(myFolder1Asset).size();
+        
+        // create file
+        assetService.createFileWebApp(sbStoreId, defaultWebApp, "/myFolder1", "myFile1");
+        AssetInfo myFile1Asset = assetService.getAssetWebApp(sbStoreId, defaultWebApp, "/myFolder1/myFile1");
+        checkAssetInfo(myFile1Asset, "myFile1", path+"/myFolder1/myFile1", USER_ONE, true, false, false, true, USER_ONE);
+        
+        int fileAspectCnt = assetService.getAspects(myFile1Asset).size();
+        
+        // add/remove aspect to/from folder
+        
+        assertFalse(assetService.hasAspect(myFolder1Asset, ContentModel.ASPECT_TITLED));
+        
+        Map<QName, Serializable> newProps = new HashMap<QName, Serializable>(2);
+        newProps.put(ContentModel.PROP_TITLE, "folder title");
+        newProps.put(ContentModel.PROP_DESCRIPTION, "folder description");
+        
+        assetService.addAspect(myFolder1Asset, ContentModel.ASPECT_TITLED, newProps);
+        
+        assertEquals(folderAspectCnt+1, assetService.getAspects(myFolder1Asset).size());
+        assertTrue(assetService.hasAspect(myFolder1Asset, ContentModel.ASPECT_TITLED));
+        
+        assetService.removeAspect(myFolder1Asset, ContentModel.ASPECT_TITLED);
+        
+        assertEquals(folderAspectCnt, assetService.getAspects(myFolder1Asset).size());
+        assertFalse(assetService.hasAspect(myFolder1Asset, ContentModel.ASPECT_TITLED));
+        
+        // add/remove aspect to/from file
+        
+        assertFalse(assetService.hasAspect(myFile1Asset, ContentModel.ASPECT_TITLED));
+        
+        newProps = new HashMap<QName, Serializable>(2);
+        newProps.put(ContentModel.PROP_TITLE, "file title");
+        newProps.put(ContentModel.PROP_DESCRIPTION, "file description");
+        
+        assetService.addAspect(myFile1Asset, ContentModel.ASPECT_TITLED, newProps);
+        
+        assertEquals(fileAspectCnt+1, assetService.getAspects(myFile1Asset).size());
+        assertTrue(assetService.hasAspect(myFile1Asset, ContentModel.ASPECT_TITLED));
+        
+        assetService.removeAspect(myFile1Asset, ContentModel.ASPECT_TITLED);
+        
+        assertEquals(fileAspectCnt, assetService.getAspects(myFile1Asset).size());
+        assertFalse(assetService.hasAspect(myFile1Asset, ContentModel.ASPECT_TITLED));        
+    }
+    
     
     public void testSimpleLockFile()
     {

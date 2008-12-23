@@ -229,6 +229,7 @@
         <property name="webProjectService" ref="WebProjectService"/>
         <property name="sandboxService" ref="SandboxService"/>
         <property name="assetService" ref="AssetService"/>
+        <property name="namespaceService" ref="NamespaceService"/>
     </bean>
     
 </beans>

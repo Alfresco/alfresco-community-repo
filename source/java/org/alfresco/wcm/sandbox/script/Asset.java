@@ -24,12 +24,20 @@
  */
 package org.alfresco.wcm.sandbox.script;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.namespace.NamespaceException;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ISO8601DateFormat;
 import org.alfresco.wcm.asset.AssetInfo;
+import org.alfresco.wcm.asset.AssetService;
 import org.alfresco.wcm.sandbox.SandboxService;
 
 /**
@@ -37,10 +45,15 @@ import org.alfresco.wcm.sandbox.SandboxService;
  * @author mrogers
  *
  */
-public class Asset 
+public class Asset implements Serializable 
 {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -5759260478423750966L;
 	private AssetInfo asset;
 	private Sandbox sandbox;
+	private Map<String, String> props;
 	
 	public Asset(Sandbox sandbox, AssetInfo asset) 
 	{
@@ -60,6 +73,11 @@ public class Asset
 	public Date getCreatedDate()
 	{
 		return asset.getCreatedDate();
+	}
+	
+	public long getFileSize()
+	{
+		return asset.getFileSize();
 	}
 	
 	public String getCreatedDateAsISO8601()
@@ -82,12 +100,33 @@ public class Asset
 		return ISO8601DateFormat.format(getModifiedDate());
 	}
 	
-	/*
-	public String getAssetRef()
-	{
-		return asset.getGuid();
-	}
-	*/
+	/**
+	 * rename this asset
+	 * @param newName
+	 */
+    public Asset rename(String newName)
+    {
+    	if(!newName.equals(asset.getName()))
+    	{
+    		AssetInfo newAsset = getAssetService().renameAsset(asset, newName);
+    		this.asset = newAsset;
+    	}
+    	return this;
+    }
+    
+    /**
+     * move this asset
+     * @param newPath
+     */
+    public Asset move(String newPath)
+    {
+    	if(!newPath.equals(asset.getPath()))
+    	{
+    		AssetInfo newAsset = getAssetService().moveAsset(asset, newPath);
+    		this.asset = newAsset;
+    	}
+    	return this;
+    }
 	
 	public String getName()
 	{
@@ -108,7 +147,7 @@ public class Asset
 		return asset.isFile();
 	}
 	
-	public boolean isDirectory()
+	public boolean isFolder()
 	{
 		return asset.isFolder();
 	}
@@ -123,12 +162,80 @@ public class Asset
 		return asset.isLocked();
 	}
 	
-	/* TODO review
+	public String lockOwner()
+	{
+		return asset.getLockOwner();
+	}
+	
 	public int getVersion()
 	{
-		return asset.getVersion();
+		return asset.getSandboxVersion();
 	}
-	*/
+	
+	/**
+	 * Get the properties as a key value pair.   The key will be either a local qname e.g. "cm:content" or 
+	 * a global qname e.g. "{http://www.alfresco.com/content/1.0}content".
+	 * 
+	 * Some properties will be updatable, protected properties are not.
+	 * 
+	 * @return the properties in a key, value pair
+	 */
+	
+	public Map<String, String> getProperties()
+	{
+		if(props == null) {
+
+			// Note there is something very strange going on with scope which is why there's this guff with propsX
+			Map<String, String> propsX = new HashMap<String, String>();
+			props = propsX;
+			NamespaceService ns = getNamespaceService();
+			
+			if(!asset.isDeleted())
+			{
+				Map <QName, Serializable> intprops = getAssetService().getAssetProperties(asset);
+
+				for (QName qname : intprops.keySet())
+				{   
+					QName prefixQname = qname.getPrefixedQName(ns);
+					Serializable propValue = intprops.get(qname);  
+					try 
+					{
+						propsX.put(prefixQname.toPrefixString(), propValue.toString());
+					} 
+					catch (NamespaceException ne)
+					{   // No local name, only thing I can do is use the full namke
+						propsX.put(qname.toString(), propValue.toString());
+					}
+				}
+			}
+		}
+		
+	    return props; 
+	}
+	
+//	/**
+//	 * Save the properties please note some system properties are protected and cannot be updated.  If you attempt to 
+//	 * update a protected property your request will be ignored.
+//	 * @param properties
+//	 */
+//	public void save()
+//	{
+//		if(props != null)
+//		{
+//			/**
+//			 * Need to map the <String, String> to a <Qname, Serializable>
+//			 */
+//			NamespaceService ns = getNamespaceService();
+//			Map<QName, Serializable> newProps = new HashMap<QName, Serializable>(props.size());
+//			for (String key : props.keySet())
+//			{
+//				String value = props.get(key);
+//				QName q = QName.resolveToQName(ns, key);
+//				newProps.put(q, value);
+//			}
+//			getAssetService().setAssetProperties(asset, newProps);
+//		}
+//	}
 	
 	/**
 	 * Submit this asset to staging
@@ -143,6 +250,14 @@ public class Asset
 	}
 	
 	/**
+	 * Delete this asset, after it has been deleted do not use this asset.
+	 */
+	public void deleteAsset()
+	{
+		getAssetService().deleteAsset(this.asset);
+	}
+	
+	/**
 	 * revert this asset
 	 */
 	public void revert()
@@ -150,6 +265,49 @@ public class Asset
 		List<String> items = new ArrayList<String>(1);
 		items.add(this.getPath());
 		getSandboxService().revertList(getSandbox().getSandboxRef(), items);
+	}
+	
+	/**
+	 * Get children of this asset, returns an empty array if there are no children.
+	 * Only folders have children.
+	 */
+	public Asset[] getChildren()
+	{
+		Asset[] ret = new Asset[0];
+		if(asset.isFolder())
+		{
+			int i = 0;
+			List<AssetInfo> assets = getAssetService().listAssets(getSandbox().getSandboxRef(), asset.getPath(), true);
+			ret = new Asset[assets.size()];
+			for(AssetInfo asset : assets)
+			{
+				ret[i++]=new Asset(sandbox, asset);
+			}
+		} 
+		return ret;
+	}
+	
+	/**
+	 * create a new file with the specified properties and content.
+	 * @param name the name of the file
+	 * @param stringContent the content of the file.   Can be null.
+	 */
+	public void createFile(String name, String stringContent)
+	{
+		 ContentWriter writer = getAssetService().createFile(getSandbox().getSandboxRef(), asset.getPath(), name, null);
+		 if(stringContent != null)
+		 {	 
+			 writer.putContent(stringContent);
+		 }
+	}
+	
+	/**
+	 * create a new folder
+	 * @param name the name of the new folder
+	 */
+	public void createFolder(String name)
+	{
+		 getAssetService().createFolder(getSandbox().getSandboxRef(), asset.getPath(), name, null);
 	}
 	
 	/**
@@ -161,8 +319,29 @@ public class Asset
 		return this.sandbox;
 	}
 	
+	/**
+	 * @return
+	 */
 	private SandboxService getSandboxService()
 	{
 	    return getSandbox().getWebproject().getWebProjects().getSandboxService();
+	}
+	
+	/**
+	 * Get the asset service
+	 * @return the asset service
+	 */
+	private AssetService getAssetService()
+	{
+	    return  getSandbox().getWebproject().getWebProjects().getAssetService();
+	}
+	
+	/**
+	 * Get the asset service
+	 * @return the asset service
+	 */
+	private NamespaceService getNamespaceService()
+	{
+	    return  getSandbox().getWebproject().getWebProjects().getNamespaceService();
 	}
 }

@@ -268,17 +268,21 @@ public class AVMServiceTest extends AVMServiceTestBase
         AVMService oldService = fService;
         fService = (AVMService) fContext.getBean("AVMLockingAwareService");
         AuthenticationService authService = (AuthenticationService) fContext.getBean("AuthenticationService");
+        
         try
         {
-            fService.setStoreProperty("main", QName.createQName(null, ".dns.main"), new PropertyValue(DataTypeDefinition.TEXT, "Nothing."));
-            fService.createStore("test");
-            fService.setStoreProperty("test", QName.createQName(null, ".dns.test.main"), new PropertyValue(DataTypeDefinition.TEXT, "Nothing."));
+              // note: locking applies to WCM web projects, hence relies on WCM sandbox conventions (naming and properties)
+            fService.setStoreProperty("main", SandboxConstants.PROP_WEB_PROJECT_NODE_REF, new PropertyValue(DataTypeDefinition.NODE_REF, new NodeRef("workspace://SpacesStore/dummy")));
+            
+            fService.createStore("main--admin");
+            
             setupBasicTree0();
-            authService.authenticateAsGuest();
-            // assertEquals(0, fLockingService.getUsersLocks("admin").size());
-            List<AVMDifference> diffs = fSyncService.compare(-1, "main:/", -1, "test:/", null);
+
+
+            List<AVMDifference> diffs = fSyncService.compare(-1, "main:/", -1, "main--admin:/", null);
             assertEquals(2, diffs.size());
-            assertEquals("[main:/a[-1] > test:/a[-1], main:/d[-1] > test:/d[-1]]", diffs.toString());
+            assertEquals("[main:/a[-1] > main--admin:/a[-1], main:/d[-1] > main--admin:/d[-1]]", diffs.toString());
+            
             fSyncService.update(diffs, null, false, false, false, false, null, null);
             RetryingTransactionHelper.RetryingTransactionCallback<Object> cb = new RetryingTransactionHelper.RetryingTransactionCallback<Object>()
             {
@@ -286,7 +290,7 @@ public class AVMServiceTest extends AVMServiceTestBase
                 {
                     BulkLoader loader = new BulkLoader();
                     loader.setAvmService(fService);
-                    loader.recursiveLoad("source/java/org/alfresco/repo/avm", "main:/");
+                    loader.recursiveLoad("source/java/org/alfresco/repo/avm", "main--admin:/");
                     return null;
                 }
             };
@@ -304,8 +308,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             fLockingService.removeStoreLocks("main");
             fLockingService.removeWebProject("main");
             authService.authenticate("admin", "admin".toCharArray());
-
-            fService.purgeStore("test");
+            fService.purgeStore("main--admin");
         }
     }
 
@@ -1967,6 +1970,7 @@ public class AVMServiceTest extends AVMServiceTestBase
         final String STAGING = "foo-staging"; // note: it is implied that the website/webproject name is the same as staging name
         try
         {
+
             fService.createStore(STAGING);
             fService.createDirectory(STAGING+":/", JNDIConstants.DIR_DEFAULT_WWW);
             fService.createDirectory(STAGING+":/" + JNDIConstants.DIR_DEFAULT_WWW, "a");
@@ -1975,7 +1979,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             fService.createFile(STAGING+":/" + JNDIConstants.DIR_DEFAULT_WWW + "/a/b/c", "foo").close();
             fService.createFile(STAGING+":/" + JNDIConstants.DIR_DEFAULT_WWW + "/a/b/c", "bar").close();
             fService.createStore("area");
-            fService.setStoreProperty("area", SandboxConstants.PROP_WEBSITE_NAME, new PropertyValue(null, STAGING)); // note: it is implied that the website name is the same as staging name
+             fService.setStoreProperty("area", SandboxConstants.PROP_WEBSITE_NAME, new PropertyValue(null, STAGING)); // note: it is implied that the website name is the same as staging name
             fService.createLayeredDirectory(STAGING+":/" + JNDIConstants.DIR_DEFAULT_WWW, "area:/", JNDIConstants.DIR_DEFAULT_WWW);
             fService.createFile("area:/" + JNDIConstants.DIR_DEFAULT_WWW, "figs").close();
             fService.getFileOutputStream("area:/" + JNDIConstants.DIR_DEFAULT_WWW + "/a/b/c/foo").close();

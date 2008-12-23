@@ -50,6 +50,7 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
+import org.alfresco.wcm.util.WCMUtil;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -680,8 +681,11 @@ public class AVMLockingAwareService implements AVMService, ApplicationContextAwa
         fService.removeNode(parent, name);
         String[] storePath = parent.split(":");
         fService.createSnapshot(storePath[0], null, null);
-        fLockingService.removeLocksInDirectory(getWebProject(storePath[0]), storePath[0],
-                                               storePath[1] + '/' + name);
+        String webProject = getWebProject(storePath[0]);
+        if (webProject != null)
+        {
+            fLockingService.removeLocksInDirectory(webProject, storePath[0], storePath[1] + '/' + name);
+        }
     }
 
     /* (non-Javadoc)
@@ -693,7 +697,11 @@ public class AVMLockingAwareService implements AVMService, ApplicationContextAwa
         fService.removeNode(path);
         String[] storePath = path.split(":");
         fService.createSnapshot(storePath[0], null, null);
-        fLockingService.removeLocksInDirectory(getWebProject(storePath[0]), storePath[0], storePath[1]);
+        String webProject = getWebProject(storePath[0]);
+        if (webProject != null)
+        {
+            fLockingService.removeLocksInDirectory(webProject, storePath[0], storePath[1]);
+        }
     }
 
     /* (non-Javadoc)
@@ -704,14 +712,26 @@ public class AVMLockingAwareService implements AVMService, ApplicationContextAwa
     {
         // TODO Unresolved: how to deal with directory level locking.
         // TODO This assumes that the rename occurs within the same web project.
-        grabLock(srcParent + '/' + srcName);
-        fService.rename(srcParent, srcName, dstParent, dstName);
-        String[] srcStorePath = splitPath(srcParent + '/' + srcName);
-        String[] dstStorePath = splitPath(dstParent + '/' + dstName);
-        String webProject = getWebProject(dstStorePath[0]);
-        if (webProject != null)
+        
+        String srcPath = srcParent + '/' + srcName;
+        
+        AVMNodeDescriptor desc = fService.lookup(-1, srcPath, false);
+        if (! (desc != null && desc.isDirectory()))
         {
-            fLockingService.modifyLock(webProject, srcStorePath[1], dstStorePath[1], dstStorePath[0], null, null);
+            grabLock(srcParent + '/' + srcName);
+        }
+        
+        fService.rename(srcParent, srcName, dstParent, dstName);
+        
+        if (! (desc != null && desc.isDirectory()))
+        {
+            String[] srcStorePath = splitPath(srcParent + '/' + srcName);
+            String[] dstStorePath = splitPath(dstParent + '/' + dstName);
+            String webProject = getWebProject(dstStorePath[0]);
+            if (webProject != null)
+            {
+                fLockingService.modifyLock(webProject, srcStorePath[1], dstStorePath[1], dstStorePath[0], null, null);
+            }
         }
     }
 
@@ -851,18 +871,13 @@ public class AVMLockingAwareService implements AVMService, ApplicationContextAwa
     }
 
     private String getWebProject(String name)
-    {
-        Map<QName, PropertyValue> results = fService.queryStorePropertyKey(name, QName.createQName(null, ".dns%"));
-        if (results.size() != 1)
+    {	
+    	String wpStoreId = WCMUtil.getWebProjectStoreId(name);
+        if (WCMUtil.getWebProjectNodeFromWebProjectStore(fService, wpStoreId) != null)
         {
-            return null;
+            return wpStoreId;
         }
-        String dnsString = results.keySet().iterator().next().getLocalName();
-        String storeName = dnsString.substring(dnsString.lastIndexOf('.') + 1, dnsString.length());
-        final int index = storeName.indexOf(STORE_SEPARATOR);
-        return (index == -1
-                ? storeName
-                : storeName.substring(0, index));
+        return null;
     }
 
     private void grabLock(String path)

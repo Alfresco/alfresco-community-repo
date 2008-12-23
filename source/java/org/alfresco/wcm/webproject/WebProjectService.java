@@ -75,7 +75,7 @@ public interface WebProjectService
      * @param absoluteAVMPath the AVM path from which to determine the Web Project
      * @return NodeRef        the web project node ref for the path or null if it could not be determined
      */
-    public NodeRef findWebProjectNodeFromPath(String absoluteAVMPath);
+    public NodeRef getWebProjectNodeFromPath(String absoluteAVMPath);
     
     /**
      * Returns the Web Project for the given AVM store name (sandbox store id)
@@ -83,7 +83,7 @@ public interface WebProjectService
      * @param storeName       the AVM store name (sandbox store id) from which to determine the Web Project
      * @return NodeRef        the web project node ref for the path or null if it could not be determined
      */
-    public NodeRef findWebProjectNodeFromStore(String storeName);
+    public NodeRef getWebProjectNodeFromStore(String storeName);
     
     /**
      * List the available web projects for the current user

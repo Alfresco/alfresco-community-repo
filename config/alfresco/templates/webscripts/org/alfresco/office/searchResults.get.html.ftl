@@ -35,13 +35,13 @@
       </#if>
 <div class="documentItem ${(resCount % 2 = 0)?string("odd", "even")}"">
    <span class="documentItemIcon">
-      <a href="${openURL}" ${hrefExtra}><img src="${url.context}${child.icon32}" alt="Open ${child.name}" /></a>
+      <a href="${openURL}" ${hrefExtra}><img src="${url.context}${child.icon32}" alt="Open ${child.name?html}" /></a>
    </span>
    <span class="documentItemDetails">
-      <a class="bold" href="${openURL}" ${hrefExtra} title="Open ${child.name}">${child.name}</a><br />
+      <a class="bold" href="${openURL}" ${hrefExtra} title="Open ${child.name?html}">${child.name?html}</a><br />
       <#if child.properties.description?exists>
          <#if (child.properties.description?length > 0)>
-            ${child.properties.description}<br />
+            ${child.properties.description?html}<br />
          </#if>
       </#if>
       <#if child.isDocument>

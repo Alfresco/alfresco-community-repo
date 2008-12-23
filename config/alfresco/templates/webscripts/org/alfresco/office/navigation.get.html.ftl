@@ -11,7 +11,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html>
 <head>
-	<title>Browse Spaces and Documents</title>
+	<title>${message("office.title.navigation")}</title>
 	<link rel="stylesheet" type="text/css" href="${url.context}/css/office.css" />
 <!--[if IE 6]>
    <link rel="stylesheet" type="text/css" href="${url.context}/css/office_ie6.css" />
@@ -27,28 +27,28 @@
 <div id="overlayPanel"></div>
 <div class="tabBar">
    <ul>
-      <li><a title="${message("office.title.my_alfresco")}" href="${url.serviceContext}/office/myAlfresco${defaultQuery?html}"><span><img src="${url.context}/images/office/my_alfresco.gif" alt="My Alfresco" /></span></a></li>
-      <li id="current"><a title="${message("office.title.navigation")}" href="${url.serviceContext}/office/navigation${defaultQuery?html}"><span><img src="${url.context}/images/office/navigator.gif" alt="Browse Spaces and Documents" /></span></a></li>
-      <li><a title="${message("office.title.search")}" href="${url.serviceContext}/office/search${defaultQuery?html}"><span><img src="${url.context}/images/office/search.gif" alt="Search Alfresco" /></span></a></li>
-      <li><a title="${message("office.title.document_details")}" href="${url.serviceContext}/office/documentDetails${defaultQuery?html}"><span><img src="${url.context}/images/office/document_details.gif" alt="View Details" /></span></a></li>
-      <li><a title="${message("office.title.my_tasks")}" href="${url.serviceContext}/office/myTasks${defaultQuery?html}"><span><img src="${url.context}/images/office/my_tasks.gif" alt="My Tasks" /></span></a></li>
+      <li><a title="${message("office.title.my_alfresco")}" href="${url.serviceContext}/office/myAlfresco${defaultQuery?html}"><span><img src="${url.context}/images/office/my_alfresco.gif" alt="${message("office.title.my_alfresco")}" /></span></a></li>
+      <li id="current"><a title="${message("office.title.navigation")}" href="${url.serviceContext}/office/navigation${defaultQuery?html}"><span><img src="${url.context}/images/office/navigator.gif" alt="${message("office.title.navigation")}" /></span></a></li>
+      <li><a title="${message("office.title.search")}" href="${url.serviceContext}/office/search${defaultQuery?html}"><span><img src="${url.context}/images/office/search.gif" alt="${message("office.title.search")}" /></span></a></li>
+      <li><a title="${message("office.title.document_details")}" href="${url.serviceContext}/office/documentDetails${defaultQuery?html}"><span><img src="${url.context}/images/office/document_details.gif" alt="${message("office.title.document_details")}" /></span></a></li>
+      <li><a title="${message("office.title.my_tasks")}" href="${url.serviceContext}/office/myTasks${defaultQuery?html}"><span><img src="${url.context}/images/office/my_tasks.gif" alt="${message("office.title.my_tasks")}" /></span></a></li>
       <li><a title="${message("office.title.document_tags")}" href="${url.serviceContext}/office/tags${defaultQuery?html}"><span><img src="${url.context}/images/office/tag.gif" alt="${message("office.title.document_tags")}" /></span></a></li>
    </ul>
 </div>
 
 <div class="headerRow">
-   <div class="headerWrapper"><div class="header">Current Space</div></div>
+   <div class="headerWrapper"><div class="header">${message("office.navigation.header")}</div></div>
 </div>
 
 <div id="currentSpaceInfo">
    <span style="float: left;">
       <span style="float: left;">
-         <img src="${url.context}${thisSpace.icon16}" alt="${thisSpace.name}" />
+         <img src="${url.context}${thisSpace.icon16}" alt="${thisSpace.name?html}" />
       </span>
       <span style="float: left; padding-left: 6px;">
-         <span class="bold">${thisSpace.name}</span><br />
+         <span class="bold">${thisSpace.name?html}</span><br />
 <#if thisSpace.properties.description?exists>
-         ${thisSpace.properties.description}
+         ${thisSpace.properties.description?html}
 </#if>
       </span>
    </span>
@@ -66,7 +66,7 @@
 </div>
 
 <div class="headerRow">
-   <div class="headerWrapper"><div class="header">Spaces in ${thisSpace.name}</div></div>
+   <div class="headerWrapper"><div class="header">Spaces in ${thisSpace.name?html}</div></div>
    <div class="headerExtra"><div class="toggle">&nbsp;</div></div>
 </div>
 
@@ -98,7 +98,7 @@
                <select id="spaceTemplate" style="width: 172px;">
                   <option selected="selected" value="">(None)</option>
    <#list templates as template>
-                  <option value="${template.id}">${template.name}</option>
+                  <option value="${template.id}">${template.name?html}</option>
    </#list>
                </select>
             </div>
@@ -121,14 +121,14 @@
       <#assign spacesFound = spacesFound + 1>
       <div class="spaceItem ${(spacesFound % 2 = 0)?string("even", "odd")}">
          <span style="float: left; width: 36px;">
-            <a href="${url.serviceContext}/office/navigation?p=${path?url}&amp;e=${extn}&amp;n=${child.id}"><img src="${url.context}${child.icon32}" alt="Open ${child.name}" /></a>
+            <a href="${url.serviceContext}/office/navigation?p=${path?url}&amp;e=${extn}&amp;n=${child.id}"><img src="${url.context}${child.icon32}" alt="Open ${child.name?html}" /></a>
          </span>
          <span>
-            <a href="${url.serviceContext}/office/navigation?p=${path?url}&amp;e=${extn}&amp;n=${child.id}" title="Open ${child.name}">
-               <span class="bold">${child.name}</span>
+            <a href="${url.serviceContext}/office/navigation?p=${path?url}&amp;e=${extn}&amp;n=${child.id}" title="Open ${child.name?html}">
+               <span class="bold">${child.name?html}</span>
             </a>
       <#if child.properties.description?exists>
-      		<br />${child.properties.description}
+      		<br />${child.properties.description?html}
       </#if>
          </span>
       </div>
@@ -140,7 +140,7 @@
 </div>
 
 <div class="headerRow">
-   <div class="headerWrapper"><div class="header">Documents in ${thisSpace.name}</div></div>
+   <div class="headerWrapper"><div class="header">Documents in ${thisSpace.name?html}</div></div>
    <div class="headerExtra"><div class="toggle">&nbsp;</div></div>
 </div>
 
@@ -154,21 +154,21 @@
       <div class="documentItem ${(documentsFound % 2 = 0)?string("even", "odd")}">
          <span class="documentItemIcon">
       <#if child.name?ends_with(extn) || child.name?ends_with(extnx)>
-            <a href="#" onclick="window.external.openDocument('${relativePath}')"><img src="${url.context}${child.icon32}" alt="Open ${child.name}" /></a>
+            <a href="#" onclick="window.external.openDocument('${relativePath}')"><img src="${url.context}${child.icon32}" alt="Open ${child.name?html}" /></a>
       <#else>
-            <a href="${url.context}${child.url}?ticket=${session.ticket}" rel="_blank"><img src="${url.context}${child.icon32}" alt="Open ${child.name}" /></a>
+            <a href="${url.context}${child.url}?ticket=${session.ticket}" rel="_blank"><img src="${url.context}${child.icon32}" alt="Open ${child.name?html}" /></a>
       </#if>
          </span>
          <span class="documentItemDetails">
       <#if child.name?ends_with(extn) || child.name?ends_with(extnx)>
-            <a href="#" onclick="window.external.openDocument('${relativePath}')"><span class="bold ${isVersionable?string("versionable", "notVersionable")}">${child.name}</span></a>
+            <a href="#" onclick="window.external.openDocument('${relativePath}')"><span class="bold ${isVersionable?string("versionable", "notVersionable")}">${child.name?html}</span></a>
       <#else>
-            <a href="${url.context}${child.url}?ticket=${session.ticket}" rel="_blank"><span class="bold">${child.name}</span></a>
+            <a href="${url.context}${child.url}?ticket=${session.ticket}" rel="_blank"><span class="bold">${child.name?html}</span></a>
       </#if>
             <br />
       <#if child.properties.description?exists>
          <#if (child.properties.description?length > 0)>
-		      ${child.properties.description}<br />
+		      ${child.properties. description?html}<br />
 		   </#if>
       </#if>
             Modified: ${child.properties.modified?datetime}, Size: ${(child.size / 1024)?int}Kb<br />

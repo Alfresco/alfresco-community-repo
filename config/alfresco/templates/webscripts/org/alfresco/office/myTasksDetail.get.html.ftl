@@ -48,13 +48,13 @@
       <#if res.isDocument>
          <#assign relativePath = (res.displayPath?substring(companyhome.name?length+1) + '/' + res.name)?url?replace('%2F', '/')?replace('\'', '\\\'') />
          <#if res.name?ends_with(extn) || res.name?ends_with(extnx)>
-            <td width="16" valign="top"><a href="${url.context}${res.url}" target="new"><img src="${url.context}${res.icon16}" alt="${res.name}"></a></td>
+            <td width="16" valign="top"><a href="${url.context}${res.url}" target="new"><img src="${url.context}${res.icon16}" alt="${res.name?html}"></a></td>
             <td>
-               <a href="#" onclick="window.external.openDocument('${relativePath}')" title="Open ${res.name}">${res.name}</a>
+               <a href="#" onclick="window.external.openDocument('${relativePath}')" title="Open ${res.name?html}">${res.name?html}</a>
          <#else>
-            <td width="16" valign="top"><a href="${url.context}${res.url}?ticket=${session.ticket}" target="_blank" title="Open ${res.name}"><img src="${url.context}${res.icon16}" alt="${res.name}"></a></td>
+            <td width="16" valign="top"><a href="${url.context}${res.url}?ticket=${session.ticket}" target="_blank" title="Open ${res.name?html}"><img src="${url.context}${res.icon16}" alt="${res.name?html}"></a></td>
             <td>
-               <a href="${url.context}${res.url}?ticket=${session.ticket}" target="_blank">${res.name}</a>
+               <a href="${url.context}${res.url}?ticket=${session.ticket}" target="_blank">${res.name?html}</a>
          </#if>
             <br />
                Modified: ${res.properties.modified?datetime} (${(res.size / 1024)?int}Kb)<br />
@@ -71,9 +71,9 @@
          </#if>
             </td>
       <#else>
-            <td width="16"><img src="${url.context}${res.icon16}" alt="${res.name}"></td>
+            <td width="16"><img src="${url.context}${res.icon16}" alt="${res.name?html}"></td>
             <td>
-               <span>${res.name}</span>
+               <span>${res.name?html}</span>
             </td>
       </#if>
          </tr>

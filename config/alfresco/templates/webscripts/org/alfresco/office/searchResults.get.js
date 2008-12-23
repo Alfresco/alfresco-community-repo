@@ -21,5 +21,13 @@ else
    queryString = "";
 }
 
-model.results = search.luceneSearch(queryString);
+var luceneResults = search.luceneSearch(queryString), results = new Array(), i, ii;
+for (i = 0, ii = luceneResults.length; i < ii; i++)
+{
+   if (luceneResults[i].properties["cm:modified"] != null)
+   {
+      results.push(luceneResults[i]);
+   }
+}
 
+model.results = results;

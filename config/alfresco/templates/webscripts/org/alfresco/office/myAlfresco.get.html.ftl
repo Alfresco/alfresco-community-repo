@@ -28,17 +28,17 @@
 
 <div class="tabBar">
    <ul>
-      <li id="current"><a title="${message("office.title.my_alfresco")}" href="${url.serviceContext}/office/myAlfresco${defaultQuery?html}"><span><img src="${url.context}/images/office/my_alfresco.gif" alt="My Alfresco" /></span></a></li>
-      <li><a title="${message("office.title.navigation")}" href="${url.serviceContext}/office/navigation${defaultQuery?html}"><span><img src="${url.context}/images/office/navigator.gif" alt="Browse Spaces and Documents" /></span></a></li>
-      <li><a title="${message("office.title.search")}" href="${url.serviceContext}/office/search${defaultQuery?html}"><span><img src="${url.context}/images/office/search.gif" alt="Search Alfresco" /></span></a></li>
-      <li><a title="${message("office.title.document_details")}" href="${url.serviceContext}/office/documentDetails${defaultQuery?html}"><span><img src="${url.context}/images/office/document_details.gif" alt="View Details" /></span></a></li>
-      <li><a title="${message("office.title.my_tasks")}" href="${url.serviceContext}/office/myTasks${defaultQuery?html}"><span><img src="${url.context}/images/office/my_tasks.gif" alt="My Tasks" /></span></a></li>
+      <li id="current"><a title="${message("office.title.my_alfresco")}" href="${url.serviceContext}/office/myAlfresco${defaultQuery?html}"><span><img src="${url.context}/images/office/my_alfresco.gif" alt="${message("office.title.my_alfresco")}" /></span></a></li>
+      <li><a title="${message("office.title.navigation")}" href="${url.serviceContext}/office/navigation${defaultQuery?html}"><span><img src="${url.context}/images/office/navigator.gif" alt="${message("office.title.navigation")}" /></span></a></li>
+      <li><a title="${message("office.title.search")}" href="${url.serviceContext}/office/search${defaultQuery?html}"><span><img src="${url.context}/images/office/search.gif" alt="${message("office.title.search")}" /></span></a></li>
+      <li><a title="${message("office.title.document_details")}" href="${url.serviceContext}/office/documentDetails${defaultQuery?html}"><span><img src="${url.context}/images/office/document_details.gif" alt="${message("office.title.document_details")}" /></span></a></li>
+      <li><a title="${message("office.title.my_tasks")}" href="${url.serviceContext}/office/myTasks${defaultQuery?html}"><span><img src="${url.context}/images/office/my_tasks.gif" alt="${message("office.title.my_tasks")}" /></span></a></li>
       <li><a title="${message("office.title.document_tags")}" href="${url.serviceContext}/office/tags${defaultQuery?html}"><span><img src="${url.context}/images/office/tag.gif" alt="${message("office.title.document_tags")}" /></span></a></li>
    </ul>
 </div>
 
 <div class="headerRow">
-   <div class="headerWrapper"><div class="header">My Checked Out Documents</div></div>
+   <div class="headerWrapper"><div class="header">${message("office.my_alfresco.my_checked_out_documents")}</div></div>
    <div class="headerExtra"><div class="toggle">&nbsp;</div></div>
 </div>
 
@@ -51,17 +51,17 @@
          <#assign relativePath = (child.displayPath?substring(companyhome.name?length+1) + '/' + child.name)?url?replace('%2F', '/')?replace('\'', '\\\'') />
    <div class="documentItem ${(rowNum % 2 = 0)?string("odd", "even")}">
          <span class="documentItemIcon">
-            <img src="${url.context}${child.icon32}" alt="${child.name}" />
+            <img src="${url.context}${child.icon32}" alt="${child.name?html}" />
          </span>
          <span class="documentItemDetails">
          <#if child.name?ends_with(extn) || child.name?ends_with(extnx)>
-            <a href="#" onclick="window.external.openDocument('${relativePath}')" title="Open ${child.name}" style="font-weight: bold;">${child.name}</a><br />
+            <a href="#" onclick="window.external.openDocument('${relativePath}')" title="Open ${child.name?html}" style="font-weight: bold;">${child.name?html}</a><br />
          <#else>
-            <a href="${url.context}${child.url}?ticket=${session.ticket}" target="_blank" title="Open ${child.name}" style="font-weight: bold;">${child.name}</a><br />
+            <a href="${url.context}${child.url}?ticket=${session.ticket}" target="_blank" title="Open ${child.name?html}" style="font-weight: bold;">${child.name?html}</a><br />
          </#if>
          <#if child.properties.description?exists>
             <#if (child.properties.description?length > 0)>
-               ${child.properties.description}<br />
+               ${child.properties.description?html}<br />
             </#if>
          </#if>
             Modified: ${child.properties.modified?datetime} (${(child.size / 1024)?int}Kb)<br />
@@ -110,7 +110,7 @@
    </#if>
       </span>
       <span class="taskItemDetails">
-         <span style="font-weight: bold;">${t.description!""?html}</span> (${t.type?html})
+         <span style="font-weight: bold;">${(t.description!"")?html}</span> (${t.type?html})
    <#if hasDue>
             <br />Due date: ${due?date}
    <#else>

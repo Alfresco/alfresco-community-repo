@@ -49,14 +49,14 @@
             <tr>
                <td valign="top">
 <#if d.isDocument>
-                  <img src="${url.context}${d.icon32}" alt="${d.name}" />
+                  <img src="${url.context}${d.icon32}" alt="${d.name?html}" />
                </td>
                <td style="padding-top: 4px;">
                   <span style="font-weight:bold; vertical-align: top;">
    <#if d.isLocked >
                      <img src="${url.context}/images/office/lock.gif" alt="Locked" title="Locked" style="margin: -2px 0px;" />
    </#if>
-                     ${d.name}
+                     ${d.name?html}
                   </span>
                   <br />
                   <table style="margin-top: 4px;">
@@ -66,7 +66,7 @@
                      <tr><td valign="top">Title:</td><td>&nbsp;</td></tr>
    </#if>
    <#if d.properties.description?exists>
-                     <tr><td valign="top">Description:</td><td>${d.properties.description}</td></tr>
+                     <tr><td valign="top">Description:</td><td>${d.properties. description?html}</td></tr>
    <#else>
                      <tr><td valign="top">Description:</td><td>&nbsp;</td></tr>
    </#if>
@@ -79,7 +79,7 @@
                         <td>
    <#if d.properties.categories?exists>
       <#list d.properties.categories as category>
-                           ${companyhome.nodeByReference[category.nodeRef].name}; 
+                           ${companyhome.nodeByReference[category.nodeRef].name?html}; 
       </#list>
    <#else>
                            None.
@@ -106,7 +106,7 @@
 </div>
 
 <div id="panelTags" class="tabPanel">
-   <div class="tabHeader">Tags<#if d.isDocument> for ${d.name}</#if></div>
+   <div class="tabHeader">Tags<#if d.isDocument> for ${d.name?html}</#if></div>
    <div id="tagList" class="containerTabMedium">
    <#if d.isDocument >
       <div class="addTagIcon"></div>
@@ -127,8 +127,8 @@
             <#list d.properties["cm:taggable"]?sort_by("name") as tag>
                <#if tag?exists>
       <div class="tagListEntry">
-         <a class="tagListDelete" href="#" title="Remove tag &quot;${tag.name}&quot;" onclick="OfficeDocDetails.removeTag('${d.id}', '${tag.name}');">[x]</a>
-         <a class="tagListName" href="${url.serviceContext}/office/tags${defaultQuery?html}&amp;tag=${tag.name}">${tag.name}</a>
+         <a class="tagListDelete" href="#" title="Remove tag &quot;${tag.name?html}&quot;" onclick="OfficeDocDetails.removeTag('${d.id}', '${tag.name?html}');">[x]</a>
+         <a class="tagListName" href="${url.serviceContext}/office/tags${defaultQuery?html}&amp;tag=${tag.name?html}">${tag.name?html}</a>
       </div>
                </#if>
             </#list>
@@ -147,7 +147,7 @@
 </div>
 
 <div id="panelVersion" class="tabPanel tabPanelHidden">
-   <div class="tabHeader">Version History<#if d.isDocument> for ${d.name}</#if></div>
+   <div class="tabHeader">Version History<#if d.isDocument> for ${d.name?html}</#if></div>
    <div id="versionList" class="containerTabMedium">
       <table width="265">
    <#if d.isDocument >
@@ -164,7 +164,7 @@
                Author: ${record.creator}<br />
                Date: ${record.createdDate?datetime}<br />
             <#if record.description?exists>
-               Notes: ${record.description}<br />
+               Notes: ${record. description?html}<br />
             </#if>
             <#-- Only Word supports document compare -->
             <#if extn = "doc">

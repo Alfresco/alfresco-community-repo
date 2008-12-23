@@ -32,7 +32,6 @@ import java.util.List;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
-import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.util.PropertyMap;
@@ -40,25 +39,19 @@ import org.alfresco.web.scripts.Status;
 import org.alfresco.web.scripts.TestWebScriptServer.DeleteRequest;
 import org.alfresco.web.scripts.TestWebScriptServer.GetRequest;
 import org.alfresco.web.scripts.TestWebScriptServer.PostRequest;
+import org.alfresco.web.scripts.TestWebScriptServer.PutRequest;
 import org.alfresco.web.scripts.TestWebScriptServer.Response;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
- * Junit tests of the REST bindings for WCM Sandbox and WCM Sandboxes
- * @author mrogers
- *
+ * Junit tests of the REST bindings for WCM Assets
  */
 public class AssetTest  extends BaseWebScriptTest {
 	
     private AuthenticationService authenticationService;
     private AuthenticationComponent authenticationComponent;
     private PersonService personService;
-    
-    // TODO - Replace the use of these two services as and when the REST API is available
-    private AVMService avmNonLockingAwareService;
-    private AVMService avmLockingAwareService;
-    private char AVM_STORE_SEPARATOR = ':';
     
     private static final String USER_ONE = "WebProjectTestOne";
     private static final String USER_TWO = "WebProjectTestTwo";
@@ -81,7 +74,6 @@ public class AssetTest  extends BaseWebScriptTest {
 	private static final String WEBAPP_ROOT = "ROOT";
 	private static final String WEBAPP_YELLOW = "YELLOW";
 	private static final String WEBAPP_GREEN = "GREEN";
-	
 	    
     private List<String> createdWebProjects = new ArrayList<String>(5);
     
@@ -93,11 +85,7 @@ public class AssetTest  extends BaseWebScriptTest {
         this.authenticationService = (AuthenticationService)getServer().getApplicationContext().getBean("AuthenticationService");
         this.authenticationComponent = (AuthenticationComponent)getServer().getApplicationContext().getBean("authenticationComponent");
         this.personService = (PersonService)getServer().getApplicationContext().getBean("PersonService");
-        
-        // TODO - Replace the use of these two services as and when the REST API is available
-        this.avmNonLockingAwareService = (AVMService)getServer().getApplicationContext().getBean("AVMService");
-        this.avmLockingAwareService = (AVMService)getServer().getApplicationContext().getBean("AVMLockingAwareService");
-        
+              
         this.authenticationComponent.setSystemUserAsCurrentUser();
         
         // Create users
@@ -233,22 +221,20 @@ public class AssetTest  extends BaseWebScriptTest {
     	String webprojref = createWebProject();
     	createMembership(webprojref, USER_ONE, ROLE_CONTENT_MANAGER);
     	String sandboxref = createSandbox(webprojref, USER_ONE);
-   	
-    	//TODO REPLACE THIS IMPLEMENTATION WITH THE REST API ONCE AVAILABLE
-        String bodgeRootPath = sandboxref + AVM_STORE_SEPARATOR + "/www/avm_webapps/" + WEBAPP_ROOT;
-        String bodgeYellowPath = sandboxref + AVM_STORE_SEPARATOR + "/www/avm_webapps/" + WEBAPP_YELLOW;
-        
-        avmLockingAwareService.createDirectory(sandboxref + AVM_STORE_SEPARATOR + "/www/avm_webapps", WEBAPP_YELLOW);
+    	createFolder(webprojref, sandboxref, "/www/avm_webapps", WEBAPP_YELLOW );
         String submitterURL = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + sandboxref + "/submitter";
+        createFile(webprojref, sandboxref, WEBAPP_ROOT, "/", "rootFile1" );
+
         JSONObject submitForm = new JSONObject();
         submitForm.put("label", "the label");
         submitForm.put("comment", "the comment");
         submitForm.put("all", true);
-        Response response = sendRequest(new PostRequest(submitterURL, submitForm.toString(), "application/json"), Status.STATUS_OK);
+        sendRequest(new PostRequest(submitterURL, submitForm.toString(), "application/json"), Status.STATUS_OK);
         
-        
-        avmLockingAwareService.createFile(bodgeRootPath, "rootFile1");
-        avmLockingAwareService.createFile(bodgeYellowPath, "yellowFile1");
+        /*
+         * Background set up now create a new file which is our test
+         */
+        createFile(webprojref, sandboxref, "/www/avm_webapps/" + WEBAPP_YELLOW, "yellowFile1" );
         
     	/**
     	 * Get the modified asset and verify its format
@@ -257,6 +243,7 @@ public class AssetTest  extends BaseWebScriptTest {
     	    String sandboxesURL = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + sandboxref + "/modified?webApp=" + WEBAPP_YELLOW;
        	    Response list = sendRequest(new GetRequest(sandboxesURL), Status.STATUS_OK);
        	    JSONObject result = new JSONObject(list.getContentAsString());
+       	    System.out.println(list.getContentAsString());
     	    JSONArray lookupResult = result.getJSONArray("data");
     	    
     	    assertTrue("testListUserSandbox", lookupResult.length() == 1);
@@ -268,13 +255,13 @@ public class AssetTest  extends BaseWebScriptTest {
     		String creator = x.getString("creator");
     		boolean isFile = x.getBoolean("isFile");
     		boolean isDeleted = x.getBoolean("isDeleted");
-    		boolean isDirectory = x.getBoolean("isDirectory");
+    		boolean isFolder = x.getBoolean("isFolder");
     		
     		assertNotNull("name is null", name);
     		assertEquals("name is wrong", "yellowFile1", name);
     		assertEquals("creator is wrong", "admin", creator);
     		assertTrue("not isFile", isFile);
-    		assertFalse("not isDirectory", isDirectory);
+    		assertFalse("not isFolder", isFolder);
     		assertFalse("not isDeleted", isDeleted);
     		
     		assertNotNull("path is null", path);
@@ -324,9 +311,7 @@ public class AssetTest  extends BaseWebScriptTest {
     	/**
     	 * add a single asset
     	 */
-    	//TODO REPLACE THIS IMPLEMENTATION WITH THE REST API ONCE AVAILABLE
-        String bodgePath = sandboxref + AVM_STORE_SEPARATOR + "/www/avm_webapps/ROOT";
-        avmLockingAwareService.createFile(bodgePath, "myFile1");
+    	createFile(webprojref, sandboxref, WEBAPP_ROOT, "/", "myFile1");
  
     	/**
     	 * Get the modified asset and verify its format
@@ -346,13 +331,13 @@ public class AssetTest  extends BaseWebScriptTest {
     		String creator = x.getString("creator");
     		boolean isFile = x.getBoolean("isFile");
     		boolean isDeleted = x.getBoolean("isDeleted");
-    		boolean isDirectory = x.getBoolean("isDirectory");
+    		boolean isFolder = x.getBoolean("isFolder");
     		
     		assertNotNull("name is null", name);
     		assertEquals("name is wrong", "myFile1", name);
     		assertEquals("creator is wrong", "admin", creator);
     		assertTrue("not isFile", isFile);
-    		assertFalse("not isDirectory", isDirectory);
+    		assertFalse("not isDirectory", isFolder);
     		assertFalse("not isDeleted", isDeleted);
     		
     		assertNotNull("path is null", path);
@@ -361,20 +346,29 @@ public class AssetTest  extends BaseWebScriptTest {
     	}
     	
     	/**
-    	 * Add some more assets, a dir and a file
+    	 * Add a second asset
     	 */
-        avmLockingAwareService.createDirectory(bodgePath, "fileA");
+    	createFile(webprojref, sandboxref, WEBAPP_ROOT, "/", "fileA");
     		
     	/**
-    	 * Get the modified assets - should be 2 (filex) is in a new dir
+    	 * Get the modified assets should be myFile1, fileA
     	 */
+    	{
+    	    String sandboxesURL = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + sandboxref + "/modified";
+       	    Response list = sendRequest(new GetRequest(sandboxesURL), Status.STATUS_OK);
+       	    JSONObject result = new JSONObject(list.getContentAsString());
+    	    JSONArray lookupResult = result.getJSONArray("data");
+    	    
+    	    assertTrue("testListUserSandbox", lookupResult.length() == 2);
+    	}    
     	
     	/**
     	 * Add a new dir containing assets
     	 */
-        avmLockingAwareService.createDirectory(bodgePath, "dir1");
-        avmLockingAwareService.createFile(bodgePath + "/dir1", "filex");
-        avmLockingAwareService.createFile(bodgePath + "/dir1", "filey");
+    	createFolder(webprojref, sandboxref, WEBAPP_ROOT, "/", "dir1");
+    	createFile(webprojref, sandboxref, WEBAPP_ROOT, "/dir1", "filex");
+    	createFile(webprojref, sandboxref, WEBAPP_ROOT, "/dir1", "filey");
+
     	
     	/**
     	 * Get the modified assets should be myFile1, fileA, dir1 
@@ -400,10 +394,11 @@ public class AssetTest  extends BaseWebScriptTest {
     	createMembership(webprojref, USER_ONE, ROLE_CONTENT_MANAGER);
     	String sandboxref = createSandbox(webprojref, USER_ONE);
     	
-    	//TODO REPLACE THIS IMPLEMENTATION WITH THE REST API ONCE AVAILABLE
-        String bodgePath = sandboxref + AVM_STORE_SEPARATOR + "/www/avm_webapps/ROOT";
-        avmLockingAwareService.createFile(bodgePath, "myFile1");
-        
+    	/**
+    	 * add a single asset
+    	 */
+    	createFile(webprojref, sandboxref, WEBAPP_ROOT, "/", "myFile1");
+    	          
         String submitterURL = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + sandboxref + "/submitter";
 
         /**
@@ -469,7 +464,7 @@ public class AssetTest  extends BaseWebScriptTest {
          * Positive test - Submit all
          */
         {
-            avmLockingAwareService.createFile(bodgePath, "myFile2");
+        	createFile(webprojref, sandboxref, WEBAPP_ROOT, "/", "myFile2");
             
         	{
         	    String sandboxesURL = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + sandboxref + "/modified";
@@ -484,8 +479,7 @@ public class AssetTest  extends BaseWebScriptTest {
             submitForm.put("label", "the label");
             submitForm.put("comment", "the comment");
             submitForm.put("all", true);
-            Response response = sendRequest(new PostRequest(submitterURL, submitForm.toString(), "application/json"), Status.STATUS_OK);
-            //TODO Nothing in the response now.
+            sendRequest(new PostRequest(submitterURL, submitForm.toString(), "application/json"), Status.STATUS_OK);
             
         	checkSandboxEmpty(webprojref, sandboxref);
 
@@ -495,7 +489,7 @@ public class AssetTest  extends BaseWebScriptTest {
          * Submit paths
          */
         {
-        	avmLockingAwareService.createFile(bodgePath, "myFile3");
+        	createFile(webprojref, sandboxref, WEBAPP_ROOT, "/", "myFile3");
             JSONObject submitForm = new JSONObject();
             submitForm.put("label", "the label");
             submitForm.put("comment", "the comment");
@@ -511,7 +505,7 @@ public class AssetTest  extends BaseWebScriptTest {
          * Submit assets - get a list of modified assets and submit them back
          */
         {
-            avmLockingAwareService.createFile(bodgePath, "myFile4");
+        	createFile(webprojref, sandboxref, WEBAPP_ROOT, "/", "myFile4");
             
         	{
         	    String sandboxesURL = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + sandboxref + "/modified";
@@ -538,14 +532,14 @@ public class AssetTest  extends BaseWebScriptTest {
          * Also has a delete to process
          */
         {
-            avmLockingAwareService.removeNode(sandboxref + AVM_STORE_SEPARATOR + "/www/avm_webapps/ROOT/myFile3");
-            avmLockingAwareService.createFile(bodgePath, "buffy.jpg");
-            avmLockingAwareService.createDirectory(bodgePath, "vampires");
-            avmLockingAwareService.createFile(bodgePath + "/vampires", "master");
-            avmLockingAwareService.createFile(bodgePath + "/vampires", "drusilla");
-            avmLockingAwareService.createDirectory(bodgePath, "humans");
-            avmLockingAwareService.createFile(bodgePath + "/humans", "willow");
-            avmLockingAwareService.createFile(bodgePath + "/humans", "xander");
+            deleteFile(webprojref, sandboxref, "/www/avm_webapps/ROOT/myFile3");
+        	createFile(webprojref, sandboxref, WEBAPP_ROOT, "/", "buffy.jpg");
+        	createFolder(webprojref, sandboxref, WEBAPP_ROOT, "/", "vampires");
+        	createFile(webprojref, sandboxref, WEBAPP_ROOT, "/vampires", "master");
+        	createFile(webprojref, sandboxref, WEBAPP_ROOT, "/vampires", "drusilla");
+         	createFolder(webprojref, sandboxref, WEBAPP_ROOT, "/", "humans");
+         	createFile(webprojref, sandboxref, WEBAPP_ROOT, "/humans", "willow");
+         	createFile(webprojref, sandboxref, WEBAPP_ROOT, "/humans", "xander");
             
         	{
         	    String sandboxesURL = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + sandboxref + "/modified";
@@ -572,19 +566,20 @@ public class AssetTest  extends BaseWebScriptTest {
          */
         {
         	// single file in existing dir
-            avmLockingAwareService.createFile(bodgePath + "/vampires", "angel");
+        	createFile(webprojref, sandboxref, WEBAPP_ROOT, "/vampires", "angel");
             
             //delete from an existing dir
-            avmLockingAwareService.removeNode(sandboxref + AVM_STORE_SEPARATOR + "/www/avm_webapps/ROOT/vampires/drusilla");
+        	deleteFile(webprojref, sandboxref, "/www/avm_webapps/ROOT/vampires/drusilla");
+            
             // multiple file in existing dir
-            avmLockingAwareService.createFile(bodgePath + "/humans", "giles");
-            avmLockingAwareService.createFile(bodgePath + "/humans", "dawn");
-            avmLockingAwareService.createFile(bodgePath + "/humans", "anya");
-            // new directory
-            avmLockingAwareService.createDirectory(bodgePath, "cast");
-            avmLockingAwareService.createFile(bodgePath + "/cast", "Anthony Head");
-            avmLockingAwareService.createFile(bodgePath + "/cast", "James Marsters");
+            createFile(webprojref, sandboxref, WEBAPP_ROOT, "/humans", "giles");
+            createFile(webprojref, sandboxref, WEBAPP_ROOT, "/humans", "dawn");
+            createFile(webprojref, sandboxref, WEBAPP_ROOT, "/humans", "anya");
 
+            // new directory
+            createFolder(webprojref, sandboxref, WEBAPP_ROOT, "/", "cast");
+            createFile(webprojref, sandboxref, WEBAPP_ROOT, "/cast", "Anthony Head");
+            createFile(webprojref, sandboxref, WEBAPP_ROOT, "/cast", "James Marsters");
             
         	{
         	    String sandboxesURL = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + sandboxref + "/modified";
@@ -656,11 +651,8 @@ public class AssetTest  extends BaseWebScriptTest {
     	createMembership(webprojref, USER_ONE, ROLE_CONTENT_MANAGER);
     	String sandboxref = createSandbox(webprojref, USER_ONE);
    	
-    	//TODO REPLACE THIS IMPLEMENTATION WITH THE REST API ONCE AVAILABLE
-        String bodgeRootPath = sandboxref + AVM_STORE_SEPARATOR + "/www/avm_webapps/" + WEBAPP_ROOT;
-        String bodgeYellowPath = sandboxref + AVM_STORE_SEPARATOR + "/www/avm_webapps/" + WEBAPP_YELLOW;  
-        avmLockingAwareService.createDirectory(sandboxref + AVM_STORE_SEPARATOR + "/www/avm_webapps", WEBAPP_YELLOW);
-        
+    	createFolder(webprojref, sandboxref, "/www/avm_webapps", WEBAPP_YELLOW );
+         
         String submitterURL = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + sandboxref + "/submitter";
         JSONObject submitForm = new JSONObject();
         submitForm.put("label", "the label");
@@ -671,8 +663,8 @@ public class AssetTest  extends BaseWebScriptTest {
         /**
          * Now we can set up our test data
          */
-        avmLockingAwareService.createFile(bodgeRootPath, "rootFile1");
-        avmLockingAwareService.createFile(bodgeYellowPath, "yellowFile1");
+    	createFile(webprojref, sandboxref, "/www/avm_webapps/" + WEBAPP_ROOT, "rootFile1" );
+    	createFile(webprojref, sandboxref, "/www/avm_webapps/" + WEBAPP_YELLOW, "yellowFile1" );
         
         /** 
          * Submit YELLOW - Should leave root alone
@@ -712,10 +704,7 @@ public class AssetTest  extends BaseWebScriptTest {
     	String webprojref = createWebProject();
     	createMembership(webprojref, USER_ONE, ROLE_CONTENT_MANAGER);
     	String sandboxref = createSandbox(webprojref, USER_ONE);
-    	
-    	//TODO REPLACE THIS IMPLEMENTATION WITH THE REST API ONCE AVAILABLE
-        String bodgePath = sandboxref + AVM_STORE_SEPARATOR + "/www/avm_webapps/ROOT";
-        avmLockingAwareService.createFile(bodgePath, "myFile1");
+    	createFile(webprojref, sandboxref, WEBAPP_ROOT, "/", "myFile1");
         
         String reverterURL = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + sandboxref + "/reverter";
 
@@ -756,7 +745,7 @@ public class AssetTest  extends BaseWebScriptTest {
          * Positive test - Revert all
          */
         {
-            avmLockingAwareService.createFile(bodgePath, "myFile2");
+        	createFile(webprojref, sandboxref, WEBAPP_ROOT, "/", "myFile2");
             
         	{
         	    String sandboxesURL = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + sandboxref + "/modified";
@@ -769,8 +758,7 @@ public class AssetTest  extends BaseWebScriptTest {
             
             JSONObject submitForm = new JSONObject();
             submitForm.put("all", true);
-            Response response = sendRequest(new PostRequest(reverterURL, submitForm.toString(), "application/json"), Status.STATUS_OK);
-            //TODO Nothing in the response now.
+            sendRequest(new PostRequest(reverterURL, submitForm.toString(), "application/json"), Status.STATUS_OK);
             
         	checkSandboxEmpty(webprojref, sandboxref);
 
@@ -780,7 +768,7 @@ public class AssetTest  extends BaseWebScriptTest {
          * Revert via paths
          */
         {
-        	avmLockingAwareService.createFile(bodgePath, "myFile3");
+        	createFile(webprojref, sandboxref, WEBAPP_ROOT, "/", "myFile3");
             JSONObject submitForm = new JSONObject();
             
             JSONArray paths = new JSONArray();
@@ -794,7 +782,7 @@ public class AssetTest  extends BaseWebScriptTest {
          * Revert assets - get a list of modified assets and revert them back
          */
         {
-            avmLockingAwareService.createFile(bodgePath, "myFile4");
+        	createFile(webprojref, sandboxref, WEBAPP_ROOT, "/", "myFile4");
             
         	{
         	    String sandboxesURL = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + sandboxref + "/modified";
@@ -818,13 +806,13 @@ public class AssetTest  extends BaseWebScriptTest {
          * Also has a delete to revert
          */
         {
-            avmLockingAwareService.createFile(bodgePath, "buffy.jpg");
-            avmLockingAwareService.createDirectory(bodgePath, "vampires");
-            avmLockingAwareService.createFile(bodgePath + "/vampires", "master");
-            avmLockingAwareService.createFile(bodgePath + "/vampires", "drusilla");
-            avmLockingAwareService.createDirectory(bodgePath, "humans");
-            avmLockingAwareService.createFile(bodgePath + "/humans", "willow");
-            avmLockingAwareService.createFile(bodgePath + "/humans", "xander");
+        	createFile(webprojref, sandboxref, WEBAPP_ROOT, "/", "buffy.jpg");
+        	createFolder(webprojref, sandboxref, WEBAPP_ROOT, "/", "vampires");
+        	createFile(webprojref, sandboxref, WEBAPP_ROOT, "/vampires", "master");
+        	createFile(webprojref, sandboxref, WEBAPP_ROOT, "/vampires", "drusilla");
+         	createFolder(webprojref, sandboxref, WEBAPP_ROOT, "/", "humans");
+         	createFile(webprojref, sandboxref, WEBAPP_ROOT, "/humans", "willow");
+         	createFile(webprojref, sandboxref, WEBAPP_ROOT, "/humans", "xander");
             
         	{
         	    String sandboxesURL = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + sandboxref + "/modified";
@@ -849,13 +837,13 @@ public class AssetTest  extends BaseWebScriptTest {
          */
         {
         	// First submit a chunk of data
-            avmLockingAwareService.createFile(bodgePath, "buffy.jpg");
-            avmLockingAwareService.createDirectory(bodgePath, "vampires");
-            avmLockingAwareService.createFile(bodgePath + "/vampires", "master");
-            avmLockingAwareService.createFile(bodgePath + "/vampires", "drusilla");
-            avmLockingAwareService.createDirectory(bodgePath, "humans");
-            avmLockingAwareService.createFile(bodgePath + "/humans", "willow");
-            avmLockingAwareService.createFile(bodgePath + "/humans", "xander");
+        	createFile(webprojref, sandboxref, WEBAPP_ROOT, "/", "buffy.jpg");
+        	createFolder(webprojref, sandboxref, WEBAPP_ROOT, "/", "vampires");
+        	createFile(webprojref, sandboxref, WEBAPP_ROOT, "/vampires", "master");
+        	createFile(webprojref, sandboxref, WEBAPP_ROOT, "/vampires", "drusilla");
+         	createFolder(webprojref, sandboxref, WEBAPP_ROOT, "/", "humans");
+         	createFile(webprojref, sandboxref, WEBAPP_ROOT, "/humans", "willow");
+         	createFile(webprojref, sandboxref, WEBAPP_ROOT, "/humans", "xander");
 
             JSONObject submitForm = new JSONObject();
             submitForm.put("label", "the label");
@@ -867,18 +855,20 @@ public class AssetTest  extends BaseWebScriptTest {
             // Now we can set up the data that will get reverted
             
         	// single file in existing dir
-            avmLockingAwareService.createFile(bodgePath + "/vampires", "angel");
+        	createFile(webprojref, sandboxref, WEBAPP_ROOT, "/vampires", "angel");
             
             //delete from an existing dir
-            avmLockingAwareService.removeNode(sandboxref + AVM_STORE_SEPARATOR + "/www/avm_webapps/ROOT/vampires/drusilla");
+         	deleteFile(webprojref, sandboxref, "/www/avm_webapps/ROOT/vampires/drusilla");
+           
             // multiple file in existing dir
-            avmLockingAwareService.createFile(bodgePath + "/humans", "giles");
-            avmLockingAwareService.createFile(bodgePath + "/humans", "dawn");
-            avmLockingAwareService.createFile(bodgePath + "/humans", "anya");
+          	createFile(webprojref, sandboxref, WEBAPP_ROOT, "/humans", "giles");
+          	createFile(webprojref, sandboxref, WEBAPP_ROOT, "/humans", "dawn");
+          	createFile(webprojref, sandboxref, WEBAPP_ROOT, "/humans", "anya");
+
             // new directory
-            avmLockingAwareService.createDirectory(bodgePath, "cast");
-            avmLockingAwareService.createFile(bodgePath + "/cast", "Anthony Head");
-            avmLockingAwareService.createFile(bodgePath + "/cast", "James Marsters");
+        	createFolder(webprojref, sandboxref, WEBAPP_ROOT, "/", "cast");
+            createFile(webprojref, sandboxref, WEBAPP_ROOT, "/cast", "Anthony Head");
+            createFile(webprojref, sandboxref, WEBAPP_ROOT, "/cast", "James Marsters");
 
             
         	{
@@ -947,10 +937,7 @@ public class AssetTest  extends BaseWebScriptTest {
     	createMembership(webprojref, USER_ONE, ROLE_CONTENT_MANAGER);
     	String sandboxref = createSandbox(webprojref, USER_ONE);
    	
-    	//TODO REPLACE THIS IMPLEMENTATION WITH THE REST API ONCE AVAILABLE
-        String bodgeRootPath = sandboxref + AVM_STORE_SEPARATOR + "/www/avm_webapps/" + WEBAPP_ROOT;
-        String bodgeYellowPath = sandboxref + AVM_STORE_SEPARATOR + "/www/avm_webapps/" + WEBAPP_YELLOW;  
-        avmLockingAwareService.createDirectory(sandboxref + AVM_STORE_SEPARATOR + "/www/avm_webapps", WEBAPP_YELLOW);
+        createFolder(webprojref, sandboxref, "/www/avm_webapps",  WEBAPP_YELLOW);
         
         String submitterURL = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + sandboxref + "/submitter";
         JSONObject submitForm = new JSONObject();
@@ -962,8 +949,8 @@ public class AssetTest  extends BaseWebScriptTest {
         /**
          * Now we can set up our test data
          */
-        avmLockingAwareService.createFile(bodgeRootPath, "rootFile1");
-        avmLockingAwareService.createFile(bodgeYellowPath, "yellowFile1");
+        createFile(webprojref, sandboxref, WEBAPP_ROOT, "/", "rootFile1");
+        createFile(webprojref, sandboxref, WEBAPP_YELLOW, "/", "yellowFile1");
         
         /** 
          * Revert YELLOW - Should leave root alone
@@ -993,4 +980,487 @@ public class AssetTest  extends BaseWebScriptTest {
     		assertEquals("name is wrong", "rootFile1", name);
     	}
     }  // End of testRevertAssetsWebAppTest
+    
+    public void testGetAsset() throws Exception
+    {
+    	final String YELLOW_FILE = "YellowFile.xyz";
+    	final String ROOT_FILE = "index.htm";
+    	
+        this.authenticationComponent.setCurrentUser("admin");
+    	String webprojref = createWebProject();
+    	createMembership(webprojref, USER_ONE, ROLE_CONTENT_MANAGER);
+    	String sandboxref = createSandbox(webprojref, USER_ONE);
+   	    
+    	// Set up a file/folder to read
+        createFolder(webprojref, sandboxref, "/www/avm_webapps",  WEBAPP_YELLOW);
+        createFile(webprojref, sandboxref, WEBAPP_ROOT, "/", ROOT_FILE);
+        createFolder(webprojref, sandboxref,  WEBAPP_ROOT, "/", "characters");
+        createFile(webprojref, sandboxref, WEBAPP_ROOT, "/characters", "Buffy Ann Summers.jpg");
+        createFile(webprojref, sandboxref, WEBAPP_ROOT, "/characters", "Willow Rosenberg.png");
+        createFile(webprojref, sandboxref, WEBAPP_ROOT, "/characters", "Joyce Summers.jpg");
+        createFile(webprojref, sandboxref, WEBAPP_ROOT, "/characters", "Cordelia Chase.jpg");
+        createFolder(webprojref, sandboxref,  WEBAPP_ROOT, "/characters", "out");
+        createFile(webprojref, sandboxref,  WEBAPP_ROOT, "/characters/out", "Giles");
+        
+        createFile(webprojref, sandboxref, WEBAPP_YELLOW, "/", YELLOW_FILE);
+        
+        /**
+         * Positive test - read ROOT folder
+         */
+        {
+        	String rootURL = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + sandboxref + "/assets" + "/www/avm_webapps/" + WEBAPP_ROOT ;
+        	Response root = sendRequest(new GetRequest(rootURL), Status.STATUS_OK);
+        	JSONObject result = new JSONObject(root.getContentAsString());
+        	System.out.println(root.getContentAsString());
+        	JSONObject rootDir = result.getJSONObject("data"); 
+        	String name = rootDir.getString("name");
+        	JSONArray children = rootDir.getJSONArray("children");
+        	assertEquals("name is wrong", WEBAPP_ROOT, name);
+        	assertEquals("too many children", children.length(), 2);
+        }
+        
+        /**
+         * Positive test - read yellowFile file absolute
+         */
+        {
+        	String yellowURL = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + sandboxref + "/assets" + "/www/avm_webapps/" + WEBAPP_YELLOW + "/" + YELLOW_FILE ;
+        	Response yellow = sendRequest(new GetRequest(yellowURL), Status.STATUS_OK);
+        	JSONObject result = new JSONObject(yellow.getContentAsString());
+        	JSONObject yellowFile = result.getJSONObject("data");  
+        	String name = yellowFile.getString("name");
+        	long version = yellowFile.getLong("version");
+        	long fileSize = yellowFile.getLong("fileSize");
+        	assertEquals("name is wrong", YELLOW_FILE, name);
+        }
+        
+        /**
+         * Positive test - read yellowFile file relative to webApp
+         */
+        {
+        	String yellowURL = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + sandboxref + "/assets" + "/" + YELLOW_FILE +"?webApp="+ WEBAPP_YELLOW;
+        	Response yellow = sendRequest(new GetRequest(yellowURL), Status.STATUS_OK);
+        	JSONObject result = new JSONObject(yellow.getContentAsString());
+        	JSONObject yellowFile = result.getJSONObject("data");  
+        	String name = yellowFile.getString("name");
+        	long version = yellowFile.getLong("version");
+        	long fileSize = yellowFile.getLong("fileSize");
+        	assertEquals("name is wrong", YELLOW_FILE, name);
+        }
+        
+        /**
+         * Negative test - read file that does not exist
+         */
+        {
+        	String yellowURL = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + sandboxref + "/assets" + "/www/avm_webapps/" + WEBAPP_YELLOW + "/crap" ;
+        	sendRequest(new GetRequest(yellowURL), Status.STATUS_NOT_FOUND);
+ 
+        }
+        
+        /**
+         * Negative test - missing web project 
+         */
+        {
+         	String yellowURL = URL_WEB_PROJECT + "/" + "crap" + URI_SANDBOXES + "/" + sandboxref + "/assets" + "/www/avm_webapps/" + WEBAPP_YELLOW + "/" + YELLOW_FILE ;
+        	sendRequest(new GetRequest(yellowURL), Status.STATUS_NOT_FOUND);
+ 
+        }
+        
+        /**
+         * Negative test - missing sandbox  
+         */
+        {
+         	String yellowURL = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + "crap" + "/assets" + "/www/avm_webapps/" + WEBAPP_YELLOW + "/" + YELLOW_FILE ;
+        	sendRequest(new GetRequest(yellowURL), Status.STATUS_NOT_FOUND);
+ 
+        }
+        
+        
+        /**
+         * Positive test - read children
+         */
+        
+        
+    }
+    
+    public void testDeleteAsset() throws Exception
+    {
+    	final String YELLOW_FILE = "YellowFile.xyz";
+    	final String YELLOW_FILE2 = "Buffy.jpg";
+    	final String ROOT_FILE = "index.htm";
+    	
+        this.authenticationComponent.setCurrentUser("admin");
+    	String webprojref = createWebProject();
+    	createMembership(webprojref, USER_ONE, ROLE_CONTENT_MANAGER);
+    	String sandboxref = createSandbox(webprojref, USER_ONE);
+   	
+    	createFolder(webprojref, sandboxref, "/www/avm_webapps", WEBAPP_YELLOW);
+        createFile(webprojref, sandboxref, WEBAPP_ROOT, "/", ROOT_FILE);
+        createFile(webprojref, sandboxref, WEBAPP_YELLOW, "/", YELLOW_FILE);
+        createFile(webprojref, sandboxref, WEBAPP_YELLOW, "/", YELLOW_FILE2);
+
+        
+        /**
+         * Positive test 
+         * 
+         * Read ROOT folder
+         * 
+         * Delete ROOT folder
+         * 
+         * Fail to read root folder
+         */
+        {
+        	String rootURL = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + sandboxref + "/assets" + "/www/avm_webapps/" + WEBAPP_ROOT ;
+        	sendRequest(new GetRequest(rootURL), Status.STATUS_OK);
+        	
+        	sendRequest(new DeleteRequest(rootURL), Status.STATUS_OK);
+        
+        	sendRequest(new GetRequest(rootURL), Status.STATUS_NOT_FOUND);
+        }
+        
+        /**
+         * Positive test - delete yellowFile file with absolute path
+         */
+        {
+        	String yellowURL = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + sandboxref + "/assets" + "/www/avm_webapps/" + WEBAPP_YELLOW + "/" + YELLOW_FILE ;
+        	sendRequest(new GetRequest(yellowURL), Status.STATUS_OK);
+        	
+        	sendRequest(new DeleteRequest(yellowURL), Status.STATUS_OK);
+        	
+        	sendRequest(new GetRequest(yellowURL), Status.STATUS_NOT_FOUND);
+        
+        	/**
+        	 * Part 2 Negative test - fail delete file that does not exist
+        	 */
+        	sendRequest(new DeleteRequest(yellowURL), Status.STATUS_NOT_FOUND);
+ 
+        }
+        
+        /**
+         * Positive test - delete yellowFile file with relative path
+         */
+        {
+        	String yellowURL = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + sandboxref + "/assets" + "/" + YELLOW_FILE2 + "?webApp="+ WEBAPP_YELLOW ;
+        	sendRequest(new GetRequest(yellowURL), Status.STATUS_OK);
+        	
+        	sendRequest(new DeleteRequest(yellowURL), Status.STATUS_OK);
+        	
+        	sendRequest(new GetRequest(yellowURL), Status.STATUS_NOT_FOUND);
+        }
+        
+        /**
+         * Negative test - delete missing web project 
+         */
+        {
+         	String yellowURL = URL_WEB_PROJECT + "/" + "crap" + URI_SANDBOXES + "/" + sandboxref + "/assets" + "/www/avm_webapps/" + WEBAPP_YELLOW + "/" + YELLOW_FILE ;
+        	sendRequest(new DeleteRequest(yellowURL), Status.STATUS_NOT_FOUND);
+ 
+        }
+        
+        /**
+         * Negative test - missing sandbox  
+         */
+        {
+         	String yellowURL = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + "crap" + "/assets" + "/www/avm_webapps/" + WEBAPP_YELLOW + "/" + YELLOW_FILE ;
+        	sendRequest(new DeleteRequest(yellowURL), Status.STATUS_NOT_FOUND);
+ 
+        }
+    }
+    
+    /**
+     * Create Asset
+     * @throws Exception
+     */
+    public void testCreateAsset() throws Exception
+    {
+    	final String YELLOW_FILE = "YellowFile.xyz";
+    	final String ROOT_FILE = "index.htm";
+    	
+        this.authenticationComponent.setCurrentUser("admin");
+    	String webprojref = createWebProject();
+    	createMembership(webprojref, USER_ONE, ROLE_CONTENT_MANAGER);
+    	String sandboxref = createSandbox(webprojref, USER_ONE);
+   	
+        /**
+         * Positive test - create a Yellow webapp with an absolute path
+         */
+        {
+        	String rootURL = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + sandboxref + "/assets" + "/www/avm_webapps";
+        	JSONObject submitForm = new JSONObject();
+        	submitForm.put("name", WEBAPP_YELLOW);
+        	submitForm.put("type", "folder");
+        
+        	Response response = sendRequest(new PostRequest(rootURL, submitForm.toString(), "application/json"), Status.STATUS_CREATED);
+       	    JSONObject result = new JSONObject(response.getContentAsString());
+    	    JSONObject lookupResult = result.getJSONObject("data");
+        	String name = lookupResult.getString("name");
+        	boolean isFolder = lookupResult.getBoolean("isFolder");
+        	boolean isFile = lookupResult.getBoolean("isFile");
+
+        	assertEquals("name is wrong", WEBAPP_YELLOW, name);
+        	assertTrue("folder not true", isFolder);
+        	assertFalse("file not false", isFile);
+        
+        }
+     
+        /**
+         * Positive test - create a file in the root webapp with a little content
+         */
+        {
+        	String rootURL = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + sandboxref + "/assets" + "/www/avm_webapps/" + WEBAPP_ROOT;
+        	JSONObject submitForm = new JSONObject();
+        	submitForm.put("name", ROOT_FILE);
+        	submitForm.put("type", "file");
+        	submitForm.put("content", "Hello World");
+        	Response response = sendRequest(new PostRequest(rootURL, submitForm.toString(), "application/json"), Status.STATUS_CREATED);
+            JSONObject result = new JSONObject(response.getContentAsString());
+        	JSONObject lookupResult = result.getJSONObject("data");
+        	String name = lookupResult.getString("name");
+        	long fileSize = lookupResult.getLong("fileSize");
+        	assertEquals("name is wrong", ROOT_FILE, name);
+        	boolean isFolder = lookupResult.getBoolean("isFolder");
+        	boolean isFile = lookupResult.getBoolean("isFile");
+        	assertTrue("file not true", isFile);
+        	assertFalse("folder not false", isFolder);
+        	assertTrue("file is empty", fileSize > 0);
+        }
+        
+        /**
+         * Positive test - create a file in the new Yellow webapp dir
+         */
+        {
+        	String rootURL = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + sandboxref + "/assets" + "/www/avm_webapps/" + WEBAPP_YELLOW;
+        	JSONObject submitForm = new JSONObject();
+        	submitForm.put("name", YELLOW_FILE);
+        	submitForm.put("type", "file");
+        	sendRequest(new PostRequest(rootURL, submitForm.toString(), "application/json"), Status.STATUS_CREATED);
+        }   
+        
+        /**
+         * Positive test - create a file in the new Yellow webapp dir with a relative path
+         */
+        {
+        	String rootURL = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + sandboxref + "/assets/" + "?webApp=" + WEBAPP_YELLOW;
+        	JSONObject submitForm = new JSONObject();
+        	submitForm.put("name", "willow.jpg");
+        	submitForm.put("type", "file");
+        	sendRequest(new PostRequest(rootURL, submitForm.toString(), "application/json"), Status.STATUS_CREATED);
+        }   
+        
+        /**
+         * Positive test - create a file in the new Yellow webapp dir with a relative path with some depth
+         */
+        {
+        	createFolder(webprojref, sandboxref, WEBAPP_YELLOW, "/", "humans" );
+        	String rootURL = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + sandboxref + "/assets/humans" + "?webApp=" + WEBAPP_YELLOW;
+        	JSONObject submitForm = new JSONObject();
+        	submitForm.put("name", "dawn.jpg");
+        	submitForm.put("type", "file");
+        	Response response = sendRequest(new PostRequest(rootURL, submitForm.toString(), "application/json"), Status.STATUS_CREATED);
+        	JSONObject result = new JSONObject(response.getContentAsString());
+         	JSONObject lookupResult = result.getJSONObject("data");
+         	String name = lookupResult.getString("name");
+        	String path = lookupResult.getString("path");
+         	assertEquals("name not correct", name, "dawn.jpg");
+         	assertEquals("path not correct", path, "/www/avm_webapps/" + WEBAPP_YELLOW + "/humans/dawn.jpg");
+         
+        }   
+
+
+     }
+    
+    /**
+     * Test rename asset
+     * @throws Exception
+     */
+    public void testRenameAsset() throws Exception
+    {
+    	final String YELLOW_FILE = "buffy.jpg";
+    	final String ROOT_FILE = "index.htm";
+    	final String PURPLE_FILE = "buffy.htm";
+    	final String PURPLE_FILE2 = "willow.htm";
+    	final String ROOT_MOVED_FILE = "smashing.htm";
+    	
+        this.authenticationComponent.setCurrentUser("admin");
+    	String webprojref = createWebProject();
+    	createMembership(webprojref, USER_ONE, ROLE_CONTENT_MANAGER);
+    	String sandboxref = createSandbox(webprojref, USER_ONE);
+
+        /**
+         * Positive test - create a Yellow webapp with some content, rename it to green
+         */
+        {
+        	createFolder(webprojref, sandboxref, "/www/avm_webapps", WEBAPP_YELLOW );
+        	createFile(webprojref, sandboxref, WEBAPP_YELLOW, "/", YELLOW_FILE);
+        	
+          	String yellowURL = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + sandboxref + "/assets" + "/www/avm_webapps/" + WEBAPP_YELLOW;
+        	JSONObject submitForm = new JSONObject();
+        	submitForm.put("name", WEBAPP_GREEN);
+        	Response response = sendRequest(new PutRequest(yellowURL, submitForm.toString(), "application/json"), Status.STATUS_OK);
+        	JSONObject result = new JSONObject(response.getContentAsString());
+    	    JSONObject lookupResult = result.getJSONObject("data");
+        	String name = lookupResult.getString("name");
+        	assertEquals("name is wrong", WEBAPP_GREEN, name);
+        }
+        
+       /**
+         * rename a file - absolute
+         */
+    	{
+    		createFile(webprojref, sandboxref, WEBAPP_ROOT, "/", ROOT_FILE);
+      	
+        	String yellowURL = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + sandboxref + "/assets" + "/www/avm_webapps/" + WEBAPP_ROOT + "/" + ROOT_FILE;
+        	JSONObject submitForm = new JSONObject();
+        	submitForm.put("name", ROOT_MOVED_FILE);
+        	Response response = sendRequest(new PutRequest(yellowURL, submitForm.toString(), "application/json"), Status.STATUS_OK);
+        	JSONObject result = new JSONObject(response.getContentAsString());
+        	JSONObject lookupResult = result.getJSONObject("data");
+        	String name = lookupResult.getString("name");
+        	assertEquals("name is wrong", ROOT_MOVED_FILE, name);
+        
+        	/**
+        	 * Part 2 Negative test - rename a file that should no longer exist
+        	 */
+        	sendRequest(new PutRequest(yellowURL, submitForm.toString(), "application/json"), Status.STATUS_NOT_FOUND);
+        }
+    	
+        /**
+         * rename a file - relative
+         */
+    	{
+    		createFile(webprojref, sandboxref, WEBAPP_ROOT, "/", PURPLE_FILE);
+      	
+        	String purpleURL = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + sandboxref + "/assets/" + PURPLE_FILE +"?webApp="+WEBAPP_ROOT;
+        	JSONObject submitForm = new JSONObject();
+        	submitForm.put("name", PURPLE_FILE2);
+        	Response response = sendRequest(new PutRequest(purpleURL, submitForm.toString(), "application/json"), Status.STATUS_OK);
+        	JSONObject result = new JSONObject(response.getContentAsString());
+        	JSONObject lookupResult = result.getJSONObject("data");
+        	String name = lookupResult.getString("name");
+        	assertEquals("name is wrong", PURPLE_FILE2, name);
+    	}
+
+    	
+        /**
+         * Negative test - missing sandbox
+         */
+    	{
+         	String yellowURL = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + "crap" + "/assets" + "/www/avm_webapps/" + WEBAPP_ROOT + "/" + ROOT_MOVED_FILE;
+        	JSONObject submitForm = new JSONObject();
+        	submitForm.put("name", ROOT_MOVED_FILE);
+        	sendRequest(new PutRequest(yellowURL, submitForm.toString(), "application/json"), Status.STATUS_NOT_FOUND);
+    	}
+    }
+    
+    /**
+     * Test rename asset
+     * @throws Exception
+     */
+    public void testMoveAsset() throws Exception
+    {
+    	final String YELLOW_FILE = "buffy.jpg";
+    	final String ROOT_FILE = "index.htm";
+    	
+        this.authenticationComponent.setCurrentUser("admin");
+    	String webprojref = createWebProject();
+    	createMembership(webprojref, USER_ONE, ROLE_CONTENT_MANAGER);
+    	String sandboxref = createSandbox(webprojref, USER_ONE);
+     	
+        /**
+         * move a file
+         */
+    	{
+    		createFile(webprojref, sandboxref, WEBAPP_ROOT, "/", ROOT_FILE);
+    		createFolder(webprojref, sandboxref, WEBAPP_ROOT, "/", "actors");
+    		createFolder(webprojref, sandboxref, WEBAPP_ROOT, "/actors", "humans");
+      	
+        	String myURL = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + sandboxref + "/assets" + "/www/avm_webapps/" + WEBAPP_ROOT + "/" + ROOT_FILE;
+        	JSONObject submitForm = new JSONObject();
+        	submitForm.put("path", "/www/avm_webapps/ROOT/actors/humans");
+        	Response response = sendRequest(new PutRequest(myURL, submitForm.toString(), "application/json"), Status.STATUS_OK);
+        	System.out.println(response.getContentAsString());
+        	JSONObject result = new JSONObject(response.getContentAsString());
+        	JSONObject lookupResult = result.getJSONObject("data");
+        	String name = lookupResult.getString("name");
+        	assertEquals("name is wrong", ROOT_FILE, name);
+        
+        	/**
+        	 * Part 2 Negative test - rename a file that should no longer exist
+        	 */
+        	sendRequest(new PutRequest(myURL, submitForm.toString(), "application/json"), Status.STATUS_NOT_FOUND);
+        }	
+    }
+    
+    /**
+     * Utility method to create a folder
+     * @param webprojref
+     * @param sandboxref
+     * @param parent
+     * @param name
+     * @throws Exception
+     */
+    
+    private void createFolder(String webprojref, String sandboxref, String parent, String name) throws Exception
+    {
+    	String rootURL = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + sandboxref + "/assets" + parent;
+    	JSONObject submitForm = new JSONObject();
+    	submitForm.put("name", name);
+    	submitForm.put("type", "folder");
+    	sendRequest(new PostRequest(rootURL, submitForm.toString(), "application/json"), Status.STATUS_CREATED);
+    }
+    
+    /**
+     * Utility method to create a folder in a web app
+     * @param webprojref
+     * @param sandboxref
+     * @param parent
+     * @param name
+     * @throws Exception
+     */
+    private void createFolder(String webprojref, String sandboxref, String webApp, String parent, String name) throws Exception
+    {
+        String rootURL = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + sandboxref + "/assets" + parent + "?webApp="+webApp;
+    	JSONObject submitForm = new JSONObject();
+    	submitForm.put("name", name);
+    	submitForm.put("type", "folder");
+    	sendRequest(new PostRequest(rootURL, submitForm.toString(), "application/json"), Status.STATUS_CREATED);
+    }
+    
+    /**
+     * Utility method to create a file
+     * @param webprojref
+     * @param sandboxref
+     * @param parent
+     * @param name
+
+     */
+    private void createFile(String webprojref, String sandboxref, String parent, String name) throws Exception
+    {
+    	String rootURL = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + sandboxref + "/assets" + parent;
+    	JSONObject submitForm = new JSONObject();
+    	submitForm.put("name", name);
+    	submitForm.put("type", "file");
+    	sendRequest(new PostRequest(rootURL, submitForm.toString(), "application/json"), Status.STATUS_CREATED);    
+    }
+    /**
+     * Utility method to create a file in a web app
+     * @param webprojref
+     * @param sandboxref
+     * @param parent
+     * @param name
+     */
+    
+    private void createFile(String webprojref, String sandboxref, String webApp, String parent, String name) throws Exception
+    {
+    	String rootURL = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + sandboxref + "/assets" + parent+ "?webApp="+webApp;
+       	JSONObject submitForm = new JSONObject();
+    	submitForm.put("name", name);
+    	submitForm.put("type", "file");
+    	sendRequest(new PostRequest(rootURL, submitForm.toString(), "application/json"), Status.STATUS_CREATED);    
+    }
+    
+    private void deleteFile(String webprojref, String sandboxref, String path) throws Exception
+    {
+       String deleteURL = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + sandboxref + "/assets" + path ;
+       sendRequest(new DeleteRequest(deleteURL), Status.STATUS_OK); 	
+    }
 } // End of AssetTest

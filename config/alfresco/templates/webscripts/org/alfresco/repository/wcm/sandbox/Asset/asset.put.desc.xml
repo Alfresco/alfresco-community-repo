@@ -1,15 +1,27 @@
 <webscript>
-  <shortname>Create a new WCM asset.</shortname>
+  <shortname>Update a WCM asset.</shortname>
   <description>
-  <![CDATA[
-  Create a new WCM Asset
-   ]]>
+    <![CDATA[
+	Update a WCM Asset, you can rename or move an asset and set the properties 
+	
+	<BR>
+	JSON Input properties
+	<dl>
+	<dt>name</dt><dd>optional rename this file or folder to this new name</dd>
+	<dt>path</dt><dd>optional move this file or folder to this path.   The destination folder must already exist.</dd>
+	<dt>properties</dt><dd>optional JSONObject containing property/value pairs.   Alfresco protected properties cannot be changed via this API and will remain unchanged.<dd>
+	</dl>
+	<BR>
+	JSON Return
+		data: 
+  
+  ]]>
   </description>
   <url>/api/wcm/webprojects/{webprojectref}/sandboxes/{sandboxref}/assets/{path}</url>
    <!-- TEMP COMMENTING OUT - FRAMEWORK BARFS
   <url>/api/wcm/webprojects/{webprojectref}/sandboxes/{sandboxref}/assets/(path}?webApp={webApp?}</url>
   -->
-  <format default="json"/>
+  <format default="json">argument</format>
   <authentication>user</authentication>
   <transaction>required</transaction>
   <family>WCM Service</family>

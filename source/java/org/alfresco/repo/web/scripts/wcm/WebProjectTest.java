@@ -184,12 +184,11 @@ public class WebProjectTest extends BaseWebScriptTest
         	JSONObject update = new JSONObject();
         	update.put("name", BASIC_UPDATED_NAME);
         	Response updateResponse = sendRequest(new PutRequest(URL_WEB_PROJECTS + "/" + webProjectRef, update.toString(), "application/json"), Status.STATUS_OK);
-        	JSONObject updateResult = new JSONObject(updateResponse.getContentAsString());  
-        	// TODO TESTS NOT PASSING         	
-//        	JSONObject data = updateResult.getJSONObject("data");  
-//        	assertEquals(BASIC_UPDATED_NAME, data.get("name"));
-//        	assertEquals(BASIC_DESCRIPTION, data.get("description"));
-//        	assertEquals(BASIC_TITLE, data.get("title"));
+        	JSONObject updateResult = new JSONObject(updateResponse.getContentAsString());        	
+        	JSONObject data = updateResult.getJSONObject("data");  
+        	assertEquals(BASIC_UPDATED_NAME, data.get("name"));
+        	assertEquals(BASIC_DESCRIPTION, data.get("description"));
+        	assertEquals(BASIC_TITLE, data.get("title"));
         }
           	
         /**

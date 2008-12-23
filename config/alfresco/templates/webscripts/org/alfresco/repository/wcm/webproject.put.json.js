@@ -47,7 +47,6 @@ function main() {
 	
 	// update the web project
 	webproject.save();
-    status.setCode(status.STATUS_OK, "Webproject " + webprojectref + " updated");
 	
 	// Set Return value
 	model.webproject = webproject;	

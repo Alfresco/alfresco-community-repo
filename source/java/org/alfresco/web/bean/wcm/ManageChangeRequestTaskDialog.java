@@ -35,7 +35,6 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.model.WCMModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
-import org.alfresco.wcm.sandbox.SandboxConstants;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.locking.AVMLock;
 import org.alfresco.service.cmr.avm.locking.AVMLockingService;
@@ -43,6 +42,7 @@ import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
+import org.alfresco.wcm.util.WCMUtil;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
@@ -267,9 +267,7 @@ public class ManageChangeRequestTaskDialog extends ManageTaskDialog
                this.workflowPackage, WCMModel.PROP_AVM_DIR_INDIRECTION);
       String userStoreAvmPath = AVMNodeConverter.ToAVMVersionPath(userStoreNodeRef).getSecond();
       String userStoreName = AVMUtil.getStoreName(userStoreAvmPath);
-      String stagingStoreName = this.getAvmService().getStoreProperty(userStoreName, 
-               SandboxConstants.PROP_WEBSITE_NAME).getStringValue();
-      NodeRef webProjectRef = getWebProjectService().findWebProjectNodeFromStore(stagingStoreName);
+      NodeRef webProjectRef = getWebProjectService().getWebProjectNodeFromStore(WCMUtil.getWebProjectStoreId(userStoreName));
       
       // update the UI context to the web project
       this.browseBean.clickSpace(webProjectRef);

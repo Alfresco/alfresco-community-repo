@@ -35,6 +35,7 @@ import org.alfresco.linkvalidation.LinkValidationReport;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.sandbox.SandboxConstants;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.wcm.util.WCMUtil;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.workflow.ManageTaskDialog;
@@ -84,8 +85,7 @@ public class ManageReviewTaskDialog extends ManageTaskDialog
          this.store = this.workflowPackage.getStoreRef().getIdentifier();
          
          // get the web project noderef for the workflow store
-         String stagingStore = AVMUtil.getStoreId(this.store);
-         this.webProjectRef = getWebProjectService().findWebProjectNodeFromStore(stagingStore);
+         this.webProjectRef = getWebProjectService().getWebProjectNodeFromStore(WCMUtil.getWebProjectStoreId(this.store));
          
          PropertyValue val = this.getAvmService().getStoreProperty(this.store, 
                   SandboxConstants.PROP_LINK_VALIDATION_REPORT);

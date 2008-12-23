@@ -42,14 +42,15 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.domain.PropertyValue;
-import org.alfresco.wcm.sandbox.SandboxConstants;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.VersionDescriptor;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.wcm.sandbox.SandboxConstants;
 import org.alfresco.wcm.sandbox.SandboxService;
+import org.alfresco.wcm.util.WCMUtil;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wcm.AVMCompareUtils;
@@ -234,7 +235,7 @@ public class UISandboxSnapshots extends SelfRenderingComponent
 
             // determine whether the deploy action should be shown
             boolean showDeployAction = false;
-            NodeRef webProjectRef = Repository.getServiceRegistry(context).getWebProjectService().findWebProjectNodeFromStore(sandbox);
+            NodeRef webProjectRef = Repository.getServiceRegistry(context).getWebProjectService().getWebProjectNodeFromStore(WCMUtil.getWebProjectStoreId(sandbox));
             List<NodeRef> deployToServers = DeploymentUtil.findLiveServers(webProjectRef);
             if (deployToServers != null && deployToServers.size() > 0)
             {

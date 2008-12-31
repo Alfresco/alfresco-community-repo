@@ -1,8 +1,22 @@
 <webscript>
   <shortname>Login</shortname>
-  <description>Establish a ticket</description>
+  <description>  
+  <![CDATA[
+  Login and establish a ticket.
+  <BR>
+  Input
+  <dl>
+  <dt>u</dt><dd>cleartext username (must be URL encoded)</dd>
+  <dt>pw</dt><dd>cleartext password (must be URL encoded)</dd>
+  </dl>
+  <BR>
+  Returns the new authentication ticket.
+  ]]>
+  </description>
   <url>/api/login?u={username}&amp;pw={password?}</url>
   <format default="xml"/>
   <authentication>none</authentication>
   <transaction>required</transaction>
+  <lifecycle>public_api</lifecycle>
+  <family>Authentication</family>
 </webscript>

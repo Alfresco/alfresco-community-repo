@@ -4,6 +4,8 @@
   <![CDATA[
   Update a single WCM web project
   <BR>
+  webprojectref is the unique reference returned by an earlier call to list, get or create web project
+  <BR>
   The following fields are may be updated in the body of the request:
   <ul>
   <li>name</li> 
@@ -11,11 +13,14 @@
   <li>description</li>
   <li>isTemplate</li>
   <ul>
+  <BR>
+  Returns 200 STATUS_OK, the body of the return will contain the updated web project.
   ]]>
   </description>
   <url>/api/wcm/webprojects/{webprojectref}</url>
   <format default="json" />
   <authentication>user</authentication>
   <transaction>required</transaction>
-  <family>WCM Service</family>
+  <family>WCM/WebProject</family>
+  <lifecycle>draft_public_api</lifecycle>
 </webscript>

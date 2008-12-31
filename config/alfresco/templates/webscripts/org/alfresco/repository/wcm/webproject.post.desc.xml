@@ -1,18 +1,28 @@
 <webscript>
   <shortname>Create Web Project</shortname>
-  <description>Create (POST) a single WCM web project.
+  <description><![CDATA[
+  Create (POST) a single WCM web project.
+  <BR>
   The following fields are required in the body of the request:
-  name, title, dnsName.
-  
+  <BR>
+  <dl>
+  <dt>name</dt><dd>Human readable name for the web project.</dd> 
+  <dt>title</dt><dd>Human readable title for the web project.</dd>
+  <dt>dnsName</dt><dd>The name of the web project which will become part of the URL.  Should be short and unique.</dd>
+  </dl>
+  <BR>
   The following fields are optional: 
-  description.
-  
-  Returns STATUS_CREATED on success.
-  
+  <dl>
+  <dt>description</dt><dd>description about the web project</dd>
+  </dl>
+  <BR>
+  Returns 201, STATUS_CREATED on success.   The body of the return will contain the new Web Project.
+  ]]>
   </description>
   <format default="json" />
   <url>/api/wcm/webprojects</url>
   <authentication>user</authentication>
   <transaction>required</transaction>
-  <family>WCM Service</family>
+  <family>WCM/WebProject</family>
+  <lifecycle>draft_public_api</lifecycle>
 </webscript>

@@ -5,5 +5,6 @@
   <url>/api/wcm/webprojects/{webprojectref}</url>
   <authentication>user</authentication>
   <transaction>required</transaction>
-  <family>WCM Service</family>
+  <family>WCM/WebProject</family>
+  <lifecycle>draft_public_api</lifecycle>
 </webscript>

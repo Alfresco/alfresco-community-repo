@@ -1,8 +1,20 @@
 <webscript>
-  <shortname>Get Login Ticket</shortname>
-  <description>Get Login Ticket</description>
+  <shortname>Validate Login Ticket</shortname>
+  <description><![CDATA[
+  Validates the specified ticket for the current user.
+  <BR>
+  The ticket may be invalid, or expired, or the user may have been locked out.    
+  <BR>
+  <ul>
+  <li>If the ticket is valid retuns 200, STATUS_SUCCESS</li>
+  <li>If the ticket is not valid returns a 404, STATUS_NOT_FOUND</li>
+  </ul>
+  ]]>
+  </description>
   <url>/api/login/ticket/{ticket}</url>
   <format default="xml"/>
   <authentication>user</authentication>
   <transaction>required</transaction>
+  <lifecycle>public_api</lifecycle>
+  <family>Authentication</family>
 </webscript>

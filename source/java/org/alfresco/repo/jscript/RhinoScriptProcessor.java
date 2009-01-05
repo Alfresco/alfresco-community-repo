@@ -73,10 +73,10 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
     private static final String PATH_CLASSPATH = "classpath:";
 
     /** Wrap Factory */
-    private static WrapFactory wrapFactory = new RhinoWrapFactory();
+    private static final WrapFactory wrapFactory = new RhinoWrapFactory();
     
     /** Base Value Converter */
-    private ValueConverter valueConverter = new ValueConverter();
+    private final ValueConverter valueConverter = new ValueConverter();
     
     /** Store into which to resolve cm:name based script paths */
     private StoreRef storeRef;
@@ -348,7 +348,8 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
         Context cx = Context.enter();
         try
         {
-            // Create a thread-specific scope from one of the shared scopes. See http://www.mozilla.org/rhino/scopes.html
+            // Create a thread-specific scope from one of the shared scopes.
+            // See http://www.mozilla.org/rhino/scopes.html
             cx.setWrapFactory(wrapFactory);
             Scriptable sharedScope = secure ? this.nonSecureScope : this.secureScope;
             Scriptable scope = cx.newObject(sharedScope);
@@ -396,7 +397,7 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
             Throwable err = w.getWrappedException();
             if (err instanceof RuntimeException)
             {
-                throw (RuntimeException) err;
+                throw (RuntimeException)err;
             }
             throw new AlfrescoRuntimeException(err.getMessage(), err);
         }
@@ -469,8 +470,8 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
 
 
     /**
-     * Pre initializes two scope objects (one secure and one not) with the standard objects preinitialised. This saves
-     * on very expensive calls to reinitialize a new scope on every web script execution. See
+     * Pre initializes two scope objects (one secure and one not) with the standard objects preinitialised.
+     * This saves on very expensive calls to reinitialize a new scope on every web script execution. See
      * http://www.mozilla.org/rhino/scopes.html
      * 
      * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
@@ -505,7 +506,6 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
             // allow access to all libraries and objects, including the importer
             // @see http://www.mozilla.org/rhino/ScriptingJava.html
             this.nonSecureScope = new ImporterTopLevel(cx);
-
         }
         finally
         {

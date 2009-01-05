@@ -2,9 +2,9 @@
   <shortname>Get modified assets within the specified sandbox.</shortname>
   <description>
   <![CDATA[
-  Get the modified (added, deleted, updated) asset properties of an author's sandbox. 
+  Get the modified (added, deleted, updated) details of an asset within an author's sandbox. 
   <BR>
-  If a directory has been added then only the directory's properties are returned (not directory plus assets within that new directory).
+  If a folder has been added then only the folders's properties are returned (not folder plus assets within that new folder).
   <BR>
   If the optional webApp argument is specified then returns the modified assets within that web app.
   ]]>
@@ -14,5 +14,6 @@
   <format default="json"/>
   <authentication>user</authentication>
   <transaction>required</transaction>
-  <family>WCM Service</family>
+  <family>WCM/Asset</family>
+  <lifecycle>draft_public_api</lifecycle>
 </webscript>

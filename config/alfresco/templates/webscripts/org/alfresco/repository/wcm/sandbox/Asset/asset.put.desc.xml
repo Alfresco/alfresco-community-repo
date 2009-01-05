@@ -2,14 +2,13 @@
   <shortname>Update a WCM asset.</shortname>
   <description>
     <![CDATA[
-	Update a WCM Asset, you can rename or move an asset and set the properties 
+	Update a WCM Asset, you can rename or move an asset.
 	
 	<BR>
 	JSON Input properties
 	<dl>
 	<dt>name</dt><dd>optional rename this file or folder to this new name</dd>
 	<dt>path</dt><dd>optional move this file or folder to this path.   The destination folder must already exist.</dd>
-	<dt>properties</dt><dd>optional JSONObject containing property/value pairs.   Alfresco protected properties cannot be changed via this API and will remain unchanged.<dd>
 	</dl>
 	<BR>
 	JSON Return
@@ -18,11 +17,10 @@
   ]]>
   </description>
   <url>/api/wcm/webprojects/{webprojectref}/sandboxes/{sandboxref}/assets/{path}</url>
-   <!-- TEMP COMMENTING OUT - FRAMEWORK BARFS
-  <url>/api/wcm/webprojects/{webprojectref}/sandboxes/{sandboxref}/assets/(path}?webApp={webApp?}</url>
-  -->
+  <url>/api/wcm/webprojects/{webprojectref}/sandboxes/{sandboxref}/assets/{path}?webApp={webApp?}</url>
   <format default="json">argument</format>
   <authentication>user</authentication>
   <transaction>required</transaction>
-  <family>WCM Service</family>
+  <family>WCM/Asset</family>
+  <lifecycle>draft_public_api</lifecycle>
 </webscript>

@@ -6,5 +6,6 @@
   <url>/api/wcm/webprojects/{webprojectref}/sandboxes/{sandboxRef}</url>
   <authentication>user</authentication>
   <transaction>required</transaction>
-  <family>WCM Service</family>
+  <family>WCM/Sandbox</family>
+  <lifecycle>draft_public_api</lifecycle>
 </webscript>

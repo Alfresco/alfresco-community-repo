@@ -1,10 +1,10 @@
 <webscript>
-  <shortname>Create a new WCM asset in the path of the URI.</shortname>
+  <shortname>Create a new WCM asset.</shortname>
   <description>
     <![CDATA[
-  Create a new WCM Asset in the specified path.
+  Create a new WCM Asset in the specified path and sandbox.
   <BR>
-  If the optional webApp argument is specified then the specified path is relative to the webapp.   
+  If the optional webApp argument is specified then the path is relative to the webapp.   
   <BR>
   If webApp is not specified then the path is will be absolute e.g. /www/avm_webapps/ROOT
   <BR>
@@ -17,7 +17,9 @@
   </dl>
   
   JSON Return value:
+  <pre>
   	data:The newly created asset in JSON format.
+  </pre>
   
   ]]>
   </description>
@@ -27,5 +29,7 @@
   <format default="json">argument</format>
   <authentication>user</authentication>
   <transaction>required</transaction>
-  <family>WCM Service</family>
+  <family>WCM/Asset</family>
+  <lifecycle>draft_public_api</lifecycle>
+
 </webscript>

@@ -1,9 +1,19 @@
 <webscript>
-  <shortname>NodeTags</shortname>
-  <description>Add the posted tags to the node</description>
+  <shortname>Add tag</shortname>
+  <description>  <![CDATA[
+  Add one or more tags to the node
+  <BR />Input: array of String
+  
+  <BR />Returns the array of tags
+  
+  <BR />Return STATUS_OK (200).
+  
+  ]]></description>
   <url>/api/node/{store_type}/{store_id}/{id}/tags</url>
   <url>/api/path/{store_type}/{store_id}/{id}/tags</url>
   <format default="json"/>
   <authentication>user</authentication>
   <transaction>required</transaction>
+  <lifecycle>draft_public_api</lifecycle>
+    <family>Tagging</family>
 </webscript>

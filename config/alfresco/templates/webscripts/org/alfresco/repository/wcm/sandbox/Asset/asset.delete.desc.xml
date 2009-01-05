@@ -3,11 +3,11 @@
   <description>
   <![CDATA[
   Delete the specified asset.
-  <BR>
+  <BR />
   If the optional webApp argument is specified then the path is relative to the webapp e.g. /index.htm   
-  <BR>
+  <BR />
   If webApp is not specified then the path is will be absolute e.g. /www/avm_webapps/ROOT/index.htm
-  <BR>
+  <BR />
   Returns STATUS_OK(200) for success.
   ]]>
   </description>
@@ -16,5 +16,6 @@
   <format default="json">argument</format>
   <authentication>user</authentication>
   <transaction>required</transaction>
-  <family>WCM Service</family>
+  <family>WCM/Asset</family>
+  <lifecycle>draft_public_api</lifecycle>
 </webscript>

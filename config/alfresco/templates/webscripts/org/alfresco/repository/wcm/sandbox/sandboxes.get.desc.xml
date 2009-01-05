@@ -1,10 +1,14 @@
 <webscript>
   <shortname>Web Project Sandboxes</shortname>
-  <description>Get a collection of a web project sandboxes.   If userName is specified then returns the sandboxes for the specified user.</description>
+  <description><![CDATA[
+  Get a collection of a web project sandboxes.   
+  <BR>If userName is specified then returns the sandboxes for the specified user.
+  ]]></description>
   <url>/api/wcm/webprojects/{webprojectref}/sandboxes?userName={userName?}</url>
   <url>/api/wcm/webprojects/{webprojectref}/sandboxes</url>
   <format default="json"/>
   <authentication>user</authentication>
   <transaction>required</transaction>
-  <family>WCM Service</family>
+  <family>WCM/Sandboxes</family>
+  <lifecycle>draft_public_api</lifecycle>
 </webscript>

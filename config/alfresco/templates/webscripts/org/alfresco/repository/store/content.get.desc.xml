@@ -28,4 +28,5 @@ Each CMIS protocol binding will provide a way for fetching a  sub-range within a
   <authentication>guest</authentication>
   <format default="">argument</format>
   <family>CMIS</family>
+  <lifecycle>public_api</lifecycle>
 </webscript>

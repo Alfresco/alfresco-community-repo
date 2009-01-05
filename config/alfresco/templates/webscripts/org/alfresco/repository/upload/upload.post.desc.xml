@@ -1,8 +1,38 @@
 <webscript>
   <shortname>File Upload</shortname>
-  <description>Upload file content and meta-data into Repository</description>
+  <description><![CDATA[
+  Upload file content and meta-data into Repository
+  
+  <BR />
+  HTML form data
+  <ul>
+	 <li>filedata</li>
+	 <li>siteid</li>
+	 <li>containerid</li>
+	 <li>uploaddirectory</li>	
+	 <li>updatenoderef</li>
+	 <li>filename</li>    
+	 <li>description</li>
+	 <li>contenttype</li>
+     <li>majorversion</li>
+     <li>overwrite</li>
+     <li>thumbnails</li>
+  </ul> 
+  
+  <BR />
+  Return content
+  <ul>
+  <li>nodeRef</li>
+  </ul>
+
+  <BR />
+  Return status: STATUS_OK (200)
+
+  ]]>
+  </description>
   <url>/api/upload</url>
   <format default="json"/>
   <authentication>user</authentication>
   <transaction>required</transaction>
+  <lifecycle>public_api</lifecycle>
 </webscript>

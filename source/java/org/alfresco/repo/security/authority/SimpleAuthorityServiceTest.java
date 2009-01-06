@@ -137,7 +137,7 @@ public class SimpleAuthorityServiceTest extends TestCase
         assertEquals(1, pubAuthorityService.getAllAuthorities(AuthorityType.EVERYONE).size());
         assertTrue(pubAuthorityService.getAllAuthorities(AuthorityType.EVERYONE).contains(
                 PermissionService.ALL_AUTHORITIES));
-        assertEquals(1, pubAuthorityService.getAllAuthorities(AuthorityType.GROUP).size());
+        assertEquals(2, pubAuthorityService.getAllAuthorities(AuthorityType.GROUP).size());
         assertEquals(1, pubAuthorityService.getAllAuthorities(AuthorityType.GUEST).size());
         assertTrue(pubAuthorityService.getAllAuthorities(AuthorityType.GUEST).contains(PermissionService.GUEST_AUTHORITY));
         assertEquals(0, pubAuthorityService.getAllAuthorities(AuthorityType.OWNER).size());

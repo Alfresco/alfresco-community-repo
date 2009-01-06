@@ -42,13 +42,14 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.InitializingBean;
 
 /**
  * The default implementation of the authority service.
  * 
  * @author Andy Hind
  */
-public class AuthorityServiceImpl implements AuthorityService
+public class AuthorityServiceImpl implements AuthorityService, InitializingBean
 {
     private static Log logger = LogFactory.getLog(AuthorityServiceImpl.class);
     
@@ -68,8 +69,10 @@ public class AuthorityServiceImpl implements AuthorityService
 
     private Set<String> allSet = Collections.singleton(PermissionService.ALL_AUTHORITIES);
 
-    private Set<String> adminUsers;
+    private Set<String> adminUsers = Collections.emptySet();
 
+    private Set<String> adminGroups = Collections.emptySet();
+    
     public AuthorityServiceImpl()
     {
         super();
@@ -110,15 +113,34 @@ public class AuthorityServiceImpl implements AuthorityService
         this.adminUsers = adminUsers;
     }
 
-    /**
-     * Currently the admin authority is granted only to the ALFRESCO_ADMIN_USER user.
+    public void setAdminGroups(Set<String> adminGroups)
+    {
+        this.adminGroups = adminGroups;
+    }
+
+    /* (non-Javadoc)
+     * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
      */
+    public void afterPropertiesSet() throws Exception
+    {
+        // Fully qualify the admin group names
+        if (!this.adminGroups.isEmpty())
+        {
+            Set<String> adminGroups = new HashSet<String>(this.adminGroups.size());
+            for (String group : this.adminGroups)
+            {
+                adminGroups.add(getName(AuthorityType.GROUP, group));
+            }
+            this.adminGroups = adminGroups;
+        }
+    }
+
     public boolean hasAdminAuthority()
     {
         String currentUserName = AuthenticationUtil.getRunAsUser();
         
-        // for MT, see note for getAuthoritiesForUser
-        return ((currentUserName != null) && (adminUsers.contains(currentUserName) || adminUsers.contains(tenantService.getBaseNameUser(currentUserName))));
+        // Determine whether the administrator role is mapped to this user or one of their groups
+        return ((currentUserName != null) && getAuthoritiesForUser(currentUserName).contains(PermissionService.ADMINISTRATOR_AUTHORITY));
     }
 
     public boolean isAdminAuthority(String authorityName)
@@ -128,8 +150,9 @@ public class AuthorityServiceImpl implements AuthorityService
         {
             canonicalName = authorityName;
         }
-        // for MT, see note for getAuthoritiesForUser
-        return (adminUsers.contains(canonicalName) || adminUsers.contains(tenantService.getBaseNameUser(canonicalName)));
+        
+        // Determine whether the administrator role is mapped to this user or one of their groups
+        return getAuthoritiesForUser(canonicalName).contains(PermissionService.ADMINISTRATOR_AUTHORITY);
     }
 
     public Set<String> getAuthorities()
@@ -142,20 +165,38 @@ public class AuthorityServiceImpl implements AuthorityService
     {
         Set<String> authorities = new HashSet<String>();
 
+        authorities.addAll(getContainingAuthorities(null, currentUserName, false));
+        
+        // Work out mapped roles
+        
+        // Check named admin users
         // note: for multi-tenancy, this currently relies on a naming convention which assumes that all tenant admins will 
         // have the same base name as the default non-tenant specific admin. Typically "admin" is the default required admin user, 
         // although, if for example "bob" is also listed as an admin then all tenant-specific bob's will also have admin authority
+        String currentUserBaseName = tenantService.getBaseNameUser(currentUserName);
+        boolean isAdminUser = (adminUsers.contains(currentUserName) || adminUsers.contains(currentUserBaseName));
 
-        if (adminUsers.contains(currentUserName) ||
-            adminUsers.contains(tenantService.getBaseNameUser(currentUserName)))
+        // Check named admin groups
+        if (!isAdminUser && !adminGroups.isEmpty())
+        {
+            for (String authority : authorities)
+            {
+                if (adminGroups.contains(authority) || adminGroups.contains(tenantService.getBaseNameUser(authority)))
+                {
+                    isAdminUser = true;
+                    break;
+                }
+            }
+        }
+
+        if (isAdminUser)
         {
             authorities.addAll(adminSet);
         }
-        if (AuthorityType.getAuthorityType(tenantService.getBaseNameUser(currentUserName)) != AuthorityType.GUEST)
+        if (AuthorityType.getAuthorityType(currentUserBaseName) != AuthorityType.GUEST)
         {
            authorities.addAll(allSet);
         }
-        authorities.addAll(getContainingAuthorities(null, currentUserName, false));
         return authorities;
     }
     

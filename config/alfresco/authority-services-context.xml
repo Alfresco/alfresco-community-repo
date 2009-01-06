@@ -47,6 +47,14 @@
     			<value>administrator</value>
     		</set>
         </property>
+        <!--                                                                  -->
+        <!-- A list of groups with admin rights.                              -->
+        <!--                                                                  -->
+        <property name="adminGroups">
+            <set>
+                <value>ALFRESCO_ADMINISTRATORS</value>
+            </set>
+        </property>
     </bean>
 
     <!-- Authority DAO that stores group information along with user information, -->

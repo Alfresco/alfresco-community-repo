@@ -43,9 +43,9 @@ CREATE TABLE alf_qname
 -- Create temporary table to hold static QNames
 CREATE TABLE t_qnames
 (
-   qname VARCHAR(200) NOT NULL,
+   qname VARCHAR(255) NOT NULL,
    namespace VARCHAR(100),
-   localname VARCHAR(100),
+   localname VARCHAR(200),
    qname_id BIGINT,
    INDEX tidx_tqn_qn (qname),
    INDEX tidx_tqn_ns (namespace),
@@ -154,7 +154,7 @@ CREATE TABLE t_qnames_dyn
    qname VARCHAR(255) NOT NULL,
    namespace VARCHAR(100),
    namespace_id BIGINT,
-   local_name VARCHAR(200),
+   local_name VARCHAR(255),
    INDEX tidx_qnd_qn (qname),
    INDEX tidx_qnd_ns (namespace)
 ) ENGINE=InnoDB;
@@ -355,7 +355,7 @@ CREATE TABLE t_alf_child_assoc
    child_node_name VARCHAR(50) NOT NULL,
    child_node_id BIGINT NOT NULL,
    qname_ns_id BIGINT NOT NULL,
-   qname_localname VARCHAR(100) NOT NULL,
+   qname_localname VARCHAR(255) NOT NULL,
    is_primary BIT,
    assoc_index INTEGER,
    INDEX idx_alf_cass_qnln (qname_localname),

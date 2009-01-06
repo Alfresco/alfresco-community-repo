@@ -145,7 +145,7 @@ CREATE TABLE t_alf_child_assoc
    child_node_name VARCHAR(50) NOT NULL,
    child_node_id BIGINT NOT NULL,
    qname_ns_id BIGINT NOT NULL,
-   qname_localname VARCHAR(100) NOT NULL,
+   qname_localname VARCHAR(255) NOT NULL,
    is_primary BIT,
    assoc_index INTEGER,
    INDEX idx_alf_cass_qnln (qname_localname),

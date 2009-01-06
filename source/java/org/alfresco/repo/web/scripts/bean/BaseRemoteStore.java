@@ -91,10 +91,10 @@ public abstract class BaseRemoteStore extends AbstractWebScript
 {
     public static final String TOKEN_STORE = "s";
     public static final String TOKEN_WEBAPP = "w";
-
+    
 	public static final String REQUEST_PARAM_STORE = "s";
 	public static final String REQUEST_PARAM_WEBAPP = "w";
-
+	
 	private static final Log logger = LogFactory.getLog(BaseRemoteStore.class);
     
     protected String defaultStore;
@@ -160,30 +160,30 @@ public abstract class BaseRemoteStore extends AbstractWebScript
         		
         		if (TOKEN_STORE.equals(el))
         		{
-        			// if the token is "s", then the next token is the id of the store
+        			// if the token is TOKEN_STORE, then the next token is the id of the store
         			store = tokenizer.nextToken();
         			
-        			// reset el
+        			// reset element
         			el = (tokenizer.hasMoreTokens() ? tokenizer.nextToken() : null);
         		}       		
         		
         		if (TOKEN_WEBAPP.equals(el))
         		{
-        			// if the token is "w", then the next token is a WCM webapp id
+        			// if the token is TOKEN_WEBAPP, then the next token is a WCM webapp id
         			webapp = tokenizer.nextToken();
         			        			
-        			// reset el
+        			// reset element
         			el = (tokenizer.hasMoreTokens() ? tokenizer.nextToken() : null);
         			
         		}
         		
-        		while(el != null)
+        		while (el != null)
         		{
-        			if(pathBuilder == null)
+        			if (pathBuilder == null)
         			{
         				pathBuilder = new StringBuilder(128);
         			}
-        			pathBuilder.append("/");
+        			pathBuilder.append('/');
         			pathBuilder.append(el);
         			
         			el = (tokenizer.hasMoreTokens() ? tokenizer.nextToken() : null);
@@ -209,7 +209,8 @@ public abstract class BaseRemoteStore extends AbstractWebScript
             	
             	// this means that a store was not passed in and that we
             	// also didn't have a configured store
-            	throw new WebScriptException("Unable to determine which store to operate against.  A store was not specified and a default was not provided.");
+            	throw new WebScriptException("Unable to determine which store to operate against." +
+            	        " A store was not specified and a default was not provided.");
             }
         }
         
@@ -227,7 +228,7 @@ public abstract class BaseRemoteStore extends AbstractWebScript
         
         // convert down to the path        
         String path = pathBuilder.toString();
-                
+        
         // debugger information
         if (logger.isDebugEnabled())
         {

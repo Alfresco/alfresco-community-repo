@@ -15,6 +15,7 @@
             <list>
                 <idref bean="AuditMethodInterceptor"/>
                 <idref bean="exceptionTranslator"/>
+                <!-- There will likely need to be some transaction handling added here -->
             </list>
         </property>
     </bean>
@@ -70,7 +71,6 @@
     -->
      
      
-    <!--  
     <bean id="formServiceScript" parent="baseJavaScriptExtension" class="org.alfresco.repo.forms.script.ScriptFormService">
         <property name="extensionName">
             <value>formService</value>
@@ -78,6 +78,5 @@
         <property name="serviceRegistry" ref="ServiceRegistry"/>
         <property name="formService" ref="formService"/>
     </bean>
-    -->
     
 </beans>

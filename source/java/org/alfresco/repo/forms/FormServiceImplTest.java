@@ -18,7 +18,7 @@
  * As a special exception to the terms and conditions of version 2.0 of 
  * the GPL, you may redistribute this Program in connection with Free/Libre 
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
+ * FLOSS exception.  You should have received a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
@@ -32,19 +32,23 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.forms.AssociationFieldDefinition.Direction;
+import org.alfresco.repo.forms.FormData.FieldData;
+import org.alfresco.repo.jscript.ClasspathScriptLocation;
 import org.alfresco.repo.forms.PropertyFieldDefinition.FieldConstraint;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.ScriptLocation;
+import org.alfresco.service.cmr.repository.ScriptService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.GUID;
+import org.alfresco.util.PropertyMap;
 
 /**
  * Form service implementation unit test.
@@ -55,6 +59,9 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
 {
     private FormService formService;
     private NamespaceService namespaceService;
+    private ScriptService scriptService;
+    private PersonService personService;
+
     private NodeRef document;
     private NodeRef associatedDoc;
     
@@ -77,6 +84,9 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
     private static String LABEL_SENT_DATE = "Sent Date";
     private static String LABEL_REFERENCES = "References";
     
+    private static final String USER_ONE = "UserOne_SiteServiceImplTest";
+
+    
     /**
      * Called during the transaction setup
      */
@@ -87,11 +97,15 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         // Get the required services
         this.formService = (FormService)this.applicationContext.getBean("FormService");
         this.namespaceService = (NamespaceService)this.applicationContext.getBean("NamespaceService");
+        this.scriptService = (ScriptService)this.applicationContext.getBean("ScriptService");
+        this.personService = (PersonService)this.applicationContext.getBean("PersonService");
         
-        // Authenticate as the system user
         AuthenticationComponent authenticationComponent = (AuthenticationComponent) this.applicationContext
                 .getBean("authenticationComponent");
-        authenticationComponent.setSystemUserAsCurrentUser();
+        
+        // Do the tests as userOne
+        createUser(USER_ONE);
+        authenticationComponent.setCurrentUser(USER_ONE);
         
         String guid = GUID.generate();
         
@@ -153,7 +167,25 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         endTransaction();
     }
     
-    public void testGetForm() throws Exception
+    private void createUser(String userName)
+    {
+        if (this.authenticationService.authenticationExists(userName) == false)
+        {
+            this.authenticationService.createAuthentication(userName, "PWD".toCharArray());
+            
+            PropertyMap ppOne = new PropertyMap(4);
+            ppOne.put(ContentModel.PROP_USERNAME, userName);
+            ppOne.put(ContentModel.PROP_FIRSTNAME, "firstName");
+            ppOne.put(ContentModel.PROP_LASTNAME, "lastName");
+            ppOne.put(ContentModel.PROP_EMAIL, "email@email.com");
+            ppOne.put(ContentModel.PROP_JOBTITLE, "jobTitle");
+            
+            this.personService.createPerson(ppOne);
+        }        
+    }
+	
+    @SuppressWarnings("unchecked")
+	public void testGetForm() throws Exception
     {
         Form form = this.formService.getForm(this.document.toString());
         
@@ -282,11 +314,36 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         assertEquals(this.associatedDoc.toString(), targets.get(0));
     }
     
-    // == Test the JavaScript API ==
+	public void off_testSaveUpdatedForm() throws Exception
+    {
+		fail("Form persistence not yet impl'd.");
+		
+        Form originalForm = this.formService.getForm(this.document.toString());
+        FormData formData = originalForm.getFormData();
+        
+        FieldData fd = originalForm.getFormData().getData().get("foo");
+        assertNull(fd);
+
+        formData.addData("foo", "bar");
+        
+        formService.saveForm(document.toString(), formData);
+
+        Form updatedForm = this.formService.getForm(this.document.toString());
+        assertFalse("Expected form instance to have changed.", originalForm == updatedForm);
+        
+        fd = updatedForm.getFormData().getData().get("foo");
+        assertNotNull(fd);
+    }
     
-//    public void testJSAPI() throws Exception
-//    {
-//        ScriptLocation location = new ClasspathScriptLocation("org/alfresco/repo/forms/script/test_formService.js");
-//        this.scriptService.executeScript(location, new HashMap<String, Object>(0));
-//    }
+    public void testJavascriptAPI() throws Exception
+    {
+    	//TODO Form saving is not yet implemented.
+    	
+    	Map<String, Object> model = new HashMap<String, Object>();
+    	model.put("testDoc", this.document.toString());
+    	model.put("testAssociatedDoc", this.associatedDoc.toString());
+    	
+        ScriptLocation location = new ClasspathScriptLocation("org/alfresco/repo/forms/script/test_formService.js");
+        this.scriptService.executeScript(location, model);
+    }
 }

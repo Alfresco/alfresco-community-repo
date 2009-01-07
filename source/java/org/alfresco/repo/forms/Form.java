@@ -26,6 +26,7 @@ package org.alfresco.repo.forms;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Data representation of a form to be displayed in the UI.
@@ -90,6 +91,16 @@ public class Form
     public Collection<FieldDefinition> getFieldDefinitions()
     {
         return this.fieldDefinitions;
+    }
+    
+    public List<String> getFieldDefinitionNames()
+    {
+    	List<String> result = new ArrayList<String>(fieldDefinitions.size());
+    	for (FieldDefinition fieldDefn : fieldDefinitions)
+    	{
+    		result.add(fieldDefn.getName());
+    	}
+    	return result;
     }
     
     /**

@@ -206,9 +206,7 @@ public abstract class BaseRemoteStore extends AbstractWebScript
             if (store == null)
             {
             	// not good, we should have a store by this point
-            	
-            	// this means that a store was not passed in and that we
-            	// also didn't have a configured store
+            	// this means that a store was not passed in and that we also didn't have a configured store
             	throw new WebScriptException("Unable to determine which store to operate against." +
             	        " A store was not specified and a default was not provided.");
             }
@@ -226,16 +224,10 @@ public abstract class BaseRemoteStore extends AbstractWebScript
         	pathBuilder.insert(0, "/www/avm_webapps/" + webapp);        	
         }
         
-        // convert down to the path        
         String path = pathBuilder.toString();
         
-        // debugger information
         if (logger.isDebugEnabled())
-        {
-        	logger.debug("Remote method: " + methodName);
-            logger.debug("Remote store id: " + store);
-            logger.debug("Remote path: " + path);
-        }
+        	logger.debug("Remote method: " + methodName + " Store Id: " + store + " Path: " + path);
         
         try
         {

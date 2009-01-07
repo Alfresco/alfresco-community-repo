@@ -121,6 +121,9 @@ public class AVMRemoteStore extends BaseRemoteStore
         Writer out = res.getWriter();
         out.write(Long.toString(desc.getModDate()));
         out.close();
+        
+        if (logger.isDebugEnabled())
+            logger.debug("AVMRemoteStore.lastModified() " + Long.toString(desc.getModDate()));
     }
 
     /* (non-Javadoc)
@@ -146,7 +149,7 @@ public class AVMRemoteStore extends BaseRemoteStore
                 try
                 {
                     reader = avmService.getContentReader(-1, avmPath);
-
+                    
                     if (reader == null)
                     {
                         throw new WebScriptException("No content found for AVM file: " + avmPath);
@@ -168,13 +171,16 @@ public class AVMRemoteStore extends BaseRemoteStore
                             }
                         }
                     }
-            
+                    
                     // set mimetype for the content and the character encoding + length for the stream
                     WebScriptServletResponse httpRes = (WebScriptServletResponse)res;
                     httpRes.setContentType(mimetype);
                     httpRes.getHttpServletResponse().setCharacterEncoding(reader.getEncoding());
                     httpRes.getHttpServletResponse().setDateHeader("Last-Modified", desc.getModDate());
                     httpRes.setHeader("Content-Length", Long.toString(reader.getSize()));
+                    
+                    if (logger.isDebugEnabled())
+                        logger.debug("AVMRemoteStore.getDocument() " + mimetype + " of size: " + reader.getSize());
                     
                     // get the content and stream directly to the response output stream
                     // assuming the repository is capable of streaming in chunks, this should allow large files
@@ -220,6 +226,9 @@ public class AVMRemoteStore extends BaseRemoteStore
         Writer out = res.getWriter();
         out.write(Boolean.toString(desc != null));
         out.close();
+        
+        if (logger.isDebugEnabled())
+            logger.debug("AVMRemoteStore.hasDocument() " + Boolean.toString(desc != null));
     }
 
     /* (non-Javadoc)
@@ -252,6 +261,9 @@ public class AVMRemoteStore extends BaseRemoteStore
                     }
                     
                     avmService.createFile(parts[0], parts[1], content);
+                    
+                    if (logger.isDebugEnabled())
+                        logger.debug("AVMRemoteStore.createDocument() " + avmPath);
                 }
                 catch (AccessDeniedException ae)
                 {
@@ -289,6 +301,9 @@ public class AVMRemoteStore extends BaseRemoteStore
                 {
                     ContentWriter writer = avmService.getContentWriter(avmPath);
                     writer.putContent(content);
+                    
+                    if (logger.isDebugEnabled())
+                        logger.debug("AVMRemoteStore.updateDocument() " + avmPath);
                 }
                 catch (AccessDeniedException ae)
                 {
@@ -321,6 +336,9 @@ public class AVMRemoteStore extends BaseRemoteStore
                 try
                 {
                     avmService.removeNode(avmPath);
+                    
+                    if (logger.isDebugEnabled())
+                        logger.debug("AVMRemoteStore.deleteDocument() " + avmPath);
                 }
                 catch (AccessDeniedException ae)
                 {
@@ -348,6 +366,8 @@ public class AVMRemoteStore extends BaseRemoteStore
         try
         {
             traverseNode(res.getWriter(), store, node, null, recurse);
+            if (logger.isDebugEnabled())
+                logger.debug("AVMRemoteStore.listDocuments() " + path + " Recursive: " + recurse);
         }
         catch (AccessDeniedException ae)
         {
@@ -383,6 +403,8 @@ public class AVMRemoteStore extends BaseRemoteStore
         try
         {
             traverseNode(res.getWriter(), store, node, Pattern.compile(matcher), true);
+            if (logger.isDebugEnabled())
+                logger.debug("AVMRemoteStore.listDocuments() " + path + " Pattern: " + pattern);
         }
         catch (AccessDeniedException ae)
         {

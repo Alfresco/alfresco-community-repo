@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -24,79 +24,70 @@
  */
 package org.alfresco.repo.web.scripts.bean;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.repo.security.authentication.AuthenticationException;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authentication.TicketComponent;
-import org.alfresco.web.scripts.DeclarativeWebScript;
+import org.alfresco.util.Content;
 import org.alfresco.web.scripts.Status;
 import org.alfresco.web.scripts.WebScriptException;
 import org.alfresco.web.scripts.WebScriptRequest;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 
 /**
- * Login Ticket
+ * Post based login script
  * 
- * @author davidc
  */
-public class LoginTicket extends DeclarativeWebScript
+public class LoginPost extends AbstractLoginBean
 {
-    // dependencies
-    private TicketComponent ticketComponent;
-    
-    /**
-     * @param ticketComponent
-     */
-    public void setTicketComponent(TicketComponent ticketComponent)
-    {
-        this.ticketComponent = ticketComponent;
-    }
-    
     
     /* (non-Javadoc)
      * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.WebScriptResponse)
      */
-    @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status)
     {
-        // retrieve ticket from request and current ticket
-        String ticket = req.getExtensionPath();
-        if (ticket == null && ticket.length() == 0)
+        // Extract user and password from JSON POST
+        Content c = req.getContent();
+        if (c == null)
         {
-            throw new WebScriptException(HttpServletResponse.SC_BAD_REQUEST, "Ticket not specified");
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST,
+                    "Missing POST body.");
         }
+        // TODO accept xml type.
         
-        // construct model for ticket
-        Map<String, Object> model = new HashMap<String, Object>(1, 1.0f);
-        model.put("ticket",  ticket);
-        
-        try
-        {
-            String ticketUser = ticketComponent.validateTicket(ticket);
-            
-            String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
+        // extract username and password from JSON object
+        JSONObject json;
+		try {
+			json = new JSONObject(c.getContent());
+	        String username = json.getString("username");
+	        String password = json.getString("password");
+	        
+	        if (username == null || username.length() == 0)
+	        {
+	            throw new WebScriptException(HttpServletResponse.SC_BAD_REQUEST, "Username not specified");
+	        }
 
-            // do not go any further if tickets are different 
-            // or the user is not fully authenticated
-            if (currentUser == null || !currentUser.equals(ticketUser))
-            {
-                status.setRedirect(true);
-                status.setCode(HttpServletResponse.SC_NOT_FOUND);
-                status.setMessage("Ticket not found");
-            }
-        }
-        catch (AuthenticationException e)
+	        if (password == null)
+	        {
+	            throw new WebScriptException(HttpServletResponse.SC_BAD_REQUEST, "Password not specified");
+	        }
+
+	        return login(username, password);
+		} 
+        catch (JSONException jErr)
         {
-            status.setRedirect(true);
-            status.setCode(HttpServletResponse.SC_NOT_FOUND);
-            status.setMessage("Ticket not found");
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST,
+                    "Unable to parse JSON POST body: " + jErr.getMessage());
         }
-        
-        return model;
+        catch (IOException ioErr)
+        {
+            throw new WebScriptException(Status.STATUS_INTERNAL_SERVER_ERROR,
+                    "Unable to retrieve POST body: " + ioErr.getMessage());
+        }
     }
-
 }

@@ -1,12 +1,12 @@
 <webscript>
   <shortname>File Upload</shortname>
   <description><![CDATA[
-  Upload file content and meta-data into Repository
+  Upload file content and meta-data into repository.
   
   <BR />
   HTML form data
   <ul>
-	 <li>filedata</li>
+	 <li>filedata, (mandatory) HTML type file</li>
 	 <li>siteid</li>
 	 <li>containerid</li>
 	 <li>uploaddirectory</li>	

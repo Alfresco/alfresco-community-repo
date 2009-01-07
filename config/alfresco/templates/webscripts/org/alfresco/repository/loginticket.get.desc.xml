@@ -1,13 +1,16 @@
 <webscript>
   <shortname>Validate Login Ticket</shortname>
   <description><![CDATA[
-  Validates the specified ticket for the current user.
+  Validates the specified ticket is still valid.
   <BR>
-  The ticket may be invalid, or expired, or the user may have been locked out.    
+  The ticket may be invalid, or expired, or the user may have been locked out. 
+  <BR>
+  For security reasons this script will not validate the ticket of another user.  
   <BR>
   <ul>
-  <li>If the ticket is valid retuns 200, STATUS_SUCCESS</li>
-  <li>If the ticket is not valid returns a 404, STATUS_NOT_FOUND</li>
+  <li>If the ticket is valid retuns, STATUS_SUCCESS (200)</li>
+  <li>If the ticket is not valid return, STATUS_NOT_FOUND (404)</li>
+  <li>If the ticket does not belong to the current user, STATUS_NOT_FOUND (404)</li>
   </ul>
   ]]>
   </description>

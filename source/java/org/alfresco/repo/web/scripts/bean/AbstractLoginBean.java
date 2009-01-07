@@ -30,8 +30,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.repo.security.authentication.AuthenticationException;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authentication.TicketComponent;
+import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.web.scripts.DeclarativeWebScript;
 import org.alfresco.web.scripts.Status;
 import org.alfresco.web.scripts.WebScriptException;
@@ -39,64 +38,51 @@ import org.alfresco.web.scripts.WebScriptRequest;
 
 
 /**
- * Login Ticket
- * 
- * @author davidc
+ * common code between Get based login and POST based login
  */
-public class LoginTicket extends DeclarativeWebScript
+/* package scope */ abstract class AbstractLoginBean extends DeclarativeWebScript
 {
     // dependencies
-    private TicketComponent ticketComponent;
+    private AuthenticationService authenticationService;
     
     /**
-     * @param ticketComponent
+     * @param authenticationService
      */
-    public void setTicketComponent(TicketComponent ticketComponent)
+    public void setAuthenticationService(AuthenticationService authenticationService)
     {
-        this.ticketComponent = ticketComponent;
+        this.authenticationService = authenticationService;
     }
-    
+
     
     /* (non-Javadoc)
      * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.WebScriptResponse)
      */
     @Override
-    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status)
+    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status) 
     {
-        // retrieve ticket from request and current ticket
-        String ticket = req.getExtensionPath();
-        if (ticket == null && ticket.length() == 0)
-        {
-            throw new WebScriptException(HttpServletResponse.SC_BAD_REQUEST, "Ticket not specified");
-        }
-        
-        // construct model for ticket
-        Map<String, Object> model = new HashMap<String, Object>(1, 1.0f);
-        model.put("ticket",  ticket);
-        
+    	return null;
+    }
+    
+    protected Map<String, Object> login(String username, String password)
+    {
+
         try
         {
-            String ticketUser = ticketComponent.validateTicket(ticket);
-            
-            String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
+            // get ticket
+            authenticationService.authenticate(username, password.toCharArray());
 
-            // do not go any further if tickets are different 
-            // or the user is not fully authenticated
-            if (currentUser == null || !currentUser.equals(ticketUser))
-            {
-                status.setRedirect(true);
-                status.setCode(HttpServletResponse.SC_NOT_FOUND);
-                status.setMessage("Ticket not found");
-            }
+            // add ticket to model for javascript and template access
+            Map<String, Object> model = new HashMap<String, Object>(7, 1.0f);
+            model.put("ticket",  authenticationService.getCurrentTicket());
+            return model;
         }
-        catch (AuthenticationException e)
+        catch(AuthenticationException e)
         {
-            status.setRedirect(true);
-            status.setCode(HttpServletResponse.SC_NOT_FOUND);
-            status.setMessage("Ticket not found");
+            throw new WebScriptException(HttpServletResponse.SC_FORBIDDEN, "Login failed");
         }
-        
-        return model;
+        finally
+        {
+            authenticationService.clearCurrentSecurityContext();
+        }
     }
-
 }

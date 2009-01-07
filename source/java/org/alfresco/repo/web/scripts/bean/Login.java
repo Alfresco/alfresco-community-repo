@@ -42,24 +42,11 @@ import org.alfresco.web.scripts.WebScriptRequest;
  * 
  * @author davidc
  */
-public class Login extends DeclarativeWebScript
-{
-    // dependencies
-    private AuthenticationService authenticationService;
-    
-    /**
-     * @param authenticationService
-     */
-    public void setAuthenticationService(AuthenticationService authenticationService)
-    {
-        this.authenticationService = authenticationService;
-    }
-    
-    
+public class Login extends AbstractLoginBean
+{   
     /* (non-Javadoc)
      * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.WebScriptResponse)
      */
-    @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status)
     {
         // extract username and password
@@ -74,24 +61,7 @@ public class Login extends DeclarativeWebScript
             throw new WebScriptException(HttpServletResponse.SC_BAD_REQUEST, "Password not specified");
         }
 
-        try
-        {
-            // get ticket
-            authenticationService.authenticate(username, password.toCharArray());
-
-            // add ticket to model for javascript and template access
-            Map<String, Object> model = new HashMap<String, Object>(7, 1.0f);
-            model.put("ticket",  authenticationService.getCurrentTicket());
-            return model;
-        }
-        catch(AuthenticationException e)
-        {
-            throw new WebScriptException(HttpServletResponse.SC_FORBIDDEN, "Login failed");
-        }
-        finally
-        {
-            authenticationService.clearCurrentSecurityContext();
-        }
+        return login(username, password);
     }
 
 }

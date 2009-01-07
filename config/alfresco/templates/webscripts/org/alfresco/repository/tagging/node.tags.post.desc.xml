@@ -2,7 +2,8 @@
   <shortname>Add tag</shortname>
   <description>  <![CDATA[
   Add one or more tags to the node
-  <BR />Input: array of String
+  <BR />Input: 
+  <BR />(mandatory) array of String
   
   <BR />Returns the array of tags
   

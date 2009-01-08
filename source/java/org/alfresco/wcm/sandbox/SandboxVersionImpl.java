@@ -73,9 +73,9 @@ public class SandboxVersionImpl implements SandboxVersion
     }
     
     /* (non-Javadoc)
-     * @see org.alfresco.wcm.sandbox.SandboxVersion#getTag()
+     * @see org.alfresco.wcm.sandbox.SandboxVersion#getLabel()
      */
-    public String getTag()
+    public String getLabel()
     {
         return vDesc.getTag();
     }

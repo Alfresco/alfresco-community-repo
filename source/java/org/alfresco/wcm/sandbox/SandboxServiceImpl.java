@@ -491,6 +491,9 @@ public class SandboxServiceImpl implements SandboxService
         submitList(sbStoreId, relativePaths, null, submitLabel, submitComment);
     }
     
+    /* (non-Javadoc)
+     * @see org.alfresco.wcm.sandbox.SandboxService#submitList(java.lang.String, java.util.List, java.util.Map, java.lang.String, java.lang.String)
+     */
     public void submitList(String sbStoreId, List<String> relativePaths, Map<String, Date> expirationDates, String submitLabel, String submitComment)
     {
         ParameterCheck.mandatoryString("sbStoreId", sbStoreId);

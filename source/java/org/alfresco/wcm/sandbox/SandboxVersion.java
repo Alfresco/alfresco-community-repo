@@ -60,16 +60,16 @@ public interface SandboxVersion
     public Date getCreatedDate();
     
     /**
-     * Get the short description
+     * Get the submitted (short) label / tag
      * 
-     * @return The short description
+     * @return The label
      */
-    public String getTag();
+    public String getLabel();
     
     /**
-     * Get the long description
+     * Get the submitted (long) description
      * 
-     * @return The long description
+     * @return The description
      */
     public String getDescription();
     

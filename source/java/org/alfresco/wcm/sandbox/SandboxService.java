@@ -28,7 +28,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.service.cmr.avm.VersionDescriptor;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.wcm.asset.AssetInfo;
 
@@ -154,7 +153,7 @@ public interface SandboxService
      * 
      * @param sbStoreId                 sandbox store id
      * @param  includeDeleted           if true, include deleted assets as well as new/modified assets
-     * @return List<AVMNodeDescriptor>  list of all changed assets
+     * @return List<AssetInfo>          list of all changed assets
      */
     public List<AssetInfo> listChangedAll(String sbStoreId, boolean includeDeleted);
     
@@ -166,7 +165,7 @@ public interface SandboxService
      * @param sbStoreId                 sandbox store id
      * @param webApp                    web app to filter by
      * @param  includeDeleted           if true, include deleted assets as well as new/modified assets
-     * @return List<AVMNodeDescriptor>  list of changed assets
+     * @return List<AssetInfo>          list of changed assets
      */
     public List<AssetInfo> listChangedWebApp(String sbStoreId, String webApp, boolean includeDeleted);
     
@@ -178,7 +177,7 @@ public interface SandboxService
      * @param sbStoreId                 sandbox store id
      * @param relativePath              relative path to filter by (eg. /www/avm_webapps/ROOT/MyFolderToList)
      * @param  includeDeleted           if true, include deleted assets as well as new/modified assets
-     * @return List<AVMNodeDescriptor>  list of changed assets
+     * @return List<AssetInfo>          list of changed assets
      */
     public List<AssetInfo> listChanged(String sbStoreId, String relativePath, boolean includeDeleted);
     
@@ -190,7 +189,7 @@ public interface SandboxService
      * @param dstSandboxStoreId         destination sandbox store id
      * @param dstRelativePath           destination relative path to filter by (eg. /www/avm_webapps/ROOT/MyFolderToList)
      * @param  includeDeleted           if true, include deleted assets as well as new/modified assets
-     * @return List<AVMNodeDescriptor>  list of changed assets
+     * @return List<AssetInfo>          list of changed assets
      */
     public List<AssetInfo> listChanged(String srcSandboxStoreId, String srcRelativePath, String dstSandboxStoreId, String dstRelativePath, boolean includeDeleted);
     
@@ -199,67 +198,81 @@ public interface SandboxService
      * <p>
      * Note: This will submit all new/modified/deleted assets from the sandbox root directory (eg. /www/avm_webapps) - ie. across all web apps
      * <p>
-     * @param sbStoreId      sandbox store id
-     * @param submitLabel    label for submitted snapshot
-     * @param submitComment  comment for submitted snapshot
+     * @param sbStoreId          sandbox store id
+     * @param submitLabel        label for submitted snapshot
+     * @param submitDescription  description for submitted snapshot
      */
-    public void submitAll(String sbStoreId, String submitLabel, String submitComment);
+    public void submitAll(String sbStoreId, String submitLabel, String submitDescription);
     
     /**
      * Submit changed assets for given sandbox and web app (eg. in user sandbox)
      * <p>
      * Note: This will submit new/modified/deleted assets for the given web app
      * 
-     * @param sbStoreId      sandbox store id
-     * @param webApp         web app to filter by
-     * @param submitLabel    label for submitted snapshot
-     * @param submitComment  comment for submitted snapshot
+     * @param sbStoreId          sandbox store id
+     * @param webApp             web app to filter by
+     * @param submitLabel        label for submitted snapshot
+     * @param submitDescription  description for submitted snapshot
      */
-    public void submitWebApp(String sbStoreId, String webApp, String submitLabel, String submitComment);
+    public void submitWebApp(String sbStoreId, String webApp, String submitLabel, String submitDescription);
     
     /**
      * Submit changed asset(s) for given sandbox path (eg. in user sandbox)
      * <p>
      * Note: This will submit new/modified/deleted asset(s) for given path (either file or directory and below)
      * 
-     * @param sbStoreId      sandbox store id
-     * @param relativePath   relative path to filter by (eg. /www/avm_webapps or /www/avm_webapps/ROOT/MyFolderToSubmit)
-     * @param submitLabel    label for submitted snapshot
-     * @param submitComment  comment for submitted snapshot
+     * @param sbStoreId          sandbox store id
+     * @param relativePath       relative path to filter by (eg. /www/avm_webapps or /www/avm_webapps/ROOT/MyFolderToSubmit)
+     * @param submitLabel        label for submitted snapshot
+     * @param submitDescription  description for submitted snapshot
      */
-    public void submit(String sbStoreId, String relativePath, String submitLabel, String submitComment);
+    public void submit(String sbStoreId, String relativePath, String submitLabel, String submitDescription);
     
     /**
      * Submit list of changed assets for given sandbox (eg. in user sandbox)
      * 
-     * @param sbStoreId      sandbox store id
-     * @param assetPaths      list of assets, as relative paths (eg. /www/avm_webapps/ROOT/MyFolderToSubmit)
-     * @param submitLabel    label for submitted snapshot
-     * @param submitComment  comment for submitted snapshot
+     * @param sbStoreId          sandbox store id
+     * @param assetPaths         list of assets, as relative paths (eg. /www/avm_webapps/ROOT/MyFolderToSubmit)
+     * @param submitLabel        label for submitted snapshot
+     * @param submitDescription  description for submitted snapshot
      */
-    public void submitList(String sbStoreId, List<String> relativePaths, String submitLabel, String submitComment);
-    
-    public void submitList(String sbStoreId, List<String> relativePaths, Map<String, Date> expirationDates, String submitLabel, String submitComment);
-    /**
-     * Submit list of changed assets for given sandbox (eg. from user sandbox to staging sandbox)
-     * 
-     * @param sbStoreId      sandbox store id
-     * @param assetNodes     list of assets, as AVM node descriptors
-     * @param submitLabel    label for submitted snapshot
-     * @param submitComment  comment for submitted snapshot
-     */
-    public void submitListAssets(String sbStoreId, List<AssetInfo> assets, String submitLabel, String submitComment);
+    public void submitList(String sbStoreId, List<String> relativePaths, String submitLabel, String submitDescription);
     
     /**
      * Submit list of changed assets for given sandbox (eg. from user sandbox to staging sandbox)
      * 
-     * @param sbStoreId        sandbox store id
-     * @param assets            list of assets, as AVM node descriptors
-     * @param expirationDates  map of <path, date> for those assets set with an expiration date, or can be null (if no expiration dates)
-     * @param submitLabel      label for submitted snapshot
-     * @param submitComment    comment for submitted snapshot
+     * NOTE: for backwards compatibility - subject to change - hence deprecated for now
+     * 
+     * @param sbStoreId          sandbox store id
+     * @param assetPaths         list of assets, as relative paths (eg. /www/avm_webapps/ROOT/MyFolderToSubmit)
+     * @param expirationDates    map of AVM src paths to expiration dates
+     * @param submitLabel        label for submitted snapshot
+     * @param submitDescription  description for submitted snapshot
+     * 
+     * @deprecated
      */
-    public void submitListAssets(String sbStoreId, List<AssetInfo> assets, Map<String, Date> expirationDates, String submitLabel, String submitComment);
+    public void submitList(String sbStoreId, List<String> relativePaths, Map<String, Date> expirationDates, String submitLabel, String submitDescription);
+    
+    /**
+     * Submit list of changed assets for given sandbox (eg. from user sandbox to staging sandbox)
+     * 
+     * @param sbStoreId          sandbox store id
+     * @param assetNodes         list of assets
+     * @param submitLabel        label for submitted snapshot
+     * @param submitDescription  description for submitted snapshot
+     */
+    public void submitListAssets(String sbStoreId, List<AssetInfo> assets, String submitLabel, String submitDescription);
+    
+    /**
+     * Submit list of changed assets for given sandbox (eg. from user sandbox to staging sandbox)
+     * 
+     * @param sbStoreId          sandbox store id
+     * @param assets             list of assets
+     * @param expirationDates    map of <path, date> for those assets set with an expiration date, or can be null (if no expiration dates)
+     * @param submitLabel        label for submitted snapshot
+     * @param submitDescription  description for submitted snapshot
+     */
+    public void submitListAssets(String sbStoreId, List<AssetInfo> assets, Map<String, Date> expirationDates, String submitLabel, String submitDescription);
     
     /**
      * Revert all changed assets for given sandbox (eg. in user sandbox)
@@ -294,14 +307,14 @@ public interface SandboxService
      * Revert list of changed assets for given sandbox (eg. in user sandbox)
      * 
      * @param sbStoreId      sandbox store id
-     * @param assetPaths      list of assets, as relative paths (eg. /www/avm_webapps/ROOT/MyFolderToRevert)
+     * @param assetPaths     list of assets, as relative paths (eg. /www/avm_webapps/ROOT/MyFolderToRevert)
      */
     public void revertList(String sbStoreId, List<String> relativePaths);
     
     /**
      * Revert list of changed assets for given sandbox (eg. in user sandbox)
      * 
-     * @param assets             list of AVM node descriptors
+     * @param assets         list of assets
      */
     public void revertListNodes(String sbStoreId, List<AssetInfo> assets);
     

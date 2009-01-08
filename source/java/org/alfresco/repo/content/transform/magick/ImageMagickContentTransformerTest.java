@@ -70,9 +70,11 @@ public class ImageMagickContentTransformerTest extends AbstractContentTransforme
         {
             return;
         }
-        boolean reliability = transformer.isTransformable(MimetypeMap.MIMETYPE_IMAGE_GIF, MimetypeMap.MIMETYPE_TEXT_PLAIN, new TransformationOptions());
+        boolean reliability = transformer.isTransformable(
+                MimetypeMap.MIMETYPE_IMAGE_GIF, MimetypeMap.MIMETYPE_TEXT_PLAIN, new TransformationOptions());
         assertEquals("Mimetype should not be supported", false, reliability);
-        reliability = transformer.isTransformable(MimetypeMap.MIMETYPE_IMAGE_GIF, MimetypeMap.MIMETYPE_IMAGE_JPEG, new TransformationOptions());
+        reliability = transformer.isTransformable(
+                MimetypeMap.MIMETYPE_IMAGE_GIF, MimetypeMap.MIMETYPE_IMAGE_JPEG, new TransformationOptions());
         assertEquals("Mimetype should be supported", true, reliability);
     }
 }

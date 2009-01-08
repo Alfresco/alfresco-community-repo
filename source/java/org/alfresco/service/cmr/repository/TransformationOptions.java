@@ -30,13 +30,15 @@ import java.util.Map;
 import org.alfresco.service.namespace.QName;
 
 /**
- * Tansformation options.
- * <p>
  * Class containing values of options that are passed to content transformers.  These options 
  * are used to determine the applicability of a content transformer and also during the
  * transformation process to provide context or parameter values.
+ * <p>
+ * This base class provides some common, optional contextual information about the source and
+ * target nodes and properties used by the transformation. 
  * 
  * @author Roy Wetherall
+ * @since 3.0.0
  */
 public class TransformationOptions
 {
@@ -73,7 +75,8 @@ public class TransformationOptions
      * @param targetNodeRef             the target node reference
      * @param targetContentProperty     the target content property
      */
-    public TransformationOptions(NodeRef sourceNodeRef, QName sourceContentProperty, NodeRef targetNodeRef, QName targetContentProperty)
+    public TransformationOptions(
+            NodeRef sourceNodeRef, QName sourceContentProperty, NodeRef targetNodeRef, QName targetContentProperty)
     {
         this.sourceNodeRef = sourceNodeRef;
         this.sourceContentProperty = sourceContentProperty;
@@ -89,7 +92,10 @@ public class TransformationOptions
      */
     public TransformationOptions(Map<String, Object> optionsMap)
     {
-        fromMapImpl(optionsMap);
+        this.sourceNodeRef = (NodeRef)optionsMap.get(OPT_SOURCE_NODEREF);
+        this.sourceContentProperty = (QName)optionsMap.get(OPT_SOURCE_CONTENT_PROPERTY);
+        this.targetNodeRef = (NodeRef)optionsMap.get(OPT_TARGET_NODEREF);
+        this.targetContentProperty = (QName)optionsMap.get(OPT_TARGET_CONTENT_PROPERTY);
     }
     
     /**
@@ -171,40 +177,28 @@ public class TransformationOptions
     {
         return targetContentProperty;
     }
-    
+
     /**
-     * Converts the transformation options object into an equivalent map
-     * 
-     * @return  
+     * Convert the transformation options into a map.
+     * <p>
+     * Basic options (optional) are:
+     * <ul>
+     *   <li>{@link #OPT_SOURCE_NODEREF}</li>
+     *   <li>{@link #OPT_SOURCE_CONTENT_PROPERTY}</li>
+     *   <li>{@link #OPT_TARGET_NODEREF}</li>
+     *   <li>{@link #OPT_TARGET_CONTENT_PROPERTY}</li>
+     * </ul>
+     * <p>
+     * Override this method to append option values to the map.  Derived classes should call
+     * the base class before appending further values and returning the result.
      */
     public Map<String, Object> toMap()
     {
-        return new HashMap<String, Object>(10);
+        Map<String, Object> optionsMap = new HashMap<String, Object>(7);
+        optionsMap.put(OPT_SOURCE_NODEREF, sourceNodeRef);
+        optionsMap.put(OPT_SOURCE_CONTENT_PROPERTY, sourceContentProperty);
+        optionsMap.put(OPT_TARGET_NODEREF, targetNodeRef);
+        optionsMap.put(OPT_TARGET_CONTENT_PROPERTY, targetContentProperty);
+        return optionsMap;
     }
-    
-    /**
-     * Places the values of the transformation options into a Map
-     * 
-     * @param optionsMap    the options map
-     */
-    protected void toMapImpl(Map<String, Object> optionsMap)
-    {
-        optionsMap.put(OPT_SOURCE_NODEREF, getSourceNodeRef());
-        optionsMap.put(OPT_SOURCE_CONTENT_PROPERTY, getSourceContentProperty());
-        optionsMap.put(OPT_TARGET_NODEREF, getTargetNodeRef());
-        optionsMap.put(OPT_TARGET_CONTENT_PROPERTY, getTargetContentProperty());
-    }
-    
-    /**
-     * Populates the transformation options from a given Map of value.
-     * 
-     * @param optionsMap    the options map
-     */
-    protected void fromMapImpl(Map<String, Object> optionsMap)
-    {
-        this.sourceNodeRef = (NodeRef)optionsMap.get(OPT_SOURCE_NODEREF);
-        this.sourceContentProperty = (QName)optionsMap.get(OPT_SOURCE_CONTENT_PROPERTY);
-        this.targetNodeRef = (NodeRef)optionsMap.get(OPT_TARGET_NODEREF);
-        this.targetContentProperty = (QName)optionsMap.get(OPT_TARGET_CONTENT_PROPERTY);
-    } 
 }

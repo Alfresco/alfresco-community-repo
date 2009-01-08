@@ -3,7 +3,40 @@
  
 <beans>
    
-   <bean id="transformer.Pdf2swf" class="org.alfresco.repo.content.transform.swf.PDFToSWFContentTransformer" parent="baseContentTransformer">       
+   <bean id="transformer.Pdf2swf" class="org.alfresco.repo.content.transform.RuntimeExecutableContentTransformer" parent="baseContentTransformer">       
+      <property name="checkCommand">
+         <bean class="org.alfresco.util.exec.RuntimeExec">
+            <property name="commandMap">
+                <map>
+                    <entry key=".*">
+                        <value>pdf2swf -V</value>
+                    </entry>
+                </map>
+            </property>
+            <property name="errorCodes">
+               <value>1</value>
+            </property>
+         </bean>
+      </property>
+      <property name="transformCommand">
+         <bean class="org.alfresco.util.exec.RuntimeExec">
+            <property name="commandMap">
+                <map>
+                    <entry key=".*">
+                        <value>pdf2swf -T ${flashVersion} ${source} -o ${target}</value>
+                    </entry>
+                </map>
+            </property>
+            <property name="defaultProperties">
+                <map>
+                    <entry key="flashVersion" value="9" />
+                </map>
+            </property>
+            <property name="errorCodes">
+               <value>1</value>
+            </property>
+         </bean>
+      </property>
       <property name="explicitTransformations">
          <list>
          	<bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails" >
@@ -12,7 +45,6 @@
             </bean>
          </list>
       </property>
-   
    </bean>   
    
    <bean id="transformer.complex.OpenOffice.Pdf2swf"

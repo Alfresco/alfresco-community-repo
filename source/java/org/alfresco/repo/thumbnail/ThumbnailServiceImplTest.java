@@ -37,7 +37,6 @@ import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
 import org.alfresco.repo.content.transform.magick.ImageResizeOptions;
 import org.alfresco.repo.content.transform.magick.ImageTransformationOptions;
 import org.alfresco.repo.jscript.ClasspathScriptLocation;
-import org.alfresco.repo.node.db.NodeDaoService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -94,7 +93,6 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
     {
     }
 
-    /*
     public void testCreateThumbnailFromImage() throws Exception
     {
         // Check that the image transformations are available
@@ -427,6 +425,4 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
         ScriptLocation location = new ClasspathScriptLocation("org/alfresco/repo/thumbnail/script/test_thumbnailAPI.js");
         this.scriptService.executeScript(location, model);
     }
-
-    */
 }

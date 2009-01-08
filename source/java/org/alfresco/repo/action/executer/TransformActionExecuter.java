@@ -32,7 +32,6 @@ import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -165,10 +164,6 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
             return;
         }
 		
-		// Get the source mimetype 
-		ContentData contentData = (ContentData)this.nodeService.getProperty(actionedUponNodeRef, ContentModel.PROP_CONTENT);
-		String sourceMimeType = contentData.getMimetype();
-		
 		// Get the mime type
 		String mimeType = (String)ruleAction.getParameterValue(PARAM_MIME_TYPE);
 		
@@ -288,7 +283,8 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
 
 	{
 	    // Transformation options
-	    TransformationOptions options = new TransformationOptions(sourceNodeRef, ContentModel.PROP_NAME, destinationNodeRef, ContentModel.PROP_NAME);          
+	    TransformationOptions options = new TransformationOptions(
+	            sourceNodeRef, ContentModel.PROP_NAME, destinationNodeRef, ContentModel.PROP_NAME);          
         
 	    // try to pre-empt the lack of a transformer	    
         if (this.contentService.isTransformable(contentReader, contentWriter, options) == false)

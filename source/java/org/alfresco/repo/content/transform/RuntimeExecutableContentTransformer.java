@@ -222,15 +222,12 @@ public class RuntimeExecutableContentTransformer extends AbstractContentTransfor
         
         Map<String, String> properties = new HashMap<String, String>(5);
         // copy options over
-        if (options instanceof RuntimeExecutableContentTransformerOptions)
+        Map<String, Object> optionsMap = options.toMap();
+        for (Map.Entry<String, Object> entry : optionsMap.entrySet())
         {
-            RuntimeExecutableContentTransformerOptions runtimeOptions = (RuntimeExecutableContentTransformerOptions)options;
-            for (Map.Entry<String, Object> entry : runtimeOptions.getPropertyValues().entrySet())
-            {
-                String key = entry.getKey();
-                Object value = entry.getValue();
-                properties.put(key, (value == null ? null : value.toString()));
-            }
+            String key = entry.getKey();
+            Object value = entry.getValue();
+            properties.put(key, (value == null ? null : value.toString()));
         }
         // add the source and target properties
         properties.put(VAR_SOURCE, sourceFile.getAbsolutePath());

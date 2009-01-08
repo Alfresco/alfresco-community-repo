@@ -40,25 +40,27 @@ import org.alfresco.service.cmr.repository.TransformationOptions;
 public class RuntimeExecutableContentTransformerOptions extends TransformationOptions
 {
     /** Map of property values */
-    private Map<String, Object> propertyValues = new HashMap<String, Object>(1);
+    private Map<String, String> propertyValues = new HashMap<String, String>(11);
     
     /**
      * Sets the map of property values that are used when executing the transformer
      * 
      * @param propertyValues    property value
      */
-    public void setPropertyValues(Map<String, Object> propertyValues)
+    public void setPropertyValues(Map<String, String> propertyValues)
     {
         this.propertyValues = propertyValues;
     }
     
     /**
-     * Gets the map of property values that are used when executing the transformer
-     * 
-     * @return Map<String, Object>  property values
+     * Overrides the base class implementation to add all values set in {@link #setPropertyValues(Map)}
      */
-    public Map<String, Object> getPropertyValues()
+    @Override
+    public Map<String, Object> toMap()
     {
-        return propertyValues;
+        Map<String, Object> baseProps = super.toMap();
+        Map<String, Object> props = new HashMap<String, Object>(baseProps);
+        props.putAll(propertyValues);
+        return props;
     }
 }

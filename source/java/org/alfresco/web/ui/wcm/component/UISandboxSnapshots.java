@@ -251,13 +251,13 @@ public class UISandboxSnapshots extends SelfRenderingComponent
             {
                 SandboxVersion item = versions.get(i);
 
-                // only display snapshots with a valid tag - others are system generated snapshots
-                if (item.getTag() != null && item.getVersion() != 0)
+                // only display snapshots with a valid label/tag - others are system generated snapshots
+                if (! item.isSystemGenerated())
                 {
                     int version = item.getVersion();
 
                     out.write("<tr><td>");
-                    out.write(Utils.encode(item.getTag()));
+                    out.write(Utils.encode(item.getLabel()));
                     out.write("</td><td>");
                     out.write(item.getDescription() != null ? Utils.encode(item.getDescription()) : "");
                     out.write("</td><td>");

@@ -247,47 +247,27 @@
    </bean>
    
    
-   <!--  AVM Remote Store -->
-   <!--  bean id="AVMStoreBean" class="org.alfresco.repo.web.scripts.bean.AVMRemoteStore">
-      <property name="mimetypeService" ref="MimetypeService" />
-      <property name="avmService" ref="AVMService" />
-      <property name="searchService" ref="SearchService" />
-   </bean>
-   -->
-   
    <!--  Remote Store service - AVM -->
    <bean id="webscript.org.alfresco.repository.store.remoteavm.get" class="org.alfresco.repo.web.scripts.bean.AVMRemoteStore" parent="webscript">
       <property name="mimetypeService" ref="MimetypeService" />
       <property name="avmService" ref="AVMService" />
       <property name="searchService" ref="SearchService" />
-      <!--
-      <property name="rootPath"><value>alfresco</value></property>
-      <property name="store"><value>sitestore</value></property>
-      -->
    </bean>
    <bean id="webscript.org.alfresco.repository.store.remoteavm.post" class="org.alfresco.repo.web.scripts.bean.AVMRemoteStore" parent="webscript">
       <property name="mimetypeService" ref="MimetypeService" />
       <property name="avmService" ref="AVMService" />
       <property name="searchService" ref="SearchService" />
-      <!--
-      <property name="rootPath"><value>alfresco</value></property>
-      <property name="store"><value>sitestore</value></property>
-      -->
    </bean>
    <bean id="webscript.org.alfresco.repository.store.remoteavm.delete" class="org.alfresco.repo.web.scripts.bean.AVMRemoteStore" parent="webscript">
       <property name="mimetypeService" ref="MimetypeService" />
       <property name="avmService" ref="AVMService" />
       <property name="searchService" ref="SearchService" />
-      <!--
-      <property name="rootPath"><value>alfresco</value></property>
-      <property name="store"><value>sitestore</value></property>
-      -->
    </bean>
    
    <!-- Web-tier SSO authentication touch point -->
    <bean id="webscript.org.alfresco.repository.touch.get" class="org.alfresco.repo.web.scripts.bean.Touch" parent="webscript" />
-
-
+   
+   
    <!--                            -->
    <!-- Activity Feed Web Scripts  -->
    <!--                            -->

@@ -227,7 +227,7 @@ public abstract class BaseRemoteStore extends AbstractWebScript
         String path = pathBuilder.toString();
         
         if (logger.isDebugEnabled())
-        	logger.debug("Remote method: " + methodName + " Store Id: " + store + " Path: " + path);
+        	logger.debug("Remote method: " + methodName.toUpperCase() + "   Store Id: " + store + "   Path: " + path);
         
         try
         {

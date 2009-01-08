@@ -77,9 +77,9 @@ public class AVMRemoteStore extends BaseRemoteStore
      */
     public void setRootPath(String rootPath)
     {
-        if (rootPath != null && rootPath.length() == 0)
+        if (rootPath == null || rootPath.length() == 0)
         {
-            rootPath = "/";
+            throw new IllegalArgumentException("Root path must be specified.");
         }
         
         this.rootPath = rootPath;

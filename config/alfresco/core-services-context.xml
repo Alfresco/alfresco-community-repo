@@ -88,6 +88,8 @@
          <map>
            <!-- MBeans to register with alfrescoMBeanServer -->
            <entry key="Alfresco:Name=Log4jHierarchy,Type=Log4JHierarchy" value-ref="log4jHierarchy"/>
+           <!--  Used by Alfresco WCM Virtualisation server -->
+           <entry key="Alfresco:Name=VirtServerRegistry,Type=VirtServerRegistry" value-ref="VirtServerRegistry"/>
          </map>
        </property>
     </bean>

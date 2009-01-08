@@ -43,13 +43,13 @@ import javax.transaction.UserTransaction;
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.cmr.avm.AVMService;
-import org.alfresco.service.cmr.avm.VersionDescriptor;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.wcm.sandbox.SandboxConstants;
 import org.alfresco.wcm.sandbox.SandboxService;
+import org.alfresco.wcm.sandbox.SandboxVersion;
 import org.alfresco.wcm.util.WCMUtil;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
@@ -199,7 +199,7 @@ public class UISandboxSnapshots extends SelfRenderingComponent
             out.write("</th></tr>");
 
             // get the list of snapshots we can potentially display
-            List<VersionDescriptor> versions;
+            List<SandboxVersion> versions;
             String dateFilter = getDateFilter();
             if (dateFilter == null || dateFilter.equals(FILTER_DATE_ALL))
             {
@@ -249,19 +249,19 @@ public class UISandboxSnapshots extends SelfRenderingComponent
             Map requestMap = context.getExternalContext().getRequestMap();
             for (int i = versions.size() - 1; i >= 0; i--) // reverse order
             {
-                VersionDescriptor item = versions.get(i);
+                SandboxVersion item = versions.get(i);
 
                 // only display snapshots with a valid tag - others are system generated snapshots
-                if (item.getTag() != null && item.getVersionID() != 0)
+                if (item.getTag() != null && item.getVersion() != 0)
                 {
-                    int version = item.getVersionID();
+                    int version = item.getVersion();
 
                     out.write("<tr><td>");
                     out.write(Utils.encode(item.getTag()));
                     out.write("</td><td>");
                     out.write(item.getDescription() != null ? Utils.encode(item.getDescription()) : "");
                     out.write("</td><td>");
-                    out.write(df.format(new Date(item.getCreateDate())));
+                    out.write(df.format(item.getCreatedDate()));
                     out.write("</td><td>");
                     out.write(Utils.encode(item.getCreator()));
                     out.write("</td><td>");
@@ -289,7 +289,7 @@ public class UISandboxSnapshots extends SelfRenderingComponent
                         action = createAction(context, sandbox, ACT_SNAPSHOT_REVERT, "/images/icons/revert.gif", "#{AVMBrowseBean.revertSnapshot}", null, null, params);
                     }
 
-                    requestMap.put(REQUEST_SNAPVERSION, Integer.toString(item.getVersionID()));
+                    requestMap.put(REQUEST_SNAPVERSION, Integer.toString(item.getVersion()));
                     Utils.encodeRecursive(context, action);
 
                     // deploy action (if there are deployto servers specified)

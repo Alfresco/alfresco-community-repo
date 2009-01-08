@@ -693,7 +693,7 @@ public class SandboxServiceImpl implements SandboxService
     /* (non-Javadoc)
      * @see org.alfresco.wcm.sandbox.SandboxService#listSnapshots(java.lang.String, boolean)
      */
-    public List<VersionDescriptor> listSnapshots(String sbStoreId, boolean includeSystemGenerated)
+    public List<SandboxVersion> listSnapshots(String sbStoreId, boolean includeSystemGenerated)
     {
         ParameterCheck.mandatoryString("sbStoreId", sbStoreId);
         
@@ -710,7 +710,7 @@ public class SandboxServiceImpl implements SandboxService
     /* (non-Javadoc)
      * @see org.alfresco.wcm.sandbox.SandboxService#listSnapshots(java.lang.String, java.util.Date, java.util.Date, boolean)
      */
-    public List<VersionDescriptor> listSnapshots(String sbStoreId, Date from, Date to, boolean includeSystemGenerated)
+    public List<SandboxVersion> listSnapshots(String sbStoreId, Date from, Date to, boolean includeSystemGenerated)
     {
         ParameterCheck.mandatoryString("sbStoreId", sbStoreId);
         
@@ -724,9 +724,9 @@ public class SandboxServiceImpl implements SandboxService
         return listSnapshots(versionsToFilter, includeSystemGenerated);
     }
         
-    private List<VersionDescriptor> listSnapshots(List<VersionDescriptor> versionsToFilter, boolean includeSystemGenerated)
+    private List<SandboxVersion> listSnapshots(List<VersionDescriptor> versionsToFilter, boolean includeSystemGenerated)
     {
-        List<VersionDescriptor> versions = new ArrayList<VersionDescriptor>(versionsToFilter.size());
+        List<SandboxVersion> versions = new ArrayList<SandboxVersion>(versionsToFilter.size());
         
         for (int i = versionsToFilter.size() - 1; i >= 0; i--) // reverse order
         {
@@ -735,7 +735,7 @@ public class SandboxServiceImpl implements SandboxService
             // only display snapshots with a valid tag - others are system generated snapshots
             if ((includeSystemGenerated == true) || ((item.getTag() != null) && (item.getVersionID() != 0)))
             {
-                versions.add(item);
+                versions.add(new SandboxVersionImpl(item));
             }
         }
         

@@ -38,7 +38,6 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.avm.AVMService;
-import org.alfresco.service.cmr.avm.VersionDescriptor;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.security.AuthenticationService;
@@ -1221,7 +1220,7 @@ public class SandboxServiceImplTest extends TestCase
         String stagingSandboxPath = sbInfo.getSandboxRootPath() + "/" + webApp;
         assertEquals(0, assetService.listAssets(stagingSandboxId, -1, stagingSandboxPath, false).size());
         
-        List<VersionDescriptor> sbVersions = sbService.listSnapshots(stagingSandboxId, fromDate, new Date(), false);
+        List<SandboxVersion> sbVersions = sbService.listSnapshots(stagingSandboxId, fromDate, new Date(), false);
         assertEquals(0, sbVersions.size());
         
         // submit (new assets) !
@@ -1289,7 +1288,7 @@ public class SandboxServiceImplTest extends TestCase
         String stagingSandboxPath = sbInfo.getSandboxRootPath() + "/" + webApp;
         assertEquals(0, assetService.listAssets(stagingSandboxId, -1, stagingSandboxPath, false).size());
         
-        List<VersionDescriptor> sbVersions = sbService.listSnapshots(stagingSandboxId, fromDate, new Date(), false);
+        List<SandboxVersion> sbVersions = sbService.listSnapshots(stagingSandboxId, fromDate, new Date(), false);
         assertEquals(0, sbVersions.size());
         
         // submit (new assets) !
@@ -1378,8 +1377,8 @@ public class SandboxServiceImplTest extends TestCase
         
         // revert to snapshot ...
         
-        VersionDescriptor version = sbVersions.get(1);
-        int versionId = version.getVersionID();
+        SandboxVersion version = sbVersions.get(1);
+        int versionId = version.getVersion();
         
         sbService.revertSnapshot(stagingSandboxId, versionId);
         

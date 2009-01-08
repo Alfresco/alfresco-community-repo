@@ -322,9 +322,9 @@ public interface SandboxService
      *  
      * @param sbStoreId                 staging sandbox store id
      * @param includeSystemGenerated    if false will ignore system generated snapshots else true to get all snapshots
-     * @return List<VersionDescriptor>  list of AVM version descriptors
+     * @return List<SandboxVersion>     list of sandbox versions
      */
-    public List<VersionDescriptor> listSnapshots(String sbStoreId, boolean includeSystemGenerated);
+    public List<SandboxVersion> listSnapshots(String sbStoreId, boolean includeSystemGenerated);
     
     /**
      * List snapshots (sandbox versions) for the given sandbox between given dates (ie. for staging sandbox)
@@ -335,8 +335,7 @@ public interface SandboxService
      * @param from                      from date
      * @param to                        to date
      * @param includeSystemGenerated    if false will ignore system generated snapshots else true to get all snapshots
-     * @return List<VersionDescriptor>  list of AVM version descriptors
+     * @return List<SandboxVersion>     list of sandbox versions
      */
-    public List<VersionDescriptor> listSnapshots(String sbStoreId, Date from, Date to, boolean includeSystemGenerated);
-    
+    public List<SandboxVersion> listSnapshots(String sbStoreId, Date from, Date to, boolean includeSystemGenerated);
 }

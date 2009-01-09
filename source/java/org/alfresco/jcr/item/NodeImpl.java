@@ -241,22 +241,48 @@ public class NodeImpl extends ItemImpl implements Node
         Set<QName> aspects = nodeService.getAspects(nodeRef);
         ClassDefinition classDef = dictionaryService.getAnonymousType(type, aspects);
         Map<QName, ChildAssociationDefinition> childAssocs = classDef.getChildAssociations();
+        
         for (ChildAssociationDefinition childAssocDef : childAssocs.values())
         {
             QName targetClass = childAssocDef.getTargetClass().getName();
-            if (dictionaryService.isSubClass(nodeType, targetClass))
+            if (nodeType.equals(targetClass))
             {
-                if (nodeTypeChildAssocDef != null)
-                {
-                    throw new AlfrescoRuntimeException("Cannot determine child association for node type '" + nodeType + " within parent " + nodeRef);
-                }
+                // exact match
                 nodeTypeChildAssocDef = childAssocDef;
+                break;
             }
         }
+        
+        if (nodeTypeChildAssocDef == null)
+        {
+            for (ChildAssociationDefinition childAssocDef : childAssocs.values())
+            {
+                QName targetClass = childAssocDef.getTargetClass().getName();
+                if (dictionaryService.isSubClass(nodeType, targetClass))
+                {
+                    if (childAssocDef.getSourceClass().getName().equals(type))
+                    {
+                        // matching parent type
+                        nodeTypeChildAssocDef = childAssocDef;
+                        break;
+                    }
+                    
+                    if (nodeTypeChildAssocDef != null)
+                    {
+                        // more than one match
+                        throw new AlfrescoRuntimeException("Cannot determine child association for node type '" + nodeType + " within parent " + nodeRef);
+                    }
+                    
+                    nodeTypeChildAssocDef = childAssocDef;
+                }
+            }
+        }
+        
         if (nodeTypeChildAssocDef == null)
         {
             throw new AlfrescoRuntimeException("Cannot determine child association for node type '" + nodeType + " within parent " + nodeRef);
         }
+        
         return nodeTypeChildAssocDef;
     }
     

@@ -10,6 +10,7 @@
         <property name="models">
             <list>
                 <value>org/alfresco/jcr/test/testModel.xml</value>
+                <value>org/alfresco/jcr/test/myModel.xml</value>
             </list>
         </property>
     </bean>

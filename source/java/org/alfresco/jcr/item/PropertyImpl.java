@@ -24,8 +24,10 @@
  */
 package org.alfresco.jcr.item;
 
+import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -49,18 +51,21 @@ import org.alfresco.jcr.api.JCRNodeRef;
 import org.alfresco.jcr.dictionary.DataTypeMap;
 import org.alfresco.jcr.dictionary.PropertyDefinitionImpl;
 import org.alfresco.jcr.util.JCRProxyFactory;
-import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.content.encoding.ContentCharsetFinder;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.InvalidTypeException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.repository.datatype.TypeConversionException;
 import org.alfresco.service.namespace.QName;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 
 /**
@@ -70,6 +75,7 @@ import org.alfresco.service.namespace.QName;
  */
 public class PropertyImpl extends ItemImpl implements Property
 {
+    private static Log logger = LogFactory.getLog(PropertyImpl.class);	
 
     private NodeImpl node;
     private QName name;
@@ -603,9 +609,34 @@ public class PropertyImpl extends ItemImpl implements Property
             {
                 ContentService contentService = session.getRepositoryImpl().getServiceRegistry().getContentService();
                 ContentWriter writer = contentService.getWriter(node.getNodeRef(), name, true);
-                writer.setMimetype(MimetypeMap.MIMETYPE_BINARY);
-                writer.putContent((InputStream)value);
+                
+                MimetypeService mimetypeService = session.getRepositoryImpl().getServiceRegistry().getMimetypeService();
+                
+                String guessedMimetype = mimetypeService.guessMimetype(node.getName());
+                writer.setMimetype(guessedMimetype);
+                
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("node pathname: " + node.getName());
+                    logger.debug("guessed mime type: " + guessedMimetype);
+                }
+                
+                BufferedInputStream bis = new BufferedInputStream((InputStream)value);
+                ContentCharsetFinder charsetFinder = mimetypeService.getContentCharsetFinder();
+                Charset encoding = charsetFinder.getCharset(bis, guessedMimetype);
+                writer.setEncoding(encoding.name());
+                
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("setEncoding: " + encoding.name());
+                }
+                
+                writer.putContent(bis);
             }
+	        catch(RepositoryException e)
+	        {
+                throw new ValueFormatException(e);
+	        }
             catch(InvalidTypeException e)
             {
                 throw new ValueFormatException(e);

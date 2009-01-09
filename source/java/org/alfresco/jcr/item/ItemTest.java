@@ -24,6 +24,8 @@
  */
 package org.alfresco.jcr.item;
 
+import java.io.InputStream;
+
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
@@ -51,6 +53,8 @@ import org.alfresco.service.cmr.version.VersionService;
 public class ItemTest extends BaseJCRTest
 {
     protected Session session;
+    
+    private static final String QUICK_TXT = "The quick brown fox jumps over the lazy dog";
     
     @Override
     protected void setUp() throws Exception
@@ -161,11 +165,10 @@ public class ItemTest extends BaseJCRTest
             //
             // write some content to new node
             //
-            content.setProperty("cm:content", "The quick brown fox jumps over the lazy dog");
+            content.setProperty("cm:content", QUICK_TXT);
             
             // use Alfresco native API to set mimetype
             ServiceRegistry registry = (ServiceRegistry)applicationContext.getBean(ServiceRegistry.SERVICE_REGISTRY);
-            
             setMimetype(registry, content, "cm:content", MimetypeMap.MIMETYPE_TEXT_PLAIN);
             
             // enable versioning capability
@@ -228,6 +231,100 @@ public class ItemTest extends BaseJCRTest
         }
     }
     
+    public void test_JAWS_191() throws RepositoryException
+    {
+        SimpleCredentials user = new SimpleCredentials("admin", "admin".toCharArray());
+        
+        session = repository.login(user, "SpacesStore");
+        
+        String runid = ""+System.currentTimeMillis();
+        String pathname = "cm:JCR-"+runid+".jpg";
+        
+        String name = "JCR Sample ("+runid+")";
+        
+        try
+        {
+            Node rootNode = session.getRootNode();
+            Node companyHome = rootNode.getNode("app:company_home");
+            
+            // create the content node
+            Node content = companyHome.addNode(pathname, "cm:content");
+            content.setProperty("cm:name", name);
+
+            // add titled aspect (for Web Client display)
+            content.addMixin("cm:titled");
+            content.setProperty("cm:title", name);
+            content.setProperty("cm:description", name);
+            
+            InputStream is = getClass().getClassLoader().getResourceAsStream("org/alfresco/jcr/test/testQuick.jpg");
+            assertNotNull(is);
+            
+            //
+            // write some content to new node
+            //
+            content.setProperty("cm:content", is);
+            
+            // save changes
+            session.save();
+            
+            content = companyHome.getNode(pathname);
+            
+            // use Alfresco native API to get content data (for mimetype / encoding)
+            ServiceRegistry registry = (ServiceRegistry)applicationContext.getBean(ServiceRegistry.SERVICE_REGISTRY);
+            ContentData contentData = getContentData(registry, content);
+            
+            assertEquals(MimetypeMap.MIMETYPE_IMAGE_JPEG, contentData.getMimetype());
+            assertEquals("UTF-8", contentData.getEncoding());
+        }
+        finally
+        {
+            if (session != null) { session.logout(); }
+        }
+        
+        session = repository.login(user, "SpacesStore");
+        
+        runid = ""+System.currentTimeMillis();
+        pathname = "cm:JCR-"+runid+".txt";
+        
+        name = "JCR Sample ("+runid+")";
+        
+        try
+        {
+            Node rootNode = session.getRootNode();
+            Node companyHome = rootNode.getNode("app:company_home");
+            
+            // create the content node
+            Node content = companyHome.addNode(pathname, "cm:content");
+            content.setProperty("cm:name", name);
+
+            // add titled aspect (for Web Client display)
+            content.addMixin("cm:titled");
+            content.setProperty("cm:title", name);
+            content.setProperty("cm:description", name);
+            
+            //
+            // write some content to new node
+            //
+            content.setProperty("cm:content", QUICK_TXT);
+            
+            // save changes
+            session.save();
+            
+            content = companyHome.getNode(pathname);
+            
+            // use Alfresco native API to get content data (for mimetype / encoding)
+            ServiceRegistry registry = (ServiceRegistry)applicationContext.getBean(ServiceRegistry.SERVICE_REGISTRY);
+            ContentData contentData = getContentData(registry, content);
+            
+            assertEquals(MimetypeMap.MIMETYPE_TEXT_PLAIN, contentData.getMimetype());
+            assertEquals("UTF-8", contentData.getEncoding());
+        }
+        finally
+        {
+            if (session != null) { session.logout(); }
+        }
+    }
+    
     private static void setMimetype(ServiceRegistry registry, Node node, String propertyName, String mimeType) throws RepositoryException
     {
         // convert the JCR Node to an Alfresco Node Reference
@@ -240,5 +337,15 @@ public class ItemTest extends BaseJCRTest
         // update the Mimetype
         content = ContentData.setMimetype(content, mimeType);
         nodeService.setProperty(nodeRef, ContentModel.PROP_CONTENT, content);
+    }
+    
+    private static ContentData getContentData(ServiceRegistry registry, Node node) throws RepositoryException
+    {
+        // convert the JCR Node to an Alfresco Node Reference
+        NodeRef nodeRef = JCRNodeRef.getNodeRef(node);
+    
+        // retrieve the Content Property (represented as a ContentData object in Alfresco)
+        NodeService nodeService = registry.getNodeService();
+        return (ContentData)nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
     }
 }

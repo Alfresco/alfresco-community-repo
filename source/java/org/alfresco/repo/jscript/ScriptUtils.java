@@ -26,6 +26,10 @@ package org.alfresco.repo.jscript;
 
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.module.ModuleService;
+import org.alfresco.service.cmr.module.ModuleDetails;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 
 /**
  * Place for general and miscellenous utility functions not already found in generic JavaScript. 
@@ -88,5 +92,22 @@ public final class ScriptUtils extends BaseScopableProcessorExtension
     public boolean toBoolean(String booleanString)
     {
         return Boolean.parseBoolean(booleanString);
+    }
+    
+    /**
+     * Function to check if a module is installed
+     * 
+     * @param moduleName	module name (e.g. "org.alfresco.module.foo")
+     * @return boolean      true if the module is currently installed
+     */
+    public boolean moduleInstalled(String moduleName)
+    {
+        ModuleService moduleService = (ModuleService)this.services.getService(QName.createQName(NamespaceService.ALFRESCO_URI, "ModuleService"));
+        if (moduleService != null)
+        {
+            ModuleDetails moduleDetail = (ModuleDetails)moduleService.getModule(moduleName);
+            return (moduleDetail != null);
+        }
+        return false;
     }
 }

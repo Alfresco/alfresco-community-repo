@@ -360,7 +360,7 @@
                 <map>
                     <entry key="Windows.*">
                         <list>
-                            <value>imconvert</value>
+                            <value>${img.win.exe}</value>
                             <value>${source}</value>
                             <value>SPLIT:${options}</value>
                             <value>${target}</value>
@@ -368,7 +368,7 @@
                     </entry>
                     <entry key=".*">
                         <list>
-                            <value>convert</value>
+                            <value>${img.exe}</value>
                             <value>${source}</value>
                             <value>SPLIT:${options}</value>
                             <value>${target}</value>
@@ -376,6 +376,19 @@
                     </entry>
                 </map>
             </property>
+  		    <property name="processProperties">
+    	        <map>
+      	            <entry key="MAGICK_HOME">
+                        <value>${img.root}</value>
+         	        </entry>
+      	            <entry key="DYLD_LIBRARY_PATH">
+                        <value>${img.dyn}</value>
+         	        </entry>
+      	            <entry key="LD_LIBRARY_PATH">
+                        <value>${img.dyn}</value>
+         	        </entry>
+		        </map>
+      		</property>
             <property name="defaultProperties">
                 <props>
                     <prop key="options"></prop>
@@ -389,13 +402,13 @@
                 <map>
                     <entry key="Windows.*">
                         <list>
-                            <value>imconvert</value>
+                            <value>${img.win.exe}</value>
                             <value>-version</value>
                         </list>
                     </entry>
                     <entry key=".*">
                         <list>
-                            <value>convert</value>
+                            <value>${img.exe}</value>
                             <value>-version</value>
                         </list>
                     </entry>

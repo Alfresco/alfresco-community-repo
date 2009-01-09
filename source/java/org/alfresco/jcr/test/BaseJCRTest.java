@@ -45,7 +45,7 @@ public class BaseJCRTest extends TestCase
     protected Repository repository;
     protected StoreRef storeRef;
     
-    private static ApplicationContext applicationContext = new ClassPathXmlApplicationContext("classpath:org/alfresco/jcr/test/test-context.xml");
+    protected static ApplicationContext applicationContext = new ClassPathXmlApplicationContext("classpath:org/alfresco/jcr/test/test-context.xml");
     
     protected String getWorkspace()
     {

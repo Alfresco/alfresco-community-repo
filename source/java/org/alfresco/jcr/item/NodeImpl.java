@@ -1035,7 +1035,15 @@ public class NodeImpl extends ItemImpl implements Node
         // construct version
         VersionService versionService = session.getRepositoryImpl().getServiceRegistry().getVersionService();
         org.alfresco.service.cmr.version.VersionHistory versionHistory = versionService.getVersionHistory(nodeRef);
-        org.alfresco.service.cmr.version.Version version = versionService.getCurrentVersion(nodeRef);
+        
+        // This patch halves the time this method takes to execute. Implements ALFCOM-1507
+        // org.alfresco.service.cmr.version.Version version = versionService.getCurrentVersion(nodeRef);
+        org.alfresco.service.cmr.version.Version version = null;
+        if (versionHistory != null)
+        {
+            String versionLabel = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_VERSION_LABEL);
+            version = versionHistory.getVersion(versionLabel);
+        }        
         return new VersionImpl(new VersionHistoryImpl(session, versionHistory), version).getProxy();
     }
 

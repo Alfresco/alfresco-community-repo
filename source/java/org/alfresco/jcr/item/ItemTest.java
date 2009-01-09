@@ -28,8 +28,19 @@ import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.SimpleCredentials;
+import javax.jcr.version.Version;
+import javax.jcr.version.VersionHistory;
+import javax.jcr.version.VersionIterator;
 
+import org.alfresco.jcr.api.JCRNodeRef;
 import org.alfresco.jcr.test.BaseJCRTest;
+import org.alfresco.model.ContentModel;
+import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.version.VersionService;
 
 
 /**
@@ -124,5 +135,110 @@ public class ItemTest extends BaseJCRTest
         {
             if (session != null) { session.logout(); }
         }
+    }
+    
+    public void test_ALFCOM_1507() throws RepositoryException
+    {
+        SimpleCredentials user = new SimpleCredentials("admin", "admin".toCharArray());
+        
+        session = repository.login(user, "SpacesStore");
+        
+        try
+        {
+            Node rootNode = session.getRootNode();
+            Node companyHome = rootNode.getNode("app:company_home");
+            
+            // create the content node
+            String name = "JCR sample (" + System.currentTimeMillis() + ")";
+            Node content = companyHome.addNode("cm:" + name, "cm:content");
+            content.setProperty("cm:name", name);
+
+            // add titled aspect (for Web Client display)
+            content.addMixin("cm:titled");
+            content.setProperty("cm:title", name);
+            content.setProperty("cm:description", name);
+
+            //
+            // write some content to new node
+            //
+            content.setProperty("cm:content", "The quick brown fox jumps over the lazy dog");
+            
+            // use Alfresco native API to set mimetype
+            ServiceRegistry registry = (ServiceRegistry)applicationContext.getBean(ServiceRegistry.SERVICE_REGISTRY);
+            
+            setMimetype(registry, content, "cm:content", MimetypeMap.MIMETYPE_TEXT_PLAIN);
+            
+            // enable versioning capability
+            content.addMixin("mix:versionable");
+            
+            NodeRef nodeRef = JCRNodeRef.getNodeRef(content);
+            
+            VersionService versionService = registry.getVersionService();
+            NodeService nodeService = registry.getNodeService();
+            
+            for (int i = 0; i <= 19; i++)
+            {
+                content.checkout();
+                
+                content.setProperty("cm:title", "v"+i);
+                
+                content.checkin();
+                
+                VersionHistory vh = content.getVersionHistory();
+                VersionIterator vi = vh.getAllVersions();
+                assertEquals(i+1, vi.getSize());
+                
+                Version v = content.getBaseVersion();
+                assertEquals("1."+i, v.getName());
+                
+                org.alfresco.service.cmr.version.VersionHistory versionHistory = versionService.getVersionHistory(nodeRef);
+                
+                // Before
+                long startTime = System.currentTimeMillis(); 
+                
+                org.alfresco.service.cmr.version.Version version = versionService.getCurrentVersion(nodeRef);
+                
+                long beforeDuration = System.currentTimeMillis() - startTime;
+                
+                assertEquals("1."+i, version.getVersionLabel());
+                
+                // After
+                
+                startTime = System.currentTimeMillis();
+                
+                if (versionHistory != null)
+                {
+                    String versionLabel = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_VERSION_LABEL);
+                    version = versionHistory.getVersion(versionLabel);
+                }  
+                
+                long afterDuration = System.currentTimeMillis() - startTime;
+                
+                assertEquals("1."+i, version.getVersionLabel());
+                
+                System.out.println("getBaseVersion - get current version (BEFORE: " + beforeDuration + "ms, AFTER: " + afterDuration + "ms) ");
+            }
+            
+            // save changes
+            session.save();
+        }
+        finally
+        {
+            if (session != null) { session.logout(); }
+        }
+    }
+    
+    private static void setMimetype(ServiceRegistry registry, Node node, String propertyName, String mimeType) throws RepositoryException
+    {
+        // convert the JCR Node to an Alfresco Node Reference
+        NodeRef nodeRef = JCRNodeRef.getNodeRef(node);
+    
+        // retrieve the Content Property (represented as a ContentData object in Alfresco)
+        NodeService nodeService = registry.getNodeService();
+        ContentData content = (ContentData)nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
+        
+        // update the Mimetype
+        content = ContentData.setMimetype(content, mimeType);
+        nodeService.setProperty(nodeRef, ContentModel.PROP_CONTENT, content);
     }
 }

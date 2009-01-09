@@ -46,7 +46,7 @@ public class InviteContentUsersWizard extends BaseInviteUsersWizard
    {
       if (this.contentPermissions == null)
       {
-         this.contentPermissions = this.permissionService.getSettablePermissions(getNode().getType());
+         this.contentPermissions = this.getPermissionService().getSettablePermissions(getNode().getType());
       }
        
       return this.contentPermissions;

@@ -272,9 +272,59 @@ public class WebDAVServlet extends HttpServlet
         NamespaceService namespaceService = (NamespaceService) context.getBean("NamespaceService");
         
         // Create the WebDAV helper
-
         m_davHelper = new WebDAVHelper(m_serviceRegistry, authService);
         
+        
+        String storeValue = context.getServletContext().getInitParameter(org.alfresco.repo.webdav.WebDAVServlet.KEY_STORE);
+        if (storeValue == null)
+        {
+            throw new ServletException("Device missing init value: " + KEY_STORE);
+        }
+
+        m_rootPath = context.getServletContext().getInitParameter(org.alfresco.repo.webdav.WebDAVServlet.KEY_ROOT_PATH);
+        if (m_rootPath == null)
+        {
+            throw new ServletException("Device missing init value: " + KEY_ROOT_PATH);
+        }
+        
+        // Initialize the root node
+        m_rootNodeRef = getRootNode(storeValue, m_rootPath, context, nodeService, searchService,
+				namespaceService, m_transactionService);
+        
+        
+        // Create the WebDAV methods table
+        
+        m_davMethods = new Hashtable<String,Class>();
+        
+        m_davMethods.put(WebDAV.METHOD_PROPFIND, PropFindMethod.class);
+        m_davMethods.put(WebDAV.METHOD_COPY, CopyMethod.class);
+        m_davMethods.put(WebDAV.METHOD_DELETE, DeleteMethod.class);
+        m_davMethods.put(WebDAV.METHOD_GET, GetMethod.class);
+        m_davMethods.put(WebDAV.METHOD_HEAD, HeadMethod.class);
+        m_davMethods.put(WebDAV.METHOD_LOCK, LockMethod.class);
+        m_davMethods.put(WebDAV.METHOD_MKCOL, MkcolMethod.class);
+        m_davMethods.put(WebDAV.METHOD_MOVE, MoveMethod.class);
+        m_davMethods.put(WebDAV.METHOD_OPTIONS, OptionsMethod.class);
+        m_davMethods.put(WebDAV.METHOD_POST, PostMethod.class);
+        m_davMethods.put(WebDAV.METHOD_PUT, PutMethod.class);
+        m_davMethods.put(WebDAV.METHOD_UNLOCK, UnlockMethod.class);
+    }
+    
+	/**
+	 * @param config
+	 * @param context
+	 * @param nodeService
+	 * @param searchService
+	 * @param namespaceService
+	 */
+	public static NodeRef getRootNode(String storeValue, String m_rootPath,
+			WebApplicationContext context, NodeService nodeService,
+			SearchService searchService, NamespaceService namespaceService,
+			TransactionService m_transactionService)
+			throws ServletException {
+		
+		NodeRef m_rootNodeRef = null;
+		
         // Initialize the root node
         
         ServerConfigurationBean fileSrvConfig = (ServerConfigurationBean) context.getBean(ServerConfigurationBean.SERVER_CONFIGURATION);
@@ -285,6 +335,7 @@ public class WebDAVServlet extends HttpServlet
 
         AuthenticationComponent authComponent = (AuthenticationComponent) context.getBean("authenticationComponent");
         authComponent.setCurrentUser( authComponent.getSystemUserName());
+        
         
         // Wrap the initialization in a transaction
         
@@ -297,9 +348,7 @@ public class WebDAVServlet extends HttpServlet
             if ( tx != null)
                 tx.begin();
             
-            // Get the store
-            
-            String storeValue = config.getInitParameter(KEY_STORE);
+            // Get the store            
             if (storeValue == null)
             {
                 throw new ServletException("Device missing init value: " + KEY_STORE);
@@ -314,9 +363,7 @@ public class WebDAVServlet extends HttpServlet
             }
             NodeRef storeRootNodeRef = nodeService.getRootNode(storeRef);
             
-            // Get the root path
-
-            m_rootPath = config.getInitParameter(KEY_ROOT_PATH);
+            // Check the root path
             if (m_rootPath == null)
             {
                 throw new ServletException("Device missing init value: " + KEY_ROOT_PATH);
@@ -342,6 +389,7 @@ public class WebDAVServlet extends HttpServlet
             {
                 // we found a node
                 m_rootNodeRef = nodeRefs.get(0);
+                
             }
             
             // Commit the transaction
@@ -359,21 +407,8 @@ public class WebDAVServlet extends HttpServlet
             authComponent.clearCurrentSecurityContext();
         }
         
-        // Create the WebDAV methods table
+        return m_rootNodeRef;
         
-        m_davMethods = new Hashtable<String,Class>();
-        
-        m_davMethods.put(WebDAV.METHOD_PROPFIND, PropFindMethod.class);
-        m_davMethods.put(WebDAV.METHOD_COPY, CopyMethod.class);
-        m_davMethods.put(WebDAV.METHOD_DELETE, DeleteMethod.class);
-        m_davMethods.put(WebDAV.METHOD_GET, GetMethod.class);
-        m_davMethods.put(WebDAV.METHOD_HEAD, HeadMethod.class);
-        m_davMethods.put(WebDAV.METHOD_LOCK, LockMethod.class);
-        m_davMethods.put(WebDAV.METHOD_MKCOL, MkcolMethod.class);
-        m_davMethods.put(WebDAV.METHOD_MOVE, MoveMethod.class);
-        m_davMethods.put(WebDAV.METHOD_OPTIONS, OptionsMethod.class);
-        m_davMethods.put(WebDAV.METHOD_POST, PostMethod.class);
-        m_davMethods.put(WebDAV.METHOD_PUT, PutMethod.class);
-        m_davMethods.put(WebDAV.METHOD_UNLOCK, UnlockMethod.class);
-    }
+	}
+    
 }

@@ -271,9 +271,45 @@ public class ExternalAccessServlet extends BaseServlet
          {
             if (args.length > 1)
             {
+            	String currentNodeId = null;
+            	
+                if (args[1].equals(WebDAVServlet.WEBDAV_PREFIX))
+                {
+                	// Drop the first argument
+                    String[] args2 = new String[ args.length -1 ];
+                    for (int i=1; i<args.length; i++)
+                    {
+                       args2[i-1] = args[i];
+                       
+                       if (logger.isDebugEnabled())
+                       {
+                           logger.debug("Added segment " + args2[i-1]);
+                       }
+                    }
+                	
+                	NodeRef nodeRef = resolveWebDAVPath(fc, args2);
+                	currentNodeId = nodeRef.getId();
+                }
+                else
+                {
+                	currentNodeId = args[1];
+                }
+                
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("currentNodeId: " + currentNodeId);
+                }
+            	
                // if a GUID was passed, use it to init the NavigationBean current context
                NavigationBean navigator = (NavigationBean)FacesHelper.getManagedBean(fc, NavigationBean.BEAN_NAME);
-               navigator.setCurrentNodeId(args[1]);
+               navigator.setCurrentNodeId(currentNodeId);
+               browseBean.setupSpaceAction(currentNodeId, true);
+               
+               // setup the Document on the browse bean
+               // avoid java.lang.NullPointerException
+               // at org.alfresco.web.bean.content.InviteContentUsersWizard.getPermissionsForType(InviteContentUsersWizard.java:49)
+               // at org.alfresco.web.bean.wizard.BaseInviteUsersWizard.getRoles(BaseInviteUsersWizard.java:562)
+               browseBean.setupContentAction(currentNodeId, true);
             }
             
             // set the external container session flag so that a plain container gets used

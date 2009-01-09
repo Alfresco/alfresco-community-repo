@@ -24,102 +24,210 @@
  */
 package org.alfresco.repo.cmis.ws;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.security.auth.callback.Callback;
-import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.callback.UnsupportedCallbackException;
+import java.util.List;
 
 import junit.framework.TestCase;
 
-import org.alfresco.repo.security.authentication.AuthenticationComponent;
-import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.ResultSet;
-import org.apache.cxf.binding.soap.saaj.SAAJOutInterceptor;
-import org.apache.cxf.endpoint.Client;
-import org.apache.cxf.frontend.ClientProxy;
-import org.apache.cxf.ws.security.wss4j.WSS4JOutInterceptor;
-import org.apache.ws.security.WSConstants;
-import org.apache.ws.security.WSPasswordCallback;
-import org.apache.ws.security.handler.WSHandlerConstants;
-import org.springframework.context.support.FileSystemXmlApplicationContext;
+import org.alfresco.cmis.dictionary.CMISMapping;
 
 /**
  * @author Michael Shavnev
+ * @author Alexander Tsvetkov
+ * 
  */
+
 public abstract class AbstractServiceTest extends TestCase
 {
-    protected ServiceRegistry serviceRegistry;
-    protected static NodeRef ALFRESCO_TUTORIAL_NODE_REF = null;
-    protected static NodeRef COMPANY_HOME_NODE_REF = null;
+    // protected ServiceRegistry serviceRegistry;
 
-    protected static FileSystemXmlApplicationContext fContext = null;
+    public String companyHomeId;
+    public String repositoryId;
+
+    protected String documentId;
+    protected String folderId;
+    protected String documentName;
+    protected String folderName;
+
+    protected ObjectFactory cmisObjectFactory = new ObjectFactory();
 
     protected Object servicePort = null;
+    protected CmisServiceTestHelper helper;
+
+    private static boolean testAsUser = false;
+
+    protected abstract Object getServicePort();
 
     @Override
     protected void setUp() throws Exception
     {
         super.setUp();
-        if (fContext == null)
-        {
-            fContext = new FileSystemXmlApplicationContext("classpath:alfresco/application-context.xml");
-
-            AuthenticationComponent authenticationComponent = (AuthenticationComponent) fContext.getBean("authenticationComponent");
-            authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
-
-            serviceRegistry = (ServiceRegistry) fContext.getBean(ServiceRegistry.SERVICE_REGISTRY);
-            ResultSet resultSet = serviceRegistry.getSearchService().query(new StoreRef("workspace://SpacesStore"), "lucene", "@cm\\:name:Alfresco-Tutorial.pdf");
-            ALFRESCO_TUTORIAL_NODE_REF = resultSet.getNodeRef(0);
-
-            resultSet = serviceRegistry.getSearchService().query(new StoreRef("workspace://SpacesStore"), "lucene", "@cm\\:name:Company Home");
-            COMPANY_HOME_NODE_REF = resultSet.getNodeRef(0);
-
-            authenticationComponent.clearCurrentSecurityContext();
-        }
     }
-
 
     public AbstractServiceTest()
     {
-        servicePort = getServicePort();
-
-        Map<String, Object> wss4jOutInterceptorProp = new HashMap<String, Object>();
-        wss4jOutInterceptorProp.put(WSHandlerConstants.ACTION, WSHandlerConstants.USERNAME_TOKEN + " " + WSHandlerConstants.TIMESTAMP);
-
-        wss4jOutInterceptorProp.put(WSHandlerConstants.USER, getUserName());
-        wss4jOutInterceptorProp.put(WSHandlerConstants.PASSWORD_TYPE, WSConstants.PW_DIGEST);
-
-        wss4jOutInterceptorProp.put(WSHandlerConstants.PW_CALLBACK_REF, new CallbackHandler()
+        super();
+        if (testAsUser)
         {
-            public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException
+            helper = CmisServiceTestHelper.getInstance(CmisServiceTestHelper.USERNAME_USER1, CmisServiceTestHelper.PASSWORD_USER1);
+            servicePort = getServicePort();
+            helper.authenticateServicePort(servicePort, CmisServiceTestHelper.USERNAME_USER1, CmisServiceTestHelper.PASSWORD_USER1);
+
+            repositoryId = helper.getRepositoryId();
+            companyHomeId = helper.getCompanyHomeId(repositoryId);
+            // Users could not create any content in Company Home, they should create test content in Users Hone folder
+            companyHomeId = helper.getUserHomeId(repositoryId, companyHomeId);
+        }
+        else
+        {
+            helper = CmisServiceTestHelper.getInstance();
+            servicePort = getServicePort();
+            helper.authenticateServicePort(servicePort, CmisServiceTestHelper.USERNAME_ADMIN, CmisServiceTestHelper.PASSWORD_ADMIN);
+
+            repositoryId = helper.getRepositoryId();
+            companyHomeId = helper.getCompanyHomeId(repositoryId);
+        }
+    }
+
+    public AbstractServiceTest(String testCase, String userName, String password)
+    {
+        super(testCase);
+        helper = CmisServiceTestHelper.getInstance(userName, password);
+        servicePort = getServicePort();
+        helper.authenticateServicePort(servicePort, userName, password);
+        repositoryId = helper.getRepositoryId();
+        companyHomeId = helper.getCompanyHomeId(repositoryId);
+        // Users could not create any content in Company Home, they should create test content in Users Home folder
+        companyHomeId = helper.getUserHomeId(repositoryId, companyHomeId);
+
+    }
+
+    public String getObjectName(GetPropertiesResponse response)
+    {
+        String property = null;
+
+        if (response != null && response.getObject() != null)
+        {
+            CmisObjectType object = response.getObject();
+            CmisPropertiesType properties = object.getProperties();
+            property = (String) PropertyUtil.getProperty(properties, CMISMapping.PROP_NAME);
+        }
+        else
+        {
+            fail("Response has no results.");
+        }
+        return property;
+    }
+
+    public String getPropertyValue(GetPropertiesResponse response, String propertyName)
+    {
+        String property = null;
+
+        if (response != null && response.getObject() != null)
+        {
+            CmisObjectType object = response.getObject();
+            CmisPropertiesType properties = object.getProperties();
+            if (PropertyUtil.getProperty(properties, propertyName) != null)
             {
-                WSPasswordCallback pc = (WSPasswordCallback) callbacks[0];
-                pc.setPassword(getPassword());
+                property = (String) PropertyUtil.getProperty(properties, propertyName);
             }
-        });
-
-        WSS4JOutInterceptor wss4jOutInterceptor = new WSS4JOutInterceptor(wss4jOutInterceptorProp);
-
-        Client client = ClientProxy.getClient(servicePort);
-        client.getEndpoint().getOutInterceptors().add(new SAAJOutInterceptor());
-        client.getEndpoint().getOutInterceptors().add(wss4jOutInterceptor);
+        }
+        else
+        {
+            fail("Response has no results.");
+        }
+        return property;
     }
 
-    protected abstract Object getServicePort();
-
-    protected String getUserName()
+    public Boolean getPropertyBooleanValue(GetPropertiesResponse response, String propertyName)
     {
-        return "admin";
+        Boolean property = null;
+
+        if (response != null && response.getObject() != null)
+        {
+            CmisObjectType object = response.getObject();
+            CmisPropertiesType properties = object.getProperties();
+            if (PropertyUtil.getProperty(properties, propertyName) != null)
+            {
+                property = (Boolean) PropertyUtil.getProperty(properties, propertyName);
+            }
+        }
+        else
+        {
+            fail("Response has no results.");
+        }
+        return property;
     }
 
-    protected String getPassword()
+    public String getObjectId(GetPropertiesResponse response)
     {
-        return "admin";
+        String property = null;
+
+        if (response != null && response.getObject() != null)
+        {
+            CmisObjectType object = response.getObject();
+            CmisPropertiesType properties = object.getProperties();
+            property = (String) PropertyUtil.getProperty(properties, CMISMapping.PROP_OBJECT_ID);
+        }
+        else
+        {
+            fail("Response has no results.");
+        }
+        return property;
+    }
+
+    public void validateResponse(List<CmisObjectType> objects)
+    {
+        for (CmisObjectType object : objects)
+        {
+            CmisPropertiesType properties = object.getProperties();
+            String name = (String) PropertyUtil.getProperty(properties, CMISMapping.PROP_NAME);
+            assertNotNull(name);
+        }
+
+    }
+
+    public boolean isExistItemWithProperty(List<CmisObjectType> objects, String propertyName, String propertyValue)
+    {
+        boolean isFound = false;
+        for (CmisObjectType object : objects)
+        {
+            CmisPropertiesType properties = object.getProperties();
+            String property = (String) PropertyUtil.getProperty(properties, propertyName);
+            if (property.equals(propertyValue))
+            {
+                isFound = true;
+            }
+        }
+        return isFound;
+    }
+
+    public void createInitialContent() throws Exception
+    {
+        // create initial content
+        documentName = "Test cmis document (" + System.currentTimeMillis() + ")";
+        documentId = helper.createDocument(documentName, companyHomeId);
+
+        folderName = "Test Cmis Folder (" + System.currentTimeMillis() + ")";
+        folderId = helper.createFolder(folderName, companyHomeId);
+    }
+
+    public void deleteInitialContent()
+    {
+        try
+        {
+            helper.deleteFolder(folderId);
+        }
+        catch (Exception e)
+        {
+        }
+
+        try
+        {
+            helper.deleteDocument(documentId);
+        }
+        catch (Exception e)
+        {
+        }
     }
 
 }

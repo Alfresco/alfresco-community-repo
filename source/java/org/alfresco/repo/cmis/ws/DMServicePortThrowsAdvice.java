@@ -31,7 +31,7 @@ import org.springframework.aop.ThrowsAdvice;
 
 /**
  * @author Dmitry Lazurkin
- *
+ * @author Dmitry Velichkevich
  */
 public class DMServicePortThrowsAdvice implements ThrowsAdvice
 {
@@ -44,7 +44,7 @@ public class DMServicePortThrowsAdvice implements ThrowsAdvice
             log.info(e);
         }
 
-        throw new PermissionDeniedException("Access denied", e);
+        throw new PermissionDeniedException("Access denied. Message: " + e.getMessage(), e);
     }
 
     public void afterThrowing(java.lang.RuntimeException e) throws RuntimeException
@@ -54,7 +54,6 @@ public class DMServicePortThrowsAdvice implements ThrowsAdvice
             log.error(e);
         }
 
-        throw new RuntimeException("Runtime error", e);
+        throw new RuntimeException("Runtime error. Message: " + e.getMessage(), e);
     }
-
 }

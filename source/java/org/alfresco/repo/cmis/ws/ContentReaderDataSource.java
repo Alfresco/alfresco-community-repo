@@ -34,7 +34,6 @@ import org.alfresco.service.cmr.repository.ContentReader;
 
 /**
  * @author Dmitry Lazurkin
- *
  */
 public class ContentReaderDataSource implements DataSource
 {

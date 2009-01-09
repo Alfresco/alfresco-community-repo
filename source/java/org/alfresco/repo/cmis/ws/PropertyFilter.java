@@ -24,7 +24,6 @@
  */
 package org.alfresco.repo.cmis.ws;
 
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -33,55 +32,56 @@ import java.util.regex.Pattern;
  * Property filter class
  *
  * @author Dmitry Lazurkin
- *
+ * @author Dmitry Velichkevich
  */
 public class PropertyFilter
 {
-    private static final Pattern PROPERTY_FILTER_REGEX = Pattern.compile("^(\\*)|([\\p{Upper}\\p{Digit}_]+(,[\\p{Upper}\\p{Digit}_]+)*)$");
+    private static final int MINIMAL_ALLOWED_STRUCTURE_SIZE = 1;
+
+    private static final String MATCH_ALL_FILTER = "*";
+
+    private static final Pattern PROPERTY_FILTER_REGEX = Pattern.compile("^(\\*)|([\\p{Alpha}\\p{Digit}_]+((,){1}( )*[\\p{Alpha}\\p{Digit}_]+)*)$");
 
     private Set<String> properties;
 
-    /**
-     * Constructor
-     */
     public PropertyFilter()
     {
     }
 
     /**
-     * Constructor
-     *
-     * @param filter filter string
+     * @param filter filter value (case insensitive)
      * @throws FilterNotValidException if filter string isn't valid
      */
     public PropertyFilter(String filter) throws FilterNotValidException
     {
-        if (filter == null)
+        if ((filter == null) || ((filter.length() < MINIMAL_ALLOWED_STRUCTURE_SIZE) ? (false) : (!PROPERTY_FILTER_REGEX.matcher(filter).matches())))
         {
-            throw new FilterNotValidException(filter + " isn't valid");
+            throw new FilterNotValidException("\"" + filter + "\" filter value is invalid");
         }
 
-        if (filter.equals("") == false)
+        if (!filter.equals(MATCH_ALL_FILTER) && (filter.length() >= MINIMAL_ALLOWED_STRUCTURE_SIZE))
         {
-            if (PROPERTY_FILTER_REGEX.matcher(filter).matches() == false)
-            {
-                throw new FilterNotValidException(filter + " isn't valid");
-            }
-
-            if (filter.equals("*") == false)
-            {
-                properties = new HashSet<String>(Arrays.asList(filter.split(",")));
-            }
+            splitFilterOnTokens(filter.split(","));
         }
     }
 
     /**
-     * @param property property
-     * @return if property is allow by filter then returns true else false
+     * @param property property token name (e.g.: name (or Name), ObjectId (or: objectid, Objectid etc))
+     * @return <b>true</b> returns if property is allowed by filter. In other case returns <b>false</b>
      */
     public boolean allow(String property)
     {
-        return properties == null || properties.contains(property);
+        return (properties == null) || properties.contains(property.toLowerCase());
     }
 
+    private void splitFilterOnTokens(String[] tokens)
+    {
+
+        properties = new HashSet<String>();
+
+        for (String token : tokens)
+        {
+            properties.add(token.trim().toLowerCase());
+        }
+    }
 }

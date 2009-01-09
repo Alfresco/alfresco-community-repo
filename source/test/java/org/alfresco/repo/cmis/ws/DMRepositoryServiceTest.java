@@ -24,79 +24,73 @@
  */
 package org.alfresco.repo.cmis.ws;
 
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.math.BigInteger;
 import java.util.List;
 
-import javax.xml.namespace.QName;
-import javax.xml.ws.Service;
-
-import org.alfresco.repo.cmis.ws.RepositoryServicePort;
-
-/**
- * @author Michael Shavnev
- */
 public class DMRepositoryServiceTest extends AbstractServiceTest
 {
+    public final static String TYPE_ID = "D/wcm_avmlayeredcontent";
 
-    public final static String SERVICE_WSDL_LOCATION = "http://localhost:8080/alfresco/cmis/RepositoryService?wsdl";
-    public final static QName SERVICE_NAME = new QName("http://www.cmis.org/ns/1.0", "RepositoryService");
+    public DMRepositoryServiceTest()
+    {
+        super();
+    }
+
+    public DMRepositoryServiceTest(String testCase, String username, String password)
+    {
+        super(testCase, username, password);
+    }
 
     protected Object getServicePort()
     {
-        URL serviceWsdlURL;
-        try
-        {
-            serviceWsdlURL = new URL(SERVICE_WSDL_LOCATION);
-        }
-        catch (MalformedURLException e)
-        {
-            throw new java.lang.RuntimeException("Cannot get service Wsdl URL", e);
-        }
-        Service service = Service.create(serviceWsdlURL, SERVICE_NAME);
-        return service.getPort(RepositoryServicePort.class);
+        return helper.repositoryServicePort;
     }
 
-    public void testGetRepositories()
+    public void testGetRepositories() throws Exception
     {
-        try
-        {
-        	List<CmisRepositoryEntryType> repositories = ((RepositoryServicePort) servicePort).getRepositories();
-            assertTrue(repositories.size() == 1);
-            assertFalse(repositories.get(0).getRepositoryID() == null);
-            assertFalse(repositories.get(0).getRepositoryName() == null);
-        }
-        catch (Throwable e)
-        {
-            e.printStackTrace();
-            fail();
-        }
-
+        List<CmisRepositoryEntryType> repositories = ((RepositoryServicePort) servicePort).getRepositories();
+        assertTrue(repositories.size() == 1);
+        assertFalse(repositories.get(0).getRepositoryID() == null);
+        assertFalse(repositories.get(0).getRepositoryName() == null);
     }
 
-    public void testGetRepositoryInfo()
+    public void testGetRepositoryInfo() throws Exception
     {
-        try
-        {
-        	List<CmisRepositoryEntryType> repositories = ((RepositoryServicePort) servicePort).getRepositories();
-        	GetRepositoryInfo parameters = new GetRepositoryInfo();
-        	parameters.setRepositoryId(repositories.get(0).getRepositoryID());
-            CmisRepositoryInfoType cmisRepositoryInfoType = ((RepositoryServicePort) servicePort).getRepositoryInfo(parameters);
-        	
-            assertTrue(cmisRepositoryInfoType.getRepositoryId().equals(repositories.get(0).getRepositoryID()));
-            assertTrue(cmisRepositoryInfoType.getRepositoryName().equals(repositories.get(0).getRepositoryName()));
-            assertTrue("Alfresco".equals(cmisRepositoryInfoType.getVendorName()));
-            assertTrue(cmisRepositoryInfoType.getVendorName().indexOf("Alfresco Repository (") > -1 );
-            CmisRepositoryCapabilitiesType capabilities = cmisRepositoryInfoType.getCapabilities();
-            assertTrue(capabilities.isCapabilityMultifiling() && capabilities.isCapabilityPWCUpdateable());
-            assertFalse(capabilities.isCapabilityUnfiling() && capabilities.isCapabilityVersionSpecificFiling());
+        List<CmisRepositoryEntryType> repositories = ((RepositoryServicePort) servicePort).getRepositories();
+        GetRepositoryInfo parameters = new GetRepositoryInfo();
+        parameters.setRepositoryId(repositories.get(0).getRepositoryID());
+        CmisRepositoryInfoType cmisRepositoryInfoType = ((RepositoryServicePort) servicePort).getRepositoryInfo(parameters);
 
-        }
-        catch (Throwable e)
-        {
-            e.printStackTrace();
-            fail();
-        }
+        assertTrue(cmisRepositoryInfoType.getRepositoryId().equals(repositories.get(0).getRepositoryID()));
+        assertTrue(cmisRepositoryInfoType.getRepositoryName().equals(repositories.get(0).getRepositoryName()));
+        CmisRepositoryCapabilitiesType capabilities = cmisRepositoryInfoType.getCapabilities();
+        assertTrue(capabilities.isCapabilityMultifiling() && capabilities.isCapabilityPWCUpdateable());
+        assertFalse(capabilities.isCapabilityUnfiling() && capabilities.isCapabilityVersionSpecificFiling());
+    }
 
+    public void testGetTypes() throws Exception
+    {
+        GetTypes request = new GetTypes();
+        request.setMaxItems(cmisObjectFactory.createGetTypesMaxItems(BigInteger.valueOf(0)));
+        request.setSkipCount(cmisObjectFactory.createGetTypesMaxItems(BigInteger.valueOf(0)));
+        request.setRepositoryId(repositoryId);
+        request.setReturnPropertyDefinitions(cmisObjectFactory.createGetTypesReturnPropertyDefinitions(Boolean.FALSE));
+        GetTypesResponse response = ((RepositoryServicePort) servicePort).getTypes(request);
+        assertNotNull(response.getType());
+        assertFalse(response.getType().isEmpty());
+        CmisTypeDefinitionType element = response.getType().get(0).getValue();
+        assertNotNull(element);
+    }
+
+    public void testGetTypeDefinition() throws Exception
+    {
+        GetTypeDefinition request = new GetTypeDefinition();
+        request.setRepositoryId(repositoryId);
+        request.setTypeId(TYPE_ID);
+        GetTypeDefinitionResponse response = ((RepositoryServicePort) servicePort).getTypeDefinition(request);
+        assertNotNull(response);
+        assertNotNull(response.getType());
+        CmisTypeDefinitionType element = response.getType().getValue();
+        assertNotNull(element);
     }
 }

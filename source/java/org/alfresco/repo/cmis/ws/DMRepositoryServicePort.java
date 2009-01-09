@@ -43,6 +43,7 @@ import org.alfresco.cmis.CMISJoinEnum;
 import org.alfresco.cmis.CMISPropertyTypeEnum;
 import org.alfresco.cmis.CMISUpdatabilityEnum;
 import org.alfresco.cmis.dictionary.CMISChoice;
+import org.alfresco.cmis.dictionary.CMISMapping;
 import org.alfresco.cmis.dictionary.CMISPropertyDefinition;
 import org.alfresco.cmis.dictionary.CMISTypeDefinition;
 import org.alfresco.cmis.dictionary.CMISTypeId;
@@ -50,11 +51,10 @@ import org.alfresco.repo.web.util.paging.Cursor;
 import org.alfresco.service.descriptor.Descriptor;
 
 /**
- * Port for repository service
+ * Port for repository service.
  *
  * @author Dmitry Lazurkin
  */
-
 @javax.jws.WebService(name = "RepositoryServicePort", serviceName = "RepositoryService", portName = "RepositoryServicePort", targetNamespace = "http://www.cmis.org/ns/1.0", endpointInterface = "org.alfresco.repo.cmis.ws.RepositoryServicePort")
 public class DMRepositoryServicePort extends DMAbstractServicePort implements RepositoryServicePort
 {
@@ -103,6 +103,16 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
         propertyTypeEnumMapping.put(CMISPropertyTypeEnum.XML, EnumPropertyType.XML);
     }
 
+    /**
+     * Gets a list of available repositories for this CMIS service endpoint.
+     * 
+     * @return collection of CmisRepositoryEntryType (repositoryId - repository Id, repositoryName: repository name, repositoryURI: Repository URI)
+     * @throws RuntimeException
+     * @throws InvalidArgumentException
+     * @throws OperationNotSupportedException
+     * @throws UpdateConflictException
+     * @throws PermissionDeniedException
+     */
     public List<CmisRepositoryEntryType> getRepositories() throws RuntimeException, InvalidArgumentException, OperationNotSupportedException, UpdateConflictException,
             PermissionDeniedException
     {
@@ -113,6 +123,19 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
         return Collections.singletonList(repositoryEntryType);
     }
 
+    /**
+     * Gets information about the CMIS repository and the capabilities it supports.
+     * 
+     * @param parameters repositoryId: repository Id
+     * @return CMIS repository Info
+     * @throws PermissionDeniedException
+     * @throws UpdateConflictException
+     * @throws ObjectNotFoundException
+     * @throws OperationNotSupportedException
+     * @throws InvalidArgumentException
+     * @throws RuntimeException
+     * @throws ConstraintViolationException
+     */
     public CmisRepositoryInfoType getRepositoryInfo(GetRepositoryInfo parameters) throws PermissionDeniedException, UpdateConflictException, ObjectNotFoundException,
             OperationNotSupportedException, InvalidArgumentException, RuntimeException, ConstraintViolationException
     {
@@ -128,7 +151,7 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
         repositoryInfoType.setRepositoryName(serverDescriptor.getName());
         repositoryInfoType.setRepositoryRelationship("self");
         repositoryInfoType.setRepositoryDescription("");
-        repositoryInfoType.setRootFolderId(cmisService.getDefaultRootNodeRef().toString());
+        repositoryInfoType.setRootFolderId((String) cmisPropertyService.getProperty(cmisService.getDefaultRootNodeRef(), CMISMapping.PROP_OBJECT_ID));
         repositoryInfoType.setVendorName("Alfresco");
         repositoryInfoType.setProductName("Alfresco Repository (" + serverDescriptor.getEdition() + ")");
         repositoryInfoType.setProductVersion(serverDescriptor.getVersion());
@@ -370,6 +393,20 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
         return result;
     }
 
+    /**
+     * Gets the list of all types in the repository.
+     * 
+     * @param parameters repositoryId: repository Id; typeId: type Id; returnPropertyDefinitions: false (default); maxItems: 0 = Repository-default number of items(Default);
+     *        skipCount: 0 = start;
+     * @return collection of CmisTypeDefinitionType and boolean hasMoreItems
+     * @throws RuntimeException
+     * @throws InvalidArgumentException
+     * @throws ObjectNotFoundException
+     * @throws ConstraintViolationException
+     * @throws OperationNotSupportedException
+     * @throws UpdateConflictException
+     * @throws PermissionDeniedException
+     */
     public GetTypesResponse getTypes(GetTypes parameters) throws RuntimeException, InvalidArgumentException, ObjectNotFoundException, ConstraintViolationException,
             OperationNotSupportedException, UpdateConflictException, PermissionDeniedException
     {
@@ -413,6 +450,20 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
         return response;
     }
 
+    /**
+     * Gets the definition for specified object type
+     * 
+     * @param parameters repositoryId: repository Id; typeId: type Id;
+     * @return CMIS type definition
+     * @throws PermissionDeniedException
+     * @throws UpdateConflictException
+     * @throws ObjectNotFoundException
+     * @throws OperationNotSupportedException
+     * @throws TypeNotFoundException
+     * @throws InvalidArgumentException
+     * @throws RuntimeException
+     * @throws ConstraintViolationException
+     */
     public GetTypeDefinitionResponse getTypeDefinition(GetTypeDefinition parameters) throws PermissionDeniedException, UpdateConflictException, ObjectNotFoundException,
             OperationNotSupportedException, TypeNotFoundException, InvalidArgumentException, RuntimeException, ConstraintViolationException
     {

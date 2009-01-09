@@ -30,7 +30,6 @@ import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.UnsupportedCallbackException;
 
-import org.alfresco.service.cmr.security.AuthenticationService;
 import org.apache.ws.security.WSPasswordCallback;
 
 /**
@@ -38,14 +37,6 @@ import org.apache.ws.security.WSPasswordCallback;
  */
 public class AuthenticationTokenCallbackHandler implements CallbackHandler
 {
-
-    private AuthenticationService authenticationService;
-
-    public void setAuthenticationService(AuthenticationService authenticationService)
-    {
-        this.authenticationService = authenticationService;
-    }
-
     public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException
     {
         WSPasswordCallback wssPasswordCallback = (WSPasswordCallback) callbacks[0];

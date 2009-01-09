@@ -53,10 +53,8 @@ import org.alfresco.service.namespace.QName;
  */
 public class CmisObjectsUtils
 {
-    private static final int NODE_REFERENCE_WITH_SUFFIX_DELIMETERS_COUNT = 5;
-
     public static final String NODE_REFERENCE_ID_DELIMETER = "/";
-
+    private static final int NODE_REFERENCE_WITH_SUFFIX_DELIMETERS_COUNT = 5;
     private static final String DOUBLE_NODE_REFERENCE_ID_DELIMETER = NODE_REFERENCE_ID_DELIMETER + NODE_REFERENCE_ID_DELIMETER;
 
     private static final List<QName> DOCUMENT_AND_FOLDER_TYPES;
@@ -77,9 +75,41 @@ public class CmisObjectsUtils
 
     private Throwable lastOperationException;
 
+    
+    public void setCmisDictionaryService(CMISDictionaryService cmisDictionaryService)
+    {
+        this.cmisDictionaryService = cmisDictionaryService;
+        this.cmisMapping = this.cmisDictionaryService.getCMISMapping();
+    }
+
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
+    }
+
+    public void setFileFolderService(FileFolderService fileFolderService)
+    {
+        this.fileFolderService = fileFolderService;
+    }
+
+    public void setLockService(LockService lockService)
+    {
+        this.lockService = lockService;
+    }
+
+    public void setCheckOutCheckInService(CheckOutCheckInService checkOutCheckInService)
+    {
+        this.checkOutCheckInService = checkOutCheckInService;
+    }
+
+    public void setAuthorityService(AuthorityService authorityService)
+    {
+        this.authorityService = authorityService;
+    }
+    
+    
     public IdentifierConversionResults getIdentifierInstance(String identifier, AlfrescoObjectType expectedType) throws InvalidArgumentException
     {
-
         if (!(identifier instanceof String))
         {
             throw new InvalidArgumentException("Invalid Object Identifier was specified");
@@ -91,15 +121,12 @@ public class CmisObjectsUtils
         if (isRelationship(identifier))
         {
             result = createAssociationIdentifierResult(identifier);
-
             actualObjectType = AlfrescoObjectType.RELATIONSHIP_OBJECT;
         }
         else
         {
-            NodeRef nodeReference = receiveNodeReferenceOfExistenceObject(cutNodeVersionIfNecessary(identifier, identifier.split(NODE_REFERENCE_ID_DELIMETER), 1));
-
+            NodeRef nodeReference = safeGetNodeRef(cutNodeVersionIfNecessary(identifier, identifier.split(NODE_REFERENCE_ID_DELIMETER), 1));
             result = createNodeReferenceIdentifierResult(nodeReference);
-
             actualObjectType = determineActualObjectType(expectedType, this.nodeService.getType(nodeReference));
         }
 
@@ -111,39 +138,50 @@ public class CmisObjectsUtils
         throw new InvalidArgumentException("Unexpected object type of the specified Object Identifier");
     }
 
-    public void deleteFolder(NodeRef folderNodeReference, boolean continueOnFailure, boolean totalDeletion, List<String> resultList) throws OperationNotSupportedException
+    public void deleteFolder(NodeRef folderNodeReference, boolean continueOnFailure, boolean totalDeletion, List<String> resultList)
+        throws OperationNotSupportedException
     {
-
         DescendantsQueueManager queueManager = new DescendantsQueueManager(new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, null, null, folderNodeReference));
 
         do
         {
-            DescendantElement currentElement = queueManager.receiveNextElement();
-
-            if (!this.nodeService.exists(currentElement.getNodesAssociation().getChildRef()))
+            DescendantElement currentElement = queueManager.getNextElement();
+            if (!nodeService.exists(currentElement.getChildAssoc().getChildRef()))
             {
                 continue;
             }
 
-            UnlinkOperationStatus unlinkingStatus = unlinkObject(currentElement.getNodesAssociation().getChildRef(), currentElement.getNodesAssociation().getParentRef(),
-                    totalDeletion);
-
-            if (!unlinkingStatus.isObjectUnlinked())
+            UnlinkOperationStatus unlinkStatus = unlinkObject(currentElement.getChildAssoc().getChildRef(), currentElement.getChildAssoc().getParentRef(), totalDeletion);
+            if (!unlinkStatus.isObjectUnlinked())
             {
-                processNotUnlinkedObjectResults(currentElement, unlinkingStatus, queueManager, resultList, continueOnFailure);
+                processUnlinkStatus(currentElement, unlinkStatus, queueManager, resultList, continueOnFailure);
             }
-        } while (!queueManager.isDepleted() && (continueOnFailure || resultList.isEmpty()));
+        } while (!queueManager.isEmpty() && (continueOnFailure || resultList.isEmpty()));
     }
 
+    private void processUnlinkStatus(DescendantElement currentElement, UnlinkOperationStatus unlinkStatus, DescendantsQueueManager queueManager, List<String> resultList, boolean addAllFailedToDelete)
+    {
+        if (!unlinkStatus.getChildren().isEmpty())
+        {
+            queueManager.addLast(currentElement);
+            queueManager.addFirst(currentElement, unlinkStatus.getChildren());
+            return;
+        }
+
+        resultList.add(currentElement.getChildAssoc().getChildRef().toString());
+        if (addAllFailedToDelete)
+        {
+            queueManager.removeParents(currentElement, resultList);
+        }
+    }
+    
     public boolean deleteObject(NodeRef objectNodeReference)
     {
-
-        return isObjectLockIsNotATrouble(objectNodeReference) && performNodeDeletion(objectNodeReference);
+        return canLock(objectNodeReference) && performNodeDeletion(objectNodeReference);
     }
 
     public boolean removeObject(NodeRef objectNodeReference, NodeRef folderNodeReference)
     {
-
         if (isChildOfThisFolder(objectNodeReference, folderNodeReference))
         {
             try
@@ -153,53 +191,43 @@ public class CmisObjectsUtils
             catch (Throwable e)
             {
                 this.lastOperationException = e;
-
                 return false;
             }
-
             return true;
         }
-
         return false;
     }
 
     public boolean addObjectToFolder(NodeRef objectNodeRef, NodeRef parentFolderNodeRef)
     {
-
         try
         {
-            this.nodeService.addChild(parentFolderNodeRef, objectNodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName
-                    .createValidLocalName((String) this.nodeService.getProperty(objectNodeRef, ContentModel.PROP_NAME))));
-
+            QName name = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName((String)nodeService.getProperty(objectNodeRef, ContentModel.PROP_NAME)));            
+            nodeService.addChild(parentFolderNodeRef, objectNodeRef, ContentModel.ASSOC_CONTAINS, name);
             return true;
         }
         catch (Throwable e)
         {
             this.lastOperationException = e;
-
             return false;
         }
     }
 
     public boolean isFolder(NodeRef folderNodeRef)
     {
-
-        return (folderNodeRef != null) && this.cmisMapping.isValidCmisFolder(this.cmisMapping.getCmisType(this.nodeService.getType(folderNodeRef)));
+        return (folderNodeRef != null) && cmisMapping.isValidCmisFolder(cmisMapping.getCmisType(nodeService.getType(folderNodeRef)));
     }
 
     public boolean isDocument(NodeRef documentNodeRef)
     {
-
-        return (documentNodeRef != null) && this.cmisMapping.isValidCmisDocument(this.cmisMapping.getCmisType(this.nodeService.getType(documentNodeRef)));
+        return (documentNodeRef != null) && cmisMapping.isValidCmisDocument(cmisMapping.getCmisType(nodeService.getType(documentNodeRef)));
     }
 
     public boolean isRelationship(String identifier)
     {
-
         try
         {
             new AssociationRef(identifier);
-
             return true;
         }
         catch (Throwable e)
@@ -210,22 +238,18 @@ public class CmisObjectsUtils
 
     public boolean isPolicy(NodeRef policyNodeRef)
     {
-
         // TODO: Policy
-
         return false;
     }
 
     public EnumObjectType determineObjectType(String identifier)
     {
-
         if (isRelationship(identifier))
         {
             return EnumObjectType.RELATIONSHIP;
         }
 
         NodeRef objectNodeReference = new NodeRef(identifier);
-
         if (isFolder(objectNodeReference))
         {
             return EnumObjectType.FOLDER;
@@ -241,184 +265,110 @@ public class CmisObjectsUtils
 
     public boolean isChildOfThisFolder(NodeRef objectNodeReference, NodeRef folderNodeReference)
     {
-
-        NodeRef searchedObjectNodeReference = this.fileFolderService.searchSimple(folderNodeReference, (String) this.nodeService.getProperty(objectNodeReference,
-                ContentModel.PROP_NAME));
-
+        NodeRef searchedObjectNodeReference = fileFolderService.searchSimple(folderNodeReference, (String)nodeService.getProperty(objectNodeReference, ContentModel.PROP_NAME));
         return (searchedObjectNodeReference != null) && searchedObjectNodeReference.equals(objectNodeReference);
     }
 
     public boolean isPrimaryObjectParent(NodeRef folderNodeReference, NodeRef objectNodeReference)
     {
-
-        NodeRef searchedParentObject = this.nodeService.getPrimaryParent(objectNodeReference).getParentRef();
-
+        NodeRef searchedParentObject = nodeService.getPrimaryParent(objectNodeReference).getParentRef();
         return (searchedParentObject != null) && searchedParentObject.equals(folderNodeReference);
     }
 
     public boolean isWorkingCopy(NodeRef objectIdentifier)
     {
-
         return nodeService.hasAspect(objectIdentifier, ContentModel.ASPECT_WORKING_COPY);
-    }
-
-    public void setCmisDictionaryService(CMISDictionaryService cmisDictionaryService)
-    {
-
-        this.cmisDictionaryService = cmisDictionaryService;
-
-        this.cmisMapping = this.cmisDictionaryService.getCMISMapping();
-    }
-
-    public void setNodeService(NodeService nodeService)
-    {
-
-        this.nodeService = nodeService;
-    }
-
-    public void setFileFolderService(FileFolderService fileFolderService)
-    {
-
-        this.fileFolderService = fileFolderService;
-    }
-
-    public void setLockService(LockService lockService)
-    {
-
-        this.lockService = lockService;
-    }
-
-    public void setCheckOutCheckInService(CheckOutCheckInService checkOutCheckInService)
-    {
-
-        this.checkOutCheckInService = checkOutCheckInService;
-    }
-
-    public void setAuthorityService(AuthorityService authorityService)
-    {
-
-        this.authorityService = authorityService;
-    }
-
-    public Throwable getLastOperationException()
-    {
-
-        return lastOperationException;
     }
 
     private boolean performNodeDeletion(NodeRef objectNodeReference)
     {
-
-        if (this.nodeService.hasAspect(objectNodeReference, ContentModel.ASPECT_WORKING_COPY))
+        if (nodeService.hasAspect(objectNodeReference, ContentModel.ASPECT_WORKING_COPY))
         {
-            this.checkOutCheckInService.cancelCheckout(objectNodeReference);
-
+            checkOutCheckInService.cancelCheckout(objectNodeReference);
             return true;
         }
 
         try
         {
-            this.nodeService.deleteNode(objectNodeReference);
+            nodeService.deleteNode(objectNodeReference);
         }
         catch (Throwable e)
         {
             return false;
         }
-
         return true;
     }
 
-    private boolean isObjectLockIsNotATrouble(NodeRef objectNodeReference)
+    private boolean canLock(NodeRef objectNodeReference)
     {
-
         String currentUserName = AuthenticationUtil.getFullyAuthenticatedUser();
-
-        return (this.lockService.getLockStatus(objectNodeReference, currentUserName) != LockStatus.LOCKED) || this.authorityService.isAdminAuthority(currentUserName);
+        return (this.lockService.getLockStatus(objectNodeReference, currentUserName) != LockStatus.LOCKED) || authorityService.isAdminAuthority(currentUserName);
     }
 
     private UnlinkOperationStatus unlinkObject(NodeRef objectNodeReference, NodeRef parentFolderNodeReference, boolean totalDeletion)
     {
-
         if (isFolder(objectNodeReference))
         {
-            List<ChildAssociationRef> children = this.nodeService.getChildAssocs(objectNodeReference);
-
-            return new UnlinkOperationStatus(((children == null) || children.isEmpty()) && deleteObject(objectNodeReference), (children != null) ? (children)
-                    : (new LinkedList<ChildAssociationRef>()));
+            List<ChildAssociationRef> children = nodeService.getChildAssocs(objectNodeReference);
+            boolean objectUnlinked = (children == null || children.isEmpty()) && deleteObject(objectNodeReference);
+            return new UnlinkOperationStatus(objectUnlinked, children != null ? children : new LinkedList<ChildAssociationRef>());
         }
 
-        return new UnlinkOperationStatus((totalDeletion) ? (deleteObject(objectNodeReference))
-                : (!isPrimaryObjectParent(parentFolderNodeReference, objectNodeReference) && removeObject(objectNodeReference, parentFolderNodeReference)),
-                new LinkedList<ChildAssociationRef>());
+        boolean objectUnlinked = false;
+        if (totalDeletion)
+        {
+            objectUnlinked = deleteObject(objectNodeReference);
+        }
+        else
+        {
+            objectUnlinked = !isPrimaryObjectParent(parentFolderNodeReference, objectNodeReference) && removeObject(objectNodeReference, parentFolderNodeReference);            
+        }
+        return new UnlinkOperationStatus(objectUnlinked, new LinkedList<ChildAssociationRef>());
     }
 
-    private void processNotUnlinkedObjectResults(DescendantElement currentElement, UnlinkOperationStatus unlinkingStatus, DescendantsQueueManager queueManager,
-            List<String> resultList, boolean addAllFailedToDelete)
+    private NodeRef safeGetNodeRef(String nodeIdentifier) throws InvalidArgumentException
     {
-
-        if (!unlinkingStatus.getChildren().isEmpty())
+        if (NodeRef.isNodeRef(nodeIdentifier))
         {
-            queueManager.addElementToQueueEnd(currentElement);
-
-            queueManager.addChildren(unlinkingStatus.getChildren(), currentElement);
-
-            return;
-        }
-
-        resultList.add(currentElement.getNodesAssociation().getChildRef().toString());
-
-        if (addAllFailedToDelete)
-        {
-            queueManager.removeParents(currentElement, resultList);
-        }
-    }
-
-    private NodeRef receiveNodeReferenceOfExistenceObject(String clearNodeIdentifier) throws InvalidArgumentException
-    {
-
-        if (NodeRef.isNodeRef(clearNodeIdentifier))
-        {
-            NodeRef result = new NodeRef(clearNodeIdentifier);
-
-            if (this.nodeService.exists(result))
+            NodeRef result = new NodeRef(nodeIdentifier);
+            if (nodeService.exists(result))
             {
                 return result;
             }
         }
 
-        throw new InvalidArgumentException("Invalid Object Identifier was specified: Identifier is incorrect or Object with the specified Identifier is not exists",
-                new ObjectNotFoundException());
+        throw new InvalidArgumentException("Invalid Object Identifier was specified: Identifier is incorrect or Object with the specified Identifier does not exist", new ObjectNotFoundException());
     }
 
-    private String cutNodeVersionIfNecessary(String identifier, String[] splitedNodeIdentifier, int startIndex)
+    private String cutNodeVersionIfNecessary(String identifier, String[] splitNodeIdentifier, int startIndex)
     {
-
         String withoutVersionSuffix = identifier;
-
-        if (splitedNodeIdentifier.length == NODE_REFERENCE_WITH_SUFFIX_DELIMETERS_COUNT)
+        if (splitNodeIdentifier.length == NODE_REFERENCE_WITH_SUFFIX_DELIMETERS_COUNT)
         {
-            withoutVersionSuffix = splitedNodeIdentifier[startIndex++ - 1] + DOUBLE_NODE_REFERENCE_ID_DELIMETER + splitedNodeIdentifier[startIndex++] + NODE_REFERENCE_ID_DELIMETER
-                    + splitedNodeIdentifier[startIndex];
+            withoutVersionSuffix = splitNodeIdentifier[startIndex++ - 1] + DOUBLE_NODE_REFERENCE_ID_DELIMETER + splitNodeIdentifier[startIndex++] + NODE_REFERENCE_ID_DELIMETER + splitNodeIdentifier[startIndex];
         }
-
         return withoutVersionSuffix;
     }
 
     private AlfrescoObjectType determineActualObjectType(AlfrescoObjectType expectedType, QName objectType)
     {
-
-        return (expectedType != AlfrescoObjectType.DOCUMENT_OR_FOLDER_OBJECT) ? (AlfrescoObjectType.fromValue(objectType.toString())) : ((DOCUMENT_AND_FOLDER_TYPES
-                .contains(objectType)) ? (AlfrescoObjectType.DOCUMENT_OR_FOLDER_OBJECT) : (AlfrescoObjectType.ANY_OBJECT));
+        if (expectedType != AlfrescoObjectType.DOCUMENT_OR_FOLDER_OBJECT)
+        {
+            return AlfrescoObjectType.fromValue(objectType.toString());
+        }
+        else if (DOCUMENT_AND_FOLDER_TYPES.contains(objectType))
+        {
+            return AlfrescoObjectType.DOCUMENT_OR_FOLDER_OBJECT;
+        }
+        return AlfrescoObjectType.ANY_OBJECT;
     }
 
     private IdentifierConversionResults createAssociationIdentifierResult(final String identifier)
     {
-
         return new IdentifierConversionResults()
         {
             public AssociationRef getConvertedIdentifier()
             {
-
                 return new AssociationRef(identifier);
             }
         };
@@ -426,12 +376,10 @@ public class CmisObjectsUtils
 
     private IdentifierConversionResults createNodeReferenceIdentifierResult(final NodeRef identifier)
     {
-
         return new IdentifierConversionResults()
         {
             public NodeRef getConvertedIdentifier()
             {
-
                 return identifier;
             }
         };
@@ -449,25 +397,28 @@ public class CmisObjectsUtils
 
         public UnlinkOperationStatus(boolean objectUnlinked, List<ChildAssociationRef> children)
         {
-
             this.objectUnlinked = objectUnlinked;
             this.children = children;
-        }
-
-        public boolean isObjectUnlinked()
-        {
-
-            return this.objectUnlinked;
-        }
-
-        public List<ChildAssociationRef> getChildren()
-        {
-
-            return this.children;
         }
 
         protected UnlinkOperationStatus()
         {
         }
+
+        public boolean isObjectUnlinked()
+        {
+            return objectUnlinked;
+        }
+
+        public List<ChildAssociationRef> getChildren()
+        {
+            return this.children;
+        }
     }
+    
+    public Throwable getLastOperationException()
+    {
+        return lastOperationException;
+    }
+    
 }

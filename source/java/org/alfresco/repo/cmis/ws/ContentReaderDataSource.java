@@ -33,6 +33,8 @@ import javax.activation.DataSource;
 import org.alfresco.service.cmr.repository.ContentReader;
 
 /**
+ * DataSource facade for an Alfresco Content Reader
+ * 
  * @author Dmitry Lazurkin
  */
 public class ContentReaderDataSource implements DataSource
@@ -46,21 +48,33 @@ public class ContentReaderDataSource implements DataSource
         this.name = name;
     }
 
+    /* (non-Javadoc)
+     * @see javax.activation.DataSource#getContentType()
+     */
     public String getContentType()
     {
         return contentReader.getMimetype();
     }
 
+    /* (non-Javadoc)
+     * @see javax.activation.DataSource#getInputStream()
+     */
     public InputStream getInputStream() throws IOException
     {
         return contentReader.getContentInputStream();
     }
 
+    /* (non-Javadoc)
+     * @see javax.activation.DataSource#getName()
+     */
     public String getName()
     {
         return name;
     }
 
+    /* (non-Javadoc)
+     * @see javax.activation.DataSource#getOutputStream()
+     */
     public OutputStream getOutputStream() throws IOException
     {
         return null;

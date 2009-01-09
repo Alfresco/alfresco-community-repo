@@ -113,8 +113,8 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
      * @throws UpdateConflictException
      * @throws PermissionDeniedException
      */
-    public List<CmisRepositoryEntryType> getRepositories() throws RuntimeException, InvalidArgumentException, OperationNotSupportedException, UpdateConflictException,
-            PermissionDeniedException
+    public List<CmisRepositoryEntryType> getRepositories()
+        throws RuntimeException, InvalidArgumentException, OperationNotSupportedException, UpdateConflictException, PermissionDeniedException
     {
         CmisRepositoryEntryType repositoryEntryType = new CmisRepositoryEntryType();
         Descriptor serverDescriptor = descriptorService.getServerDescriptor();
@@ -136,11 +136,10 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
      * @throws RuntimeException
      * @throws ConstraintViolationException
      */
-    public CmisRepositoryInfoType getRepositoryInfo(GetRepositoryInfo parameters) throws PermissionDeniedException, UpdateConflictException, ObjectNotFoundException,
-            OperationNotSupportedException, InvalidArgumentException, RuntimeException, ConstraintViolationException
+    public CmisRepositoryInfoType getRepositoryInfo(GetRepositoryInfo parameters)
+        throws PermissionDeniedException, UpdateConflictException, ObjectNotFoundException, OperationNotSupportedException, InvalidArgumentException, RuntimeException, ConstraintViolationException
     {
         Descriptor serverDescriptor = descriptorService.getServerDescriptor();
-
         if (serverDescriptor.getId().equals(parameters.getRepositoryId()) == false)
         {
             throw new InvalidArgumentException("Invalid repository id");
@@ -167,7 +166,6 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
         repositoryInfoType.setCapabilities(capabilities);
 
         repositoryInfoType.setCmisVersionsSupported(cmisService.getCMISVersion());
-
         return repositoryInfoType;
     }
 
@@ -184,54 +182,54 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
 
         switch (propertyType)
         {
-        case BOOLEAN:
-            CmisChoiceBooleanType choiceBooleanType = new CmisChoiceBooleanType();
-            choiceBooleanType.setIndex(BigInteger.valueOf(choice.getIndex()));
-            choiceBooleanType.setKey(choice.getName());
-            choiceBooleanType.setValue((Boolean) choice.getValue());
-            result = cmisObjectFactory.createChoiceBoolean(choiceBooleanType);
-            break;
-        case DATETIME:
-            CmisChoiceDateTimeType choiceDateTimeType = new CmisChoiceDateTimeType();
-            choiceDateTimeType.setIndex(BigInteger.valueOf(choice.getIndex()));
-            choiceDateTimeType.setKey(choice.getName());
-            choiceDateTimeType.setValue(convert((Date) choice.getValue()));
-            result = cmisObjectFactory.createChoiceDateTime(choiceDateTimeType);
-            break;
-        case DECIMAL:
-            CmisChoiceDecimalType choiceDecimalType = new CmisChoiceDecimalType();
-            choiceDecimalType.setIndex(BigInteger.valueOf(choice.getIndex()));
-            choiceDecimalType.setKey(choice.getName());
-            choiceDecimalType.setValue(BigDecimal.valueOf((Double) choice.getValue()));
-            result = cmisObjectFactory.createChoiceDecimal(choiceDecimalType);
-            break;
-        case HTML:
-            break;
-        case ID:
-            CmisChoiceIdType choiceIdType = new CmisChoiceIdType();
-            choiceIdType.setIndex(BigInteger.valueOf(choice.getIndex()));
-            choiceIdType.setKey(choice.getName());
-            choiceIdType.setValue((String) choice.getValue());
-            result = cmisObjectFactory.createChoiceId(choiceIdType);
-            break;
-        case INTEGER:
-            CmisChoiceIntegerType choiceIntegerType = new CmisChoiceIntegerType();
-            choiceIntegerType.setIndex(BigInteger.valueOf(choice.getIndex()));
-            choiceIntegerType.setKey(choice.getName());
-            choiceIntegerType.setValue(BigInteger.valueOf((Integer) choice.getValue()));
-            result = cmisObjectFactory.createChoiceInteger(choiceIntegerType);
-            break;
-        case STRING:
-            CmisChoiceStringType choiceStringType = new CmisChoiceStringType();
-            choiceStringType.setIndex(BigInteger.valueOf(choice.getIndex()));
-            choiceStringType.setKey(choice.getName());
-            choiceStringType.setValue((String) choice.getValue());
-            result = cmisObjectFactory.createChoiceString(choiceStringType);
-            break;
-        case URI:
-            break;
-        case XML:
-            break;
+            case BOOLEAN:
+                CmisChoiceBooleanType choiceBooleanType = new CmisChoiceBooleanType();
+                choiceBooleanType.setIndex(BigInteger.valueOf(choice.getIndex()));
+                choiceBooleanType.setKey(choice.getName());
+                choiceBooleanType.setValue((Boolean) choice.getValue());
+                result = cmisObjectFactory.createChoiceBoolean(choiceBooleanType);
+                break;
+            case DATETIME:
+                CmisChoiceDateTimeType choiceDateTimeType = new CmisChoiceDateTimeType();
+                choiceDateTimeType.setIndex(BigInteger.valueOf(choice.getIndex()));
+                choiceDateTimeType.setKey(choice.getName());
+                choiceDateTimeType.setValue(convert((Date) choice.getValue()));
+                result = cmisObjectFactory.createChoiceDateTime(choiceDateTimeType);
+                break;
+            case DECIMAL:
+                CmisChoiceDecimalType choiceDecimalType = new CmisChoiceDecimalType();
+                choiceDecimalType.setIndex(BigInteger.valueOf(choice.getIndex()));
+                choiceDecimalType.setKey(choice.getName());
+                choiceDecimalType.setValue(BigDecimal.valueOf((Double) choice.getValue()));
+                result = cmisObjectFactory.createChoiceDecimal(choiceDecimalType);
+                break;
+            case HTML:
+                break;
+            case ID:
+                CmisChoiceIdType choiceIdType = new CmisChoiceIdType();
+                choiceIdType.setIndex(BigInteger.valueOf(choice.getIndex()));
+                choiceIdType.setKey(choice.getName());
+                choiceIdType.setValue((String) choice.getValue());
+                result = cmisObjectFactory.createChoiceId(choiceIdType);
+                break;
+            case INTEGER:
+                CmisChoiceIntegerType choiceIntegerType = new CmisChoiceIntegerType();
+                choiceIntegerType.setIndex(BigInteger.valueOf(choice.getIndex()));
+                choiceIntegerType.setKey(choice.getName());
+                choiceIntegerType.setValue(BigInteger.valueOf((Integer) choice.getValue()));
+                result = cmisObjectFactory.createChoiceInteger(choiceIntegerType);
+                break;
+            case STRING:
+                CmisChoiceStringType choiceStringType = new CmisChoiceStringType();
+                choiceStringType.setIndex(BigInteger.valueOf(choice.getIndex()));
+                choiceStringType.setKey(choice.getName());
+                choiceStringType.setValue((String) choice.getValue());
+                result = cmisObjectFactory.createChoiceString(choiceStringType);
+                break;
+            case URI:
+                break;
+            case XML:
+                break;
         }
 
         return result;
@@ -364,30 +362,30 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
 
         switch (cmisTypeId.getScope())
         {
-        case DOCUMENT:
-            CmisTypeDocumentDefinitionType documentDefinitionType = new CmisTypeDocumentDefinitionType();
-            setCmisTypeDefinitionProperties(documentDefinitionType, typeDefinition, includeProperties);
-            documentDefinitionType.setVersionable(typeDefinition.isVersionable());
-            documentDefinitionType.setContentStreamAllowed(contentStreamAllowedEnumMapping.get(typeDefinition.getContentStreamAllowed()));
-            result = cmisObjectFactory.createDocumentType(documentDefinitionType);
-            break;
-        case FOLDER:
-            CmisTypeFolderDefinitionType folderDefinitionType = new CmisTypeFolderDefinitionType();
-            setCmisTypeDefinitionProperties(folderDefinitionType, typeDefinition, includeProperties);
-            result = cmisObjectFactory.createFolderType(folderDefinitionType);
-            break;
-        case POLICY:
-            CmisTypePolicyDefinitionType policyDefinitionType = new CmisTypePolicyDefinitionType();
-            setCmisTypeDefinitionProperties(policyDefinitionType, typeDefinition, includeProperties);
-            result = cmisObjectFactory.createPolicyType(policyDefinitionType);
-            break;
-        case RELATIONSHIP:
-            CmisTypeRelationshipDefinitionType relationshipDefinitionType = new CmisTypeRelationshipDefinitionType();
-            setCmisTypeDefinitionProperties(relationshipDefinitionType, typeDefinition, includeProperties);
-            result = cmisObjectFactory.createRelationshipType(relationshipDefinitionType);
-            break;
-        case UNKNOWN:
-            throw new ObjectNotFoundException("Bab type");
+            case DOCUMENT:
+                CmisTypeDocumentDefinitionType documentDefinitionType = new CmisTypeDocumentDefinitionType();
+                setCmisTypeDefinitionProperties(documentDefinitionType, typeDefinition, includeProperties);
+                documentDefinitionType.setVersionable(typeDefinition.isVersionable());
+                documentDefinitionType.setContentStreamAllowed(contentStreamAllowedEnumMapping.get(typeDefinition.getContentStreamAllowed()));
+                result = cmisObjectFactory.createDocumentType(documentDefinitionType);
+                break;
+            case FOLDER:
+                CmisTypeFolderDefinitionType folderDefinitionType = new CmisTypeFolderDefinitionType();
+                setCmisTypeDefinitionProperties(folderDefinitionType, typeDefinition, includeProperties);
+                result = cmisObjectFactory.createFolderType(folderDefinitionType);
+                break;
+            case POLICY:
+                CmisTypePolicyDefinitionType policyDefinitionType = new CmisTypePolicyDefinitionType();
+                setCmisTypeDefinitionProperties(policyDefinitionType, typeDefinition, includeProperties);
+                result = cmisObjectFactory.createPolicyType(policyDefinitionType);
+                break;
+            case RELATIONSHIP:
+                CmisTypeRelationshipDefinitionType relationshipDefinitionType = new CmisTypeRelationshipDefinitionType();
+                setCmisTypeDefinitionProperties(relationshipDefinitionType, typeDefinition, includeProperties);
+                result = cmisObjectFactory.createRelationshipType(relationshipDefinitionType);
+                break;
+            case UNKNOWN:
+                throw new ObjectNotFoundException("Unknown CMIS Type");
         }
 
         return result;
@@ -407,28 +405,32 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
      * @throws UpdateConflictException
      * @throws PermissionDeniedException
      */
-    public GetTypesResponse getTypes(GetTypes parameters) throws RuntimeException, InvalidArgumentException, ObjectNotFoundException, ConstraintViolationException,
-            OperationNotSupportedException, UpdateConflictException, PermissionDeniedException
+    public GetTypesResponse getTypes(GetTypes parameters)
+        throws RuntimeException, InvalidArgumentException, ObjectNotFoundException, ConstraintViolationException, OperationNotSupportedException, UpdateConflictException, PermissionDeniedException
     {
         if (descriptorService.getServerDescriptor().getId().equals(parameters.getRepositoryId()) == false)
         {
             throw new InvalidArgumentException("Invalid repository id");
         }
 
+        Collection<CMISTypeId> typeIds;
+        if (parameters.getTypeId() == null)
+        {
+            typeIds = cmisDictionaryService.getAllObjectTypeIds();
+        }
+        else
+        {
+            typeIds = cmisDictionaryService.getChildTypeIds(cmisDictionaryService.getCMISMapping().getCmisTypeId(parameters.getTypeId().getValue()), true);
+        }
+
         GetTypesResponse response = new GetTypesResponse();
-
-        Collection<CMISTypeId> typeIds = parameters.getTypeId() == null ? cmisDictionaryService.getAllObjectTypeIds() : cmisDictionaryService.getChildTypeIds(cmisDictionaryService
-                .getCMISMapping().getCmisTypeId(parameters.getTypeId().getValue()), true);
-
         if (parameters.getMaxItems() != null)
         {
             response.setHasMoreItems(parameters.getMaxItems().getValue().intValue() < typeIds.size());
         }
 
-        Cursor cursor = createCursor(typeIds.size(), parameters.getSkipCount() != null ? parameters.getSkipCount().getValue() : null, parameters.getMaxItems() != null ? parameters
-                .getMaxItems().getValue() : null);
-
         // skip
+        Cursor cursor = createCursor(typeIds.size(), parameters.getSkipCount() != null ? parameters.getSkipCount().getValue() : null, parameters.getMaxItems() != null ? parameters.getMaxItems().getValue() : null);
         Iterator<CMISTypeId> iterTypeIds = typeIds.iterator();
         for (int i = 0; i < cursor.getStartRow(); i++)
         {
@@ -464,8 +466,8 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
      * @throws RuntimeException
      * @throws ConstraintViolationException
      */
-    public GetTypeDefinitionResponse getTypeDefinition(GetTypeDefinition parameters) throws PermissionDeniedException, UpdateConflictException, ObjectNotFoundException,
-            OperationNotSupportedException, TypeNotFoundException, InvalidArgumentException, RuntimeException, ConstraintViolationException
+    public GetTypeDefinitionResponse getTypeDefinition(GetTypeDefinition parameters)
+        throws PermissionDeniedException, UpdateConflictException, ObjectNotFoundException, OperationNotSupportedException, TypeNotFoundException, InvalidArgumentException, RuntimeException, ConstraintViolationException
     {
         if (descriptorService.getServerDescriptor().getId().equals(parameters.getRepositoryId()) == false)
         {

@@ -30,6 +30,8 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.aop.ThrowsAdvice;
 
 /**
+ * Map Alfresco Exceptions to CMIS Exceptions
+ * 
  * @author Dmitry Lazurkin
  * @author Dmitry Velichkevich
  */
@@ -37,7 +39,8 @@ public class DMServicePortThrowsAdvice implements ThrowsAdvice
 {
     private static final Log log = LogFactory.getLog("org.alfresco.repo.cmis.ws");
 
-    public void afterThrowing(AccessDeniedException e) throws PermissionDeniedException
+    public void afterThrowing(AccessDeniedException e)
+        throws PermissionDeniedException
     {
         if (log.isInfoEnabled())
         {
@@ -47,7 +50,8 @@ public class DMServicePortThrowsAdvice implements ThrowsAdvice
         throw new PermissionDeniedException("Access denied. Message: " + e.getMessage(), e);
     }
 
-    public void afterThrowing(java.lang.RuntimeException e) throws RuntimeException
+    public void afterThrowing(java.lang.RuntimeException e)
+        throws RuntimeException
     {
         if (log.isErrorEnabled())
         {

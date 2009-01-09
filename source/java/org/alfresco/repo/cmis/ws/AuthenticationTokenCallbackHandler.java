@@ -64,7 +64,6 @@ public class AuthenticationTokenCallbackHandler implements CallbackHandler
 
     private String getPassword(String userName)
     {
-        // TODO Auto-generated method stub
         return userName;
     }
 

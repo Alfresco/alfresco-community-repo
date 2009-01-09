@@ -22,14 +22,16 @@
  * the FLOSS exception, and it is also available here:
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.repo.cmis.ws;
+package org.alfresco.repo.cmis;
 
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import org.alfresco.repo.cmis.ws.FilterNotValidException;
+
 /**
- * Property filter class
+ * Property filter supporting CMIS filter expression
  *
  * @author Dmitry Lazurkin
  * @author Dmitry Velichkevich
@@ -37,9 +39,7 @@ import java.util.regex.Pattern;
 public class PropertyFilter
 {
     private static final int MINIMAL_ALLOWED_STRUCTURE_SIZE = 1;
-
     private static final String MATCH_ALL_FILTER = "*";
-
     private static final Pattern PROPERTY_FILTER_REGEX = Pattern.compile("^(\\*)|([\\p{Alpha}\\p{Digit}_]+((,){1}( )*[\\p{Alpha}\\p{Digit}_]+)*)$");
 
     private Set<String> properties;
@@ -54,14 +54,23 @@ public class PropertyFilter
      */
     public PropertyFilter(String filter) throws FilterNotValidException
     {
-        if ((filter == null) || ((filter.length() < MINIMAL_ALLOWED_STRUCTURE_SIZE) ? (false) : (!PROPERTY_FILTER_REGEX.matcher(filter).matches())))
+        if (filter == null || filter.length() < MINIMAL_ALLOWED_STRUCTURE_SIZE ? false : !PROPERTY_FILTER_REGEX.matcher(filter).matches())
         {
             throw new FilterNotValidException("\"" + filter + "\" filter value is invalid");
         }
 
-        if (!filter.equals(MATCH_ALL_FILTER) && (filter.length() >= MINIMAL_ALLOWED_STRUCTURE_SIZE))
+        if (!filter.equals(MATCH_ALL_FILTER) && filter.length() >= MINIMAL_ALLOWED_STRUCTURE_SIZE)
         {
             splitFilterOnTokens(filter.split(","));
+        }
+    }
+
+    private void splitFilterOnTokens(String[] tokens)
+    {
+        properties = new HashSet<String>();
+        for (String token : tokens)
+        {
+            properties.add(token.trim().toLowerCase());
         }
     }
 
@@ -71,17 +80,7 @@ public class PropertyFilter
      */
     public boolean allow(String property)
     {
-        return (properties == null) || properties.contains(property.toLowerCase());
+        return properties == null || properties.contains(property.toLowerCase());
     }
 
-    private void splitFilterOnTokens(String[] tokens)
-    {
-
-        properties = new HashSet<String>();
-
-        for (String token : tokens)
-        {
-            properties.add(token.trim().toLowerCase());
-        }
-    }
 }

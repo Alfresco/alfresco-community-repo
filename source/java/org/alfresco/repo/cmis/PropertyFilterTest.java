@@ -22,10 +22,10 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.repo.cmis.ws.filtering;
+package org.alfresco.repo.cmis;
 
+import org.alfresco.repo.cmis.PropertyFilter;
 import org.alfresco.repo.cmis.ws.FilterNotValidException;
-import org.alfresco.repo.cmis.ws.PropertyFilter;
 
 import junit.framework.TestCase;
 
@@ -58,9 +58,9 @@ public class PropertyFilterTest extends TestCase
     private static final String INVALID_FILTER_WITH_DENIED_SYMBOL = "ObjectId; name";
     private static final String INVALID_FILTER_WITH_LAST_INVALID_SYMBOL = "ObjectId, name*";
 
+    
     public void testValidFilters() throws Exception
     {
-
         try
         {
             allTokensValidAssertion(new PropertyFilter());
@@ -83,7 +83,6 @@ public class PropertyFilterTest extends TestCase
 
     public void testInvalidFilters() throws Exception
     {
-
         invalidFilterAssertion(INVALID_MATCHE_ALL_FILTER);
         invalidFilterAssertion(INVALID_FILTER_WITH_NAME);
         invalidFilterAssertion(INVALID_FILTER_WITH_SEVERAL_TOKENS);
@@ -97,7 +96,6 @@ public class PropertyFilterTest extends TestCase
 
     private void nameAndObjectIdTokensAssertionValid(PropertyFilter propertyFilter)
     {
-
         for (String token : FILTER_TOKENS)
         {
             assertTrue(propertyFilter.allow(token));
@@ -111,7 +109,6 @@ public class PropertyFilterTest extends TestCase
 
     private void onlyNameTokensAssertionValid(PropertyFilter propertyFilter)
     {
-
         for (String token : FILTER_TOKENS)
         {
             if (!token.equalsIgnoreCase(NAME_TOKEN))
@@ -130,7 +127,6 @@ public class PropertyFilterTest extends TestCase
 
     private void allTokensValidAssertion(PropertyFilter propertyFilter)
     {
-
         for (String token : FILTER_TOKENS)
         {
             assertTrue(propertyFilter.allow(token));
@@ -144,7 +140,6 @@ public class PropertyFilterTest extends TestCase
 
     private void invalidFilterAssertion(String filterValue)
     {
-
         try
         {
             new PropertyFilter(filterValue);
@@ -156,4 +151,5 @@ public class PropertyFilterTest extends TestCase
             assertTrue(("Unexpected exception type was thrown: " + e.getClass().getName()), e instanceof FilterNotValidException);
         }
     }
+    
 }

@@ -35,8 +35,11 @@ import org.alfresco.model.ContentModel;
  */
 public enum AlfrescoObjectType
 {
-    DOCUMENT_OBJECT(ContentModel.TYPE_CONTENT.toString()), FOLDER_OBJECT(ContentModel.TYPE_FOLDER.toString()), DOCUMENT_OR_FOLDER_OBJECT("DOCUMENT_OR_FOLDER"), RELATIONSHIP_OBJECT(
-            CMISMapping.RELATIONSHIP_QNAME.toString()), ANY_OBJECT("ANY");
+    DOCUMENT_OBJECT(ContentModel.TYPE_CONTENT.toString()),
+    FOLDER_OBJECT(ContentModel.TYPE_FOLDER.toString()),
+    DOCUMENT_OR_FOLDER_OBJECT("DOCUMENT_OR_FOLDER"),
+    RELATIONSHIP_OBJECT(CMISMapping.RELATIONSHIP_QNAME.toString()),
+    ANY_OBJECT("ANY");
 
     String value;
 
@@ -50,26 +53,21 @@ public enum AlfrescoObjectType
 
     AlfrescoObjectType(String value)
     {
-
         this.value = value;
     }
 
     public String getValue()
     {
-
         return this.value;
     }
 
     public static AlfrescoObjectType fromValue(String valueName)
     {
-
         AlfrescoObjectType result = VALUES.get(valueName);
-
         if (result == null)
         {
             result = ANY_OBJECT;
         }
-
         return result;
     }
 }

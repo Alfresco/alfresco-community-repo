@@ -46,7 +46,6 @@ public class DMPolicyServicePort extends DMAbstractServicePort implements Policy
             OperationNotSupportedException, InvalidArgumentException, RuntimeException, ConstraintViolationException
     {
         // TODO Auto-generated method stub
-
     }
 
     /**
@@ -87,7 +86,6 @@ public class DMPolicyServicePort extends DMAbstractServicePort implements Policy
             OperationNotSupportedException, InvalidArgumentException, RuntimeException, ConstraintViolationException
     {
         // TODO Auto-generated method stub
-
     }
 
 }

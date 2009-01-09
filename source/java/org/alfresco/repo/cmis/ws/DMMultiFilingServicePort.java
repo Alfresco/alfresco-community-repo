@@ -51,16 +51,16 @@ public class DMMultiFilingServicePort extends DMAbstractServicePort implements M
      * @throws RuntimeException
      * @throws ConstraintViolationException
      */
-    public void addObjectToFolder(String repositoryId, String objectId, String folderId) throws PermissionDeniedException, UpdateConflictException, ObjectNotFoundException,
-            FolderNotValidException, OperationNotSupportedException, InvalidArgumentException, RuntimeException, ConstraintViolationException
+    public void addObjectToFolder(String repositoryId, String objectId, String folderId)
+        throws PermissionDeniedException, UpdateConflictException, ObjectNotFoundException, FolderNotValidException, OperationNotSupportedException, InvalidArgumentException, RuntimeException, ConstraintViolationException
     {
         checkRepositoryId(repositoryId);
-        NodeRef objectNodeRef = this.cmisObjectsUtils.getIdentifierInstance(objectId, AlfrescoObjectType.DOCUMENT_OR_FOLDER_OBJECT).getConvertedIdentifier();
-        NodeRef parentFolderNodeRef = this.cmisObjectsUtils.getIdentifierInstance(folderId, AlfrescoObjectType.FOLDER_OBJECT).getConvertedIdentifier();
+        NodeRef objectNodeRef = cmisObjectsUtils.getIdentifierInstance(objectId, AlfrescoObjectType.DOCUMENT_OR_FOLDER_OBJECT).getConvertedIdentifier();
+        NodeRef parentFolderNodeRef = cmisObjectsUtils.getIdentifierInstance(folderId, AlfrescoObjectType.FOLDER_OBJECT).getConvertedIdentifier();
 
         // TODO: check for allowed child object types
 
-        this.cmisObjectsUtils.addObjectToFolder(objectNodeRef, parentFolderNodeRef);
+        cmisObjectsUtils.addObjectToFolder(objectNodeRef, parentFolderNodeRef);
     }
 
     /**
@@ -79,20 +79,18 @@ public class DMMultiFilingServicePort extends DMAbstractServicePort implements M
      * @throws RuntimeException
      * @throws ConstraintViolationException
      */
-    public void removeObjectFromFolder(String repositoryId, String objectId, String folderId) throws PermissionDeniedException, UpdateConflictException, ObjectNotFoundException,
-            FolderNotValidException, OperationNotSupportedException, NotInFolderException, InvalidArgumentException, RuntimeException, ConstraintViolationException
+    public void removeObjectFromFolder(String repositoryId, String objectId, String folderId)
+        throws PermissionDeniedException, UpdateConflictException, ObjectNotFoundException, FolderNotValidException, OperationNotSupportedException, NotInFolderException, InvalidArgumentException, RuntimeException, ConstraintViolationException
     {
-
         checkRepositoryId(repositoryId);
 
-        NodeRef objectNodeReference = this.cmisObjectsUtils.getIdentifierInstance(objectId, AlfrescoObjectType.DOCUMENT_OR_FOLDER_OBJECT).getConvertedIdentifier();
+        NodeRef objectNodeReference = cmisObjectsUtils.getIdentifierInstance(objectId, AlfrescoObjectType.DOCUMENT_OR_FOLDER_OBJECT).getConvertedIdentifier();
         NodeRef folderNodeReference = checkAndReceiveFolderIdentifier(folderId);
 
         assertExistFolder(folderNodeReference);
-
         checkObjectChildParentRelationships(objectNodeReference, folderNodeReference);
 
-        if (!this.cmisObjectsUtils.removeObject(objectNodeReference, folderNodeReference))
+        if (!cmisObjectsUtils.removeObject(objectNodeReference, folderNodeReference))
         {
             throw new NotInFolderException("The specified Object is not child of the specified Folder Object");
         }
@@ -100,23 +98,21 @@ public class DMMultiFilingServicePort extends DMAbstractServicePort implements M
 
     private NodeRef checkAndReceiveFolderIdentifier(String folderIdentifier) throws OperationNotSupportedException
     {
-
         try
         {
-            return this.cmisObjectsUtils.getIdentifierInstance(folderIdentifier, AlfrescoObjectType.FOLDER_OBJECT).getConvertedIdentifier();
+            return cmisObjectsUtils.getIdentifierInstance(folderIdentifier, AlfrescoObjectType.FOLDER_OBJECT).getConvertedIdentifier();
         }
         catch (Throwable e)
         {
-            throw new OperationNotSupportedException("Unfiling is not supported. Any Object can't be deleted from all Folders");
+            throw new OperationNotSupportedException("Unfiling is not supported. An Object can't be deleted from all Folders");
         }
     }
 
     private void checkObjectChildParentRelationships(NodeRef objectNodeReference, NodeRef folderNodeReference) throws OperationNotSupportedException
     {
-
-        if (this.cmisObjectsUtils.isPrimaryObjectParent(folderNodeReference, objectNodeReference))
+        if (cmisObjectsUtils.isPrimaryObjectParent(folderNodeReference, objectNodeReference))
         {
-            throw new OperationNotSupportedException("Unfiling is not supported. User deleteObjectService instead");
+            throw new OperationNotSupportedException("Unfiling is not supported. Use deleteObjectService instead");
         }
     }
 }

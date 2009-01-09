@@ -27,6 +27,7 @@ package org.alfresco.repo.cmis.ws;
 import org.alfresco.cmis.search.CMISQueryOptions;
 import org.alfresco.cmis.search.CMISResultSet;
 import org.alfresco.cmis.search.CMISResultSetRow;
+import org.alfresco.repo.cmis.PropertyFilter;
 
 /**
  * Port for Discovery service.
@@ -67,10 +68,8 @@ public class DMDiscoveryServicePort extends DMAbstractServicePort implements Dis
         }
 
         CMISResultSet resultSet = cmisQueryService.query(options);
-
         QueryResponse response = new QueryResponse();
         response.setHasMoreItems(resultSet.hasMore());
-
         for (CMISResultSetRow row : resultSet)
         {
             CmisObjectType object = new CmisObjectType();

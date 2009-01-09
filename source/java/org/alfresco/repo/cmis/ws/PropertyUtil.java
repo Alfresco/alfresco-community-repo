@@ -98,13 +98,11 @@ public class PropertyUtil
 
     public static boolean isReadOnlyCmisProperty(String internalPropertyName)
     {
-
         return repoToCmisPropertiesNamesMapping.get(internalPropertyName).getSecond();
     }
 
     public static boolean isReadOnlyRepositoryProperty(String cmisPropertyName)
     {
-
         return repoToCmisPropertiesNamesMapping.get(cmisPropertyName).getSecond();
     }
 

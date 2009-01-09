@@ -38,119 +38,101 @@ public class DescendantsQueueManager
 
     public DescendantsQueueManager(ChildAssociationRef headAssociation)
     {
-
         this.queue = new LinkedList<DescendantElement>();
-        this.queue.addFirst(createElement(headAssociation, null));
-    }
-
-    public DescendantElement createElement(ChildAssociationRef data, DescendantElement parent)
-    {
-
-        return new DescendantElement(parent, data);
-    }
-
-    public void removeParents(DescendantElement source, List<String> undeletedNodes)
-    {
-
-        while (source.getParentElement() != null)
-        {
-            source = source.getParentElement();
-
-            determineUndeletedObjectToPut(source.getNodesAssociation().getChildRef().toString(), undeletedNodes);
-
-            this.queue.remove(source);
-        }
-    }
-
-    public void addChildren(List<ChildAssociationRef> children, DescendantElement parent)
-    {
-
-        for (ChildAssociationRef child : children)
-        {
-            this.queue.addFirst(createElement(child, parent));
-        }
-    }
-
-    /**
-     * This method receives and immediately removes next element from the queue
-     * 
-     * @return next <b>DescendantElement</b> (in this case - first element) in the queue if queue still contain any element or <b>null</b> if queue is empty
-     */
-    public DescendantElement receiveNextElement()
-    {
-
-        DescendantElement result = (this.queue.isEmpty()) ? (null) : (this.queue.getFirst());
-
-        this.queue.remove(result);
-
-        return result;
-    }
-
-    public void addElementToQueueEnd(DescendantElement element)
-    {
-
-        this.queue.addLast(element);
-    }
-
-    public boolean isDepleted()
-    {
-
-        return this.queue.isEmpty();
+        this.queue.addFirst(createElement(null, headAssociation));
     }
 
     protected DescendantsQueueManager()
     {
     }
+    
+    public boolean isEmpty()
+    {
+        return this.queue.isEmpty();
+    }
 
-    private void determineUndeletedObjectToPut(String undeletedObjectIdentifier, List<String> undeletedNodes)
+    /**
+     * This method gets and immediately removes next element from the queue
+     * 
+     * @return next <b>DescendantElement</b> (in this case - first element) in the queue if queue still contain any element or <b>null</b> if queue is empty
+     */
+    public DescendantElement getNextElement()
+    {
+        DescendantElement result = queue.isEmpty() ? null : queue.getFirst();
+        queue.remove(result);
+        return result;
+    }
+    
+    public void addFirst(DescendantElement parent, List<ChildAssociationRef> children)
+    {
+        for (ChildAssociationRef child : children)
+        {
+            queue.addFirst(createElement(parent, child));
+        }
+    }
+    
+    private DescendantElement createElement(DescendantElement parent, ChildAssociationRef child)
+    {
+        return new DescendantElement(parent, child);
+    }
+
+    public void addLast(DescendantElement element)
+    {
+        queue.addLast(element);
+    }
+    
+    public void removeParents(DescendantElement element, List<String> undeletedNodes)
     {
 
-        if (!undeletedNodes.contains(undeletedObjectIdentifier))
+        while (element.getParent() != null)
         {
-            undeletedNodes.add(undeletedObjectIdentifier);
+            element = element.getParent();
+            String child = element.getChildAssoc().getChildRef().toString();
+            if (!undeletedNodes.contains(child))
+            {
+                undeletedNodes.add(child);
+            }
+
+            queue.remove(element);
         }
     }
 
     public class DescendantElement
     {
-        private DescendantElement parentElement;
-        private ChildAssociationRef nodesAssociation;
+        private DescendantElement parent;
+        private ChildAssociationRef childAssoc;
 
-        public DescendantElement(DescendantElement parentElement, ChildAssociationRef nodesAssociation)
+        public DescendantElement(DescendantElement parent, ChildAssociationRef childAssoc)
         {
-
-            this.parentElement = parentElement;
-            this.nodesAssociation = nodesAssociation;
+            this.parent = parent;
+            this.childAssoc = childAssoc;
         }
 
-        public DescendantElement getParentElement()
+        protected DescendantElement()
         {
-
-            return parentElement;
         }
 
-        public ChildAssociationRef getNodesAssociation()
+        public DescendantElement getParent()
         {
+            return parent;
+        }
 
-            return nodesAssociation;
+        public ChildAssociationRef getChildAssoc()
+        {
+            return childAssoc;
         }
 
         @Override
         public boolean equals(Object obj)
         {
-
             if (!(obj instanceof DescendantElement))
             {
                 return false;
             }
 
             DescendantElement currentElement = (DescendantElement) obj;
-
-            return (this.nodesAssociation != null) ? (this.nodesAssociation.equals(currentElement.getNodesAssociation())) : (currentElement.getNodesAssociation() == null);
-        }
-
-        protected DescendantElement()
-        {
+            return (childAssoc != null) ? (childAssoc.equals(currentElement.getChildAssoc())) : (currentElement.getChildAssoc() == null);
         }
     }
+    
 }

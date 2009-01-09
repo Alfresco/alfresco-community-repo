@@ -28,6 +28,7 @@ import java.math.BigInteger;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.alfresco.repo.cmis.PropertyFilter;
 import org.alfresco.repo.cmis.ws.utils.AlfrescoObjectType;
 import org.alfresco.repo.web.util.paging.Cursor;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -46,6 +47,12 @@ public class DMRelationshipServicePort extends DMAbstractServicePort implements 
 {
     private DictionaryService dictionaryService;
 
+    public void setDictionaryService(DictionaryService dictionaryService)
+    {
+        this.dictionaryService = dictionaryService;
+    }
+
+    
     /**
      * Gets a list of relationships associated with the object, optionally of a specified relationship type, and optionally in a specified direction.
      * 
@@ -66,86 +73,78 @@ public class DMRelationshipServicePort extends DMAbstractServicePort implements 
     public GetRelationshipsResponse getRelationships(GetRelationships parameters) throws PermissionDeniedException, UpdateConflictException, FilterNotValidException,
             ObjectNotFoundException, OperationNotSupportedException, TypeNotFoundException, InvalidArgumentException, RuntimeException, ConstraintViolationException
     {
-
         checkRepositoryId(parameters.getRepositoryId());
 
-        EnumRelationshipDirection direction = ((parameters.getDirection() != null) && (parameters.getDirection().getValue() != null)) ? (parameters.getDirection().getValue())
-                : (EnumRelationshipDirection.SOURCE);
-        Boolean includingSubtypes = ((parameters.getIncludeSubRelationshipTypes() != null) && (parameters.getIncludeSubRelationshipTypes().getValue() != null)) ? (parameters
-                .getIncludeSubRelationshipTypes().getValue()) : (false);
-        String typeId = ((parameters.getTypeId() != null) && (parameters.getTypeId().getValue() != null)) ? (parameters.getTypeId().getValue()) : (null);
-        BigInteger skipCount = ((parameters.getSkipCount() != null) && (parameters.getSkipCount().getValue() != null)) ? (parameters.getSkipCount().getValue()) : (BigInteger.ZERO);
-        BigInteger maxItems = ((parameters.getMaxItems() != null) && (parameters.getMaxItems().getValue() != null)) ? (parameters.getMaxItems().getValue()) : (BigInteger.ZERO);
+        EnumRelationshipDirection direction = ((parameters.getDirection() != null) && (parameters.getDirection().getValue() != null)) ? parameters.getDirection().getValue() : EnumRelationshipDirection.SOURCE;
+        Boolean includingSubtypes = ((parameters.getIncludeSubRelationshipTypes() != null) && (parameters.getIncludeSubRelationshipTypes().getValue() != null)) ? parameters.getIncludeSubRelationshipTypes().getValue() : false;
+        String typeId = ((parameters.getTypeId() != null) && (parameters.getTypeId().getValue() != null)) ? parameters.getTypeId().getValue() : null;
+        BigInteger skipCount = ((parameters.getSkipCount() != null) && (parameters.getSkipCount().getValue() != null)) ? parameters.getSkipCount().getValue() : BigInteger.ZERO;
+        BigInteger maxItems = ((parameters.getMaxItems() != null) && (parameters.getMaxItems().getValue() != null)) ? parameters.getMaxItems().getValue() : BigInteger.ZERO;
 
         QName associationType = cmisDictionaryService.getCMISMapping().getAlfrescoType(cmisDictionaryService.getCMISMapping().getCmisTypeId(typeId).getQName());
 
-        return formatResponse(createPropertyFilter(parameters.getFilter()), receiveAssociations(
-                (NodeRef) this.cmisObjectsUtils.getIdentifierInstance(parameters.getObjectId(), AlfrescoObjectType.DOCUMENT_OR_FOLDER_OBJECT).getConvertedIdentifier(),
-                associationType, direction, includingSubtypes).toArray(), new GetRelationshipsResponse(), skipCount, maxItems);
+        PropertyFilter propertyFilter = createPropertyFilter(parameters.getFilter());
+        NodeRef objectNodeRef = (NodeRef) cmisObjectsUtils.getIdentifierInstance(parameters.getObjectId(), AlfrescoObjectType.DOCUMENT_OR_FOLDER_OBJECT).getConvertedIdentifier();
+        List<AssociationRef> assocs = receiveAssociations(objectNodeRef, associationType, direction, includingSubtypes);
+        
+        return formatResponse(propertyFilter, assocs.toArray(), new GetRelationshipsResponse(), skipCount, maxItems);
     }
 
-    public void setDictionaryService(DictionaryService dictionaryService)
+    private List<AssociationRef> receiveAssociations(NodeRef objectNodeReference, QName relationshipType, EnumRelationshipDirection direction, boolean includeSubtypes)
     {
-
-        this.dictionaryService = dictionaryService;
-    }
-
-    private GetRelationshipsResponse formatResponse(PropertyFilter filter, Object[] sourceArray, GetRelationshipsResponse result, BigInteger skipCount, BigInteger maxItems)
-            throws InvalidArgumentException, FilterNotValidException
-    {
-
-        Cursor cursor = createCursor(sourceArray.length, skipCount, maxItems);
-
-        for (int i = cursor.getStartRow(); i < cursor.getEndRow(); i++)
-        {
-            result.getObject().add(convertAlfrescoObjectToCmisObject(sourceArray[i].toString(), filter));
-        }
-
-        return result;
-    }
-
-    private List<AssociationRef> receiveAssociations(NodeRef objectNodeReference, QName necessaryRelationshipType, EnumRelationshipDirection direction, boolean includingSubtypes)
-    {
-
         List<AssociationRef> result = new LinkedList<AssociationRef>();
-
-        QNamePattern matcher = new RelationshipByTypeFilter(necessaryRelationshipType, includingSubtypes);
+        QNamePattern matcher = new RelationshipTypeFilter(relationshipType, includeSubtypes);
 
         if ((direction == EnumRelationshipDirection.BOTH) || (direction == EnumRelationshipDirection.TARGET))
         {
-            result.addAll(this.nodeService.getSourceAssocs(objectNodeReference, matcher));
+            result.addAll(nodeService.getSourceAssocs(objectNodeReference, matcher));
         }
 
         if ((direction == EnumRelationshipDirection.BOTH) || (direction == EnumRelationshipDirection.SOURCE))
         {
-            result.addAll(this.nodeService.getTargetAssocs(objectNodeReference, matcher));
+            result.addAll(nodeService.getTargetAssocs(objectNodeReference, matcher));
         }
 
         return result;
     }
-
-    private class RelationshipByTypeFilter implements QNamePattern
+    
+    private GetRelationshipsResponse formatResponse(PropertyFilter filter, Object[] sourceArray, GetRelationshipsResponse result, BigInteger skipCount, BigInteger maxItems)
+        throws InvalidArgumentException, FilterNotValidException
     {
-        private boolean includingSubtypes;
-        private QName necessaryGeneralType;
-
-        public RelationshipByTypeFilter(QName necessaryGeneralType, boolean includingSubtypes)
+        Cursor cursor = createCursor(sourceArray.length, skipCount, maxItems);
+        for (int i = cursor.getStartRow(); i < cursor.getEndRow(); i++)
         {
+            result.getObject().add(createCmisObject(sourceArray[i].toString(), filter));
+        }
+        return result;
+    }
 
-            this.includingSubtypes = includingSubtypes;
-            this.necessaryGeneralType = necessaryGeneralType;
+
+    private class RelationshipTypeFilter implements QNamePattern
+    {
+        private boolean includeSubtypes;
+        private QName relationshipType;
+
+        public RelationshipTypeFilter(QName ralationshipType, boolean includeSubtypes)
+        {
+            this.relationshipType = ralationshipType;
+            this.includeSubtypes = includeSubtypes;
         }
 
         public boolean isMatch(QName qname)
         {
-
-            if (this.necessaryGeneralType == null)
+            if (relationshipType == null)
             {
                 return true;
             }
-
-            return ((this.includingSubtypes) ? (dictionaryService.getAssociation(qname) != null)
-                    : (cmisDictionaryService.getCMISMapping().isValidCmisRelationship(qname) && this.necessaryGeneralType.equals(qname)));
+            else if (includeSubtypes)
+            {
+                return dictionaryService.getAssociation(qname) != null;
+            }
+            else
+            {
+                return cmisDictionaryService.getCMISMapping().isValidCmisRelationship(qname) && relationshipType.equals(qname);
+            }
         }
     }
 }

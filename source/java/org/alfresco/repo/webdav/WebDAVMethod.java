@@ -129,7 +129,7 @@ public abstract class WebDAVMethod
      * Executes the method, wrapping the call to {@link #executeImpl()} in an appropriate transaction
      * and handling the error conditions.
      */
-    public final void execute() throws WebDAVServerException
+    public void execute() throws WebDAVServerException
     {
         // Parse the HTTP headers
         parseRequestHeaders();

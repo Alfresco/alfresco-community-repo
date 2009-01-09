@@ -64,19 +64,19 @@ import org.xml.sax.helpers.AttributesImpl;
 public class PropFindMethod extends WebDAVMethod
 {
     // Request types
-    private static final int GET_ALL_PROPS = 0;
-    private static final int GET_NAMED_PROPS = 1;
-    private static final int FIND_PROPS = 2;
+	protected static final int GET_ALL_PROPS = 0;
+	protected static final int GET_NAMED_PROPS = 1;
+	protected static final int FIND_PROPS = 2;
 
     // Find depth and request type
     private int m_depth = WebDAV.DEPTH_INFINITY;
-    private int m_mode = GET_ALL_PROPS;
+    protected int m_mode = GET_ALL_PROPS;
 
     // Requested properties
-    private ArrayList<WebDAVProperty> m_properties = null;
+    protected ArrayList<WebDAVProperty> m_properties = null;
 
     // Available namespaces list
-    private HashMap<String, String> m_namespaces = null;
+    protected HashMap<String, String> m_namespaces = null;
 
     /**
      * Default constructor
@@ -390,7 +390,7 @@ public class PropFindMethod extends WebDAVMethod
      * @param node NodeRef
      * @param path String
      */
-    private void generateResponseForNode(XMLWriter xml, FileInfo nodeInfo, String path) throws Exception
+    protected void generateResponseForNode(XMLWriter xml, FileInfo nodeInfo, String path) throws Exception
     {
         NodeRef nodeRef = nodeInfo.getNodeRef();
         boolean isFolder = nodeInfo.isFolder();
@@ -683,7 +683,7 @@ public class PropFindMethod extends WebDAVMethod
      * @param node NodeRef
      * @param isDir boolean
      */
-    private void generateAllPropertiesResponse(XMLWriter xml, NodeRef node, boolean isDir) throws Exception
+    protected void generateAllPropertiesResponse(XMLWriter xml, NodeRef node, boolean isDir) throws Exception
     {
         // Get the properties for the node
 
@@ -834,7 +834,7 @@ public class PropFindMethod extends WebDAVMethod
      * @param node NodeRef
      * @param isDir boolean
      */
-    private void generateFindPropertiesResponse(XMLWriter xml, NodeRef node, boolean isDir)
+    protected void generateFindPropertiesResponse(XMLWriter xml, NodeRef node, boolean isDir)
     {
         try
         {
@@ -892,7 +892,7 @@ public class PropFindMethod extends WebDAVMethod
      * @param node NodeRef
      * @param isDir boolean
      */
-    private void generateLockDiscoveryResponse(XMLWriter xml, NodeRef node, boolean isDir) throws Exception
+    protected void generateLockDiscoveryResponse(XMLWriter xml, NodeRef node, boolean isDir) throws Exception
     {
         // Get the lock status for the node
 
@@ -910,7 +910,7 @@ public class PropFindMethod extends WebDAVMethod
      * 
      * @param xml XMLWriter
      */
-    private void writeLockTypes(XMLWriter xml)
+    protected void writeLockTypes(XMLWriter xml)
     {
         try
         {

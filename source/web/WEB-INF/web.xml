@@ -85,6 +85,19 @@
       <description>Spring config file locations</description>
    </context-param>
 
+	<!--  These were previously init params for the WebDAV servlet,
+	      but since they are also needed to MT-enable the 
+	      ExternalAccess servlet, I have made them context wide. -->
+   <context-param>
+         <param-name>store</param-name>
+         <param-value>workspace://SpacesStore</param-value>
+   </context-param>
+   <context-param>
+         <param-name>rootPath</param-name>
+         <param-value>/app:company_home</param-value>
+   </context-param>
+
+
    <filter>
       <filter-name>Authentication Filter</filter-name>
       <filter-class>org.alfresco.web.app.servlet.AuthenticationFilter</filter-class>
@@ -312,14 +325,6 @@
    <servlet>
       <servlet-name>WebDAV</servlet-name>
       <servlet-class>org.alfresco.repo.webdav.WebDAVServlet</servlet-class>
-      <init-param>
-         <param-name>store</param-name>
-         <param-value>workspace://SpacesStore</param-value>
-      </init-param>
-      <init-param>
-         <param-name>rootPath</param-name>
-         <param-value>/app:company_home</param-value>
-      </init-param>
       <load-on-startup>5</load-on-startup>
    </servlet>
 

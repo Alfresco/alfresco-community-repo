@@ -52,6 +52,13 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.springframework.web.jsf.FacesContextUtils;
 
+import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.namespace.NamespaceService;
+
+
 /**
  * Base servlet class containing useful constant values and common methods for Alfresco servlets.
  * 
@@ -89,6 +96,8 @@ public abstract class BaseServlet extends HttpServlet
    
    private static Log logger = LogFactory.getLog(BaseServlet.class);
    
+   // Tenant service
+   private static TenantService m_tenantService;
    
    /**
     * Return the ServiceRegistry helper instance
@@ -290,6 +299,26 @@ public abstract class BaseServlet extends HttpServlet
          
          // get the company home node to start the search from
          nodeRef = new NodeRef(Repository.getStoreRef(), Application.getCompanyRootId());
+         
+         m_tenantService = (TenantService) wc.getBean("tenantService");         
+         if (m_tenantService !=null && m_tenantService.isEnabled())
+         {
+        	 if (logger.isDebugEnabled())
+        	 {
+        	     logger.debug("MT is enabled.");
+        	 }
+        	 
+             NodeService nodeService = (NodeService) wc.getBean("NodeService");
+             SearchService searchService = (SearchService) wc.getBean("SearchService");
+             NamespaceService namespaceService = (NamespaceService) wc.getBean("NamespaceService");
+             
+             // TODO: since these constants are used more widely than just the WebDAVServlet, 
+             // they should be defined somewhere other than in that servlet
+             String m_rootPath = wc.getServletContext().getInitParameter(org.alfresco.repo.webdav.WebDAVServlet.KEY_ROOT_PATH);
+             
+             // note: rootNodeRef is required (for storeRef part)
+             nodeRef = m_tenantService.getRootNode(nodeService, searchService, namespaceService, m_rootPath, nodeRef);
+         }
          
          if (paths.size() != 0)
          {

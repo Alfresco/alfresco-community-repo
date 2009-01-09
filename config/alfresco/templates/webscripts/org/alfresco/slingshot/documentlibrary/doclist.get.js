@@ -53,12 +53,12 @@ function getDocList(filter)
       allAssets = allAssets.slice(0, filterParams.limitResults);
    }
       
-   // Ensure folders appear at the top of the list
+   // Ensure folders and folderlinks appear at the top of the list
    folderAssets = new Array();
    documentAssets = new Array();
    for each(asset in allAssets)
    {
-      if (asset.isContainer)
+      if (asset.isContainer || asset.type == "{http://www.alfresco.org/model/application/1.0}folderlink")
       {
          folderAssets.push(asset);
       }
@@ -78,15 +78,16 @@ function getDocList(filter)
    var startIndex = (pagePos - 1) * pageSize;
    assets = assets.slice(startIndex, pagePos * pageSize);
    
-   var itemStatus, itemOwner, actionSet, thumbnail, createdBy, modifiedBy, activeWorkflows;
-   var location, qnamePaths, displayPaths;
+   var itemStatus, itemOwner, actionSet, thumbnail, createdBy, modifiedBy, activeWorkflows, assetType, linkAsset, isLink;
+   var defaultLocation, location, qnamePaths, displayPaths, locationAsset;
 
    // Location if we're in a site
-   var location =
+   var defaultLocation =
    {
       site: parsedArgs.location.site,
       container: parsedArgs.location.container,
-      path: parsedArgs.location.path
+      path: parsedArgs.location.path,
+      file: null
    }
    
    // User permissions and role
@@ -99,20 +100,23 @@ function getDocList(filter)
    	   "delete": parsedArgs.parentNode.hasPermission("Delete")
       }
    };
-   if (location.site !== null)
+   if (defaultLocation.site !== null)
    {
       user.role = parsedArgs.location.siteNode.getMembersRole(person.properties["userName"]);
    }
    
    // Locked/working copy status defines action set
-   for each(asset in assets)
+   for each (asset in assets)
    {
       itemStatus = [];
       itemOwner = null;
       createdBy = null;
       modifiedBy = null;
       activeWorkflows = [];
-      
+      linkAsset = null;
+      isLink = false;
+
+      // Asset status
       if (asset.isLocked)
       {
          itemStatus.push("locked");
@@ -129,6 +133,81 @@ function getDocList(filter)
          itemStatus.push("lockedBySelf");
       }
       
+      // Get users
+      createdBy = people.getPerson(asset.properties["cm:creator"]);
+      modifiedBy = people.getPerson(asset.properties["cm:modifier"]);
+      
+       // Asset type
+      if (asset.isContainer)
+      {
+         assetType = "folder";
+      }
+      else if (asset.type == "{http://www.alfresco.org/model/application/1.0}folderlink")
+      {
+         assetType = "folder";
+         isLink = true;
+      }
+      else if (asset.type == "{http://www.alfresco.org/model/application/1.0}filelink")
+      {
+         assetType = "document";
+         isLink = true;
+      }
+      else
+      {
+         assetType = "document";
+      }
+      
+      if (isLink)
+      {
+         /**
+          * NOTE: After this point, the "asset" object will be changed to a link's destination node
+          *       if the original node was a filelink type
+          */
+         linkAsset = asset;
+         asset = linkAsset.properties.destination;
+      }
+      
+      // Does this collection of assets have potentially differering paths?
+      if (filterParams.variablePath || isLink)
+      {
+         locationAsset = (isLink && assetType == "document") ? linkAsset : asset;
+
+         qnamePaths = locationAsset.qnamePath.split("/");
+         displayPaths = locationAsset.displayPath.split("/");
+
+         if ((qnamePaths.length > 5) && (qnamePaths[2] == "st:sites"))
+         {
+            // This asset belongs to a site
+            location =
+            {
+               site: qnamePaths[3].substr(3),
+               container: qnamePaths[4].substr(3),
+               path: "/" + displayPaths.slice(5, displayPaths.length).join("/"),
+               file: locationAsset.name
+            }
+         }
+         else
+         {
+            location =
+            {
+               site: null,
+               container: null,
+               path: null,
+               file: null
+            }
+         }
+      }
+      else
+      {
+         location =
+         {
+            site: defaultLocation.site,
+            container: defaultLocation.container,
+            path: defaultLocation.path,
+            file: asset.name
+         }
+      }
+
       // Make sure we have a thumbnail
       if (haveThumbnails)
       {
@@ -140,42 +219,14 @@ function getDocList(filter)
          }
       }
       
-      // Get users
-      createdBy = people.getPerson(asset.properties["cm:creator"]);
-      modifiedBy = people.getPerson(asset.properties["cm:modifier"]);
-      
       // Get relevant actions set
       actionSet = getActionSet(asset,
       {
+         assetType: assetType,
+         isLink: isLink,
          itemStatus: itemStatus,
          itemOwner: itemOwner
       });
-      
-      // Does this collection of assets have potentially differering paths?
-      if (filterParams.variablePath)
-      {
-         qnamePaths = asset.qnamePath.split("/");
-         displayPaths = asset.displayPath.split("/");
-         if ((qnamePaths.length > 5) && (qnamePaths[2] == "st:sites"))
-         {
-            // This asset belongs to a site
-            location =
-            {
-               site: qnamePaths[3].substr(3),
-               container: qnamePaths[4].substr(3),
-               path: "/" + displayPaths.slice(5, displayPaths.length).join("/")
-            }
-         }
-         else
-         {
-            location =
-            {
-               site: null,
-               container: null,
-               path: null
-            }
-         }
-      }
       
       // Part of an active workflow?
       for each (activeWorkflow in asset.activeWorkflows)
@@ -186,6 +237,9 @@ function getDocList(filter)
       items.push(
       {
          asset: asset,
+         linkAsset: linkAsset,
+         type: assetType,
+         isLink: isLink,
          status: itemStatus,
          owner: itemOwner,
          createdBy: createdBy,
@@ -199,7 +253,8 @@ function getDocList(filter)
 
    return (
    {
-      luceneQuery: filterParams.query,
+      luceneQuery: query,
+      onlineEditing: utils.moduleInstalled("org.alfresco.module.vti"),
       paging:
       {
          startIndex: startIndex,

@@ -22,6 +22,8 @@ function getFilterParams(filter, parsedArgs)
       case "all":
          var filterQuery = "+PATH:\"" + parsedArgs.rootNode.qnamePath + "//*\"";
          filterQuery += " -TYPE:\"{http://www.alfresco.org/model/content/1.0}thumbnail\"";
+         filterQuery += " -TYPE:\"{http://www.alfresco.org/model/forum/1.0}forum\"";
+         filterQuery += " -TYPE:\"{http://www.alfresco.org/model/forum/1.0}topic\"";
          filterQuery += " -TYPE:\"{http://www.alfresco.org/model/forum/1.0}post\"";
          filterParams.query = filterQuery;
          break;
@@ -69,6 +71,8 @@ function getFilterParams(filter, parsedArgs)
          filterQuery += " +@cm\\:" + dateField + ":[" + fromQuery + "T00\\:00\\:00.000 TO " + toQuery + "T23\\:59\\:59.999]";
          filterQuery += " -ASPECT:\"{http://www.alfresco.org/model/content/1.0}workingcopy\"";
          filterQuery += " -TYPE:\"{http://www.alfresco.org/model/content/1.0}thumbnail\"";
+         filterQuery += " -TYPE:\"{http://www.alfresco.org/model/forum/1.0}forum\"";
+         filterQuery += " -TYPE:\"{http://www.alfresco.org/model/forum/1.0}topic\"";
          filterQuery += " -TYPE:\"{http://www.alfresco.org/model/forum/1.0}post\"";
 
          filterParams.sortBy = "@{http://www.alfresco.org/model/content/1.0}" + dateField;
@@ -108,7 +112,7 @@ function getFilterParams(filter, parsedArgs)
 
 const TYPE_MAP =
 {
-   "documents": '+TYPE:"{http://www.alfresco.org/model/content/1.0}content"',
+   "documents": '+(TYPE:"{http://www.alfresco.org/model/content/1.0}content" OR TYPE:"{http://www.alfresco.org/model/application/1.0}filelink")',
    "folders": '+TYPE:"{http://www.alfresco.org/model/content/1.0}folder"',
    "images": "-TYPE:\"{http://www.alfresco.org/model/content/1.0}thumbnail\" +@cm\\:content.mimetype:image/*"
 };

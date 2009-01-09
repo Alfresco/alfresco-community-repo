@@ -1,12 +1,16 @@
 function getActionSet(asset, obj)
 {
-   var actionSet = "empty";
-   var itemStatus = obj.itemStatus.toString();
-   var isItemOwner = null;
-   isItemOwner = (obj.itemOwner && obj.itemOwner.properties.userName == person.properties.userName);
+   var actionSet = "empty",
+      assetType = obj.assetType.toString(),
+      isLink = obj.isLink,
+      itemStatus = obj.itemStatus.toString(),
+      isItemOwner = (obj.itemOwner && obj.itemOwner.properties.userName == person.properties.userName);
    
-   // Only 1 action set for folders
-   if (asset.isContainer)
+   if (isLink)
+   {
+      actionSet = "link";
+   }
+   else if (asset.isContainer)
    {
       actionSet = "folder";
    }

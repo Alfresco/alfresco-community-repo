@@ -1,3 +1,4 @@
+<#macro dateFormat date>${date?string("dd MMM yyyy HH:mm:ss 'GMT'Z '('zzz')'")}</#macro>
 <#assign workingCopyLabel = " " + message("coci_service.working_copy_label")>
 <#assign paging = doclist.paging>
 <#assign user = doclist.user>
@@ -16,7 +17,8 @@
             "edit" : ${user.permissions.edit?string},
             "delete" : ${user.permissions.delete?string}
          }
-      }
+      },
+      "onlineEditing": ${doclist.onlineEditing?string}
    },
    "items":
    [
@@ -24,19 +26,19 @@
       <#assign d = item.asset>
       <#assign version = "1.0">
       <#if d.hasAspect("cm:versionable") && d.versionHistory?size != 0><#assign version = d.versionHistory?sort_by("versionLabel")?reverse[0].versionLabel></#if>
-      <#if item.owner?exists>
+      <#if item.owner??>
          <#assign lockedBy = (item.owner.properties.firstName + " " + item.owner.properties.lastName)?trim>
          <#assign lockedByUser = item.owner.properties.userName>
       <#else>
          <#assign lockedBy="" lockedByUser="">
       </#if>
-      <#if item.createdBy?exists>
+      <#if item.createdBy??>
          <#assign createdBy = (item.createdBy.properties.firstName + " " + item.createdBy.properties.lastName)?trim>
          <#assign createdByUser = item.createdBy.properties.userName>
       <#else>
          <#assign createdBy="" createdByUser="">
       </#if>
-      <#if item.modifiedBy?exists>
+      <#if item.modifiedBy??>
          <#assign modifiedBy = (item.modifiedBy.properties.firstName + " " + item.modifiedBy.properties.lastName)?trim>
          <#assign modifiedByUser = item.modifiedBy.properties.userName>
       <#else>
@@ -46,20 +48,21 @@
       {
          "index": ${item_index},
          "nodeRef": "${d.nodeRef}",
-         "type": "<#if d.isContainer>folder<#else>document</#if>",
+         "type": "${item.type}",
+         "isLink": ${item.isLink?string},
          "mimetype": "${d.mimetype!""}",
          "icon32": "${d.icon32}",
-         "fileName": "${d.name}",
+         "fileName": "<#if item.isLink>${item.linkAsset.name}<#else>${d.name}</#if>",
          "displayName": "${d.name?replace(workingCopyLabel, "")}",
          "status": "<#list item.status as s>${s}<#if s_has_next>,</#if></#list>",
          "lockedBy": "${lockedBy}",
          "lockedByUser": "${lockedByUser}",
          "title": "${(d.properties.title!"")}",
          "description": "${(d.properties.description!"")}",
-         "createdOn": "${d.properties.created?string("dd MMM yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
+         "createdOn": "<@dateFormat d.properties.created />",
          "createdBy": "${createdBy}",
          "createdByUser": "${createdByUser}",
-         "modifiedOn": "${d.properties.modified?string("dd MMM yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
+         "modifiedOn": "<@dateFormat d.properties.modified />",
          "modifiedBy": "${modifiedBy}",
          "modifiedByUser": "${modifiedByUser}",
          "size": "${d.size?c}",
@@ -72,7 +75,8 @@
          {
             "site": "${item.location.site!""}",
             "container": "${item.location.container!""}",
-            "path": "${item.location.path!""}"
+            "path": "${item.location.path!""}",
+            "file": "${item.location.file!""}"
          },
       	"permissions":
       	{

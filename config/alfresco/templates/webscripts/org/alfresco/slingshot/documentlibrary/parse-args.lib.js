@@ -27,7 +27,7 @@ function getParsedArgs()
       }
       else if (nodeRef == "alfresco://sites/home")
       {
-         rootNode = companyhome.childByNamePath("Sites");
+         rootNode = companyhome.childrenByXPath("st:sites")[0];
       }
       else
       {
@@ -88,9 +88,15 @@ function getParsedArgs()
       path: null
    };
 
-   var site, siteNode, container;
-   var qnamePaths = search.ISO9075Decode(parentNode.qnamePath).split("/");
-   var displayPaths = parentNode.displayPath.split("/");
+   var site, siteNode, container,
+      qnamePaths = search.ISO9075Decode(parentNode.qnamePath).split("/");
+      displayPaths = parentNode.displayPath.split("/");
+   
+   if (parentNode.isContainer)
+   {
+      displayPaths = displayPaths.concat([parentNode.name]);
+   }
+      
    if ((qnamePaths.length > 4) && (qnamePaths[2] == "st:sites"))
    {
       site = displayPaths[3];

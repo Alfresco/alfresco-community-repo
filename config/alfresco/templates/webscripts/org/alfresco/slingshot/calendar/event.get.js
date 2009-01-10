@@ -71,7 +71,7 @@ function main()
       "name": event.name,
       "what": event.properties["ia:whatEvent"], 
       "description": event.properties["ia:descriptionEvent"],
-   	"location": event.properties["ia:whereEvent"],
+   	  "location": event.properties["ia:whereEvent"],
       "from": event.properties["ia:fromDate"],
       "to": event.properties["ia:toDate"],
       "tags": event.tags

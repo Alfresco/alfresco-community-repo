@@ -6,9 +6,9 @@
   "event":
   {
     "name": "${result.name}",
-    "from": "${result.from?string("yyyy-M-dd")}",
+    "from": "${result.from?string("yyyy-MM-dd")}",
     "start": "${result.from?string("HH:mm")}",
-    "to": "${result.to?string("yyyy-M-dd")}",
+    "to": "${result.to?string("yyyy-MM-dd")}",
     "end": "${result.to?string("HH:mm")}",
     "uri": "${result.uri}",
     "desc": "${result.desc}",

@@ -22,48 +22,49 @@ function getUserEvents(user, range)
 	{
 		return [];
 	}
-
-   var paths = [], events = [], event, results, result, j, jj, luceneQuery, siteTitles = {};
-
-   var sites = siteService.listUserSites(user), site;
-   for (j = 0, jj = sites.length; j < jj; j++)
-   {
+	var paths = [], events = [], event, results, result, j, jj, luceneQuery, siteTitles = {};
+  
+  var sites = siteService.listUserSites(user);
+  for (var j=0; j < sites.length; j++)
+  {
       site = sites[j];
-      paths.push("PATH:\"/app:company_home/st:sites/cm:" + search.ISO9075Encode(site.shortName) + "/cm:calendar/*\"");
+      paths.push("PATH:\"/app:company_home/st:sites/cm:" + search.ISO9075Encode(sites[j].shortName) + "/cm:calendar/*\"");
       siteTitles[site.shortName] = site.title;
-   }
-
-   if (paths.length != 0)
-   {
-      luceneQuery = "+(" + paths.join(" OR ") + ") +TYPE:\"{http\://www.alfresco.org/model/calendar}calendarEvent\"";
-      if (range.fromdate)
-      {
-         // Expects the date in the format yyyy/mm/dd
-         var from = range.fromdate.split("/").join("\\-"); 
-         var dateClause = " +@ia\\:fromDate:[" + from + "T00:00:00 TO 2099\\-1\\-1T00:00:00]";
-         luceneQuery += dateClause;
-      }
-      results = search.luceneSearch(luceneQuery, "ia:fromDate", true);
-
-      for (j = 0, jj = events.length; j < jj; j++)
-      {
-    		event = {};
-    		result = results[i];
-         event.name  = e.name;
-         event.title = e.properties["ia:whatEvent"];
-         event.where = e.properties["ia:whereEvent"];
-         event.when = e.properties["ia:fromDate"];
-         event.start = e.properties["ia:fromDate"];
-         event.end = e.properties["ia:toDate"];
-         event.site = e.parent.parent.name;
-         event.siteTitle = siteTitles[event.site];
-         event.allday = (isAllDayEvent(e)) ? 'true' : 'false';
-         event.tags = e.tags.join(' ');
-         events.push(event);
-      }
-   }
-
-   return events;
+  }
+	
+	var results = [];
+	
+	if (paths.length > 0)
+	{
+		var luceneQuery = "+(" + paths.join(" OR ") + ") +TYPE:\"{http\://www.alfresco.org/model/calendar}calendarEvent\"";
+		if (range.fromdate)
+		{
+			// Expects the date in the format yyyy/mm/dd
+			var from = range.fromdate.split("/").join("\\-"); 
+			var dateClause = " +@ia\\:fromDate:[" + from + "T00:00:00 TO 2099\\-1\\-1T00:00:00]";
+			luceneQuery += dateClause;
+		}
+		results = search.luceneSearch(luceneQuery, "ia:fromDate", true);
+	}
+  // repurpose results into custom array so as to add custom properties
+  var events = [];
+  for (var i=0;i<results.length;i++)
+  {
+    var event = {};
+    var e = results[i];
+    event.name  = e.name;
+    event.title = e.properties["ia:whatEvent"];
+    event.where = e.properties["ia:whereEvent"];
+    event.when = e.properties["ia:fromDate"];
+    event.start = e.properties["ia:fromDate"];
+    event.end = e.properties["ia:toDate"];
+    event.site = e.parent.parent.name;
+    event.siteTitle = siteTitles[event.site];    
+    event.allday = (isAllDayEvent(e)) ? 'true' : 'false';
+    event.tags = e.tags.join(' ');
+    events.push(event);
+  }
+	return events;
 }
 
 /**

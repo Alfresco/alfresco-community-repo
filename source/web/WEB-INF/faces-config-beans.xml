@@ -38,15 +38,11 @@
          <property-name>versionService</property-name>
          <value>#{VersionService}</value>
       </managed-property>
-      <managed-property>
-         <property-name>translationDocument</property-name>
-         <value>#{DocumentDetailsDialog.translationDocument}</value>
-      </managed-property>
    </managed-bean>
    
    <managed-bean>
       <description>
-         The bean for the Manage Permissions.
+         The bean for Manage WCM Permissions.
       </description>
       <managed-bean-name>ManagePermissionsDialog</managed-bean-name>
       <managed-bean-class>
@@ -65,7 +61,7 @@
   
    <managed-bean>
       <description>
-         The bean that make a document multilingual
+         The bean that makes a document multilingual
       </description>
       <managed-bean-name>MakeMultilingualDialog</managed-bean-name>
       <managed-bean-class>org.alfresco.web.bean.ml.MakeMultilingualDialog</managed-bean-class>
@@ -110,7 +106,7 @@
 
    <managed-bean>
       <description>
-         The bean that edit the multilinguals properties of a document
+         The bean that edits the multilinguals properties of a document
       </description>
       <managed-bean-name>EditMLContainerDialog</managed-bean-name>
       <managed-bean-class>org.alfresco.web.bean.ml.EditMLContainerDialog</managed-bean-class>
@@ -151,7 +147,7 @@
 
    <managed-bean>
      <description>
-        The bean that add a new translation without content
+        The bean that adds a new translation without content
      </description>
      <managed-bean-name>AddTranslationWithoutContentDialog</managed-bean-name>
      <managed-bean-class>org.alfresco.web.bean.ml.AddTranslationWithoutContentDialog</managed-bean-class>
@@ -184,7 +180,7 @@
 
    <managed-bean>
       <description>
-         The bean that add a translation with a content
+         The bean that adds a translation with a content
       </description>
       <managed-bean-name>AddTranslationDialog</managed-bean-name>
       <managed-bean-class>org.alfresco.web.bean.ml.AddTranslationDialog</managed-bean-class>

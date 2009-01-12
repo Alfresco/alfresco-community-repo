@@ -74,6 +74,7 @@ import org.alfresco.web.app.context.UIContextService;
 import org.alfresco.web.app.servlet.DownloadContentServlet;
 import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.content.DocumentDetailsDialog;
+import org.alfresco.web.bean.ml.MultilingualManageDialog;
 import org.alfresco.web.bean.repository.MapNode;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.NodePropertyResolver;
@@ -1764,9 +1765,12 @@ public class BrowseBean implements IContextListener, Serializable
 
       NodeRef translation =  new NodeRef(Repository.getStoreRef(), id);
 
-      // remember the bean from wich the action comes
-      DocumentDetailsDialog docDetails = (DocumentDetailsDialog)FacesContext.getCurrentInstance().getExternalContext().getSessionMap().get("DocumentDetailsDialog");
+      // remember the bean from which the action comes
+      FacesContext fc = FacesContext.getCurrentInstance();
+      DocumentDetailsDialog docDetails = (DocumentDetailsDialog)FacesHelper.getManagedBean(fc, "DocumentDetailsDialog");
       docDetails.setTranslationDocument(new MapNode(translation));
+      MultilingualManageDialog mmDialog = (MultilingualManageDialog)FacesHelper.getManagedBean(fc, "MultilingualManageDialog");
+      mmDialog.setTranslationDocument(docDetails.getTranslationDocument());
 
       // set the ml container as the current document
       NodeRef mlContainer = getMultilingualContentService().getTranslationContainer(translation);

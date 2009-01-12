@@ -358,14 +358,6 @@
          <bean name="transformer.ImageMagick.Command" class="org.alfresco.util.exec.RuntimeExec">
             <property name="commandsAndArguments">
                 <map>
-                    <entry key="Windows.*">
-                        <list>
-                            <value>${img.win.exe}</value>
-                            <value>${source}</value>
-                            <value>SPLIT:${options}</value>
-                            <value>${target}</value>
-                        </list>
-                    </entry>
                     <entry key=".*">
                         <list>
                             <value>${img.exe}</value>
@@ -400,12 +392,6 @@
          <bean name="transformer.ImageMagick.CheckCommand" class="org.alfresco.util.exec.RuntimeExec">
             <property name="commandsAndArguments">
                 <map>
-                    <entry key="Windows.*">
-                        <list>
-                            <value>${img.win.exe}</value>
-                            <value>-version</value>
-                        </list>
-                    </entry>
                     <entry key=".*">
                         <list>
                             <value>${img.exe}</value>

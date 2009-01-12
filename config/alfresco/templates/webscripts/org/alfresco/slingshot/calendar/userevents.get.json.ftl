@@ -14,7 +14,7 @@
 		"start": "${event.start?string("HH:mm")}",
 		"end": "${event.end?string("HH:mm")}",
 		"site": "${event.site}",
-		"siteTitle: "${event.siteTitle}",
+		"siteTitle": "${event.siteTitle}",
 		"allday": "${event.allday}",
       "tags": "${event.tags}"
 	}<#if event_has_next>,</#if>

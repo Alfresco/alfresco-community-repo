@@ -7,7 +7,7 @@
    
    <managed-bean>
       <description>
-         The bean for the Delete Category screen.
+         The bean for the Manage Multilingual dialog.
       </description>
       <managed-bean-name>MultilingualManageDialog</managed-bean-name>
       <managed-bean-class>
@@ -43,6 +43,7 @@
          <value>#{DocumentDetailsDialog.translationDocument}</value>
       </managed-property>
    </managed-bean>
+   
    <managed-bean>
       <description>
          The bean for the Manage Permissions.
@@ -52,7 +53,6 @@
          org.alfresco.web.bean.wcm.ManagePermissionsDialog
       </managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
-      
       <managed-property>
          <property-name>personService</property-name>
          <value>#{PersonService}</value>
@@ -61,7 +61,6 @@
          <property-name>avmBrowseBean</property-name>
          <value>#{AVMBrowseBean}</value>
       </managed-property>
-      
    </managed-bean>
   
    <managed-bean>

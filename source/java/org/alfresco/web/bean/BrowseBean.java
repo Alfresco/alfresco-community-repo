@@ -38,7 +38,6 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.faces.context.FacesContext;
-import javax.faces.context.ResponseWriter;
 import javax.faces.event.ActionEvent;
 import javax.transaction.UserTransaction;
 
@@ -1728,7 +1727,7 @@ public class BrowseBean implements IContextListener, Serializable
       Node node = getActionSpace();
       if (node != null)
       {
-    	 FacesContext fc = FacesContext.getCurrentInstance();
+         FacesContext fc = FacesContext.getCurrentInstance();
          NodeRef companyRootRef = new NodeRef(Repository.getStoreRef(), Application.getCompanyRootId(fc));
          if (node.getNodeRef().equals(companyRootRef))
          {
@@ -1767,13 +1766,13 @@ public class BrowseBean implements IContextListener, Serializable
 
       // remember the bean from wich the action comes
       DocumentDetailsDialog docDetails = (DocumentDetailsDialog)FacesContext.getCurrentInstance().getExternalContext().getSessionMap().get("DocumentDetailsDialog");
-      docDetails.setTranslationDocument(new Node(translation));
+      docDetails.setTranslationDocument(new MapNode(translation));
 
       // set the ml container as the current document
       NodeRef mlContainer = getMultilingualContentService().getTranslationContainer(translation);
 
       setupContentAction(mlContainer.getId(), true);
-    }
+   }
 
    /**
     * Public helper to setup action pages with content context

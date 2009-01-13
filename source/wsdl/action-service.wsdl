@@ -40,7 +40,7 @@
             <sequence>
                <element name="name" type="xsd:string"/>
                <element name="type" type="action:ActionItemDefinitionType"/>
-               <element name="title" type="xsd:string"/>
+               <element name="title" type="xsd:string" nillable="true"/>
                <element name="description" type="xsd:string" nillable="true"/>
                <element name="adHocPropertiesAllowed" type="xsd:boolean"/>
                <element name="parameterDefinition" type="action:ParameterDefinition" maxOccurs="unbounded" minOccurs="0" nillable="true"/>

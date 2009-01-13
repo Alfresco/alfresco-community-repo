@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Web Framework AVM Store</shortname>
+  <description>Remote service mirroring the Store interface - to an AVM store</description>
+  <url>/avmstore/{method}/{path}</url>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+  <format default="">argument</format>
+</webscript>

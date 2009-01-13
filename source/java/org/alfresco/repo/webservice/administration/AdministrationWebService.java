@@ -65,6 +65,15 @@ public class AdministrationWebService extends AbstractWebService implements
     /** The person service */
     private PersonService personService = null;
     
+    /** 
+     * Indicates whether the user administration methods should manage the authentication
+     * details, or just the person details.
+     * 
+     * Set this to true if an 3rd party authentication implementation has been pluged into
+     * the repository that manages authentication details.
+     */
+    private boolean manageAuthenticationDetails = true;
+    
     /** The authentication service */
     private AuthenticationService authenticationService = null;
     
@@ -84,6 +93,17 @@ public class AdministrationWebService extends AbstractWebService implements
         AdministrationWebService.ignoredProperties.add(ContentModel.PROP_STORE_IDENTIFIER);
         AdministrationWebService.ignoredProperties.add(ContentModel.PROP_NODE_UUID);
     }
+    
+    /**
+     * Set the flag that indicates whether this service should manage user authentication details as
+     * well as person details.
+     * 
+     * @param manageAuthenticationDetails	true if authentication details are managed, false otherwise
+     */
+    public void setManageAuthenticationDetails(boolean manageAuthenticationDetails) 
+    {
+		this.manageAuthenticationDetails = manageAuthenticationDetails;
+	}
     
     /**
      * Set the transaction service
@@ -390,8 +410,11 @@ public class AdministrationWebService extends AbstractWebService implements
         int index = 0;
         for (NewUserDetails newUser : newUsers)
         {
-            // Create a new authentication
-            this.authenticationService.createAuthentication(newUser.getUserName(), newUser.getPassword().toCharArray());
+        	if (this.manageAuthenticationDetails == true)
+        	{
+        		// Create a new authentication
+        		this.authenticationService.createAuthentication(newUser.getUserName(), newUser.getPassword().toCharArray());
+        	}
             
             // Create a new person
             Map<QName, Serializable> properties = new HashMap<QName, Serializable>(7);
@@ -508,14 +531,21 @@ public class AdministrationWebService extends AbstractWebService implements
      */
     private void changePasswordImpl(String userName, String oldPassword, String newPassword)
     {
-        // Update the authentication details
-    	if (this.authenticationService.getCurrentUserName().equals("admin") == true)
+    	if (this.manageAuthenticationDetails == true)
     	{
-    		this.authenticationService.setAuthentication(userName, newPassword.toCharArray());
+	        // Update the authentication details
+	    	if (this.authenticationService.getCurrentUserName().equals("admin") == true)
+	    	{
+	    		this.authenticationService.setAuthentication(userName, newPassword.toCharArray());
+	    	}
+	    	else
+	    	{
+	    		this.authenticationService.updateAuthentication(userName, oldPassword.toCharArray(), newPassword.toCharArray());
+	    	}
     	}
     	else
     	{
-    		this.authenticationService.updateAuthentication(userName, oldPassword.toCharArray(), newPassword.toCharArray());
+    		throw new RuntimeException("Web service has been configured so that user authenticaiton details are not managed.");
     	}
     }
 
@@ -557,7 +587,10 @@ public class AdministrationWebService extends AbstractWebService implements
     {
         for (String userName : userNames)
         {
-            this.authenticationService.deleteAuthentication(userName);
+        	if (this.manageAuthenticationDetails == true)
+        	{
+        		this.authenticationService.deleteAuthentication(userName);
+        	}
             this.personService.deletePerson(userName);
         }        
     }

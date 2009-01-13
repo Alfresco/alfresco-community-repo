@@ -61,6 +61,7 @@
        <property name="activityService" ref="activityService"/>
        <property name="taggingService" ref="TaggingService"/>
        <property name="authorityService" ref="authorityService"/>
+       <property name="dictionaryService" ref="DictionaryService"/>
        <property name="sitesXPath">
            <value>./${spaces.company_home.childname}/st:sites</value>
        </property>

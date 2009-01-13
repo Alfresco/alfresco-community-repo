@@ -37,6 +37,7 @@ import org.alfresco.repo.activities.ActivityType;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.activities.ActivityService;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
@@ -91,6 +92,7 @@ public class SiteServiceImpl implements SiteService, SiteModel
     private AuthenticationComponent authenticationComponent;
     private TaggingService taggingService;
     private AuthorityService authorityService;
+    private DictionaryService dictionaryService;
 
     /**
      * Set the path to the location of the sites root folder.  For example:
@@ -183,6 +185,16 @@ public class SiteServiceImpl implements SiteService, SiteModel
     public void setAuthorityService(AuthorityService authorityService)
     {
         this.authorityService = authorityService;
+    }
+    
+    /**
+     * Set the dictionary service 
+     * 
+     * @param dictionaryService     dictionary service
+     */
+    public void setDictionaryService(DictionaryService dictionaryService)
+    {
+        this.dictionaryService = dictionaryService;
     }
     
     /**
@@ -430,7 +442,6 @@ public class SiteServiceImpl implements SiteService, SiteModel
         // - take into consideration that the sites may not just be in a flat
         // list under the site root
 
-        // TODO
         // For now just return the list of sites present under the site root
         NodeRef siteRoot = getSiteRoot();
         List<ChildAssociationRef> assocs = this.nodeService.getChildAssocs(
@@ -439,7 +450,13 @@ public class SiteServiceImpl implements SiteService, SiteModel
         List<SiteInfo> result = new ArrayList<SiteInfo>(assocs.size());
         for (ChildAssociationRef assoc : assocs)
         {
-            result.add(createSiteInfo(assoc.getChildRef()));
+            // Ignore any node that is not a "site"
+            NodeRef site = assoc.getChildRef();
+            QName siteClassName = this.nodeService.getType(site);
+            if (this.dictionaryService.isSubClass(siteClassName, SiteModel.TYPE_SITE) == true)
+            {            
+                result.add(createSiteInfo(site));
+            }
         }
 
         return result;

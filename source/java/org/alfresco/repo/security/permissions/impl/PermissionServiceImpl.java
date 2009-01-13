@@ -55,6 +55,7 @@ import org.alfresco.repo.security.permissions.PermissionReference;
 import org.alfresco.repo.security.permissions.PermissionServiceSPI;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.version.VersionModel;
+import org.alfresco.repo.version.common.VersionUtil;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -435,9 +436,9 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
         
         // NOTE: maybe in future there will appear situation when changing Node permissions will be a cause for creating new Node version. In other words,
         // VersionedNodeRefs will contain their own permissions (whose, probably, will differ from version to version). In this case you should delete/comment this code!!!
-        if(isVersionedNodeRefInstance(passedNodeRef))
+        if (isVersionedNodeRefInstance(passedNodeRef))
         {
-            passedNodeRef = convertVersionedNodeRefToFrozenNodeRef(passedNodeRef);
+            passedNodeRef = convertVersionedNodeRefToFrozenNodeRef(VersionUtil.convertNodeRef(passedNodeRef));
         }
         
         final NodeRef nodeRef = tenantService.getName(passedNodeRef);

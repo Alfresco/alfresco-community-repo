@@ -109,7 +109,7 @@ public class EditionServiceImpl implements EditionService
 
         // get the last edition and add it the Version Histories property to the version
         Version currentEdition = versionService.getCurrentVersion(mlContainerToVersion);
-        addVersionHitoryProperty(currentEdition, childAssocRefs);
+        addVersionHistoryProperty(currentEdition, childAssocRefs);
 
         if(versionProperties == null)
         {
@@ -264,19 +264,35 @@ public class EditionServiceImpl implements EditionService
         // Switch VersionStore depending on configured impl
         if (versionService.getVersionStoreReference().getIdentifier().equals(Version2Model.STORE_ID))
         {
-        	// V2 version store (eg. workspace://version2Store)
-        	
+            // V2 version store (eg. workspace://version2Store)
+            
             // get the serialisation of the version histories in the version properties
-            versionHistories = (List<VersionHistory>)
-                    properties.get(Version2Model.PROP_QNAME_TRANSLATION_VERSIONS);
+            Object histories = properties.get(Version2Model.PROP_QNAME_TRANSLATION_VERSIONS);
+            if (histories instanceof List)
+            {
+                versionHistories = (List<VersionHistory>)histories;
+            }
+            else if (histories instanceof VersionHistory)
+            {
+                versionHistories = new ArrayList<VersionHistory>(1);
+                versionHistories.add((VersionHistory)histories);
+            }
         }
         else if (versionService.getVersionStoreReference().getIdentifier().equals(VersionModel.STORE_ID))
         {
             // Deprecated V1 version store (eg. workspace://lightWeightVersionStore)
             
             // get the serialisation of the version histories in the version properties
-            versionHistories = (List<VersionHistory>)
-                        properties.get(VersionModel.PROP_QNAME_TRANSLATION_VERSIONS);
+            Object histories = properties.get(VersionModel.PROP_QNAME_TRANSLATION_VERSIONS);
+            if (histories instanceof List)
+            {
+                versionHistories = (List<VersionHistory>)histories;
+            }
+            else if (histories instanceof VersionHistory)
+            {
+                versionHistories = new ArrayList<VersionHistory>(1);
+                versionHistories.add((VersionHistory)histories);
+            }
         }
         else
         {
@@ -303,7 +319,7 @@ public class EditionServiceImpl implements EditionService
     /**
      * Util method to add the version histories of translations as a property of the frozen mlContainer
      */
-    private void addVersionHitoryProperty(Version edition, List<ChildAssociationRef> childAssocRefs)
+    private void addVersionHistoryProperty(Version edition, List<ChildAssociationRef> childAssocRefs)
     {
         List<VersionHistory> translationVersionHistories = new ArrayList<VersionHistory>(childAssocRefs.size());
 
@@ -312,7 +328,6 @@ public class EditionServiceImpl implements EditionService
             NodeRef translation = ref.getChildRef();
 
             translationVersionHistories.add(versionService.getVersionHistory(translation));
-
         }
 
         // properties in which the version histories will be stored
@@ -348,7 +363,6 @@ public class EditionServiceImpl implements EditionService
         {
             throw new AlfrescoRuntimeException("Unexpected versionstore: " + versionService.getVersionStoreReference().getIdentifier());
         }
-
     }
 
     /**

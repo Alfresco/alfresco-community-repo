@@ -60,6 +60,8 @@ public class SelectListTag extends HtmlComponentTag
       setStringProperty(component, "itemStyleClass", this.itemStyleClass);
       setStringProperty(component, "value", this.value);
       setStringProperty(component, "onchange", this.onchange);
+      setBooleanProperty(component, "escapeItemLabel", this.escapeItemLabel);
+      setBooleanProperty(component, "escapeItemDescription", this.escapeItemDescription);
    }
    
    /**
@@ -75,6 +77,8 @@ public class SelectListTag extends HtmlComponentTag
       this.itemStyleClass = null;
       this.value = null;
       this.onchange = null;
+      this.escapeItemLabel = null;
+      this.escapeItemDescription = null;
    }
 
    /**
@@ -146,6 +150,26 @@ public class SelectListTag extends HtmlComponentTag
    {
       this.onchange = onchange;
    }
+   
+   /**
+    * Set the escapeItemLabel flag
+    *
+    * @param escapeItemLabel true to escape the items labels
+    */
+   public void setEscapeItemLabel(String escapeItemLabel)
+   {
+      this.escapeItemLabel = escapeItemLabel;
+   }
+   
+   /**
+    * Set the escapeItemDescription flag
+    *
+    * @param escapeItemDescription true to escape the items descriptions
+    */
+   public void setEscapeItemDescription(String escapeItemDescription)
+   {
+      this.escapeItemDescription = escapeItemDescription;
+   }
 
    /** the selected value */
    private String value;
@@ -167,4 +191,10 @@ public class SelectListTag extends HtmlComponentTag
 
    /** the event handler for a change in selection */
    private String onchange;
+   
+   /** the escape mode for item's labels */
+   private String escapeItemLabel;
+   
+   /** the escape mode for item's descriptions */
+   private String escapeItemDescription;
 }

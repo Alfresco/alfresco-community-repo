@@ -3,6 +3,7 @@ package org.alfresco.web.bean.wcm;
 import javax.faces.context.FacesContext;
 
 import org.alfresco.web.app.Application;
+import org.alfresco.web.ui.common.Utils;
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -43,7 +44,8 @@ public class DescriptionAttributeHelper
     public static String getTableLine(FacesContext fc, String fieldName, String fieldValue)
     {
         StringBuilder line = new StringBuilder(128);
-        line.append(TRTD_BEGIN).append(Application.getMessage(fc, fieldName)).append(TD_TD).append(fieldValue).append(TDTR_END);
+        line.append(TRTD_BEGIN).append(Application.getMessage(fc, fieldName)).
+           append(TD_TD).append(Utils.encode(fieldValue)).append(TDTR_END);
         return line.toString();
     }
     

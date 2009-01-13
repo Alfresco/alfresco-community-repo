@@ -67,6 +67,9 @@ public interface Rendition
    /** the output stream for the rendition */
    public OutputStream getOutputStream();
 
+   /** the HTML label attribute for UI */
+   public String getLabelAttribute();
+   
    /** the HTML description attribute for UI */
    public String getDescriptionAttribute();
 

@@ -67,6 +67,8 @@ public class UISelectList extends UIInput implements NamingContainer
    private int rowIndex = -1;
    private int itemCount;
    private String onchange = null;
+   private Boolean escapeItemLabel;
+   private Boolean escapeItemDescription;
    
    // ------------------------------------------------------------------------------
    // Component Impl 
@@ -99,6 +101,8 @@ public class UISelectList extends UIInput implements NamingContainer
       this.activeSelect = (Boolean)values[2];
       this.itemCount = (Integer)values[3];
       this.onchange = (String)values[4];
+      this.escapeItemLabel = (Boolean)values[5];
+      this.escapeItemDescription = (Boolean)values[6];
    }
    
    /**
@@ -112,7 +116,9 @@ public class UISelectList extends UIInput implements NamingContainer
          this.multiSelect,
          this.activeSelect,
          this.itemCount,
-         this.onchange
+         this.onchange,
+         this.escapeItemLabel,
+         this.escapeItemDescription
       };
    }
    
@@ -326,6 +332,8 @@ public class UISelectList extends UIInput implements NamingContainer
       throws IOException
    {
       boolean activeSelect = isActiveSelect();
+      boolean escapeLabel = getEscapeItemLabel();
+      boolean escapeDescription = getEscapeItemDescription();
       
       // begin the row, add tooltip if present
       String tooltip = item.getTooltip();
@@ -394,17 +402,32 @@ public class UISelectList extends UIInput implements NamingContainer
       }
       
       // label and description text
+      String label = item.getLabel();
       String description = item.getDescription();
       out.write("<td width=100%");
       Utils.outputAttribute(out, getAttributes().get("itemStyle"), "style");
       Utils.outputAttribute(out, getAttributes().get("itemStyleClass"), "class");
       out.write("><div style='padding:2px'>");
-      out.write(Utils.encode(item.getLabel()));
+      if (escapeLabel)
+      {
+         out.write(Utils.encode(label));
+      }
+      else
+      {
+         out.write(label);
+      }
       out.write("</div>");
       if (description != null)
       {
          out.write("<div style='padding:2px'>");
-         out.write(Utils.encode(description));
+         if (escapeDescription)
+         {
+            out.write(Utils.encode(description));
+         }
+         else
+         {
+            out.write(description);
+         }
          out.write("</div>");
       }
       out.write("</td>");
@@ -520,6 +543,57 @@ public class UISelectList extends UIInput implements NamingContainer
       this.activeSelect = activeSelect;
    }
    
+   /**
+    * Get the escape item label flag
+    *
+    * @return true if the items label should be escaped, false otherwise
+    */
+   public boolean getEscapeItemLabel()
+   {
+      ValueBinding vb = getValueBinding("escapeItemLabel");
+      if (vb != null)
+      {
+         this.escapeItemLabel = (Boolean)vb.getValue(getFacesContext());
+      }
+      
+      return this.escapeItemLabel != null ? this.escapeItemLabel.booleanValue() : true;
+   }
+
+   /**
+    * Set true to escape the items label, false otherwise
+    *
+    * @param escapeItemLabel true to escape the items label
+    */
+   public void setEscapeItemLabel(boolean escapeItemLabel)
+   {
+      this.escapeItemLabel = escapeItemLabel;
+   }
+   
+   /**
+    * Get the escape item description flag
+    *
+    * @return true if the items description should be escaped, false otherwise
+    */
+   public boolean getEscapeItemDescription()
+   {
+      ValueBinding vb = getValueBinding("escapeItemDescription");
+      if (vb != null)
+      {
+         this.escapeItemDescription = (Boolean)vb.getValue(getFacesContext());
+      }
+      
+      return this.escapeItemDescription != null ? this.escapeItemDescription.booleanValue() : true;
+   }
+
+   /**
+    * Set true to escape the items description, false otherwise
+    *
+    * @param escapeItemDescription true to escape the items description
+    */
+   public void setEscapeItemDescription(boolean escapeItemDescription)
+   {
+      this.escapeItemDescription = escapeItemDescription;
+   }
    
    /**
     * We use a hidden field name based on the parent form component Id and

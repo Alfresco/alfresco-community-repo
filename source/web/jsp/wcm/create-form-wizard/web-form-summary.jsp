@@ -42,8 +42,9 @@
                 multiSelect="false"
                 activeSelect="true" 
                 style="width:100%"
-                itemStyle="vertical-align: top; margin-right: 5px; padding-right: 5px;">
-    <a:listItem label="<b>${WizardManager.bean.formTitle}</b>" value="${WizardManager.bean.formName}" 
+                itemStyle="vertical-align: top; margin-right: 5px; padding-right: 5px;"
+                escapeItemLabel="false" escapeItemDescription="false">
+    <a:listItem label="${WizardManager.bean.formLabelAttribute}" value="${WizardManager.bean.formName}" 
                 image="/images/icons/webform_large.gif"
                 description="${WizardManager.bean.formDescriptionAttribute}" />
   </a:selectList>
@@ -62,9 +63,10 @@
                 multiSelect="false"
                 itemStyle="vertical-align: top; margin-right: 5px; padding-right: 5px;"
                 activeSelect="true" 
-                style="width:100%">
+                style="width:100%"
+                escapeItemLabel="false" escapeItemDescription="false">
     <c:forEach items="${WizardManager.bean.renderingEngineTemplates}" var="ret">
-      <a:listItem label="<b>${ret.title}</b>"
+      <a:listItem label="${ret.renderingEngineLabelAttribute}"
                   value="${ret.name}"
                   image="/images/icons/template_large.gif"
                   description="${ret.renderingEngineDescriptionAttribute}" />
@@ -85,8 +87,9 @@
                 multiSelect="false"
                 activeSelect="true" 
                 itemStyle="vertical-align: top; margin-right: 5px; padding-right: 5px;"
-                style="width:100%">
-    <a:listItem label="<b>${WizardManager.bean.defaultWorkflowDefinition.title}</b>"
+                style="width:100%"
+                escapeItemLabel="false" escapeItemDescription="false">
+    <a:listItem label="${WizardManager.bean.workflowLabelAttribute}"
                 value="${WizardManager.bean.defaultWorkflowDefinition.name}"
                 image="/images/icons/workflow_large.gif"
                 description="${WizardManager.bean.workflowDescriptionAttribute}" />

@@ -41,10 +41,11 @@
 
    <h:panelGrid columns="1" cellpadding="3" cellspacing="3" border="0" width="100%">
       <a:selectList id="webproject-list" multiSelect="false" activeSelect="true" style="width:100%;" 
-                    itemStyle="vertical-align: top; margin-right: 5px; padding-right: 5px;">
+                    itemStyle="vertical-align: top; margin-right: 5px; padding-right: 5px;"
+                    escapeItemLabel="false" escapeItemDescription="false">
          <a:listItem value="${WizardManager.bean.name}"
                      image="/images/icons/website_large.gif"
-                     label="<b>${WizardManager.bean.name}</b>"
+                     label="${WizardManager.bean.websiteLabelAttribute}"
                      description="${WizardManager.bean.websiteDescriptionAttribute}" /> 
       </a:selectList>
    </h:panelGrid>
@@ -57,11 +58,12 @@
    <h:panelGrid columns="2" cellpadding="3" cellspacing="3" border="0" width="100%">
       <h:outputText rendered="#{empty WizardManager.bean.forms}" value="#{msg.no_selected_items}"/>
       <a:selectList id="form-list" multiSelect="false" activeSelect="true" style="width:100%;" 
-                    itemStyle="vertical-align: top; margin-right: 5px; padding-right: 5px;">
+                    itemStyle="vertical-align: top; margin-right: 5px; padding-right: 5px;"
+                    escapeItemLabel="false" escapeItemDescription="false">
          <c:forEach items="${WizardManager.bean.forms}" var="form">
             <a:listItem value="${form.name}"
                         image="/images/icons/webform_large.gif"
-                        label="<b>${form.name}</b>"
+                        label="${form.formLabelAttribute}"
                         description="${form.formDescriptionAttribute}" />
          </c:forEach>
       </a:selectList>
@@ -75,11 +77,12 @@
    <h:panelGrid columns="1" cellpadding="3" cellspacing="3" border="0" width="100%">
       <h:outputText rendered="#{empty WizardManager.bean.workflows}" value="#{msg.no_selected_items}"/>
       <a:selectList id="workflow-list" multiSelect="false" activeSelect="true" style="width:100%;" 
-                    itemStyle="vertical-align: top; margin-right: 5px; padding-right: 5px;">
+                    itemStyle="vertical-align: top; margin-right: 5px; padding-right: 5px;"
+                    escapeItemLabel="false" escapeItemDescription="false">
          <c:forEach items="${WizardManager.bean.workflows}" var="workflow">
             <a:listItem value="${workflow.name}"
                         image="/images/icons/workflow_large.gif"
-                        label="<b>${workflow.title}</b>"
+                        label="${workflow.workflowLabelAttribute}"
                         description="${workflow.workflowDescriptionAttribute}" />
          </c:forEach>
       </a:selectList>
@@ -95,12 +98,13 @@
                   multiSelect="false"
                   activeSelect="true" 
                   style="width:100%;"
-                  itemStyle="vertical-align: top; margin-right: 5px;">
-      <c:forEach items="${WizardManager.bean.invitedUsers}" var="user">
-         <a:listItem value="${user.name}"
-                     image="/images/icons/user_large.gif"
-                     label="<b>${user.name}</b>"
-                     description="${user.userDescriptionAttribute}" />
+                  itemStyle="vertical-align: top; margin-right: 5px;"
+                  escapeItemLabel="false" escapeItemDescription="false">
+		<c:forEach items="${WizardManager.bean.invitedUsers}" var="user">
+	        <a:listItem value="${user.name}"
+                    	image="/images/icons/user_large.gif"
+          				label="${user.userLabelAttribute}"
+          				description="${user.userDescriptionAttribute}" />
       </c:forEach>
     </a:selectList>
   </h:panelGrid>

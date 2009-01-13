@@ -41,30 +41,32 @@
                   multiSelect="false"
                   activeSelect="true" 
                   style="width:100%" 
-		            itemStyle="vertical-align: top; margin-right: 5px; padding-right: 5px;">
+                  itemStyle="vertical-align: top; margin-right: 5px; padding-right: 5px;"
+                  escapeItemLabel="false" escapeItemDescription="false">
       <a:listItem value="${WizardManager.bean.formInstanceData.name}"
                   image="/images/filetypes32/xml.gif"
-                  label="<b>${WizardManager.bean.formInstanceData.name}</b>"
+                  label="${WizardManager.bean.formLabelAttribute}"
                   description="${WizardManager.bean.formDescriptionAttribute}" />
     </a:selectList>
   </h:panelGrid>
 
   <h:panelGrid columns="1" cellpadding="2" style="padding-top: 4px; padding-bottom: 4px;"
                width="100%" rowClasses="wizardSectionHeading"
-	       rendered="#{!empty WizardManager.bean.renditions}">
+               rendered="#{!empty WizardManager.bean.renditions}">
     <h:outputText value="&#160;#{msg.create_web_content_summary_rendition_details}" escape="false" />
   </h:panelGrid>
 
   <h:panelGrid columns="1" cellpadding="3" cellspacing="3" border="0" width="100%"
 	       rendered="#{!empty WizardManager.bean.renditions}">
     <a:selectList id="rendition-list" 
-		  multiSelect="false"
-		  activeSelect="true" 
-		  style="width:100%" 
-		  itemStyle="vertical-align: top; margin-right: 5px; padding-right: 5px;">
+                  multiSelect="false"
+                  activeSelect="true" 
+                  style="width:100%" 
+                  itemStyle="vertical-align: top; margin-right: 5px; padding-right: 5px;"
+                  escapeItemLabel="false" escapeItemDescription="false">
       <c:forEach items="${WizardManager.bean.renditions}" var="rendition" varStatus="status">
         <a:listItem id="listItem${status.index}" value="${rendition.name}" image="${rendition.fileTypeImage}"
-        			label="<b>${rendition.name}</b>"
+        			label="${rendition.labelAttribute}"
         			description="${rendition.descriptionAttribute}" /> 
       </c:forEach>
     </a:selectList>

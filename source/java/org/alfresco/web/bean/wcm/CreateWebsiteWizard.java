@@ -1357,6 +1357,18 @@ public class CreateWebsiteWizard extends BaseWizardBean
    
    /**
     * 
+    * @return Returns HTML for website label
+    */
+   public String getWebsiteLabelAttribute()
+   {
+      StringBuilder builder = new StringBuilder("<b>");
+      builder.append(Utils.encode(this.name));
+      builder.append("</b>");
+      return builder.toString();
+   }
+   
+   /**
+    * 
     * @return Returns a HTML code for "description" attribute
     */
    private String buildWebsiteDescriptionAttribute()
@@ -1454,6 +1466,14 @@ public class CreateWebsiteWizard extends BaseWizardBean
               this.formDescriptionAttribute = this.buildFormDescriptionAttribute();
           }
           return this.formDescriptionAttribute;
+      }
+      
+      public String getFormLabelAttribute()
+      {
+         StringBuilder builder = new StringBuilder("<b>");
+         builder.append(Utils.encode(this.getName()));
+         builder.append("</b>");
+         return builder.toString();
       }
 
       /**
@@ -1746,6 +1766,18 @@ public class CreateWebsiteWizard extends BaseWizardBean
 
       /**
        * 
+       * @return Returns HTML for the workflow label
+       */
+      public String getWorkflowLabelAttribute()
+      {
+         StringBuilder builder = new StringBuilder("<b>");
+         builder.append(Utils.encode(this.title));
+         builder.append("</b>");
+         return builder.toString();
+      }
+
+      /**
+       * 
        * @return Returns HTML representation of the "description" attribute
        */
       private String buildWorkflowDescriptionAttribute()
@@ -1797,6 +1829,14 @@ public class CreateWebsiteWizard extends BaseWizardBean
               this.userDescriptionAttribute = buildUserDescriptionAttribute();
           }
           return this.userDescriptionAttribute;
+      }
+      
+      public String getUserLabelAttribute()
+      {
+         StringBuilder builder = new StringBuilder("<b>");
+         builder.append(Utils.encode(this.name));
+         builder.append("</b>");
+         return builder.toString();
       }
       
       private String buildUserDescriptionAttribute()

@@ -41,8 +41,9 @@
                  multiSelect="false"
                  activeSelect="true" 
                  style="width:100%"
-                 itemStyle="vertical-align: top; margin-right: 5px; padding-right: 5px;">
-      <a:listItem label="<b>${WizardManager.bean.formTitle}</b>" value="${WizardManager.bean.formName}" 
+                 itemStyle="vertical-align: top; margin-right: 5px; padding-right: 5px;"
+                 escapeItemLabel="false" escapeItemDescription="false">
+      <a:listItem label="${WizardManager.bean.formLabelAttribute}" value="${WizardManager.bean.formName}" 
                   image="/images/icons/webform_large.gif"
                   description="${WizardManager.bean.formDescriptionAttribute}" />
    </a:selectList>

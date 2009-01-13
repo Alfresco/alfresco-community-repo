@@ -187,6 +187,14 @@ public class CreateFormWizard extends BaseWizardBean
       {
          return this.renderingEngineDescriptionAttribute;
       }
+      
+      public String getRenderingEngineLabelAttribute()
+      {
+         StringBuilder builder = new StringBuilder("<b>");
+         builder.append(Utils.encode(this.title));
+         builder.append("</b>");
+         return builder.toString();
+      }
 
       public String toString()
       {
@@ -538,6 +546,18 @@ public class CreateFormWizard extends BaseWizardBean
        }
        return this.formDescriptionAttribute;
    }
+   
+   /**
+    *
+    * @return HTML code for the form label
+    */
+   public String getFormLabelAttribute()
+   {
+      StringBuilder builder = new StringBuilder("<b>");
+      builder.append(Utils.encode(this.getFormTitle()));
+      builder.append("</b>");
+      return builder.toString();
+   }
 
    /**
     * 
@@ -552,6 +572,24 @@ public class CreateFormWizard extends BaseWizardBean
            this.workflowDescriptionAttribute = buildWorkflowDescriptionAttribute();
        }
        return this.workflowDescriptionAttribute;
+   }
+   
+   /**
+    * 
+    * @return Returns HTML code of the workflow label
+    */
+   public String getWorkflowLabelAttribute()
+   {
+      StringBuilder builder = new StringBuilder("<b>");
+      
+      WorkflowDefinition wkDef = this.getDefaultWorkflowDefinition();
+      if (wkDef != null)
+      {
+         builder.append(Utils.encode(wkDef.getTitle()));
+      }
+      
+      builder.append("</b>");
+      return builder.toString();
    }
    
    /**

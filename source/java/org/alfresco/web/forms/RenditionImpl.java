@@ -42,6 +42,7 @@ import org.alfresco.util.Pair;
 import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wcm.AVMUtil;
+import org.alfresco.web.ui.common.Utils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -279,6 +280,14 @@ import org.xml.sax.SAXException;
        return this.descriptionAttribute;
    }
    
+   public String getLabelAttribute()
+   {
+      StringBuilder builder = new StringBuilder("<b>");
+      builder.append(Utils.encode(this.getName()));
+      builder.append("</b>");
+      return builder.toString();
+   }
+
    private String buildDescriptionAttribute()
    {
        int hashCode = hashCode();

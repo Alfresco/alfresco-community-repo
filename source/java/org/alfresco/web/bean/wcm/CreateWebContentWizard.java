@@ -894,6 +894,14 @@ public class CreateWebContentWizard extends CreateContentWizard
        }
        return this.formDescriptionAttribute;
    }
+   
+   public String getFormLabelAttribute()
+   {
+      StringBuilder builder = new StringBuilder("<b>");
+      builder.append(Utils.encode(this.getFormInstanceData().getName()));
+      builder.append("</b>");
+      return builder.toString();
+   }
 
    // ------------------------------------------------------------------------------
    // Action event handlers

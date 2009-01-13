@@ -264,6 +264,23 @@
       <property name="searchService" ref="SearchService" />
    </bean>
    
+   <!--  Authenticated Web Framework AVM Store service -->
+   <bean id="webscript.org.alfresco.webframework.avmstore.get" class="org.alfresco.repo.web.scripts.bean.AVMRemoteStore" parent="webscript">
+      <property name="mimetypeService" ref="MimetypeService" />
+      <property name="avmService" ref="AVMService" />
+      <property name="searchService" ref="SearchService" />
+   </bean>
+   <bean id="webscript.org.alfresco.webframework.avmstore.post" class="org.alfresco.repo.web.scripts.bean.AVMRemoteStore" parent="webscript">
+      <property name="mimetypeService" ref="MimetypeService" />
+      <property name="avmService" ref="AVMService" />
+      <property name="searchService" ref="SearchService" />
+   </bean>
+   <bean id="webscript.org.alfresco.webframework.avmstore.delete" class="org.alfresco.repo.web.scripts.bean.AVMRemoteStore" parent="webscript">
+      <property name="mimetypeService" ref="MimetypeService" />
+      <property name="avmService" ref="AVMService" />
+      <property name="searchService" ref="SearchService" />
+   </bean>
+   
    <!-- Web-tier SSO authentication touch point -->
    <bean id="webscript.org.alfresco.repository.touch.get" class="org.alfresco.repo.web.scripts.bean.Touch" parent="webscript" />
    
@@ -604,22 +621,5 @@
       <property name="namespaceService" ref="NamespaceService"/>
       <property name="dictionaryService" ref="DictionaryService"/>
     </bean>
-
-   <!--  Authenticated Web Framework AVM Store service -->
-   <bean id="webscript.org.alfresco.webframework.avmstore.get" class="org.alfresco.repo.web.scripts.bean.AVMRemoteStore" parent="webscript">
-      <property name="mimetypeService" ref="MimetypeService" />
-      <property name="avmService" ref="AVMService" />
-      <property name="searchService" ref="SearchService" />
-   </bean>
-   <bean id="webscript.org.alfresco.webframework.avmstore.post" class="org.alfresco.repo.web.scripts.bean.AVMRemoteStore" parent="webscript">
-      <property name="mimetypeService" ref="MimetypeService" />
-      <property name="avmService" ref="AVMService" />
-      <property name="searchService" ref="SearchService" />
-   </bean>
-   <bean id="webscript.org.alfresco.webframework.avmstore.delete" class="org.alfresco.repo.web.scripts.bean.AVMRemoteStore" parent="webscript">
-      <property name="mimetypeService" ref="MimetypeService" />
-      <property name="avmService" ref="AVMService" />
-      <property name="searchService" ref="SearchService" />
-   </bean>
     
 </beans>

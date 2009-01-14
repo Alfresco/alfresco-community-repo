@@ -215,6 +215,27 @@ public class MLPropertyInterceptor implements MethodInterceptor
             nodeService.setProperties(nodeRef, convertedProperties);
             // Done
         }
+        else if (methodName.equals("addProperties"))
+        {
+            NodeRef nodeRef = (NodeRef) args[0];
+            Map<QName, Serializable> newProperties =(Map<QName, Serializable>) args[1];
+            
+            // Get the pivot translation, if appropriate
+            NodeRef pivotNodeRef = getPivotNodeRef(nodeRef);
+
+            // Get the current properties for the node
+            Map<QName, Serializable> currentProperties = nodeService.getProperties(nodeRef);
+            // Convert all properties
+            Map<QName, Serializable> convertedProperties = convertInboundProperties(
+                    currentProperties,
+                    newProperties,
+                    contentLocale,
+                    nodeRef,
+                    pivotNodeRef);
+            // Now complete the call by passing the converted properties
+            nodeService.addProperties(nodeRef, convertedProperties);
+            // Done
+        }
         else if (methodName.equals("setProperty"))
         {
             NodeRef nodeRef = (NodeRef) args[0];

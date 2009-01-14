@@ -2416,9 +2416,21 @@ public class IndexInfo implements IndexMonitor
      */
     public static void main(String[] args) throws Throwable
     {
-
-        String indexLocation = args[0];
-        IndexInfo ii = new IndexInfo(new File(indexLocation), null);
+        for (int i = 0; i < args.length; i++)
+        {
+            File indexLocation = new File(args[i]);
+            if (!indexLocation.exists())
+            {
+                System.err.println("Index directory doesn't exist: " + indexLocation);
+                continue;
+            }
+            readIndexInfo(indexLocation);
+        }
+    }
+    
+    private static void readIndexInfo(File indexLocation) throws Throwable
+    {
+        IndexInfo ii = new IndexInfo(indexLocation, null);
 
         ii.readWriteLock.writeLock().lock();
         try

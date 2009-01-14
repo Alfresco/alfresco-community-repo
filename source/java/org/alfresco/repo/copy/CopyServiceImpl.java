@@ -608,7 +608,8 @@ public class CopyServiceImpl implements CopyService
 		Collection<CopyServicePolicies.OnCopyNodePolicy> policies = this.onCopyNodeDelegate.getList(sourceClassRef);
 		if (policies.isEmpty() == true)
 		{
-			defaultOnCopy(sourceClassRef, sourceNodeRef, copyDetails);
+		    Map<QName, Serializable> sourceNodeProperties = this.nodeService.getProperties(sourceNodeRef);
+			defaultOnCopy(sourceClassRef, sourceNodeRef, sourceNodeProperties, copyDetails);
 		}
 		else
 		{
@@ -626,7 +627,11 @@ public class CopyServiceImpl implements CopyService
 	 * @param sourceNodeRef		the source node reference
 	 * @param copyDetails		details of the state being copied
 	 */
-    private void defaultOnCopy(QName classRef, NodeRef sourceNodeRef, PolicyScope copyDetails) 
+    private void defaultOnCopy(
+            QName classRef,
+            NodeRef sourceNodeRef,
+            Map<QName, Serializable> sourceNodeProperties,
+            PolicyScope copyDetails) 
 	{
 		ClassDefinition classDefinition = this.dictionaryService.getClass(classRef);	
 		if (classDefinition != null)
@@ -641,8 +646,11 @@ public class CopyServiceImpl implements CopyService
             Map<QName,PropertyDefinition> propertyDefinitions = classDefinition.getProperties();
             for (QName propertyName : propertyDefinitions.keySet()) 
             {
-                Serializable propValue = this.nodeService.getProperty(sourceNodeRef, propertyName);
-                copyDetails.addProperty(classDefinition.getName(), propertyName, propValue);
+                Serializable propValue = sourceNodeProperties.get(propertyName);
+                if (propValue != null)
+                {
+                    copyDetails.addProperty(classDefinition.getName(), propertyName, propValue);
+                }
             }           
 
             // Copy the associations (child and target)
@@ -684,10 +692,16 @@ public class CopyServiceImpl implements CopyService
 		Map<QName, Serializable> props = copyDetails.getProperties();
 		if (props != null)
 		{
+	        Map<QName, Serializable> copyProps = new HashMap<QName, Serializable>(props);
 			for (QName propName : props.keySet()) 
 			{
-				this.nodeService.setProperty(destinationNodeRef, propName, props.get(propName));
+			    Serializable value = props.get(propName);
+			    if (value == null)
+			    {
+			        copyProps.remove(propName);
+			    }
 			}
+            this.nodeService.addProperties(destinationNodeRef, copyProps);
 		}
 	}
 	

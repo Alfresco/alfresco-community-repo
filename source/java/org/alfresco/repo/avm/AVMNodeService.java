@@ -1343,6 +1343,14 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         }
     }
     
+    public void addProperties(NodeRef nodeRef, Map<QName, Serializable> properties)
+    {
+        // Overwrite the current properties
+        Map<QName, Serializable> currentProperties = getProperties(nodeRef);
+        currentProperties.putAll(properties);
+        setProperties(nodeRef, currentProperties);
+    }
+    
     static QName [] fgBuiltinProperties = new QName [] 
     { 
         ContentModel.PROP_CREATED,

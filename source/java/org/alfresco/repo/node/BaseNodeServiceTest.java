@@ -110,6 +110,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
     public static final QName ASPECT_QNAME_MANDATORY = QName.createQName(NAMESPACE, "mandatoryaspect");
     public static final QName ASPECT_QNAME_WITH_DEFAULT_VALUE = QName.createQName(NAMESPACE, "withDefaultValue");
     public static final QName PROP_QNAME_TEST_TITLE = QName.createQName(NAMESPACE, "title");
+    public static final QName PROP_QNAME_TEST_DESCRIPTION = QName.createQName(NAMESPACE, "description");
     public static final QName PROP_QNAME_TEST_CONTENT = QName.createQName(NAMESPACE, "content");
     public static final QName PROP_QNAME_BOOLEAN_VALUE = QName.createQName(NAMESPACE, "booleanValue");
     public static final QName PROP_QNAME_INTEGER_VALUE = QName.createQName(NAMESPACE, "integerValue");
@@ -709,6 +710,36 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
                 0, nodeService.getTargetAssocs(sourceNodeRef, RegexQNamePattern.MATCH_ALL).size());
     }
     
+    /**
+     * Test {@link https://issues.alfresco.com/jira/browse/ALFCOM-2299 ALFCOM-2299}
+     */
+    public void testAspectRemovalCascadeDelete() throws Exception
+    {
+        // Create a node to add the aspect to
+        NodeRef sourceNodeRef = nodeService.createNode(
+                rootNodeRef,
+                ASSOC_TYPE_QNAME_TEST_CHILDREN,
+                QName.createQName(BaseNodeServiceTest.NAMESPACE, "testAspectRemovalCascadeDelete"),
+                ContentModel.TYPE_CONTAINER).getChildRef();
+        
+        // Add the aspect to the source node and add a child using an association defined on the aspect
+        nodeService.addAspect(sourceNodeRef, ASPECT_WITH_ASSOCIATIONS, null);
+        NodeRef targetNodeRef = nodeService.createNode(
+                sourceNodeRef,
+                ASSOC_ASPECT_CHILD_ASSOC,
+                QName.createQName(BaseNodeServiceTest.NAMESPACE, "testAspectRemovalCascadeDelete"),
+                ContentModel.TYPE_CONTAINER).getChildRef();
+        
+        assertTrue("Child node must exist", nodeService.exists(targetNodeRef));
+        // Now remove the aspect from the source node and check that the target node was cascade-deleted
+        nodeService.removeAspect(sourceNodeRef, ASPECT_WITH_ASSOCIATIONS);
+        assertFalse("Child node must have been cascade-deleted", nodeService.exists(targetNodeRef));
+        
+        // Commit for good measure
+        setComplete();
+        endTransaction();
+    }
+    
     private static final QName ASPECT_QNAME_TEST_RENDERED = QName.createQName(NAMESPACE, "rendered");
     private static final QName ASSOC_TYPE_QNAME_TEST_RENDITION = QName.createQName(NAMESPACE, "rendition-page");
     private static final QName TYPE_QNAME_TEST_RENDITION_PAGE = QName.createQName(NAMESPACE, "rendition-page");
@@ -1203,6 +1234,26 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         {
             fail("Null property values are allowed in the map");
         }
+    }
+    
+    public void setAddProperties() throws Exception
+    {
+        Map<QName, Serializable> properties = nodeService.getProperties(rootNodeRef);
+        // Add an aspect with a default value
+        nodeService.addAspect(rootNodeRef, ASPECT_QNAME_TEST_TITLED, null);
+        assertNull("Expected null property", nodeService.getProperty(rootNodeRef, PROP_QNAME_TEST_TITLE));
+        assertNull("Expected null property", nodeService.getProperty(rootNodeRef, PROP_QNAME_TEST_DESCRIPTION));
+        
+        // Now add a map of two properties and check
+        Map<QName, Serializable> addProperties = new HashMap<QName, Serializable>(11);
+        addProperties.put(PROP_QNAME_TEST_TITLE, "Title");
+        addProperties.put(PROP_QNAME_TEST_DESCRIPTION, "Description");
+        nodeService.addProperties(rootNodeRef, addProperties);
+        
+        // Check
+        Map<QName, Serializable> checkProperties = nodeService.getProperties(rootNodeRef);
+        assertEquals("Title", checkProperties.get(PROP_QNAME_TEST_TITLE));
+        assertEquals("Description", checkProperties.get(PROP_QNAME_TEST_DESCRIPTION));
     }
     
     public void testRemoveProperty() throws Exception

@@ -204,6 +204,37 @@ public class FullNodeServiceTest extends BaseNodeServiceTest
                 nodeService.getProperty(nodeRef, BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE));
     }
 
+    public void testMLValuesOnAddProperties() throws Exception
+    {
+        Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
+        fillProperties(BaseNodeServiceTest.TYPE_QNAME_TEST_MANY_PROPERTIES, properties);
+        // Replace the MLText value with a plain string
+        properties.put(BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE, "Bonjour");
+        // Now switch to French
+        I18NUtil.setContentLocale(Locale.FRENCH);
+        // Add an aspect
+        NodeRef nodeRef = rootNodeRef;
+        nodeService.addProperties(nodeRef, properties);
+        // Now switch to English
+        I18NUtil.setContentLocale(Locale.ENGLISH);
+        // Set the english property
+        nodeService.setProperty(nodeRef, BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE, "Hello");
+        
+        // Switch back to French and get the value
+        I18NUtil.setContentLocale(Locale.FRENCH);
+        assertEquals(
+                "Expected French value property",
+                "Bonjour",
+                nodeService.getProperty(nodeRef, BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE));
+        
+        // Switch back to English and get the value
+        I18NUtil.setContentLocale(Locale.ENGLISH);
+        assertEquals(
+                "Expected English value property",
+                "Hello",
+                nodeService.getProperty(nodeRef, BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE));
+    }
+
     /**
      * {@inheritDoc}
      * 

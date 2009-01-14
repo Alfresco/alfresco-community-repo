@@ -579,7 +579,7 @@ public class ExporterComponent
                 catch(TypeConversionException e)
                 {
                     exporter.warning("Value of property " + property + " could not be converted to xml string");
-                    exporter.value(nodeRef, property, value.toString(), index);
+                    exporter.value(nodeRef, property, (value == null ? null : value.toString()), index);
                 }
             }
             else
@@ -590,7 +590,15 @@ public class ExporterComponent
                 {
                     // export an empty url for the content
                     ContentData contentData = (ContentData)value;
-                    ContentData noContentURL = new ContentData("", contentData.getMimetype(), contentData.getSize(), contentData.getEncoding());
+                    ContentData noContentURL = null;
+                    if (contentData == null)
+                    {
+                        noContentURL = new ContentData("", null, 0L, "UTF-8");
+                    }
+                    else
+                    {
+                        noContentURL = new ContentData("", contentData.getMimetype(), contentData.getSize(), contentData.getEncoding());
+                    }
                     exporter.content(nodeRef, property, null, noContentURL, index);
                     exporter.warning("Skipped content for property " + property + " on node " + nodeRef);
                 }

@@ -1048,11 +1048,15 @@ ALTER TABLE alf_map_attribute_entries
 
 ALTER TABLE alf_transaction DROP INDEX idx_commit_time_ms; -- (optional)
 ALTER TABLE alf_transaction
+   ADD COLUMN commit_time_ms BIGINT NULL
+; -- (optional)
+ALTER TABLE alf_transaction
    DROP INDEX FKB8761A3A9AE340B7, DROP FOREIGN KEY FKB8761A3A9AE340B7,
    ADD INDEX fk_alf_txn_svr (server_id),
    ADD CONSTRAINT fk_alf_txn_svr FOREIGN KEY (server_id) REFERENCES alf_server (id),
    ADD INDEX idx_alf_txn_ctms (commit_time_ms)
 ;
+UPDATE alf_transaction SET commit_time_ms = id WHERE commit_time_ms IS NULL;
 
 ALTER TABLE avm_child_entries DROP INDEX fk_avm_ce_child, DROP FOREIGN KEY fk_avm_ce_child; -- (optional)
 ALTER TABLE avm_child_entries DROP INDEX fk_avm_ce_parent, DROP FOREIGN KEY fk_avm_ce_parent; -- (optional)

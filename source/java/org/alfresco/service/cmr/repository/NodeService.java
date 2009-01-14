@@ -382,12 +382,24 @@ public interface NodeService
      * <p>
      * <b>NOTE:</b> Null values <u>are</u> allowed.
      * 
-     * @param nodeRef
-     * @param properties all the properties of the node keyed by their qualified names
+     * @param nodeRef           the node to chance
+     * @param properties        all the properties of the node keyed by their qualified names
      * @throws InvalidNodeRefException if the node could not be found
      */
     @Auditable(key = Auditable.Key.ARG_0 ,parameters = {"nodeRef", "properties"})
     public void setProperties(NodeRef nodeRef, Map<QName, Serializable> properties) throws InvalidNodeRefException;
+    
+    /**
+     * Add all given properties to the node.
+     * <p>
+     * <b>NOTE:</b> Null values <u>are</u> allowed and will replace the existing value.
+     * 
+     * @param nodeRef           the node to change
+     * @param properties        the properties to change, keyed by their qualified names
+     * @throws InvalidNodeRefException if the node could not be found
+     */
+    @Auditable(key = Auditable.Key.ARG_0 ,parameters = {"nodeRef", "properties"})
+    public void addProperties(NodeRef nodeRef, Map<QName, Serializable> properties) throws InvalidNodeRefException;
     
     /**
      * Sets the value of a property to be any <code>Serializable</code> instance.

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -78,6 +78,9 @@ public class RuntimeExecutableContentTransformer extends AbstractContentTransfor
     private RuntimeExec checkCommand;
     private RuntimeExec transformCommand;
 
+    /** Stores the output from the check command */
+    private String versionString;
+    
     public RuntimeExecutableContentTransformer()
     {
     }
@@ -145,8 +148,11 @@ public class RuntimeExecutableContentTransformer extends AbstractContentTransfor
         {
             ExecutionResult result = checkCommand.execute();
             // check the return code
-            available = result.getSuccess();
-            if (!available)
+            if (this.available = result.getSuccess())
+            {
+                this.versionString = result.getStdOut().trim();
+            }
+            else
             {
                 logger.error("Failed to start a runtime executable content transformer: \n" + result);
             }
@@ -185,6 +191,26 @@ public class RuntimeExecutableContentTransformer extends AbstractContentTransfor
         }
     }
     
+    /**
+     * Signals whether this transformer is available.
+     * 
+     * @return true, if is available
+     */
+    public boolean isAvailable()
+    {
+        return this.available;
+    }
+    
+    /**
+     * Gets the version string captured from the check command.
+     * 
+     * @return the version string
+     */
+    public String getVersionString()
+    {
+        return this.versionString;
+    }
+
     /**
      * Converts the source and target content to temporary files with the
      * correct extensions for the mimetype that they map to.

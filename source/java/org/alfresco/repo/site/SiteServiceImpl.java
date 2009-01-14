@@ -792,31 +792,24 @@ public class SiteServiceImpl implements SiteService, SiteModel
             // If ...
             // -- the current user has change permissions rights on the site
             // or
-            // -- the site is public and
-            // -- the user is ourselves and
-            // -- the users current role is consumer
-            if ((permissionService.hasPermission(siteNodeRef,
-                    PermissionService.CHANGE_PERMISSIONS) == AccessStatus.ALLOWED)
-                    || (isPublic == true
-                            && currentUserName.equals(userName) == true && role
-                            .equals(SiteModel.SITE_CONSUMER) == true))
+            // -- the user is ourselves
+            if ((currentUserName.equals(userName) == true) ||
+                (permissionService.hasPermission(siteNodeRef, PermissionService.CHANGE_PERMISSIONS) == AccessStatus.ALLOWED))
             {
                 // Run as system user
                 AuthenticationUtil.runAs(
-                        new AuthenticationUtil.RunAsWork<Object>()
+                    new AuthenticationUtil.RunAsWork<Object>()
+                    {
+                        public Object doWork() throws Exception
                         {
-                            public Object doWork() throws Exception
-                            {
-                                // Remove the user from the current permission
-                                // group
-                                String currentGroup = getSiteRoleGroup(
-                                        shortName, role, true);
-                                authorityService.removeAuthority(currentGroup,
-                                        userName);
-
-                                return null;
-                            }
-                        }, AuthenticationUtil.SYSTEM_USER_NAME);
+                            // Remove the user from the current permission
+                            // group
+                            String currentGroup = getSiteRoleGroup(shortName, role, true);
+                            authorityService.removeAuthority(currentGroup, userName);
+                            
+                            return null;
+                        }
+                    }, AuthenticationUtil.SYSTEM_USER_NAME);
 
                 // Raise events
                 if (AuthorityType.getAuthorityType(userName) == AuthorityType.USER)
@@ -824,14 +817,15 @@ public class SiteServiceImpl implements SiteService, SiteModel
                     activityService.postActivity(
                             ActivityType.SITE_USER_REMOVED, shortName,
                             ACTIVITY_TOOL, getActivityData(userName, ""));
-                } else
+                }
+                else
                 {
                     // TODO - update this, if sites support groups
-                    logger
-                            .error("setMembership - failed to post activity: unexpected authority type: "
-                                    + AuthorityType.getAuthorityType(userName));
+                    logger.error("setMembership - failed to post activity: unexpected authority type: "
+                                 + AuthorityType.getAuthorityType(userName));
                 }
-            } else
+            }
+            else
             {
                 // Throw a permission exception
                 throw new AlfrescoRuntimeException(

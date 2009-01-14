@@ -212,7 +212,7 @@ public class CreateFormWizard extends BaseWizardBean
           StringBuilder attribute = new StringBuilder(255);
           attribute.append(DescriptionAttributeHelper.getTableBegin());
           attribute.append(DescriptionAttributeHelper.getTableLine(fc, "description", 
-                   DescriptionAttributeHelper.getDescriptionNotEmpty(fc, this.getDescription())));
+                   DescriptionAttributeHelper.getDescriptionNotEmpty(fc, this.getDescription()), false));
           attribute.append(DescriptionAttributeHelper.getTableLine(fc, "rendering_engine_type", 
                    this.getRenderingEngine().getName()));
           attribute.append(DescriptionAttributeHelper.getTableLine(fc, "output_path_pattern", 
@@ -1363,7 +1363,7 @@ public class CreateFormWizard extends BaseWizardBean
        StringBuilder attribute = new StringBuilder(255);
        attribute.append(DescriptionAttributeHelper.getTableBegin());
        attribute.append(DescriptionAttributeHelper.getTableLine(fc, "description", 
-                DescriptionAttributeHelper.getDescriptionNotEmpty(fc, getFormDescription())));
+                DescriptionAttributeHelper.getDescriptionNotEmpty(fc, getFormDescription()), false));
        attribute.append(DescriptionAttributeHelper.getTableLine(fc, "schema_root_element_name", 
                 getSchemaRootElementName()));
        attribute.append(DescriptionAttributeHelper.getTableLine(fc, "output_path_pattern", 
@@ -1390,7 +1390,7 @@ public class CreateFormWizard extends BaseWizardBean
        }
        
        attribute.append(DescriptionAttributeHelper.getTableLine(fc, "description", 
-                DescriptionAttributeHelper.getDescriptionNotEmpty(fc, desc)));
+                DescriptionAttributeHelper.getDescriptionNotEmpty(fc, desc), false));
        attribute.append(DescriptionAttributeHelper.getTableEnd());
        return attribute.toString();
    }

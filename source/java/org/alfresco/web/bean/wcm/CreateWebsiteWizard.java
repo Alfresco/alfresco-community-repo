@@ -1386,7 +1386,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
        attribute.append(DescriptionAttributeHelper.getTableLine(fc, "website_webapp", getWebapp()));
        attribute.append(DescriptionAttributeHelper.getTableLine(fc, "title", getTitle()));
        attribute.append(DescriptionAttributeHelper.getTableLine(fc, "description", 
-                DescriptionAttributeHelper.getDescriptionNotEmpty(fc, getDescription())));
+                DescriptionAttributeHelper.getDescriptionNotEmpty(fc, getDescription()), false));
        attribute.append(DescriptionAttributeHelper.getTableEnd());
        return attribute.toString();
    }
@@ -1571,7 +1571,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
           attribute.append(DescriptionAttributeHelper.getTableLine(fc, "name", this.getName()));
           attribute.append(DescriptionAttributeHelper.getTableLine(fc, "title", this.getTitle()));
           attribute.append(DescriptionAttributeHelper.getTableLine(fc, "output_path_pattern", this.getOutputPathPattern()));
-          attribute.append(DescriptionAttributeHelper.getTableLine(fc, "description", formDescription));
+          attribute.append(DescriptionAttributeHelper.getTableLine(fc, "description", formDescription, false));
           attribute.append(DescriptionAttributeHelper.getTableLine(fc, "workflow", workflowTitle));
           attribute.append(DescriptionAttributeHelper.getTableEnd());
           return attribute.toString();
@@ -1786,7 +1786,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
           String workflowDescription = DescriptionAttributeHelper.getDescriptionNotEmpty(fc, getDescription());
           StringBuilder attribute = new StringBuilder(255);
           attribute.append(DescriptionAttributeHelper.getTableBegin());
-          attribute.append(DescriptionAttributeHelper.getTableLine(fc, "description", workflowDescription));
+          attribute.append(DescriptionAttributeHelper.getTableLine(fc, "description", workflowDescription, false));
           attribute.append(DescriptionAttributeHelper.getTableLine(fc, "website_filename_pattern", this.getFilenamePattern()));
           attribute.append(DescriptionAttributeHelper.getTableEnd());
           return attribute.toString();

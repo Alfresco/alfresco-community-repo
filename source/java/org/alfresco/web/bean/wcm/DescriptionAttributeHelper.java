@@ -34,6 +34,7 @@ public class DescriptionAttributeHelper
     {
         return TABLE_BEGIN;
     }
+    
     /**
      * 
      * @param fc            Current FacesContext
@@ -43,9 +44,30 @@ public class DescriptionAttributeHelper
      */
     public static String getTableLine(FacesContext fc, String fieldName, String fieldValue)
     {
+        return getTableLine(fc, fieldName, fieldValue, true);
+    }
+    
+    /**
+     * 
+     * @param fc            Current FacesContext
+     * @param fieldName     Field name
+     * @param fieldValue    Field value
+     * @param encode        Whether to encode the given value or not
+     * @return              Returns a table line <code><tr><td>Localised field name:</td><td>Field value</td></tr></code>
+     */
+    public static String getTableLine(FacesContext fc, String fieldName, String fieldValue, boolean encode)
+    {
         StringBuilder line = new StringBuilder(128);
-        line.append(TRTD_BEGIN).append(Application.getMessage(fc, fieldName)).
-           append(TD_TD).append(Utils.encode(fieldValue)).append(TDTR_END);
+        line.append(TRTD_BEGIN).append(Application.getMessage(fc, fieldName)).append(TD_TD);
+        if (encode)
+        {
+           line.append(Utils.encode(fieldValue));
+        }
+        else
+        {
+           line.append(fieldValue);
+        }
+        line.append(TDTR_END);
         return line.toString();
     }
     
@@ -68,7 +90,7 @@ public class DescriptionAttributeHelper
     {
         return StringUtils.isEmpty(fieldValue) ?
                 SPAN_ITALIC_BEGIN + Application.getMessage(fc, "description_not_set") + SPAN_END :
-                fieldValue;
+                Utils.encode(fieldValue);
     }
 
 }

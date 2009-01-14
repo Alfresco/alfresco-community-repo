@@ -92,6 +92,7 @@
            <entry key="Alfresco:Name=VirtServerRegistry,Type=VirtServerRegistry" value-ref="VirtServerRegistry"/>
          </map>
        </property>
+       <property name="registrationBehaviorName" value="REGISTRATION_REPLACE_EXISTING"/>       
     </bean>
 
     <!-- MBeans registered with alfrescoMBeanServer -->

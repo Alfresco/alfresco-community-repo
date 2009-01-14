@@ -28,9 +28,11 @@ import javax.faces.context.FacesContext;
 
 import org.alfresco.web.app.Application;
 
+/**
+ * Dialog supporting the Upload New Version action on a working copy node.
+ */
 public class UploadNewVersionDialog extends DoneEditingDialog
 {
-
     private final static String MSG_UPLOAD_NEW_VERSION = "upload_new_version";
     private final static String MSG_OF = "of";
 
@@ -52,7 +54,6 @@ public class UploadNewVersionDialog extends DoneEditingDialog
         return property.getFile() == null;
     }
 
-
     @Override
     public String getContainerTitle()
     {
@@ -63,8 +64,15 @@ public class UploadNewVersionDialog extends DoneEditingDialog
     @Override
     protected String finishImpl(FacesContext context, String outcome) throws Exception
     {
-        property.setKeepCheckedOut(!finishedEditing);
-        return checkinFileOK(context, outcome);
+        if (finishedEditing)
+        {
+            property.setKeepCheckedOut(false);
+            return checkinFileOK(context, outcome);
+        }
+        else
+        {
+            return updateFileOK(context, outcome);
+        }
     }
     
     @Override
@@ -73,5 +81,4 @@ public class UploadNewVersionDialog extends DoneEditingDialog
         super.resetState();
         finishedEditing = false;
     }
-
 }

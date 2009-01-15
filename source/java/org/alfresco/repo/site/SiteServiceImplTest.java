@@ -163,13 +163,11 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         catch (Exception exception) {}
         try
         {
-            this.siteService.removeMembership(siteInfo.getShortName(), USER_THREE);
+            this.siteService.removeMembership(siteInfo.getShortName(), USER_ONE);
             fail("Shouldn't be able to do this cos you don't have permissions");
         }
-        catch (Exception exception) {}
-        
-        authenticationComponent.setSystemUserAsCurrentUser();
-        this.siteService.removeMembership(siteInfo.getShortName(), USER_THREE);        
+        catch (Exception exception) {}        
+        this.siteService.removeMembership(siteInfo.getShortName(), USER_THREE);
     }
     
     private void checkSiteInfo( SiteInfo siteInfo, String expectedSitePreset, String expectedShortName, String expectedTitle, 
@@ -444,15 +442,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         {
             // As expected
         }
-        try
-        {
-            this.siteService.removeMembership("testMembership", USER_THREE);
-            fail("A member who isn't a manager shouldnt be able to remove a membership");
-        }
-        catch (AlfrescoRuntimeException e)
-        {
-            // As expected            
-        }
+        this.siteService.removeMembership("testMembership", USER_THREE);
         
         this.authenticationComponent.setCurrentUser(USER_ONE);        
         // Try and change the permissions of the only site manager

@@ -39,12 +39,14 @@ function postActivity()
    switch (String(type).toLowerCase())
    {
       case "file-added":
+      case "file-updated":
          data.title = json.get("fileName");
          strParams = "?nodeRef=" + json.get("nodeRef");
          break;
       
       case "files-added":
       case "files-deleted":
+      case "files-updated":
          data.title = json.get("fileCount");
          strParams = "?path=" + json.get("path");
          break;

@@ -33,14 +33,14 @@ function main()
           
    deleteBlogPost(node);
    
-   if (args["site"] !== undefined && args["page"] !== undefined && !item.isDraft)
+   if (url.templateArgs.site !== undefined && !item.isDraft)
    {
       var data =
       {
          title: title,
          page: decodeURIComponent(args["page"])
       }
-      activities.postActivity("org.alfresco.blog.post-deleted", args["site"], "blog", jsonUtils.toJSONString(data));
+      activities.postActivity("org.alfresco.blog.post-deleted", url.templateArgs.site, "blog", jsonUtils.toJSONString(data));
    }
 }
 

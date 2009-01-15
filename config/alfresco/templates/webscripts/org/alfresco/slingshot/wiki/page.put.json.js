@@ -71,6 +71,7 @@ function update()
          var workingCopy = page.checkout();
          workingCopy.content = json.get("pagecontent");
          workingCopy.checkin();
+         page.save();
 
          activityType = "org.alfresco.wiki.page-edited";
       }
@@ -130,7 +131,8 @@ function update()
  */
 function pageVersionMatchesSubmitted(page)
 {
-   var currentVersion = 0, repoVersion = 0;
+   var currentVersion = "0",
+      repoVersion = "0";
    
    if (json.has("currentVersion"))
    {
@@ -143,9 +145,12 @@ function pageVersionMatchesSubmitted(page)
    }
    
    return (sortByLabel(
-      { label:  repoVersion},
-      { label: currentVersion }
-   ) != -1);
+   {
+      label: repoVersion
+   },
+   {
+      label: currentVersion
+   }) != -1);
 }
 
 function sortByLabel(version1, version2)

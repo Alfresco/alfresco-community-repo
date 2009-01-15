@@ -44,8 +44,8 @@
    {
       var disable = function()
       {
-         document.getElementById('dialog:ok-button').setProperty('disabled', 'disabled');
-         document.getElementById('dialog:cancel-button').setProperty('disabled', 'disabled');
+         document.getElementById('dialog:ok-button').disabled = true;
+         document.getElementById('dialog:cancel-button').disabled = true;
       }
       disable.delay(50, this);
       document.getElementById('progress').style.display='inline';

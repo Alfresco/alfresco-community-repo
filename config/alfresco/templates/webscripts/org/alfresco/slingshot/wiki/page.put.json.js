@@ -1,12 +1,11 @@
 <import resource="classpath:/alfresco/templates/webscripts/org/alfresco/slingshot/wiki/lib/wiki.lib.js">
+
 /**
  * Update specified wiki page.
- *
  *
  * @method PUT
  * @param uri {string} /slingshot/wiki/page/{siteid}/{pageTitle}
  */
-
 function getTemplateParams()
 {
    // Grab the URI parameters
@@ -164,7 +163,6 @@ function sortByLabel(version1, version2)
        return (major1 < major2) ? 1 : -1;
    }
 }
-
 
 function getLatestVersion(versionHistory)
 {

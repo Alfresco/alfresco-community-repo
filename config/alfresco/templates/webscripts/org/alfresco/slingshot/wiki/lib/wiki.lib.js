@@ -2,10 +2,10 @@
  * A collection of general functions used across most wiki scripts.
  */
 const DEFAULT_PAGE_CONTENT = "This is a new page. It has no content";
+
 /**
  * Takes an array of template parameter arguments
  * and returns an object keyed on parameter name.
- *
  */
 function getTemplateArgs(params)
 {
@@ -24,14 +24,6 @@ function getTemplateArgs(params)
 /* Format and return error object */
 function jsonError(errorString)
 {
-/*
-   var obj =
-   {
-      "error": errorString
-   };
-   
-   return obj;
-*/
    status.setCode(status.STATUS_BAD_REQUEST, errorString);
 }
 
@@ -49,8 +41,10 @@ function createWikiPage(name, folder, options)
 		if (options.content)
 		{
 			page.content = options.content;
+			page.mimetype = "text/html";
 		}
 	}
+	
 	// Initialise tags to empty array
 	page.tags = [];
 	
@@ -81,5 +75,3 @@ function getWikiContainer(site)
    
    return wiki;
 }
-
-

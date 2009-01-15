@@ -183,7 +183,7 @@ if (fileUploaded)
 
       function pageLoaded()
       {
-         document.getElementById("dialog:finish-button").onclick = function() {finishButtonPressed = true; clear_add_2Dcontent_2Dupload_2Dend();}
+         document.getElementById("dialog:finish-button").onclick = function() {finishButtonPressed = true; clear_dialog();}
       }
 
       function checkButtonState()

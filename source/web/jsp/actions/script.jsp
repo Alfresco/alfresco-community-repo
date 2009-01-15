@@ -40,11 +40,11 @@
       var okButton = document.getElementById("script-action:ok-button");
       if (selectElement.selectedIndex == 0)
       {
-         okButton.setProperty('disabled', true);
+         okButton.disabled = true;
       }
       else
       {
-         okButton.setProperty('disabled', false);
+         okButton.disabled = false;
       }
    }
 </script>

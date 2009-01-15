@@ -537,17 +537,6 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         this.siteService.setMembership("testMembershipPrivate", USER_TWO, SiteModel.SITE_CONSUMER);
         this.authenticationComponent.setCurrentUser(USER_TWO);
         
-        // try and remove user two permissions from private site
-        try
-        {
-            this.siteService.removeMembership("testMembershipPrivate", USER_TWO);
-            fail("Cannot remove a users permissions from a private site");
-        }
-        catch (Exception exception)
-        {
-            // Ignore because as expected
-        }
-        
         // Try and remove user threes membership from public site
         try
         {

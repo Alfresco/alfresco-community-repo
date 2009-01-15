@@ -2,7 +2,7 @@
 <rss version="2.0">
    <channel>
       <title>Alfresco Activities User Feed for ${feedUserId?xml}</title>
-      <copyright>Copyright (c) 2008 Alfresco Software, Inc. All rights reserved.</copyright>
+      <copyright>Copyright (c) 2008-2009 Alfresco Software, Inc. All rights reserved.</copyright>
       <link></link>
       <description>Alfresco Activities User Feed for ${feedUserId?xml}</description>
       <language>en-us</language>

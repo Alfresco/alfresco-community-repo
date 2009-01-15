@@ -40,7 +40,7 @@ function handleSelect(type, args, obj)
 
 function init() 
 {
-	YAHOO.example.calendar.cal1 = new YAHOO.widget.Calendar("cal1","cal1Container", { mindate:"1/1/2006", maxdate:"12/31/2008" });
+	YAHOO.example.calendar.cal1 = new YAHOO.widget.Calendar("cal1","cal1Container", { mindate:"1/1/2006", maxdate:"12/31/2019" });
 	YAHOO.example.calendar.cal1.selectEvent.subscribe(handleSelect, YAHOO.example.calendar.cal1, true);
 	YAHOO.example.calendar.cal1.render();
 	

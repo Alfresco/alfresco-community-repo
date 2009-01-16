@@ -33,15 +33,14 @@ import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.Vector;
 
-import javax.servlet.ServletContext;
+import javax.faces.context.FacesContext;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.i18n.MessageService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.web.bean.repository.Repository;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.web.context.support.WebApplicationContextUtils;
+import org.springframework.web.jsf.FacesContextUtils;
 
 
 /**
@@ -58,21 +57,148 @@ public final class ResourceBundleWrapper extends ResourceBundle implements Seria
    
    /** List of custom bundle names */
    private static List<String> addedBundleNames = new ArrayList<String>(10);
+   
+   /** Serializable details of the resource bundles being wrapped */
+   private Locale locale;
+   private String bundleName;
 
    /** List of delegate resource bundles */
    transient private List<ResourceBundle> delegates;
+   
+   /** Message service */
+   transient private MessageService messageService;
    
    public static final String BEAN_RESOURCE_MESSAGE_SERVICE = "messageService";      
    public static final String PATH = "app:company_home/app:dictionary/app:webclient_extension";
    
    /**
     * Constructor
-    *
-    * @param bundles    the resource bundles including the default, custom and any added
+    * 
+    * @param locale         the locale
+    * @param bundleName     the bundle name
     */
-   private ResourceBundleWrapper(List<ResourceBundle> bundles)
+   private ResourceBundleWrapper(Locale locale, String bundleName) 
    {
-      this.delegates = bundles;
+      this.locale = locale;
+      this.bundleName = bundleName;
+   }
+   
+   /**
+    * Get the message service
+    * 
+    * @return   MessageService  message service
+    */
+   private MessageService getMessageService()
+   {
+       if (this.messageService == null && FacesContext.getCurrentInstance() != null)
+       {
+           this.messageService = (MessageService)FacesContextUtils.getRequiredWebApplicationContext(
+                                       FacesContext.getCurrentInstance()).getBean(BEAN_RESOURCE_MESSAGE_SERVICE);
+       }
+       return this.messageService;
+   }
+   
+   /** 
+    * Get a list of the delegate resource bundles
+    * 
+    * @return   List<ResourceBundle>    list of delegate resource bundles
+    */
+   private List<ResourceBundle> getDelegates()
+   {
+      if (this.delegates == null)
+      {
+         this.delegates = new ArrayList<ResourceBundle>(ResourceBundleWrapper.addedBundleNames.size() + 2); 
+         
+         // Add the bundle
+         this.delegates.add(getResourceBundle(locale, this.bundleName));
+         
+         // first try in the repo otherwise try the classpath
+         ResourceBundle customBundle = null;
+         
+         if (getMessageService() != null)
+         {
+             StoreRef storeRef = null;
+             String path = null;
+                 
+             try
+             {
+                String customName = null;
+                int idx = this.bundleName.lastIndexOf(".");
+                if (idx != -1)
+                {
+                   customName = this.bundleName.substring(idx+1, this.bundleName.length());
+                }
+                else
+                {
+                   customName = this.bundleName;
+                }
+        
+                storeRef = Repository.getStoreRef();
+                
+                // TODO - make path configurable in one place ... 
+                // Note: path here is XPath for selectNodes query
+                path = PATH + "/cm:" + customName;          
+                customBundle = getMessageService().getRepoResourceBundle(Repository.getStoreRef(), path, locale);
+             }
+             catch (Throwable t)
+             {
+                // for now ... ignore the error, cannot be found or read from repo
+                logger.debug("Custom Web Client properties not found: " + storeRef + path);
+             }
+         }
+         
+         if (customBundle == null)
+         {
+            // also look up the custom version of the bundle in the extension package
+            String customName = determineCustomBundleName(this.bundleName);
+            customBundle = getResourceBundle(locale, customName);
+         }
+         
+         // Add the custom bundle to the list
+         if (customBundle != null)
+         {
+            this.delegates.add(customBundle);
+         }
+                  
+         // Add the added bundles
+         for (String addedBundleName : ResourceBundleWrapper.addedBundleNames)
+         {
+            this.delegates.add(getResourceBundle(locale, addedBundleName));
+         }
+      }
+      return this.delegates;
+   }
+   
+   /**
+    * Given a local and name, gets the resource bundle
+    * 
+    * @param locale             locale
+    * @param bundleName         bundle name
+    * @return ResourceBundle    resource bundle
+    */
+   private ResourceBundle getResourceBundle(Locale locale, String bundleName)
+   {
+       ResourceBundle bundle = null;
+       try
+       {
+           // Load the bundle
+           bundle = ResourceBundle.getBundle(bundleName, locale);
+           this.delegates.add(bundle);
+
+           if (logger.isDebugEnabled())
+           {
+              logger.debug("Located and loaded bundle " + bundleName);
+           }
+       }
+       catch (MissingResourceException mre)
+       {
+          // ignore the error, just log some debug info
+          if (logger.isDebugEnabled())
+          {
+              logger.debug("Unable to load bundle " + bundleName);
+          }
+       }
+       return bundle;
    }
    
    /**
@@ -80,14 +206,14 @@ public final class ResourceBundleWrapper extends ResourceBundle implements Seria
     */
    public Enumeration<String> getKeys()
    {
-      if (this.delegates.size() == 1)
+      if (getDelegates().size() == 1)
       {
-         return this.delegates.get(0).getKeys();
+         return getDelegates().get(0).getKeys();
       }
       else
       {
          Vector<String> allKeys = new Vector<String>(100, 2); 
-         for (ResourceBundle delegate : this.delegates) 
+         for (ResourceBundle delegate : getDelegates()) 
          {
              Enumeration<String> keys = delegate.getKeys();
              while(keys.hasMoreElements() == true)
@@ -107,7 +233,7 @@ public final class ResourceBundleWrapper extends ResourceBundle implements Seria
    {
       Object result = null;
       
-      for (ResourceBundle delegate : this.delegates) 
+      for (ResourceBundle delegate : getDelegates()) 
       {
          try
          {
@@ -147,107 +273,9 @@ public final class ResourceBundleWrapper extends ResourceBundle implements Seria
     * 
     * @return Wrapped ResourceBundle instance for specified locale
     */
-   public static ResourceBundle getResourceBundle(ServletContext servletContext, String name, Locale locale)
+   public static ResourceBundle getResourceBundle(String name, Locale locale)
    {
-       List<ResourceBundle> bundles = new ArrayList<ResourceBundle>(ResourceBundleWrapper.addedBundleNames.size() + 2);
-
-       // Load the default bundle
-       ResourceBundle bundle = ResourceBundle.getBundle(name, locale);
-       if (bundle == null)
-       {
-          throw new AlfrescoRuntimeException("Unable to load Alfresco messages bundle: " + name);
-       }
-       bundles.add(bundle);
-       
-       // also look up the custom version of the bundle in the extension package
-       ResourceBundle customBundle = null;
-       
-       if (servletContext != null)
-       {
-           MessageService messageService = (MessageService)WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext).getBean(BEAN_RESOURCE_MESSAGE_SERVICE);
-           
-           // first try in the repo otherwise try the classpath
-           StoreRef storeRef = null;
-           String path = null;
-           
-           try
-           {
-               String customName = null;
-               int idx = name.lastIndexOf(".");
-               if (idx != -1)
-               {
-                   customName = name.substring(idx+1, name.length());
-               }
-               else
-               {
-                   customName = name;
-               }
-     
-               storeRef = Repository.getStoreRef();
-               
-               // TODO - make path configurable in one place ... 
-               // Note: path here is XPath for selectNodes query
-               path = PATH + "/cm:" + customName;          
-               customBundle = messageService.getRepoResourceBundle(Repository.getStoreRef(), path, locale);
-           }
-           catch (Throwable t)
-           {
-               // for now ... ignore the error, cannot be found or read from repo
-               logger.debug("Custom Web Client properties not found: " + storeRef + path);
-           }
-       }
-       
-       if (customBundle == null)
-       {
-           // also look up the custom version of the bundle in the extension package
-           String customName = determineCustomBundleName(name);
-           try
-           {
-              customBundle = ResourceBundle.getBundle(customName, locale);
-            
-              if (logger.isDebugEnabled()== true)
-              {
-                 logger.debug("Located and loaded custom bundle: " + customName);
-              }
-           }
-           catch (MissingResourceException mre)
-           {
-              // ignore the error, just leave custom bundle as null
-           }
-       }
-       
-       // Add the custom bundle to the list
-       if (customBundle != null)
-       {
-           bundles.add(customBundle);
-       }
-
-       // Add any additional bundles
-       for (String bundleName : ResourceBundleWrapper.addedBundleNames) 
-       {
-           try
-           {
-              // Load the added bundle 
-              ResourceBundle addedBundle = ResourceBundle.getBundle(bundleName, locale);
-              bundles.add(addedBundle);
-              
-              if (logger.isDebugEnabled())
-              {
-                 logger.debug("Located and loaded added bundle: " + bundleName);
-              }
-           }
-           catch (MissingResourceException mre)
-           {
-              // ignore the error, just log some debug info
-              if (logger.isDebugEnabled())
-              {
-                 logger.debug("Unable to load added bundle: " + bundleName);
-              }
-           }
-       }
-       
-       // apply our wrapper to catch MissingResourceException
-       return new ResourceBundleWrapper(bundles);
+       return new ResourceBundleWrapper(locale, name);
    }
    
    /**

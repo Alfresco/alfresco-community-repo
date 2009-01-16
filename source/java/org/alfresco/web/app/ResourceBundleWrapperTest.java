@@ -30,7 +30,7 @@ public class ResourceBundleWrapperTest extends TestCase
 	public void testAddingBundles()
 	{
 		// Check that the string's are not added to the bundle
-		ResourceBundle before = ResourceBundleWrapper.getResourceBundle(null, "alfresco.messages.webclient", Locale.US);
+		ResourceBundle before = ResourceBundleWrapper.getResourceBundle("alfresco.messages.webclient", Locale.US);
 		Enumeration<String> keys = before.getKeys();
 		assertFalse(containsValue(keys, KEY_1));
 		assertFalse(containsValue(keys, KEY_2));
@@ -51,7 +51,7 @@ public class ResourceBundleWrapperTest extends TestCase
 		ResourceBundleWrapper.addResourceBundle(BUNDLE_NAME);
 		
 		// Check that the string's are now added to the bundle
-		ResourceBundle after = ResourceBundleWrapper.getResourceBundle(null, "alfresco.messages.webclient", Locale.US);
+		ResourceBundle after = ResourceBundleWrapper.getResourceBundle("alfresco.messages.webclient", Locale.US);
 		Enumeration<String> keys2 = after.getKeys();
 		assertTrue(containsValue(keys2, KEY_1));
 		assertEquals(after.getString(KEY_1), MSG_1);
@@ -70,7 +70,7 @@ public class ResourceBundleWrapperTest extends TestCase
 		bootstrap.setResourceBundles(bundles);
 		
 		// Check that the string's are now added to the bundle
-		ResourceBundle after = ResourceBundleWrapper.getResourceBundle(null, "alfresco.messages.webclient", Locale.US);
+		ResourceBundle after = ResourceBundleWrapper.getResourceBundle("alfresco.messages.webclient", Locale.US);
 		Enumeration<String> keys2 = after.getKeys();
 		assertTrue(containsValue(keys2, KEY_1));
 		assertTrue(containsValue(keys2, KEY_2));

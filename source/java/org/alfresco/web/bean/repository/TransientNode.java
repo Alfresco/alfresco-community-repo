@@ -166,8 +166,8 @@ public class TransientNode extends Node
       DictionaryService ddService = this.getServiceRegistry().getDictionaryService();
       
       // marshall the given properties and associations into the internal maps
-      this.associations = new QNameNodeMap(getServiceRegistry().getNamespaceService(), this);
-      this.childAssociations = new QNameNodeMap(getServiceRegistry().getNamespaceService(), this);
+      this.associations = new QNameNodeMap(this, this);
+      this.childAssociations = new QNameNodeMap(this, this);
 
       if (data != null)
       {

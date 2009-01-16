@@ -44,6 +44,8 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.namespace.NamespacePrefixResolver;
+import org.alfresco.service.namespace.NamespacePrefixResolverProvider;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.web.app.Application;
@@ -53,9 +55,9 @@ import org.alfresco.web.app.Application;
  * 
  * @author gavinc
  */
-public class Node implements Serializable
+public class Node implements Serializable, NamespacePrefixResolverProvider
 {
-   private static final long serialVersionUID = 3544390322739034169L;
+   private static final long serialVersionUID = 3544390322739034170L;
 
    protected NodeRef nodeRef;
    protected String name;
@@ -94,7 +96,7 @@ public class Node implements Serializable
       this.nodeRef = nodeRef;
       this.id = nodeRef.getId();
       
-      this.properties = new QNameNodeMap<String, Object>(getServiceRegistry().getNamespaceService(), this);
+      this.properties = new QNameNodeMap<String, Object>(this, this);
    }
 
    /**
@@ -134,7 +136,7 @@ public class Node implements Serializable
    {
       if (this.assocsRetrieved == false)
       {
-         this.associations = new QNameNodeMap(getServiceRegistry().getNamespaceService(), this);
+         this.associations = new QNameNodeMap(this, this);
          
          List<AssociationRef> assocs = getServiceRegistry().getNodeService().getTargetAssocs(this.nodeRef, RegexQNamePattern.MATCH_ALL);
          
@@ -196,7 +198,7 @@ public class Node implements Serializable
    {
       if (this.childAssocsRetrieved == false)
       {
-         this.childAssociations = new QNameNodeMap(getServiceRegistry().getNamespaceService(), this);
+         this.childAssociations = new QNameNodeMap(this, this);
          
          List<ChildAssociationRef> assocs = getServiceRegistry().getNodeService().getChildAssocs(this.nodeRef);
          
@@ -518,5 +520,10 @@ public class Node implements Serializable
           this.services = Repository.getServiceRegistry(FacesContext.getCurrentInstance());
       }
       return this.services;
+   }
+   
+   public NamespacePrefixResolver getNamespacePrefixResolver()
+   {
+      return getServiceRegistry().getNamespaceService();
    }
 }

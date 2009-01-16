@@ -699,7 +699,7 @@ public class NavigationBean implements Serializable
          Path path = node.getNodePath();
          
          // resolve CIFS network folder location for this node
-         FilesystemsConfigSection filesysConfig = (FilesystemsConfigSection) cifsServer.getConfiguration().getConfigSection(FilesystemsConfigSection.SectionName); 
+         FilesystemsConfigSection filesysConfig = (FilesystemsConfigSection)getCifsServer().getConfiguration().getConfigSection(FilesystemsConfigSection.SectionName); 
          DiskSharedDevice diskShare = null;
          
          SharedDeviceList shares = filesysConfig.getShares();

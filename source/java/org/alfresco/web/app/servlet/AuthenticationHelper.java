@@ -229,6 +229,7 @@ public final class AuthenticationHelper
          catch (AuthenticationException authErr)
          {
             // expired ticket
+            session.removeAttribute(AUTHENTICATION_USER);
             return AuthenticationStatus.Failure;
          }
          
@@ -276,11 +277,11 @@ public final class AuthenticationHelper
       WebApplicationContext wc = WebApplicationContextUtils.getRequiredWebApplicationContext(context);
       AuthenticationService auth = (AuthenticationService)wc.getBean(AUTHENTICATION_SERVICE);
       UserTransaction tx = null;
+      HttpSession session = httpRequest.getSession();
       try
       {
          auth.validate(ticket);
          
-         HttpSession session = httpRequest.getSession();
          User user = (User)session.getAttribute(AuthenticationHelper.AUTHENTICATION_USER);
          if (user == null)
          {
@@ -313,6 +314,7 @@ public final class AuthenticationHelper
       }
       catch (AuthenticationException authErr)
       {
+         session.removeAttribute(AUTHENTICATION_USER);
          return AuthenticationStatus.Failure;
       }
       catch (Throwable e)

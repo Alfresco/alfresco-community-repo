@@ -352,8 +352,10 @@ public class DialogsConfigElement extends ConfigElementAdapter
     * 
     * @author gavinc
     */
-   public static class DialogAttributes
+   public static class DialogAttributes implements Serializable
    {
+      private static final long serialVersionUID = -6897300549207773138L;
+      
       protected String name;
       protected String page;
       protected String managedBean;

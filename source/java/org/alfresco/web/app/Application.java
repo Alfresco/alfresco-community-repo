@@ -49,12 +49,12 @@ import org.alfresco.web.app.servlet.AuthenticationHelper;
 import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.ErrorBean;
 import org.alfresco.web.bean.SidebarBean;
-import org.alfresco.web.bean.users.UserPreferencesBean;
 import org.alfresco.web.bean.dashboard.DashboardManager;
 import org.alfresco.web.bean.dialog.DialogManager;
 import org.alfresco.web.bean.repository.PreferencesService;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.repository.User;
+import org.alfresco.web.bean.users.UserPreferencesBean;
 import org.alfresco.web.bean.wizard.WizardManager;
 import org.alfresco.web.config.ClientConfigElement;
 import org.alfresco.web.config.LanguagesConfigElement;
@@ -578,9 +578,6 @@ public class Application
    
    /**
     * Set the language locale for the current user context
-=======
-    * Set the language locale for the current user session.
->>>>>>> .merge-right.r8121
     * 
     * @param context        FacesContext for current user
     * @param code           The ISO locale code to set
@@ -801,7 +798,7 @@ public class Application
          {
             locale = Locale.getDefault();
          }
-         bundle = ResourceBundleWrapper.getResourceBundle(session.getServletContext(), MESSAGE_BUNDLE, locale);
+         bundle = ResourceBundleWrapper.getResourceBundle(MESSAGE_BUNDLE, locale);
          
          session.setAttribute(MESSAGE_BUNDLE, bundle);
       }
@@ -832,7 +829,7 @@ public class Application
          {
             locale = Locale.getDefault();
          }
-         bundle = ResourceBundleWrapper.getResourceBundle(FacesContextUtils.getRequiredWebApplicationContext(context).getServletContext(), MESSAGE_BUNDLE, locale);
+         bundle = ResourceBundleWrapper.getResourceBundle(MESSAGE_BUNDLE, locale);
          
          session.put(MESSAGE_BUNDLE, bundle);
       }

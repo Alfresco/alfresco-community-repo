@@ -28,7 +28,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.service.namespace.NamespacePrefixResolver;
+import org.alfresco.service.namespace.NamespacePrefixResolverProvider;
 import org.alfresco.service.namespace.QNameMap;
 
 /**
@@ -38,19 +38,20 @@ import org.alfresco.service.namespace.QNameMap;
  */
 public final class QNameNodeMap<K, V> extends QNameMap implements Map, Cloneable, Serializable
 {
+   private static final long serialVersionUID = -1760755862411509263L;
    
-   private static final long serialVersionUID = -1760755862411509262L;
    private Node parent = null;
    private Map<String, NodePropertyResolver> resolvers = new HashMap<String, NodePropertyResolver>(8, 1.0f);
+   
    
    /**
     * Constructor
     * 
     * @param parent     Parent Node of the QNameNodeMap
     */
-   public QNameNodeMap(NamespacePrefixResolver resolver, Node parent)
+   public QNameNodeMap(NamespacePrefixResolverProvider provider, Node parent)
    {
-      super(resolver);
+      super(provider);
       if (parent == null)
       {
          throw new IllegalArgumentException("Parent Node cannot be null!");
@@ -58,9 +59,8 @@ public final class QNameNodeMap<K, V> extends QNameMap implements Map, Cloneable
       this.parent = parent;
    }
    
-   
    /**
-    * 
+    * Serialization constructor
     */
    protected QNameNodeMap()
    {
@@ -141,7 +141,7 @@ public final class QNameNodeMap<K, V> extends QNameMap implements Map, Cloneable
    @SuppressWarnings("unchecked")
    public Object clone()
    {
-      QNameNodeMap map = new QNameNodeMap(this.resolver, this.parent);
+      QNameNodeMap map = new QNameNodeMap(this.provider, this.parent);
       map.putAll(this);
       if (this.resolvers.size() != 0)
       {

@@ -1566,13 +1566,13 @@ public class CreateWebsiteWizard extends BaseWizardBean
           String formDescription = DescriptionAttributeHelper.getDescriptionNotEmpty(fc, this.getDescription());
           String workflowTitle = getWorkflow() == null ?
                    DescriptionAttributeHelper.SPAN_ITALIC_BEGIN + Application.getMessage(fc, "none") + 
-                   DescriptionAttributeHelper.SPAN_END : getWorkflow().getTitle();
+                   DescriptionAttributeHelper.SPAN_END : Utils.encode(getWorkflow().getTitle());
           attribute.append(DescriptionAttributeHelper.getTableBegin());
           attribute.append(DescriptionAttributeHelper.getTableLine(fc, "name", this.getName()));
           attribute.append(DescriptionAttributeHelper.getTableLine(fc, "title", this.getTitle()));
           attribute.append(DescriptionAttributeHelper.getTableLine(fc, "output_path_pattern", this.getOutputPathPattern()));
           attribute.append(DescriptionAttributeHelper.getTableLine(fc, "description", formDescription, false));
-          attribute.append(DescriptionAttributeHelper.getTableLine(fc, "workflow", workflowTitle));
+          attribute.append(DescriptionAttributeHelper.getTableLine(fc, "workflow", workflowTitle, false));
           attribute.append(DescriptionAttributeHelper.getTableEnd());
           return attribute.toString();
       }

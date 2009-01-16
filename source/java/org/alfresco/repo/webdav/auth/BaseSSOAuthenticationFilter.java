@@ -250,6 +250,14 @@ public abstract class BaseSSOAuthenticationFilter implements Filter
     }
     
     /**
+     * Remove the user from the session - after failed ticket auth
+     */
+    protected void removeSessionUser(HttpSession session)
+    {
+        session.removeAttribute( getUserAttributeName());
+    }
+    
+    /**
      * Return the user object session attribute name
      * 
      * @return String

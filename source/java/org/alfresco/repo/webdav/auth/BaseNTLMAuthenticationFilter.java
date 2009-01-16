@@ -250,6 +250,8 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
                 if (getLogger().isErrorEnabled())
                     getLogger().error("Failed to validate user " + user.getUserName(), ex);
                 
+                removeSessionUser( httpSess);
+                
                 reqAuth = true;
             }
         }
@@ -536,6 +538,8 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
                 if (logger.isErrorEnabled())
                     logger.error("Failed to validate user " + user.getUserName(), ex);
                 
+                removeSessionUser(session);
+                
                 onValidateFailed(req, res, session);
                 return;
             }
@@ -658,6 +662,8 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
                     {
                         if (logger.isErrorEnabled())
                             logger.error("Failed to validate user " + user.getUserName(), ex);
+                        
+                        removeSessionUser(session);
                         
                         onValidateFailed(req, res, session);
                         return;

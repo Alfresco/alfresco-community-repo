@@ -338,6 +338,8 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
                 if ( getLogger().isErrorEnabled())
                     getLogger().error("Failed to validate user " + user.getUserName(), ex);
                 
+                removeSessionUser( httpSess);
+                
                 reqAuth = true;
             }
         }

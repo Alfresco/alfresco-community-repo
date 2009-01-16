@@ -57,6 +57,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
@@ -739,7 +740,9 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
     public Map<String, String> listWebUsers(NodeRef wpNodeRef)
     {
         // special case: allow System - eg. to allow user to create their own sandbox on-demand (createAuthorSandbox)
-        if (isContentManager(wpNodeRef) || (AuthenticationUtil.getRunAsUser().equals(AuthenticationUtil.getSystemUserName())))
+        if (isContentManager(wpNodeRef) 
+           || (AuthenticationUtil.getRunAsUser().equals(AuthenticationUtil.getSystemUserName())
+           || (permissionService.hasPermission(wpNodeRef, PermissionService.ADD_CHILDREN) == AccessStatus.ALLOWED)))
         {
             return WCMUtil.listWebUsers(nodeService, wpNodeRef);
         }
@@ -875,7 +878,8 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
     
     public void inviteWebUsersGroups(NodeRef wpNodeRef, Map<String, String> userGroupRoles, boolean autoCreateAuthorSandbox)
     {
-        if (! isContentManager(wpNodeRef))
+        if (! (isContentManager(wpNodeRef) ||
+                permissionService.hasPermission(wpNodeRef, PermissionService.ADD_CHILDREN) == AccessStatus.ALLOWED))
         {
             throw new AccessDeniedException("Only content managers may invite web users");
         }
@@ -1014,7 +1018,8 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
      */
     public void inviteWebUser(NodeRef wpNodeRef, String userAuth, String role, boolean autoCreateAuthorSandbox)
     {
-        if (! isContentManager(wpNodeRef))
+        if (! (isContentManager(wpNodeRef) ||
+               permissionService.hasPermission(wpNodeRef, PermissionService.ADD_CHILDREN) == AccessStatus.ALLOWED))
         {
             throw new AccessDeniedException("Only content managers may invite web user");
         }

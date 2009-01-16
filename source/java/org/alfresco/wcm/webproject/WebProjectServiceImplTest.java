@@ -45,6 +45,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.PropertyMap;
@@ -94,6 +95,7 @@ public class WebProjectServiceImplTest extends TestCase
     private static final String USER_THREE = TEST_USER+"-Three";
     private static final String USER_FOUR  = TEST_USER+"-Four";
     private static final String USER_FIVE  = TEST_USER+"-Five";
+    private static final String USER_SIX   = TEST_USER+"-Six";
     
     private static final String GROUP_ONE  = TEST_GROUP+"-One";
     
@@ -111,6 +113,7 @@ public class WebProjectServiceImplTest extends TestCase
     private PersonService personService;
     private FileFolderService fileFolderService;
     private AuthorityService authorityService;
+    private PermissionService permissionService;
 
     
     @Override
@@ -122,6 +125,8 @@ public class WebProjectServiceImplTest extends TestCase
         personService = (PersonService)ctx.getBean("PersonService");
         fileFolderService = (FileFolderService)ctx.getBean("FileFolderService");
         authorityService = (AuthorityService)ctx.getBean("AuthorityService");
+        permissionService = (PermissionService)ctx.getBean("PermissionService");
+         
        
         // By default run as Admin
         AuthenticationUtil.setFullyAuthenticatedUser(USER_ADMIN);
@@ -131,6 +136,7 @@ public class WebProjectServiceImplTest extends TestCase
         createUser(USER_THREE);
         createUser(USER_FOUR);
         createUser(USER_FIVE);
+        createUser(USER_SIX);
         
         Set<String> userNames = new HashSet<String>(2);
         userNames.add(USER_ONE);
@@ -163,6 +169,7 @@ public class WebProjectServiceImplTest extends TestCase
             deleteUser(USER_THREE);
             deleteUser(USER_FOUR);
             deleteUser(USER_FIVE);
+            deleteUser(USER_SIX);
             
             NodeRef wpRoot = wpService.getWebProjectsRoot();
             List<FileInfo> list = fileFolderService.list(wpRoot);
@@ -313,6 +320,94 @@ public class WebProjectServiceImplTest extends TestCase
         {
             // Expected
         }
+    }
+    
+    // note: requires "add_children" rights on "Web Projects" root space
+    // eg. DM coordinator, collaborator or contributor (not editor or consumer)
+    public void testCreateWebProjectAsNonAdmin()
+    {
+        // Switch to USER_ONE
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_ONE);
+        
+        try
+        {
+            // Try to create web project (-ve test)
+            wpService.createWebProject(TEST_WEBPROJ_DNS+"-createAsNonAdmin", TEST_WEBPROJ_NAME+"-createAsNonAdmin", TEST_TITLE, TEST_DESCRIPTION, TEST_DEFAULT_WEBAPP, TEST_USE_AS_TEMPLATE, null);
+            fail("Shouldn't allow anyone to create web project by default");
+        }
+        catch (AccessDeniedException exception)
+        {
+            // Expected
+        }
+        
+        // Switch back to Admin
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_ADMIN);
+        NodeRef wpRootNodeRef = wpService.getWebProjectsRoot();
+        
+        // note: implies "coordinator", "collaborator" or "contributor" (not "editor" or "consumer") - see permissionsDefinition.xml
+        permissionService.setPermission(wpRootNodeRef, USER_ONE, PermissionService.ADD_CHILDREN, true);
+        
+        // Switch to USER_ONE
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_ONE);
+        
+        // Create a web project
+        WebProjectInfo wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-createAsNonAdmin", TEST_WEBPROJ_NAME+"-createAsNonAdmin", TEST_TITLE, TEST_DESCRIPTION, TEST_DEFAULT_WEBAPP, TEST_USE_AS_TEMPLATE, null);
+        checkWebProjectInfo(wpInfo, TEST_WEBPROJ_DNS+"-createAsNonAdmin", TEST_WEBPROJ_NAME+"-createAsNonAdmin", TEST_TITLE, TEST_DESCRIPTION, TEST_DEFAULT_WEBAPP, TEST_USE_AS_TEMPLATE);
+        
+        // test list and invite users
+        assertEquals(1, wpService.listWebUsers(wpInfo.getStoreId()).size());
+        assertEquals(WCMUtil.ROLE_CONTENT_MANAGER, wpService.listWebUsers(wpInfo.getStoreId()).get(USER_ONE));
+        
+        wpService.inviteWebUser(wpInfo.getStoreId(), USER_TWO, WCMUtil.ROLE_CONTENT_PUBLISHER);
+        
+        assertEquals(2, wpService.listWebUsers(wpInfo.getStoreId()).size());
+        assertEquals(WCMUtil.ROLE_CONTENT_PUBLISHER, wpService.listWebUsers(wpInfo.getStoreId()).get(USER_TWO));
+        
+        // Switch back to Admin
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_ADMIN);
+        
+        permissionService.setPermission(wpRootNodeRef, USER_TWO, PermissionService.EDITOR, true);
+        permissionService.setPermission(wpRootNodeRef, USER_THREE, PermissionService.CONSUMER, true);
+        
+        permissionService.setPermission(wpRootNodeRef, USER_FOUR, PermissionService.COORDINATOR, true);
+        permissionService.setPermission(wpRootNodeRef, USER_FIVE, PermissionService.CONTRIBUTOR, true);
+        permissionService.setPermission(wpRootNodeRef, USER_SIX, "Collaborator", true);
+        
+        // Switch to USER_TWO
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_TWO);
+        
+        try
+        {
+            // Try to create web project with "editor" rights to web project root (-ve test)
+            wpService.createWebProject(TEST_WEBPROJ_DNS+"-ano", TEST_WEBPROJ_NAME+"-ano", TEST_TITLE, TEST_DESCRIPTION, TEST_DEFAULT_WEBAPP, TEST_USE_AS_TEMPLATE, null);
+            fail("Shouldn't allow anyone to create web project by default");
+        }
+        catch (AccessDeniedException exception)
+        {
+            // Expected
+        }
+        
+        // Switch to USER_THREE
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_THREE);
+        
+        try
+        {
+            // Try to create web project with "comsumer" rights to web project root (-ve test)
+            wpService.createWebProject(TEST_WEBPROJ_DNS+"-ano", TEST_WEBPROJ_NAME+"-ano", TEST_TITLE, TEST_DESCRIPTION, TEST_DEFAULT_WEBAPP, TEST_USE_AS_TEMPLATE, null);
+            fail("Shouldn't allow anyone to create web project by default");
+        }
+        catch (AccessDeniedException exception)
+        {
+            // Expected
+        }
+        
+        // Switch to USER_FOUR
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_FOUR);
+        
+        // Create a web project
+        wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-createAsCoordinator", TEST_WEBPROJ_NAME+"-createAsCoordinator", TEST_TITLE, TEST_DESCRIPTION, TEST_DEFAULT_WEBAPP, TEST_USE_AS_TEMPLATE, null);
+        checkWebProjectInfo(wpInfo, TEST_WEBPROJ_DNS+"-createAsCoordinator", TEST_WEBPROJ_NAME+"-createAsCoordinator", TEST_TITLE, TEST_DESCRIPTION, TEST_DEFAULT_WEBAPP, TEST_USE_AS_TEMPLATE);
+
     }
     
     private void checkWebProjectInfo(WebProjectInfo wpInfo, String expectedStoreId, String expectedName, String expectedTitle, 
@@ -862,6 +957,7 @@ public class WebProjectServiceImplTest extends TestCase
             // Expected
         }
 
+        /*  System can invite due to ALFCOM-2388 - need to review System in general
         // Switch user to System
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
                  
@@ -874,7 +970,8 @@ public class WebProjectServiceImplTest extends TestCase
         catch (AccessDeniedException exception)
         {
             // Expected
-        }         
+        }
+        */
         
         // Test newly invited content manager can invite other
         

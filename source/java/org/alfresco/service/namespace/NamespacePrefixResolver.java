@@ -37,7 +37,7 @@ import org.alfresco.service.PublicService;
  * @author David Caruana
  */
 @PublicService
-public interface NamespacePrefixResolver extends Serializable
+public interface NamespacePrefixResolver 
 {
     /**
      * Gets the namespace URI registered for the given prefix
@@ -76,5 +76,4 @@ public interface NamespacePrefixResolver extends Serializable
      */
     @Auditable
     Collection<String> getURIs();
-
 }

@@ -43,6 +43,8 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionHistory;
+import org.alfresco.service.namespace.NamespacePrefixResolver;
+import org.alfresco.service.namespace.NamespacePrefixResolverProvider;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNameMap;
 import org.alfresco.service.namespace.RegexQNamePattern;
@@ -66,7 +68,7 @@ import freemarker.ext.dom.NodeModel;
  * 
  * @author Kevin Roast
  */
-public class TemplateNode extends BasePermissionsNode
+public class TemplateNode extends BasePermissionsNode implements NamespacePrefixResolverProvider
 {
     private static final long serialVersionUID = 1234390333739034171L;
     
@@ -123,7 +125,7 @@ public class TemplateNode extends BasePermissionsNode
         this.services = services;
         this.imageResolver = resolver;
         
-        this.properties = new QNameMap<String, Serializable>(this.services.getNamespaceService());
+        this.properties = new QNameMap<String, Serializable>(this);
     }
     
     
@@ -241,7 +243,7 @@ public class TemplateNode extends BasePermissionsNode
         if (this.targetAssocs == null)
         {
             List<AssociationRef> refs = this.services.getNodeService().getTargetAssocs(this.nodeRef, RegexQNamePattern.MATCH_ALL);
-            this.targetAssocs = new QNameMap<String, List<TemplateNode>>(this.services.getNamespaceService());
+            this.targetAssocs = new QNameMap<String, List<TemplateNode>>(this);
             for (AssociationRef ref : refs)
             {
                 String qname = ref.getTypeQName().toString();
@@ -272,7 +274,7 @@ public class TemplateNode extends BasePermissionsNode
         if (this.sourceAssocs == null)
         {
             List<AssociationRef> refs = this.services.getNodeService().getSourceAssocs(this.nodeRef, RegexQNamePattern.MATCH_ALL);
-            this.sourceAssocs = new QNameMap<String, List<TemplateNode>>(this.services.getNamespaceService());
+            this.sourceAssocs = new QNameMap<String, List<TemplateNode>>(this);
             for (AssociationRef ref : refs)
             {
                 String qname = ref.getTypeQName().toString();
@@ -303,7 +305,7 @@ public class TemplateNode extends BasePermissionsNode
         if (this.childAssocs == null)
         {
             List<ChildAssociationRef> refs = this.services.getNodeService().getChildAssocs(this.nodeRef);
-            this.childAssocs = new QNameMap<String, List<TemplateNode>>(this.services.getNamespaceService());
+            this.childAssocs = new QNameMap<String, List<TemplateNode>>(this);
             for (ChildAssociationRef ref : refs)
             {
                 String qname = ref.getTypeQName().toString();
@@ -510,9 +512,15 @@ public class TemplateNode extends BasePermissionsNode
         return this.imageResolver;
     }
     
+    
     // ------------------------------------------------------------------------------
     // Inner classes
     
+    public NamespacePrefixResolver getNamespacePrefixResolver()
+    {
+        return this.services.getNamespaceService();
+    }
+
     /**
      * Class to convert properties into template accessable objects
      */

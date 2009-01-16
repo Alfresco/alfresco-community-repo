@@ -49,6 +49,8 @@ import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.cmr.workflow.WorkflowTransition;
+import org.alfresco.service.namespace.NamespacePrefixResolver;
+import org.alfresco.service.namespace.NamespacePrefixResolverProvider;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNameMap;
 import org.alfresco.service.namespace.RegexQNamePattern;
@@ -160,7 +162,7 @@ public class Workflow extends BaseTemplateProcessorExtension
     /**
      * Simple bean wrapper around a WorkflowTask item 
      */
-    public static class WorkflowTaskItem
+    public static class WorkflowTaskItem implements NamespacePrefixResolverProvider
     {
         private WorkflowTask task;
         private QNameMap<String, Serializable> properties = null;
@@ -317,7 +319,7 @@ public class Workflow extends BaseTemplateProcessorExtension
             {
                 // convert properties to a QName accessable Map with TemplateNode objects as required
                 PropertyConverter converter = new PropertyConverter();
-                this.properties = new QNameMap<String, Serializable>(this.services.getNamespaceService());
+                this.properties = new QNameMap<String, Serializable>(this);
                 for (QName qname : this.task.properties.keySet())
                 {
                     Serializable value = converter.convertProperty(
@@ -326,6 +328,11 @@ public class Workflow extends BaseTemplateProcessorExtension
                 }
             }
             return this.properties;
+        }
+        
+        public NamespacePrefixResolver getNamespacePrefixResolver()
+        {
+            return this.services.getNamespaceService();
         }
     }
 }

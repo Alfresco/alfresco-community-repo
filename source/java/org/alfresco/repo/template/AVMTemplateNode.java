@@ -46,6 +46,8 @@ import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
+import org.alfresco.service.namespace.NamespacePrefixResolver;
+import org.alfresco.service.namespace.NamespacePrefixResolverProvider;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNameMap;
 import org.alfresco.util.Pair;
@@ -67,7 +69,7 @@ import freemarker.ext.dom.NodeModel;
  * 
  * @author Kevin Roast
  */
-public class AVMTemplateNode extends BasePermissionsNode
+public class AVMTemplateNode extends BasePermissionsNode implements NamespacePrefixResolverProvider
 {
     private static Log logger = LogFactory.getLog(AVMTemplateNode.class);
     
@@ -172,7 +174,7 @@ public class AVMTemplateNode extends BasePermissionsNode
     {
         this.version = version;
         this.path = path;
-        this.properties = new QNameMap<String, Serializable>(this.services.getNamespaceService());
+        this.properties = new QNameMap<String, Serializable>(this);
         if (descriptor == null)
         {
             descriptor = this.services.getAVMService().lookup(version, path, true);
@@ -468,6 +470,12 @@ public class AVMTemplateNode extends BasePermissionsNode
     public String getDisplayPath()
     {
         return this.path;
+    }
+    
+    
+    public NamespacePrefixResolver getNamespacePrefixResolver()
+    {
+        return this.services.getNamespaceService();
     }
     
     

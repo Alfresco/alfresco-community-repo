@@ -36,7 +36,6 @@ import org.alfresco.service.namespace.NamespacePrefixResolver;
  */
 public interface NamespaceDAO extends NamespacePrefixResolver
 {
-    
     /**
      * Add a namespace URI
      * 

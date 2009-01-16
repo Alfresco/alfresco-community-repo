@@ -36,13 +36,9 @@ import java.util.Set;
  * required.
  * 
  * @author andyh
- * 
  */
 public class DynamicNamespacePrefixResolver implements NamespaceService
 {
-
-    private static final long serialVersionUID = -7721089444629137409L;
-
     /**
      * The delegate
      */
@@ -53,6 +49,7 @@ public class DynamicNamespacePrefixResolver implements NamespaceService
      */
     private HashMap<String, String> map = new HashMap<String, String>();
 
+    
     public DynamicNamespacePrefixResolver(NamespacePrefixResolver delegate)
     {
         super();
@@ -64,6 +61,7 @@ public class DynamicNamespacePrefixResolver implements NamespaceService
         this(null);
     }
 
+    
     /**
      * Add prefix to name space mapping override
      * 
@@ -143,5 +141,4 @@ public class DynamicNamespacePrefixResolver implements NamespaceService
        uris.addAll(map.keySet());
        return uris;
     }
-    
 }

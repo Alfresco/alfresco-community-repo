@@ -51,6 +51,8 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowTransition;
+import org.alfresco.service.namespace.NamespacePrefixResolver;
+import org.alfresco.service.namespace.NamespacePrefixResolverProvider;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.Pair;
@@ -151,7 +153,12 @@ public class JscriptWorkflowTask extends BaseScopableProcessorExtension implemen
 
         // instantiate ScriptableQNameMap<String, Serializable> properties
         // from WorkflowTasks's Map<QName, Serializable> properties
-        this.properties = new ScriptableQNameMap<String, Serializable>(serviceRegistry.getNamespaceService());
+        this.properties = new ScriptableQNameMap<String, Serializable>(new NamespacePrefixResolverProvider(){
+            public NamespacePrefixResolver getNamespacePrefixResolver()
+            {
+                return serviceRegistry.getNamespaceService();
+            }
+        });
 
         Set<QName> keys = cmrWorkflowTask.properties.keySet();
         for (QName key : keys)

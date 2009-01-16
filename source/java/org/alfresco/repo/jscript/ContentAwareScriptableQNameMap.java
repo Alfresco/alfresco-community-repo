@@ -29,6 +29,8 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.namespace.NamespacePrefixResolver;
+import org.alfresco.service.namespace.NamespacePrefixResolverProvider;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -44,9 +46,21 @@ public class ContentAwareScriptableQNameMap<K,V> extends ScriptableQNameMap<K,V>
     private ServiceRegistry services;
     private ScriptNode factory;
     
-    public ContentAwareScriptableQNameMap(ScriptNode factory, ServiceRegistry services)
+    
+    /**
+     * Constructor
+     * 
+     * @param factory       Factory to provide further ScriptNode objects
+     * @param services      ServiceRegistry
+     */
+    public ContentAwareScriptableQNameMap(final ScriptNode factory, final ServiceRegistry services)
     {
-        super(services.getNamespaceService());
+        super(new NamespacePrefixResolverProvider(){
+            public NamespacePrefixResolver getNamespacePrefixResolver()
+            {
+                return services.getNamespaceService();
+            }
+        });
         this.services = services;
         this.factory = factory;
     }
@@ -62,7 +76,7 @@ public class ContentAwareScriptableQNameMap<K,V> extends ScriptableQNameMap<K,V>
         if (value == null)
         {
            // convert the key to a qname and look up the data-type for the property
-           QName qname = QName.resolveToQName(this.resolver, name.toString());
+           QName qname = QName.resolveToQName(getResolver(), name.toString());
            PropertyDefinition propDef = this.services.getDictionaryService().getProperty(qname);
            if (propDef != null && DataTypeDefinition.CONTENT.equals(propDef.getDataType().getName()))
            {

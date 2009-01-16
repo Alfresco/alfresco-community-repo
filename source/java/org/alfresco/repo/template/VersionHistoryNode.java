@@ -37,6 +37,8 @@ import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionType;
+import org.alfresco.service.namespace.NamespacePrefixResolver;
+import org.alfresco.service.namespace.NamespacePrefixResolverProvider;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNameMap;
 import org.alfresco.util.URLEncoder;
@@ -47,7 +49,7 @@ import org.alfresco.util.URLEncoder;
  * 
  * @author Kevin Roast
  */
-public class VersionHistoryNode extends BaseContentNode
+public class VersionHistoryNode extends BaseContentNode implements NamespacePrefixResolverProvider
 {
     private QNameMap<String, Serializable> properties;
     private boolean propsRetrieved = false;
@@ -77,7 +79,7 @@ public class VersionHistoryNode extends BaseContentNode
         this.version = version;
         this.parent = parent;
         this.services = services;
-        this.properties = new QNameMap<String, Serializable>(parent.services.getNamespaceService());
+        this.properties = new QNameMap<String, Serializable>(this);
     }
     
     /**
@@ -261,6 +263,12 @@ public class VersionHistoryNode extends BaseContentNode
     public TemplateProperties getParent()
     {
         return null;
+    }
+    
+    
+    public NamespacePrefixResolver getNamespacePrefixResolver()
+    {
+        return this.services.getNamespaceService();
     }
     
     

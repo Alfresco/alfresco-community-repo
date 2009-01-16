@@ -77,6 +77,8 @@ import org.alfresco.service.cmr.version.VersionHistory;
 import org.alfresco.service.cmr.version.VersionType;
 import org.alfresco.service.cmr.workflow.WorkflowInstance;
 import org.alfresco.service.cmr.workflow.WorkflowService;
+import org.alfresco.service.namespace.NamespacePrefixResolver;
+import org.alfresco.service.namespace.NamespacePrefixResolverProvider;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
@@ -104,9 +106,9 @@ import org.mozilla.javascript.Wrapper;
  * 
  * @author Kevin Roast
  */
-public class ScriptNode implements Serializable, Scopeable
+public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResolverProvider
 {
-    private static final long serialVersionUID = -3378946227712939600L;
+    private static final long serialVersionUID = -3378946227712939601L;
     
     private static Log logger = LogFactory.getLog(ScriptNode.class);
     
@@ -436,7 +438,7 @@ public class ScriptNode implements Serializable, Scopeable
         if (this.targetAssocs == null)
         {
             // this Map implements the Scriptable interface for native JS syntax property access
-            this.targetAssocs = new ScriptableQNameMap<String, Object>(this.services.getNamespaceService());
+            this.targetAssocs = new ScriptableQNameMap<String, Object>(this);
 
             // get the list of target nodes for each association type
             List<AssociationRef> refs = this.nodeService.getTargetAssocs(this.nodeRef, RegexQNamePattern.MATCH_ALL);
@@ -484,7 +486,7 @@ public class ScriptNode implements Serializable, Scopeable
         if (this.sourceAssocs == null)
         {
             // this Map implements the Scriptable interface for native JS syntax property access
-            this.sourceAssocs = new ScriptableQNameMap<String, Object>(this.services.getNamespaceService());
+            this.sourceAssocs = new ScriptableQNameMap<String, Object>(this);
 
             // get the list of source nodes for each association type
             List<AssociationRef> refs = this.nodeService.getSourceAssocs(this.nodeRef, RegexQNamePattern.MATCH_ALL);
@@ -532,7 +534,7 @@ public class ScriptNode implements Serializable, Scopeable
         if (this.childAssocs == null)
         {
             // this Map implements the Scriptable interface for native JS syntax property access
-            this.childAssocs = new ScriptableQNameMap<String, Object>(this.services.getNamespaceService());
+            this.childAssocs = new ScriptableQNameMap<String, Object>(this);
             
             // get the list of child assoc nodes for each association type
             List<ChildAssociationRef> refs = this.nodeService.getChildAssocs(nodeRef);
@@ -2793,5 +2795,14 @@ public class ScriptNode implements Serializable, Scopeable
          * @return Node representing the transformed entity
          */
         ScriptNode transform(ContentService contentService, NodeRef noderef, ContentReader reader, ContentWriter writer);
+    }
+    
+    
+    /**
+     * NamespacePrefixResolverProvider getter implementation
+     */
+    public NamespacePrefixResolver getNamespacePrefixResolver()
+    {
+        return this.services.getNamespaceService();
     }
 }

@@ -48,8 +48,6 @@ public class NamespaceDAOImpl implements NamespaceDAO
 {
     private static final Log logger = LogFactory.getLog(NamespaceDAOImpl.class);
     
-    private static final long serialVersionUID = -1085431310721591548L;
-    
     /**
      * Lock objects
      */
@@ -63,6 +61,7 @@ public class NamespaceDAOImpl implements NamespaceDAO
 
     // Dependencies
     private TenantService tenantService;
+    private DictionaryDAO dictionaryDAO;
     
     
     public void setTenantService(TenantService tenantService)
@@ -79,9 +78,6 @@ public class NamespaceDAOImpl implements NamespaceDAO
     {
         this.prefixesCache = prefixesCache;
     }
-    
-    
-    private DictionaryDAO dictionaryDAO;
     
     public void registerDictionary(DictionaryDAO dictionaryDAO)
     {

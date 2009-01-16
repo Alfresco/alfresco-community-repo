@@ -25,6 +25,7 @@
 package org.alfresco.repo.jscript;
 
 import org.alfresco.service.namespace.NamespacePrefixResolver;
+import org.alfresco.service.namespace.NamespacePrefixResolverProvider;
 import org.alfresco.service.namespace.QNameMap;
 import org.mozilla.javascript.Scriptable;
 
@@ -36,7 +37,7 @@ public class ScriptableQNameMap<K,V> extends QNameMap<K,V> implements Scriptable
     /**
      * @param resolver
      */
-    public ScriptableQNameMap(NamespacePrefixResolver resolver)
+    public ScriptableQNameMap(NamespacePrefixResolverProvider resolver)
     {
         super(resolver);
     }

@@ -36,8 +36,6 @@ import org.alfresco.service.namespace.NamespaceService;
  */
 public class DictionaryNamespaceComponent implements NamespaceService
 {
-
-    private static final long serialVersionUID = -3774701459465102431L;
     /**
      * Namespace DAO
      */
@@ -109,5 +107,4 @@ public class DictionaryNamespaceComponent implements NamespaceService
         // TODO:
         throw new UnsupportedOperationException();        
     }
-    
 }

@@ -700,8 +700,6 @@ public class RepoStore implements Store, TenantDeployer
             {
                 public Object doWork() throws Exception
                 {
-                    // Run this in an isolated transaction to avoid flushing an uncommitted webscript transaction and
-                    // causing deadlocks or trying to flush a 'dead' failed transaction
                     return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
                     {
                         public Object execute() throws Exception
@@ -714,7 +712,7 @@ public class RepoStore implements Store, TenantDeployer
                             }
                             return source;
                         }
-                    }, true, true);
+                    }, true);
                 }
             }, AuthenticationUtil.getSystemUserName());
         }

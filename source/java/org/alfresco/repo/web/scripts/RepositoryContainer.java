@@ -169,7 +169,7 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
      */
     public Map<String, Object> getTemplateParameters()
     {
-        // This must be in an isolated read-only transaction, in case we are handling failure of another transaction
+        // Ensure we have a transaction - we might be generating the status template after the main transaction failed
         return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Map<String, Object>>()
         {
             public Map<String, Object> execute() throws Throwable
@@ -180,7 +180,7 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
                 addRepoParameters(params);
                 return params;
             }
-        }, true, true);
+        }, true);
     }
 
     /**

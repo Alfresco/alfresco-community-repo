@@ -25,10 +25,13 @@
 package org.alfresco.web.bean.wcm;
 
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 
+import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.wcm.sandbox.SandboxService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
@@ -76,10 +79,17 @@ public class RevertSelectedDialog extends BaseDialogBean
    @Override
    protected String finishImpl(FacesContext context, String outcome) throws Exception
    {
-      String webApp = this.avmBrowseBean.getWebapp();
       String userSandboxId = this.avmBrowseBean.getSandbox();
-       
-      getSandboxService().revertWebApp(userSandboxId, webApp);
+      
+      List<AVMNodeDescriptor> selected = this.avmBrowseBean.getSelectedSandboxItems();
+      
+      List<String> relativePaths = new ArrayList<String>(selected.size());
+      for (AVMNodeDescriptor node : selected)
+      {
+          relativePaths.add(AVMUtil.getStoreRelativePath(node.getPath()));
+      }
+      
+      getSandboxService().revertList(userSandboxId, relativePaths);
       
       String msg = MessageFormat.format(Application.getMessage(
                   context, MSG_REVERTSELECTED_SUCCESS), this.avmBrowseBean.getUsername());

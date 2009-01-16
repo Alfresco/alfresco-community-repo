@@ -30,7 +30,8 @@ function getWikiPages(siteId)
    }
    
    var query = "+PATH:\"" + wiki.qnamePath + "//*\" ";
-   query += " +@\\{http\\://www.alfresco.org/model/content/1.0\\}content.mimetype:application/octet-stream";
+   query += " +(@\\{http\\://www.alfresco.org/model/content/1.0\\}content.mimetype:application/octet-stream OR";
+   query += "  @\\{http\\://www.alfresco.org/model/content/1.0\\}content.mimetype:text/html)";
    query += " -TYPE:\"{http://www.alfresco.org/model/content/1.0}thumbnail\"";
    query += " -TYPE:\"{http://www.alfresco.org/model/forum/1.0}post\"";
    

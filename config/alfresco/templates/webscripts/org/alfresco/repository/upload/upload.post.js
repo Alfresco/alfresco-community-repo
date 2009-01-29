@@ -234,6 +234,13 @@ function main()
          }
       }
       
+      // Extract metadata - via repo action for now
+      var emAction = actions.create("extract-metadata");
+      if (emAction != null)
+      {
+         emAction.execute(newFile);
+      }
+      
       model.document = newFile;
    }
    else

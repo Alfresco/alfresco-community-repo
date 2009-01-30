@@ -608,7 +608,7 @@ public class XFormsBean implements Serializable
             {
                // It's a web project asset include / import
                final String baseURI = (uri.charAt(0) == '/'
-                                       ? AVMUtil.buildStoreUrl(cwdAvmPath)
+                                       ? AVMUtil.buildStoreUrl(AVMUtil.getStoreName(cwdAvmPath))
                                        : AVMUtil.buildAssetUrl(cwdAvmPath));
 
                finalURI = baseURI + uri;

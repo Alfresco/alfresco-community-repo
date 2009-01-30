@@ -1193,12 +1193,12 @@ alfresco.xforms.CheckboxSelect = alfresco.xforms.AbstractSelectWidget.extend({
       checkbox.setAttribute("name", this.id + "_" + i + "-widget");
       checkbox.setAttribute("type", "checkbox");
       checkbox.setAttribute("value", values[i].value);
+      checkboxDiv.appendChild(checkbox);
       if (initial_value.indexOf(values[i].value) != -1)
       {
         this._selectedValues.push(values[i].value);
         checkbox.checked = true;
       }
-      checkboxDiv.appendChild(checkbox);
       checkboxDiv.appendChild(document.createTextNode(values[i].label));
       checkbox.onclick = this._checkbox_clickHandler.bindAsEventListener(this);
     }

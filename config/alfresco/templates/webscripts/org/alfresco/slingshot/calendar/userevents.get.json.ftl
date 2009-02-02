@@ -9,7 +9,7 @@
 		"name": "${event.name}",
 		"title": "${event.title}",
 		"where": "${event.where}",
-		"when": "${event.when?string("dd MMM yyyy")}",
+		"when": "${xmldate(event.when)}",
 	    "url": "page/site/${event.site}/calendar?date=${event.when?string("yyyy-MM-dd")}",
 		"start": "${event.start?string("HH:mm")}",
 		"end": "${event.end?string("HH:mm")}",

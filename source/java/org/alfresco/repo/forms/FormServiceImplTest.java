@@ -90,6 +90,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
     /**
      * Called during the transaction setup
      */
+    @Override
     protected void onSetUpInTransaction() throws Exception
     {
         super.onSetUpInTransaction();
@@ -295,21 +296,22 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         FormData data = form.getFormData();
         assertNotNull("Expecting form data", data);
         Map<String, FormData.FieldData> fieldData = data.getData();
-        assertEquals(VALUE_TITLE, fieldData.get("cm:title").getValue());
-        assertEquals(VALUE_DESCRIPTION, fieldData.get("cm:description").getValue());
-        assertEquals(VALUE_ORIGINATOR, fieldData.get("cm:originator").getValue());
-        assertEquals(VALUE_ADDRESSEE, fieldData.get("cm:addressee").getValue());
-        assertEquals(VALUE_ADDRESSEES1, fieldData.get("cm:addressees_0").getValue());
-        assertEquals(VALUE_ADDRESSEES2, fieldData.get("cm:addressees_1").getValue());
-        assertEquals(VALUE_SUBJECT, fieldData.get("cm:subjectline").getValue());
+        assertNotNull("Expecting field data", fieldData);
+        assertEquals(VALUE_TITLE, fieldData.get("prop:cm:title").getValue());
+        assertEquals(VALUE_DESCRIPTION, fieldData.get("prop:cm:description").getValue());
+        assertEquals(VALUE_ORIGINATOR, fieldData.get("prop:cm:originator").getValue());
+        assertEquals(VALUE_ADDRESSEE, fieldData.get("prop:cm:addressee").getValue());
+        assertEquals(VALUE_ADDRESSEES1, fieldData.get("prop:cm:addressees_0").getValue());
+        assertEquals(VALUE_ADDRESSEES2, fieldData.get("prop:cm:addressees_1").getValue());
+        assertEquals(VALUE_SUBJECT, fieldData.get("prop:cm:subjectline").getValue());
         
         Calendar calTestValue = Calendar.getInstance();
         calTestValue.setTime(VALUE_SENT_DATE);
         Calendar calServiceValue = Calendar.getInstance();
-        calServiceValue.setTime((Date)fieldData.get("cm:sentdate").getValue());
+        calServiceValue.setTime((Date)fieldData.get("prop:cm:sentdate").getValue());
         assertEquals(calTestValue.getTimeInMillis(), calServiceValue.getTimeInMillis());
         
-        List<String> targets = (List<String>)fieldData.get("cm:references").getValue();
+        List<String> targets = (List<String>)fieldData.get("assoc:cm:references").getValue();
         assertEquals("Expecting 1 target", 1, targets.size());
         assertEquals(this.associatedDoc.toString(), targets.get(0));
     }

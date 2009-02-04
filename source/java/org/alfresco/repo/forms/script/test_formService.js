@@ -102,20 +102,20 @@ function testGetFormForContentNode()
     test.assertNotNull(fieldData, "fieldData should not be null.");
     test.assertNotNull(fieldData.length, "fieldData.length should not be null.");
     
-    test.assertEquals("This is the title for the test document", fieldData["cm:title"].value);
-    test.assertEquals("This is the description for the test document", fieldData["cm:description"].value);
-    test.assertEquals("fred@customer.com", fieldData["cm:originator"].value);
-    test.assertEquals("bill@example.com", fieldData["cm:addressee"].value);
-    test.assertEquals("harry@example.com", fieldData["cm:addressees_0"].value);
-    test.assertEquals("jane@example.com", fieldData["cm:addressees_1"].value);
-    test.assertEquals("The subject is...", fieldData["cm:subjectline"].value);
+    test.assertEquals("This is the title for the test document", fieldData["prop:cm:title"].value);
+    test.assertEquals("This is the description for the test document", fieldData["prop:cm:description"].value);
+    test.assertEquals("fred@customer.com", fieldData["prop:cm:originator"].value);
+    test.assertEquals("bill@example.com", fieldData["prop:cm:addressee"].value);
+    test.assertEquals("harry@example.com", fieldData["prop:cm:addressees_0"].value);
+    test.assertEquals("jane@example.com", fieldData["prop:cm:addressees_1"].value);
+    test.assertEquals("The subject is...", fieldData["prop:cm:subjectline"].value);
 
     //TODO Might add the equivalent of the VALUE_SENT_DATE testing here.
     // In the meantime I'll use JavaScript's own Date object to assert that it is a valid date.
-    var sentDate = fieldData["cm:sentdate"].value;
+    var sentDate = fieldData["prop:cm:sentdate"].value;
     test.assertFalse(isNaN(Date.parse(sentDate)));
     
-    var targets = fieldData["cm:references"].value;
+    var targets = fieldData["assoc:cm:references"].value;
     test.assertEquals(1, targets.length);
     test.assertEquals(testAssociatedDoc, targets[0]);
 }

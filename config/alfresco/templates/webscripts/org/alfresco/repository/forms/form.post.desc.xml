@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Form</shortname>
+  <description>Handles the submission of a form</description>
+  <url>/api/forms/node/{store_type}/{store_id}/{id}</url>
+  <url>/api/forms/node/{path}</url>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>

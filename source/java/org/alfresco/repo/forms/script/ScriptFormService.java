@@ -25,6 +25,7 @@
 package org.alfresco.repo.forms.script;
 
 import org.alfresco.repo.forms.Form;
+import org.alfresco.repo.forms.FormData;
 import org.alfresco.repo.forms.FormService;
 import org.alfresco.repo.jscript.BaseScopableProcessorExtension;
 import org.alfresco.service.ServiceRegistry;
@@ -63,9 +64,32 @@ public class ScriptFormService extends BaseScopableProcessorExtension
         this.formService = formService;
     }
 
+    /**
+     * Returns the form for the given item
+     * 
+     * @param item The item to retrieve a form for
+     * @return The form
+     */
     public ScriptForm getForm(String item)
     {
         Form result = formService.getForm(item);
-        return new ScriptForm(result);
+        return result == null ? null : new ScriptForm(result);
+    }
+    
+    /**
+     * Persists the given data object for the item provided
+     * 
+     * @param item The item to persist the data for
+     * @param postData The post data, this can be a Map of name value
+     *                 pairs, a webscript FormData object or a JSONObject
+     */
+    public void saveForm(String item, Object postData)
+    {
+       FormData data = null;
+       
+       // convert the post data into a repo FormData object
+       data = new FormData();
+       
+       formService.saveForm(item, data);
     }
 }

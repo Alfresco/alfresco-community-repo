@@ -24,15 +24,18 @@
  */
 package org.alfresco.repo.jscript;
 
+import java.util.Date;
+
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.util.ISO8601DateFormat;
 import org.alfresco.service.cmr.module.ModuleService;
 import org.alfresco.service.cmr.module.ModuleDetails;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 
 /**
- * Place for general and miscellenous utility functions not already found in generic JavaScript. 
+ * Place for general and miscellaneous utility functions not already found in generic JavaScript. 
  * 
  * @author Kevin Roast
  */
@@ -92,6 +95,19 @@ public final class ScriptUtils extends BaseScopableProcessorExtension
     public boolean toBoolean(String booleanString)
     {
         return Boolean.parseBoolean(booleanString);
+    }
+    
+    /**
+     * Converts the specified Date object to an
+     * <a href="http://www.iso.org/iso/date_and_time_format">ISO 8601</a>-formatted
+     * String.
+     * 
+     * @param d date
+     * @return an ISO 8601-formatted date String.
+     */
+    public String toISO8601(Date d)
+    {
+        return ISO8601DateFormat.format(d);
     }
     
     /**

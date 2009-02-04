@@ -75,7 +75,7 @@ public class AssociationFieldDefinition extends FieldDefinition
      * 
      * @return Direction.TARGET or Direction.SOURCE
      */
-    public Direction getEnpointDirection()
+    public Direction getEndpointDirection()
     {
         return this.endpointDirection;
     }

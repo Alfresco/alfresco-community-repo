@@ -31,13 +31,11 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.repo.forms.AssociationFieldDefinition;
-import org.alfresco.repo.forms.FieldDefinition;
 import org.alfresco.repo.forms.Form;
 import org.alfresco.repo.forms.FormData;
 import org.alfresco.repo.forms.FormException;
 import org.alfresco.repo.forms.PropertyFieldDefinition;
 import org.alfresco.repo.forms.AssociationFieldDefinition.Direction;
-import org.alfresco.repo.forms.FormData.FieldData;
 import org.alfresco.repo.forms.PropertyFieldDefinition.FieldConstraint;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.Constraint;
@@ -66,6 +64,9 @@ public class NodeHandler extends AbstractHandler
 {
     private static final Log logger = LogFactory.getLog(NodeHandler.class);
 
+    protected static final String PROP_PREFIX = "prop:";
+    protected static final String ASSOC_PREFIX = "assoc:";
+    
     /** Services */
     protected NodeService nodeService;
     protected DictionaryService dictionaryService;
@@ -130,7 +131,14 @@ public class NodeHandler extends AbstractHandler
      */
     public void handlePersist(Object item, FormData data)
     {
-        // nothing yet
+        if (logger.isDebugEnabled())
+            logger.debug("Persisting form for: " + item + " with data: " + data);
+        
+        // cast to the expected NodeRef representation
+        NodeRef nodeRef = (NodeRef)item;
+        
+        // TODO: persist data using node service
+        
     }
     
     /**
@@ -206,7 +214,7 @@ public class NodeHandler extends AbstractHandler
                 if (fieldData instanceof List)
                 {
                     List list = (List)fieldData;
-                    String fieldName = fieldDef.getName();
+                    String fieldName = PROP_PREFIX + fieldDef.getName();
                     for (int x = 0; x < list.size(); x++)
                     {
                         Object repeatingVal = list.get(x);
@@ -215,7 +223,7 @@ public class NodeHandler extends AbstractHandler
                 }
                 else
                 {
-                    formData.addData(fieldDef.getName(), fieldData);
+                    formData.addData(PROP_PREFIX + fieldDef.getName(), fieldData);
                 }
             }
         }
@@ -273,7 +281,7 @@ public class NodeHandler extends AbstractHandler
                     if (targets == null)
                     {
                         targets = new ArrayList<String>(4);
-                        formData.addData(assocName, targets);
+                        formData.addData(ASSOC_PREFIX + assocName, targets);
                     }
                     
                     // add the assoc value to the list
@@ -282,7 +290,7 @@ public class NodeHandler extends AbstractHandler
                 else
                 {
                     // there should only be one value
-                    formData.addData(assocName, assocValue);
+                    formData.addData(ASSOC_PREFIX + assocName, assocValue);
                 }
             }
         }

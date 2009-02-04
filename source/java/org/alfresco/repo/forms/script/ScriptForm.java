@@ -26,12 +26,14 @@ package org.alfresco.repo.forms.script;
 
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.List;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.alfresco.repo.forms.FieldDefinition;
 import org.alfresco.repo.forms.FieldGroup;
 import org.alfresco.repo.forms.Form;
-import org.alfresco.repo.forms.FormData;
+import org.alfresco.repo.jscript.ScriptableHashMap;
 
 /**
  * Form JavaScript Object.
@@ -43,10 +45,17 @@ public class ScriptForm implements Serializable
     private static final long serialVersionUID = 579853076546002023L;
 
     private Form form;
+    private Map<String, FieldDefinition> fieldDefinitionData;
+    //TODO Consider caching
 
     /* default */ScriptForm(Form formObject)
     {
         this.form = formObject;
+        
+        fieldDefinitionData = new HashMap<String, FieldDefinition>();
+        for (FieldDefinition fd : form.getFieldDefinitions()) {
+            fieldDefinitionData.put(fd.getName(), fd);
+        }
     }
 
     public String getItem()
@@ -59,23 +68,44 @@ public class ScriptForm implements Serializable
         return form.getType();
     }
 
+    //TODO Wrap this type in a script type?
     public Collection<FieldGroup> getFieldGroups()
     {
         return form.getFieldGroups();
     }
 
-    public Collection<FieldDefinition> getFieldDefinitions()
+    public FieldDefinition[] getFieldDefinitions()
     {
-        return form.getFieldDefinitions();
+        Collection<FieldDefinition> fieldDefs = form.getFieldDefinitions();
+        if (fieldDefs == null)
+        {
+            fieldDefs = Collections.emptyList();
+        }
+        return fieldDefs.toArray(new FieldDefinition[fieldDefs.size()]);
+    }
+    
+    public ScriptableHashMap<String, ScriptFieldDefinition> getFieldDefinitionData()
+    {
+        ScriptableHashMap<String, ScriptFieldDefinition> result =
+            new ScriptableHashMap<String, ScriptFieldDefinition>();
+        Collection<FieldDefinition> fieldDefs = form.getFieldDefinitions();
+        for (FieldDefinition fd : fieldDefs)
+        {
+            result.put(fd.getName(), new ScriptFieldDefinition(fd));
+        }
+        return result;
     }
 
-    public List<String> getFieldDefinitionNames()
+    public ScriptFormData getFormData()
     {
-        return form.getFieldDefinitionNames();
+        return new ScriptFormData(form.getFormData());
     }
-
-    public FormData getFormData()
+    
+    @Override
+    public String toString()
     {
-        return form.getFormData();
+        StringBuilder builder = new StringBuilder();
+        builder.append("ScriptForm:").append(form.getItem());
+        return builder.toString();
     }
 }

@@ -285,7 +285,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
                     referencesField.getEndpointType());
         assertEquals("Expecting cm:references endpoint direction to be TARGET", 
                     Direction.TARGET.toString(),
-                    referencesField.getEnpointDirection().toString());
+                    referencesField.getEndpointDirection().toString());
         assertFalse("Expecting cm:references endpoint to be optional", 
                     referencesField.isEndpointMandatory());
         assertTrue("Expecting cm:references endpoint to be 1 to many",

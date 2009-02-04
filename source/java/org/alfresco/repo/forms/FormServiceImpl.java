@@ -26,6 +26,7 @@ package org.alfresco.repo.forms;
 
 import org.alfresco.repo.forms.processor.FormProcessor;
 import org.alfresco.repo.forms.processor.FormProcessorRegistry;
+import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -73,7 +74,20 @@ public class FormServiceImpl implements FormService
         }
         else
         {
-            return processor.generate(item);
+            // TODO Check with Gav that this is ok.
+            Form result = null;
+            try
+            {
+                result = processor.generate(item);
+            }
+            catch (InvalidNodeRefException inrx)
+            {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug(inrx);
+                }
+            }
+            return result;
         }
     }
 

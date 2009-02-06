@@ -86,19 +86,19 @@ function main()
     formModel.data.formData = {};
     for (var k in formScriptObj.formData.data)
     {
-    	var value = formScriptObj.formData.data[k].value;
+        var value = formScriptObj.formData.data[k].value;
 
         if (value instanceof java.util.Date)
         {
-        	formModel.data.formData[k] = utils.toISO8601(value);
+            formModel.data.formData[k.replace(/:/g, "_")] = utils.toISO8601(value);
         }
         else
         {
-            formModel.data.formData[k] = value;
+            formModel.data.formData[k.replace(/:/g, "_")] = value;
         }
     }
 
     model.form = formModel;
 }
 
-main();	
+main();

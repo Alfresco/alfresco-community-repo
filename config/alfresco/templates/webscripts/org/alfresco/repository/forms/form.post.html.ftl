@@ -4,7 +4,7 @@
    </head>
    <body>
       <h2>${message}</h2>
-      <#if data.fields?exists>
+      <#if data?exists && data.fields?exists>
          <ul>
             <#list data.fields as field>
                <li>${field.name} = ${field.value}</li>

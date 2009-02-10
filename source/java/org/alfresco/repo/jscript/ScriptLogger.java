@@ -45,6 +45,16 @@ public final class ScriptLogger extends BaseProcessorExtension
     {
         logger.debug(str);
     }
+    
+    public boolean isWarnLoggingEnabled()
+    {
+        return logger.isWarnEnabled();
+    }
+    
+    public void warn(String str)
+    {
+        logger.warn(str);
+    }
 
     public SystemOut getSystem()
     {

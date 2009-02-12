@@ -25,15 +25,31 @@ function main()
    // persist the submitted data using the most appropriate data set
    if (typeof formdata !== "undefined")
    {
-      model.data = formdata;
-      formService.saveForm(nodeRef, formdata);
+	   // The model.data is set here to allow the rendering of a simple result page.
+	   // TODO This should be removed when the POST is working.
+	   model.data = formdata;
+	   
+	   // Note: This formdata is org/alfresco/web/scripts/servlet/FormData.java
+      logger.log("Saving form with formdata, " + formdata.fields.length + " fields.");
+
+      // N.B. This repoFormData is a different FormData class to that used above.
+      var repoFormData = new Packages.org.alfresco.repo.forms.FormData();
+      for (var i = 0; i < formdata.fields.length; i++)
+      {
+    	  repoFormData.addData(formdata.fields[i].name, formdata.fields[i].value);
+      }
+      
+      //TODO How to handle false booleans? They are omitted from POST
+      formService.saveForm(nodeRef, repoFormData);
    }
    else if (typeof json !== "undefined")
    {
+      logger.log("Saving form with json = " + json);
       formService.saveForm(nodeRef, json);
    }
    else
    {
+      logger.log("Saving form with args = " + args);
       formService.saveForm(nodeRef, args);
    }
    

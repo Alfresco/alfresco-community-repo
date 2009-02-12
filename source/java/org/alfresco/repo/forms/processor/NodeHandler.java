@@ -29,6 +29,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.alfresco.repo.forms.AssociationFieldDefinition;
 import org.alfresco.repo.forms.Form;
@@ -36,6 +38,7 @@ import org.alfresco.repo.forms.FormData;
 import org.alfresco.repo.forms.FormException;
 import org.alfresco.repo.forms.PropertyFieldDefinition;
 import org.alfresco.repo.forms.AssociationFieldDefinition.Direction;
+import org.alfresco.repo.forms.FormData.FieldData;
 import org.alfresco.repo.forms.PropertyFieldDefinition.FieldConstraint;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.Constraint;
@@ -71,6 +74,13 @@ public class NodeHandler extends AbstractHandler
     protected NodeService nodeService;
     protected DictionaryService dictionaryService;
     protected NamespaceService namespaceService;
+
+    /**
+     * A regular expression which can be used to match property/association names.
+     * These names will look like <code>"prop:cm:name"</code>.
+     * The pattern can also be used to extract the "cm" and the "name" parts.
+     */
+    private Pattern propertyNamePattern = Pattern.compile("prop:(.*){1}?:(.*){1}?");
     
     /**
      * Sets the node service 
@@ -131,14 +141,51 @@ public class NodeHandler extends AbstractHandler
      */
     public void handlePersist(Object item, FormData data)
     {
-        if (logger.isDebugEnabled())
-            logger.debug("Persisting form for: " + item + " with data: " + data);
-        
         // cast to the expected NodeRef representation
         NodeRef nodeRef = (NodeRef)item;
         
-        // TODO: persist data using node service
+        Map<QName, Serializable> submittedProperties = extractSubmittedPropsFrom(data);
         
+        // The call to addProperties changes the repo values of those properties
+        // included in the Map, but leaves any other property values unchanged.
+        //
+        // Compare setProperties(..), which causes the deletion of properties that
+        // are not included in the Map.
+        this.nodeService.addProperties(nodeRef, submittedProperties);
+    }
+
+    private Map<QName, Serializable> extractSubmittedPropsFrom(FormData data)
+    {
+        Map<QName, Serializable> result = new HashMap<QName, Serializable>();
+        for (String dataKey : data.getData().keySet())
+        {
+            FieldData nextFieldData = data.getData().get(dataKey);
+            if (nextFieldData.isFile())
+            {
+                //TODO Implement support for file-based submits.
+            }
+            else
+            {
+                String nextDataName = nextFieldData.getName();
+                
+                Matcher m = this.propertyNamePattern.matcher(nextDataName);
+                // Only "prop:" properties are handled here
+                if (m.matches())
+                {
+                    String qNamePrefix = m.group(1);
+                    String localName = m.group(2);
+                    QName fullQName = QName.createQName(qNamePrefix, localName, namespaceService);
+                    // These values are all Strings. The repo does most of the data
+                    // conversion work for us.
+                    Object nextDataObject = nextFieldData.getValue();
+                    
+                    // This cast should be safe as all dataObjects are Strings.
+                    result.put(fullQName, (Serializable)nextDataObject);
+                }
+                //TODO Implement support for "assoc:" properties.
+            }
+        }
+        return result;
     }
     
     /**

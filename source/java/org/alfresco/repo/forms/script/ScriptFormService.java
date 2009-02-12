@@ -29,6 +29,8 @@ import org.alfresco.repo.forms.FormData;
 import org.alfresco.repo.forms.FormService;
 import org.alfresco.repo.jscript.BaseScopableProcessorExtension;
 import org.alfresco.service.ServiceRegistry;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Script object representing the form service.
@@ -37,6 +39,7 @@ import org.alfresco.service.ServiceRegistry;
  */
 public class ScriptFormService extends BaseScopableProcessorExtension
 {
+    private static Log logger = LogFactory.getLog(ScriptFormService.class);
     /** Service Registry */
     private ServiceRegistry serviceRegistry;
 
@@ -85,11 +88,21 @@ public class ScriptFormService extends BaseScopableProcessorExtension
      */
     public void saveForm(String item, Object postData)
     {
-       FormData data = null;
+        FormData dataForFormService = null;
+        if (postData instanceof FormData)
+        {
+            dataForFormService = (FormData)postData;
+            // Note on data conversion. The Repo will handle conversion of String-based
+            // data into the types required by the model.
+            
+            //TODO Do we need special handling for submission of false booleans?
+        }
+        else
+        {
+            // TODO Need to add handling of other POST submit types here. JSON, args.
+            dataForFormService = new FormData();
+        }
        
-       // convert the post data into a repo FormData object
-       data = new FormData();
-       
-       formService.saveForm(item, data);
+        formService.saveForm(item, dataForFormService);
     }
 }

@@ -25,7 +25,7 @@
 package org.alfresco.repo.forms;
 
 import java.io.InputStream;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.commons.lang.NotImplementedException;
@@ -44,7 +44,7 @@ public class FormData
      */
     public FormData()
     {
-        this.data = new HashMap<String, FieldData>(8);
+        this.data = new LinkedHashMap<String, FieldData>(8);
     }
     
     /**
@@ -82,6 +82,7 @@ public class FormData
     /*
      * @see java.lang.Object#toString()
      */
+    @Override
     public String toString()
     {
         StringBuilder buffer = new StringBuilder(super.toString());
@@ -163,6 +164,7 @@ public class FormData
         /*
          * @see java.lang.Object#toString()
          */
+        @Override
         public String toString()
         {
             StringBuilder buffer = new StringBuilder(super.toString());

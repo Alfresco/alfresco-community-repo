@@ -28,7 +28,7 @@ function main()
 	
 	if (formScriptObj == null)
 	{
-		var message = "Form " + formUrl + " not found.";
+		var message = "The form for item \"" + formUrl + "\" could not be found.";
 		logger.log(message);
 		status.setCode(404, message);
 		return;

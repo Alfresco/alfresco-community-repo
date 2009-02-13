@@ -45,11 +45,6 @@ public class QueryOptions
         AND, OR;
     }
 
-    public enum CMISQueryMode
-    {
-        STRICT;
-    }
-
     private String query;
 
     private List<StoreRef> stores = new ArrayList<StoreRef>(1);

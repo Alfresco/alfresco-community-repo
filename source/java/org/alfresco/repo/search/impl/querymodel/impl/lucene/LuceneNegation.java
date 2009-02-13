@@ -25,6 +25,7 @@
 package org.alfresco.repo.search.impl.querymodel.impl.lucene;
 
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.repo.search.impl.lucene.ParseException;
 import org.alfresco.repo.search.impl.querymodel.Argument;
@@ -54,13 +55,13 @@ public class LuceneNegation extends BaseNegation implements LuceneQueryBuilderCo
      *      java.util.Map, org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderContext,
      *      org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext)
      */
-    public Query addComponent(String selector, Map<String, Argument> functionArgs, LuceneQueryBuilderContext luceneContext, FunctionEvaluationContext functionContext)
+    public Query addComponent(Set<String> selectors, Map<String, Argument> functionArgs, LuceneQueryBuilderContext luceneContext, FunctionEvaluationContext functionContext)
             throws ParseException
     {
         if (getConstraint() instanceof LuceneQueryBuilderComponent)
         {
             LuceneQueryBuilderComponent luceneQueryBuilderComponent = (LuceneQueryBuilderComponent) getConstraint();
-            Query constraintQuery = luceneQueryBuilderComponent.addComponent(selector, functionArgs, luceneContext, functionContext);
+            Query constraintQuery = luceneQueryBuilderComponent.addComponent(selectors, functionArgs, luceneContext, functionContext);
             if (constraintQuery == null)
             {
                 throw new UnsupportedOperationException();

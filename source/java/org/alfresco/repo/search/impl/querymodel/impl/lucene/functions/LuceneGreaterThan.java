@@ -25,6 +25,7 @@
 package org.alfresco.repo.search.impl.querymodel.impl.lucene.functions;
 
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.search.impl.lucene.ParseException;
@@ -58,7 +59,7 @@ public class LuceneGreaterThan extends GreaterThan implements LuceneQueryBuilder
      *      org.apache.lucene.search.BooleanQuery, org.alfresco.service.cmr.dictionary.DictionaryService,
      *      java.lang.String)
      */
-    public Query addComponent(String selector, Map<String, Argument> functionArgs, LuceneQueryBuilderContext luceneContext, FunctionEvaluationContext functionContext)
+    public Query addComponent(Set<String> selectors, Map<String, Argument> functionArgs, LuceneQueryBuilderContext luceneContext, FunctionEvaluationContext functionContext)
             throws ParseException
     {
         LuceneQueryParser lqp = luceneContext.getLuceneQueryParser();

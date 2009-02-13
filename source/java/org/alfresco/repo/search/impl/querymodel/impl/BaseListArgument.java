@@ -45,7 +45,7 @@ public class BaseListArgument extends BaseStaticArgument implements ListArgument
      */
     public BaseListArgument(String name, List<Argument> arguments)
     {
-        super(name);
+        super(name, false, false);
         this.arguments = arguments;
     }
 
@@ -80,5 +80,17 @@ public class BaseListArgument extends BaseStaticArgument implements ListArgument
         builder.append("values=").append(getArguments());
         builder.append("]");
         return builder.toString();
+    }
+    
+    public boolean isQueryable()
+    {
+        for(Argument arg : arguments)
+        {
+            if(!arg.isQueryable())
+            {
+                return false;
+            }
+        }
+        return true;
     }
 }

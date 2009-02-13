@@ -40,6 +40,7 @@ import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -95,6 +96,8 @@ public abstract class BaseCMISTest extends TestCase
 
     protected SearchService searchService;
 
+    protected ContentService contentService;
+
     public void setUp() throws Exception
     {
         serviceRegistry = (ServiceRegistry) ctx.getBean("ServiceRegistry");
@@ -114,6 +117,8 @@ public abstract class BaseCMISTest extends TestCase
         
         searchService = (SearchService) ctx.getBean("searchService");
         
+        contentService = (ContentService) ctx.getBean("contentService");
+        
         authenticationService = (AuthenticationService) ctx.getBean("authenticationService");
         authenticationDAO = (MutableAuthenticationDao) ctx.getBean("authenticationDao");
         
@@ -121,7 +126,7 @@ public abstract class BaseCMISTest extends TestCase
         testTX.begin();
         this.authenticationComponent.setSystemUserAsCurrentUser();
         
-        String storeName = "CMISTest-" + getName() + "-" + (new Date().getTime());
+        String storeName = "CMISTest-" + getStoreName() + "-" + (new Date().getTime());
         StoreRef storeRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, storeName);
         rootNodeRef = nodeService.getRootNode(storeRef);
         
@@ -130,6 +135,15 @@ public abstract class BaseCMISTest extends TestCase
             authenticationService.deleteAuthentication("cmis");
         }
         authenticationService.createAuthentication("cmis", "cmis".toCharArray());
+    }
+    
+    private String getStoreName()
+    {
+        String testName = getName();
+        testName = testName.replace("_", "-");
+        testName = testName.replace("%", "-");
+        return testName;
+        
     }
 
     protected void runAs(String userName)

@@ -25,6 +25,10 @@
 package org.alfresco.repo.search.impl.querymodel.impl.lucene;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.repo.search.SearcherException;
 import org.alfresco.repo.search.impl.lucene.ClosingIndexSearcher;
@@ -35,6 +39,7 @@ import org.alfresco.repo.search.impl.lucene.ParseException;
 import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
 import org.alfresco.repo.search.impl.querymodel.Query;
 import org.alfresco.repo.search.impl.querymodel.QueryEngine;
+import org.alfresco.repo.search.impl.querymodel.QueryEngineResults;
 import org.alfresco.repo.search.impl.querymodel.QueryModelFactory;
 import org.alfresco.repo.search.impl.querymodel.QueryOptions;
 import org.alfresco.repo.tenant.TenantService;
@@ -46,6 +51,7 @@ import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.util.Pair;
 import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.Sort;
 
@@ -114,8 +120,22 @@ public class LuceneQueryEngine implements QueryEngine
         return new LuceneQueryModelFactory();
     }
 
-    public ResultSet executeQuery(Query query, String selectorName, QueryOptions options, FunctionEvaluationContext functionContext)
+    public QueryEngineResults executeQuery(Query query, QueryOptions options, FunctionEvaluationContext functionContext)
     {
+        List<Set<String>> selectorGroups = query.getSource().getSelectorGroups();
+        
+        if(selectorGroups.size() == 0)
+        {
+            throw new UnsupportedOperationException("No selectors"); 
+        }
+        
+        if(selectorGroups.size() > 1)
+        {
+            throw new UnsupportedOperationException("Advanced join is not supported"); 
+        }
+        
+        Set<String> selectorGroup = selectorGroups.get(0);
+        
         SearchParameters searchParameters = new SearchParameters();
         searchParameters.setBulkFetch(options.getFetchSize() > 0);
         searchParameters.setBulkFetchSize(options.getFetchSize());
@@ -143,10 +163,10 @@ public class LuceneQueryEngine implements QueryEngine
                             searcher.getIndexReader());
 
                     LuceneQueryBuilder builder = (LuceneQueryBuilder) query;
-                    org.apache.lucene.search.Query luceneQuery = builder.buildQuery(selectorName, luceneContext, functionContext);
+                    org.apache.lucene.search.Query luceneQuery = builder.buildQuery(selectorGroup, luceneContext, functionContext);
                     //System.out.println(luceneQuery);
 
-                    Sort sort = builder.buildSort(selectorName, luceneContext, functionContext);
+                    Sort sort = builder.buildSort(selectorGroup, luceneContext, functionContext);
 
                     Hits hits;
 
@@ -159,8 +179,10 @@ public class LuceneQueryEngine implements QueryEngine
                         hits = searcher.search(luceneQuery, sort);
                     }
 
-                    return new LuceneResultSet(hits, searcher, nodeService, tenantService, null, searchParameters, indexAndSearcher);
-
+                    LuceneResultSet result = new LuceneResultSet(hits, searcher, nodeService, tenantService, null, searchParameters, indexAndSearcher);
+                    Map<Set<String>, ResultSet> map = new HashMap<Set<String>, ResultSet>(1);
+                    map.put(selectorGroup, result);
+                    return new QueryEngineResults(map);
                 }
                 else
                 {
@@ -181,4 +203,5 @@ public class LuceneQueryEngine implements QueryEngine
             throw new SearcherException("IO exception during search", e);
         }
     }
+    
 }

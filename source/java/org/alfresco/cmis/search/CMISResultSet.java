@@ -41,7 +41,7 @@ public interface CMISResultSet extends Iterable<CMISResultSetRow>
     
     /**
      * Get the start point for this results set in the overall
-     * set of rows that match the query - this will be equals to the skip count 
+     * set of rows that match the query - this will be equal to the skip count 
      * set when executing the query.
      * @return
      */

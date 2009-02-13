@@ -243,6 +243,42 @@
             <aspect>cmis:Core</aspect>
          </mandatory-aspects>
       </type>
+	   
+	  <type name="cmis:Policy">
+         <title>Policy</title>
+         <description>Policy Type</description>
+         <properties>
+            <property name="cmis:PolicyName">
+               <title>Policy Name</title>
+               <description>The name of the policy</description>
+               <type>d:text</type>
+               <protected>true</protected>
+               <mandatory enforced="true">true</mandatory>
+               <multiple>false</multiple>
+               <index enabled="false" />
+            </property> 
+            <property name="cmis:PolicyText">
+               <title>Policy Text</title>
+               <description>The policy text</description>
+               <type>d:text</type>
+               <protected>true</protected>
+               <mandatory enforced="true">true</mandatory>
+               <multiple>false</multiple>
+               <index enabled="false" />
+            </property> 
+         </properties>
+         <mandatory-aspects>
+            <aspect>cmis:Core</aspect>
+         </mandatory-aspects>
+      </type>
+	   
+      <type name="cmis:AspectPolicy">
+         <title>Aspect Policy</title>
+         <description>Aspect Policy Type</description>
+		 <parent>cmis:Policy</parent>
+      </type>	   
+	   
+	   
       
    </types>
    

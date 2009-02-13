@@ -42,7 +42,7 @@ public class BaseParameterArgument extends BaseStaticArgument implements Paramet
      */
     public BaseParameterArgument(String name, String parameterName)
     {
-        super(name);
+        super(name, true, false);
         this.parameterName = parameterName;
     }
 

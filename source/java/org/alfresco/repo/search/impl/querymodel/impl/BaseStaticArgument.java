@@ -36,9 +36,9 @@ public abstract class BaseStaticArgument extends BaseArgument implements StaticA
     /**
      * @param name
      */
-    public BaseStaticArgument(String name)
+    public BaseStaticArgument(String name, boolean queryable, boolean orderable)
     {
-        super(name);
+        super(name, queryable, orderable);
     }
 
 

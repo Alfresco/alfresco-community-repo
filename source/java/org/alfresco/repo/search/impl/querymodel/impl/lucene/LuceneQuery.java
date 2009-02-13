@@ -25,11 +25,13 @@
 package org.alfresco.repo.search.impl.querymodel.impl.lucene;
 
 import java.util.List;
+import java.util.Set;
 
 import org.alfresco.repo.search.impl.lucene.ParseException;
 import org.alfresco.repo.search.impl.querymodel.Column;
 import org.alfresco.repo.search.impl.querymodel.Constraint;
 import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
+import org.alfresco.repo.search.impl.querymodel.Join;
 import org.alfresco.repo.search.impl.querymodel.Negation;
 import org.alfresco.repo.search.impl.querymodel.Order;
 import org.alfresco.repo.search.impl.querymodel.Ordering;
@@ -68,17 +70,18 @@ public class LuceneQuery extends BaseQuery implements LuceneQueryBuilder
      * 
      * @see org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilder#buildQuery()
      */
-    public Query buildQuery(String selectorName, LuceneQueryBuilderContext luceneContext, FunctionEvaluationContext functionContext) throws ParseException
+    public Query buildQuery(Set<String> selectors, LuceneQueryBuilderContext luceneContext, FunctionEvaluationContext functionContext) throws ParseException
     {
 
         BooleanQuery luceneQuery = new BooleanQuery();
-        Selector selector = getSource().getSelector(selectorName);
-        if (selector != null)
+
+        for (String selector : selectors)
         {
-            if (selector instanceof LuceneQueryBuilderComponent)
+            Selector current = getSource().getSelector(selector);
+            if (current instanceof LuceneQueryBuilderComponent)
             {
-                LuceneQueryBuilderComponent luceneQueryBuilderComponent = (LuceneQueryBuilderComponent) selector;
-                Query selectorQuery = luceneQueryBuilderComponent.addComponent(selectorName, null, luceneContext, functionContext);
+                LuceneQueryBuilderComponent luceneQueryBuilderComponent = (LuceneQueryBuilderComponent) current;
+                Query selectorQuery = luceneQueryBuilderComponent.addComponent(selectors, null, luceneContext, functionContext);
                 if (selectorQuery != null)
                 {
                     luceneQuery.add(selectorQuery, Occur.MUST);
@@ -89,10 +92,6 @@ public class LuceneQuery extends BaseQuery implements LuceneQueryBuilder
                 throw new UnsupportedOperationException();
             }
         }
-        else
-        {
-            throw new UnsupportedOperationException();
-        }
 
         Constraint constraint = getConstraint();
         if (constraint != null)
@@ -100,7 +99,7 @@ public class LuceneQuery extends BaseQuery implements LuceneQueryBuilder
             if (constraint instanceof LuceneQueryBuilderComponent)
             {
                 LuceneQueryBuilderComponent luceneQueryBuilderComponent = (LuceneQueryBuilderComponent) constraint;
-                Query constraintQuery = luceneQueryBuilderComponent.addComponent(selectorName, null, luceneContext, functionContext);
+                Query constraintQuery = luceneQueryBuilderComponent.addComponent(selectors, null, luceneContext, functionContext);
                 if (constraintQuery != null)
                 {
                     if (constraint instanceof Negation)
@@ -134,7 +133,7 @@ public class LuceneQuery extends BaseQuery implements LuceneQueryBuilder
      *      org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderContext,
      *      org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext)
      */
-    public Sort buildSort(String selectorName, LuceneQueryBuilderContext luceneContext, FunctionEvaluationContext functionContext)
+    public Sort buildSort(Set<String> selectors, LuceneQueryBuilderContext luceneContext, FunctionEvaluationContext functionContext)
     {
         if ((getOrderings() == null) || (getOrderings().size() == 0))
         {
@@ -168,7 +167,7 @@ public class LuceneQuery extends BaseQuery implements LuceneQueryBuilder
                     throw new IllegalStateException();
                 }
             }
-            else if(ordering.getColumn().getFunction().getName().equals(Score.NAME))
+            else if (ordering.getColumn().getFunction().getName().equals(Score.NAME))
             {
                 fields[index++] = new SortField(null, SortField.SCORE, !(ordering.getOrder() == Order.DESCENDING));
             }

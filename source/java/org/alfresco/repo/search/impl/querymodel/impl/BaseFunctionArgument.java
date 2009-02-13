@@ -45,7 +45,7 @@ public class BaseFunctionArgument extends BaseDynamicArgument implements Functio
 
     public BaseFunctionArgument(String name, Function function, Map<String, Argument> arguments)
     {
-        super(name);
+        super(name, false, false);
         this.function = function;
         this.arguments = arguments;
     }
@@ -83,6 +83,18 @@ public class BaseFunctionArgument extends BaseDynamicArgument implements Functio
         builder.append("Arguments="+getFunctionArguments());
         builder.append("]");
         return builder.toString();
+    }
+
+    public boolean isQueryable()
+    {
+        for(Argument arg : arguments.values())
+        {
+            if(!arg.isQueryable())
+            {
+                return false;
+            }
+        }
+        return true;
     }
 
 }

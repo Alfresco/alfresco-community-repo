@@ -42,7 +42,7 @@ public class BaseLiteralArgument extends BaseStaticArgument implements LiteralAr
     
     public BaseLiteralArgument(String name, QName type, Serializable value)
     {
-        super(name);
+        super(name, true, false);
         this.type = type;
         this.value = value;
     }
@@ -74,5 +74,4 @@ public class BaseLiteralArgument extends BaseStaticArgument implements LiteralAr
         builder.append("]");
         return builder.toString();
     }
-
 }

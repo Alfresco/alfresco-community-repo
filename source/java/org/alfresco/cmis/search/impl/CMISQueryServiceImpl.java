@@ -26,11 +26,12 @@ package org.alfresco.cmis.search.impl;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
-import org.alfresco.cmis.CMISQueryEnum;
-import org.alfresco.cmis.CMISService;
 import org.alfresco.cmis.CMISFullTextSearchEnum;
 import org.alfresco.cmis.CMISJoinEnum;
+import org.alfresco.cmis.CMISQueryEnum;
+import org.alfresco.cmis.CMISService;
 import org.alfresco.cmis.dictionary.CMISDictionaryService;
 import org.alfresco.cmis.dictionary.CMISMapping;
 import org.alfresco.cmis.property.CMISPropertyService;
@@ -41,6 +42,7 @@ import org.alfresco.cmis.search.CMISResultSetImpl;
 import org.alfresco.cmis.search.CmisFunctionEvaluationContext;
 import org.alfresco.repo.search.impl.querymodel.Query;
 import org.alfresco.repo.search.impl.querymodel.QueryEngine;
+import org.alfresco.repo.search.impl.querymodel.QueryEngineResults;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.search.ResultSet;
 
@@ -122,17 +124,30 @@ public class CMISQueryServiceImpl implements CMISQueryService
      */
     public CMISResultSet query(CMISQueryOptions options)
     {
-        CMISQueryParser parser = new CMISQueryParser(options, cmisDictionaryService, cmisMapping, getJoinSupport());
+        CMISJoinEnum joinSupport = getJoinSupport();
+        if(options.getQueryMode() == CMISQueryOptions.CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS)
+        {
+            joinSupport = CMISJoinEnum.INNER_JOIN_SUPPORT;
+        }
+        CMISQueryParser parser = new CMISQueryParser(options, cmisDictionaryService, cmisMapping, joinSupport);
         Query query = parser.parse(queryEngine.getQueryModelFactory());
-        
+
         CmisFunctionEvaluationContext functionContext = new CmisFunctionEvaluationContext();
         functionContext.setCmisDictionaryService(cmisDictionaryService);
         functionContext.setCmisPropertyService(cmisPropertyService);
         functionContext.setNodeService(nodeService);
 
-        ResultSet lucene = queryEngine.executeQuery(query, query.getSource().getSelector(), options, functionContext);
+        QueryEngineResults results = queryEngine.executeQuery(query, options, functionContext);
         Map<String, ResultSet> wrapped = new HashMap<String, ResultSet>();
-        wrapped.put(query.getSource().getSelector(), lucene);
+        Map<Set<String>, ResultSet> map = results.getResults();
+        for (Set<String> group : map.keySet())
+        {
+            ResultSet current = map.get(group);
+            for (String selector : group)
+            {
+                wrapped.put(selector, current);
+            }
+        }
         CMISResultSet cmis = new CMISResultSetImpl(wrapped, options, nodeService, query, cmisDictionaryService, cmisPropertyService);
         return cmis;
     }

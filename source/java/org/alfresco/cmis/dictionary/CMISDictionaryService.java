@@ -44,9 +44,9 @@ import org.alfresco.service.namespace.QName;
 public class CMISDictionaryService
 {
     private CMISMapping cmisMapping;
-    
+
     private DictionaryService dictionaryService;
-    
+
     private boolean strict = true;
 
     /**
@@ -58,15 +58,15 @@ public class CMISDictionaryService
     {
         this.cmisMapping = cmisMapping;
     }
-    
+
     /**
-     * @return  cmis mapping service
+     * @return cmis mapping service
      */
     public CMISMapping getCMISMapping()
     {
         return cmisMapping;
     }
-    
+
     /**
      * Set the dictionary Service
      * 
@@ -82,11 +82,11 @@ public class CMISDictionaryService
      * 
      * @return dictionaryService
      */
-    /*package*/ DictionaryService getDictionaryService()
+    /* package */DictionaryService getDictionaryService()
     {
         return this.dictionaryService;
     }
-    
+
     /**
      * Is the service strict (CMIS types only)
      * 
@@ -145,6 +145,8 @@ public class CMISDictionaryService
             {
                 answer.add(cmisMapping.getCmisTypeId(CMISScope.RELATIONSHIP, typeQName));
             }
+            // TODO: Policy
+            // For now, policies are not reported
         }
 
         for (QName associationName : alfrescoAssociationQNames)
@@ -162,7 +164,8 @@ public class CMISDictionaryService
      * Gets all the object type ids within a type hierarchy
      * 
      * @param typeId
-     * @param descendants  true => include all descendants, false => children only
+     * @param descendants
+     *            true => include all descendants, false => children only
      * @return
      */
     public Collection<CMISTypeId> getChildTypeIds(CMISTypeId typeId, boolean descendants)
@@ -218,11 +221,13 @@ public class CMISDictionaryService
             {
                 return Collections.emptySet();
             }
+        case POLICY:
+            // TODO: Policy
         default:
             return Collections.emptySet();
         }
     }
-    
+
     /**
      * Get the object type definition TODO: Note there can be name collisions between types and associations. e.g.
      * app:configurations Currently clashing types will give inconsistent behaviour
@@ -262,11 +267,13 @@ public class CMISDictionaryService
             {
                 return null;
             }
+        case POLICY:
+            // TODO: Policy
         default:
             return null;
         }
     }
-    
+
     /**
      * Get all the property definitions for a type
      * 
@@ -331,6 +338,39 @@ public class CMISDictionaryService
                         properties.putAll(getPropertyDefinitions(typeId.getRootTypeId()));
                     }
                 }
+            }
+            break;
+        case POLICY:
+            AspectDefinition aspectDefinition = dictionaryService.getAspect(typeId.getQName());
+            if (aspectDefinition != null)
+            {
+
+                for (QName qname : aspectDefinition.getProperties().keySet())
+                {
+                    if (cmisMapping.getPropertyType(qname) != null)
+                    {
+                        CMISPropertyDefinition cmisPropDefinition = new CMISPropertyDefinition(this, qname, aspectDefinition.getName());
+                        properties.put(cmisPropDefinition.getPropertyName(), cmisPropDefinition);
+                    }
+                }
+                for (AspectDefinition aspect : aspectDefinition.getDefaultAspects())
+                {
+                    for (QName qname : aspect.getProperties().keySet())
+                    {
+                        if (cmisMapping.getPropertyType(qname) != null)
+                        {
+                            CMISPropertyDefinition cmisPropDefinition = new CMISPropertyDefinition(this, qname, aspectDefinition.getName());
+                            properties.put(cmisPropDefinition.getPropertyName(), cmisPropDefinition);
+                        }
+                    }
+                }
+
+                // Add CMIS properties if required
+                if (!cmisMapping.isCmisCoreType(typeId.getQName()))
+                {
+                    properties.putAll(getPropertyDefinitions(typeId.getRootTypeId()));
+                }
+
             }
             break;
         case UNKNOWN:

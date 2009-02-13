@@ -25,6 +25,7 @@
 package org.alfresco.repo.search.impl.querymodel.impl.lucene;
 
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.repo.search.impl.lucene.ParseException;
 import org.alfresco.repo.search.impl.querymodel.Argument;
@@ -36,5 +37,5 @@ import org.apache.lucene.search.Query;
  */
 public interface LuceneQueryBuilderComponent
 {
-    public Query addComponent(String selector, Map<String, Argument> functionArgs, LuceneQueryBuilderContext luceneContext, FunctionEvaluationContext functionContext) throws ParseException;
+    public Query addComponent(Set<String> selectors, Map<String, Argument> functionArgs, LuceneQueryBuilderContext luceneContext, FunctionEvaluationContext functionContext) throws ParseException;
 }

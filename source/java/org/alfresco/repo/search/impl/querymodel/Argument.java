@@ -37,4 +37,8 @@ public interface Argument
     public String getName();
     
     public Serializable getValue(FunctionEvaluationContext context);
+
+    public boolean isOrderable();
+
+    public boolean isQueryable();
 }

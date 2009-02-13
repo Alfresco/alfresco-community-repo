@@ -24,8 +24,13 @@
  */
 package org.alfresco.repo.search.impl.querymodel.impl;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.repo.search.impl.querymodel.Selector;
 import org.alfresco.service.namespace.QName;
@@ -100,11 +105,12 @@ public class BaseSelector implements Selector
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.Source#getSelector()
-     */
-    public String getSelector()
+    public List<Set<String>> getSelectorGroups()
     {
-       return getAlias();
+        HashSet<String> set = new HashSet<String>();
+        set.add(getAlias());
+        List<Set<String>> answer = new ArrayList<Set<String>>();
+        answer.add(set);
+        return answer;
     }
 }

@@ -26,6 +26,7 @@ package org.alfresco.repo.search.impl.querymodel.impl.lucene;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.repo.search.impl.lucene.ParseException;
 import org.alfresco.repo.search.impl.querymodel.Argument;
@@ -58,7 +59,7 @@ public class LuceneDisjunction extends BaseDisjunction implements LuceneQueryBui
      *      java.util.Map, org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderContext,
      *      org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext)
      */
-    public Query addComponent(String selector, Map<String, Argument> functionArgs, LuceneQueryBuilderContext luceneContext, FunctionEvaluationContext functionContext)
+    public Query addComponent(Set<String> selectors, Map<String, Argument> functionArgs, LuceneQueryBuilderContext luceneContext, FunctionEvaluationContext functionContext)
             throws ParseException
     {
         BooleanQuery query = new BooleanQuery();
@@ -67,7 +68,7 @@ public class LuceneDisjunction extends BaseDisjunction implements LuceneQueryBui
             if (constraint instanceof LuceneQueryBuilderComponent)
             {
                 LuceneQueryBuilderComponent luceneQueryBuilderComponent = (LuceneQueryBuilderComponent) constraint;
-                Query constraintQuery = luceneQueryBuilderComponent.addComponent(selector, functionArgs, luceneContext, functionContext);
+                Query constraintQuery = luceneQueryBuilderComponent.addComponent(selectors, functionArgs, luceneContext, functionContext);
                 if (constraintQuery != null)
                 {
                     if (constraint instanceof Negation)

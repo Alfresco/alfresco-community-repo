@@ -36,9 +36,9 @@ public abstract class BaseDynamicArgument extends BaseArgument implements Dynami
     /**
      * @param name
      */
-    public BaseDynamicArgument(String name)
+    public BaseDynamicArgument(String name, boolean queryable, boolean orderable)
     {
-        super(name);
+        super(name, queryable, orderable);
     }
 
 }

@@ -95,6 +95,8 @@ public class CMISTypeId implements Serializable
             return CMISMapping.FOLDER_TYPE_ID;
         case RELATIONSHIP:
             return CMISMapping.RELATIONSHIP_TYPE_ID;
+        case POLICY:
+            return CMISMapping.POLICY_TYPE_ID;
         case UNKNOWN:
         default:
             return null;

@@ -25,6 +25,7 @@
 package org.alfresco.repo.search.impl.querymodel.impl.lucene;
 
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.search.impl.lucene.ParseException;
@@ -53,10 +54,10 @@ public class LuceneSelector extends BaseSelector implements LuceneQueryBuilderCo
     /* (non-Javadoc)
      * @see org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderComponent#addComponent(org.apache.lucene.search.BooleanQuery, org.apache.lucene.search.BooleanQuery)
      */
-    public Query addComponent(String selector, Map<String, Argument> functionArgs, LuceneQueryBuilderContext luceneContext, FunctionEvaluationContext functionContext) throws ParseException
+    public Query addComponent(Set<String> selectors, Map<String, Argument> functionArgs, LuceneQueryBuilderContext luceneContext, FunctionEvaluationContext functionContext) throws ParseException
     {
         LuceneQueryParser lqp = luceneContext.getLuceneQueryParser();
-        return lqp.getFieldQuery("TYPE", getType().toString());
+        return lqp.getFieldQuery("CLASS", getType().toString());
         
     }
 

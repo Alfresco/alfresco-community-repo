@@ -37,8 +37,13 @@ import org.alfresco.service.cmr.repository.StoreRef;
  */
 public class CMISQueryOptions extends QueryOptions
 {
+    public enum CMISQueryMode
+    {
+        CMS_STRICT, CMS_WITH_ALFRESCO_EXTENSIONS ;
+    }
+    
    
-    private CMISQueryMode queryMode = CMISQueryMode.STRICT;
+    private CMISQueryMode queryMode = CMISQueryMode.CMS_STRICT;
 
     /**
      * Create a CMISQueryOptions instance with the default options other than the query and store ref.
@@ -86,3 +91,5 @@ public class CMISQueryOptions extends QueryOptions
         this.queryMode = queryMode;
     }
 }
+
+

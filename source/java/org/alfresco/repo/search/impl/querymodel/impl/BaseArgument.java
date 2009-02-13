@@ -34,10 +34,16 @@ public abstract class BaseArgument implements Argument
 {
     private String name;
     
+    private boolean queryable;
     
-    public BaseArgument(String name)
+    private boolean orderable;
+    
+    
+    public BaseArgument(String name, boolean queryable, boolean orderable)
     {
         this.name = name;
+        this.queryable = queryable;
+        this.orderable = orderable;
     }
     
     /* (non-Javadoc)
@@ -46,5 +52,15 @@ public abstract class BaseArgument implements Argument
     public String getName()
     {
         return name;
+    }
+
+    public boolean isOrderable()
+    {
+        return orderable;
+    }
+
+    public boolean isQueryable()
+    {
+       return queryable;
     }
 }

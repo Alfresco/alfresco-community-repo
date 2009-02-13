@@ -24,7 +24,11 @@
  */
 package org.alfresco.repo.search.impl.querymodel;
 
+import java.util.List;
+import java.util.Set;
+
 import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.util.Pair;
 
 /**
  * @author andyh
@@ -32,7 +36,7 @@ import org.alfresco.service.cmr.search.ResultSet;
  */
 public interface QueryEngine
 {
-    public ResultSet executeQuery(Query query, String selectorName, QueryOptions options, FunctionEvaluationContext functionContext);
+    public QueryEngineResults executeQuery(Query query, QueryOptions options, FunctionEvaluationContext functionContext);
     
     public QueryModelFactory getQueryModelFactory();
 }

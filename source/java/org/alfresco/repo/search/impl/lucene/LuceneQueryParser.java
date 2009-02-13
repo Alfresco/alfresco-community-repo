@@ -341,6 +341,34 @@ public class LuceneQueryParser extends QueryParser
                 reader.parse("//" + queryText);
                 return handler.getQuery();
             }
+            else if(field.equals("CLASS"))
+            {
+                ClassDefinition target;
+                if (queryText.startsWith("{"))
+                {
+                    target = dictionaryService.getClass(QName.createQName(queryText));
+                }
+                else
+                {
+                    int colonPosition = queryText.indexOf(':');
+                    if (colonPosition == -1)
+                    {
+                        // use the default namespace
+                        target = dictionaryService.getClass(QName.createQName(namespacePrefixResolver.getNamespaceURI(""), queryText));
+                    }
+                    else
+                    {
+                        // find the prefix
+                        target = dictionaryService.getClass(QName.createQName(namespacePrefixResolver.getNamespaceURI(queryText.substring(0, colonPosition)), queryText
+                                .substring(colonPosition + 1)));
+                    }
+                }
+                if (target == null)
+                {
+                    throw new SearcherException("Invalid type: " + queryText);
+                }
+                return getFieldQuery(target.isAspect() ? "ASPECT" : "TYPE", queryText);
+            }
             else if (field.equals("TYPE"))
             {
                 TypeDefinition target;

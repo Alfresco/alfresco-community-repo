@@ -38,4 +38,8 @@ public interface Column extends FunctionInvokation
      * @return
      */
     public String getAlias();
+    
+    public boolean isOrderable();
+    
+    public boolean isQueryable();
 }

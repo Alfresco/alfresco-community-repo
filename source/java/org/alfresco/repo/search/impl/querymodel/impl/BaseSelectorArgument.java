@@ -43,7 +43,7 @@ public class BaseSelectorArgument  extends BaseStaticArgument implements Selecto
      */
     public BaseSelectorArgument(String name, String selector)
     {
-        super(name);
+        super(name, true, false);
         this.selector = selector;
 
     }

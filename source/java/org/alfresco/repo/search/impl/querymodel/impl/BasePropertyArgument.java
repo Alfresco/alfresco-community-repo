@@ -43,9 +43,9 @@ public class BasePropertyArgument extends BaseDynamicArgument implements Propert
     /**
      * @param name
      */
-    public BasePropertyArgument(String name, String selector, QName propertyName)
+    public BasePropertyArgument(String name, boolean queryable, boolean orderable, String selector, QName propertyName)
     {
-        super(name);
+        super(name, queryable, orderable);
         this.selector = selector;
         this.propertyName = propertyName;
 

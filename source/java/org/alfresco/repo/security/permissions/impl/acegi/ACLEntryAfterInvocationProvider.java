@@ -27,9 +27,11 @@ package org.alfresco.repo.security.permissions.impl.acegi;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
@@ -40,6 +42,7 @@ import net.sf.acegisecurity.ConfigAttributeDefinition;
 import net.sf.acegisecurity.afterinvocation.AfterInvocationProvider;
 
 import org.alfresco.repo.search.SimpleResultSetMetaData;
+import org.alfresco.repo.search.impl.querymodel.QueryEngineResults;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.impl.SimplePermissionReference;
 import org.alfresco.service.cmr.model.FileInfo;
@@ -250,6 +253,14 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
                     log.debug("Result Set access");
                 }
                 return decide(authentication, object, config, (ResultSet) returnedObject);
+            }
+            else if (QueryEngineResults.class.isAssignableFrom(returnedObject.getClass()))
+            {
+                if (log.isDebugEnabled())
+                {
+                    log.debug("Result Set access");
+                }
+                return decide(authentication, object, config, (QueryEngineResults) returnedObject);
             }
             else if (Collection.class.isAssignableFrom(returnedObject.getClass()))
             {
@@ -510,6 +521,22 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
         return filteringResultSet;
     }
 
+    private QueryEngineResults decide(Authentication authentication, Object object, ConfigAttributeDefinition config,
+            QueryEngineResults returnedObject) throws AccessDeniedException
+
+    {
+        Map<Set<String>, ResultSet> map = returnedObject.getResults();
+        Map<Set<String>, ResultSet> answer = new HashMap<Set<String>, ResultSet>(map.size(), 1.0f);
+       
+        for (Set<String> group : map.keySet())
+        {
+            ResultSet raw = map.get(group);
+            ResultSet permed = decide(authentication, object, config, raw);
+            answer.put(group, permed);
+        }
+        return new QueryEngineResults(answer);
+    }
+    
     private Collection decide(Authentication authentication, Object object, ConfigAttributeDefinition config,
             Collection returnedObject) throws AccessDeniedException
 

@@ -31,6 +31,7 @@ import org.alfresco.cmis.CMISPropertyTypeEnum;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
+import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
@@ -76,6 +77,11 @@ public class CMISMapping
     public static String RELATIONSHIP_OBJECT_TYPE = "Relationship";
 
     /**
+     * Type Id for CMIS Policies, from the spec.
+     */
+    public static String POLICY_OBJECT_TYPE = "Policy";
+
+    /**
      * QName for CMIS documents in the Alfresco CMIS model.
      */
     public static QName DOCUMENT_QNAME = QName.createQName(CMIS_MODEL_URI, DOCUMENT_OBJECT_TYPE);
@@ -90,13 +96,17 @@ public class CMISMapping
      */
     public static QName RELATIONSHIP_QNAME = QName.createQName(CMIS_MODEL_URI, RELATIONSHIP_OBJECT_TYPE);
 
+    public static QName POLICY_QNAME = QName.createQName(CMIS_MODEL_URI, POLICY_OBJECT_TYPE);
+
     // TODO: spec issue - objectTypeEnum is lower cased - object type ids are repository specific in spec
-    
+
     public static CMISTypeId DOCUMENT_TYPE_ID = new CMISTypeId(CMISScope.DOCUMENT, DOCUMENT_QNAME, DOCUMENT_OBJECT_TYPE.toLowerCase());
 
     public static CMISTypeId FOLDER_TYPE_ID = new CMISTypeId(CMISScope.FOLDER, FOLDER_QNAME, FOLDER_OBJECT_TYPE.toLowerCase());
 
     public static CMISTypeId RELATIONSHIP_TYPE_ID = new CMISTypeId(CMISScope.RELATIONSHIP, RELATIONSHIP_QNAME, RELATIONSHIP_OBJECT_TYPE.toLowerCase());
+
+    public static CMISTypeId POLICY_TYPE_ID = new CMISTypeId(CMISScope.POLICY, POLICY_QNAME, POLICY_OBJECT_TYPE.toLowerCase());
 
     // CMIS properties
 
@@ -156,6 +166,10 @@ public class CMISMapping
 
     public static String PROP_TARGET_ID = "TargetId";
 
+    // QNames
+
+    public static QName PROP_OBJECT_ID_QNAME = QName.createQName(CMIS_MODEL_URI, PROP_OBJECT_ID);
+
     // Mappings
     // - no entry means no mapping and pass through as is
 
@@ -175,10 +189,12 @@ public class CMISMapping
         qNameToCmisTypeId.put(DOCUMENT_QNAME, DOCUMENT_TYPE_ID);
         qNameToCmisTypeId.put(FOLDER_QNAME, FOLDER_TYPE_ID);
         qNameToCmisTypeId.put(RELATIONSHIP_QNAME, RELATIONSHIP_TYPE_ID);
+        qNameToCmisTypeId.put(POLICY_QNAME, POLICY_TYPE_ID);
 
         cmisToAlfrecsoTypes.put(DOCUMENT_QNAME, ContentModel.TYPE_CONTENT);
         cmisToAlfrecsoTypes.put(FOLDER_QNAME, ContentModel.TYPE_FOLDER);
         cmisToAlfrecsoTypes.put(RELATIONSHIP_QNAME, null);
+        cmisToAlfrecsoTypes.put(POLICY_QNAME, null);
 
         alfrescoToCmisTypes.put(ContentModel.TYPE_CONTENT, DOCUMENT_QNAME);
         alfrescoToCmisTypes.put(ContentModel.TYPE_FOLDER, FOLDER_QNAME);
@@ -280,7 +296,10 @@ public class CMISMapping
         {
             return RELATIONSHIP_TYPE_ID;
         }
-        // TODO: Policy root object type
+        else if (typeId.equalsIgnoreCase(POLICY_TYPE_ID.getTypeId()))
+        {
+            return POLICY_TYPE_ID;
+        }
 
         // Is it an Alfresco type id?
         if (typeId.length() < 4 || typeId.charAt(1) != '/')
@@ -347,7 +366,15 @@ public class CMISMapping
         }
         else
         {
-            return null;
+            ClassDefinition classDef = dictionaryService.getClass(typeQName);
+            if (classDef.isAspect())
+            {
+                return getCmisTypeId(CMISScope.POLICY, getCmisType(typeQName));
+            }
+            else
+            {
+                return null;
+            }
         }
 
     }
@@ -395,6 +422,8 @@ public class CMISMapping
      */
     public boolean isValidCmisType(QName typeQName)
     {
+        // TODO: Policy: Include aspects types as policies
+        // TODO: Policy: Add isValidCmispolicy(QName typeQName)
         return isValidCmisFolder(typeQName) || isValidCmisDocument(typeQName) || isValidCmisRelationship(typeQName);
     }
 
@@ -530,7 +559,7 @@ public class CMISMapping
         }
         return typeQName;
     }
-    
+
     /**
      * Given a CMIS model type map it to the appropriate Alfresco type.
      * 
@@ -557,6 +586,21 @@ public class CMISMapping
     public String getCmisPropertyName(QName propertyQName)
     {
         return buildPrefixEncodedString(propertyQName, false);
+    }
+
+    public CMISTypeId getCmisTypeForProperty(QName propertyQName)
+    {
+        PropertyDefinition pDef = dictionaryService.getProperty(propertyQName);
+        if (pDef != null)
+        {
+            QName typeQName = pDef.getContainerClass().getName();
+            return getCmisTypeId(typeQName);
+        }
+        else
+        {
+            return null;
+        }
+
     }
 
     /**
@@ -615,6 +659,23 @@ public class CMISMapping
         // Find prefix and property name - in upper case
 
         int split = cmisPropertyName.indexOf('_');
+
+        // CMIS case insensitive hunt - no prefix
+        if (split == -1)
+        {
+            for (QName qname : dictionaryService.getAllProperties(null))
+            {
+                if (qname.getNamespaceURI().equals(CMIS_MODEL_URI))
+                {
+                    if (qname.getLocalName().equalsIgnoreCase(cmisPropertyName))
+                    {
+                        return qname;
+                    }
+                }
+            }
+            return null;
+        }
+
         String prefix = cmisPropertyName.substring(0, split);
         String localName = cmisPropertyName.substring(split + 1);
 
@@ -671,10 +732,18 @@ public class CMISMapping
         {
             return null;
         }
+        else if (tableName.equalsIgnoreCase(POLICY_TYPE_ID.getTypeId()))
+        {
+            return null;
+        }
 
         // Find prefix and property name - in upper case
 
         int split = tableName.indexOf('_');
+        if (split == -1)
+        {
+            return null;
+        }
         String prefix = tableName.substring(0, split);
         String localName = tableName.substring(split + 1);
 

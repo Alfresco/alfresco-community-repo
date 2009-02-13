@@ -35,6 +35,7 @@ import org.alfresco.cmis.CMISContentStreamAllowedEnum;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
+import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.namespace.QName;
@@ -71,6 +72,7 @@ public class CMISTypeDefinition implements Serializable
 
     private boolean queryable;
 
+    // TODO: Policy - report controllable true as policies can be applied
     private boolean controllable;
 
     private boolean versionable;
@@ -161,7 +163,7 @@ public class CMISTypeDefinition implements Serializable
             break;
         case DOCUMENT:
         case FOLDER:
-            TypeDefinition typeDefinition = dictionaryService.getType(typeId.getQName());
+            ClassDefinition typeDefinition = dictionaryService.getType(typeId.getQName());
             if (typeDefinition != null)
             {
                 objectTypeId = typeId;
@@ -227,6 +229,25 @@ public class CMISTypeDefinition implements Serializable
                 }
             }
 
+            break;
+        case POLICY:
+            ClassDefinition classDefinition = dictionaryService.getType(typeId.getQName());
+            if (classDefinition != null)
+            {
+                objectTypeId = typeId;
+                objectTypeQueryName = cmisMapping.getQueryName(typeId.getQName());
+                displayName = (classDefinition.getTitle() != null) ? classDefinition.getTitle() : typeId.getTypeId();
+                parentTypeId = CMISMapping.POLICY_TYPE_ID;
+                rootTypeQueryName = cmisMapping.getQueryName(CMISMapping.POLICY_QNAME);
+                description = classDefinition.getDescription();
+                creatable = false;
+                fileable = false;
+                queryable = false;
+                controllable = false;
+                versionable = false;
+                includedInSupertypeQuery = true;
+                contentStreamAllowed = CMISContentStreamAllowedEnum.NOT_ALLOWED;
+            }
             break;
         case UNKNOWN:
         default:

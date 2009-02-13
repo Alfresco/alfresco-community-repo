@@ -83,5 +83,29 @@ public class BaseColumn implements Column
         builder.append("]");
         return builder.toString();
     }
+
+    public boolean isOrderable()
+    {
+        for(Argument arg : functionArguments.values())
+        {
+            if(!arg.isOrderable())
+            {
+                return false;
+            }
+        }
+       return true;
+    }
+
+    public boolean isQueryable()
+    {
+        for(Argument arg : functionArguments.values())
+        {
+            if(!arg.isQueryable())
+            {
+                return false;
+            }
+        }
+        return true;
+    }
     
 }

@@ -26,8 +26,10 @@ package org.alfresco.cmis.search;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.cmis.dictionary.CMISDictionaryService;
 import org.alfresco.cmis.property.CMISPropertyService;
@@ -36,6 +38,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.ResultSet;
+import org.springframework.web.servlet.tags.form.OptionTag;
 
 /**
  * @author andyh
@@ -49,14 +52,15 @@ public class CMISResultSetImpl implements CMISResultSet, Serializable
     CMISQueryOptions options;
 
     NodeService nodeService;
-    
+
     Query query;
-    
+
     CMISDictionaryService cmisDictionaryService;
-    
+
     CMISPropertyService cmisPropertyService;
 
-    public CMISResultSetImpl(Map<String, ResultSet> wrapped, CMISQueryOptions options, NodeService nodeService, Query query, CMISDictionaryService cmisDictionaryService, CMISPropertyService cmisPropertyService)
+    public CMISResultSetImpl(Map<String, ResultSet> wrapped, CMISQueryOptions options, NodeService nodeService, Query query, CMISDictionaryService cmisDictionaryService,
+            CMISPropertyService cmisPropertyService)
     {
         this.wrapped = wrapped;
         this.options = options;
@@ -73,9 +77,15 @@ public class CMISResultSetImpl implements CMISResultSet, Serializable
      */
     public void close()
     {
+        // results sets can be used for more than one selector so we need to keep track of what we have closed
+        Set<ResultSet> closed = new HashSet<ResultSet>();
         for (ResultSet resultSet : wrapped.values())
         {
-            resultSet.close();
+            if (!closed.contains(resultSet))
+            {
+                resultSet.close();
+                closed.add(resultSet);
+            }
         }
     }
 
@@ -108,12 +118,19 @@ public class CMISResultSetImpl implements CMISResultSet, Serializable
     {
         for (ResultSet resultSet : wrapped.values())
         {
-            if(resultSet.getResultSetMetaData().getLimitedBy() != LimitBy.UNLIMITED)
+            if (resultSet.getResultSetMetaData().getLimitedBy() != LimitBy.UNLIMITED)
             {
                 return true;
             }
+            else
+            {
+                if(resultSet.length() - getStart() > getLength() )
+                {
+                    return true;
+                }
+            }
         }
-       return false;
+        return false;
     }
 
     /*
@@ -125,7 +142,16 @@ public class CMISResultSetImpl implements CMISResultSet, Serializable
     {
         for (ResultSet resultSet : wrapped.values())
         {
-            return resultSet.length();
+            int max = options.getMaxItems();
+            int skip = options.getSkipCount();
+            if((max >= 0) && (max < (resultSet.length() - skip)))
+            {
+                return options.getMaxItems();
+            }
+            else
+            {
+                return resultSet.length() - skip;
+            }
         }
         throw new IllegalStateException();
     }
@@ -156,7 +182,7 @@ public class CMISResultSetImpl implements CMISResultSet, Serializable
         for (String selector : wrapped.keySet())
         {
             ResultSet rs = wrapped.get(selector);
-            refs.put(selector, rs.getNodeRef(i));
+            refs.put(selector, rs.getNodeRef(getStart() + i));
         }
         return refs;
     }
@@ -167,7 +193,7 @@ public class CMISResultSetImpl implements CMISResultSet, Serializable
         for (String selector : wrapped.keySet())
         {
             ResultSet rs = wrapped.get(selector);
-            scores.put(selector, Float.valueOf(rs.getScore(i)));
+            scores.put(selector, Float.valueOf(rs.getScore(getStart() + i)));
         }
         return scores;
     }

@@ -25,6 +25,7 @@
 package org.alfresco.repo.search.impl.querymodel.impl.lucene;
 
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.repo.search.impl.lucene.ParseException;
 import org.alfresco.repo.search.impl.querymodel.Argument;
@@ -52,7 +53,7 @@ public class LuceneFunctionalConstraint extends BaseFunctionalConstraint impleme
     /* (non-Javadoc)
      * @see org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderComponent#addComponent(org.apache.lucene.search.BooleanQuery, org.apache.lucene.search.BooleanQuery, org.alfresco.service.cmr.dictionary.DictionaryService, java.lang.String)
      */
-    public Query addComponent(String selector, Map<String, Argument> functionArgs, LuceneQueryBuilderContext luceneContext, FunctionEvaluationContext functionContext) throws ParseException
+    public Query addComponent(Set<String> selectors, Map<String, Argument> functionArgs, LuceneQueryBuilderContext luceneContext, FunctionEvaluationContext functionContext) throws ParseException
     {
         Function function = getFunction();
         if(function != null)
@@ -60,7 +61,7 @@ public class LuceneFunctionalConstraint extends BaseFunctionalConstraint impleme
             if(function instanceof LuceneQueryBuilderComponent)
             {
                 LuceneQueryBuilderComponent luceneQueryBuilderComponent = (LuceneQueryBuilderComponent)function;
-                return luceneQueryBuilderComponent.addComponent(selector, getFunctionArguments(), luceneContext, functionContext);            
+                return luceneQueryBuilderComponent.addComponent(selectors, getFunctionArguments(), luceneContext, functionContext);            
             }
             else
             {

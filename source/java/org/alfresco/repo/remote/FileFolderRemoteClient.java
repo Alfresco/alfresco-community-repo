@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -168,11 +168,26 @@ public class FileFolderRemoteClient implements FileFolderRemote
     /**
      * {@inheritDoc}
      */
+    public FileInfo[] create(String ticket, final NodeRef[] parentNodeRefs, final String[] names, final QName[] typesQName) throws FileExistsException
+    {
+        return remotePeer.create(ticket, parentNodeRefs, names, typesQName);
+    }
+    /**
+     * {@inheritDoc}
+     */
     public void delete(String ticket, final NodeRef nodeRef)
     {
         remotePeer.delete(ticket, nodeRef);
     }
     
+    /**
+     * {@inheritDoc}
+     */
+    public void delete(String ticket, final NodeRef[] nodeRefs)
+    {
+        remotePeer.delete(ticket, nodeRefs);
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -213,6 +228,14 @@ public class FileFolderRemoteClient implements FileFolderRemote
         return remotePeer.putContent(ticket, nodeRef, bytes, filename);
     }
     
+    /**
+     * {@inheritDoc}
+     */
+    public ContentData[] putContent(String ticket, NodeRef nodeRefs[], byte[][] bytes, String[] filenames)
+    {
+        return remotePeer.putContent(ticket, nodeRefs, bytes, filenames);
+    }
+
     /**
      * {@inheritDoc}
      */

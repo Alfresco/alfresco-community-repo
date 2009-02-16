@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -286,7 +286,7 @@ public class FileFolderRemoteLoader
             long testTotal = 0L;
             long testDepth = 1L;
             boolean testVerbose = false;
-            long filesPerUpload = 1;
+            long filesPerIteration = 1;
             try
             {
                 testCount = Long.parseLong(strValues[0]);
@@ -294,13 +294,13 @@ public class FileFolderRemoteLoader
                 testTotal = Long.parseLong(strValues[2]);
                 testDepth = Long.parseLong(strValues[3]);
                 testVerbose = Boolean.parseBoolean(strValues[4]);
-                filesPerUpload = Long.parseLong(strValues[5]);
+                filesPerIteration = Long.parseLong(strValues[5]);
             }
             catch (Throwable e)
             {
                 throw new LoaderClientException(
                         "Unable to parse the loader configuration for '" + name + "'. " + LoaderSession.getLineEnding() +
-                        "The correct format is [threadCount], [period(ms)], [total], [folder depth], [verbose]<, [filesPerUpload]>");
+                        "The correct format is [threadCount], [period(ms)], [total], [folder depth], [verbose]<, [filesPerIteration]>");
             }
             
             // Construct
@@ -309,7 +309,7 @@ public class FileFolderRemoteLoader
                 AbstractLoaderThread thread = null;
                 if (type.equals("upload"))
                 {
-                    thread = new LoaderUploadThread(session, name, testPeriod, testTotal, testDepth, testVerbose, filesPerUpload);
+                    thread = new LoaderUploadThread(session, name, testPeriod, testTotal, testDepth, testVerbose, filesPerIteration);
                 }
                 else if (type.equals("totals"))
                 {
@@ -318,6 +318,20 @@ public class FileFolderRemoteLoader
                 else if (type.equals("listFolders"))
                 {
                     thread = new LoaderListFoldersThread(session, name, testPeriod, testTotal, testDepth, testVerbose);
+
+                }
+                else if(type.equals("delete"))
+                {
+                    thread = new LoaderDeleteThread(session, name, testPeriod, testTotal, testDepth, testVerbose, filesPerIteration);
+                }
+                else if(type.equals("update"))
+                {
+                    thread = new LoaderUpdateThread(session, name, testPeriod, testTotal, testDepth, testVerbose, filesPerIteration);
+
+                }
+                else if(type.equals("coci"))
+                {
+                     thread = new LoaderCOCIThread(session, name, testPeriod, testTotal, testDepth, testVerbose, filesPerIteration);
                 }
                 else
                 {

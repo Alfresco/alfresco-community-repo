@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -27,6 +27,10 @@ package org.alfresco.service.cmr.remote;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
+
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  * Remote transport interface for the Loader application.  This adds functionality
@@ -84,4 +88,38 @@ public interface LoaderRemote
      * @return              Returns the details of each file created
      */
     public FileInfo[] uploadContent(String ticket, NodeRef folderNodeRef, String[] filenames, byte[][] bytes);
+
+    /**
+     * Check in Check out files.
+     *
+     * @param ticket            the authentication ticket
+     * @param nodeRef           a reference to the node to checkout
+     * @param bytes             the contents of the files
+     * @param versionProperties the version properties.  If null is passed then the original node
+     *                          is NOT versioned during the checkin operation.
+     */
+    public void coci(String ticket, final NodeRef[] nodeRef, byte[][] bytes, List<HashMap<String, Serializable>> versionProperties);
+
+    /**
+     * Check out files.
+     *
+     * @param ticket  the authentication ticket
+     * @param nodeRef a reference to the node to checkout
+     * @return a node reference to the created working copy
+     */
+    public FileInfo[] checkout(String ticket, NodeRef[] nodeRef);
+
+    /**
+     * Check in files.
+     *
+     * @param ticket             the authentication ticket
+     * @param workingCopyNodeRef the working copy node reference
+     * @param versionProperties  the version properties.  If null is passed then the original node
+     *                           is NOT versioned during the checkin operation.
+     * @return the node reference to the original node, updated with the checked in
+     *         state
+     */
+    public NodeRef[] checkin(String ticket, NodeRef[] workingCopyNodeRef,
+                             List<HashMap<String, Serializable>> versionProperties);
+
 }

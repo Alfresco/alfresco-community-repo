@@ -57,6 +57,12 @@
         <property name="mimetypeService">
             <ref bean="MimetypeService"/>
         </property>
+        <property name="checkOutCheckInService">
+ 	    <ref bean="CheckoutCheckinService"/>
+ 	</property>
+ 	<property name="fileFolderRemote">
+            <ref bean="fileFolderRemoteServer"/>
+        </property>
     </bean>
     
     <bean id="loaderRemoteServerRMI" class="org.springframework.remoting.rmi.RmiServiceExporter">

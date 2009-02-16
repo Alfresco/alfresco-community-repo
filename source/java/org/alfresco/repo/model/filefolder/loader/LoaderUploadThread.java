@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -24,20 +24,13 @@
  */
 package org.alfresco.repo.model.filefolder.loader;
 
-import java.io.File;
-import java.net.URL;
-import java.util.Collections;
-import java.util.List;
-
-import net.sf.ehcache.Cache;
-import net.sf.ehcache.CacheManager;
-
-import org.alfresco.model.ContentModel;
-import org.alfresco.repo.cache.EhCacheAdapter;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.GUID;
 import org.springframework.util.FileCopyUtils;
+
+import java.io.File;
+import java.util.List;
 
 /**
  * Loader thread that puts documents to the remote repository.
@@ -47,18 +40,6 @@ import org.springframework.util.FileCopyUtils;
  */
 public class LoaderUploadThread extends AbstractLoaderThread
 {
-    private static EhCacheAdapter<String, NodeRef> pathCache;
-    
-    static
-    {
-        System.setProperty(CacheManager.ENABLE_SHUTDOWN_HOOK_PROPERTY, "TRUE");
-        URL url = LoaderUploadThread.class.getResource("/org/alfresco/repo/model/filefolder/loader/loader-ehcache.xml");
-        CacheManager cacheManager = new CacheManager(url);
-        Cache cache = cacheManager.getCache("org.alfresco.LoaderUploadThread.PathCache");
-        
-        pathCache = new EhCacheAdapter<String, NodeRef>();
-        pathCache.setCache(cache);
-    }
     
     private int filesPerUpload;
     
@@ -75,44 +56,6 @@ public class LoaderUploadThread extends AbstractLoaderThread
         this.filesPerUpload = (int) filesPerUpload;
     }
 
-    /**
-     * Creates or find the folders based on caching.
-     */
-    private NodeRef makeFolders(
-            String ticket,
-            LoaderServerProxy serverProxy,
-            NodeRef workingRootNodeRef,
-            List<String> folderPath) throws Exception
-    {
-        // Iterate down the path, checking the cache and populating it as necessary
-        NodeRef currentParentNodeRef = workingRootNodeRef;
-        String currentKey = workingRootNodeRef.toString();
-        for (String pathElement : folderPath)
-        {
-            currentKey += ("/" + pathElement);
-            // Is this there?
-            NodeRef nodeRef = pathCache.get(currentKey);
-            if (nodeRef != null)
-            {
-                // Found it
-                currentParentNodeRef = nodeRef;
-                // Step into the next level
-                continue;
-            }
-            // It is not there, so create it
-            FileInfo folderInfo = serverProxy.fileFolderRemote.makeFolders(
-                    serverProxy.ticket,
-                    currentParentNodeRef,
-                    Collections.singletonList(pathElement),
-                    ContentModel.TYPE_FOLDER);
-            currentParentNodeRef = folderInfo.getNodeRef();
-            // Cache the new node
-            pathCache.put(currentKey, currentParentNodeRef);
-        }
-        // Done
-        return currentParentNodeRef;
-    }
-    
     @Override
     protected String doLoading(LoaderServerProxy serverProxy, NodeRef workingRootNodeRef) throws Exception
     {

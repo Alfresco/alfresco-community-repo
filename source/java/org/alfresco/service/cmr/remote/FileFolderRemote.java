@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -137,9 +137,23 @@ public interface FileFolderRemote
     /**
      * @param token     the authentication ticket
      * 
+     * This is additional method to avoid multiple authorisation during creating files
+     */
+    public FileInfo[] create(String ticket, NodeRef[] parentNodeRefs, String[] names, QName[] typesQName) throws FileExistsException;
+
+    /**
+     * @param token     the authentication ticket
+     * 
      * @see FileFolderService#delete(NodeRef)
      */
     public void delete(String ticket, NodeRef nodeRef);
+    
+    /**
+     * @param token     the authentication ticket
+     * 
+     * This is additional method to avoid multiple authorisation during deleting files
+     */
+    public void delete(String ticket, NodeRef[] nodeRefs);
     
     /**
      * @param token     the authentication ticket
@@ -176,6 +190,13 @@ public interface FileFolderRemote
      */
     public ContentData putContent(String ticket, NodeRef nodeRef, byte[] bytes, String filename);
     
+    /**
+     * @param token     the authentication ticket
+     *
+     * This is additional method to avoid multiple authorisation during putting content
+     */
+    public ContentData[] putContent(String ticket, NodeRef nodeRefs[], byte[][] bytes, String[] filenames);
+
     /**
      * TODO: Refactor!!!
      */

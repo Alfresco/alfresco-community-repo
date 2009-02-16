@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -360,6 +360,36 @@ public class FileFolderRemoteServer implements FileFolderRemote
     /**
      * {@inheritDoc}
      */
+    public FileInfo[] create(String ticket, final NodeRef[] parentNodeRefs, final String[] names, final QName[] typesQName) throws FileExistsException
+    {
+        AuthenticationUtil.pushAuthentication();
+        try
+        {
+            authenticationService.validate(ticket);
+            // Make the call
+            RetryingTransactionCallback<FileInfo[]> callback = new RetryingTransactionCallback<FileInfo[]>()
+            {
+                public FileInfo[] execute() throws Throwable
+                {
+                    FileInfo[] result = new FileInfo[parentNodeRefs.length];
+                    for (int i = 0; i< result.length; i++)
+                    {
+                        result[i] = fileFolderService.create(parentNodeRefs[i], names[i], typesQName[i]); 
+                    }
+                    return result;
+                }
+            };
+            return retryingTransactionHelper.doInTransaction(callback, false, true);
+        }
+        finally
+        {
+            AuthenticationUtil.popAuthentication();
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public void delete(String ticket, final NodeRef nodeRef)
     {
         AuthenticationUtil.pushAuthentication();
@@ -383,6 +413,33 @@ public class FileFolderRemoteServer implements FileFolderRemote
         }
     }
     
+    /**
+     * {@inheritDoc}
+     */
+    public void delete(String ticket, final NodeRef[] nodeRefs)
+    {
+        AuthenticationUtil.pushAuthentication();
+        try
+        {
+            authenticationService.validate(ticket);
+            // Make the call
+            RetryingTransactionCallback<Object> callback = new RetryingTransactionCallback<Object>()
+            {
+                public Object execute() throws Throwable
+                {
+                    for (NodeRef nodeRef : nodeRefs)
+                        fileFolderService.delete(nodeRef);
+                    return null;
+                }
+            };
+            retryingTransactionHelper.doInTransaction(callback, false, true);
+        }
+        finally
+        {
+            AuthenticationUtil.popAuthentication();
+        }
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -532,6 +589,62 @@ public class FileFolderRemoteServer implements FileFolderRemote
         }
     }
     
+    /**
+     * {@inheritDoc}
+     */
+    public ContentData[] putContent(
+            String ticket,
+            final NodeRef[] nodeRefs,
+            final byte[][] bytes,
+            final String[] filenames)
+    {
+        AuthenticationUtil.pushAuthentication();
+        try
+        {
+            authenticationService.validate(ticket);
+            // Make the call
+            RetryingTransactionCallback<ContentData[]> callback = new RetryingTransactionCallback<ContentData[]>()
+            {
+                public ContentData[] execute() throws Throwable
+                {
+                    // Guess the mimetype
+                    ContentData[] results = new ContentData[filenames.length];
+
+                    for (int i = 0; i < filenames.length; i++)
+                    {
+
+                        String mimetype = mimetypeService.guessMimetype(filenames[i]);
+
+                        // Get a writer
+                        ContentWriter writer = fileFolderService.getWriter(nodeRefs[i]);
+                        // Make a stream
+                        ByteArrayInputStream is = new ByteArrayInputStream(bytes[i]);
+                        // Guess the encoding
+                        ContentCharsetFinder charsetFinder = mimetypeService.getContentCharsetFinder();
+                        Charset charset = charsetFinder.getCharset(is, mimetype);
+                        // Set metadata
+                        writer.setEncoding(charset.name());
+                        writer.setMimetype(mimetype);
+
+                        // Write the stream
+                        writer.putContent(is);
+                        results[i] = writer.getContentData();
+                    }
+                    // Done
+                    return results;
+                }
+            };
+            ContentData[] contentData = retryingTransactionHelper.doInTransaction(callback, false, true);
+            // Done
+            return contentData;
+        }
+        finally
+        {
+            AuthenticationUtil.popAuthentication();
+        }
+    }
+
+
     /**
      * {@inheritDoc}
      */

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -28,10 +28,18 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.net.URL;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.model.FileInfo;
+import org.alfresco.service.cmr.model.FileExistsException;
+import org.alfresco.model.ContentModel;
+import org.alfresco.repo.cache.EhCacheAdapter;
+import net.sf.ehcache.CacheManager;
+import net.sf.ehcache.Cache;
 
 /**
  * A description of what the remote loader should do.
@@ -54,6 +62,19 @@ public abstract class AbstractLoaderThread extends Thread
     private int statCount;
     private double statTotalMs;
     
+    private static EhCacheAdapter<String, NodeRef> pathCache;
+
+    static
+    {
+        System.setProperty(CacheManager.ENABLE_SHUTDOWN_HOOK_PROPERTY, "TRUE");
+        URL url = LoaderUploadThread.class.getResource("/org/alfresco/repo/model/filefolder/loader/loader-ehcache.xml");
+        CacheManager cacheManager = new CacheManager(url);
+        Cache cache = cacheManager.getCache("org.alfresco.LoaderUploadThread.PathCache");
+
+        pathCache = new EhCacheAdapter<String, NodeRef>();
+        pathCache.setCache(cache);
+    }
+
     public AbstractLoaderThread(
             LoaderSession session,
             String loaderName,
@@ -110,6 +131,8 @@ public abstract class AbstractLoaderThread extends Thread
                 int nodeIndex = random.nextInt(nodeCount);
                 NodeRef workingRootNodeRef = session.getWorkingRootNodeRefs().get(nodeIndex);
                 
+                this.doBefore(serverProxy, workingRootNodeRef);
+
                 long startTime = System.nanoTime();
                 String msg = doLoading(serverProxy, workingRootNodeRef);
                 long endTime = System.nanoTime();
@@ -137,6 +160,7 @@ public abstract class AbstractLoaderThread extends Thread
                         this.wait(mustWait);
                     }
                 }
+                this.doAfter(serverProxy, workingRootNodeRef);
             }
             catch (Throwable e)
             {
@@ -237,5 +261,70 @@ public abstract class AbstractLoaderThread extends Thread
             throw new LoaderClientException("Cannot find loading file: " + file);
         }
         return file;
+    }
+
+
+    /**
+     * Creates or find the folders based on caching.
+     */
+    protected NodeRef makeFolders(
+            String ticket,
+            LoaderServerProxy serverProxy,
+            NodeRef workingRootNodeRef,
+            List<String> folderPath) throws Exception
+    {
+        // Iterate down the path, checking the cache and populating it as necessary
+        NodeRef currentParentNodeRef = workingRootNodeRef;
+        String currentKey = workingRootNodeRef.toString();
+
+        for (String aFolderPath : folderPath)
+        {
+            currentKey += ("/" + aFolderPath);
+            // Is this there?
+            NodeRef nodeRef = pathCache.get(currentKey);
+            if (nodeRef != null)
+            {
+                // Found it
+                currentParentNodeRef = nodeRef;
+                // Step into the next level
+                continue;
+            }
+
+            // It is not there, so create it
+            try
+            {
+                FileInfo folderInfo = serverProxy.fileFolderRemote.makeFolders(
+                        serverProxy.ticket,
+                        currentParentNodeRef,
+                        Collections.singletonList(aFolderPath),
+                        ContentModel.TYPE_FOLDER);
+                currentParentNodeRef = folderInfo.getNodeRef();
+            } catch (FileExistsException e)
+            {
+                currentParentNodeRef = pathCache.get(currentKey);
+            }
+
+
+            // Cache the new node
+            pathCache.put(currentKey, currentParentNodeRef);
+
+        }
+        // Done
+        return currentParentNodeRef;
+    }
+
+
+    /**
+     * Run before record stats
+     */
+    protected void doBefore(LoaderServerProxy loaderServerProxy, NodeRef nodeRef) throws Exception
+    {
+    }
+
+    /**
+     * Run after record stats
+     */
+    protected void doAfter(LoaderServerProxy loaderServerProxy, NodeRef nodeRef) throws Exception
+    {
     }
 }

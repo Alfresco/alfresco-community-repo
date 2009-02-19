@@ -48,6 +48,9 @@ public interface CopyServicePolicies
          * @param destinationStoreRef   the destination store reference
          * @param copyToNewNode         indicates whether we are copying to a new node or not 
          * @param copyDetails           modifiable <b>node</b> details
+         * 
+         * @deprecated                  <b>WARNING:</b> This method will be replaced with a more
+         *                              flexible and future-proof policy callback in the post-3.1 / Labs 3D code.
          */
 		public void onCopyNode(
 				QName classRef,

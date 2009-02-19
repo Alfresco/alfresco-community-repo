@@ -13,12 +13,28 @@
         </property>
         <property name="interceptorNames">
             <list>
+                <idref local="FormService_transaction"/>
                 <idref bean="AuditMethodInterceptor"/>
                 <idref bean="exceptionTranslator"/>
-                <!-- There will likely need to be some transaction handling added here -->
+                <idref local="FormService_security"/>
             </list>
         </property>
     </bean>
+ 
+     <!-- Form service transaction bean -->
+    <bean id="FormService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+        <property name="transactionManager">
+            <ref bean="transactionManager"/>
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="*">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
+
+    <!-- Form service security bean -->
+    <bean id="FormService_security" class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
     
     <bean id="formService" class="org.alfresco.repo.forms.FormServiceImpl">
        <property name="processorRegistry" ref="formProcessorRegistry" />
@@ -76,7 +92,7 @@
             <value>formService</value>
         </property>
         <property name="serviceRegistry" ref="ServiceRegistry"/>
-        <property name="formService" ref="formService"/>
+        <property name="formService" ref="FormService"/>
     </bean>
     
 </beans>

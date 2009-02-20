@@ -31,6 +31,7 @@ function main()
 	   
 	   // Note: This formdata is org/alfresco/web/scripts/servlet/FormData.java
       logger.log("Saving form with formdata, " + formdata.fields.length + " fields.");
+   	  //TODO At this point, for multipart, the field names are e.g. prop_cm_name
 
       // N.B. This repoFormData is a different FormData class to that used above.
       var repoFormData = new Packages.org.alfresco.repo.forms.FormData();
@@ -41,11 +42,6 @@ function main()
       
       //TODO How to handle false booleans? They are omitted from POST
       formService.saveForm(nodeRef, repoFormData);
-   }
-   else if (typeof json !== "undefined")
-   {
-      logger.log("Saving form with json = " + json);
-      formService.saveForm(nodeRef, json);
    }
    else
    {

@@ -6,10 +6,13 @@ function main()
 	var ta_id = url.templateArgs['id'];
 	var ta_path = url.templateArgs['path'];
 	
-	logger.log("ta_storeType = " + ta_storeType);
-	logger.log("ta_storeId = " + ta_storeId);
-	logger.log("ta_id = " + ta_id);
-	logger.log("ta_path = " + ta_path);
+    if (logger.isLoggingEnabled())
+    {
+       logger.log("ta_storeType = " + ta_storeType);
+       logger.log("ta_storeId = " + ta_storeId);
+       logger.log("ta_id = " + ta_id);
+       logger.log("ta_path = " + ta_path);
+    }
 
 	var formUrl = '';
 	// The template argument 'path' only appears in the second URI template.
@@ -22,16 +25,23 @@ function main()
 	{
 		formUrl = ta_storeType + '://' + ta_storeId + '/' + ta_id;
 	}
-	logger.log("formUrl = " + formUrl);
+
+    if (logger.isLoggingEnabled())
+    {
+       logger.log("formUrl = " + formUrl);
+    }
 
 	var formScriptObj = formService.getForm(formUrl);
 	
 	if (formScriptObj == null)
 	{
-		var message = "The form for item \"" + formUrl + "\" could not be found.";
-		logger.log(message);
-		status.setCode(404, message);
-		return;
+	      if (logger.isWarnLoggingEnabled())
+	      {
+	         var message = "The form for item \"" + formUrl + "\" could not be found.";
+	         logger.warn(message);
+	         status.setCode(404, message);
+	         return;
+	      }
 	}
 	
     var formModel = {};

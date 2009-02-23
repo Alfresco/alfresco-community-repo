@@ -10,17 +10,25 @@ function main()
    // The template argument 'path' only appears in the second URI template.
    if (ta_path != null)
    {
-   	//TODO Need to test this path.
-   	nodeRef = ta_path;
+    	nodeRef = ta_path;
    }
    else
    {
-   	nodeRef = ta_storeType + '://' + ta_storeId + '/' + ta_id;
+    	nodeRef = ta_storeType + '://' + ta_storeId + '/' + ta_id;
    }
    
-   logger.log("POST request received for nodeRef: " + nodeRef);
+   if (logger.isLoggingEnabled())
+   {
+	   logger.log("POST request received for nodeRef: " + nodeRef);
+   }
+   
+   
+   
    
    // TODO: check the given nodeRef is real
+   
+   
+   
    
    // persist the submitted data using the most appropriate data set
    if (typeof formdata !== "undefined")
@@ -30,22 +38,28 @@ function main()
 	   model.data = formdata;
 	   
 	   // Note: This formdata is org/alfresco/web/scripts/servlet/FormData.java
-      logger.log("Saving form with formdata, " + formdata.fields.length + " fields.");
-   	  //TODO At this point, for multipart, the field names are e.g. prop_cm_name
+	   if (logger.isLoggingEnabled())
+	   {
+		   logger.log("Saving form with formdata, " + formdata.fields.length + " fields.");
+	   }
 
       // N.B. This repoFormData is a different FormData class to that used above.
       var repoFormData = new Packages.org.alfresco.repo.forms.FormData();
       for (var i = 0; i < formdata.fields.length; i++)
       {
-    	  repoFormData.addData(formdata.fields[i].name, formdata.fields[i].value);
+    	  // Replace the first 2 underscores with colons.
+    	  var alteredName = formdata.fields[i].name.replaceFirst("_", ":").replaceFirst("_", ":");
+    	  repoFormData.addData(alteredName, formdata.fields[i].value);
       }
       
-      //TODO How to handle false booleans? They are omitted from POST
       formService.saveForm(nodeRef, repoFormData);
    }
    else
    {
-      logger.log("Saving form with args = " + args);
+	   if (logger.isLoggingEnabled())
+	   {
+		   logger.log("Saving form with args = " + args);
+	   }
       formService.saveForm(nodeRef, args);
    }
    

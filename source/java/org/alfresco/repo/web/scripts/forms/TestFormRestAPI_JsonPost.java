@@ -39,7 +39,7 @@ public class TestFormRestAPI_JsonPost extends AbstractTestFormRestApi
     private static final String PROP_CM_DESCRIPTION = "prop_cm_description";
     private static final String APPLICATION_JSON = "application/json";
 
-    public void testSubmitJsonPostRequest() throws IOException, JSONException
+    public void testSimpleJsonPostRequest() throws IOException, JSONException
     {
         // Retrieve and store the original property value.
         Serializable originalDescription =

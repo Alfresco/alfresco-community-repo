@@ -183,6 +183,15 @@ public class NodeHandler extends AbstractHandler
                     result.put(fullQName, (Serializable)nextDataObject);
                 }
                 //TODO Implement support for "assoc:" properties.
+                else
+                {
+                	if (logger.isWarnEnabled())
+                	{
+                		StringBuilder msg = new StringBuilder();
+                		msg.append("Field ").append(nextDataName).append(" has not been recognised.");
+                		logger.warn(msg.toString());
+                	}
+                }
             }
         }
         return result;

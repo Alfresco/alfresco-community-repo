@@ -50,6 +50,9 @@
             <#if form.data.formData[k]?is_boolean>
                     <#-- Render boolean data without the surrounding inverted commas -->
             "${k}" : ${form.data.formData[k]?string}<#if k_has_next>,</#if>
+            <#elseif form.data.formData[k]?is_number>
+                    <#-- Render number data without the surrounding inverted commas and no formatting -->
+            "${k}" : ${form.data.formData[k]?c}<#if k_has_next>,</#if>
             <#else>
                     <#-- All other data rendered with inverted commas -->
             "${k}" : "${form.data.formData[k]}"<#if k_has_next>,</#if>

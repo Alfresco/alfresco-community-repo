@@ -34,7 +34,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
-public class TestFormRestAPI_Get extends AbstractTestFormRestApi {
+public class FormRestApiGet_Test extends AbstractTestFormRestApi {
 
     public void testResponseContentType() throws Exception
     {

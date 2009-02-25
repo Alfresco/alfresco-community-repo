@@ -34,7 +34,7 @@ import org.alfresco.web.scripts.TestWebScriptServer.Response;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class TestFormRestAPI_JsonPost extends AbstractTestFormRestApi
+public class FormRestApiJsonPost_Test extends AbstractTestFormRestApi
 {
     private static final String PROP_CM_DESCRIPTION = "prop_cm_description";
     private static final String APPLICATION_JSON = "application/json";

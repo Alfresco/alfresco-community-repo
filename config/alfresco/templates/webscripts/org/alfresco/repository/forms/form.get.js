@@ -35,13 +35,13 @@ function main()
 	
 	if (formScriptObj == null)
 	{
-	      if (logger.isWarnLoggingEnabled())
-	      {
-	         var message = "The form for item \"" + formUrl + "\" could not be found.";
-	         logger.warn(message);
-	         status.setCode(404, message);
-	         return;
-	      }
+        var message = "The form for item \"" + formUrl + "\" could not be found.";
+        if (logger.isWarnLoggingEnabled())
+        {
+           logger.warn(message);
+        }
+        status.setCode(404, message);
+        return;
 	}
 	
     var formModel = {};

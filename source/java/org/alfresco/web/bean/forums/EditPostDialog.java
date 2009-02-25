@@ -65,6 +65,9 @@ public class EditPostDialog extends CreatePostDialog
          String htmlContent = reader.getContentString();
          if (htmlContent != null)
          {
+            // ETHREEOH-1216: replace both forms of 'br' as older posts have the <br/> version
+            // which doesn't work in all browsers supported by Alfresco Explorer
+            htmlContent = StringUtils.replace(htmlContent, "<br/>", "\r\n");
             this.content = StringUtils.replace(htmlContent, "<br>", "\r\n");
          }
       }

@@ -88,19 +88,25 @@ public class ScriptFormService extends BaseScopableProcessorExtension
      */
     public void saveForm(String item, Object postData)
     {
+        // A note on data conversion as passed in to this method:
+        // Each of the 3 submission methods (multipart/formdata, JSON Post and
+        // application/x-www-form-urlencoded) pass an instance of FormData into this
+        // method.
         FormData dataForFormService = null;
         if (postData instanceof FormData)
         {
             dataForFormService = (FormData)postData;
-            // Note on data conversion. The Repo will handle conversion of String-based
-            // data into the types required by the model.
-            
-            //TODO Do we need special handling for submission of false booleans?
+            // A note on data conversion as passed out of this method:
+            // The Repo will handle conversion of String-based data into the types
+            // required by the model.
         }
         else
         {
-            // TODO Need to add handling of other POST submit types here. JSON, args.
-            dataForFormService = new FormData();
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("ScriptFormService.saveForm: postData not instanceof FormData.");
+            }
+            return;
         }
        
         formService.saveForm(item, dataForFormService);

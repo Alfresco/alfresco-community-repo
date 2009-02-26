@@ -88,6 +88,11 @@ public class AVMServiceTestBase extends TestCase
     
     protected static AuthenticationService fAuthService;
     
+    public void testSetup()
+    {
+    	// NOOP
+    }
+    
     /**
      * Setup for AVM tests.  Note that we set the polling
      * interval for the reaper to 4 seconds so that tests will

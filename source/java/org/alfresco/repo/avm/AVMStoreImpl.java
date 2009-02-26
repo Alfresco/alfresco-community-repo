@@ -258,7 +258,9 @@ public class AVMStoreImpl implements AVMStore, Serializable
         }
         // Clear out the new nodes.
         List<Long> allLayeredNodeIDs = AVMDAOs.Instance().fAVMNodeDAO.getNewLayeredInStoreIDs(me);
+
         AVMDAOs.Instance().fAVMNodeDAO.clearNewInStore(me);
+        
         AVMDAOs.Instance().fAVMNodeDAO.clear();
         List<Long> layeredNodeIDs = new ArrayList<Long>();
         for (Long layeredID : allLayeredNodeIDs)

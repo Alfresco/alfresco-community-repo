@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.activities.ActivityType;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
@@ -52,10 +51,14 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.cmr.site.SiteInfo;
+import org.alfresco.service.cmr.site.SiteService;
+import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.PropertyMap;
 import org.apache.commons.logging.Log;
@@ -76,10 +79,21 @@ public class SiteServiceImpl implements SiteService, SiteModel
     /** The DM store where site's are kept */
     public static final StoreRef SITE_STORE = new StoreRef("workspace://SpacesStore");
 
-    /** Activiti tool */
+    /** Activity tool */
     private static final String ACTIVITY_TOOL = "siteService";
 
     private String sitesXPath;
+    
+    /** Messages */
+    private static final String MSG_UNABLE_TO_CREATE = "site_service.unable_to_create";
+    private static final String MSG_CAN_NOT_UPDATE = "site_service.can_not_update";
+    private static final String MSG_CAN_NOT_DELETE = "site_service.can_not_delete";
+    private static final String MSG_SITE_NO_EXIST = "site_service.site_no_exist";
+    private static final String MSG_DO_NOT_REMOVE_MGR = "site_service.do_not_remove_manager";
+    private static final String MSG_CAN_NOT_REMOVE_MSHIP = "site_service.can_not_reomve_memebership";
+    private static final String MSG_DO_NOT_CHANGE_MGR = "site_service.do_not_change_manager";
+    private static final String MSG_CAN_NOT_CHANGE_MSHIP="site_service.can_not_change_memebership";
+    private static final String MSG_SITE_CONTAINER_NOT_FOLDER = "site_service.site_container_not_folder";
 
     /* Services */
     private NodeService nodeService;
@@ -172,7 +186,7 @@ public class SiteServiceImpl implements SiteService, SiteModel
     }
 
     /**
-     * Set the taggin service
+     * Set the tagging service
      */
     public void setTaggingService(TaggingService taggingService)
     {
@@ -214,12 +228,35 @@ public class SiteServiceImpl implements SiteService, SiteModel
         PropertyCheck.mandatory(this, "authorityService", authorityService);
         PropertyCheck.mandatory(this, "sitesXPath", sitesXPath);
     }
+    
+    /**
+     * @see org.alfresco.service.cmr.site.SiteService#createSite(java.lang.String, java.lang.String, java.lang.String, java.lang.String, boolean)
+     */
+    public SiteInfo createSite( final String sitePreset, 
+                                String passedShortName, 
+                                final String title, 
+                                final String description, 
+                                final boolean isPublic)
+    {
+        // Determine the site visibility
+        SiteVisibility visibility = SiteVisibility.PRIVATE;
+        if (isPublic == true)
+        {
+            visibility = SiteVisibility.PUBLIC;
+        }
+        
+        // Create the site
+        return createSite(sitePreset, passedShortName, title, description, visibility);
+    }
 
     /**
-     * {@inheritDoc}
+     * @see org.alfresco.service.cmr.site.SiteService#createSite(java.lang.String, java.lang.String, java.lang.String, java.lang.String, boolean)
      */
-    public SiteInfo createSite(final String sitePreset, String passedShortName,
-            final String title, final String description, final boolean isPublic)
+    public SiteInfo createSite(final String sitePreset, 
+                               String passedShortName, 
+                               final String title, 
+                               final String description, 
+                               final SiteVisibility visibility)
     {
         // Remove spaces from shortName
         final String shortName = passedShortName.replaceAll(" ", "");
@@ -229,10 +266,7 @@ public class SiteServiceImpl implements SiteService, SiteModel
         if (existingSite != null)
         {
             // Throw an exception since we have a duplicate site name
-            throw new AlfrescoRuntimeException(
-                    "Unable to create site because the site short name '"
-                            + shortName
-                            + "' is already in use.  Site short names must be unique.");
+            throw new SiteServiceException(MSG_UNABLE_TO_CREATE, new Object[]{shortName});
         }
 
         // Get the site parent node reference
@@ -242,6 +276,7 @@ public class SiteServiceImpl implements SiteService, SiteModel
         PropertyMap properties = new PropertyMap(4);
         properties.put(ContentModel.PROP_NAME, shortName);
         properties.put(SiteModel.PROP_SITE_PRESET, sitePreset);
+        properties.put(SiteModel.PROP_SITE_VISIBILITY, visibility.toString());
         properties.put(ContentModel.PROP_TITLE, title);
         properties.put(ContentModel.PROP_DESCRIPTION, description);
         
@@ -270,8 +305,7 @@ public class SiteServiceImpl implements SiteService, SiteModel
                 String siteGroup = authorityService.createAuthority(
                         AuthorityType.GROUP, null, getSiteGroup(shortName,
                                 false));
-                Set<String> permissions = permissionService
-                        .getSettablePermissions(SiteModel.TYPE_SITE);
+                Set<String> permissions = permissionService.getSettablePermissions(SiteModel.TYPE_SITE);
                 for (String permission : permissions)
                 {
                     // Create a group for the permission
@@ -280,20 +314,22 @@ public class SiteServiceImpl implements SiteService, SiteModel
                                     shortName, permission, false));
 
                     // Assign the group the relevant permission on the site
-                    permissionService.setPermission(siteNodeRef,
-                            permissionGroup, permission, true);
+                    permissionService.setPermission(siteNodeRef, permissionGroup, permission, true);
                 }
 
-                // Set the memberhips details
-                // - give all authorities read permissions if site is public
+                // Set the memberships details
+                // - give all authorities site consumer if site is public
+                // - give all authorities read properties if site is moderated
                 // - give all authorities read permission on permissions so
                 // memberships can be calculated
                 // - add the current user to the site manager group
-                if (isPublic == true)
+                if (SiteVisibility.PUBLIC.equals(visibility) == true)
                 {
-                    permissionService.setPermission(siteNodeRef,
-                            PermissionService.ALL_AUTHORITIES, SITE_CONSUMER,
-                            true);
+                    permissionService.setPermission(siteNodeRef, PermissionService.ALL_AUTHORITIES, SITE_CONSUMER, true);
+                }
+                else if (SiteVisibility.MODERATED.equals(visibility) == true)
+                {
+                    permissionService.setPermission(siteNodeRef, PermissionService.ALL_AUTHORITIES, PermissionService.READ_PROPERTIES, true);
                 }
                 permissionService.setPermission(siteNodeRef,
                         PermissionService.ALL_AUTHORITIES,
@@ -309,7 +345,7 @@ public class SiteServiceImpl implements SiteService, SiteModel
 
         // Return created site information
         Map<QName, Serializable> customProperties = getSiteCustomProperties(siteNodeRef);
-        SiteInfo siteInfo = new SiteInfo(sitePreset, shortName, title, description, isPublic, customProperties, siteNodeRef);
+        SiteInfo siteInfo = new SiteInfoImpl(sitePreset, shortName, title, description, visibility, customProperties, siteNodeRef);
         return siteInfo;
     }
 
@@ -335,7 +371,7 @@ public class SiteServiceImpl implements SiteService, SiteModel
     }
     
     /**
-     * @see org.alfresco.repo.site.SiteService#getSiteGroup(java.lang.String)
+     * @see org.alfresco.service.cmr.site.SiteService#getSiteGroup(java.lang.String)
      */
     public String getSiteGroup(String shortName)
     {
@@ -343,7 +379,7 @@ public class SiteServiceImpl implements SiteService, SiteModel
     }
 
     /**
-     * @see org.alfresco.repo.site.SiteService#getSiteRoleGroup(java.lang.String,
+     * @see org.alfresco.service.cmr.site.SiteService#getSiteRoleGroup(java.lang.String,
      *      java.lang.String)
      */
     public String getSiteRoleGroup(String shortName, String role)
@@ -420,7 +456,7 @@ public class SiteServiceImpl implements SiteService, SiteModel
         if (results.size() == 0)
         {
             // No root site folder exists
-            throw new AlfrescoRuntimeException("No root sites folder exists");
+            throw new SiteServiceException("No root sites folder exists");
         }
         else if (results.size() != 1)
         {
@@ -432,7 +468,7 @@ public class SiteServiceImpl implements SiteService, SiteModel
     }
 
     /**
-     * @see org.alfresco.repo.site.SiteService#listSites(java.lang.String,
+     * @see org.alfresco.service.cmr.site.SiteService#listSites(java.lang.String,
      *      java.lang.String)
      */
     public List<SiteInfo> listSites(String nameFilter, String sitePresetFilter)
@@ -463,7 +499,7 @@ public class SiteServiceImpl implements SiteService, SiteModel
     }
 
     /**
-     * @see org.alfresco.repo.site.SiteService#listSites(java.lang.String)
+     * @see org.alfresco.service.cmr.site.SiteService#listSites(java.lang.String)
      */
     public List<SiteInfo> listSites(String userName)
     {
@@ -480,7 +516,7 @@ public class SiteServiceImpl implements SiteService, SiteModel
     }
 
     /**
-     * Creates a site informatoin object given a site node reference
+     * Creates a site information object given a site node reference
      * 
      * @param siteNodeRef
      *            site node reference
@@ -497,42 +533,59 @@ public class SiteServiceImpl implements SiteService, SiteModel
         String description = (String) properties
                 .get(ContentModel.PROP_DESCRIPTION);
 
-        // Determine whether the space is public or not
-        boolean isPublic = isSitePublic(siteNodeRef);
-
+        // Get the visibility of the site
+        SiteVisibility visibility = getSiteVisibility(siteNodeRef);
+        
         // Create and return the site information
         Map<QName, Serializable> customProperties = getSiteCustomProperties(siteNodeRef);
-        SiteInfo siteInfo = new SiteInfo(sitePreset, shortName, title, description, isPublic, customProperties, siteNodeRef);
+        SiteInfo siteInfo = new SiteInfoImpl(sitePreset, shortName, title, description, visibility, customProperties, siteNodeRef);
         return siteInfo;
     }
-
+    
     /**
-     * Indicates whether a site is public or not
+     * Helper method to get the visibility of the site.  If no value is present in the repository then it is calculated from the 
+     * set permissions.  This will maintain backwards compatibility with earlier versions of the service implementation.
      * 
-     * @param siteNodeRef
-     *            site node reference
-     * @return boolean true if the site is public, false otherwise
+     * @param siteNodeRef       site node reference
+     * @return SiteVisibility   site visibility
      */
-    private boolean isSitePublic(NodeRef siteNodeRef)
+    private SiteVisibility getSiteVisibility(NodeRef siteNodeRef)
     {
-        boolean isPublic = false;
-        Set<AccessPermission> permissions = this.permissionService
-                .getAllSetPermissions(siteNodeRef);
-        for (AccessPermission permission : permissions)
+        SiteVisibility visibility = SiteVisibility.PRIVATE;
+        
+        // Get the visibility value stored in the repo
+        String visibilityValue = (String)this.nodeService.getProperty(siteNodeRef, SiteModel.PROP_SITE_VISIBILITY);
+        
+        // To maintain backwards compatibility calculate the visibility from the permissions
+        // if there is no value specified on the site node
+        if (visibilityValue == null)
         {
-            if (permission.getAuthority().equals(
-                    PermissionService.ALL_AUTHORITIES) == true
-                    && permission.getPermission().equals(SITE_CONSUMER) == true)
+            // Examine each permission to see if this is a public site or not
+            Set<AccessPermission> permissions = this.permissionService.getAllSetPermissions(siteNodeRef);
+            for (AccessPermission permission : permissions)
             {
-                isPublic = true;
-                break;
+                if (permission.getAuthority().equals(PermissionService.ALL_AUTHORITIES) == true && 
+                    permission.getPermission().equals(SITE_CONSUMER) == true)
+                {
+                    visibility = SiteVisibility.PUBLIC;
+                    break;
+                }
             }
+            
+            // Store the visibility value on the node ref for next time
+            this.nodeService.setProperty(siteNodeRef, SiteModel.PROP_SITE_VISIBILITY, visibility.toString());            
         }
-        return isPublic;
+        else
+        {
+            // Create the enum value from the string
+            visibility = SiteVisibility.valueOf(visibilityValue);
+        }
+        
+        return visibility;
     }
 
     /**
-     * @see org.alfresco.repo.site.SiteService#getSite(java.lang.String)
+     * @see org.alfresco.service.cmr.site.SiteService#getSite(java.lang.String)
      */
     public SiteInfo getSite(String shortName)
     {
@@ -572,62 +625,74 @@ public class SiteServiceImpl implements SiteService, SiteModel
     }
 
     /**
-     * @see org.alfresco.repo.site.SiteService#updateSite(org.alfresco.repo.site.SiteInfo)
+     * @see org.alfresco.service.cmr.site.SiteService#updateSite(org.alfresco.service.cmr.site.SiteInfo)
      */
     public void updateSite(SiteInfo siteInfo)
     {
         NodeRef siteNodeRef = getSiteNodeRef(siteInfo.getShortName());
         if (siteNodeRef == null)
         {
-            throw new AlfrescoRuntimeException("Can not update site "
-                    + siteInfo.getShortName() + " because it does not exist.");
+            throw new SiteServiceException(MSG_CAN_NOT_UPDATE, new Object[]{siteInfo.getShortName()});            
         }
-
-        // Note: the site preset and short name can not be updated
-
+        
+        // Get the sites properties
+        Map<QName, Serializable> properties = this.nodeService.getProperties(siteNodeRef);
+        
         // Update the properties of the site
-        Map<QName, Serializable> properties = this.nodeService
-                .getProperties(siteNodeRef);
+        // Note: the site preset and short name can not be updated
         properties.put(ContentModel.PROP_TITLE, siteInfo.getTitle());
-        properties
-                .put(ContentModel.PROP_DESCRIPTION, siteInfo.getDescription());
-        this.nodeService.setProperties(siteNodeRef, properties);
+        properties.put(ContentModel.PROP_DESCRIPTION, siteInfo.getDescription());
 
         // Update the isPublic flag
-        boolean isPublic = isSitePublic(siteNodeRef);
-        if (isPublic != siteInfo.getIsPublic())
-            ;
+        SiteVisibility currentVisibility = getSiteVisibility(siteNodeRef);
+        SiteVisibility updatedVisibility = siteInfo.getVisibility();
+        if (currentVisibility.equals(updatedVisibility) == false)
         {
-            if (siteInfo.getIsPublic() == true)
+            // Remove current visibility permissions
+            if (SiteVisibility.PUBLIC.equals(currentVisibility) == true)
             {
-                // Add the permission
-                this.permissionService.setPermission(siteNodeRef,
-                        PermissionService.ALL_AUTHORITIES, SITE_CONSUMER, true);
-            } else
-            {
-                // Remove the permission
-                this.permissionService.deletePermission(siteNodeRef,
-                        PermissionService.ALL_AUTHORITIES, SITE_CONSUMER);
+                this.permissionService.deletePermission(siteNodeRef, PermissionService.ALL_AUTHORITIES, SITE_CONSUMER);
             }
+            else if (SiteVisibility.MODERATED.equals(currentVisibility) == true)
+            {
+                this.permissionService.deletePermission(siteNodeRef, PermissionService.ALL_AUTHORITIES, PermissionService.READ_PROPERTIES);
+                // TODO update all child folders ?? ...
+            }
+            
+            // Add new visibility permissions
+            if (SiteVisibility.PUBLIC.equals(updatedVisibility) == true)
+            {
+                this.permissionService.setPermission(siteNodeRef, PermissionService.ALL_AUTHORITIES, SITE_CONSUMER, true);
+            }
+            else if (SiteVisibility.MODERATED.equals(updatedVisibility) == true)
+            {
+                this.permissionService.setPermission(siteNodeRef, PermissionService.ALL_AUTHORITIES, PermissionService.READ_PROPERTIES, true);
+                // TODO update all child folders ?? ...
+            }    
+            
+            // Update the site node reference with the updated visibility value
+            properties.put(SiteModel.PROP_SITE_VISIBILITY, siteInfo.getVisibility());
         }
+        
+        // Set the updated properties back onto the site node reference
+        this.nodeService.setProperties(siteNodeRef, properties);
     }
-
+    
     /**
-     * @see org.alfresco.repo.site.SiteService#deleteSite(java.lang.String)
+     * @see org.alfresco.service.cmr.site.SiteService#deleteSite(java.lang.String)
      */
     public void deleteSite(final String shortName)
     {
         NodeRef siteNodeRef = getSiteNodeRef(shortName);
         if (siteNodeRef == null)
         {
-            throw new AlfrescoRuntimeException("Can not delete site "
-                    + shortName + " because it does not exist.");
+            throw new SiteServiceException(MSG_CAN_NOT_DELETE, new Object[]{shortName});
         }
 
         // Delete the node
         this.nodeService.deleteNode(siteNodeRef);
 
-        // Delete the associatated group's
+        // Delete the associated group's
         AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
         {
             public Object doWork() throws Exception
@@ -639,96 +704,166 @@ public class SiteServiceImpl implements SiteService, SiteModel
     }
 
     /**
-     * @see org.alfresco.repo.site.SiteService#listMembers(java.lang.String,
-     *      java.lang.String, java.lang.String)
+     * @see org.alfresco.service.cmr.site.SiteService#listMembers(java.lang.String, java.lang.String, java.lang.String)
      */
-    public Map<String, String> listMembers(String shortName, String nameFilter,
-            String roleFilter)
+    public Map<String, String> listMembers(String shortName, String nameFilter, String roleFilter)
+    {
+        return listMembers(shortName, nameFilter, roleFilter, false);
+    }
+    
+    /**
+     * @see org.alfresco.service.cmr.site.SiteService#listMembers(String, String, String, boolean)
+     */
+    public Map<String, String> listMembers(String shortName, String nameFilter, String roleFilter, boolean collapseGroups)
     {
         NodeRef siteNodeRef = getSiteNodeRef(shortName);
         if (siteNodeRef == null)
         {
-            throw new AlfrescoRuntimeException("Site " + shortName
-                    + " does not exist.");
+            throw new SiteServiceException(MSG_SITE_NO_EXIST, new Object[]{shortName});
         }
 
         Map<String, String> members = new HashMap<String, String>(23);
 
-        Set<String> permissions = permissionService
-                .getSettablePermissions(SiteModel.TYPE_SITE);
+        Set<String> permissions = permissionService.getSettablePermissions(SiteModel.TYPE_SITE);
         for (String permission : permissions)
         {
-            if (roleFilter == null || 
-                roleFilter.length() == 0 ||
-                roleFilter.equals(permission) == true)
+            if (filterMatch(roleFilter, permission) == true)
             {
                 String groupName = getSiteRoleGroup(shortName, permission, true);
-                Set<String> users = this.authorityService.getContainedAuthorities(
-                        AuthorityType.USER, groupName, true);
+                Set<String> users = this.authorityService.getContainedAuthorities(AuthorityType.USER, groupName, true);
                 for (String user : users)
                 {
-                    if (nameFilter == null ||
-                        nameFilter.length() == 0 ||
-                        nameFilter.equals(user) == true)
+                    if (filterMatch(nameFilter, user) == true)
                     {
                         // Add the user and their permission to the returned map
                         members.put(user, permission);
                     }
+                }
+                Set<String> groups = this.authorityService.getContainedAuthorities(AuthorityType.GROUP, groupName, true);
+                for (String group : groups)
+                {                    
+                    if (collapseGroups == false)
+                    {     
+                        if (filterMatch(nameFilter, group) == true)
+                        {
+                            // Add the group and their permission to the returned map
+                            members.put(group, permission);
+                         }
+                    }
+                    else
+                    {
+                        Set<String> subUsers = this.authorityService.getContainedAuthorities(AuthorityType.USER, group, false);
+                        for (String subUser : subUsers)
+                        {
+                            if (filterMatch(nameFilter, subUser) == true)
+                            {
+                                // Add the collapsed user into the members list if they do not already appear in the list 
+                                if (members.containsKey(subUser) == false)
+                                {
+                                    members.put(subUser, permission);
+                                }
+                            }
+                        }
+                    }
+                
                 }
             }         
         }
 
         return members;
     }
+    
+    /**
+     * Helper method to calculate whether a value matches a filter or not
+     * 
+     * @param filter    filter
+     * @param value     value
+     * @return boolean  true if the value matches the filter, false otherwise
+     */
+    private boolean filterMatch(String filter, String value)
+    {
+        boolean result = false;
+        if (filter == null ||
+            filter.length() == 0 ||
+            filter.equals(value) == true)
+        {
+            result = true;
+        }
+        return result;
+    }
 
     /**
-     * @see org.alfresco.repo.site.SiteService#getMembersRole(java.lang.String,
+     * @see org.alfresco.service.cmr.site.SiteService#getMembersRole(java.lang.String,
      *      java.lang.String)
      */
-    public String getMembersRole(String shortName, String userName)
+    public String getMembersRole(String shortName, String authorityName) 
     {
         String result = null;
-        String group = getPermissionGroup(shortName, userName);
-        if (group != null)
+        List<String> roles = getMembersRoles(shortName, authorityName);
+        if (roles.isEmpty() == false)
+        {
+            result = roles.get(0);
+        }
+        return result;
+    }
+    
+    public List<String> getMembersRoles(String shortName, String authorityName)
+    {
+        List<String> result = new ArrayList<String>(5);
+        List<String> groups = getPermissionGroups(shortName, authorityName);
+        for (String group : groups)
         {
             int index = group.lastIndexOf('_');
             if (index != -1)
             {
-                result = group.substring(index + 1);
+                result.add(group.substring(index + 1));
             }
         }
         return result;
     }
-
+    
+    private List<String> getPermissionGroups(String siteShortName, String authorityName)
+    {
+        List<String> result = new ArrayList<String>(5);
+        Set<String> roles = permissionService.getSettablePermissions(SiteModel.TYPE_SITE);  
+        for (String role : roles)
+        {
+            String roleGroup = getSiteRoleGroup(siteShortName, role, true);
+            Set <String> authorities = this.authorityService.getContainedAuthorities(null, roleGroup, false);
+            if (authorities.contains(authorityName) == true)
+            {
+                result.add(roleGroup);
+            }
+        }        
+        return result;
+    }    
+    
     /**
-     * Helper method to get the permission group for a given user on a site.
+     * Helper method to get the permission group for a given authority on a site.
      * Returns null if the user does not have a explicit membership to the site.
      * 
-     * @param siteShortName
-     *            site short name
-     * @param userName
-     *            user name
-     * @return String permission group, null if no explicit membership set
+     * @param siteShortName     site short name
+     * @param authorityName     authority name
+     * @return String           permission group, null if no explicit membership set
      */
-    private String getPermissionGroup(String siteShortName, String userName)
-    {
-        String result = null;
-        Set<String> groups = this.authorityService.getContainingAuthorities(
-                AuthorityType.GROUP, userName, true);
-        for (String group : groups)
-        {
-            if (group.startsWith(PermissionService.GROUP_PREFIX + "site_"
-                    + siteShortName) == true)
-            {
-                result = group;
-                break;
-            }
-        }
-        return result;
-    }
+//    private String getPermissionGroup(String siteShortName, String authorityName)
+//    {
+//        String result = null;
+//        Set<String> groups = this.authorityService.getContainingAuthorities(AuthorityType.GROUP, authorityName, true);
+//        for (String group : groups)
+//        {
+//            if (group.startsWith(PermissionService.GROUP_PREFIX + "site_"
+//                    + siteShortName) == true)
+//            {
+//                result = group;
+//                break;
+//            }
+//        }
+//        return result;
+//    }
 
     /**
-     * @see org.alfresco.repo.site.SiteService#getSiteRoles()
+     * @see org.alfresco.service.cmr.site.SiteService#getSiteRoles()
      */
     public List<String> getSiteRoles()
     {
@@ -738,38 +873,32 @@ public class SiteServiceImpl implements SiteService, SiteModel
     }
 
     /**
-     * @see org.alfresco.repo.site.SiteService#isMember(java.lang.String,
-     *      java.lang.String)
+     * @see org.alfresco.service.cmr.site.SiteService#isMember(java.lang.String, java.lang.String)
      */
-    public boolean isMember(String shortName, String userName)
+    public boolean isMember(String shortName, String authorityName)
     {
-        return (getPermissionGroup(shortName, userName) != null);
+        return (!getPermissionGroups(shortName, authorityName).isEmpty());
     }
 
     /**
-     * @see org.alfresco.repo.site.SiteService#removeMembership(java.lang.String,
-     *      java.lang.String)
+     * @see org.alfresco.service.cmr.site.SiteService#removeMembership(java.lang.String, java.lang.String)
      */
-    public void removeMembership(final String shortName, final String userName)
+    public void removeMembership(final String shortName, final String authorityName)
     {
         final NodeRef siteNodeRef = getSiteNodeRef(shortName);
         if (siteNodeRef == null)
         {
-            throw new AlfrescoRuntimeException("Site " + shortName
-                    + " does not exist.");
+            throw new SiteServiceException(MSG_SITE_NO_EXIST, new Object[]{shortName});
         }
 
         // TODO what do we do about the user if they are in a group that has
         // rights to the site?
 
-        // Determine whether the site is private or not
-        boolean isPublic = isSitePublic(siteNodeRef);
-
         // Get the current user
         String currentUserName = AuthenticationUtil.getFullyAuthenticatedUser();
 
         // Get the user current role
-        final String role = getMembersRole(shortName, userName);
+        final String role = getMembersRole(shortName, authorityName);
         if (role != null)
         {
             // Check that we are not about to remove the last site manager
@@ -782,10 +911,7 @@ public class SiteServiceImpl implements SiteService, SiteModel
                                 true);
                 if (siteMangers.size() == 1)
                 {
-                    throw new AlfrescoRuntimeException(
-                            "A site requires at least one site manager.  You can not remove '"
-                                    + userName
-                                    + "' from the site memebership because they are currently the only site manager.");
+                    throw new SiteServiceException(MSG_DO_NOT_REMOVE_MGR, new Object[]{authorityName});
                 }
             }
 
@@ -793,7 +919,7 @@ public class SiteServiceImpl implements SiteService, SiteModel
             // -- the current user has change permissions rights on the site
             // or
             // -- the user is ourselves
-            if ((currentUserName.equals(userName) == true) ||
+            if ((currentUserName.equals(authorityName) == true) ||
                 (permissionService.hasPermission(siteNodeRef, PermissionService.CHANGE_PERMISSIONS) == AccessStatus.ALLOWED))
             {
                 // Run as system user
@@ -805,187 +931,172 @@ public class SiteServiceImpl implements SiteService, SiteModel
                             // Remove the user from the current permission
                             // group
                             String currentGroup = getSiteRoleGroup(shortName, role, true);
-                            authorityService.removeAuthority(currentGroup, userName);
+                            authorityService.removeAuthority(currentGroup, authorityName);
                             
                             return null;
                         }
                     }, AuthenticationUtil.SYSTEM_USER_NAME);
 
                 // Raise events
-                if (AuthorityType.getAuthorityType(userName) == AuthorityType.USER)
+                if (AuthorityType.getAuthorityType(authorityName) == AuthorityType.USER)
                 {
                     activityService.postActivity(
                             ActivityType.SITE_USER_REMOVED, shortName,
-                            ACTIVITY_TOOL, getActivityData(userName, ""));
+                            ACTIVITY_TOOL, getActivityData(authorityName, ""));
                 }
                 else
                 {
                     // TODO - update this, if sites support groups
                     logger.error("setMembership - failed to post activity: unexpected authority type: "
-                                 + AuthorityType.getAuthorityType(userName));
+                                 + AuthorityType.getAuthorityType(authorityName));
                 }
             }
             else
             {
-                // Throw a permission exception
-                throw new AlfrescoRuntimeException(
-                        "Access denied, user does not have permissions to delete membership details of the site '"
-                                + shortName + "'");
+                // Throw an exception
+                throw new SiteServiceException(MSG_CAN_NOT_REMOVE_MSHIP, new Object[]{shortName});
             }
-        } else
+        } 
+        else
         {
-            // Throw a permission exception
-            throw new AlfrescoRuntimeException(
-                    "Access denied, user does not have permissions to delete membership details of the site '"
-                            + shortName + "'");
+            // Throw an exception
+            throw new SiteServiceException(MSG_CAN_NOT_REMOVE_MSHIP, new Object[]{shortName});
         }
     }
 
     /**
-     * @see org.alfresco.repo.site.SiteService#setMembership(java.lang.String,
+     * @see org.alfresco.service.cmr.site.SiteService#setMembership(java.lang.String,
      *      java.lang.String, java.lang.String)
      */
-    public void setMembership(final String shortName, final String userName,
-            final String role)
+    public void setMembership(final String shortName, 
+                              final String authorityName,
+                              final String role)
     {
         final NodeRef siteNodeRef = getSiteNodeRef(shortName);
         if (siteNodeRef == null)
         {
-            throw new AlfrescoRuntimeException("Site " + shortName
-                    + " does not exist.");
+            throw new SiteServiceException(MSG_SITE_NO_EXIST, new Object[]{shortName});
         }
 
         // Get the user's current role
-        final String currentRole = getMembersRole(shortName, userName);
+        final String currentRole = getMembersRole(shortName, authorityName);
 
         // Do nothing if the role of the user is not being changed
         if (currentRole == null || role.equals(currentRole) == false)
         {
-            // Determine whether the site is private or not
-            boolean isPublic = isSitePublic(siteNodeRef);
-
-            // TODO if this is the only site manager do not downgrade their
+            // TODO if this is the only site manager do not down grade their
             // permissions
+            
+            // Get the visibility of the site
+            SiteVisibility visibility = getSiteVisibility(siteNodeRef);
 
             // If we are ...
             // -- the current user has change permissions rights on the site
             // or we are ...
-            // -- refering to a public site and
+            // -- referring to a public site and
             // -- the role being set is consumer and
             // -- the user being added is ourselves and
             // -- the member does not already have permissions
             // ... then we can set the permissions as system user
             final String currentUserName = AuthenticationUtil.getFullyAuthenticatedUser();
-            if ((permissionService.hasPermission(siteNodeRef,
-                    PermissionService.CHANGE_PERMISSIONS) == AccessStatus.ALLOWED)
-                    || (isPublic == true
-                            && role.equals(SiteModel.SITE_CONSUMER) == true
-                            && userName.equals(currentUserName) == true && currentRole == null))
+            if ((permissionService.hasPermission(siteNodeRef, PermissionService.CHANGE_PERMISSIONS) == AccessStatus.ALLOWED) || 
+                (SiteVisibility.PUBLIC.equals(visibility) == true && 
+                 role.equals(SiteModel.SITE_CONSUMER) == true && 
+                 authorityName.equals(currentUserName) == true && 
+                 currentRole == null))
             {
                 // Check that we are not about to remove the last site manager
                 if (SiteModel.SITE_MANAGER.equals(currentRole) == true)
                 {
-                    Set<String> siteMangers = this.authorityService
-                            .getContainedAuthorities(AuthorityType.USER,
-                                    getSiteRoleGroup(shortName, SITE_MANAGER,
-                                            true), true);
+                    Set<String> siteMangers = this.authorityService.getContainedAuthorities(AuthorityType.USER, 
+                                                                                            getSiteRoleGroup(shortName, SITE_MANAGER, true), 
+                                                                                            true);
                     if (siteMangers.size() == 1)
                     {
-                        throw new AlfrescoRuntimeException(
-                                "A site requires at least one site manager.  You can not change '"
-                                        + userName
-                                        + "' role from the site memebership because they are currently the only site manager.");
+                        throw new SiteServiceException(MSG_DO_NOT_CHANGE_MGR, new Object[]{authorityName});
                     }
                 }
 
                 // Run as system user
-                AuthenticationUtil.runAs(
-                        new AuthenticationUtil.RunAsWork<Object>()
+                AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
+                {
+                    public Object doWork() throws Exception
+                    {
+                        if (currentRole != null)
                         {
-                            public Object doWork() throws Exception
-                            {
-                                if (currentRole != null)
-                                {
-                                    // Remove the user from the current
-                                    // permission group
-                                    String currentGroup = getSiteRoleGroup(
-                                            shortName, currentRole, true);
-                                    authorityService.removeAuthority(
-                                            currentGroup, userName);
-                                }
+                            // Remove the user from the current
+                            // permission group
+                            String currentGroup = getSiteRoleGroup(shortName, currentRole, true);
+                            authorityService.removeAuthority(currentGroup, authorityName);
+                        }
 
-                                // Add the user to the new permission group
-                                String newGroup = getSiteRoleGroup(shortName,
-                                        role, true);
-                                authorityService.addAuthority(newGroup,
-                                        userName);
+                        // Add the user to the new permission group
+                        String newGroup = getSiteRoleGroup(shortName, role, true);
+                        authorityService.addAuthority(newGroup, authorityName);
 
-                                return null;
-                            }
+                        return null;
+                    }
 
-                        }, AuthenticationUtil.SYSTEM_USER_NAME);
+                }, AuthenticationUtil.SYSTEM_USER_NAME);
 
                 if (currentRole == null)
                 {
-                    if (AuthorityType.getAuthorityType(userName) == AuthorityType.USER)
+                    if (AuthorityType.getAuthorityType(authorityName) == AuthorityType.USER)
                     {
                         activityService.postActivity(
                                 ActivityType.SITE_USER_JOINED, shortName,
-                                ACTIVITY_TOOL, getActivityData(userName, role));
-                    } else
+                                ACTIVITY_TOOL, getActivityData(authorityName, role));
+                    } 
+                    else
                     {
                         // TODO - update this, if sites support groups
                         logger
                                 .error("setMembership - failed to post activity: unexpected authority type: "
-                                        + AuthorityType
-                                                .getAuthorityType(userName));
+                                        + AuthorityType.getAuthorityType(authorityName));
                     }
-                } else
+                } 
+                else
                 {
-                    if (AuthorityType.getAuthorityType(userName) == AuthorityType.USER)
+                    if (AuthorityType.getAuthorityType(authorityName) == AuthorityType.USER)
                     {
                         activityService.postActivity(
                                 ActivityType.SITE_USER_ROLE_UPDATE, shortName,
-                                ACTIVITY_TOOL, getActivityData(userName, role));
-                    } else
+                                ACTIVITY_TOOL, getActivityData(authorityName, role));
+                    } 
+                    else
                     {
                         // TODO - update this, if sites support groups
-                        logger
-                                .error("setMembership - failed to post activity: unexpected authority type: "
-                                        + AuthorityType
-                                                .getAuthorityType(userName));
+                        logger.error("setMembership - failed to post activity: unexpected authority type: "
+                                        + AuthorityType.getAuthorityType(authorityName));
                     }
                 }
-            } else
+            } 
+            else
             {
                 // Raise a permission exception
-                throw new AlfrescoRuntimeException(
-                        "Access denied, user does not have permissions to modify membership details of the site '"
-                                + shortName + "'");
+                throw new SiteServiceException(MSG_CAN_NOT_CHANGE_MSHIP, new Object[]{shortName});
             }
         }
     }
 
     /**
-     * @see org.alfresco.repo.site.SiteService#createContainer(java.lang.String,
+     * @see org.alfresco.service.cmr.site.SiteService#createContainer(java.lang.String,
      *      java.lang.String, org.alfresco.service.namespace.QName,
      *      java.util.Map)
      */
-    public NodeRef createContainer(String shortName, String componentId,
-            QName containerType, Map<QName, Serializable> containerProperties)
+    public NodeRef createContainer(String shortName, 
+                                   String componentId,
+                                   QName containerType, 
+                                   Map<QName, Serializable> containerProperties)
     {
         // Check for the component id
-        if (componentId == null || componentId.length() == 0)
-        {
-            throw new AlfrescoRuntimeException("Component id not provided");
-        }
+        ParameterCheck.mandatoryString("componentId", componentId);
 
         // retrieve site
         NodeRef siteNodeRef = getSiteNodeRef(shortName);
         if (siteNodeRef == null)
         {
-            throw new AlfrescoRuntimeException("Site " + shortName
-                    + " does not exist.");
+            throw new SiteServiceException(MSG_SITE_NO_EXIST, new Object[]{shortName});
         }
 
         // retrieve component folder within site
@@ -993,7 +1104,8 @@ public class SiteServiceImpl implements SiteService, SiteModel
         try
         {
             containerNodeRef = findContainer(siteNodeRef, componentId);
-        } catch (FileNotFoundException e)
+        } 
+        catch (FileNotFoundException e)
         {
         }
 
@@ -1036,21 +1148,17 @@ public class SiteServiceImpl implements SiteService, SiteModel
     }
 
     /**
-     * @see org.alfresco.repo.site.SiteService#getContainer(java.lang.String)
+     * @see org.alfresco.service.cmr.site.SiteService#getContainer(java.lang.String)
      */
     public NodeRef getContainer(String shortName, String componentId)
     {
-        if (componentId == null || componentId.length() == 0)
-        {
-            throw new AlfrescoRuntimeException("Component id not provided");
-        }
+        ParameterCheck.mandatoryString("componentId", componentId);
 
         // retrieve site
         NodeRef siteNodeRef = getSiteNodeRef(shortName);
         if (siteNodeRef == null)
         {
-            throw new AlfrescoRuntimeException("Site " + shortName
-                    + " does not exist.");
+            throw new SiteServiceException(MSG_SITE_NO_EXIST, new Object[]{shortName});
         }
 
         // retrieve component folder within site
@@ -1059,7 +1167,8 @@ public class SiteServiceImpl implements SiteService, SiteModel
         try
         {
             containerNodeRef = findContainer(siteNodeRef, componentId);
-        } catch (FileNotFoundException e)
+        } 
+        catch (FileNotFoundException e)
         {
         }
 
@@ -1067,21 +1176,17 @@ public class SiteServiceImpl implements SiteService, SiteModel
     }
 
     /**
-     * @see org.alfresco.repo.site.SiteService#hasContainer(java.lang.String)
+     * @see org.alfresco.service.cmr.site.SiteService#hasContainer(java.lang.String)
      */
     public boolean hasContainer(String shortName, String componentId)
     {
-        if (componentId == null || componentId.length() == 0)
-        {
-            throw new AlfrescoRuntimeException("Component id not provided");
-        }
+        ParameterCheck.mandatoryString("componentId", componentId);
 
         // retrieve site
         NodeRef siteNodeRef = getSiteNodeRef(shortName);
         if (siteNodeRef == null)
         {
-            throw new AlfrescoRuntimeException("Site " + shortName
-                    + " does not exist.");
+            throw new SiteServiceException(MSG_SITE_NO_EXIST, new Object[]{shortName});
         }
 
         // retrieve component folder within site
@@ -1091,7 +1196,8 @@ public class SiteServiceImpl implements SiteService, SiteModel
         {
             findContainer(siteNodeRef, componentId);
             hasContainer = true;
-        } catch (FileNotFoundException e)
+        } 
+        catch (FileNotFoundException e)
         {
         }
 
@@ -1117,12 +1223,18 @@ public class SiteServiceImpl implements SiteService, SiteModel
                 paths);
         if (!fileInfo.isFolder())
         {
-            throw new AlfrescoRuntimeException("Site container "
-                    + fileInfo.getName() + " does not refer to a folder ");
+            throw new SiteServiceException(MSG_SITE_CONTAINER_NOT_FOLDER, new Object[]{fileInfo.getName()});
         }
         return fileInfo.getNodeRef();
     }
 
+    /**
+     * Helper method to get the activity data for a user
+     * 
+     * @param userName      user name
+     * @param role          role
+     * @return
+     */
     private String getActivityData(String userName, String role)
     {
         String memberFN = "";

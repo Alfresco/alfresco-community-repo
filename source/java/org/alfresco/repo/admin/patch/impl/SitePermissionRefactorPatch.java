@@ -30,14 +30,14 @@ import java.util.Set;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.site.SiteInfo;
 import org.alfresco.repo.site.SiteModel;
-import org.alfresco.repo.site.SiteService;
 import org.alfresco.repo.site.SiteServiceImpl;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.cmr.site.SiteInfo;
+import org.alfresco.service.cmr.site.SiteService;
 
 /**
  * Patch's the site permission model to use groups to contain users.

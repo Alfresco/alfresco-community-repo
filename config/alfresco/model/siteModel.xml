@@ -40,6 +40,10 @@
             	<title>Site Preset</title>
             	<type>d:text</type>        
             </property>
+            <property name="st:siteVisibility">
+               <title>Site Visibility</title>
+               <type>d:text</type>        
+            </property>
          </properties>
          <mandatory-aspects>
             <aspect>cm:titled</aspect>
@@ -47,7 +51,7 @@
       </type>
 
 	  <!-- Site Root Folder:                                                               -->
-	  <!--    - all sites are stored beneth the site root folder                           -->
+	  <!--    - all sites are stored beneath the site root folder                           -->
       <type name="st:sites">
          <title>Sites</title>
          <parent>cm:folder</parent>         

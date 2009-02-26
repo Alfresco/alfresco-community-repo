@@ -1,4 +1,4 @@
-package org.alfresco.repo.site;
+package org.alfresco.service.cmr.site;
 
 import java.io.Serializable;
 import java.util.List;
@@ -23,10 +23,23 @@ public interface SiteService
      * @param shortName     site short name, must be unique
      * @param title         site title
      * @param description   site description
-     * @param isPublic      whether the site is public or not
+     * @param isPublic      whether the site is public or not (true = public, false = private)
      * @return SiteInfo     information about the created site
+     * @deprecated          since version 3.2, replaced by {@link #createSite(String, String, String, String, SiteVisibility)}
      */
     SiteInfo createSite(String sitePreset, String shortName, String title, String description, boolean isPublic);
+    
+    /**
+     * Create a new site.
+     * 
+     * @param sitePreset    site preset name
+     * @param shortName     site short name, must be unique
+     * @param title         site title
+     * @param description   site description
+     * @param visibility    site visibility (public|moderated|private)
+     * @return SiteInfo     information about the created site
+     */
+    SiteInfo createSite(String sitePreset, String shortName, String title, String description, SiteVisibility visibility);
     
     /**
      * List the available sites.  This list can optionally be filtered by site name and/or site preset.
@@ -58,7 +71,7 @@ public interface SiteService
     /**
      * Update the site information.
      * <P>
-     * Note that the shortname and sitepreset of a site can not be updated once the site has been created.
+     * Note that the short name and site preset of a site can not be updated once the site has been created.
      * 
      * @param siteInfo  site information
      */
@@ -72,51 +85,63 @@ public interface SiteService
     void deleteSite(String shortName);
     
     /**
-     * List the memebers of the site.
+     * List the members of the site.  This includes both users and groups.
      * <p>
      * Name and role filters are optional and if not specified all the members of the site are returned.
      * 
      * @param shortName     site short name
      * @param nameFilter    name filter
      * @param roleFilter    role filter
-     * @return Map<String, String>  the username and their role
+     * @return Map<String, String>  the authority name and their role
      */
     Map<String, String> listMembers(String shortName, String nameFilter, String roleFilter);
     
     /**
-     * Gets the role of the specified user
+     * List the members of the site.  This includes both users and groups if collapseGroups is set to false, otherwise all
+     * groups that are members are collapsed into their component users and listed.
+     * 
+     * @param shortName         site short name
+     * @param nameFilter        name filter
+     * @param roleFilter        role filter
+     * @param collapseGroups    true if collapse member groups into user list, false otherwise
+     * @return Map<String, String>  the authority name and their role
+     */
+    Map<String, String> listMembers(String shortName, String nameFilter, String roleFilter, boolean collapseGroups);
+    
+    /**
+     * Gets the role of the specified user.
      * 
      * @param shortName     site short name
-     * @param userName      user name
+     * @param authorityName authority name
      * @return String       site role, null if none
      */
-    String getMembersRole(String shortName, String userName);
+    String getMembersRole(String shortName, String authorityName);
     
     /**
-     * Inidiactes whether a user is a member of a site or not
+     * Indicates whether an authority is a member of a site or not
      * 
      * @param shortName     site short name
-     * @param userName      user name
-     * @return boolean      true if the user is a member of the site, false otherwise
+     * @param authorityName authority name
+     * @return boolean      true if the authority is a member of the site, false otherwise
      */
-    boolean isMember(String shortName, String userName);
+    boolean isMember(String shortName, String authorityName);
     
     /**
-     * Sets the role of a user withint a site
+     * Sets the role of an authority within a site
      * 
      * @param shortName     site short name
-     * @param userName      user name
+     * @param authorityName authority name
      * @param role          site role
      */
-    void setMembership(String shortName, String userName, String role);
+    void setMembership(String shortName, String authorityName, String role);
     
     /**
-     * Clears a users role within a site
+     * Clears an authorities role within a site
      * 
      * @param shortName     site short name
-     * @param userName      user name
+     * @param authorityName authority name
      */
-    void removeMembership(String shortName, String userName);
+    void removeMembership(String shortName, String authorityName);
     
     /**
      * Creates a container for a component is a site of the given container type (must be a sub-type of st:siteContainer)
@@ -157,7 +182,7 @@ public interface SiteService
     /**
      * Gets a list of all the currently available roles that a user can perform on a site
      * 
-     * @return  List<String>    list of availble roles
+     * @return  List<String>    list of available roles
      */
     List<String> getSiteRoles();
      

@@ -1,11 +1,11 @@
-function checkSite(site, sitePreset, shortName, title, description, isPublic)
+function checkSite(site, sitePreset, shortName, title, description, visibility)
 {
 	test.assertNotNull(site);
 	test.assertEquals(sitePreset, site.sitePreset);
 	test.assertEquals(shortName, site.shortName);
 	test.assertEquals(title, site.title);
 	test.assertEquals(description, site.description);
-	test.assertEquals(isPublic, site.isPublic);
+	test.assertEquals(visibility, site.visibility);
 	test.assertNotNull(site.node);
 	test.assertTrue(site.node.isTagScope);
 }
@@ -17,21 +17,21 @@ function testCRUD()
 	test.assertNull(site, "Site should not have been found.");
 	
 	// Try and create a site
-	site = siteService.createSite("sitePreset", "siteShortNameCRUD", "siteTitle", "siteDescription", true);
-	checkSite(site, "sitePreset", "siteShortNameCRUD", "siteTitle", "siteDescription", true);
+	site = siteService.createSite("sitePreset", "siteShortNameCRUD", "siteTitle", "siteDescription", siteService.PUBLIC_SITE);
+	checkSite(site, "sitePreset", "siteShortNameCRUD", "siteTitle", "siteDescription", siteService.PUBLIC_SITE);
 	
 	// Try and get the created site
 	site = siteService.getSite("siteShortNameCRUD");
-	checkSite(site, "sitePreset", "siteShortNameCRUD", "siteTitle", "siteDescription", true);
+	checkSite(site, "sitePreset", "siteShortNameCRUD", "siteTitle", "siteDescription", siteService.PUBLIC_SITE);
 	
 	// Try and update the values of the site
 	site.title = "abc123abc";
 	site.description = "abc123abc";
-	site.isPublic = false;
-	checkSite(site, "sitePreset", "siteShortNameCRUD", "abc123abc", "abc123abc", false);
+	site.visibility = siteService.PRIVATE_SITE;
+	checkSite(site, "sitePreset", "siteShortNameCRUD", "abc123abc", "abc123abc", siteService.PRIVATE_SITE);
 	site.save();
 	site = siteService.getSite("siteShortNameCRUD");
-	checkSite(site, "sitePreset", "siteShortNameCRUD", "abc123abc", "abc123abc", false);
+	checkSite(site, "sitePreset", "siteShortNameCRUD", "abc123abc", "abc123abc", siteService.PRIVATE_SITE);
 	
 	// Delete the site
 	site.deleteSite();
@@ -42,8 +42,8 @@ function testCRUD()
 function testListSites()
 {
 	// Create a couple of sites
-	siteService.createSite("sitePreset", "siteShortName", "siteTitle", "siteDescription", true);
-	siteService.createSite("sitePreset", "siteShortName2", "siteTitle", "siteDescription", true);
+	siteService.createSite("sitePreset", "siteShortName", "siteTitle", "siteDescription", siteService.PUBLIC_SITE);
+	siteService.createSite("sitePreset", "siteShortName2", "siteTitle", "siteDescription", siteService.PUBLIC_SITE);
 	
 	// List all the site
 	var sites = siteService.listSites(null, null);
@@ -133,7 +133,7 @@ function testContainer()
 
 function testPermissions()
 {
-	var site = siteService.createSite("sitePreset", "siteShortNameToo", "siteTitle", "siteDescription", false);
+	var site = siteService.createSite("sitePreset", "siteShortNameToo", "siteTitle", "siteDescription", siteService.PRIVATE_SITE);
 	test.assertNotNull(site);
     var container = site.createContainer("test.permissions");
     test.assertNotNull(container);
@@ -164,7 +164,7 @@ function testRolesAndGroups()
    test.assertNotNull(roles);
    test.assertFalse(roles.length == 0);
    
-   var site = siteService.createSite("sitePreset", "sn", "siteTitle", "siteDescription", false);
+   var site = siteService.createSite("sitePreset", "sn", "siteTitle", "siteDescription", siteService.PRIVATE_SITE);
    var siteGroup = site.siteGroup;
    test.assertNotNull(siteGroup);
    test.assertEquals("GROUP_site_sn", siteGroup);

@@ -29,6 +29,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.site.SiteInfo;
+import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -36,7 +38,7 @@ import org.alfresco.service.namespace.QName;
  * 
  * @author Roy Wetherall
  */
-public class SiteInfo
+public class SiteInfoImpl implements SiteInfo
 {
     /** Site node reference */    
     private NodeRef nodeRef;
@@ -53,8 +55,8 @@ public class SiteInfo
     /** Site description */
     private String description;
     
-    /** Indicates whether the site is public or not */
-    private boolean isPublic;
+    /** Site visibility */
+    private SiteVisibility visibility;
     
     /** Set of custom properties that have been defined for site */
     private Map<QName, Serializable> customProperties = new HashMap<QName, Serializable>(1);
@@ -66,12 +68,12 @@ public class SiteInfo
      * @param shortName     short name
      * @param title         title
      * @param description   description
-     * @param isPublic      is site public
+     * @param visibility    site visibility
      * @param nodeRef       site node reference
      */
-    /*package*/ SiteInfo(String sitePreset, String shortName, String title, String description, boolean isPublic, Map<QName, Serializable> customProperties, NodeRef nodeRef)
+    /*package*/ SiteInfoImpl(String sitePreset, String shortName, String title, String description, SiteVisibility visibility, Map<QName, Serializable> customProperties, NodeRef nodeRef)
     {
-        this(sitePreset, shortName, title, description, isPublic, customProperties);
+        this(sitePreset, shortName, title, description, visibility, customProperties);
         this.nodeRef = nodeRef;
     }
     
@@ -82,15 +84,15 @@ public class SiteInfo
      * @param shortName     short name
      * @param title         title
      * @param description   description
-     * @param isPublic      is site public
+     * @param visibility    site visibility
      */
-    /*package*/ SiteInfo(String sitePreset, String shortName, String title, String description, boolean isPublic, Map<QName, Serializable> customProperties)
+    /*package*/ SiteInfoImpl(String sitePreset, String shortName, String title, String description, SiteVisibility visibility, Map<QName, Serializable> customProperties)
     {
         this.sitePreset = sitePreset;
         this.shortName = shortName;
         this.title = title;
         this.description = description;
-        this.isPublic = isPublic;
+        this.visibility = visibility;
         if (customProperties != null)
         {
             this.customProperties = customProperties;
@@ -98,9 +100,7 @@ public class SiteInfo
     }
     
     /**
-     * Get the site node reference
-     * 
-     * @return  NodeRef     site node reference, null if not set
+     * @see org.alfresco.repo.site.SiteInfo#getNodeRef()
      */
     public NodeRef getNodeRef()
     {
@@ -108,9 +108,7 @@ public class SiteInfo
     }
     
     /**
-     * Get the site preset
-     * 
-     * @return  String  site preset
+     * @see org.alfresco.repo.site.SiteInfo#getSitePreset()
      */
     public String getSitePreset()
     {
@@ -118,9 +116,7 @@ public class SiteInfo
     }
     
     /**
-     * Get the short name
-     * 
-     * @return  String  short name
+     * @see org.alfresco.repo.site.SiteInfo#getShortName()
      */
     public String getShortName()
     {
@@ -128,9 +124,7 @@ public class SiteInfo
     }
     
     /**
-     * Get the title
-     * 
-     * @return  String  site title
+     * @see org.alfresco.repo.site.SiteInfo#getTitle()
      */
     public String getTitle()
     {
@@ -138,9 +132,7 @@ public class SiteInfo
     }
     
     /**
-     * Set the title
-     * 
-     * @param title site title
+     * @see org.alfresco.repo.site.SiteInfo#setTitle(java.lang.String)
      */
     public void setTitle(String title)
     {
@@ -148,9 +140,7 @@ public class SiteInfo
     }
     
     /**
-     * Get the description
-     * 
-     * @return  String  site description
+     * @see org.alfresco.repo.site.SiteInfo#getDescription()
      */
     public String getDescription()
     {
@@ -158,9 +148,7 @@ public class SiteInfo
     }
     
     /**
-     * Set the description
-     * 
-     * @param description   site description
+     * @see org.alfresco.repo.site.SiteInfo#setDescription(java.lang.String)
      */
     public void setDescription(String description)
     {
@@ -168,29 +156,51 @@ public class SiteInfo
     }
     
     /**
-     * Sets whether the site is public or not
-     * 
-     * @param isPublic  true if the site is public, false otherwise
+     * @see org.alfresco.repo.site.SiteInfo#setIsPublic(boolean)
      */
     public void setIsPublic(boolean isPublic)
     {
-        this.isPublic = isPublic;
+        if (isPublic == true)
+        {
+            setVisibility(SiteVisibility.PUBLIC);
+        }
+        else
+        {
+            setVisibility(SiteVisibility.PRIVATE);
+        }
     }
     
     /**
-     * Indicates wehther the site is public
-     * 
-     * @return  boolean true if public false otherwise
+     * @see org.alfresco.repo.site.SiteInfo#getIsPublic()
      */
     public boolean getIsPublic()
     {
-        return this.isPublic;
+        boolean result = false;
+        if (SiteVisibility.PUBLIC.equals(this.visibility) == true)
+        {
+            result = true;
+        }
+        return result;
     }
     
     /**
-     * Get the custom property values
-     * 
-     * @return  Map<QName, Serializable>    map of custom property names and values
+     * @see org.alfresco.service.cmr.site.SiteInfo#getVisibility()
+     */
+    public SiteVisibility getVisibility()
+    {
+        return this.visibility;
+    }
+
+    /**
+     * @see org.alfresco.service.cmr.site.SiteInfo#setVisibility(org.alfresco.service.cmr.site.SiteVisibility)
+     */
+    public void setVisibility(SiteVisibility visibility)
+    {
+        this.visibility = visibility;
+    }
+    
+    /**
+     * @see org.alfresco.repo.site.SiteInfo#getCustomProperties()
      */
     public Map<QName, Serializable> getCustomProperties()
     {
@@ -198,10 +208,7 @@ public class SiteInfo
     }
     
     /**
-     * Get the value of a custom property
-     * 
-     * @param  name             name of custom property
-     * @return Serializable     value of the property, null if not set or doesn't exist    
+     * @see org.alfresco.repo.site.SiteInfo#getCustomProperty(org.alfresco.service.namespace.QName)
      */
     public Serializable getCustomProperty(QName name)
     {
@@ -211,5 +218,35 @@ public class SiteInfo
             result = this.customProperties.get(name);
         }
         return result;
+    }    
+    
+    /**
+     * Override equals for this ref type
+     * 
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+        {
+            return true;
+        }
+        if (obj instanceof SiteInfoImpl)
+        {
+            SiteInfoImpl that = (SiteInfoImpl) obj;
+            return (this.shortName.equals(that.shortName));
+        }
+        else
+        {
+            return false;
+        }
+    }
+    
+    /**
+     * @see java.lang.Object#hashCode()
+     */
+    public int hashCode()
+    {
+        return this.shortName.hashCode();
     }
 }

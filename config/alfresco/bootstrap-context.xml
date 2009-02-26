@@ -371,18 +371,38 @@
                <prop key="mimetype">text/xml</prop>
                <prop key="redeploy">false</prop>
             </props>
+            
+            <props>
+               <prop key="engineId">jbpm</prop>
+               <prop key="location">alfresco/workflow/invitation-nominated_processdefinition.xml</prop>
+               <prop key="mimetype">text/xml</prop>
+               <prop key="redeploy">false</prop>
+            </props>
+            
+            <props>
+               <prop key="engineId">jbpm</prop>
+               <prop key="location">alfresco/workflow/invitation-moderated_processdefinition.xml</prop>
+               <prop key="mimetype">text/xml</prop>
+               <prop key="redeploy">true</prop>
+            </props>
+            
+            
             </list>
         </property>
         <property name="models">
             <list>
                <value>alfresco/workflow/workflowModel.xml</value>
                <value>alfresco/workflow/wcmWorkflowModel.xml</value>
+               <value>alfresco/workflow/invitation-nominated-workflow-model.xml</value>
+               <value>alfresco/workflow/invitation-moderated-workflow-model.xml</value>
             </list>
         </property>
         <property name="labels">
             <list>
                <value>alfresco/workflow/workflow-messages</value>
                <value>alfresco/workflow/wcm-workflow-messages</value>
+               <value>alfresco/workflow/invitation-nominated-workflow-messages</value>
+               <value>alfresco/workflow/invitation-moderated-workflow-messages</value>
             </list>
         </property>
         <property name="repositoryWorkflowDefsLocations" ref="customWorkflowDefsRepositoryLocation"/>

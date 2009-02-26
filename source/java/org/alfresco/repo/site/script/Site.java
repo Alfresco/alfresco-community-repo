@@ -37,14 +37,16 @@ import org.alfresco.repo.jscript.ScriptNode.NodeValueConverter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
-import org.alfresco.repo.site.SiteInfo;
 import org.alfresco.repo.site.SiteModel;
-import org.alfresco.repo.site.SiteService;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.cmr.site.SiteInfo;
+import org.alfresco.service.cmr.site.SiteService;
+import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.ParameterCheck;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 
@@ -158,7 +160,8 @@ public class Site implements Serializable
     /**
      * Gets whether the site is public or not
      * 
-     * @return  true is public false otherwise
+     * @return      true is public false otherwise
+     * @deprecated  since version 3.2, replaced by {@link #getVisibility()}
      */
     public boolean getIsPublic()
     {
@@ -169,11 +172,35 @@ public class Site implements Serializable
      * Set whether the site is public or not
      * 
      * @param isPublic  true the site is public false otherwise
+     * @deprecated      since version 3.2, replaced by {@link #setVisibility(String)}
      */
     public void setIsPublic(boolean isPublic)
     {
         this.isDirty = true;
         this.siteInfo.setIsPublic(isPublic);
+    }
+    
+    /**
+     * Get the site visibility
+     * 
+     * @return  String  site visibility
+     */
+    public String getVisibility()
+    {
+        return this.siteInfo.getVisibility().toString();
+    }
+    
+    /**
+     * Set the site visibility
+     * 
+     * @param visibility    site visibility (public|moderated|private)
+     */
+    public void setVisibility(String visibility)
+    {
+        ParameterCheck.mandatoryString("visibility", visibility);
+        SiteVisibility siteVisibility = SiteVisibility.valueOf(visibility);
+        this.siteInfo.setVisibility(siteVisibility);
+        this.isDirty = true;
     }
     
     /**

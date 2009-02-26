@@ -28,7 +28,6 @@ import java.util.Collection;
 
 import org.alfresco.mbeans.VirtServerRegistry;
 import org.alfresco.repo.forms.FormService;
-import org.alfresco.repo.site.SiteService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.ActionService;
@@ -40,6 +39,7 @@ import org.alfresco.service.cmr.avm.locking.AVMLockingService;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.invitation.InvitationService;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.ml.ContentFilterLanguagesService;
 import org.alfresco.service.cmr.ml.EditionService;
@@ -60,6 +60,7 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.service.cmr.thumbnail.ThumbnailService;
 import org.alfresco.service.cmr.version.VersionService;
@@ -496,4 +497,13 @@ public class ServiceDescriptorRegistry
     {
         return (FormService)getService(FORM_SERVICE);
     }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.service.ServiceRegistry#getInvitationService()
+     */
+	public InvitationService getInvitationService() 
+	{
+	     return (InvitationService)getService(INVITATION_SERVICE);
+
+	}
 }

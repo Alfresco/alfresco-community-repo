@@ -28,9 +28,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.alfresco.repo.jscript.BaseScopableProcessorExtension;
-import org.alfresco.repo.site.SiteInfo;
-import org.alfresco.repo.site.SiteService;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.site.SiteInfo;
+import org.alfresco.service.cmr.site.SiteService;
+import org.alfresco.service.cmr.site.SiteVisibility;
+import org.alfresco.util.ParameterCheck;
 
 
 /**
@@ -40,6 +42,11 @@ import org.alfresco.service.ServiceRegistry;
  */
 public class ScriptSiteService extends BaseScopableProcessorExtension
 {
+    /** Visibility helper constants */
+    public static final String PUBLIC_SITE = "PUBLIC";
+    public static final String MODERATED_SITE = "MODERATED";
+    public static final String PRIVATE_SITE = "PRIVATE";
+    
 	/** Service Registry */
 	private ServiceRegistry serviceRegistry;
 	
@@ -67,6 +74,23 @@ public class ScriptSiteService extends BaseScopableProcessorExtension
     }
     
     /**
+     * @see {@link #createSite(String, String, String, String, String)}
+     * 
+     * @param sitePreset    site preset
+     * @param shortName     site short name
+     * @param title         site title
+     * @param description   site description
+     * @param isPublic      whether the site is public or not
+     * @return Site         the created site
+     * @deprecated          as of version 3.2, replaced by {@link #createSite(String, String, String, String, String)}
+     */    
+    public Site createSite(String sitePreset, String shortName, String title, String description, boolean isPublic)
+    {                
+        SiteInfo siteInfo = this.siteService.createSite(sitePreset, shortName, title, description, isPublic);
+        return new Site(siteInfo, this.serviceRegistry, this.siteService, getScope());
+    }
+    
+    /**
      * Create a new site.
      * <p>
      * The site short name will be used to uniquely identify the site so it must be unique.
@@ -74,13 +98,15 @@ public class ScriptSiteService extends BaseScopableProcessorExtension
      * @param sitePreset    site preset
      * @param shortName     site short name
      * @param title         site title
-     * @param description    site description
-     * @param isPublic      whether the site is public or not
+     * @param description   site description
+     * @param visibility    visibility of the site (public|moderated|private)
      * @return Site         the created site
      */
-    public Site createSite(String sitePreset, String shortName, String title, String description, boolean isPublic)
-    {                
-        SiteInfo siteInfo = this.siteService.createSite(sitePreset, shortName, title, description, isPublic);
+    public Site createSite(String sitePreset, String shortName, String title, String description, String visibility)
+    { 
+        ParameterCheck.mandatoryString("visibility", visibility);
+        SiteVisibility siteVisibility = SiteVisibility.valueOf(visibility);
+        SiteInfo siteInfo = this.siteService.createSite(sitePreset, shortName, title, description, siteVisibility);
         return new Site(siteInfo, this.serviceRegistry, this.siteService, getScope());
     }
     
@@ -142,7 +168,7 @@ public class ScriptSiteService extends BaseScopableProcessorExtension
     }
     
     /**
-     * Returns an array of all the roles that can be assigned to a memeber of a site.
+     * Returns an array of all the roles that can be assigned to a member of a site.
      * 
      * @return  String[]    roles available to assign to a member of a site
      */

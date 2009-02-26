@@ -29,8 +29,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.repo.site.SiteService;
+import org.alfresco.repo.invitation.WorkflowModelNominatedInvitation;
+import org.alfresco.repo.invitation.site.InviteHelper;
+import org.alfresco.repo.invitation.site.InviteInfo;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowTaskQuery;
@@ -183,17 +186,17 @@ public class Invites extends DeclarativeWebScript
                     1.0f);
             if (inviterUserNameProvided)
             {
-                wfQueryProps.put(InviteWorkflowModel.WF_PROP_INVITER_USER_NAME,
+                wfQueryProps.put(WorkflowModelNominatedInvitation.WF_PROP_INVITER_USER_NAME,
                         inviterUserName);
             }
             if (inviteeUserNameProvided)
             {
-                wfQueryProps.put(InviteWorkflowModel.WF_PROP_INVITEE_USER_NAME,
+                wfQueryProps.put(WorkflowModelNominatedInvitation.WF_PROP_INVITEE_USER_NAME,
                         inviteeUserName);
             }
             if (siteShortNameProvided)
             {
-                wfQueryProps.put(InviteWorkflowModel.WF_PROP_SITE_SHORT_NAME,
+                wfQueryProps.put(WorkflowModelNominatedInvitation.WF_PROP_RESOURCE_NAME,
                         siteShortName);
             }
 
@@ -206,12 +209,12 @@ public class Invites extends DeclarativeWebScript
 
         // pick up the start task
         wfTaskQuery.setTaskState(WorkflowTaskState.IN_PROGRESS);
-        wfTaskQuery.setTaskName(InviteWorkflowModel.WF_INVITE_TASK_INVITE_PENDING);
+        wfTaskQuery.setTaskName(WorkflowModelNominatedInvitation.WF_INVITE_TASK_INVITE_PENDING);
 
         // set process name to "wf:invite" so that only tasks associated with
         // invite workflow instances
         // are returned by query
-        wfTaskQuery.setProcessName(InviteWorkflowModel.WF_PROCESS_INVITE);
+        wfTaskQuery.setProcessName(WorkflowModelNominatedInvitation.WF_PROCESS_INVITE);
 
         // query for invite workflow tasks
         List<WorkflowTask> wf_invite_tasks = this.workflowService

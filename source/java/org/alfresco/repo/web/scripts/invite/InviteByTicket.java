@@ -27,9 +27,12 @@ package org.alfresco.repo.web.scripts.invite;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.alfresco.repo.invitation.WorkflowModelNominatedInvitation;
+import org.alfresco.repo.invitation.site.InviteHelper;
+import org.alfresco.repo.invitation.site.InviteInfo;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.site.SiteService;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.web.scripts.DeclarativeWebScript;
@@ -103,7 +106,7 @@ public class InviteByTicket extends DeclarativeWebScript
 
         // check whether tickets match, throw error otherwise
         String ticket = (String) workflowTask.properties.get(
-                InviteWorkflowModel.WF_PROP_INVITE_TICKET);
+                WorkflowModelNominatedInvitation.WF_PROP_INVITE_TICKET);
         if (ticket == null || (! ticket.equals(inviteTicket)))
         {
             throw new WebScriptException(Status.STATUS_NOT_FOUND,

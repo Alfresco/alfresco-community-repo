@@ -11,6 +11,7 @@
 			   "tagScope" : "${url.serviceContext + "/api/tagscopes/" + site.node.storeType + "/" + site.node.storeId + "/" + site.node.id}",
 			</#if>
 			"isPublic" : ${site.isPublic?string("true", "false")},
+			"visibility" : "${site.visibility}",
 			<#if site.customProperties?size != 0>
 				"customProperties" :
 				{

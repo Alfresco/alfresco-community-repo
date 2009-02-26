@@ -30,13 +30,12 @@ import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.invitation.WorkflowModelNominatedInvitation;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
-import org.alfresco.repo.site.SiteInfo;
 import org.alfresco.repo.site.SiteModel;
-import org.alfresco.repo.site.SiteService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
@@ -47,6 +46,8 @@ import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.cmr.site.SiteInfo;
+import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowInstance;
 import org.alfresco.service.cmr.workflow.WorkflowService;
@@ -137,10 +138,10 @@ public class InviteServiceTest extends BaseWebScriptTest
 
         // redeploy invite process definition in case it has been modified
         WorkflowDefinition inviteWfDefinition = this.workflowService.getDefinitionByName(
-                "jbpm$" + InviteWorkflowModel.WF_PROCESS_INVITE.toPrefixString(this.namespaceService));
+                "jbpm$" + WorkflowModelNominatedInvitation.WF_PROCESS_INVITE.toPrefixString(this.namespaceService));
         this.workflowService.undeployDefinition(inviteWfDefinition.id);
         ClassPathResource inviteWfResource = new ClassPathResource(
-                "alfresco/workflow/invite_processdefinition.xml");
+                "alfresco/workflow/invitation-nominated_processdefinition.xml");
         workflowService.deployDefinition(
                 "jbpm", inviteWfResource.getInputStream(), MimetypeMap.MIMETYPE_XML);
         

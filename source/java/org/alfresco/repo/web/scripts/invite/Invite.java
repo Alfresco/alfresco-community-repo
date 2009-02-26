@@ -31,20 +31,24 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.invitation.WorkflowModelNominatedInvitation;
+import org.alfresco.repo.invitation.site.InviteHelper;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
 import org.alfresco.repo.security.authentication.PasswordGenerator;
 import org.alfresco.repo.security.authentication.UserNameGenerator;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.site.SiteModel;
-import org.alfresco.repo.site.SiteService;
 import org.alfresco.repo.workflow.WorkflowModel;
+import org.alfresco.service.cmr.invitation.Invitation;
+import org.alfresco.service.cmr.invitation.InvitationExceptionForbidden;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowException;
 import org.alfresco.service.cmr.workflow.WorkflowPath;
@@ -374,7 +378,14 @@ public class Invite extends DeclarativeWebScript
             }
 
             // process action 'cancel' with provided parameters
-            cancelInvite(model, inviteId);
+            try
+            {
+            	cancelInvite(model, inviteId);
+            }
+            catch(InvitationExceptionForbidden fe)
+            {
+            	throw new WebScriptException(Status.STATUS_FORBIDDEN, "Unable to cancel workflow" , fe);
+            }
         }
         // handle action not recognised
         else
@@ -589,16 +600,16 @@ public class Invite extends DeclarativeWebScript
         //
         
         WorkflowDefinition wfDefinition = this.workflowService
-                .getDefinitionByName(InviteWorkflowModel.WORKFLOW_DEFINITION_NAME);
+                .getDefinitionByName(WorkflowModelNominatedInvitation.WORKFLOW_DEFINITION_NAME);
         
         // handle workflow definition does not exist
         if (wfDefinition == null)
         {
             if (logger.isInfoEnabled())
-                logger.info("Workflow definition for name " + InviteWorkflowModel.WORKFLOW_DEFINITION_NAME + " does not exist.");
+                logger.info("Workflow definition for name " + WorkflowModelNominatedInvitation.WORKFLOW_DEFINITION_NAME + " does not exist.");
             
             throw new WebScriptException(Status.STATUS_INTERNAL_SERVER_ERROR,
-                    "Workflow definition for name " + InviteWorkflowModel.WORKFLOW_DEFINITION_NAME + " does not exist.");
+                    "Workflow definition for name " + WorkflowModelNominatedInvitation.WORKFLOW_DEFINITION_NAME + " does not exist.");
         }
 
         // Get invitee person NodeRef to add as assignee
@@ -606,18 +617,19 @@ public class Invite extends DeclarativeWebScript
         
         // create workflow properties
         Map<QName, Serializable> workflowProps = new HashMap<QName, Serializable>(16);
-        workflowProps.put(InviteWorkflowModel.WF_PROP_INVITER_USER_NAME, inviterUserName);
-        workflowProps.put(InviteWorkflowModel.WF_PROP_INVITEE_USER_NAME, inviteeUserName);
+        workflowProps.put(WorkflowModelNominatedInvitation.WF_PROP_INVITER_USER_NAME, inviterUserName);
+        workflowProps.put(WorkflowModelNominatedInvitation.WF_PROP_INVITEE_USER_NAME, inviteeUserName);
         workflowProps.put(WorkflowModel.ASSOC_ASSIGNEE, inviteeNodeRef);
-        workflowProps.put(InviteWorkflowModel.WF_PROP_INVITEE_FIRSTNAME, inviteeFirstName);
-        workflowProps.put(InviteWorkflowModel.WF_PROP_INVITEE_LASTNAME, inviteeLastName);
-        workflowProps.put(InviteWorkflowModel.WF_PROP_INVITEE_GEN_PASSWORD, inviteePassword);
-        workflowProps.put(InviteWorkflowModel.WF_PROP_SITE_SHORT_NAME, siteShortName);
-        workflowProps.put(InviteWorkflowModel.WF_PROP_INVITEE_SITE_ROLE, inviteeSiteRole);
-        workflowProps.put(InviteWorkflowModel.WF_PROP_SERVER_PATH, serverPath);
-        workflowProps.put(InviteWorkflowModel.WF_PROP_ACCEPT_URL, acceptUrl);
-        workflowProps.put(InviteWorkflowModel.WF_PROP_REJECT_URL, rejectUrl);
-        workflowProps.put(InviteWorkflowModel.WF_PROP_INVITE_TICKET, inviteTicket);
+        workflowProps.put(WorkflowModelNominatedInvitation.WF_PROP_INVITEE_FIRSTNAME, inviteeFirstName);
+        workflowProps.put(WorkflowModelNominatedInvitation.WF_PROP_INVITEE_LASTNAME, inviteeLastName);
+        workflowProps.put(WorkflowModelNominatedInvitation.WF_PROP_INVITEE_GEN_PASSWORD, inviteePassword);
+        workflowProps.put(WorkflowModelNominatedInvitation.WF_PROP_RESOURCE_TYPE, Invitation.ResourceType.WEB_SITE);
+        workflowProps.put(WorkflowModelNominatedInvitation.WF_PROP_RESOURCE_NAME, siteShortName);
+        workflowProps.put(WorkflowModelNominatedInvitation.WF_PROP_INVITEE_SITE_ROLE, inviteeSiteRole);
+        workflowProps.put(WorkflowModelNominatedInvitation.WF_PROP_SERVER_PATH, serverPath);
+        workflowProps.put(WorkflowModelNominatedInvitation.WF_PROP_ACCEPT_URL, acceptUrl);
+        workflowProps.put(WorkflowModelNominatedInvitation.WF_PROP_REJECT_URL, rejectUrl);
+        workflowProps.put(WorkflowModelNominatedInvitation.WF_PROP_INVITE_TICKET, inviteTicket);
 
         // start the workflow
         WorkflowPath wfPath = this.workflowService.startWorkflow(wfDefinition.getId(), workflowProps);
@@ -649,7 +661,7 @@ public class Invite extends DeclarativeWebScript
         
         String wfTaskName = wfTasks.get(0).name;
         QName wfTaskNameQName = QName.createQName(wfTaskName, this.namespaceService);
-        QName inviteToSiteTaskQName = InviteWorkflowModel.WF_INVITE_TASK_INVITE_TO_SITE;
+        QName inviteToSiteTaskQName = WorkflowModelNominatedInvitation.WF_INVITE_TASK_INVITE_TO_SITE;
         if (!wfTaskNameQName.equals(inviteToSiteTaskQName))
         {
             if (logger.isInfoEnabled())
@@ -679,7 +691,7 @@ public class Invite extends DeclarativeWebScript
             logger.debug("Transitioning Invite workflow task...");
         try
         {
-            this.workflowService.endTask(wfStartTask.id, InviteWorkflowModel.WF_TRANSITION_SEND_INVITE);
+            this.workflowService.endTask(wfStartTask.id, WorkflowModelNominatedInvitation.WF_TRANSITION_SEND_INVITE);
         }
         catch (RuntimeException err)
         {
@@ -723,9 +735,14 @@ public class Invite extends DeclarativeWebScript
         try
         {
             // complete the wf:invitePendingTask along the 'cancel' transition because the invitation has been cancelled
-            InviteHelper.completeInviteTask(inviteId, InviteWorkflowModel.WF_INVITE_TASK_INVITE_PENDING,
-                        InviteWorkflowModel.WF_TRANSITION_CANCEL, this.workflowService);
+            InviteHelper.completeInviteTask(inviteId, WorkflowModelNominatedInvitation.WF_INVITE_TASK_INVITE_PENDING,
+                        WorkflowModelNominatedInvitation.WF_TRANSITION_CANCEL, this.workflowService);
         }
+        catch(InvitationExceptionForbidden fe)
+        {
+        	throw new WebScriptException(Status.STATUS_FORBIDDEN, "Unable to cancel workflow" , fe);
+        }
+
         catch (WorkflowException wfe)
         {
             //
@@ -734,7 +751,12 @@ public class Invite extends DeclarativeWebScript
             //
             
             Throwable indirectCause = wfe.getCause().getCause();
-            if (indirectCause instanceof WebScriptException)
+            
+            if(indirectCause instanceof InvitationExceptionForbidden)
+            {
+            	throw new WebScriptException(Status.STATUS_FORBIDDEN, "Unable to cancel workflow" , indirectCause);
+            }
+            else if (indirectCause instanceof WebScriptException)
             {
                 WebScriptException wse = (WebScriptException) indirectCause;
                 throw wse;

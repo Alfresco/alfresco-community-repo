@@ -27,6 +27,8 @@ package org.alfresco.repo.web.scripts.invite;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.alfresco.repo.invitation.WorkflowModelNominatedInvitation;
+import org.alfresco.repo.invitation.site.InviteHelper;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.web.scripts.DeclarativeWebScript;
@@ -90,7 +92,7 @@ public class InviteResponse extends DeclarativeWebScript
         }
         
         // check the ticket for a match
-        String ticket = (String) inviteStartTask.properties.get(InviteWorkflowModel.WF_PROP_INVITE_TICKET);
+        String ticket = (String) inviteStartTask.properties.get(WorkflowModelNominatedInvitation.WF_PROP_INVITE_TICKET);
         if (ticket == null || (! ticket.equals(inviteTicket)))
         {
             throw new WebScriptException(Status.STATUS_NOT_FOUND,
@@ -133,11 +135,11 @@ public class InviteResponse extends DeclarativeWebScript
     private void acceptInvite(Map<String, Object> model, String inviteId, WorkflowTask inviteStartTask)
     {
         String siteShortName = (String) inviteStartTask.properties.get(
-                InviteWorkflowModel.WF_PROP_SITE_SHORT_NAME);
+                WorkflowModelNominatedInvitation.WF_PROP_RESOURCE_NAME);
         
         // complete the wf:invitePendingTask along the 'accept' transition because the invitation has been accepted
-        InviteHelper.completeInviteTask(inviteId, InviteWorkflowModel.WF_INVITE_TASK_INVITE_PENDING,
-                InviteWorkflowModel.WF_TRANSITION_ACCEPT, this.workflowService);
+        InviteHelper.completeInviteTask(inviteId, WorkflowModelNominatedInvitation.WF_INVITE_TASK_INVITE_PENDING,
+                WorkflowModelNominatedInvitation.WF_TRANSITION_ACCEPT, this.workflowService);
         
         // add model properties for template to render
         model.put(MODEL_PROP_KEY_RESPONSE, RESPONSE_ACCEPT);
@@ -161,11 +163,11 @@ public class InviteResponse extends DeclarativeWebScript
     private void rejectInvite(Map<String, Object> model, String inviteId, WorkflowTask inviteStartTask)
     {
         String siteShortName = (String) inviteStartTask.properties.get(
-                InviteWorkflowModel.WF_PROP_SITE_SHORT_NAME);
+                WorkflowModelNominatedInvitation.WF_PROP_RESOURCE_NAME);
         
         // complete the wf:invitePendingTask task along the 'reject' transition because the invitation has been rejected
-        InviteHelper.completeInviteTask(inviteId, InviteWorkflowModel.WF_INVITE_TASK_INVITE_PENDING,
-                InviteWorkflowModel.WF_TRANSITION_REJECT, this.workflowService);
+        InviteHelper.completeInviteTask(inviteId, WorkflowModelNominatedInvitation.WF_INVITE_TASK_INVITE_PENDING,
+                WorkflowModelNominatedInvitation.WF_TRANSITION_REJECT, this.workflowService);
         
         // add model properties for template to render
         model.put(MODEL_PROP_KEY_RESPONSE, RESPONSE_REJECT);

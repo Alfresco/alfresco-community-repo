@@ -32,14 +32,15 @@ import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
-import org.alfresco.repo.site.SiteInfo;
 import org.alfresco.repo.site.SiteModel;
-import org.alfresco.repo.site.SiteService;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.cmr.site.SiteInfo;
+import org.alfresco.service.cmr.site.SiteService;
+import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
@@ -48,6 +49,7 @@ import org.alfresco.web.scripts.TestWebScriptServer.GetRequest;
 import org.alfresco.web.scripts.TestWebScriptServer.PostRequest;
 import org.alfresco.web.scripts.TestWebScriptServer.PutRequest;
 import org.alfresco.web.scripts.TestWebScriptServer.Response;
+import org.htmlparser.parserapplications.SiteCapturer;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -133,20 +135,21 @@ public class SiteServiceTest extends BaseWebScriptTest
         String shortName  = GUID.generate();
         
         // Create a new site
-        JSONObject result = createSite("myPreset", shortName, "myTitle", "myDescription", true, 200);        
+        JSONObject result = createSite("myPreset", shortName, "myTitle", "myDescription", SiteVisibility.PUBLIC, 200);        
         assertEquals("myPreset", result.get("sitePreset"));
         assertEquals(shortName, result.get("shortName"));
         assertEquals("myTitle", result.get("title"));
         assertEquals("myDescription", result.get("description"));
         assertNotNull(result.get("node"));
         assertNotNull(result.get("tagScope"));
+        assertEquals(SiteVisibility.PUBLIC.toString(), result.get("visibility"));
         assertTrue(result.getBoolean("isPublic"));
         
         // Check for duplicate names
-        createSite("myPreset", shortName, "myTitle", "myDescription", true, 500); 
+        createSite("myPreset", shortName, "myTitle", "myDescription", SiteVisibility.PUBLIC, 500); 
     }
     
-    private JSONObject createSite(String sitePreset, String shortName, String title, String description, boolean isPublic, int expectedStatus)
+    private JSONObject createSite(String sitePreset, String shortName, String title, String description, SiteVisibility visibility, int expectedStatus)
         throws Exception
     {
         JSONObject site = new JSONObject();
@@ -154,7 +157,7 @@ public class SiteServiceTest extends BaseWebScriptTest
         site.put("shortName", shortName);
         site.put("title", title);
         site.put("description", description);
-        site.put("isPublic", isPublic);                
+        site.put("visibility", visibility.toString());                
         Response response = sendRequest(new PostRequest(URL_SITES, site.toString(), "application/json"), expectedStatus); 
         this.createdSites.add(shortName);
         return new JSONObject(response.getContentAsString());
@@ -167,11 +170,11 @@ public class SiteServiceTest extends BaseWebScriptTest
         assertNotNull(result);
         assertEquals(0, result.length());
         
-        createSite("myPreset", GUID.generate(), "myTitle", "myDescription", true, 200);
-        createSite("myPreset", GUID.generate(), "myTitle", "myDescription", true, 200);
-        createSite("myPreset", GUID.generate(), "myTitle", "myDescription", true, 200);
-        createSite("myPreset", GUID.generate(), "myTitle", "myDescription", true, 200);
-        createSite("myPreset", GUID.generate(), "myTitle", "myDescription", true, 200);
+        createSite("myPreset", GUID.generate(), "myTitle", "myDescription", SiteVisibility.PUBLIC, 200);
+        createSite("myPreset", GUID.generate(), "myTitle", "myDescription", SiteVisibility.PUBLIC, 200);
+        createSite("myPreset", GUID.generate(), "myTitle", "myDescription", SiteVisibility.PUBLIC, 200);
+        createSite("myPreset", GUID.generate(), "myTitle", "myDescription", SiteVisibility.PUBLIC, 200);
+        createSite("myPreset", GUID.generate(), "myTitle", "myDescription", SiteVisibility.PUBLIC, 200);
         
         response = sendRequest(new GetRequest(URL_SITES), 200);        
         result = new JSONArray(response.getContentAsString());        
@@ -196,7 +199,7 @@ public class SiteServiceTest extends BaseWebScriptTest
         
         // Create a site and get it
         String shortName  = GUID.generate();
-        JSONObject result = createSite("myPreset", shortName, "myTitle", "myDescription", true, 200);
+        JSONObject result = createSite("myPreset", shortName, "myTitle", "myDescription", SiteVisibility.PUBLIC, 200);
         response = sendRequest(new GetRequest(URL_SITES + "/" + shortName), 200);
        
     }
@@ -205,17 +208,18 @@ public class SiteServiceTest extends BaseWebScriptTest
     {
         // Create a site
         String shortName  = GUID.generate();
-        JSONObject result = createSite("myPreset", shortName, "myTitle", "myDescription", true, 200);
+        JSONObject result = createSite("myPreset", shortName, "myTitle", "myDescription", SiteVisibility.PUBLIC, 200);
         
         // Update the site
         result.put("title", "abs123abc");
         result.put("description", "123abc123");
-        result.put("isPublic", false);
+        result.put("visibility", SiteVisibility.PRIVATE.toString());
         Response response = sendRequest(new PutRequest(URL_SITES + "/" + shortName, result.toString(), "application/json"), 200);
         result = new JSONObject(response.getContentAsString());
         assertEquals("abs123abc", result.get("title"));
         assertEquals("123abc123", result.get("description"));
         assertFalse(result.getBoolean("isPublic"));
+        assertEquals(SiteVisibility.PRIVATE.toString(), result.get("visibility"));
         
         // Try and get the site and double check it's changed
         response = sendRequest(new GetRequest(URL_SITES + "/" + shortName), 200);
@@ -223,16 +227,17 @@ public class SiteServiceTest extends BaseWebScriptTest
         assertEquals("abs123abc", result.get("title"));
         assertEquals("123abc123", result.get("description"));
         assertFalse(result.getBoolean("isPublic"));
+        assertEquals(SiteVisibility.PRIVATE.toString(), result.get("visibility"));
     }
     
     public void testDeleteSite() throws Exception
     {
-        // Delete non-existant site
+        // Delete non-existent site
         Response response = sendRequest(new DeleteRequest(URL_SITES + "/" + "somerandomshortname"), 404);
         
         // Create a site
         String shortName  = GUID.generate();
-        JSONObject result = createSite("myPreset", shortName, "myTitle", "myDescription", true, 200);
+        JSONObject result = createSite("myPreset", shortName, "myTitle", "myDescription", SiteVisibility.PUBLIC, 200);
         
         // Get the site
         response = sendRequest(new GetRequest(URL_SITES + "/" + shortName), 200);
@@ -248,7 +253,7 @@ public class SiteServiceTest extends BaseWebScriptTest
     {
         // Create a site
         String shortName  = GUID.generate();
-        createSite("myPreset", shortName, "myTitle", "myDescription", true, 200);
+        createSite("myPreset", shortName, "myTitle", "myDescription", SiteVisibility.PUBLIC, 200);
         
         // Check the memberships
         Response response = sendRequest(new GetRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS), 200);
@@ -264,7 +269,7 @@ public class SiteServiceTest extends BaseWebScriptTest
     {
         // Create a site
         String shortName  = GUID.generate();
-        createSite("myPreset", shortName, "myTitle", "myDescription", true, 200);
+        createSite("myPreset", shortName, "myTitle", "myDescription", SiteVisibility.PUBLIC, 200);
         
         // Build the JSON membership object
         JSONObject membership = new JSONObject();
@@ -273,7 +278,7 @@ public class SiteServiceTest extends BaseWebScriptTest
         person.put("userName", USER_TWO);
         membership.put("person", person);
         
-        // Post the memebership
+        // Post the membership
         Response response = sendRequest(new PostRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS, membership.toString(), "application/json"), 200);
         JSONObject result = new JSONObject(response.getContentAsString());
         
@@ -292,7 +297,7 @@ public class SiteServiceTest extends BaseWebScriptTest
     {
         // Create a site
         String shortName  = GUID.generate();
-        createSite("myPreset", shortName, "myTitle", "myDescription", true, 200);
+        createSite("myPreset", shortName, "myTitle", "myDescription", SiteVisibility.PUBLIC, 200);
         
         // Test error conditions
         sendRequest(new GetRequest(URL_SITES + "/badsite" + URL_MEMBERSHIPS + "/" + USER_ONE), 404);
@@ -311,7 +316,7 @@ public class SiteServiceTest extends BaseWebScriptTest
     {
         // Create a site
         String shortName  = GUID.generate();
-        createSite("myPreset", shortName, "myTitle", "myDescription", true, 200);
+        createSite("myPreset", shortName, "myTitle", "myDescription", SiteVisibility.PUBLIC, 200);
         
         // Test error conditions
         // TODO
@@ -323,7 +328,7 @@ public class SiteServiceTest extends BaseWebScriptTest
         person.put("userName", USER_TWO);
         membership.put("person", person);
         
-        // Post the memebership
+        // Post the membership
         Response response = sendRequest(new PostRequest(URL_SITES + "/" + shortName + URL_MEMBERSHIPS, membership.toString(), "application/json"), 200);
         JSONObject newMember = new JSONObject(response.getContentAsString());
         
@@ -347,7 +352,7 @@ public class SiteServiceTest extends BaseWebScriptTest
     {
         // Create a site
         String shortName  = GUID.generate();
-        createSite("myPreset", shortName, "myTitle", "myDescription", true, 200);
+        createSite("myPreset", shortName, "myTitle", "myDescription", SiteVisibility.PUBLIC, 200);
      
         // Build the JSON membership object
         JSONObject membership = new JSONObject();
@@ -371,9 +376,9 @@ public class SiteServiceTest extends BaseWebScriptTest
     {
         // Create a site
         String shortName  = GUID.generate();
-        createSite("myPreset", shortName, "myTitle", "myDescription", true, 200);
+        createSite("myPreset", shortName, "myTitle", "myDescription", SiteVisibility.PUBLIC, 200);
         String shortName2  = GUID.generate();
-        createSite("myPreset", shortName2, "myTitle", "myDescription", true, 200);
+        createSite("myPreset", shortName2, "myTitle", "myDescription", SiteVisibility.PUBLIC, 200);
         
         Response response = sendRequest(new GetRequest("/api/people/" + USER_TWO + "/sites"), 200);
         JSONArray result = new JSONArray(response.getContentAsString());
@@ -381,7 +386,7 @@ public class SiteServiceTest extends BaseWebScriptTest
         assertNotNull(result);
         assertEquals(0, result.length());
         
-        // Add some memeberships
+        // Add some memberships
         JSONObject membership = new JSONObject();
         membership.put("role", SiteModel.SITE_CONSUMER);
         JSONObject person = new JSONObject();
@@ -430,7 +435,7 @@ public class SiteServiceTest extends BaseWebScriptTest
         throws Exception
     {
         // Create a site with a custom property
-        SiteInfo siteInfo = this.siteService.createSite("testPreset", "mySiteWithCustomProperty2", "testTitle", "testDescription", true);
+        SiteInfo siteInfo = this.siteService.createSite("testPreset", "mySiteWithCustomProperty2", "testTitle", "testDescription", SiteVisibility.PUBLIC);
         NodeRef siteNodeRef = siteInfo.getNodeRef();
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>(1);
         properties.put(QName.createQName(SiteModel.SITE_CUSTOM_PROPERTY_URL, "additionalInformation"), "information");

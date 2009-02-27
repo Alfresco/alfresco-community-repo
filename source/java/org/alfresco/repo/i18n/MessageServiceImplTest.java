@@ -8,9 +8,11 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import junit.framework.TestCase;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -20,7 +22,8 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.BaseSpringTest;
+import org.alfresco.util.ApplicationContextHelper;
+import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
@@ -28,12 +31,13 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
  * Message Service unit tests
  * 
  */
-public class MessageServiceImplTest extends BaseSpringTest implements MessageDeployer
+public class MessageServiceImplTest extends TestCase implements MessageDeployer
 {
+    private static ApplicationContext applicationContext = ApplicationContextHelper.getApplicationContext();
+    
 	private MessageService messageService;
 	private NodeService nodeService;
 	private AuthenticationService authenticationService;
-	private MutableAuthenticationDao authenticationDAO;
 	private ContentService contentService;
 
 	private static final String BASE_BUNDLE_NAME = "testMessages";
@@ -64,14 +68,13 @@ public class MessageServiceImplTest extends BaseSpringTest implements MessageDep
     
     
     @Override
-    protected void onSetUpInTransaction() throws Exception
+    protected void setUp() throws Exception
     {  	
     	// Get the services by name from the application context
     	messageService = (MessageService)applicationContext.getBean("messageService");
-        nodeService = (NodeService)applicationContext.getBean("nodeService");
-        authenticationService = (AuthenticationService)applicationContext.getBean("authenticationService");
-        authenticationDAO = (MutableAuthenticationDao) applicationContext.getBean("authenticationDao");
-        contentService = (ContentService) applicationContext.getBean("contentService");
+        nodeService = (NodeService)applicationContext.getBean("NodeService");
+        authenticationService = (AuthenticationService)applicationContext.getBean("AuthenticationService");
+        contentService = (ContentService) applicationContext.getBean("ContentService");
         
         // Re-set the current locale to be the default
         Locale.setDefault(Locale.ENGLISH);
@@ -80,7 +83,8 @@ public class MessageServiceImplTest extends BaseSpringTest implements MessageDep
     
     private void setupRepo() throws Exception
     {       
-        authenticationService.clearCurrentSecurityContext();
+        AuthenticationUtil.clearCurrentSecurityContext();
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
         
         // Create a test workspace
         this.testStoreRef = this.nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.currentTimeMillis());
@@ -89,7 +93,7 @@ public class MessageServiceImplTest extends BaseSpringTest implements MessageDep
         NodeRef rootNodeRef = this.nodeService.getRootNode(this.testStoreRef);
         
         // Create an authenticate the user        
-        if(!authenticationDAO.userExists(USER_NAME))
+        if(!authenticationService.authenticationExists(USER_NAME))
         {
             authenticationService.createAuthentication(USER_NAME, PWD.toCharArray());
         }
@@ -120,7 +124,7 @@ public class MessageServiceImplTest extends BaseSpringTest implements MessageDep
         contentProps.put(ContentModel.PROP_NAME, name);
         
         ChildAssociationRef association = nodeService.createNode(rootNodeRef,
-                ContentModel.ASSOC_CONTAINS, 
+                ContentModel.ASSOC_CHILDREN,
                 QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, name),
                 ContentModel.TYPE_CONTENT,
                 contentProps);
@@ -167,6 +171,8 @@ public class MessageServiceImplTest extends BaseSpringTest implements MessageDep
         messageService.registerResourceBundle(testStoreRef + "/cm:" + BASE_BUNDLE_NAME);
         
         getMessages();
+        
+        messageService.unregisterResourceBundle(testStoreRef + "/cm:" + BASE_BUNDLE_NAME);
     }
        
     /**
@@ -183,6 +189,8 @@ public class MessageServiceImplTest extends BaseSpringTest implements MessageDep
     	messageService.registerResourceBundle(testStoreRef + "/cm:" + BASE_BUNDLE_NAME);
     	
     	getMessagesWithParams();
+    	
+    	messageService.unregisterResourceBundle(testStoreRef + "/cm:" + BASE_BUNDLE_NAME);
     }
  
     
@@ -198,6 +206,8 @@ public class MessageServiceImplTest extends BaseSpringTest implements MessageDep
         messageService.registerResourceBundle(BASE_RESOURCE_CLASSPATH + BASE_BUNDLE_NAME);
         
         getMessages();
+        
+        messageService.unregisterResourceBundle(BASE_RESOURCE_CLASSPATH + BASE_BUNDLE_NAME);
     }
     
     /**
@@ -212,6 +222,8 @@ public class MessageServiceImplTest extends BaseSpringTest implements MessageDep
     	messageService.registerResourceBundle(BASE_RESOURCE_CLASSPATH + BASE_BUNDLE_NAME);
         
     	getMessagesWithParams();
+    	
+        messageService.unregisterResourceBundle(BASE_RESOURCE_CLASSPATH + BASE_BUNDLE_NAME);
     }
     
     /**
@@ -226,6 +238,8 @@ public class MessageServiceImplTest extends BaseSpringTest implements MessageDep
        
         // Test getting a message
         assertEquals(VALUE_YES, messageService.getMessage(MSG_YES));
+        
+        messageService.unregisterResourceBundle(testStoreRef + "/cm:" + BASE_BUNDLE_NAME);
     }
     
     /**
@@ -238,6 +252,8 @@ public class MessageServiceImplTest extends BaseSpringTest implements MessageDep
        
         // Test getting a message
         assertEquals(VALUE_YES, messageService.getMessage(MSG_YES));
+        
+        messageService.unregisterResourceBundle(BASE_RESOURCE_CLASSPATH + BASE_BUNDLE_NAME);
     }
     
     /**

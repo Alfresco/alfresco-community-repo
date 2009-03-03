@@ -62,6 +62,9 @@ import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationEvent;
+import org.springframework.core.io.DefaultResourceLoader;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.util.FileCopyUtils;
 
 /**
@@ -81,7 +84,7 @@ public class ImporterBootstrap extends AbstractLifecycleBean
     
     // Logger
     private static final Log logger = LogFactory.getLog(ImporterBootstrap.class);
-    private boolean logEnabled = false;
+//    private boolean logEnabled = false;
 
     private boolean allowWrite = true;
     private boolean useExistingStore = false;
@@ -288,13 +291,11 @@ public class ImporterBootstrap extends AbstractLifecycleBean
     }
     
     /**
-     * Set log
-     * 
-     * @param logEnabled
+     * @deprecated          Was never used
      */
     public void setLog(boolean logEnabled)
     {
-        this.logEnabled = logEnabled;
+        // Ignore
     }
 
     /**
@@ -486,8 +487,9 @@ public class ImporterBootstrap extends AbstractLifecycleBean
     private Reader getReader(String view, String encoding)
     {
         // Get Input Stream
-        InputStream viewStream = getClass().getClassLoader().getResourceAsStream(view);
-        if (viewStream == null)
+        ResourceLoader resourceLoader = new DefaultResourceLoader(getClass().getClassLoader());
+        Resource viewResource = resourceLoader.getResource(view);
+        if (viewResource == null)
         {
             throw new ImporterException("Could not find view file " + view);
         }
@@ -495,6 +497,7 @@ public class ImporterBootstrap extends AbstractLifecycleBean
         // Wrap in buffered reader
         try
         {
+            InputStream viewStream = viewResource.getInputStream();
             InputStreamReader inputReader = (encoding == null) ? new InputStreamReader(viewStream) : new InputStreamReader(viewStream, encoding);
             BufferedReader reader = new BufferedReader(inputReader);
             return reader;
@@ -502,6 +505,10 @@ public class ImporterBootstrap extends AbstractLifecycleBean
         catch (UnsupportedEncodingException e)
         {
             throw new ImporterException("Could not create reader for view " + view + " as encoding " + encoding + " is not supported");
+        }
+        catch (IOException e)
+        {
+            throw new ImporterException("Could not open resource for view " + view);
         }
     }
     

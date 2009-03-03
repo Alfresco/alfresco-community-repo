@@ -2,7 +2,7 @@
   <shortname>Membership</shortname>
   <description>Get the membership details for a user</description>
   <url>/api/sites/{shortname}/memberships/{username}</url>
-  <format default="json"/>
+  <format default="json">argument</format>
   <authentication>user</authentication>
   <transaction>required</transaction>
 </webscript>

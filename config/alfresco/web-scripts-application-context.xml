@@ -371,6 +371,7 @@
          class="org.alfresco.repo.web.scripts.invite.InviteResponse"
          parent="webscript">
       <property name="workflowService" ref="WorkflowService"/>
+      <property name="tenantService" ref="tenantService"/>
    </bean>
    
    <!--                                                                                                       -->

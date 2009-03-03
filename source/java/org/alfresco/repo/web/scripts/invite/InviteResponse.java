@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -29,6 +29,8 @@ import java.util.Map;
 
 import org.alfresco.repo.invitation.WorkflowModelNominatedInvitation;
 import org.alfresco.repo.invitation.site.InviteHelper;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.web.scripts.DeclarativeWebScript;
@@ -50,9 +52,14 @@ public class InviteResponse extends DeclarativeWebScript
     private static final String RESPONSE_REJECT = "reject";
     private static final String MODEL_PROP_KEY_RESPONSE = "response";
     private static final String MODEL_PROP_KEY_SITE_SHORT_NAME = "siteShortName";
+    
+    // request parameter names
+    private static final String PARAM_INVITEE_USER_NAME = "inviteeUserName";
 
     // properties for services
     private WorkflowService workflowService;
+    
+    private TenantService tenantService;
 
     /**
      * Sets the workflow service property
@@ -64,6 +71,17 @@ public class InviteResponse extends DeclarativeWebScript
     {
         this.workflowService = workflowService;
     }
+    
+    /**
+     * Sets the tenant service property
+     * 
+     * @param tenantService
+     *            the tenant service instance assign to the property
+     */
+    public void setTenantService(TenantService tenantService)
+    {
+        this.tenantService = tenantService;
+    }
 
     /*
      * (non-Javadoc)
@@ -74,8 +92,37 @@ public class InviteResponse extends DeclarativeWebScript
      * org.alfresco.web.scripts.WebScriptResponse)
      */
     @Override
-    protected Map<String, Object> executeImpl(WebScriptRequest req,
-            Status status)
+    protected Map<String, Object> executeImpl(final WebScriptRequest req, final Status status)
+    {
+        if (tenantService.isEnabled())
+        {
+            final String tenantDomain;
+            
+            String inviteeUserName = req.getParameter(PARAM_INVITEE_USER_NAME);
+            if (inviteeUserName != null)
+            {
+                tenantDomain = tenantService.getUserDomain(inviteeUserName);
+            }
+            else
+            {
+                tenantDomain = "";
+            }
+                
+            return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Map<String, Object>>()
+            {
+                public Map<String, Object> doWork() throws Exception
+                {
+                    return execute(req, status);
+                }
+            }, tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain));
+        }
+        else
+        {
+            return execute(req, status);
+        }
+    }
+    
+    private Map<String, Object> execute(WebScriptRequest req, Status status)
     {
         // initialise model to pass on for template to render
         Map<String, Object> model = new HashMap<String, Object>();

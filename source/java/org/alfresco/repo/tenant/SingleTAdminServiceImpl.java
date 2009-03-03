@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -28,6 +28,7 @@ import java.io.File;
 import java.util.Collections;
 import java.util.List;
 
+import org.alfresco.repo.workflow.WorkflowDeployer;
 import org.apache.commons.logging.Log;
 
 /**
@@ -90,6 +91,13 @@ public class SingleTAdminServiceImpl implements TenantAdminService
      * NO-OP
      */
     public void unregister(TenantDeployer tenantDeployer)
+    {
+    }
+
+    /**
+     * NO-OP
+     */
+    public void register(WorkflowDeployer workflowDeployer)
     {
     }
 

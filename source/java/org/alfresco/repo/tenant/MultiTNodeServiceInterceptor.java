@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -226,7 +226,7 @@ public class MultiTNodeServiceInterceptor extends DelegatingIntroductionIntercep
                 StoreRef storeRef = ref;
                 try
                 {
-                    if (tenantService.isEnabled())
+                    if (tenantService.isEnabled() && (! storeRef.getProtocol().equals(StoreRef.PROTOCOL_AVM)))
                     {
                         // MT: return tenant stores only (although for super System return all stores - as used by
                         // ConfigurationChecker, IndexRecovery, IndexBackup etc)

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -33,6 +33,7 @@ import org.alfresco.repo.activities.post.ActivityPostDAO;
 import org.alfresco.repo.activities.post.ActivityPostDaoService;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -65,6 +66,7 @@ public class PostLookup
     private PermissionService permissionService;
     private TransactionService transactionService;
     private PersonService personService;
+    private TenantService tenantService;
     
     public void setPostDaoService(ActivityPostDaoService postDaoService)
     {
@@ -91,6 +93,11 @@ public class PostLookup
         this.personService = personService;
     }
     
+    public void setTenantService(TenantService tenantService)
+    {
+        this.tenantService = tenantService;
+    }
+    
     /**
      * Perform basic checks to ensure that the necessary dependencies were injected.
      */
@@ -101,6 +108,7 @@ public class PostLookup
         PropertyCheck.mandatory(this, "permissionService", permissionService);
         PropertyCheck.mandatory(this, "transactionService", transactionService);
         PropertyCheck.mandatory(this, "personService", personService);
+        PropertyCheck.mandatory(this, "tenantService", tenantService);
     }
     
     public void execute() throws JobExecutionException
@@ -118,46 +126,57 @@ public class PostLookup
                 logger.info("Update: " + activityPosts.size() + " activity posts");
             }
             
-            for (ActivityPostDAO activityPost : activityPosts)
+            for (final ActivityPostDAO activityPost : activityPosts)
             {
                 try
                 {
                     postDaoService.startTransaction();
                     
-                    JSONObject jo = new JSONObject(new JSONTokener(activityPost.getActivityData()));
-                    String postUserId = activityPost.getUserId();
+                    final JSONObject jo = new JSONObject(new JSONTokener(activityPost.getActivityData()));
+                    final String postUserId = activityPost.getUserId();
                     
-                    if (! jo.isNull("nodeRef"))
+                    // MT share
+                    String tenantDomain = tenantService.getUserDomain(postUserId);
+                    
+                    AuthenticationUtil.runAs(new RunAsWork<Object>()
                     {
-                        String nodeRefStr = jo.getString("nodeRef");
-                        NodeRef nodeRef = new NodeRef(nodeRefStr);
-                        
-                        // lookup additional node data
-                        JSONObject activityData = lookupNode(nodeRef, postUserId, jo);
-                        
-                        activityPost.setActivityData(activityData.toString());
-                    }
-                    else
-                    {
-                        // lookup additional person data
-                        Pair<String, String> firstLastName = lookupPerson(postUserId);
-                        if (firstLastName != null)
+                        public Object doWork() throws Exception
                         {
-                            jo.put("firstName", firstLastName.getFirst());
-                            jo.put("lastName", firstLastName.getSecond());
-                            
-                            activityPost.setActivityData(jo.toString());
-                        }
-                    }
+                            if (! jo.isNull("nodeRef"))
+                            {
+                                String nodeRefStr = jo.getString("nodeRef");
+                                NodeRef nodeRef = new NodeRef(nodeRefStr);
+                                
+                                // lookup additional node data
+                                JSONObject activityData = lookupNode(nodeRef, postUserId, jo);
+                                
+                                activityPost.setActivityData(activityData.toString());
+                            }
+                            else
+                            {
+                                // lookup additional person data
+                                Pair<String, String> firstLastName = lookupPerson(postUserId);
+                                if (firstLastName != null)
+                                {
+                                    jo.put("firstName", firstLastName.getFirst());
+                                    jo.put("lastName", firstLastName.getSecond());
+                                    
+                                    activityPost.setActivityData(jo.toString());
+                                }
+                            }
 
-                    activityPost.setLastModified(new Date());
-                    
-                    postDaoService.updatePost(activityPost.getId(), activityPost.getSiteNetwork(), activityPost.getActivityData(), ActivityPostDAO.STATUS.POSTED);
-                    if (logger.isDebugEnabled())
-                    {
-                        activityPost.setStatus(ActivityPostDAO.STATUS.POSTED.toString()); // for debug output
-                        logger.debug("Updated: " + activityPost);
-                    }
+                            activityPost.setLastModified(new Date());
+                            
+                            postDaoService.updatePost(activityPost.getId(), activityPost.getSiteNetwork(), activityPost.getActivityData(), ActivityPostDAO.STATUS.POSTED);
+                            if (logger.isDebugEnabled())
+                            {
+                                activityPost.setStatus(ActivityPostDAO.STATUS.POSTED.toString()); // for debug output
+                                logger.debug("Updated: " + activityPost);
+                            }
+                            
+                            return null;
+                        }
+                    }, tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain));
                     
                     postDaoService.commitTransaction();
                 } 
@@ -201,38 +220,32 @@ public class PostLookup
     
     private Pair<String, String> lookupPerson(final String postUserId) throws JSONException
     {
-        return AuthenticationUtil.runAs(new RunAsWork<Pair<String, String>>()
+        RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
+        
+        // wrap to make the request in a transaction
+        RetryingTransactionCallback<Pair<String, String>> lookup = new RetryingTransactionCallback<Pair<String, String>>()
         {
-            public Pair<String, String> doWork() throws Exception
+            public Pair<String, String> execute() throws Throwable
             {
-                RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
+                String firstName = "";
+                String lastName = "";
                 
-                // wrap to make the request in a transaction
-                RetryingTransactionCallback<Pair<String, String>> lookup = new RetryingTransactionCallback<Pair<String, String>>()
+                if (personService.personExists(postUserId))
                 {
-                    public Pair<String, String> execute() throws Throwable
-                    {
-                        String firstName = "";
-                        String lastName = "";
-                        
-                        if (personService.personExists(postUserId))
-                        {
-                           NodeRef personRef = personService.getPerson(postUserId);
-                           
-                           firstName = (String)nodeService.getProperty(personRef, ContentModel.PROP_FIRSTNAME);
-                           lastName = (String)nodeService.getProperty(personRef, ContentModel.PROP_LASTNAME);
-                           
-                           return new Pair<String, String>(firstName, lastName);
-                        }
+                   NodeRef personRef = personService.getPerson(postUserId);
+                   
+                   firstName = (String)nodeService.getProperty(personRef, ContentModel.PROP_FIRSTNAME);
+                   lastName = (String)nodeService.getProperty(personRef, ContentModel.PROP_LASTNAME);
+                   
+                   return new Pair<String, String>(firstName, lastName);
+                }
 
-                        return null;
-                    }
-                };
-                
-                // execute in txn
-                return txnHelper.doInTransaction(lookup, true);
+                return null;
             }
-        }, AuthenticationUtil.getSystemUserName());
+        };
+        
+        // execute in txn
+        return txnHelper.doInTransaction(lookup, true);
     }
     
     private JSONObject lookupNode(final NodeRef nodeRef, final String postUserId, final JSONObject jo) throws JSONException

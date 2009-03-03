@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -67,6 +67,11 @@ public class SingleTServiceImpl implements TenantService
     public StoreRef getName(String username, StoreRef storeRef)
     {
         return storeRef;
+    }
+    
+    public QName getName(QName name)
+    {
+        return name;
     }
     
     public QName getName(NodeRef inNodeRef, QName name)

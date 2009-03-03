@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -40,6 +40,7 @@ import org.alfresco.repo.dictionary.RepositoryLocation;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -85,6 +86,7 @@ public class WorkflowDeployer extends AbstractLifecycleBean
     private List<Properties> workflowDefinitions;
     private List<String> models = new ArrayList<String>();
     private List<String> resourceBundles = new ArrayList<String>();
+    private TenantAdminService tenantAdminService;
     private TenantService tenantService;
     
     private NodeService nodeService;
@@ -145,6 +147,16 @@ public class WorkflowDeployer extends AbstractLifecycleBean
         this.dictionaryDAO = dictionaryDAO;
     }
     
+    /**
+     * Sets the tenant admin service
+     * 
+     * @param tenantService the tenant admin service
+     */
+    public void setTenantAdminService(TenantAdminService tenantAdminService)
+    {
+        this.tenantAdminService = tenantAdminService;
+    }
+
     /**
      * Sets the tenant service
      * 
@@ -432,6 +444,8 @@ public class WorkflowDeployer extends AbstractLifecycleBean
                 return null;
             }                               
         }, AuthenticationUtil.getSystemUserName());
+        
+        tenantAdminService.register(this);
     }
 
     @Override

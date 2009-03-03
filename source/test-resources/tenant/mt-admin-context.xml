@@ -7,26 +7,7 @@
    <!-- MT Admin Service Implementation -->
    <!--                                           -->
             
-   <bean id="tenantAdminService" class="org.alfresco.repo.tenant.MultiTAdminServiceImpl">
-   
-      <!--
-      <property name="nodeService" ref="NodeService"/>
-      -->
-      <property name="nodeService" ref="dbNodeServiceImpl"/> <!-- TODO - go direct, until we expose deleteStore via public NodeService API -->
-      <property name="dictionaryComponent" ref="dictionaryService"/>
-      <property name="authenticationComponent" ref="authenticationComponent"/>
-      <property name="repoAdminService" ref="RepoAdminService"/>
-      <property name="tenantService" ref="tenantService"/>
-      <property name="transactionService" ref="transactionComponent"/>
-      <property name="attributeService" ref="AttributeService"/>
-      <property name="passwordEncoder" ref="passwordEncoder"/>
-      <property name="tenantFileContentStore" ref="tenantFileContentStore"/>     
-      <property name="workflowService" ref="WorkflowService"/>
-      <property name="repositoryExporterService" ref="repositoryExporterComponent"/>
-      <property name="workflowDeployer" ref="workflowBootstrap"/>
-      <property name="moduleService" ref="moduleService"/>
-      
-   </bean>
+   <bean id="tenantAdminService" parent="baseMultiTAdminService" />
                 
    <bean id="tenantInterpreter" class="org.alfresco.repo.tenant.TenantInterpreter">
         <property name="transactionService" ref="transactionComponent"/>

@@ -1,0 +1,28 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+   <bean id="baseMultiTAdminService" class="org.alfresco.repo.tenant.MultiTAdminServiceImpl" abstract="true">
+   
+      <!--
+      <property name="nodeService" ref="NodeService"/>
+      -->
+      <property name="nodeService" ref="dbNodeServiceImpl"/> <!-- TODO - go direct, until we expose deleteStore via public NodeService API -->
+      <property name="dictionaryComponent" ref="dictionaryService"/>
+      <property name="authenticationComponent" ref="authenticationComponent"/>
+      <property name="repoAdminService" ref="RepoAdminService"/>
+      <property name="tenantService" ref="tenantService"/>
+      <property name="transactionService" ref="transactionComponent"/>
+      <property name="attributeService" ref="AttributeService"/>
+      <property name="passwordEncoder" ref="passwordEncoder"/>
+      <property name="tenantFileContentStore" ref="tenantFileContentStore"/>     
+      <property name="workflowService" ref="WorkflowService"/>
+      <property name="repositoryExporterService" ref="repositoryExporterComponent"/>
+      <property name="moduleService" ref="moduleService"/>
+      
+      <property name="siteAVMBootstrap" ref="siteAVMBootstrap"/>
+      
+   </bean>
+   
+</beans>

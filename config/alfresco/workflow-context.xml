@@ -18,6 +18,8 @@
       <property name="nodeService" ref="NodeService"/>
       <property name="searchService" ref="SearchService"/>
       <property name="namespaceService" ref="NamespaceService"/>
+      <property name="tenantService" ref="tenantService"/>
+      <property name="tenantAdminService" ref="tenantAdminService"/>
    </bean>
    
    <bean id="workflowServiceImpl" class="org.alfresco.repo.workflow.WorkflowServiceImpl">

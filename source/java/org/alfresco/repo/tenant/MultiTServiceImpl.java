@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -172,6 +172,25 @@ public class MultiTServiceImpl implements TenantService
         }               
 
         return name;          
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.tenant.TenantService#getName(org.alfresco.service.namespace.QName)
+     */
+    public QName getName(QName name)
+    {
+        // Check that all the passed values are not null
+        ParameterCheck.mandatory("Name", name);
+
+        String tenantDomain = getCurrentUserDomain();
+        
+        if (! tenantDomain.equals(DEFAULT_DOMAIN))
+        {
+            checkTenantEnabled(tenantDomain);
+            name = getName(name, tenantDomain);
+        }
+        
+        return name;
     }
     
     /* (non-Javadoc)

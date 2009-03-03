@@ -828,13 +828,22 @@
             <value>org.alfresco.service.cmr.avm.AVMService</value>
         </property>
         <property name="target">
-            <ref bean="avmServiceBase"/>
+            <ref bean="avmServiceMT"/>
         </property>
         <property name="interceptorNames">
             <list>
                 <value>avmSessionSizeResourceInterceptor</value>
                 <value>checkTxnAdvisor</value>
             </list>
+        </property>
+    </bean>
+    
+    <bean id="avmServiceMT" class="org.alfresco.repo.avm.MultiTAVMService">
+        <property name="avmService">
+            <ref bean="avmServiceBase"/>
+        </property>
+        <property name="tenantService">
+            <ref bean="tenantService"/>
         </property>
     </bean>
 

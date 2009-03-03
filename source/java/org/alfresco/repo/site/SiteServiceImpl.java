@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -35,6 +35,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.activities.ActivityType;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.activities.ActivityService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.model.FileFolderService;
@@ -107,6 +108,7 @@ public class SiteServiceImpl implements SiteService, SiteModel
     private TaggingService taggingService;
     private AuthorityService authorityService;
     private DictionaryService dictionaryService;
+    private TenantService tenantService;
 
     /**
      * Set the path to the location of the sites root folder.  For example:
@@ -209,6 +211,16 @@ public class SiteServiceImpl implements SiteService, SiteModel
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;
+    }
+    
+    /**
+     * Set the tenant service 
+     * 
+     * @param tenantService     tenant service
+     */
+    public void setTenantService(TenantService tenantService)
+    {
+        this.tenantService = tenantService;
     }
     
     /**
@@ -587,7 +599,30 @@ public class SiteServiceImpl implements SiteService, SiteModel
     /**
      * @see org.alfresco.service.cmr.site.SiteService#getSite(java.lang.String)
      */
-    public SiteInfo getSite(String shortName)
+    public SiteInfo getSite(final String shortName)
+    {
+        // MT share - for activity service system callback
+        if (tenantService.isEnabled() && (AuthenticationUtil.SYSTEM_USER_NAME.equals(AuthenticationUtil.getRunAsUser())) && tenantService.isTenantName(shortName))
+        {
+            final String tenantDomain = tenantService.getDomain(shortName);
+            final String sName = tenantService.getBaseName(shortName, true);
+            
+            return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<SiteInfo>()
+            {
+                public SiteInfo doWork() throws Exception
+                {
+                    SiteInfo site = getSiteImpl(sName);
+                    return new SiteInfoImpl(site.getSitePreset(), shortName, site.getTitle(), site.getDescription(), site.getVisibility(), site.getCustomProperties(), site.getNodeRef());
+                }
+            }, tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain));
+        }
+        else
+        {
+            return getSiteImpl(shortName);
+        }
+    }
+    
+    private SiteInfo getSiteImpl(String shortName)
     {
         SiteInfo result = null;
 
@@ -714,7 +749,29 @@ public class SiteServiceImpl implements SiteService, SiteModel
     /**
      * @see org.alfresco.service.cmr.site.SiteService#listMembers(String, String, String, boolean)
      */
-    public Map<String, String> listMembers(String shortName, String nameFilter, String roleFilter, boolean collapseGroups)
+    public Map<String, String> listMembers(String shortName, final String nameFilter, final String roleFilter, final boolean collapseGroups)
+    {
+        // MT share - for activity service system callback
+        if (tenantService.isEnabled() && (AuthenticationUtil.SYSTEM_USER_NAME.equals(AuthenticationUtil.getRunAsUser())) && tenantService.isTenantName(shortName))
+        {
+            final String tenantDomain = tenantService.getDomain(shortName);
+            final String sName = tenantService.getBaseName(shortName, true);
+            
+            return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Map<String, String>>()
+            {
+                public Map<String, String> doWork() throws Exception
+                {
+                    return listMembersImpl(sName, nameFilter, roleFilter, collapseGroups);
+                }
+            }, tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain));
+        }
+        else
+        {
+            return listMembersImpl(shortName, nameFilter, roleFilter, collapseGroups);
+        }
+    }
+    
+    private Map<String, String> listMembersImpl(String shortName, String nameFilter, String roleFilter, boolean collapseGroups)
     {
         NodeRef siteNodeRef = getSiteNodeRef(shortName);
         if (siteNodeRef == null)

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -24,6 +24,7 @@
  */
 package org.alfresco.repo.security.authentication;
 
+import org.alfresco.repo.tenant.TenantService;
 import org.apache.commons.lang.RandomStringUtils;
 
 /**
@@ -35,6 +36,13 @@ public class BasicUserNameGenerator implements UserNameGenerator
 {
     // user name length property
     private int userNameLength;
+    
+    private TenantService tenantService;
+    
+    public void setTenantService(TenantService tenantService)
+    {
+        this.tenantService = tenantService;
+    }
     
     /**
      * Set the user name length
@@ -53,6 +61,11 @@ public class BasicUserNameGenerator implements UserNameGenerator
      */
     public String generateUserName()
     {
-        return RandomStringUtils.randomNumeric(userNameLength);
+        String userName = RandomStringUtils.randomNumeric(userNameLength);
+        if (tenantService.isEnabled())
+        {
+            userName = tenantService.getDomainUser(userName, tenantService.getCurrentUserDomain());
+        }
+        return userName;
     }
 }

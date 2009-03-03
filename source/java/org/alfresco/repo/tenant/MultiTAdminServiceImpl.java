@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -50,6 +50,7 @@ import org.alfresco.repo.node.db.DbNodeServiceImpl;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.site.SiteAVMBootstrap;
 import org.alfresco.repo.workflow.WorkflowDeployer;
 import org.alfresco.service.cmr.admin.RepoAdminService;
 import org.alfresco.service.cmr.attributes.AttributeService;
@@ -93,8 +94,10 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
     private TenantRoutingFileContentStore tenantFileContentStore;
     private WorkflowService workflowService;
     private RepositoryExporterService repositoryExporterService;
-    private WorkflowDeployer workflowDeployer;
     private ModuleService moduleService;
+    private SiteAVMBootstrap siteAVMBootstrap;
+    
+    private List<WorkflowDeployer> workflowDeployers = new ArrayList<WorkflowDeployer>();
     
     /*
      * Tenant domain/ids are unique strings that are case-insensitive. Tenant ids must be valid filenames. 
@@ -182,14 +185,23 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         this.repositoryExporterService = repositoryExporterService;
     }
     
+    /**
+     * @deprecated see setWorkflowDeployers
+     */
     public void setWorkflowDeployer(WorkflowDeployer workflowDeployer)
     {
-        this.workflowDeployer = workflowDeployer;
+        // NOOP
+        logger.warn(WARN_MSG);
     }
     
     public void setModuleService(ModuleService moduleService)
     {
         this.moduleService = moduleService;
+    }
+    
+    public void setSiteAVMBootstrap(SiteAVMBootstrap siteAVMBootstrap)
+    {
+        this.siteAVMBootstrap = siteAVMBootstrap;
     }
     
     public static final String PROTOCOL_STORE_USER = "user";
@@ -211,6 +223,7 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
 
     private List<TenantDeployer> tenantDeployers = new ArrayList<TenantDeployer>();
 
+    private static final String WARN_MSG = "Please update your alfresco/extension/mt/mt-admin-context.xml to use baseMultiTAdminService (see latest alfresco/extension/mt/mt-admin-context.xml.sample)";
     
     protected void checkProperties()
     {
@@ -224,9 +237,22 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         PropertyCheck.mandatory(this, "TenantFileContentStore", tenantFileContentStore);
         PropertyCheck.mandatory(this, "WorkflowService", workflowService);
         PropertyCheck.mandatory(this, "RepositoryExporterService", repositoryExporterService);
-        PropertyCheck.mandatory(this, "WorkflowDeployer", workflowDeployer);
         
-        PropertyCheck.mandatory(this, "ModuleService - see updated alfresco/extension/mt/mt-admin-context.xml.sample", moduleService);
+        // for backwards compatibility only
+        
+        if (moduleService == null)
+        {
+            // default for now
+            logger.warn(WARN_MSG);
+            moduleService = (ModuleService)ctx.getBean("moduleService");
+        }
+        
+        if (siteAVMBootstrap == null)
+        {
+            // default for now
+            logger.warn(WARN_MSG);
+            siteAVMBootstrap = (SiteAVMBootstrap)ctx.getBean("siteAVMBootstrap");
+        }
     }
     
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
@@ -348,7 +374,9 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
                         bootstrapSpacesArchiveTenantStore(spacesArchiveImporterBootstrap, tenantDomain);
                         
                         ImporterBootstrap spacesImporterBootstrap = (ImporterBootstrap)ctx.getBean("spacesBootstrap");
-                        bootstrapSpacesTenantStore(spacesImporterBootstrap, tenantDomain);                           
+                        bootstrapSpacesTenantStore(spacesImporterBootstrap, tenantDomain);       
+                        
+                        siteAVMBootstrap.bootstrap();
                         
                         // notify listeners that tenant has been created & hence enabled
                         for (TenantDeployer tenantDeployer : tenantDeployers)
@@ -357,7 +385,10 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
                         }
                         
                         // bootstrap workflows
-                        workflowDeployer.init();
+                        for (WorkflowDeployer workflowDeployer : workflowDeployers)
+                        {
+                            workflowDeployer.init();
+                        }
                         
                         // bootstrap modules (if any)
                         moduleService.startModules();
@@ -415,7 +446,10 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
                         }
                         
                         // bootstrap workflows
-                        workflowDeployer.init();
+                        for (WorkflowDeployer workflowDeployer : workflowDeployers)
+                        {
+                            workflowDeployer.init();
+                        }
                         
                         // bootstrap modules (if any)
                         moduleService.startModules();
@@ -1050,8 +1084,8 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
     {
         if (deployer == null)
         {
-            throw new AlfrescoRuntimeException("Deployer must be provided");
-        }  
+            throw new AlfrescoRuntimeException("TenantDeployer must be provided");
+        }
         
         if (! tenantDeployers.contains(deployer))
         {
@@ -1063,12 +1097,25 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
     {
         if (deployer == null)
         {
-            throw new AlfrescoRuntimeException("Deployer must be provided");
+            throw new AlfrescoRuntimeException("TenantDeployer must be provided");
         } 
 
         if (tenantDeployers != null)
         {
             tenantDeployers.remove(deployer);
+        }
+    }
+    
+    public void register(WorkflowDeployer workflowDeployer)
+    {
+        if (workflowDeployer == null)
+        {
+            throw new AlfrescoRuntimeException("WorkflowDeployer must be provided");
+        }
+        
+        if (! workflowDeployers.contains(workflowDeployer))
+        {
+            workflowDeployers.add(workflowDeployer);
         }
     }
      

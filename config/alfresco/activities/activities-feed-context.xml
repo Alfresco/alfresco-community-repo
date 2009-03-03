@@ -8,6 +8,7 @@
       <property name="feedDaoService" ref="feedDaoService"/>
       <property name="feedControlDaoService" ref="feedControlDaoService"/>
       <property name="authorityService" ref="AuthorityService"/>
+      <property name="tenantService" ref="tenantService"/>
       <property name="userNamesAreCaseSensitive" value="${user.name.caseSensitive}"/>
       <property name="feedGenerator" ref="feedGenerator"/>
       <property name="maxFeedItems" value="100"/>
@@ -59,6 +60,7 @@
       <property name="permissionService" ref="PermissionService"/>
       <property name="transactionService" ref="transactionService"/>
       <property name="personService" ref="personService"/>
+      <property name="tenantService" ref="tenantService"/>
    </bean>
     
    <bean id="baseFeedGenerator" class="org.alfresco.repo.activities.feed.AbstractFeedGenerator" abstract="true" init-method="init">

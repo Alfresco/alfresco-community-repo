@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -27,9 +27,11 @@ package org.alfresco.repo.security.person;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -68,6 +70,11 @@ public abstract class AbstractHomeFolderProvider implements HomeFolderProvider, 
     private ServiceRegistry serviceRegistry;
 
     /**
+     * Tenant service - required for MT-enabled environment, else optional
+     */
+    private TenantService tenantService;
+    
+    /**
      * The path to a folder
      */
     private String path;
@@ -75,7 +82,7 @@ public abstract class AbstractHomeFolderProvider implements HomeFolderProvider, 
     /**
      * Cache the result of the path look up.
      */
-    private NodeRef pathNodeRef;
+    private Map<String, NodeRef> pathNodeRefs; // MT-aware
 
     /**
      * The owner to set on creation of a home folder (if unset this will be the uid).
@@ -110,6 +117,8 @@ public abstract class AbstractHomeFolderProvider implements HomeFolderProvider, 
     public AbstractHomeFolderProvider()
     {
         super();
+        
+        pathNodeRefs = new ConcurrentHashMap<String, NodeRef>();
     }
 
     /**
@@ -229,6 +238,16 @@ public abstract class AbstractHomeFolderProvider implements HomeFolderProvider, 
     }
 
     /**
+     * Set the tenant service
+     * 
+     * @param tenantService
+     */
+    public void setTenantService(TenantService tenantService)
+    {
+        this.tenantService = tenantService;
+    }
+
+    /**
      * Inherit permissions when home folder are created?
      * 
      * @param inheritsPermissionsOnCreate
@@ -289,15 +308,19 @@ public abstract class AbstractHomeFolderProvider implements HomeFolderProvider, 
     }
 
     /**
-     * Cache path to node resolution/
+     * Cache path to node resolution
      * 
      * @return
      */
-    protected synchronized NodeRef getPathNodeRef()
+    protected NodeRef getPathNodeRef()
     {
+        String tenantDomain = (tenantService != null ? tenantService.getCurrentUserDomain() : TenantService.DEFAULT_DOMAIN);
+        
+        NodeRef pathNodeRef = pathNodeRefs.get(tenantDomain);
         if (pathNodeRef == null)
         {
             pathNodeRef = resolvePath(path);
+            pathNodeRefs.put(tenantDomain, pathNodeRef);
         }
         return pathNodeRef;
     }

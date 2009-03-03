@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -41,6 +41,7 @@ import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.PermissionServiceSPI;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
@@ -233,7 +234,28 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
      * @return NodeRef of the person as specified by the username
      * @throws NoSuchPersonException
      */
-    public NodeRef getPerson(String userName)
+    public NodeRef getPerson(final String userName)
+    {
+        // MT share - for activity service system callback
+        if (tenantService.isEnabled() && (AuthenticationUtil.SYSTEM_USER_NAME.equals(AuthenticationUtil.getRunAsUser())) && tenantService.isTenantUser(userName))
+        {
+            final String tenantDomain = tenantService.getUserDomain(userName);
+            
+            return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<NodeRef>()
+            {
+                public NodeRef doWork() throws Exception
+                {
+                    return getPersonImpl(userName);
+                }
+            }, tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain));
+        }
+        else
+        {
+            return getPersonImpl(userName);
+        }
+    }
+    
+    private NodeRef getPersonImpl(String userName)
     {
         NodeRef personNode = getPersonOrNull(userName);
         if (personNode == null)

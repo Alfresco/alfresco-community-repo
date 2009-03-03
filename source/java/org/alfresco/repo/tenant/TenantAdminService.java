@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -27,6 +27,7 @@ package org.alfresco.repo.tenant;
 import java.io.File;
 import java.util.List;
 
+import org.alfresco.repo.workflow.WorkflowDeployer;
 import org.apache.commons.logging.Log;
 
 
@@ -44,7 +45,7 @@ public interface TenantAdminService extends TenantUserService
     public void stopTenants();
     
     /*
-     * Deployer methods
+     * Tenant Deployer methods
      */
 
     public void deployTenants(final TenantDeployer deployer, Log logger);
@@ -58,7 +59,13 @@ public interface TenantAdminService extends TenantUserService
     public List<Tenant> getAllTenants();
     
     /*
-     * Deployer methods
+     * Workflow Deployer methods
+     */
+
+    public void register(WorkflowDeployer workflowDeployer);
+    
+    /*
+     * Admin methods
      */
     
     public void createTenant(String tenantDomain, char[] adminRawPassword);

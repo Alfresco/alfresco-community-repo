@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -38,6 +38,7 @@ import org.alfresco.repo.activities.feed.control.FeedControlDaoService;
 import org.alfresco.repo.activities.post.ActivityPostDAO;
 import org.alfresco.repo.activities.post.ActivityPostDaoService;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.activities.ActivityService;
 import org.alfresco.service.cmr.activities.FeedControl;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -68,6 +69,8 @@ public class ActivityServiceImpl implements ActivityService
     private FeedControlDaoService feedControlDaoService;
     private AuthorityService authorityService;
     private FeedGenerator feedGenerator;
+    
+    private TenantService tenantService;
     
     private int maxFeedItems = 100;
     
@@ -108,32 +111,37 @@ public class ActivityServiceImpl implements ActivityService
         this.feedGenerator = feedGenerator;
     }
     
+    public void setTenantService(TenantService tenantService)
+    {
+        this.tenantService = tenantService;
+    }
+    
     
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.activities.ActivityService#postActivity(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
      */
-    public void postActivity(String activityType, String network, String appTool, String activityData)
+    public void postActivity(String activityType, String siteId, String appTool, String activityData)
     {
-        postActivity(activityType, network, appTool, activityData, ActivityPostDAO.STATUS.PENDING);
+        postActivity(activityType, siteId, appTool, activityData, ActivityPostDAO.STATUS.PENDING);
     }
     
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.activities.ActivityService#postActivity(java.lang.String, java.lang.String, java.lang.String, org.alfresco.service.cmr.repository.NodeRef)
      */
-    public void postActivity(String activityType, String network, String appTool, NodeRef nodeRef)
+    public void postActivity(String activityType, String siteId, String appTool, NodeRef nodeRef)
     {
         ParameterCheck.mandatory("nodeRef", nodeRef);
         
         StringBuffer sb = new StringBuffer();
         sb.append("{").append("\"nodeRef\":\"").append(nodeRef.toString()).append("\"").append("}");
         
-        postActivity(activityType, network, appTool, sb.toString(), ActivityPostDAO.STATUS.PENDING);
+        postActivity(activityType, siteId, appTool, sb.toString(), ActivityPostDAO.STATUS.PENDING);
     }
     
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.activities.ActivityService#postActivity(java.lang.String, java.lang.String, java.lang.String, org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
      */
-    public void postActivity(String activityType, String network, String appTool, NodeRef nodeRef, String name)
+    public void postActivity(String activityType, String siteId, String appTool, NodeRef nodeRef, String name)
     {
         ParameterCheck.mandatory("nodeRef", nodeRef);
         
@@ -142,13 +150,13 @@ public class ActivityServiceImpl implements ActivityService
                       .append("\"name\":\"").append(name).append("\"")
                       .append("}");
         
-        postActivity(activityType, network, appTool, sb.toString(), ActivityPostDAO.STATUS.PENDING);
+        postActivity(activityType, siteId, appTool, sb.toString(), ActivityPostDAO.STATUS.PENDING);
     }
 
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.activities.ActivityService#postActivity(java.lang.String, java.lang.String, java.lang.String, org.alfresco.service.cmr.repository.NodeRef, java.lang.String, org.alfresco.service.namespace.QName, org.alfresco.service.cmr.repository.NodeRef)
      */
-    public void postActivity(String activityType, String network, String appTool, NodeRef nodeRef, String name, QName typeQName, NodeRef parentNodeRef)
+    public void postActivity(String activityType, String siteId, String appTool, NodeRef nodeRef, String name, QName typeQName, NodeRef parentNodeRef)
     {
         // primarily for delete node activities - eg. delete document, delete folder
         
@@ -163,23 +171,23 @@ public class ActivityServiceImpl implements ActivityService
                       .append("\"parentNodeRef\":\"").append(parentNodeRef.toString()).append("\"")
                       .append("}");
         
-        postActivity(activityType, network, appTool, sb.toString(), ActivityPostDAO.STATUS.PENDING);
+        postActivity(activityType, siteId, appTool, sb.toString(), ActivityPostDAO.STATUS.PENDING);
     }
     
-    private void postActivity(String activityType, String siteNetwork, String appTool, String activityData, ActivityPostDAO.STATUS status)
+    private void postActivity(String activityType, String siteId, String appTool, String activityData, ActivityPostDAO.STATUS status)
     {
         String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
         
         try
         {
             // optional - default to empty string
-            if (siteNetwork == null)
+            if (siteId == null)
             {
-                siteNetwork = "";
+                siteId = "";
             }
-            else if (siteNetwork.length() > MAX_LEN_SITE_ID)
+            else if (siteId.length() > MAX_LEN_SITE_ID)
             {
-                throw new AlfrescoRuntimeException("Invalid site network - exceeds " + MAX_LEN_SITE_ID + " chars: " + siteNetwork);
+                throw new AlfrescoRuntimeException("Invalid siteId - exceeds " + MAX_LEN_SITE_ID + " chars: " + siteId);
             }
             
             // optional - default to empty string
@@ -235,7 +243,9 @@ public class ActivityServiceImpl implements ActivityService
             Date postDate = new Date();
             ActivityPostDAO activityPost = new ActivityPostDAO();
             activityPost.setUserId(currentUser);
-            activityPost.setSiteNetwork(siteNetwork);
+            
+            activityPost.setSiteNetwork(tenantService.getName(siteId));
+            
             activityPost.setAppTool(appTool);
             activityPost.setActivityData(activityData);
             activityPost.setActivityType(activityType);
@@ -297,6 +307,8 @@ public class ActivityServiceImpl implements ActivityService
             List<ActivityFeedDAO> activityFeeds = null;
             if (siteId != null)
             {
+                siteId = tenantService.getName(siteId);
+                
                 activityFeeds = feedDaoService.selectUserFeedEntries(feedUserId, format, siteId);
             }
             else
@@ -312,6 +324,8 @@ public class ActivityServiceImpl implements ActivityService
                 {
                     break;
                 }
+                
+                activityFeed.setSiteNetwork(tenantService.getBaseName(activityFeed.getSiteNetwork()));
                 activityFeedEntries.add(activityFeed.getJSONString());
             }
         }
@@ -343,6 +357,8 @@ public class ActivityServiceImpl implements ActivityService
 
         try
         { 
+            siteId = tenantService.getName(siteId);
+            
             List<ActivityFeedDAO> activityFeeds = feedDaoService.selectSiteFeedEntries(siteId, format);
             
             int count = 0;
@@ -353,6 +369,8 @@ public class ActivityServiceImpl implements ActivityService
                 {
                     break;
                 }
+                
+                activityFeed.setSiteNetwork(tenantService.getBaseName(activityFeed.getSiteNetwork()));
                 activityFeedEntries.add(activityFeed.getJSONString());
             }
         }
@@ -503,5 +521,17 @@ public class ActivityServiceImpl implements ActivityService
             logger.error(are);
             throw are;
         }
+    }
+    
+    private FeedControl getTenantFeedControl(FeedControl feedControl)
+    {
+        // TODO
+        return null;
+    }
+    
+    private FeedControl getBaseFeedControl(FeedControl feedControl)
+    {
+        // TODO
+        return null;
     }
 }

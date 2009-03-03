@@ -1261,6 +1261,12 @@ public class JBPMEngine extends BPMEngine
                 public List<WorkflowTask> doInJbpm(JbpmContext context)
                 {
                     Session session = context.getSession();
+                    
+                    if ((query.getProcessName() != null) && (tenantService.isEnabled()))
+                    {
+                        query.setProcessName(tenantService.getName(query.getProcessName()));
+                    }
+                    
                     Criteria criteria = createTaskQueryCriteria(session, query);
                     List<TaskInstance> tasks = criteria.list();
                     
@@ -1505,7 +1511,19 @@ public class JBPMEngine extends BPMEngine
         {
             process = (process == null) ? root.createCriteria("processInstance") : process;
             Criteria processDef = process.createCriteria("processDefinition");
-            processDef.add(Restrictions.eq("name", query.getProcessName().toPrefixString(namespaceService)));
+            
+            String processName = null;
+            if (tenantService.isEnabled())
+            {
+                QName baseProcessName = tenantService.getBaseName(query.getProcessName(), true);
+                processName = tenantService.getName(baseProcessName.toPrefixString(namespaceService));
+            }
+            else
+            {
+                processName = query.getProcessName().toPrefixString(namespaceService);
+            }
+            
+            processDef.add(Restrictions.eq("name", processName));
         }
         
         return process;

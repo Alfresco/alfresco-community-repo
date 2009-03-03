@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -77,6 +77,11 @@ public interface TenantService extends TenantUserService
      * @return          the reference <b>with</b> the tenant-specific ID attached
      */
     public StoreRef getName(String username, StoreRef storeRef);
+    
+    /**
+     * @return          the reference <b>with</b> the tenant-specific ID attached
+     */
+    public QName getName(QName name);
     
     /**
      * @return          the reference <b>with</b> the tenant-specific ID attached

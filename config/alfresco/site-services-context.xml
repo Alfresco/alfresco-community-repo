@@ -74,6 +74,7 @@
        <property name="sitesXPath">
            <value>./${spaces.company_home.childname}/st:sites</value>
        </property>
+       <property name="tenantService" ref="tenantService"/>
     </bean>
     
     <bean id="siteServiceScript" parent="baseJavaScriptExtension" class="org.alfresco.repo.site.script.ScriptSiteService">

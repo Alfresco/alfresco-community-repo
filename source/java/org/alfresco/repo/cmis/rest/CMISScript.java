@@ -455,7 +455,7 @@ public class CMISScript extends BaseScopableProcessorExtension
         options.setSkipCount(page.getNumber());
         options.setMaxItems(page.getSize());
         CMISResultSet resultSet = cmisQueryService.query(options);
-        Cursor cursor = paging.createCursor(resultSet.getLength() + (resultSet.hasMore() ? 1 : 0) , page);
+        Cursor cursor = paging.createCursor(page.getNumber() + resultSet.getLength() + (resultSet.hasMore() ? 1 : 0) , page);
         return paging.createPagedResult(resultSet, cursor);
     }
     

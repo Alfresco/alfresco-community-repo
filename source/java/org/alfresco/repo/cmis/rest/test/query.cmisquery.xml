@@ -1,4 +1,5 @@
 <cmis:query xmlns:cmis="http://www.cmis.org/2008/05" >
   <cmis:statement><![CDATA[${STATEMENT}]]></cmis:statement>
+  <cmis:skipCount>${SKIPCOUNT}</cmis:skipCount>
   <cmis:pageSize>${PAGESIZE}</cmis:pageSize>
 </cmis:query>

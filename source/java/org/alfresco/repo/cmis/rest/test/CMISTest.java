@@ -104,8 +104,8 @@ public class CMISTest extends BaseCMISWebScriptTest
 //        setRemoteServer(server);
 //        setArgsAsHeaders(false);
 //        setValidateResponse(false);
-//        setListener(new CMISTestListener(System.out));
-//        setTraceReqRes(true);
+        setListener(new CMISTestListener(System.out));
+        setTraceReqRes(true);
         
         super.setUp();
     }
@@ -1222,6 +1222,7 @@ public class CMISTest extends BaseCMISWebScriptTest
                            "WHERE IN_FOLDER('" + testFolderObject.getObjectId().getValue() + "') " +
                            "AND Name = 'apple1'";
             String queryReq = queryDoc.replace("${STATEMENT}", query);
+            queryReq = queryReq.replace("${SKIPCOUNT}", "0");
             queryReq = queryReq.replace("${PAGESIZE}", "5");
     
             // issue structured query
@@ -1243,6 +1244,7 @@ public class CMISTest extends BaseCMISWebScriptTest
             String query = "SELECT ObjectId, ObjectTypeId, Name FROM Document " +
                            "WHERE CONTAINS('" + doc2name + "')";
             String queryReq = queryDoc.replace("${STATEMENT}", query);
+            queryReq = queryReq.replace("${SKIPCOUNT}", "0");
             queryReq = queryReq.replace("${PAGESIZE}", "5");
     
             // issue fulltext query
@@ -1266,6 +1268,7 @@ public class CMISTest extends BaseCMISWebScriptTest
                            "AND Name = 'apple1' " +
                            "AND CONTAINS('apple1')";
             String queryReq = queryDoc.replace("${STATEMENT}", query);
+            queryReq = queryReq.replace("${SKIPCOUNT}", "0");
             queryReq = queryReq.replace("${PAGESIZE}", "5");
     
             // issue structured query
@@ -1282,6 +1285,51 @@ public class CMISTest extends BaseCMISWebScriptTest
         }
     }
     
+    public void testQueryPaging() throws Exception
+    {
+        // retrieve query collection
+        IRI queryHREF = getQueryCollection(getWorkspace(getRepository()));
+
+        // create multiple children
+        Set<IRI> docIds = new HashSet<IRI>();
+        Entry testFolder = createTestFolder("testQueryPaging");
+        Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
+        assertNotNull(childrenLink);
+        for (int i = 0; i < 15; i++)
+        {
+            Entry document = createDocument(childrenLink.getHref(), "testQueryPaging" + i);
+            assertNotNull(document);
+            docIds.add(document.getId());
+        }
+        assertEquals(15, docIds.size());
+
+        // query children
+        String queryDoc = loadString("/org/alfresco/repo/cmis/rest/test/query.cmisquery.xml");
+        CMISObject testFolderObject = testFolder.getExtension(CMISConstants.OBJECT);
+        String query = "SELECT ObjectId, ObjectTypeId, Name FROM Document " + "WHERE IN_FOLDER('" + testFolderObject.getObjectId().getValue() + "')";
+
+        for (int page = 0; page < 4; page++)
+        {
+            String queryReq = queryDoc.replace("${STATEMENT}", query);
+            queryReq = queryReq.replace("${SKIPCOUNT}", new Integer(page * 4).toString());
+            queryReq = queryReq.replace("${PAGESIZE}", "4");
+            Response queryRes = sendRequest(new PostRequest(queryHREF.toString(), queryReq.getBytes(), CMISConstants.MIMETYPE_QUERY), 200);
+            assertNotNull(queryRes);
+
+            Feed queryFeed = abdera.parseFeed(new StringReader(queryRes.getContentAsString()), null);
+            assertNotNull(queryFeed);
+            assertEquals(page < 3 ? 4 : 3, queryFeed.getEntries().size());
+
+            for (Entry entry : queryFeed.getEntries())
+            {
+                docIds.remove(entry.getId());
+            }
+        }
+        
+        assertEquals(0, docIds.size());
+    }
+
+
 //    public void testUnfiled()
 //    {
 //    }

@@ -847,6 +847,19 @@ public class CMISTest extends BaseCMISWebScriptTest
         assertEquals(docObject.getObjectId().getValue(), pwcObject.getVersionSeriesId().getValue());
         assertEquals(pwcObject.getObjectId().getValue(), pwcObject.getVersionSeriesCheckedOutId().getValue());
         assertNotNull(pwcObject.getVersionSeriesCheckedOutBy().getValue());
+        
+        // retrieve pwc directly
+        Response pwcGetRes = sendRequest(new GetRequest(pwc.getSelfLink().getHref().toString()), 200);
+        assertNotNull(pwcGetRes);
+        String pwcGetXml = pwcRes.getContentAsString();
+        Entry pwcGet = abdera.parseEntry(new StringReader(pwcGetXml), null);
+        assertNotNull(pwcGet);
+        CMISObject pwcGetObject = pwc.getExtension(CMISConstants.OBJECT);
+        assertNotNull(pwcGetObject);
+        assertTrue(pwcGetObject.isVersionSeriesCheckedOut().getBooleanValue());
+        assertEquals(docObject.getObjectId().getValue(), pwcGetObject.getVersionSeriesId().getValue());
+        assertEquals(pwcGetObject.getObjectId().getValue(), pwcGetObject.getVersionSeriesCheckedOutId().getValue());
+        assertNotNull(pwcGetObject.getVersionSeriesCheckedOutBy().getValue());
 
         // test getCheckedOut is updated
         CMISObject object = testFolder.getExtension(CMISConstants.OBJECT);

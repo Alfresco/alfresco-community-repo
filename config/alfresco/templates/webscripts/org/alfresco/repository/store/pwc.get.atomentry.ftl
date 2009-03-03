@@ -4,6 +4,8 @@
 [#compress]
 
 <?xml version="1.0" encoding="UTF-8"?>
-[@entryLib.pwc node ns=[@nsLib.entryNS/]/]
+[#assign namespace][@nsLib.entryNS/][/#assign]
+
+[@entryLib.pwc node=node ns=namespace/]
 
 [/#compress]

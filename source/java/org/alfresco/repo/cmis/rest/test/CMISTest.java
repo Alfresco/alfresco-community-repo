@@ -104,8 +104,8 @@ public class CMISTest extends BaseCMISWebScriptTest
 //        setRemoteServer(server);
 //        setArgsAsHeaders(false);
 //        setValidateResponse(false);
-        setListener(new CMISTestListener(System.out));
-        setTraceReqRes(true);
+//        setListener(new CMISTestListener(System.out));
+//        setTraceReqRes(true);
         
         super.setUp();
     }
@@ -417,6 +417,26 @@ public class CMISTest extends BaseCMISWebScriptTest
         int entriesAfter = feedFolderAfter.getEntries().size();
         assertEquals(entriesBefore +1, entriesAfter);
         Entry entry = feedFolderAfter.getEntry(folder.getId().toString());
+        assertNotNull(entry);
+    }
+    
+    public void testCreateDocumentViaDescendants()
+        throws Exception
+    {
+        Entry testFolder = createTestFolder("testCreateDocumentViaDescendants");
+        Link descendantsLink = testFolder.getLink(CMISConstants.REL_DESCENDANTS);
+        assertNotNull(descendantsLink);
+        Feed descendants = getFeed(descendantsLink.getHref());
+        assertNotNull(descendants);
+        int entriesBefore = descendants.getEntries().size();
+        Entry document = createDocument(descendants.getSelfLink().getHref(), "testCreateDocumentViaDescendants");
+        Response documentContentRes = sendRequest(new GetRequest(document.getContentSrc().toString()), 200);
+        String resContent = documentContentRes.getContentAsString();
+        assertEquals(document.getTitle(), resContent);
+        Feed feedFolderAfter = getFeed(descendantsLink.getHref());
+        int entriesAfter = feedFolderAfter.getEntries().size();
+        assertEquals(entriesBefore +1, entriesAfter);
+        Entry entry = feedFolderAfter.getEntry(document.getId().toString());
         assertNotNull(entry);
     }
     

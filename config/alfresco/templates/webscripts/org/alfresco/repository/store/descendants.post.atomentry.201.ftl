@@ -5,10 +5,12 @@
 
 <?xml version="1.0" encoding="UTF-8"?>
 
+[#assign namespace][@nsLib.entryNS/][/#assign]
+
 [#if node.isDocument]  
-  [@entryLib.document node ns=[@nsLib.entryNS/]/]
+  [@entryLib.document node=node ns=namespace/]
 [#else]
-  [@entryLib.folder node ns=[@nsLib.entryNS/]/]
+  [@entryLib.folder node=node ns=namespace/]
 [/#if]
 
 [/#compress]

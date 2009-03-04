@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -115,7 +115,7 @@ public class MultiTDemoTest extends TestCase
     public static final String TEST_USER3 = "eve";
     public static final String TEST_USER4 = "fred";
     
-    private static final int DEFAULT_DM_STORE_COUNT = 6;
+    private static final int DEFAULT_STORE_COUNT = 7; // including siteStore
     
     public static StoreRef SPACES_STORE = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
 
@@ -509,7 +509,7 @@ public class MultiTDemoTest extends TestCase
         {
             public Object doWork() throws Exception
             {
-                assertTrue("System: ", (nodeService.getStores().size() >= (DEFAULT_DM_STORE_COUNT * (tenants.size()+1))));
+                assertTrue("System: ", (nodeService.getStores().size() >= (DEFAULT_STORE_COUNT * (tenants.size()+1))));
                 return null;                      
             }
         }, AuthenticationUtil.getSystemUserName());
@@ -519,7 +519,7 @@ public class MultiTDemoTest extends TestCase
         {
             public Object doWork() throws Exception
             {
-                assertTrue("Super admin: ", (nodeService.getStores().size() >= DEFAULT_DM_STORE_COUNT));
+                assertTrue("Super admin: ", (nodeService.getStores().size() >= DEFAULT_STORE_COUNT));
                 return null;                      
             }
         }, DEFAULT_ADMIN_UN);
@@ -532,7 +532,7 @@ public class MultiTDemoTest extends TestCase
             {
                 public Object doWork() throws Exception
                 {
-                    assertEquals("Tenant: "+tenantDomain, DEFAULT_DM_STORE_COUNT, nodeService.getStores().size());
+                    assertEquals("Tenant: "+tenantDomain, DEFAULT_STORE_COUNT, nodeService.getStores().size());
                     
                     return null;                      
                 }

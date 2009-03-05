@@ -1251,6 +1251,27 @@ public class CMISTest extends BaseCMISWebScriptTest
 
         {
             // construct structured query
+            String query = "SELECT * FROM Folder " +
+                           "WHERE ObjectId = '" + testFolderObject.getObjectId().getValue() + "'";
+            String queryReq = queryDoc.replace("${STATEMENT}", query);
+            queryReq = queryReq.replace("${SKIPCOUNT}", "0");
+            queryReq = queryReq.replace("${PAGESIZE}", "5");
+    
+            // issue structured query
+            Response queryRes = sendRequest(new PostRequest(queryHREF.toString(), queryReq.getBytes(), CMISConstants.MIMETYPE_QUERY), 200);
+            assertNotNull(queryRes);
+            Feed queryFeed = abdera.parseFeed(new StringReader(queryRes.getContentAsString()), null);
+            assertNotNull(queryFeed);
+            assertEquals(1, queryFeed.getEntries().size());
+            assertNotNull(queryFeed.getEntry(testFolder.getId().toString()));
+            CMISObject result1 = queryFeed.getEntry(testFolder.getId().toString()).getExtension(CMISConstants.OBJECT);
+            assertEquals(testFolderObject.getName().getValue(), result1.getName().getValue());
+            assertEquals(testFolderObject.getObjectId().getValue(), result1.getObjectId().getValue());
+            assertEquals(testFolderObject.getObjectTypeId().getValue(), result1.getObjectTypeId().getValue());
+        }
+
+        {
+            // construct structured query
             String query = "SELECT * FROM Document " +
                            "WHERE IN_FOLDER('" + testFolderObject.getObjectId().getValue() + "') " +
                            "AND Name = 'apple1'";
@@ -1270,7 +1291,7 @@ public class CMISTest extends BaseCMISWebScriptTest
             assertEquals(document1Object.getObjectId().getValue(), result1.getObjectId().getValue());
             assertEquals(document1Object.getObjectTypeId().getValue(), result1.getObjectTypeId().getValue());
         }
-        
+
         if (fulltextCapability.equals("fulltextonly") || fulltextCapability.equals("fulltextandstructured"))
         {
             // construct fulltext query

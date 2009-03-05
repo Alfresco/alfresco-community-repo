@@ -209,7 +209,14 @@
 [#if row.nodes??]
 [#assign node = row.nodes?first]
 <author><name>${node.properties.creator!""}</name></author>
-[@contentstream node/]
+
+[#-- TODO: review if consistent with ATOM --]
+[#if node.isDocument]
+  [@contentstream node/]
+[#else]
+  <content>${node.id}</content>  [#-- TODO --]
+[/#if]    
+
 <id>urn:uuid:${node.id}</id>
 <link rel="self" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}"/>
 <title>${node.name}</title>
@@ -219,13 +226,11 @@
 <cmis:properties>
 
 [#-- TODO: spec issue: baseType to become formal property --]
-[#if node??]
-  [#if node.isDocument]
-    [@propvalue "BaseType" "document" "STRING"/]
-  [#else]
-    [@propvalue "BaseType" "folder" "STRING"/]
-  [/#if]    
-[/#if]
+[#if node.isDocument]
+  [@propvalue "BaseType" "document" "STRING"/]
+[#else]
+  [@propvalue "BaseType" "folder" "STRING"/]
+[/#if]    
 
 [#assign values = row.values]
 [#list values?keys as colname]

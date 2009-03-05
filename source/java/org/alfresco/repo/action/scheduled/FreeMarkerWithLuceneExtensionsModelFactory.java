@@ -175,20 +175,32 @@ public class FreeMarkerWithLuceneExtensionsModelFactory implements TemplateActio
                 sp.setLanguage(language);
                 sp.setQuery(query);
 
-                ResultSet results = serviceRegistry.getSearchService().query(sp);
+                ResultSet results = null; 
+                    
+                try
+                {
+                    results = serviceRegistry.getSearchService().query(sp);
 
-                if (results.length() == 0)
-                {
-                    throw new TemplateModelException("No nodes selected");
-                }
+                    if (results.length() == 0)
+                    {
+                        throw new TemplateModelException("No nodes selected");
+                    }
 
-                else if (results.length() == 1)
-                {
-                    return results.getNodeRef(0).toString();
+                    else if (results.length() == 1)
+                    {
+                        return results.getNodeRef(0).toString();
+                    }
+                    else
+                    {
+                        throw new TemplateModelException("More than one node selected");
+                    }
                 }
-                else
+                finally
                 {
-                    throw new TemplateModelException("More than one node selected");
+                    if(results != null)
+                    {
+                        results.close();
+                    }
                 }
             }
             else

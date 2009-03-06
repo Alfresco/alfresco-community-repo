@@ -16,7 +16,7 @@ const SITES_SPACE_QNAME_PATH = "/app:company_home/st:sites/";
  * Returns site data as returned to the user.
  * { shortName: siteId, title: title }
  * 
- * Caches the sites to avoid double-querying the repository
+ * Caches the sites to avoid repeatedly querying the repository.
  */
 var siteDataCache = [];
 function getSiteData(siteId)
@@ -37,6 +37,29 @@ function getSiteData(siteId)
    }
    siteDataCache[siteId] = data;
    return data;
+}
+
+/**
+ * Returns person display name string as returned to the user.
+ * 
+ * Caches the person full name to avoid repeatedly querying the repository.
+ */
+var personDataCache = [];
+function getPersonDisplayName(userId)
+{
+   if (personDataCache[userId] != undefined)
+   {
+      return personDataCache[userId];
+   }
+   
+   var displayName = "";
+   var person = people.getPerson(userId);
+   if (person != null)
+   {
+      displayName = person.properties.firstName + " " + person.properties.lastName;
+   }
+   personDataCache[userId] = displayName;
+   return displayName;
 }
 
 /**
@@ -107,30 +130,32 @@ function getDocumentItem(siteId, containerId, restOfPath, node)
    }
    addToProcessed(siteId + containerId, "" + node.nodeRef.toString());
     
-   // check whether this is a folder or a file
+   // check whether this is a valid folder or a file
    var item = null;
-   if (node.isContainer)
+   if (node.isContainer || node.isDocument)
    {
       item = {};
       item.site = getSiteData(siteId);
       item.container = containerId;
       item.nodeRef = node.nodeRef.toString();
-      item.type = "folder";
       item.tags = (node.tags != null) ? node.tags : [];
       item.name = node.name;
-      item.displayName = node.name; // PENDING: node.name.replace(message("coci_service.working_copy_label"), ''); // ${item.name?replace(workingCopyLabel, "")?html}",  
+      item.displayName = node.name;
+      item.description = node.properties["cm:description"];
+      item.modifiedOn = node.properties["cm:modified"];
+      item.modifiedByUser = node.properties["cm:modifier"];
+      item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
+   }
+   if (node.isContainer)
+   {
+      item.type = "folder";
+      item.size = -1;
       item.browseUrl = containerId + "#path=" + encodeURIComponent(getSpaceNamePath(siteId, containerId, node));
    }
    else if (node.isDocument)
    {
-      item = {};
-      item.site = getSiteData(siteId);
-      item.container = containerId;
-      item.nodeRef = node.nodeRef.toString();
       item.type = "file";
-      item.tags = (node.tags != null) ? node.tags : [];
-      item.name = node.name;
-      item.displayName = node.name; // PENDING: node.name.replace(message("coci_service.working_copy_label"), ''); // ${item.name?replace(workingCopyLabel, "")?html}",
+      item.size = node.size;
       item.browseUrl = "document-details?nodeRef=" + node.nodeRef.toString();
    }
    
@@ -175,6 +200,10 @@ function getBlogPostItem(siteId, containerId, restOfPath, node)
    item.type = "blogpost";
    item.tags = (child.tags != null) ? child.tags : [];
    item.name = child.name;
+   item.modifiedOn = child.properties["cm:modified"];
+   item.modifiedByUser = child.properties["cm:modifier"];
+   item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
+   item.size = child.size;
    item.displayName = child.properties["cm:title"];
    item.browseUrl = "blog-postview?container=" + containerId + "&postId=" + child.name;
    
@@ -213,6 +242,11 @@ function getForumPostItem(siteId, containerId, restOfPath, node)
    item.type = "topicpost";
    item.tags = (topicNode.tags != null) ? topicNode.tags : [];
    item.name = topicNode.name;
+   item.description = topicNode.properties["cm:description"];
+   item.modifiedOn = topicNode.properties["cm:modified"];
+   item.modifiedByUser = topicNode.properties["cm:modifier"];
+   item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
+   item.size = topicNode.size;
    item.displayName = postNode.properties["cm:title"];
    item.browseUrl = "discussions-topicview?container=" + containerId + "&topicId=" + topicNode.name;
    
@@ -241,6 +275,11 @@ function getCalendarItem(siteId, containerId, restOfPath, node)
    item.type = "calendarevent";
    item.tags = (node.tags != null) ? node.tags : [];
    item.name = node.name;
+   item.description = node.properties["ia:descriptionEvent"];
+   item.modifiedOn = node.properties["cm:modified"];
+   item.modifiedByUser = node.properties["cm:modifier"];
+   item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
+   item.size = -1;
    item.displayName = node.properties["ia:whatEvent"];
    item.browseUrl = containerId; // this is "calendar"
    
@@ -269,6 +308,11 @@ function getWikiItem(siteId, containerId, restOfPath, node)
    item.type = "wikipage";
    item.tags = (node.tags != null) ? node.tags : [];
    item.name = node.name;
+   item.description = node.properties["cm:description"];
+   item.modifiedOn = node.properties["cm:modified"];
+   item.modifiedByUser = node.properties["cm:modifier"];
+   item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
+   item.size = node.size;
    item.displayName = node.properties["cm:name"]; // cm:title at some point?
    item.browseUrl = "wiki-page?title=" + node.properties["cm:name"];
    
@@ -379,11 +423,11 @@ function processResults(nodes, maxResults)
  * Return Search results with the given search terms
  * Terms are split on whitespace characters.
  * 
- * AND, OR and NOT are supported keyboard as their Lucene equivilent.
+ * AND, OR and NOT are supported - as their Lucene equivalent.
  */
 function getSearchResults(term, maxResults, siteId, containerId)
 {
-   var path = SITES_SPACE_QNAME_PATH; // "/app:company_home/st:sites/";
+   var path = SITES_SPACE_QNAME_PATH;
    if (siteId != null && siteId.length > 0)
    {
       path += "cm:" + search.ISO9075Encode(siteId) + "/";

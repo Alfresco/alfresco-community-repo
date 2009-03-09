@@ -43,7 +43,6 @@ import org.mozilla.javascript.IdScriptableObject;
 import org.mozilla.javascript.NativeArray;
 import org.mozilla.javascript.ScriptRuntime;
 import org.mozilla.javascript.Scriptable;
-import org.mozilla.javascript.ScriptableObject;
 import org.mozilla.javascript.Wrapper;
 
 
@@ -96,9 +95,18 @@ public class ValueConverter
             // call the "Date" constructor on the root scope object - passing in the millisecond
             // value from the Java date - this will construct a JavaScript Date with the same value
             Date date = (Date)value;
-            Object val = ScriptRuntime.newObject(
+            
+            try
+            {
+            	Context.enter();           
+            	Object val = ScriptRuntime.newObject(
                     Context.getCurrentContext(), scope, TYPE_DATE, new Object[] {date.getTime()});
-            value = (Serializable)val;
+            	value = (Serializable)val;
+            }
+            finally
+            {
+            	Context.exit();
+            }
         }
         else if (value instanceof Collection)
         {
@@ -110,8 +118,16 @@ public class ValueConverter
             {
                 array[index++] = convertValueForScript(services, scope, qname, obj);
             }
-            // convert array to a native JavaScript Array
-            value = (Serializable)Context.getCurrentContext().newArray(scope, array);
+            try
+            {
+            	Context.enter();
+            	// convert array to a native JavaScript Array
+            	value = (Serializable)Context.getCurrentContext().newArray(scope, array);
+            }
+            finally
+            {
+            	Context.exit();
+            }
         }
         // simple numbers and strings are wrapped automatically by Rhino
         

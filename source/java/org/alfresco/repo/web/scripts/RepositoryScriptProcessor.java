@@ -57,7 +57,7 @@ public class RepositoryScriptProcessor implements ScriptProcessor
     protected SearchPath searchPath;
 
     // Javascript Converter
-    private ValueConverter valueConverter = new ValueConverter();
+    private final ValueConverter valueConverter = new ValueConverter();
 
     
     /**
@@ -122,6 +122,7 @@ public class RepositoryScriptProcessor implements ScriptProcessor
     public void reset()
     {
         init();
+        this.scriptService.resetScriptProcessors();
     }
     
     /**
@@ -172,18 +173,33 @@ public class RepositoryScriptProcessor implements ScriptProcessor
         }
         
         /* (non-Javadoc)
+         * @see org.alfresco.service.cmr.repository.ScriptLocation#isCachable()
+         */
+        public boolean isCachable()
+        {
+            return content.isCachable();
+        }
+        
+        /* (non-Javadoc)
          * @see org.alfresco.service.cmr.repository.ScriptLocation#isSecure()
          */
         public boolean isSecure()
         {
             return content.isSecure();
         }
-
+        
+        /* (non-Javadoc)
+         * @see org.alfresco.service.cmr.repository.ScriptLocation#getPath()
+         */
+        public String getPath()
+        {
+            return content.getPath();
+        }
+        
         @Override
         public String toString()
         {
         	return content.getPathDescription();
         }
     }
-
 }

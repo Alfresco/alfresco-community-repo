@@ -946,7 +946,15 @@ public class RepoStore implements Store, TenantDeployer
 		{
 		    return "/" + path + " (in repository store " + repoStore.toString() + getBaseDir() + ")";
 		}
-
+		
+        /* (non-Javadoc)
+         * @see org.alfresco.web.scripts.ScriptContent#isCachable()
+         */
+        public boolean isCachable()
+        {
+            return false;
+        }
+        
         /* (non-Javadoc)
          * @see org.alfresco.web.scripts.ScriptContent#isSecure()
          */
@@ -955,5 +963,4 @@ public class RepoStore implements Store, TenantDeployer
             return false;
         }
     }
-
 }

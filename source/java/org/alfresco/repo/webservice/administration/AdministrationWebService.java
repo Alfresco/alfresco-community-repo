@@ -46,6 +46,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
@@ -76,6 +77,8 @@ public class AdministrationWebService extends AbstractWebService implements
     
     /** The authentication service */
     private AuthenticationService authenticationService = null;
+    
+    private AuthorityService authorityService;
     
     /** The transaction service */
     private TransactionService transactionService = null;
@@ -134,7 +137,17 @@ public class AdministrationWebService extends AbstractWebService implements
     {
         this.authenticationService = authenticationService;
     }
-    
+
+    /**
+     * Set the authority service used to determine admin rights.
+     * 
+     * @param authorityService          the service implementation
+     */
+    public void setAuthorityService(AuthorityService authorityService)
+    {
+        this.authorityService = authorityService;
+    }
+
     /**
      * @see org.alfresco.repo.webservice.administration.AdministrationServiceSoapPort#queryUsers(org.alfresco.repo.webservice.administration.UserFilter)
      */
@@ -534,7 +547,7 @@ public class AdministrationWebService extends AbstractWebService implements
     	if (this.manageAuthenticationDetails == true)
     	{
 	        // Update the authentication details
-	    	if (this.authenticationService.getCurrentUserName().equals("admin") == true)
+	    	if (this.authorityService.hasAdminAuthority() == true)
 	    	{
 	    		this.authenticationService.setAuthentication(userName, newPassword.toCharArray());
 	    	}

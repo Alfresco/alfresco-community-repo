@@ -86,8 +86,6 @@
        <property name="server" ref="alfrescoMBeanServer"/>
        <property name="beans">
          <map>
-           <!-- MBeans to register with alfrescoMBeanServer -->
-           <entry key="Alfresco:Name=Log4jHierarchy,Type=Log4JHierarchy" value-ref="log4jHierarchy"/>
            <!--  Used by Alfresco WCM Virtualisation server -->
            <entry key="Alfresco:Name=VirtServerRegistry,Type=VirtServerRegistry" value-ref="VirtServerRegistry"/>
          </map>
@@ -129,9 +127,6 @@
         <property name="cifsServer"><ref bean="cifsServer"/></property>
         <property name="nfsServer"><ref bean="nfsServer"/></property> 
     </bean>
-
-    <!-- Log4J Hierarchy -->
-    <bean id="log4jHierarchy" class="org.apache.log4j.jmx.HierarchyDynamicMBean"/>
 
     <!-- This bean will attempt to export extra beans to log4jHierarchy's MBeanServer, so it's vital that the exporter has been initialised -->
     <bean id="log4JHierarchyInit" class="org.alfresco.repo.admin.Log4JHierarchyInit" depends-on="exporter" init-method="init">

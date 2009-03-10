@@ -38,10 +38,13 @@ import net.sf.acegisecurity.providers.dao.User;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.util.EqualsHelper;
+import org.alfresco.util.log.NDC;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.log4j.NDC;
 
+/**
+ * Utility helper methods to change the authenticated context for threads.
+ */
 public abstract class AuthenticationUtil
 {
     static Log s_logger = LogFactory.getLog(AuthenticationUtil.class);
@@ -59,7 +62,7 @@ public abstract class AuthenticationUtil
     public static final String SYSTEM_USER_NAME = "System";
 
     private static boolean mtEnabled = false;
-
+    
     public static void setMtEnabled(boolean mtEnabled)
     {
         if (!AuthenticationUtil.mtEnabled)

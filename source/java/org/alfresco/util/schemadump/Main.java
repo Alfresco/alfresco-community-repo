@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -80,6 +80,8 @@ public class Main
     /**
      * Creates a new instance of this tool..
      * 
+     * @param contextPath
+     *            path to the context xml file
      * @throws SQLException
      *             the SQL exception
      * @throws IOException
@@ -94,12 +96,12 @@ public class Main
      *             the no such field exception
      */
     @SuppressWarnings("unchecked")
-    public Main() throws SQLException, IOException, InstantiationException, IllegalAccessException,
+    public Main(final String contextPath) throws SQLException, IOException, InstantiationException, IllegalAccessException,
             ClassNotFoundException, NoSuchFieldException
     {
         final ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(new String[]
         {
-            "classpath:/org/alfresco/extension/dump-context.xml"
+            "file:" + contextPath
         });
         final DataSource datasource = (DataSource) context.getBean("dataSource");
         this.con = datasource.getConnection();
@@ -142,7 +144,13 @@ public class Main
      */
     public static void main(final String[] args) throws Exception
     {
-        final NamedElementCollection result = new Main().execute();
+        if (args.length != 2)
+        {
+            System.out.println("Usage:");
+            System.out.println("java " + Main.class.getName() + " <context.xml> <output.xml>");
+            System.exit(1);
+        }
+        final NamedElementCollection result = new Main(args[0]).execute();
 
         // Set up a SAX TransformerHandler for outputting XML
         final SAXTransformerFactory stf = (SAXTransformerFactory) TransformerFactory.newInstance();
@@ -157,7 +165,7 @@ public class Main
             // It was worth a try
         }
         t.setOutputProperty(OutputKeys.INDENT, "yes");
-        xmlOut.setResult(new StreamResult(args[0]));
+        xmlOut.setResult(new StreamResult(args[1]));
 
         xmlOut.startDocument();
         result.output(xmlOut);

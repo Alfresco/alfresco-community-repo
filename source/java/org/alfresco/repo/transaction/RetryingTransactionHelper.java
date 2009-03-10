@@ -48,6 +48,7 @@ import org.hibernate.StaleStateException;
 import org.hibernate.cache.CacheException;
 import org.hibernate.exception.ConstraintViolationException;
 import org.hibernate.exception.LockAcquisitionException;
+import org.hibernate.exception.SQLGrammarException;
 import org.springframework.aop.MethodBeforeAdvice;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.dao.ConcurrencyFailureException;
@@ -101,7 +102,8 @@ public class RetryingTransactionHelper
                 StaleStateException.class,
                 ObjectNotFoundException.class,
                 CacheException.class,                       // Usually a cache replication issue
-                RemoteCacheException.class                  // A cache replication issue
+                RemoteCacheException.class,                 // A cache replication issue
+                SQLGrammarException.class // Actually specific to MS SQL Server 2005 - we check for this
                 };
     }
 
@@ -456,15 +458,13 @@ public class RetryingTransactionHelper
     public static Throwable extractRetryCause(Throwable cause)
     {
         Throwable retryCause = ExceptionStackUtil.getCause(cause, RETRY_EXCEPTIONS);
-        if (retryCause == null)
+        if (retryCause == null || retryCause instanceof SQLGrammarException
+                && ((SQLGrammarException) retryCause).getErrorCode() != 3960)
         {
             return null;
         }
-        else
-        {
-            // A simple match
-            return retryCause;
-        }
+        // A simple match
+        return retryCause;
     }
     
     /**

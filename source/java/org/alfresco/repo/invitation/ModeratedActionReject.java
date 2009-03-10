@@ -1,7 +1,6 @@
 package org.alfresco.repo.invitation;
 
 
-import org.alfresco.repo.invitation.WorkflowModelNominatedInvitation;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
 import org.alfresco.repo.workflow.jbpm.JBPMSpringActionHandler;
 import org.alfresco.service.ServiceRegistry;
@@ -40,6 +39,13 @@ public class ModeratedActionReject extends JBPMSpringActionHandler
     @SuppressWarnings("unchecked")
     public void execute(final ExecutionContext executionContext) throws Exception
     {
-    	System.out.println("Reject woz ere!");
+        final String resourceType = (String)executionContext.getVariable(WorkflowModelModeratedInvitation.wfVarResourceType);
+        final String resourceName = (String)executionContext.getVariable(WorkflowModelModeratedInvitation.wfVarResourceName);
+        final String inviteeUserName = (String)executionContext.getVariable(WorkflowModelModeratedInvitation.wfVarInviteeUserName);
+        final String inviteeRole = (String)executionContext.getVariable(WorkflowModelModeratedInvitation.wfVarInviteeRole);
+        final String reviewer = (String)executionContext.getVariable(WorkflowModelModeratedInvitation.wfVarReviewer);
+        final String reviewComments = (String)executionContext.getVariable(WorkflowModelModeratedInvitation.wfVarReviewComments);
+
+
     }
 }

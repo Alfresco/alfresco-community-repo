@@ -53,13 +53,6 @@ public class ModeratedActionApprove extends JBPMSpringActionHandler
         final String reviewer = (String)executionContext.getVariable(WorkflowModelModeratedInvitation.wfVarReviewer);
         final String reviewComments = (String)executionContext.getVariable(WorkflowModelModeratedInvitation.wfVarReviewComments);
     	
-    	System.out.println("resourceType=" + resourceType);
-    	System.out.println("resourceName=" + resourceName);
-    	System.out.println("role=" + inviteeRole);
-    	System.out.println("inviteeUserName=" + inviteeUserName);
-    	System.out.println("reviewer=" + reviewer);
-    	System.out.println("reviewComments=" + reviewComments);
-    	
         /**
          * Add invitee to the site
          */
@@ -67,7 +60,9 @@ public class ModeratedActionApprove extends JBPMSpringActionHandler
         {
             public Object doWork() throws Exception
             {
-                siteService.setMembership(resourceName, inviteeUserName, inviteeRole);
+            	// Add the new user to the web site
+            	siteService.setMembership(resourceName, inviteeUserName, inviteeRole);
+            	
                 return null;
             }
             

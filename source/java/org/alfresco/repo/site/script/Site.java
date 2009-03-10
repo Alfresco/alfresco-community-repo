@@ -29,6 +29,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.invitation.InvitationSearchCriteriaImpl;
+import org.alfresco.repo.invitation.script.ScriptInvitation;
+import org.alfresco.repo.invitation.script.ScriptInvitationFactory;
 import org.alfresco.repo.jscript.ContentAwareScriptableQNameMap;
 import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.repo.jscript.ScriptableHashMap;
@@ -40,6 +43,11 @@ import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.service.cmr.invitation.Invitation;
+import org.alfresco.service.cmr.invitation.InvitationException;
+import org.alfresco.service.cmr.invitation.InvitationSearchCriteria;
+import org.alfresco.service.cmr.invitation.InvitationService;
+import org.alfresco.service.cmr.invitation.InvitationSearchCriteria.InvitationType;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteInfo;
@@ -47,6 +55,9 @@ import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ParameterCheck;
+import org.alfresco.wcm.asset.AssetInfo;
+import org.alfresco.wcm.sandbox.script.Asset;
+import org.mozilla.javascript.NativeObject;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 
@@ -592,6 +603,113 @@ public class Site implements Serializable
             }
         }
         return this.customProperties;
+    }
+    
+    /**
+     * Create new moderated invitation to this web site
+     * @return the new invitation
+     */
+    public ScriptInvitation inviteModerated(String inviteeComments, String inviteeUserName, String inviteeRole)
+    {
+    	InvitationService invitationService = serviceRegistry.getInvitationService();
+    	Invitation invitation = invitationService.inviteModerated(inviteeComments, inviteeUserName, Invitation.ResourceType.WEB_SITE, getShortName(), inviteeRole);
+    	return ScriptInvitationFactory.toScriptInvitation(invitation, invitationService);
+    }
+    
+    /**
+     * Create new nominated invitation to this web site
+     * @return the new invitation
+     */
+    public ScriptInvitation inviteNominated(String inviteeFirstName, String inviteeLastName, String inviteeEmail, String inviteeRole, String serverPath, String acceptUrl, String rejectUrl)
+    {    	
+    	InvitationService invitationService = serviceRegistry.getInvitationService();
+    	Invitation invitation = invitationService.inviteNominated(inviteeFirstName, inviteeLastName, inviteeEmail, Invitation.ResourceType.WEB_SITE, getShortName(), inviteeRole, serverPath, acceptUrl, rejectUrl);
+    	return ScriptInvitationFactory.toScriptInvitation(invitation, invitationService);
+    }
+    
+    /**
+     * Create new nominated invitation to this web site
+     * @return the new invitation
+     */
+    public ScriptInvitation inviteNominated(String inviteeUserName, String inviteeRole, String serverPath, String acceptUrl, String rejectUrl)
+    {    	
+    	InvitationService invitationService = serviceRegistry.getInvitationService();
+    	Invitation invitation = invitationService.inviteNominated(inviteeUserName, Invitation.ResourceType.WEB_SITE, getShortName(), inviteeRole, serverPath, acceptUrl, rejectUrl);
+    	return ScriptInvitationFactory.toScriptInvitation(invitation, invitationService);
+    }
+    
+    /**
+     * Get an invitation to this web site
+     * @return the invitation or null if it does not exist
+     */
+    public ScriptInvitation getInvitation(String invitationId)
+    {    	
+    	InvitationService invitationService = serviceRegistry.getInvitationService();
+    	try 
+    	{
+    		Invitation invitation = invitationService.getInvitation(invitationId);
+    		return ScriptInvitationFactory.toScriptInvitation(invitation, invitationService);
+    	} 
+    	catch (InvitationException e)
+    	{
+    		return null;
+        }
+    }
+    
+    /**
+     * list the outstanding invitations for this site
+     * 
+     * Map of name / invitation
+     */
+    public ScriptInvitation[] listInvitations()
+    {
+    	InvitationService invitationService = serviceRegistry.getInvitationService();
+    	
+    	List<Invitation> invitations = invitationService.listPendingInvitationsForResource(Invitation.ResourceType.WEB_SITE, getShortName());
+    	ScriptInvitation[] ret = new ScriptInvitation[invitations.size()];
+        int i = 0;
+		for(Invitation item : invitations)
+		{
+			ret[i++] = ScriptInvitationFactory.toScriptInvitation(item, invitationService);
+		}
+    	return ret;
+    }
+    
+    /**
+     * List the open invitations for this web site.
+     * props specifies optional properties to be searched.
+     * 
+     * @param props inviteeUserName
+     *
+     * @return the invitations
+     */
+    public ScriptInvitation[] listInvitations(Scriptable props)
+    {
+    	
+    	InvitationService invitationService = serviceRegistry.getInvitationService();
+    	
+    	InvitationSearchCriteriaImpl crit = new InvitationSearchCriteriaImpl();
+    	crit.setResourceName(getShortName());
+    	crit.setResourceType(Invitation.ResourceType.WEB_SITE);
+    	
+    	if (props.has("inviteeUserName", props))
+    	{
+    		crit.setInvitee((String)props.get("inviteeUserName", props));
+      	}
+    	if (props.has("invitationType", props))
+    	{
+    		String invitationType = (String)props.get("inviteeUserName", props);
+    		crit.setInvitationType(InvitationType.valueOf(invitationType));
+        }
+
+    	List<Invitation> invitations = invitationService.searchInvitation(crit);
+    	ScriptInvitation[] ret = new ScriptInvitation[invitations.size()];
+        int i = 0;
+		for(Invitation item : invitations)
+		{
+			ret[i++] = ScriptInvitationFactory.toScriptInvitation(item, invitationService);
+		}
+    	return ret;
     }
     
     /**

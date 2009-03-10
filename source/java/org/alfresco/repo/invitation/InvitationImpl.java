@@ -5,10 +5,8 @@ import org.alfresco.service.cmr.invitation.Invitation.ResourceType;
 
 /* package scope */ abstract class InvitationImpl 
 {
-	 /**
-	  * Who is this invitation for
-	  */
-     private String inviteeUserName;
+
+	
      
      /**
       * Unique reference for this invitation
@@ -46,14 +44,6 @@ import org.alfresco.service.cmr.invitation.Invitation.ResourceType;
 	public void setResourceType(ResourceType resourceType)
 	{
 		this.resourceType = resourceType;
-	}
-
-	public void setInviteeUserName(String inviteeUserName) {
-		this.inviteeUserName = inviteeUserName;
-	}
-
-	public String getInviteeUserName() {
-		return inviteeUserName;
 	}
 
 	public void setInviteId(String inviteId) {

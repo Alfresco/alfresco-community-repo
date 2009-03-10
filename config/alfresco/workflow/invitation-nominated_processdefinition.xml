@@ -2,7 +2,8 @@
 
 <!--  Nominated invitation -->
 
-<process-definition xmlns="urn:jbpm.org:jpdl-3.1" name="wf:invite">
+<process-definition xmlns="urn:jbpm.org:jpdl-3.1" 
+	name="wf:invitation-nominated">
 
    <swimlane name="initiator"/>
    
@@ -40,7 +41,7 @@
                args["inviteePersonRef"] = inviteePerson.nodeRef.toString();
                args["inviterPersonRef"] = inviterPerson.nodeRef.toString();
                args["siteName"] = siteName;
-               args["inviteeSiteRole"] = wf_inviteeSiteRole;
+               args["inviteeSiteRole"] = wf_inviteeRole;
                args["inviteeUserName"] = wf_inviteeUserName;
                args["inviteeGenPassword"] = wf_inviteeGenPassword;
                args["acceptLink"] = acceptLink;

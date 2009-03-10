@@ -34,6 +34,9 @@
             <property name="wf:inviteeUserName">
                <type>d:text</type>
             </property>
+            <property name="wf:inviteeEmail">
+               <type>d:text</type>
+            </property>
             <property name="wf:inviteeFirstName">
                <type>d:text</type>
             </property>
@@ -49,7 +52,7 @@
             <property name="wf:resourceName">
                <type>d:text</type>
             </property>
-            <property name="wf:inviteeSiteRole">
+            <property name="wf:inviteeRole">
                <type>d:text</type>
             </property>
          </properties>

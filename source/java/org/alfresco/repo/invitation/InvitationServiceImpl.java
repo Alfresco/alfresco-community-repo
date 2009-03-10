@@ -26,6 +26,7 @@ package org.alfresco.repo.invitation;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,6 +49,7 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
+import org.alfresco.service.cmr.workflow.WorkflowException;
 import org.alfresco.service.cmr.workflow.WorkflowInstance;
 import org.alfresco.service.cmr.workflow.WorkflowPath;
 import org.alfresco.service.cmr.workflow.WorkflowService;
@@ -85,7 +87,65 @@ public class InvitationServiceImpl implements InvitationService
 	// maximum number of tries to generate a invitee user name which
 	// does not already belong to an existing person
 	public static final int MAX_NUM_INVITEE_USER_NAME_GEN_TRIES = 10;
+	
+	/**
+	 * Get the names of the workflows which are managed by the invitation service
+	 * @return
+	 */
+	public List<String> getInvitationServiceWorkflowNames()
+	{
+		List<String> ret = new ArrayList<String>(2);
+		ret.add(WorkflowModelNominatedInvitation.WORKFLOW_DEFINITION_NAME);
+		ret.add(WorkflowModelModeratedInvitation.WORKFLOW_DEFINITION_NAME);
+		return ret;
+	}
 
+	/**
+	 * Start the invitation process for a NominatedInvitation
+	 * 
+	 * @param inviteeUserName Alfresco user name of the invitee
+	 * @param Invitation 
+	 * @param ResourceType resourceType
+	 * @param resourceName
+	 * @param inviteeRole
+	 * @param serverPath
+	 * @param acceptUrl
+	 * @param rejectUrl
+	 * 
+	 * @return the nominated invitation which will contain the invitationId and
+	 *         ticket which will uniqely identify this invitation for the rest
+	 *         of the workflow.
+	 * 
+	 * @throws InvitationException
+	 * @throws InvitationExceptionUserError
+	 * @throws InvitationExceptionForbidden
+	 */
+	public NominatedInvitation inviteNominated(String inviteeUserName, 
+			Invitation.ResourceType resourceType,
+			String resourceName, 
+			String inviteeRole, 
+			String serverPath,
+			String acceptUrl, 
+			String rejectUrl) 
+	{
+		// inviteeUserName was specified
+		NodeRef person = this.personService.getPerson(inviteeUserName);
+		
+		Serializable firstNameVal = this.getNodeService().getProperty(person, ContentModel.PROP_FIRSTNAME);
+		Serializable lastNameVal = this.getNodeService().getProperty(person, ContentModel.PROP_LASTNAME);
+		Serializable emailVal = this.getNodeService().getProperty(person, ContentModel.PROP_EMAIL);
+		String firstName = DefaultTypeConverter.INSTANCE.convert(
+				String.class, firstNameVal);
+		String lastName = DefaultTypeConverter.INSTANCE.convert(
+				String.class, lastNameVal);
+		String email = DefaultTypeConverter.INSTANCE.convert(
+				String.class, emailVal);
+
+		return inviteNominated(firstName, lastName, email,
+			inviteeUserName, resourceType, resourceName, inviteeRole,
+			serverPath, acceptUrl, rejectUrl);
+	}
+	
 	/**
 	 * Start the invitation process for a NominatedInvitation
 	 * 
@@ -111,11 +171,40 @@ public class InvitationServiceImpl implements InvitationService
 	 * @throws InvitationExceptionUserError
 	 * @throws InvitationExceptionForbidden
 	 */
-	public NominatedInvitation inviteNominated(String inviteeFirstName,
-			String inviteeLastName, String inviteeEmail,
-			String inviteeUserName, Invitation.ResourceType resourceType,
-			String resourceName, String inviteeRole, String serverPath,
-			String acceptUrl, String rejectUrl) 
+	public  NominatedInvitation inviteNominated(
+			String inviteeFirstName,
+			String inviteeLastName, 
+			String inviteeEmail,
+			Invitation.ResourceType resourceType,
+			String resourceName, 
+			String inviteeRole, 
+			String serverPath,
+			String acceptUrl, 
+			String rejectUrl) 
+	{
+		return inviteNominated(inviteeFirstName, 
+				inviteeLastName,
+				inviteeEmail,
+				null,
+				resourceType, 
+				resourceName, 
+				inviteeRole,
+				serverPath, 
+				acceptUrl, 
+				rejectUrl);
+	}
+
+    // Temporary method
+	private  NominatedInvitation inviteNominated(String inviteeFirstName,
+			String inviteeLastName, 
+			String inviteeEmail,
+			String inviteeUserName, 
+			Invitation.ResourceType resourceType,
+			String resourceName, 
+			String inviteeRole, 
+			String serverPath,
+			String acceptUrl, 
+			String rejectUrl) 
 	{
 		// Validate the request
 
@@ -123,7 +212,7 @@ public class InvitationServiceImpl implements InvitationService
 
 		if (resourceType == Invitation.ResourceType.WEB_SITE) 
 		{
-			return startInvite(inviteeFirstName, inviteeLastName, inviteeEmail,
+			return startNominatedInvite(inviteeFirstName, inviteeLastName, inviteeEmail,
 					inviteeUserName, resourceType, resourceName, inviteeRole,
 					serverPath, acceptUrl, rejectUrl);
 		}
@@ -151,7 +240,7 @@ public class InvitationServiceImpl implements InvitationService
 	{
 		if (resourceType == Invitation.ResourceType.WEB_SITE) 
 		{
-			return startInvite(inviteeComments, inviteeUserName, resourceType,
+			return startModeratedInvite(inviteeComments, inviteeUserName, resourceType,
 					resourceName, inviteeRole);
 		}
 		throw new InvitationException("unknown resource type");
@@ -335,10 +424,23 @@ public class InvitationServiceImpl implements InvitationService
 	 * 
 	 * @throws InvitationExceptionNotFound
 	 *             the invitation does not exist.
+	 * @throws InvitationExceptionUserError            
 	 * @return the invitation.
 	 */
 	public Invitation getInvitation(String invitationId) {
-		WorkflowInstance wi = workflowService.getWorkflowById(invitationId);
+		
+		validateInvitationId(invitationId);
+		
+		WorkflowInstance wi = null;
+		try 
+		{
+			wi = workflowService.getWorkflowById(invitationId);
+		}
+		catch (WorkflowException we)
+		{
+			// Do nothing
+		}
+		
 		if (wi == null) {
 			Object objs[] = { invitationId };
 			throw new InvitationExceptionNotFound("invitation.error.not_found",
@@ -363,11 +465,14 @@ public class InvitationServiceImpl implements InvitationService
 
 			// should also be 0 or 1
 			if (inviteStartTasks.size() < 1) {
-				return null;
+				Object objs[] = { invitationId };
+				throw new InvitationExceptionNotFound("invitation.error.not_found",
+						objs);
 			} else {
 				WorkflowTask task = inviteStartTasks.get(0);
 				NominatedInvitationImpl result = new NominatedInvitationImpl(
 						task.properties);
+				result.setSentInviteDate(task.path.instance.startDate);
 				result.setInviteId(invitationId);
 				return result;
 			}
@@ -836,7 +941,7 @@ public class InvitationServiceImpl implements InvitationService
 	 * @param inviteeRole
 	 * @return the new moderated invitation
 	 */
-	private ModeratedInvitation startInvite(String inviteeComments,
+	private ModeratedInvitation startModeratedInvite(String inviteeComments,
 			String inviteeUserName, Invitation.ResourceType resourceType,
 			String resourceName, String inviteeRole) 
 	{
@@ -878,10 +983,10 @@ public class InvitationServiceImpl implements InvitationService
 				WorkflowModelModeratedInvitation.WF_PROP_INVITEE_USER_NAME,
 				inviteeUserName);
 		workflowProps.put(
-				WorkflowModelNominatedInvitation.WF_PROP_RESOURCE_NAME,
+				WorkflowModelModeratedInvitation.WF_PROP_RESOURCE_NAME,
 				resourceName);
 		workflowProps.put(
-				WorkflowModelNominatedInvitation.WF_PROP_RESOURCE_TYPE,
+				WorkflowModelModeratedInvitation.WF_PROP_RESOURCE_TYPE,
 				resourceType.toString());
 
 		// get the moderated workflow
@@ -945,11 +1050,17 @@ public class InvitationServiceImpl implements InvitationService
 	 *            externally accessible server address of server hosting invite
 	 *            web scripts
 	 */
-	private NominatedInvitation startInvite(String inviteeFirstName,
-			String inviteeLastName, String inviteeEmail,
-			String inviteeUserName, Invitation.ResourceType resourceType,
-			String siteShortName, String inviteeSiteRole, String serverPath,
-			String acceptUrl, String rejectUrl) {
+	private NominatedInvitation startNominatedInvite(
+			String inviteeFirstName,
+			String inviteeLastName, 
+			String inviteeEmail,
+			String inviteeUserName, 
+			Invitation.ResourceType resourceType,
+			String siteShortName, 
+			String inviteeSiteRole, 
+			String serverPath,
+			String acceptUrl, 
+			String rejectUrl) {
 		
 		// get the inviter user name (the name of user web script is executed
 		// under)
@@ -1003,7 +1114,8 @@ public class InvitationServiceImpl implements InvitationService
 			// else there are no existing people who have the given invitee
 			// email address
 			// so create invitee person
-			else {
+			else 
+			{
 				inviteeUserName = createInviteePerson(inviteeFirstName,
 						inviteeLastName, inviteeEmail);
 
@@ -1013,9 +1125,25 @@ public class InvitationServiceImpl implements InvitationService
 									+ inviteeUserName);
 			}
 		}
+		else
+		{
+			// inviteeUserName was specified
+			NodeRef person = this.personService.getPerson(inviteeUserName);
+			
+			Serializable firstNameVal = this.getNodeService().getProperty(person, ContentModel.PROP_FIRSTNAME);
+			Serializable lastNameVal = this.getNodeService().getProperty(person, ContentModel.PROP_LASTNAME);
+			Serializable emailVal = this.getNodeService().getProperty(person, ContentModel.PROP_EMAIL);
+			firstNameVal = DefaultTypeConverter.INSTANCE.convert(
+					String.class, firstNameVal);
+			lastNameVal = DefaultTypeConverter.INSTANCE.convert(
+					String.class, lastNameVal);
+			emailVal = DefaultTypeConverter.INSTANCE.convert(
+					String.class, emailVal);
+		}
 
-		// throw web script exception if person is already a member of the given
-		// site
+		/**
+		 * throw exception if person is already a member of the given site
+		 */
 		if (this.siteService.isMember(siteShortName, inviteeUserName)) {
 			if (logger.isDebugEnabled())
 				logger
@@ -1070,6 +1198,9 @@ public class InvitationServiceImpl implements InvitationService
 		workflowProps.put(
 				WorkflowModelNominatedInvitation.WF_PROP_INVITEE_USER_NAME,
 				inviteeUserName);
+		workflowProps.put(
+				WorkflowModelNominatedInvitation.WF_PROP_INVITEE_EMAIL,
+				inviteeEmail);
 		workflowProps.put(WorkflowModel.ASSOC_ASSIGNEE, inviteeNodeRef);
 		workflowProps.put(
 				WorkflowModelNominatedInvitation.WF_PROP_INVITEE_FIRSTNAME,
@@ -1087,7 +1218,7 @@ public class InvitationServiceImpl implements InvitationService
 				WorkflowModelNominatedInvitation.WF_PROP_RESOURCE_TYPE,
 				resourceType.toString());
 		workflowProps.put(
-				WorkflowModelNominatedInvitation.WF_PROP_INVITEE_SITE_ROLE,
+				WorkflowModelNominatedInvitation.WF_PROP_INVITEE_ROLE,
 				inviteeSiteRole);
 		workflowProps.put(WorkflowModelNominatedInvitation.WF_PROP_SERVER_PATH,
 				serverPath);
@@ -1173,6 +1304,7 @@ public class InvitationServiceImpl implements InvitationService
 				workflowProps);
 		result.setTicket(inviteTicket);
 		result.setInviteId(workflowId);
+		result.setSentInviteDate(new Date());
 		return result;
 	}
 	
@@ -1194,5 +1326,20 @@ public class InvitationServiceImpl implements InvitationService
 			throw new InvitationExceptionForbidden(
 					"invitation.invite.not_site_manager", objs);
 		}
+	}
+	
+	/**
+	 * Validator for invitationId
+	 * @param invitationId
+	 */
+	private void validateInvitationId(String invitationId)
+	{
+	    final String ID_SEPERATOR_REGEX = "\\$"; 
+        String[] parts = invitationId.split(ID_SEPERATOR_REGEX);
+        if (parts.length != 2)
+        {
+        	Object objs[] = { invitationId };
+        	throw new InvitationExceptionUserError("invitation.error.invalid_inviteId_format", objs);
+        }
 	}
 }

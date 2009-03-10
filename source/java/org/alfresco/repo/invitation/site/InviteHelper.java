@@ -139,7 +139,7 @@ public class InviteHelper
         final String inviteeUserNameProp = (String) startInviteTask.properties.get(
                 WorkflowModelNominatedInvitation.WF_PROP_INVITEE_USER_NAME);
         final String role = (String) startInviteTask.properties.get(
-                WorkflowModelNominatedInvitation.WF_PROP_INVITEE_SITE_ROLE);
+                WorkflowModelNominatedInvitation.WF_PROP_INVITEE_ROLE);
         final String siteShortNameProp = (String) startInviteTask.properties.get(
                 WorkflowModelNominatedInvitation.WF_PROP_RESOURCE_NAME);
 

@@ -25,7 +25,6 @@
 package org.alfresco.repo.invitation;
 
 import org.alfresco.service.cmr.invitation.ModeratedInvitation;
-import org.alfresco.service.cmr.invitation.Invitation.ResourceType;
 import org.alfresco.service.namespace.QName;
 
 import java.io.Serializable;
@@ -44,14 +43,15 @@ import java.util.Map;
 	
 	private String roleName;
 	private String inviteeComments;
+	private String inviteeUserName;
 	
 	public ModeratedInvitationImpl()
 	{
 		super();
 	}
 	
-	 public ModeratedInvitationImpl(Map<QName, Serializable> workflowProps)
-	 {
+	public ModeratedInvitationImpl(Map<QName, Serializable> workflowProps)
+	{
 		 super();
 		 
 		 setInviteeUserName((String)workflowProps.get(WorkflowModelModeratedInvitation.WF_PROP_INVITEE_USER_NAME));
@@ -62,8 +62,7 @@ import java.util.Map;
 	     }
 	     roleName = (String)workflowProps.get(WorkflowModelModeratedInvitation.WF_PROP_INVITEE_ROLE);
 	     inviteeComments = (String)workflowProps.get(WorkflowModelModeratedInvitation.WF_PROP_INVITEE_COMMENTS);
-		 
-	 }
+	}
 	
 
 	public void setRoleName(String roleName) 
@@ -86,5 +85,16 @@ import java.util.Map;
 		this.inviteeComments = inviteeComments;
 	}
 
+	public InvitationType getInvitationType() {
+		return InvitationType.MODERATED;
+	}
 	
+	public void setInviteeUserName(String inviteeUserName) {
+		this.inviteeUserName = inviteeUserName;
+	}
+
+	public String getInviteeUserName() {
+		return inviteeUserName;
+	}
+
 }

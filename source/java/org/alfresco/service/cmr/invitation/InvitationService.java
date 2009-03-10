@@ -38,14 +38,48 @@ import java.util.List;
  */
 public interface InvitationService 
 {
+	/**
+	 * Get the names of the workflows managed by the invitation service.
+	 * 
+	 * @return the names of the workkflows managed by the invitation service.
+	 */
+	public List<String> getInvitationServiceWorkflowNames();
 	
 	/**
-	 * Start the invitation process for a NominatedInvitation
+	 * Start the invitation process for a NominatedInvitation for a user who does not yet have an Alfresco User Name
+	 * 
+	 * @param inviteeUserName Alfresco user name of who should be invited
+	 * @param ResourceType resourceType
+	 * @param resourceName
+	 * @param inviteeRole
+	 * @param serverPath
+	 * @param acceptUrl
+	 * @param rejectUrl
+	 * 
+	 * @return the nominated invitation which will contain the invitationId and
+	 *         ticket which will uniqely identify this invitation for the rest
+	 *         of the workflow.
+	 * 
+	 * @throws InvitationException
+	 * @throws InvitationExceptionUserError
+	 * @throws InvitationExceptionForbidden
+	 */
+	public NominatedInvitation inviteNominated(
+			String inviteeUserName, 
+			Invitation.ResourceType resourceType,
+			String resourceName, 
+			String inviteeRole, 
+			String serverPath,
+			String acceptUrl, 
+			String rejectUrl) ;
+
+	/**
+	 * Start the invitation process for a NominatedInvitation for a user who does not yet have an 
+	 * Alfresco User NameA new user name will be generated as part of the invitation process.
 	 * 
 	 * @param inviteeFirstName
 	 * @param inviteeLastName
      * @param inviteeEmail
-     * @param inviteeUserName the alfresco user name of the invitee, may be null for a new user
      * @param Invitation.ResourceType resourceType
      * @param resourceName
      * @param inviteeRole 
@@ -64,7 +98,6 @@ public interface InvitationService
 			String inviteeFirstName, 
 			String inviteeLastName,
             String inviteeEmail, 
-            String inviteeUserName,
             Invitation.ResourceType resourceType,
             String resourceName, 
             String inviteeRole, 

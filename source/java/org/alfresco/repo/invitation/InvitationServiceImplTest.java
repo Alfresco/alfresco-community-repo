@@ -24,13 +24,12 @@
  */
 package org.alfresco.repo.invitation;
 
+import java.util.Date;
 import java.util.List;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
-import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.service.cmr.invitation.InvitationExceptionUserError;
 import org.alfresco.service.cmr.invitation.InvitationSearchCriteria;
@@ -39,20 +38,12 @@ import org.alfresco.service.cmr.invitation.Invitation;
 import org.alfresco.service.cmr.invitation.ModeratedInvitation;
 import org.alfresco.service.cmr.invitation.NominatedInvitation;
 import org.alfresco.service.cmr.invitation.Invitation.ResourceType;
-import org.alfresco.service.cmr.model.FileFolderService;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.ScriptService;
-import org.alfresco.service.cmr.security.AuthorityService;
-import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
-import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.PropertyMap;
-
-import junit.framework.TestCase;
 
 /**
  * 
@@ -79,6 +70,10 @@ public class InvitationServiceImplTest extends BaseAlfrescoSpringTest
     public static String USER_ONE = "InvitationServiceAlice";
     public static String USER_TWO = "InvitationServiceBob";
     public static String USER_EVE = "InvitationServiceEve";
+    public static String USER_ONE_FIRSTNAME = "One" ;
+    public static String USER_ONE_LASTNAME = "Test";
+    public static String USER_ONE_EMAIL = USER_ONE + "@alfrescotesting.com";
+    
     
     /**
      * Called during the transaction setup
@@ -92,10 +87,10 @@ public class InvitationServiceImplTest extends BaseAlfrescoSpringTest
         this.authenticationComponent = (AuthenticationComponent)this.applicationContext.getBean("authenticationComponent");
         this.mutableAuthenticationDao = (MutableAuthenticationDao)this.applicationContext.getBean("authenticationDao");
         
-        createPerson(USER_MANAGER, "");
-        createPerson(USER_ONE, "");
-        createPerson(USER_TWO, "");
-        createPerson(USER_EVE, "");
+        createPerson(USER_MANAGER, USER_MANAGER + "@alfrescotesting.com", PERSON_FIRSTNAME, PERSON_LASTNAME);
+        createPerson(USER_ONE, USER_ONE_EMAIL,USER_ONE_FIRSTNAME, USER_ONE_LASTNAME);
+        createPerson(USER_TWO, USER_TWO + "@alfrescotesting.com", PERSON_FIRSTNAME, PERSON_LASTNAME);
+        createPerson(USER_EVE, USER_EVE + "@alfrescotesting.com", PERSON_FIRSTNAME, PERSON_LASTNAME);
         
         this.authenticationComponent.setCurrentUser(USER_MANAGER);
         
@@ -158,7 +153,120 @@ public class InvitationServiceImplTest extends BaseAlfrescoSpringTest
     }
     
     /**
-     * Create a Nominated Invitation 
+     * Test nominated user - new user
+     * 
+     * @throws Exception
+     */
+    public void testNominatedInvitationNewUser() throws Exception
+    {
+    	Date startDate = new java.util.Date();
+    	
+    	String inviteeFirstName = PERSON_FIRSTNAME;
+    	String inviteeLastName = PERSON_LASTNAME; 
+    	String inviteeEmail = "123";
+    	String inviteeUserName = null;
+    	Invitation.ResourceType resourceType = Invitation.ResourceType.WEB_SITE; 
+    	String resourceName = SITE_SHORT_NAME_INVITE;
+    	String inviteeRole = SiteModel.SITE_COLLABORATOR;
+    	String serverPath = "wibble";
+    	String acceptUrl = "froob";
+    	String rejectUrl = "marshmallow";
+    	
+    	this.authenticationComponent.setCurrentUser(USER_MANAGER);
+    	
+    	NominatedInvitation nominatedInvitation = invitationService.inviteNominated(
+    			inviteeFirstName,
+    			inviteeLastName,
+    			inviteeEmail, 
+    			resourceType, 
+    			resourceName, 
+    			inviteeRole, 
+    			serverPath, 
+    			acceptUrl, 
+    			rejectUrl) ;
+    	
+    	assertNotNull("nominated invitation is null", nominatedInvitation);
+    	String inviteId =  nominatedInvitation.getInviteId();
+    	assertEquals("first name wrong", inviteeFirstName, nominatedInvitation.getInviteeFirstName());
+    	assertEquals("last name wrong", inviteeLastName, nominatedInvitation.getInviteeLastName());
+    	assertEquals("email name wrong", inviteeEmail, nominatedInvitation.getInviteeEmail());
+    	
+    	// Generated User Name should be returned
+    	inviteeUserName = nominatedInvitation.getInviteeUserName();
+    	assertNotNull("generated user name is null", inviteeUserName);
+    	// sentInviteDate should be set to today
+    	{
+    		Date sentDate = nominatedInvitation.getSentInviteDate();
+    		assertTrue("sentDate wrong - too early", sentDate.after(startDate));
+    		assertTrue("sentDate wrong - too late", sentDate.before(new Date(new Date().getTime()+ 1)));
+    	}	
+    	
+    	assertEquals("resource type name wrong", resourceType, nominatedInvitation.getResourceType());
+    	assertEquals("resource name wrong", resourceName, nominatedInvitation.getResourceName());
+    	assertEquals("role  name wrong", inviteeRole, nominatedInvitation.getRoleName());
+    	assertEquals("server path wrong", serverPath, nominatedInvitation.getServerPath());
+    	assertEquals("accept URL wrong", acceptUrl, nominatedInvitation.getAcceptUrl());
+    	assertEquals("reject URL wrong", rejectUrl, nominatedInvitation.getRejectUrl());
+    	
+    	/**
+    	 * Now we have an invitation get it and check the details have been returned correctly.
+    	 */
+    	{
+    		NominatedInvitation invitation = (NominatedInvitation)invitationService.getInvitation(inviteId);
+    	
+    		assertNotNull("invitation is null", invitation);
+    		assertEquals("invite id wrong", inviteId, invitation.getInviteId());
+    		assertEquals("first name wrong", inviteeFirstName, invitation.getInviteeFirstName());
+    		assertEquals("last name wrong", inviteeLastName, invitation.getInviteeLastName());
+    		assertEquals("user name wrong", inviteeUserName, invitation.getInviteeUserName());
+    		assertEquals("resource type name wrong", resourceType, invitation.getResourceType());
+    		assertEquals("resource name wrong", resourceName, invitation.getResourceName());
+    		assertEquals("role  name wrong", inviteeRole, invitation.getRoleName());
+    		assertEquals("server path wrong", serverPath, invitation.getServerPath());
+    		assertEquals("accept URL wrong", acceptUrl, invitation.getAcceptUrl());
+    		assertEquals("reject URL wrong", rejectUrl, invitation.getRejectUrl());
+
+    		Date sentDate = invitation.getSentInviteDate();
+        	// sentInviteDate should be set to today
+    		assertTrue("sentDate wrong too early", sentDate.after(startDate));
+    		assertTrue("sentDate wrong - too late", sentDate.before(new Date(new Date().getTime()+ 1)));
+    	}
+    	
+    	/**
+    	 * Search for the new invitation
+    	 */
+    	List<Invitation> invitations = invitationService.listPendingInvitationsForResource(resourceType, resourceName);
+    	assertTrue("invitations is empty", !invitations.isEmpty());
+    	
+    	NominatedInvitation firstInvite = (NominatedInvitation)invitations.get(0);
+    	assertEquals("invite id wrong", inviteId, firstInvite.getInviteId());
+    	assertEquals("first name wrong", inviteeFirstName, firstInvite.getInviteeFirstName());
+    	assertEquals("last name wrong", inviteeLastName, firstInvite.getInviteeLastName());
+    	assertEquals("user name wrong", inviteeUserName, firstInvite.getInviteeUserName());
+    	
+    	/**
+    	 * Now accept the invitation
+    	 */
+    	NominatedInvitation acceptedInvitation = (NominatedInvitation)invitationService.accept(firstInvite.getInviteId(), firstInvite.getTicket());
+    	assertEquals("invite id wrong", firstInvite.getInviteId(), acceptedInvitation.getInviteId());
+    	assertEquals("first name wrong", inviteeFirstName, acceptedInvitation.getInviteeFirstName());
+    	assertEquals("last name wrong", inviteeLastName, acceptedInvitation.getInviteeLastName());
+    	assertEquals("user name wrong", inviteeUserName, acceptedInvitation.getInviteeUserName());
+    	
+    	List<Invitation> it4 = invitationService.listPendingInvitationsForResource(resourceType, resourceName);
+    	assertTrue("invitations is not empty", it4.isEmpty());
+    	
+    	/**
+    	 * Now verify access control list
+    	 */
+    	String roleName = siteService.getMembersRole(resourceName, inviteeUserName);
+    	assertEquals("role name wrong", roleName, inviteeRole);
+    	siteService.removeMembership(resourceName, inviteeUserName);
+    }
+
+    
+    /**
+     * Create a Nominated Invitation (for existing user, USER_ONE)
      * read it.
      * search for it
      * cancel it
@@ -171,12 +279,13 @@ public class InvitationServiceImplTest extends BaseAlfrescoSpringTest
      * read it.
      * accept it
      */
-    public void testNominatedInvitation() throws Exception
+    public void testNominatedInvitationExistingUser() throws Exception
     {
-    	String inviteeFirstName = PERSON_FIRSTNAME;
-    	String inviteeLastName = PERSON_LASTNAME; 
-    	String inviteeEmail = "123";
-    	String inviteeUserName = "invitee@alfrescotesting.com";
+    	String inviteeUserName = USER_ONE;
+    	String inviteeEmail =   USER_ONE_EMAIL;  	
+    	String inviteeFirstName = USER_ONE_FIRSTNAME;
+    	String inviteeLastName = USER_ONE_LASTNAME; 
+    	
     	Invitation.ResourceType resourceType = Invitation.ResourceType.WEB_SITE; 
     	String resourceName = SITE_SHORT_NAME_INVITE;
     	String inviteeRole = SiteModel.SITE_COLLABORATOR;
@@ -186,9 +295,7 @@ public class InvitationServiceImplTest extends BaseAlfrescoSpringTest
     	
     	this.authenticationComponent.setCurrentUser(USER_MANAGER);
     	
-    	NominatedInvitation nominatedInvitation = invitationService.inviteNominated(inviteeFirstName, 
-    			inviteeLastName, 
-    			inviteeEmail, 
+    	NominatedInvitation nominatedInvitation = invitationService.inviteNominated(
     			inviteeUserName, 
     			resourceType, 
     			resourceName, 
@@ -199,8 +306,6 @@ public class InvitationServiceImplTest extends BaseAlfrescoSpringTest
     	
     	assertNotNull("nominated invitation is null", nominatedInvitation);
     	String inviteId =  nominatedInvitation.getInviteId();
-    	assertEquals("first name wrong", inviteeFirstName, nominatedInvitation.getInviteeFirstName());
-    	assertEquals("last name wrong", inviteeLastName, nominatedInvitation.getInviteeLastName());
     	assertEquals("user name wrong", inviteeUserName, nominatedInvitation.getInviteeUserName());
     	assertEquals("resource type name wrong", resourceType, nominatedInvitation.getResourceType());
     	assertEquals("resource name wrong", resourceName, nominatedInvitation.getResourceName());
@@ -209,6 +314,11 @@ public class InvitationServiceImplTest extends BaseAlfrescoSpringTest
     	assertEquals("accept URL wrong", acceptUrl, nominatedInvitation.getAcceptUrl());
     	assertEquals("reject URL wrong", rejectUrl, nominatedInvitation.getRejectUrl());
     	
+    	// These values should be read from the person record 
+    	assertEquals("first name wrong", inviteeFirstName, nominatedInvitation.getInviteeFirstName());
+    	assertEquals("last name wrong", inviteeLastName, nominatedInvitation.getInviteeLastName());
+    	assertEquals("email name wrong", inviteeEmail, nominatedInvitation.getInviteeEmail());
+    	
     	/**
     	 * Now we have an invitation get it and check the details have been returned correctly.
     	 */
@@ -216,9 +326,7 @@ public class InvitationServiceImplTest extends BaseAlfrescoSpringTest
     	
     	assertNotNull("invitation is null", invitation);
     	assertEquals("invite id wrong", inviteId, invitation.getInviteId());
-    	assertEquals("first name wrong", inviteeFirstName, invitation.getInviteeFirstName());
-    	assertEquals("last name wrong", inviteeLastName, invitation.getInviteeLastName());
-    	assertEquals("user name wrong", inviteeUserName, invitation.getInviteeUserName());
+    	assertEquals("user name wrong", inviteeUserName, nominatedInvitation.getInviteeUserName());
     	assertEquals("resource type name wrong", resourceType, invitation.getResourceType());
     	assertEquals("resource name wrong", resourceName, invitation.getResourceName());
     	assertEquals("role  name wrong", inviteeRole, invitation.getRoleName());
@@ -226,6 +334,11 @@ public class InvitationServiceImplTest extends BaseAlfrescoSpringTest
     	assertEquals("accept URL wrong", acceptUrl, invitation.getAcceptUrl());
     	assertEquals("reject URL wrong", rejectUrl, invitation.getRejectUrl());
     	
+    	// These values should have been read from the DB
+    	assertEquals("first name wrong", inviteeFirstName, invitation.getInviteeFirstName());
+    	assertEquals("last name wrong", inviteeLastName, invitation.getInviteeLastName());
+    	assertEquals("email name wrong", inviteeEmail, invitation.getInviteeEmail());
+
     	/**
     	 * Search for the new invitation
     	 */
@@ -256,9 +369,7 @@ public class InvitationServiceImplTest extends BaseAlfrescoSpringTest
     	/**
     	 * Now invite and reject
     	 */
-    	NominatedInvitation secondInvite = invitationService.inviteNominated(inviteeFirstName, 
-    			inviteeLastName, 
-    			inviteeEmail, 
+    	NominatedInvitation secondInvite = invitationService.inviteNominated(
     			inviteeUserName, 
     			resourceType, 
     			resourceName, 
@@ -269,8 +380,6 @@ public class InvitationServiceImplTest extends BaseAlfrescoSpringTest
     	
     	NominatedInvitation rejectedInvitation = (NominatedInvitation)invitationService.cancel(secondInvite.getInviteId());
     	assertEquals("invite id wrong", secondInvite.getInviteId(), rejectedInvitation.getInviteId());
-    	assertEquals("first name wrong", inviteeFirstName, rejectedInvitation.getInviteeFirstName());
-    	assertEquals("last name wrong", inviteeLastName, rejectedInvitation.getInviteeLastName());
     	assertEquals("user name wrong", inviteeUserName, rejectedInvitation.getInviteeUserName());
     	
     	List<Invitation> it3 = invitationService.listPendingInvitationsForResource(resourceType, resourceName);
@@ -279,9 +388,7 @@ public class InvitationServiceImplTest extends BaseAlfrescoSpringTest
     	/**
     	 * Now invite and accept
     	 */    	
-    	NominatedInvitation thirdInvite = invitationService.inviteNominated(inviteeFirstName, 
-    			inviteeLastName, 
-    			inviteeEmail, 
+    	NominatedInvitation thirdInvite = invitationService.inviteNominated(
     			inviteeUserName, 
     			resourceType, 
     			resourceName, 
@@ -517,7 +624,7 @@ public class InvitationServiceImplTest extends BaseAlfrescoSpringTest
     	 */
     	try 
     	{
-    		invitationService.approve(invitationId, "No Way Hosea!");
+    		invitationService.reject(invitationId, "No Way Hosea!");
     		assertTrue("excetion not thrown", false);
     		
     	} 
@@ -532,7 +639,7 @@ public class InvitationServiceImplTest extends BaseAlfrescoSpringTest
     	 * Reject the invitation
     	 */
        	this.authenticationComponent.setCurrentUser(USER_MANAGER);
-   		invitationService.approve(invitationId, "Go away!");
+   		invitationService.reject(invitationId, "Go away!");
    		
     	/**
     	 * Negative test
@@ -584,9 +691,7 @@ public class InvitationServiceImplTest extends BaseAlfrescoSpringTest
     			inviteeRole);
     	
     	String oneId = invitationOne.getInviteId();
-    	NominatedInvitation invitationTwo = invitationService.inviteNominated(inviteeFirstName, 
-    			inviteeLastName, 
-    			inviteeEmail, 
+    	NominatedInvitation invitationTwo = invitationService.inviteNominated(
     			USER_ONE, 
     			resourceType, 
     			SITE_SHORT_NAME_RED, 
@@ -596,9 +701,7 @@ public class InvitationServiceImplTest extends BaseAlfrescoSpringTest
     			rejectUrl) ;
     	String twoId = invitationTwo.getInviteId();
     	
-    	NominatedInvitation invitationThree = invitationService.inviteNominated(inviteeFirstName, 
-    			inviteeLastName, 
-    			inviteeEmail, 
+    	NominatedInvitation invitationThree = invitationService.inviteNominated(
     			USER_ONE, 
     			resourceType, 
     			SITE_SHORT_NAME_BLUE, 
@@ -683,11 +786,11 @@ public class InvitationServiceImplTest extends BaseAlfrescoSpringTest
     	} 
     	catch (Exception e)
     	{
-    		
+    		// should have gone here
     	}
     }
         
-    private void createPerson(String userName, String emailAddress)
+    private void createPerson(String userName, String emailAddress, String firstName, String lastName)
     {
         // if user with given user name doesn't already exist then create user
         if (this.authenticationService.authenticationExists(userName) == false)
@@ -704,8 +807,8 @@ public class InvitationServiceImplTest extends BaseAlfrescoSpringTest
             // create person properties
             PropertyMap personProps = new PropertyMap();
             personProps.put(ContentModel.PROP_USERNAME, userName);
-            personProps.put(ContentModel.PROP_FIRSTNAME, PERSON_FIRSTNAME);
-            personProps.put(ContentModel.PROP_LASTNAME, PERSON_LASTNAME);
+            personProps.put(ContentModel.PROP_FIRSTNAME, firstName);
+            personProps.put(ContentModel.PROP_LASTNAME, lastName);
             personProps.put(ContentModel.PROP_EMAIL, emailAddress);
             personProps.put(ContentModel.PROP_JOBTITLE, PERSON_JOBTITLE);
             personProps.put(ContentModel.PROP_ORGANIZATION, PERSON_ORG);

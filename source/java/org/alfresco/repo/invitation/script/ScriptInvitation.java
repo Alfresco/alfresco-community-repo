@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -22,62 +22,55 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.service.cmr.invitation;
 
+package org.alfresco.repo.invitation.script;
+
+import org.alfresco.service.cmr.invitation.Invitation;
+import org.alfresco.service.cmr.invitation.InvitationService;
 
 /**
- * The invitation request is a command object for who, needs to be added or removed 
- * from which resource with which attributes.
+ * Java script invitation for the Java Script API
  * 
- * Invitations are processed by the InvitationService
- * 
- * @see org.alfresco.service.cmr.invitation.InvitationService
- *
  * @author mrogers
  */
-public interface Invitation 
+public class ScriptInvitation 
 {
-	/**
-	 * What sort of Resource   Web Project, Web Site, Node 
-	 * (Just Web site for now) 
-	 */
-	enum ResourceType 
+	private Invitation invitation;
+	private InvitationService invitationService;
+					
+	public ScriptInvitation(Invitation invitation, InvitationService invitationService)
 	{
-		WEB_SITE
+		this.invitation = invitation;
+		this.invitationService = invitationService;				
 	}
 	
-	/**
-	 * What type of invitation are we? 
-	 * (Just Web site for now) 
-	 */
-	enum InvitationType 
+	public String getInviteId() 
 	{
-		NOMINATED,
-		MODERATED
+		return invitation.getInviteId();
+	}
+
+	public String getInvitationType() 
+	{
+		return invitation.getInvitationType().toString();
+	}
+
+	public String getResourceName() 
+	{
+		return invitation.getResourceName();
+	}
+
+	public String getResourceType() 
+	{
+		return invitation.getResourceType().toString();
 	}
 	
-	/**
-	 * What sort of resource is it, for example a WEB_SITE?
-	 * @return the resource type
-	 */
-	public ResourceType getResourceType();
+	protected Invitation getInvitation()
+	{
+		return invitation;
+	}
 	
-	/**
-	 * What is the resource name ?
-	 * @return the name of the resource
-	 */
-	public String getResourceName();
-	
-	/**
-	 * What is the unique reference for this invitation ?
-	 * @return the unique reference for this invitation
-	 */
-	public String getInviteId();
-	
-	/**
-	 * What sort of invitation is this ?
-	 */
-	public InvitationType getInvitationType();
-	
-	
+	protected InvitationService getInvitationService()
+	{
+		return invitationService;
+	}
 }

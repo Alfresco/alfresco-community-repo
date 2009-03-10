@@ -39,6 +39,7 @@ import java.util.Date;
  */
 public interface NominatedInvitation extends Invitation
 {
+	public String getInviteeUserName();
 
 	public String getInviteeFirstName();
 

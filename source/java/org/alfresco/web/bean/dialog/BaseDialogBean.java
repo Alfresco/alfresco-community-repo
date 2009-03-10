@@ -47,6 +47,7 @@ import org.alfresco.web.bean.BrowseBean;
 import org.alfresco.web.bean.NavigationBean;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.config.DialogsConfigElement.DialogButtonConfig;
+import org.alfresco.web.ui.common.ReportedException;
 import org.alfresco.web.ui.common.Utils;
 
 /**
@@ -124,7 +125,7 @@ public abstract class BaseDialogBean implements IDialogBean, Serializable
          try
          {
             // Execute
-            outcome = txnHelper.doInTransaction(callback);
+            outcome = txnHelper.doInTransaction(callback, false, true);
             
             // allow any subclasses to perform post commit processing 
             // i.e. resetting state or setting status messages
@@ -138,9 +139,11 @@ public abstract class BaseDialogBean implements IDialogBean, Serializable
          {
             // reset the flag so we can re-attempt the operation
             isFinished = false;
-            
-            Utils.addErrorMessage(formatErrorMessage(e), e);
             outcome = getErrorOutcome(e);
+            if (e instanceof ReportedException == false)
+            {
+                Utils.addErrorMessage(formatErrorMessage(e), e);
+            }
             ReportedException.throwIfNecessary(e);
          }
       }
@@ -353,7 +356,7 @@ public abstract class BaseDialogBean implements IDialogBean, Serializable
     * @return The outcome
     */
    protected abstract String finishImpl(FacesContext context, String outcome)
-      throws Exception;
+      throws Throwable;
 
    /**
     * Performs any post commit processing subclasses may want to provide

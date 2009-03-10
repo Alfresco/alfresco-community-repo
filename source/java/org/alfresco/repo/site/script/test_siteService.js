@@ -61,20 +61,20 @@ function testMembership()
 	var site = siteService.getSite("siteShortName");
 	test.assertNotNull(site);
 	
-	var members = site.listMembers(null, null);
+	var members = site.listMembers(null, null, 0);
 	test.assertNotNull(members);
 	test.assertEquals(1, members.length);
 	test.assertEquals("SiteManager", members["UserOne_SiteServiceImplTest"]);
 	
 	site.setMembership("UserTwo_SiteServiceImplTest", "SiteCollaborator");
-	members = site.listMembers(null, null);
+	members = site.listMembers(null, null, 0);
 	test.assertNotNull(members);
 	test.assertEquals(2, members.length);
 	test.assertEquals("SiteManager", members["UserOne_SiteServiceImplTest"]);
 	test.assertEquals("SiteCollaborator", members["UserTwo_SiteServiceImplTest"]);
 	
 	site.removeMembership("UserTwo_SiteServiceImplTest");
-	members = site.listMembers(null, null);
+	members = site.listMembers(null, null, 0);
 	test.assertNotNull(members);
 	test.assertEquals(1, members.length);
 	test.assertEquals("SiteManager", members["UserOne_SiteServiceImplTest"]);

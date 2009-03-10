@@ -99,19 +99,6 @@ public final class ScriptUtils extends BaseScopableProcessorExtension
     }
     
     /**
-     * Converts the specified Date object to an
-     * <a href="http://www.iso.org/iso/date_and_time_format">ISO 8601</a>-formatted
-     * String.
-     * 
-     * @param d date
-     * @return an ISO 8601-formatted date String.
-     */
-    public String toISO8601(Date d)
-    {
-        return ISO8601DateFormat.format(d);
-    }
-    
-    /**
      * Function to check if a module is installed
      * 
      * @param moduleName	module name (e.g. "org.alfresco.module.foo")

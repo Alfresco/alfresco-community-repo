@@ -20,6 +20,9 @@
         <property name="allowDeleteUser">
             <value>true</value>
         </property>
+        <property name="allowGetEnabled">
+            <value>true</value>
+        </property>
     </bean>    
    
 

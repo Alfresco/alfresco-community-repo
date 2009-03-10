@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.alfresco.i18n.I18NUtil;
 import org.alfresco.service.cmr.dictionary.ConstraintException;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 
@@ -51,6 +52,7 @@ public class RegexConstraint extends AbstractConstraint
 {
     public static final String CONSTRAINT_REGEX_NO_MATCH = "d_dictionary.constraint.regex.no_match";
     public static final String CONSTRAINT_REGEX_MATCH = "d_dictionary.constraint.regex.match";
+    public static final String CONSTRAINT_REGEX_MSG_PREFIX = "d_dictionary.constraint.regex.error.";
 
     private String expression;
     private Pattern patternMatcher;
@@ -127,7 +129,14 @@ public class RegexConstraint extends AbstractConstraint
         boolean matches = matcher.matches();
         if (matches != requiresMatch)
         {
-            if (requiresMatch)
+            // Look for a message corresponding to this constraint name
+            String messageId = CONSTRAINT_REGEX_MSG_PREFIX + getShortName();
+            if (I18NUtil.getMessage(messageId, value) != null)
+            {
+                throw new ConstraintException(messageId, value);
+            }
+            // Otherwise, fall back to a generic (but unfriendly) message
+            else if (requiresMatch)
             {
                 throw new ConstraintException(RegexConstraint.CONSTRAINT_REGEX_NO_MATCH, value, expression);
             }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -33,6 +33,7 @@ import org.alfresco.service.cmr.module.ModuleService;
 import org.alfresco.service.cmr.module.ModuleDetails;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.ISO8601DateFormat;
 
 /**
  * Place for general and miscellaneous utility functions not already found in generic JavaScript. 
@@ -125,5 +126,38 @@ public final class ScriptUtils extends BaseScopableProcessorExtension
             return (moduleDetail != null);
         }
         return false;
+    }
+    
+    /**
+     * Format timeInMillis to ISO 8601 formatted string
+     * 
+     * @param timeInMillis
+     * @return
+     */
+    public String toISO8601(long timeInMillis)
+    {
+        return ISO8601DateFormat.format(new Date(timeInMillis));
+    }
+    
+    /**
+     * Format date to ISO 8601 formatted string
+     * 
+     * @param date
+     * @return
+     */
+    public String toISO8601(Date date)
+    {
+        return ISO8601DateFormat.format(date);
+    }
+    
+    /**
+     * Parse date from ISO formatted string
+     * 
+     * @param isoDateString
+     * @return
+     */
+    public Date fromISO8601(String isoDateString)
+    {
+        return ISO8601DateFormat.parse(isoDateString);
     }
 }

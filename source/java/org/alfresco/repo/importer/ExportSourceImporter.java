@@ -27,8 +27,10 @@ package org.alfresco.repo.importer;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.util.List;
@@ -173,12 +175,12 @@ public class ExportSourceImporter implements ImporterJobSPI
             }
 
             File tempFile = TempFileProvider.createTempFile("ExportSourceImporter-", ".xml");
-            Writer writer = new BufferedWriter(new FileWriter(tempFile));
+            Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(tempFile), "UTF-8"));
             XMLWriter xmlWriter = createXMLExporter(writer);
             exportSource.generateExport(xmlWriter);
             xmlWriter.close();
 
-            Reader reader = new BufferedReader(new FileReader(tempFile));
+            Reader reader = new BufferedReader(new InputStreamReader(new FileInputStream(tempFile), "UTF-8"));
 
             Location location = new Location(storeRef);
             location.setPath(path);

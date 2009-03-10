@@ -570,4 +570,10 @@ public interface NodeDaoService
     
     @DirtySessionAnnotation(markDirty=true)
     public void purgeTxn(Long txnId);
+    
+    @DirtySessionAnnotation(markDirty=false)
+    public Long getMinTxnCommitTime();
+    
+    @DirtySessionAnnotation(markDirty=false)
+    public Long getMaxTxnCommitTime();
 }

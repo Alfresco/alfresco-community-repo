@@ -35,7 +35,9 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PermissionService;
@@ -165,7 +167,20 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
         else
         {
             SetCurrentUserCallback callback = new SetCurrentUserCallback(userName);
-            Authentication auth = transactionService.getRetryingTransactionHelper().doInTransaction(callback, transactionService.isReadOnly(), false);
+            Authentication auth;
+            // If the repository is read only, we have to settle for a read only transaction. Auto user creation will
+            // not be possible.
+            if (transactionService.isReadOnly())
+            {
+                auth = transactionService.getRetryingTransactionHelper().doInTransaction(callback, true, false);
+            }
+            // Otherwise, we want a writeable transaction, so if the current transaction is read only we set the
+            // requiresNew flag to true
+            else
+            {
+                auth = transactionService.getRetryingTransactionHelper().doInTransaction(callback, false,
+                        AlfrescoTransactionSupport.getTransactionReadState() == TxnReadState.TXN_READ_ONLY);
+            }
             if ((auth == null) || (callback.ae != null))
             {
                 throw callback.ae;

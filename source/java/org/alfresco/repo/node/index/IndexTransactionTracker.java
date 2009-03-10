@@ -1,18 +1,26 @@
 /*
- * Copyright (C) 2005-2006 Alfresco, Inc.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
- * Licensed under the Mozilla Public License version 1.1 
- * with a permitted attribution clause. You may obtain a
- * copy of the License at
- *
- *   http://www.alfresco.org/legal/license.txt
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
- * either express or implied. See the License for the specific
- * language governing permissions and limitations under the
- * License.
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+
+ * As a special exception to the terms and conditions of version 2.0 of 
+ * the GPL, you may redistribute this Program in connection with Free/Libre 
+ * and Open Source Software ("FLOSS") applications as described in Alfresco's 
+ * FLOSS exception.  You should have recieved a copy of the text describing 
+ * the FLOSS exception, and it is also available here: 
+ * http://www.alfresco.com/legal/licensing"
  */
 package org.alfresco.repo.node.index;
 
@@ -56,6 +64,10 @@ public class IndexTransactionTracker extends AbstractReindexComponent
     private Map<Long, TxnRecord> voids;
     private boolean forceReindex;
     
+    private long fromTxnId;
+    private String statusMsg;
+    private static final String NO_REINDEX = "No reindex in progress";
+    
     /**
      * Set the defaults.
      * <ul>
@@ -73,11 +85,16 @@ public class IndexTransactionTracker extends AbstractReindexComponent
         maxRecordSetSize = 1000;
         maxTransactionsPerLuceneCommit = 100;
         disableInTransactionIndexing = false;
+        
+        started = false;
         previousTxnIds = Collections.<Long>emptyList();
         lastMaxTxnId = Long.MAX_VALUE;
         fromTimeInclusive = -1L;
         voids = new TreeMap<Long, TxnRecord>();
         forceReindex = false;
+        
+        fromTxnId = 0L;
+        statusMsg = NO_REINDEX;
     }
 
     public synchronized void setListener(IndexTransactionTrackerListener listener)
@@ -177,12 +194,38 @@ public class IndexTransactionTracker extends AbstractReindexComponent
             return reindexInTransaction();
         }
     };
+    
+    public void reindexFromTxn(long txnId)
+    {
+        try
+        {
+            logger.info("reindexFromTxn: "+txnId);
+            
+            this.fromTxnId = txnId;
+            this.started = false;
+        
+            reindex();
+            
+            this.started = false;
+        }
+        finally
+        {
+            this.fromTxnId = 0L;
+            
+        }
+    }
 
     @Override
     protected void reindexImpl()
     {
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("reindexImpl started: " + this);
+        }
+        
         RetryingTransactionHelper retryingTransactionHelper = transactionService.getRetryingTransactionHelper();
-        if (!started)
+        
+        if ((!started) || (this.fromTxnId != 0L))
         {
             // Disable in-transaction indexing
             if (disableInTransactionIndexing && nodeIndexer != null)
@@ -194,8 +237,29 @@ public class IndexTransactionTracker extends AbstractReindexComponent
             voids.clear();
             previousTxnIds = new ArrayList<Long>(maxRecordSetSize);
             lastMaxTxnId = null;                                // So that it is ignored at first
-            fromTimeInclusive = retryingTransactionHelper.doInTransaction(getStartingCommitTimeWork, true, true);
+            
+            if (this.fromTxnId != 0L)
+            {
+                Long fromTxnCommitTime = getTxnCommitTime(this.fromTxnId);
+                
+                if (fromTxnCommitTime == null)
+                {
+                    return;
+                }
+                
+                fromTimeInclusive = fromTxnCommitTime;
+            }
+            else
+            {
+                fromTimeInclusive = retryingTransactionHelper.doInTransaction(getStartingCommitTimeWork, true, true);
+            }
+        
             started = true;
+            
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("reindexImpl: fromTimeInclusive: "+fromTimeInclusive+" "+this);
+            }
         }
         
         while (true)
@@ -209,6 +273,35 @@ public class IndexTransactionTracker extends AbstractReindexComponent
         }
         // Wait for the asynchronous reindexing to complete
         waitForAsynchronousReindexing();
+        
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("reindexImpl: completed: " + this);
+        }
+        
+        statusMsg = NO_REINDEX;
+    }
+    
+    private Long getTxnCommitTime(final long txnId)
+    {
+        RetryingTransactionHelper retryingTransactionHelper = transactionService.getRetryingTransactionHelper();
+        
+        RetryingTransactionCallback<Long> getTxnCommitTimeWork = new RetryingTransactionCallback<Long>()
+        {
+            public Long execute() throws Exception
+            {
+                Transaction txn = nodeDaoService.getTxnById(txnId);
+                if (txn != null)
+                {
+                    return txn.getCommitTimeMs();
+                }
+                
+                logger.warn("Txn not found: "+txnId);
+                return null;
+            }
+        };
+        
+        return retryingTransactionHelper.doInTransaction(getTxnCommitTimeWork, true, true);
     }
      
     /**
@@ -217,6 +310,8 @@ public class IndexTransactionTracker extends AbstractReindexComponent
      */
     private boolean reindexInTransaction()
     {
+        List<Transaction> txns = null;
+        
         long toTimeExclusive = System.currentTimeMillis() - reindexLagMs;
         
         // Check that the voids haven't been filled
@@ -232,7 +327,7 @@ public class IndexTransactionTracker extends AbstractReindexComponent
         }
         
         // get next transactions to index
-        List<Transaction> txns = getNextTransactions(fromTimeInclusive, toTimeExclusive, previousTxnIds);
+        txns = getNextTransactions(fromTimeInclusive, toTimeExclusive, previousTxnIds);
         
         // If there are no transactions, then all the work is done
         if (txns.size() == 0)
@@ -243,14 +338,15 @@ public class IndexTransactionTracker extends AbstractReindexComponent
             return false;
         }
         
+        statusMsg = String.format(
+                "Reindexing batch of %d transactions from %s (txnId=%s)",
+                txns.size(),
+                (new Date(fromTimeInclusive)).toString(),
+                txns.isEmpty() ? "---" : txns.get(0).getId().toString());
+            
         if (logger.isDebugEnabled())
         {
-            String msg = String.format(
-                    "Reindexing %d transactions from %s (%s)",
-                    txns.size(),
-                    (new Date(fromTimeInclusive)).toString(),
-                    txns.isEmpty() ? "---" : txns.get(0).getId().toString());
-            logger.debug(msg);
+            logger.debug(statusMsg);
         }
         
         // Reindex the transactions.  Voids between the last set of transactions and this
@@ -297,6 +393,11 @@ public class IndexTransactionTracker extends AbstractReindexComponent
             // There is more work to do and we should be called back right away
             return true;
         }
+    }
+    
+    public String getReindexStatus()
+    {
+        return statusMsg;
     }
     
     private static final long ONE_HOUR_MS = 3600*1000;

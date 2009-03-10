@@ -226,6 +226,24 @@ import org.springframework.beans.PropertyAccessException;
                         throw new DictionaryException(ERR_PROPERTY_MISMATCH, e, namedValue.getName(), shortName);
                     }
                 }
+                
+                // Pass in the name as a special property, if it is available
+                if (beanWrapper.isWritableProperty("_shortName"))
+                {
+                    try
+                    {
+                        beanWrapper.setPropertyValue("_shortName", shortName);
+                    }
+                    catch (PropertyAccessException e)
+                    {
+                        throw new DictionaryException(ERR_PROPERTY_MISMATCH, e, shortName, shortName);
+                    }
+                    catch (InvalidPropertyException e)
+                    {
+                        throw new DictionaryException(ERR_PROPERTY_MISMATCH, e, shortName, shortName);
+                    }
+                    
+                }
             }
             // now initialize
             constraint.initialize();

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -166,11 +166,13 @@ public final class NodeRef implements EntityRef, Serializable
     public static class Status
     {
         private final String changeTxnId;
+        private final Long dbTxnId;
         private final boolean deleted;
         
-        public Status(String changeTxnId, boolean deleted)
+        public Status(String changeTxnId, Long dbTxnId, boolean deleted)
         {
             this.changeTxnId = changeTxnId;
+            this.dbTxnId = dbTxnId;
             this.deleted = deleted;
         }
         /**
@@ -181,11 +183,35 @@ public final class NodeRef implements EntityRef, Serializable
             return changeTxnId;
         }
         /**
+         * @return Returns the db ID of the last transaction to change the node
+         */
+        public Long getDbTxnId()
+        {
+            return dbTxnId;
+        }
+        /**
          * @return Returns true if the node has been deleted, otherwise false
          */
         public boolean isDeleted()
         {
             return deleted;
+        }
+        
+        // debug display string
+        public String toString()
+        {
+            StringBuilder sb = new StringBuilder(50);
+            
+            sb.append("Status[")
+              .append("changeTxnId=")
+              .append(changeTxnId)
+              .append(", dbTxnId=")
+              .append(dbTxnId)
+              .append(", deleted=")
+              .append(deleted)
+              .append("]");
+            
+            return sb.toString();
         }
     }
 }

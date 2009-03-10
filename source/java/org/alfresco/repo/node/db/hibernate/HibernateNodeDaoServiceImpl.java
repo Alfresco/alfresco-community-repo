@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -672,6 +672,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         {
             return new NodeRef.Status(
                     node.getTransaction().getChangeTxnId(),
+                    node.getTransaction().getId(),
                     node.getDeleted());
         }
     }

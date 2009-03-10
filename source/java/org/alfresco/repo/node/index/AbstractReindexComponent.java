@@ -240,6 +240,12 @@ public abstract class AbstractReindexComponent implements IndexRecovery
         {
             try
             {
+                // started
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Reindex work started: " + this);
+                }
+                
                 AuthenticationUtil.pushAuthentication();
                 // authenticate as the system user
                 AuthenticationUtil.setRunAsUserSystem();
@@ -284,7 +290,7 @@ public abstract class AbstractReindexComponent implements IndexRecovery
         }
     }
 
-    protected enum InIndex
+    public enum InIndex
     {
         YES, NO, INDETERMINATE;
     }
@@ -348,7 +354,7 @@ public abstract class AbstractReindexComponent implements IndexRecovery
      * @param txn       a specific transaction
      * @return          Returns <tt>true</tt> if the transaction is definitely in the index
      */
-    protected InIndex isTxnPresentInIndex(final Transaction txn)
+    public InIndex isTxnPresentInIndex(final Transaction txn)
     {
         if (txn == null)
         {
@@ -356,9 +362,9 @@ public abstract class AbstractReindexComponent implements IndexRecovery
         }
 
         final Long txnId = txn.getId();
-        if (logger.isDebugEnabled())
+        if (logger.isTraceEnabled())
         {
-            logger.debug("Checking for transaction in index: " + txnId);
+            logger.trace("Checking for transaction in index: " + txnId);
         }
         
         // Check if the txn ID is present in any store's index
@@ -398,6 +404,7 @@ public abstract class AbstractReindexComponent implements IndexRecovery
                 {
                     // There were deleted nodes only.  Check that all the deleted nodes were
                     // removed from the index otherwise it is out of date.
+                    result = InIndex.YES;
                     for (StoreRef storeRef : storeRefs)
                     {
                         if (!haveNodesBeenRemovedFromIndex(storeRef, txn))
@@ -444,17 +451,17 @@ public abstract class AbstractReindexComponent implements IndexRecovery
             
             if (results.length() > 0)
             {
-                if (logger.isDebugEnabled())
+                if (logger.isTraceEnabled())
                 {
-                    logger.debug("Index has results for txn " + txnId + " for store " + storeRef);
+                    logger.trace("Index has results for txn " + txnId + " for store " + storeRef);
                 }
                 return true;        // there were updates/creates and results for the txn were found
             }
             else
             {
-                if (logger.isDebugEnabled())
+                if (logger.isTraceEnabled())
                 {
-                    logger.debug("Transaction " + txnId + " not in index for store " + storeRef + ".  Possibly out of date.");
+                    logger.trace("Transaction " + txnId + " not in index for store " + storeRef + ".  Possibly out of date.");
                 }
                 return false;
             }
@@ -474,9 +481,9 @@ public abstract class AbstractReindexComponent implements IndexRecovery
         boolean foundNodeRef = false;
         for (NodeRef nodeRef : nodeRefs)
         {
-            if (logger.isDebugEnabled())
+            if (logger.isTraceEnabled())
             {
-                logger.debug("Searching for node in index: \n" +
+                logger.trace("Searching for node in index: \n" +
                         "   node: " + nodeRef + "\n" +
                   "   txn: " + txnId);
             }
@@ -514,9 +521,9 @@ public abstract class AbstractReindexComponent implements IndexRecovery
         else
         {
             // No nodes found
-            if (logger.isDebugEnabled())
+            if (logger.isTraceEnabled())
             {
-                logger.debug(" --> Node not found (OK)");
+                logger.trace(" --> Node not found (OK)");
             }
         }
         return !foundNodeRef;

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,7 +18,7 @@
  * As a special exception to the terms and conditions of version 2.0 of 
  * the GPL, you may redistribute this Program in connection with Free/Libre 
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
+ * FLOSS exception.  You should have received a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
@@ -40,6 +40,31 @@ public abstract class AbstractConstraint implements Constraint
 {
     public static final String ERR_PROP_NOT_SET = "d_dictionary.constraint.err.property_not_set";
     public static final String ERR_EVALUATE_EXCEPTION = "d_dictionary.constraint.err.evaluate_exception";
+    
+    
+    /** The constraint name. May be useful in error messages */
+    private String shortName;
+    
+    /**
+     * Sets the constraint name. Automatically called after construction. Please excuse the strange method name as we
+     * want the property name to begin with an underscore to avoid property name clashes.
+     * 
+     * @param shortName
+     */
+    public void set_shortName(String shortName)
+    {
+        this.shortName = shortName;
+    }
+    
+    /**
+     * Gets the constraint name. May be useful in error messages.
+     * 
+     * @return the constraint name.
+     */
+    public String getShortName()
+    {
+        return this.shortName;
+    }
 
     /*
      * @see org.alfresco.service.cmr.dictionary.Constraint#getType()

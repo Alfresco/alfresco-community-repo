@@ -1,23 +1,24 @@
 <#assign doc_actions="${url.serviceContext}/office/docActions">
-<#if args.p?exists><#assign path=args.p><#else><#assign path=""></#if>
-<#if args.e?exists><#assign extn=args.e><#else><#assign extn="doc"></#if><#assign extnx=extn+"x">
-<#if args.n?exists><#assign nav=args.n><#else><#assign nav=""></#if>
-<#if docWorkflow?exists>
+<#assign path=args.p!"">
+<#assign extn=args.e!"doc"><#assign extnx=extn+"x">
+<#assign nav=args.n!"">
+<#if docWorkflow??>
    <#assign d=docWorkflow>
 <#else>
    <#-- resolve the path (from Company Home) into a node -->
-   <#if companyhome.childByNamePath[path]?exists>
+   <#if companyhome.childByNamePath[path]??>
       <#assign d=companyhome.childByNamePath[path]>
    <#else>
       <#assign d=companyhome>
    </#if>
 </#if>
 <#assign defaultQuery="?p=" + path?url + "&e=" + extn + "&n=" + nav>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-	<title>My Tasks</title>
-	<link rel="stylesheet" type="text/css" href="${url.context}/css/office.css" />
+   <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+   <title>${message("office.title.my_tasks")}</title>
+   <link rel="stylesheet" type="text/css" href="${url.context}/css/office.css" />
 <!--[if IE 6]>
    <link rel="stylesheet" type="text/css" href="${url.context}/css/office_ie6.css" />
 <![endif]-->
@@ -26,8 +27,15 @@
    <script type="text/javascript" src="${url.context}/scripts/ajax/date_picker.js"></script>
    <script type="text/javascript" src="${url.context}/scripts/office/office_addin.js"></script>
    <script type="text/javascript" src="${url.context}/scripts/office/my_tasks.js"></script>
+   <script type="text/javascript" src="${url.context}/scripts/office/external_component.js"></script>
    <script type="text/javascript">//<![CDATA[
       OfficeAddin.defaultQuery = '${defaultQuery}';
+      ExternalComponent.init(
+      {
+         fullUrl: "${url.full}",
+         folderPath: "${url.serviceContext}/office/",
+         ticket: "${session.ticket}"
+      });
    //]]></script>
 </head>
 <body>
@@ -44,14 +52,14 @@
 </div>
 
 <div class="headerRow">
-   <div class="headerWrapper"><div class="header">My Tasks<span class="taskKey"><img src="${url.context}/images/office/task_overdue.gif" alt="overdue" />=overdue, <img src="${url.context}/images/office/task_today.gif" alt="due today" />=due today</span></div></div>
+   <div class="headerWrapper"><div class="header">${message("office.header.my_tasks")}<span class="taskKey"><img src="${url.context}/images/office/task_overdue.gif" alt="${message("office.task.overdue")}" />=${message("office.task.overdue")}, <img src="${url.context}/images/office/task_today.gif" alt="${message("office.task.due_today")}" />=${message("office.task.due_today")}</span></div></div>
 </div>
 
 <div id="taskList" class="containerMedium">
 <#assign taskNum=0>
 <#list workflow.assignedTasks as t>
    <#assign taskNum=taskNum+1>
-   <#assign hasDue=t.properties["bpm:dueDate"]?exists>
+   <#assign hasDue=t.properties["bpm:dueDate"]??>
    <#if hasDue>
       <#assign due=t.properties["bpm:dueDate"]>
    </#if>
@@ -60,10 +68,10 @@
    <#if hasDue>
       <#-- items due today? -->
       <#if (dateCompare(date?date, due?date, 0, "==") == 1)>
-         <img src="${url.context}/images/office/task_today.gif" alt="due today" />
+         <img src="${url.context}/images/office/task_today.gif" alt="${message("office.task.due_today")}" />
       <#-- items overdue? -->
       <#elseif (dateCompare(date?date, due?date) == 1)>
-         <img src="${url.context}/images/office/task_overdue.gif" alt="overdue" />
+         <img src="${url.context}/images/office/task_overdue.gif" alt="${message("office.task.overdue")}" />
       </#if>
    <#else>
          &nbsp;
@@ -72,62 +80,62 @@
       <span class="taskItemDetails">
          <span style="font-weight: bold;">${(t.description!"")?html}</span> (${t.type?html})
    <#if hasDue>
-            <br />Due date: ${due?date}
+            <br />${message("office.property.due_date")}: ${due?date}
    <#else>
-            <br />(No due date)
+            <br />(${message("office.message.no_due_date")})
    </#if>
       </span>
    </div>
 </#list>
 <#if taskNum = 0>
    <div>
-      <span class="noItems">(No tasks)</span>
+      <span class="noItems">(${message("office.message.no_tasks")})</span>
    </div>
 </#if>
 </div>
 
 <div class="headerRow">
-   <div class="headerWrapper"><div class="header">Task Details</div></div>
+   <div class="headerWrapper"><div class="header">${message("office.header.task_details")}</div></div>
 </div>
 
 <div class="containerBig">
    <div id="nonStatusText">
-<#if args.w?exists && d.isDocument>
+<#if args.w?? && d.isDocument>
       <div id="taskDetails">
          <table width="100%">
             <tr>
-               <td valign="top"><img src="${url.context}/images/office/new_workflow_large.gif" alt="Start workflow" /></td>
+               <td valign="top"><img src="${url.context}/images/office/new_workflow_large.gif" alt="${message("office.action.start_workflow")}" /></td>
                <td>
-                  Start workflow on:<br /><span style="font-weight: bold; padding-left: 8px;">${d.name?html}</span>
+                  ${message("office.action.start_workflow")}:<br /><span style="font-weight: bold; padding-left: 8px;">${d.name?html}</span>
                </td>
             </tr>
          </table>
       
-         <div style="margin-top: 8px; font-weight: bold;">Enter new workflow details below</div>
+         <div style="margin-top: 8px; font-weight: bold;">${message("office.message.enter_workflow_details")}</div>
          <div class="taskParameters">
-            <div class="taskParam">Workflow:</div>
+            <div class="taskParam">${message("office.property.workflow")}:</div>
             <div class="taskValue">
                <select id="wrkType" style="width: 178px;">
-                  <option value="review" selected>Review &amp; Approve</option>
-                  <option value="adhoc">Adhoc Task</option>
+                  <option value="review" selected>${message("office.workflow.review")}</option>
+                  <option value="adhoc">${message("office.workflow.review")}</option>
                </select>
             </div>
-            <div class="taskParam">Assign to:</div>
+            <div class="taskParam">${message("office.property.assign_to")}:</div>
             <div class="taskValue">
                <input id="wrkAssignTo" type="text" value="" />
                <img id="ajxAssignTo" src="${url.context}/images/office/ajax_anim.gif" alt="*" style="display: none;" />
             </div>
-            <div class="taskParam">Due on:</div>
+            <div class="taskParam">${message("office.property.due_on")}:</div>
             <div class="taskValue">
                <input type="text" id="wrkDueDate" value="" readonly="readonly" />
-               <img src="${url.context}/images/office/date.gif" alt="date" />
+               <img src="${url.context}/images/office/date.gif" alt="${message("office.property.date")}" />
             </div>
-            <div class="taskParam">Description:</div>
+            <div class="taskParam">${message("office.property.description")}:</div>
             <div class="taskValue"><textarea id="wrkDescription" rows="4" style="height:54px;"></textarea></div>
             <div class="taskParam">&nbsp;</div>
             <div class="taskValue">
-               <a class="taskAction" href="#" onclick="OfficeMyTasks.startWorkflow('${url.serviceContext}/office/docActions', '${d.id}');">Submit</a>
-               <a class="taskAction" href="${url.serviceContext}/office/myTasks${defaultQuery?html}">Cancel</a>
+               <a class="taskAction" href="#" onclick="OfficeMyTasks.startWorkflow('${url.serviceContext}/office/docActions', '${d.id}');">${message("office.button.submit")}</a>
+               <a class="taskAction" href="${url.serviceContext}/office/myTasks${defaultQuery?html}">${message("office.button.cancel")}</a>
             </div>
 
          </div>
@@ -139,6 +147,10 @@
    
    <div id="statusText"></div>
 
+</div>
+
+<div style="position: absolute; top: 0px; left: 0px; z-index: 100; display: none">
+   <iframe id="if_externalComponenetMethodCall" name="if_externalComponenetMethodCall" src="" style="visibility: hidden;" width="0" height="0"></iframe>
 </div>
 
 </body>

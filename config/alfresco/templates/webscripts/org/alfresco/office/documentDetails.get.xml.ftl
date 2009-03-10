@@ -31,12 +31,12 @@
  ****************************************************************************-->
 
 <#assign doc_actions="${url.serviceContext}/office/docActions">
-<#if args.p?exists><#assign path=args.p><#else><#assign path=""></#if>
+<#assign path=args.p!"">
 <#assign extn="doc" extn1="odt" extn2="sxw">
 <#assign extnx=extn+"x">
-<#if args.n?exists><#assign nav=args.n><#else><#assign nav=""></#if>
+<#assign nav=args.n!"">
 <#-- resolve the path (from Company Home) into a node -->
-<#if companyhome.childByNamePath[path]?exists>
+<#if companyhome.childByNamePath[path]??>
    <#assign d=companyhome.childByNamePath[path]>
 <#else>
    <#assign d=companyhome>
@@ -48,12 +48,12 @@
                   <locked>YES</locked>
    </#if>
                 <name>${d.name}</name>
-   <#if d.properties.title?exists>
+   <#if d.properties.title??>
                   <title>${d.properties.title}</title>
    <#else>
                   <title>""</title>
    </#if>
-   <#if d.properties.description?exists>
+   <#if d.properties.description??>
                   <description>${d.properties.description}</description>
    <#else>
                   <description>""</description>
@@ -76,7 +76,7 @@
 </#if>
 <versionHistory>
 <#if d.isDocument >
-   <#if hasAspect(d, "cm:versionable") == 1>
+   <#if d.hasAspect("cm:versionable")>
       <#assign versionRow=0>
       <#list d.versionHistory?sort_by("versionLabel")?reverse as record>
          <#assign versionRow=versionRow+1>
@@ -85,7 +85,7 @@
 		<url>${url.context}${record.url}?ticket=${session.ticket}</url>
             <author>${record.creator}</author>
             <date>${record.createdDate?datetime}</date>
-         <#if record.description?exists>
+         <#if record.description??>
             <notes>${record.description}</notes>
          </#if>
          <#-- Only Word supports document compare -->
@@ -105,7 +105,7 @@
 <documentActions>
 <#if d.isDocument>
    <#if d.isLocked >
-   <#elseif hasAspect(d, "cm:workingcopy") == 1>
+   <#elseif d.hasAspect("cm:workingcopy")>
 	<checkin>${doc_actions}?a=checkin&amp;n=${d.id}</checkin>
    <#else>
 	<checkout>${doc_actions}?a=checkout&amp;n=${d.id}</checkout>

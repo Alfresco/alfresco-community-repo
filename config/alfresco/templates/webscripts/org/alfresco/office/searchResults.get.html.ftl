@@ -1,11 +1,12 @@
 <#assign doc_actions="${url.serviceContext}/office/docActions">
-<#if args.p?exists><#assign path=args.p><#else><#assign path=""></#if>
-<#if args.n?exists><#assign nav=args.n><#else><#assign nav=""></#if>
-<#if args.e?exists><#assign extn=args.e><#else><#assign extn="doc"></#if><#assign extnx=extn+"x">
-<#if args.search?exists><#assign searchString = args.search><#else><#assign searchString=""></#if>
+<#assign path=args.p!"">
+<#assign nav=args.n!"">
+<#assign extn=args.e!"doc"><#assign extnx=extn+"x">
+<#if args.e??><#assign extList=[]><#else><#assign extList=[".odt", ".sxw", ".doc", ".rtf", ".ods", ".sxc", ".xls", ".odp", ".sxi", ".ppt", ".odg", ".sxd", ".odb", ".odf", ".sxm"]></#if>
+<#if args.search??><#assign searchString = args.search><#else><#assign searchString=""></#if>
 <#assign defaultQuery="?p=" + path?url + "&e=" + extn + "&n=" + nav>
 
-<#if args.maxresults?exists>
+<#if args.maxresults??>
    <#assign maxresults=args.maxresults?number>
 <#else>
    <#assign maxresults=10>
@@ -14,17 +15,24 @@
 <#assign totalResults=0>
 <#if results?size = 0>
 <div class="noItems">
-   <span>(No results found)</span>
+   <span>(${message("office.message.no_results")})</span>
 </div>
 <#else>
    <#assign totalResults = results?size>
    <#list results?sort_by(["properties","cm:modified"])?reverse as child>
       <#assign resCount=resCount + 1>
+      <#assign isSupportedExtn = false>
+      <#list extList as ext>
+         <#if child.name?ends_with(ext)>
+            <#assign isSupportedExtn = true>
+            <#break>
+         </#if>
+      </#list>
       <#if child.isDocument>
          <#assign relativePath = (child.displayPath?substring(companyhome.name?length+1) + '/' + child.name)?url?replace('%2F', '/')?replace('\'', '\\\'') />
-         <#if child.name?ends_with(extn) || child.name?ends_with(extnx)>
+         <#if child.name?ends_with(extn) || child.name?ends_with(extnx) || isSupportedExtn>
             <#assign openURL = "#">
-            <#assign hrefExtra = " onClick=\"window.external.openDocument('${relativePath}')\"">
+            <#assign hrefExtra = " onClick=\"ExternalComponent.openDocument('${relativePath}')\"">
          <#else>
             <#assign openURL = "${url.context}${child.url}">
             <#assign hrefExtra = " target=\"_blank\"">
@@ -33,33 +41,33 @@
          <#assign openURL = "${url.serviceContext}/office/navigation?p=${path?url}&amp;e=${extn}&amp;n=${child.id}&amp;search=${searchString?url}&amp;maxresults=${maxresults}">
          <#assign hrefExtra = "">
       </#if>
-<div class="documentItem ${(resCount % 2 = 0)?string("odd", "even")}"">
+<div class="documentItem ${(resCount % 2 = 0)?string("odd", "even")}">
    <span class="documentItemIcon">
-      <a href="${openURL}" ${hrefExtra}><img src="${url.context}${child.icon32}" alt="Open ${child.name?html}" /></a>
+      <a href="${openURL}" ${hrefExtra}><img src="${url.context}${child.icon32}" alt="${message("office.action.open", child.name?html)}" /></a>
    </span>
    <span class="documentItemDetails">
-      <a class="bold" href="${openURL}" ${hrefExtra} title="Open ${child.name?html}">${child.name?html}</a><br />
-      <#if child.properties.description?exists>
+      <a class="bold" href="${openURL}" ${hrefExtra} title="${message("office.action.open", child.name?html)}">${child.name?html}</a><br />
+      <#if child.properties.description??>
          <#if (child.properties.description?length > 0)>
             ${child.properties.description?html}<br />
          </#if>
       </#if>
       <#if child.isDocument>
-         Modified: ${child.properties.modified?datetime} (${(child.size / 1024)?int}Kb)<br />
+         ${message("office.property.modified")}: ${child.properties.modified?datetime} (${(child.size / 1024)?int}${message("office.unit.kb")})<br />
          <#if child.isLocked >
-         <img src="${url.context}/images/office/lock.gif" style="padding:3px 6px 2px 0px;" alt="Locked" />
-         <#elseif hasAspect(child, "cm:workingcopy") == 1>
-         <a href="#" onclick="OfficeAddin.getAction('${doc_actions}','checkin','${child.id}', '');"><img src="${url.context}/images/office/checkin.gif" style="padding:3px 6px 2px 0px;" alt="Check In" title="Check In" /></a>
+         <img src="${url.context}/images/office/lock.gif" style="padding:3px 6px 2px 0px;" alt="${message("office.status.locked")}" />
+         <#elseif child.hasAspect("cm:workingcopy")>
+         <a href="#" onclick="OfficeAddin.getAction('${doc_actions}','checkin','${child.id}', '');"><img src="${url.context}/images/office/checkin.gif" style="padding:3px 6px 2px 0px;" alt="${message("office.action.checkin")}" title="${message("office.action.checkin")}" /></a>
          <#else>
-         <a href="#" onclick="OfficeAddin.getAction('${doc_actions}','checkout','${child.id}', '');"><img src="${url.context}/images/office/checkout.gif" style="padding:3px 6px 2px 0px;" alt="Check Out" title="Check Out" /></a>
+         <a href="#" onclick="OfficeAddin.getAction('${doc_actions}','checkout','${child.id}', '');"><img src="${url.context}/images/office/checkout.gif" style="padding:3px 6px 2px 0px;" alt="${message("office.action.checkout")}" title="${message("office.action.checkout")}" /></a>
          </#if>
-         <a href="${url.serviceContext}/office/myTasks${defaultQuery?html}&amp;w=new&amp;wd=${child.id}"><img src="${url.context}/images/office/new_workflow.gif" style="padding:3px 6px 2px 0px;" alt="Create Workflow..." title="Create Workflow..." /></a>
-         <a href="#" onclick="window.external.insertDocument('${relativePath}')"><img src="${url.context}/images/office/insert_document.gif" style="padding:3px 6px 2px 0px;" alt="Insert File into Current Document" title="Insert File into Current Document" /></a>
+         <a href="${url.serviceContext}/office/myTasks${defaultQuery?html}&amp;w=new&amp;wd=${child.id}"><img src="${url.context}/images/office/new_workflow.gif" style="padding:3px 6px 2px 0px;" alt="${message("office.action.start_workflow")}..." title="${message("office.action.start_workflow")}..." /></a>
+         <a href="#" onclick="ExternalComponent.insertDocument('${relativePath}')"><img src="${url.context}/images/office/insert_document.gif" style="padding:3px 6px 2px 0px;" alt="${message("office.action.insert")}" title="${message("office.action.insert")}" /></a>
          <#if !child.name?ends_with(".pdf")>
-         <a href="#" onclick="OfficeAddin.getAction('${doc_actions}','makepdf','${child.id}', '');"><img src="${url.context}/images/office/makepdf.gif" style="padding:3px 6px 2px 0px;" alt="Make PDF..." title="Make PDF" /></a>
+         <a href="#" onclick="OfficeAddin.getAction('${doc_actions}','makepdf','${child.id}', '');"><img src="${url.context}/images/office/makepdf.gif" style="padding:3px 6px 2px 0px;" alt="${message("office.action.transform_pdf")}" title="${message("office.action.transform_pdf")}" /></a>
          </#if>
          <#if !child.isLocked>
-         <a href="#" onclick="OfficeAddin.getAction('${doc_actions}','delete','${child.id}', 'Are you sure you want to delete this document?');"><img src="${url.context}/images/office/delete.gif" style="padding:3px 6px 2px 0px;" alt="Delete..." title="Delete" /></a>
+         <a href="#" onclick="OfficeAddin.getAction('${doc_actions}','delete','${child.id}', '${message("office.message.confirm_delete")}');"><img src="${url.context}/images/office/delete.gif" style="padding:3px 6px 2px 0px;" alt="${message("office.action.delete")}..." title="${message("office.action.delete")}..." /></a>
          </#if>
       </#if>
    </span>

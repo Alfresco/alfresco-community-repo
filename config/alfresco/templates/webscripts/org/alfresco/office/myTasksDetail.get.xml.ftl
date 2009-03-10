@@ -30,15 +30,15 @@
  * the copyright holder.                                                       *
  ****************************************************************************-->
 
-<#if args.e?exists><#assign extn=args.e><#else><#assign extn="doc"></#if>
-<#if args.t?exists>
+<#if args.e??><#assign extn=args.e><#else><#assign extn="doc"></#if>
+<#if args.t??>
    <#assign taskid = args.t>
    <#if taskid != "">
       <#assign task = workflow.getTaskById(taskid)>
    </#if>
 </#if>
 <taskDetails>
-<#if task?exists>
+<#if task??>
             <description>${task.description?html}</description>
                   <status>${task.properties["bpm:status"]}</status>
                   <priority>${task.properties["bpm:priority"]}</priority>
@@ -52,7 +52,7 @@
 		<resName>${res.name}</resName>
    </#list>
    <#list task.transitions as wt>
-         <taskAction>${url.context}/command/task/end/${task.id}<#if wt.id?exists>/${wt.id}</#if></taskAction>
+         <taskAction>${url.context}/command/task/end/${task.id}<#if wt.id??>/${wt.id}</#if></taskAction>
    </#list>
       <taskManage>${url.context}/command/ui/managetask?id=${task.id}&amp;type=${task.qnameType}&amp;container=plain&amp;ticket=${session.ticket}</taskManage>
 </#if>

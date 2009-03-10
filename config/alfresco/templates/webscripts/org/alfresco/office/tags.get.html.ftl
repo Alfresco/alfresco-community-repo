@@ -1,18 +1,19 @@
-<#if args.p?exists><#assign path=args.p><#else><#assign path=""></#if>
-<#if args.e?exists><#assign extn=args.e><#else><#assign extn="doc"></#if><#assign extnx=extn+"x">
-<#if args.n?exists><#assign nav=args.n><#else><#assign nav=""></#if>
-<#if args.tag?exists><#assign tag=args.tag><#else><#assign tag=""></#if>
+<#assign path=args.p!"">
+<#assign extn=args.e!"doc"><#assign extnx=extn+"x">
+<#assign nav=args.n!"">
+<#if args.tag??><#assign tag=args.tag><#else><#assign tag=""></#if>
 <#-- resolve the path (from Company Home) into a node -->
-<#if companyhome.childByNamePath[path]?exists>
+<#if companyhome.childByNamePath[path]??>
    <#assign d=companyhome.childByNamePath[path]>
 <#else>
    <#assign d=companyhome>
 </#if>
 <#assign defaultQuery="?p=" + path?url + "&e=" + extn + "&n=" + nav>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
 <head>
    <title>${message("office.title.document_tags")}</title>
+   <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
    <link rel="stylesheet" type="text/css" href="${url.context}/css/office.css" />
 <!--[if IE 6]>
    <link rel="stylesheet" type="text/css" href="${url.context}/css/office_ie6.css" />
@@ -20,8 +21,15 @@
    <script type="text/javascript" src="${url.context}/scripts/ajax/mootools.v1.11.js"></script>
    <script type="text/javascript" src="${url.context}/scripts/office/office_addin.js"></script>
    <script type="text/javascript" src="${url.context}/scripts/office/tags.js"></script>
+   <script type="text/javascript" src="${url.context}/scripts/office/external_component.js"></script>
    <script type="text/javascript">//<![CDATA[
       OfficeAddin.defaultQuery = '${defaultQuery}';
+      ExternalComponent.init(
+      {
+         fullUrl: "${url.full}",
+         folderPath: "${url.serviceContext}/office/",
+         ticket: "${session.ticket}"
+      });
    //]]></script>
 </head>
 <body>
@@ -38,7 +46,7 @@
 </div>
 
 <div class="headerRow">
-   <div class="headerWrapper"><div class="header">Tag Cloud</div></div>
+   <div class="headerWrapper"><div class="header">${message("office.header.tag_cloud")}</div></div>
 </div>
 
 <div class="containerMedium">
@@ -49,7 +57,7 @@
 </div>
 
 <div class="headerRow">
-   <div class="headerWrapper"><div id="taggedHeader" class="header">Tagged Documents</div></div>
+   <div class="headerWrapper"><div id="taggedHeader" class="header">${message("office.header.tagged")}</div></div>
 </div>
 
 <div id="taggedContainer">
@@ -57,9 +65,16 @@
    <div id="taggedList" class="containerBig"></div>
 </div>
 
-<#if (args.tag?exists)>
+<div style="position: absolute; top: 0px; left: 0px; z-index: 100; display: none">
+   <iframe id="if_externalComponenetMethodCall" name="if_externalComponenetMethodCall" src="" style="visibility: hidden;" width="0" height="0"></iframe>
+</div>
+
+<#if (args.tag??)>
 <script type="text/javascript">
-   window.addEvent("domready", function(){OfficeTags.preselectTag("${args.tag}")});
+   window.addEvent("domready", function()
+   {
+      OfficeTags.preselectTag("${args.tag}")
+   });
 </script>
 </#if>
 </body>

@@ -31,7 +31,7 @@
  ****************************************************************************-->
 
 <#assign extn="doc" extn1="odt" extn2="sxw">
-<#if args.search?exists>
+<#if args.search??>
    <#assign searchString = args.search>
    <#if searchString != "">
       <#assign queryString = "(TEXT:\"${searchString}\") OR (@cm\\:name:*${searchString}*)" >
@@ -43,7 +43,7 @@
 </#if>
 <searchResults>
 <#if searchString != "">
-   <#if args.maxresults?exists>
+   <#if args.maxresults??>
       <#assign maxresults=args.maxresults?number>
    <#else>
       <#assign maxresults=10>
@@ -72,7 +72,7 @@
 	<name>${child.name}</name>
          <url>${openURL}</url>
 
-         <#if child.properties.description?exists>
+         <#if child.properties.description??>
             <#if (child.properties.description?length > 0)>
               <details> ${child.properties.description}</details>
             </#if>

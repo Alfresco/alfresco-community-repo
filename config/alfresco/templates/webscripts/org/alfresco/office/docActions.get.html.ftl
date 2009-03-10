@@ -1,4 +1,4 @@
 {
-   "statusString":"${resultString}",
+   "statusString":"${message(resultString)}",
    "statusCode":${resultCode?string}
 }

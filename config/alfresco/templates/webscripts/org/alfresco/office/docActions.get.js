@@ -4,7 +4,7 @@
 var runAction = args.a;
 
 /* Outputs */
-var resultString = "Action failed",
+var resultString = "failed",
    resultCode = false;
 
 // Is this action targetting a document?
@@ -19,47 +19,49 @@ if ((docNodeId != "") && (docNodeId != null))
       {
          if (runAction == "makepdf")
          {
-            resultString = "Could not convert document";
+            resultString = "convert.failed";
             var nodeTrans = docNode.transformDocument("application/pdf");
             if (nodeTrans != null)
             {
-               resultString = "Document converted";
+               resultString = "converted";
                resultCode = true;
             }
          }
          else if (runAction == "delete")
          {
-            resultString = "Could not delete document";
+            resultString = "delete.failed";
             if (docNode.remove())
             {
-               resultString = "Document deleted";
+               resultString = "deleted";
                resultCode = true;
             }
          }
          else if (runAction == "checkout")
          {
+            resultString = "checkout.failed"
             var workingCopy = docNode.checkout();
             if (workingCopy != null)
             {
-               resultString = "Document checked out";
+               resultString = "checked_out";
                resultCode = true;
             }
          }
          else if (runAction == "checkin")
          {
+            resultString = "checkin.failed"
             var originalDoc = docNode.checkin();
             if (originalDoc != null)
             {
-               resultString = "Document checked in";
+               resultString = "checked_in";
                resultCode = true;
             }
          }
          else if (runAction == "makeversion")
          {
-            resultString = "Could not version document";
+            resultString = "version.failed";
             if (docNode.addAspect("cm:versionable"))
             {
-               resultString = "Document versioned";
+               resultString = "versioned";
                resultCode = true;
             }
          }
@@ -79,22 +81,22 @@ if ((docNodeId != "") && (docNodeId != null))
                workflow.parameters["bpm:workflowDueDate"] = dueDate;
             } 
             workflow.execute(docNode);
-            resultString = "New workflow started";
+            resultString = "workflow_started";
             resultCode = true;
          }
          else if (runAction == "test")
          {
-            resultString = "Tested ok.";
+            resultString = "Test complete.";
             resultCode = true;
          }
          else
          {
-             resultString = "Unknown action";
+             resultString = "unknown";
          }
       }
       catch(e)
       {
-         resultString = "Action failed due to exception";
+         resultString = "exception";
       }
    }
 }
@@ -104,7 +106,7 @@ else  // Non document-based actions
    {
       if (runAction == "newspace")
       {
-         resultString = "Could not create space";
+         resultString = "create_space.failed";
          var parentNodeId = args.p,
             spaceName = args.sn,
             spaceTitle = (args.st == "undefined") ? "" : args.st,
@@ -114,7 +116,7 @@ else  // Non document-based actions
          
          if ((spaceName == null) || (spaceName == ""))
          {
-            resultString = "Space must have a Name";
+            resultString = "create_space.missing_name";
          }
          else
          {
@@ -139,20 +141,20 @@ else  // Non document-based actions
             nodeNew.addAspect("app:uifacets");
             if (nodeNew != null)
             {
-               resultString = "New space created";
+               resultString = "space_created";
                resultCode = true;
             }
          }
       }
       else
       {
-          resultString = "Unknown action";
+          resultString = "unknown";
       }
    }
    catch(e)
    {
-      resultString = "Action failed due to exception";
+      resultString = "exception";
    }
 }
-model.resultString = resultString;
+model.resultString = "office.result." + resultString;
 model.resultCode = resultCode;

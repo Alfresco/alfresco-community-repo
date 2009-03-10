@@ -31,12 +31,12 @@
  ****************************************************************************-->
 
 <#assign doc_actions="${url.serviceContext}/office/docActions">
-<#if args.e?exists><#assign extn=args.e>
+<#if args.e??><#assign extn=args.e>
 <#else>
 </#if>
 <#assign extn="doc" extn1="odt" extn2="sxw">
 <#assign extnx=extn+"x">
-<#if args.n?exists><#assign nav=args.n><#else><#assign nav=""></#if>
+<#assign nav=args.n!"">
 <#assign chLen=companyhome.name?length>
 <#if node.isDocument>
    <#assign thisSpace = node.parent>
@@ -47,14 +47,14 @@
 <webdavSpace>${thisSpace.displayPath}/${thisSpace.name}/</webdavSpace>
 <space>${thisSpace.name}</space>
 <id>${thisSpace.id}</id>
-<descr><#if thisSpace.properties.description?exists>${thisSpace.properties.description}</#if></descr>
+<descr><#if thisSpace.properties.description??>${thisSpace.properties.description}</#if></descr>
 <#if thisSpace=companyhome>
 <#else>
    <up>${url.serviceContext}/office/navigation.xml?p=${path?url}&amp;n=${thisSpace.parent.id}</up>
 </#if>
 
 <lblSpaces>Spaces in ${thisSpace.name}</lblSpaces>
-<lblCreate>Create New <#if args.cc?exists>Collaboration </#if>Space...</lblCreate>
+<lblCreate>Create New <#if args.cc??>Collaboration </#if>Space...</lblCreate>
 <#assign xpath="app:dictionary/app:space_templates/*">
 <#assign templates = companyhome.childrenByXPath[xpath]>
 <#if (templates?size > 0)>
@@ -74,7 +74,7 @@
 <name>${child.name}</name>      
        <url>${url.serviceContext}/office/navigation.xml?p=${path?url}&amp;n=${child.id}</url>
 
-      <#if child.properties.description?exists>
+      <#if child.properties.description??>
       		<descr>${child.properties.description}</descr>
       </#if>
 </childSpace>
@@ -100,7 +100,7 @@
       <#else>
             ${url.context}${child.url}?ticket=${session.ticket}
       </#if></url>
-      <#if child.properties.description?exists>
+      <#if child.properties.description??>
          <#if (child.properties.description?length > 0)>
 	 <descr>${child.properties.description}</descr>
 		   </#if>
@@ -111,7 +111,7 @@
 	<fileSize>${(child.size / 1024)?int}Kb</fileSize>
       <#if child.isLocked >
         <locked>YES</locked>
-      <#elseif hasAspect(child, "cm:workingcopy") == 1>
+      <#elseif child.hasAspect("cm:workingcopy")>
 	<checkin>${doc_actions}?a=checkin&amp;n=${child.id}</checkin>
       <#else>
 	<checkout>${doc_actions}?a=checkout&amp;n=${child.id}</checkout>      

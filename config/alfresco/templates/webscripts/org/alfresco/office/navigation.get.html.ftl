@@ -1,6 +1,8 @@
 <#assign doc_actions="${url.serviceContext}/office/docActions">
-<#if args.e?exists><#assign extn=args.e><#else><#assign extn="doc"></#if><#assign extnx=extn+"x">
-<#if args.n?exists><#assign nav=args.n><#else><#assign nav=""></#if>
+<#assign path=args.p!"">
+<#assign extn=args.e!"doc"><#assign extnx=extn+"x">
+<#if args.e??><#assign extList=[]><#else><#assign extList=[".odt", ".sxw", ".doc", ".rtf", ".ods", ".sxc", ".xls", ".odp", ".sxi", ".ppt", ".odg", ".sxd", ".odb", ".odf", ".sxm"]></#if>
+<#assign nav=args.n!"">
 <#assign chLen=companyhome.name?length>
 <#if node.isDocument>
    <#assign thisSpace = node.parent>
@@ -8,19 +10,27 @@
    <#assign thisSpace = node>
 </#if>
 <#assign defaultQuery="?p=" + path?url + "&e=" + extn + "&n=" + nav>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-	<title>${message("office.title.navigation")}</title>
-	<link rel="stylesheet" type="text/css" href="${url.context}/css/office.css" />
+   <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+   <title>${message("office.title.navigation")}</title>
+   <link rel="stylesheet" type="text/css" href="${url.context}/css/office.css" />
 <!--[if IE 6]>
    <link rel="stylesheet" type="text/css" href="${url.context}/css/office_ie6.css" />
 <![endif]-->
    <script type="text/javascript" src="${url.context}/scripts/ajax/mootools.v1.11.js"></script>
-	<script type="text/javascript" src="${url.context}/scripts/office/office_addin.js"></script>
-	<script type="text/javascript" src="${url.context}/scripts/office/navigation.js"></script>
+   <script type="text/javascript" src="${url.context}/scripts/office/office_addin.js"></script>
+   <script type="text/javascript" src="${url.context}/scripts/office/navigation.js"></script>
+   <script type="text/javascript" src="${url.context}/scripts/office/external_component.js"></script>
    <script type="text/javascript">//<![CDATA[
       OfficeAddin.defaultQuery = '${defaultQuery}';
+      ExternalComponent.init(
+      {
+         fullUrl: "${url.full}",
+         folderPath: "${url.serviceContext}/office/",
+         ticket: "${session.ticket}"
+      }<#if args.env??>, "${args.env}")</#if>);
    //]]></script>
 </head>
 <body>
@@ -37,7 +47,7 @@
 </div>
 
 <div class="headerRow">
-   <div class="headerWrapper"><div class="header">${message("office.navigation.header")}</div></div>
+   <div class="headerWrapper"><div class="header">${message("office.header.current_space")}</div></div>
 </div>
 
 <div id="currentSpaceInfo">
@@ -47,7 +57,7 @@
       </span>
       <span style="float: left; padding-left: 6px;">
          <span class="bold">${thisSpace.name?html}</span><br />
-<#if thisSpace.properties.description?exists>
+<#if thisSpace.properties.description??>
          ${thisSpace.properties.description?html}
 </#if>
       </span>
@@ -55,48 +65,48 @@
 <#if thisSpace=companyhome>
 <#else>
    <span style="float: right;">
-      <a title="To UserHome Space" href="${url.serviceContext}/office/navigation?p=${path?url}&amp;e=${extn}&amp;n=${userhome.id}">
-         <img src="${url.context}/images/office/userhome.gif" alt="To UserHome Space" />
+      <a title="${message("office.action.userhome")}" href="${url.serviceContext}/office/navigation?p=${path?url}&amp;e=${extn}&amp;n=${userhome.id}">
+         <img src="${url.context}/images/office/userhome.gif" alt="${message("office.action.userhome")}" />
       </a>
-      <a title="Up to Parent Space" href="${url.serviceContext}/office/navigation?p=${path?url}&amp;e=${extn}&amp;n=${thisSpace.parent.id}">
-         <img src="${url.context}/images/office/go_up.gif" alt="Up to Parent Space" />
+      <a title="${message("office.action.parent_space")}" href="${url.serviceContext}/office/navigation?p=${path?url}&amp;e=${extn}&amp;n=${thisSpace.parent.id}">
+         <img src="${url.context}/images/office/go_up.gif" alt="${message("office.action.parent_space")}" />
       </a>
    </span>
 </#if>
 </div>
 
 <div class="headerRow">
-   <div class="headerWrapper"><div class="header">Spaces in ${thisSpace.name?html}</div></div>
+   <div class="headerWrapper"><div class="header">${message("office.header.spaces_in", thisSpace.name?html)}</div></div>
    <div class="headerExtra"><div class="toggle">&nbsp;</div></div>
 </div>
 
 <div id="spaceList" class="containerMedium togglePanel">
    <div id="createSpaceContainer">
       <div id="createSpace" onclick="OfficeNavigation.showCreateSpace();">
-         <img src="${url.context}/images/office/create_space.gif" alt="Create new space" />
-         <span style="vertical-align: top;">Create New <#if args.cc?exists>Collaboration </#if>Space...</span>
+         <img src="${url.context}/images/office/create_space.gif" alt="${message("office.action.create_space")}" />
+         <span style="vertical-align: top;"><#if args.cc??>${message("office.action.create_collaboration_space")}<#else>${message("office.action.create_space")}</#if>...</span>
       </div>
       <div id="createSpacePanel">
          <div id="createSpaceParameters">
-            <div class="spaceParam">Name:</div>
+            <div class="spaceParam">${message("office.property.name")}:</div>
             <div class="spaceValue">
                <input id="spaceName" type="text" value="" />
             </div>
-            <div class="spaceParam">Title:</div>
+            <div class="spaceParam">${message("office.property.title")}:</div>
             <div class="spaceValue">
                <input id="spaceTitle" type="text" value="" />
             </div>
-            <div class="spaceParam">Description:</div>
+            <div class="spaceParam">${message("office.property.description")}:</div>
             <div class="spaceValue">
                <input id="spaceDescription" type="text" value="" />
             </div>
 <#assign xpath="app:dictionary/app:space_templates/*">
 <#assign templates = companyhome.childrenByXPath[xpath]>
 <#if (templates?size > 0)>
-            <div class="spaceParam">Template:</div>
+            <div class="spaceParam">${message("office.property.template")}:</div>
             <div class="spaceValue">
                <select id="spaceTemplate" style="width: 172px;">
-                  <option selected="selected" value="">(None)</option>
+                  <option selected="selected" value="">(${message("office.message.none")})</option>
    <#list templates as template>
                   <option value="${template.id}">${template.name?html}</option>
    </#list>
@@ -106,10 +116,10 @@
             <div class="spaceParam">&nbsp;</div>
             <div class="spaceValue">
                <a class="spaceAction" href="#" onclick="OfficeNavigation.submitCreateSpace('${url.serviceContext}/office/docActions', '${thisSpace.id}');">
-                  Submit
+                  ${message("office.button.submit")}
                </a>
                <a class="spaceAction" href="#" onclick="OfficeNavigation.hideCreateSpace();">
-                  Cancel
+                  ${message("office.button.cancel")}
                </a>
             </div>
          </div>
@@ -121,13 +131,13 @@
       <#assign spacesFound = spacesFound + 1>
       <div class="spaceItem ${(spacesFound % 2 = 0)?string("even", "odd")}">
          <span style="float: left; width: 36px;">
-            <a href="${url.serviceContext}/office/navigation?p=${path?url}&amp;e=${extn}&amp;n=${child.id}"><img src="${url.context}${child.icon32}" alt="Open ${child.name?html}" /></a>
+            <a href="${url.serviceContext}/office/navigation?p=${path?url}&amp;e=${extn}&amp;n=${child.id}"><img src="${url.context}${child.icon32}" alt="${message("office.action.open", child.name?html)}" /></a>
          </span>
          <span>
-            <a href="${url.serviceContext}/office/navigation?p=${path?url}&amp;e=${extn}&amp;n=${child.id}" title="Open ${child.name?html}">
+            <a href="${url.serviceContext}/office/navigation?p=${path?url}&amp;e=${extn}&amp;n=${child.id}" title="${message("office.action.open", child.name?html)}">
                <span class="bold">${child.name?html}</span>
             </a>
-      <#if child.properties.description?exists>
+      <#if child.properties.description??>
       		<br />${child.properties.description?html}
       </#if>
          </span>
@@ -135,12 +145,12 @@
    </#if>
 </#list>
 <#if spacesFound = 0>
-      <div class="noItems">(No subspaces)</div>
+      <div class="noItems">(${message("office.message.no_subspaces")})</div>
 </#if>
 </div>
 
 <div class="headerRow">
-   <div class="headerWrapper"><div class="header">Documents in ${thisSpace.name?html}</div></div>
+   <div class="headerWrapper"><div class="header">${message("office.header.documents_in", thisSpace.name?html)}</div></div>
    <div class="headerExtra"><div class="toggle">&nbsp;</div></div>
 </div>
 
@@ -148,89 +158,100 @@
 <#assign documentsFound = 0>
 <#list thisSpace.children?sort_by('name') as child>
    <#if child.isDocument>
-      <#assign isVersionable = (hasAspect(child, "cm:versionable") == 1)>
+      <#assign isVersionable = child.hasAspect("cm:versionable")>
       <#assign documentsFound = documentsFound + 1>
       <#assign relativePath = (child.displayPath?substring(chLen+1) + '/' + child.name)?url?replace('%2F', '/')?replace('\'', '\\\'') />
+      <#assign isSupportedExtn = false>
+      <#list extList as ext>
+         <#if child.name?ends_with(ext)>
+            <#assign isSupportedExtn = true>
+            <#break>
+         </#if>
+      </#list>
       <div class="documentItem ${(documentsFound % 2 = 0)?string("even", "odd")}">
          <span class="documentItemIcon">
-      <#if child.name?ends_with(extn) || child.name?ends_with(extnx)>
-            <a href="#" onclick="window.external.openDocument('${relativePath}')"><img src="${url.context}${child.icon32}" alt="Open ${child.name?html}" /></a>
+      <#if child.name?ends_with(extn) || child.name?ends_with(extnx) || isSupportedExtn>
+            <a href="#" onclick="ExternalComponent.openDocument('${relativePath}')"><img src="${url.context}${child.icon32}" alt="Open ${child.name?html}" /></a>
       <#else>
             <a href="${url.context}${child.url}" rel="_blank"><img src="${url.context}${child.icon32}" alt="Open ${child.name?html}" /></a>
       </#if>
          </span>
          <span class="documentItemDetails">
-      <#if child.name?ends_with(extn) || child.name?ends_with(extnx)>
-            <a href="#" onclick="window.external.openDocument('${relativePath}')"><span class="bold ${isVersionable?string("versionable", "notVersionable")}">${child.name?html}</span></a>
+      <#if child.name?ends_with(extn) || child.name?ends_with(extnx) || isSupportedExtn>
+            <a href="#" onclick="ExternalComponent.openDocument('${relativePath}')"><span class="bold ${isVersionable?string("versionable", "notVersionable")}">${child.name?html}</span></a>
       <#else>
             <a href="${url.context}${child.url}" rel="_blank"><span class="bold">${child.name?html}</span></a>
       </#if>
             <br />
-      <#if child.properties.description?exists>
+      <#if child.properties.description??>
          <#if (child.properties.description?length > 0)>
-		      ${child.properties. description?html}<br />
-		   </#if>
+            ${child.properties.description?html}<br />
+         </#if>
       </#if>
-            Modified: ${child.properties.modified?datetime}, Size: ${(child.size / 1024)?int}Kb<br />
+            ${message("office.property.modified")}: ${child.properties.modified?datetime}, ${message("office.property.size")}: ${(child.size / 1024)?int}${message("office.unit.kb")}<br />
       <#if child.isLocked >
             <img src="${url.context}/images/office/lock.gif" style="padding:3px 6px 2px 0px;" alt="Locked" />
-      <#elseif hasAspect(child, "cm:workingcopy") == 1>
-            <a href="#" onclick="OfficeAddin.getAction('${doc_actions}','checkin','${child.id}', '');"><img src="${url.context}/images/office/checkin.gif" style="padding:3px 6px 2px 0px;" alt="Check In" title="Check In" /></a>
+      <#elseif child.hasAspect("cm:workingcopy")>
+            <a href="#" onclick="OfficeAddin.getAction('${doc_actions}','checkin','${child.id}', '');"><img src="${url.context}/images/office/checkin.gif" style="padding:3px 6px 2px 0px;" alt="${message("office.action.checkin")}" title="${message("office.action.checkin")}" /></a>
       <#else>
-            <a href="#" onclick="OfficeAddin.getAction('${doc_actions}','checkout','${child.id}', '');"><img src="${url.context}/images/office/checkout.gif" style="padding:3px 6px 2px 0px;" alt="Check Out" title="Check Out" /></a>
+            <a href="#" onclick="OfficeAddin.getAction('${doc_actions}','checkout','${child.id}', '');"><img src="${url.context}/images/office/checkout.gif" style="padding:3px 6px 2px 0px;" alt="${message("office.action.checkout")}" title="${message("office.action.checkout")}" /></a>
       </#if>
-            <a href="${url.serviceContext}/office/myTasks${defaultQuery?html}&amp;w=new&amp;wd=${child.id}"><img src="${url.context}/images/office/new_workflow.gif" style="padding:3px 6px 2px 0px;" alt="Create Workflow..." title="Create Workflow..." /></a>
-            <a href="#" onclick="window.external.insertDocument('${relativePath}')"><img src="${url.context}/images/office/insert_document.gif" style="padding:3px 6px 2px 0px;" alt="Insert File into Current Document" title="Insert File into Current Document" /></a>
+            <a href="${url.serviceContext}/office/myTasks${defaultQuery?html}&amp;w=new&amp;wd=${child.id}"><img src="${url.context}/images/office/new_workflow.gif" style="padding:3px 6px 2px 0px;" alt="${message("office.action.start_workflow")}..." title="${message("office.action.start_workflow")}..." /></a>
+            <a href="#" onclick="ExternalComponent.insertDocument('${relativePath}')"><img src="${url.context}/images/office/insert_document.gif" style="padding:3px 6px 2px 0px;" alt="${message("office.action.insert")}" title="${message("office.action.insert")}" /></a>
       <#if !child.name?ends_with(".pdf")>
-            <a href="#" onclick="OfficeAddin.getAction('${doc_actions}','makepdf','${child.id}', '');"><img src="${url.context}/images/office/makepdf.gif" style="padding:3px 6px 2px 0px;" alt="Make PDF..." title="Make PDF" /></a>
+            <a href="#" onclick="OfficeAddin.getAction('${doc_actions}','makepdf','${child.id}', '');"><img src="${url.context}/images/office/makepdf.gif" style="padding:3px 6px 2px 0px;" alt="${message("office.action.transform_pdf")}" title="${message("office.action.transform_pdf")}" /></a>
       </#if>
       <#if !child.isLocked>
-            <a href="#" onclick="OfficeAddin.getAction('${doc_actions}','delete','${child.id}', 'Are you sure you want to delete this document?');"><img src="${url.context}/images/office/delete.gif" style="padding:3px 6px 2px 0px;" alt="Delete..." title="Delete" /></a>
+            <a href="#" onclick="OfficeAddin.getAction('${doc_actions}','delete','${child.id}', '${message("office.message.confirm_delete")}');"><img src="${url.context}/images/office/delete.gif" style="padding:3px 6px 2px 0px;" alt="${message("office.action.delete")}..." title="${message("office.action.delete")}..." /></a>
       </#if>
          </span>
       </div>
    </#if>
 </#list>
 <#if documentsFound = 0>
-      <div class="noItems">(No documents)</div>
+      <div class="noItems">(${message("office.message.no_documents")})</div>
 </#if>
 </div>
 
 <div class="headerRow">
-   <div class="headerWrapper"><div class="header">Actions</div></div>
+   <div class="headerWrapper"><div class="header">${message("office.header.actions")}</div></div>
 </div>
 
 <#assign currentPath = thisSpace.displayPath  + '/' + thisSpace.name />
 <#assign currentPath = currentPath?substring(chLen+1)?url?replace('%2F', '/')?replace('\'', '\\\'') />
 <div id="navigationActions" class="actionsPanel">
    <div id="saveDetailsPanel">
-      Document filename:<br />
+      ${message("office.property.filename")}:<br />
       <input class="saveDetailsItem" type="text" id="saveFilename" style="height: 18px; width: 168px;" />
-      <a class="spaceAction" href="#" onclick="OfficeNavigation.saveOK(this);">OK</a>
-      <a class="spaceAction" href="#" onclick="OfficeNavigation.saveCancel();">Cancel</a>
+      <a class="spaceAction" href="#" onclick="OfficeNavigation.saveOK(this);">${message("office.button.ok")}</a>
+      <a class="spaceAction" href="#" onclick="OfficeNavigation.saveCancel();">${message("office.button.cancel")}</a>
    </div>
    <div id="nonStatusText">
       <ul>
          <li>
             <a href="#" onclick="OfficeNavigation.saveToAlfresco('${currentPath}')">
-               <img src="${url.context}/images/office/save_to_alfresco.gif" alt="Save to Alfresco" />
-               Save to Alfresco
+               <img src="${url.context}/images/office/save_to_alfresco.gif" alt="${message("office.action.save_to_alfresco")}" />
+               ${message("office.action.save_to_alfresco")}
             </a>
-            <br />Save the document to the current Space.
+            <br />${message("office.action.save_to_alfresco.description")}
          </li>
-<#if args.search?exists>
+<#if args.search??>
          <li>
             <a href="${url.serviceContext}/office/search${defaultQuery?html}&amp;searchagain=${args.search?url}&amp;maxresults=${args.maxresults}">
-               <img src="${url.context}/images/office/search_again.gif" alt="Back to results" />
-               Back to search results
+               <img src="${url.context}/images/office/search_again.gif" alt="${message("office.action.return_search")}" />
+               ${message("office.action.return_search")}
             </a>
-            <br />Return to the search tab.
+            <br />${message("office.action.return_search.description")}
          </li>
 </#if>
       </ul>
    </div>
    
    <div id="statusText"></div>
+</div>
+
+<div style="position: absolute; top: 0px; left: 0px; z-index: 100; display: none">
+   <iframe id="if_externalComponenetMethodCall" name="if_externalComponenetMethodCall" src="" style="visibility: hidden;" width="0" height="0"></iframe>
 </div>
 
 </body>

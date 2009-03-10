@@ -1,4 +1,3 @@
-
 if ((args.n) && (args.n != ""))
 {
    model.node = search.findNode("workspace://SpacesStore/" + args.n);
@@ -34,4 +33,3 @@ if (model.node == null)
 {
    model.node = userhome;
 }
-model.path = args.p;

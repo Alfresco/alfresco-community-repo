@@ -31,11 +31,11 @@
  ****************************************************************************-->
 
 <#assign doc_actions="${url.serviceContext}/office/docActions">
-<#if args.p?exists><#assign path=args.p><#else><#assign path=""></#if>
-<#if args.e?exists><#assign extn=args.e><#assign extn="doc" extn1="odt" extn2="sxw"></#if>
-<#if args.n?exists><#assign nav=args.n><#else><#assign nav=""></#if>
+<#assign path=args.p!"">
+<#if args.e??><#assign extn=args.e><#assign extn="doc" extn1="odt" extn2="sxw"></#if>
+<#assign nav=args.n!"">
 <#-- resolve the path (from Company Home) into a node -->
-<#if companyhome.childByNamePath[path]?exists>
+<#if companyhome.childByNamePath[path]??>
    <#assign d=companyhome.childByNamePath[path]>
 <#else>
    <#assign d=companyhome>
@@ -63,7 +63,7 @@
          <#else>
             ${url.context}${child.url}?ticket=${session.ticket}
          </#if>
-         <#if child.properties.description?exists>
+         <#if child.properties.description??>
             <#if (child.properties.description?length > 0)>
                <description>${child.properties.description}</description>
             </#if>
@@ -84,7 +84,7 @@
    <myTasks title="My Tasks">
 <#list workflow.assignedTasks as t>
       <task>
-   <#assign hasDue=t.properties["bpm:dueDate"]?exists>
+   <#assign hasDue=t.properties["bpm:dueDate"]??>
    <#if hasDue>
       <#assign due=t.properties["bpm:dueDate"]>
    </#if>

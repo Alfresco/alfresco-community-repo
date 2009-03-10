@@ -1,0 +1,7 @@
+<webscript>
+  <shortname>External caller page (Office Add-In)</shortname>
+  <description>Temporary page for external calls</description>
+  <url>/office/callexternal?action={action?}&amp;path={path?}&amp;filename={filename?}</url>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>

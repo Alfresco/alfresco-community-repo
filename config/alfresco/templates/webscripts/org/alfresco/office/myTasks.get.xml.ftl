@@ -31,14 +31,14 @@
  ****************************************************************************-->
 
 <#assign doc_actions="${url.serviceContext}/office/docActions">
-<#if args.p?exists><#assign path=args.p><#else><#assign path=""></#if>
-<#if args.e?exists><#assign extn=args.e><#else><#assign extn="doc"></#if>
-<#if args.n?exists><#assign nav=args.n><#else><#assign nav=""></#if>
-<#if docWorkflow?exists>
+<#assign path=args.p!"">
+<#if args.e??><#assign extn=args.e><#else><#assign extn="doc"></#if>
+<#assign nav=args.n!"">
+<#if docWorkflow??>
    <#assign d=docWorkflow>
 <#else>
    <#-- resolve the path (from Company Home) into a node -->
-   <#if companyhome.childByNamePath[path]?exists>
+   <#if companyhome.childByNamePath[path]??>
       <#assign d=companyhome.childByNamePath[path]>
    <#else>
       <#assign d=companyhome>
@@ -52,7 +52,7 @@
 <#assign taskNum=0>
 <#list workflow.assignedTasks as t>
    <#assign taskNum=taskNum+1>
-   <#assign hasDue=t.properties["bpm:dueDate"]?exists>
+   <#assign hasDue=t.properties["bpm:dueDate"]??>
    <#if hasDue>
       <#assign due=t.properties["bpm:dueDate"]>
    </#if>
@@ -85,7 +85,7 @@
 </#if>
 </task>
 <workflow>
-<#if args.w?exists && d.isDocument>
+<#if args.w?? && d.isDocument>
       <taskDetails>
                <taskAction>${url.serviceContext}/office/docActions, ${d.id}</taskAction>
 <#else>

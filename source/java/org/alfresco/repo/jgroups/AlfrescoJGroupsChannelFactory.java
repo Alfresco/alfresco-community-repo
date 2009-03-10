@@ -153,13 +153,33 @@ public class AlfrescoJGroupsChannelFactory extends AbstractLifecycleBean
     }
     
     /**
-     * Close all channels.  All the channels will continue to function, but will be replaced
-     * internally with dummy channels.  Effectively, all the cluster communications will be
-     * closed down.
+     * Close all channels.  All the channels will be closed and will cease to function.
      */
     private static void closeChannels()
     {
-        changeClusterNamePrefix(null);
+        for (Map.Entry<String, ChannelProxy> entry : channels.entrySet())
+        {
+            ChannelProxy channelProxy = entry.getValue();
+            
+            // Close the channel via the proxy
+            try
+            {
+                channelProxy.close();
+                channelProxy.shutdown();
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("\n" +
+                            "Closed channel: " + channelProxy);
+                }
+            }
+            catch (Throwable e)
+            {
+                logger.warn(
+                        "Unable to close channel: \n" +
+                        "   Channel: " + channelProxy,
+                        e);
+            }
+        }
     }
 
     /**
@@ -358,11 +378,13 @@ public class AlfrescoJGroupsChannelFactory extends AbstractLifecycleBean
                     e);
         }
         // done
-        if (logger.isDebugEnabled())
+        if (logger.isInfoEnabled())
         {
-            logger.debug("\n" +
+            logger.info("\n" +
                     "Created JChannelFactory: \n" +
-                    "   configuration: " + AlfrescoJGroupsChannelFactory.configUrl);
+                    "   Cluster Name:  " + (AlfrescoJGroupsChannelFactory.clusterNamePrefix == null ? "" : AlfrescoJGroupsChannelFactory.clusterNamePrefix) + "\n" +
+                    "   Stack Mapping: " + AlfrescoJGroupsChannelFactory.stacksByAppRegion + "\n" +
+                    "   Configuration: " + AlfrescoJGroupsChannelFactory.configUrl);
         }
         return AlfrescoJGroupsChannelFactory.channelFactory;
     }
@@ -394,6 +416,13 @@ public class AlfrescoJGroupsChannelFactory extends AbstractLifecycleBean
             try
             {
                 oldChannel.close();
+                oldChannel.shutdown();
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("\n" +
+                            "Closed old channel during channel rebuild: \n" +
+                            "   Old channel: " + oldChannel);
+                }
             }
             catch (Throwable e)
             {
@@ -420,12 +449,15 @@ public class AlfrescoJGroupsChannelFactory extends AbstractLifecycleBean
         writeLock.lock();
         try
         {
-            if (clusterNamePrefix == null || clusterNamePrefix.length() == 0)
+            if (clusterNamePrefix == null || clusterNamePrefix.trim().length() == 0 || clusterNamePrefix.startsWith("${"))
             {
                 // Clear everything out
                 AlfrescoJGroupsChannelFactory.clusterNamePrefix = null;
             }
-            AlfrescoJGroupsChannelFactory.clusterNamePrefix = clusterNamePrefix;
+            else
+            {
+                AlfrescoJGroupsChannelFactory.clusterNamePrefix = clusterNamePrefix;
+            }
         }
         finally
         {
@@ -490,11 +522,11 @@ public class AlfrescoJGroupsChannelFactory extends AbstractLifecycleBean
     }
     
     /**
-     * @see AlfrescoJGroupsChannelFactory#changeClusterName(String)
+     * @see AlfrescoJGroupsChannelFactory#changeClusterNamePrefix(String)
      */
-    public void setClusterNamePrefix(String clusterNamePrefix)
+    public void setClusterName(String clusterName)
     {
-        AlfrescoJGroupsChannelFactory.changeClusterNamePrefix(clusterNamePrefix);
+        AlfrescoJGroupsChannelFactory.changeClusterNamePrefix(clusterName);
     }
     
     /**
@@ -579,6 +611,8 @@ public class AlfrescoJGroupsChannelFactory extends AbstractLifecycleBean
         /**
          * Swap the channel.  The old delegate will be disconnected before the swap occurs.
          * This guarantees data consistency, assuming that any failures will be handled.
+         * <p>
+         * Note that the old delegate is not closed or shutdown.
          * 
          * @param           the new delegate
          * @return          the old, disconnected delegate
@@ -593,8 +627,6 @@ public class AlfrescoJGroupsChannelFactory extends AbstractLifecycleBean
             }
             delegate.setUpHandler(null);
             
-            // Close the old delegate
-            delegate.close();
             Channel oldDelegage = delegate;
             
             // Assign the new delegate and carry the listeners over

@@ -11,14 +11,14 @@
             description="Using TCP as transport">
         <config>
             <TCP
-                start_port="7800"
+                start_port="${alfresco.tcp.start_port:7800}"
                 suspect_on_send_failure="true"
                 send_buf_size="100000"
                 recv_buf_size="200000"/>
             <TCPPING
                 timeout="3000"
                 initial_hosts="${alfresco.tcp.initial_hosts:localhost[7800]}"
-                port_range="3"
+                port_range="${alfresco.tcp.port_range:3}"
                 num_initial_members="2"/>
             <MERGE2
                 min_interval="5000"

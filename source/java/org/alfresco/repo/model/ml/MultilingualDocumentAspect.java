@@ -28,7 +28,6 @@ import java.io.Serializable;
 import java.util.Locale;
 import java.util.Map;
 
-import org.alfresco.i18n.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.copy.CopyServicePolicies;
 import org.alfresco.repo.node.NodeServicePolicies;
@@ -163,7 +162,7 @@ public class MultilingualDocumentAspect implements
         }
         
         // if the local has been modified
-        if (!localeBefore.equals(localeAfter))
+        if (localeBefore == null || !localeBefore.equals(localeAfter))
         {
             NodeRef mlContainer = multilingualContentService.getTranslationContainer(nodeRef);
 
@@ -191,7 +190,7 @@ public class MultilingualDocumentAspect implements
             // if locale of the container is equals to the locale of
             // the node (before update). The nodeRef is the pivot language
             // and the locale of the mlContainer must be modified
-            if(localeBefore.equals(localMlContainer))
+            if(localeBefore != null && localeBefore.equals(localMlContainer))
             {
                 nodeService.setProperty(
                         mlContainer,

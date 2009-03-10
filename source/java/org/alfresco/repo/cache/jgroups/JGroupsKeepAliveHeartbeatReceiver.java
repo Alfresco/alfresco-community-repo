@@ -58,6 +58,7 @@ public class JGroupsKeepAliveHeartbeatReceiver extends ReceiverAdapter
     private final JGroupsKeepAliveHeartbeatSender heartbeatSender;
     private final Channel channel;
     private boolean stopped;
+    private View lastView;
     private final ThreadPoolExecutor threadPool;
     private final Set<String> rmiUrlsProcessingQueue;
     
@@ -189,9 +190,28 @@ public class JGroupsKeepAliveHeartbeatReceiver extends ReceiverAdapter
     @Override
     public void viewAccepted(View newView)
     {
-        if (logger.isDebugEnabled())
+        if (EqualsHelper.nullSafeEquals(lastView, newView))
         {
-            logger.debug("Cluster view changed: " + newView);
+            // No change, so ignore
+            return;
         }
+        int lastSize = (lastView == null) ? 0 : lastView.getMembers().size();
+        int newSize = newView.getMembers().size();
+        // Report
+        if (newSize < lastSize)
+        {
+            logger.warn("\n" +
+            		"New cluster view with fewer members: \n" +
+            		"   Last View: " + lastView + "\n" +
+            		"   New View:  " + newView);
+        }
+        else
+        {
+            logger.info("\n" +
+                    "New cluster view with additional members: \n" +
+                    "   Last View: " + lastView + "\n" +
+                    "   New View:  " + newView);
+        }
+        lastView = newView;
     }
 }

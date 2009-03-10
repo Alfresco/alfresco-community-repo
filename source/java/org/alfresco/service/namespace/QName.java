@@ -361,7 +361,18 @@ public final class QName implements QNamePattern, Serializable, Cloneable
         return (prefix == null) ? localName : prefix + NAMESPACE_PREFIX + localName;
     }
 
+    
+    /**
+     * Getter version of toPrefixString()
+     * 
+     * @return  the string representation of QName
+     */
+    public String getPrefixString()
+    {
+        return toPrefixString();
+    }
 
+    
     /**
      * Render string representation of QName using format:
      * 

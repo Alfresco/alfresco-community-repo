@@ -23,13 +23,23 @@
                 <value>classpath:alfresco/extension/custom-repository.properties</value>
             </list>
         </property>
+        <property name="systemPropertiesModeName">
+            <value>SYSTEM_PROPERTIES_MODE_OVERRIDE</value>
+        </property>
     </bean>
 
-    <bean id="hibernateConfigProperties" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+    <bean id="hibernateConfigProperties" class="org.alfresco.config.SystemPropertiesFactoryBean">
+        <property name="systemProperties">
+            <list>
+                <value>hibernate.dialect</value>
+                <value>hibernate.query.substitutions</value>
+                <value>hibernate.jdbc.use_get_generated_keys</value>
+                <value>hibernate.default_schema</value>
+            </list>
+        </property>
         <property name="locations">
             <list>
                 <value>classpath:alfresco/domain/hibernate-cfg.properties</value>
-
                 <!-- Override hibernate dialect -->
                 <value>classpath:alfresco/extension/custom-hibernate-dialect.properties</value>
             </list>

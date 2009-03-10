@@ -24,7 +24,9 @@
  */
 package org.alfresco.repo.module;
 
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.module.ModuleService;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.AbstractLifecycleBean;
 import org.alfresco.util.PropertyCheck;
 import org.springframework.context.ApplicationEvent;
@@ -37,7 +39,17 @@ import org.springframework.context.ApplicationEvent;
  */
 public class ModuleStarter extends AbstractLifecycleBean
 {
+    private TransactionService transactionService;
     private ModuleService moduleService;
+
+    /**
+     * 
+     * @param transactionService        provides the retrying transaction
+     */
+    public void setTransactionService(TransactionService transactionService)
+    {
+        this.transactionService = transactionService;
+    }
 
     /**
      * @param moduleService the service that will do the actual work.
@@ -51,7 +63,15 @@ public class ModuleStarter extends AbstractLifecycleBean
     protected void onBootstrap(ApplicationEvent event)
     {
         PropertyCheck.mandatory(this, "moduleService", moduleService);
-        moduleService.startModules();
+        RetryingTransactionCallback<Object> startModulesCallback = new RetryingTransactionCallback<Object>()
+        {
+            public Object execute() throws Throwable
+            {
+                moduleService.startModules();
+                return null;
+            }
+        };
+        transactionService.getRetryingTransactionHelper().doInTransaction(startModulesCallback);
     }
 
     @Override

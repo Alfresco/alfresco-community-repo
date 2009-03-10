@@ -16,10 +16,11 @@
 #db.pool.max=100
 
 #
-# Activate index tracking and recovery
+# Sample settings to activate a cluster
 #
 #index.tracking.cronExpression=0/5 * * * * ?
 #index.recovery.mode=AUTO
+#alfresco.cluster.name=alfresco-cluster
 
 #
 # Property to control whether schema updates are performed automatically.

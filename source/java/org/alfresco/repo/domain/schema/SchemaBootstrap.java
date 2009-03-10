@@ -970,8 +970,14 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     private void changeDialect(Configuration cfg)
     {
         String dialectName = cfg.getProperty(Environment.DIALECT);
-        if (dialectName == null)
+        if (dialectName == null || dialectName.length() == 0)
         {
+            // Look for it on the system properties
+            dialectName = System.getProperty("hibernate.dialect");
+            if (dialectName != null)
+            {
+                cfg.setProperty(Environment.DIALECT, dialectName);
+            }
             return;
         }
 // TODO: https://issues.alfresco.com/jira/browse/ETHREEOH-679

@@ -31,6 +31,7 @@ import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.distribution.CachePeer;
 
 import org.alfresco.repo.jgroups.AlfrescoJGroupsChannelFactory;
+import org.alfresco.util.VmShutdownListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jgroups.Address;
@@ -60,6 +61,8 @@ public final class JGroupsKeepAliveHeartbeatSender
         lastHeartbeatSendUrls = heartbeatUrls;
     }
     
+    private VmShutdownListener vmShutdownListener;
+    
     private final CacheManager cacheManager;
     private final Channel heartbeatChannel;
     private long heartBeatInterval;
@@ -77,7 +80,7 @@ public final class JGroupsKeepAliveHeartbeatSender
             Channel heartbeatChannel,
             long heartBeatInterval)
     {
-        
+        this.vmShutdownListener = new VmShutdownListener("JGroupsKeepAliveHeartbeatSender");
         this.cacheManager = cacheManager;
         this.heartbeatChannel = heartbeatChannel;
         this.heartBeatInterval = heartBeatInterval;
@@ -112,6 +115,7 @@ public final class JGroupsKeepAliveHeartbeatSender
     public void init()
     {
         serverThread = new HeartbeatSenderThread();
+        serverThread.setDaemon(true);
         serverThread.start();
     }
 
@@ -149,7 +153,7 @@ public final class JGroupsKeepAliveHeartbeatSender
                 logger.debug("\n" +
                         "Starting cache peer URLs heartbeat");
             }
-            while (!stopped)
+            while (!stopped && !vmShutdownListener.isVmShuttingDown())
             {
                 try
                 {
@@ -171,6 +175,11 @@ public final class JGroupsKeepAliveHeartbeatSender
                 catch (Throwable e)
                 {
                     logger.debug("Heartbeat sending failed: ", e);
+                }
+                // Quick exit if necessary
+                if (stopped || vmShutdownListener.isVmShuttingDown())
+                {
+                    break;
                 }
                 // Wait for the next heartbeat
                 synchronized (this)

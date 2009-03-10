@@ -1,7 +1,44 @@
 <alfresco-config area="mimetype-map">
-   
+
    <config evaluator="string-compare" condition="Mimetype Map">
       <mimetypes>
+
+         <mimetype mimetype="application/eps" display="EPS Type PostScript">
+            <extension default="true">eps</extension>
+         </mimetype>
+
+         <mimetype mimetype="image/jp2" display="JPEG 2000 Image">
+            <extension default="true">jp2</extension>
+            <extension>jpx</extension>
+            <extension>jpm</extension>
+            <extension>jpc</extension>
+            <extension>j2k</extension>
+            <extension>jpf</extension>
+         </mimetype>
+
+         <mimetype mimetype="application/vnd.ms-project" display="Microsoft Project">
+            <extension default="true">mpp</extension>
+         </mimetype>
+
+         <mimetype mimetype="application/photoshop" display="Adobe Photoshop">
+            <extension default="true">psd</extension>
+         </mimetype>
+
+         <mimetype mimetype="application/framemaker" display="Adobe FrameMaker">
+            <extension default="true">fm</extension>
+         </mimetype>
+
+         <mimetype mimetype="application/pagemaker" display="Adobe PageMaker">
+            <extension default="true">pmd</extension>
+            <extension>pm6</extension>
+            <extension>p65</extension>
+            <extension>pm</extension>
+         </mimetype>
+
+         <mimetype mimetype="application/remote-printing" display="Printer Text File">
+            <extension default="true">prn</extension>
+         </mimetype>
+
          <mimetype mimetype="text/plain" text="true" display="Plain Text">
             <extension display="Plain Text" default="true">txt</extension>
             <extension display="Comma Separated Values">csv</extension>
@@ -23,15 +60,14 @@
             <extension>body</extension>
          </mimetype>
          <mimetype mimetype="text/mediawiki" text="true" display="MediaWiki Markup">
-         	<extension display="MediaWiki Markup" default="true">mw</extension>
+            <extension display="MediaWiki Markup" default="true">mw</extension>
          </mimetype>         
          <mimetype mimetype="application/xhtml+xml" text="true" display="XHTML">
             <extension default="true">xhtml</extension>
          </mimetype>
-         <mimetype mimetype="application/postscript" display="Postscript">
+         <mimetype mimetype="application/postscript" display="PostScript">
             <!-- extension display will be same as mimetype's unless specified otherwise -->
             <extension>ai</extension>
-            <extension>eps</extension>
             <extension default="true">ps</extension>
          </mimetype>
          <mimetype mimetype="audio/x-aiff" display="AIFF Audio">
@@ -41,6 +77,12 @@
          </mimetype>
          <mimetype mimetype="application/acp" display="Alfresco Content Package">
             <extension>acp</extension>
+         </mimetype>
+         <mimetype mimetype="application/visio" display="Microsoft Visio">
+            <extension>vsd</extension>
+         </mimetype>
+         <mimetype mimetype="application/vnd.adobe.xdp+xml" display="Adobe Acrobat XML Data Package">
+            <extension>xdp</extension>
          </mimetype>
          <mimetype mimetype="audio/basic" display="Basic Audio">
             <extension>au</extension>
@@ -141,11 +183,6 @@
             <extension default="true">jpg</extension>
             <extension>jpeg</extension>
             <extension>jpe</extension>
-         </mimetype>
-         <mimetype mimetype="image/jpeg2000" display="JPEG 2000 Image">
-            <extension default="true">jpx</extension>
-            <extension>jp2</extension>
-            <extension>jpm</extension>
          </mimetype>
          <mimetype mimetype="image/svg" display="Scalable Vector Graphics Image">
             <extension>svg</extension>

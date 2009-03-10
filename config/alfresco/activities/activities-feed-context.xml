@@ -20,7 +20,7 @@
       </property>
    </bean>
 
-   <bean id="sqlMapClient" class="org.springframework.orm.ibatis.SqlMapClientFactoryBean" singleton="true">
+   <bean id="sqlMapClient" class="org.alfresco.repo.domain.ibatis.AlfrescoSqlMapClientFactoryBean" singleton="true">
       <property name="configLocation"><value>classpath:alfresco/activities/activities-SqlMapConfig.xml</value></property> 
       <property name="dataSource" ref="iBatisDataSource"/>
    </bean> 

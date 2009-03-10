@@ -100,8 +100,8 @@
 
     <!-- Set up the JGroups clustering, if necessary -->
     <bean name="jgroupsChannelFactory" class="org.alfresco.repo.jgroups.AlfrescoJGroupsChannelFactory">
-        <property name="clusterNamePrefix">
-            <value>${system.cluster.name}</value>
+        <property name="clusterName">
+            <value>${alfresco.cluster.name}</value>
         </property>
     </bean>
 
@@ -506,6 +506,9 @@
     <!-- Start module components -->
 
     <bean id="moduleStarter" class="org.alfresco.repo.module.ModuleStarter">
+        <property name="transactionService">
+            <ref bean="transactionService" />
+        </property>
         <property name="moduleService">
             <ref bean="ModuleService" />
         </property>

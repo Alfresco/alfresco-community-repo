@@ -11,7 +11,7 @@
     </bean>
     
     <bean name="jgroupsChannelFactory" class="org.alfresco.repo.jgroups.AlfrescoJGroupsChannelFactory">
-        <property name="clusterNamePrefix">
+        <property name="clusterName">
             <value>ehcache-jgroups-cluster-test</value>
         </property>
     </bean>

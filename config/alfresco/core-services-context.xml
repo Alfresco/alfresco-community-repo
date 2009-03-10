@@ -27,6 +27,9 @@
                 <!-- <value>classpath:alfresco/jndi.properties</value> -->
             </list>
         </property>
+        <property name="systemPropertiesModeName">
+            <value>SYSTEM_PROPERTIES_MODE_OVERRIDE</value>
+        </property>
     </bean>
 
 

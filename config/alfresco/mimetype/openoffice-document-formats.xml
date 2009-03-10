@@ -66,6 +66,15 @@
     </export-filters>
   </document-format>
 
+  <document-format><name>Microsoft Word 2007</name>
+    <family>Text</family>
+    <mime-type>application/vnd.openxmlformats-officedocument.wordprocessingml.document</mime-type>
+    <file-extension>docx</file-extension>
+    <export-filters>
+      <entry><family>Text</family><string>MS Word 2007</string></entry>
+    </export-filters>
+  </document-format>
+
   <document-format><name>WordPerfect</name>
     <family>Text</family>
     <mime-type>application/wordperfect</mime-type>
@@ -122,6 +131,15 @@
     </export-filters>
   </document-format>
 
+  <document-format><name>Microsoft Excel 2007</name>
+    <family>Spreadsheet</family>
+    <mime-type>application/vnd.openxmlformats-officedocument.spreadsheetml.sheet</mime-type>
+    <file-extension>xlsx</file-extension>
+    <export-filters>
+      <entry><family>Spreadsheet</family><string>MS Excel 2007</string></entry>
+    </export-filters>
+  </document-format>
+
 
   <!-- Presentation Formats -->
 
@@ -149,6 +167,15 @@
     <file-extension>ppt</file-extension>
     <export-filters>
       <entry><family>Presentation</family><string>MS PowerPoint 97</string></entry>
+    </export-filters>
+  </document-format>
+
+  <document-format><name>Microsoft PowerPoint 2007</name>
+    <family>Presentation</family>
+    <mime-type>application/vnd.openxmlformats-officedocument.presentationml.presentation</mime-type>
+    <file-extension>pptx</file-extension>
+    <export-filters>
+      <entry><family>Presentation</family><string>MS PowerPoint 2007</string></entry>
     </export-filters>
   </document-format>
 

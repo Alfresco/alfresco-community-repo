@@ -161,6 +161,16 @@
       <property name="connection">
          <ref bean="openOfficeConnection" />
       </property>
+      <property name="supportedMimetypes">
+         <list>
+            <value>application/msword</value>
+            <value>application/vnd.excel</value>
+            <value>application/vnd.powerpoint</value>
+            <value>application/vnd.openxmlformats-officedocument.wordprocessingml.document</value>
+            <value>application/vnd.openxmlformats-officedocument.spreadsheetml.sheet</value>
+            <value>application/vnd.openxmlformats-officedocument.presentationml.presentation</value>
+         </list>
+      </property>
    </bean>
    
 

@@ -156,14 +156,14 @@
       <#if child.name?ends_with(extn) || child.name?ends_with(extnx)>
             <a href="#" onclick="window.external.openDocument('${relativePath}')"><img src="${url.context}${child.icon32}" alt="Open ${child.name?html}" /></a>
       <#else>
-            <a href="${url.context}${child.url}?ticket=${session.ticket}" rel="_blank"><img src="${url.context}${child.icon32}" alt="Open ${child.name?html}" /></a>
+            <a href="${url.context}${child.url}" rel="_blank"><img src="${url.context}${child.icon32}" alt="Open ${child.name?html}" /></a>
       </#if>
          </span>
          <span class="documentItemDetails">
       <#if child.name?ends_with(extn) || child.name?ends_with(extnx)>
             <a href="#" onclick="window.external.openDocument('${relativePath}')"><span class="bold ${isVersionable?string("versionable", "notVersionable")}">${child.name?html}</span></a>
       <#else>
-            <a href="${url.context}${child.url}?ticket=${session.ticket}" rel="_blank"><span class="bold">${child.name?html}</span></a>
+            <a href="${url.context}${child.url}" rel="_blank"><span class="bold">${child.name?html}</span></a>
       </#if>
             <br />
       <#if child.properties.description?exists>

@@ -157,10 +157,10 @@
             <#assign versionRow=versionRow+1>
          <tr class="${(versionRow % 2 = 0)?string("odd", "even")}">
             <td valign="top">
-               <a title="Download ${record.versionLabel}" href="${url.context}${record.url}?ticket=${session.ticket}"><img src="${url.context}/images/office/document.gif" alt="Open ${record.versionLabel}" /></a>
+               <a title="Download ${record.versionLabel}" href="${url.context}${record.url}"><img src="${url.context}/images/office/document.gif" alt="Open ${record.versionLabel}" /></a>
             </td>
             <td>
-               <a title="Download ${record.versionLabel}" href="${url.context}${record.url}?ticket=${session.ticket}"><span style="font-weight:bold;">${record.versionLabel}</span></a><br />
+               <a title="Download ${record.versionLabel}" href="${url.context}${record.url}"><span style="font-weight:bold;">${record.versionLabel}</span></a><br />
                Author: ${record.creator}<br />
                Date: ${record.createdDate?datetime}<br />
             <#if record.description?exists>
@@ -239,7 +239,7 @@
       </li>
     </#if>
       <li>
-         <a href="${url.context}/navigate/showDocDetails/workspace/SpacesStore/${d.id}?ticket=${session.ticket}" rel="_blank">
+         <a href="${url.context}/navigate/showDocDetails/workspace/SpacesStore/${d.id}" rel="_blank">
             <img src="${url.context}/images/office/document_details.gif" alt="Open Full Details" />
             Open Full Details
          </a>

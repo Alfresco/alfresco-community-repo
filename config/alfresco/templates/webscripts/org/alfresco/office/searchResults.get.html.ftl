@@ -26,7 +26,7 @@
             <#assign openURL = "#">
             <#assign hrefExtra = " onClick=\"window.external.openDocument('${relativePath}')\"">
          <#else>
-            <#assign openURL = "${url.context}${child.url}?ticket=${session.ticket}">
+            <#assign openURL = "${url.context}${child.url}">
             <#assign hrefExtra = " target=\"_blank\"">
          </#if>
       <#else>

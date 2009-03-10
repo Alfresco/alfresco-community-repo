@@ -12,7 +12,7 @@
       <tr>
          <td width="32" valign="top"><img src="${url.context}/images/office/task_item.gif" alt="Task item" /></td>
          <td>
-            <span style="font-weight: bold;">${task.description!""?html}</span>
+            <span style="font-weight: bold;">${(task.description!"")?html}</span>
             <br />     
             <table style="margin-top: 4px;">
                <tr>
@@ -52,9 +52,9 @@
             <td>
                <a href="#" onclick="window.external.openDocument('${relativePath}')" title="Open ${res.name?html}">${res.name?html}</a>
          <#else>
-            <td width="16" valign="top"><a href="${url.context}${res.url}?ticket=${session.ticket}" target="_blank" title="Open ${res.name?html}"><img src="${url.context}${res.icon16}" alt="${res.name?html}"></a></td>
+            <td width="16" valign="top"><a href="${url.context}${res.url}" target="_blank" title="Open ${res.name?html}"><img src="${url.context}${res.icon16}" alt="${res.name?html}"></a></td>
             <td>
-               <a href="${url.context}${res.url}?ticket=${session.ticket}" target="_blank">${res.name?html}</a>
+               <a href="${url.context}${res.url}" target="_blank">${res.name?html}</a>
          </#if>
             <br />
                Modified: ${res.properties.modified?datetime} (${(res.size / 1024)?int}Kb)<br />
@@ -88,7 +88,7 @@
    </#list>
       </span>
       <span class="taskManage">
-         <span class="taskAction" onclick="OfficeAddin.openWindowCallback('${url.context}/command/ui/managetask?id=${task.id}&amp;type=${task.qnameType}&amp;container=plain&amp;ticket=${session.ticket}', OfficeMyTasks.refreshPage);">Manage...</span>
+         <span class="taskAction" onclick="OfficeAddin.openWindowCallback('${url.context}/command/ui/managetask?id=${task.id}&amp;type=${task.qnameType}&amp;container=plain', OfficeMyTasks.refreshPage);">Manage...</span>
       </span>
    </div>
 </#if>

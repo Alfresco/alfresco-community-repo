@@ -57,7 +57,7 @@
          <#if child.name?ends_with(extn) || child.name?ends_with(extnx)>
             <a href="#" onclick="window.external.openDocument('${relativePath}')" title="Open ${child.name?html}" style="font-weight: bold;">${child.name?html}</a><br />
          <#else>
-            <a href="${url.context}${child.url}?ticket=${session.ticket}" target="_blank" title="Open ${child.name?html}" style="font-weight: bold;">${child.name?html}</a><br />
+            <a href="${url.context}${child.url}" target="_blank" title="Open ${child.name?html}" style="font-weight: bold;">${child.name?html}</a><br />
          </#if>
          <#if child.properties.description?exists>
             <#if (child.properties.description?length > 0)>
@@ -150,7 +150,7 @@
             <br />Create a new Collaboration Space in the Alfresco Repository
          </li>
          <li>
-            <a title="Launch Alfresco" href="${url.context}/navigate/browse?ticket=${session.ticket}" rel="_blank">
+            <a title="Launch Alfresco" href="${url.context}/navigate/browse" rel="_blank">
                <img src="${url.context}/images/logo/AlfrescoLogo16.gif" alt="Launch Alfresco" />
                Launch Alfresco
             </a>

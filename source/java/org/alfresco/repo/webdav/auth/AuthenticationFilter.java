@@ -202,12 +202,6 @@ public class AuthenticationFilter implements Filter
             			ticket = ticket.substring(0, ticket.length() - PPT_EXTN.length());
             		}
 
-            		// vtiIgnore argument may find its way onto the ticket due to a double-encoding issue with Office
-            		if (ticket.endsWith(VTI_IGNORE))
-            		{
-            			ticket = ticket.substring(0, ticket.length() - VTI_IGNORE.length());
-            		}
-
                 	// Debug
                     
                     if ( logger.isDebugEnabled())

@@ -55,8 +55,8 @@ public class ScriptServiceImpl implements ScriptService
     private String defaultScriptProcessor;    
     
     /** Maps containing the script processors */
-    private Map<String, ScriptProcessor> scriptProcessors = new HashMap<String, ScriptProcessor>(5);
-    private Map<String, String> scriptProcessorNamesByExtension = new HashMap<String, String>(5);
+    private Map<String, ScriptProcessor> scriptProcessors = new HashMap<String, ScriptProcessor>(8);
+    private Map<String, String> scriptProcessorNamesByExtension = new HashMap<String, String>(8);
     
     /** The node service */
     private NodeService nodeService;
@@ -92,6 +92,17 @@ public class ScriptServiceImpl implements ScriptService
         this.scriptProcessorNamesByExtension.put(scriptProcessor.getExtension(), scriptProcessor.getName());
     }
     
+    /**
+     * Reset all registered script processors
+     */
+    public void resetScriptProcessors()
+    {
+        for (ScriptProcessor p : this.scriptProcessors.values())
+        {
+            p.reset();
+        }
+    }
+
     /**
      * @see org.alfresco.service.cmr.repository.ScriptService#executeScript(java.lang.String, java.util.Map)
      */

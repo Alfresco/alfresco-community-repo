@@ -71,5 +71,9 @@ public interface ScriptProcessor extends Processor
      * @return Obejct   the result of the script 
      */
     public Object executeString(String script, Map<String, Object> model);
-
+    
+    /**
+     * Reset the processor - such as clearing any internal caches etc.
+     */
+    public void reset();
 }

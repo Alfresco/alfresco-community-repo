@@ -37,12 +37,11 @@ import org.alfresco.util.ParameterCheck;
  * Classpath script location object.
  * 
  * @author Roy Wetherall
- *
  */
 public class ClasspathScriptLocation implements ScriptLocation 
 {
 	/** Classpath location **/
-	private String location;
+	private final String location;
 	
 	/**
 	 * Constructor
@@ -91,7 +90,20 @@ public class ClasspathScriptLocation implements ScriptLocation
         return reader;
 	}
     
-	public boolean isSecure()
+	/**
+     * @see org.alfresco.service.cmr.repository.ScriptLocation#getPath()
+     */
+    public String getPath()
+    {
+        return this.location;
+    }
+    
+    public boolean isCachable()
+    {
+        return true;
+    }
+
+    public boolean isSecure()
     {
         return true;
     }
@@ -108,7 +120,7 @@ public class ClasspathScriptLocation implements ScriptLocation
             return false;
         }
         ClasspathScriptLocation other = (ClasspathScriptLocation)obj;
-        return  this.location.equals(other.location);
+        return this.location.equals(other.location);
     }
 
     @Override

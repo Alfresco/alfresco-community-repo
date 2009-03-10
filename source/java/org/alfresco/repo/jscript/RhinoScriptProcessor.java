@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -54,6 +55,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.ImporterTopLevel;
+import org.mozilla.javascript.Script;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 import org.mozilla.javascript.WrapFactory;
@@ -68,10 +70,10 @@ import org.springframework.util.FileCopyUtils;
  */
 public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcessor, ScriptResourceLoader, InitializingBean
 {
-    private static final Log    logger = LogFactory.getLog(RhinoScriptProcessor.class);
+    private static final Log logger = LogFactory.getLog(RhinoScriptProcessor.class);
     
     private static final String PATH_CLASSPATH = "classpath:";
-
+    
     /** Wrap Factory */
     private static final WrapFactory wrapFactory = new RhinoWrapFactory();
     
@@ -90,6 +92,10 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
     /** Pre initialized non secure scope object. */
     private Scriptable nonSecureScope;
     
+    /** Cache of runtime compiled script instances */
+    private final Map<String, Script> scriptCache = new ConcurrentHashMap<String, Script>(256);
+    
+    
     /**
      * Set the default store reference
      * 
@@ -107,24 +113,78 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
     {
         this.storePath = storePath;
     }
-
+    
+    /**
+     * @see org.alfresco.service.cmr.repository.ScriptProcessor#reset()
+     */
+    public void reset()
+    {
+        this.scriptCache.clear();
+    }
+    
     /**
      * @see org.alfresco.service.cmr.repository.ScriptProcessor#execute(org.alfresco.service.cmr.repository.ScriptLocation, java.util.Map)
      */
     public Object execute(ScriptLocation location, Map<String, Object> model)
     {
         try
-        {   
-            ByteArrayOutputStream os = new ByteArrayOutputStream();
-            FileCopyUtils.copy(location.getInputStream(), os);  // both streams are closed
-            byte[] bytes = os.toByteArray();
-            // create the script string from the byte[]
-            return executeScriptImpl(resolveScriptImports(new String(bytes)), model, location.isSecure());
+        {
+            // test the cache for a pre-compiled script matching our path
+            Script script = null;
+            String path = location.getPath();
+            if (location.isCachable())
+            {
+                script = this.scriptCache.get(path);
+            }
+            if (script == null)
+            {
+                if (logger.isDebugEnabled())
+                    logger.debug("Resolving and compiling script path: " + path);
+                
+                // retrieve script content and resolve imports
+                ByteArrayOutputStream os = new ByteArrayOutputStream();
+                FileCopyUtils.copy(location.getInputStream(), os);  // both streams are closed
+                byte[] bytes = os.toByteArray();
+                String source = new String(bytes, "UTF-8");
+                source = resolveScriptImports(new String(bytes));
+                
+                // compile the script and cache the result
+                Context cx = Context.enter();
+                try
+                {
+                    script = cx.compileString(source, path, 1, null);
+                    
+                    // We do not worry about more than one user thread compiling the same script.
+                    // If more than one request thread compiles the same script and adds it to the
+                    // cache that does not matter - the results will be the same. Therefore we
+                    // rely on the ConcurrentHashMap impl to deal both with ensuring the safety of the
+                    // underlying structure with asynchronous get/put operations and for fast
+                    // multi-threaded access to the common cache.
+                    if (location.isCachable())
+                    {
+                        this.scriptCache.put(path, script);
+                    }
+                }
+                finally
+                {
+                    Context.exit();
+                }
+            }
+            
+            return executeScriptImpl(script, model, location.isSecure());
         }
         catch (Throwable err)
         {
             throw new ScriptException("Failed to execute script '" + location.toString() + "': " + err.getMessage(), err);
         }
+    }
+    
+    /**
+     * @see org.alfresco.service.cmr.repository.ScriptProcessor#execute(java.lang.String, java.util.Map)
+     */
+    public Object execute(String location, Map<String, Object> model)
+    {        
+        return execute(new ClasspathScriptLocation(location), model);
     }
     
     /**
@@ -149,7 +209,19 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
                 throw new AlfrescoRuntimeException("Script Node content not found: " + nodeRef);
             }
             
-            return executeScriptImpl(resolveScriptImports(cr.getContentString()), model, false);
+            // compile the script based on the node content
+            Script script;
+            Context cx = Context.enter();
+            try
+            {
+                script = cx.compileString(resolveScriptImports(cr.getContentString()), nodeRef.toString(), 1, null);
+            }
+            finally
+            {
+                Context.exit();
+            }
+            
+            return executeScriptImpl(script, model, false);
         }
         catch (Throwable err)
         {
@@ -158,37 +230,24 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
     }
 
     /**
-     * @see org.alfresco.service.cmr.repository.ScriptProcessor#execute(java.lang.String, java.util.Map)
-     */
-    public Object execute(String location, Map<String, Object> model)
-    {        
-        try
-        {
-            InputStream stream = getClass().getClassLoader().getResourceAsStream(location);
-            if (stream == null)
-            {
-                throw new AlfrescoRuntimeException("Unable to load classpath resource: " + location);
-            }
-            ByteArrayOutputStream os = new ByteArrayOutputStream();
-            FileCopyUtils.copy(stream, os);  // both streams are closed
-            byte[] bytes = os.toByteArray();
-            
-            return executeScriptImpl(resolveScriptImports(new String(bytes, "UTF-8")), model, true);
-        }
-        catch (Throwable err)
-        {
-            throw new ScriptException("Failed to execute script '" + location + "': " + err.getMessage(), err);
-        }
-    }
-
-    /**
      * @see org.alfresco.service.cmr.repository.ScriptProcessor#executeString(java.lang.String, java.util.Map)
      */
-    public Object executeString(String script, Map<String, Object> model)
+    public Object executeString(String source, Map<String, Object> model)
     {
         try
         {
-            return executeScriptImpl(resolveScriptImports(script), model, true);
+            // compile the script based on the node content
+            Script script;
+            Context cx = Context.enter();
+            try
+            {
+                script = cx.compileString(resolveScriptImports(source), "AlfrescoJS", 1, null);
+            }
+            finally
+            {
+                Context.exit();
+            }
+            return executeScriptImpl(script, model, true);
         }
         catch (Throwable err)
         {
@@ -332,20 +391,20 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
      * 
      * @throws AlfrescoRuntimeException
      */
-    private Object executeScriptImpl(String script, Map<String, Object> model, boolean secure)
+    private Object executeScriptImpl(Script script, Map<String, Object> model, boolean secure)
         throws AlfrescoRuntimeException
     {
         long startTime = 0;
         if (logger.isDebugEnabled())
         {
-            startTime = System.currentTimeMillis();
+            startTime = System.nanoTime();
         }
         
         // Convert the model
         model = convertToRhinoModel(model);
         
-        // check that rhino script engine is available
         Context cx = Context.enter();
+        cx.setOptimizationLevel(1);
         try
         {
             // Create a thread-specific scope from one of the shared scopes.
@@ -386,8 +445,8 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
                 ScriptableObject.putProperty(scope, key, jsObject);
             }
             
-            // execute the script
-            Object result = cx.evaluateString(scope, script, "AlfrescoScript", 1, null);
+            // execute the script and return the result
+            Object result = script.exec(cx, scope);
             
             // extract java object result if wrapped by Rhino 
             return valueConverter.convertValueForRepo((Serializable)result);
@@ -411,8 +470,8 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
             
             if (logger.isDebugEnabled())
             {
-                long endTime = System.currentTimeMillis();
-                logger.debug("Time to execute script: " + (endTime - startTime) + "ms");
+                long endTime = System.nanoTime();
+                logger.debug("Time to execute script: " + (endTime - startTime)/1000000f + "ms");
             }
         }
     }

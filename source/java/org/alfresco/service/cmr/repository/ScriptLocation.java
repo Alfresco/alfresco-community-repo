@@ -28,10 +28,9 @@ import java.io.InputStream;
 import java.io.Reader;
 
 /**
- * Interface encapsulating the location of a script and provding access to it.
+ * Interface encapsulating the location of a script and providing access to it.
  * 
  * @author Roy Wetherall
- *
  */
 public interface ScriptLocation 
 {
@@ -48,6 +47,19 @@ public interface ScriptLocation
 	 * @return	the reader
 	 */
 	Reader getReader();
+	
+	/**
+	 * @return unique path of this script location
+	 */
+	String getPath();
+	
+	/**
+	 * Returns true if the script content is considered cachedable - i.e. classpath located or similar.
+	 * Else the content will be compiled/interpreted on every execution i.e. repo content.
+	 * 
+	 * @return true if the script content is considered cachedable, false otherwise
+	 */
+	boolean isCachable();
     
     /**
      * Returns true if the script location is considered secure - i.e. on the repository classpath.

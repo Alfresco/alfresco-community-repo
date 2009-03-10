@@ -185,6 +185,12 @@ public interface ScriptService
     public void registerScriptProcessor(ScriptProcessor scriptProcessor);
     
     /**
+     * Reset all registered script processors
+     */
+    @Auditable
+    public void resetScriptProcessors();
+    
+    /**
      * Create the default data-model available to scripts as global scope level objects:
      * <p>
      * 'companyhome' - the Company Home node<br>

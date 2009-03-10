@@ -67,22 +67,13 @@
 
    <context-param>
       <param-name>contextConfigLocation</param-name>
-      <param-value>
-         classpath:alfresco/application-context.xml
-         classpath:alfresco/webscript-framework-application-context.xml
-         classpath:alfresco/web-client-application-context.xml
-         classpath:alfresco/web-scripts-application-context.xml
-         classpath:alfresco/web-services-application-context.xml
-
-         <!--
-         To give final control over the tuning of the custom environment,
-         the custom-web-context.xml file is processed last (note:
-         custom-web-context.xml isn't part of the source tree itself).
-         -->
-         classpath*:alfresco/extension/custom-web-context.xml
-
-      </param-value>
-      <description>Spring config file locations</description>
+      <param-value>/WEB-INF/web-application-context.xml</param-value>
+      <description>Spring config file location</description>
+   </context-param>
+   <context-param>
+      <param-name>log4jExposeWebAppRoot</param-name>
+      <param-value>false</param-value>
+      <description>Do not try to resolve web app root as file</description>
    </context-param>
 
 	<!--  These were previously init params for the WebDAV servlet,

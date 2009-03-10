@@ -141,6 +141,7 @@ public abstract class BaseDialogBean implements IDialogBean, Serializable
             
             Utils.addErrorMessage(formatErrorMessage(e), e);
             outcome = getErrorOutcome(e);
+            ReportedException.throwIfNecessary(e);
          }
       }
       

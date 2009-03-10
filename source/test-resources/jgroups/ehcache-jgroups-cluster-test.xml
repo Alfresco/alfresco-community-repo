@@ -1,0 +1,83 @@
+<ehcache>
+    <!--
+        Initialises EHCache with the JGroup-enabled cluster support.
+        At the moment, the default replication mechanism remains RMI with the
+        heartbeat functionality being replaced by a JGroups channel.
+        
+        The JGroups heartbeats are only activated if the following bean is configured:
+           org.alfresco.repo.jgroups.AlfrescoJGroupsChannelFactory
+        Without it, the JGroups heartbeats will all be absorbed locally and there will
+        be no communication with any other Alfresco instances.
+    -->
+    
+    <diskStore
+        path="java.io.tmpdir"/>
+
+    <cacheManagerPeerProviderFactory
+        class="org.alfresco.repo.cache.jgroups.JGroupsRMICacheManagerPeerProvider$Factory"
+    />
+
+    <cacheManagerPeerListenerFactory
+        class="net.sf.ehcache.distribution.RMICacheManagerPeerListenerFactory"
+    />
+
+    <defaultCache
+        maxElementsInMemory="5000"
+        eternal="true"
+        timeToIdleSeconds="0"
+        timeToLiveSeconds="0"
+        overflowToDisk="false">
+
+            <cacheEventListenerFactory
+                    class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
+                    properties="replicatePuts = false,
+                                replicateUpdates = true,
+                                replicateRemovals = true,
+                                replicateUpdatesViaCopy = false,
+                                replicateAsynchronously = false"/>
+    </defaultCache>
+
+    <!-- Clustered: Invalidation -->
+    <cache
+        name="org.alresco.test.cache.invalidation"
+        maxElementsInMemory="500"
+        eternal="true"
+        timeToLiveSeconds="0"
+        overflowToDisk="false">
+
+            <cacheEventListenerFactory
+                    class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
+                    properties="replicatePuts = false,
+                                replicateUpdates = true,
+                                replicateRemovals = true,
+                                replicateUpdatesViaCopy = false,
+                                replicateAsynchronously = false"/>
+    </cache>
+
+    <!-- Clustered: Replication -->
+    <cache
+        name="org.alresco.test.cache.replication"
+        maxElementsInMemory="1000"
+        eternal="true"
+        overflowToDisk="true">
+
+            <cacheEventListenerFactory
+                    class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
+                    properties="replicatePuts = true,
+                                replicateUpdates = true,
+                                replicateRemovals = true,
+                                replicateUpdatesViaCopy = true,
+                                replicateAsynchronously = false"/>
+    </cache>
+
+    <!-- Not clustered -->
+    <cache
+        name="org.alresco.test.cache.not-clustered"
+        maxElementsInMemory="1000"
+        eternal="true"
+        overflowToDisk="true">
+    </cache>
+
+</ehcache>
+
+

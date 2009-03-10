@@ -2,34 +2,13 @@
     <diskStore
       path="java.io.tmpdir"/>
 
-<!-- ================================================================= -->
-
     <cacheManagerPeerProviderFactory
-            class="net.sf.ehcache.distribution.RMICacheManagerPeerProviderFactory"
-            properties="peerDiscovery=automatic,
-                        multicastGroupAddress=230.0.0.1,
-                        multicastGroupPort=4446"/>
+        class="org.alfresco.repo.cache.jgroups.JGroupsRMICacheManagerPeerProvider$Factory"
+    />
 
-<!--
-    <cacheManagerPeerProviderFactory
-            class="net.sf.ehcache.distribution.RMICacheManagerPeerProviderFactory"
-            properties="peerDiscovery=manual,
-                        rmiUrls=//server1:40000/sampleCache1|//server2:40000/sampleCache1|
-                                //server1:40000/sampleCache2|//server2:40000/sampleCache2"/>
--->
-
-<!-- ================================================================= -->
-
-    <cacheManagerPeerListenerFactory
-            class="net.sf.ehcache.distribution.RMICacheManagerPeerListenerFactory"/>
-
-<!--
     <cacheManagerPeerListenerFactory
             class="net.sf.ehcache.distribution.RMICacheManagerPeerListenerFactory"
-            properties="port=40001, socketTimeoutMillis=5000"/>
--->
-
-<!-- ================================================================= -->
+    />
 
     <defaultCache
         maxElementsInMemory="5000"

@@ -50,8 +50,6 @@
         </property>
     </bean>
 
-
-
     <!-- Custom MBeanServer -->
     <bean id="alfrescoMBeanServer" class="org.springframework.jmx.support.MBeanServerFactoryBean">
         <property name="locateExistingServerIfPossible" value="true" />

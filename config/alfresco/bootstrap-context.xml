@@ -98,6 +98,13 @@
        </property>
     </bean>
 
+    <!-- Set up the JGroups clustering, if necessary -->
+    <bean name="jgroupsChannelFactory" class="org.alfresco.repo.jgroups.AlfrescoJGroupsChannelFactory">
+        <property name="clusterNamePrefix">
+            <value>${system.cluster.name}</value>
+        </property>
+    </bean>
+
     <!-- Bootstrap the AVM -->
     <bean id="avmBootstrap" class="org.alfresco.repo.avm.AvmBootstrap" >
        <property name="issuers">

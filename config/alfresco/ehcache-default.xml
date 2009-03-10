@@ -2,15 +2,9 @@
 <ehcache>
     <!-- defaults -->
     <diskStore 
-        path="java.io.tmpdir"/>
-<!--
-    <cacheManagerPeerProviderFactory
-        class="net.sf.ehcache.distribution.RMICacheManagerPeerProviderFactory"
-        properties="peerDiscovery=automatic, multicastGroupAddress=230.0.0.1,
-                    multicastGroupPort=4446"/>
-    <cacheManagerPeerListenerFactory
-        class="net.sf.ehcache.distribution.RMICacheManagerPeerListenerFactory"/>
--->
+        path="java.io.tmpdir"
+    />
+
     <defaultCache 
         maxElementsInMemory="5000" 
         eternal="true" 
@@ -18,14 +12,8 @@
         timeToLiveSeconds="0" 
         overflowToDisk="false" 
         >
-<!--
-        <cacheEventListenerFactory
-                class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
-                properties="replicateAsynchronously=false, replicatePuts=false,
-                            replicateUpdates=true, replicateUpdatesViaCopy=false,
-                            replicateRemovals=true"/>
--->
     </defaultCache>
+
     <!-- Hibernate usage -->
     <cache 
         name="org.hibernate.cache.StandardQueryCache" 

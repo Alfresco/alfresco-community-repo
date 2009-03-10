@@ -6,7 +6,7 @@
    <config evaluator="string-compare" condition="Filesystems" replace="true">
       <filesystems>
 
-         <filesystem name="Alfresco">
+         <filesystem name="${filesystem.name}">
             <store>workspace://SpacesStore</store>
             <rootPath>/app:company_home</rootPath>
 

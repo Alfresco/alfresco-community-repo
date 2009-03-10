@@ -1,16 +1,18 @@
 <alfresco-config area="file-servers">
 
    <config evaluator="string-compare" condition="CIFS Server">
-	  <serverEnable enabled="true"/>
+	  <serverEnable enabled="${cifs.enabled}"/>
       <host name="${cifs.localname}A" domain="${cifs.domain}"/>
       <comment>Alfresco CIFS Server</comment>
 
       <!-- Set to the broadcast mask for the subnet -->
       <broadcast>${cifs.broadcast}</broadcast>
+      <!-- Set to the IP for the adapter for Java socket -->
+      <bindto>${cifs.bindto}</bindto>
 
       <!-- Use Java socket based NetBIOS over TCP/IP and native SMB on linux -->
       <tcpipSMB platforms="linux,solaris,macosx"/>
-      <netBIOSSMB platforms="linux,solaris,macosx"/>
+      <netBIOSSMB bindto="${cifs.bindto}" platforms="linux,solaris,macosx"/>
 
 	   <!-- Can be mapped to non-privileged ports, then use firewall rules to forward
 		    requests from the standard ports -->
@@ -39,7 +41,7 @@
    </config>
 
    <config evaluator="string-compare" condition="FTP Server">
-	  <serverEnable enabled="true"/>
+	  <serverEnable enabled="${ftp.enabled}"/>
 	  
 	  <!-- Run on a non-privileged port -->
 	  <!--
@@ -53,14 +55,15 @@
    </config>
    
    <config evaluator="string-compare" condition="NFS Server">
-	  <serverEnable enabled="false"/>
+	  <serverEnable enabled="${nfs.enabled}"/>
    </config>
 	
    <config evaluator="string-compare" condition="Filesystems">
 	  <filesystems>
 		  
-		 <!-- Alfresco repository access shared filesystem -->
-         <filesystem name="Alfresco">
+
+         <!-- Alfresco repository access shared filesystem -->
+         <filesystem name="${filesystem.name}">
             <store>workspace://SpacesStore</store>
             <rootPath>/app:company_home</rootPath>
 

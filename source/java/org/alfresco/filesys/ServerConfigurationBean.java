@@ -136,6 +136,10 @@ public class ServerConfigurationBean extends ServerConfiguration implements Appl
   
   public static final String SERVER_CONFIGURATION = "fileServerConfiguration";
   
+  // IP address representing null
+  
+  public static final String BIND_TO_IGNORE = "0.0.0.0";
+  
   // SMB/CIFS session debug type strings
   //
   // Must match the bit mask order
@@ -803,7 +807,8 @@ public class ServerConfigurationBean extends ServerConfiguration implements Appl
               
               cifsConfig.setSMBBindAddress(bindAddr);
             }
-            else {
+            else if (!elem.getValue().equals(BIND_TO_IGNORE))
+            {
   
               // Validate the bind address
     
@@ -957,7 +962,7 @@ public class ServerConfigurationBean extends ServerConfiguration implements Appl
               // Check for a bind address
   
               String bindto = elem.getAttribute("bindto");
-              if (bindto != null && bindto.length() > 0)
+              if (bindto != null && bindto.length() > 0 && !bindto.equals(BIND_TO_IGNORE))
               {
   
                   // Validate the bind address
@@ -1137,7 +1142,7 @@ public class ServerConfigurationBean extends ServerConfiguration implements Appl
         //  Check for a bind address
         
         String attr = elem.getAttribute("bindto");
-        if ( attr != null && attr.length() > 0) {
+        if ( attr != null && attr.length() > 0 && !attr.equals(BIND_TO_IGNORE)) {
         
           //  Validate the bind address
   
@@ -1624,7 +1629,7 @@ public class ServerConfigurationBean extends ServerConfiguration implements Appl
         //  Check for a bind address
         
         elem = config.getConfigElement("bindto");
-        if ( elem != null) {
+        if ( elem != null && !elem.getValue().equals(BIND_TO_IGNORE)) {
         
             //  Validate the bind address
   

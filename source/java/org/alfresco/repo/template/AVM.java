@@ -143,9 +143,11 @@ public class AVM extends BaseTemplateProcessorExtension
         ParameterCheck.mandatoryString("Webapp", webapp);
 
         SandboxService sbService = this.services.getSandboxService();
+
+        String userStoreId = userSandboxStore(storeId, username);
         
         // get modified items - not including deleted
-        List<AssetInfo> assets = sbService.listChangedWebApp(storeId, webapp, false);
+        List<AssetInfo> assets = sbService.listChangedWebApp(userStoreId, webapp, false);
         
         List<AVMTemplateNode> items = new ArrayList<AVMTemplateNode>(assets.size());
         

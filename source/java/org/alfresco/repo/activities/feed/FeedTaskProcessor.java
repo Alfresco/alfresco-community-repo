@@ -25,13 +25,11 @@
 package org.alfresco.repo.activities.feed;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
+import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
@@ -527,12 +525,10 @@ public abstract class FeedTaskProcessor
             templateCache.put(fmTemplate, myTemplate);
         }
         
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        Writer out = new OutputStreamWriter(bos);
-        myTemplate.process(model, out);
-        out.flush();
+        StringWriter textWriter = new StringWriter();
+        myTemplate.process(model, textWriter);
         
-        return new String(bos.toByteArray());
+        return textWriter.toString();
     }
     
     protected List<FeedControlDAO> getFeedControls(String connectedUser) throws SQLException

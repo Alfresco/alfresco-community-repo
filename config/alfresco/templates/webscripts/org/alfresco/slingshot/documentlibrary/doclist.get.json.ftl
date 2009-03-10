@@ -79,23 +79,23 @@
             "path": "${item.location.path!""}",
             "file": "${item.location.file!""}"
          },
-      	"permissions":
-      	{
-      	   "inherited": ${d.inheritsPermissions?string},
-      	   "roles":
-      	   [
+         "permissions":
+         {
+            "inherited": ${d.inheritsPermissions?string},
+            "roles":
+            [
             <#list d.permissions as permission>
                "${permission?string}"<#if permission_has_next>,</#if>
             </#list>
             ],
-      	   "userAccess":
-      	   {
+            "userAccess":
+            {
                "create": ${d.hasPermission("CreateChildren")?string},
                "edit": ${d.hasPermission("Write")?string},
                "delete": ${d.hasPermission("Delete")?string},
                "permissions": ${d.hasPermission("ChangePermissions")?string}
-      	   }
-      	}
+            }
+         }
       }<#if item_has_next>,</#if>
    </#list>
    ]

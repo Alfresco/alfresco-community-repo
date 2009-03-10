@@ -71,7 +71,8 @@ public class ModuleStarter extends AbstractLifecycleBean
                 return null;
             }
         };
-        transactionService.getRetryingTransactionHelper().doInTransaction(startModulesCallback);
+        transactionService.getRetryingTransactionHelper().doInTransaction(startModulesCallback,
+                transactionService.isReadOnly());
     }
 
     @Override

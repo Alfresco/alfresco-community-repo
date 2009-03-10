@@ -3,10 +3,10 @@
 <#if result.error?exists>
   error : "${result.error}"
 <#else>
-  name: "${result.name}",
-  what: "${result.what}",
-  description: "${result.description}",
-  location: "${result.location}",
+  name: "${result.name?html}",
+  what: "${result.what?html}",
+  description: "${result.description?html}",
+  location: "${result.location?html}",
   tags: [
   <#list result.tags as tag>
    "${tag}"<#if tag_has_next>,</#if>

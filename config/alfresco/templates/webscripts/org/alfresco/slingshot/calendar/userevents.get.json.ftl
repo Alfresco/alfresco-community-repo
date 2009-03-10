@@ -6,17 +6,17 @@
 <#list events?sort_by("when") as event>
 	<#if event_index?string == limit?string><#break></#if>
 	{
-		"name": "${event.name}",
-		"title": "${event.title}",
-		"where": "${event.where}",
+		"name": "${event.name?html}",
+		"title": "${event.title?html}",
+		"where": "${event.where?html}",
 		"when": "${xmldate(event.when)}",
 	    "url": "page/site/${event.site}/calendar?date=${event.when?string("yyyy-MM-dd")}",
 		"start": "${event.start?string("HH:mm")}",
 		"end": "${event.end?string("HH:mm")}",
-		"site": "${event.site}",
-		"siteTitle": "${event.siteTitle}",
+		"site": "${event.site?html}",
+		"siteTitle": "${event.siteTitle?html}",
 		"allday": "${event.allday}",
-      "tags": "${event.tags}"
+      "tags": "${event.tags?html}"
 	}<#if event_has_next>,</#if>
 </#list>
 ]

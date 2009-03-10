@@ -3,14 +3,14 @@
    "error": "${result.error}"
 <#else>
    "data": {
-       "summary" : "${result.summary}",
-       "location" : "${result.location}",
-       "description" : "${result.description}",
-       "dtstart" : "${result.dtstart}",
-       "dtend" : "${result.dtend}",
+       "summary" : "${result.summary?html}",
+       "location" : "${result.location?html}",
+       "description" : "${result.description?html}",
+       "dtstart" : "${result.dtstart?html}",
+       "dtend" : "${result.dtend?html}",
        "uri" : "${result.uri}",       
        "allday" : "${result.allday?string}",
-       "tags" : "${result.tags}"
+       "tags" : "${result.tags?html}"
    }
    
 </#if>

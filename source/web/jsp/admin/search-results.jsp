@@ -71,7 +71,7 @@
                   <h:outputText value="Name"/>
               </f:facet>
               <h:commandLink action="#{AdminNodeBrowseBean.selectResultNode}">
-              	   <h:outputText value="#{row.QName}"/>
+              	   <h:outputText value="#{row.QName.prefixString}"/>
               </h:commandLink>
           </h:column>
           <h:column>

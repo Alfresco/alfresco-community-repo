@@ -222,7 +222,7 @@
               <f:facet name="header">
                   <h:outputText value="Child Name"/>
               </f:facet>
-              <h:outputText value="#{child.QName}"/>
+              <h:outputText value="#{child.QName.prefixString}"/>
           </h:column>
           <h:column>
               <f:facet name="header">
@@ -242,7 +242,7 @@
               <f:facet name="header">
                   <h:outputText value="Association Type"/>
               </f:facet>
-              <h:outputText value="#{child.typeQName}"/>
+              <h:outputText value="#{child.typeQName.prefixString}"/>
           </h:column>
           <h:column>
               <f:facet name="header">
@@ -269,7 +269,7 @@
               <f:facet name="header">
                   <h:outputText value="Association Type"/>
               </f:facet>
-              <h:outputText value="#{assoc.typeQName}"/>
+              <h:outputText value="#{assoc.typeQName.prefixString}"/>
           </h:column>
       </h:dataTable>
    
@@ -281,7 +281,7 @@
               <f:facet name="header">
                   <h:outputText value="Child Name"/>
               </f:facet>
-              <h:outputText value="#{parent.QName}"/>
+              <h:outputText value="#{parent.QName.prefixString}"/>
           </h:column>
           <h:column>
               <f:facet name="header">
@@ -301,7 +301,7 @@
               <f:facet name="header">
                   <h:outputText value="Association Type"/>
               </f:facet>
-              <h:outputText value="#{parent.typeQName}"/>
+              <h:outputText value="#{parent.typeQName.prefixString}"/>
           </h:column>
       </h:dataTable>
       

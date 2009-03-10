@@ -98,7 +98,7 @@
        </property>
     </bean>
 
-    <!-- Set up the JGroups clustering, if necessary -->
+    <!-- Set up JGroups communication, if necessary -->
     <bean name="jgroupsChannelFactory" class="org.alfresco.repo.jgroups.AlfrescoJGroupsChannelFactory">
         <property name="clusterName">
             <value>${alfresco.cluster.name}</value>

@@ -60,9 +60,6 @@
    
    <!-- Abstract bean definition defining base definition for content service -->
    <bean id="baseContentService" class="org.alfresco.repo.content.RoutingContentService" abstract="true" init-method="init">
-      <property name="transactionService">
-          <ref bean="transactionService" />
-      </property>
       <property name="retryingTransactionHelper">
           <ref bean="retryingTransactionHelper"/>
       </property>

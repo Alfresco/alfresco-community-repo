@@ -2,8 +2,15 @@
     <diskStore
       path="java.io.tmpdir"/>
 
+    <!--
+       The 'heartbeatInterval' property is the only one used for the JGroups-enabled implementation
+    -->
     <cacheManagerPeerProviderFactory
-        class="org.alfresco.repo.cache.jgroups.JGroupsRMICacheManagerPeerProvider$Factory"
+        class="org.alfresco.repo.cache.AlfrescoCacheManagerPeerProviderFactory"
+        properties="heartbeatInterval=5000,
+                    peerDiscovery=automatic,
+                    multicastGroupAddress=230.0.0.1,
+                    multicastGroupPort=4446"/>
     />
 
     <cacheManagerPeerListenerFactory

@@ -25,10 +25,12 @@
 package org.alfresco.repo.cache;
 
 import java.io.IOException;
+import java.net.URL;
 
 import net.sf.ehcache.CacheException;
 import net.sf.ehcache.CacheManager;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -65,8 +67,17 @@ public class EhCacheManagerFactoryBean implements FactoryBean, InitializingBean,
     {
         PropertyCheck.mandatory(this, "configLocation", configLocation);
         
-        logger.info("Initializing EHCache CacheManager");
-        this.cacheManager = new CacheManager(this.configLocation.getURL());
+        // Double-check the config location or EHCache will throw an NPE
+        try
+        {
+            URL configUrl = this.configLocation.getURL();
+            logger.info("Initializing EHCache CacheManager using URL: " + configLocation);
+            this.cacheManager = new CacheManager(configUrl);
+        }
+        catch (IOException e)
+        {
+            throw new AlfrescoRuntimeException("Unabled to read EHCache configuration file at " + configLocation, e);
+        }
     }
 
     public Object getObject()
@@ -74,6 +85,7 @@ public class EhCacheManagerFactoryBean implements FactoryBean, InitializingBean,
         return this.cacheManager;
     }
 
+    @SuppressWarnings("unchecked")
     public Class getObjectType()
     {
         return (this.cacheManager != null ? this.cacheManager.getClass() : CacheManager.class);

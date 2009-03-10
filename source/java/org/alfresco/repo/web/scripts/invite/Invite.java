@@ -625,7 +625,7 @@ public class Invite extends DeclarativeWebScript
         workflowProps.put(WorkflowModelNominatedInvitation.WF_PROP_INVITEE_GEN_PASSWORD, inviteePassword);
         workflowProps.put(WorkflowModelNominatedInvitation.WF_PROP_RESOURCE_TYPE, Invitation.ResourceType.WEB_SITE);
         workflowProps.put(WorkflowModelNominatedInvitation.WF_PROP_RESOURCE_NAME, siteShortName);
-        workflowProps.put(WorkflowModelNominatedInvitation.WF_PROP_INVITEE_SITE_ROLE, inviteeSiteRole);
+        workflowProps.put(WorkflowModelNominatedInvitation.WF_PROP_INVITEE_ROLE, inviteeSiteRole);
         workflowProps.put(WorkflowModelNominatedInvitation.WF_PROP_SERVER_PATH, serverPath);
         workflowProps.put(WorkflowModelNominatedInvitation.WF_PROP_ACCEPT_URL, acceptUrl);
         workflowProps.put(WorkflowModelNominatedInvitation.WF_PROP_REJECT_URL, rejectUrl);

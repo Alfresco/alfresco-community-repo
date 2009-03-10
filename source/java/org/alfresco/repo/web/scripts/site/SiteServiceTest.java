@@ -44,6 +44,7 @@ import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
+import org.alfresco.web.scripts.Status;
 import org.alfresco.web.scripts.TestWebScriptServer.DeleteRequest;
 import org.alfresco.web.scripts.TestWebScriptServer.GetRequest;
 import org.alfresco.web.scripts.TestWebScriptServer.PostRequest;
@@ -54,7 +55,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
- * Unit test to test site Web Script API
+ * Unit test to test site Web Script API of the Site Object.
  * 
  * @author Roy Wetherall
  */
@@ -195,12 +196,12 @@ public class SiteServiceTest extends BaseWebScriptTest
     public void testGetSite() throws Exception
     {
         // Get a site that doesn't exist
-        Response response = sendRequest(new GetRequest(URL_SITES + "/" + "somerandomshortname"), 404);
+        sendRequest(new GetRequest(URL_SITES + "/" + "somerandomshortname"), 404);
         
         // Create a site and get it
         String shortName  = GUID.generate();
         JSONObject result = createSite("myPreset", shortName, "myTitle", "myDescription", SiteVisibility.PUBLIC, 200);
-        response = sendRequest(new GetRequest(URL_SITES + "/" + shortName), 200);
+        Response response = sendRequest(new GetRequest(URL_SITES + "/" + shortName), 200);
        
     }
     
@@ -455,5 +456,306 @@ public class SiteServiceTest extends BaseWebScriptTest
         assertEquals("{http://www.alfresco.org/model/dictionary/1.0}text", addInfo.get("type"));
         assertEquals("Additional Site Information", addInfo.get("title"));
         
+    }
+    
+    /**
+     * End to end sanity check of web site invitation.
+     * 
+     * Nominated and Moderated invitations.
+     * 
+     * @throws Exception
+     */
+    public void testInvitationSanityCheck() throws Exception
+    {
+        String shortName  = GUID.generate();
+        createSite("myPreset", shortName, "myTitle", "myDescription", SiteVisibility.PUBLIC, 200);
+        
+        String inviteComments = "Please sir, let me in";
+        String userName = USER_TWO;
+        String roleName = SiteModel.SITE_CONSUMER;
+        
+        String inviteeFirstName = "Buffy";
+        String inviteeLastName = "Summers";
+        String inviteeEmail = "buffy@sunnydale";
+        String inviteeUserName = userName;
+        String serverPath = "http://localhost:8081/share/";
+        String acceptURL = "page/accept-invite";
+        String rejectURL = "page/reject-invite";
+        
+    	// Create a nominated invitation
+        String nominatedId = createNominatedInvitation(shortName, inviteeFirstName, inviteeLastName, inviteeEmail, inviteeUserName, roleName, serverPath, acceptURL, rejectURL);
+        
+    	// Get the nominated invitation
+        sendRequest(new GetRequest(URL_SITES + "/" + shortName + "/invitations/" + nominatedId), 200);	
+        
+        //Create a new moderated invitation
+        String moderatedId = createModeratedInvitation(shortName, inviteComments, userName, roleName);
+    	
+    	// Get the moderated invitation
+        sendRequest(new GetRequest(URL_SITES + "/" + shortName + "/invitations/" + moderatedId), 200);
+    	
+    	// search for the moderated invitation 
+        sendRequest(new GetRequest(URL_SITES + "/" + shortName + "/invitations?inviteeUserName=" + userName), 200);
+          
+        // Search for all invitations on this site
+        sendRequest(new GetRequest(URL_SITES + "/" + shortName + "/invitations"), 200);
+    	
+    	// cancel the nominated invitation
+        sendRequest(new DeleteRequest(URL_SITES + "/" + shortName + "/invitations/" + nominatedId), 200);
+    	
+    	// cancel the moderated invitation
+        sendRequest(new DeleteRequest(URL_SITES + "/" + shortName + "/invitations/" + moderatedId), 200);	
+    }
+    
+    /**
+     * Detailed Test of Get Invitation Web Script
+     * @throws Exception
+     */
+    public void testGetInvitation() throws Exception
+    {
+        String shortName  = GUID.generate();
+        createSite("myPreset", shortName, "myTitle", "myDescription", SiteVisibility.PUBLIC, 200);
+        
+        /*
+         * Create a new moderated invitation
+         */
+        String inviteeComments = "Please sir, let $* me in";
+        String userName = USER_TWO;
+        String roleName = SiteModel.SITE_CONSUMER;
+        String inviteId = createModeratedInvitation(shortName, inviteeComments, userName, roleName);
+              
+        /*
+         * Negative test - site does not exist
+         */
+       	sendRequest(new GetRequest(URL_SITES + "/rubbish/invitations/" + inviteId), 404);
+        
+        /*
+         * Negative test - site does exist but invitation doesn't
+         */
+        sendRequest(new GetRequest(URL_SITES + "/" + shortName + "/invitations/jbpm$8787487"), 404);
+        
+        /*
+         * Negative test - site does exist but invitation engine is wrong
+         */
+        sendRequest(new GetRequest(URL_SITES + "/" + shortName + "/invitations/trash$123"), 404);
+        
+        /*
+         * Negative test - site does exist but invitation doesn't  no $ in inviteId
+         */
+        sendRequest(new GetRequest(URL_SITES + "/" + shortName + "/invitations/trash123"), 404);
+        
+        /*
+         * Positive test - get the invitation and validate that it is correct
+         */
+        {
+        	Response response = sendRequest(new GetRequest(URL_SITES + "/" + shortName + "/invitations/" + inviteId), 200);
+            JSONObject top = new JSONObject(response.getContentAsString());
+            //System.out.println(response.getContentAsString());
+            JSONObject data = top.getJSONObject("data");
+            assertNotNull("data is null", data);
+            assertEquals("inviteId is not set", data.getString("inviteId"), inviteId);
+            assertEquals("invitationType", "MODERATED", data.getString("invitationType"));
+            assertEquals("inviteeUserName is not set", userName, data.getString("inviteeUserName"));
+            assertEquals("resourceName is not correct", shortName, data.getString("resourceName"));
+            assertEquals("resourceType is not correct", "WEB_SITE", data.getString("resourceType"));
+            // Moderated specific properties
+            assertEquals("inviteeComments", inviteeComments, data.getString("inviteeComments"));
+            assertEquals("roleName is not set", roleName, data.getString("roleName"));
+
+        }
+        
+        /*
+         * Cancel the invitation
+         */
+        sendRequest(new DeleteRequest(URL_SITES + "/" + shortName + "/invitations/" + inviteId), 200);
+        
+        /*
+         * Verify that the invitation is no longer open
+         */
+        sendRequest(new GetRequest(URL_SITES + "/" + shortName + "/invitations/" + inviteId), 404);
+        
+        /**
+         * Create a nominated invitation
+         */
+        String inviteeFirstName = "Buffy";
+        String inviteeLastName = "Summers";
+        String inviteeEmail = "FirstName123.LastName123@email.com";
+        String inviteeUserName = null;
+        String serverPath = "http://localhost:8081/share/";
+        String acceptURL = "page/accept-invite";
+        String rejectURL = "page/reject-invite";
+        inviteId = createNominatedInvitation(shortName, inviteeFirstName, inviteeLastName, inviteeEmail, inviteeUserName, roleName, serverPath, acceptURL, rejectURL);
+        
+        /*
+         * Positive test - get the invitation and validate that it is correct
+         * inviteId and inviteeUserName will be generated.
+         */
+        {
+        	Response response = sendRequest(new GetRequest(URL_SITES + "/" + shortName + "/invitations/" + inviteId), 200);
+            JSONObject top = new JSONObject(response.getContentAsString());
+            //System.out.println(response.getContentAsString());
+            JSONObject data = top.getJSONObject("data");
+            assertNotNull("data is null", data);
+            assertEquals("inviteId is not set", data.getString("inviteId"), inviteId);
+            assertEquals("invitationType", "NOMINATED", data.getString("invitationType"));
+            assertEquals("resourceName is not correct", shortName, data.getString("resourceName"));
+            assertEquals("resourceType is not correct", "WEB_SITE", data.getString("resourceType"));
+            
+            // Nominated specific attributes
+            assertEquals("roleName is not set", roleName, data.getString("roleName"));
+            // Generated user name
+            assertNotNull("inviteeUserName is not set", data.getString("inviteeUserName"));
+            
+        }
+        
+        /*
+         * Cancel the nominated invitation
+         */
+        sendRequest(new DeleteRequest(URL_SITES + "/" + shortName + "/invitations/" + inviteId), 200);
+                       
+    }
+    
+    /**
+     * Detailed Test of List Invitation Web Script.
+     * @throws Exception
+     */
+    public void testListInvitation() throws Exception
+    {
+        String shortName  = GUID.generate();
+        createSite("myPreset", shortName, "myTitle", "myDescription", SiteVisibility.PUBLIC, 200);
+        
+        
+        
+    }
+    
+    /**
+     * Detailed test of Create Invitation Web Script
+     * 
+     * Create Nominated Invitation
+     * 
+     * Create Moderated Invitation
+     * 
+     * @throws Exception
+     */
+    public void testCreateInvitation() throws Exception
+    {
+        String shortName  = GUID.generate();
+        createSite("myPreset", shortName, "myTitle", "myDescription", SiteVisibility.PUBLIC, 200);
+        
+
+        String inviteComments = "Please sir, let me in";
+        String userName = USER_TWO;
+        String roleName = SiteModel.SITE_CONSUMER;
+        String inviteId = null;
+
+        /*
+         * Negative test - wrong invitation type
+         */
+        {
+            JSONObject newInvitation = new JSONObject();
+            newInvitation.put("invitationType", "Grundge");
+        	newInvitation.put("inviteeRoleName", roleName);
+        	newInvitation.put("inviteeComments", inviteComments);
+        	newInvitation.put("inviteeUserName", userName);
+        	sendRequest(new PostRequest(URL_SITES + "/" + shortName + "/invitations",  newInvitation.toString(), "application/json"), Status.STATUS_BAD_REQUEST);   
+        }
+        
+        /*
+         * Negative test - missing Invitation type
+         */
+        {
+            JSONObject newInvitation = new JSONObject();
+        	newInvitation.put("inviteeRoleName", roleName);
+        	newInvitation.put("inviteeComments", inviteComments);
+        	newInvitation.put("inviteeUserName", userName);
+        	sendRequest(new PostRequest(URL_SITES + "/" + shortName + "/invitations",  newInvitation.toString(), "application/json"), Status.STATUS_BAD_REQUEST);   
+        }
+        
+        /*
+         * Negative test - blank RoleName
+         */
+        {
+            JSONObject newInvitation = new JSONObject();
+            newInvitation.put("invitationType", "MODERATED");
+        	newInvitation.put("inviteeRoleName", "");
+        	newInvitation.put("inviteeComments", inviteComments);
+        	newInvitation.put("inviteeUserName", userName);
+        	sendRequest(new PostRequest(URL_SITES + "/" + shortName + "/invitations",  newInvitation.toString(), "application/json"), Status.STATUS_BAD_REQUEST);   
+        }
+        
+        /*
+         * Create a new moderated invitation
+         */
+        JSONObject newInvitation = new JSONObject();
+        {
+            newInvitation.put("invitationType", "MODERATED");
+        	newInvitation.put("inviteeRoleName", roleName);
+        	newInvitation.put("inviteeComments", inviteComments);
+        	newInvitation.put("inviteeUserName", userName);
+        	Response response = sendRequest(new PostRequest(URL_SITES + "/" + shortName + "/invitations",  newInvitation.toString(), "application/json"), Status.STATUS_CREATED);   
+        	JSONObject top = new JSONObject(response.getContentAsString());
+        	JSONObject data = top.getJSONObject("data");
+        	inviteId = data.getString("inviteId");
+            assertEquals("invitationType", "MODERATED", data.getString("invitationType"));
+            assertEquals("inviteeUserName is not set", userName, data.getString("inviteeUserName"));
+            assertEquals("resourceName is not correct", shortName, data.getString("resourceName"));
+            assertEquals("resourceType is not correct", "WEB_SITE", data.getString("resourceType"));
+        	
+        }
+        assertNotNull("inviteId is null", inviteId);
+        assertTrue("inviteId is too small", inviteId.length() > 0);
+        
+    }    
+    
+    private String createNominatedInvitation(String siteName, String inviteeFirstName, String inviteeLastName, String inviteeEmail, String inviteeUserName, String inviteeRoleName, String serverPath, String acceptURL, String rejectURL) throws Exception 
+    {
+        /*
+         * Create a new nominated invitation
+         */
+        JSONObject newInvitation = new JSONObject();
+        
+      	newInvitation.put("invitationType", "NOMINATED");
+    	newInvitation.put("inviteeRoleName", inviteeRoleName);
+        if(inviteeUserName != null)
+        {
+        	// nominate an existing user
+            newInvitation.put("inviteeUserName", inviteeUserName);
+        }
+        else
+        {
+        	// nominate someone else
+        	newInvitation.put("inviteeFirstName", inviteeFirstName);
+        	newInvitation.put("inviteeLastName", inviteeLastName);
+        	newInvitation.put("inviteeEmail", inviteeEmail);
+        }
+        newInvitation.put("serverPath", serverPath);
+        newInvitation.put("acceptURL", acceptURL);
+        newInvitation.put("rejectURL", rejectURL);    
+        
+        Response response = sendRequest(new PostRequest(URL_SITES + "/" + siteName + "/invitations",  newInvitation.toString(), "application/json"), 201);   
+        JSONObject top = new JSONObject(response.getContentAsString());
+        JSONObject data = top.getJSONObject("data");
+        String inviteId = data.getString("inviteId");
+        
+        return inviteId;
+    }
+    
+    private String createModeratedInvitation(String siteName, String inviteeComments, String inviteeUserName, String inviteeRoleName) throws Exception
+    {
+        /*
+         * Create a new moderated invitation
+         */
+        JSONObject newInvitation = new JSONObject();
+        
+        newInvitation.put("invitationType", "MODERATED");
+        newInvitation.put("inviteeRoleName", inviteeRoleName);
+        newInvitation.put("inviteeComments", inviteeComments);
+        newInvitation.put("inviteeUserName", inviteeUserName);
+        Response response = sendRequest(new PostRequest(URL_SITES + "/" + siteName + "/invitations",  newInvitation.toString(), "application/json"), 201);   
+        JSONObject top = new JSONObject(response.getContentAsString());
+        JSONObject data = top.getJSONObject("data");
+        String inviteId = data.getString("inviteId");
+        
+        return inviteId;
     }
 }

@@ -233,7 +233,7 @@ var OfficeAddin =
       // Register our "well known" callback function
       window.alfrescoCallback = OfficeAddin.openWindowOnCallback;
       // Use a named window so that only one dialog is active at a time
-      window.open(url, 'alfrescoDialog', 'width=1024,height=768');
+      window.open(url, 'alfrescoDialog', 'width=1024,height=768,scrollbars=yes');
    },
    
    openWindowOnCallback: function(fromTimeout)

@@ -6,11 +6,15 @@ var OfficeMyAlfresco =
 {
    TOGGLE_AMOUNT: 150,
    ANIM_LENGTH: 800,
+   taskCount: 0,
 
    init: function()
    {
-      OfficeAddin.sortTasks($('taskList'));
-      OfficeMyAlfresco.setupTasks();
+      if (OfficeMyAlfresco.taskCount > 0)
+      {
+         OfficeAddin.sortTasks($('taskList'));
+         OfficeMyAlfresco.setupTasks();
+      }
       OfficeMyAlfresco.setupToggles();
    },
 

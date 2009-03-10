@@ -502,6 +502,22 @@ input.button {
    width: 160px;
 }
 
+.searchButton {
+   background-color: #cce6ff;
+   border: 1px solid #0073e6;
+   color: #0073e6;
+   float: left;
+   font-size: 11px;
+   font-weight: bold;
+   cursor: pointer;
+   margin: 0px 0px 0px 4px;
+   padding: 4px;
+   filter:progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr='#ffffff', EndColorStr='#cce6ff');
+}
+
+.searchButtonDisabled {
+}
+
 #searchResultsList {
    overflow: hidden;
 }

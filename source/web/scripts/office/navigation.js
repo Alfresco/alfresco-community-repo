@@ -34,7 +34,12 @@ var OfficeNavigation =
       var toggles = $$('.toggle');
 
       // Animation
-      var fxPanel = new Fx.Elements(panels, {wait: false, duration: OfficeNavigation.ANIM_LENGTH, transition: Fx.Transitions.Back.easeInOut});
+      var fxPanel = new Fx.Elements(panels,
+      {
+         wait: false,
+         duration: OfficeNavigation.ANIM_LENGTH,
+         transition: Fx.Transitions.Back.easeInOut
+      });
       
       panels.each(function(panel, i)
       {
@@ -183,9 +188,13 @@ var OfficeNavigation =
       actionURL += "&st=" + encodeURIComponent(spaceTitle);
       actionURL += "&sd=" + encodeURIComponent(spaceDescription);
       actionURL += "&t=" + encodeURIComponent(spaceTemplate);
-      var myAjax = new Ajax(actionURL, {
+      var myAjax = new Ajax(actionURL,
+      {
          method: 'get',
-         headers: {'If-Modified-Since': 'Sat, 1 Jan 2000 00:00:00 GMT'},
+         headers:
+         {
+            'If-Modified-Since': 'Sat, 1 Jan 2000 00:00:00 GMT'
+         },
          onComplete: function(textResponse, xmlResponse)
          {
             // Remove any trailing hash
@@ -206,16 +215,14 @@ var OfficeNavigation =
    
    saveToAlfresco: function(currentPath)
    {
-      // Does the current doc have an extension?
-      if (!window.external.docHasExtension())
+      // Does the current doc have an extension? - async request
+      ExternalComponent.docHasExtension(function()
       {
-         // No - we need to ask for a filename
-         OfficeNavigation.showSaveFilenamePanel(currentPath);
-      }
-      else
+         ExternalComponent.saveToAlfresco(currentPath)
+      }, function()
       {
-         window.external.saveToAlfresco(currentPath);
-      }
+         OfficeNavigation.showSaveFilenamePanel(currentPath)
+      });
    },
    
    showSaveFilenamePanel: function(currentPath)
@@ -291,7 +298,7 @@ var OfficeNavigation =
          
          if (!cancelSave)
          {
-            window.external.saveToAlfrescoAs(currentPath, filename);
+            ExternalComponent.saveToAlfrescoAs(currentPath, filename);
          }
       }
       OfficeNavigation.saveCancel();

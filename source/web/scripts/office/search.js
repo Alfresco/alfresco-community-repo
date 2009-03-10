@@ -4,6 +4,8 @@
  */
 var OfficeSearch = 
 {
+   MIN_LENGTH: 3,
+   
    init: function()
    {
       $('searchText').addEvent('keydown', function(event)
@@ -16,6 +18,8 @@ var OfficeSearch =
       });
       
       $('itemsFound').innerHTML = "Results Shown Below";
+      
+      $('searchText').focus();
    },
    
    itemsFound: function(shownResults, totalResults)
@@ -39,11 +43,16 @@ var OfficeSearch =
    /* AJAX call to perform server-side search */
    runSearch: function(useTemplate, argPath)
    {
-      OfficeAddin.showStatusText("Searching...", "ajax_anim.gif", false);
-
       var searchString = $('searchText').value;
       var maxResults = $('maxResults').value;
+      
+      if (searchString.length < OfficeSearch.MIN_LENGTH)
+      {
+         OfficeAddin.showStatusText("Minimum " + OfficeSearch.MIN_LENGTH + " characters.", "info.gif", true);
+         return;
+      }
 
+      OfficeAddin.showStatusText("Searching...", "ajax_anim.gif", false);
       var actionURL = useTemplate + argPath + "&search=" + encodeURIComponent(searchString) + "&maxresults=" + maxResults;
       var myAjax = new Ajax(actionURL, {
          method: 'get',

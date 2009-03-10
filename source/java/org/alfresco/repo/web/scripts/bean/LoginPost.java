@@ -41,11 +41,9 @@ import org.json.JSONObject;
 
 /**
  * Post based login script
- * 
  */
 public class LoginPost extends AbstractLoginBean
 {
-    
     /* (non-Javadoc)
      * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.WebScriptResponse)
      */
@@ -55,30 +53,31 @@ public class LoginPost extends AbstractLoginBean
         Content c = req.getContent();
         if (c == null)
         {
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                    "Missing POST body.");
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Missing POST body.");
         }
+        
         // TODO accept xml type.
         
         // extract username and password from JSON object
         JSONObject json;
-		try {
-			json = new JSONObject(c.getContent());
-	        String username = json.getString("username");
-	        String password = json.getString("password");
-	        
-	        if (username == null || username.length() == 0)
-	        {
-	            throw new WebScriptException(HttpServletResponse.SC_BAD_REQUEST, "Username not specified");
-	        }
+        try
+        {
+            json = new JSONObject(c.getContent());
+            String username = json.getString("username");
+            String password = json.getString("password");
 
-	        if (password == null)
-	        {
-	            throw new WebScriptException(HttpServletResponse.SC_BAD_REQUEST, "Password not specified");
-	        }
+            if (username == null || username.length() == 0)
+            {
+                throw new WebScriptException(HttpServletResponse.SC_BAD_REQUEST, "Username not specified");
+            }
 
-	        return login(username, password);
-		} 
+            if (password == null)
+            {
+                throw new WebScriptException(HttpServletResponse.SC_BAD_REQUEST, "Password not specified");
+            }
+
+            return login(username, password);
+        } 
         catch (JSONException jErr)
         {
             throw new WebScriptException(Status.STATUS_BAD_REQUEST,

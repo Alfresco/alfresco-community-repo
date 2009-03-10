@@ -63,5 +63,4 @@ public class Login extends AbstractLoginBean
 
         return login(username, password);
     }
-
 }

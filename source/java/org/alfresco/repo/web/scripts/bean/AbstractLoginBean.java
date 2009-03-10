@@ -30,6 +30,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.repo.security.authentication.AuthenticationException;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.web.scripts.DeclarativeWebScript;
 import org.alfresco.web.scripts.Status;
@@ -38,7 +39,7 @@ import org.alfresco.web.scripts.WebScriptRequest;
 
 
 /**
- * common code between Get based login and POST based login
+ * Common code between Get based login and POST based login
  */
 /* package scope */ abstract class AbstractLoginBean extends DeclarativeWebScript
 {
@@ -65,7 +66,6 @@ import org.alfresco.web.scripts.WebScriptRequest;
     
     protected Map<String, Object> login(String username, String password)
     {
-
         try
         {
             // get ticket
@@ -82,7 +82,7 @@ import org.alfresco.web.scripts.WebScriptRequest;
         }
         finally
         {
-            authenticationService.clearCurrentSecurityContext();
+            AuthenticationUtil.clearCurrentSecurityContext();
         }
     }
 }

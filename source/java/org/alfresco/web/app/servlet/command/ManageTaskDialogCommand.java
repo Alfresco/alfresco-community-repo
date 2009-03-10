@@ -69,7 +69,7 @@ public class ManageTaskDialogCommand extends BaseUIActionCommand
       ServletContext sc = (ServletContext)properties.get(PROP_SERVLETCONTEXT);
       ServletRequest req = (ServletRequest)properties.get(PROP_REQUEST);
       ServletResponse res = (ServletResponse)properties.get(PROP_RESPONSE);
-      FacesContext fc = FacesHelper.getFacesContext(req, res, sc);
+      FacesContext fc = FacesHelper.getFacesContext(req, res, sc, "/jsp/close.jsp");
       WorkflowBean wfBean = (WorkflowBean)FacesHelper.getManagedBean(fc, WorkflowBean.BEAN_NAME);
       
       // setup dialog context from url args in properties map

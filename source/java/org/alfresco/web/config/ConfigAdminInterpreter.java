@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -65,11 +65,6 @@ public class ConfigAdminInterpreter extends BaseInterpreter
     {
     	ApplicationContext context = new ClassPathXmlApplicationContext(new String[] {"classpath:alfresco/application-context.xml","classpath:alfresco/web-client-application-context.xml"});
         runMain(context, "webClientConfigAdminInterpreter");
-    }
-    
-    protected boolean hasAuthority(String username)
-    {
-        return ((username != null) && (tenantService.getBaseNameUser(username).equals(BaseInterpreter.DEFAULT_ADMIN)));
     }
 
     /**

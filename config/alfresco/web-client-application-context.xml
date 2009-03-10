@@ -225,7 +225,7 @@
    <bean id="webClientConfigAdminInterpreter" class="org.alfresco.web.config.ConfigAdminInterpreter">   
       <property name="transactionService" ref="transactionComponent"/>
       <property name="repoXMLConfigService" ref="webClientConfigService"/>
-      <property name="tenantService" ref="tenantService"/>        
+      <property name="authorityService" ref="AuthorityService"/>
    </bean>
    
    <bean id="webClientConfigAdminInterpreterHelp" class="org.alfresco.i18n.ResourceBundleBootstrapComponent"> 

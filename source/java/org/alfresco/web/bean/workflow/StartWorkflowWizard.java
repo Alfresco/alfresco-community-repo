@@ -44,6 +44,7 @@ import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.service.cmr.invitation.InvitationService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
@@ -84,9 +85,11 @@ public class StartWorkflowWizard extends BaseWizardBean
    transient protected List<SelectItem> availableWorkflows;
    transient private Map<String, WorkflowDefinition> workflows;
    
-   protected Map<String, String> wcmWorkflows;
+   protected List<String> wcmWorkflows;
+   protected List<String> invitationWorkflows;
    
    transient private WorkflowService workflowService;
+   transient private InvitationService invitationService;
    
    protected Node startTaskNode;
    protected List<Node> resources;
@@ -561,14 +564,16 @@ public class StartWorkflowWizard extends BaseWizardBean
       
       // get the list of configured WCM workflows and filter these from
       // the list as these workflows are specific to WCM functionality and AVM stores
-      Map<String, String> configuredWcmWorkflows = this.getWCMWorkflows();
+      List<String> configuredWcmWorkflows = this.getWCMWorkflowNames();
+      List<String> configuredInvitationWorkflows = this.getInvitationServiceWorkflowNames();
       
       List<WorkflowDefinition> workflowDefs =  this.getWorkflowService().getDefinitions();
       for (WorkflowDefinition workflowDef : workflowDefs)
       {
          String name = workflowDef.name;
-         if (configuredWcmWorkflows.containsKey(name) == false &&
-             "jbpm$wf:invite".equals(name) == false)
+         
+         if (configuredWcmWorkflows.contains(name) == false &&
+        	 configuredInvitationWorkflows.contains(name) == false)
          {
             // add the workflow if it is not a WCM specific workflow
             String label = workflowDef.title;
@@ -720,10 +725,11 @@ public class StartWorkflowWizard extends BaseWizardBean
    }
    
    /**
-    * @return The configured comma separated list of WCM workflows, if the config
-    *         can not be found an empty string will be returned
+    * Get the Names of the WCM workflows.
+    * 
+    * @return The names of the WCM workflows.
     */
-   protected Map<String, String> getWCMWorkflows()   
+   protected List<String> getWCMWorkflowNames()   
    {
       if ((wcmWorkflows == null) || (Application.isDynamicConfig(FacesContext.getCurrentInstance())))
       {
@@ -736,11 +742,11 @@ public class StartWorkflowWizard extends BaseWizardBean
             if (workflowConfig != null)
             {
                StringTokenizer t = new StringTokenizer(workflowConfig.getValue().trim(), ", ");
-               wcmWorkflows = new HashMap<String, String>(t.countTokens());
+               wcmWorkflows = new ArrayList<String>(t.countTokens());
                while (t.hasMoreTokens())
                {
                   String wfName = "jbpm$" + t.nextToken();
-                  wcmWorkflows.put(wfName, wfName);
+                  wcmWorkflows.add(wfName);
                }
             }
             else
@@ -757,7 +763,7 @@ public class StartWorkflowWizard extends BaseWizardBean
                while (t.hasMoreTokens())
                {
                   String wfName = "jbpm$" + t.nextToken();
-                  wcmWorkflows.put(wfName, wfName);
+                  wcmWorkflows.add(wfName);
                }
             }
             else
@@ -774,4 +780,30 @@ public class StartWorkflowWizard extends BaseWizardBean
       
       return wcmWorkflows;
    }
+   /**
+    * Get the Names of the Invitation Service Workflows
+    * 
+    * @return The names of the Invitation Service workflows
+    */
+   protected List<String> getInvitationServiceWorkflowNames()   
+   {
+	   if( invitationWorkflows == null )
+	   {
+		   if (invitationService != null)
+		   {
+		   		invitationWorkflows = invitationService.getInvitationServiceWorkflowNames();
+		   }
+	   }
+	   return invitationWorkflows;
+   }
+
+   public void setInvitationService(InvitationService invitationService) 
+   {
+	   this.invitationService = invitationService;
+   }
+
+	public  InvitationService getInvitationService() 
+	{
+		return invitationService;
+	}
 }

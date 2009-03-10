@@ -2670,6 +2670,10 @@
          <property-name>workflowService</property-name>
          <value>#{WorkflowService}</value>
       </managed-property>
+      <managed-property>
+         <property-name>invitationService</property-name>
+         <value>#{InvitationService}</value>
+      </managed-property>
 	  <managed-property>
          <property-name>unprotectedNodeService</property-name>
          <value>#{nodeService}</value>

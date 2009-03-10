@@ -1183,6 +1183,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             cfg.setProperty(Environment.CONNECTION_PROVIDER, defaultConnectionProviderFactoryClass);
             
             // all done successfully
+            ((ApplicationContext) event.getSource()).publishEvent(new SchemaAvailableEvent(this));
         }
         catch (Throwable e)
         {

@@ -56,6 +56,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AbstractAuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.NTLMMode;
+import org.alfresco.service.Managed;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.NoSuchPersonException;
@@ -281,6 +282,7 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
      * 
      * @param domain String
      */
+    @Managed(category="Security")
     public void setDomain(String domain) {
         
         // Check if the passthru server list is already configured
@@ -305,6 +307,7 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
      * 
      * @param servers String
      */
+    @Managed(category="Security")
     public void setServers(String servers) {
         
         // Check if the passthru server list is already configured
@@ -322,6 +325,7 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
      * 
      * @param useLocal String
      */
+    @Managed(category="Security")
     public void setUseLocalServer(String useLocal)
     {
         // Check if the local server should be used for authentication
@@ -376,6 +380,7 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
      * 
      * @param guest String
      */
+    @Managed(category="Security")
     public void setGuestAccess(String guest)
     {
         m_allowGuest = Boolean.parseBoolean(guest);
@@ -386,6 +391,7 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
      * 
      * @param auth String
      */
+    @Managed(category="Security")
     public void setAllowAuthUserAsGuest(String auth)
     {
         m_allowAuthUserAsGuest = Boolean.parseBoolean(auth);
@@ -396,6 +402,7 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
      * 
      * @param nullDomain String
      */
+    @Managed(category="Security")
     public void setNullDomainUseAnyServer(String nullDomain)
     {
         m_nullDomainUseAnyServer = Boolean.parseBoolean(nullDomain);
@@ -410,6 +417,7 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
      * 
      * @param providerClass String
      */
+    @Managed(category="Security")
     public void setJCEProvider(String providerClass)
     {
         // Set the JCE provider, required to provide various encryption/hashing algorithms not available
@@ -457,6 +465,7 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
      * 
      * @param sessTmo String
      */
+    @Managed(category="Security")
     public void setSessionTimeout(String sessTmo)
     {
         // Convert to an integer value and range check the timeout value
@@ -489,6 +498,7 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
      * 
      * @param protoOrder String
      */
+    @Managed(category="Security")
     public void setProtocolOrder(String protoOrder)
     {
     	// Parse the protocol order list

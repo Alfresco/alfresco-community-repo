@@ -29,6 +29,7 @@ import java.util.List;
 
 import net.sf.acegisecurity.Authentication;
 
+import org.alfresco.service.Managed;
 import org.alfresco.service.cmr.security.PermissionService;
 
 /**
@@ -72,6 +73,7 @@ public class ChainingAuthenticationComponentImpl implements AuthenticationCompon
      * 
      * @param authenticationComponents
      */
+    @Managed(category="Security")
     public void setAuthenticationComponents(List<AuthenticationComponent> authenticationComponents)
     {
         this.authenticationComponents = authenticationComponents;
@@ -92,6 +94,7 @@ public class ChainingAuthenticationComponentImpl implements AuthenticationCompon
      * 
      * @param mutableAuthenticationComponent
      */
+    @Managed(category="Security")
     public void setMutableAuthenticationComponent(AuthenticationComponent mutableAuthenticationComponent)
     {
         this.mutableAuthenticationComponent = mutableAuthenticationComponent;
@@ -99,6 +102,7 @@ public class ChainingAuthenticationComponentImpl implements AuthenticationCompon
 
     
     
+    @Managed(category="Security")
     public void setNtlmMode(NTLMMode ntlmMode)
     {
         this.ntlmMode = ntlmMode;

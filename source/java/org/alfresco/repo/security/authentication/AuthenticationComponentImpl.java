@@ -31,6 +31,8 @@ import net.sf.acegisecurity.AuthenticationManager;
 import net.sf.acegisecurity.UserDetails;
 import net.sf.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 
+import org.alfresco.service.Managed;
+
 public class AuthenticationComponentImpl extends AbstractAuthenticationComponent
 {
     private MutableAuthenticationDao authenticationDao;
@@ -57,6 +59,7 @@ public class AuthenticationComponentImpl extends AbstractAuthenticationComponent
      * 
      * @param authenticationDao
      */
+    @Managed(category="Security")
     public void setAuthenticationDao(MutableAuthenticationDao authenticationDao)
     {
         this.authenticationDao = authenticationDao;

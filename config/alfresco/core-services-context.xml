@@ -1198,4 +1198,62 @@
             <value>/sys:system-registry</value>
         </property>
     </bean>
+
+    <bean id="serverDescriptorDAO" class="org.alfresco.repo.descriptor.ServerDescriptorDAOImpl">
+       <property name="repositoryName">
+           <value>${repository.name}</value>
+       </property>
+       <property name="resource">
+           <value>classpath:alfresco/version.properties</value>
+       </property>
+    </bean>
+
+    <bean id="currentRepoDescriptorDAO" class="org.alfresco.repo.descriptor.RepositoryDescriptorDAOImpl">
+       <property name="name">
+           <value>system.descriptor.current.childname</value>
+       </property>
+       <property name="systemBootstrap">
+           <ref bean="systemBootstrap"/>
+       </property>
+       <property name="transactionService">
+           <ref bean="transactionService"/>
+       </property>
+       <property name="namespaceService">
+           <ref bean="namespaceService"/>
+       </property>
+       <property name="nodeService">
+           <ref bean="nodeService"/>
+       </property>
+       <property name="contentService">
+           <ref bean="contentService"/>
+       </property>
+       <property name="searchService">
+           <ref bean="searchService"/>
+       </property>
+    </bean>
+
+    <bean id="installedRepoDescriptorDAO" class="org.alfresco.repo.descriptor.RepositoryDescriptorDAOImpl">
+       <property name="name">
+           <value>system.descriptor.childname</value>
+       </property>
+       <property name="systemBootstrap">
+           <ref bean="systemBootstrap"/>
+       </property>
+       <property name="transactionService">
+           <ref bean="transactionService"/>
+       </property>
+       <property name="namespaceService">
+           <ref bean="namespaceService"/>
+       </property>
+       <property name="nodeService">
+           <ref bean="nodeService"/>
+       </property>
+       <property name="contentService">
+           <ref bean="contentService"/>
+       </property>
+       <property name="searchService">
+           <ref bean="searchService"/>
+       </property>
+    </bean>
+
 </beans>

@@ -29,6 +29,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.alfresco.service.Managed;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 
@@ -69,6 +70,7 @@ public class ChainingAuthenticationServiceImpl extends AbstractAuthenticationSer
         return authenticationServices;
     }
 
+    @Managed(category="Security")
     public void setAuthenticationServices(List<AuthenticationService> authenticationServices)
     {
         this.authenticationServices = authenticationServices;
@@ -79,6 +81,7 @@ public class ChainingAuthenticationServiceImpl extends AbstractAuthenticationSer
         return mutableAuthenticationService;
     }
 
+    @Managed(category="Security")
     public void setMutableAuthenticationService(AuthenticationService mutableAuthenticationService)
     {
         this.mutableAuthenticationService = mutableAuthenticationService;

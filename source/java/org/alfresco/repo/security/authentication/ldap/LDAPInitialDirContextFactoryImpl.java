@@ -38,6 +38,7 @@ import javax.naming.directory.BasicAttributes;
 import javax.naming.directory.InitialDirContext;
 
 import org.alfresco.repo.security.authentication.AuthenticationException;
+import org.alfresco.service.Managed;
 import org.alfresco.util.ApplicationContextHelper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -60,8 +61,8 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
         super();
     }
 
+    @Managed(category="Security")
     public void setInitialDirContextEnvironment(Map<String, String> initialDirContextEnvironment)
-
     {
         this.initialDirContextEnvironment = initialDirContextEnvironment;
     }
@@ -236,7 +237,8 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
         }
         catch (NamingException nx)
         {
-            throw new AuthenticationException("Unable to connect to LDAP Server; check LDAP configuration", nx);
+            logger.error("Unable to connect to LDAP Server; check LDAP configuration", nx);
+            return;
         }
         
         // Simple DN and password

@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.alfresco.repo.cache.SimpleCache;
+import org.alfresco.service.Managed;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.springframework.beans.factory.InitializingBean;
 
@@ -76,6 +77,7 @@ public abstract class AbstractAuthenticationService implements AuthenticationSer
         }
     }
 
+    @Managed(category="Security")
     public void setAllowedUsers(List<String> allowedUsers)
     {
         if (initialised)
@@ -105,6 +107,7 @@ public abstract class AbstractAuthenticationService implements AuthenticationSer
         }
     }
 
+    @Managed(category="Security")
     public void setMaxUsers(int maxUsers)
     {
         if (initialised)

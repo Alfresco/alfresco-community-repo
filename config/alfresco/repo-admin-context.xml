@@ -21,7 +21,7 @@
    
       <property name="transactionService" ref="transactionComponent"/>
       <property name="repoAdminService" ref="RepoAdminService"/>
-      <property name="tenantService" ref="tenantService"/>
+      <property name="authorityService" ref="AuthorityService"/>
         
    </bean>
 

@@ -7,13 +7,15 @@
    <!-- MT Admin Service Implementation -->
    <!--                                           -->
             
-<bean id="tenantAdminService" parent="baseMultiTAdminService" />
+   <bean id="tenantAdminService" parent="baseMultiTAdminService" />
                 
    <bean id="tenantInterpreter" class="org.alfresco.repo.tenant.TenantInterpreter">
         <property name="transactionService" ref="transactionComponent"/>
         <property name="tenantAdminService" ref="tenantAdminService"/>       
         <property name="tenantService" ref="tenantService"/>        
         <property name="authenticationService" ref="AuthenticationService"/>
+        <property name="authorityService" ref="AuthorityService"/>
+        <property name="baseAdminUsername"><value>${alfresco_user_store.adminusername}</value></property>
    </bean>
 
    <bean id="tenantInterpreterHelp" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">

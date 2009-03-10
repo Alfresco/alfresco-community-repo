@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -30,8 +30,8 @@ import java.io.InputStreamReader;
 
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
-import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.AbstractLifecycleBean;
 import org.alfresco.util.ApplicationContextHelper;
@@ -46,8 +46,7 @@ public abstract class BaseInterpreter extends AbstractLifecycleBean
 {
     // dependencies
     protected TransactionService transactionService;
-    protected TenantService tenantService;
-
+    protected AuthorityService authorityService;
 
     /**4
      * The reader for interaction.
@@ -99,11 +98,11 @@ public abstract class BaseInterpreter extends AbstractLifecycleBean
     {
         this.transactionService = transactionService;
     }
-
-    public void setTenantService(TenantService tenantService)
+    
+    public void setAuthorityService(AuthorityService authorityService)
     {
-        this.tenantService = tenantService;
-    }   
+        this.authorityService = authorityService;
+    }
     
 
 
@@ -175,7 +174,13 @@ public abstract class BaseInterpreter extends AbstractLifecycleBean
     
     protected boolean hasAuthority(String username)
     {
-        return ((username != null) && (tenantService.getBaseNameUser(username).equals(DEFAULT_ADMIN)));
+        if (authorityService == null)
+        {
+            // default for backwards compatibility - eg. upgrade of existing MT instance (mt-admin-context.xml.sample)
+            authorityService = (AuthorityService)getApplicationContext().getBean("AuthorityService");
+        }
+        
+        return ((username != null) && (authorityService.isAdminAuthority(username)));
     }
 
     /**

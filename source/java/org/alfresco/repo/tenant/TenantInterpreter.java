@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -48,8 +48,10 @@ public class TenantInterpreter extends BaseInterpreter
     // Service dependencies    
     
     private TenantAdminService tenantAdminService;
-    
+    protected TenantService tenantService;
     private AuthenticationService authenticationService;
+    
+    private String baseAdminUsername = "admin"; // default for backwards compatibility only - eg. upgrade of existing MT instance (mt-admin-context.xml.sample)
 
     public void setTenantAdminService(TenantAdminService tenantAdminService)
     {
@@ -60,7 +62,17 @@ public class TenantInterpreter extends BaseInterpreter
     {
         this.authenticationService = authenticationService;
     }
-
+    
+    public void setTenantService(TenantService tenantService)
+    {
+        this.tenantService = tenantService;
+    }
+    
+    public void setBaseAdminUsername(String baseAdminUsername)
+    {
+        this.baseAdminUsername = baseAdminUsername;
+    }
+    
     /**
      * Main entry point.
      */
@@ -72,8 +84,8 @@ public class TenantInterpreter extends BaseInterpreter
     
     protected boolean hasAuthority(String username)
     {
-        // must be super "admin" for tenant administrator
-        return ((username != null) && (username.equals(BaseInterpreter.DEFAULT_ADMIN)));
+        // must be "super" admin for tenant administration
+        return ((username != null) && (authorityService.isAdminAuthority(username)) && (! tenantService.isTenantUser(username)));
     }
     
     public String interpretCommand(final String line) throws IOException
@@ -323,8 +335,8 @@ public class TenantInterpreter extends BaseInterpreter
             
             String tenantDomain = new String(command[1]).toLowerCase();
             
-            final String newPassword = new String(command[2]);        
-            final String tenantAdminUsername = tenantService.getDomainUser(TenantService.ADMIN_BASENAME, tenantDomain);
+            final String newPassword = new String(command[2]);
+            final String tenantAdminUsername = tenantService.getDomainUser(baseAdminUsername, tenantDomain);
 
             AuthenticationUtil.runAs(new RunAsWork<Object>()
             {

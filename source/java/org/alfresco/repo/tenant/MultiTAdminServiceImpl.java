@@ -99,6 +99,8 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
     
     private List<WorkflowDeployer> workflowDeployers = new ArrayList<WorkflowDeployer>();
     
+    private String baseAdminUsername = "admin"; // default for backwards compatibility only - eg. upgrade of existing MT instance (mt-admin-context.xml.sample)
+
     /*
      * Tenant domain/ids are unique strings that are case-insensitive. Tenant ids must be valid filenames. 
      * They may also map onto domains and hence should allow valid FQDN.
@@ -204,6 +206,11 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         this.siteAVMBootstrap = siteAVMBootstrap;
     }
     
+    public void setBaseAdminUsername(String baseAdminUsername)
+    {
+        this.baseAdminUsername = baseAdminUsername;
+    }
+    
     public static final String PROTOCOL_STORE_USER = "user";
     public static final String PROTOCOL_STORE_WORKSPACE = "workspace";
     public static final String PROTOCOL_STORE_SYSTEM = "system";
@@ -218,8 +225,6 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
     private static final String TENANTS_ATTRIBUTE_PATH = "alfresco-tenants";
     private static final String TENANT_ATTRIBUTE_ENABLED = "enabled";
     private static final String TENANT_ROOT_CONTENT_STORE_DIR = "rootContentStoreDir";
-    
-    private static final String ADMIN_BASENAME = TenantService.ADMIN_BASENAME;
 
     private List<TenantDeployer> tenantDeployers = new ArrayList<TenantDeployer>();
 
@@ -750,7 +755,6 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         
         ImporterBootstrap systemImporterBootstrap = (ImporterBootstrap)ctx.getBean("systemBootstrap");
         systemImporterBootstrap.setBootstrapViews(bootstrapViews);
-        systemImporterBootstrap.setLog(true);
 
         bootstrapSystemTenantStore(systemImporterBootstrap, tenantDomain);
     }
@@ -787,7 +791,6 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         
         ImporterBootstrap userImporterBootstrap = (ImporterBootstrap)ctx.getBean("userBootstrap");
         userImporterBootstrap.setBootstrapViews(bootstrapViews);
-        userImporterBootstrap.setLog(true);
 
         bootstrapUserTenantStore(userImporterBootstrap, tenantDomain, null);
     }
@@ -826,7 +829,6 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         
         ImporterBootstrap versionImporterBootstrap = (ImporterBootstrap)ctx.getBean("versionBootstrap");
         versionImporterBootstrap.setBootstrapViews(bootstrapViews);
-        versionImporterBootstrap.setLog(true);
 
         bootstrapVersionTenantStore(versionImporterBootstrap, tenantDomain);
     }
@@ -855,7 +857,6 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         
         ImporterBootstrap spacesArchiveImporterBootstrap = (ImporterBootstrap)ctx.getBean("spacesArchiveBootstrap");
         spacesArchiveImporterBootstrap.setBootstrapViews(bootstrapViews);
-        spacesArchiveImporterBootstrap.setLog(true);
 
         bootstrapSpacesArchiveTenantStore(spacesArchiveImporterBootstrap, tenantDomain);
     }
@@ -889,7 +890,6 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         
         ImporterBootstrap spacesImporterBootstrap = (ImporterBootstrap)ctx.getBean("spacesBootstrap");
         spacesImporterBootstrap.setBootstrapViews(bootstrapViews);
-        spacesImporterBootstrap.setLog(true);
 
         bootstrapSpacesTenantStore(spacesImporterBootstrap, tenantDomain);
     }
@@ -907,7 +907,6 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         
         ImporterBootstrap spacesImporterBootstrap = (ImporterBootstrap)ctx.getBean("spacesBootstrap");
         spacesImporterBootstrap.setBootstrapViews(bootstrapViews);
-        spacesImporterBootstrap.setLog(true);
         
         spacesImporterBootstrap.setUseExistingStore(true);
 
@@ -1240,7 +1239,7 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
     
     private String getTenantAdminUser(String tenantDomain)
     {
-        return tenantService.getDomainUser(ADMIN_BASENAME, tenantDomain);
+        return tenantService.getDomainUser(this.baseAdminUsername, tenantDomain);
     }
 
     private String getTenantGuestUser(String tenantDomain)

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -45,7 +45,7 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 public class RepoAdminInterpreter extends BaseInterpreter
 {
     // dependencies
-    private RepoAdminService repoAdminService;   
+    private RepoAdminService repoAdminService;
       
     
     public void setRepoAdminService(RepoAdminService repoAdminService)
@@ -60,13 +60,6 @@ public class RepoAdminInterpreter extends BaseInterpreter
     {
         runMain("repoAdminInterpreter");
     }
-
-    protected boolean hasAuthority(String username)
-    {
-        // must be an "admin" for repository administration
-        return ((username != null) && (tenantService.getBaseNameUser(username).equals(BaseInterpreter.DEFAULT_ADMIN)));
-    }
-
 
     /**
      * Execute a single command using the BufferedReader passed in for any data needed.

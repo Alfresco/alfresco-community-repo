@@ -217,7 +217,7 @@ public class MultiTDemoTest extends TestCase
         {
             for (final String tenantDomain : tenants)
             {        
-                String tenantAdminName = tenantService.getDomainUser(TenantService.ADMIN_BASENAME, tenantDomain);
+                String tenantAdminName = tenantService.getDomainUser(DEFAULT_ADMIN_UN, tenantDomain);
                 
                 AuthenticationUtil.runAs(new RunAsWork<Object>()
                 {
@@ -238,7 +238,7 @@ public class MultiTDemoTest extends TestCase
             
             for (final String tenantDomain : tenants)
             {        
-                String tenantAdminName = tenantService.getDomainUser(TenantService.ADMIN_BASENAME, tenantDomain);
+                String tenantAdminName = tenantService.getDomainUser(DEFAULT_ADMIN_UN, tenantDomain);
                 
                 AuthenticationUtil.runAs(new RunAsWork<Object>()
                 {
@@ -343,7 +343,7 @@ public class MultiTDemoTest extends TestCase
             
             for (final String tenantDomain : tenants)
             {
-                loginLogoutUser(tenantService.getDomainUser(TenantService.ADMIN_BASENAME, tenantDomain), DEFAULT_ADMIN_PW+" "+tenantDomain);
+                loginLogoutUser(tenantService.getDomainUser(DEFAULT_ADMIN_UN, tenantDomain), DEFAULT_ADMIN_PW+" "+tenantDomain);
             }
         }   
         catch (Throwable t)
@@ -361,7 +361,7 @@ public class MultiTDemoTest extends TestCase
 
         for (final String tenantDomain : tenants)
         {        
-            String tenantAdminName = tenantService.getDomainUser(TenantService.ADMIN_BASENAME, tenantDomain);
+            String tenantAdminName = tenantService.getDomainUser(DEFAULT_ADMIN_UN, tenantDomain);
             
             AuthenticationUtil.runAs(new RunAsWork<Object>()
                     {
@@ -392,7 +392,7 @@ public class MultiTDemoTest extends TestCase
         
         for (final String tenantDomain : tenants)
         {        
-            String tenantAdminName = tenantService.getDomainUser(TenantService.ADMIN_BASENAME, tenantDomain);
+            String tenantAdminName = tenantService.getDomainUser(DEFAULT_ADMIN_UN, tenantDomain);
             
             AuthenticationUtil.runAs(new RunAsWork<Object>()
                     {
@@ -526,7 +526,7 @@ public class MultiTDemoTest extends TestCase
         
         for (final String tenantDomain : tenants)
         {        
-            String tenantAdminName = tenantService.getDomainUser(TenantService.ADMIN_BASENAME, tenantDomain);
+            String tenantAdminName = tenantService.getDomainUser(DEFAULT_ADMIN_UN, tenantDomain);
             
             AuthenticationUtil.runAs(new RunAsWork<Object>()
             {
@@ -546,7 +546,7 @@ public class MultiTDemoTest extends TestCase
         
         for (final String tenantDomain : tenants)
         {
-            String tenantAdminName = tenantService.getDomainUser(TenantService.ADMIN_BASENAME, tenantDomain);
+            String tenantAdminName = tenantService.getDomainUser(DEFAULT_ADMIN_UN, tenantDomain);
             
             AuthenticationUtil.runAs(new RunAsWork<Object>()
             {

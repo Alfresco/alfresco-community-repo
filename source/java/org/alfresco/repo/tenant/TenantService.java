@@ -46,8 +46,6 @@ public interface TenantService extends TenantUserService
     
     public static final String DEFAULT_DOMAIN = "";
     
-    public static final String ADMIN_BASENAME = "admin";
-    
     /**
      * @return          the reference <b>with</b> the tenant-specific ID attached
      */

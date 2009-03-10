@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -398,7 +398,7 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
                 for (NodeRef pendingNodeRef : pendingModels)
                 {
                     String tenantDomain = tenantService.getDomain(pendingNodeRef.getStoreRef().getIdentifier());
-                    String tenantAdminUserName = tenantService.getDomainUser(TenantService.ADMIN_BASENAME, tenantDomain);
+                    String tenantSystemUserName = tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain);
                     
                     final NodeRef nodeRef = tenantService.getBaseName(pendingNodeRef);
                     
@@ -484,7 +484,7 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
 
                             return null; 
                         }
-                    }, tenantAdminUserName);
+                    }, tenantSystemUserName);
                 }
             }
         }

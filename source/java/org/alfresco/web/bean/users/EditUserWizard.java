@@ -38,7 +38,8 @@ import org.alfresco.util.Pair;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.ui.common.Utils;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * @author YanO
@@ -48,7 +49,7 @@ public class EditUserWizard extends CreateUserWizard
 {
     private static final long serialVersionUID = 7529989488476324511L;
 
-    private static Logger logger = Logger.getLogger(EditUserWizard.class);
+    private static Log logger = LogFactory.getLog(EditUserWizard.class);
    
     protected UsersBeanProperties properties;
 

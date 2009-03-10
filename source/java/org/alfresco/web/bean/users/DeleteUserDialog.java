@@ -51,14 +51,15 @@ import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIActionLink;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 public class DeleteUserDialog extends BaseDialogBean
 {
 
    private static final long serialVersionUID = -4977064287365766306L;
 
-   private static Logger logger = Logger.getLogger(DeleteUserDialog.class);
+   private static Log logger = LogFactory.getLog(DeleteUserDialog.class);
 
    private static final String ERROR_DELETE = "error_delete_user";
 

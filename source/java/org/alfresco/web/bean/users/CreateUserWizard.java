@@ -60,7 +60,8 @@ import org.alfresco.web.bean.spaces.CreateSpaceWizard;
 import org.alfresco.web.bean.wizard.BaseWizardBean;
 import org.alfresco.web.config.ClientConfigElement;
 import org.alfresco.web.ui.common.Utils;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * @author Kevin Roast
@@ -69,7 +70,7 @@ public class CreateUserWizard extends BaseWizardBean
 {
     private static final long serialVersionUID = 8008464794715380019L;
     
-    private static Logger logger = Logger.getLogger(CreateUserWizard.class);
+    private static Log logger = LogFactory.getLog(BaseWizardBean.class);
     protected static final String ERROR = "error_person";
     protected static final String ERROR_DOMAIN_MISMATCH = "error_domain_mismatch";
 

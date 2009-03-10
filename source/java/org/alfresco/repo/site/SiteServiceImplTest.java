@@ -381,7 +381,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         this.siteService.createSite(TEST_SITE_PRESET, "testMembership", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PRIVATE);
         
         // Get the members of the site and check that user one is a manager
-        Map<String, String> members = this.siteService.listMembers("testMembership", null, null);
+        Map<String, String> members = this.siteService.listMembers("testMembership", null, null, 0);
         assertNotNull(members);
         assertEquals(1, members.size());
         assertTrue(members.containsKey(USER_ONE));
@@ -392,7 +392,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         this.siteService.setMembership("testMembership", USER_THREE, SiteModel.SITE_COLLABORATOR);
         
         // Get the members of the site
-        members = this.siteService.listMembers("testMembership", null, null);
+        members = this.siteService.listMembers("testMembership", null, null, 0);
         assertNotNull(members);
         assertEquals(3, members.size());
         assertTrue(members.containsKey(USER_ONE));
@@ -403,14 +403,14 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         assertEquals(SiteModel.SITE_COLLABORATOR, members.get(USER_THREE));
         
         // Get only the site managers
-        members = this.siteService.listMembers("testMembership", null, SiteModel.SITE_MANAGER);
+        members = this.siteService.listMembers("testMembership", null, SiteModel.SITE_MANAGER, 0);
         assertNotNull(members);
         assertEquals(1, members.size());
         assertTrue(members.containsKey(USER_ONE));
         assertEquals(SiteModel.SITE_MANAGER, members.get(USER_ONE));
         
         // Get only user two
-        members = this.siteService.listMembers("testMembership", USER_TWO, null);
+        members = this.siteService.listMembers("testMembership", USER_TWO, null, 0);
         assertNotNull(members);
         assertEquals(1, members.size());
         assertTrue(members.containsKey(USER_TWO));
@@ -420,7 +420,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         this.siteService.setMembership("testMembership", USER_TWO, SiteModel.SITE_COLLABORATOR);
         
         // Check the members of the site
-        members = this.siteService.listMembers("testMembership", null, null);
+        members = this.siteService.listMembers("testMembership", null, null, 0);
         assertNotNull(members);
         assertEquals(3, members.size());
         assertTrue(members.containsKey(USER_ONE));
@@ -434,7 +434,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         this.siteService.removeMembership("testMembership", USER_TWO);
         
         // Check the members of the site
-        members = this.siteService.listMembers("testMembership", null, null);
+        members = this.siteService.listMembers("testMembership", null, null, 0);
         assertNotNull(members);
         assertEquals(2, members.size());
         assertTrue(members.containsKey(USER_ONE));
@@ -677,7 +677,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         this.siteService.createSite(TEST_SITE_PRESET, "testMembership", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PRIVATE);
 
         // Get the members of the site and check that user one is a manager
-        Map<String, String> members = this.siteService.listMembers("testMembership", null, null);
+        Map<String, String> members = this.siteService.listMembers("testMembership", null, null, 0);
         assertNotNull(members);
         assertEquals(1, members.size());
         assertTrue(members.containsKey(USER_ONE));
@@ -686,7 +686,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         // Add a group
         this.siteService.setMembership("testMembership", this.groupTwo, SiteModel.SITE_CONSUMER);        
         //   - is the group in the list of all members?
-        members = this.siteService.listMembers("testMembership", null, null);
+        members = this.siteService.listMembers("testMembership", null, null, 0);
         assertNotNull(members);
         assertEquals(2, members.size());
         assertTrue(members.containsKey(USER_ONE));
@@ -694,7 +694,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         assertTrue(members.containsKey(this.groupTwo));
         assertEquals(SiteModel.SITE_CONSUMER, members.get(this.groupTwo));        
         //   - is the user in the expanded list?      
-        members = this.siteService.listMembers("testMembership", null, null, true);
+        members = this.siteService.listMembers("testMembership", null, null, 0, true);
         assertNotNull(members);
         assertEquals(3, members.size());
         assertTrue(members.containsKey(USER_ONE));
@@ -718,7 +718,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         // Add a group member as an explicit member
         this.siteService.setMembership("testMembership", USER_THREE, SiteModel.SITE_COLLABORATOR);
         //   - check the explicit members list
-        members = this.siteService.listMembers("testMembership", null, null);
+        members = this.siteService.listMembers("testMembership", null, null, 0);
         assertNotNull(members);
         assertEquals(3, members.size());
         assertTrue(members.containsKey(USER_ONE));
@@ -728,7 +728,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         assertTrue(members.containsKey(this.groupTwo));
         assertEquals(SiteModel.SITE_CONSUMER, members.get(this.groupTwo));        
         //   - check the expanded members list      
-        members = this.siteService.listMembers("testMembership", null, null, true);
+        members = this.siteService.listMembers("testMembership", null, null, 0, true);
         assertNotNull(members);
         assertEquals(3, members.size());
         assertTrue(members.containsKey(USER_ONE));

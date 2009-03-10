@@ -82,6 +82,9 @@ public class SiteServiceImpl implements SiteService, SiteModel
 
     /** Activity tool */
     private static final String ACTIVITY_TOOL = "siteService";
+    
+    private static final String SITE_PREFIX = "site_";
+    private static final int GROUP_PREFIX_LENGTH = SITE_PREFIX.length() + PermissionService.GROUP_PREFIX.length();
 
     private String sitesXPath;
     
@@ -402,8 +405,7 @@ public class SiteServiceImpl implements SiteService, SiteModel
     /**
      * Helper method to get the name of the site group
      * 
-     * @param shortName
-     *            site short name
+     * @param shortName     site short name
      * @return String site group name
      */
     public String getSiteGroup(String shortName, boolean withGroupPrefix)
@@ -413,7 +415,7 @@ public class SiteServiceImpl implements SiteService, SiteModel
         {
             sb.append(PermissionService.GROUP_PREFIX);
         }
-        sb.append("site_");
+        sb.append(SITE_PREFIX);
         sb.append(shortName);
         return sb.toString();
     }
@@ -421,14 +423,11 @@ public class SiteServiceImpl implements SiteService, SiteModel
     /**
      * Helper method to get the name of the site permission group
      * 
-     * @param shortName
-     *            site short name
-     * @param permission
-     *            permission name
+     * @param shortName     site short name
+     * @param permission    permission name
      * @return String site permission group name
      */
-    public String getSiteRoleGroup(String shortName, String permission,
-            boolean withGroupPrefix)
+    public String getSiteRoleGroup(String shortName, String permission, boolean withGroupPrefix)
     {
         return getSiteGroup(shortName, withGroupPrefix) + "_" + permission;
     }
@@ -436,8 +435,7 @@ public class SiteServiceImpl implements SiteService, SiteModel
     /**
      * Gets a sites parent folder based on it's short name ]
      * 
-     * @param shortName
-     *            site short name
+     * @param shortName site short name
      * @return NodeRef the site's parent
      */
     private NodeRef getSiteParent(String shortName)
@@ -739,17 +737,17 @@ public class SiteServiceImpl implements SiteService, SiteModel
     }
 
     /**
-     * @see org.alfresco.service.cmr.site.SiteService#listMembers(java.lang.String, java.lang.String, java.lang.String)
+     * @see org.alfresco.service.cmr.site.SiteService#listMembers(java.lang.String, java.lang.String, java.lang.String, int)
      */
-    public Map<String, String> listMembers(String shortName, String nameFilter, String roleFilter)
+    public Map<String, String> listMembers(String shortName, String nameFilter, String roleFilter, int size)
     {
-        return listMembers(shortName, nameFilter, roleFilter, false);
+        return listMembers(shortName, nameFilter, roleFilter, size, false);
     }
     
     /**
-     * @see org.alfresco.service.cmr.site.SiteService#listMembers(String, String, String, boolean)
+     * @see org.alfresco.service.cmr.site.SiteService#listMembers(String, String, String, int, boolean)
      */
-    public Map<String, String> listMembers(String shortName, final String nameFilter, final String roleFilter, final boolean collapseGroups)
+    public Map<String, String> listMembers(String shortName, final String nameFilter, final String roleFilter, final int size, final boolean collapseGroups)
     {
         // MT share - for activity service system callback
         if (tenantService.isEnabled() && (AuthenticationUtil.SYSTEM_USER_NAME.equals(AuthenticationUtil.getRunAsUser())) && tenantService.isTenantName(shortName))
@@ -761,17 +759,17 @@ public class SiteServiceImpl implements SiteService, SiteModel
             {
                 public Map<String, String> doWork() throws Exception
                 {
-                    return listMembersImpl(sName, nameFilter, roleFilter, collapseGroups);
+                    return listMembersImpl(sName, nameFilter, roleFilter, size, collapseGroups);
                 }
             }, tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain));
         }
         else
         {
-            return listMembersImpl(shortName, nameFilter, roleFilter, collapseGroups);
+            return listMembersImpl(shortName, nameFilter, roleFilter, size, collapseGroups);
         }
     }
     
-    private Map<String, String> listMembersImpl(String shortName, String nameFilter, String roleFilter, boolean collapseGroups)
+    private Map<String, String> listMembersImpl(String shortName, String nameFilter, String roleFilter, int size, boolean collapseGroups)
     {
         NodeRef siteNodeRef = getSiteNodeRef(shortName);
         if (siteNodeRef == null)
@@ -779,74 +777,101 @@ public class SiteServiceImpl implements SiteService, SiteModel
             throw new SiteServiceException(MSG_SITE_NO_EXIST, new Object[]{shortName});
         }
 
-        Map<String, String> members = new HashMap<String, String>(23);
+        Map<String, String> members = new HashMap<String, String>(32);
 
-        Set<String> permissions = permissionService.getSettablePermissions(SiteModel.TYPE_SITE);
+        Set<String> permissions = this.permissionService.getSettablePermissions(SiteModel.TYPE_SITE);
         for (String permission : permissions)
         {
-            if (filterMatch(roleFilter, permission) == true)
+            if (roleFilter == null || roleFilter.length() == 0 || roleFilter.equals(permission))
             {
                 String groupName = getSiteRoleGroup(shortName, permission, true);
                 Set<String> users = this.authorityService.getContainedAuthorities(AuthorityType.USER, groupName, true);
                 for (String user : users)
                 {
-                    if (filterMatch(nameFilter, user) == true)
+                    boolean addUser = true;
+                    if (nameFilter != null && nameFilter.length() != 0 && !nameFilter.equals(user))
+                    {
+                        // found a filter - does it match person first/last name?
+                        addUser = matchPerson(nameFilter, user);
+                    }
+                    if (addUser)
                     {
                         // Add the user and their permission to the returned map
                         members.put(user, permission);
+                        
+                        // break on max size limit reached
+                        if (members.size() == size) break;
                     }
                 }
+                
                 Set<String> groups = this.authorityService.getContainedAuthorities(AuthorityType.GROUP, groupName, true);
                 for (String group : groups)
                 {                    
                     if (collapseGroups == false)
-                    {     
-                        if (filterMatch(nameFilter, group) == true)
+                    {
+                        boolean addGroup = true;
+                        if (nameFilter != null && nameFilter.length() != 0)
                         {
-                            // Add the group and their permission to the returned map
-                            members.put(group, permission);
-                         }
+                            // found a filter - does it match Group name part?
+                            if (group.substring(GROUP_PREFIX_LENGTH).toLowerCase().contains(nameFilter.toLowerCase()))
+                            {
+                                members.put(group, permission);
+                            }
+                        }
                     }
                     else
                     {
                         Set<String> subUsers = this.authorityService.getContainedAuthorities(AuthorityType.USER, group, false);
                         for (String subUser : subUsers)
                         {
-                            if (filterMatch(nameFilter, subUser) == true)
+                            boolean addUser = true;
+                            if (nameFilter != null && nameFilter.length() != 0 && !nameFilter.equals(subUser))
+                            {
+                                // found a filter - does it match person first/last name?
+                                addUser = matchPerson(nameFilter, subUser);
+                            }
+                            if (addUser)
                             {
                                 // Add the collapsed user into the members list if they do not already appear in the list 
                                 if (members.containsKey(subUser) == false)
                                 {
                                     members.put(subUser, permission);
                                 }
+                                
+                                // break on max size limit reached
+                                if (members.size() == size) break;
                             }
                         }
                     }
-                
                 }
             }         
         }
 
         return members;
     }
-    
+
     /**
-     * Helper method to calculate whether a value matches a filter or not
-     * 
-     * @param filter    filter
-     * @param value     value
-     * @return boolean  true if the value matches the filter, false otherwise
+     * Helper to 
+     * @param filter
+     * @param username
+     * @return
      */
-    private boolean filterMatch(String filter, String value)
+    private boolean matchPerson(String filter, String username)
     {
-        boolean result = false;
-        if (filter == null ||
-            filter.length() == 0 ||
-            filter.equals(value) == true)
+        boolean addUser = false;
+        NodeRef personRef = this.personService.getPerson(username);
+        Map<QName, Serializable> props = this.nodeService.getProperties(personRef);
+        String firstName = (String)props.get(ContentModel.PROP_FIRSTNAME);
+        String lastName = (String)props.get(ContentModel.PROP_LASTNAME);
+        if (firstName != null && firstName.toLowerCase().indexOf(filter.toLowerCase()) != -1)
         {
-            result = true;
+            addUser = true;
         }
-        return result;
+        else if (lastName != null && lastName.toLowerCase().indexOf(filter.toLowerCase()) != -1)
+        {
+            addUser = true;
+        }
+        return addUser;
     }
 
     /**

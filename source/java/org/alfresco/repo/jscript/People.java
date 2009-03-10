@@ -36,6 +36,7 @@ import org.alfresco.repo.security.authority.AuthorityDAO;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
@@ -304,6 +305,11 @@ public final class People extends BaseScopableProcessorExtension
                 params.setLanguage(SearchService.LANGUAGE_LUCENE);
                 params.addStore(this.storeRef);
                 params.setQuery(query.toString());
+                if (maxResults > 0)
+                {
+                    params.setLimitBy(LimitBy.FINAL_SIZE);
+                    params.setLimit(maxResults);
+                }
                 
                 ResultSet results = null;
                 try
@@ -324,12 +330,6 @@ public final class People extends BaseScopableProcessorExtension
         if (people == null)
         {
             people = new Object[0];
-        }
-        else if (maxResults > 0 && people.length > maxResults)
-        {
-            Object[] copy = new Object[maxResults];
-            System.arraycopy(people, 0, copy, 0, maxResults);
-            people = copy;
         }
         
         return Context.getCurrentContext().newArray(getScope(), people);

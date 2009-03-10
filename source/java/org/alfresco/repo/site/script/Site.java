@@ -299,11 +299,13 @@ public class Site implements Serializable
      * 
      * @param nameFilter                            user name filter
      * @param roleFilter                            user role filter
+     * @param size                                  max results size crop if >0
+     * 
      * @return ScriptableHashMap<String, String>    list of members of site with their roles
      */
-    public ScriptableHashMap<String, String> listMembers(String nameFilter, String roleFilter)
+    public ScriptableHashMap<String, String> listMembers(String nameFilter, String roleFilter, int size)
     {
-        Map<String, String> members =  this.siteService.listMembers(getShortName(), nameFilter, roleFilter);
+        Map<String, String> members =  this.siteService.listMembers(getShortName(), nameFilter, roleFilter, size);
         
         ScriptableHashMap<String, String> result = new ScriptableHashMap<String, String>();
         result.putAll(members);

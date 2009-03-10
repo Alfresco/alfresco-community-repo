@@ -92,9 +92,10 @@ public interface SiteService
      * @param shortName     site short name
      * @param nameFilter    name filter
      * @param roleFilter    role filter
+     * @param size          max results size crop if >0
      * @return Map<String, String>  the authority name and their role
      */
-    Map<String, String> listMembers(String shortName, String nameFilter, String roleFilter);
+    Map<String, String> listMembers(String shortName, String nameFilter, String roleFilter, int size);
     
     /**
      * List the members of the site.  This includes both users and groups if collapseGroups is set to false, otherwise all
@@ -103,10 +104,11 @@ public interface SiteService
      * @param shortName         site short name
      * @param nameFilter        name filter
      * @param roleFilter        role filter
+     * @param size          max results size crop if >0
      * @param collapseGroups    true if collapse member groups into user list, false otherwise
      * @return Map<String, String>  the authority name and their role
      */
-    Map<String, String> listMembers(String shortName, String nameFilter, String roleFilter, boolean collapseGroups);
+    Map<String, String> listMembers(String shortName, String nameFilter, String roleFilter, int size, boolean collapseGroups);
     
     /**
      * Gets the role of the specified user.

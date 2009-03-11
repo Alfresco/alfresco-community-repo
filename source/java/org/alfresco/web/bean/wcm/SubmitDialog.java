@@ -523,7 +523,7 @@ public class SubmitDialog extends BaseDialogBean
       }
 
       // write changes to layer so files are marked as modified
-      getAvmSyncService().update(diffs, null, true, true, false, false, null, null);
+      getAvmSyncService().update(diffs, null, false, false, false, false, null, null);
    }
 
    /**

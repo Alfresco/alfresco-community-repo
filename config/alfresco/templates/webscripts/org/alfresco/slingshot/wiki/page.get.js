@@ -11,14 +11,14 @@ function main()
    var params = getTemplateArgs(["siteId", "pageTitle"]);
    if (params === null)
    {
-	   return jsonError("No parameters supplied");
+      return jsonError("No parameters supplied");
    }
 
    // Get the site
    var site = siteService.getSite(params.siteId);
    if (site === null)
    {
-	   return jsonError("Could not find site: " + params.siteId);
+      return jsonError("Could not find site: " + params.siteId);
    }
 
    var wiki = getWikiContainer(site);
@@ -28,26 +28,24 @@ function main()
    }
  
    var page = wiki.childByNamePath(params.pageTitle);
-	if (!page)
-	{
-		return jsonError("The page \"" + params.pageTitle.replace(/_/g, " ") + "\" does not exist.");
-	}
+   if (!page)
+   {
+      return jsonError("The page \"" + params.pageTitle.replace(/_/g, " ") + "\" does not exist.");
+   }
 
    // Figure out what (internal) pages this page contains links to
    var content = page.content.toString();
    var re = /\[\[([^\|\]]+)/g;
-   var links = [];
     
-   var result, match, matched_p;
-   var matchedsofar = [];
+   var links = [], result, match, matched_p, matchedSoFar = [], j;
    while ((result = re.exec(content)) !== null)
    {
       match = result[1];
       matched_p = false;
       // Check for duplicate links
-      for (var j=0; j < matchedsofar.length; j++)
+      for (j = 0; j < matchedSoFar.length; j++)
       {
-         if (match ===  matchedsofar[j])
+         if (match === matchedSoFar[j])
          {
             matched_p = true;
             break;
@@ -56,16 +54,33 @@ function main()
       
       if (!matched_p)
       {
-         matchedsofar.push(match);
+         matchedSoFar.push(match);
          links.push(match);
       }
    }
+
+   // Also return complete list of pages to resolve links
+   var query = "+PATH:\"" + wiki.qnamePath + "//*\" ";
+   query += " +(@\\{http\\://www.alfresco.org/model/content/1.0\\}content.mimetype:application/octet-stream OR";
+   query += "  @\\{http\\://www.alfresco.org/model/content/1.0\\}content.mimetype:text/html)";
+   query += " -TYPE:\"{http://www.alfresco.org/model/content/1.0}thumbnail\"";
+   query += " -TYPE:\"{http://www.alfresco.org/model/forum/1.0}post\"";
+   
+   var wikiPages = search.luceneSearch(query);
+   var p, pageList = [];
+   for each (p in wikiPages)
+   {
+      pageList.push(p.name);
+   }
     
-	return {
-	   "page": page,
-	   "tags": page.tags,
-	   "links": links
-	};
+   return (
+   {
+      page: page,
+      container: wiki,
+      tags: page.tags,
+      links: links,
+      pageList: pageList
+   });
 }
 
 model.result = main();

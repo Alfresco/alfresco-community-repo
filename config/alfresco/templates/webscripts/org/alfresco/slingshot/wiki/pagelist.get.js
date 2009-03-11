@@ -5,28 +5,28 @@ model.siteId = siteId;
 
 var filter = args.filter;
 
-model.pageList = getWikiPages(siteId, filter);
+model.wiki = getWikiPages(siteId, filter);
 
 function getWikiPages(siteId)
 {
    if (siteId === null || siteId.length === 0)
    {
-	   status.setCode(status.STATUS_BAD_REQUEST, "Site not found: '" + siteId + "'");
-   	return;
+      status.setCode(status.STATUS_BAD_REQUEST, "Site not found: '" + siteId + "'");
+      return;
    }
    
    var site = siteService.getSite(siteId);
    if (site === null)
    {
-	   status.setCode(status.STATUS_BAD_REQUEST, "Site not found: '" + siteId + "'");
-	   return;
+      status.setCode(status.STATUS_BAD_REQUEST, "Site not found: '" + siteId + "'");
+      return;
    }
    
    var wiki = getWikiContainer(site);
    if (wiki === null)
    {
       status.setCode(status.STATUS_BAD_REQUEST, "Wiki container not found");
-	   return;
+      return;
    }
    
    var query = "+PATH:\"" + wiki.qnamePath + "//*\" ";
@@ -61,6 +61,7 @@ function getWikiPages(siteId)
    
    return ( 
    {
+      "container": wiki,
       "pages": pages
    });
 }

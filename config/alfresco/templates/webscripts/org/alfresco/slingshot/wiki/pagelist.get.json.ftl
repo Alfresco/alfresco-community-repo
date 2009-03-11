@@ -1,13 +1,13 @@
 <#escape x as jsonUtils.encodeJSONString(x)>
 {
-   "totalPages" : ${pageList.pages?size},
+   "totalPages" : ${wiki.pages?size},
+   "create": ${wiki.container.hasPermission("CreateChildren")?string},
    "pages":
    [
-   <#list pageList.pages?sort_by(['modified'])?reverse as p>
+   <#list wiki.pages?sort_by(['modified'])?reverse as p>
       <#assign page = p.page>
       {
          "name" : "${page.name}",
-         "editable" : "<#if page.hasPermission("Write")>true<#else>false</#if>",
          "title" : "<#if page.properties.title?exists>${page.properties.title}<#else>${page.name?replace("_", " ")}</#if>",
          <#-- Strip out any HTML tags -->
          "text" : "${page.content}",
@@ -35,7 +35,12 @@
             <#assign modifiedByUser="">
          </#if>
          "modifiedBy": "${modifiedBy}",
-         "modifiedByUser": "${modifiedByUser}"
+         "modifiedByUser": "${modifiedByUser}",
+         "permissions":
+         {
+            "edit": ${page.hasPermission("Write")?string},
+            "delete": ${page.hasPermission("Delete")?string}
+         }
       }<#if p_has_next>,</#if>
    </#list>
    ]

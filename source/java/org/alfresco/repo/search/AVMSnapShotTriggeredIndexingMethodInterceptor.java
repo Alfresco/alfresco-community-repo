@@ -35,6 +35,7 @@ import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.search.impl.lucene.AVMLuceneIndexer;
 import org.alfresco.service.cmr.avm.AVMService;
+import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 import org.aopalliance.intercept.MethodInterceptor;
@@ -307,9 +308,10 @@ public class AVMSnapShotTriggeredIndexingMethodInterceptor implements MethodInte
             return false;
         }
     }
-    
+
     /**
-     * Check if the index is up to date according to its index defintion i it does not check that all asynchronous work is done.
+     * Check if the index is up to date according to its index defintion i it does not check that all asynchronous work
+     * is done.
      * 
      * @param store
      * @return
@@ -362,7 +364,13 @@ public class AVMSnapShotTriggeredIndexingMethodInterceptor implements MethodInte
                 }
                 else
                 {
-                    String storeType = getStoreType(store).toString();
+                    AVMStoreDescriptor avmStoreDescriptor = avmService.getStore(store);
+                    Map<QName, PropertyValue> storeProperties = null;
+                    if (avmStoreDescriptor != null)
+                    {
+                        storeProperties = avmService.getStoreProperties(store);
+                    }
+                    String storeType = StoreType.getStoreType(store, avmStoreDescriptor, storeProperties).toString();
                     if (def.pattern.matcher(storeType).matches())
                     {
                         mode = def.indexMode;
@@ -403,54 +411,6 @@ public class AVMSnapShotTriggeredIndexingMethodInterceptor implements MethodInte
         }
     }
 
-    public StoreType getStoreType(String name)
-    {
-        if (avmService.getStore(name) != null)
-        {
-            Map<QName, PropertyValue> storeProperties = avmService.getStoreProperties(name);
-            if (storeProperties.containsKey(PROP_SANDBOX_STAGING_MAIN))
-            {
-                return StoreType.STAGING;
-            }
-            else if (storeProperties.containsKey(PROP_SANDBOX_STAGING_PREVIEW))
-            {
-                return StoreType.STAGING_PREVIEW;
-            }
-            else if (storeProperties.containsKey(PROP_SANDBOX_AUTHOR_MAIN))
-            {
-                return StoreType.AUTHOR;
-            }
-            else if (storeProperties.containsKey(PROP_SANDBOX_AUTHOR_PREVIEW))
-            {
-                return StoreType.AUTHOR_PREVIEW;
-            }
-            else if (storeProperties.containsKey(PROP_SANDBOX_WORKFLOW_MAIN))
-            {
-                return StoreType.WORKFLOW;
-            }
-            else if (storeProperties.containsKey(PROP_SANDBOX_WORKFLOW_PREVIEW))
-            {
-                return StoreType.WORKFLOW_PREVIEW;
-            }
-            else if (storeProperties.containsKey(PROP_SANDBOX_AUTHOR_WORKFLOW_MAIN))
-            {
-                return StoreType.AUTHOR_WORKFLOW;
-            }
-            else if (storeProperties.containsKey(PROP_SANDBOX_AUTHOR_WORKFLOW_PREVIEW))
-            {
-                return StoreType.AUTHOR_WORKFLOW_PREVIEW;
-            }
-            else
-            {
-                return StoreType.UNKNOWN;
-            }
-        }
-        else
-        {
-            return StoreType.UNKNOWN;
-        }
-    }
-
     private enum DefinitionType
     {
         NAME, TYPE;
@@ -459,6 +419,55 @@ public class AVMSnapShotTriggeredIndexingMethodInterceptor implements MethodInte
     public enum StoreType
     {
         STAGING, STAGING_PREVIEW, AUTHOR, AUTHOR_PREVIEW, WORKFLOW, WORKFLOW_PREVIEW, AUTHOR_WORKFLOW, AUTHOR_WORKFLOW_PREVIEW, UNKNOWN;
+
+        public static StoreType getStoreType(String name, AVMStoreDescriptor storeDescriptor, Map<QName, PropertyValue> storeProperties)
+        {
+            // if (avmService.getStore(name) != null)
+            if (storeDescriptor != null)
+            {
+                // Map<QName, PropertyValue> storeProperties = avmService.getStoreProperties(name);
+                if (storeProperties.containsKey(PROP_SANDBOX_STAGING_MAIN))
+                {
+                    return StoreType.STAGING;
+                }
+                else if (storeProperties.containsKey(PROP_SANDBOX_STAGING_PREVIEW))
+                {
+                    return StoreType.STAGING_PREVIEW;
+                }
+                else if (storeProperties.containsKey(PROP_SANDBOX_AUTHOR_MAIN))
+                {
+                    return StoreType.AUTHOR;
+                }
+                else if (storeProperties.containsKey(PROP_SANDBOX_AUTHOR_PREVIEW))
+                {
+                    return StoreType.AUTHOR_PREVIEW;
+                }
+                else if (storeProperties.containsKey(PROP_SANDBOX_WORKFLOW_MAIN))
+                {
+                    return StoreType.WORKFLOW;
+                }
+                else if (storeProperties.containsKey(PROP_SANDBOX_WORKFLOW_PREVIEW))
+                {
+                    return StoreType.WORKFLOW_PREVIEW;
+                }
+                else if (storeProperties.containsKey(PROP_SANDBOX_AUTHOR_WORKFLOW_MAIN))
+                {
+                    return StoreType.AUTHOR_WORKFLOW;
+                }
+                else if (storeProperties.containsKey(PROP_SANDBOX_AUTHOR_WORKFLOW_PREVIEW))
+                {
+                    return StoreType.AUTHOR_WORKFLOW_PREVIEW;
+                }
+                else
+                {
+                    return StoreType.UNKNOWN;
+                }
+            }
+            else
+            {
+                return StoreType.UNKNOWN;
+            }
+        }
     }
 
     public boolean hasIndexBeenCreated(String store)
@@ -484,7 +493,7 @@ public class AVMSnapShotTriggeredIndexingMethodInterceptor implements MethodInte
             avmIndexer.createIndex(store, IndexMode.SYNCHRONOUS);
         }
     }
-    
+
     public AVMLuceneIndexer getIndexer(String store)
     {
         StoreRef storeRef = AVMNodeConverter.ToStoreRef(store);
@@ -497,5 +506,4 @@ public class AVMSnapShotTriggeredIndexingMethodInterceptor implements MethodInte
         return null;
     }
 
-    
 }

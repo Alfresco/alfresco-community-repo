@@ -66,6 +66,11 @@ public interface PermissionService
     public static final String OWNER_AUTHORITY = "ROLE_OWNER";
 
     /**
+     * The authority that all owners of WCM stores have.
+     */
+    public static final String WCM_STORE_OWNER_AUTHORITY = "ROLE_WCM_STORE_OWNER";
+    
+    /**
      * The dynamic authority used for the ownership of locks.
      */
     public static final String LOCK_OWNER_AUTHORITY = "ROLE_LOCK_OWNER";
@@ -162,6 +167,8 @@ public interface PermissionService
     public static final String WCM_CONTENT_CONTRIBUTOR = "ContentContributor";
 
     public static final String WCM_CONTENT_REVIEWER = "ContentReviewer";
+
+    public static final String FLATTEN = "Flatten";
 
     /**
      * Get the Owner Authority

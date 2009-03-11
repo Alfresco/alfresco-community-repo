@@ -41,6 +41,7 @@ import org.alfresco.repo.avm.AVMRepository;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.domain.hibernate.AclDaoComponentImpl;
 import org.alfresco.repo.search.AVMSnapShotTriggeredIndexingMethodInterceptor;
+import org.alfresco.repo.search.AVMSnapShotTriggeredIndexingMethodInterceptor.StoreType;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
@@ -132,7 +133,10 @@ public class MoveWCMToGroupBasedPermissionsPatch extends AbstractPatch
         List<AVMStoreDescriptor> stores = avmService.getStores();
         for (AVMStoreDescriptor store : stores)
         {
-            switch (avmSnapShotTriggeredIndexingMethodInterceptor.getStoreType(store.getName()))
+
+            Map<QName, PropertyValue> storeProperties = avmService.getStoreProperties(store.getName());
+
+            switch (StoreType.getStoreType(store.getName(), store, storeProperties))
             {
             /* Set permissions in staging */
             case STAGING:

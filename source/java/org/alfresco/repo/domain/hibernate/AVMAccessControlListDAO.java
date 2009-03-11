@@ -34,8 +34,10 @@ import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.avm.AVMRepository;
 import org.alfresco.repo.domain.AccessControlListDAO;
 import org.alfresco.repo.domain.DbAccessControlList;
+import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.domain.hibernate.AclDaoComponentImpl.Indirection;
 import org.alfresco.repo.search.AVMSnapShotTriggeredIndexingMethodInterceptor;
+import org.alfresco.repo.search.AVMSnapShotTriggeredIndexingMethodInterceptor.StoreType;
 import org.alfresco.repo.search.impl.lucene.index.IndexInfo;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -54,6 +56,7 @@ import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.InvalidStoreRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
@@ -70,7 +73,7 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
      * The logger.
      */
     private static Log s_logger = LogFactory.getLog(AVMAccessControlListDAO.class);
-    
+
     /**
      * Reference to the AVM Repository instance.
      */
@@ -268,8 +271,9 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
 
     public void updateChangedAcls(NodeRef startingPoint, List<AclChange> changes)
     {
-        // If their are no actual changes there is nothing to do (the changes are all in TX and have already COWed so they can just change)
-        
+        // If their are no actual changes there is nothing to do (the changes are all in TX and have already COWed so
+        // they can just change)
+
         boolean hasChanges = false;
         Long after = null;
         for (AclChange change : changes)
@@ -282,22 +286,22 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
             {
                 after = change.getAfter();
             }
-            
-            if(!EqualsHelper.nullSafeEquals(change.getTypeBefore(), change.getTypeAfter()))
+
+            if (!EqualsHelper.nullSafeEquals(change.getTypeBefore(), change.getTypeAfter()))
             {
                 hasChanges = true;
             }
-            if(!EqualsHelper.nullSafeEquals(change.getBefore(), change.getAfter()))
+            if (!EqualsHelper.nullSafeEquals(change.getBefore(), change.getAfter()))
             {
                 hasChanges = true;
             }
         }
-        
-        if(!hasChanges)
+
+        if (!hasChanges)
         {
             return;
         }
-        
+
         Long inherited = null;
         if (after != null)
         {
@@ -307,8 +311,6 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
         updateChangedAclsImpl(startingPoint, changes, SetMode.ALL, inherited, after, indirections);
     }
 
-   
-    
     private void updateChangedAclsImpl(NodeRef startingPoint, List<AclChange> changes, SetMode mode, Long inherited, Long setAcl, Map<Long, Set<Long>> indirections)
     {
         hibernateSessionHelper.mark();
@@ -762,7 +764,10 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
         {
             AVMNodeDescriptor root = fAVMService.getStoreRoot(-1, store.getName());
             CounterSet update;
-            switch (avmSnapShotTriggeredIndexingMethodInterceptor.getStoreType(store.getName()))
+
+            Map<QName, PropertyValue> storeProperties = fAVMService.getStoreProperties(store.getName());
+
+            switch (StoreType.getStoreType(store.getName(), store, storeProperties))
             {
             case AUTHOR:
             case AUTHOR_PREVIEW:
@@ -773,7 +778,7 @@ public class AVMAccessControlListDAO implements AccessControlListDAO
             case WORKFLOW:
             case WORKFLOW_PREVIEW:
                 AVMNodeDescriptor www = fAVMService.lookup(-1, store.getName() + ":/www");
-                if(www != null)
+                if (www != null)
                 {
                     update = fixOldAvmAcls(www, false, indirections);
                     result.add(update);

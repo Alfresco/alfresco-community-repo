@@ -472,11 +472,12 @@
 		   JOIN alf_store s on s.id = n.store_id
         WHERE
            c.qname_localname = :userName1 AND
-           p.qname_id = :qnameId AND
+           p.qname_id = :qnamePropId AND
            p.string_value = :userName2 AND
+           n.type_qname_id = :qnameTypeId AND
            n.node_deleted = :False AND
-		   s.protocol = :storeProtocol AND
-		   s.identifier = :storeIdentifier
+           s.protocol = :storeProtocol AND
+           s.identifier = :storeIdentifier
     </sql-query>
     
     <sql-query name="person.getAllPeople">
@@ -488,7 +489,8 @@
            JOIN alf_node_properties p ON n.id = p.node_id
 		   JOIN alf_store s on s.id = n.store_id
         WHERE
-           p.qname_id = :qnameId AND
+           p.qname_id = :qnamePropId AND
+           n.type_qname_id = :qnameTypeId AND
            n.node_deleted = :False AND
 		   s.protocol = :storeProtocol AND
 		   s.identifier = :storeIdentifier

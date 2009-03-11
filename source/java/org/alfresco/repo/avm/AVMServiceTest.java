@@ -30,6 +30,7 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -90,6 +91,69 @@ import org.alfresco.util.Pair;
  */
 public class AVMServiceTest extends AVMServiceTestBase
 {
+    public void testDiffOrder()
+    {
+        try
+        {
+            fService.createStore("Bottom");
+            fService.createStore("Top");
+
+            fService.createDirectory("Bottom:/", "www");
+            fService.createLayeredDirectory("Bottom:/www", "Top:/", "www");
+
+            fService.createFile("Bottom:/www", "newInBottom");
+            fService.createSnapshot("Bottom", null, null);
+            fService.createFile("Top:/www", "newInTop");
+            fService.createSnapshot("Top", null, null);
+            fService.createFile("Bottom:/www", "file");
+            fService.createSnapshot("Bottom", null, null);
+            fService.forceCopy("Top:/www/file");
+            fService.createSnapshot("Top", null, null);
+            fService.forceCopy("Bottom:/www/file");
+            fService.createSnapshot("Bottom", null, null);
+           
+
+            List<AVMDifference> diffs = fSyncService.compare(-1, "Top:/", -1, "Bottom:/", null);
+            assertEquals(
+                    2, diffs.size());
+            Collections.sort(diffs);
+            AVMDifference last = null;
+            for(AVMDifference current : diffs)
+            {
+                if(last != null)
+                {
+                    assert(last.getOrderValue() < current.getOrderValue());
+                }
+                last = current;
+            }
+            
+            diffs.add(new AVMDifference(1, null, -1, null, 0));
+            diffs.add(new AVMDifference(1, null, -1, null, 1));
+            diffs.add(new AVMDifference(1, null, -1, null, 2));
+            diffs.add(new AVMDifference(1, null, -1, null, 3));
+            diffs.add(new AVMDifference(1, null, -1, null, 4));
+            diffs.add(new AVMDifference(1, null, -1, null, 5));
+            diffs.add(new AVMDifference(1, null, -1, null, 6));
+            
+            Collections.sort(diffs);
+            last = null;
+            for(AVMDifference current : diffs)
+            {
+                if(last != null)
+                {
+                    assert(last.getOrderValue() < current.getOrderValue());
+                }
+                last = current;
+            }
+        }
+        finally
+        {
+            fService.purgeStore("Bottom");
+            fService.purgeStore("Top");
+        }
+
+    }
+    
     public void testETWOTWO570() throws Exception
     {
         // Check that read-write methods are properly intercepted
@@ -5266,4 +5330,6 @@ public class AVMServiceTest extends AVMServiceTestBase
             fService.purgeStore("second");
         }
     }
+    
+    
 }

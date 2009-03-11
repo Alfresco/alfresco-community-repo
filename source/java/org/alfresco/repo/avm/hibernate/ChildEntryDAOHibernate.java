@@ -31,15 +31,19 @@ import org.alfresco.repo.avm.ChildEntryImpl;
 import org.alfresco.repo.avm.ChildEntryDAO;
 import org.alfresco.repo.avm.ChildKey;
 import org.alfresco.repo.avm.DirectoryNode;
+import org.hibernate.Criteria;
+import org.hibernate.FetchMode;
 import org.hibernate.Query;
+import org.hibernate.criterion.Criterion;
+import org.hibernate.criterion.Restrictions;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
 /**
  * The Hibernate version of the ChildEntry DAO.
+ * 
  * @author britt
  */
-class ChildEntryDAOHibernate extends HibernateDaoSupport implements
-        ChildEntryDAO
+class ChildEntryDAOHibernate extends HibernateDaoSupport implements ChildEntryDAO
 {
     /**
      * Do nothing constructor.
@@ -51,7 +55,9 @@ class ChildEntryDAOHibernate extends HibernateDaoSupport implements
 
     /**
      * Save an unsaved ChildEntry.
-     * @param entry The entry to save.
+     * 
+     * @param entry
+     *            The entry to save.
      */
     public void save(ChildEntry entry)
     {
@@ -60,64 +66,78 @@ class ChildEntryDAOHibernate extends HibernateDaoSupport implements
 
     /**
      * Get an entry by name and parent.
-     * @param name The name of the child to find.
-     * @param parent The parent to look in.
+     * 
+     * @param name
+     *            The name of the child to find.
+     * @param parent
+     *            The parent to look in.
      * @return The ChildEntry or null if not foun.
      */
     public ChildEntry get(ChildKey key)
     {
         SessionCacheChecker.instance.check();
-        return (ChildEntry)getSession().get(ChildEntryImpl.class, key);
+        return (ChildEntry) getSession().get(ChildEntryImpl.class, key);
     }
 
     /**
      * Get all the children of a given parent.
-     * @param parent The parent.
+     * 
+     * @param parent
+     *            The parent.
      * @return A List of ChildEntries.
      */
     @SuppressWarnings("unchecked")
     public List<ChildEntry> getByParent(DirectoryNode parent)
     {
-        Query query =
-            getSession().createQuery("from ChildEntryImpl ce where ce.key.parent = :parent");
-        query.setEntity("parent", parent);
-        return (List<ChildEntry>)query.list();
+        Criteria criteria = getSession().createCriteria(ChildEntryImpl.class, "ce");
+        criteria.add(Restrictions.eq("ce.key.parent", parent));
+        criteria.createCriteria("child", "cld").setFetchMode("ce.child", FetchMode.JOIN);
+        criteria.setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
+        // Query query =
+        // getSession().createQuery("select ce, cld from ChildEntryImpl ce join child cld where ce.key.parent =
+        // :parent");
+        // query.setEntity("parent", parent);
+        return (List<ChildEntry>) criteria.list();
     }
 
     /**
      * Get the entry for a given child in a given parent.
-     * @param parent The parent.
-     * @param child The child.
+     * 
+     * @param parent
+     *            The parent.
+     * @param child
+     *            The child.
      * @return The ChildEntry or null.
      */
     public ChildEntry getByParentChild(DirectoryNode parent, AVMNode child)
     {
-        Query query =
-            getSession().createQuery("from ChildEntryImpl ce where ce.key.parent = :parent " +
-                                     "and ce.child = :child");
+        Query query = getSession().createQuery("from ChildEntryImpl ce where ce.key.parent = :parent " + "and ce.child = :child");
         query.setEntity("parent", parent);
         query.setEntity("child", child);
         SessionCacheChecker.instance.check();
-        return (ChildEntry)query.uniqueResult();
+        return (ChildEntry) query.uniqueResult();
     }
 
     /**
      * Get all the ChildEntries corresponding to the given child.
-     * @param child The child for which to look up entries.
+     * 
+     * @param child
+     *            The child for which to look up entries.
      * @return The matching entries.
      */
     @SuppressWarnings("unchecked")
     public List<ChildEntry> getByChild(AVMNode child)
     {
-        Query query = getSession().createQuery("from ChildEntryImpl ce " +
-                                               "where ce.child = :child");
+        Query query = getSession().createQuery("from ChildEntryImpl ce " + "where ce.child = :child");
         query.setEntity("child", child);
-        return (List<ChildEntry>)query.list();
+        return (List<ChildEntry>) query.list();
     }
 
     /**
      * Update a dirty ChildEntry.
-     * @param child The dirty entry.
+     * 
+     * @param child
+     *            The dirty entry.
      */
     public void update(ChildEntry child)
     {
@@ -126,17 +146,20 @@ class ChildEntryDAOHibernate extends HibernateDaoSupport implements
 
     /**
      * Delete one.
-     * @param child The one to delete.
+     * 
+     * @param child
+     *            The one to delete.
      */
     public void delete(ChildEntry child)
     {
         getSession().delete(child);
     }
 
-    // TODO Does this have dangerous interactions with the cache?
     /**
      * Delete all children of the given parent.
-     * @param parent The parent.
+     * 
+     * @param parent
+     *            The parent.
      */
     public void deleteByParent(AVMNode parent)
     {
@@ -145,7 +168,9 @@ class ChildEntryDAOHibernate extends HibernateDaoSupport implements
         delete.executeUpdate();
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.alfresco.repo.avm.ChildEntryDAO#evict(org.alfresco.repo.avm.ChildEntry)
      */
     public void evict(ChildEntry entry)

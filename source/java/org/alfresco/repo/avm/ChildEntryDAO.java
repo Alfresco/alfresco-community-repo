@@ -48,6 +48,7 @@ public interface ChildEntryDAO
     /**
      * Get all the children of a given parent.
      * @param parent The parent.
+     * @param eager - true -> fetch children in the query
      * @return A List of ChildEntries.
      */
     public List<ChildEntry> getByParent(DirectoryNode parent);

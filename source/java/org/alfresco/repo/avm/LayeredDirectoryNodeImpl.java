@@ -157,7 +157,6 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
      * @param repos
      *            The AVMStore object we use.
      */
-    @SuppressWarnings("unchecked")
     public LayeredDirectoryNodeImpl(LayeredDirectoryNode other, AVMStore repos, Lookup lookup, boolean copyAll, Long parentAcl, ACLCopyMode mode)
     {
         super(repos.getAVMRepository().issueID(), repos);
@@ -200,7 +199,6 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
      * @param lPath
      *            The Lookup object.
      */
-    @SuppressWarnings("unchecked")
     public LayeredDirectoryNodeImpl(PlainDirectoryNode other, AVMStore store, Lookup lPath, boolean copyContents, Long parentAcl, ACLCopyMode mode)
     {
         super(store.getAVMRepository().issueID(), store);
@@ -431,7 +429,6 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
      *            The Lookup.
      * @return A Map from names to nodes. This is a sorted Map.
      */
-    @SuppressWarnings("unchecked")
     public Map<String, AVMNode> getListing(Lookup lPath, boolean includeDeleted)
     {
         // Get the base listing from the thing we indirect to.
@@ -448,7 +445,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
                     if (entry.getValue().getType() == AVMNodeType.LAYERED_DIRECTORY ||
                         entry.getValue().getType() == AVMNodeType.PLAIN_DIRECTORY)
                     {
-                        if (!AVMRepository.GetInstance().can(lookup.getAVMStore(), entry.getValue(), PermissionService.READ_CHILDREN))
+                        if (!AVMRepository.GetInstance().can(lookup.getAVMStore(), entry.getValue(), PermissionService.READ_CHILDREN, false))
                         {
                             continue;
                         }
@@ -462,7 +459,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
             if (entry.getChild().getType() == AVMNodeType.LAYERED_DIRECTORY ||
                 entry.getChild().getType() == AVMNodeType.PLAIN_DIRECTORY)
             {
-                if (!AVMRepository.GetInstance().can(lPath.getAVMStore(), entry.getChild(), PermissionService.READ_CHILDREN))
+                if (!AVMRepository.GetInstance().can(lPath.getAVMStore(), entry.getChild(), PermissionService.READ_CHILDREN, lPath.getDirectlyContained()))
                 {
                     continue;
                 }
@@ -494,7 +491,9 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
             if (entry.getChild().getType() == AVMNodeType.LAYERED_DIRECTORY ||
                 entry.getChild().getType() == AVMNodeType.PLAIN_DIRECTORY)
             {
-                if (!AVMRepository.GetInstance().can(lPath != null ? lPath.getAVMStore() : null, entry.getChild(), PermissionService.READ_CHILDREN))
+                if (!AVMRepository.GetInstance().can(lPath != null ? lPath.getAVMStore() : null, 
+                		                             entry.getChild(), PermissionService.READ_CHILDREN, 
+                		                             lPath != null ? lPath.getDirectlyContained() : false))
                 {
                     continue;
                 }
@@ -526,7 +525,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
             if (childNode.getType() == AVMNodeType.LAYERED_DIRECTORY ||
                 childNode.getType() == AVMNodeType.PLAIN_DIRECTORY)
             {
-                if (!AVMRepository.GetInstance().can(null, childNode, PermissionService.READ_CHILDREN))
+                if (!AVMRepository.GetInstance().can(null, childNode, PermissionService.READ_CHILDREN, false))
                 {
                     continue;
                 }
@@ -570,7 +569,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
                     if (entry.getValue().getType() == AVMNodeType.LAYERED_DIRECTORY ||
                         entry.getValue().getType() == AVMNodeType.PLAIN_DIRECTORY)
                     {
-                        if (!AVMRepository.GetInstance().can(null, entry.getValue(), PermissionService.READ_CHILDREN))
+                        if (!AVMRepository.GetInstance().can(null, entry.getValue(), PermissionService.READ_CHILDREN, false))
                         {
                             continue;
                         }
@@ -588,7 +587,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
             if (child.getChild().getType() == AVMNodeType.LAYERED_DIRECTORY ||
                 child.getChild().getType() == AVMNodeType.PLAIN_DIRECTORY)
             {
-                if (!AVMRepository.GetInstance().can(null, child.getChild(), PermissionService.READ_CHILDREN))
+                if (!AVMRepository.GetInstance().can(null, child.getChild(), PermissionService.READ_CHILDREN, false))
                 {
                     continue;
                 }
@@ -638,7 +637,6 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
      *            Whether this lookup is occurring in a write context.
      * @return The child or null if not found.
      */
-    @SuppressWarnings("unchecked")
     public Pair<AVMNode, Boolean> lookupChild(Lookup lPath, String name, boolean includeDeleted)
     {
         ChildKey key = new ChildKey(this, name);
@@ -733,7 +731,6 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
      * @param name
      *            The name of the child to remove.
      */
-    @SuppressWarnings("unchecked")
     public void removeChild(Lookup lPath, String name)
     {
         if (DEBUG)
@@ -874,7 +871,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         }
     }
 
-    protected void setAclAndInherit(LayeredDirectoryNodeImpl layeredDirectory, DbAccessControlList acl, String name)
+    public void setAclAndInherit(LayeredDirectoryNode layeredDirectory, DbAccessControlList acl, String name)
     {
         // Note ACLS may COW on next ACL change
         layeredDirectory.setAcl(acl);
@@ -883,9 +880,9 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         {
             AVMNode node = directChildren.get(key);
 
-            if (node instanceof LayeredDirectoryNodeImpl)
+            if (node instanceof LayeredDirectoryNode)
             {
-                LayeredDirectoryNodeImpl childNode = (LayeredDirectoryNodeImpl) node;
+                LayeredDirectoryNode childNode = (LayeredDirectoryNode) node;
                 DbAccessControlList currentAcl = node.getAcl();
                 if (currentAcl == null)
                 {
@@ -910,9 +907,9 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
                     }
                 }
             }
-            else if (node instanceof PlainFileNodeImpl)
+            else if (node instanceof PlainFileNode)
             {
-                PlainFileNodeImpl childNode = (PlainFileNodeImpl) node;
+                PlainFileNode childNode = (PlainFileNode) node;
                 DbAccessControlList currentAcl = node.getAcl();
                 if (currentAcl == null)
                 {

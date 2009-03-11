@@ -1578,6 +1578,10 @@ public class AclDaoComponentImpl extends HibernateDaoSupport implements AclDaoCo
             }
             return toCopy;
         case REDIRECT:
+            if((toInheritFrom != null) && (toInheritFrom == toCopy))
+            {
+                return getInheritedAccessControlList(toInheritFrom);
+            }
             aclToCopy = (DbAccessControlList) getHibernateTemplate().get(DbAccessControlListImpl.class, toCopy);
             aclToInheritFrom = null;
             if (toInheritFrom != null)

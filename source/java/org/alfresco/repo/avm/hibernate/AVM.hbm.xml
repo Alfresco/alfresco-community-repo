@@ -11,7 +11,7 @@
         name="AVMNodeImpl"
         proxy="AVMNode"
         optimistic-lock="version"
-        lazy="true">
+        lazy="false">
         <cache usage="read-write"/>
         <!-- The id is set programmatically using an Issuer.  See below. -->
         <id name="id"
@@ -70,7 +70,7 @@
         <!-- Deleted nodes -->
         <subclass name="DeletedNodeImpl"
               proxy="DeletedNode"
-              lazy="true"
+              lazy="false"
               discriminator-value="deletednode">
             <property name="deletedType" type="int"/>
         </subclass>
@@ -78,11 +78,11 @@
         <subclass name="DirectoryNodeImpl"
                   proxy="DirectoryNode"
                   abstract="true"
-                  lazy="true">
+                  lazy="false">
             <!-- A Layered Directory is our smart symlink thingy. -->
             <subclass name="LayeredDirectoryNodeImpl"
                 proxy="LayeredDirectoryNode"
-                discriminator-value="layereddirectory" lazy="true">
+                discriminator-value="layereddirectory" lazy="false">
                 <!-- The layer id is an implementation trick to disambiguate
                     exactly what layer is being refered to in various circumstances. -->
                 <property name="layerID" column="layer_id" type="long"/>
@@ -102,7 +102,7 @@
             </subclass>
             <!-- Just plain directories. -->
             <subclass name="PlainDirectoryNodeImpl"
-                discriminator-value="plaindirectory" proxy="PlainDirectoryNode" lazy="true">
+                discriminator-value="plaindirectory" proxy="PlainDirectoryNode" lazy="false">
             </subclass>
         </subclass>
         <!-- There are two kinds of files, plain and symlinky. -->
@@ -112,7 +112,7 @@
             lazy="false">
             <!-- Plain files just have a reference to a Content object. -->
             <subclass discriminator-value="plainfile"
-                name="PlainFileNodeImpl" proxy="PlainFileNode" lazy="true">
+                name="PlainFileNodeImpl" proxy="PlainFileNode" lazy="false">
                 <property name="contentURL" column="content_url" type="string" length="128"/>
                 <property name="mimeType" column="mime_type" type="string" length="64"/>
                 <property name="encoding" column="encoding" type="string" length="16"/>
@@ -120,7 +120,7 @@
             </subclass>
             <!-- Layered files are almost exactly copy on write symlinks. -->
             <subclass name="LayeredFileNodeImpl"
-                discriminator-value="layeredfile" proxy="LayeredFileNode" lazy="true">
+                discriminator-value="layeredfile" proxy="LayeredFileNode" lazy="false">
                 <property name="indirection" type="string" length="511"
                     column="indirection" />
                 <property name="indirectionVersion" type="int" column="indirection_version"/>
@@ -190,7 +190,7 @@
     </class>
     <class name="ChildEntryImpl" proxy="ChildEntry" table="avm_child_entries">
         <cache usage="read-write"/>
-        <composite-id name="key" class="ChildKey">
+        <composite-id name="key" class="ChildKey" >
             <key-many-to-one name="parent" column="parent_id" class="DirectoryNodeImpl" foreign-key="fk_avm_ce_parent"/>
             <key-property name="name" column="name" type="string" length="160"/>
         </composite-id>

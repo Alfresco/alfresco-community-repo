@@ -30,6 +30,7 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.workflow.WorkflowService;
@@ -59,6 +60,7 @@ public class AVMExpiredContentTest extends TestCase
         PersonService personService = serviceRegistry.getPersonService();
         TransactionService transactionService = serviceRegistry.getTransactionService();
         WorkflowService workflowService = serviceRegistry.getWorkflowService();
+        SearchService searchService = serviceRegistry.getSearchService();
         
         // construct the test processor
         this.processor = new AVMExpiredContentProcessor();
@@ -69,6 +71,7 @@ public class AVMExpiredContentTest extends TestCase
         this.processor.setPersonService(personService);
         this.processor.setTransactionService(transactionService);
         this.processor.setWorkflowService(workflowService);
+        this.processor.setSearchService(searchService);
     }
     
     public void testProcessor() throws Exception

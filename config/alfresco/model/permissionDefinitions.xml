@@ -106,6 +106,7 @@
       <permissionGroup name="CreateAssociations" expose="true" allowFullControl="false" />  
       <permissionGroup name="ReadPermissions" expose="true" allowFullControl="false" />  
       <permissionGroup name="ChangePermissions" expose="true" allowFullControl="false" />  
+      <permissionGroup name="Flatten" expose="true" allowFullControl="false" />  
     
       <!-- =========== -->
       <!-- Permissions -->
@@ -275,6 +276,15 @@
       
       <permission name="_ChangePermissions" expose="false" >
         <grantedToGroup permissionGroup="ChangePermissions" />
+        <!-- Commented out parent permission check ...
+        <requiredPermission on="parent" name="_ReadChildren" implies="false"/>
+        -->
+      </permission>
+       
+      <!-- AVM specific -->
+       
+      <permission name="_Flatten" expose="false" >
+        <grantedToGroup permissionGroup="Flatten" />
         <!-- Commented out parent permission check ...
         <requiredPermission on="parent" name="_ReadChildren" implies="false"/>
         -->
@@ -536,4 +546,8 @@
    <!-- Cancel check out is granted to the locak owner                                   -->
    <globalPermission permission="CancelCheckOut" authority="ROLE_LOCK_OWNER"/>
    
+   <!-- Usere need to be able to remove stuff from thier own sandbox -->
+    
+   <globalPermission permission="Flatten" authority="ROLE_WCM_STORE_OWNER" />
+       
 </permissions>

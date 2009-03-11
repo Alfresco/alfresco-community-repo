@@ -354,16 +354,9 @@ public class RetryingTransactionHelper
                 // Somebody else 'owns' the transaction, so just rethrow.
                 if (txn == null)
                 {
-                    if (e instanceof RuntimeException)
-                    {
-                        throw (RuntimeException)e;
-                    }
-                    else
-                    {
-                        throw new AlfrescoRuntimeException(
-                                "Exception from transactional callback: " + cb,
-                                e);
-                    }
+                    RuntimeException ee = AlfrescoRuntimeException.makeRuntimeException(
+                            e, "Exception from transactional callback: " + cb);
+                    throw ee;
                 }
                 if (logger.isDebugEnabled())
                 {

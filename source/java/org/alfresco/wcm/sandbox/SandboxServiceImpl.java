@@ -62,6 +62,7 @@ import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.VirtServerUtils;
 import org.alfresco.wcm.asset.AssetInfo;
+import org.alfresco.wcm.asset.AssetInfoImpl;
 import org.alfresco.wcm.asset.AssetService;
 import org.alfresco.wcm.util.WCMUtil;
 import org.alfresco.wcm.util.WCMWorkflowUtil;
@@ -433,6 +434,8 @@ public class SandboxServiceImpl implements SandboxService
             AssetInfo asset = assetService.getAsset(parts[0], -1, parts[1], includeDeleted);
             if (asset != null)
             {
+                // TODO refactor
+                ((AssetInfoImpl)asset).setDiffCode(diff.getDifferenceCode());
                 assets.add(asset);
             }
         }

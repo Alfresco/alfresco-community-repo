@@ -37,6 +37,7 @@ public class AssetInfoImpl implements AssetInfo
     private AVMNodeDescriptor node;
     private String lockOwner = null; // null if not locked
     private int sandboxVersion = -1;
+    private int diffCode = -1; // if applicable, eg. when getting list of modified assets
     
     /* package */ AssetInfoImpl(int sandboxVersion, AVMNodeDescriptor node, String lockOwner)
     {
@@ -123,5 +124,15 @@ public class AssetInfoImpl implements AssetInfo
     public String getAvmPath()
     {
         return node.getPath();
+    }
+    
+    public int getDiffCode()
+    {
+       return diffCode;
+    }
+    
+    public void setDiffCode(int diffCode)
+    {
+        this.diffCode = diffCode;
     }
 }

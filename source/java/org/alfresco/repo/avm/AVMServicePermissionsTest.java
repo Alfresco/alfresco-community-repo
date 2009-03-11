@@ -324,7 +324,7 @@ public class AVMServicePermissionsTest extends TestCase
             AVMNode node = avmNodeDAO.getByID(desc.getId());
             NodeRef nodeRef = AVMNodeConverter.ToNodeRef(-1, path);
             AVMStore store = AVMDAOs.Instance().fAVMStoreDAO.getByName(nodeRef.getStoreRef().getIdentifier());
-            boolean can = AVMRepository.GetInstance().can(store, node, permission);
+            boolean can = AVMRepository.GetInstance().can(store, node, permission, AVMRepository.GetInstance().lookup(-1, path, false).getDirectlyContained());
             return allowed ? can : !can;
         }
         finally
@@ -343,11 +343,11 @@ public class AVMServicePermissionsTest extends TestCase
             AVMNode node = avmNodeDAO.getByID(desc.getId());
             NodeRef nodeRef = AVMNodeConverter.ToNodeRef(-1, path);
             AVMStore store = AVMDAOs.Instance().fAVMStoreDAO.getByName(nodeRef.getStoreRef().getIdentifier());
-            boolean can = AVMRepository.GetInstance().can(store, node, permission);
+            boolean can = AVMRepository.GetInstance().can(store, node, permission, AVMRepository.GetInstance().lookup(-1, path, false).getDirectlyContained());
             long start = System.nanoTime();
             for (int i = 0; i < count; i++)
             {
-                can = AVMRepository.GetInstance().can(null, node, permission);
+                can = AVMRepository.GetInstance().can(null, node, permission, AVMRepository.GetInstance().lookup(-1, path, false).getDirectlyContained());
             }
             long end = System.nanoTime();
             System.out.println("Can in " + ((end - start) / 10e9f / count));

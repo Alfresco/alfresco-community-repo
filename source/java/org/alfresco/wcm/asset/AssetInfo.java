@@ -60,4 +60,6 @@ public interface AssetInfo
     public Date getModifiedDate();
     
     public String getAvmPath(); // absolute AVM path, eg. <avmStore>:<path>
+    
+    public int getDiffCode(); // if applicable, eg. when getting list of changed assets (see AVMDifference for diff codes), else -1
 }

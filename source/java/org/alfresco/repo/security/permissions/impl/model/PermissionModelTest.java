@@ -90,7 +90,7 @@ public class PermissionModelTest extends AbstractPermissionTest
 
         // NB This has gone from 59 to 63, I believe, because of the for new WCM roles.
         // 63-97 from AVM permission fix up
-        assertEquals(97, grantees.size());
+        assertEquals(99, grantees.size());
     }
     
     public void testIncludePermissionGroups6()
@@ -119,7 +119,7 @@ public class PermissionModelTest extends AbstractPermissionTest
     public void testGlobalPermissions()
     {
         Set<? extends PermissionEntry> globalPermissions = permissionModelDAO.getGlobalPermissionEntries();
-        assertEquals(5, globalPermissions.size());
+        assertEquals(6, globalPermissions.size());
     }
     
     public void testRequiredPermissions()
@@ -144,13 +144,13 @@ public class PermissionModelTest extends AbstractPermissionTest
         required = permissionModelDAO.getRequiredPermissions(SimplePermissionReference.getPermissionReference(QName.createQName("cm", "cmobject",
                 namespacePrefixResolver), "Coordinator"), QName.createQName("cm", "cmobject",
                         namespacePrefixResolver), Collections.<QName>emptySet(), On.NODE);
-        assertEquals(17, required.size());
+        assertEquals(18, required.size());
         
         
         required = permissionModelDAO.getRequiredPermissions(SimplePermissionReference.getPermissionReference(QName.createQName("sys", "base",
                 namespacePrefixResolver), "FullControl"), QName.createQName("sys", "base",
                         namespacePrefixResolver), Collections.<QName>emptySet(), On.NODE);
-        assertEquals(17, required.size());
+        assertEquals(18, required.size());
         
         
         

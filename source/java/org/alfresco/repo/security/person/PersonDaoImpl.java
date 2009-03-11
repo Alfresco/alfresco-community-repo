@@ -56,11 +56,9 @@ public class PersonDaoImpl extends HibernateDaoSupport implements PersonDao
     private static final String QUERY_PERSON_GET_ALL_PEOPLE = "person.getAllPeople";
 
     private QNameDAO qnameDAO;
-
-    private Long qNameId;
-
+    private Long qNamePropId;
+    private Long qNameTypeId;
     private LocaleDAO localeDAO;
-
     private DictionaryService dictionaryService;
 
     private StoreRef storeRef;
@@ -89,7 +87,8 @@ public class PersonDaoImpl extends HibernateDaoSupport implements PersonDao
             public Object doInHibernate(Session session)
             {
                 SQLQuery query = (SQLQuery) session.getNamedQuery(QUERY_PERSON_GET_PERSON);
-                query.setParameter("qnameId", qNameId);
+                query.setParameter("qnamePropId", qNamePropId);
+                query.setParameter("qnameTypeId", qNameTypeId);
                 query.setParameter("userName1", searchUserName);
                 query.setParameter("userName2", searchUserName);
                 query.setParameter("False", Boolean.FALSE);
@@ -124,7 +123,8 @@ public class PersonDaoImpl extends HibernateDaoSupport implements PersonDao
 
     public void init()
     {
-        qNameId = qnameDAO.getOrCreateQName(ContentModel.PROP_USERNAME).getFirst();
+        qNamePropId = qnameDAO.getOrCreateQName(ContentModel.PROP_USERNAME).getFirst();
+        qNameTypeId = qnameDAO.getOrCreateQName(ContentModel.TYPE_PERSON).getFirst();
     }
 
     @SuppressWarnings("unchecked")
@@ -139,7 +139,8 @@ public class PersonDaoImpl extends HibernateDaoSupport implements PersonDao
             public Object doInHibernate(Session session)
             {
                 SQLQuery query = (SQLQuery) session.getNamedQuery(QUERY_PERSON_GET_ALL_PEOPLE);
-                query.setParameter("qnameId", qNameId);
+                query.setParameter("qnamePropId", qNamePropId);
+                query.setParameter("qnameTypeId", qNameTypeId);
                 query.setParameter("False", Boolean.FALSE);
                 query.setParameter("storeProtocol", personStoreRef.getProtocol());
                 query.setParameter("storeIdentifier", personStoreRef.getIdentifier());

@@ -44,6 +44,7 @@ import java.util.TreeMap;
 import java.util.zip.CRC32;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.error.ExceptionStackUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.domain.AuditableProperties;
@@ -160,6 +161,18 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     /** Log to trace parent association caching: <b>classname + .ParentAssocsCache</b> */
     private static Log loggerParentAssocsCache = LogFactory.getLog(HibernateNodeDaoServiceImpl.class.getName() + ".ParentAssocsCache");
     
+    /**
+     * Exceptions that indicate duplicate child names violations.
+     */
+    @SuppressWarnings("unchecked")
+    public static final Class[] DUPLICATE_CHILD_NAME_EXCEPTIONS;
+    static
+    {
+        DUPLICATE_CHILD_NAME_EXCEPTIONS = new Class[] {
+                ConstraintViolationException.class
+                };
+    }
+
     private QNameDAO qnameDAO;
     private UsageDeltaDAO usageDeltaDAO;
     private AclDaoComponent aclDaoComponent;
@@ -1589,13 +1602,34 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         DirtySessionMethodInterceptor.flushSession(getSession(false));
         Long assocId = (Long) getHibernateTemplate().execute(new HibernateCallback()
         {
+            @SuppressWarnings("unchecked")
             public Object doInHibernate(Session session)
             {
                 try
                 {
-                    Object result = session.save(assoc);
-                    DirtySessionMethodInterceptor.flushSession(session);
-                    return result;
+                    try
+                    {
+                        Object result = session.save(assoc);
+                        DirtySessionMethodInterceptor.flushSession(session, true);
+                        return result;
+                    }
+                    catch (Throwable e)
+                    {
+                        ConstraintViolationException constraintViolation = (ConstraintViolationException) ExceptionStackUtil.getCause(
+                                e,
+                                DUPLICATE_CHILD_NAME_EXCEPTIONS);
+                        if (constraintViolation == null)
+                        {
+                            // It was something else
+                            RuntimeException ee = AlfrescoRuntimeException.makeRuntimeException(
+                                    e, "Exception while flushing child assoc to database");
+                            throw ee;
+                        }
+                        else
+                        {
+                            throw constraintViolation;
+                        }
+                    }
                 }
                 catch (ConstraintViolationException e)
                 {

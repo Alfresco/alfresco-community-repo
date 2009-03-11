@@ -34,6 +34,7 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.search.AVMSnapShotTriggeredIndexingMethodInterceptor;
 import org.alfresco.repo.search.IndexerAndSearcher;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.locking.AVMLockingService;
@@ -88,9 +89,9 @@ public class AVMServiceTestBase extends TestCase
     
     protected static AuthenticationService fAuthService;
     
-    public void testSetup()
+    public void testSetup() throws Exception
     {
-    	// NOOP
+        setupBasicTree();
     }
     
     /**
@@ -157,10 +158,12 @@ public class AVMServiceTestBase extends TestCase
         
         fAuthService.authenticate("admin", "admin".toCharArray());
         
-        if (fService.getStore("main") == null)
+        if (fService.getStore("main") != null)
         {
-            fService.createStore("main");
+            fService.purgeStore("main");
         }
+        fService.createStore("main");
+        
         if (!fLockingService.getWebProjects().contains("main"))
         {
             fLockingService.addWebProject("main");
@@ -184,6 +187,8 @@ public class AVMServiceTestBase extends TestCase
         // File alfData = new File("alf_data");
         // File target = new File("alf_data" + now);
         // alfData.renameTo(target);
+        
+        AuthenticationUtil.clearCurrentSecurityContext();
     }
     
     /**

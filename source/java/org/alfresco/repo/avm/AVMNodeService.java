@@ -1602,6 +1602,11 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         throw new UnsupportedOperationException();
     }
 
+    public List<ChildAssociationRef> getChildrenByName(NodeRef nodeRef, QName assocTypeQName, Collection<String> childNames)
+    {
+        throw new UnsupportedOperationException();
+    }
+
     /**
      * Get a child NodeRef by name.
      * @param nodeRef The parent node.

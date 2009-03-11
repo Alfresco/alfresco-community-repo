@@ -289,7 +289,7 @@ public class WCMUtil
     * 
     * @return the corresponding path within the supplied store
     */
-   protected static String getCorrespondingPath(final String avmPath, final String otherStore)
+   public static String getCorrespondingPath(final String avmPath, final String otherStore)
    {
       return (otherStore + AVM_STORE_SEPARATOR + WCMUtil.getStoreRelativePath(avmPath));
    }
@@ -390,7 +390,7 @@ public class WCMUtil
     * 
     * @return root path for the specified store name
     */
-   protected static String buildStoreRootPath(final String storeName)
+   public static String buildStoreRootPath(final String storeName)
    {
        ParameterCheck.mandatoryString("storeName", storeName);
        return storeName + AVM_STORE_SEPARATOR + "/" + JNDIConstants.DIR_DEFAULT_WWW;
@@ -578,7 +578,7 @@ public class WCMUtil
     *
     * @return an the webapp name contained within the path or <tt>null</tt>.
     */
-   protected static String getWebapp(final String absoluteAVMPath)
+   public static String getWebapp(final String absoluteAVMPath)
    {
       final Matcher m = WEBAPP_RELATIVE_PATH_PATTERN.matcher(absoluteAVMPath);
       return m.matches() && m.group(2).length() != 0 ? m.group(2) : null;

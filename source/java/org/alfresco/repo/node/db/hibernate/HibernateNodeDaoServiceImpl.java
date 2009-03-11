@@ -133,6 +133,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     private static final String QUERY_GET_CHILD_NODE_IDS = "node.GetChildNodeIds";
     private static final String QUERY_GET_CHILD_ASSOCS_BY_ALL = "node.GetChildAssocsByAll";
     private static final String QUERY_GET_CHILD_ASSOC_BY_TYPE_AND_NAME = "node.GetChildAssocByTypeAndName";
+    private static final String QUERY_GET_CHILD_ASSOC_REFS_BY_TYPE_AND_NAME_LIST = "node.GetChildAssocRefsByTypeAndNameList";
     private static final String QUERY_GET_CHILD_ASSOC_REFS = "node.GetChildAssocRefs";
     private static final String QUERY_GET_CHILD_ASSOC_REFS_BY_QNAME = "node.GetChildAssocRefsByQName";
     private static final String QUERY_GET_CHILD_ASSOC_REFS_BY_TYPEQNAMES = "node.GetChildAssocRefsByTypeQNames";
@@ -2059,6 +2060,92 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         // Done
     }
 
+    public void getChildAssocs(final Long parentNodeId, QName assocTypeQName, Collection<String> childNames, final ChildAssocRefQueryCallback resultsCallback)
+    {
+        /*
+         * The child names are converted to the stardard form (shortened, lower-case) and used directly in an IN clause.
+         * In order to guarantee uniqueness, the CRC for each matching, stardard-form name is checked for a match before
+         * the result is passed to the client's callback handler.
+         */
+        
+        // Shortcut
+        if (childNames.size() == 0)
+        {
+            return;
+        }
+        else if (childNames.size() > 1000)
+        {
+            throw new IllegalArgumentException("Unable to process more than 1000 child names in getChildAssocs");
+        }
+        final Pair<Long, QName> assocTypeQNamePair = qnameDAO.getQName(assocTypeQName);
+        if (assocTypeQNamePair == null)
+        {
+            return;
+        }
+        
+        // Convert the child names and compile the CRC values
+        final Set<Long> crcValues = new HashSet<Long>(childNames.size() * 2);
+        final Set<String> nameValues = new HashSet<String>(childNames.size() * 2);
+        for (String childName : childNames)
+        {
+            String childNameLower = childName.toLowerCase();
+            String childNameShort = getShortName(childNameLower);
+            Long childNameLowerCrc = new Long(getCrc(childNameLower));
+            crcValues.add(childNameLowerCrc);
+            nameValues.add(childNameShort);
+        }
+        
+        Node parentNode = getNodeNotNull(parentNodeId);
+        HibernateCallback callback = new HibernateCallback()
+        {
+            public Object doInHibernate(Session session)
+            {
+                Query query = session
+                    .getNamedQuery(HibernateNodeDaoServiceImpl.QUERY_GET_CHILD_ASSOC_REFS_BY_TYPE_AND_NAME_LIST)
+                    .setLong("parentId", parentNodeId)
+                    .setLong("typeQNameId", assocTypeQNamePair.getFirst())
+                    .setParameterList("childNodeNames", nameValues);
+                DirtySessionMethodInterceptor.setQueryFlushMode(session, query);
+                return query.scroll(ScrollMode.FORWARD_ONLY);
+            }
+        };
+        
+        // Create an extended callback to filter out the crc values
+        ChildAssocRefQueryCallbackFilter filterCallback = new ChildAssocRefQueryCallbackFilter()
+        {
+            public boolean isDesiredRow(
+                    Pair<Long, ChildAssociationRef> childAssocPair,
+                    Pair<Long, NodeRef> parentNodePair,
+                    Pair<Long, NodeRef> childNodePair,
+                    String assocChildNodeName, Long assocChildNodeNameCrc)
+            {
+                // The CRC value must be in the list
+                return crcValues.contains(assocChildNodeNameCrc);
+            }
+            /**
+             * Defers to the client's handler
+             */
+            public boolean handle(Pair<Long, ChildAssociationRef> childAssocPair, Pair<Long, NodeRef> parentNodePair, Pair<Long, NodeRef> childNodePair)
+            {
+                return resultsCallback.handle(childAssocPair, parentNodePair, childNodePair);
+            }
+        };
+        
+        ScrollableResults queryResults = null;
+        try
+        {
+            queryResults = (ScrollableResults) getHibernateTemplate().execute(callback);
+            convertToChildAssocRefs(parentNode, queryResults, filterCallback);
+        }
+        finally
+        {
+            if (queryResults != null)
+            {
+                queryResults.close();
+            }
+        }
+    }
+
     public void getChildAssocsByTypeQNames(
             final Long parentNodeId,
             final List<QName> assocTypeQNames,
@@ -2360,12 +2447,14 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
             String assocQNameNamespace = qnameDAO.getNamespace((Long) row[2]).getSecond();
             String assocQNameLocalName = (String) row[3];
             QName assocQName = QName.createQName(assocQNameNamespace, assocQNameLocalName);
-            Boolean assocIsPrimary = (Boolean) row[4];
-            Integer assocIndex = (Integer) row[5];
-            Long childNodeId = (Long) row[6];
-            String childProtocol = (String) row[7];
-            String childIdentifier = (String) row[8];
-            String childUuid = (String) row[9];
+            String assocChildNodeName = (String) row[4];
+            Long assocChildNodeNameCrc = (Long) row[5];
+            Boolean assocIsPrimary = (Boolean) row[6];
+            Integer assocIndex = (Integer) row[7];
+            Long childNodeId = (Long) row[8];
+            String childProtocol = (String) row[9];
+            String childIdentifier = (String) row[10];
+            String childUuid = (String) row[11];
             NodeRef childNodeRef = new NodeRef(new StoreRef(childProtocol, childIdentifier), childUuid);
             ChildAssociationRef assocRef = new ChildAssociationRef(
                     assocTypeQName,
@@ -2376,6 +2465,22 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
                     assocIndex.intValue());
             Pair<Long, ChildAssociationRef> assocPair = new Pair<Long, ChildAssociationRef>(assocId, assocRef);
             Pair<Long, NodeRef> childNodePair = new Pair<Long, NodeRef>(childNodeId, childNodeRef);
+            // Check if we are doing a filtering callback
+            if (resultsCallback instanceof ChildAssocRefQueryCallbackFilter)
+            {
+                ChildAssocRefQueryCallbackFilter filterCallback = (ChildAssocRefQueryCallbackFilter) resultsCallback;
+                boolean process = filterCallback.isDesiredRow(
+                        assocPair,
+                        parentNodePair,
+                        childNodePair,
+                        assocChildNodeName,
+                        assocChildNodeNameCrc);
+                if (!process)
+                {
+                    // The result is filtered out
+                    continue;
+                }
+            }
             // Call back
             resultsCallback.handle(assocPair, parentNodePair, childNodePair);
         }

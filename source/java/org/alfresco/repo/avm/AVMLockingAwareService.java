@@ -328,6 +328,15 @@ public class AVMLockingAwareService implements AVMService, ApplicationContextAwa
     {
         return fService.getDirectoryListing(dir);
     }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.avm.AVMService#getDirectoryListing(org.alfresco.service.cmr.avm.AVMNodeDescriptor, String)
+     */
+    public SortedMap<String, AVMNodeDescriptor> getDirectoryListing(
+            AVMNodeDescriptor dir, String childNamePattern)
+    {
+        return fService.getDirectoryListing(dir, childNamePattern);
+    }
 
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.avm.AVMService#getDirectoryListing(org.alfresco.service.cmr.avm.AVMNodeDescriptor, boolean)

@@ -1203,6 +1203,42 @@ public class AVMRepository
     }
 
     /**
+     * Get a directory listing from a directory node descriptor fo children that match the given pattern
+     * 
+     * @param dir
+     *            The directory node descriptor.
+     * @return A SortedMap listing.
+     */
+    public SortedMap<String, AVMNodeDescriptor> getListing(AVMNodeDescriptor dir, String childNamePattern, boolean includeDeleted)
+    {
+        fLookupCount.set(1);
+        try
+        {
+            AVMNode node = fAVMNodeDAO.getByID(dir.getId());
+            if (node == null)
+            {
+                throw new AVMBadArgumentException("Invalid Node.");
+            }
+            if (node.getType() != AVMNodeType.LAYERED_DIRECTORY && node.getType() != AVMNodeType.PLAIN_DIRECTORY)
+            {
+                throw new AVMWrongTypeException("Not a directory.");
+            }
+            if (!can(null, node, PermissionService.READ_CHILDREN, false))
+            {
+                throw new AccessDeniedException("Not allowed to read children: " + dir);
+            }
+            DirectoryNode dirNode = (DirectoryNode) node;
+            SortedMap<String, AVMNodeDescriptor> listing = dirNode.getListing(dir, childNamePattern, includeDeleted);
+            return listing;
+        }
+        finally
+        {
+            fLookupCount.set(null);
+        }
+    }
+
+    
+    /**
      * Get the names of deleted nodes in a directory.
      * 
      * @param version

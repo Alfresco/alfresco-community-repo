@@ -27,14 +27,15 @@ import java.util.List;
 
 import org.alfresco.repo.avm.AVMNode;
 import org.alfresco.repo.avm.ChildEntry;
-import org.alfresco.repo.avm.ChildEntryImpl;
 import org.alfresco.repo.avm.ChildEntryDAO;
+import org.alfresco.repo.avm.ChildEntryImpl;
 import org.alfresco.repo.avm.ChildKey;
 import org.alfresco.repo.avm.DirectoryNode;
+import org.alfresco.util.SearchLanguageConversion;
 import org.hibernate.Criteria;
 import org.hibernate.FetchMode;
 import org.hibernate.Query;
-import org.hibernate.criterion.Criterion;
+import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
@@ -87,16 +88,17 @@ class ChildEntryDAOHibernate extends HibernateDaoSupport implements ChildEntryDA
      * @return A List of ChildEntries.
      */
     @SuppressWarnings("unchecked")
-    public List<ChildEntry> getByParent(DirectoryNode parent)
+    public List<ChildEntry> getByParent(DirectoryNode parent, String childNamePattern)
     {
         Criteria criteria = getSession().createCriteria(ChildEntryImpl.class, "ce");
         criteria.add(Restrictions.eq("ce.key.parent", parent));
+        if(childNamePattern != null)
+        {
+            String pattern = SearchLanguageConversion.convert(SearchLanguageConversion.DEF_LUCENE, SearchLanguageConversion.DEF_SQL_LIKE, childNamePattern);
+            criteria.add(Restrictions.like("ce.key.name", pattern));
+        }
         criteria.createCriteria("child", "cld").setFetchMode("ce.child", FetchMode.JOIN);
         criteria.setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
-        // Query query =
-        // getSession().createQuery("select ce, cld from ChildEntryImpl ce join child cld where ce.key.parent =
-        // :parent");
-        // query.setEntity("parent", parent);
         return (List<ChildEntry>) criteria.list();
     }
 

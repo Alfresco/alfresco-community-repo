@@ -30,7 +30,6 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import org.alfresco.repo.domain.DbAccessControlList;
 import org.alfresco.repo.security.permissions.ACLCopyMode;
 import org.alfresco.service.cmr.avm.AVMBadArgumentException;
 import org.alfresco.service.cmr.avm.AVMExistsException;
@@ -77,7 +76,7 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
     {
         super(store.getAVMRepository().issueID(), store);
         AVMDAOs.Instance().fAVMNodeDAO.save(this);
-        for (ChildEntry child : AVMDAOs.Instance().fChildEntryDAO.getByParent(other))
+        for (ChildEntry child : AVMDAOs.Instance().fChildEntryDAO.getByParent(other, null))
         {
             ChildKey key = new ChildKey(this, child.getKey().getName());
             ChildEntry newChild = new ChildEntryImpl(key,
@@ -110,8 +109,21 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
     @SuppressWarnings("unchecked")
     public Map<String, AVMNode> getListing(Lookup lPath, boolean includeDeleted)
     {
+        return getListing(lPath, null, includeDeleted);
+    }
+    
+    /**
+     * Get a directory listing.
+     * @param lPath The lookup path.
+     * @param childNamePattern A child name pattern.
+     * @param includeDeleted Include deleted nodes.
+     * @return The listing.
+     */
+    @SuppressWarnings("unchecked")
+    public Map<String, AVMNode> getListing(Lookup lPath, String childNamePattern, boolean includeDeleted)
+    {
         Map<String, AVMNode> result = new HashMap<String, AVMNode>();
-        List<ChildEntry> children = AVMDAOs.Instance().fChildEntryDAO.getByParent(this);
+        List<ChildEntry> children = AVMDAOs.Instance().fChildEntryDAO.getByParent(this, childNamePattern);
         for (ChildEntry child : children)
         {
             if (child.getChild().getType() == AVMNodeType.LAYERED_DIRECTORY ||
@@ -160,12 +172,23 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
      */
     public SortedMap<String, AVMNodeDescriptor> getListing(AVMNodeDescriptor dir, boolean includeDeleted)
     {
+        return getListing(dir, null, includeDeleted);
+    }
+    
+    /**
+     * Get a listing of from a directory node descriptor.
+     * @param dir The directory node descriptor.
+     * @param childNamePattern - pattern to match for child names - may be null
+     * @return A Map of names to node descriptors.
+     */
+    public SortedMap<String, AVMNodeDescriptor> getListing(AVMNodeDescriptor dir, String childNamePattern, boolean includeDeleted)
+    {
         if (dir.getPath() == null)
         {
             throw new AVMBadArgumentException("Path is null.");
         }
         SortedMap<String, AVMNodeDescriptor> result = new TreeMap<String, AVMNodeDescriptor>(String.CASE_INSENSITIVE_ORDER);
-        List<ChildEntry> children = AVMDAOs.Instance().fChildEntryDAO.getByParent(this);
+        List<ChildEntry> children = AVMDAOs.Instance().fChildEntryDAO.getByParent(this, childNamePattern);
         for (ChildEntry child : children)
         {
             if (child.getChild().getType() == AVMNodeType.LAYERED_DIRECTORY ||

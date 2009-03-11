@@ -196,7 +196,7 @@
        <property name="avmSyncService" ref="AVMSyncService"/>
        <property name="nameMatcher" ref="globalPathExcluder"/>
        <property name="virtServerRegistry" ref="VirtServerRegistry"/>
-       <property name="avmLockingService" ref="AVMLockingService"/>
+       <property name="transactionService" ref="transactionService"/>
        <property name="actionService" ref="ActionService"/>
        <property name="workflowService" ref="WorkflowService"/>
     </bean>

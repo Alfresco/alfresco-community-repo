@@ -30,8 +30,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import junit.framework.TestCase;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -47,27 +45,16 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
-import org.alfresco.util.ApplicationContextHelper;
-import org.alfresco.util.PropertyMap;
+import org.alfresco.wcm.AbstractWCMServiceImplTest;
 import org.alfresco.wcm.util.WCMUtil;
-import org.springframework.context.ApplicationContext;
 
 /**
  * Web Project Service implementation unit test
  * 
  * @author janv
  */
-public class WebProjectServiceImplTest extends TestCase 
+public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest 
 {
-    private static final ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
-    
-    //
-    // test data
-    //
-    
-    private static final String TEST_RUN = ""+System.currentTimeMillis();
-    private static final boolean CLEAN = true; // cleanup during teardown
-    
     // base web project dns / name 
     private static final String TEST_WEBPROJ_DNS  = "testWebProjDNS-"+TEST_RUN;
     private static final String TEST_WEBPROJ_NAME = "test Web Project Display Name - "+TEST_RUN;
@@ -109,8 +96,6 @@ public class WebProjectServiceImplTest extends TestCase
     //
     
     private WebProjectService wpService;
-    private AuthenticationService authenticationService;
-    private PersonService personService;
     private FileFolderService fileFolderService;
     private AuthorityService authorityService;
     private PermissionService permissionService;
@@ -119,6 +104,8 @@ public class WebProjectServiceImplTest extends TestCase
     @Override
     protected void setUp() throws Exception
     {
+        super.setUp();
+        
         // Get the required services
         wpService = (WebProjectService)ctx.getBean("WebProjectService");
         authenticationService = (AuthenticationService)ctx.getBean("AuthenticationService");
@@ -186,23 +173,6 @@ public class WebProjectServiceImplTest extends TestCase
         super.tearDown();
     }
     
-    private void createUser(String userName)
-    {
-        if (authenticationService.authenticationExists(userName) == false)
-        {
-            authenticationService.createAuthentication(userName, "PWD".toCharArray());
-            
-            PropertyMap ppOne = new PropertyMap(4);
-            ppOne.put(ContentModel.PROP_USERNAME, userName);
-            ppOne.put(ContentModel.PROP_FIRSTNAME, "firstName");
-            ppOne.put(ContentModel.PROP_LASTNAME, "lastName");
-            ppOne.put(ContentModel.PROP_EMAIL, "email@email.com");
-            ppOne.put(ContentModel.PROP_JOBTITLE, "jobTitle");
-            
-            personService.createPerson(ppOne);
-        }
-    }
-    
     private void createSimpleGroup(String shortName, Set<String> userNames)
     {
         String groupName = authorityService.getName(AuthorityType.GROUP, shortName);
@@ -214,15 +184,6 @@ public class WebProjectServiceImplTest extends TestCase
             {
                 authorityService.addAuthority(groupName, userName);
             }
-        }
-    }
-    
-    private void deleteUser(String userName)
-    {
-        if (authenticationService.authenticationExists(userName) == true)
-        {
-            personService.deletePerson(userName);
-            authenticationService.deleteAuthentication(userName);
         }
     }
     

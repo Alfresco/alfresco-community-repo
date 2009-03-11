@@ -1122,6 +1122,9 @@ public class AVMSyncServiceImpl implements AVMSyncService
      * Takes a layer, deletes it and recreates it pointing at the same underlying
      * node. Any changes in the layer are lost (except to history if the layer has been
      * snapshotted.)
+     * 
+     * NB: fixed to respect permissions and allow reset end preview sandboxes by finding all direct children and flattening
+     * 
      * @param layerPath
      */
     public void resetLayer(String layerPath)
@@ -1131,9 +1134,12 @@ public class AVMSyncServiceImpl implements AVMSyncService
         {
             throw new AVMNotFoundException("Not Found: " + layerPath);
         }
-        String [] parts = AVMNodeConverter.SplitBase(layerPath);
-        fAVMService.removeNode(parts[0], parts[1]);
-        fAVMService.createLayeredDirectory(desc.getIndirection(), parts[0], parts[1]);
+        Map<String, AVMNodeDescriptor> layerListing =
+            fAVMService.getDirectoryListingDirect(-1, layerPath, true);
+        for (String name : layerListing.keySet())
+        {
+            fAVMRepository.flatten(layerPath, name);
+        }
     }
 
     /**

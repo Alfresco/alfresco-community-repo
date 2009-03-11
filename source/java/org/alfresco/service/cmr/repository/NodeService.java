@@ -25,6 +25,7 @@
 package org.alfresco.service.cmr.repository;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -530,6 +531,21 @@ public interface NodeService
             NodeRef nodeRef,
             QName assocTypeQName,
             String childName);
+    
+    /**
+     * Get the nodes with the given names within the context of the parent node.
+     * 
+     * {@inheritDoc #getChildByName(NodeRef, QName, String)}
+     * 
+     * @param childNames        a collection of up to 1000 child names to match on
+     * 
+     * @see {@link #getChildByName(NodeRef, QName, String)} 
+     */
+    @Auditable(key = Auditable.Key.ARG_0 ,parameters = {"nodeRef", "assocTypeQName", "childName"})
+    public List<ChildAssociationRef> getChildrenByName(
+            NodeRef nodeRef,
+            QName assocTypeQName,
+            Collection<String> childNames);
     
     /**
      * Fetches the primary parent-child relationship.

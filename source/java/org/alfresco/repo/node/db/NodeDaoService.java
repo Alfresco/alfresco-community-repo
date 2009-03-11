@@ -233,6 +233,31 @@ public interface NodeDaoService
     }
 
     /**
+     * Interface used to iterate over results from child association queries
+     * @author Derek Hulley
+     */
+    public interface ChildAssocRefQueryCallbackFilter extends ChildAssocRefQueryCallback
+    {
+        /**
+         * Method to handle raw query results and decide if the result should be filtered out or not.
+         * If <tt>true</tt> is returned, the standard {@link #handle(Pair, Pair, Pair) handler} method
+         * will be called.  If <tt>false</tt> is returned, then the query result will be skipped.
+         * <p>
+         * This provides a quick way to filter out results without having to pull in full entities.
+         * 
+         * @return              Return <tt>true</tt> if the standard {@link #handle(Pair, Pair, Pair) handler}
+         *                      method should be called, or <tt>false</tt> to filter the result out.
+         */
+        boolean isDesiredRow(
+                Pair<Long, ChildAssociationRef> childAssocPair,
+                Pair<Long, NodeRef> parentNodePair,
+                Pair<Long, NodeRef> childNodePair,
+                String assocChildNodeName,
+                Long assocChildNodeNameCrc
+                );
+    }
+
+    /**
      * Get a collection of all child association references for a given parent node.
      * <p>
      * <b>WARNING:</b> Be sure selective when doing this call recursively.
@@ -249,11 +274,23 @@ public interface NodeDaoService
     /**
      * Get a collection of all child association references for a given parent node.
      * 
-     * @param parentNodeId the parent node
+     * @param parentNodeId          the parent node
      * @param resultsCallback       the callback that will be called with the results
      */
     @DirtySessionAnnotation(markDirty=false)
     public void getChildAssocs(Long parentNodeId, QName assocQName, ChildAssocRefQueryCallback resultsCallback);
+
+    /**
+     * Get a collection of all child associations references where the child name is an exact match.
+     * This method only works if the association type fundamentally supports unique-name enforcement.
+     * 
+     * @param parentNodeId          the parent node
+     * @param assocTypeQName        the type of the association to check.
+     * @param childNames            the names of the child nodes (<b>cm:name</b>).  These will be matched exactly.
+     * @param resultsCallback       the callback that will be called with the results
+     */
+    @DirtySessionAnnotation(markDirty=false)
+    public void getChildAssocs(Long parentNodeId, QName assocTypeQName, Collection<String> childNames, ChildAssocRefQueryCallback resultsCallback);
     
     @DirtySessionAnnotation(markDirty=false)
     public void getChildAssocsByTypeQNames(
@@ -314,8 +351,7 @@ public interface NodeDaoService
     public void getNodesWithAspect(QName aspectQName, Long minNodeId, int count, NodeRefQueryCallback resultsCallback);
     
     /**
-     * @return Returns an association matching the given parent, type and child name - or null
-     *      if not found
+     * @return Returns an association matching the given parent, type and child name (<b>cm:name</b>) - or <tt>null</tt> if not found
      */
     @DirtySessionAnnotation(markDirty=false)
     public Pair<Long, ChildAssociationRef> getChildAssoc(Long parentNodeId, QName assocTypeQName, String childName);

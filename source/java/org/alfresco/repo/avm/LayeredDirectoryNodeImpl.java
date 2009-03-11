@@ -210,7 +210,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         AVMDAOs.Instance().fAVMNodeDAO.save(this);
         if (copyContents)
         {
-            for (ChildEntry child : AVMDAOs.Instance().fChildEntryDAO.getByParent(other))
+            for (ChildEntry child : AVMDAOs.Instance().fChildEntryDAO.getByParent(other, null))
             {
                 ChildKey key = new ChildKey(this, child.getKey().getName());
                 ChildEntryImpl newChild = new ChildEntryImpl(key, child.getChild());
@@ -431,6 +431,18 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
      */
     public Map<String, AVMNode> getListing(Lookup lPath, boolean includeDeleted)
     {
+        return getListing(lPath, null, includeDeleted);
+    }
+    
+    /**
+     * Get a listing of the virtual contents of this directory.
+     *
+     * @param lPath
+     *            The Lookup.
+     * @return A Map from names to nodes. This is a sorted Map.
+     */
+    public Map<String, AVMNode> getListing(Lookup lPath, String childNamePattern, boolean includeDeleted)
+    {
         // Get the base listing from the thing we indirect to.
         Map<String, AVMNode> listing = new HashMap<String, AVMNode>();
         if (!fOpacity)
@@ -439,7 +451,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
             if (lookup != null)
             {
                 DirectoryNode dir = (DirectoryNode) lookup.getCurrentNode();
-                Map<String, AVMNode> underListing = dir.getListing(lookup, includeDeleted);
+                Map<String, AVMNode> underListing = dir.getListing(lookup, childNamePattern, includeDeleted);
                 for (Map.Entry<String, AVMNode> entry : underListing.entrySet())
                 {
                     if (entry.getValue().getType() == AVMNodeType.LAYERED_DIRECTORY ||
@@ -454,7 +466,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
                 }
             }
         }
-        for (ChildEntry entry : AVMDAOs.Instance().fChildEntryDAO.getByParent(this))
+        for (ChildEntry entry : AVMDAOs.Instance().fChildEntryDAO.getByParent(this, childNamePattern))
         {
             if (entry.getChild().getType() == AVMNodeType.LAYERED_DIRECTORY ||
                 entry.getChild().getType() == AVMNodeType.PLAIN_DIRECTORY)
@@ -486,7 +498,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
     public Map<String, AVMNode> getListingDirect(Lookup lPath, boolean includeDeleted)
     {
         Map<String, AVMNode> listing = new HashMap<String, AVMNode>();
-        for (ChildEntry entry : AVMDAOs.Instance().fChildEntryDAO.getByParent(this))
+        for (ChildEntry entry : AVMDAOs.Instance().fChildEntryDAO.getByParent(this, null))
         {
             if (entry.getChild().getType() == AVMNodeType.LAYERED_DIRECTORY ||
                 entry.getChild().getType() == AVMNodeType.PLAIN_DIRECTORY)
@@ -517,7 +529,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
      */
     public SortedMap<String, AVMNodeDescriptor> getListingDirect(AVMNodeDescriptor dir, boolean includeDeleted)
     {
-        List<ChildEntry> children = AVMDAOs.Instance().fChildEntryDAO.getByParent(this);
+        List<ChildEntry> children = AVMDAOs.Instance().fChildEntryDAO.getByParent(this, null);
         SortedMap<String, AVMNodeDescriptor> listing = new TreeMap<String, AVMNodeDescriptor>(String.CASE_INSENSITIVE_ORDER);
         for (ChildEntry child : children)
         {
@@ -551,6 +563,22 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
      */
     public SortedMap<String, AVMNodeDescriptor> getListing(AVMNodeDescriptor dir, boolean includeDeleted)
     {
+        return getListing(dir, null, includeDeleted);
+    }
+    
+    /**
+     * Get a listing from a directory node descriptor.
+     *
+     * @param dir
+     *            The directory node descriptor.
+     * @param childNamePattern
+     *            Pattern to match for child names - may be null
+     * @param includeDeleted
+     *            Should DeletedNodes be shown.
+     * @return A Map of names to node descriptors.
+     */
+    public SortedMap<String, AVMNodeDescriptor> getListing(AVMNodeDescriptor dir, String childNamePattern, boolean includeDeleted)
+    {
         if (dir.getPath() == null || dir.getIndirection() == null)
         {
             throw new AVMBadArgumentException("Illegal null argument.");
@@ -563,7 +591,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
             if (lookup != null)
             {
                 DirectoryNode dirNode = (DirectoryNode) lookup.getCurrentNode();
-                Map<String, AVMNode> listing = dirNode.getListing(lookup, includeDeleted);
+                Map<String, AVMNode> listing = dirNode.getListing(lookup, childNamePattern, includeDeleted);
                 for (Map.Entry<String, AVMNode> entry : listing.entrySet())
                 {
                     if (entry.getValue().getType() == AVMNodeType.LAYERED_DIRECTORY ||
@@ -581,7 +609,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
                 }
             }
         }
-        List<ChildEntry> children = AVMDAOs.Instance().fChildEntryDAO.getByParent(this);
+        List<ChildEntry> children = AVMDAOs.Instance().fChildEntryDAO.getByParent(this, childNamePattern);
         for (ChildEntry child : children)
         {
             if (child.getChild().getType() == AVMNodeType.LAYERED_DIRECTORY ||
@@ -612,7 +640,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
      */
     public List<String> getDeletedNames()
     {
-        List<ChildEntry> children = AVMDAOs.Instance().fChildEntryDAO.getByParent(this);
+        List<ChildEntry> children = AVMDAOs.Instance().fChildEntryDAO.getByParent(this, null);
         List<String> listing = new ArrayList<String>();
         for (ChildEntry entry : children)
         {

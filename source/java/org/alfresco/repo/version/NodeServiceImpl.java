@@ -326,6 +326,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
     /**
      * Translation for version store
      */
+    @SuppressWarnings("unchecked")
     public Set<QName> getAspects(NodeRef nodeRef) throws InvalidNodeRefException
     {
         return new HashSet<QName>(
@@ -518,6 +519,15 @@ public class NodeServiceImpl implements NodeService, VersionModel
      * @throws UnsupportedOperationException always
      */
     public List<ChildAssociationRef> getChildAssocs(NodeRef nodeRef, Set<QName> childNodeTypes)
+    {
+        // This operation is not supported for a version store
+        throw new UnsupportedOperationException(MSG_UNSUPPORTED);
+    }
+
+    /**
+     * @throws UnsupportedOperationException always
+     */
+    public List<ChildAssociationRef> getChildrenByName(NodeRef nodeRef, QName assocTypeQName, Collection<String> childNames)
     {
         // This operation is not supported for a version store
         throw new UnsupportedOperationException(MSG_UNSUPPORTED);

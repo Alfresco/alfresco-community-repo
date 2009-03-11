@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -35,7 +35,7 @@ import java.util.Map;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.mbeans.VirtServerRegistry;
 import org.alfresco.model.WCMAppModel;
-import org.alfresco.repo.avm.AVMDAOs;
+import org.alfresco.model.WCMWorkflowModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.avm.actions.AVMRevertStoreAction;
 import org.alfresco.repo.avm.actions.AVMUndoSandboxListAction;
@@ -43,20 +43,26 @@ import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.TransactionListenerAdapter;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.VersionDescriptor;
-import org.alfresco.service.cmr.avm.locking.AVMLockingService;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.workflow.WorkflowDefinition;
+import org.alfresco.service.cmr.workflow.WorkflowPath;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
+import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.NameMatcher;
 import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
@@ -84,16 +90,19 @@ public class SandboxServiceImpl implements SandboxService
     /** Logger */
     private static Log logger = LogFactory.getLog(SandboxServiceImpl.class);
     
+    private static final String WORKFLOW_SUBMITDIRECT = "jbpm$wcmwf:submitdirect";
+    
     private WebProjectService wpService;
     private SandboxFactory sandboxFactory;
     private AVMService avmService;
-    private AVMLockingService avmLockingService;
     private AVMSyncService avmSyncService;
     private NameMatcher nameMatcher;
     private VirtServerRegistry virtServerRegistry;
     private ActionService actionService;
     private WorkflowService workflowService;
     private AssetService assetService;
+    private TransactionService transactionService;
+    
     
     public void setWebProjectService(WebProjectService wpService)
     {
@@ -108,11 +117,6 @@ public class SandboxServiceImpl implements SandboxService
     public void setAvmService(AVMService avmService)
     {
         this.avmService = avmService;
-    }
-    
-    public void setAvmLockingService(AVMLockingService avmLockingService)
-    {
-        this.avmLockingService = avmLockingService;
     }
     
     public void setAvmSyncService(AVMSyncService avmSyncService)
@@ -144,6 +148,12 @@ public class SandboxServiceImpl implements SandboxService
     {
         this.assetService = assetService;
     }
+    
+    public void setTransactionService(TransactionService transactionService)
+    {
+        this.transactionService = transactionService;
+    }
+    
  
     /* (non-Javadoc)
      * @see org.alfresco.wcm.sandbox.SandboxService#createAuthorSandbox(java.lang.String)
@@ -491,16 +501,6 @@ public class SandboxServiceImpl implements SandboxService
     {
         ParameterCheck.mandatoryString("sbStoreId", sbStoreId);
         
-        submitList(sbStoreId, relativePaths, null, submitLabel, submitComment);
-    }
-    
-    /* (non-Javadoc)
-     * @see org.alfresco.wcm.sandbox.SandboxService#submitList(java.lang.String, java.util.List, java.util.Map, java.lang.String, java.lang.String)
-     */
-    public void submitList(String sbStoreId, List<String> relativePaths, Map<String, Date> expirationDates, String submitLabel, String submitComment)
-    {
-        ParameterCheck.mandatoryString("sbStoreId", sbStoreId);
-        
         List<AssetInfo> assets = new ArrayList<AssetInfo>(relativePaths.size());
         
         for (String relativePath : relativePaths)
@@ -513,7 +513,7 @@ public class SandboxServiceImpl implements SandboxService
             }
         }
         
-        submitListAssets(sbStoreId, assets, expirationDates, submitLabel, submitComment);
+        submitListAssets(sbStoreId, assets, submitLabel, submitComment);
     }
     
     /* (non-Javadoc)
@@ -522,18 +522,7 @@ public class SandboxServiceImpl implements SandboxService
     public void submitListAssets(String sbStoreId, List<AssetInfo> assets, String submitLabel, String submitComment)
     {
         ParameterCheck.mandatoryString("sbStoreId", sbStoreId);
-        
-        submitListAssets(sbStoreId, assets, null, submitLabel, submitComment);
-    }
-    
-    /* (non-Javadoc)
-     * @see org.alfresco.wcm.sandbox.SandboxService#submitListAssets(java.lang.String, java.util.List, java.util.Map, java.lang.String, java.lang.String)
-     */
-    public void submitListAssets(String sbStoreId, List<AssetInfo> assets, Map<String, Date> expirationDates, final String submitLabel, final String submitComment)
-    {
-        ParameterCheck.mandatoryString("sbStoreId", sbStoreId);
-        
-        // direct submit to the staging area (without workflow)
+        ParameterCheck.mandatoryString("submitLabel", submitLabel);
         
         // TODO - consider submit to higher-level sandbox, not just to staging
         if (! WCMUtil.isUserStore(sbStoreId))
@@ -541,61 +530,322 @@ public class SandboxServiceImpl implements SandboxService
             throw new AlfrescoRuntimeException("Not an author sandbox: "+sbStoreId);
         }
         
-        // construct diffs for selected assets for submission
-        String wpStoreId = WCMUtil.getWebProjectStoreId(sbStoreId);
-        String stagingSandboxId = WCMUtil.buildStagingStoreName(wpStoreId);
-        
-        final List<AVMDifference> diffs = new ArrayList<AVMDifference>(assets.size());
-        
+        List<String> relativePaths = new ArrayList<String>(assets.size());
         for (AssetInfo asset : assets)
         {
-            String relativePath = WCMUtil.getStoreRelativePath(asset.getAvmPath());
-            
-            String srcPath = sbStoreId + WCMUtil.AVM_STORE_SEPARATOR + relativePath;
-            String dstPath = stagingSandboxId + WCMUtil.AVM_STORE_SEPARATOR + relativePath;         
- 
-            AVMDifference diff = new AVMDifference(-1, srcPath, -1, dstPath, AVMDifference.NEWER);
-            diffs.add(diff);
+            relativePaths.add(asset.getPath());
+        }
+        
+        // via submit direct workflow
+        submitViaWorkflow(sbStoreId, relativePaths, null, null, submitLabel, submitComment, null, null, false, false);
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.wcm.sandbox.SandboxService#submitListAssets(java.lang.String, java.util.List, java.lang.String, java.util.Map, java.lang.String, java.lang.String, java.util.Map, java.util.Date, boolean, boolean)
+     */
+    public void submitListAssets(String sbStoreId, List<String> relativePaths,
+                                 String workflowName, Map<QName, Serializable> workflowParams, 
+                                 String submitLabel, String submitComment,
+                                 Map<String, Date> expirationDates, Date launchDate, boolean validateLinks, boolean autoDeploy)
+    {
+        // via selected workflow
+        submitViaWorkflow(sbStoreId, relativePaths, workflowName, workflowParams, submitLabel, submitComment,
+                          expirationDates, launchDate, validateLinks, autoDeploy);
+    }
+    
+    /**
+     * Submits the selected items via the configured workflow.
+     * <p>
+     * This method uses 2 separate transactions to perform the submit.
+     * The first one creates the workflow sandbox. The virtualisation
+     * server is then informed of the new stores. The second
+     * transaction then starts the appropriate workflow. This approach
+     * is needed to allow link validation to be performed on the
+     * workflow sandbox.
+     */
+    private void submitViaWorkflow(final String sbStoreId, final List<String> relativePaths, String workflowName, Map<QName, Serializable> workflowParams, 
+                                   final String submitLabel, final String submitComment,
+                                   final Map<String, Date> expirationDates, final Date launchDate, final boolean validateLinks, final boolean autoDeploy)
+    {
+        final String wpStoreId = WCMUtil.getWebProjectStoreId(sbStoreId);
+        final String stagingSandboxId = WCMUtil.buildStagingStoreName(wpStoreId);
+        
+        final String finalWorkflowName;
+        final Map<QName, Serializable> finalWorkflowParams;
+        
+        if ((workflowName == null) || (workflowName.equals("")))
+        {
+            finalWorkflowName = WORKFLOW_SUBMITDIRECT;
+            finalWorkflowParams = new HashMap<QName, Serializable>();
+        }
+        else
+        {
+            finalWorkflowName = workflowName;
+            finalWorkflowParams = workflowParams;
+        }
+        
+        RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
+        
+        final List<String> srcPaths = new ArrayList<String>(relativePaths.size());
 
-            if (expirationDates != null)
+        String derivedWebApp = null;
+        boolean multiWebAppsFound = false;
+        
+        for (String relativePath : relativePaths)
+        {
+            // Example srcPath:
+            //     mysite--alice:/www/avm_webapps/ROOT/foo.txt
+            String srcPath = sbStoreId + WCMUtil.AVM_STORE_SEPARATOR + relativePath;
+            srcPaths.add(srcPath);
+           
+            // derive webapp for now (TODO check usage)
+            String srcWebApp = WCMUtil.getWebapp(srcPath);
+            if (srcWebApp != null)
+            {
+                if (derivedWebApp == null)
+                {
+                    derivedWebApp = srcWebApp;
+                }
+                else if (! derivedWebApp.equals(srcWebApp))
+                {
+                    multiWebAppsFound = true;
+                }
+            }
+        }
+        
+        final String webApp = (multiWebAppsFound == false ? derivedWebApp : null);
+       
+        RetryingTransactionCallback<Pair<SandboxInfo, String>> sandboxCallback = new RetryingTransactionCallback<Pair<SandboxInfo, String>>()
+        {
+            public Pair<SandboxInfo, String> execute() throws Throwable
+            {
+                // call the actual implementation
+                return createWorkflowSandbox(finalWorkflowName, finalWorkflowParams, stagingSandboxId, srcPaths, expirationDates);
+            }
+        };
+
+        // create the workflow sandbox firstly
+        final Pair<SandboxInfo, String> workflowInfo = txnHelper.doInTransaction(sandboxCallback, false, true);
+
+        if (workflowInfo != null)
+        {
+            final SandboxInfo wfSandboxInfo = workflowInfo.getFirst();
+            String virtUpdatePath = workflowInfo.getSecond();
+            
+            // inform the virtualisation server if the workflow sandbox was created
+            if (virtUpdatePath != null)
+            {
+                WCMUtil.updateVServerWebapp(virtServerRegistry, virtUpdatePath, true);
+            }
+
+            try
+            {
+                RetryingTransactionCallback<String> workflowCallback = new RetryingTransactionCallback<String>()
+                {
+                    public String execute() throws Throwable
+                    {
+                        // call the actual implementation
+                        startWorkflow(wpStoreId, sbStoreId, wfSandboxInfo, webApp, finalWorkflowName, finalWorkflowParams, submitLabel, submitComment, launchDate, validateLinks, autoDeploy);
+                        return null;
+                    }
+                };
+                
+                // start the workflow
+                txnHelper.doInTransaction(workflowCallback, false, true);
+            }
+            catch (Throwable err)
+            {
+                cleanupWorkflowSandbox(wfSandboxInfo);
+                throw new AlfrescoRuntimeException("Failed to submit to workflow", err);
+            }
+        }
+    }
+    
+    /**
+     * Creates a workflow sandbox for all the submitted items
+     *
+     * @param context Faces context
+     */
+    protected Pair<SandboxInfo, String> createWorkflowSandbox(String workflowName, Map<QName, Serializable> workflowParams, String stagingSandboxId, final List<String> srcPaths, Map<String, Date> expirationDates)
+    {
+        // The virtualization server might need to be notified
+        // because one or more of the files submitted could alter
+        // the behavior the virtual webapp in the target of the submit.
+        // For example, the user might be submitting a new jar or web.xml file.
+        //
+        // This must take place after the transaction has been completed;
+        // therefore, a variable is needed to store the path to the
+        // updated webapp so it can happen in doPostCommitProcessing.
+        String virtUpdatePath = null;
+        SandboxInfo sandboxInfo = null;
+       
+        // create container for our avm workflow package
+       
+        if (! workflowName.equals(WORKFLOW_SUBMITDIRECT))
+        {
+            // Create workflow sandbox for workflow package
+            sandboxInfo = sandboxFactory.createWorkflowSandbox(stagingSandboxId);
+        }
+        else
+        {
+            // default to direct submit workflow
+
+            // NOTE: read only workflow sandbox is lighter to construct than full workflow sandbox
+            sandboxInfo = sandboxFactory.createReadOnlyWorkflowSandbox(stagingSandboxId);
+        }
+       
+        // Example workflow main store name:
+        //     mysite--workflow-9161f640-b020-11db-8015-130bf9b5b652
+        String workflowMainStoreName = sandboxInfo.getMainStoreName();
+       
+        List<AVMDifference> diffs = new ArrayList<AVMDifference>(srcPaths.size());
+       
+        // get diff list - also process expiration dates, if any, and set virt svr update path
+       
+        for (String srcPath : srcPaths)
+        {
+            // We *always* want to update virtualization server
+            // when a workflow sandbox is given data in the
+            // context of a submit workflow.  Without this,
+            // it would be impossible to see workflow data
+            // in context.  The raw operation to create a
+            // workflow sandbox does not notify the virtualization
+            // server that it exists because it's useful to
+            // defer this operation until everything is already
+            // in place; this allows pointlessly fine-grained
+            // notifications to be suppressed (they're expensive).
+            //
+            // Therefore, just derive the name of the webapp
+            // in the workflow sandbox from the 1st item in
+            // the submit list (even if it's not in WEB-INF),
+            // and force the virt server notification after the
+            // transaction has completed via doPostCommitProcessing.
+            if (virtUpdatePath  == null)
+            {
+                // The virtUpdatePath looks just like the srcPath
+                // except that it belongs to a the main store of
+                // the workflow sandbox instead of the sandbox
+                // that originated the submit.
+                virtUpdatePath = workflowMainStoreName + srcPath.substring(srcPath.indexOf(':'),srcPath.length());
+            }
+
+            if ((expirationDates != null) && (! expirationDates.isEmpty()))
             {
                 // process the expiration date (if any)
                 processExpirationDate(srcPath, expirationDates);
             }
+          
+            diffs.add(new AVMDifference(-1, srcPath, -1, WCMUtil.getCorrespondingPath(srcPath, workflowMainStoreName), AVMDifference.NEWER));
+        }
 
-            // recursively remove locks from this item
-            recursivelyRemoveLocks(wpStoreId, -1, avmService.lookup(-1, srcPath, true), srcPath);
+        // write changes to layer so files are marked as modified
+        avmSyncService.update(diffs, null, false, false, false, false, null, null);
+       
+        return new Pair<SandboxInfo, String>(sandboxInfo, virtUpdatePath);
+    }
 
-            // check to see if destPath forces a notification of the virtualization server
-            // (e.g.:  it might be a path to a jar file within WEB-INF/lib).
-            if (VirtServerUtils.requiresUpdateNotification(dstPath))
+    /**
+     * Starts the configured workflow to allow the submitted items to be link
+     * checked and reviewed.
+     */
+    protected void startWorkflow(String wpStoreId, String sbStoreId, SandboxInfo wfSandboxInfo, String webApp, String workflowName, Map<QName, Serializable> workflowParams, 
+                                 String submitLabel, String submitComment, Date launchDate, boolean validateLinks, boolean autoDeploy)
+    {
+        ParameterCheck.mandatoryString("workflowName", workflowName);
+        ParameterCheck.mandatory("workflowParams", workflowParams);
+        
+        // start the workflow to get access to the start task
+        WorkflowDefinition wfDef = workflowService.getDefinitionByName(workflowName);
+        WorkflowPath path = workflowService.startWorkflow(wfDef.id, null);
+        
+        if (path != null)
+        {
+            // extract the start task
+            List<WorkflowTask> tasks = workflowService.getTasksForWorkflowPath(path.id);
+            if (tasks.size() == 1)
             {
-                // Bind the post-commit transaction listener with data required for virtualization server notification
-                UpdateSandboxTransactionListener tl = new UpdateSandboxTransactionListener(dstPath);
-                AlfrescoTransactionSupport.bindListener(tl);
+                WorkflowTask startTask = tasks.get(0);
+
+                if (startTask.state == WorkflowTaskState.IN_PROGRESS)
+                {
+                    final NodeRef workflowPackage = WCMWorkflowUtil.createWorkflowPackage(workflowService, avmService, wfSandboxInfo);
+
+                    workflowParams.put(WorkflowModel.ASSOC_PACKAGE, workflowPackage);
+
+                    // add submission parameters
+                    workflowParams.put(WorkflowModel.PROP_WORKFLOW_DESCRIPTION, submitComment);
+                    workflowParams.put(WCMWorkflowModel.PROP_LABEL, submitLabel);
+                    workflowParams.put(WCMWorkflowModel.PROP_FROM_PATH,
+                            WCMUtil.buildStoreRootPath(sbStoreId));
+                    workflowParams.put(WCMWorkflowModel.PROP_LAUNCH_DATE, launchDate);
+                    workflowParams.put(WCMWorkflowModel.PROP_VALIDATE_LINKS,
+                            new Boolean(validateLinks));
+                    workflowParams.put(WCMWorkflowModel.PROP_AUTO_DEPLOY,
+                            new Boolean(autoDeploy));
+                    workflowParams.put(WCMWorkflowModel.PROP_WEBAPP,
+                            webApp);
+                    workflowParams.put(WCMWorkflowModel.ASSOC_WEBPROJECT,
+                           wpService.getWebProjectNodeFromStore(wpStoreId));
+
+                    // update start task with submit parameters
+                    workflowService.updateTask(startTask.id, workflowParams, null, null);
+
+                    // end the start task to trigger the first 'proper' task in the workflow
+                    workflowService.endTask(startTask.id, null);
+                }
             }
         }
-        
-        // write changes to layer so files are marked as modified
-        
-        // Submit is done as system as the staging store is read only
-        // We could add support to runIgnoringStoreACls
-        
-        // TODO review flatten - assumes webapps, hence currently flattens at /www/avm_webapps level
-        // also review flatten for SimpleAVMSubmitAction and AVMSubmitAction
-        final String sandboxPath = WCMUtil.buildSandboxRootPath(sbStoreId);
-        final String stagingPath = WCMUtil.buildSandboxRootPath(stagingSandboxId);
+    }
 
-        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
+    /**
+     * Cleans up the workflow sandbox created by the first transaction. This
+     * action is itself preformed in a separate transaction.
+     */
+    private void cleanupWorkflowSandbox(final SandboxInfo sandboxInfo)
+    {
+        RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
+       
+        RetryingTransactionCallback<String> callback = new RetryingTransactionCallback<String>()
         {
-             public Object doWork() throws Exception
-             {
-                 avmSyncService.update(diffs, null, true, true, false, false, submitLabel, submitComment);
-                 AVMDAOs.Instance().fAVMNodeDAO.flush();
-                 avmSyncService.flatten(sandboxPath, stagingPath);
-                 return null;
-             }
-        }, AuthenticationUtil.getSystemUserName());
+            public String execute() throws Throwable
+            {
+                // call the actual implementation
+                cleanupWorkflowSandboxImpl(sandboxInfo);
+                return null;
+            }
+        };
+
+        try
+        {
+            // Execute the cleanup handler
+            txnHelper.doInTransaction(callback);
+        }
+        catch (Throwable e)
+        {
+            // not much we can do now, just log the error to inform admins
+            logger.error("Failed to cleanup workflow sandbox after workflow failure", e);
+        }
+    }
+
+    /**
+     * Performs the actual deletion of stores in the workflow sandbox.
+     */
+    private void cleanupWorkflowSandboxImpl(SandboxInfo sandboxInfo)
+    {
+        if (sandboxInfo != null)
+        {
+            String mainWorkflowStore = sandboxInfo.getMainStoreName();
+            Map<QName, PropertyValue> matches = avmService.queryStorePropertyKey(mainWorkflowStore, 
+                                                                                 QName.createQName(null, ".sandbox-id%"));
+            
+            QName sandboxID = matches.keySet().iterator().next();
+            // Get all the stores in the sandbox.
+            Map<String, Map<QName, PropertyValue>> stores = avmService.queryStoresPropertyKeys(sandboxID);
+            for (String storeName : stores.keySet())
+            {
+                avmService.purgeStore(storeName);
+            }
+        }
     }
     
     /* (non-Javadoc)
@@ -826,6 +1076,7 @@ public class SandboxServiceImpl implements SandboxService
      * Recursively remove locks from a path. Walking child folders looking for files
      * to remove locks from.
      */
+    /*
     private void recursivelyRemoveLocks(String wpStoreId, int version, AVMNodeDescriptor desc, String absoluteAVMPath)
     {
        if (desc.isFile() || desc.isDeletedFile())
@@ -854,6 +1105,7 @@ public class SandboxServiceImpl implements SandboxService
           }
        }
     }
+    */
 
     /**
      * Create Sandbox Transaction listener - invoked after commit

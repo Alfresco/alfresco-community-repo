@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -32,42 +32,27 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import junit.framework.TestCase;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.avm.AVMNotFoundException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
-import org.alfresco.service.cmr.security.AuthenticationService;
-import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.ApplicationContextHelper;
-import org.alfresco.util.PropertyMap;
+import org.alfresco.wcm.AbstractWCMServiceImplTest;
 import org.alfresco.wcm.sandbox.SandboxInfo;
 import org.alfresco.wcm.sandbox.SandboxService;
 import org.alfresco.wcm.util.WCMUtil;
 import org.alfresco.wcm.webproject.WebProjectInfo;
 import org.alfresco.wcm.webproject.WebProjectService;
-import org.springframework.context.ApplicationContext;
 
 /**
  * Asset Service implementation unit test
  * 
  * @author janv
  */
-public class AssetServiceImplTest extends TestCase 
+public class AssetServiceImplTest extends AbstractWCMServiceImplTest
 {
-    private static final ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
-    
-    //
-    // test data
-    //
-    
-    private static final String TEST_RUN = ""+System.currentTimeMillis();
-    private static final boolean CLEAN = true; // cleanup during teardown
-    
     // base web project
     private static final String TEST_WEBPROJ_DNS  = "testAsset-"+TEST_RUN;
     private static final String TEST_WEBPROJ_NAME = "testAsset Web Project Display Name - "+TEST_RUN;
@@ -83,7 +68,7 @@ public class AssetServiceImplTest extends TestCase
     private static final String USER_ONE = TEST_USER+"-One";
     private static final String USER_TWO = TEST_USER+"-Two";
     private static final String USER_THREE = TEST_USER+"-Three";
-    
+     
     //
     // services
     //
@@ -92,20 +77,16 @@ public class AssetServiceImplTest extends TestCase
     private SandboxService sbService;
     private AssetService assetService;
     
-    private AuthenticationService authenticationService;
-    private PersonService personService;
-    
     @Override
     protected void setUp() throws Exception
     {
+        super.setUp();
+        
         // Get the required services
         wpService = (WebProjectService)ctx.getBean("WebProjectService");
         sbService = (SandboxService)ctx.getBean("SandboxService");
         assetService = (AssetService)ctx.getBean("AssetService");
-        
-        authenticationService = (AuthenticationService)ctx.getBean("AuthenticationService");
-        personService = (PersonService)ctx.getBean("PersonService");
-        
+
         // By default run as Admin
         AuthenticationUtil.setFullyAuthenticatedUser(USER_ADMIN);
         
@@ -138,32 +119,6 @@ public class AssetServiceImplTest extends TestCase
         
         AuthenticationUtil.clearCurrentSecurityContext();
         super.tearDown();
-    }
-    
-    private void createUser(String userName)
-    {
-        if (authenticationService.authenticationExists(userName) == false)
-        {
-            authenticationService.createAuthentication(userName, "PWD".toCharArray());
-            
-            PropertyMap ppOne = new PropertyMap(4);
-            ppOne.put(ContentModel.PROP_USERNAME, userName);
-            ppOne.put(ContentModel.PROP_FIRSTNAME, "firstName");
-            ppOne.put(ContentModel.PROP_LASTNAME, "lastName");
-            ppOne.put(ContentModel.PROP_EMAIL, "email@email.com");
-            ppOne.put(ContentModel.PROP_JOBTITLE, "jobTitle");
-            
-            personService.createPerson(ppOne);
-        }
-    }
-    
-    private void deleteUser(String userName)
-    {
-        if (authenticationService.authenticationExists(userName) == true)
-        {
-            personService.deletePerson(userName);
-            authenticationService.deleteAuthentication(userName);
-        }
     }
     
     private void checkAssetInfo(AssetInfo assetInfo, String expectedName, String expectedPath, String expectedCreator, boolean expectedIsFile, boolean expectedIsFolder, boolean expectedIsDeleted, boolean expectedIsLocked, String expectedLockOwner)
@@ -720,7 +675,7 @@ public class AssetServiceImplTest extends TestCase
         checkAssetInfo(myMovedFile1Asset, "myFile1", path+"/myFolder2/myFile1", USER_ONE, true, false, false, false, null);
     }
     
-    public void testProperties()
+    public void testProperties() throws InterruptedException
     {
         // create web project (also creates staging sandbox and admin's author sandbox)
         WebProjectInfo wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-properties", TEST_WEBPROJ_NAME+"-properties", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION, TEST_WEBPROJ_DEFAULT_WEBAPP, TEST_WEBPROJ_DONT_USE_AS_TEMPLATE, null);
@@ -759,6 +714,8 @@ public class AssetServiceImplTest extends TestCase
         assertEquals(USER_ONE, assetService.getLockOwner(myFile1Asset));
         
         sbService.submitWebApp(sbStoreId, defaultWebApp, "submit1 label", "submit1 comment");
+        
+        Thread.sleep(SUBMIT_DELAY);
         
         assertNull(assetService.getLockOwner(myFile1Asset));
         
@@ -873,7 +830,7 @@ public class AssetServiceImplTest extends TestCase
     }
     
     
-    public void testSimpleLockFile()
+    public void testSimpleLockFile() throws InterruptedException
     {
         // create web project (also creates staging sandbox and admin's author sandbox)
         WebProjectInfo wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-simpleLock", TEST_WEBPROJ_NAME+"-simpleLock", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION, TEST_WEBPROJ_DEFAULT_WEBAPP, TEST_WEBPROJ_DONT_USE_AS_TEMPLATE, null);
@@ -917,6 +874,8 @@ public class AssetServiceImplTest extends TestCase
         AuthenticationUtil.setFullyAuthenticatedUser(USER_ONE);
         
         sbService.submitWebApp(sbStoreId, defaultWebApp, "submit1 label", "submit1 comment");
+        
+        Thread.sleep(SUBMIT_DELAY);
         
         assertNull(assetService.getLockOwner(myFile1Asset));
         assertTrue(assetService.hasLockAccess(myFile1Asset));

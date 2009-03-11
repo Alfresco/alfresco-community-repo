@@ -355,12 +355,42 @@
          assoc.id
    </query>
    
+   <query name="node.GetChildAssocRefsByTypeAndNameList">
+      select
+         assoc.id,
+         assoc.typeQNameId,
+         assoc.qnameNamespaceId,
+         assoc.qnameLocalName,
+         assoc.childNodeName,
+         assoc.childNodeNameCrc,
+         assoc.isPrimary,
+         assoc.index,
+         child.id,
+         store.protocol,
+         store.identifier,
+         child.uuid
+      from
+         org.alfresco.repo.domain.hibernate.ChildAssocImpl as assoc
+         join assoc.parent as parent
+         join assoc.child as child
+         join child.store as store
+      where
+         parent.id = :parentId and
+         assoc.typeQNameId = :typeQNameId and
+         assoc.childNodeName in (:childNodeNames)
+      order by
+         assoc.index,
+         assoc.id
+   </query>
+   
    <query name="node.GetChildAssocRefs">
       select
          assoc.id,
          assoc.typeQNameId,
          assoc.qnameNamespaceId,
          assoc.qnameLocalName,
+         assoc.childNodeName,
+         assoc.childNodeNameCrc,
          assoc.isPrimary,
          assoc.index,
          child.id,
@@ -385,6 +415,8 @@
          assoc.typeQNameId,
          assoc.qnameNamespaceId,
          assoc.qnameLocalName,
+         assoc.childNodeName,
+         assoc.childNodeNameCrc,
          assoc.isPrimary,
          assoc.index,
          child.id,
@@ -411,6 +443,8 @@
          assoc.typeQNameId,
          assoc.qnameNamespaceId,
          assoc.qnameLocalName,
+         assoc.childNodeName,
+         assoc.childNodeNameCrc,
          assoc.isPrimary,
          assoc.index,
          child.id,
@@ -436,6 +470,8 @@
          assoc.typeQNameId,
          assoc.qnameNamespaceId,
          assoc.qnameLocalName,
+         assoc.childNodeName,
+         assoc.childNodeNameCrc,
          assoc.isPrimary,
          assoc.index,
          child.id,
@@ -463,6 +499,8 @@
          assoc.typeQNameId,
          assoc.qnameNamespaceId,
          assoc.qnameLocalName,
+         assoc.childNodeName,
+         assoc.childNodeNameCrc,
          assoc.isPrimary,
          assoc.index,
          child.id,
@@ -488,6 +526,8 @@
          assoc.typeQNameId,
          assoc.qnameNamespaceId,
          assoc.qnameLocalName,
+         assoc.childNodeName,
+         assoc.childNodeNameCrc,
          assoc.isPrimary,
          assoc.index,
          child.id,
@@ -513,6 +553,8 @@
          assoc.typeQNameId,
          assoc.qnameNamespaceId,
          assoc.qnameLocalName,
+         assoc.childNodeName,
+         assoc.childNodeNameCrc,
          assoc.isPrimary,
          assoc.index,
          child.id,

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -24,6 +24,7 @@
  */
 package org.alfresco.wcm.sandbox;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -241,21 +242,6 @@ public interface SandboxService
     /**
      * Submit list of changed assets for given sandbox (eg. from user sandbox to staging sandbox)
      * 
-     * NOTE: for backwards compatibility - subject to change - hence deprecated for now
-     * 
-     * @param sbStoreId          sandbox store id
-     * @param assetPaths         list of assets, as relative paths (eg. /www/avm_webapps/ROOT/MyFolderToSubmit)
-     * @param expirationDates    map of AVM src paths to expiration dates
-     * @param submitLabel        label for submitted snapshot
-     * @param submitDescription  description for submitted snapshot
-     * 
-     * @deprecated
-     */
-    public void submitList(String sbStoreId, List<String> relativePaths, Map<String, Date> expirationDates, String submitLabel, String submitDescription);
-    
-    /**
-     * Submit list of changed assets for given sandbox (eg. from user sandbox to staging sandbox)
-     * 
      * @param sbStoreId          sandbox store id
      * @param assetNodes         list of assets
      * @param submitLabel        label for submitted snapshot
@@ -266,13 +252,25 @@ public interface SandboxService
     /**
      * Submit list of changed assets for given sandbox (eg. from user sandbox to staging sandbox)
      * 
+     * NOTE: for backwards compatibility - subject to change - hence deprecated for now
+     * 
      * @param sbStoreId          sandbox store id
-     * @param assets             list of assets
-     * @param expirationDates    map of <path, date> for those assets set with an expiration date, or can be null (if no expiration dates)
+     * @param assetPaths         list of assets, as relative paths (eg. /www/avm_webapps/ROOT/MyFolderToSubmit)
+     * @param workflowName       selected workflow name - if null, will use default submit direct workflow
+     * @param workflowParams     configured workflow params
      * @param submitLabel        label for submitted snapshot
      * @param submitDescription  description for submitted snapshot
+     * @param expirationDates    optional map of <path, date> for those assets set with an expiration date, or can be null (if no expiration dates)
+     * @param launchDate         optional launch date
+     * @param validateLinks      if true then will validate links (if link validation is enabled)
+     * @param autoDeploy         if true then will auto-deploy on workflow approval
+     * 
+     * @deprecated subject to change
      */
-    public void submitListAssets(String sbStoreId, List<AssetInfo> assets, Map<String, Date> expirationDates, String submitLabel, String submitDescription);
+    public void submitListAssets(String sbStoreId, List<String> relativePaths,
+                                 String workflowName, Map<QName, Serializable> workflowParams, 
+                                 String submitLabel, String submitDescription,
+                                 Map<String, Date> expirationDates, Date launchDate, boolean validateLinks, boolean autoDeploy);
     
     /**
      * Revert all changed assets for given sandbox (eg. in user sandbox)

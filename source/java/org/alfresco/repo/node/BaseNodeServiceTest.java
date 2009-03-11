@@ -27,6 +27,7 @@ package org.alfresco.repo.node;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -2269,6 +2270,15 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
                 ContentModel.TYPE_CONTENT,
                 props);
         NodeRef defRef = pathDefRef.getChildRef();
+        // create node KLM
+        props.put(ContentModel.PROP_NAME, "KLM");
+        ChildAssociationRef pathKlmRef = nodeService.createNode(
+                abcRef,
+                ASSOC_TYPE_QNAME_TEST_CONTAINS,
+                QName.createQName("KLM"),
+                ContentModel.TYPE_CONTENT,
+                props);
+        NodeRef klmRef = pathDefRef.getChildRef();
         
         // now browse down using the node service
         NodeRef checkAbcRef = nodeService.getChildByName(parentRef, ASSOC_TYPE_QNAME_TEST_CONTAINS, "abc");
@@ -2280,6 +2290,13 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         // check that we get null where not present
         NodeRef checkHijRef = nodeService.getChildByName(checkAbcRef, ASSOC_TYPE_QNAME_TEST_CONTAINS, "hij");
         assertNull("Third level, named node 'HIJ' should not have been found", checkHijRef);
+        
+        // Now search for multiple names
+        List<String> namesList = Arrays.asList("ABC", "DEF", "HIJ", "KLM");
+        List<ChildAssociationRef> childAssocRefs = nodeService.getChildrenByName(checkAbcRef, ASSOC_TYPE_QNAME_TEST_CONTAINS, namesList);
+        assertEquals("Expected exactly 2 results", 2, childAssocRefs.size());
+        assertTrue("Expected result not included", childAssocRefs.contains(pathDefRef));
+        assertTrue("Expected result not included", childAssocRefs.contains(pathKlmRef));
     }
     
     public void testLocalizedAspect() throws Exception

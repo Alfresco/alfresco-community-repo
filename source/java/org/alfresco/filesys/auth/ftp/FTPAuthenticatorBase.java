@@ -174,4 +174,18 @@ public abstract class FTPAuthenticatorBase implements FTPAuthenticator {
 			}
 		}
 	}
+	
+	/**
+	 * Create a transaction, this will be a wrteable transaction unless the system is in read-only mode.
+	 * 
+	 * return UserTransaction
+	 */
+	protected final UserTransaction createTransaction()
+	{
+		// Get the transaction service
+		
+		TransactionService txService = getTransactionService();
+		
+		return txService.getUserTransaction( txService.isReadOnly() ? true : false);
+	}
 }

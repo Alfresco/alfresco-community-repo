@@ -301,6 +301,21 @@ public class AVMServiceImpl implements AVMService
         return getDirectoryListing(dir, false);
     }
 
+
+    public SortedMap<String, AVMNodeDescriptor> getDirectoryListing(AVMNodeDescriptor dir, String childPattern)
+    {
+        return getDirectoryListing(dir, childPattern, false);
+    }
+
+    public SortedMap<String, AVMNodeDescriptor> getDirectoryListing(AVMNodeDescriptor dir, String childNamePattern, boolean includeDeleted)
+    {
+        if (dir == null)
+        {
+            throw new AVMBadArgumentException("Null descriptor.");
+        }
+        return fAVMRepository.getListing(dir, childNamePattern, includeDeleted);     
+    }
+    
     /**
      * Get a directory listing from a node descriptor, with the option of
      * seeing deleted nodes.

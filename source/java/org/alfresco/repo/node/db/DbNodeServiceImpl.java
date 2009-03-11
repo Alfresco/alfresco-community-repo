@@ -1443,8 +1443,10 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         };
         // Get all child associations with the specific qualified name
         nodeDaoService.getChildAssocsByChildTypes(nodeId, childNodeTypeQNames, callback);
+        // Sort the results
+        List<ChildAssociationRef> orderedList = reorderChildAssocs(results);
         // Done
-        return results;
+        return orderedList;
     }
 
     private List<ChildAssociationRef> reorderChildAssocs(Collection<ChildAssociationRef> childAssocRefs)
@@ -1486,6 +1488,33 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         {
             return null;
         }
+    }
+
+    public List<ChildAssociationRef> getChildrenByName(NodeRef nodeRef, QName assocTypeQName, Collection<String> childNames)
+    {
+        // Get the node
+        Pair<Long, NodeRef> nodePair = getNodePairNotNull(nodeRef);
+        Long nodeId = nodePair.getFirst();
+
+        final List<ChildAssociationRef> results = new ArrayList<ChildAssociationRef>(100);
+        
+        NodeDaoService.ChildAssocRefQueryCallback callback = new NodeDaoService.ChildAssocRefQueryCallback()
+        {
+            public boolean handle(
+                    Pair<Long, ChildAssociationRef> childAssocPair,
+                    Pair<Long, NodeRef> parentNodePair,
+                    Pair<Long, NodeRef> childNodePair)
+            {
+                results.add(childAssocPair.getSecond());
+                return false;
+            }
+        };
+        // Get all child associations with the specific qualified name
+        nodeDaoService.getChildAssocs(nodeId, assocTypeQName, childNames, callback);
+        // Sort the results
+        List<ChildAssociationRef> orderedList = reorderChildAssocs(results);
+        // Done
+        return orderedList;
     }
 
     public ChildAssociationRef getPrimaryParent(NodeRef nodeRef) throws InvalidNodeRefException

@@ -108,12 +108,13 @@ public class AlfrescoFtpAuthenticator extends FTPAuthenticatorBase {
         
         // Start a transaction
       
-        tx = getTransactionService().getUserTransaction( false);
+        tx = createTransaction();
         tx.begin();
 
-        // Perform local MD4 password check
+        // Authenitcate using the authentication component, as we have the plaintext password
         
-        authSts = doMD4UserAuthentication(client, sess);
+        getAuthenticationComponent().authenticate( client.getUserName(), client.getPasswordAsString().toCharArray());
+        authSts = true;
         
         // Check if the user has been logged on successfully
         
@@ -192,63 +193,5 @@ public class AlfrescoFtpAuthenticator extends FTPAuthenticatorBase {
       // Mark the client as being a guest logon
       
       client.setGuest( true);
-  }
-  
-  /**
-   * Perform MD4 user authentication
-   * 
-   * @param client Client information
-   * @param sess Server session
-   * @return boolean 
-   */
-  private final boolean doMD4UserAuthentication(ClientInfo client, SrvSession sess)
-  {
-      // Get the stored MD4 hashed password for the user, or null if the user does not exist
-      
-      String md4hash = getAuthenticationComponent().getMD4HashedPassword(client.getUserName());
-      
-      if ( md4hash != null)
-      {
-          // Check if the client has supplied a password, if not then do not allow access
-          
-          if ( client.getPassword() == null)
-              return false;
-          
-          // Encode the user supplied password
-          
-          String userMd4 = m_md4Encoder.encodePassword( client.getPasswordAsString(), null);
-          
-          // Compare the hashed passwords
-
-          if ( md4hash.equals( userMd4) == false)
-          {
-              // DEBUG
-            
-              if ( logger.isDebugEnabled())
-                  logger.debug("Password mismatch for user " + client.getUserName());
-              
-              // Access not allowed
-              
-              return false;
-          }
-            
-          // Logging
-          
-          if ( logger.isInfoEnabled())
-            logger.info( "Logged on user " + client.getUserName() + " ( address " + sess.getRemoteAddress() + ")");
-          
-          // Set the current user to be authenticated, save the authentication token
-
-          AlfrescoClientInfo alfClient = (AlfrescoClientInfo) client;
-          alfClient.setAuthenticationToken( getAuthenticationComponent().setCurrentUser(client.getUserName()));
-          
-          // Passwords match, grant access
-          
-          return true;
-      }
-
-      // User does not exist
-          
-      return false;
   }
 }

@@ -80,6 +80,13 @@ public interface DirectoryNode extends AVMNode
     public Map<String, AVMNode> getListing(Lookup lPath, boolean includeDeleted);
     
     /**
+     * Get a directory listing.
+     * @param lPath The lookup context.
+     * @return A SortedMap of names to DirectoryEntries.
+     */
+    public Map<String, AVMNode> getListing(Lookup lPath, String childNamePattern, boolean includeDeleted);
+    
+    /**
      * Get a listing of the nodes directly contained by a directory.
      * @param lPath The Lookup to this directory.
      * @return A Map of names to nodes.
@@ -101,6 +108,17 @@ public interface DirectoryNode extends AVMNode
      * @return A Map of names to node descriptors
      */
     public SortedMap<String, AVMNodeDescriptor> getListing(AVMNodeDescriptor dir, 
+                                                           boolean includeDeleted);
+    
+    /**
+     * Get a listing from a directory specified by an AVMNodeDescriptor.
+     * @param dir The directory to list.
+     * @param childNamePattern - child name pattern to match
+     * @param includeDeleted = include deleted children
+     * @return A Map of names to node descriptors
+     */
+    public SortedMap<String, AVMNodeDescriptor> getListing(AVMNodeDescriptor dir, 
+                                                           String childNamePattern,
                                                            boolean includeDeleted);
 
     /**

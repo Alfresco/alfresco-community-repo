@@ -167,14 +167,14 @@ public class PassthruCifsAuthenticator extends CifsAuthenticatorBase implements 
             // Debug
             
             if ( logger.isDebugEnabled())
-                logger.debug("Null CIFS logon allowed");
+                logger.debug("Null CIFS logon allowed, sess = " + sess.getUniqueId());
 
             return CifsAuthenticator.AUTH_ALLOW;
         }
 
         // Start a transaction
     	
-        UserTransaction tx = getTransactionService().getUserTransaction( true);
+        UserTransaction tx = getTransactionService().getUserTransaction( false);
         int authSts = AUTH_DISALLOW;
         
         try
@@ -303,7 +303,7 @@ public class PassthruCifsAuthenticator extends CifsAuthenticatorBase implements 
     
                     // Debug
     
-                    logger.error(ex.getMessage());
+                    logger.error(ex);
                 }
     
                 // Keep the authentication session if the user session is an SMB session, else close the
@@ -399,17 +399,15 @@ public class PassthruCifsAuthenticator extends CifsAuthenticatorBase implements 
      * 
      * @return AuthContext
      */
-    public AuthContext getAuthContext( SrvSession sess)
+    public AuthContext getAuthContext( SMBSrvSession sess)
     {
         // Make sure the SMB server listener is installed
 
-    	if ( m_server == null && sess instanceof SMBSrvSession)
+    	if ( m_server == null)
     	{
-    		SMBSrvSession smbSess = (SMBSrvSession) sess;
-    		m_server = smbSess.getSMBServer();
-    		
     		// Install the server listener
     		
+    		m_server = sess.getSMBServer();
             m_server.addSessionListener(this);
     	}
     	
@@ -422,6 +420,11 @@ public class PassthruCifsAuthenticator extends CifsAuthenticatorBase implements 
         	// Try and map the client address to a domain
         	
         	String domain = mapClientAddressToDomain( sess.getRemoteAddress());
+        	
+        	// DEBUG
+        	
+        	if ( logger.isDebugEnabled())
+        		logger.debug("Mapped client " + sess.getRemoteAddress() + " to domain " + domain);
         	
 	        AuthenticateSession authSess = m_passthruServers.openSession( false, domain);
 	        if (authSess != null)
@@ -442,6 +445,8 @@ public class PassthruCifsAuthenticator extends CifsAuthenticatorBase implements 
 	            if (logger.isDebugEnabled())
 	                logger.debug("Passthru sessId=" + authSess.getSessionId() + ", auth ctx=" + authCtx);
 	        }
+	        else if ( logger.isDebugEnabled())
+	        	logger.debug("Failed to open a passthru session, mapped domain = " + domain);
         }
         catch (Exception ex)
         {
@@ -1128,7 +1133,7 @@ public class PassthruCifsAuthenticator extends CifsAuthenticatorBase implements 
             // DEBUG
 
             if (logger.isDebugEnabled())
-                logger.debug("  No PassthruDetails for " + sess.getUniqueId());
+                logger.debug("  No PassthruDetails for " + sess.getUniqueId() + ", check server list/domain mappings");
             
             // Indicate logon failure
             
@@ -1153,6 +1158,11 @@ public class PassthruCifsAuthenticator extends CifsAuthenticatorBase implements 
         // Create the passthru authentication server list
         
         m_passthruServers = new PassthruServers();
+        
+        // Propagate the debug setting
+        
+        if ( logger.isDebugEnabled())
+        	m_passthruServers.setDebug( true);
         
         // Check if the session timeout has been specified
 
@@ -1426,6 +1436,13 @@ public class PassthruCifsAuthenticator extends CifsAuthenticatorBase implements 
      */
     public void sessionLoggedOn(SrvSession sess)
     {
+    	// Check the client information for the session
+    	
+    	ClientInfo cInfo = sess.getClientInformation();
+    	
+    	if ( cInfo == null || cInfo.isNullSession())
+    		return;
+    	
         // Check if there is an active session to the authentication server for this local
         // session
 

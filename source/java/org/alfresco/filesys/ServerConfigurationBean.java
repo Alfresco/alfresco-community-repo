@@ -1875,10 +1875,7 @@ public class ServerConfigurationBean extends ServerConfiguration implements Appl
             }
             else if (authType.equalsIgnoreCase("alfresco"))
             {
-                // Standard authenticator requires MD4 or passthru based authentication
-                
-//                if ( ntlmMode == NTLMMode.NONE)
-//                    throw new AlfrescoRuntimeException("Wrong authentication setup for alfresco authenticator");
+            	// Do nothing, uses the authentication component as it has the plaintext password from the user
             }
             else if ( authType.equalsIgnoreCase( "custom"))
             {

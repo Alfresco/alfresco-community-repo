@@ -305,6 +305,11 @@ public class MultiTAVMService implements AVMService
         return getBaseNodes(fService.getDirectoryListing(getTenantNode(dir), includeDeleted));
     }
 
+    public SortedMap<String, AVMNodeDescriptor> getDirectoryListing(AVMNodeDescriptor dir, String childNamePattern)
+    {
+        return getBaseNodes(fService.getDirectoryListing(getTenantNode(dir), childNamePattern));
+    }
+
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.avm.AVMService#getDirectoryListingArray(int, java.lang.String, boolean)
      */

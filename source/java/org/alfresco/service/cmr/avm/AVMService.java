@@ -170,6 +170,21 @@ public interface AVMService
      * @throws AVMWrongTypeException
      */
     public SortedMap<String, AVMNodeDescriptor> getDirectoryListing(AVMNodeDescriptor dir);
+    
+    /**
+     * Get a non-recursive directory listing of a directory node
+     * identified by a node descriptor. Only return children matching the given pattern.
+     * '*' match any number of characters - equivalent to SQL '%'
+     * '?' match a single character - equivalent to SQL '_'
+     * '\' escape - valid sequences "\\", "\*" and "\?" 
+     *
+     * @param dir The directory node descriptor.
+     * @param childPattern
+     * @return A sorted Map of names to node descriptors.
+     * @throws AVMNotFoundException
+     * @throws AVMWrongTypeException
+     */
+    public SortedMap<String, AVMNodeDescriptor> getDirectoryListing(AVMNodeDescriptor dir, String childNamePattern);
 
     /**
      * Non-recursively get the names of nodes that have been deleted in 

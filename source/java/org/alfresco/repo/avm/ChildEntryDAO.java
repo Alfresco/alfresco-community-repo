@@ -48,10 +48,10 @@ public interface ChildEntryDAO
     /**
      * Get all the children of a given parent.
      * @param parent The parent.
-     * @param eager - true -> fetch children in the query
+     * @param childNamePattern - achild name pattern to match - null is supported for match all
      * @return A List of ChildEntries.
      */
-    public List<ChildEntry> getByParent(DirectoryNode parent);
+    public List<ChildEntry> getByParent(DirectoryNode parent, String childNamePattern);
 
     /**
      * Get the entry for a given child in a given parent.

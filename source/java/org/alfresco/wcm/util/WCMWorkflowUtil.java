@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -29,15 +29,20 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.alfresco.model.WCMWorkflowModel;
+import org.alfresco.repo.avm.AVMNodeConverter;
+import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMNotFoundException;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.LayeringDescriptor;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowTaskQuery;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.wcm.sandbox.SandboxInfo;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -52,6 +57,28 @@ public class WCMWorkflowUtil
 {
     private static final Log logger = LogFactory.getLog(WCMWorkflowUtil.class);
 
+    public static NodeRef createWorkflowPackage(WorkflowService workflowService, AVMService avmService, SandboxInfo sandboxInfo)
+    {
+        // create package paths (layered to user sandbox area as target)
+        final String workflowMainStoreName = sandboxInfo.getMainStoreName();
+        final String packagesPath = WCMUtil.buildStoreRootPath(workflowMainStoreName);
+        
+        // convert package to workflow package
+        final AVMNodeDescriptor packageDesc = avmService.lookup(-1, packagesPath);
+        final NodeRef packageNodeRef = workflowService.createPackage(AVMNodeConverter.ToNodeRef(-1, packageDesc.getPath()));
+        
+        avmService.setNodeProperty(packagesPath, WorkflowModel.PROP_IS_SYSTEM_PACKAGE, new PropertyValue(DataTypeDefinition.BOOLEAN, true));
+        
+        // NOTE: WCM-1019: As permissions are now implemented for AVM nodes we no longer need to set permisssions here
+        //                 as they will be inherited from the store the workflow store is layered over.
+        
+        //final ServiceRegistry services = Repository.getServiceRegistry(FacesContext.getCurrentInstance());
+        //final PermissionService permissionService = services.getPermissionService();
+        //permissionService.setPermission(packageNodeRef, PermissionService.ALL_AUTHORITIES, PermissionService.ALL_PERMISSIONS, true);
+        
+        return packageNodeRef;
+    }
+    
     public static List<WorkflowTask> getAssociatedTasksForSandbox(WorkflowService workflowService, final String storeName)
     {
         String fromPath = WCMUtil.buildStoreRootPath(storeName);

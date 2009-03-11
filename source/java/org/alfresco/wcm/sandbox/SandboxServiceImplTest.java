@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -31,9 +31,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import junit.framework.TestCase;
-
-import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
@@ -41,35 +38,24 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransacti
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
-import org.alfresco.service.cmr.security.AuthenticationService;
-import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.PropertyMap;
+import org.alfresco.wcm.AbstractWCMServiceImplTest;
 import org.alfresco.wcm.asset.AssetInfo;
 import org.alfresco.wcm.asset.AssetService;
 import org.alfresco.wcm.util.WCMUtil;
 import org.alfresco.wcm.webproject.WebProjectInfo;
 import org.alfresco.wcm.webproject.WebProjectService;
-import org.springframework.context.ApplicationContext;
 
 /**
  * Sandbox Service implementation unit test
  * 
  * @author janv
  */
-public class SandboxServiceImplTest extends TestCase 
-{
-    private static final ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
-    
-    //
-    // test data
-    //
-    
-    private static final String TEST_RUN = ""+System.currentTimeMillis();
-    private static final boolean CLEAN = true; // cleanup during teardown
-    
+public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
+{   
     // base web project
     private static final String TEST_WEBPROJ_DNS  = "testSandbox-"+TEST_RUN;
     private static final String TEST_WEBPROJ_NAME = "testSandbox Web Project Display Name - "+TEST_RUN;
@@ -102,9 +88,6 @@ public class SandboxServiceImplTest extends TestCase
     private SandboxService sbService;
     private AssetService assetService;
     
-    private AuthenticationService authenticationService;
-    private PersonService personService;
-    
     // TODO: temporary - remove from here when r13170 is merged from V3.1->HEAD
     private TransactionService transactionService;
     
@@ -117,13 +100,12 @@ public class SandboxServiceImplTest extends TestCase
     @Override
     protected void setUp() throws Exception
     {
+        super.setUp();
+        
         // Get the required services
         wpService = (WebProjectService)ctx.getBean("WebProjectService");
         sbService = (SandboxService)ctx.getBean("SandboxService");
         assetService = (AssetService)ctx.getBean("AssetService");
-        
-        authenticationService = (AuthenticationService)ctx.getBean("AuthenticationService");
-        personService = (PersonService)ctx.getBean("PersonService");
         
         avmService = (AVMService)ctx.getBean("AVMService");
         
@@ -181,32 +163,6 @@ public class SandboxServiceImplTest extends TestCase
         
         AuthenticationUtil.clearCurrentSecurityContext();
         super.tearDown();
-    }
-    
-    private void createUser(String userName)
-    {
-        if (authenticationService.authenticationExists(userName) == false)
-        {
-            authenticationService.createAuthentication(userName, "PWD".toCharArray());
-            
-            PropertyMap ppOne = new PropertyMap(4);
-            ppOne.put(ContentModel.PROP_USERNAME, userName);
-            ppOne.put(ContentModel.PROP_FIRSTNAME, "firstName");
-            ppOne.put(ContentModel.PROP_LASTNAME, "lastName");
-            ppOne.put(ContentModel.PROP_EMAIL, "email@email.com");
-            ppOne.put(ContentModel.PROP_JOBTITLE, "jobTitle");
-            
-            personService.createPerson(ppOne);
-        }
-    }
-    
-    private void deleteUser(String userName)
-    {
-        if (authenticationService.authenticationExists(userName) == true)
-        {
-            personService.deletePerson(userName);
-            authenticationService.deleteAuthentication(userName);
-        }
     }
     
     public void testSimple()
@@ -792,7 +748,7 @@ public class SandboxServiceImplTest extends TestCase
     */
     
     // submit new assets in user sandbox to staging sandbox
-    public void testSubmitNewItems1()
+    public void testSubmitNewItems1() throws InterruptedException
     {
         WebProjectInfo wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-submitNewItems1", TEST_WEBPROJ_NAME+" submitNewItems1", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION);
         
@@ -833,6 +789,8 @@ public class SandboxServiceImplTest extends TestCase
         // submit (new assets) !
         sbService.submitWebApp(authorSandboxId, webApp, "a submit label", "a submit comment");
         
+        Thread.sleep(SUBMIT_DELAY);
+        
         assets = sbService.listChangedWebApp(authorSandboxId, webApp, false);
         assertEquals(0, assets.size());
         
@@ -858,7 +816,7 @@ public class SandboxServiceImplTest extends TestCase
     }
     
     // submit changed assets in user sandbox to staging sandbox
-    public void testSubmitChangedAssets1() throws IOException
+    public void testSubmitChangedAssets1() throws IOException, InterruptedException
     {
         WebProjectInfo wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-submitChangedAssets1", TEST_WEBPROJ_NAME+" submitChangedAssets1", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION);
         
@@ -867,8 +825,15 @@ public class SandboxServiceImplTest extends TestCase
         final String stagingSandboxId = wpInfo.getStagingStoreName();
         
         // Invite web users
+        
+        // TODO - pending merge of ETWOTWO-1088 fix
+        /*
         wpService.inviteWebUser(wpStoreId, USER_ONE, WCMUtil.ROLE_CONTENT_CONTRIBUTOR, true);
         wpService.inviteWebUser(wpStoreId, USER_TWO, WCMUtil.ROLE_CONTENT_PUBLISHER, true);
+        */
+        
+        wpService.inviteWebUser(wpStoreId, USER_ONE, WCMUtil.ROLE_CONTENT_MANAGER, true);
+        wpService.inviteWebUser(wpStoreId, USER_TWO, WCMUtil.ROLE_CONTENT_MANAGER, true);
         
         // Switch to USER_ONE
         AuthenticationUtil.setFullyAuthenticatedUser(USER_ONE);
@@ -905,6 +870,8 @@ public class SandboxServiceImplTest extends TestCase
         
         // submit (new assets) !
         sbService.submitWebApp(authorSandboxId, webApp, "a submit label", "a submit comment");
+        
+        Thread.sleep(SUBMIT_DELAY);
         
         assets = sbService.listChangedWebApp(authorSandboxId, webApp, false);
         assertEquals(0, assets.size());
@@ -957,7 +924,9 @@ public class SandboxServiceImplTest extends TestCase
         assertEquals(MYFILE2, new String(buff, 0, MYFILE2.length()));
         
         // submit (modified assets) !
-        sbService.submitWebApp(authorSandboxId, webApp, null, null);
+        sbService.submitWebApp(authorSandboxId, webApp, "my label", null);
+        
+        Thread.sleep(SUBMIT_DELAY);
         
         assets = sbService.listChangedWebApp(authorSandboxId, webApp, false);
         assertEquals(0, assets.size());
@@ -978,8 +947,94 @@ public class SandboxServiceImplTest extends TestCase
         assertEquals(MYFILE2_MODIFIED, new String(buff, 0, MYFILE1_MODIFIED.length()));
     }
     
+    // submit "all" changed assets in user sandbox to staging sandbox (not using default webapp)
+    public void testSubmitChangedAssets2() throws IOException, InterruptedException
+    {
+        WebProjectInfo wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-submitChangedAssets1", TEST_WEBPROJ_NAME+" submitChangedAssets1", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION);
+        
+        final String wpStoreId = wpInfo.getStoreId();
+        final String stagingSandboxId = wpInfo.getStagingStoreName();
+        
+        SandboxInfo sbInfo = sbService.getAuthorSandbox(wpStoreId);
+        String authorSandboxId = sbInfo.getSandboxId();
+        
+        String rootPath = sbInfo.getSandboxRootPath(); // currently /www/avm_webapps
+        
+        // no changes yet
+        List<AssetInfo> assets = sbService.listChangedAll(authorSandboxId, true);
+        assertEquals(0, assets.size());
+        
+        assetService.createFolder(authorSandboxId, rootPath, "a", null);
+        assetService.createFolder(authorSandboxId, rootPath+"/a", "b", null);
+        assetService.createFolder(authorSandboxId, rootPath+"/a/b", "c", null);
+
+        final String MYFILE1 = "This is foo";
+        ContentWriter writer = assetService.createFile(authorSandboxId, rootPath+"/a/b/c", "foo", null);
+        writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+        writer.setEncoding("UTF-8");
+        writer.putContent(MYFILE1);
+        
+        final String MYFILE2 = "This is bar";
+        writer = assetService.createFile(authorSandboxId, rootPath+"/a/b/c", "bar", null);
+        writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+        writer.setEncoding("UTF-8");
+        writer.putContent(MYFILE2);
+                
+        assets = sbService.listChangedAll(authorSandboxId, true);
+        assertEquals(1, assets.size());
+        
+        // check staging before
+        assertEquals(1, assetService.listAssets(stagingSandboxId, -1, rootPath, false).size()); // note: currently includes default webapp ('ROOT')
+        
+        // submit (new assets) !
+        sbService.submitAll(authorSandboxId, "a submit label", "a submit comment");
+        
+        Thread.sleep(SUBMIT_DELAY);
+        
+        // check staging after
+        List<AssetInfo> listing = assetService.listAssets(stagingSandboxId, -1, rootPath, false);
+        assertEquals(2, listing.size()); // 'a' and 'ROOT'
+        
+        // no changes in sandbox
+        assets = sbService.listChangedAll(authorSandboxId, true);
+        assertEquals(0, assets.size());
+        
+        final String MYFILE3 = "This is figs";
+        writer = assetService.createFile(authorSandboxId, rootPath, "figs", null);
+        writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+        writer.setEncoding("UTF-8");
+        writer.putContent(MYFILE3);
+        
+        final String MYFILE1_MODIFIED = "This is foo ... modified";
+        writer = assetService.getContentWriter(assetService.getAsset(authorSandboxId, rootPath+"/a/b/c/foo"));
+        writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+        writer.setEncoding("UTF-8");
+        writer.putContent(MYFILE1_MODIFIED);
+        
+        assetService.deleteAsset(assetService.getAsset(authorSandboxId, rootPath+"/a/b/c/bar"));
+                
+        assets = sbService.listChangedAll(authorSandboxId, true);
+        assertEquals(3, assets.size());
+        
+        // check staging before
+        listing = assetService.listAssets(stagingSandboxId, -1, rootPath, false);
+        assertEquals(2, listing.size());  // 'a' and 'ROOT'
+        
+        // submit all (modified assets) !
+        sbService.submitAll(authorSandboxId, "my label", null);
+        
+        Thread.sleep(SUBMIT_DELAY);
+        
+        assets = sbService.listChangedAll(authorSandboxId, true);
+        assertEquals(0, assets.size());
+       
+        // check staging after
+        listing = assetService.listAssets(stagingSandboxId, -1, rootPath, false);
+        assertEquals(3, listing.size());  // 'figs', 'a' and 'ROOT'
+    }
+    
     // submit deleted assets in user sandbox to staging sandbox
-    public void testSubmitDeletedItems1() throws IOException
+    public void testSubmitDeletedItems1() throws IOException, InterruptedException
     {
         WebProjectInfo wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-submitDeletedItems1", TEST_WEBPROJ_NAME+" submitDeletedItems1", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION);
         
@@ -1028,6 +1083,8 @@ public class SandboxServiceImplTest extends TestCase
         // submit (new assets) !
         sbService.submitWebApp(authorSandboxId, webApp, "a submit label", "a submit comment");
         
+        Thread.sleep(SUBMIT_DELAY);
+        
         assets = sbService.listChangedWebApp(authorSandboxId, webApp, false);
         assertEquals(0, assets.size());
         
@@ -1068,7 +1125,9 @@ public class SandboxServiceImplTest extends TestCase
         assertNotNull(assetService.getAssetWebApp(stagingSandboxId, webApp, "/myDir1/myFile2"));
         
         // submit (deleted assets) !
-        sbService.submitWebApp(authorSandboxId, webApp, null, null);
+        sbService.submitWebApp(authorSandboxId, webApp, "my label", null);
+        
+        Thread.sleep(SUBMIT_DELAY);
         
         assets = sbService.listChangedWebApp(authorSandboxId, webApp, false);
         assertEquals(0, assets.size());
@@ -1082,7 +1141,7 @@ public class SandboxServiceImplTest extends TestCase
     }
     
     // revert all (changed) assets in user sandbox
-    public void testRevertAll() throws IOException
+    public void testRevertAll() throws IOException, InterruptedException
     {
         WebProjectInfo wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-revertChangedAssets", TEST_WEBPROJ_NAME+" revertChangedAssets", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION);
         
@@ -1133,6 +1192,8 @@ public class SandboxServiceImplTest extends TestCase
         
         // submit (new assets) !
         sbService.submitWebApp(authorSandboxId, webApp, "a submit label", "a submit comment");
+        
+        Thread.sleep(SUBMIT_DELAY);
         
         assets = sbService.listChangedWebApp(authorSandboxId, webApp, false);
         assertEquals(0, assets.size());
@@ -1207,7 +1268,7 @@ public class SandboxServiceImplTest extends TestCase
         assertEquals(MYFILE2, new String(buff, 0, MYFILE2.length()));
     }
     
-    public void testListSnapshots() throws IOException
+    public void testListSnapshots() throws IOException, InterruptedException
     {
         Date fromDate = new Date();
         
@@ -1247,6 +1308,8 @@ public class SandboxServiceImplTest extends TestCase
         // submit (new assets) !
         sbService.submitWebApp(authorSandboxId, webApp, "a submit label", "a submit comment");
         
+        Thread.sleep(SUBMIT_DELAY);
+        
         assets = sbService.listChangedWebApp(authorSandboxId, webApp, false);
         assertEquals(0, assets.size());
         
@@ -1263,6 +1326,8 @@ public class SandboxServiceImplTest extends TestCase
         // submit (new assets) !
         sbService.submitWebApp(authorSandboxId, webApp, "a submit label", "a submit comment");
         
+        Thread.sleep(SUBMIT_DELAY);
+        
         // check staging after
         listing = assetService.listAssets(stagingSandboxId, -1, stagingSandboxPath, false);
         assertEquals(4, listing.size());
@@ -1271,7 +1336,7 @@ public class SandboxServiceImplTest extends TestCase
         assertEquals(2, sbVersions.size());
     }
    
-    public void testRevertSnapshot() throws IOException
+    public void testRevertSnapshot() throws IOException, InterruptedException
     {
         Date fromDate = new Date();
         
@@ -1315,6 +1380,8 @@ public class SandboxServiceImplTest extends TestCase
         // submit (new assets) !
         sbService.submitWebApp(authorSandboxId, webApp, "a submit label", "a submit comment");
         
+        Thread.sleep(SUBMIT_DELAY);
+        
         assets = sbService.listChangedWebApp(authorSandboxId, webApp, false);
         assertEquals(0, assets.size());
         
@@ -1341,6 +1408,8 @@ public class SandboxServiceImplTest extends TestCase
 
         // submit (new assets) !
         sbService.submitWebApp(authorSandboxId, webApp, "a submit label", "a submit comment");
+        
+        Thread.sleep(SUBMIT_DELAY);
         
         // check staging after
         listing = assetService.listAssets(stagingSandboxId, -1, stagingSandboxPath, false);
@@ -1369,6 +1438,8 @@ public class SandboxServiceImplTest extends TestCase
 
         // submit (new assets) !
         sbService.submitWebApp(authorSandboxId, webApp, "a submit label", "a submit comment");
+        
+        Thread.sleep(SUBMIT_DELAY);
         
         // check staging after
         listing = assetService.listAssets(stagingSandboxId, -1, stagingSandboxPath, false);

@@ -8,7 +8,6 @@
  * Outputs:
  *  data.items/data.error - object containing list of search results
  */
-
 const DEFAULT_MAX_RESULTS = 100;
 const SITES_SPACE_QNAME_PATH = "/app:company_home/st:sites/";
 
@@ -21,7 +20,7 @@ const SITES_SPACE_QNAME_PATH = "/app:company_home/st:sites/";
 var siteDataCache = [];
 function getSiteData(siteId)
 {
-   if (siteDataCache[siteId] != undefined)
+   if (siteDataCache[siteId] !== undefined)
    {
       return siteDataCache[siteId];
    }
@@ -31,7 +30,7 @@ function getSiteData(siteId)
       shortName : siteId,
       title : "unknown"
    };
-   if (site != null)
+   if (site !== null)
    {
       data.title = site.title;
    }
@@ -70,7 +69,7 @@ var processedCache = {};
 function addToProcessed(category, key)
 {
    var cat = processedCache[category];
-   if (cat == undefined)
+   if (cat === undefined)
    {
       processedCache[category] = [];
       cat = processedCache[category];
@@ -80,7 +79,7 @@ function addToProcessed(category, key)
 function checkProcessed(category, key)
 {
    var cat = processedCache[category];
-   if (cat != undefined)
+   if (cat !== undefined)
    {
       for (var x in cat)
       {
@@ -134,17 +133,19 @@ function getDocumentItem(siteId, containerId, restOfPath, node)
    var item = null;
    if (node.isContainer || node.isDocument)
    {
-      item = {};
-      item.site = getSiteData(siteId);
-      item.container = containerId;
-      item.nodeRef = node.nodeRef.toString();
-      item.tags = (node.tags != null) ? node.tags : [];
-      item.name = node.name;
-      item.displayName = node.name;
-      item.description = node.properties["cm:description"];
-      item.modifiedOn = node.properties["cm:modified"];
-      item.modifiedByUser = node.properties["cm:modifier"];
-      item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
+      item =
+      {
+         site: getSiteData(siteId),
+         container: containerId,
+         nodeRef: node.nodeRef.toString(),
+         tags: (node.tags !== null) ? node.tags : [],
+         name: node.name,
+         displayName: node.name,
+         description: node.properties["cm:description"],
+         modifiedOn: node.properties["cm:modified"],
+         modifiedByUser: node.properties["cm:modifier"],
+         modifiedBy: getPersonDisplayName(item.modifiedByUser)
+      };
    }
    if (node.isContainer)
    {
@@ -154,7 +155,7 @@ function getDocumentItem(siteId, containerId, restOfPath, node)
    }
    else if (node.isDocument)
    {
-      item.type = "file";
+      item.type = "document";
       item.size = node.size;
       item.browseUrl = "document-details?nodeRef=" + node.nodeRef.toString();
    }
@@ -164,23 +165,27 @@ function getDocumentItem(siteId, containerId, restOfPath, node)
 
 function getBlogPostItem(siteId, containerId, restOfPath, node)
 {
-   // investigate the rest of the path. the first item is the blog post, ignore everything that follows
-   // are replies or folders 
+   /**
+    * Investigate the rest of the path. the first item is the blog post, ignore everything that follows
+    * are replies or folders
+    */
    var site = siteService.getSite(siteId);
    var container = site.getContainer(containerId);
    
-   // find the direct child of the container
-   // note: this only works for post which are direct children of the blog container
+   /**
+    * Find the direct child of the container
+    * Note: this only works for post which are direct children of the blog container
+    */
    var child = node;
    var parent = child.parent;
-   while ((parent != null) && (! parent.nodeRef.equals(container.nodeRef)))
+   while ((parent !== null) && (!parent.nodeRef.equals(container.nodeRef)))
    {
       child = parent;
       parent = parent.parent;
    }
    
    // check whether we found the container
-   if (parent == null)
+   if (parent === null)
    {
       return null;
    }
@@ -193,19 +198,21 @@ function getBlogPostItem(siteId, containerId, restOfPath, node)
    addToProcessed(siteId + containerId, "" + child.nodeRef.toString());
        
    // child is our blog post
-   var item = {};
-   item.site = getSiteData(siteId);
-   item.container = containerId;
-   item.nodeRef = child.nodeRef.toString();
-   item.type = "blogpost";
-   item.tags = (child.tags != null) ? child.tags : [];
-   item.name = child.name;
-   item.modifiedOn = child.properties["cm:modified"];
-   item.modifiedByUser = child.properties["cm:modifier"];
-   item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
-   item.size = child.size;
-   item.displayName = child.properties["cm:title"];
-   item.browseUrl = "blog-postview?container=" + containerId + "&postId=" + child.name;
+   item =
+   {
+      site: getSiteData(siteId),
+      container: containerId,
+      nodeRef: child.nodeRef.toString(),
+      type: "blogpost",
+      tags: (child.tags !== null) ? child.tags : [],
+      name: child.name,
+      modifiedOn: child.properties["cm:modified"],
+      modifiedByUser: child.properties["cm:modifier"],
+      modifiedBy: getPersonDisplayName(child.properties["cm:modifier"]),
+      size: child.size,
+      displayName: child.properties["cm:title"],
+      browseUrl: "blog-postview?container=" + containerId + "&postId=" + child.name
+   };
    
    return item;
 }
@@ -214,11 +221,11 @@ function getForumPostItem(siteId, containerId, restOfPath, node)
 {
    // try to find the first fm:topic node, that's what we return as search result
    var topicNode = node;
-   while ((topicNode != null) && (topicNode.type != "{http://www.alfresco.org/model/forum/1.0}topic"))
+   while ((topicNode !== null) && (topicNode.type != "{http://www.alfresco.org/model/forum/1.0}topic"))
    {
       topicNode = topicNode.parent;
    }
-   if (topicNode == null)
+   if (topicNode === null)
    {
       return null;
    }
@@ -235,20 +242,22 @@ function getForumPostItem(siteId, containerId, restOfPath, node)
    var postNode = topicNode.childAssocs["cm:contains"][0];
    
    // child is our forum post
-   var item = {};
-   item.site = getSiteData(siteId);
-   item.container = containerId;
-   item.nodeRef = topicNode.nodeRef.toString();
-   item.type = "topicpost";
-   item.tags = (topicNode.tags != null) ? topicNode.tags : [];
-   item.name = topicNode.name;
-   item.description = topicNode.properties["cm:description"];
-   item.modifiedOn = topicNode.properties["cm:modified"];
-   item.modifiedByUser = topicNode.properties["cm:modifier"];
-   item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
-   item.size = topicNode.size;
-   item.displayName = postNode.properties["cm:title"];
-   item.browseUrl = "discussions-topicview?container=" + containerId + "&topicId=" + topicNode.name;
+   var item =
+   {
+      site: getSiteData(siteId),
+      container: containerId,
+      nodeRef: topicNode.nodeRef.toString(),
+      type: "forumpost",
+      tags: (topicNode.tags != null) ? topicNode.tags : [],
+      name: topicNode.name,
+      description: topicNode.properties["cm:description"],
+      modifiedOn: topicNode.properties["cm:modified"],
+      modifiedByUser: topicNode.properties["cm:modifier"],
+      modifiedBy: getPersonDisplayName(topicNode.properties["cm:modifier"]),
+      size: topicNode.size,
+      displayName: postNode.properties["cm:title"],
+      browseUrl: "discussions-topicview?container=" + containerId + "&topicId=" + topicNode.name
+   };
    
    return item;
 }
@@ -268,20 +277,22 @@ function getCalendarItem(siteId, containerId, restOfPath, node)
    }
    addToProcessed(siteId + containerId, "" + node.nodeRef.toString());
    
-   var item = {};
-   item.site = getSiteData(siteId);
-   item.container = containerId;
-   item.nodeRef = node.nodeRef.toString();
-   item.type = "calendarevent";
-   item.tags = (node.tags != null) ? node.tags : [];
-   item.name = node.name;
-   item.description = node.properties["ia:descriptionEvent"];
-   item.modifiedOn = node.properties["cm:modified"];
-   item.modifiedByUser = node.properties["cm:modifier"];
-   item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
-   item.size = -1;
-   item.displayName = node.properties["ia:whatEvent"];
-   item.browseUrl = containerId; // this is "calendar"
+   var item =
+   {
+      site: getSiteData(siteId),
+      container: containerId,
+      nodeRef: node.nodeRef.toString(),
+      type: "calendarevent",
+      tags: (node.tags != null) ? node.tags : [],
+      name: node.name,
+      description: node.properties["ia:descriptionEvent"],
+      modifiedOn: node.properties["cm:modified"],
+      modifiedByUser: node.properties["cm:modifier"],
+      modifiedBy: getPersonDisplayName(modifiedByUser),
+      size: -1,
+      displayName: node.properties["ia:whatEvent"],
+      browseUrl: containerId // this is "calendar"
+   };
    
    return item;
 }
@@ -301,20 +312,56 @@ function getWikiItem(siteId, containerId, restOfPath, node)
    }
    addToProcessed(siteId + containerId, "" + node.nodeRef.toString());
    
-   var item = {};
-   item.site = getSiteData(siteId);
-   item.container = containerId;
-   item.nodeRef = node.nodeRef.toString();
-   item.type = "wikipage";
-   item.tags = (node.tags != null) ? node.tags : [];
-   item.name = node.name;
-   item.description = node.properties["cm:description"];
-   item.modifiedOn = node.properties["cm:modified"];
-   item.modifiedByUser = node.properties["cm:modifier"];
-   item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
-   item.size = node.size;
-   item.displayName = node.properties["cm:name"]; // cm:title at some point?
-   item.browseUrl = "wiki-page?title=" + node.properties["cm:name"];
+   var item =
+   {
+      site: getSiteData(siteId),
+      container: containerId,
+      nodeRef: node.nodeRef.toString(),
+      type: "wikipage",
+      tags: (node.tags != null) ? node.tags : [],
+      name: node.name,
+      description: node.properties["cm:description"],
+      modifiedOn: node.properties["cm:modified"],
+      modifiedByUser: node.properties["cm:modifier"],
+      modifiedBy: getPersonDisplayName(node.properties["cm:modifier"]),
+      size: node.size,
+      displayName: node.properties["cm:name"], // cm:title at some point?
+      browseUrl: "wiki-page?title=" + node.properties["cm:name"]
+   };
+   
+   return item;
+}
+
+function getLinkItem(siteId, containerId, restOfPath, node)
+{
+   // only process documents
+   if (!node.isDocument)
+   {
+      return null;
+   }
+   
+   // make sure we haven't already added this link
+   if (checkProcessed(siteId + containerId, "" + node.nodeRef.toString()))
+   {
+      return null;
+   }
+   addToProcessed(siteId + containerId, "" + node.nodeRef.toString());
+   
+   var item =
+   {
+      site: getSiteData(siteId),
+      container: containerId,
+      nodeRef: node.nodeRef.toString(),
+      type: "link",
+      tags: (node.tags !== null) ? node.tags : [],
+      name: node.name,
+      description: node.properties["cm:description"],
+      modifiedOn: node.properties["cm:modified"],
+      modifiedByUser: node.properties["cm:modifier"],
+      modifiedBy: getPersonDisplayName(node.properties["cm:modifier"]),
+      displayName: node.properties["lnk:title"],
+      browseUrl: "links-view?linkId=" + node.properties["cm:name"]
+   };
    
    return item;
 }
@@ -344,6 +391,10 @@ function getItem(siteId, containerId, restOfPath, node)
    else if (containerId == "wiki")
    {
       return getWikiItem(siteId, containerId, restOfPath, node);
+   }
+   else if (containerId == "links")
+   {
+      return getLinkItem(siteId, containerId, restOfPath, node);
    }
    else
    {
@@ -394,18 +445,23 @@ function splitQNamePath(node)
  */
 function processResults(nodes, maxResults)
 {    
-   var results = new Array(nodes.length);
+   var results = [],
+      added = 0,
+      parts,
+      item,
+      i, j;
    
-   var added = 0;
-   for (var x=0; x < nodes.length && added < maxResults; x++)
+   for (i = 0, j = nodes.length; i < j && added < maxResults; i++)
    {
-      // for each node we extract the site/container qname path and then
-      // let the per-container helper function decide what to do
-      var parts = splitQNamePath(nodes[x]);
-      if (parts != null)
+      /**
+       * For each node we extract the site/container qname path and then
+       * let the per-container helper function decide what to do.
+       */
+      parts = splitQNamePath(nodes[i]);
+      if (parts !== null)
       {
-         var item = getItem(parts[0], parts[1], parts[2], nodes[x]);
-         if (item != null)
+         item = getItem(parts[0], parts[1], parts[2], nodes[i]);
+         if (item !== null)
          {
             results.push(item);
             added++;
@@ -415,7 +471,7 @@ function processResults(nodes, maxResults)
    
    return (
    {
-      "items": results
+      items: results
    });
 }
 
@@ -428,7 +484,7 @@ function processResults(nodes, maxResults)
 function getSearchResults(term, maxResults, siteId, containerId)
 {
    var path = SITES_SPACE_QNAME_PATH;
-   if (siteId != null && siteId.length > 0)
+   if (siteId !== null && siteId.length > 0)
    {
       path += "cm:" + search.ISO9075Encode(siteId) + "/";
    }
@@ -436,7 +492,7 @@ function getSearchResults(term, maxResults, siteId, containerId)
    {
       path += "*/";
    }
-   if (containerId != null && containerId.length > 0)
+   if (containerId !== null && containerId.length > 0)
    {
       path += "cm:" + search.ISO9075Encode(containerId) + "/";
    }
@@ -445,24 +501,25 @@ function getSearchResults(term, maxResults, siteId, containerId)
       path += "*/";
    }
 	
-   var luceneQuery = ""
-   if (term != null && term.length != 0)
+   var luceneQuery = "";
+   if (term !== null && term.length !== 0)
    {
       // TODO: Perform smarter term processing. For now we simply split on whitespace
       //       which ignores quoted phrases that may be present.
-      var terms = term.split(/\s/);
+      var terms = term.split(/\s/),
+         i, j, t;
       
-      for (var x=0; x < terms.length; x++)
+      for (i = 0, j = terms.length; i < j; i++)
       {
-         var t = terms[x];
+         t = terms[i];
          // remove quotes - TODO: add support for quoted terms later
          t = t.replace(/\"/g, "");
-         if (t.length != 0)
+         if (t.length !== 0)
          {
             switch (t.toLowerCase())
             {
                case "and":
-                  if (x < terms.length - 1 && terms[x + 1].length != 0)
+                  if (i < j - 1 && terms[i + 1].length !== 0)
                   {
                      luceneQuery += "AND ";
                   }
@@ -472,7 +529,7 @@ function getSearchResults(term, maxResults, siteId, containerId)
                   break;
                
                case "not":
-                  if (x < terms.length - 1 && terms[x + 1].length != 0)
+                  if (i < j - 1 && terms[i + 1].length !== 0)
                   {
                      luceneQuery += "NOT ";
                   }
@@ -481,6 +538,8 @@ function getSearchResults(term, maxResults, siteId, containerId)
                default:
                   luceneQuery += "(TEXT:\"" + t + "\"" +        // full text
                                  " @cm\\:name:\"" + t + "\"" +  // name property
+                                 " @lnk\\:title:\"" + t + "\"" +  // link title
+                                 " @lnk\\:description:\"" + t + "\"" +  // link description
                                  " PATH:\"/cm:taggable/cm:" + search.ISO9075Encode(t) + "/member\"" + // tags
                                  ") ";
             }
@@ -491,7 +550,7 @@ function getSearchResults(term, maxResults, siteId, containerId)
    var nodes;
    
    // if we processed the search terms, then suffix the PATH query
-   if (luceneQuery.length != 0)
+   if (luceneQuery.length !== 0)
    {
       luceneQuery = "+PATH:\"" + path + "/*\" +(" + luceneQuery + ")";
       luceneQuery += " -TYPE:\"{http://www.alfresco.org/model/content/1.0}thumbnail\"";
@@ -500,7 +559,7 @@ function getSearchResults(term, maxResults, siteId, containerId)
    else
    {
       // failed to process the search string - empty list returned
-      nodes = new Array();
+      nodes = [];
    }
    
    return processResults(nodes, maxResults);
@@ -509,10 +568,10 @@ function getSearchResults(term, maxResults, siteId, containerId)
 
 function main()
 {
-   var siteId = (args["site"] != undefined) ? args["site"] : null;
-   var containerId = (args["container"] != undefined) ? args["container"] : null;
-   var term = (args["term"] != undefined) ? args["term"] : null;
-   var maxResults = (args["maxResults"] != undefined) ? parseInt(args["maxResults"]) : DEFAULT_MAX_RESULTS;
+   var siteId = (args.site !== undefined) ? args.site : null;
+   var containerId = (args.container !== undefined) ? args.container : null;
+   var term = (args.term !== undefined) ? args.term : null;
+   var maxResults = (args.maxResults !== undefined) ? parseInt(args.maxResults, 10) : DEFAULT_MAX_RESULTS;
    
    model.data = getSearchResults(term, maxResults, siteId, containerId);
 }

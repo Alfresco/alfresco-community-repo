@@ -427,6 +427,12 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
             return;
         }
 
+        // avoid NullPointerException if it was not created
+        if (acl == null)
+        {
+            return;
+        }
+        
         switch (acl.getAclType())
         {
         case FIXED:

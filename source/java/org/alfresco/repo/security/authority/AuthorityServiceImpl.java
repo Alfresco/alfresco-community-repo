@@ -261,10 +261,7 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
     
     public String createAuthority(AuthorityType type, String parentName, String shortName)
     {
-        checkTypeIsMutable(type);
-        String name = getName(type, shortName);
-        authorityDAO.createAuthority(parentName, name);
-        return name;
+        return createAuthority(type, parentName, shortName, shortName);
     }
 
     public void deleteAuthority(String name)
@@ -332,6 +329,31 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
     public boolean authorityExists(String name)
     {
        return authorityDAO.authorityExists(name);
+    }
+
+    public String createAuthority(AuthorityType type, String parentName, String shortName, String authorityDisplayName)
+    {
+        checkTypeIsMutable(type);
+        String name = getName(type, shortName);
+        authorityDAO.createAuthority(parentName, name, authorityDisplayName);
+        return name;
+    }
+
+    public String getAuthorityDisplayName(String name)
+    {
+        String displayName = authorityDAO.getAuthorityDisplayName(name);
+        if(displayName == null)
+        {
+            displayName = getShortName(name);
+        }
+        return displayName;
+    }
+
+    public void setAuthorityDisplayName(String authorityName, String authorityDisplayName)
+    {
+        AuthorityType type = AuthorityType.getAuthorityType(authorityName);
+        checkTypeIsMutable(type);
+        authorityDAO.setAuthorityDisplayName(authorityName, authorityDisplayName);
     }
 
 }

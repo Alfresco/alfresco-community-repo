@@ -262,4 +262,19 @@ public class SimpleAuthorityServiceImpl implements AuthorityService
         return authorities;
     }
 
+    public String createAuthority(AuthorityType type, String parentName, String shortName, String authorityDisplayName)
+    {
+        return "";
+    }
+
+    public String getAuthorityDisplayName(String name)
+    {
+        return "";
+    }
+
+    public void setAuthorityDisplayName(String authorityName, String authorityDisplayName)
+    {
+        
+    }
+
 }

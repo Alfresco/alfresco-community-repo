@@ -207,15 +207,17 @@
         eternal="true"
         overflowToDisk="false"
         />
+     <!--  Note: Workaround for ETWOTWO-978: no row issues - do not adjust -->
      <cache
         name="org.alfresco.repo.avm.VersionRootImpl" 
-        maxElementsInMemory="200"
+        maxElementsInMemory="0"
         eternal="true"
         overflowToDisk="false"
         />
+     <!--  Note: Workaround for ETWOTWO-978: no row issues - do not adjust -->
      <cache
         name="org.alfresco.repo.avm.ChildEntryImpl" 
-        maxElementsInMemory="10000"
+        maxElementsInMemory="0"
         eternal="true"
         overflowToDisk="false"
         />

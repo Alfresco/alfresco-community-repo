@@ -44,8 +44,9 @@ public interface AuthorityDAO
      * 
      * @param parentName
      * @param name
+     * @param authorityDisplayName 
      */
-    void createAuthority(String parentName, String name);
+    void createAuthority(String parentName, String name, String authorityDisplayName);
 
     /**
      * Delete an authority.
@@ -121,5 +122,21 @@ public interface AuthorityDAO
      * @return  name
      */
     public String getAuthorityName(NodeRef authorityRef);
+
+    /**
+     * Get the display name for an authority
+     * 
+     * @param authorityName
+     * @return the display name
+     */
+    String getAuthorityDisplayName(String authorityName);
+
+    /**
+     * Set the display name for an authority
+     * 
+     * @param authorityName
+     * @param authorityDisplayName
+     */
+    void setAuthorityDisplayName(String authorityName, String authorityDisplayName);
 
 }

@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.config.JNDIConstants;
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -340,7 +341,7 @@ public final class SandboxFactory extends WCMUtil
       permissionService.setPermission(dirRef, PermissionService.ALL_AUTHORITIES, PermissionService.READ, true);
    }
    
-   private void updateStagingAreaManagers(String storeId, NodeRef webProjectNodeRef, final List<String> managers)
+   private void updateStagingAreaManagers(String storeId, final List<String> managers)
    {
        // The stores have the mask set in updateSandboxManagers
        String storeName = WCMUtil.buildStagingStoreName(storeId);
@@ -931,9 +932,9 @@ public final class SandboxFactory extends WCMUtil
        }
    }
    
-   public void updateSandboxManagers(final String wpStoreId, NodeRef wpNodeRef, List<String> managers)
+   public void updateSandboxManagers(final String wpStoreId, List<String> managers)
    {
-       // walk existing user sandboxes and reapply manager permissions to include new manager user
+       // walk existing user sandboxes and reapply manager permissions to include new managers
        List<SandboxInfo> sbInfos = AuthenticationUtil.runAs(new RunAsWork<List<SandboxInfo>>()
        {
            public List<SandboxInfo> doWork() throws Exception
@@ -951,7 +952,7 @@ public final class SandboxFactory extends WCMUtil
            }
        }
        
-       updateStagingAreaManagers(wpStoreId, wpNodeRef, managers);
+       updateStagingAreaManagers(wpStoreId, managers);
    }
    
    /**
@@ -983,6 +984,174 @@ public final class SandboxFactory extends WCMUtil
       {
          permissionService.setPermission(dirRef.getStoreRef(), manager, WCMUtil.ROLE_CONTENT_MANAGER, true);
       }
+   }
+   
+   public void removeSandboxManagers(final String wpStoreId, List<String> managers)
+   {
+       // walk existing user sandboxes and remove manager permissions to exclude old managers
+       List<SandboxInfo> sbInfos = AuthenticationUtil.runAs(new RunAsWork<List<SandboxInfo>>()
+       {
+           public List<SandboxInfo> doWork() throws Exception
+           {
+               return listSandboxes(wpStoreId, AuthenticationUtil.getSystemUserName());
+           }
+       }, AuthenticationUtil.getSystemUserName());
+       
+       for (SandboxInfo sbInfo : sbInfos)
+       {
+           if (sbInfo.getSandboxType().equals(SandboxConstants.PROP_SANDBOX_AUTHOR_MAIN))
+           {
+               String username = sbInfo.getName();
+               removeUserSandboxManagers(wpStoreId, managers, username);
+           }
+       }
+       
+       removeStagingAreaManagers(wpStoreId, managers);
+   }
+   
+   /**
+    * Removes the permissions for the list of sandbox ex-managers.
+    * 
+    * @param storeId            The store id of the sandbox to update
+    * @param managersToRemove   The list of authorities who have had ContentManager role in the web project
+    * @param username           Username of the user sandbox to update
+    */
+   private void removeUserSandboxManagers(String storeId, List<String> managersToRemove, String username)
+   {
+       final String userStoreName = WCMUtil.buildUserMainStoreName(storeId, username);
+       final String previewStoreName = WCMUtil.buildUserPreviewStoreName(storeId, username);
+       
+       final NodeRef mainDirRef = AVMNodeConverter.ToNodeRef(-1, WCMUtil.buildStoreRootPath(userStoreName));
+       final NodeRef previewDirRef = AVMNodeConverter.ToNodeRef(-1, WCMUtil.buildStoreRootPath(previewStoreName));
+       for (String manager : managersToRemove)
+       {
+           permissionService.deletePermission(mainDirRef.getStoreRef(), manager, WCMUtil.ROLE_CONTENT_MANAGER);
+           permissionService.deletePermission(previewDirRef.getStoreRef(), manager, WCMUtil.ROLE_CONTENT_MANAGER);
+       }
+   }
+   /**
+    * Removes the ContentManager role on staging area to ex-managers.
+    * 
+    * @param storeId            The store id of the sandbox to update
+    * @param managersToRemove   The list of authorities who have had ContentManager role in the web project
+    */
+   private void removeStagingAreaManagers(String storeId, List<String> managersToRemove)
+   {
+       final String storeName = WCMUtil.buildStagingStoreName(storeId);
+    
+       final NodeRef dirRef = AVMNodeConverter.ToNodeRef(-1, WCMUtil.buildStoreRootPath(storeName));
+       for (String manager : managersToRemove)
+       {
+           permissionService.deletePermission(dirRef, manager, WCMUtil.ROLE_CONTENT_MANAGER);
+           
+           permissionService.deletePermission(dirRef.getStoreRef(), manager, 
+                    PermissionService.CHANGE_PERMISSIONS);
+           permissionService.deletePermission(dirRef.getStoreRef(), manager, 
+                   PermissionService.READ_PERMISSIONS);
+       }
+       
+   }
+   
+   public void updateSandboxRoles(final String wpStoreId, List<UserRoleWrapper> usersToUpdate, Set<String> permissionsList)
+   {
+       // walk existing user sandboxes and remove manager permissions to exclude old managers
+       List<SandboxInfo> sbInfos = AuthenticationUtil.runAs(new RunAsWork<List<SandboxInfo>>()
+       {
+           public List<SandboxInfo> doWork() throws Exception
+           {
+               return listSandboxes(wpStoreId, AuthenticationUtil.getSystemUserName());
+           }
+       }, AuthenticationUtil.getSystemUserName());
+       
+       for (SandboxInfo sbInfo : sbInfos)
+       {
+           if (sbInfo.getSandboxType().equals(SandboxConstants.PROP_SANDBOX_AUTHOR_MAIN))
+           {
+               String username = sbInfo.getName();
+               updateUserSandboxRole(wpStoreId, username ,usersToUpdate, permissionsList);
+           }
+       }
+       
+       updateStagingAreaRole(wpStoreId, usersToUpdate, permissionsList);
+   }
+   
+   /**
+    * Updates roles on the sandbox identified by username to users from usersToUpdate list.
+    * 
+    * @param storeId            The store id of the sandbox to update
+    * @param username           Username of the user sandbox to update
+    * @param usersToUpdate      The list of users who have role changes
+    * @param permissionsList    List of permissions @see org.alfresco.web.bean.wcm.InviteWebsiteUsersWizard.getPermissionsForType(). It is not mandatory.
+    */
+   private void updateUserSandboxRole(String storeId, String username, List<UserRoleWrapper> usersToUpdate, Set<String> permissionsList)
+   {
+       final String userStoreName = WCMUtil.buildUserMainStoreName(storeId, username);
+       final String previewStoreName = WCMUtil.buildUserPreviewStoreName(storeId, username);
+       
+       final NodeRef mainDirRef = AVMNodeConverter.ToNodeRef(-1, WCMUtil.buildStoreRootPath(userStoreName));
+       final NodeRef previewDirRef = AVMNodeConverter.ToNodeRef(-1, WCMUtil.buildStoreRootPath(previewStoreName));
+
+       // If permissionsList is set remove all possible user permissions and set only necessary.
+       // This will fix previous wrong role changes. (paranoid)
+       // For little better performance just set permissionsList to null.
+       // But in this case it removes only previous permission.
+       if (permissionsList != null && permissionsList.size() != 0)
+       {
+           for (UserRoleWrapper user : usersToUpdate)
+           {
+               for (String permission : permissionsList)
+               {
+                   permissionService.deletePermission(mainDirRef, user.getUserAuth(), permission);
+                   permissionService.deletePermission(previewDirRef, user.getUserAuth(), permission);
+               }
+               
+               permissionService.setPermission(mainDirRef, user.getUserAuth(), user.getNewRole(), true);
+               permissionService.setPermission(previewDirRef, user.getUserAuth(), user.getNewRole(), true);
+           }
+       }
+       else
+       {
+           for (UserRoleWrapper user: usersToUpdate)
+           {
+               permissionService.deletePermission(mainDirRef, user.getUserAuth(), user.getOldRole());
+               permissionService.deletePermission(previewDirRef, user.getUserAuth(), user.getOldRole());
+               permissionService.setPermission(mainDirRef, user.getUserAuth(), user.getNewRole(), true);
+               permissionService.setPermission(previewDirRef, user.getUserAuth(), user.getNewRole(), true);
+           }
+       }
+   }
+   
+   /**
+    * Updates roles on staging sandbox to users from usersToUpdate list.
+    * 
+    * @param storeId            The store id of the sandbox to update
+    * @param usersToUpdate      The list of users who have role changes
+    * @param permissionsList    List of permissions @see org.alfresco.web.bean.wcm.InviteWebsiteUsersWizard.getPermissionsForType(). It is not mandatory.
+    */
+   private void updateStagingAreaRole(String storeId, List<UserRoleWrapper> usersToUpdate, Set<String> permissionsList)
+   {
+       final String storeName = WCMUtil.buildStagingStoreName(storeId);
+       final NodeRef dirRef = AVMNodeConverter.ToNodeRef(-1, WCMUtil.buildStoreRootPath(storeName));
+       
+       if (permissionsList != null && permissionsList.size() != 0)
+       {
+           for (UserRoleWrapper user : usersToUpdate)
+           {
+               for (String permission : permissionsList)
+               {
+                   permissionService.deletePermission(dirRef, user.getUserAuth(), permission);
+               }
+               permissionService.setPermission(dirRef, user.getUserAuth(), user.getNewRole(), true);
+           }
+       }
+       else
+       {
+           for (UserRoleWrapper user : usersToUpdate)
+           {
+               permissionService.deletePermission(dirRef, user.getUserAuth(), user.getOldRole());
+               permissionService.setPermission(dirRef, user.getUserAuth(), user.getNewRole(), true);
+           }
+       }
    }
    
    /**
@@ -1048,5 +1217,44 @@ public final class SandboxFactory extends WCMUtil
       {
          logger.debug("   " + name + ": " + props.get(name));
       }
+   }
+   
+   public class UserRoleWrapper
+   {
+       private String newRole;
+       private String oldRole;
+       private String userAuth;
+
+       public UserRoleWrapper(String userAuth, String oldRole, String newRole)
+       {
+           this.userAuth = userAuth;
+           this.oldRole = oldRole;
+           this.newRole = newRole;
+       }
+       
+       public String getNewRole()
+       {
+           return newRole;
+       }
+       public void setNewRole(String newRole)
+       {
+           this.newRole = newRole;
+       }
+       public String getOldRole()
+       {
+           return oldRole;
+       }
+       public void setOldRole(String oldRole)
+       {
+           this.oldRole = oldRole;
+       }
+       public String getUserAuth()
+       {
+           return userAuth;
+       }
+       public void setUserAuth(String userAuth)
+       {
+           this.userAuth = userAuth;
+       }
    }
 }

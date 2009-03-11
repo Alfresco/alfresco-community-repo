@@ -702,6 +702,8 @@
                 org.alfresco.service.cmr.security.AuthorityService.getName=ACL_ALLOW
                 org.alfresco.service.cmr.security.AuthorityService.authorityExists=ACL_METHOD.ROLE_ADMINISTRATOR
                 org.alfresco.service.cmr.security.AuthorityService.getAuthoritiesForUser=ACL_METHOD.ROLE_ADMINISTRATOR
+				org.alfresco.service.cmr.security.AuthorityService.setAuthorityDisplayName=ACL_METHOD.ROLE_ADMINISTRATOR
+				org.alfresco.service.cmr.security.AuthorityService.getAuthorityDisplayName=ACL_ALLOW
             </value>
         </property>
     </bean>

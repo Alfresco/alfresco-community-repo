@@ -153,7 +153,7 @@ class AVMStoreDAOHibernate extends HibernateDaoSupport implements
     /* (non-Javadoc)
      * @see org.alfresco.repo.avm.AVMStoreDAO#invalidateCache()
      */
-    public synchronized void invalidateCache() 
+    public void invalidateCache() 
     {
         fNameCache.clear();
     }

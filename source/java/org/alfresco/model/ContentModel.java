@@ -294,6 +294,8 @@ public interface ContentModel
     
     static final QName TYPE_AUTHORITY_CONTAINER = QName.createQName(USER_MODEL_URI, "authorityContainer");
     static final QName PROP_AUTHORITY_NAME = QName.createQName(USER_MODEL_URI, "authorityName");
+    static final QName PROP_AUTHORITY_DISPLAY_NAME = QName.createQName(USER_MODEL_URI, "authorityDisplayName");
+    
     static final QName ASSOC_MEMBER = QName.createQName(USER_MODEL_URI, "member");
     static final QName PROP_MEMBERS = QName.createQName(USER_MODEL_URI, "members");    
     

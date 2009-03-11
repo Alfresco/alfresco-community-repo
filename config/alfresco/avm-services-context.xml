@@ -154,17 +154,7 @@
 		</property>
 	</bean>
 
-	<bean id="lookupCache" class="org.alfresco.repo.avm.LookupCache">
-	    <property name="avmNodeDAO">
-	        <ref bean="avmNodeDAO"/>
-	    </property>
-	    <property name="avmStoreDAO">
-	        <ref bean="avmStoreDAO"/>
-	    </property>
-	    <property name="transactionalCache">
-	    	<ref bean="avmLookupCache"/>
-	    </property>
-	</bean>
+	<bean id="lookupCache" class="org.alfresco.repo.avm.NOOPLookupCache"/>
 
 	<bean id="rawServices" class="org.alfresco.repo.avm.util.RawServices"/>
 

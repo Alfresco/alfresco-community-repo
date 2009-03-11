@@ -113,12 +113,33 @@ public interface AuthorityService
      *            authority is created.
      * @param shortName -
      *            the short name of the authority to create
+     *            this will also be set as the default display name for the authority 
      * 
      * @return the name of the authority (this will be the prefix, if any
      *         associated with the type appended with the short name)
      */
     @Auditable(parameters = {"type", "parentName", "shortName"})
     public String createAuthority(AuthorityType type, String parentName, String shortName);
+
+    /**
+     * Create an authority. If the parent is null thisw method creates a root
+     * authority.
+     * 
+     * @param type -
+     *            the type of the authority
+     * @param parentName -
+     *            the name of the parent authority. If this is null then a root
+     *            authority is created.
+     * @param shortName -
+     *            the short name of the authority to create
+     * @param authorityDisplayName           
+     *            the display name for the authority 
+     * 
+     * @return the name of the authority (this will be the prefix, if any
+     *         associated with the type appended with the short name)
+     */
+    @Auditable(parameters = {"type", "parentName", "shortName", "authorityDisplayName"})
+    public String createAuthority(AuthorityType type, String parentName, String shortName, String authorityDisplayName);
 
     /**
      * Set an authority to include another authority. For example, adding a
@@ -218,5 +239,24 @@ public interface AuthorityService
      */
     @Auditable(parameters = {"name"})
     public boolean authorityExists(String name);
+    
+    /**
+     * Get the display name for the given authority.
+     * 
+     * @param name - the full authority string including any prefix (e.g. GROUP_woof)
+     * @return - the display name
+     */
+    @Auditable(parameters = {"name"})
+    public String getAuthorityDisplayName(String name);
+    
+    /**
+     * Set the display name for the given authority.
+     * Setting the display name is only supported for authorities of type group
+     * 
+     * @param authorityName
+     * @param authorityDisplayName
+     */
+    @Auditable(parameters = {"authorityName", "authorityDisplayName"})
+    public void setAuthorityDisplayName(String authorityName, String authorityDisplayName);
 
 }

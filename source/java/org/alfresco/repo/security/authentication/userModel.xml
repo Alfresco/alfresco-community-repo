@@ -91,6 +91,9 @@
                <type>d:text</type>
                <multiple>true</multiple>   
             </property>
+			<property name="usr:authorityDisplayName">
+               <type>d:text</type>
+            </property>
          </properties>
          <associations>
             <child-association name="usr:member">

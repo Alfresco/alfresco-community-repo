@@ -69,6 +69,7 @@ import org.alfresco.util.DNSNameMangler;
 import org.alfresco.util.ParameterCheck;
 import org.alfresco.wcm.sandbox.SandboxFactory;
 import org.alfresco.wcm.sandbox.SandboxInfo;
+import org.alfresco.wcm.sandbox.SandboxFactory.UserRoleWrapper;
 import org.alfresco.wcm.util.WCMUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -790,9 +791,19 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
     
     private String getWebUserRoleImpl(NodeRef wpNodeRef, String userName)
     {
-        long start = System.currentTimeMillis();
+        NodeRef userRef = getWebUserRef(wpNodeRef, userName);
         String userRole = null;
-
+        
+        if (userRef != null)
+        {
+            userRole = (String)nodeService.getProperty(userRef, WCMAppModel.PROP_WEBUSERROLE);
+        }
+       
+        return userRole;
+    }
+    
+    private NodeRef getWebUserRef(NodeRef wpNodeRef, String userName)
+    {
         StringBuilder query = new StringBuilder(128);
         query.append("+PARENT:\"").append(wpNodeRef).append("\" ");
         query.append("+TYPE:\"").append(WCMAppModel.TYPE_WEBUSER).append("\" ");
@@ -820,27 +831,23 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
     
         if (nodes.size() == 1)
         {
-            userRole = (String)nodeService.getProperty(nodes.get(0), WCMAppModel.PROP_WEBUSERROLE);
+            return nodes.get(0);
         }
         else if (nodes.size() == 0)
         {
             if (logger.isTraceEnabled())
             {
-                logger.trace("getWebProjectUserRole: user role not found for " + userName);
+                logger.trace("getWebUserRef: web user ("+userName+") not found in web project: "+wpNodeRef);
             }
         }
         else
         {
-            logger.warn("getWebProjectUserRole: more than one user role found for " + userName);
+            logger.error("getWebUserRef: more than one web user ("+userName+") found in web project: "+wpNodeRef);
         }
-   
-        if (logger.isTraceEnabled())
-        {
-            logger.trace("getWebProjectUserRole: "+userName+" "+userRole+" in "+(System.currentTimeMillis()-start)+" ms");
-        }
-   
-        return userRole;
+
+        return null;
     }
+
     
     /* (non-Javadoc)
      * @see org.alfresco.wcm.webproject.WebProjectService#findWebProjectNodeFromPath(java.lang.String)
@@ -889,7 +896,9 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
         
         // build a list of managers who will have full permissions on ALL staging areas
         List<String> managers = new ArrayList<String>(4);
-        Set<String> existingUsers = new HashSet<String>(8);
+        Map<String, NodeRef> webSiteUsers = new HashMap<String, NodeRef>(8);
+        List<String> managersToRemove = new LinkedList<String>();
+        List<UserRoleWrapper> usersToUpdate = new LinkedList<UserRoleWrapper>();
         
         // retrieve the list of managers from the existing users
         for (Map.Entry<String, String> userRole : userGroupRoles.entrySet())
@@ -906,19 +915,21 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
             }
         }
        
-        Map<String, String> existingUserRoles = listWebUsers(wpNodeRef);
-        for (Map.Entry<String, String> userRole : existingUserRoles.entrySet())
+        List<ChildAssociationRef> userInfoRefs = nodeService.getChildAssocs(wpNodeRef, WCMAppModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
+        
+        for (ChildAssociationRef ref : userInfoRefs)
         {
-            String username = userRole.getKey();
-            String userrole = userRole.getValue();
-              
+            NodeRef userInfoRef = ref.getChildRef();
+            String username = (String)nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERNAME);
+            String userrole = (String)nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERROLE);
+            
             if (WCMUtil.ROLE_CONTENT_MANAGER.equals(userrole) && managers.contains(username) == false)
             {
                 managers.add(username);
             }
               
-            // add each existing user to the exclude this - we cannot add them more than once!
-            existingUsers.add(username);
+            // add each existing user to the map which will be rechecked for update changed user permissions
+            webSiteUsers.put(username, userInfoRef);
         }
         
         List<SandboxInfo> sandboxInfoList = new LinkedList<SandboxInfo>();
@@ -933,7 +944,7 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
             
             for (String userAuth : findNestedUserAuthorities(authority))
             {
-                if (existingUsers.contains(userAuth) == false)
+                if (webSiteUsers.keySet().contains(userAuth) == false)
                 {
                     if (autoCreateAuthorSandbox)
                     {
@@ -955,18 +966,54 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
                 }
                 else
                 {
-                    logger.warn("User '"+userAuth+"' already invited to web project: "+wpNodeRef+"(store id: "+wpStoreId+")");
+                    // TODO - split out into separate 'change role'
+                    // if user role have been changed then update required properties etc.
+                    NodeRef userRef = webSiteUsers.get(userAuth);
+                    String oldUserRole = (String)nodeService.getProperty(userRef, WCMAppModel.PROP_WEBUSERROLE);
+                    
+                    if (!role.equals(oldUserRole))
+                    {
+                        // change in role
+                        Map<QName, Serializable> props = nodeService.getProperties(userRef);
+                        props.put(WCMAppModel.PROP_WEBUSERNAME, userAuth);
+                        props.put(WCMAppModel.PROP_WEBUSERROLE, role);
+                        nodeService.setProperties(userRef, props);
+                        
+                        if (WCMUtil.ROLE_CONTENT_MANAGER.equals(role))
+                        {
+                            managersUpdateRequired = true;
+                        }
+                        else if (WCMUtil.ROLE_CONTENT_MANAGER.equals(oldUserRole))
+                        {
+                                managersToRemove.add(userAuth);
+                        }
+                        
+                        usersToUpdate.add(sandboxFactory.new UserRoleWrapper(userAuth, oldUserRole, role));
+                        
+                        if (logger.isDebugEnabled())
+                        {
+                            logger.debug(userAuth +"'s role has been changed from '" + oldUserRole +
+                                         "' to '" + role + "'");
+                        }
+                    }
                 }
            }
         }
-        
+          
         // Bind the post-commit transaction listener with data required for virtualization server notification
         CreateSandboxTransactionListener tl = new CreateSandboxTransactionListener(sandboxInfoList, listWebApps(wpNodeRef));
         AlfrescoTransactionSupport.bindListener(tl);
         
         if (managersUpdateRequired == true)
         {
-            sandboxFactory.updateSandboxManagers(wpStoreId, wpNodeRef, managers);
+            sandboxFactory.updateSandboxManagers(wpStoreId, managers);
+        }
+        
+        // TODO - split out into separate 'change role'
+        // remove ex-managers from sandboxes
+        if (managersToRemove.size() != 0)
+        {
+            sandboxFactory.removeSandboxManagers(wpStoreId, managersToRemove);
         }
         
         // get permissions and roles for a web project folder type
@@ -989,6 +1036,13 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
                     break;
                 }
             }
+        }
+
+        // TODO - split out into separate 'change role'
+        // update user's roles
+        if (usersToUpdate.size() != 0)
+        {
+            sandboxFactory.updateSandboxRoles(wpStoreId, usersToUpdate, perms);
         }
         
         if (logger.isInfoEnabled())
@@ -1027,29 +1081,65 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
         WebProjectInfo wpInfo = getWebProject(wpNodeRef);
         final String wpStoreId = wpInfo.getStoreId();
 
-        if (isWebUser(wpNodeRef, userAuth))        
+        // build a list of managers who will have full permissions on ALL staging areas
+        List<String> managers = new ArrayList<String>(4);
+        
+        // retrieve the list of managers from the existing users
+        Map<String, String> existingUserRoles = listWebUsers(wpNodeRef);
+        for (Map.Entry<String, String> userRole : existingUserRoles.entrySet())
         {
-            logger.warn("User '"+userAuth+"' already invited to web project: "+wpNodeRef+" (store id: "+wpStoreId+")");
-            return;
+            String username = userRole.getKey();
+            String userrole = userRole.getValue();
+            
+            if (WCMUtil.ROLE_CONTENT_MANAGER.equals(userrole) && managers.contains(username) == false)
+            {
+                managers.add(username);
+            }
+        }
+        
+        // get permissions and roles for a web project folder type
+        Set<String> perms = permissionService.getSettablePermissions(WCMAppModel.TYPE_AVMWEBFOLDER);
+        
+        NodeRef userRef = getWebUserRef(wpNodeRef, userAuth);
+        if (userRef != null)
+        {
+            // TODO - split out into separate 'change role'
+            // if user role has been changed then update required properties etc. 
+            String oldUserRole = (String)nodeService.getProperty(userRef, WCMAppModel.PROP_WEBUSERROLE);
+            if (!role.equals(oldUserRole))
+            {
+                // change in role
+                Map<QName, Serializable> props = nodeService.getProperties(userRef);
+                props.put(WCMAppModel.PROP_WEBUSERNAME, userAuth);
+                props.put(WCMAppModel.PROP_WEBUSERROLE, role);
+                nodeService.setProperties(userRef, props);
+                
+                if (WCMUtil.ROLE_CONTENT_MANAGER.equals(role))
+                {
+                    managers.add(userAuth);
+                    sandboxFactory.updateSandboxManagers(wpStoreId, managers);
+                }
+                else if (WCMUtil.ROLE_CONTENT_MANAGER.equals(oldUserRole))
+                {
+                    List<String> managersToRemove = new LinkedList<String>();
+                    managersToRemove.add(userAuth);
+                    
+                    sandboxFactory.removeSandboxManagers(wpStoreId, managersToRemove);
+                }
+                
+                List<UserRoleWrapper> usersToUpdate = new LinkedList<UserRoleWrapper>();
+                usersToUpdate.add(sandboxFactory.new UserRoleWrapper(userAuth, oldUserRole, role));
+                
+                sandboxFactory.updateSandboxRoles(wpStoreId, usersToUpdate, perms);
+                
+                if (logger.isInfoEnabled())
+                {
+                    logger.info("Web user "+userAuth +"'s role has been changed from '" + oldUserRole + "' to '" + role + "' (store id: "+wpStoreId+")");
+                }
+            }
         }
         else
         {
-            // build a list of managers who will have full permissions on ALL staging areas
-            List<String> managers = new ArrayList<String>(4);
-            
-            // retrieve the list of managers from the existing users
-            Map<String, String> existingUserRoles = listWebUsers(wpNodeRef);
-            for (Map.Entry<String, String> userRole : existingUserRoles.entrySet())
-            {
-                String username = userRole.getKey();
-                String userrole = userRole.getValue();
-                
-                if (WCMUtil.ROLE_CONTENT_MANAGER.equals(userrole) && managers.contains(username) == false)
-                {
-                    managers.add(username);
-                }
-            }
-            
             if (autoCreateAuthorSandbox)
             {
                 // create a sandbox for the user with permissions based on role
@@ -1068,16 +1158,13 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
             if (WCMUtil.ROLE_CONTENT_MANAGER.equals(role))
             {
                 managers.add(userAuth);
-                sandboxFactory.updateSandboxManagers(wpStoreId, wpNodeRef, managers);
+                sandboxFactory.updateSandboxManagers(wpStoreId, managers);
             }
             
             sandboxFactory.addStagingAreaUser(wpStoreId, userAuth, role);
              
             // create an app:webuser instance for the user and assoc to the web project node
             createWebUser(wpNodeRef, userAuth, role);
-            
-            // get permissions and roles for a web project folder type
-            Set<String> perms = permissionService.getSettablePermissions(WCMAppModel.TYPE_AVMWEBFOLDER);
             
             // set permissions for the user
             for (String permission : perms)

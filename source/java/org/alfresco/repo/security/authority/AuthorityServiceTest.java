@@ -867,4 +867,30 @@ public class AuthorityServiceTest extends TestCase
         properties.put(ContentModel.PROP_ORGID, orgId);
         return properties;
     }
+    
+    public void testAuthorityDisplayNames()
+    {
+        String authOne = pubAuthorityService.createAuthority(AuthorityType.GROUP, null, "One");
+        assertEquals(pubAuthorityService.getAuthorityDisplayName(authOne), "One");
+        pubAuthorityService.setAuthorityDisplayName(authOne, "Selfish Crocodile");
+        assertEquals(pubAuthorityService.getAuthorityDisplayName(authOne), "Selfish Crocodile");
+        
+        String authTwo = pubAuthorityService.createAuthority(AuthorityType.GROUP, null, "Two", "Lamp posts");
+        assertEquals(pubAuthorityService.getAuthorityDisplayName(authTwo), "Lamp posts");
+        pubAuthorityService.setAuthorityDisplayName(authTwo, "Happy Hippos");
+        assertEquals(pubAuthorityService.getAuthorityDisplayName(authTwo), "Happy Hippos");
+        
+        assertEquals(pubAuthorityService.getAuthorityDisplayName("GROUP_Loon"), "Loon");
+        assertEquals(pubAuthorityService.getAuthorityDisplayName("ROLE_Gibbon"), "Gibbon");
+        assertEquals(pubAuthorityService.getAuthorityDisplayName("Monkey"), "Monkey");
+        
+        authenticationComponent.setCurrentUser("andy");
+        assertEquals(pubAuthorityService.getAuthorityDisplayName(authOne), "Selfish Crocodile");
+        assertEquals(pubAuthorityService.getAuthorityDisplayName(authTwo), "Happy Hippos");
+        assertEquals(pubAuthorityService.getAuthorityDisplayName("GROUP_Loon"), "Loon");
+        assertEquals(pubAuthorityService.getAuthorityDisplayName("GROUP_Loon"), "Loon");
+        assertEquals(pubAuthorityService.getAuthorityDisplayName("ROLE_Gibbon"), "Gibbon");
+        assertEquals(pubAuthorityService.getAuthorityDisplayName("Monkey"), "Monkey");
+        
+    }
 }

@@ -144,10 +144,11 @@ public class AuthorityDAOImpl implements AuthorityDAO
         }
     }
 
-    public void createAuthority(String parentName, String name)
+    public void createAuthority(String parentName, String name, String authorityDisplayName)
     {
         HashMap<QName, Serializable> props = new HashMap<QName, Serializable>();
         props.put(ContentModel.PROP_AUTHORITY_NAME, name);
+        props.put(ContentModel.PROP_AUTHORITY_DISPLAY_NAME, authorityDisplayName);
         if (parentName != null)
         {
             NodeRef parentRef = getAuthorityOrNull(parentName);
@@ -541,6 +542,32 @@ public class AuthorityDAOImpl implements AuthorityDAO
             }
         }
         return name;
+    }
+
+    public String getAuthorityDisplayName(String authorityName)
+    {
+        NodeRef ref = getAuthorityOrNull(authorityName);
+        if(ref == null)
+        {
+            return null;
+        }
+        Serializable value = nodeService.getProperty(ref, ContentModel.PROP_AUTHORITY_DISPLAY_NAME);
+        if(value == null)
+        {
+            return null;
+        }
+        return DefaultTypeConverter.INSTANCE.convert(String.class, value);
+    }
+
+    public void setAuthorityDisplayName(String authorityName, String authorityDisplayName)
+    {
+        NodeRef ref = getAuthorityOrNull(authorityName);
+        if(ref == null)
+        {
+            return;
+        }
+        nodeService.setProperty(ref, ContentModel.PROP_AUTHORITY_DISPLAY_NAME, authorityDisplayName);
+        
     }
 
 }

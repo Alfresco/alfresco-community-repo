@@ -64,13 +64,15 @@
        <property name="fileFolderService" ref="FileFolderService"/>
        <property name="searchService" ref="SearchService"/>
        <property name="namespaceService" ref="NamespaceService"/>
-       <property name="permissionService" ref="PermissionService" />
+       <property name="permissionService" ref="PermissionService"/>
        <property name="authenticationComponent" ref="authenticationComponent"/>      
        <property name="personService" ref="PersonService"/>
        <property name="activityService" ref="activityService"/>
        <property name="taggingService" ref="TaggingService"/>
        <property name="authorityService" ref="authorityService"/>
        <property name="dictionaryService" ref="DictionaryService"/>
+       <property name="tenantAdminService" ref="tenantAdminService"/>
+       <property name="transactionHelper" ref="retryingTransactionHelper"/>
        <property name="sitesXPath">
            <value>./${spaces.company_home.childname}/st:sites</value>
        </property>

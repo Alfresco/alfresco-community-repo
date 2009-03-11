@@ -122,14 +122,31 @@ public class ScriptSiteService extends BaseScopableProcessorExtension
      */
     public Site[] listSites(String nameFilter, String sitePresetFilter)
     {
-        List<SiteInfo> siteInfos = this.siteService.listSites(nameFilter, sitePresetFilter);
+        return listSites(nameFilter, sitePresetFilter, 0);
+    }
+    
+    /**
+     * List the sites available in the repository.  The returned list can optionally be filtered by name and site
+     * preset.
+     * <p>
+     * If no filters are specified then all the available sites are returned.
+     * 
+     * @param nameFilter        name filter
+     * @param sitePresetFilter  site preset filter
+     * @param size              max results size crop if >0
+     * 
+     * @return Site[]           a list of the site filtered as appropriate             
+     */
+    public Site[] listSites(String nameFilter, String sitePresetFilter, int size)
+    {
+        List<SiteInfo> siteInfos = this.siteService.listSites(nameFilter, sitePresetFilter, size);
         List<Site> sites = new ArrayList<Site>(siteInfos.size());
         for (SiteInfo siteInfo : siteInfos)
         {
             sites.add(new Site(siteInfo, this.serviceRegistry, this.siteService, getScope()));
         }
         return (Site[])sites.toArray(new Site[sites.size()]);
-    }  
+    }
     
     /**
      * List all the sites that the specified user has an explicit membership to.

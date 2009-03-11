@@ -27,17 +27,23 @@ package org.alfresco.repo.site;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.activities.ActivityType;
+import org.alfresco.repo.search.QueryParameterDefImpl;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.activities.ActivityService;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
@@ -46,6 +52,8 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.QueryParameterDefinition;
+import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
@@ -75,11 +83,11 @@ import org.json.JSONObject;
  */
 public class SiteServiceImpl implements SiteService, SiteModel
 {
-    private static final String GROUP_SITE_PREFIX = PermissionService.GROUP_PREFIX + "site_";
-
     /** Logger */
     private static Log logger = LogFactory.getLog(SiteServiceImpl.class);
-
+    
+    private static final String GROUP_SITE_PREFIX = PermissionService.GROUP_PREFIX + "site_";
+    
     /** The DM store where site's are kept */
     public static final StoreRef SITE_STORE = new StoreRef("workspace://SpacesStore");
 
@@ -88,6 +96,9 @@ public class SiteServiceImpl implements SiteService, SiteModel
     
     private static final String SITE_PREFIX = "site_";
     private static final int GROUP_PREFIX_LENGTH = SITE_PREFIX.length() + PermissionService.GROUP_PREFIX.length();
+    
+    /** Site home ref cache (Tennant aware) */
+    private Map<String, NodeRef> siteHomeRefs = new ConcurrentHashMap<String, NodeRef>(4);
 
     private String sitesXPath;
     
@@ -115,6 +126,9 @@ public class SiteServiceImpl implements SiteService, SiteModel
     private AuthorityService authorityService;
     private DictionaryService dictionaryService;
     private TenantService tenantService;
+    private TenantAdminService tenantAdminService;
+    private RetryingTransactionHelper retryingTransactionHelper;
+
 
     /**
      * Set the path to the location of the sites root folder.  For example:
@@ -227,6 +241,22 @@ public class SiteServiceImpl implements SiteService, SiteModel
     public void setTenantService(TenantService tenantService)
     {
         this.tenantService = tenantService;
+    }
+    
+    /**
+     * Sets the tenant admin service
+     */
+    public void setTenantAdminService(TenantAdminService tenantAdminService)
+    {
+        this.tenantAdminService = tenantAdminService;
+    }
+    
+    /**
+     * Sets helper that provides transaction callbacks
+     */
+    public void setTransactionHelper(RetryingTransactionHelper retryingTransactionHelper)
+    {
+        this.retryingTransactionHelper = retryingTransactionHelper;
     }
     
     /**
@@ -465,8 +495,7 @@ public class SiteServiceImpl implements SiteService, SiteModel
     {
         // TODO
         // For now just return the site root, later we may build folder
-        // structure based on the shortname to
-        // spread the sites about
+        // structure based on the shortname to spread the sites about
         return getSiteRoot();
     }
 
@@ -477,57 +506,128 @@ public class SiteServiceImpl implements SiteService, SiteModel
      */
     private NodeRef getSiteRoot()
     {
-        // Get the root 'sites' folder
-        NodeRef rootNodeRef = this.nodeService.getRootNode(SITE_STORE);
-        List<NodeRef> results = this.searchService.selectNodes(
-                rootNodeRef,
-                sitesXPath,
-                null,
-                namespaceService,
-                false,
-                SearchService.LANGUAGE_XPATH);
-        if (results.size() == 0)
-        {
-            // No root site folder exists
-            throw new SiteServiceException("No root sites folder exists");
+        String tenantDomain = tenantAdminService.getCurrentUserDomain();
+        NodeRef siteHomeRef = siteHomeRefs.get(tenantDomain);
+        if (siteHomeRef == null)
+        {       
+            siteHomeRef = AuthenticationUtil.runAs(new RunAsWork<NodeRef>()
+            {
+                public NodeRef doWork() throws Exception
+                {
+                    return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>()
+                    {
+                        public NodeRef execute() throws Exception
+                        {                   
+                            // Get the root 'sites' folder
+                            NodeRef rootNodeRef = nodeService.getRootNode(SITE_STORE);
+                            List<NodeRef> results = searchService.selectNodes(
+                                    rootNodeRef,
+                                    sitesXPath,
+                                    null,
+                                    namespaceService,
+                                    false,
+                                    SearchService.LANGUAGE_XPATH);
+                            if (results.size() == 0)
+                            {
+                                // No root site folder exists
+                                throw new SiteServiceException("No root sites folder exists");
+                            }
+                            else if (results.size() != 1)
+                            {
+                                // More than one root site folder exits
+                                logger.warn("More than one root sites folder exists: \n" + results);
+                            }
+                            
+                            return results.get(0);
+                        }
+                    });
+                }
+            }, AuthenticationUtil.getSystemUserName());
+            
+            siteHomeRefs.put(tenantDomain, siteHomeRef);
         }
-        else if (results.size() != 1)
-        {
-            // More than one root site folder exits
-            logger.warn("More than one root sites folder exists: \n" + results);
-        }
-
-        return results.get(0);
+        return siteHomeRef;
     }
 
     /**
-     * @see org.alfresco.service.cmr.site.SiteService#listSites(java.lang.String,
-     *      java.lang.String)
+     * @see org.alfresco.service.cmr.site.SiteService#listSites(java.lang.String, java.lang.String)
      */
     public List<SiteInfo> listSites(String nameFilter, String sitePresetFilter)
     {
-        // TODO
-        // - take into consideration the filters set
-        // - take into consideration that the sites may not just be in a flat
-        // list under the site root
+        return listSites(nameFilter, sitePresetFilter, 0);
+    }
 
-        // For now just return the list of sites present under the site root
+    /**
+     * @see org.alfresco.service.cmr.site.SiteService#listSites(java.lang.String, java.lang.String, int)
+     */
+    public List<SiteInfo> listSites(String nameFilter, String sitePresetFilter, int size)
+    {
+        List<SiteInfo> result;
+        
+        // TODO: take into consideration the sitePresetFilter
+        
         NodeRef siteRoot = getSiteRoot();
-        List<ChildAssociationRef> assocs = this.nodeService.getChildAssocs(
-                siteRoot, ContentModel.ASSOC_CONTAINS,
-                RegexQNamePattern.MATCH_ALL);
-        List<SiteInfo> result = new ArrayList<SiteInfo>(assocs.size());
-        for (ChildAssociationRef assoc : assocs)
+        if (nameFilter != null && nameFilter.length() != 0)
         {
-            // Ignore any node that is not a "site"
-            NodeRef site = assoc.getChildRef();
-            QName siteClassName = this.nodeService.getType(site);
-            if (this.dictionaryService.isSubClass(siteClassName, SiteModel.TYPE_SITE) == true)
-            {            
-                result.add(createSiteInfo(site));
+            // Perform a Lucene search under the Site parent node using *name* search query
+            QueryParameterDefinition[] params = new QueryParameterDefinition[1];
+            params[0] = new QueryParameterDefImpl(
+                    ContentModel.PROP_NAME,
+                    dictionaryService.getDataType(
+                            DataTypeDefinition.TEXT),
+                            true,
+                            nameFilter);
+            
+            // get the sites that match the specified names
+            StringBuilder query = new StringBuilder(128);
+            query.append("+PARENT:\"").append(siteRoot.toString())
+                 .append("\" +@cm\\:name:\"*").append(nameFilter).append("*\"");
+            ResultSet results = this.searchService.query(
+                    siteRoot.getStoreRef(),
+                    SearchService.LANGUAGE_LUCENE,
+                    query.toString(),
+                    params);
+            result = new ArrayList<SiteInfo>(results.length());
+            try
+            {
+                for (NodeRef site : results.getNodeRefs())
+                {
+                    // Ignore any node type that is not a "site"
+                    QName siteClassName = this.nodeService.getType(site);
+                    if (this.dictionaryService.isSubClass(siteClassName, SiteModel.TYPE_SITE) == true)
+                    {
+                        result.add(createSiteInfo(site));
+                        // break on max size limit reached
+                        if (result.size() == size) break;
+                    }
+                }
+            }
+            finally
+            {
+                results.close();
             }
         }
-
+        else
+        {
+            // Get ALL sites - this may be a very slow operation if there are many sites...
+            List<ChildAssociationRef> assocs = this.nodeService.getChildAssocs(
+                    siteRoot, ContentModel.ASSOC_CONTAINS,
+                    RegexQNamePattern.MATCH_ALL);
+            result = new ArrayList<SiteInfo>(assocs.size());
+            for (ChildAssociationRef assoc : assocs)
+            {
+                // Ignore any node type that is not a "site"
+                NodeRef site = assoc.getChildRef();
+                QName siteClassName = this.nodeService.getType(site);
+                if (this.dictionaryService.isSubClass(siteClassName, SiteModel.TYPE_SITE) == true)
+                {            
+                    result.add(createSiteInfo(site));
+                    // break on max size limit reached
+                    if (result.size() == size) break;
+                }
+            }
+        }
+        
         return result;
     }
 

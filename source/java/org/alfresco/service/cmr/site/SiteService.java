@@ -46,6 +46,16 @@ public interface SiteService
      * 
      * @param nameFilter            name filter
      * @param sitePresetFilter      site preset filter
+     * @param size                  list maximum size or zero for all
+     * @return List<SiteInfo>       list of site information
+     */
+    List<SiteInfo> listSites(String nameFilter, String sitePresetFilter, int size);
+    
+    /**
+     * List the available sites.  This list can optionally be filtered by site name and/or site preset.
+     * 
+     * @param nameFilter            name filter
+     * @param sitePresetFilter      site preset filter
      * @return List<SiteInfo>       list of site information
      */
     List<SiteInfo> listSites(String nameFilter, String sitePresetFilter);

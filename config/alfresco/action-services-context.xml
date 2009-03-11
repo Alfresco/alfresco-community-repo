@@ -38,64 +38,64 @@
       <property name="threadPoolExecutor">
          <ref bean="defaultAsyncThreadPool"/>
       </property>
-    	<property name="transactionService">
-    		<ref bean="transactionService"/>
-    	</property>
-    	<property name="authenticationComponent">
-    		<ref bean="AuthenticationComponent"/>
-    	</property>
-    	<property name="nodeService">
-    		<ref bean="NodeService"/>
-    	</property>	   
-		<property name="policyComponent">
-		    <ref bean="policyComponent"/>
-		</property>
+        <property name="transactionService">
+            <ref bean="transactionService"/>
+        </property>
+        <property name="authenticationComponent">
+            <ref bean="AuthenticationComponent"/>
+        </property>
+        <property name="nodeService">
+            <ref bean="NodeService"/>
+        </property>       
+        <property name="policyComponent">
+            <ref bean="policyComponent"/>
+        </property>
     </bean>
     
     <bean id="deploymentAsynchronousActionExecutionQueue" class="org.alfresco.repo.action.AsynchronousActionExecutionQueueImpl" init-method="init">
       <property name="threadPoolExecutor">
          <ref bean="deploymentAsyncThreadPool"/>
       </property>
-    	<property name="transactionService">
-    		<ref bean="transactionService"/>
-    	</property>
-    	<property name="authenticationComponent">
-    		<ref bean="AuthenticationComponent"/>
-    	</property>
-    	<property name="nodeService">
-    		<ref bean="NodeService"/>
-    	</property>	   
-		<property name="policyComponent">
-		    <ref bean="policyComponent"/>
-		</property>
+        <property name="transactionService">
+            <ref bean="transactionService"/>
+        </property>
+        <property name="authenticationComponent">
+            <ref bean="AuthenticationComponent"/>
+        </property>
+        <property name="nodeService">
+            <ref bean="NodeService"/>
+        </property>       
+        <property name="policyComponent">
+            <ref bean="policyComponent"/>
+        </property>
     </bean>
     
     <!-- Action Service -->
     <bean id="actionService" class="org.alfresco.repo.action.ActionServiceImpl">
         <property name="nodeService">
             <ref bean="NodeService" />
-        </property>  	   
+        </property>         
         <property name="searchService">
             <ref bean="ADMSearchService" />
-        </property>  	   
+        </property>         
         <property name="authenticationComponent">
             <ref bean="authenticationComponent" />
-        </property> 	   
+        </property>        
         <property name="dictionaryService">
             <ref bean="DictionaryService" />
         </property> 
         
         <property name="asynchronousActionExecutionQueues">
             <map>
-            	<!--  This is the default async queue -->
+                <!--  This is the default async queue -->
                <entry key="">
-               	   <ref bean="defaultAsynchronousActionExecutionQueue"/>
+                      <ref bean="defaultAsynchronousActionExecutionQueue"/>
                </entry>
                <entry key="deployment">
-               	   <ref bean="deploymentAsynchronousActionExecutionQueue"/>
+                      <ref bean="deploymentAsynchronousActionExecutionQueue"/>
                </entry>
             </map>   
-		</property>
+        </property>
     </bean>
 
 
@@ -103,25 +103,25 @@
    
    <bean id="actionsAspect" class="org.alfresco.repo.action.ActionsAspect" init-method="init">
       <property name="nodeService">
-	     <ref bean="nodeService"/>
-	  </property>	   
-	  <property name="policyComponent">
-	     <ref bean="policyComponent"/>
-	  </property>	  	   
-	  <property name="ruleService">
-	     <ref bean="ruleService"/>
-	  </property>
+         <ref bean="nodeService"/>
+      </property>       
+      <property name="policyComponent">
+         <ref bean="policyComponent"/>
+      </property>             
+      <property name="ruleService">
+         <ref bean="ruleService"/>
+      </property>
    </bean>   
    
    <!-- I18N -->
    
    <bean id="actionResourceBundles" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
-    	<property name="resourceBundles">
-    		<list>
-    			<value>alfresco.messages.action-service</value>
-    			<value>alfresco.messages.action-config</value>
-    		</list>
-    	</property>
+        <property name="resourceBundles">
+            <list>
+                <value>alfresco.messages.action-service</value>
+                <value>alfresco.messages.action-config</value>
+            </list>
+        </property>
    </bean>
 
     <!-- Action Conditions -->
@@ -147,12 +147,17 @@
         </property>
         <property name="propertyValueComparators">
             <list>
-            	<bean class="org.alfresco.repo.action.evaluator.compare.TextPropertyValueComparator"/>
-            	<bean class="org.alfresco.repo.action.evaluator.compare.NumericPropertyValueComparator"/>
-            	<bean class="org.alfresco.repo.action.evaluator.compare.DatePropertyValueComparator"/>
+                <bean class="org.alfresco.repo.action.evaluator.compare.TextPropertyValueComparator"/>
+                <bean class="org.alfresco.repo.action.evaluator.compare.NumericPropertyValueComparator"/>
+                <bean class="org.alfresco.repo.action.evaluator.compare.DatePropertyValueComparator"/>
             </list>
         </property>
-    </bean>
+   </bean>
+
+    <bean id="compare-date-property" parent="compare-property-value"> </bean>
+    <bean id="compare-integer-property" parent="compare-property-value"> </bean>
+    <bean id="compare-text-property" parent="compare-property-value"> </bean>
+
     
     <bean id="compare-mime-type" class="org.alfresco.repo.action.evaluator.CompareMimeTypeEvaluator" parent="compare-property-value"/>
 
@@ -174,7 +179,7 @@
         </property>
     </bean>
 
-	<bean id="has-aspect" class="org.alfresco.repo.action.evaluator.HasAspectEvaluator" parent="action-condition-evaluator">
+    <bean id="has-aspect" class="org.alfresco.repo.action.evaluator.HasAspectEvaluator" parent="action-condition-evaluator">
         <property name="nodeService">
             <ref bean="nodeService" />
         </property>
@@ -192,6 +197,9 @@
         </property>
     </bean>
 
+    <bean id="composite-condition" class="org.alfresco.repo.action.evaluator.CompositeConditionEvaluator" parent="action-condition-evaluator">
+    </bean>
+   
     <!-- Actions -->
 
     <bean id="action-executer" abstract="true" init-method="init">
@@ -204,21 +212,21 @@
       <property name="publicAction">
          <value>false</value>
       </property>
-	  <property name="actionService">
+      <property name="actionService">
          <ref bean="actionService"/>
-	  </property>
+      </property>
    </bean>
    
    <bean id="create-version" class="org.alfresco.repo.action.executer.CreateVersionActionExecuter" parent="action-executer">
       <property name="publicAction">
          <value>false</value>
       </property>
-	  <property name="nodeService">
+      <property name="nodeService">
          <ref bean="nodeService"/>
-	  </property>
-	  <property name="versionService">
+      </property>
+      <property name="versionService">
          <ref bean="versionService"/>
-	  </property>
+      </property>
    </bean>
 
     <bean id="add-features" class="org.alfresco.repo.action.executer.AddFeaturesActionExecuter" parent="action-executer">
@@ -274,9 +282,9 @@
             <ref bean="mimetypeService" />
         </property>
         <property name="applicableTypes">
-        	<list>
-        		<value>{http://www.alfresco.org/model/content/1.0}content</value>
-        	</list>
+            <list>
+                <value>{http://www.alfresco.org/model/content/1.0}content</value>
+            </list>
         </property>
     </bean>
 
@@ -319,9 +327,9 @@
             <ref bean="checkOutCheckInService"></ref>
         </property>
         <property name="applicableTypes">
-        	<list>
-        		<value>{http://www.alfresco.org/model/content/1.0}content</value>
-        	</list>
+            <list>
+                <value>{http://www.alfresco.org/model/content/1.0}content</value>
+            </list>
         </property>
     </bean>
 
@@ -333,9 +341,9 @@
             <ref bean="checkOutCheckInService"></ref>
         </property>
         <property name="applicableTypes">
-        	<list>
-        		<value>{http://www.alfresco.org/model/content/1.0}content</value>
-        	</list>
+            <list>
+                <value>{http://www.alfresco.org/model/content/1.0}content</value>
+            </list>
         </property>
     </bean>
 
@@ -392,9 +400,9 @@
             <ref bean="metadataExtracterRegistry" />
         </property>
         <property name="applicableTypes">
-        	<list>
-        		<value>{http://www.alfresco.org/model/content/1.0}content</value>
-        	</list>
+            <list>
+                <value>{http://www.alfresco.org/model/content/1.0}content</value>
+            </list>
         </property>
         <property name="carryAspectProperties">
             <value>true</value>
@@ -490,17 +498,17 @@
     
     <bean id="simple-avm-submit" class="org.alfresco.repo.avm.actions.SimpleAVMSubmitAction" parent="action-executer">
         <property name="avmService">
-    	    <ref bean="indexingAVMService"/>
-    	</property>
-    	<property name="avmSyncService">
-    	    <ref bean="avmSyncService"/>
-    	</property>    
-    	<property name="excluder">
-    		<ref bean="globalPathExcluder"/>
-    	</property>
-    	<property name="publicAction">
-    	    <value>false</value>
-    	</property>
+            <ref bean="indexingAVMService"/>
+        </property>
+        <property name="avmSyncService">
+            <ref bean="avmSyncService"/>
+        </property>    
+        <property name="excluder">
+            <ref bean="globalPathExcluder"/>
+        </property>
+        <property name="publicAction">
+            <value>false</value>
+        </property>
     </bean>
     
     <bean id="start-avm-workflow" class="org.alfresco.repo.avm.actions.StartAVMWorkflowAction" parent="action-executer">
@@ -516,12 +524,12 @@
     </bean>
     
     <bean id="simple-avm-promote" class="org.alfresco.repo.avm.actions.SimpleAVMPromoteAction" parent="action-executer">
-    	<property name="avmSyncService">
-    	    <ref bean="avmSyncService"/>
-    	</property>
-    	<property name="publicAction">
-    	    <value>false</value>
-    	</property>
+        <property name="avmSyncService">
+            <ref bean="avmSyncService"/>
+        </property>
+        <property name="publicAction">
+            <value>false</value>
+        </property>
     </bean>
     
     <bean id="avm-revert-store" class="org.alfresco.repo.avm.actions.AVMRevertStoreAction" parent="action-executer">
@@ -552,25 +560,25 @@
     </bean>
     
     <bean id="avm-undo-list" class="org.alfresco.repo.avm.actions.AVMUndoSandboxListAction" parent="action-executer">
-    	<property name="avmService">
-    	    <ref bean="indexingAVMService"/>
-    	</property>
-    	<property name="avmLockingService">
-    	    <ref bean="AVMLockingService"/>
-    	</property>
-    	<property name="publicAction">
-    	    <value>false</value>
-    	</property>
+        <property name="avmService">
+            <ref bean="indexingAVMService"/>
+        </property>
+        <property name="avmLockingService">
+            <ref bean="AVMLockingService"/>
+        </property>
+        <property name="publicAction">
+            <value>false</value>
+        </property>
     </bean>
     
     <bean id="avm-deploy-website" class="org.alfresco.repo.avm.actions.AVMDeployWebsiteAction" parent="action-executer">
       
       <!--  Run avm-deploy-website action on the deployment queue -->
       <property name="queueName">
-      	<value>deployment</value>
-      </property>	
+          <value>deployment</value>
+      </property>    
       <property name="deploymentService">
-    	    <ref bean="DeploymentService"/>
+            <ref bean="DeploymentService"/>
       </property>
       <property name="contentService">
           <ref bean="ContentService"/>
@@ -579,7 +587,7 @@
           <ref bean="NodeService"/>
       </property>
       <property name="publicAction">
-    	    <value>false</value>
+            <value>false</value>
       </property>
       <property name="defaultRemoteUsername">
          <value>admin</value>
@@ -605,9 +613,9 @@
       <property name="nodeService">
           <ref bean="NodeService"/>
       </property>
-    	<property name="publicAction">
-    	    <value>false</value>
-    	</property>
+        <property name="publicAction">
+            <value>false</value>
+        </property>
     </bean>
     
     <bean id="avm-link-validation" class="org.alfresco.linkvalidation.LinkValidationAction" parent="action-executer" lazy-init="true">

@@ -239,6 +239,11 @@ public class AlfrescoCifsAuthenticator extends CifsAuthenticatorBase
             }
         }
         
+        // Check for an administrator logon
+        
+        if ( authSts == AUTH_ALLOW && client.getLogonType() == ClientInfo.LogonNormal)
+        	checkForAdminUserName( client);
+        
         // DEBUG
         
         if ( logger.isDebugEnabled())
@@ -404,6 +409,10 @@ public class AlfrescoCifsAuthenticator extends CifsAuthenticatorBase
                 
                 getHomeFolderForUser( client);
                 
+                // Indicate this is a normal user logon
+                
+                client.setLogonType( ClientInfo.LogonNormal);
+                
                 // Passwords match, grant access
                 
                 return CifsAuthenticator.AUTH_ALLOW;
@@ -497,6 +506,10 @@ public class AlfrescoCifsAuthenticator extends CifsAuthenticatorBase
                     // Allow the user access as a guest
 
                     authSts = CifsAuthenticator.AUTH_GUEST;
+                    
+                    // Indicate that this is a guest logon
+                    
+                    client.setLogonType( ClientInfo.LogonGuest);
                 }
             }
             else
@@ -505,6 +518,10 @@ public class AlfrescoCifsAuthenticator extends CifsAuthenticatorBase
                 // Allow the user full access to the server
 
                 authSts = CifsAuthenticator.AUTH_ALLOW;
+                
+                // Indicate that this is a normal user logon
+                
+                client.setLogonType( ClientInfo.LogonNormal);
             }
 
             // Set the current user to be authenticated, save the authentication token

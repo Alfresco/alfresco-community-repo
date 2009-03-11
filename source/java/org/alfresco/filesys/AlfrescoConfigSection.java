@@ -31,6 +31,7 @@ import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.transaction.TransactionService;
@@ -70,6 +71,7 @@ public class AlfrescoConfigSection extends ConfigSection {
   private TenantService m_tenantService;
   private SearchService m_searchService;
   private NamespaceService m_namespaceService;
+  private AuthorityService m_authorityService;
   
   /**
    * Class constructor
@@ -93,6 +95,7 @@ public class AlfrescoConfigSection extends ConfigSection {
     m_tenantService      = config.getTenantService();
     m_searchService      = config.getSearchService();
     m_namespaceService   = config.getNamespaceService();
+    m_authorityService   = config.getAuthorityService();
   }
   
   /**
@@ -193,5 +196,15 @@ public class AlfrescoConfigSection extends ConfigSection {
   public final NamespaceService getNamespaceService()
   {
   	return m_namespaceService;
+  }
+  
+  /**
+   * Return the authority service
+   * 
+   * @return AuthorityService
+   */
+  public final AuthorityService getAuthorityService()
+  {
+	return m_authorityService;
   }
 }

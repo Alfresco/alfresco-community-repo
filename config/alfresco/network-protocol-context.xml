@@ -57,6 +57,9 @@
       <property name="transactionService">
          <ref bean="transactionService"/>
       </property>
+      <property name="authorityService">
+         <ref bean="authorityService"/>
+      </property>
       <property name="diskInterface">
          <ref bean="contentDiskDriver"/>
       </property>

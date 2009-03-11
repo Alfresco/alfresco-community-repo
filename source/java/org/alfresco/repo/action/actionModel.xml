@@ -21,9 +21,9 @@
       <!-- Action, conditions and rules -->
       
       <type name="act:actionbase">
-	     <title>Action Base Type</title>
-	     <parent>cm:cmobject</parent> 
-	     <properties>
+        <title>Action Base Type</title>
+        <parent>cm:cmobject</parent> 
+        <properties>
             <property name="act:definitionName">
                <type>d:text</type>
                <mandatory>true</mandatory>
@@ -40,10 +40,10 @@
          </associations>  
       </type>
       
-	  <type name="act:action">
-	     <title>Action</title>
-	     <parent>act:actionbase</parent>
-	     <properties>
+     <type name="act:action">
+        <title>Action</title>
+        <parent>act:actionbase</parent>
+        <properties>
             <property name="act:actionTitle">
                <type>d:text</type>
                <mandatory>false</mandatory>
@@ -64,7 +64,7 @@
                <type>d:text</type>
                <mandatory>false</mandatory>
             </property>
-         </properties>	     
+         </properties>        
          <associations>
             <child-association name="act:conditions">
                <target>
@@ -81,23 +81,43 @@
                </target>
             </child-association>
          </associations>
-	  </type>
-	  
-	  <type name="act:actioncondition">	  
-	     <title>Action Condition</title>
-	     <parent>act:actionbase</parent>
-	     <properties>
+     </type>
+     
+     <type name="act:actioncondition">     
+        <title>Action Condition</title>
+        <parent>act:actionbase</parent>
+        <properties>
             <property name="act:invert">
                <type>d:boolean</type>
                <mandatory>true</mandatory>
             </property>
          </properties>
-	  </type>
-	  
-	  <type name="act:actionparameter">
-	     <title>Action/Condition Parameter</title>
-	     <parent>cm:cmobject</parent>
-	     <properties>
+     </type>
+     
+     <type name="act:compositeactioncondition">     
+       <title>Composite Condition</title>
+       <parent>act:actioncondition</parent>
+       <properties>
+          <property name="act:orconditions">
+             <type>d:boolean</type>
+            <mandatory>true</mandatory>
+          </property>
+       </properties>
+       <associations>
+          <child-association name="act:compositeconditions">
+             <target>
+                <class>act:actioncondition</class>
+                <mandatory>true</mandatory>
+                <many>true</many>
+             </target>
+          </child-association>
+       </associations>
+     </type>
+     
+     <type name="act:actionparameter">
+        <title>Action/Condition Parameter</title>
+        <parent>cm:cmobject</parent>
+        <properties>
             <property name="act:parameterName">
                <type>d:text</type>
                <mandatory>true</mandatory>
@@ -107,11 +127,11 @@
                <mandatory>true</mandatory>
             </property>
          </properties>
-	  </type>
-	  
-	  <type name="act:compositeaction">
-	     <title>Composite Action</title>
-	     <parent>act:action</parent>
+     </type>
+     
+     <type name="act:compositeaction">
+        <title>Composite Action</title>
+        <parent>act:action</parent>
          <associations>
             <child-association name="act:actions">
                <target>
@@ -121,11 +141,11 @@
                </target>
             </child-association>
          </associations>
-	  </type>
-	  
-	  <type name="act:savedactionfolder">
-	     <title>Saved Action Folder</title>
-	     <parent>cm:systemfolder</parent>
+     </type>
+     
+     <type name="act:savedactionfolder">
+        <title>Saved Action Folder</title>
+        <parent>cm:systemfolder</parent>
          <associations>
             <child-association name="act:savedActions">
                <target>
@@ -135,14 +155,14 @@
                </target>
             </child-association>
          </associations>
-	  </type>
+     </type>
 
 
-      <!-- This type has been deprecated: for backwards compatibility only -->	  
-	  <type name="act:actionexecutiondetails">
-	     <title>Action Execution Details</title>
-	     <parent>cm:cmobject</parent>
-	     <properties>
+      <!-- This type has been deprecated: for backwards compatibility only -->     
+     <type name="act:actionexecutiondetails">
+        <title>Action Execution Details</title>
+        <parent>cm:cmobject</parent>
+        <properties>
             <property name="act:actionExecutionTitle">
                <type>d:text</type>
                <mandatory>false</mandatory>
@@ -160,13 +180,13 @@
                <mandatory>false</mandatory>
             </property>
          </properties>
-	  </type>
+     </type>
 
-	</types>
+   </types>
 
 
-	<aspects>
-	
+   <aspects>
+   
       <aspect name="act:actions">
          <title>Rules</title>           
          <associations>
@@ -180,7 +200,7 @@
          </associations>  
       </aspect>
       
-      <!-- This type has been deprecated: for backwards compatibility only -->	  
+      <!-- This type has been deprecated: for backwards compatibility only -->     
       <aspect name="act:actionexecutionhistory">
          <title>Action Execution History</title>           
          <associations>
@@ -194,6 +214,6 @@
          </associations>  
       </aspect>
          
-	</aspects>
+   </aspects>
 
 </model>

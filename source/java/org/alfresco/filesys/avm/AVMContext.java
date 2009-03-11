@@ -92,6 +92,10 @@ public class AVMContext extends AlfrescoContext
     private StringList m_newStores;
     private Object m_newStoresLock;
     
+    // Allow admin user to write to web project staging stores
+    
+    private boolean m_allowAdminStagingWrites;
+    
     /**
      * Class constructor
      * 
@@ -182,6 +186,24 @@ public class AVMContext extends AlfrescoContext
     	return m_virtualView;
     }
 
+    /**
+     * Check if the admin user is allowed to write to web project staging stores
+     * 
+     * @return boolean
+     */
+    public final boolean allowAdminStagingWrites() {
+    	return m_allowAdminStagingWrites;
+    }
+
+    /**
+     * Set the admin web project staging store writeable status
+     * 
+     * @param writeable boolean
+     */
+    public final void setAllowAdminStaginWrites(boolean writeable) {
+    	m_allowAdminStagingWrites = writeable;
+    }
+    
     /**
      * Check if there are any new stores queued for adding to the virtualization view
      * 

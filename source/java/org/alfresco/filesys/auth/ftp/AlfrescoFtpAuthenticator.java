@@ -44,6 +44,7 @@ import org.alfresco.repo.security.authentication.MD4PasswordEncoder;
 import org.alfresco.repo.security.authentication.MD4PasswordEncoderImpl;
 import org.alfresco.repo.security.authentication.NTLMMode;
 import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -53,11 +54,7 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author gkspencer
  */
-public class AlfrescoFtpAuthenticator implements FTPAuthenticator {
-
-  // Logging
-  
-  protected static final Log logger = LogFactory.getLog("org.alfresco.ftp.protocol.auth");
+public class AlfrescoFtpAuthenticator extends FTPAuthenticatorBase {
 
   // MD4 hash decoder
   
@@ -66,30 +63,6 @@ public class AlfrescoFtpAuthenticator implements FTPAuthenticator {
   // Password encryptor, for MD4 hashing
   
   protected PasswordEncryptor m_encryptor = new PasswordEncryptor();
-  
-  // Alfresco configuration section
-  
-  private AlfrescoConfigSection m_alfrescoConfig;
-  
-  /**
-   * Initialize the authenticator
-   * 
-   * @param config ServerConfiguration
-   * @param params ConfigElement
-   * @exception InvalidConfigurationException
-   */
-  public void initialize(ServerConfiguration config, ConfigElement params)
-    throws InvalidConfigurationException
-  {
-      // Get the alfresco configuration section, required to get hold of various services/components
-      
-      m_alfrescoConfig = (AlfrescoConfigSection) config.getConfigSection( AlfrescoConfigSection.SectionName);
-      
-      // Check that the required authentication classes are available
-  
-      if ( m_alfrescoConfig == null || getAuthenticationComponent() == null)
-          throw new InvalidConfigurationException("Authentication component not available");
-  }
   
   /**
    * Authenticate the user
@@ -121,6 +94,7 @@ public class AlfrescoFtpAuthenticator implements FTPAuthenticator {
             // Indicate logged on as guest
             
             authSts = true;
+            client.setLogonType( ClientInfo.LogonGuest);
             
             // DEBUG
             
@@ -136,10 +110,24 @@ public class AlfrescoFtpAuthenticator implements FTPAuthenticator {
       
         tx = getTransactionService().getUserTransaction( false);
         tx.begin();
-        
+
         // Perform local MD4 password check
         
         authSts = doMD4UserAuthentication(client, sess);
+        
+        // Check if the user has been logged on successfully
+        
+        if ( authSts == true)
+        	client.setLogonType( ClientInfo.LogonNormal);
+        
+        // Check if the logged on user is an administrator
+        
+        if ( client.getLogonType() == ClientInfo.LogonNormal)
+        {
+        	// Check for an administrator logon, update the logon type
+        	
+        	checkForAdminUserName( client);
+        }
     }
     catch ( Exception ex)
     {
@@ -263,41 +251,4 @@ public class AlfrescoFtpAuthenticator implements FTPAuthenticator {
           
       return false;
   }
-
-  /**
-   * Return the authentication componenet
-   * 
-   * @return AuthenticationComponent
-   */
-  protected final AuthenticationComponent getAuthenticationComponent()
-  {
-      return m_alfrescoConfig.getAuthenticationComponent();
-  }
-  
-  /**
-   * Return the authentication service
-   * 
-   * @return AuthenticationService
-   */
-  protected final AuthenticationService getAuthenticationService()
-  {
-      return m_alfrescoConfig.getAuthenticationService();
-  }
-  
-  /**
-   * Return the transaction service
-   * 
-   * @return TransactionService
-   */
-  protected final TransactionService getTransactionService()
-  {
-      return m_alfrescoConfig.getTransactionService();
-  }
-  
-  /**
-   * Close the authenticator, perform any cleanup
-   */
-   public void closeAuthenticator()
-   {
-   }
 }

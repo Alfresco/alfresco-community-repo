@@ -60,6 +60,7 @@ public class ActionTestSuite extends TestSuite
         suite.addTestSuite(ActionConditionImplTest.class);
         suite.addTestSuite(CompositeActionImplTest.class);
         suite.addTestSuite(ActionServiceImplTest.class);
+        suite.addTestSuite(CompositeActionConditionImplTest.class);
         
         // Test evaluators
         suite.addTestSuite(IsSubTypeEvaluatorTest.class);

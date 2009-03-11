@@ -311,14 +311,18 @@ public class CopyServiceImpl implements CopyService
             boolean copyToNewNode,
     		Map<NodeRef, NodeRef> copiedNodeRefs)
 	{
+    	// Get the destination and target associations up-front for performance reasons
+    	List<ChildAssociationRef> destinationChildAssocs = this.nodeService.getChildAssocs(destinationNodeRef);
+    	List<AssociationRef> destinationAssocs = this.nodeService.getTargetAssocs(destinationNodeRef, RegexQNamePattern.MATCH_ALL);
+    	
     	QName sourceClassRef = this.nodeService.getType(sourceNodeRef);		
-    	invokeCopyComplete(sourceClassRef, sourceNodeRef, destinationNodeRef, copyToNewNode, copiedNodeRefs);
+    	invokeCopyComplete(sourceClassRef, sourceNodeRef, destinationNodeRef, destinationChildAssocs, destinationAssocs, copyToNewNode, copiedNodeRefs);
 		
 		// Get the source aspects
 		Set<QName> sourceAspects = this.nodeService.getAspects(sourceNodeRef);
 		for (QName sourceAspect : sourceAspects) 
 		{
-			invokeCopyComplete(sourceAspect, sourceNodeRef, destinationNodeRef, copyToNewNode, copiedNodeRefs);
+			invokeCopyComplete(sourceAspect, sourceNodeRef, destinationNodeRef, destinationChildAssocs, destinationAssocs, copyToNewNode, copiedNodeRefs);
 		}
 	}
 
@@ -333,13 +337,15 @@ public class CopyServiceImpl implements CopyService
 			QName typeQName, 
 			NodeRef sourceNodeRef, 
 			NodeRef destinationNodeRef, 
+			List<ChildAssociationRef> destinationChildAssocs,
+			List<AssociationRef> destinationAssocs,
             boolean copyToNewNode,
 			Map<NodeRef, NodeRef> copiedNodeRefs)
 	{
 		Collection<CopyServicePolicies.OnCopyCompletePolicy> policies = this.onCopyCompleteDelegate.getList(typeQName);
 		if (policies.isEmpty() == true)
 		{
-			defaultOnCopyComplete(typeQName, sourceNodeRef, destinationNodeRef, copiedNodeRefs);
+			defaultOnCopyComplete(typeQName, sourceNodeRef, destinationNodeRef, destinationChildAssocs, destinationAssocs, copiedNodeRefs);
 		}
 		else
 		{
@@ -361,6 +367,8 @@ public class CopyServiceImpl implements CopyService
 			QName typeQName, 
 			NodeRef sourceNodeRef, 
 			NodeRef destinationNodeRef, 
+			List<ChildAssociationRef> destinationChildAssocs,
+			List<AssociationRef> destinationAssocs,			
 			Map<NodeRef, NodeRef> copiedNodeRefs)
 	{
 		ClassDefinition classDefinition = this.dictionaryService.getClass(typeQName);	
@@ -392,8 +400,8 @@ public class CopyServiceImpl implements CopyService
             Map<QName, AssociationDefinition> assocDefs = classDefinition.getAssociations();
 
             // TODO: Need way of getting child assocs of a given type
-            List<ChildAssociationRef> childAssocRefs = this.nodeService.getChildAssocs(destinationNodeRef);
-            for (ChildAssociationRef childAssocRef : childAssocRefs) 
+            //List<ChildAssociationRef> childAssocRefs = this.nodeService.getChildAssocs(destinationNodeRef);
+            for (ChildAssociationRef childAssocRef : destinationChildAssocs) 
             {
                 if (assocDefs.containsKey(childAssocRef.getTypeQName()) &&
                 	childAssocRef.isPrimary() == false &&
@@ -410,8 +418,8 @@ public class CopyServiceImpl implements CopyService
             }
             
             // TODO: Need way of getting assocs of a given type
-            List<AssociationRef> nodeAssocRefs = this.nodeService.getTargetAssocs(destinationNodeRef, RegexQNamePattern.MATCH_ALL);
-            for (AssociationRef nodeAssocRef : nodeAssocRefs) 
+            //List<AssociationRef> nodeAssocRefs = this.nodeService.getTargetAssocs(destinationNodeRef, RegexQNamePattern.MATCH_ALL);
+            for (AssociationRef nodeAssocRef : destinationAssocs) 
             {
                 if (assocDefs.containsKey(nodeAssocRef.getTypeQName()) &&
                 	copiedNodeRefs.containsKey(nodeAssocRef.getTargetRef()) == true)

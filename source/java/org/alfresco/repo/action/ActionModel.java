@@ -12,14 +12,18 @@ public interface ActionModel
     static final QName PROP_ACTION_DESCRIPTION      = QName.createQName(ACTION_MODEL_URI, "actionDescription");
     static final QName PROP_EXECUTE_ASYNCHRONOUSLY  = QName.createQName(ACTION_MODEL_URI, "executeAsynchronously");
     static final QName ASSOC_CONDITIONS             = QName.createQName(ACTION_MODEL_URI, "conditions");
+
     static final QName ASSOC_COMPENSATING_ACTION    = QName.createQName(ACTION_MODEL_URI, "compensatingAction");
     static final QName ASSOC_PARAMETERS             = QName.createQName(ACTION_MODEL_URI, "parameters");
     static final QName TYPE_ACTION_CONDITION        = QName.createQName(ACTION_MODEL_URI, "actioncondition");
+    static final QName TYPE_COMPOSITE_ACTION_CONDITION        = QName.createQName(ACTION_MODEL_URI, "compositeactioncondition");
+
     static final QName TYPE_ACTION_PARAMETER        = QName.createQName(ACTION_MODEL_URI, "actionparameter");
     static final QName PROP_PARAMETER_NAME          = QName.createQName(ACTION_MODEL_URI, "parameterName");
     static final QName PROP_PARAMETER_VALUE         = QName.createQName(ACTION_MODEL_URI, "parameterValue");
     static final QName TYPE_COMPOSITE_ACTION        = QName.createQName(ACTION_MODEL_URI, "compositeaction");
     static final QName ASSOC_ACTIONS                = QName.createQName(ACTION_MODEL_URI, "actions");
+    static final QName ASSOC_COMPOSITE_ACTION_CONDITION       = QName.createQName(ACTION_MODEL_URI, "compositeconditions");
 
     static final QName ASPECT_ACTIONS               = QName.createQName(ACTION_MODEL_URI, "actions");
     static final QName ASSOC_ACTION_FOLDER          = QName.createQName(ACTION_MODEL_URI, "actionFolder");
@@ -30,5 +34,9 @@ public interface ActionModel
     //static final QName ASSOC_SAVED_ACTIONS = QName.createQName(ACTION_MODEL_URI, "savedActions");
     
     static final QName PROP_CONDITION_INVERT = QName.createQName(ACTION_MODEL_URI, "invert");
+    static final QName PROP_CONDITION_ANDOR = QName.createQName(ACTION_MODEL_URI, "or");
+
+    /** Action assoc name */
+    public static final QName ASSOC_NAME_ACTIONS = QName.createQName(ACTION_MODEL_URI, "actions");
 
 }

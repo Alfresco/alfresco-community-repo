@@ -37,6 +37,7 @@ import org.alfresco.service.cmr.action.ActionDefinition;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.action.ActionServiceTransport;
 import org.alfresco.service.cmr.action.CompositeAction;
+import org.alfresco.service.cmr.action.CompositeActionCondition;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -221,5 +222,10 @@ public class ActionServiceRemote implements ActionService
     public void saveAction(NodeRef nodeRef, Action action)
     {
         fTransport.saveAction(fHolder.getTicket(), nodeRef, action);
+    }
+
+    public CompositeActionCondition createCompositeActionCondition() 
+    {
+        return null;
     }
 }

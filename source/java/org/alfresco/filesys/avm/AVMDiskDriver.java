@@ -362,6 +362,11 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
 
                     context.enableStateTable(true, getStateReaper());
 
+                    // Check if the admin user should be allowed to write to the web project staging stores
+                    
+                    if ( cfg.getChild("adminWriteable") != null)
+                    	context.setAllowAdminStaginWrites( true);
+                    
                     // Plug the virtualization view context into the various store/version call back listeners
                     // so that store/version pseudo folders can be kept in sync with AVM
 
@@ -834,9 +839,12 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
 
         // Check if the filesystem is the virtualization view
 
-        if (ctx.isVirtualizationView() && storePath.isReadOnlyPseudoPath())
+        if (ctx.isVirtualizationView())
         {
-            throw new AccessDeniedException("Cannot create folder in store/version layer, " + params.getPath());
+        	if (storePath.isReadOnlyPseudoPath())
+        		throw new AccessDeniedException("Cannot create folder in store/version layer, " + params.getPath());
+        	else if ( storePath.isReadOnlyAccess())
+        		throw new AccessDeniedException("Cannot create folder " + params.getPath() + ", read-only path");
         }
 
         // Create a new file
@@ -910,9 +918,12 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
 
         // Check if the filesystem is the virtualization view
 
-        if (ctx.isVirtualizationView() && storePath.isReadOnlyPseudoPath())
+        if (ctx.isVirtualizationView())
         {
-            throw new AccessDeniedException("Cannot create file in store/version layer, " + params.getPath());
+        	if (storePath.isReadOnlyPseudoPath())
+        		throw new AccessDeniedException("Cannot create file in store/version layer, " + params.getPath());
+        	else if ( storePath.isReadOnlyAccess())
+        		throw new AccessDeniedException("Cannot create file " + params.getPath() + ", read-only path");
         }
         else if (storePath.getVersion() != AVMContext.VERSION_HEAD)
         {
@@ -1008,9 +1019,12 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
 
         // Check if the filesystem is the virtualization view
 
-        if (ctx.isVirtualizationView() && storePath.isPseudoPath())
+        if (ctx.isVirtualizationView())
         {
-            throw new AccessDeniedException("Cannot delete pseudo folder, " + dir);
+        	if (storePath.isPseudoPath())
+        		throw new AccessDeniedException("Cannot delete folder in store/version layer, " + dir);
+        	else if ( storePath.isReadOnlyAccess())
+        		throw new AccessDeniedException("Cannot delete folder " + dir + ", read-only path");
         }
 
         // Make sure the path is to a folder before deleting it
@@ -1080,9 +1094,12 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
 
         // Check if the filesystem is the virtualization view
 
-        if (ctx.isVirtualizationView() && storePath.isPseudoPath())
+        if (ctx.isVirtualizationView())
         {
-            throw new AccessDeniedException("Cannot delete pseudo file, " + name);
+        	if (storePath.isPseudoPath())
+        		throw new AccessDeniedException("Cannot delete file in store/version layer, " + name);
+        	else if ( storePath.isReadOnlyAccess())
+        		throw new AccessDeniedException("Cannot delete file " + name + ", read-only path");
         }
 
         // Make sure the path is to a file before deleting it
@@ -1609,9 +1626,14 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
 
         // Check if the filesystem is the virtualization view
 
-        if (ctx.isVirtualizationView() && oldAVMPath.isReadOnlyPseudoPath())
+        if (ctx.isVirtualizationView())
         {
-            throw new AccessDeniedException("Cannot rename folder in store/version layer, " + oldName);
+        	if ( oldAVMPath.isReadOnlyPseudoPath())
+        		throw new AccessDeniedException("Cannot rename folder in store/version layer, " + oldName);
+        	else if ( newAVMPath.isReadOnlyPseudoPath())
+        		throw new AccessDeniedException("Cannot rename folder to store/version layer, " + newName);
+        	else if ( newAVMPath.isReadOnlyAccess())
+        		throw new AccessDeniedException("Cannot rename folder to read-only folder, " + newName);
         }
 
         // Start a transaction for the rename
@@ -1701,7 +1723,12 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
             // If this is not the head version then it's not writable
 
             AVMContext avmCtx = (AVMContext) tree.getContext();
-            if (avmCtx.isVersion() != AVMContext.VERSION_HEAD)
+
+            // Parse the path
+        	
+            AVMPath storePath = buildStorePath(avmCtx, name, sess);
+        	
+            if (avmCtx.isVersion() != AVMContext.VERSION_HEAD || storePath.isReadOnlyAccess())
                 throw new AccessDeniedException("Store not writable, cannot set delete on close");
         }
     }
@@ -2757,13 +2784,14 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
 
     	// Allow access to the root folder
     	
-    	if ( avmPath.isLevel() == AVMPath.LevelId.Root)
+    	if ( avmPath.isLevel() == AVMPath.LevelId.Root) {
+    		
+    		// Allow read only access to the root
+    		
+    		avmPath.setReadOnlyAccess( true);
     		return;
+    	}
     	
-    	// Admin user has full access
-    	
-    	if ( cInfo.getUserName().equalsIgnoreCase( m_authComponent.getSystemUserName()))
-    		return;
     	
     	// Get root file state, get the store pseudo folder details
 
@@ -2798,7 +2826,13 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
 	    				
 	    				throw new AccessDeniedException("User " + cInfo.getUserName() + " has no access to web project, " + webFolder.getFileName());
     				}
-    				else if ( role == WebProjectStorePseudoFile.RolePublisher)
+    				else if ( avmCtx.allowAdminStagingWrites() && cInfo.isAdministrator())
+    				{
+    					// Allow admin write access
+    					
+    					avmPath.setReadOnlyAccess( false);
+    				}
+    				else
     				{
     					// Only allow read-only access to the staging area
     					

@@ -36,18 +36,18 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 
 /**
- * No condition evaluator implmentation.
+ * No condition evaluator implementation.
  * 
  * @author Roy Wetherall
  */
 public class IsSubTypeEvaluator extends ActionConditionEvaluatorAbstractBase
 {
-	/**
-	 * Evaluator constants
-	 */
-	public static final String NAME = "is-subtype";
+    /**
+     * Evaluator constants
+     */
+    public static final String NAME = "is-subtype";
     public static final String PARAM_TYPE = "type";
-	
+    
     /**
      * The node service
      */
@@ -101,10 +101,10 @@ public class IsSubTypeEvaluator extends ActionConditionEvaluatorAbstractBase
     /**
      * @see org.alfresco.repo.action.ParameterizedItemAbstractBase#addParameterDefinitions(java.util.List)
      */
-	@Override
-	protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
-	{
+    @Override
+    protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
+    {
         paramList.add(new ParameterDefinitionImpl(PARAM_TYPE, DataTypeDefinition.QNAME, true, getParamDisplayLabel(PARAM_TYPE)));
-	}
+    }
 
 }

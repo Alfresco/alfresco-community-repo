@@ -64,11 +64,7 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author gkspencer
  */
-public class PassthruFtpAuthenticator implements FTPAuthenticator {
-
-	// Logging
-
-	protected static final Log logger = LogFactory.getLog("org.alfresco.ftp.protocol.auth");
+public class PassthruFtpAuthenticator extends FTPAuthenticatorBase {
 
 	// Constants
 
@@ -88,10 +84,6 @@ public class PassthruFtpAuthenticator implements FTPAuthenticator {
 	
 	private PasswordEncryptor m_passwordEncryptor;
 	
-	// Alfresco configuration section
-
-	private AlfrescoConfigSection m_alfrescoConfig;
-
 	// Security configuration
 	
 	private SecurityConfigSection m_securityConfig;
@@ -105,21 +97,13 @@ public class PassthruFtpAuthenticator implements FTPAuthenticator {
 	 */
 	public void initialize(ServerConfiguration config, ConfigElement params)
 		throws InvalidConfigurationException {
+
+		super.initialize(config, params);
 		
-		// Get the alfresco configuration section, required to get hold of various
-		// services/components
-
-		m_alfrescoConfig = (AlfrescoConfigSection) config.getConfigSection(AlfrescoConfigSection.SectionName);
-
 		// Get the security configuration, for domain mapping
 		
 		m_securityConfig = (SecurityConfigSection) config.getConfigSection(SecurityConfigSection.SectionName);
 		
-		// Check that the required authentication classes are available
-
-		if ( m_alfrescoConfig == null || getAuthenticationComponent() == null)
-			throw new InvalidConfigurationException("Authentication component not available");
-
 		// Create the password encryptor
 		
 		m_passwordEncryptor = new PasswordEncryptor();
@@ -354,6 +338,11 @@ public class PassthruFtpAuthenticator implements FTPAuthenticator {
 			// Perform passthru authentication check
 			
 			authSts = doPassthruUserAuthentication(client, sess);
+			
+			// Check if the user is an administrator
+			
+			if ( authSts == true && client.getLogonType() == ClientInfo.LogonNormal)
+				checkForAdminUserName( client);
 		}
 		catch (Exception ex) {
 			if ( logger.isDebugEnabled())
@@ -475,6 +464,7 @@ public class PassthruFtpAuthenticator implements FTPAuthenticator {
     				// Passwords match, grant access
 
     				authSts = true;
+    				client.setLogonType( ClientInfo.LogonNormal);
 
     				// Logging
 
@@ -510,33 +500,6 @@ public class PassthruFtpAuthenticator implements FTPAuthenticator {
 		return authSts;
 	}
 
-	/**
-	 * Return the authentication componenet
-	 * 
-	 * @return AuthenticationComponent
-	 */
-	protected final AuthenticationComponent getAuthenticationComponent() {
-		return m_alfrescoConfig.getAuthenticationComponent();
-	}
-
-	/**
-	 * Return the authentication service
-	 * 
-	 * @return AuthenticationService
-	 */
-	protected final AuthenticationService getAuthenticationService() {
-		return m_alfrescoConfig.getAuthenticationService();
-	}
-
-	/**
-	 * Return the transaction service
-	 * 
-	 * @return TransactionService
-	 */
-	protected final TransactionService getTransactionService() {
-		return m_alfrescoConfig.getTransactionService();
-	}
-	
 	/**
 	 * Map a client IP address to a domain
 	 * 
@@ -582,6 +545,8 @@ public class PassthruFtpAuthenticator implements FTPAuthenticator {
 	 */
 	public void closeAuthenticator()
 	{
+		super.closeAuthenticator();
+		
         // Close the passthru authentication server list
         
         if ( m_passthruServers != null)

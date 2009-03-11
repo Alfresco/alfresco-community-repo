@@ -901,6 +901,10 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
           
           sess.removeSetupObject( client.getProcessId());
           
+          // Check if the user is an administrator
+          
+          checkForAdminUserName( client);
+          
           // Create a virtual circuit for the new logon
           
           VirtualCircuit vc = new VirtualCircuit( vcNum, client);

@@ -41,7 +41,7 @@ public class ActionConditionImpl extends ParameterizedItemImpl implements Serial
     private static final long serialVersionUID = 3257288015402644020L;
     
     /**
-     * Rule condition defintion
+     * Rule condition definition
      */
     private String actionConditionDefinitionName;
     
@@ -63,7 +63,7 @@ public class ActionConditionImpl extends ParameterizedItemImpl implements Serial
      * @param parameterValues
      */
     public ActionConditionImpl(
-    		String id,
+            String id,
             String actionConditionDefinitionName, 
             Map<String, Serializable> parameterValues)
     {

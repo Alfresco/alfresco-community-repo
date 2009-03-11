@@ -34,6 +34,7 @@ import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.repo.action.evaluator.compare.ComparePropertyValueOperation;
 import org.alfresco.repo.action.evaluator.compare.ContentPropertyName;
 import org.alfresco.repo.action.evaluator.compare.PropertyValueComparator;
+import org.alfresco.repo.node.integrity.IntegrityChecker;
 import org.alfresco.service.cmr.action.ActionCondition;
 import org.alfresco.service.cmr.action.ActionServiceException;
 import org.alfresco.service.cmr.action.ParameterDefinition;
@@ -47,6 +48,8 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.QName;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Compare property value evaluator
@@ -55,19 +58,22 @@ import org.alfresco.service.namespace.QName;
  */
 public class ComparePropertyValueEvaluator extends ActionConditionEvaluatorAbstractBase 
 {
-	/**
-	 * Evaluator constants
-	 */
-	public final static String NAME = "compare-property-value";
+    private static Log logger = LogFactory.getLog(ComparePropertyValueEvaluator.class);
+
+     /**
+      * Evaluator constants
+      */
+     public final static String NAME = "compare-property-value";
+
     public final static String PARAM_PROPERTY = "property"; 
     public final static String PARAM_CONTENT_PROPERTY = "content-property";
-	public final static String PARAM_VALUE = "value";
-	public final static String PARAM_OPERATION = "operation";
-    
-	/**
+    public final static String PARAM_VALUE = "value";
+    public final static String PARAM_OPERATION = "operation";
+
+    /**
      * The default property to check if none is specified in the properties
      */
-    private final static QName DEFAULT_PROPERTY = ContentModel.PROP_NAME;
+    private final static QName DEFAULT_PROPERTY = ContentModel.PROP_NAME;    
     
     /**
      * I18N message ID's
@@ -80,9 +86,9 @@ public class ComparePropertyValueEvaluator extends ActionConditionEvaluatorAbstr
      */
     private Map<QName, PropertyValueComparator> comparators = new HashMap<QName, PropertyValueComparator>();
     
-	/**
-	 * The node service
-	 */
+    /**
+     * The node service
+     */
     protected NodeService nodeService;
     
     /**
@@ -94,16 +100,16 @@ public class ComparePropertyValueEvaluator extends ActionConditionEvaluatorAbstr
      * The dictionary service
      */
     protected DictionaryService dictionaryService;
-	
+    
     /**
      * Set node service
      * 
      * @param nodeService  the node service
      */
-	public void setNodeService(NodeService nodeService) 
-	{
-		this.nodeService = nodeService;
-	}
+    public void setNodeService(NodeService nodeService) 
+    {
+        this.nodeService = nodeService;
+    }
     
     /**
      * Set the content service
@@ -148,38 +154,41 @@ public class ComparePropertyValueEvaluator extends ActionConditionEvaluatorAbstr
     {
         this.comparators.put(dataType, comparator);
     }
-	
+    
     /**
-     * Add paremeter defintions
+     * Add parameter definitions
      */
-	@Override
-	protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
-	{
+    @Override
+    protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
+    {
         paramList.add(new ParameterDefinitionImpl(PARAM_PROPERTY, DataTypeDefinition.QNAME, false, getParamDisplayLabel(PARAM_PROPERTY)));
         paramList.add(new ParameterDefinitionImpl(PARAM_CONTENT_PROPERTY, DataTypeDefinition.TEXT, false, getParamDisplayLabel(PARAM_CONTENT_PROPERTY)));
-		paramList.add(new ParameterDefinitionImpl(PARAM_VALUE, DataTypeDefinition.ANY, true, getParamDisplayLabel(PARAM_VALUE)));
-		paramList.add(new ParameterDefinitionImpl(PARAM_OPERATION, DataTypeDefinition.TEXT, false, getParamDisplayLabel(PARAM_OPERATION)));
-	}
+        paramList.add(new ParameterDefinitionImpl(PARAM_VALUE, DataTypeDefinition.ANY, true, getParamDisplayLabel(PARAM_VALUE)));
+        paramList.add(new ParameterDefinitionImpl(PARAM_OPERATION, DataTypeDefinition.TEXT, false, getParamDisplayLabel(PARAM_OPERATION)));
+    }
 
-	/**
+    /**
      * @see ActionConditionEvaluatorAbstractBase#evaluateImpl(ActionCondition, NodeRef)
-	 */
-	public boolean evaluateImpl(
-			ActionCondition ruleCondition,
-			NodeRef actionedUponNodeRef) 
-	{
-		boolean result = false;
-		
-		if (this.nodeService.exists(actionedUponNodeRef) == true)
-		{
-		    // Get the name value of the node
+     */
+    public boolean evaluateImpl(
+            ActionCondition ruleCondition,
+            NodeRef actionedUponNodeRef) 
+    {
+        boolean result = false;
+        
+        if (this.nodeService.exists(actionedUponNodeRef) == true)
+        {
+            // Get the name value of the node
             QName propertyQName = (QName)ruleCondition.getParameterValue(PARAM_PROPERTY);
             if (propertyQName == null)
             {
+                if (logger.isWarnEnabled())
+                    logger.warn("ComparePropertyValue - Property is NULL.  Setting to " + DEFAULT_PROPERTY);
+                
                 propertyQName = DEFAULT_PROPERTY;
             }
             
-            // Get the origional value and the value to match
+            // Get the original value and the value to match
             Serializable propertyValue = this.nodeService.getProperty(actionedUponNodeRef, propertyQName);
             Serializable compareValue = ruleCondition.getParameterValue(PARAM_VALUE);
             
@@ -191,12 +200,20 @@ public class ComparePropertyValueEvaluator extends ActionConditionEvaluatorAbstr
                 operation = ComparePropertyValueOperation.valueOf(operationString);
             }
             
-            // Look at the type of the property (assume to be ANY if none found in dicitionary)
+            // Look at the type of the property (assume to be ANY if none found in dictionary)
             QName propertyTypeQName = DataTypeDefinition.ANY;
             PropertyDefinition propertyDefintion = this.dictionaryService.getProperty(propertyQName);
             if (propertyDefintion != null)
             {
                 propertyTypeQName = propertyDefintion.getDataType().getName();
+            }
+            
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Evaluating Property Parameters, propertyQName - [" + propertyQName + 
+                         "] getInverted? [" + ruleCondition.getInvertCondition() +"] operation [" + 
+                         operation + "]");
+                logger.debug("Compare Value [" + compareValue + "] Actual Value [" + propertyValue + "]");
             }
             
             // Sort out what to do if the property is a content property
@@ -254,6 +271,10 @@ public class ComparePropertyValueEvaluator extends ActionConditionEvaluatorAbstr
                 }
                 else
                 {
+                    if (logger.isWarnEnabled())
+                    {
+                        logger.warn("Comparator not found for property type " + propertyTypeQName);
+                    }
                     // The default behaviour is to assume the property can only be compared using equals
                     if (operation != null && operation != ComparePropertyValueOperation.EQUALS)
                     {
@@ -267,8 +288,20 @@ public class ComparePropertyValueEvaluator extends ActionConditionEvaluatorAbstr
                     result = compareValue.equals(propertyValue);
                 }
             }
+            else 
+            {
+                if (logger.isInfoEnabled())
+                {
+                    logger.info("Condition Comparator encountered null value for property [" + propertyTypeQName +"]");
+                }
+            }
         }
-		
-		return result;
-	}
+        
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Returning result " + result);
+        }
+          
+        return result;
+    }
 }

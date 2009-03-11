@@ -32,7 +32,9 @@ import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.AbstractLifecycleBean;
+import org.alfresco.util.PropertyCheck;
 import org.springframework.context.ApplicationEvent;
 
 /**
@@ -54,12 +56,18 @@ public class SiteAVMBootstrap extends AbstractLifecycleBean
     /** The Permission Service to use */
     private PermissionService permissionService;
     
+    private TransactionService transactionService;
+    
     
     /**
      * @param rootDir the rootDir to set
      */
     public void setRootdir(String rootdir)
     {
+        if (rootDir != null && rootDir.length() == 0)
+        {
+            rootDir = null;
+        }
         this.rootDir = rootdir;
     }
 
@@ -87,9 +95,11 @@ public class SiteAVMBootstrap extends AbstractLifecycleBean
         this.permissionService = permissionService;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.util.AbstractLifecycleBean#onBootstrap(org.springframework.context.ApplicationEvent)
-     */
+    public void setTransactionService(TransactionService transactionService)
+    {
+        this.transactionService = transactionService;
+    }
+
     @Override
     protected void onBootstrap(ApplicationEvent event)
     {
@@ -110,10 +120,18 @@ public class SiteAVMBootstrap extends AbstractLifecycleBean
     public void bootstrap()
     {
         // ensure properties have been set
-        assert(avmService != null);
-        assert(permissionService != null);
-        assert(storeName != null && storeName.length() != 0);
-        assert(rootDir != null && rootDir.length() != 0);
+        PropertyCheck.mandatory(this, "avmService", avmService);
+        PropertyCheck.mandatory(this, "permissionService", permissionService);
+        PropertyCheck.mandatory(this, "transactionService", transactionService);
+        PropertyCheck.mandatory(this, "storeName", storeName);
+        PropertyCheck.mandatory(this, "rootDir", rootDir);
+        
+        // Avoid read-only mode errors
+        if (transactionService.isReadOnly())
+        {
+            // Do nothing
+            return;
+        }
         
         if (this.avmService.getStore(storeName) == null)
         {
@@ -135,9 +153,6 @@ public class SiteAVMBootstrap extends AbstractLifecycleBean
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.util.AbstractLifecycleBean#onShutdown(org.springframework.context.ApplicationEvent)
-     */
     @Override
     protected void onShutdown(ApplicationEvent event)
     {

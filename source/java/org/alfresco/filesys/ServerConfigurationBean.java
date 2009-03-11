@@ -97,6 +97,7 @@ import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.transaction.TransactionService;
@@ -231,11 +232,16 @@ public class ServerConfigurationBean extends ServerConfiguration implements Appl
   private TenantService m_tenantService;
   private SearchService m_searchService;
   private NamespaceService m_namespaceService;
+  private AuthorityService m_authorityService;
   
   // Local server name and domain/workgroup name
 
   private String m_localName;
   private String m_localDomain;
+  
+  // Disable use of native code on Windows, do not use any JNI calls
+  
+  private boolean m_disableNativeCode = false;
   
   /**
    * Default constructor
@@ -375,6 +381,16 @@ public class ServerConfigurationBean extends ServerConfiguration implements Appl
   }
   
   /**
+   * Set the authority service
+   * 
+   * @param authService AuthorityService
+   */
+  public void setAuthorityService(AuthorityService authService)
+  {
+  	m_authorityService = authService;
+  }
+  
+  /**
    * Check if the configuration has been initialized
    * 
    * @return Returns true if the configuration was fully initialised
@@ -472,6 +488,10 @@ public class ServerConfigurationBean extends ServerConfiguration implements Appl
       else if (m_configService == null)
       {
           throw new AlfrescoRuntimeException("Property 'configService' not set");
+      }
+      else if (m_authorityService == null)
+      {
+      	throw new AlfrescoRuntimeException("Property 'authorityService' not set");
       }
       
       // Create the configuration context
@@ -675,6 +695,21 @@ public class ServerConfigurationBean extends ServerConfiguration implements Appl
       
       try
       {
+        // Check if native code calls should be disabled on Windows
+          
+        elem = config.getConfigElement( "disableNativeCode");
+        if ( elem != null)
+        {
+          	// Disable native code calls so that the JNI DLL is not required
+        	
+          	cifsConfig.setNativeCodeDisabled( true);
+          	m_disableNativeCode = true;
+          	
+          	// Warning
+          	
+          	logger.warn("CIFS server native calls disabled, JNI code will not be used");
+        }
+          
         // Get the network broadcast address
         //
         // Note: We need to set this first as the call to getLocalDomainName() may use a NetBIOS
@@ -767,7 +802,7 @@ public class ServerConfigurationBean extends ServerConfiguration implements Appl
   
             String localDomain = getLocalDomainName();
             
-            if ( localDomain == null && getPlatformType() != Platform.Type.WINDOWS)
+            if ( localDomain == null && ( getPlatformType() != Platform.Type.WINDOWS || isNativeCodeDisabled()))
             {
                 // Use a default domain/workgroup name
                 
@@ -873,6 +908,13 @@ public class ServerConfigurationBean extends ServerConfiguration implements Appl
                 // Load the Enterprise authenticator dynamically
                 
                 authClass = "org.alfresco.filesys.auth.cifs.EnterpriseCifsAuthenticator";
+            }
+            else if ( authType.equalsIgnoreCase( "custom"))
+            {
+            	// Get the authenticator class
+            	
+            	ConfigElement authClassElem = authElem.getChild("class");
+            	authClass = authClassElem.getValue();
             }
             else
                 throw new AlfrescoRuntimeException("Invalid authenticator type, " + authType);
@@ -1348,7 +1390,8 @@ public class ServerConfigurationBean extends ServerConfiguration implements Appl
   
             String osName = System.getProperty("os.name");
             if (osName.startsWith("Windows")
-                    && (osName.endsWith("95") == false && osName.endsWith("98") == false && osName.endsWith("ME") == false))
+                    && (osName.endsWith("95") == false && osName.endsWith("98") == false && osName.endsWith("ME") == false)
+                    && isNativeCodeDisabled() == false)
             {
   
                 // Call the Win32NetBIOS native code to make sure it is initialized
@@ -1478,7 +1521,7 @@ public class ServerConfigurationBean extends ServerConfiguration implements Appl
   
         // Check if WINS is configured, if we are running on Windows and socket based NetBIOS is enabled
   
-        else if (cifsConfig.hasNetBIOSSMB() && getPlatformType() == Platform.Type.WINDOWS)
+        else if (cifsConfig.hasNetBIOSSMB() && getPlatformType() == Platform.Type.WINDOWS && isNativeCodeDisabled())
         {
             // Get the WINS server list
   
@@ -1834,8 +1877,15 @@ public class ServerConfigurationBean extends ServerConfiguration implements Appl
             {
                 // Standard authenticator requires MD4 or passthru based authentication
                 
-                if ( ntlmMode == NTLMMode.NONE)
-                    throw new AlfrescoRuntimeException("Wrong authentication setup for alfresco authenticator");
+//                if ( ntlmMode == NTLMMode.NONE)
+//                    throw new AlfrescoRuntimeException("Wrong authentication setup for alfresco authenticator");
+            }
+            else if ( authType.equalsIgnoreCase( "custom"))
+            {
+            	// Get the authenticator class
+            	
+            	ConfigElement authClassElem = authElem.getChild("class");
+            	authClass = authClassElem.getValue();
             }
             else
                 throw new AlfrescoRuntimeException("Invalid authenticator type, " + authType);
@@ -2056,9 +2106,19 @@ public class ServerConfigurationBean extends ServerConfiguration implements Appl
         {
           try
           {
+        	// Default RPC authenticator class
+        	
+        	String authClass = "org.alfresco.filesys.auth.nfs.AlfrescoRpcAuthenticator";
+        	
+           	// Check if a custom NFS authentictor class has been specified
+            	
+           	ConfigElement authClassElem = elem.getChild("class");
+           	if ( authClassElem != null)
+           		authClass = authClassElem.getValue();
+       	
             // Create the RPC authenticator
             
-            nfsConfig.setRpcAuthenticator( "org.alfresco.filesys.auth.nfs.AlfrescoRpcAuthenticator", elem);
+            nfsConfig.setRpcAuthenticator( authClass, elem);
           }
           catch ( InvalidConfigurationException ex)
           {
@@ -2934,7 +2994,7 @@ public class ServerConfigurationBean extends ServerConfiguration implements Appl
 
         String srvName = null;
 
-        if (getPlatformType() == Platform.Type.WINDOWS)
+        if (getPlatformType() == Platform.Type.WINDOWS && isNativeCodeDisabled() == false)
         {
             // Get the local name via JNI
 
@@ -2987,7 +3047,7 @@ public class ServerConfigurationBean extends ServerConfiguration implements Appl
 
         String domainName = null;
 
-        if (getPlatformType() == Platform.Type.WINDOWS)
+        if (getPlatformType() == Platform.Type.WINDOWS && isNativeCodeDisabled())
         {
             // Get the local domain/workgroup name via JNI
 
@@ -3192,5 +3252,46 @@ public class ServerConfigurationBean extends ServerConfiguration implements Appl
     protected final NamespaceService getNamespaceService()
     {
     	return m_namespaceService;
+    }
+    
+    /**
+     * Check if native code calls are disabled
+     * 
+     * @return boolean
+     */
+    public final boolean isNativeCodeDisabled()
+    {
+    	return m_disableNativeCode;
+    }
+    
+    /**
+     * Return the named bean
+     * 
+     * @param beanName String
+     * @return Object
+     */
+    public final Object getBean( String beanName)
+    {
+    	return applicationContext.getBean( beanName);
+    }
+    
+    /**
+     * Return the applicatin context
+     * 
+     * @return ApplicationContext
+     */
+    public final ApplicationContext getApplicationsContext()
+    {
+    	return applicationContext;
+    }
+
+    /**
+     * Return the authority service
+     * 
+     * @return AuthorityService
+     */
+    public final AuthorityService getAuthorityService()
+    {
+    	return m_authorityService;
     }
 }

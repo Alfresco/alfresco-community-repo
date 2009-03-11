@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javax.transaction.RollbackException;
 import javax.transaction.SystemException;
@@ -1017,6 +1018,9 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
      */
     public static class LuceneIndexBackupComponent implements InitializingBean
     {
+        ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock();
+
+        boolean executing = false;
 
         private static String BACKUP_TEMP_NAME = ".indexbackup_temp";
 
@@ -1095,15 +1099,57 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
          */
         public void backup()
         {
-            RetryingTransactionCallback<Object> backupWork = new RetryingTransactionCallback<Object>()
+            rwLock.readLock().lock();
+            try
             {
-                public Object execute() throws Exception
+                if (executing)
                 {
-                    backupImpl();
-                    return null;
+                    return;
                 }
-            };
-            transactionService.getRetryingTransactionHelper().doInTransaction(backupWork);
+            }
+            finally
+            {
+                rwLock.readLock().unlock();
+            }
+
+            rwLock.writeLock().lock();
+            try
+            {
+                if (executing)
+                {
+                    return;
+                }
+                executing = true;
+            }
+            finally
+            {
+                rwLock.writeLock().unlock();
+            }
+
+            try
+            {
+                RetryingTransactionCallback<Object> backupWork = new RetryingTransactionCallback<Object>()
+                {
+                    public Object execute() throws Exception
+                    {
+                        backupImpl();
+                        return null;
+                    }
+                };
+                transactionService.getRetryingTransactionHelper().doInTransaction(backupWork);
+            }
+            finally
+            {
+                rwLock.writeLock().lock();
+                try
+                {
+                    executing = false;
+                }
+                finally
+                {
+                    rwLock.writeLock().unlock();
+                }
+            }
         }
 
         private void backupImpl()
@@ -1464,7 +1510,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
 
             if (checkConfiguration)
             {
-                transactionService.getRetryingTransactionHelper().doInTransaction(backupWork);
+                transactionService.getRetryingTransactionHelper().doInTransaction(backupWork, true);
             }
 
         }
@@ -1477,6 +1523,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
      */
     public static class LuceneIndexBackupJob implements Job
     {
+
         /** KEY_LUCENE_INDEX_BACKUP_COMPONENT = 'luceneIndexBackupComponent' */
         public static final String KEY_LUCENE_INDEX_BACKUP_COMPONENT = "luceneIndexBackupComponent";
 

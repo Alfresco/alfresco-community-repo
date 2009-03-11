@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -22,36 +22,37 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.repo.action.evaluator.compare;
+package org.alfresco.repo.action.evaluator;
 
-import java.io.Serializable;
+import java.util.List;
 
-import org.alfresco.repo.action.evaluator.ComparePropertyValueEvaluator;
+import org.alfresco.service.cmr.action.ActionCondition;
+import org.alfresco.service.cmr.action.ParameterDefinition;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
-/**
- * Property value comparator interface
+/**  
+ * This class is needed to provide some infrastructure, but the actual evaluation of 
+ * Composite Conditions happens inside the ActionServiceImpl as a special case.
  * 
- * @author Roy Wetherall
+ * @author Jean Barmash
  */
-public interface PropertyValueComparator
+public class CompositeConditionEvaluator extends ActionConditionEvaluatorAbstractBase
 {
-    /**
-     * Callback method to register this comparator with the evaluator.
-     * 
-     * @param evaluator     the compare property value evaluator
-     */
-    void registerComparator(ComparePropertyValueEvaluator evaluator);
-    
-    /**
-     * Compares the value of a property with the compare value, using the operator passed.
-     * 
-     * @param propertyValue     the property value
-     * @param compareValue      the compare value
-     * @param operation         the operation used to compare the two values
-     * @return                  the result of the comparison, true if successful false otherwise
-     */
-    boolean compare(
-            Serializable propertyValue,             
-            Serializable compareValue, 
-            ComparePropertyValueOperation operation);
+
+    private static Log logger = LogFactory.getLog(CompositeConditionEvaluator.class);
+
+    @Override
+    protected boolean evaluateImpl(ActionCondition actionCondition,
+             NodeRef actionedUponNodeRef) 
+    {
+       logger.error("Evaluating composite condition.  Should not be called.");
+       return false;
+    }
+
+    @Override
+    protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
+    {
+    }
 }

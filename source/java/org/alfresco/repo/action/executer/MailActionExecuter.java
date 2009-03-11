@@ -333,15 +333,24 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                 }
                 message.setText(text);
                 
-                // set the from address - use the default if not set
-                String from = (String)ruleAction.getParameterValue(PARAM_FROM);
-                if (from == null || from.length() == 0)
+                // set the from address
+                NodeRef person = personService.getPerson(authService.getCurrentUserName());
+                String fromActualUser = (String)nodeService.getProperty(person, ContentModel.PROP_EMAIL);
+                if( fromActualUser != null && fromActualUser.length() != 0)
                 {
-                    message.setFrom(fromAddress);
+                    message.setFrom(fromActualUser);
                 }
                 else
                 {
-                    message.setFrom(from);
+                    String from = (String)ruleAction.getParameterValue(PARAM_FROM);
+                    if (from == null || from.length() == 0)
+                    {
+                        message.setFrom(fromAddress);
+                    }
+                    else
+                    {
+                        message.setFrom(from);
+                    }
                 }
             }
         };

@@ -129,9 +129,8 @@
 
     <!-- Bootstrap AVM Locking Service. -->
     <bean id="avmLockingBootstrap" class="org.alfresco.repo.avm.locking.AVMLockingBootstrap">
-       <property name="avmLockingService">
-          <ref bean="avmLockingService"/>
-       </property>
+       <property name="avmLockingService" ref="avmLockingService"/>
+       <property name="transactionService" ref="transactionService"/>
     </bean>
 
     <!-- Bootstrap MT (multi-tenancy) if applicable -->
@@ -140,12 +139,12 @@
     </bean>
     
     <!-- Load models -->
-   <bean id="dictionaryRepositoryBootstrap" class="org.alfresco.repo.dictionary.DictionaryRepositoryBootstrap">
+    <bean id="dictionaryRepositoryBootstrap" class="org.alfresco.repo.dictionary.DictionaryRepositoryBootstrap">
 
       <property name="dictionaryDAO" ref="dictionaryDAO"/>
       <property name="contentService" ref="ContentService"/>      
       <property name="searchService" ref="SearchService"/>
-      <property name="transactionService" ref="transactionComponent"/>
+      <property name="transactionService" ref="transactionService"/>
       <property name="namespaceService" ref="namespaceService"/>
       <property name="nodeService" ref="NodeService"/>
       <property name="messageService" ref="messageService"/>
@@ -341,6 +340,7 @@
     <bean id="siteAVMBootstrap" class="org.alfresco.repo.site.SiteAVMBootstrap">
         <property name="avmService" ref="AVMService" />
         <property name="permissionService" ref="PermissionService" />
+        <property name="transactionService" ref="TransactionService" />
         <property name="storename">
             <value>sitestore</value>
         </property>

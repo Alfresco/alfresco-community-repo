@@ -49,6 +49,7 @@ import org.alfresco.repo.security.authentication.MD4PasswordEncoderImpl;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
@@ -349,4 +350,54 @@ public abstract class CifsAuthenticatorBase extends CifsAuthenticator
     {
         return m_alfrescoConfig.getTransactionService();
     }
+    
+	/**
+	 * Return the authority service
+	 * 
+	 * @return AuthorityService
+	 */
+	protected final AuthorityService getAuthorityService() {
+		return m_alfrescoConfig.getAuthorityService();
+	}
+
+	/**
+	 * Check if the user is an administrator user name
+	 * 
+	 * @param cInfo ClientInfo
+	 */
+	protected final void checkForAdminUserName(ClientInfo cInfo) {
+		
+		// Check if the user name is an administrator
+
+		UserTransaction tx = getTransactionService().getUserTransaction();
+
+		try {
+			tx.begin();
+
+			if ( cInfo.getLogonType() == ClientInfo.LogonNormal && getAuthorityService().isAdminAuthority(cInfo.getUserName())) {
+				
+				// Indicate that this is an administrator logon
+
+				cInfo.setLogonType(ClientInfo.LogonAdmin);
+			}
+			tx.commit();
+		}
+		catch (Throwable ex) {
+			try {
+				tx.rollback();
+			}
+			catch (Throwable ex2) {
+				logger.error("Failed to rollback transaction", ex2);
+			}
+
+			// Re-throw the exception
+
+			if ( ex instanceof RuntimeException) {
+				throw (RuntimeException) ex;
+			}
+			else {
+				throw new RuntimeException("Error during execution of transaction.", ex);
+			}
+		}
+	}
 }

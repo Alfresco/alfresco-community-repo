@@ -238,7 +238,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         Pair<Long, NodeRef> rootNodePair = nodeDaoService.getRootNode(storeRef);
         if (rootNodePair == null)
         {
-            throw new InvalidStoreRefException("Store does not exist", storeRef);
+            throw new InvalidStoreRefException("Store does not exist: " + storeRef, storeRef);
         }
         // done
         return rootNodePair.getSecond();

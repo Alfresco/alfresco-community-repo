@@ -26,6 +26,7 @@
 package org.alfresco.repo.avm.locking;
 
 import org.alfresco.service.cmr.avm.locking.AVMLockingService;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.AbstractLifecycleBean;
 import org.springframework.context.ApplicationEvent;
 
@@ -37,31 +38,33 @@ import org.springframework.context.ApplicationEvent;
 public class AVMLockingBootstrap extends AbstractLifecycleBean
 {
     private AVMLockingService fLockingService;
+    private TransactionService transactionService;
 
     public void setAvmLockingService(AVMLockingService service)
     {
         fLockingService = service;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.alfresco.util.AbstractLifecycleBean#onBootstrap(org.springframework.context.ApplicationEvent)
-     */
+    public void setTransactionService(TransactionService transactionService)
+    {
+        this.transactionService = transactionService;
+    }
+
     @Override
     protected void onBootstrap(ApplicationEvent event)
     {
+        // Do nothing if the repo is read-only
+        if (transactionService.isReadOnly())
+        {
+            return;
+        }
+        
         if (fLockingService instanceof AVMLockingServiceImpl)
         {
             ((AVMLockingServiceImpl) fLockingService).init();
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.alfresco.util.AbstractLifecycleBean#onShutdown(org.springframework.context.ApplicationEvent)
-     */
     @Override
     protected void onShutdown(ApplicationEvent event)
     {

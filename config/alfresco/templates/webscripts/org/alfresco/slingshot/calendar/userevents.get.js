@@ -1,6 +1,6 @@
 /** 
  * Limits the number of events that get returned.
- * Would be nice to have this supported in the Lucene query syntax
+ * TODO: have this supported in the Lucene query syntax
  */
 model.limit = args.limit;
 
@@ -13,58 +13,73 @@ if (dateFilter)
 {
    range["fromdate"] = dateFilter;
 }
+var siteId = url.templateArgs.site;
 
-model.events = getUserEvents(username, range);
+model.events = getUserEvents(username, siteId, range);
 
-function getUserEvents(user, range)
+function getUserEvents(user, siteId, range)
 {
-	if (!user)
-	{
-		return [];
-	}
-	var paths = [], events = [], event, results, result, j, jj, luceneQuery, siteTitles = {};
-  
-  var sites = siteService.listUserSites(user);
-  for (var j=0; j < sites.length; j++)
-  {
+   if (!user)
+   {
+      return [];
+   }
+   
+   var paths = [], site, siteTitles = {}, sites = [];
+   
+   if (siteId == null)
+   {
+      sites = siteService.listUserSites(user);
+   }
+   else
+   {
+      site = siteService.getSite(siteId);
+      if (site != null)
+      {
+         sites.push(site);
+      }
+   }
+   for (var j=0; j < sites.length; j++)
+   {
       site = sites[j];
       paths.push("PATH:\"/app:company_home/st:sites/cm:" + search.ISO9075Encode(sites[j].shortName) + "/cm:calendar/*\"");
       siteTitles[site.shortName] = site.title;
-  }
-	
-	var results = [];
-	
-	if (paths.length > 0)
-	{
-		var luceneQuery = "+(" + paths.join(" OR ") + ") +TYPE:\"{http\://www.alfresco.org/model/calendar}calendarEvent\"";
-		if (range.fromdate)
-		{
-			// Expects the date in the format yyyy/mm/dd
-			var from = range.fromdate.split("/").join("\\-"); 
-			var dateClause = " +@ia\\:fromDate:[" + from + "T00:00:00 TO 2099\\-1\\-1T00:00:00]";
-			luceneQuery += dateClause;
-		}
-		results = search.luceneSearch(luceneQuery, "ia:fromDate", true);
-	}
-  // repurpose results into custom array so as to add custom properties
-  var events = [];
-  for (var i=0;i<results.length;i++)
-  {
-    var event = {};
-    var e = results[i];
-    event.name  = e.name;
-    event.title = e.properties["ia:whatEvent"];
-    event.where = e.properties["ia:whereEvent"];
-    event.when = e.properties["ia:fromDate"];
-    event.start = e.properties["ia:fromDate"];
-    event.end = e.properties["ia:toDate"];
-    event.site = e.parent.parent.name;
-    event.siteTitle = siteTitles[event.site];    
-    event.allday = (isAllDayEvent(e)) ? 'true' : 'false';
-    event.tags = e.tags.join(' ');
-    events.push(event);
-  }
-	return events;
+   }
+   
+   var results = [];
+   
+   if (paths.length > 0)
+   {
+      var luceneQuery = "+(" + paths.join(" OR ") + ") +TYPE:\"{http\://www.alfresco.org/model/calendar}calendarEvent\"";
+      if (range.fromdate)
+      {
+         // Expects the date in the format yyyy/mm/dd
+         var from = range.fromdate.split("/").join("\\-"); 
+         var dateClause = " +@ia\\:fromDate:[" + from + "T00:00:00 TO 2099\\-1\\-1T00:00:00]";
+         luceneQuery += dateClause;
+      }
+      results = search.luceneSearch(luceneQuery, "ia:fromDate", true);
+   }
+   
+   // repurpose results into custom array so as to add custom properties
+   var events = [];
+   for (var i=0;i<results.length;i++)
+   {
+      var event = {};
+      var e = results[i];
+      event.name  = e.name;
+      event.title = e.properties["ia:whatEvent"];
+      event.where = e.properties["ia:whereEvent"];
+      event.when = e.properties["ia:fromDate"];
+      event.start = e.properties["ia:fromDate"];
+      event.end = e.properties["ia:toDate"];
+      event.site = e.parent.parent.name;
+      event.siteTitle = siteTitles[event.site];    
+      event.allday = (isAllDayEvent(e)) ? 'true' : 'false';
+      event.tags = e.tags.join(' ');
+      events.push(event);
+   }
+   
+   return events;
 }
 
 /**
@@ -79,7 +94,8 @@ function isAllDayEvent(event)
    var startTime = startDate.getHours() + ":" + startDate.getMinutes();
    var endTime = endDate.getHours() + ":" + endDate.getMinutes();
    
-   logger.log("STARTTIME: " + startTime + " " + endTime + " " + (startTime == "0:0" && (startTime == endTime)));
-  
+   if (logger.isLoggingEnabled())
+      logger.log("STARTTIME: " + startTime + " " + endTime + " " + (startTime == "0:0" && (startTime == endTime)));
+   
    return (startTime == "0:0" && (startTime == endTime));
 }

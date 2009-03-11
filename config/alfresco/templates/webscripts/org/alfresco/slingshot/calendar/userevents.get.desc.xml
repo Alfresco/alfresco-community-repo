@@ -1,7 +1,8 @@
 <webscript>
   <shortname>userevents</shortname>
-  <description>Lists all of the events for all the sites the {user} belongs to</description>
+  <description>Lists all of the events for all the sites the user belongs to</description>
   <url>/calendar/events/user</url>
+  <url>/calendar/events/{site}/user</url>
   <format default="json">argument</format>
   <authentication>user</authentication>
   <transaction>required</transaction>

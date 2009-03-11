@@ -99,6 +99,9 @@ public class SiteServiceImpl implements SiteService, SiteModel
     
     /** Site home ref cache (Tennant aware) */
     private Map<String, NodeRef> siteHomeRefs = new ConcurrentHashMap<String, NodeRef>(4);
+    
+    /** Site node ref cache (Tennant aware) */
+    private Map<String, NodeRef> siteNodeRefs = new ConcurrentHashMap<String, NodeRef>(256);
 
     private String sitesXPath;
     
@@ -493,9 +496,8 @@ public class SiteServiceImpl implements SiteService, SiteModel
      */
     private NodeRef getSiteParent(String shortName)
     {
-        // TODO
-        // For now just return the site root, later we may build folder
-        // structure based on the shortname to spread the sites about
+        // TODO: For now just return the site root, later we may build folder
+        //       structure based on the shortname to spread the sites about
         return getSiteRoot();
     }
 
@@ -509,7 +511,7 @@ public class SiteServiceImpl implements SiteService, SiteModel
         String tenantDomain = tenantAdminService.getCurrentUserDomain();
         NodeRef siteHomeRef = siteHomeRefs.get(tenantDomain);
         if (siteHomeRef == null)
-        {       
+        {
             siteHomeRef = AuthenticationUtil.runAs(new RunAsWork<NodeRef>()
             {
                 public NodeRef doWork() throws Exception
@@ -760,22 +762,28 @@ public class SiteServiceImpl implements SiteService, SiteModel
     /**
      * Gets the site's node reference based on its short name
      * 
-     * @param shortName
-     *            short name
+     * @param shortName    short name
+     * 
      * @return NodeRef node reference
      */
     private NodeRef getSiteNodeRef(String shortName)
     {
-        NodeRef result = null;
-        NodeRef siteRoot = getSiteParent(shortName);
-        List<ChildAssociationRef> assoc = this.nodeService.getChildAssocs(
-                siteRoot, ContentModel.ASSOC_CONTAINS, QName.createQName(
-                        NamespaceService.CONTENT_MODEL_1_0_URI, shortName));
-        if (assoc.size() == 1)
+        final String cacheKey = this.tenantAdminService.getCurrentUserDomain() + '_' + shortName;
+        NodeRef siteNodeRef = this.siteNodeRefs.get(cacheKey);
+        if (siteNodeRef == null)
         {
-            result = assoc.get(0).getChildRef();
+           NodeRef siteRoot = getSiteParent(shortName);
+           
+           // the site "short name" directly maps to the cm:name property 
+           siteNodeRef = this.nodeService.getChildByName(siteRoot, ContentModel.ASSOC_CONTAINS, shortName);
+           
+           // cache the result if found - null results will be requeried to ensure new sites are found later
+           if (siteNodeRef != null)
+           {
+               this.siteNodeRefs.put(cacheKey, siteNodeRef);
+           }
         }
-        return result;
+        return siteNodeRef;
     }
 
     /**
@@ -793,7 +801,7 @@ public class SiteServiceImpl implements SiteService, SiteModel
         Map<QName, Serializable> properties = this.nodeService.getProperties(siteNodeRef);
         
         // Update the properties of the site
-        // Note: the site preset and short name can not be updated
+        // Note: the site preset and short name should never be updated!
         properties.put(ContentModel.PROP_TITLE, siteInfo.getTitle());
         properties.put(ContentModel.PROP_DESCRIPTION, siteInfo.getDescription());
 
@@ -822,7 +830,7 @@ public class SiteServiceImpl implements SiteService, SiteModel
             {
                 this.permissionService.setPermission(siteNodeRef, PermissionService.ALL_AUTHORITIES, PermissionService.READ_PROPERTIES, true);
                 // TODO update all child folders ?? ...
-            }    
+            }
             
             // Update the site node reference with the updated visibility value
             properties.put(SiteModel.PROP_SITE_VISIBILITY, siteInfo.getVisibility());
@@ -843,6 +851,10 @@ public class SiteServiceImpl implements SiteService, SiteModel
             throw new SiteServiceException(MSG_CAN_NOT_DELETE, new Object[]{shortName});
         }
 
+        // Delete the cached reference
+        String cacheKey = this.tenantAdminService.getCurrentUserDomain() + '_' + shortName;
+        this.siteNodeRefs.remove(cacheKey);
+        
         // Delete the node
         this.nodeService.deleteNode(siteNodeRef);
 

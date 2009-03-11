@@ -181,8 +181,9 @@ public class GetMethod extends WebDAVMethod
                 // it is a folder and no content is required
                 throw new WebDAVServerException(HttpServletResponse.SC_BAD_REQUEST);
             }
+            
             // Generate a folder listing
-            m_response.setHeader(WebDAV.HEADER_CONTENT_TYPE, "text/html");
+            m_response.setContentType("text/html;charset=UTF-8");
             generateDirectoryListing(nodeInfo);
         }
         else
@@ -326,7 +327,7 @@ public class GetMethod extends WebDAVMethod
 
             // Send back the start of the HTML
             writer.write("<html><head><title>");
-            writer.write(I18NUtil.getMessage("webdav.repository_title"));
+            writer.write(WebDAVHelper.encodeHTML(I18NUtil.getMessage("webdav.repository_title")));
             writer.write("</title>");
             writer.write("<style>");
             writer.write("body { font-family: Arial, Helvetica; font-size: 12pt; background-color: white; }\n");
@@ -345,7 +346,7 @@ public class GetMethod extends WebDAVMethod
             writer.write("<body>\n");
             writer.write("<table cellspacing='2' cellpadding='3' border='0' width='100%'>\n");
             writer.write("<tr><td colspan='4' class='textLocation'>");
-            writer.write(I18NUtil.getMessage("webdav.directory_listing"));
+            writer.write(WebDAVHelper.encodeHTML(I18NUtil.getMessage("webdav.directory_listing")));
             writer.write(' ');
             writer.write(WebDAVHelper.encodeHTML(getPath()));
             writer.write("</td></tr>\n");
@@ -353,16 +354,16 @@ public class GetMethod extends WebDAVMethod
 
             writer.write("<table cellspacing='2' cellpadding='3' border='0' width='100%' class='listingTable'>\n");
             writer.write("<tr><td class='tableHeading' width='*'>");
-            writer.write(I18NUtil.getMessage("webdav.column.name"));
+            writer.write(WebDAVHelper.encodeHTML(I18NUtil.getMessage("webdav.column.name")));
             writer.write("</td>");
             writer.write("<td class='tableHeading' width='10%'>");
-            writer.write(I18NUtil.getMessage("webdav.column.size"));
+            writer.write(WebDAVHelper.encodeHTML(I18NUtil.getMessage("webdav.column.size")));
             writer.write("</td>");
             writer.write("<td class='tableHeading' width='20%'>");
-            writer.write(I18NUtil.getMessage("webdav.column.type"));
+            writer.write(WebDAVHelper.encodeHTML(I18NUtil.getMessage("webdav.column.type")));
             writer.write("</td>");
             writer.write("<td class='tableHeading' width='25%'>");
-            writer.write(I18NUtil.getMessage("webdav.column.modifieddate"));
+            writer.write(WebDAVHelper.encodeHTML(I18NUtil.getMessage("webdav.column.modifieddate")));
             writer.write("</td>");
             writer.write("</tr>\n");
 
@@ -385,7 +386,7 @@ public class GetMethod extends WebDAVMethod
 
                 writer.write("\">");
                 writer.write("[");
-                writer.write(I18NUtil.getMessage("webdav.column.navigate_up"));
+                writer.write(WebDAVHelper.encodeHTML(I18NUtil.getMessage("webdav.column.navigate_up")));
                 writer.write("]</a>");
                 writer.write("</tr>\n");
             }
@@ -482,7 +483,7 @@ public class GetMethod extends WebDAVMethod
                 try
                 {
                     writer.write("</table><table><tr><td style='color:red'>");
-                    writer.write(I18NUtil.getMessage("webdav.err.dir"));
+                    writer.write(WebDAVHelper.encodeHTML(I18NUtil.getMessage("webdav.err.dir")));
                     writer.write("</td></tr></table></body></html>");
                     writer.flush();
                 }
@@ -506,7 +507,7 @@ public class GetMethod extends WebDAVMethod
         int length = strSize.length();
         if (length < 4)
         {
-            strFormattedSize = strSize + ' ' + I18NUtil.getMessage("webdav.size.bytes");
+            strFormattedSize = strSize + ' ' + WebDAVHelper.encodeHTML(I18NUtil.getMessage("webdav.size.bytes"));
         }
         else if (length >= 4 && length < 7)
         {
@@ -519,7 +520,7 @@ public class GetMethod extends WebDAVMethod
                 buffer.append('.');
                 buffer.append(strRight);
             }
-            buffer.append(' ').append(I18NUtil.getMessage("webdav.size.kilobytes"));
+            buffer.append(' ').append(WebDAVHelper.encodeHTML(I18NUtil.getMessage("webdav.size.kilobytes")));
 
             strFormattedSize = buffer.toString();
         }
@@ -534,7 +535,7 @@ public class GetMethod extends WebDAVMethod
                 buffer.append('.');
                 buffer.append(strRight);
             }
-            buffer.append(' ').append(I18NUtil.getMessage("webdav.size.megabytes"));
+            buffer.append(' ').append(WebDAVHelper.encodeHTML(I18NUtil.getMessage("webdav.size.megabytes")));
 
             strFormattedSize = buffer.toString();
         }

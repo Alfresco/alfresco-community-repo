@@ -466,17 +466,7 @@ public class WebDAVHelper
                 case '<': enc = "&lt;"; break;      //<
                 case '>': enc = "&gt;"; break;      //>
                 
-                //german umlauts
-                case '\u00E4' : enc = "&auml;";  break;
-                case '\u00C4' : enc = "&Auml;";  break;
-                case '\u00F6' : enc = "&ouml;";  break;
-                case '\u00D6' : enc = "&Ouml;";  break;
-                case '\u00FC' : enc = "&uuml;";  break;
-                case '\u00DC' : enc = "&Uuml;";  break;
-                case '\u00DF' : enc = "&szlig;"; break;
-                
                 //misc
-                //case 0x80: enc = "&euro;"; break;  sometimes euro symbol is ascii 128, should we suport it?
                 case '\u20AC': enc = "&euro;";  break;
                 case '\u00AB': enc = "&laquo;"; break;
                 case '\u00BB': enc = "&raquo;"; break;

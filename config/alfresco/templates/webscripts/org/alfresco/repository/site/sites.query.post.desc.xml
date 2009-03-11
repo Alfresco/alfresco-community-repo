@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>SitesQuery</shortname>
+  <description>Queries the collection of sites.</description>
+  <url>/api/sites/query</url>
+  <format default="json"/>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>

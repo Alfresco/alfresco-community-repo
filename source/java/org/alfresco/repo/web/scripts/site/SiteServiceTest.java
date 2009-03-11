@@ -27,8 +27,10 @@ package org.alfresco.repo.web.scripts.site;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
@@ -72,6 +74,7 @@ public class SiteServiceTest extends BaseWebScriptTest
     private static final String USER_THREE = "SiteTestThree";
     
     private static final String URL_SITES = "/api/sites";
+    private static final String URL_SITES_QUERY = URL_SITES + "/query";
     private static final String URL_MEMBERSHIPS = "/memberships";
     
     private List<String> createdSites = new ArrayList<String>(5);
@@ -191,6 +194,62 @@ public class SiteServiceTest extends BaseWebScriptTest
         result = new JSONArray(response.getContentAsString());        
         assertNotNull(result);
         assertEquals(5, result.length());
+    }
+    
+    /**
+     * https://issues.alfresco.com/jira/browse/JAWS-456
+     */
+    public void testQuerySites() throws Exception
+    {
+        // Generate the short names of the sites
+        String[] shortNames = new String[]{GUID.generate(), GUID.generate(), GUID.generate(), GUID.generate(), GUID.generate()};
+        
+        // Create the sites
+        createSite("myPreset", shortNames[0], "myTitle", "myDescription", true, 200);
+        createSite("myPreset", shortNames[1], "myTitle", "myDescription", true, 200);
+        createSite("myPreset", shortNames[2], "myTitle", "myDescription", true, 200);
+        createSite("myPreset", shortNames[3], "myTitle", "myDescription", true, 200);
+        createSite("myPreset", shortNames[4], "myTitle", "myDescription", true, 200);
+        
+        // build query json
+        JSONObject shortNameQuery = new JSONObject();
+        shortNameQuery.put("match", "exact");
+        JSONArray valuesArray = new JSONArray();
+        valuesArray.put(0, shortNames[0]);
+        valuesArray.put(1, shortNames[2]);
+        valuesArray.put(2, shortNames[4]);
+        valuesArray.put(3, "bobbins");
+        shortNameQuery.put("values", valuesArray);
+        JSONObject query = new JSONObject();
+        query.put("shortName", shortNameQuery);
+        
+        // execute site query
+        Response response = sendRequest(new PostRequest(URL_SITES_QUERY, query.toString(), "application/json"), 200);
+        JSONArray result = new JSONArray(response.getContentAsString());
+        
+        // check we have the results we expect
+        assertEquals(3, result.length());
+        Set<String> resultSet = new HashSet<String>();
+        for (int i=0; i<result.length(); i++)
+        {
+           resultSet.add((String)result.getJSONObject(i).get("shortName"));
+        }
+        assertTrue(resultSet.contains(shortNames[0]));
+        assertFalse(resultSet.contains(shortNames[1]));
+        assertTrue(resultSet.contains(shortNames[2]));
+        assertFalse(resultSet.contains(shortNames[3]));
+        assertTrue(resultSet.contains(shortNames[4]));
+        assertFalse(resultSet.contains("bobbins"));
+        
+        // sample one of the returned sites and check it's what we expect
+        JSONObject site = result.getJSONObject(0);
+        assertNotNull(site);
+        assertEquals("myPreset", site.get("sitePreset"));
+        assertEquals("myTitle", site.get("title"));
+        assertEquals("myDescription", site.get("description"));
+        assertNotNull(site.get("node"));
+        assertNotNull(site.get("tagScope"));
+        assertTrue(site.getBoolean("isPublic"));
     }
     
     public void testGetSite() throws Exception

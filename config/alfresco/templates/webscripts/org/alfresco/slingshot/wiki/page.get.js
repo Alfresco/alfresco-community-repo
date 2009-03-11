@@ -30,7 +30,8 @@ function main()
    var page = wiki.childByNamePath(params.pageTitle);
    if (!page)
    {
-      return jsonError("The page \"" + params.pageTitle.replace(/_/g, " ") + "\" does not exist.");
+      model.container = wiki;
+      return status.setCode(status.STATUS_NOT_FOUND, "The page \"" + params.pageTitle.replace(/_/g, " ") + "\" does not exist.");
    }
 
    // Figure out what (internal) pages this page contains links to

@@ -110,22 +110,6 @@ public class WorkflowInterpreter extends BaseInterpreter
     @Override
     protected void onBootstrap(ApplicationEvent event)
     {
-        try
-        {
-            setCurrentUserName(BaseInterpreter.DEFAULT_ADMIN);
-            
-            if (!transactionService.isReadOnly())
-            {
-                //interpretCommand("var bpm:package package 1"); // only used for testing workflows, causes increment usage/delta
-                interpretCommand("var bpm:assignee person admin");
-            }
-            
-            setCurrentUserName(null);
-        }
-        catch(IOException e)
-        {
-            throw new WorkflowException("Failed to initialise WorkflowInterpreter", e);
-        }
     }
 
     /* (non-Javadoc)

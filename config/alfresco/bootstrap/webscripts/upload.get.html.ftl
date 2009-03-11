@@ -15,7 +15,7 @@
     </table>
     <p>
     <table>
-      <form action="${url.service}" method="post" enctype="multipart/form-data" charset="utf-8">
+      <form action="${url.service?html}" method="post" enctype="multipart/form-data" charset="utf-8">
         <tr><td>File:<td><input type="file" name="file">
         <tr><td>Title:<td><input name="title">
         <tr><td>Description:<td><input name="desc">

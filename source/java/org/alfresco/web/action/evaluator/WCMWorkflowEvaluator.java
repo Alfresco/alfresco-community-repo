@@ -24,17 +24,19 @@
  */
 package org.alfresco.web.action.evaluator;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import javax.faces.context.FacesContext;
 
-import org.alfresco.repo.avm.AVMNodeConverter;
-import org.alfresco.service.cmr.avm.AVMService;
-import org.alfresco.util.Pair;
+import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.repository.Node;
-import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.wcm.AVMBrowseBean;
 import org.alfresco.web.bean.wcm.AVMNode;
 import org.alfresco.web.bean.wcm.AVMUtil;
+import org.alfresco.web.bean.wcm.AVMWorkflowUtil;
 import org.alfresco.web.bean.wcm.WebProject;
 
 /**
@@ -45,6 +47,8 @@ import org.alfresco.web.bean.wcm.WebProject;
 public class WCMWorkflowEvaluator extends WCMLockEvaluator
 {
    private static final long serialVersionUID = -5847066921917855781L;
+   
+   private static final String TASK_CACHE = "_alf_sandbox_task_cache";
 
    /**
     * @see org.alfresco.web.action.ActionEvaluator#evaluate(org.alfresco.web.bean.repository.Node)
@@ -55,19 +59,28 @@ public class WCMWorkflowEvaluator extends WCMLockEvaluator
       if (super.evaluate(node))
       {
          final FacesContext fc = FacesContext.getCurrentInstance();
-         final AVMService avmService = Repository.getServiceRegistry(fc).getAVMService();
          final AVMBrowseBean avmBrowseBean = (AVMBrowseBean)FacesHelper.getManagedBean(fc, AVMBrowseBean.BEAN_NAME);
          WebProject webProject = avmBrowseBean.getWebProject();
          if (webProject == null || webProject.hasWorkflow())
          {
-            final Pair<Integer, String> p = AVMNodeConverter.ToAVMVersionPath(node.getNodeRef());
-            final String path = p.getSecond();
+            Map<String, List<WorkflowTask>> cachedSandboxTasks = (Map<String, List<WorkflowTask>>)fc.getExternalContext().getRequestMap().get(TASK_CACHE);
+            if (cachedSandboxTasks == null)
+            {
+                cachedSandboxTasks = new HashMap<String, List<WorkflowTask>>(64, 1.0f);
+                fc.getExternalContext().getRequestMap().put(TASK_CACHE, cachedSandboxTasks);
+            }
             
-            // evaluate to true if we are not deleted and within a workflow store (i.e. list of resources
-            // in the task dialog) or not part of an already in-progress workflow
-            proceed = ((AVMUtil.isWorkflowStore(AVMUtil.getStoreName(path)) ||
-                  !((AVMNode)node).isWorkflowInFlight()) &&
-                  avmService.lookup(p.getFirst(), path) != null);
+            String sandbox = AVMUtil.getStoreName(node.getPath());
+            List<WorkflowTask> cachedTasks = cachedSandboxTasks.get(sandbox);
+            if (cachedTasks == null)
+            {
+                cachedTasks = AVMWorkflowUtil.getAssociatedTasksForSandbox(sandbox);
+                cachedSandboxTasks.put(sandbox, cachedTasks);
+            }
+             
+            proceed = ((AVMUtil.isWorkflowStore(sandbox) ||
+                    !((AVMNode)node).isWorkflowInFlight(cachedTasks)) &&
+                    !((AVMNode)node).isDeleted());
          }
          else
          {

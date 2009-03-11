@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -37,8 +37,8 @@ import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.LayeringDescriptor;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.Path;
+import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.Pair;
 import org.alfresco.wcm.asset.AssetInfo;
 import org.alfresco.wcm.asset.AssetInfoImpl;
 import org.alfresco.web.bean.BrowseBean;
@@ -164,7 +164,6 @@ public class AVMNode extends Node implements Map<String, Object>
    private LayeringDescriptor layeringDesc;
    private final int version;
    private final boolean deleted;
-   private WebProject webProject;
    private Boolean workflowInFlight;
 
    public AVMNode(final AssetInfo asset)
@@ -243,6 +242,11 @@ public class AVMNode extends Node implements Map<String, Object>
       return this.avmRef.isFile() || this.avmRef.isDeletedFile();
    }
 
+   public final boolean isDeleted()
+   {
+       return this.avmRef.isDeleted();
+   }
+   
    public final boolean isModified()
    {
       if (this.layeringDesc == null)
@@ -252,7 +256,7 @@ public class AVMNode extends Node implements Map<String, Object>
       return !this.layeringDesc.isBackground();
    }
 
-   public final boolean isWorkflowInFlight()
+   public final boolean isWorkflowInFlight(List<WorkflowTask> tasks)
    {
       if (this.workflowInFlight == null)
       {
@@ -262,30 +266,12 @@ public class AVMNode extends Node implements Map<String, Object>
          }
          else
          {
-            // optimization to avoid having to perform a workflow query and multiple lookups
-            // per workflow sandbox.  only accurate for files, not new directories
-            if (!this.isDirectory())
-            {
-               this.workflowInFlight = false;
-               final List<Pair<Integer, String>> headPaths = this.getServiceRegistry().getAVMService().getHeadPaths(this.getDescriptor());
-               for (final Pair<Integer, String> headPath : headPaths)
-               {
-                  if (AVMUtil.isWorkflowStore(AVMUtil.getStoreName(headPath.getSecond())))
-                  {
-                     this.workflowInFlight = true;
-                     break;
-                  }
-               }
-            }
-            else
-            {
-               this.workflowInFlight = AVMWorkflowUtil.getAssociatedTasksForNode(this.getDescriptor()).size() != 0;
-            }
+            this.workflowInFlight = AVMWorkflowUtil.getAssociatedTasksForNode(this.avmRef, tasks).size() != 0;
          }
       }
       return this.workflowInFlight;
    }
-
+   
    /**
     * @return All the properties known about this node.
     */

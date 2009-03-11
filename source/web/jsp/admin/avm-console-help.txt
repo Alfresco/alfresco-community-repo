@@ -159,9 +159,11 @@ name is the name of the copy.
 snap - Creates a snapshot (a new version of an
 avmstore).
 
-snap, storename
+snap, storename, tag, description
 
 storename is the name of the store to snapshot.
+tag is the short label - note: cannot contain ',' using this interface
+description is the longer description - note: cannot contain ',' using this interface
 
 ------
 

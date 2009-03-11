@@ -584,7 +584,10 @@ public class ClientConfigElement extends ConfigElementAdapter
          if (value == null)
          {
             value = JNDIConstants.DEFAULT_VSERVER_IP;
-            logger.warn("Virtualisation Server not started - reverting to default IP: " + value);
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Virtualisation Server not started - reverting to default IP: " + value);
+            }
          }
          this.wcmDomain.put(value);
       }
@@ -605,7 +608,10 @@ public class ClientConfigElement extends ConfigElementAdapter
          if (iValue == null)
          {
             iValue = JNDIConstants.DEFAULT_VSERVER_PORT;
-            logger.warn("Virtualisation Server not started - reverting to default port: " + iValue);
+            if (logger.isDebugEnabled())
+            {
+               logger.debug("Virtualisation Server not started - reverting to default port: " + iValue);
+            }
          }
          value = iValue.toString();
          this.wcmPort.put(value);

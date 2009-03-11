@@ -173,6 +173,13 @@ public class SimpleAuthorityServiceImpl implements AuthorityService
         return authorities;
     }
 
+    
+    
+    public Set<String> findAuthorities(AuthorityType type, String namePattern)
+    {
+       return Collections.<String>emptySet();
+    }
+
     public void addAuthority(String parentName, String childName)
     {
         

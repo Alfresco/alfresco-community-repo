@@ -32,6 +32,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -52,6 +54,8 @@ import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.ISO9075;
+import org.alfresco.util.SearchLanguageConversion;
+import org.hibernate.loader.hql.QueryLoader;
 
 public class AuthorityDAOImpl implements AuthorityDAO
 {
@@ -118,8 +122,7 @@ public class AuthorityDAOImpl implements AuthorityDAO
         }
         if (AuthorityType.getAuthorityType(childName).equals(AuthorityType.USER))
         {
-            Collection<String> memberCollection = DefaultTypeConverter.INSTANCE.getCollection(String.class, nodeService
-                    .getProperty(parentRef, ContentModel.PROP_MEMBERS));
+            Collection<String> memberCollection = DefaultTypeConverter.INSTANCE.getCollection(String.class, nodeService.getProperty(parentRef, ContentModel.PROP_MEMBERS));
             HashSet<String> members = new HashSet<String>();
             members.addAll(memberCollection);
             members.add(childName);
@@ -133,14 +136,12 @@ public class AuthorityDAOImpl implements AuthorityDAO
             {
                 throw new UnknownAuthorityException("An authority was not found for " + childName);
             }
-            nodeService.addChild(parentRef, childRef, ContentModel.ASSOC_MEMBER, QName.createQName("usr", childName,
-                    namespacePrefixResolver));
+            nodeService.addChild(parentRef, childRef, ContentModel.ASSOC_MEMBER, QName.createQName("usr", childName, namespacePrefixResolver));
             userToAuthorityCache.clear();
         }
         else
         {
-            throw new AlfrescoRuntimeException("Authorities of the type "
-                    + AuthorityType.getAuthorityType(childName) + " may not be added to other authorities");
+            throw new AlfrescoRuntimeException("Authorities of the type " + AuthorityType.getAuthorityType(childName) + " may not be added to other authorities");
         }
     }
 
@@ -156,14 +157,13 @@ public class AuthorityDAOImpl implements AuthorityDAO
             {
                 throw new UnknownAuthorityException("An authority was not found for " + parentName);
             }
-            nodeService.createNode(parentRef, ContentModel.ASSOC_MEMBER, QName.createQName("usr", name,
-                    namespacePrefixResolver), ContentModel.TYPE_AUTHORITY_CONTAINER, props);
+            nodeService.createNode(parentRef, ContentModel.ASSOC_MEMBER, QName.createQName("usr", name, namespacePrefixResolver), ContentModel.TYPE_AUTHORITY_CONTAINER, props);
         }
         else
         {
             NodeRef authorityContainerRef = getAuthorityContainer();
-            nodeService.createNode(authorityContainerRef, ContentModel.ASSOC_CHILDREN, QName.createQName("usr", name,
-                    namespacePrefixResolver), ContentModel.TYPE_AUTHORITY_CONTAINER, props);
+            nodeService.createNode(authorityContainerRef, ContentModel.ASSOC_CHILDREN, QName.createQName("usr", name, namespacePrefixResolver),
+                    ContentModel.TYPE_AUTHORITY_CONTAINER, props);
         }
     }
 
@@ -184,7 +184,7 @@ public class AuthorityDAOImpl implements AuthorityDAO
         NodeRef container = getAuthorityContainer();
         if (container != null)
         {
-            findAuthorities(type, container, authorities, false, false, false);
+            findAuthorities(type, null, container, authorities, false, false, false);
         }
         return authorities;
     }
@@ -195,9 +195,62 @@ public class AuthorityDAOImpl implements AuthorityDAO
         NodeRef container = getAuthorityContainer();
         if (container != null)
         {
-            findAuthorities(type, container, authorities, false, true, false);
+            findAuthorities(type, null, container, authorities, false, true, false);
         }
         return authorities;
+    }
+
+    public Set<String> findAuthorities(AuthorityType type, String namePattern)
+    {
+        String regExpString = SearchLanguageConversion.convert(SearchLanguageConversion.DEF_LUCENE, SearchLanguageConversion.DEF_REGEX, namePattern);
+        Pattern pattern = Pattern.compile(regExpString);
+        if ((type != null) && (type == AuthorityType.GROUP))
+        {
+            return findGroupsByLuceneQuery(namePattern, pattern);
+        }
+        HashSet<String> authorities = new HashSet<String>();
+        NodeRef container = getAuthorityContainer();
+        if (container != null)
+        {
+            findAuthorities(type, pattern, container, authorities, false, true, false);
+        }
+        return authorities;
+    }
+
+    private Set<String> findGroupsByLuceneQuery(String namePattern, Pattern pattern)
+    {
+        HashSet<String> authorities = new HashSet<String>();
+        SearchParameters sp = new SearchParameters();
+        sp.addStore(STOREREF_USERS);
+        sp.setLanguage("lucene");
+        sp.setQuery("+TYPE:\""
+                + ContentModel.TYPE_AUTHORITY_CONTAINER + "\"" + " +@"
+                + QueryParser.escape("{" + ContentModel.PROP_AUTHORITY_NAME.getNamespaceURI() + "}" + ISO9075.encode(ContentModel.PROP_AUTHORITY_NAME.getLocalName())) + ":\""
+                + namePattern + "\"");
+        ResultSet rs = null;
+        try
+        {
+            rs = searchService.query(sp);
+
+            for (ResultSetRow row : rs)
+            {
+                String test = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(row.getNodeRef(), ContentModel.PROP_AUTHORITY_NAME));
+                Matcher m = pattern.matcher(test);
+                if(m.matches())
+                {
+                    authorities.add(test);
+                }
+            }
+            return authorities;
+        }
+        finally
+        {
+            if (rs != null)
+            {
+                rs.close();
+            }
+        }
+
     }
 
     public Set<String> getContainedAuthorities(AuthorityType type, String name, boolean immediate)
@@ -214,7 +267,7 @@ public class AuthorityDAOImpl implements AuthorityDAO
                 throw new UnknownAuthorityException("An authority was not found for " + name);
             }
             HashSet<String> authorities = new HashSet<String>();
-            findAuthorities(type, nodeRef, authorities, false, !immediate, false);
+            findAuthorities(type, null, nodeRef, authorities, false, !immediate, false);
             return authorities;
         }
     }
@@ -228,8 +281,7 @@ public class AuthorityDAOImpl implements AuthorityDAO
         }
         if (AuthorityType.getAuthorityType(childName).equals(AuthorityType.USER))
         {
-            Collection<String> memberCollection = DefaultTypeConverter.INSTANCE.getCollection(String.class, nodeService
-                    .getProperty(parentRef, ContentModel.PROP_MEMBERS));
+            Collection<String> memberCollection = DefaultTypeConverter.INSTANCE.getCollection(String.class, nodeService.getProperty(parentRef, ContentModel.PROP_MEMBERS));
             HashSet<String> members = new HashSet<String>();
             members.addAll(memberCollection);
             members.remove(childName);
@@ -270,8 +322,7 @@ public class AuthorityDAOImpl implements AuthorityDAO
         }
     }
 
-    private void findAuthorities(AuthorityType type, String name, Set<String> authorities, boolean parents,
-            boolean recursive)
+    private void findAuthorities(AuthorityType type, String name, Set<String> authorities, boolean parents, boolean recursive)
     {
         if (AuthorityType.getAuthorityType(name).equals(AuthorityType.GUEST))
         {
@@ -285,12 +336,11 @@ public class AuthorityDAOImpl implements AuthorityDAO
                 {
                     if (recursive)
                     {
-                        findAuthorities(type, ref, authorities, parents, recursive, true);
+                        findAuthorities(type, null, ref, authorities, parents, recursive, true);
                     }
                     else
                     {
-                        String authorityName = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService
-                                .getProperty(ref, ContentModel.PROP_AUTHORITY_NAME));
+                        String authorityName = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(ref, ContentModel.PROP_AUTHORITY_NAME));
                         if (type == null)
                         {
                             authorities.add(authorityName);
@@ -317,7 +367,7 @@ public class AuthorityDAOImpl implements AuthorityDAO
                 throw new UnknownAuthorityException("An authority was not found for " + name);
             }
 
-            findAuthorities(type, ref, authorities, parents, recursive, false);
+            findAuthorities(type, null, ref, authorities, parents, recursive, false);
 
         }
     }
@@ -334,12 +384,8 @@ public class AuthorityDAOImpl implements AuthorityDAO
         sp.addStore(STOREREF_USERS);
         sp.setLanguage("lucene");
         sp.setQuery("+TYPE:\""
-                + ContentModel.TYPE_AUTHORITY_CONTAINER
-                + "\""
-                + " +@"
-                + QueryParser.escape("{"
-                        + ContentModel.PROP_MEMBERS.getNamespaceURI() + "}"
-                        + ISO9075.encode(ContentModel.PROP_MEMBERS.getLocalName())) + ":\"" + name + "\"");
+                + ContentModel.TYPE_AUTHORITY_CONTAINER + "\"" + " +@"
+                + QueryParser.escape("{" + ContentModel.PROP_MEMBERS.getNamespaceURI() + "}" + ISO9075.encode(ContentModel.PROP_MEMBERS.getLocalName())) + ":\"" + name + "\"");
         ResultSet rs = null;
         try
         {
@@ -361,26 +407,45 @@ public class AuthorityDAOImpl implements AuthorityDAO
 
     }
 
-    private void findAuthorities(AuthorityType type, NodeRef nodeRef, Set<String> authorities, boolean parents,
-            boolean recursive, boolean includeNode)
+    private void findAuthorities(AuthorityType type, Pattern pattern, NodeRef nodeRef, Set<String> authorities, boolean parents, boolean recursive, boolean includeNode)
     {
-        List<ChildAssociationRef> cars = parents ? nodeService.getParentAssocs(nodeRef) : nodeService
-                .getChildAssocs(nodeRef);
+        List<ChildAssociationRef> cars = parents ? nodeService.getParentAssocs(nodeRef) : nodeService.getChildAssocs(nodeRef);
 
         if (includeNode)
         {
-            String authorityName = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(nodeRef,
-                    ContentModel.PROP_AUTHORITY_NAME));
+            String authorityName = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(nodeRef, ContentModel.PROP_AUTHORITY_NAME));
             if (type == null)
             {
-                authorities.add(authorityName);
+                if (pattern == null)
+                {
+                    authorities.add(authorityName);
+                }
+                else
+                {
+                    Matcher m = pattern.matcher(authorityName);
+                    if (m.matches())
+                    {
+                        authorities.add(authorityName);
+                    }
+                }
             }
             else
             {
                 AuthorityType authorityType = AuthorityType.getAuthorityType(authorityName);
                 if (authorityType.equals(type))
                 {
-                    authorities.add(authorityName);
+                    if (pattern == null)
+                    {
+                        authorities.add(authorityName);
+                    }
+                    else
+                    {
+                        Matcher m = pattern.matcher(authorityName);
+                        if (m.matches())
+                        {
+                            authorities.add(authorityName);
+                        }
+                    }
                 }
             }
         }
@@ -393,15 +458,25 @@ public class AuthorityDAOImpl implements AuthorityDAO
             if (dictionaryService.isSubClass(currentType, ContentModel.TYPE_AUTHORITY))
             {
 
-                String authorityName = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(
-                        current, ContentModel.PROP_AUTHORITY_NAME));
+                String authorityName = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(current, ContentModel.PROP_AUTHORITY_NAME));
 
                 if (type == null)
                 {
-                    authorities.add(authorityName);
+                    if (pattern == null)
+                    {
+                        authorities.add(authorityName);
+                    }
+                    else
+                    {
+                        Matcher m = pattern.matcher(authorityName);
+                        if (m.matches())
+                        {
+                            authorities.add(authorityName);
+                        }
+                    }
                     if (recursive)
                     {
-                        findAuthorities(type, current, authorities, parents, recursive, false);
+                        findAuthorities(type, pattern, current, authorities, parents, recursive, false);
                     }
                 }
                 else
@@ -409,11 +484,22 @@ public class AuthorityDAOImpl implements AuthorityDAO
                     AuthorityType authorityType = AuthorityType.getAuthorityType(authorityName);
                     if (authorityType.equals(type))
                     {
-                        authorities.add(authorityName);
+                        if (pattern == null)
+                        {
+                            authorities.add(authorityName);
+                        }
+                        else
+                        {
+                            Matcher m = pattern.matcher(authorityName);
+                            if (m.matches())
+                            {
+                                authorities.add(authorityName);
+                            }
+                        }
                     }
                     if (recursive)
                     {
-                        findAuthorities(type, current, authorities, parents, recursive, false);
+                        findAuthorities(type, pattern, current, authorities, parents, recursive, false);
                     }
                 }
             }
@@ -421,8 +507,7 @@ public class AuthorityDAOImpl implements AuthorityDAO
         // loop over properties
         if (!parents)
         {
-            Collection<String> members = DefaultTypeConverter.INSTANCE.getCollection(String.class, nodeService
-                    .getProperty(nodeRef, ContentModel.PROP_MEMBERS));
+            Collection<String> members = DefaultTypeConverter.INSTANCE.getCollection(String.class, nodeService.getProperty(nodeRef, ContentModel.PROP_MEMBERS));
             if (members != null)
             {
                 for (String user : members)
@@ -431,14 +516,38 @@ public class AuthorityDAOImpl implements AuthorityDAO
                     {
                         if (type == null)
                         {
-                            authorities.add(user);
+                            if (pattern == null)
+                            {
+                                authorities.add(user);
+                            }
+                            else
+                            {
+                                Matcher m = pattern.matcher(user);
+                                if (m.matches())
+                                {
+                                    authorities.add(user);
+                                    ;
+                                }
+                            }
                         }
                         else
                         {
                             AuthorityType authorityType = AuthorityType.getAuthorityType(user);
                             if (authorityType.equals(type))
                             {
-                                authorities.add(user);
+                                if (pattern == null)
+                                {
+                                    authorities.add(user);
+                                }
+                                else
+                                {
+                                    Matcher m = pattern.matcher(user);
+                                    if (m.matches())
+                                    {
+                                        authorities.add(user);
+                                        ;
+                                    }
+                                }
                             }
                         }
                     }
@@ -453,12 +562,9 @@ public class AuthorityDAOImpl implements AuthorityDAO
         sp.addStore(STOREREF_USERS);
         sp.setLanguage("lucene");
         sp.setQuery("+TYPE:\""
-                + ContentModel.TYPE_AUTHORITY_CONTAINER
-                + "\""
-                + " +@"
-                + QueryParser.escape("{"
-                        + ContentModel.PROP_AUTHORITY_NAME.getNamespaceURI() + "}"
-                        + ISO9075.encode(ContentModel.PROP_AUTHORITY_NAME.getLocalName())) + ":\"" + name + "\"");
+                + ContentModel.TYPE_AUTHORITY_CONTAINER + "\"" + " +@"
+                + QueryParser.escape("{" + ContentModel.PROP_AUTHORITY_NAME.getNamespaceURI() + "}" + ISO9075.encode(ContentModel.PROP_AUTHORITY_NAME.getLocalName())) + ":\""
+                + name + "\"");
         ResultSet rs = null;
         try
         {
@@ -471,8 +577,7 @@ public class AuthorityDAOImpl implements AuthorityDAO
             {
                 for (ResultSetRow row : rs)
                 {
-                    String test = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(row
-                            .getNodeRef(), ContentModel.PROP_AUTHORITY_NAME));
+                    String test = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(row.getNodeRef(), ContentModel.PROP_AUTHORITY_NAME));
                     if (test.equals(name))
                     {
                         return row.getNodeRef();
@@ -497,8 +602,7 @@ public class AuthorityDAOImpl implements AuthorityDAO
     private NodeRef getAuthorityContainer()
     {
         NodeRef rootNodeRef = nodeService.getRootNode(STOREREF_USERS);
-        List<ChildAssociationRef> results = nodeService.getChildAssocs(rootNodeRef, RegexQNamePattern.MATCH_ALL,
-                qnameAssocSystem);
+        List<ChildAssociationRef> results = nodeService.getChildAssocs(rootNodeRef, RegexQNamePattern.MATCH_ALL, qnameAssocSystem);
         NodeRef sysNodeRef = null;
         if (results.size() == 0)
         {
@@ -547,12 +651,12 @@ public class AuthorityDAOImpl implements AuthorityDAO
     public String getAuthorityDisplayName(String authorityName)
     {
         NodeRef ref = getAuthorityOrNull(authorityName);
-        if(ref == null)
+        if (ref == null)
         {
             return null;
         }
         Serializable value = nodeService.getProperty(ref, ContentModel.PROP_AUTHORITY_DISPLAY_NAME);
-        if(value == null)
+        if (value == null)
         {
             return null;
         }
@@ -562,12 +666,12 @@ public class AuthorityDAOImpl implements AuthorityDAO
     public void setAuthorityDisplayName(String authorityName, String authorityDisplayName)
     {
         NodeRef ref = getAuthorityOrNull(authorityName);
-        if(ref == null)
+        if (ref == null)
         {
             return;
         }
         nodeService.setProperty(ref, ContentModel.PROP_AUTHORITY_DISPLAY_NAME, authorityDisplayName);
-        
+
     }
 
 }

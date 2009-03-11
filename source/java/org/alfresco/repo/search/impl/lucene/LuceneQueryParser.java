@@ -729,7 +729,7 @@ public class LuceneQueryParser extends QueryParser
                             for (int j = 0; j < v.size(); j++)
                             {
                                 org.apache.lucene.analysis.Token test = v.get(j);
-                                if ((test.startOffset() <= i) && (i < test.endOffset()))
+                                if ((test.startOffset() <= i) && (i <= test.endOffset()))
                                 {
                                     found = true;
                                     break;
@@ -790,7 +790,7 @@ public class LuceneQueryParser extends QueryParser
                             for (int j = 0; j < v.size(); j++)
                             {
                                 org.apache.lucene.analysis.Token test = v.get(j);
-                                if ((test.startOffset() <= i) && (i < test.endOffset()))
+                                if ((test.startOffset() <= i) && (i <= test.endOffset()))
                                 {
                                     found = true;
                                     break;

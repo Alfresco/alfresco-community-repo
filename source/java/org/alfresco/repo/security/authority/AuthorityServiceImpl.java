@@ -235,6 +235,31 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
         return authorities;
     }
 
+    
+    
+    public Set<String> findAuthorities(AuthorityType type, String namePattern)
+    {
+        Set<String> authorities = new HashSet<String>();
+        switch (type)
+        {
+        case ADMIN:
+        case EVERYONE:
+        case GUEST:
+            throw new UnsupportedOperationException();
+        case GROUP:           
+            authorities.addAll(authorityDAO.findAuthorities(type, namePattern));
+            break;
+        case OWNER:
+        case ROLE:
+            throw new UnsupportedOperationException();
+        case USER:
+            throw new UnsupportedOperationException();
+        default:
+            break;
+        }
+        return authorities;
+    }
+
     public void addAuthority(String parentName, String childName)
     {
         if (AuthorityType.getAuthorityType(childName).equals(AuthorityType.USER))

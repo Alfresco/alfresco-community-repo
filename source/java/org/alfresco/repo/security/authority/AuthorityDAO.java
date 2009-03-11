@@ -139,4 +139,13 @@ public interface AuthorityDAO
      */
     void setAuthorityDisplayName(String authorityName, String authorityDisplayName);
 
+    /**
+     * Find authorities by pattern.
+     * 
+     * @param type
+     * @param namePattern
+     * @return
+     */
+    public Set<String> findAuthorities(AuthorityType type, String namePattern);
+
 }

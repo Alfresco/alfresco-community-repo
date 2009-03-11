@@ -90,6 +90,16 @@ public interface AuthorityService
      */
     @Auditable(parameters = {"type"})
     public Set<String> getAllAuthorities(AuthorityType type);
+    
+    /**
+     * Find authorities by pattern matching (* and ?)
+     * @param type - the authority type
+     * @param namePattern - the pattern 
+     * @return
+     */
+    @Auditable(parameters = {"type"})
+    public Set<String> findAuthorities(AuthorityType type,  String namePattern);
+    
 
     /**
      * Get all root authorities by type. Root authorities are ones that were

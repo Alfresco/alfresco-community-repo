@@ -114,7 +114,7 @@ public class AuthorityServiceTest extends TestCase
                 {
                     NodeRef person = personService.getPerson(user);
                     NodeRef hf = DefaultTypeConverter.INSTANCE.convert(NodeRef.class, nodeService.getProperty(person, ContentModel.PROP_HOMEFOLDER));
-                    if(hf != null)
+                    if (hf != null)
                     {
                         nodeService.deleteNode(hf);
                     }
@@ -126,7 +126,7 @@ public class AuthorityServiceTest extends TestCase
                     authenticationDAO.deleteUser(user);
                 }
             }
-           
+
         }
         tx.commit();
 
@@ -156,6 +156,49 @@ public class AuthorityServiceTest extends TestCase
         authenticationComponentImpl.clearCurrentSecurityContext();
         tx.rollback();
         super.tearDown();
+    }
+
+    public void testGroupWildcards()
+    {
+        long before, after;
+        char end = 'd';
+        for (char i = 'a'; i <= end; i++)
+        {
+            for (char j = 'a'; j <= end; j++)
+            {
+                for (char k = 'a'; k <= end; k++)
+                {
+                    StringBuilder name = new StringBuilder();
+                    name.append("__").append(i).append(j).append(k);
+                    pubAuthorityService.createAuthority(AuthorityType.GROUP, null, name.toString());
+                }
+            }
+        }
+        int size = end - 'a' + 1;
+        before = System.nanoTime();
+        Set<String> matches = pubAuthorityService.findAuthorities(AuthorityType.GROUP, "GROUP___a*");
+        after = System.nanoTime();
+        System.out.println("GROUP___a* in "+((after-before)/1000000000.0f));
+        assertEquals(size*size, matches.size());
+        
+        before = System.nanoTime();
+        matches = pubAuthorityService.findAuthorities(AuthorityType.GROUP, "GROUP___aa*");
+        after = System.nanoTime();
+        System.out.println("GROUP___aa* in "+((after-before)/1000000000.0f));
+        assertEquals(size, matches.size());
+        
+        before = System.nanoTime();
+        matches = pubAuthorityService.findAuthorities(AuthorityType.GROUP, "GROUP___*aa");
+        after = System.nanoTime();
+        System.out.println("GROUP___*aa in "+((after-before)/1000000000.0f));
+        assertEquals(size, matches.size());
+        before = System.nanoTime();
+        
+        matches = pubAuthorityService.findAuthorities(AuthorityType.GROUP, "GROUP___*a");
+        after = System.nanoTime();
+        System.out.println("GROUP___*a in "+((after-before)/1000000000.0f));
+        assertEquals(size*size, matches.size());
+        
     }
 
     public void testNonAdminUser()
@@ -362,17 +405,13 @@ public class AuthorityServiceTest extends TestCase
         assertEquals(0, pubAuthorityService.getAllAuthorities(AuthorityType.ROLE).size());
         assertEquals(0, pubAuthorityService.getAllRootAuthorities(AuthorityType.ROLE).size());
     }
-    
+
     private void checkAuthorityCollectionSize(int expected, Set<String> actual, AuthorityType type)
     {
         if (actual.size() != expected)
         {
-            String msg =
-                    "Incorrect number of authorities.\n" +
-                    "   Type:           " + type + "\n" +
-                    "   Expected Count: " + expected + "\n" +
-                    "   Actual Count:   " + actual.size() + "\n" +
-                    "   Authorities:    " + actual;
+            String msg = "Incorrect number of authorities.\n"
+                    + "   Type:           " + type + "\n" + "   Expected Count: " + expected + "\n" + "   Actual Count:   " + actual.size() + "\n" + "   Authorities:    " + actual;
             fail(msg);
         }
     }
@@ -843,7 +882,7 @@ public class AuthorityServiceTest extends TestCase
         assertEquals(2, pubAuthorityService.getAllAuthorities(AuthorityType.GROUP).size());
         assertEquals(2, pubAuthorityService.getAllRootAuthorities(AuthorityType.GROUP).size());
     }
-    
+
     public void testAdminGroup()
     {
         personService.getPerson("andy");
@@ -851,7 +890,7 @@ public class AuthorityServiceTest extends TestCase
         pubAuthorityService.removeAuthority(adminGroup, "andy");
         assertFalse(pubAuthorityService.isAdminAuthority("andy"));
         pubAuthorityService.addAuthority(adminGroup, "andy");
-        assertTrue(pubAuthorityService.isAdminAuthority("andy"));        
+        assertTrue(pubAuthorityService.isAdminAuthority("andy"));
         pubAuthorityService.removeAuthority(adminGroup, "andy");
         assertFalse(pubAuthorityService.isAdminAuthority("andy"));
     }
@@ -867,23 +906,23 @@ public class AuthorityServiceTest extends TestCase
         properties.put(ContentModel.PROP_ORGID, orgId);
         return properties;
     }
-    
+
     public void testAuthorityDisplayNames()
     {
         String authOne = pubAuthorityService.createAuthority(AuthorityType.GROUP, null, "One");
         assertEquals(pubAuthorityService.getAuthorityDisplayName(authOne), "One");
         pubAuthorityService.setAuthorityDisplayName(authOne, "Selfish Crocodile");
         assertEquals(pubAuthorityService.getAuthorityDisplayName(authOne), "Selfish Crocodile");
-        
+
         String authTwo = pubAuthorityService.createAuthority(AuthorityType.GROUP, null, "Two", "Lamp posts");
         assertEquals(pubAuthorityService.getAuthorityDisplayName(authTwo), "Lamp posts");
         pubAuthorityService.setAuthorityDisplayName(authTwo, "Happy Hippos");
         assertEquals(pubAuthorityService.getAuthorityDisplayName(authTwo), "Happy Hippos");
-        
+
         assertEquals(pubAuthorityService.getAuthorityDisplayName("GROUP_Loon"), "Loon");
         assertEquals(pubAuthorityService.getAuthorityDisplayName("ROLE_Gibbon"), "Gibbon");
         assertEquals(pubAuthorityService.getAuthorityDisplayName("Monkey"), "Monkey");
-        
+
         authenticationComponent.setCurrentUser("andy");
         assertEquals(pubAuthorityService.getAuthorityDisplayName(authOne), "Selfish Crocodile");
         assertEquals(pubAuthorityService.getAuthorityDisplayName(authTwo), "Happy Hippos");
@@ -891,6 +930,6 @@ public class AuthorityServiceTest extends TestCase
         assertEquals(pubAuthorityService.getAuthorityDisplayName("GROUP_Loon"), "Loon");
         assertEquals(pubAuthorityService.getAuthorityDisplayName("ROLE_Gibbon"), "Gibbon");
         assertEquals(pubAuthorityService.getAuthorityDisplayName("Monkey"), "Monkey");
-        
+
     }
 }

@@ -30,6 +30,11 @@
 
 <%@ page buffer="32kb" contentType="text/html;charset=UTF-8" %>
 <%@ page isELIgnored="false" %>
+<%@ page import="javax.faces.context.FacesContext" %>
+<%@ page import="java.util.HashMap" %>
+<%@ page import="org.alfresco.web.ui.common.PanelGenerator" %>
+<%@ page import="org.alfresco.web.bean.spaces.InviteSpaceUsersWizard" %>
+<%@ page import="org.alfresco.web.app.servlet.FacesHelper" %>
 <%@ page import="org.alfresco.web.ui.common.PanelGenerator" %>
 
 <r:page titleId="title_action_email">
@@ -137,6 +142,18 @@
                                  <tr>
                                     <td colspan="2" class="mainSubTitle"><h:outputText value="#{msg.set_action_values}" /></td>
                                  </tr>
+                                 
+                                 <h:panelGroup rendered="#{InviteSpaceUsersWizard.haveMaximumUsersBeenReturned}">
+                                    <f:verbatim><tr><td colspan="2">
+                                    <% out.write("<div style='padding:2px;'></div>");
+                                    PanelGenerator.generatePanelStart(out, request.getContextPath(), "yellowInner", "#ffffcc"); %>
+                                    <img src='<%=request.getContextPath()%>/images/icons/info_icon.gif' align='absmiddle' />&nbsp;&nbsp;
+                                    </f:verbatim>
+                                    <h:outputText id="infoMsg" value="#{InviteSpaceUsersWizard.maximumUsersMsg}" />
+                                    <f:verbatim>
+                                    <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "yellowInner"); %>
+                                    </td></tr></f:verbatim>
+                                 </h:panelGroup>
                                  
                                  <%-- Select the email receipients --%>
                                  <tr><td colspan="2" class="paddingRow"></td></tr>
@@ -267,3 +284,11 @@
 </f:view>
 
 </r:page>
+
+<%
+InviteSpaceUsersWizard wizard = (InviteSpaceUsersWizard)FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "InviteSpaceUsersWizard");
+if (wizard != null) 
+{
+   wizard.init(new HashMap<String, String>());
+}
+%>

@@ -295,9 +295,24 @@ public abstract class BaseInviteUsersWizard extends BaseWizardBean
          }
       }
       
+      // reset max users flag
+      this.maxUsersReturned = false;
+      
       return outcome;
    }
    
+   /* (non-Javadoc)
+    * @see org.alfresco.web.bean.dialog.BaseDialogBean#cancel()
+    */
+   @Override
+   public String cancel()
+   {
+      // reset max users flag
+      this.maxUsersReturned = false;
+      
+      return super.cancel();
+   }
+
    /**
     * @see org.alfresco.web.bean.dialog.BaseDialogBean#getFinishButtonDisabled()
     */
@@ -366,19 +381,30 @@ public abstract class BaseInviteUsersWizard extends BaseWizardBean
             // Use lucene search to retrieve user details
             String term = QueryParser.escape(contains.trim());
             StringBuilder query = new StringBuilder(128);
-            query.append("@").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:firstName:\"*");
-            query.append(term);
-            query.append("*\" @").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:lastName:\"*");
-            query.append(term);
-            query.append("*\" @").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:userName:");
-            query.append(term);
-            query.append("*");
-            
+            if (contains == null || contains.length() == 0)
+            {
+               // if there is no search term, search for all people
+               query.append("+TYPE:\"");
+               query.append(ContentModel.TYPE_PERSON.toString());
+               query.append("\"");
+            }
+            else
+            {
+               query.append("@").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:firstName:\"*");
+               query.append(term);
+               query.append("*\" @").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:lastName:\"*");
+               query.append(term);
+               query.append("*\" @").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:userName:");
+               query.append(term);
+               query.append("*");
+            }
+               
             int maxResults = Application.getClientConfig(context).getInviteUsersMaxResults();
             
             if (logger.isDebugEnabled())
             {
                logger.debug("Maximum invite users results size: " + maxResults);
+               logger.debug("Using query to find users: " + query.toString());
             }
             
             SearchParameters searchParams = new SearchParameters();
@@ -428,12 +454,19 @@ public abstract class BaseInviteUsersWizard extends BaseWizardBean
             groups.addAll(getAuthorityService().getAllAuthorities(AuthorityType.EVERYONE));
 
             String containsLower = contains.trim().toLowerCase();
-            int offset = PermissionService.GROUP_PREFIX.length();
+            String groupDisplayName;
             for (String group : groups)
             {
-               if (group.toLowerCase().indexOf(containsLower, offset) != -1)
+               // get display name, if not present strip prefix from group id
+               groupDisplayName = authorityService.getAuthorityDisplayName(group);
+               if (groupDisplayName == null || groupDisplayName.length() == 0)
                {
-                  results.add(new SortableSelectItem(group, group.substring(offset), group));
+                  groupDisplayName = group.substring(PermissionService.GROUP_PREFIX.length());
+               }
+               
+               if (groupDisplayName.toLowerCase().indexOf(containsLower) != -1)
+               {
+                  results.add(new SortableSelectItem(group, groupDisplayName, groupDisplayName));
                }
             }
          }
@@ -684,8 +717,14 @@ public abstract class BaseInviteUsersWizard extends BaseWizardBean
     */
    public String buildLabelForGroupAuthorityRole(String authority, String role)
    {
+      String groupDisplayName = this.authorityService.getAuthorityDisplayName(authority);
+      if (groupDisplayName == null || groupDisplayName.length() == 0)
+      {
+         groupDisplayName = authority.substring(PermissionService.GROUP_PREFIX.length());
+      }
+      
       StringBuilder buf = new StringBuilder(100);
-      buf.append(authority.substring(PermissionService.GROUP_PREFIX.length()))
+      buf.append(groupDisplayName)
          .append(" (")
          .append(Application.getMessage(FacesContext.getCurrentInstance(), role))
          .append(")");

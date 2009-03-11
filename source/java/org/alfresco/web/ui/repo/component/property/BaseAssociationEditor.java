@@ -726,10 +726,17 @@ public abstract class BaseAssociationEditor extends UIInput
       }
       else if (ContentModel.TYPE_AUTHORITY_CONTAINER.equals(nodeService.getType(targetRef)))
       {
-         int offset = PermissionService.GROUP_PREFIX.length();
-         String group = (String)nodeService.getProperty(targetRef, 
-               ContentModel.PROP_AUTHORITY_NAME);
-         out.write(group.substring(offset));
+         // get display name, if not present strip prefix from group id
+         String groupDisplayName = (String)nodeService.getProperty(targetRef, 
+                  ContentModel.PROP_AUTHORITY_DISPLAY_NAME);
+         if (groupDisplayName == null || groupDisplayName.length() == 0)
+         {
+            String group = (String)nodeService.getProperty(targetRef, 
+                     ContentModel.PROP_AUTHORITY_NAME);
+            groupDisplayName = group.substring(PermissionService.GROUP_PREFIX.length());
+         }
+         
+         out.write(groupDisplayName);
       }
       else
       {
@@ -867,15 +874,24 @@ public abstract class BaseAssociationEditor extends UIInput
                }
                else if (ContentModel.TYPE_AUTHORITY_CONTAINER.equals(nodeService.getType(item)))
                {
-                  // if the node represents a group, show the authority name instead of the name
-                  int offset = PermissionService.GROUP_PREFIX.length();
-                  String group = (String)nodeService.getProperty(item, 
-                        ContentModel.PROP_AUTHORITY_NAME);
+                  // if the node represents a group, show the authority display name instead of the name
+                  String groupDisplayName = (String)nodeService.getProperty(item, 
+                           ContentModel.PROP_AUTHORITY_DISPLAY_NAME);
+                  if (groupDisplayName == null || groupDisplayName.length() == 0)
+                  {
+                     String group = (String)nodeService.getProperty(item, 
+                              ContentModel.PROP_AUTHORITY_NAME);
+                     groupDisplayName = group.substring(PermissionService.GROUP_PREFIX.length());
+                  }
+                  
                   out.write("<option value='");
                   out.write(item.toString());
                   out.write("'>");
-                  out.write(group.substring(offset));
+                  out.write(groupDisplayName);
                   out.write("</option>");
+                  
+                  
+                  
                }
                else
                {
@@ -949,15 +965,22 @@ public abstract class BaseAssociationEditor extends UIInput
                if (authorityDAO != null)
                {
                   List<String> matchingGroups = new ArrayList<String>();
-                  int offset = PermissionService.GROUP_PREFIX.length();
                   
+                  String groupDisplayName;
                   for (String group : groups)
                   {
+                     // get display name, if not present strip prefix from group id
+                     groupDisplayName = authorityService.getAuthorityDisplayName(group);
+                     if (groupDisplayName == null || groupDisplayName.length() == 0)
+                     {
+                        groupDisplayName = group.substring(PermissionService.GROUP_PREFIX.length());
+                     }
+                     
                      // if a search string is present make sure the group matches
                      // otherwise just add the group name to the sorted set
                      if (safeContains != null)
                      {
-                        if (group.toLowerCase().indexOf(safeContains, offset) != -1)
+                        if (groupDisplayName.toLowerCase().indexOf(safeContains) != -1)
                         {
                            matchingGroups.add(group);
                         }

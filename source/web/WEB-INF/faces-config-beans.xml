@@ -1219,6 +1219,10 @@
          <value>#{PermissionService}</value>
       </managed-property>
       <managed-property>
+         <property-name>authorityService</property-name>
+         <value>#{AuthorityService}</value>
+      </managed-property>
+      <managed-property>
          <property-name>ownableService</property-name>
          <value>#{OwnableService}</value>
       </managed-property>
@@ -1250,6 +1254,10 @@
       <managed-property>
          <property-name>permissionService</property-name>
          <value>#{PermissionService}</value>
+      </managed-property>
+      <managed-property>
+         <property-name>authorityService</property-name>
+         <value>#{AuthorityService}</value>
       </managed-property>
       <managed-property>
          <property-name>ownableService</property-name>

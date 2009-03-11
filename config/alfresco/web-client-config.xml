@@ -100,6 +100,9 @@
          <!-- Language selection from login dialog - if false then the language will be selected -->
          <!-- from the client browser locale and the language drop-down will not be displayed -->
          <language-select>true</language-select>
+         
+         <!-- Allow zero byte file uploads - set to false log warning and ignore on upload otherwise -->
+         <zero-byte-file-uploads>true</zero-byte-file-uploads>
       </client>
    </config>
 

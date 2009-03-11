@@ -63,9 +63,9 @@
                      <%-- Username column --%>
                      <a:column width="120" style="text-align:left">
                         <f:facet name="header">
-                           <a:sortLink label="#{msg.authority}" value="userName" styleClass="header"/>
+                           <a:sortLink label="#{msg.authority}" value="userNameLabel" styleClass="header"/>
                         </f:facet>
-                        <h:outputText value="#{r.userName}" />
+                        <h:outputText value="#{r.userNameLabel}" />
                      </a:column>
                      
                      <%-- Roles column --%>
@@ -83,10 +83,12 @@
                         </f:facet>
                         <a:booleanEvaluator value="#{!r.inherited}">
                            <a:actionLink value="#{msg.change_roles}" image="/images/icons/edituser.gif" showLink="false" action="dialog:editContentUserRoles" actionListener="#{EditContentUserRolesDialog.setupUserAction}">
-                              <f:param name="userName" value="#{r.userName}" />
+                              <f:param id="p1" name="userName" value="#{r.userName}" />
+                              <f:param id="p2" name="userNameLabel" value="#{r.userNameLabel}" />
                            </a:actionLink>
                            <a:actionLink value="#{msg.remove}" image="/images/icons/delete_person.gif" showLink="false" action="dialog:removeContentUser" actionListener="#{RemoveContentUserDialog.setupUserAction}">
-                              <f:param name="userName" value="#{r.userName}" />
+                              <f:param id="p3" name="userName" value="#{r.userName}" />
+                              <f:param id="p4" name="userNameLabel" value="#{r.userNameLabel}" />
                            </a:actionLink>
                         </a:booleanEvaluator>
                      </a:column>

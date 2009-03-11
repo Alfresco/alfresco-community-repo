@@ -571,14 +571,21 @@ public class EmailSpaceUsersDialog extends BaseDialogBean implements IContextLis
       {
          // need a map (dummy node) to represent props for this Group Authority
          node = new HashMap<String, Object>(8, 1.0f);
-         if (authority.startsWith(PermissionService.GROUP_PREFIX) == true)
+         
+         String groupDisplayName = this.authorityService.getAuthorityDisplayName(authority);
+         if (groupDisplayName == null || groupDisplayName.length() == 0)
          {
-            node.put(PROP_FULLNAME, authority.substring(PermissionService.GROUP_PREFIX.length()));
+            if (authority.startsWith(PermissionService.GROUP_PREFIX) == true)
+            {
+               groupDisplayName = authority.substring(PermissionService.GROUP_PREFIX.length());
+            }
+            else
+            {
+               groupDisplayName = authority;
+            }
          }
-         else
-         {
-            node.put(PROP_FULLNAME, authority);
-         }
+         
+         node.put(PROP_FULLNAME, groupDisplayName);
          node.put(PROP_USERNAME, authority);
          node.put(PROP_ID, authority);
          node.put(PROP_ICON, WebResources.IMAGE_GROUP);

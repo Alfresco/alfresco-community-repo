@@ -25,27 +25,31 @@ package org.alfresco.web.app.servlet;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Iterator;
 import java.util.List;
 
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.alfresco.config.ConfigService;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.util.TempFileProvider;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.FileUploadBean;
-import org.apache.commons.io.FilenameUtils;
+import org.alfresco.web.config.ClientConfigElement;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.RequestContext;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.fileupload.servlet.ServletRequestContext;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.support.WebApplicationContextUtils;
 
 /**
  * Servlet that takes a file uploaded via a browser and represents it as an
@@ -58,6 +62,21 @@ public class UploadFileServlet extends BaseServlet
    private static final long serialVersionUID = -5482538466491052873L;
    private static final Log logger = LogFactory.getLog(UploadFileServlet.class); 
    
+   private ConfigService configService;
+   
+   
+   /**
+    * @see javax.servlet.GenericServlet#init()
+    */
+   @Override
+   public void init(ServletConfig sc) throws ServletException
+   {
+      super.init(sc);
+      
+      WebApplicationContext ctx = WebApplicationContextUtils.getRequiredWebApplicationContext(sc.getServletContext());
+      this.configService = (ConfigService)ctx.getBean("webClientConfigService");
+   }
+
    /**
     * @see javax.servlet.http.HttpServlet#service(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
     */
@@ -103,7 +122,7 @@ public class UploadFileServlet extends BaseServlet
                {
                   returnPage = item.getString();
                }
-	       else if (item.getFieldName().equalsIgnoreCase("upload-id"))
+               else if (item.getFieldName().equalsIgnoreCase("upload-id"))
                {
                   uploadId = item.getString();
                }
@@ -117,19 +136,30 @@ public class UploadFileServlet extends BaseServlet
                   {
                      logger.debug("Processing uploaded file: " + filename);
                   }
-                  // workaround a bug in IE where the full path is returned
-                  // IE is only available for Windows so only check for the Windows path separator
-                  filename = FilenameUtils.getName(filename);
-                  final File tempFile = TempFileProvider.createTempFile("alfresco", ".upload");
-                  item.write(tempFile);
-                  bean.setFile(tempFile);
-                  bean.setFileName(filename);
-                  bean.setFilePath(tempFile.getAbsolutePath());
-                  if (logger.isDebugEnabled())
+                  
+                  // ADB-41: Ignore non-existent files i.e. 0 byte streams.
+                  if (allowZeroByteFiles() == true || item.getSize() > 0)
                   {
-                     logger.debug("Temp file: " + tempFile.getAbsolutePath() + 
-                                  " size " + tempFile.length() +  
-                                  " bytes created from upload filename: " + filename);
+                     // workaround a bug in IE where the full path is returned
+                     // IE is only available for Windows so only check for the Windows path separator
+                     filename = FilenameUtils.getName(filename);
+                     final File tempFile = TempFileProvider.createTempFile("alfresco", ".upload");
+                     item.write(tempFile);
+                     bean.setFile(tempFile);
+                     bean.setFileName(filename);
+                     bean.setFilePath(tempFile.getAbsolutePath());
+                     if (logger.isDebugEnabled())
+                     {
+                        logger.debug("Temp file: " + tempFile.getAbsolutePath() + 
+                                     " size " + tempFile.length() +  
+                                     " bytes created from upload filename: " + filename);
+                     }
+                  }
+                  else
+                  {
+                     if (logger.isWarnEnabled())
+                        logger.warn("Ignored file '" + filename + "' as there was no content, this is either " +
+                              "caused by uploading an empty file or a file path that does not exist on the client.");
                   }
                }
             }
@@ -137,10 +167,11 @@ public class UploadFileServlet extends BaseServlet
 
          session.setAttribute(FileUploadBean.getKey(uploadId), bean);         
 
-         if (bean.getFile() == null)
+         if (bean.getFile() == null && uploadId != null && logger.isWarnEnabled())
          {
-            logger.warn("no file uploaded for upload " + uploadId);
+            logger.warn("no file uploaded for upload id: " + uploadId);
          }
+         
          if (returnPage == null || returnPage.length() == 0)
          {
             throw new AlfrescoRuntimeException("return-page parameter has not been supplied");
@@ -183,5 +214,12 @@ public class UploadFileServlet extends BaseServlet
       {
          logger.debug("upload complete");
       }
+   }
+   
+   private boolean allowZeroByteFiles()
+   {
+      ClientConfigElement clientConfig = (ClientConfigElement)configService.getGlobalConfig().getConfigElement(
+            ClientConfigElement.CONFIG_ELEMENT_ID);
+      return clientConfig.isZeroByteFileUploads();
    }
 }

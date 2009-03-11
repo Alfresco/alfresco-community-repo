@@ -49,6 +49,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
@@ -100,6 +101,9 @@ public abstract class UserMembersBean extends BaseDialogBean implements IContext
    
    /** PermissionService bean reference */
    transient private PermissionService permissionService;
+   
+   /** AuthorityService bean reference */
+   transient private AuthorityService authorityService;
    
    /** PersonService bean reference */
    transient private PersonService personService;
@@ -198,6 +202,23 @@ public abstract class UserMembersBean extends BaseDialogBean implements IContext
          permissionService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getPermissionService();
       }
       return permissionService;
+   }
+   
+   /**
+    * @param authorityService  The AuthorityService to set.
+    */
+   public void setAuthorityService(AuthorityService authorityService)
+   {
+      this.authorityService = authorityService;
+   }
+   
+   protected AuthorityService getAuthorityService()
+   {
+      if (authorityService == null)
+      {
+         authorityService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAuthorityService();
+      }
+      return authorityService;
    }
    
    /**
@@ -410,6 +431,7 @@ public abstract class UserMembersBean extends BaseDialogBean implements IContext
                   // it is much better for performance to do this now rather than during page bind
                   Map<String, Object> props = node.getProperties(); 
                   props.put("fullName", ((String)props.get("firstName")) + ' ' + ((String)props.get("lastName")));
+                  props.put("userNameLabel", props.get("userName"));
                   props.put("roles", roleListToString(context, permissionMap.get(authority)));
                   props.put("icon", WebResources.IMAGE_PERSON);
                   props.put("isGroup", Boolean.FALSE);
@@ -422,14 +444,22 @@ public abstract class UserMembersBean extends BaseDialogBean implements IContext
             {
                // need a map (dummy node) to represent props for this Group Authority
                Map<String, Object> node = new HashMap<String, Object>(8, 1.0f);
-               if (authority.startsWith(PermissionService.GROUP_PREFIX) == true)
+               
+               String groupDisplayName = getAuthorityService().getAuthorityDisplayName(authority);
+               if (groupDisplayName == null || groupDisplayName.length() == 0)
                {
-                  node.put("fullName", authority.substring(PermissionService.GROUP_PREFIX.length()));
+                  if (authority.startsWith(PermissionService.GROUP_PREFIX) == true)
+                  {
+                     groupDisplayName = authority.substring(PermissionService.GROUP_PREFIX.length());
+                  }
+                  else
+                  {
+                     groupDisplayName = authority;
+                  }
                }
-               else
-               {
-                  node.put("fullName", authority);
-               }
+               
+               node.put("fullName", groupDisplayName);
+               node.put("userNameLabel", groupDisplayName);
                node.put("userName", authority);
                node.put("id", authority);
                node.put("roles", roleListToString(context, permissionMap.get(authority)));
@@ -621,7 +651,13 @@ public abstract class UserMembersBean extends BaseDialogBean implements IContext
             }
             else
             {
-               setPersonName(authority);
+               String label = params.get("userNameLabel");
+               if (label == null || label.length() == 0)
+               {
+                  label = authority;
+               }
+               
+               setPersonName(label);
             }
             
             // setup roles for this Authority

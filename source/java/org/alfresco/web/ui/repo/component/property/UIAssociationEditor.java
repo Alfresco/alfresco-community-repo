@@ -175,11 +175,17 @@ public class UIAssociationEditor extends BaseAssociationEditor
             }
             else if (ContentModel.TYPE_AUTHORITY_CONTAINER.equals(nodeService.getType(targetNode)))
             {
-               // if the node represents a group, show the group name instead of the name
-               int offset = PermissionService.GROUP_PREFIX.length();
-               String group = (String)nodeService.getProperty(targetNode, 
-                     ContentModel.PROP_AUTHORITY_NAME);
-               out.write(group.substring(offset));
+               // if the node represents a group, show the group display name instead of the name
+               String groupDisplayName = (String)nodeService.getProperty(targetNode, 
+                        ContentModel.PROP_AUTHORITY_DISPLAY_NAME);
+               if (groupDisplayName == null || groupDisplayName.length() == 0)
+               {
+                  String group = (String)nodeService.getProperty(targetNode, 
+                           ContentModel.PROP_AUTHORITY_NAME);
+                  groupDisplayName = group.substring(PermissionService.GROUP_PREFIX.length());
+               }
+               
+               out.write(groupDisplayName);
             }
             else
             {

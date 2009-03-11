@@ -82,6 +82,7 @@ public class ClientConfigElement extends ConfigElementAdapter
    private String breadcrumbMode = BREADCRUMB_PATH;
    private String cifsURLSuffix;
    private boolean languageSelect = true;
+   private boolean zeroByteFileUploads = true;
    
    
    /**
@@ -261,6 +262,11 @@ public class ClientConfigElement extends ConfigElementAdapter
       if (newElement.isLanguageSelect() != combinedElement.isLanguageSelect())
       {
          combinedElement.setLanguageSelect(newElement.isLanguageSelect());
+      }
+      
+      if (newElement.isZeroByteFileUploads() != combinedElement.isZeroByteFileUploads())
+      {
+         combinedElement.setZeroByteFileUploads(newElement.isZeroByteFileUploads());
       }
       
       return combinedElement;
@@ -743,5 +749,21 @@ public class ClientConfigElement extends ConfigElementAdapter
    /*package*/ void setLanguageSelect(boolean value)
    {
       this.languageSelect = value;
+   }
+
+   /**
+    * @return true if zero byte file uploads are allowed, false otherwise
+    */
+   public boolean isZeroByteFileUploads()
+   {
+      return this.zeroByteFileUploads;
+   }
+
+   /**
+    * @param zeroByteFileUploads    true if zero byte file uploads are allowed, false otherwise
+    */
+   /*package*/ void setZeroByteFileUploads(boolean zeroByteFileUploads)
+   {
+      this.zeroByteFileUploads = zeroByteFileUploads;
    }
 }

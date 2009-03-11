@@ -67,6 +67,7 @@ public class ClientElementReader implements ConfigElementReader
    public static final String ELEMENT_BREADCRUMB_MODE = "breadcrumb-mode";
    public static final String ELEMENT_CIFSURLSUFFIX = "cifs-url-suffix";
    public static final String ELEMENT_LANGUAGESELECT = "language-select";
+   public static final String ELEMENT_ZEROBYTEFILEUPLOADS = "zero-byte-file-uploads";
    
    
    /**
@@ -282,6 +283,13 @@ public class ClientElementReader implements ConfigElementReader
          if (langSelect != null)
          {
             configElement.setLanguageSelect(Boolean.parseBoolean(langSelect.getTextTrim()));
+         }
+         
+         // get the zero byte file upload mode
+         Element zeroByteFiles = element.element(ELEMENT_ZEROBYTEFILEUPLOADS);
+         if (zeroByteFiles != null)
+         {
+            configElement.setZeroByteFileUploads(Boolean.parseBoolean(zeroByteFiles.getTextTrim()));
          }
       }
       

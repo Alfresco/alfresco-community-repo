@@ -1,7 +1,10 @@
 <#escape x as jsonUtils.encodeJSONString(x)>
 {
    "totalPages" : ${wiki.pages?size},
-   "create": ${wiki.container.hasPermission("CreateChildren")?string},
+   "permissions":
+   {
+      "create": ${wiki.container.hasPermission("CreateChildren")?string}
+   },
    "pages":
    [
    <#list wiki.pages?sort_by(['modified'])?reverse as p>

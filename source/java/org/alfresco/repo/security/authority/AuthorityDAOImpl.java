@@ -203,7 +203,7 @@ public class AuthorityDAOImpl implements AuthorityDAO
     public Set<String> findAuthorities(AuthorityType type, String namePattern)
     {
         String regExpString = SearchLanguageConversion.convert(SearchLanguageConversion.DEF_LUCENE, SearchLanguageConversion.DEF_REGEX, namePattern);
-        Pattern pattern = Pattern.compile(regExpString);
+        Pattern pattern = Pattern.compile(regExpString, Pattern.CASE_INSENSITIVE);
         if ((type != null) && (type == AuthorityType.GROUP))
         {
             return findGroupsByLuceneQuery(namePattern, pattern);

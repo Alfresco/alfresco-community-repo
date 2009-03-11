@@ -96,6 +96,10 @@
          
          <!-- Breadcrumb mode, can be either 'path' or 'location' -->
          <breadcrumb-mode>path</breadcrumb-mode>
+         
+         <!-- Language selection from login dialog - if false then the language will be selected -->
+         <!-- from the client browser locale and the language drop-down will not be displayed -->
+         <language-select>true</language-select>
       </client>
    </config>
 

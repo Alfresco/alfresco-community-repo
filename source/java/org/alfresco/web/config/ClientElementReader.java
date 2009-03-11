@@ -66,6 +66,8 @@ public class ClientElementReader implements ConfigElementReader
    public static final String ELEMENT_MINPASSWORDLENGTH = "password-min-length";
    public static final String ELEMENT_BREADCRUMB_MODE = "breadcrumb-mode";
    public static final String ELEMENT_CIFSURLSUFFIX = "cifs-url-suffix";
+   public static final String ELEMENT_LANGUAGESELECT = "language-select";
+   
    
    /**
     * @see org.alfresco.config.xml.elementreader.ConfigElementReader#parse(org.dom4j.Element)
@@ -262,15 +264,24 @@ public class ClientElementReader implements ConfigElementReader
          {
             configElement.setBreadcrumbMode(breadcrumbMode.getTextTrim());
          }
-         
+
          // Get the CIFS URL suffix
          Element cifsSuffix = element.element(ELEMENT_CIFSURLSUFFIX);
-         if ( cifsSuffix != null)
+         if (cifsSuffix != null)
          {
-        	 String suffix = cifsSuffix.getTextTrim();
-        	 if ( suffix.startsWith( ".") == false)
-        		 suffix = "." + suffix;
-        	 configElement.setCifsURLSuffix( suffix);
+            String suffix = cifsSuffix.getTextTrim();
+            if (suffix.startsWith(".") == false)
+            {
+               suffix = "." + suffix;
+            }
+            configElement.setCifsURLSuffix( suffix);
+         }
+         
+         // get the language selection mode
+         Element langSelect = element.element(ELEMENT_LANGUAGESELECT);
+         if (langSelect != null)
+         {
+            configElement.setLanguageSelect(Boolean.parseBoolean(langSelect.getTextTrim()));
          }
       }
       

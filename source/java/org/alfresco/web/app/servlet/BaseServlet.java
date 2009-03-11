@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.StringTokenizer;
 
@@ -52,6 +53,7 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.springframework.web.jsf.FacesContextUtils;
 
+import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -195,6 +197,28 @@ public abstract class BaseServlet extends HttpServlet
       {
          req.getSession().setAttribute(LoginBean.LOGIN_REDIRECT_KEY, url);
       }
+   }
+   
+   /**
+    * Apply Client and Repository language locale based on the 'Accept-Language' request header
+    */
+   public static Locale setLanguageFromRequestHeader(HttpServletRequest req)
+   {
+      Locale locale = null;
+      
+      // set language locale from browser header
+      String acceptLang = req.getHeader("Accept-Language");
+      if (acceptLang != null && acceptLang.length() != 0)
+      {
+         StringTokenizer t = new StringTokenizer(acceptLang, ",; ");
+         // get language and convert to java locale format
+         String language = t.nextToken().replace('-', '_');
+         Application.setLanguage(req.getSession(), language);
+         locale = I18NUtil.parseLocale(language);
+         I18NUtil.setLocale(locale);
+      }
+      
+      return locale;
    }
    
    /**

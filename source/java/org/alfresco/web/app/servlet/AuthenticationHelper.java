@@ -27,6 +27,7 @@ package org.alfresco.web.app.servlet;
 import java.io.IOException;
 import java.util.Enumeration;
 
+import javax.faces.context.FacesContext;
 import javax.portlet.PortletSession;
 import javax.servlet.ServletContext;
 import javax.servlet.http.Cookie;
@@ -50,6 +51,7 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.LoginBean;
 import org.alfresco.web.bean.repository.User;
+import org.alfresco.web.config.ClientConfigElement;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.web.context.WebApplicationContext;
@@ -180,9 +182,17 @@ public final class AuthenticationHelper
                   // store the User object in the Session - the authentication servlet will then proceed
                   session.setAttribute(AuthenticationHelper.AUTHENTICATION_USER, user);
                   
-                  // Set the current locale
-                  FacesHelper.getFacesContext(req, res, sc);
-                  I18NUtil.setLocale(Application.getLanguage(req.getSession()));
+                  // Set the current locale and language
+                  FacesContext fc = FacesHelper.getFacesContext(req, res, sc);
+                  if (Application.getClientConfig(fc).isLanguageSelect())
+                  {
+                     I18NUtil.setLocale(Application.getLanguage(req.getSession()));
+                  }
+                  else
+                  {
+                     // Set the current thread locale (also for JSF context)
+                     fc.getViewRoot().setLocale(BaseServlet.setLanguageFromRequestHeader(req));
+                  }
                   
                   // remove the session invalidated flag
                   session.removeAttribute(AuthenticationHelper.SESSION_INVALIDATED);
@@ -240,10 +250,18 @@ public final class AuthenticationHelper
          }
          
          // setup faces context
-         FacesHelper.getFacesContext(req, res, sc);
+         FacesContext fc = FacesHelper.getFacesContext(req, res, sc);
          
-         // Set the current locale
-         I18NUtil.setLocale(Application.getLanguage(req.getSession()));
+         // Set the current locale and language
+         if (Application.getClientConfig(fc).isLanguageSelect())
+         {
+            I18NUtil.setLocale(Application.getLanguage(req.getSession()));
+         }
+         else
+         {
+            // Set the current thread locale (also for JSF context)
+            fc.getViewRoot().setLocale(BaseServlet.setLanguageFromRequestHeader(req));
+         }
          
          if (loginBean != null && (loginBean.getUserPreferencesBean() != null))
          {
@@ -331,8 +349,18 @@ public final class AuthenticationHelper
       }
       
       // Set the current locale
-      FacesHelper.getFacesContext(httpRequest, httpResponse, context);
-      I18NUtil.setLocale(Application.getLanguage(httpRequest.getSession()));
+      FacesContext fc = FacesHelper.getFacesContext(httpRequest, httpResponse, context);
+      
+      // Set the current locale and language
+      if (Application.getClientConfig(fc).isLanguageSelect())
+      {
+         I18NUtil.setLocale(Application.getLanguage(httpRequest.getSession()));
+      }
+      else
+      {
+         // Set the current thread locale (also for JSF context)
+         fc.getViewRoot().setLocale(BaseServlet.setLanguageFromRequestHeader(httpRequest));
+      }
       
       return AuthenticationStatus.Success;
    }

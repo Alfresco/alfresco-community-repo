@@ -81,6 +81,8 @@ public class ClientConfigElement extends ConfigElementAdapter
    private int minPasswordLength = 3;
    private String breadcrumbMode = BREADCRUMB_PATH;
    private String cifsURLSuffix;
+   private boolean languageSelect = true;
+   
    
    /**
     * Default Constructor
@@ -254,6 +256,11 @@ public class ClientConfigElement extends ConfigElementAdapter
           newElement.getBreadcrumbMode().equals(combinedElement.getBreadcrumbMode()) == false)
       {
          combinedElement.setBreadcrumbMode(newElement.getBreadcrumbMode());
+      }
+      
+      if (newElement.isLanguageSelect() != combinedElement.isLanguageSelect())
+      {
+         combinedElement.setLanguageSelect(newElement.isLanguageSelect());
       }
       
       return combinedElement;
@@ -700,7 +707,7 @@ public class ClientConfigElement extends ConfigElementAdapter
          breadcrumbMode = mode;
       }
    }
-   
+
    /**
     * Get the CIFs URL suffix
     * 
@@ -708,9 +715,9 @@ public class ClientConfigElement extends ConfigElementAdapter
     */
    public final String getCifsURLSuffix()
    {
-	   return cifsURLSuffix;
+      return cifsURLSuffix;
    }
-   
+
    /**
     * Set the CIFS URL suffix
     * 
@@ -718,6 +725,23 @@ public class ClientConfigElement extends ConfigElementAdapter
     */
    void setCifsURLSuffix(String suffix)
    {
-	   cifsURLSuffix = suffix;
+      cifsURLSuffix = suffix;
+   }
+
+   /**
+    * @return the language select flag - true to display language selection, false to
+    *         get the language from the client browser locale instead
+    */
+   public final boolean isLanguageSelect()
+   {
+      return this.languageSelect;
+   }
+
+   /**
+    * @param value  the language select flag
+    */
+   /*package*/ void setLanguageSelect(boolean value)
+   {
+      this.languageSelect = value;
    }
 }

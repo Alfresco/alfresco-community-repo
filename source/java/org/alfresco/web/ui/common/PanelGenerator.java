@@ -108,6 +108,46 @@ public final class PanelGenerator
       out.write(";'>");
    }
    
+   public static void generatePanelStartWithBgImg(final Writer out, 
+            final String contextPath, final String panel, String bgColor)
+            throws IOException
+   {
+      out.write("<table cellspacing='0' cellpadding='0' style='border-width: 0px; width: 100%'>");
+      out.write("<tr><td style='width: 7px;'><img src='");
+      out.write(contextPath);
+      out.write("/images/parts/");
+      out.write(panel);
+      out.write("_01.gif' width='7' height='7' alt=''/></td>");
+      
+      out.write("<td style='background-image: url(");
+      out.write(contextPath);
+      out.write("/images/parts/");
+      out.write(panel);
+      out.write("_02.gif)'><img src='");
+      out.write(contextPath);
+      out.write("/images/parts/");
+      out.write(panel);
+      out.write("_02.gif' width='7' height='7' alt=''/></td>");
+      
+      out.write("<td style='width: 7px;'><img src='");
+      out.write(contextPath);
+      out.write("/images/parts/");
+      out.write(panel);
+      out.write("_03.gif' width='7' height='7' alt=''/></td></tr>");
+      
+      out.write("<tr><td style='background-image: url(");
+      out.write(contextPath);
+      out.write("/images/parts/");
+      out.write(panel);
+      out.write("_04.gif)'></td><td style='background-image: url(");
+      out.write(contextPath);
+      out.write("/images/parts/");
+      out.write(panel);
+      out.write("_bg.gif); background-repeat: repeat-x; background-color: ");
+      out.write(bgColor);
+      out.write(";'>");
+   }
+   
    public static void generatePanelEnd(final Writer out, 
                                        final String contextPath, 
                                        final String panel)
@@ -145,6 +185,40 @@ public final class PanelGenerator
       out.write(panel);
       out.write("_09.gif' width='7' height='7' alt=''/></td></tr></table>");
    }
+   
+   public static void generatePanelEndWithBgImg(final Writer out, 
+                                       final String contextPath, 
+                                       final String panel)
+      throws IOException
+   {
+      out.write("</td><td style='background-image: url(");
+      out.write(contextPath);
+      out.write("/images/parts/");
+      out.write(panel);
+      out.write("_06.gif)'></td></tr>");
+      
+      out.write("<tr><td style='width: 7px;'><img src='");
+      out.write(contextPath);
+      out.write("/images/parts/");
+      out.write(panel);
+      out.write("_07.gif' width='7' height='7' alt=''/></td>");
+      
+      out.write("<td style='background-image: url(");
+      out.write(contextPath);
+      out.write("/images/parts/");
+      out.write(panel);
+      out.write("_08.gif)'><img src='");
+      out.write(contextPath);
+      out.write("/images/parts/");
+      out.write(panel);
+      out.write("_08.gif' width='7' height='7' alt=''/></td>");
+      
+      out.write("<td style='width: 7px;'><img src='");
+      out.write(contextPath);
+      out.write("/images/parts/");
+      out.write(panel);
+      out.write("_09.gif' width='7' height='7' alt=''/></td></tr></table>");
+}
    
    public static void generateTitledPanelMiddle(final Writer out, 
                                                 final String contextPath, 

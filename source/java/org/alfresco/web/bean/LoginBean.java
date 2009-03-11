@@ -201,6 +201,14 @@ public class LoginBean implements Serializable
    {
       return this.password;
    }
+   
+   /**
+    * @return true to display language selection, false to 
+    */
+   public boolean isLanguageSelect()
+   {
+      return Application.getClientConfig(FacesContext.getCurrentInstance()).isLanguageSelect();
+   }
 
 
    // ------------------------------------------------------------------------------

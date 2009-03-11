@@ -44,8 +44,8 @@ import org.alfresco.web.app.Application;
  * Servlet filter responsible for redirecting to the login page for the Web Client if the user
  * does not have a valid ticket.
  * <p>
- * The current ticker is validated for each page request and the login page is shown if the
- * ticker has expired.
+ * The current ticket is validated for each page request and the login page is shown if the
+ * ticket has expired.
  * <p>
  * Note that this filter is only active when the system is running in a servlet container -
  * the AlfrescoFacesPortlet will be used for a JSR-168 Portal environment.
@@ -82,7 +82,6 @@ public class AuthenticationFilter implements Filter
          }
          else
          {
-            
             // authentication failed - so end servlet execution and redirect to login page
             // also save the requested URL so the login page knows where to redirect too later
             BaseServlet.redirectToLoginPage(httpReq, httpRes, context);
@@ -90,6 +89,8 @@ public class AuthenticationFilter implements Filter
       }
       else
       {
+         BaseServlet.setLanguageFromRequestHeader(httpReq);
+         
          // continue filter chaining
          chain.doFilter(req, res);
       }

@@ -120,9 +120,9 @@
             <f:selectItems value="#{UserPreferencesBean.startLocations}" />
          </h:selectOneMenu>
          
-         <h:outputText value="#{msg.interface_language}:" />
+         <h:outputText value="#{msg.interface_language}:" rendered="#{LoginBean.languageSelect}" />
          <h:selectOneMenu
-               id="language" value="#{UserPreferencesBean.language}"
+               id="language" value="#{UserPreferencesBean.language}" rendered="#{LoginBean.languageSelect}"
                onchange="document.forms['dialog'].submit(); return true;">
             <f:selectItems value="#{UserPreferencesBean.languages}" />
          </h:selectOneMenu>

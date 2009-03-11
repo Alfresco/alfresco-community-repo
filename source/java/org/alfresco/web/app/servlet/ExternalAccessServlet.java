@@ -212,15 +212,23 @@ public class ExternalAccessServlet extends BaseServlet
       }
       else if (OUTCOME_BROWSE.equals(outcome))
       {
-         if (args != null && args.length >= 3)
+         NodeRef nodeRef = null;
+         
+         if (args.length != 0 && args[0].equals(WebDAVServlet.WEBDAV_PREFIX))
          {
-            NodeRef nodeRef = null;
+            nodeRef = resolveWebDAVPath(fc, args);
+         }
+         else if (args.length >= 3)
+         {
             int offset = 0;
 
             offset = args.length - 3;
             StoreRef storeRef = new StoreRef(args[0+offset], args[1+offset]);
             nodeRef = new NodeRef(storeRef, args[2+offset]);
-            
+         }
+         
+         if (nodeRef != null)
+         {
             // check that the user has at least READ access - else redirect to the login page
             if (permissionService.hasPermission(nodeRef, PermissionService.READ) == AccessStatus.DENIED)
             {

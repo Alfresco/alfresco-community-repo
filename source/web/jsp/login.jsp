@@ -28,9 +28,12 @@
 <%@ taglib uri="/WEB-INF/alfresco.tld" prefix="a" %>
 <%@ taglib uri="/WEB-INF/repo.tld" prefix="r" %>
 
+<%@ page import="org.alfresco.web.app.servlet.BaseServlet" %>
 <%@ page import="org.alfresco.web.app.servlet.AuthenticationHelper" %>
 <%@ page import="org.alfresco.web.ui.common.PanelGenerator" %>
+<%@ page import="javax.faces.context.FacesContext" %>
 <%@ page import="javax.servlet.http.Cookie" %>
+<%@ page import="java.util.Locale" %>
 
 <%@ page buffer="16kb" contentType="text/html;charset=UTF-8" %>
 <%@ page isELIgnored="false" %>
@@ -55,6 +58,9 @@
          session.setAttribute(AuthenticationHelper.SESSION_USERNAME, authCookie.getValue());
       }
    }
+   
+   // setup system locale from the Accept-Language header value
+   Locale locale = BaseServlet.setLanguageFromRequestHeader(request);
 %>
 
 <body bgcolor="#ffffff" style="background-image: url(<%=request.getContextPath()%>/images/logo/AlfrescoFadedBG.png); background-repeat: no-repeat; background-attachment: fixed">
@@ -62,6 +68,13 @@
 <r:page titleId="title_login">
 
 <f:view>
+<%
+   FacesContext fc = FacesContext.getCurrentInstance();
+
+   // set locale for JSF framework usage
+   fc.getViewRoot().setLocale(locale);
+%>
+   
    <%-- load a bundle of properties I18N strings here --%>
    <f:loadBundle basename="alfresco.messages.webclient" var="msg"/>
    
@@ -116,11 +129,11 @@
                
                <tr>
                   <td>
-                     <h:outputText value="#{msg.language}"/>:
+                     <h:outputText value="#{msg.language}:" rendered="#{LoginBean.languageSelect}" />
                   </td>
                   <td>
                      <%-- language selection drop-down --%>
-                     <h:selectOneMenu id="language" value="#{UserPreferencesBean.language}" style="width:150px" onchange="document.forms['loginForm'].submit(); return true;">
+                     <h:selectOneMenu id="language" value="#{UserPreferencesBean.language}" style="width:150px" onchange="document.forms['loginForm'].submit(); return true;" rendered="#{LoginBean.languageSelect}">
                         <f:selectItems value="#{UserPreferencesBean.languages}" />
                      </h:selectOneMenu>
                   </td>

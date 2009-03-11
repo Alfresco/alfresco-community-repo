@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -74,6 +74,9 @@ public class AssetTest  extends BaseWebScriptTest {
 	private static final String WEBAPP_ROOT = "ROOT";
 	private static final String WEBAPP_YELLOW = "YELLOW";
 	private static final String WEBAPP_GREEN = "GREEN";
+	
+	private static final long SUBMIT_DELAY = 120000L; // 2 minutes - to allow time for async submit workflow to complete
+	
 	    
     private List<String> createdWebProjects = new ArrayList<String>(5);
     
@@ -230,6 +233,8 @@ public class AssetTest  extends BaseWebScriptTest {
         submitForm.put("comment", "the comment");
         submitForm.put("all", true);
         sendRequest(new PostRequest(submitterURL, submitForm.toString(), "application/json"), Status.STATUS_OK);
+        
+        Thread.sleep(SUBMIT_DELAY);
         
         /*
          * Background set up now create a new file which is our test
@@ -481,6 +486,8 @@ public class AssetTest  extends BaseWebScriptTest {
             submitForm.put("all", true);
             sendRequest(new PostRequest(submitterURL, submitForm.toString(), "application/json"), Status.STATUS_OK);
             
+            Thread.sleep(SUBMIT_DELAY);
+            
         	checkSandboxEmpty(webprojref, sandboxref);
 
         }
@@ -498,7 +505,10 @@ public class AssetTest  extends BaseWebScriptTest {
             paths.put("/www/avm_webapps/ROOT/myFile3");
             submitForm.put("paths", paths);
             Response response = sendRequest(new PostRequest(submitterURL, submitForm.toString(), "application/json"), Status.STATUS_OK); 
-         	checkSandboxEmpty(webprojref, sandboxref);
+         	
+            Thread.sleep(SUBMIT_DELAY);
+            
+            checkSandboxEmpty(webprojref, sandboxref);
         }
         
         /**
@@ -522,6 +532,9 @@ public class AssetTest  extends BaseWebScriptTest {
                 Response response = sendRequest(new PostRequest(submitterURL, submitForm.toString(), "application/json"), Status.STATUS_OK); 
 
         	}
+        	
+        	Thread.sleep(SUBMIT_DELAY);
+        	
         	checkSandboxEmpty(webprojref, sandboxref);
         	    	
         	
@@ -556,6 +569,9 @@ public class AssetTest  extends BaseWebScriptTest {
                 Response response = sendRequest(new PostRequest(submitterURL, submitForm.toString(), "application/json"), Status.STATUS_OK); 
 
         	}
+        	
+        	Thread.sleep(SUBMIT_DELAY);
+        	
         	checkSandboxEmpty(webprojref, sandboxref);
         	    	    	
          }
@@ -621,6 +637,8 @@ public class AssetTest  extends BaseWebScriptTest {
                 
                 Response response = sendRequest(new PostRequest(submitterURL, submitForm.toString(), "application/json"), Status.STATUS_OK); 
                 
+                Thread.sleep(SUBMIT_DELAY);
+                
            	    Response listTwo = sendRequest(new GetRequest(sandboxesURL), Status.STATUS_OK);
            	    JSONObject resultTwo = new JSONObject(listTwo.getContentAsString());
         	    JSONArray lookupResultTwo = resultTwo.getJSONArray("data");
@@ -635,6 +653,9 @@ public class AssetTest  extends BaseWebScriptTest {
                 submitOmitted.put("paths", omitted);
                 sendRequest(new PostRequest(submitterURL, submitOmitted.toString(), "application/json"), Status.STATUS_OK); 
         	}
+        	
+        	Thread.sleep(SUBMIT_DELAY);
+        	
         	checkSandboxEmpty(webprojref, sandboxref);
         	    	    	
          }
@@ -673,6 +694,8 @@ public class AssetTest  extends BaseWebScriptTest {
         submitForm.put("comment", "yellow submit");
         submitForm.put("all", true);
         sendRequest(new PostRequest(submitterURL + "?webApp=" + WEBAPP_YELLOW, submitForm.toString(), "application/json"), Status.STATUS_OK);
+        
+        Thread.sleep(SUBMIT_DELAY);
         
     	/**
     	 * Get the modified asset (yellow should have been submitted leaving root
@@ -852,6 +875,8 @@ public class AssetTest  extends BaseWebScriptTest {
             String submitterURL = URL_WEB_PROJECT + "/" + webprojref + URI_SANDBOXES + "/" + sandboxref + "/submitter";
             sendRequest(new PostRequest(submitterURL, submitForm.toString(), "application/json"), Status.STATUS_OK);
             
+            Thread.sleep(SUBMIT_DELAY);
+            
             // Now we can set up the data that will get reverted
             
         	// single file in existing dir
@@ -945,6 +970,8 @@ public class AssetTest  extends BaseWebScriptTest {
         submitForm.put("comment", "the comment");
         submitForm.put("all", true);
         sendRequest(new PostRequest(submitterURL, submitForm.toString(), "application/json"), Status.STATUS_OK);
+        
+        Thread.sleep(SUBMIT_DELAY);
     
         /**
          * Now we can set up our test data

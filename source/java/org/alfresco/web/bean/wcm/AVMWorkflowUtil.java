@@ -86,45 +86,10 @@ public class AVMWorkflowUtil extends WorkflowUtil
       final FacesContext fc = FacesContext.getCurrentInstance();
       final WorkflowService workflowService = Repository.getServiceRegistry(fc).getWorkflowService();
       final AVMService avmService = Repository.getServiceRegistry(fc).getAVMLockingAwareService();
-      final AVMSyncService avmSyncService = Repository.getServiceRegistry(fc).getAVMSyncService();
 
       // create package paths (layered to user sandbox area as target)
       final String workflowMainStoreName = sandboxInfo.getMainStoreName();
       final String packagesPath = AVMUtil.buildStoreRootPath(workflowMainStoreName);
-
-      final String stagingStoreName = AVMUtil.getStoreId(workflowMainStoreName);
-      final List<AVMDifference> diffs = new ArrayList<AVMDifference>(srcPaths.size());
-      for (final String srcPath : srcPaths)
-      {
-         final AVMNodeDescriptor node = avmService.lookup(-1, srcPath, true);
-         if (node.isDirectory())
-         {
-            diffs.add(new AVMDifference(-1, srcPath,
-                                        -1, AVMUtil.getCorrespondingPath(srcPath, workflowMainStoreName),
-                                        AVMDifference.NEWER));
-         }
-         else
-         {
-            final HashSet<String> directoriesAdded = new HashSet<String>();
-            // add all newly created directories
-            String parentPath = AVMNodeConverter.SplitBase(srcPath)[0];
-            while (!directoriesAdded.contains(parentPath) &&
-                   avmService.lookup(-1, AVMUtil.getCorrespondingPath(parentPath, stagingStoreName), true) == null)
-            {
-               diffs.add(new AVMDifference(-1, parentPath,
-                                           -1, AVMUtil.getCorrespondingPath(parentPath, workflowMainStoreName),
-                                           AVMDifference.NEWER));
-               directoriesAdded.add(parentPath);
-               parentPath = AVMNodeConverter.SplitBase(parentPath)[0];
-            }
-            diffs.add(new AVMDifference(-1, srcPath, 
-                                        -1, AVMUtil.getCorrespondingPath(srcPath, workflowMainStoreName),
-                                        AVMDifference.NEWER));
-         }
-      }
-                  
-      // write changes to layer so files are marked as modified
-      avmSyncService.update(diffs, null, true, true, false, false, null, null);
                     
       // convert package to workflow package
       final AVMNodeDescriptor packageDesc = avmService.lookup(-1, packagesPath);

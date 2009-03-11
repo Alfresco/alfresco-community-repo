@@ -182,7 +182,6 @@ public class WebProject implements Serializable
    
    private final NodeRef nodeRef;
    private String storeId = null;
-   private Boolean hasWorkflow = null;
    
    public WebProject(final NodeRef nodeRef)
    {
@@ -339,27 +338,9 @@ public class WebProject implements Serializable
     */
    public boolean hasWorkflow()
    {
-      if (this.hasWorkflow == null)
-      {
-         final NodeService nodeService = this.getServiceRegistry().getNodeService();
-         List<ChildAssociationRef> webWorkflowRefs = nodeService.getChildAssocs(
-               this.nodeRef, WCMAppModel.ASSOC_WEBWORKFLOWDEFAULTS, RegexQNamePattern.MATCH_ALL);
-         this.hasWorkflow = (webWorkflowRefs.size() != 0);
-         if (!this.hasWorkflow)
-         {
-            // might have a workflow assigned to one of the forms used in the website
-            Map<String, Form> forms = getFormsImpl();
-            for (Form form : forms.values())
-            {
-               if (form.getDefaultWorkflow() != null)
-               {
-                  this.hasWorkflow = Boolean.TRUE;
-                  break;
-               }
-            }
-         }
-      }
-      return this.hasWorkflow.booleanValue();
+      // note: there's always a submit workflow, as direct to staging is now
+      //       also routed via workflow
+      return true;
    }
 
    private Map<String, Form> getFormsImpl()

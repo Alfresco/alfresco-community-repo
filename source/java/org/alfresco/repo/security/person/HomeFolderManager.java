@@ -49,6 +49,8 @@ public class HomeFolderManager implements InitializingBean, NodeServicePolicies.
     private PolicyComponent policyComponent;
 
     private NodeService nodeService;
+    
+    private boolean enableHomeFolderCreationAsPeopleAreCreated = false;
 
     /**
      * A default provider
@@ -61,12 +63,19 @@ public class HomeFolderManager implements InitializingBean, NodeServicePolicies.
     private Map<String, HomeFolderProvider> providers = new HashMap<String, HomeFolderProvider>();
 
     /**
-     * Bind the calss behaviour to this implementation
+     * Bind the class behaviour to this implementation
      */
     public void afterPropertiesSet() throws Exception
     {
-        policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateNode"),
-                ContentModel.TYPE_PERSON, new JavaBehaviour(this, "onCreateNode"));
+        if (enableHomeFolderCreationAsPeopleAreCreated)
+        {
+            policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateNode"), ContentModel.TYPE_PERSON, new JavaBehaviour(this, "onCreateNode"));
+        }
+    }
+
+    public void setEnableHomeFolderCreationAsPeopleAreCreated(boolean enableHomeFolderCreationAsPeopleAreCreated)
+    {
+        this.enableHomeFolderCreationAsPeopleAreCreated = enableHomeFolderCreationAsPeopleAreCreated;
     }
 
     /**

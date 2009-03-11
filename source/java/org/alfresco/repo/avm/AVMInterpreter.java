@@ -357,11 +357,15 @@ public class AVMInterpreter
             }
             else if (command[0].equals("snap"))
             {
-                if (command.length != 2)
+                if ((command.length < 2) || (command.length > 4))
                 {
                     return "Syntax Error.";
                 }
-                fService.createSnapshot(command[1], null, null);
+                
+                String tag = (command.length > 2) ? command[2] : null;
+                String description = (command.length > 3) ? command[3] : null;
+                
+                fService.createSnapshot(command[1], tag, description);
             }
             else if (command[0].equals("cat"))
             {

@@ -109,7 +109,7 @@ public class ChildKey implements Serializable
         }
         ChildKey o = (ChildKey)other;
         return fParent.equals(o.getParent()) &&
-               fName.equals(o.getName());
+               fName.equalsIgnoreCase(o.getName());
     }
     
     /**
@@ -117,6 +117,6 @@ public class ChildKey implements Serializable
      */
     public int hashCode()
     {
-        return fParent.hashCode() + fName.hashCode();
+        return fParent.hashCode() + fName.toLowerCase().hashCode();
     }
 }

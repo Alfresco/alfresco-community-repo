@@ -20,51 +20,29 @@
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
  * FLOSS exception.  You should have recieved a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
- * http://www.alfresco.com/legal/licensing
+ * http://www.alfresco.com/legal/licensing"
  */
-
-package org.alfresco.repo.avm.locking;
-
-import org.alfresco.service.cmr.avm.locking.AVMLockingService;
-import org.alfresco.util.AbstractLifecycleBean;
-import org.springframework.context.ApplicationEvent;
+package org.alfresco.repo.security.person;
 
 /**
- * Bootstrap for AVM Locking Service.
- * 
- * @author britt
+ * Check if userNames match
+ * @author andyh
+ *
  */
-public class AVMLockingBootstrap extends AbstractLifecycleBean
+public interface UserNameMatcher
 {
-    private AVMLockingService fLockingService;
-
-    public void setAvmLockingService(AVMLockingService service)
-    {
-        fLockingService = service;
-    }
-
-    /*
-     * (non-Javadoc)
+    /**
+     * Do the two user names match?
      * 
-     * @see org.alfresco.util.AbstractLifecycleBean#onBootstrap(org.springframework.context.ApplicationEvent)
+     * @param userName1
+     * @param userName2
+     * @return
      */
-    @Override
-    protected void onBootstrap(ApplicationEvent event)
-    {
-        if (fLockingService instanceof AVMLockingServiceImpl)
-        {
-            ((AVMLockingServiceImpl) fLockingService).init();
-        }
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.alfresco.util.AbstractLifecycleBean#onShutdown(org.springframework.context.ApplicationEvent)
-     */
-    @Override
-    protected void onShutdown(ApplicationEvent event)
-    {
-        // Do nothing.
-    }
+    public boolean matches(String userName1, String userName2);
+    
+    public boolean getUserNamesAreCaseSensitive();
+  
+    public boolean getDomainNamesAreCaseSensitive();
+    
+    public String getDomainSeparator();
 }

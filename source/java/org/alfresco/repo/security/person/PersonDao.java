@@ -31,7 +31,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 
 public interface PersonDao
 {
-    public List<NodeRef> getPersonOrNull(String searchUserName, boolean userNamesAreCaseSensitive);
+    public List<NodeRef> getPersonOrNull(final String searchUserName, UserNameMatcher matcher);
 
     public Set<NodeRef> getAllPeople();
 }

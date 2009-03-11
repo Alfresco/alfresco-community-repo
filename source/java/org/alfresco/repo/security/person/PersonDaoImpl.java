@@ -52,6 +52,7 @@ import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 public class PersonDaoImpl extends HibernateDaoSupport implements PersonDao
 {
     private static final String QUERY_PERSON_GET_PERSON = "person.getPerson";
+
     private static final String QUERY_PERSON_GET_ALL_PEOPLE = "person.getAllPeople";
 
     private QNameDAO qnameDAO;
@@ -61,26 +62,26 @@ public class PersonDaoImpl extends HibernateDaoSupport implements PersonDao
     private LocaleDAO localeDAO;
 
     private DictionaryService dictionaryService;
-    
+
     private StoreRef storeRef;
-    
+
     private TenantService tenantService;
-    
+
     public void setStoreUrl(String storeUrl)
     {
         this.storeRef = new StoreRef(storeUrl);
     }
-    
+
     public void setTenantService(TenantService tenantService)
     {
         this.tenantService = tenantService;
     }
 
     @SuppressWarnings("unchecked")
-    public List<NodeRef> getPersonOrNull(final String searchUserName, boolean userNamesAreCaseSensitive)
+    public List<NodeRef> getPersonOrNull(final String searchUserName, UserNameMatcher matcher)
     {
         final StoreRef personStoreRef = tenantService.getName(storeRef);
-        
+
         List<NodeRef> answer = new ArrayList<NodeRef>();
 
         HibernateCallback callback = new HibernateCallback()
@@ -111,19 +112,9 @@ public class PersonDaoImpl extends HibernateDaoSupport implements PersonDao
             Serializable value = converted.get(ContentModel.PROP_USERNAME);
             String realUserName = DefaultTypeConverter.INSTANCE.convert(String.class, value);
 
-            if (userNamesAreCaseSensitive)
+            if (matcher.matches(searchUserName, realUserName))
             {
-                if (realUserName.equals(searchUserName))
-                {
-                    answer.add(nodeRef);
-                }
-            }
-            else
-            {
-                if (realUserName.equalsIgnoreCase(searchUserName))
-                {
-                    answer.add(nodeRef);
-                }
+                answer.add(nodeRef);
             }
 
         }
@@ -140,7 +131,7 @@ public class PersonDaoImpl extends HibernateDaoSupport implements PersonDao
     public Set<NodeRef> getAllPeople()
     {
         final StoreRef personStoreRef = tenantService.getName(storeRef);
-        
+
         Set<NodeRef> answer = new HashSet<NodeRef>();
 
         HibernateCallback callback = new HibernateCallback()

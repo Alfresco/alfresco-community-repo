@@ -39,9 +39,9 @@ import net.sf.acegisecurity.providers.encoding.PasswordEncoder;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.security.person.UserNameMatcher;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.alfresco.service.Managed;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
@@ -63,6 +63,7 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
     private static final StoreRef STOREREF_USERS = new StoreRef("user", "alfrescoUserStore");
 
     private NodeService nodeService;
+
     private TenantService tenantService;
 
     private NamespacePrefixResolver namespacePrefixResolver;
@@ -71,22 +72,26 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
     private DictionaryService dictionaryService;
 
     private SearchService searchService;
-    
+
     private RetryingTransactionHelper retryingTransactionHelper;
 
     private PasswordEncoder passwordEncoder;
 
-    private boolean userNamesAreCaseSensitive;
+    private UserNameMatcher userNameMatcher;
 
+    public RepositoryAuthenticationDao()
+    {
+        super();
+    }
+    
     public boolean getUserNamesAreCaseSensitive()
     {
-        return userNamesAreCaseSensitive;
+        return userNameMatcher.getUserNamesAreCaseSensitive();
     }
 
-    @Managed(category="Security")
-    public void setUserNamesAreCaseSensitive(boolean userNamesAreCaseSensitive)
+    public void setUserNameMatcher(UserNameMatcher userNameMatcher)
     {
-        this.userNamesAreCaseSensitive = userNamesAreCaseSensitive;
+        this.userNameMatcher = userNameMatcher;
     }
 
     public void setDictionaryService(DictionaryService dictionaryService)
@@ -103,7 +108,7 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
     {
         this.nodeService = nodeService;
     }
-    
+
     public void setRetryingTransactionHelper(RetryingTransactionHelper retryingTransactionHelper)
     {
         this.retryingTransactionHelper = retryingTransactionHelper;
@@ -124,8 +129,7 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
         this.searchService = searchService;
     }
 
-    public UserDetails loadUserByUsername(String incomingUserName) throws UsernameNotFoundException,
-            DataAccessException
+    public UserDetails loadUserByUsername(String incomingUserName) throws UsernameNotFoundException, DataAccessException
     {
         NodeRef userRef = getUserOrNull(incomingUserName);
         if (userRef == null)
@@ -134,28 +138,25 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
         }
 
         Map<QName, Serializable> properties = nodeService.getProperties(userRef);
-        String password = DefaultTypeConverter.INSTANCE.convert(String.class, properties
-                .get(ContentModel.PROP_PASSWORD));
+        String password = DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_PASSWORD));
 
         // Report back the user name as stored on the user
-        String userName = DefaultTypeConverter.INSTANCE.convert(String.class, properties
-                .get(ContentModel.PROP_USER_USERNAME));
+        String userName = DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_USER_USERNAME));
 
         GrantedAuthority[] gas = new GrantedAuthority[1];
         gas[0] = new GrantedAuthorityImpl("ROLE_AUTHENTICATED");
 
-        UserDetails ud = new User(userName, password, getEnabled(userRef), !getAccountHasExpired(userRef),
-                !getCredentialsHaveExpired(userRef), !getAccountlocked(userRef), gas);
+        UserDetails ud = new User(userName, password, getEnabled(userRef), !getAccountHasExpired(userRef), !getCredentialsHaveExpired(userRef), !getAccountlocked(userRef), gas);
         return ud;
     }
 
     public NodeRef getUserOrNull(String searchUserName)
     {
-        if(searchUserName == null)
+        if (searchUserName == null)
         {
             return null;
         }
-        if(searchUserName.length() == 0)
+        if (searchUserName.length() == 0)
         {
             return null;
         }
@@ -189,75 +190,37 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
                 final NodeRef nodeRef = row.getNodeRef();
                 if (nodeService.exists(nodeRef))
                 {
-                    String realUserName = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(
-                            nodeRef, ContentModel.PROP_USER_USERNAME));
+                    String realUserName = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(nodeRef, ContentModel.PROP_USER_USERNAME));
 
-                    if (userNamesAreCaseSensitive)
+                    if(userNameMatcher.matches(realUserName, searchUserName))
                     {
-                        if (realUserName.equals(searchUserName))
+                        if (returnRef == null)
                         {
-                            if(returnRef == null)
+                            returnRef = nodeRef;
+                        }
+                        else
+                        {
+                            try
                             {
-                               returnRef = nodeRef;
+                                this.retryingTransactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Object>()
+                                {
+                                    public Object execute() throws Throwable
+                                    {
+                                        // Delete the extra user node references
+                                        RepositoryAuthenticationDao.this.nodeService.deleteNode(nodeRef);
+
+                                        return null;
+                                    }
+
+                                }, false, true);
                             }
-                            else
+                            catch (InvalidNodeRefException exception)
                             {
-                                try
-                                {
-                                    this.retryingTransactionHelper.doInTransaction(
-                                        new RetryingTransactionHelper.RetryingTransactionCallback<Object>()
-                                        {
-                                            public Object execute()
-                                                    throws Throwable
-                                            {
-                                                // Delete the extra user node references
-                                                RepositoryAuthenticationDao.this.nodeService.deleteNode(nodeRef);
-                                                
-                                                return null;
-                                            }
-                                            
-                                        }, false, true);
-                                }
-                                catch (InvalidNodeRefException exception)
-                                {
-                                    // Ignore this exception as the node has already been deleted
-                                }
+                                // Ignore this exception as the node has already been deleted
                             }
                         }
                     }
-                    else
-                    {
-                        if (realUserName.equalsIgnoreCase(searchUserName))
-                        {
-                            if(returnRef == null)
-                            {
-                               returnRef = nodeRef;
-                            }
-                            else
-                            {
-                                try
-                                {
-                                    this.retryingTransactionHelper.doInTransaction(
-                                        new RetryingTransactionHelper.RetryingTransactionCallback<Object>()
-                                        {
-                                            public Object execute()
-                                                    throws Throwable
-                                            {
-                                                // Delete the extra user node references
-                                                RepositoryAuthenticationDao.this.nodeService.deleteNode(nodeRef);
-                                                
-                                                return null;
-                                            }
-                                            
-                                        }, false, true);
-                                }
-                                catch (InvalidNodeRefException exception)
-                                {
-                                    // Ignore this exception as the node has already been deleted
-                                }
-                            }
-                        }
-                    }
+
                 }
             }
 
@@ -291,8 +254,7 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
         properties.put(ContentModel.PROP_CREDENTIALS_EXPIRE, Boolean.valueOf(false));
         properties.put(ContentModel.PROP_ENABLED, Boolean.valueOf(true));
         properties.put(ContentModel.PROP_ACCOUNT_LOCKED, Boolean.valueOf(false));
-        nodeService.createNode(typesNode, ContentModel.ASSOC_CHILDREN, ContentModel.TYPE_USER, ContentModel.TYPE_USER,
-                properties);
+        nodeService.createNode(typesNode, ContentModel.ASSOC_CHILDREN, ContentModel.TYPE_USER, ContentModel.TYPE_USER, properties);
     }
 
     private NodeRef getUserFolderLocation(String caseSensitiveUserName)
@@ -304,8 +266,7 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
 
         // AR-527
         NodeRef rootNode = nodeService.getRootNode(userStoreRef);
-        List<ChildAssociationRef> results = nodeService.getChildAssocs(rootNode, RegexQNamePattern.MATCH_ALL,
-                qnameAssocSystem);
+        List<ChildAssociationRef> results = nodeService.getChildAssocs(rootNode, RegexQNamePattern.MATCH_ALL, qnameAssocSystem);
         NodeRef sysNodeRef = null;
         if (results.size() == 0)
         {
@@ -404,11 +365,9 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
         {
             return null;
         }
-        if (DefaultTypeConverter.INSTANCE.booleanValue(nodeService.getProperty(userNode,
-                ContentModel.PROP_ACCOUNT_EXPIRES)))
+        if (DefaultTypeConverter.INSTANCE.booleanValue(nodeService.getProperty(userNode, ContentModel.PROP_ACCOUNT_EXPIRES)))
         {
-            return DefaultTypeConverter.INSTANCE.convert(Date.class, nodeService.getProperty(userNode,
-                    ContentModel.PROP_ACCOUNT_EXPIRY_DATE));
+            return DefaultTypeConverter.INSTANCE.convert(Date.class, nodeService.getProperty(userNode, ContentModel.PROP_ACCOUNT_EXPIRY_DATE));
         }
         else
         {
@@ -427,11 +386,9 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
         {
             return false;
         }
-        if (DefaultTypeConverter.INSTANCE.booleanValue(nodeService.getProperty(userNode,
-                ContentModel.PROP_ACCOUNT_EXPIRES)))
+        if (DefaultTypeConverter.INSTANCE.booleanValue(nodeService.getProperty(userNode, ContentModel.PROP_ACCOUNT_EXPIRES)))
         {
-            Date date = DefaultTypeConverter.INSTANCE.convert(Date.class, nodeService.getProperty(userNode,
-                    ContentModel.PROP_ACCOUNT_EXPIRY_DATE));
+            Date date = DefaultTypeConverter.INSTANCE.convert(Date.class, nodeService.getProperty(userNode, ContentModel.PROP_ACCOUNT_EXPIRY_DATE));
             if (date == null)
             {
                 return false;
@@ -498,11 +455,9 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
         {
             return null;
         }
-        if (DefaultTypeConverter.INSTANCE.booleanValue(nodeService.getProperty(userNode,
-                ContentModel.PROP_CREDENTIALS_EXPIRE)))
+        if (DefaultTypeConverter.INSTANCE.booleanValue(nodeService.getProperty(userNode, ContentModel.PROP_CREDENTIALS_EXPIRE)))
         {
-            return DefaultTypeConverter.INSTANCE.convert(Date.class, nodeService.getProperty(userNode,
-                    ContentModel.PROP_CREDENTIALS_EXPIRY_DATE));
+            return DefaultTypeConverter.INSTANCE.convert(Date.class, nodeService.getProperty(userNode, ContentModel.PROP_CREDENTIALS_EXPIRY_DATE));
         }
         else
         {
@@ -521,11 +476,9 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
         {
             return false;
         }
-        if (DefaultTypeConverter.INSTANCE.booleanValue(nodeService.getProperty(userNode,
-                ContentModel.PROP_CREDENTIALS_EXPIRE)))
+        if (DefaultTypeConverter.INSTANCE.booleanValue(nodeService.getProperty(userNode, ContentModel.PROP_CREDENTIALS_EXPIRE)))
         {
-            Date date = DefaultTypeConverter.INSTANCE.convert(Date.class, nodeService.getProperty(userNode,
-                    ContentModel.PROP_CREDENTIALS_EXPIRY_DATE));
+            Date date = DefaultTypeConverter.INSTANCE.convert(Date.class, nodeService.getProperty(userNode, ContentModel.PROP_CREDENTIALS_EXPIRY_DATE));
             if (date == null)
             {
                 return false;
@@ -634,8 +587,7 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao
         }
         else
         {
-            String password = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(userNode,
-                    ContentModel.PROP_PASSWORD));
+            String password = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(userNode, ContentModel.PROP_PASSWORD));
             return password;
         }
     }

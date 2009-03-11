@@ -51,6 +51,7 @@ import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.authentication.InMemoryTicketComponentImpl.ExpiryMode;
 import org.alfresco.repo.security.authentication.InMemoryTicketComponentImpl.Ticket;
+import org.alfresco.repo.security.person.UserNameMatcher;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
@@ -118,6 +119,8 @@ public class AuthenticationTest extends TestCase
 
     private PersonService personService;
 
+    private UserNameMatcher userNameMatcher;
+
     public AuthenticationTest()
     {
         super();
@@ -143,6 +146,7 @@ public class AuthenticationTest extends TestCase
         authenticationComponentImpl = (AuthenticationComponent) ctx.getBean("authenticationComponent");
         pubPersonService =  (PersonService) ctx.getBean("PersonService");
         personService =  (PersonService) ctx.getBean("personService");
+        userNameMatcher = (UserNameMatcher) ctx.getBean("userNameMatcher");
         // permissionServiceSPI = (PermissionServiceSPI)
         // ctx.getBean("permissionService");
         ticketsCache = (SimpleCache<String, Ticket>) ctx.getBean("ticketsCache");
@@ -182,6 +186,8 @@ public class AuthenticationTest extends TestCase
         dao.setDictionaryService(dictionaryService);
         dao.setNamespaceService(getNamespacePrefixReolsver(""));
         dao.setPasswordEncoder(passwordEncoder);
+        dao.setUserNameMatcher(userNameMatcher);
+        dao.setRetryingTransactionHelper(transactionService.getRetryingTransactionHelper());
 
         if (dao.getUserOrNull("andy") != null)
         {
@@ -388,6 +394,8 @@ public class AuthenticationTest extends TestCase
         dao.setDictionaryService(dictionaryService);
         dao.setNamespaceService(getNamespacePrefixReolsver(""));
         dao.setPasswordEncoder(passwordEncoder);
+        dao.setUserNameMatcher(userNameMatcher);
+        dao.setRetryingTransactionHelper(transactionService.getRetryingTransactionHelper());
         dao.createUser("Andy", "cabbage".toCharArray());
         assertNotNull(dao.getUserOrNull("Andy"));
 

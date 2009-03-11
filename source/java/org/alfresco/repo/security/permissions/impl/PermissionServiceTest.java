@@ -590,6 +590,26 @@ public class PermissionServiceTest extends AbstractPermissionTest
         assertEquals(permissionService.hasPermission(rootNodeRef, (PermissionService.CONSUMER)), AccessStatus.DENIED);
     }
 
+    public void testEqualBarCaseAuthorities()
+    {
+
+        runAs("admin");
+
+        NodeRef n1 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER).getChildRef();
+        
+        permissionService.setPermission(new SimplePermissionEntry(n1, getPermission(PermissionService.READ), "andy", AccessStatus.ALLOWED));   
+        permissionService.setPermission(new SimplePermissionEntry(n1, getPermission(PermissionService.READ), "Andy", AccessStatus.ALLOWED));   
+        permissionService.setPermission(new SimplePermissionEntry(n1, getPermission(PermissionService.READ), "ANDY", AccessStatus.ALLOWED)); 
+        permissionService.setPermission(new SimplePermissionEntry(n1, getPermission(PermissionService.READ), "woof/adobe", AccessStatus.ALLOWED)); 
+        permissionService.setPermission(new SimplePermissionEntry(n1, getPermission(PermissionService.READ), "woof/Adobe", AccessStatus.ALLOWED)); 
+        permissionService.setPermission(new SimplePermissionEntry(n1, getPermission(PermissionService.READ), "woof/ADOBE", AccessStatus.ALLOWED)); 
+        permissionService.setPermission(new SimplePermissionEntry(n1, getPermission(PermissionService.READ), "Woof/Adobe", AccessStatus.ALLOWED)); 
+        permissionService.setPermission(new SimplePermissionEntry(n1, getPermission(PermissionService.READ), "WOOF/ADOBE", AccessStatus.ALLOWED)); 
+        
+        assertEquals(8, permissionService.getAllSetPermissions(n1).size());
+    }
+    
+    
     public void testGetAllSetPermissions()
     {
         runAs("andy");

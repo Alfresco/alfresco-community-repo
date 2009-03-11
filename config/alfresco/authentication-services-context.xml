@@ -90,11 +90,11 @@
        <property name="searchService">
            <ref bean="admSearchService" />
        </property>       
-      <property name="retryingTransactionHelper">
-          <ref bean="retryingTransactionHelper"/>
-      </property>
-       <property name="userNamesAreCaseSensitive">
-          <value>${user.name.caseSensitive}</value>
+       <property name="retryingTransactionHelper">
+           <ref bean="retryingTransactionHelper"/>
+       </property>
+       <property name="userNameMatcher">
+           <ref bean="userNameMatcher" />
        </property>
        <property name="passwordEncoder">
            <ref bean="passwordEncoder" />
@@ -231,6 +231,20 @@
 	</bean>
 
 
+	<!-- support to match user names -->
+	
+	<bean id="userNameMatcher" class="org.alfresco.repo.security.person.UserNameMatcherImpl">
+		<property name="userNamesAreCaseSensitive">
+          <value>${user.name.caseSensitive}</value>
+        </property>
+		<property name="domainNamesAreCaseSensitive">
+          <value>${domain.name.caseSensitive}</value>
+        </property>
+        <property name="domainSeparator">
+          <value>${domain.separator}</value>
+        </property>  
+	</bean>
+	
     <!-- The person service.                                                -->
 
     <bean id="personService" class="org.alfresco.repo.security.person.PersonServiceImpl" init-method="init">
@@ -288,8 +302,8 @@
         <property name="createMissingPeople">
            <value>${server.transaction.allow-writes}</value>
         </property>
-        <property name="userNamesAreCaseSensitive">
-          <value>${user.name.caseSensitive}</value>
+        <property name="userNameMatcher">
+           <ref bean="userNameMatcher" />
         </property>
         <!-- New properties after 1.4.0 to deal with duplicate user ids when found -->
         <property name="processDuplicates">
@@ -305,6 +319,9 @@
         <property name="includeAutoCreated">
             <value>false</value>
         </property>
+		<property name="homeFolderManager">
+             <ref bean="homeFolderManager" />
+        </property>
     </bean>
 
     <bean name="homeFolderManager" class="org.alfresco.repo.security.person.HomeFolderManager">
@@ -316,6 +333,10 @@
         </property>
         <property name="defaultProvider">
             <ref bean="userHomesHomeFolderProvider" />
+        </property>
+		<property name="enableHomeFolderCreationAsPeopleAreCreated">
+           <!--<value>false</value> -->
+			<value>${home.folder.creation.eager}</value>
         </property>
     </bean>
 

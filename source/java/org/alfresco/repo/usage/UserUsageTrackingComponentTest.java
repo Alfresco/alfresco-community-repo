@@ -82,7 +82,7 @@ public class UserUsageTrackingComponentTest extends TestCase
         nodeService = (NodeService)applicationContext.getBean("NodeService");
         authenticationService = (AuthenticationService)applicationContext.getBean("authenticationService");   
         transactionService = (TransactionService)applicationContext.getBean("transactionComponent");
-        personService = (PersonService)applicationContext.getBean("personService");
+        personService = (PersonService)applicationContext.getBean("PersonService");
         contentService = (ContentService)applicationContext.getBean("ContentService");
         contentUsageService = (ContentUsageService)applicationContext.getBean("ContentUsageService");
         

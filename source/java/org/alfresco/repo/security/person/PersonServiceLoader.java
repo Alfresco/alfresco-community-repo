@@ -28,6 +28,10 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
+import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
@@ -106,6 +110,51 @@ public class PersonServiceLoader
             PersonServiceLoader loader = new PersonServiceLoader(ctx, batchSize, batchCount);
             loader.run(user, pwd, threads);
 
+
+            // check the lazy creation
+            
+            AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
+            
+            final ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
+            final AuthenticationService authenticationService = serviceRegistry.getAuthenticationService();
+            final PersonService personService = serviceRegistry.getPersonService();
+            final TransactionService transactionService = serviceRegistry.getTransactionService();
+            final NodeService nodeService = serviceRegistry.getNodeService();
+            
+            String firstName = "" + System.currentTimeMillis();
+            String lastName = String.format("%05d", -1);
+            String username = GUID.generate();
+            String emailAddress = String.format("%s.%s@xyz.com", firstName, lastName);
+            PropertyMap properties = new PropertyMap(7);
+            properties.put(ContentModel.PROP_USERNAME, username);
+            properties.put(ContentModel.PROP_FIRSTNAME, firstName);
+            properties.put(ContentModel.PROP_LASTNAME, lastName);
+            properties.put(ContentModel.PROP_EMAIL, emailAddress);
+            NodeRef madePerson = personService.createPerson(properties);
+            
+            NodeRef homeFolder = DefaultTypeConverter.INSTANCE.convert(NodeRef.class, nodeService.getProperty(madePerson, ContentModel.PROP_HOMEFOLDER));
+            if(homeFolder != null)
+            {
+               throw new IllegalStateException("Home folder created eagerly");
+            }
+            
+            NodeRef person = personService.getPerson(username);
+            homeFolder = DefaultTypeConverter.INSTANCE.convert(NodeRef.class, nodeService.getProperty(person, ContentModel.PROP_HOMEFOLDER));
+            if(homeFolder == null)
+            {
+               throw new IllegalStateException("Home folder not created lazily");
+            }
+        
+            
+            NodeRef autoPerson = personService.getPerson(GUID.generate());
+            NodeRef autoHomeFolder = DefaultTypeConverter.INSTANCE.convert(NodeRef.class, nodeService.getProperty(autoPerson, ContentModel.PROP_HOMEFOLDER));
+            if(autoHomeFolder == null)
+            {
+               throw new IllegalStateException("Home folder not created lazily for auto created users");
+            }
+            
+            
+            
             // All done
             ApplicationContextHelper.closeApplicationContext();
             System.exit(0);

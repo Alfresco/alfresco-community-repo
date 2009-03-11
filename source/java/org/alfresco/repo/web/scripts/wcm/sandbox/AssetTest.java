@@ -75,7 +75,9 @@ public class AssetTest  extends BaseWebScriptTest {
 	private static final String WEBAPP_YELLOW = "YELLOW";
 	private static final String WEBAPP_GREEN = "GREEN";
 	
-	private static final long SUBMIT_DELAY = 120000L; // 2 minutes - to allow time for async submit workflow to complete
+    // override jbpm.job.executor idleInterval to 5s (was 1.5m) for WCM unit tests
+	private static final String SUBMIT_CONFIG_LOCATION = "classpath:wcm/wcm-jbpm-context.xml";
+	private static final long SUBMIT_DELAY = 10000L; // (in millis) 10s - to allow time for async submit workflow to complete (as per 5s idleInterval above)
 	
 	    
     private List<String> createdWebProjects = new ArrayList<String>(5);
@@ -84,6 +86,8 @@ public class AssetTest  extends BaseWebScriptTest {
     protected void setUp() throws Exception
     {
         super.setUp();
+
+        initServer(SUBMIT_CONFIG_LOCATION);
         
         this.authenticationService = (AuthenticationService)getServer().getApplicationContext().getBean("AuthenticationService");
         this.authenticationComponent = (AuthenticationComponent)getServer().getApplicationContext().getBean("authenticationComponent");

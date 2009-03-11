@@ -219,6 +219,20 @@ public abstract class BaseWebScriptTest extends TestCase
         }
         return BaseWebScriptTest.server;
     }
+    
+    protected static TestWebScriptServer initServer()
+    {
+        return getServer();
+    }
+    
+    protected static TestWebScriptServer initServer(String appendTestConfigLocation)
+    {
+        if (BaseWebScriptTest.server == null)
+        {
+            BaseWebScriptTest.server = TestWebScriptRepoServer.getTestServer(appendTestConfigLocation);
+        }
+        return BaseWebScriptTest.server;
+    }
 
     /**
      * Is Log Enabled?

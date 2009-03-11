@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -90,6 +90,14 @@ public class TestWebScriptRepoServer extends TestWebScriptServer
         }
     }
 
+    private final static String[] CONFIG_LOCATIONS = new String[]
+                                           {
+                                               "classpath:alfresco/application-context.xml",
+                                               "classpath:alfresco/webscript-framework-application-context.xml",
+                                               "classpath:alfresco/web-scripts-application-context.xml",
+                                               "classpath:alfresco/web-scripts-application-context-test.xml"
+                                           };
+    
     /**
      * Retrieve an instance of the TestWebScriptServer
      *  
@@ -97,14 +105,18 @@ public class TestWebScriptRepoServer extends TestWebScriptServer
      */
     public static TestWebScriptServer getTestServer()
     {
-        String[] CONFIG_LOCATIONS = new String[]
-        {
-            "classpath:alfresco/application-context.xml",
-            "classpath:alfresco/webscript-framework-application-context.xml",
-            "classpath:alfresco/web-scripts-application-context.xml",
-            "classpath:alfresco/web-scripts-application-context-test.xml"
-        };
         ApplicationContext context = new ClassPathXmlApplicationContext(CONFIG_LOCATIONS);
+        TestWebScriptServer testServer = (TestWebScriptRepoServer)context.getBean("webscripts.test");
+        return testServer;
+    }
+    
+    public static TestWebScriptServer getTestServer(String appendTestConfigLocation)
+    {
+        String[] config_locations = new String[CONFIG_LOCATIONS.length+1];
+        System.arraycopy(CONFIG_LOCATIONS, 0, config_locations, 0, CONFIG_LOCATIONS.length);
+        config_locations[CONFIG_LOCATIONS.length] = appendTestConfigLocation;
+        
+        ApplicationContext context = new ClassPathXmlApplicationContext(config_locations);
         TestWebScriptServer testServer = (TestWebScriptRepoServer)context.getBean("webscripts.test");
         return testServer;
     }

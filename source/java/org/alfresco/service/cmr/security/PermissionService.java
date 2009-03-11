@@ -155,6 +155,14 @@ public interface PermissionService
 
     public static final String PROPERTIES = "Properties";
 
+    public static final String WCM_CONTENT_MANAGER = "ContentManager";
+
+    public static final String WCM_CONTENT_PUBLISHER = "ContentPublisher";
+
+    public static final String WCM_CONTENT_CONTRIBUTOR = "ContentContributor";
+
+    public static final String WCM_CONTENT_REVIEWER = "ContentReviewer";
+
     /**
      * Get the Owner Authority
      *

@@ -217,6 +217,7 @@
        <property name="avmService" ref="AVMService"/>
        <property name="avmLockingService" ref="AVMLockingService"/>
        <property name="virtServerRegistry" ref="VirtServerRegistry"/>
+       <property name="authorityService" ref="AuthorityService"/>
     </bean>
     
     

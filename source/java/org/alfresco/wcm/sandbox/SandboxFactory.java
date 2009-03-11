@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -26,6 +26,7 @@ package org.alfresco.wcm.sandbox;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -43,6 +44,10 @@ import org.alfresco.service.cmr.avm.locking.AVMLockingService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.security.AccessPermission;
+import org.alfresco.service.cmr.security.AuthorityService;
+import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.DNSNameMangler;
@@ -60,6 +65,12 @@ import org.apache.commons.logging.LogFactory;
  */
 public final class SandboxFactory extends WCMUtil
 {
+   public static final String[] PERMISSIONS = new String[] {
+        PermissionService.WCM_CONTENT_MANAGER, 
+        PermissionService.WCM_CONTENT_PUBLISHER,
+        PermissionService.WCM_CONTENT_CONTRIBUTOR, 
+        PermissionService.WCM_CONTENT_REVIEWER };
+    
    private static Log logger = LogFactory.getLog(SandboxFactory.class);
    
    /** Services */
@@ -68,6 +79,7 @@ public final class SandboxFactory extends WCMUtil
    private AVMService avmService;
    private AVMLockingService avmLockingService;
    private VirtServerRegistry virtServerRegistry;
+   private AuthorityService authorityService;
    
    public void setNodeService(NodeService nodeService)
    {
@@ -94,6 +106,10 @@ public final class SandboxFactory extends WCMUtil
        this.virtServerRegistry = virtServerRegistry;
    }
    
+   public void setAuthorityService(AuthorityService authorityService)
+   {
+       this.authorityService = authorityService;
+   }
    
    /**
     * Private constructor
@@ -307,11 +323,12 @@ public final class SandboxFactory extends WCMUtil
        return new SandboxInfoImpl(wpStoreId, sandboxId, sandboxType, name, storeNames, new Date(storeDesc.getCreateDate()), storeDesc.getCreator());
    }
 
-   protected void setStagingPermissions(String storeId, NodeRef wpNodeRef)
+   private void setStagingPermissions(String storeId, NodeRef wpNodeRef)
    {
        String storeName = WCMUtil.buildStagingStoreName(storeId);
        NodeRef dirRef = AVMNodeConverter.ToNodeRef(-1, WCMUtil.buildStoreRootPath(storeName));
-      
+
+       makeGroupsIfRequired(storeName, dirRef);
        // Apply specific user permissions as set on the web project
        // All these will be masked out
       
@@ -322,8 +339,110 @@ public final class SandboxFactory extends WCMUtil
            String username = userRole.getKey();
            String userrole = userRole.getValue();
       
-           permissionService.setPermission(dirRef, username, userrole, true);
+           // permissionService.setPermission(dirRef, username, userrole, true);
+           addToGroupIfRequired(storeName, username, userrole);
        }
+
+       // Add group permissions
+       for (String permission : PERMISSIONS)
+       {
+           String cms = authorityService.getName(AuthorityType.GROUP, storeName + "-" + permission);
+           permissionService.setPermission(dirRef, cms, permission, true);
+       }
+
+       // TODO: does everyone get read writes?
+       permissionService.setPermission(dirRef, PermissionService.ALL_AUTHORITIES, PermissionService.READ, true);
+   }
+   
+   private void makeGroupsIfRequired(final String stagingStoreName, final NodeRef dirRef)
+   {
+       AuthenticationUtil.runAs(new RunAsWork<Object>(){
+
+           public Object doWork() throws Exception
+           {
+               for (String permission : PERMISSIONS)
+               {
+                   String shortName = stagingStoreName + "-" + permission;
+                   String group = authorityService.getName(AuthorityType.GROUP, shortName);
+                   if (!authorityService.authorityExists(group))
+                   {
+                       authorityService.createAuthority(AuthorityType.GROUP, null, shortName);
+                   }
+                   if (!isPermissionSet(dirRef, group, permission))
+                   {
+                       permissionService.setPermission(dirRef, group, permission, true);
+                   }
+               }
+               return null;
+           }}, AuthenticationUtil.getSystemUserName());
+   }
+
+   private boolean isPermissionSet(NodeRef nodeRef, String authority, String permission)
+   {
+       Set<AccessPermission> set = permissionService.getAllSetPermissions(nodeRef);
+       for (AccessPermission ap : set)
+       {
+           if (ap.getAuthority().equals(authority) && ap.isSetDirectly() && ap.getPermission().equals(permission))
+           {
+               return true;
+           }
+       }
+       return false;
+   }
+
+   private void addToGroupIfRequired(final String stagingStoreName, final String user, final String permission)
+   {
+       AuthenticationUtil.runAs(new RunAsWork<Object>(){
+
+           public Object doWork() throws Exception
+           {
+               String shortName = stagingStoreName + "-" + permission;
+               String group = authorityService.getName(AuthorityType.GROUP, shortName);
+               if (!authorityService.authorityExists(group))
+               {
+                   authorityService.createAuthority(AuthorityType.GROUP, null, shortName);
+               }
+               Set<String> members = authorityService.getContainedAuthorities(AuthorityType.USER, group, true);
+               if (!members.contains(user))
+               {
+                   authorityService.addAuthority(group, user);
+               }
+               return null;
+           }}, AuthenticationUtil.getSystemUserName());
+       
+   }
+
+   private void removeFromGroupIfRequired(final String stagingStoreName, final String user, final String permission)
+   {
+       AuthenticationUtil.runAs(new RunAsWork<Object>(){
+
+           public Object doWork() throws Exception
+           {
+               String shortName = stagingStoreName + "-" + permission;
+               String group = authorityService.getName(AuthorityType.GROUP, shortName);
+               if (authorityService.authorityExists(group))
+               {
+                   Set<String> members = authorityService.getContainedAuthorities(AuthorityType.USER, group, true);
+                   if (members.contains(user))
+                   {
+                       authorityService.removeAuthority(group, user);
+                   }
+               }
+               return null;
+           }}, AuthenticationUtil.getSystemUserName());
+   }
+
+   private boolean isMaskSet(StoreRef storeRef, String authority, String permission)
+   {
+       Set<AccessPermission> set = permissionService.getAllSetPermissions(storeRef);
+       for (AccessPermission ap : set)
+       {
+           if (ap.getAuthority().equals(authority) && ap.isSetDirectly() && ap.getPermission().equals(permission))
+           {
+               return true;
+           }
+       }
+       return false;
    }
    
    public void setStagingPermissionMasks(String storeId)
@@ -333,39 +452,73 @@ public final class SandboxFactory extends WCMUtil
       
       // Set store permission masks
       String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
-      permissionService.setPermission(dirRef.getStoreRef(), currentUser, PermissionService.CHANGE_PERMISSIONS, true);
-      permissionService.setPermission(dirRef.getStoreRef(), currentUser, PermissionService.READ_PERMISSIONS, true);
-      permissionService.setPermission(dirRef.getStoreRef(), PermissionService.ALL_AUTHORITIES, PermissionService.READ, true);
-      
-      // apply READ permissions for all users
-      permissionService.setPermission(dirRef, PermissionService.ALL_AUTHORITIES, PermissionService.READ, true);
+      addToGroupIfRequired(storeName, currentUser, PermissionService.WCM_CONTENT_MANAGER);
+
+      String cms = authorityService.getName(AuthorityType.GROUP, storeName + "-" + PermissionService.WCM_CONTENT_MANAGER);
+       
+      // read early or the mask prevents access...
+      boolean setReadPermissions = !isMaskSet(dirRef.getStoreRef(), cms, PermissionService.READ_PERMISSIONS);
+       
+      if (!isMaskSet(dirRef.getStoreRef(), cms, PermissionService.CHANGE_PERMISSIONS))
+      {
+          permissionService.setPermission(dirRef.getStoreRef(), cms, PermissionService.CHANGE_PERMISSIONS, true);
+      }
+
+      if (setReadPermissions)
+      {
+          permissionService.setPermission(dirRef.getStoreRef(), cms, PermissionService.READ_PERMISSIONS, true);
+      }
+
+      if (!isMaskSet(dirRef.getStoreRef(), PermissionService.ALL_AUTHORITIES, PermissionService.READ))
+      {
+          permissionService.setPermission(dirRef.getStoreRef(), PermissionService.ALL_AUTHORITIES, PermissionService.READ, true);
+      }
    }
+
+   /*
+   private Set<String> getGroupMembers(String stagingStoreName, String permission)
+   {
+       String shortName = stagingStoreName + "-" + permission;
+       String group = authorityService.getName(AuthorityType.GROUP, shortName);
+       Set<String> members = authorityService.getContainedAuthorities(AuthorityType.USER, group, true);
+       return members;
+
+   }
+   */
    
    private void updateStagingAreaManagers(String storeId, final List<String> managers)
    {
        // The stores have the mask set in updateSandboxManagers
        String storeName = WCMUtil.buildStagingStoreName(storeId);
-    
-       NodeRef dirRef = AVMNodeConverter.ToNodeRef(-1, WCMUtil.buildStoreRootPath(storeName));
+
+       // Set<String> existingMembers = getGroupMembers(storeName, PermissionService.WCM_CONTENT_MANAGER);
+       
+       String shortName = storeName + "-" + PermissionService.WCM_CONTENT_MANAGER;
+       String group = authorityService.getName(AuthorityType.GROUP, shortName);
+       Set<String> members = authorityService.getContainedAuthorities(AuthorityType.USER, group, true);
+       Set<String> toRemove = new HashSet<String>(members);
+
        for (String manager : managers)
        {
-           permissionService.setPermission(dirRef, manager, WCMUtil.ROLE_CONTENT_MANAGER, true);
-           
-           // give the manager change permissions permission in the staging area store
-           permissionService.setPermission(dirRef.getStoreRef(), manager, 
-                    PermissionService.CHANGE_PERMISSIONS, true);
-           permissionService.setPermission(dirRef.getStoreRef(), manager, 
-                   PermissionService.READ_PERMISSIONS, true);
+           addToGroupIfRequired(storeName, manager, PermissionService.WCM_CONTENT_MANAGER);
+           toRemove.remove(manager);
+       }
+
+       for (String remove : toRemove)
+       {
+           removeFromGroupIfRequired(storeName, remove, PermissionService.WCM_CONTENT_MANAGER);
        }
    }
    
-   public void addStagingAreaUser(String wpStoreId, String authority, String role)
+   public void addStagingAreaUser(String storeId, String authority, String role)
    {
        // The stores have the mask set in updateSandboxManagers
-       String storeName = WCMUtil.buildStagingStoreName(wpStoreId);
-    
-       NodeRef dirRef = AVMNodeConverter.ToNodeRef(-1, WCMUtil.buildStoreRootPath(storeName));
-       permissionService.setPermission(dirRef, authority, role, true);
+       
+       //String storeName = WCMUtil.buildStagingStoreName(storeId);
+       //NodeRef dirRef = AVMNodeConverter.ToNodeRef(-1, WCMUtil.buildStoreRootPath(storeName));
+
+       addToGroupIfRequired(storeId, authority, role);
+       // permissionService.setPermission(dirRef, authority, role, true);
    }
    
    /**
@@ -424,14 +577,18 @@ public final class SandboxFactory extends WCMUtil
       
       // apply the user role permissions to the sandbox
       String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
-      permissionService.setPermission(dirRef.getStoreRef(), currentUser, WCMUtil.ROLE_CONTENT_MANAGER, true);
+      // permissionService.setPermission(dirRef.getStoreRef(), currentUser, AVMUtil.ROLE_CONTENT_MANAGER, true);
+      addToGroupIfRequired(stagingStoreName, currentUser, PermissionService.WCM_CONTENT_MANAGER);
+      String cms = authorityService.getName(AuthorityType.GROUP, stagingStoreName + "-" + PermissionService.WCM_CONTENT_MANAGER);
+      permissionService.setPermission(dirRef.getStoreRef(), cms, PermissionService.WCM_CONTENT_MANAGER, true);
+
       permissionService.setPermission(dirRef.getStoreRef(), username, PermissionService.ALL_PERMISSIONS, true);
       permissionService.setPermission(dirRef.getStoreRef(), PermissionService.ALL_AUTHORITIES, PermissionService.READ, true);
       // apply the manager role permission for each manager in the web project
-      for (String manager : managers)
-      {
-         permissionService.setPermission(dirRef.getStoreRef(), manager, WCMUtil.ROLE_CONTENT_MANAGER, true);
-      }
+      // for (String manager : managers)
+      // {
+      // permissionService.setPermission(dirRef.getStoreRef(), manager, AVMUtil.ROLE_CONTENT_MANAGER, true);
+      // }
       
       // tag the store with the store type
       avmService.setStoreProperty(userStoreName,
@@ -541,11 +698,11 @@ public final class SandboxFactory extends WCMUtil
     */
    public SandboxInfo createWorkflowSandbox(final String storeId)
    {
-      final String stagingStoreName = WCMUtil.buildStagingStoreName(storeId);
+      String stagingStoreName = WCMUtil.buildStagingStoreName(storeId);
 
       // create the workflow 'main' store
-      final String packageName = WCMUtil.STORE_WORKFLOW + "-" + GUID.generate();
-      final String mainStoreName = WCMUtil.buildWorkflowMainStoreName(storeId, packageName);
+      String packageName = WCMUtil.STORE_WORKFLOW + "-" + GUID.generate();
+      String mainStoreName = WCMUtil.buildWorkflowMainStoreName(storeId, packageName);
       
       avmService.createStore(mainStoreName);
       
@@ -665,16 +822,18 @@ public final class SandboxFactory extends WCMUtil
     */
    public SandboxInfo createReadOnlyWorkflowSandbox(final String storeId)
    {
-      final String stagingStoreName = WCMUtil.buildStagingStoreName(storeId);
+      String stagingStoreName = WCMUtil.buildStagingStoreName(storeId);
 
       // create the workflow 'main' store
-      final String packageName = WCMUtil.STORE_WORKFLOW + "-" + GUID.generate();
-      final String mainStoreName = 
-          WCMUtil.buildWorkflowMainStoreName(storeId, packageName);
+      String packageName = WCMUtil.STORE_WORKFLOW + "-" + GUID.generate();
+      String mainStoreName = WCMUtil.buildWorkflowMainStoreName(storeId, packageName);
       
       avmService.createStore(mainStoreName);
+      
       if (logger.isDebugEnabled())
+      {
          logger.debug("Created read-only workflow sandbox store: " + mainStoreName);
+      }
          
       // create a layered directory pointing to 'www' in the staging area
       avmService.createLayeredDirectory(WCMUtil.buildStoreRootPath(stagingStoreName), 
@@ -734,28 +893,30 @@ public final class SandboxFactory extends WCMUtil
        String packageName = "workflow-" + GUID.generate();
        String workflowStoreName = userStore + STORE_SEPARATOR + packageName;
      
-       this.avmService.createStore(workflowStoreName);
+       avmService.createStore(workflowStoreName);
        
        if (logger.isDebugEnabled())
+       {
            logger.debug("Created user workflow sandbox store: " + workflowStoreName);
+       }
         
        // create a layered directory pointing to 'www' in the users store
-       this.avmService.createLayeredDirectory(
+       avmService.createLayeredDirectory(
                 userStore + ":/" + JNDIConstants.DIR_DEFAULT_WWW, 
                 workflowStoreName + ":/", JNDIConstants.DIR_DEFAULT_WWW);
         
        // tag the store with the store type
-       this.avmService.setStoreProperty(workflowStoreName, 
+       avmService.setStoreProperty(workflowStoreName, 
                 SandboxConstants.PROP_SANDBOX_AUTHOR_WORKFLOW_MAIN,
                 new PropertyValue(DataTypeDefinition.TEXT, null));
         
        // tag the store with the name of the author's store this one is layered over
-       this.avmService.setStoreProperty(workflowStoreName, 
+       avmService.setStoreProperty(workflowStoreName, 
                 SandboxConstants.PROP_AUTHOR_NAME,
                 new PropertyValue(DataTypeDefinition.TEXT, userStore));
         
        // tag the store, oddly enough, with its own store name for querying.
-       this.avmService.setStoreProperty(workflowStoreName,
+       avmService.setStoreProperty(workflowStoreName,
                 QName.createQName(null, SandboxConstants.PROP_SANDBOX_STORE_PREFIX + workflowStoreName),
                 new PropertyValue(DataTypeDefinition.TEXT, null));
         
@@ -764,7 +925,7 @@ public final class SandboxFactory extends WCMUtil
                 "/" + JNDIConstants.DIR_DEFAULT_APPBASE;
        // DNS name mangle the property name - can only contain value DNS characters!
        String dnsProp = SandboxConstants.PROP_DNS + DNSNameMangler.MakeDNSName(stagingStore, packageName);
-       this.avmService.setStoreProperty(workflowStoreName, QName.createQName(null, dnsProp),
+       avmService.setStoreProperty(workflowStoreName, QName.createQName(null, dnsProp),
                 new PropertyValue(DataTypeDefinition.TEXT, path));
        
        // TODO review above and replace with common call to ...
@@ -775,31 +936,33 @@ public final class SandboxFactory extends WCMUtil
        
        // the main workflow store depends on the main user store (dist=1)
        String prop_key = SandboxConstants.PROP_BACKGROUND_LAYER + userStore;
-       this.avmService.setStoreProperty(workflowStoreName, QName.createQName(null, prop_key),
+       avmService.setStoreProperty(workflowStoreName, QName.createQName(null, prop_key),
                 new PropertyValue(DataTypeDefinition.INT, 1));
        
        // The main workflow store depends on the main staging store (dist=2)
        prop_key = SandboxConstants.PROP_BACKGROUND_LAYER + stagingStore;
-       this.avmService.setStoreProperty(workflowStoreName, QName.createQName(null, prop_key),
+       avmService.setStoreProperty(workflowStoreName, QName.createQName(null, prop_key),
                 new PropertyValue(DataTypeDefinition.INT, 2));
      
        // snapshot the store
-       this.avmService.createSnapshot(workflowStoreName, null, null);
+       avmService.createSnapshot(workflowStoreName, null, null);
         
        // create the workflow 'preview' store
        String previewStoreName = workflowStoreName + STORE_SEPARATOR + "preview";
-       this.avmService.createStore(previewStoreName);
+       avmService.createStore(previewStoreName);
      
        if (logger.isDebugEnabled())
+       {
            logger.debug("Created user workflow sandbox preview store: " + previewStoreName);
+       }
         
        // create a layered directory pointing to 'www' in the workflow 'main' store
-       this.avmService.createLayeredDirectory(
+       avmService.createLayeredDirectory(
                 workflowStoreName + ":/" + JNDIConstants.DIR_DEFAULT_WWW, 
                 previewStoreName + ":/", JNDIConstants.DIR_DEFAULT_WWW);
         
        // tag the store with the store type
-       this.avmService.setStoreProperty(previewStoreName, SandboxConstants.PROP_SANDBOX_WORKFLOW_PREVIEW,
+       avmService.setStoreProperty(previewStoreName, SandboxConstants.PROP_SANDBOX_WORKFLOW_PREVIEW,
                 new PropertyValue(DataTypeDefinition.TEXT, null));
      
        // tag the store with its own store name for querying.
@@ -812,7 +975,7 @@ public final class SandboxFactory extends WCMUtil
                 "/" + JNDIConstants.DIR_DEFAULT_APPBASE;
        // DNS name mangle the property name - can only contain value DNS characters!
        dnsProp = SandboxConstants.PROP_DNS + DNSNameMangler.MakeDNSName(userStore, packageName, "preview");
-       this.avmService.setStoreProperty(previewStoreName, QName.createQName(null, dnsProp),
+       avmService.setStoreProperty(previewStoreName, QName.createQName(null, dnsProp),
                 new PropertyValue(DataTypeDefinition.TEXT, path));
        
        // TODO review above and replace with common call to ...
@@ -823,27 +986,27 @@ public final class SandboxFactory extends WCMUtil
 
        // The preview worfkflow store depends on the main workflow store (dist=1)
        prop_key = SandboxConstants.PROP_BACKGROUND_LAYER + workflowStoreName;
-       this.avmService.setStoreProperty(previewStoreName, QName.createQName(null, prop_key),
+       avmService.setStoreProperty(previewStoreName, QName.createQName(null, prop_key),
                 new PropertyValue(DataTypeDefinition.INT, 1));
 
        // The preview workflow store depends on the main user store (dist=2)
        prop_key = SandboxConstants.PROP_BACKGROUND_LAYER + userStore;
-       this.avmService.setStoreProperty(previewStoreName, QName.createQName(null, prop_key),
+       avmService.setStoreProperty(previewStoreName, QName.createQName(null, prop_key),
                 new PropertyValue(DataTypeDefinition.INT, 2));
        
        // The preview workflow store depends on the main staging store (dist=3)
        prop_key = SandboxConstants.PROP_BACKGROUND_LAYER + stagingStore;
-       this.avmService.setStoreProperty(previewStoreName, QName.createQName(null, prop_key),
+       avmService.setStoreProperty(previewStoreName, QName.createQName(null, prop_key),
                 new PropertyValue(DataTypeDefinition.INT, 3));
      
        // snapshot the store
-       this.avmService.createSnapshot(previewStoreName, null, null);
+       avmService.createSnapshot(previewStoreName, null, null);
         
        // tag all related stores to indicate that they are part of a single sandbox
        QName sandboxIdProp = QName.createQName(SandboxConstants.PROP_SANDBOXID + GUID.generate());
-       this.avmService.setStoreProperty(workflowStoreName, sandboxIdProp,
+       avmService.setStoreProperty(workflowStoreName, sandboxIdProp,
                 new PropertyValue(DataTypeDefinition.TEXT, null));
-       this.avmService.setStoreProperty(previewStoreName, sandboxIdProp,
+       avmService.setStoreProperty(previewStoreName, sandboxIdProp,
                 new PropertyValue(DataTypeDefinition.TEXT, null));
      
        // return the main workflow store name
@@ -932,27 +1095,21 @@ public final class SandboxFactory extends WCMUtil
        }
    }
    
-   public void updateSandboxManagers(final String wpStoreId, List<String> managers)
+   /**
+    * Update the permissions for the list of sandbox managers applied to a user sandbox.
+    * <p>
+    * Ensures that all managers in the list have full WRITE access to the specified user stores.
+    * 
+    * @param storeId
+    *            The store id of the sandbox to update
+    * @param managers
+    *            The list of authorities who have ContentManager role in the web project
+    */
+   public void updateSandboxManagers(final String storeId, final List<String> managers)
    {
-       // walk existing user sandboxes and reapply manager permissions to include new managers
-       List<SandboxInfo> sbInfos = AuthenticationUtil.runAs(new RunAsWork<List<SandboxInfo>>()
-       {
-           public List<SandboxInfo> doWork() throws Exception
-           {
-               return listSandboxes(wpStoreId, AuthenticationUtil.getSystemUserName());
-           }
-       }, AuthenticationUtil.getSystemUserName());
-       
-       for (SandboxInfo sbInfo : sbInfos)
-       {
-           if (sbInfo.getSandboxType().equals(SandboxConstants.PROP_SANDBOX_AUTHOR_MAIN))
-           {
-               String username = sbInfo.getName();
-               updateUserSandboxManagers(wpStoreId, managers, username);
-           }
-       }
-       
-       updateStagingAreaManagers(wpStoreId, managers);
+       String stagingStoreName = WCMUtil.buildStagingStoreName(storeId);
+
+       updateStagingAreaManagers(stagingStoreName, managers);
    }
    
    /**
@@ -960,75 +1117,16 @@ public final class SandboxFactory extends WCMUtil
     * <p>
     * Ensures that all managers in the list have full WRITE access to the specified user stores.
     * 
-    * @param storeId    The store id of the sandbox to update
-    * @param managers   The list of authorities who have ContentManager role in the web project
-    * @param username   Username of the user sandbox to update
+    * @param storeId
+    *            The store id of the sandbox to update
+    * @param managers
+    *            The list of authorities who have ContentManager role in the web project
     */
-   private void updateUserSandboxManagers(final String storeId, final List<String> managers, final String username)
+   public void removeSandboxManagers(String storeId, List<String> managersToRemove)
    {
-      final String userStoreName    = WCMUtil.buildUserMainStoreName(storeId, username);
-      final String previewStoreName = WCMUtil.buildUserPreviewStoreName(storeId, username);
-      
-      // Apply masks to the stores
-      
-      // apply the manager role permission to the user main sandbox for each manager
-      NodeRef dirRef = AVMNodeConverter.ToNodeRef(-1, WCMUtil.buildStoreRootPath(userStoreName));
-      for (String manager : managers)
-      {
-         permissionService.setPermission(dirRef.getStoreRef(), manager, WCMUtil.ROLE_CONTENT_MANAGER, true);
-      }
-      
-      // apply the manager role permission to the user preview sandbox for each manager
-      dirRef = AVMNodeConverter.ToNodeRef(-1, WCMUtil.buildStoreRootPath(previewStoreName));
-      for (String manager : managers)
-      {
-         permissionService.setPermission(dirRef.getStoreRef(), manager, WCMUtil.ROLE_CONTENT_MANAGER, true);
-      }
+       removeStagingAreaManagers(storeId, managersToRemove);
    }
    
-   public void removeSandboxManagers(final String wpStoreId, List<String> managers)
-   {
-       // walk existing user sandboxes and remove manager permissions to exclude old managers
-       List<SandboxInfo> sbInfos = AuthenticationUtil.runAs(new RunAsWork<List<SandboxInfo>>()
-       {
-           public List<SandboxInfo> doWork() throws Exception
-           {
-               return listSandboxes(wpStoreId, AuthenticationUtil.getSystemUserName());
-           }
-       }, AuthenticationUtil.getSystemUserName());
-       
-       for (SandboxInfo sbInfo : sbInfos)
-       {
-           if (sbInfo.getSandboxType().equals(SandboxConstants.PROP_SANDBOX_AUTHOR_MAIN))
-           {
-               String username = sbInfo.getName();
-               removeUserSandboxManagers(wpStoreId, managers, username);
-           }
-       }
-       
-       removeStagingAreaManagers(wpStoreId, managers);
-   }
-   
-   /**
-    * Removes the permissions for the list of sandbox ex-managers.
-    * 
-    * @param storeId            The store id of the sandbox to update
-    * @param managersToRemove   The list of authorities who have had ContentManager role in the web project
-    * @param username           Username of the user sandbox to update
-    */
-   private void removeUserSandboxManagers(String storeId, List<String> managersToRemove, String username)
-   {
-       final String userStoreName = WCMUtil.buildUserMainStoreName(storeId, username);
-       final String previewStoreName = WCMUtil.buildUserPreviewStoreName(storeId, username);
-       
-       final NodeRef mainDirRef = AVMNodeConverter.ToNodeRef(-1, WCMUtil.buildStoreRootPath(userStoreName));
-       final NodeRef previewDirRef = AVMNodeConverter.ToNodeRef(-1, WCMUtil.buildStoreRootPath(previewStoreName));
-       for (String manager : managersToRemove)
-       {
-           permissionService.deletePermission(mainDirRef.getStoreRef(), manager, WCMUtil.ROLE_CONTENT_MANAGER);
-           permissionService.deletePermission(previewDirRef.getStoreRef(), manager, WCMUtil.ROLE_CONTENT_MANAGER);
-       }
-   }
    /**
     * Removes the ContentManager role on staging area to ex-managers.
     * 
@@ -1037,19 +1135,12 @@ public final class SandboxFactory extends WCMUtil
     */
    private void removeStagingAreaManagers(String storeId, List<String> managersToRemove)
    {
-       final String storeName = WCMUtil.buildStagingStoreName(storeId);
-    
-       final NodeRef dirRef = AVMNodeConverter.ToNodeRef(-1, WCMUtil.buildStoreRootPath(storeName));
-       for (String manager : managersToRemove)
+       String storeName = WCMUtil.buildStagingStoreName(storeId);
+
+       for (String remove : managersToRemove)
        {
-           permissionService.deletePermission(dirRef, manager, WCMUtil.ROLE_CONTENT_MANAGER);
-           
-           permissionService.deletePermission(dirRef.getStoreRef(), manager, 
-                    PermissionService.CHANGE_PERMISSIONS);
-           permissionService.deletePermission(dirRef.getStoreRef(), manager, 
-                   PermissionService.READ_PERMISSIONS);
+           removeFromGroupIfRequired(storeName, remove, PermissionService.WCM_CONTENT_MANAGER);
        }
-       
    }
    
    public void updateSandboxRoles(final String wpStoreId, List<UserRoleWrapper> usersToUpdate, Set<String> permissionsList)
@@ -1085,11 +1176,7 @@ public final class SandboxFactory extends WCMUtil
     */
    private void updateUserSandboxRole(String storeId, String username, List<UserRoleWrapper> usersToUpdate, Set<String> permissionsList)
    {
-       final String userStoreName = WCMUtil.buildUserMainStoreName(storeId, username);
-       final String previewStoreName = WCMUtil.buildUserPreviewStoreName(storeId, username);
-       
-       final NodeRef mainDirRef = AVMNodeConverter.ToNodeRef(-1, WCMUtil.buildStoreRootPath(userStoreName));
-       final NodeRef previewDirRef = AVMNodeConverter.ToNodeRef(-1, WCMUtil.buildStoreRootPath(previewStoreName));
+       final String storeName = WCMUtil.buildStagingStoreName(storeId);
 
        // If permissionsList is set remove all possible user permissions and set only necessary.
        // This will fix previous wrong role changes. (paranoid)
@@ -1101,22 +1188,18 @@ public final class SandboxFactory extends WCMUtil
            {
                for (String permission : permissionsList)
                {
-                   permissionService.deletePermission(mainDirRef, user.getUserAuth(), permission);
-                   permissionService.deletePermission(previewDirRef, user.getUserAuth(), permission);
+                   removeFromGroupIfRequired(storeName, user.getUserAuth(), permission);
                }
-               
-               permissionService.setPermission(mainDirRef, user.getUserAuth(), user.getNewRole(), true);
-               permissionService.setPermission(previewDirRef, user.getUserAuth(), user.getNewRole(), true);
+
+               addToGroupIfRequired(storeName, user.getUserAuth(), user.getNewRole());
            }
        }
        else
        {
-           for (UserRoleWrapper user: usersToUpdate)
+           for (UserRoleWrapper user : usersToUpdate)
            {
-               permissionService.deletePermission(mainDirRef, user.getUserAuth(), user.getOldRole());
-               permissionService.deletePermission(previewDirRef, user.getUserAuth(), user.getOldRole());
-               permissionService.setPermission(mainDirRef, user.getUserAuth(), user.getNewRole(), true);
-               permissionService.setPermission(previewDirRef, user.getUserAuth(), user.getNewRole(), true);
+               removeFromGroupIfRequired(storeName, user.getUserAuth(), user.getOldRole());
+               addToGroupIfRequired(storeName, user.getUserAuth(), user.getNewRole());
            }
        }
    }
@@ -1131,25 +1214,29 @@ public final class SandboxFactory extends WCMUtil
    private void updateStagingAreaRole(String storeId, List<UserRoleWrapper> usersToUpdate, Set<String> permissionsList)
    {
        final String storeName = WCMUtil.buildStagingStoreName(storeId);
-       final NodeRef dirRef = AVMNodeConverter.ToNodeRef(-1, WCMUtil.buildStoreRootPath(storeName));
-       
+
+       // If permissionsList is set remove all possible user permissions and set only necessary.
+       // This will fix previous wrong role changes. (paranoid)
+       // For little better performance just set permissionsList to null.
+       // But in this case it removes only previous permission.
        if (permissionsList != null && permissionsList.size() != 0)
        {
            for (UserRoleWrapper user : usersToUpdate)
            {
                for (String permission : permissionsList)
                {
-                   permissionService.deletePermission(dirRef, user.getUserAuth(), permission);
+                   removeFromGroupIfRequired(storeName, user.getUserAuth(), permission);
                }
-               permissionService.setPermission(dirRef, user.getUserAuth(), user.getNewRole(), true);
+
+               addToGroupIfRequired(storeName, user.getUserAuth(), user.getNewRole());
            }
        }
        else
        {
            for (UserRoleWrapper user : usersToUpdate)
            {
-               permissionService.deletePermission(dirRef, user.getUserAuth(), user.getOldRole());
-               permissionService.setPermission(dirRef, user.getUserAuth(), user.getNewRole(), true);
+               removeFromGroupIfRequired(storeName, user.getUserAuth(), user.getOldRole());
+               addToGroupIfRequired(storeName, user.getUserAuth(), user.getNewRole());
            }
        }
    }

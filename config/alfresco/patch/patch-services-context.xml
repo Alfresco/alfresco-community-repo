@@ -1598,4 +1598,54 @@
         </property>
     </bean>
 
+    <bean id="patch.moveWCMToGroupBasedPermissionsPatch" class="org.alfresco.repo.admin.patch.impl.MoveWCMToGroupBasedPermissionsPatch" parent="basePatch" >
+        <property name="id"><value>patch.moveWCMToGroupBasedPermissionsPatch</value></property>
+        <property name="description"><value>patch.moveWCMToGroupBasedPermissionsPatch.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>2001</value></property>
+        <property name="targetSchema"><value>2002</value></property>
+        <!-- helper beans -->
+        <property name="avmService">
+            <ref bean="avmService" />
+        </property>
+        <property name="permissionService">
+            <ref bean="permissionService" />
+        </property>
+        <property name="aclDaoComponent">
+            <ref bean="aclDaoComponent" />
+        </property>
+        <property name="avmSnapShotTriggeredIndexingMethodInterceptor">
+            <ref bean="avmSnapShotTriggeredIndexingMethodInterceptor" />
+        </property>
+        <property name="authorityService">
+            <ref bean="authorityService" />
+        </property>
+        <property name="replaceAllWith">
+            <value>ContentManager</value>
+        </property>
+    </bean>
+    
+     <bean id="patch.wcmPostPermissionSnapshotPatch2" class="org.alfresco.repo.admin.patch.impl.WCMPostPermissionSnapshotPatch" parent="basePatch" >
+        <property name="id"><value>patch.wcmPostPermissionSnapshotPatch2</value></property>
+        <property name="description"><value>patch.wcmPostPermissionSnapshotPatch.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>2001</value></property>
+        <property name="targetSchema"><value>2002</value></property>
+        <!-- helper beans -->
+        <property name="avmService">
+            <ref bean="AVMService" />
+        </property>
+        <property name="avmSnapShotTriggeredIndexingMethodInterceptor">
+            <ref bean="avmSnapShotTriggeredIndexingMethodInterceptor" />
+        </property>
+        <property name="aclDaoComponent">
+            <ref bean="aclDaoComponent" />
+        </property>
+        <property name="dependsOn" >
+            <list>
+                <ref bean="patch.moveWCMToGroupBasedPermissionsPatch" />
+            </list>
+        </property>
+    </bean>
+    
 </beans>

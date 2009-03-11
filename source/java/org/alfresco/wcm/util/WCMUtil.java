@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General protected License
@@ -42,6 +42,7 @@ import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.ParameterCheck;
@@ -771,10 +772,10 @@ public class WCMUtil
    protected final static String SPACE_ICON_WEBSITE       = "space-icon-website";
    
    // web user role permissions
-   public static final String ROLE_CONTENT_MANAGER     = "ContentManager";
-   public static final String ROLE_CONTENT_PUBLISHER   = "ContentPublisher";
-   public static final String ROLE_CONTENT_REVIEWER    = "ContentReviewer";
-   public static final String ROLE_CONTENT_CONTRIBUTOR = "ContentContributor";
+   public static final String ROLE_CONTENT_MANAGER     = PermissionService.WCM_CONTENT_MANAGER;
+   public static final String ROLE_CONTENT_PUBLISHER   = PermissionService.WCM_CONTENT_PUBLISHER;
+   public static final String ROLE_CONTENT_CONTRIBUTOR = PermissionService.WCM_CONTENT_CONTRIBUTOR;
+   public static final String ROLE_CONTENT_REVIEWER    = PermissionService.WCM_CONTENT_REVIEWER;
    
    private final static Pattern WEBAPP_RELATIVE_PATH_PATTERN = 
       Pattern.compile("([^:]+:/" + JNDIConstants.DIR_DEFAULT_WWW +

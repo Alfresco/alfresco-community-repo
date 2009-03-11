@@ -32,43 +32,22 @@
 <%@ page isELIgnored="false" %>
 <%@ page import="org.alfresco.web.ui.common.PanelGenerator" %>
 
-<r:page titleId="title_action_email">
+<r:page titleId="title_condition_contains_text">
 
-   
-<script type="text/javascript">
-   
-   window.onload = pageLoaded;
-   
-   function pageLoaded()
+<script language="JavaScript1.2">
+   function checkButtonState(inputField)
    {
-      document.getElementById("email-action:subject").focus();
-      checkButtonState();
-   }
-   
-   function checkButtonState()
-   {
-      var disableBtn = document.getElementById("finishButtonDisabled").innerHTML;
-      if (document.getElementById("email-action:subject").value.length > 0 && disableBtn == "false")
-      {
-         document.getElementById("email-action:ok-button").disabled = false;
-      }
-      else
-      {
-         document.getElementById("email-action:ok-button").disabled = true;
-      }
+	return true;
    }
 </script>
-   
-<f:view>
-   
-   <h:outputText id="finishButtonDisabled" value="#{WizardManager.bean.finishButtonDisabled}" style="display:none;"/>
 
+<f:view>
    
    <%-- load a bundle of properties with I18N strings --%>
    <f:loadBundle basename="alfresco.messages.webclient" var="msg"/>
    
-   <h:form acceptcharset="UTF-8" id="email-action">
-      
+   <h:form acceptcharset="UTF-8" id="contains-text-condition">
+   
    <%-- Main outer table --%>
    <table cellspacing="0" cellpadding="2">
       
@@ -110,7 +89,6 @@
                            </td>
                         </tr>
                      </table>
-                     
                   </td>
                   <td style="background-image: url(<%=request.getContextPath()%>/images/parts/statuspanel_6.gif)" width="4"></td>
                </tr>
@@ -129,98 +107,59 @@
                      <table cellspacing="0" cellpadding="3" border="0" width="100%">
                         <tr>
                            <td width="100%" valign="top">
-                              
+                           
                               <a:errors message="#{msg.error_wizard}" styleClass="errorMessage" />
-                              
+                           
                               <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "white", "white"); %>
                               <table cellpadding="2" cellspacing="2" border="0" width="100%">
                                  <tr>
-                                    <td colspan="2" class="mainSubTitle"><h:outputText value="#{msg.set_action_values}" /></td>
+                                    <td colspan="2" class="mainSubTitle"><h:outputText value="#{msg.set_condition_values}" /></td>
                                  </tr>
-                                 
-                                 <%-- Select the email receipients --%>
                                  <tr><td colspan="2" class="paddingRow"></td></tr>
-                                 <tr><td colspan="2" class="mainSubTitle"><h:outputText value="#{msg.message_recipients}" /></td></tr>
-                                 <tr><td colspan="2" style="padding-left:12px">1. <h:outputText value="#{msg.select_recipients}" /></td></tr>
                                  <tr>
-                                    <%-- Generic Picker to select Users/Groups --%>
-                                    <td colspan=2 style="padding-left:16px">
-                                       <a:genericPicker id="picker" filters="#{InviteSpaceUsersWizard.filters}"
-                                             queryCallback="#{InviteSpaceUsersWizard.pickerCallback}"
-                                             actionListener="#{WizardManager.bean.addRecipient}" />
+                                    <td colspan="2" class="mainSubText">
+					<h:outputText value="#{msg.enter_date_condition}"/>
+				    </td>
+                                 </tr>
+                                 <tr>
+                                    <td width="200px"> 
+                                        <h:outputText value="#{msg.date_property_condition_property}"/>:&nbsp;
+				    </td> <td>
+ 					<h:inputText id="qname" value="#{WizardManager.bean.conditionProperties.qname}" size="35" maxlength="1024" />
                                     </td>
                                  </tr>
-                                 
-                                 <tr><td colspan="2" style="padding-left:12px">2. <h:outputText value="#{msg.selected_recipients}" /></td></tr>
-                                 <tr>
-                                    <td colspan=2 style="padding-left:12px">
-                                       <h:dataTable value="#{WizardManager.bean.emailRecipientsDataModel}" var="row"
-                                                    rowClasses="selectedItemsRow,selectedItemsRowAlt"
-                                                    styleClass="selectedItems" headerClass="selectedItemsHeader"
-                                                    cellspacing="0" cellpadding="4" 
-                                                    rendered="#{WizardManager.bean.emailRecipientsDataModel.rowCount != 0}">
-                                          <h:column>
-                                             <f:facet name="header">
-                                                <h:outputText value="#{msg.name}" />
-                                             </f:facet>
-                                             <h:outputText value="#{row.name}" />
-                                          </h:column>
-                                          <h:column>
-                                             <a:actionLink actionListener="#{WizardManager.bean.removeRecipient}" image="/images/icons/delete.gif"
-                                                           value="#{msg.remove}" showLink="false" style="padding-left:6px" />
-                                          </h:column>
-                                       </h:dataTable>
-                                       <a:panel id="no-items" rendered="#{WizardManager.bean.emailRecipientsDataModel.rowCount == 0}">
-                                          <table cellspacing='0' cellpadding='2' border='0' class='selectedItems'>
-                                             <tr>
-                                                <td colspan='2' class='selectedItemsHeader'><h:outputText id="no-items-name" value="#{msg.name}" /></td>
-                                             </tr>
-                                             <tr>
-                                                <td class='selectedItemsRow'><h:outputText id="no-items-msg" value="#{msg.no_selected_items}" /></td>
-                                             </tr>
-                                          </table>
-                                       </a:panel>
+ 				<tr>
+                                    <td width="200px"> 
+                                        <h:outputText value="#{msg.property_condition_operation}"/>:&nbsp;
+
+     				     </td> <td>
+   					<h:selectOneMenu value="#{WizardManager.bean.conditionProperties.operation}">
+  						<f:selectItem itemValue="EQUALS" itemLabel="#{msg.property_date_condition_equals}"/>
+  						<f:selectItem itemValue="GREATER_THAN" itemLabel="#{msg.property_date_condition_greaterthan}"/>
+  						<f:selectItem itemValue="GREATER_THAN_EQUAL" itemLabel="#{msg.property_date_condition_greaterthanequals}"/>
+  						<f:selectItem itemValue="LESS_THAN" itemLabel="#{msg.property_date_condition_lessthan}"/>
+  						<f:selectItem itemValue="LESS_THAN_EQUAL" itemLabel="#{msg.property_date_condition_lessthanequals}"/>
+                                       </h:selectOneMenu>
                                     </td>
-                                 </tr>
-                                 
-                                 <%-- Enter the message subject and body --%>
-                                 <tr><td colspan="2" class="paddingRow"></td></tr>
-                                 <tr><td colspan="2" class="mainSubTitle"><h:outputText value="#{msg.email_message}" /></td></tr>
+                                
+			  </tr>
                                  <tr>
-                                    <td style="padding-left:16px"><h:outputText value="#{msg.subject}"/>:</td>
-                                    <td width="90%">
-                                       <h:inputText id="subject" value="#{WizardManager.bean.actionProperties.subject}" size="75" maxlength="1024" 
-                                                    onkeyup="javascript:checkButtonState();" />&nbsp;*
-                                    </td>
-                                 </tr>
-                                 
-                                 <tr>
-                                    <td></td>
-                                    <td valign="top">
-                                       <table cellspacing="0" cellpadding="2" border="0">
-                                          <tr>
-                                             <td><h:outputText value="#{msg.action_mail_template}"/>:</td>
-                                             <td>
-                                                <%-- Templates drop-down selector --%>
-                                                <h:selectOneMenu value="#{WizardManager.bean.actionProperties.template}">
-                                                   <f:selectItems value="#{TemplateSupportBean.emailTemplates}" />
-                                                </h:selectOneMenu>
-                                             </td>
-                                             <td><h:commandButton value="#{msg.insert_template}" actionListener="#{WizardManager.bean.insertTemplate}" styleClass="wizardButton" /></td>
-                                             <td><h:commandButton value="#{msg.discard_template}" actionListener="#{WizardManager.bean.discardTemplate}" styleClass="wizardButton" disabled="#{WizardManager.bean.usingTemplate == null}" /></td>
-                                          </tr>
-                                       </table>
-                                    </td>
-                                 </tr>
-                                 
-                                 <tr>
-                                    <td style="padding-left:16px"><h:outputText value="#{msg.message}"/>:</td>
                                     <td>
-                                       <h:inputTextarea value="#{WizardManager.bean.actionProperties.message}" 
-                                                        rows="4" cols="75" disabled="#{WizardManager.bean.usingTemplate != null}" />
+                                       <h:outputText value="#{msg.property_condition_value}"/>:&nbsp;
+				     </td> <td>
+                                       <a:inputDatePicker id="pattern" value="#{WizardManager.bean.conditionProperties.containstext}" showTime="true"
+								startYear="#{DatePickerGenerator.startYear}"  initialiseIfNull="true" />
+
                                     </td>
                                  </tr>
-                                 
+                                 <tr>
+                                    <td colspan="2">
+                                       <table><tr>
+                                       <td><h:selectBooleanCheckbox value="#{WizardManager.bean.conditionProperties.notcondition}"/></td>
+                                       <td><h:outputText value="#{msg.not_condition_result}"/></td>
+                                       </tr></table>
+                                    </td>
+                                 </tr>
                                  <tr><td class="paddingRow"></td></tr>
                               </table>
                               <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "white"); %>
@@ -231,13 +170,13 @@
                               <table cellpadding="1" cellspacing="1" border="0">
                                  <tr>
                                     <td align="center">
-                                       <h:commandButton id="ok-button" value="#{msg.ok}" action="#{WizardManager.bean.addAction}" 
+                                       <h:commandButton id="ok-button" value="#{msg.ok}" action="#{WizardManager.bean.addCondition}" 
                                                         styleClass="wizardButton" />
                                     </td>
                                  </tr>
                                  <tr>
                                     <td align="center">
-                                       <h:commandButton value="#{msg.cancel_button}" action="#{WizardManager.bean.cancelAddAction}" 
+                                       <h:commandButton value="#{msg.cancel_button}" action="#{WizardManager.bean.cancelAddCondition}" 
                                                         styleClass="wizardButton" />
                                     </td>
                                  </tr>

@@ -18,7 +18,7 @@
  * As a special exception to the terms and conditions of version 2.0 of 
  * the GPL, you may redistribute this Program in connection with Free/Libre 
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
+ * FLOSS exception.  You should have received a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
@@ -53,6 +53,12 @@ public class PropertyValueHandler extends BaseConditionHandler
    public void prepareForSave(Map<String, Serializable> conditionProps,
          Map<String, Serializable> repoProps)
    {
+      prepareForSaveWithCorrectType(conditionProps, repoProps);
+   }
+
+   //Responsible for serializing the value of the property, which could have different types
+   protected void prepareForSaveWithCorrectType(Map<String, Serializable> conditionProps, Map<String, Serializable> repoProps)
+   {
       String text = (String)conditionProps.get(PROP_CONTAINS_TEXT);
       repoProps.put(ComparePropertyValueEvaluator.PARAM_VALUE, text);
    }
@@ -60,10 +66,17 @@ public class PropertyValueHandler extends BaseConditionHandler
    public void prepareForEdit(Map<String, Serializable> conditionProps,
          Map<String, Serializable> repoProps)
    {
+      prepareForEditWithCorrectType(conditionProps, repoProps);
+   }
+
+   protected void prepareForEditWithCorrectType(Map<String, Serializable> conditionProps,
+         Map<String, Serializable> repoProps)
+   {
       String propValue = (String)repoProps.get(ComparePropertyValueEvaluator.PARAM_VALUE);
       conditionProps.put(PROP_CONTAINS_TEXT, propValue);
    }
 
+   
    public String generateSummary(FacesContext context, IWizardBean wizard,
          Map<String, Serializable> conditionProps)
    {

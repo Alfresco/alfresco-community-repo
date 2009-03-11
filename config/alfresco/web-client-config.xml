@@ -400,6 +400,10 @@
          <handler name="has-aspect" class="org.alfresco.web.bean.rules.handlers.HasAspectHandler" />
          <handler name="in-category" class="org.alfresco.web.bean.rules.handlers.InCategoryHandler" />
          <handler name="is-subtype" class="org.alfresco.web.bean.rules.handlers.IsSubTypeHandler" />
+         <handler name="composite-condition" class="org.alfresco.web.bean.rules.handlers.CompositeConditionHandler" />
+         <handler name="compare-date-property" class="org.alfresco.web.bean.rules.handlers.property.DatePropertyValueConditionHandler" />
+         <handler name="compare-integer-property" class="org.alfresco.web.bean.rules.handlers.property.IntegerPropertyValueConditionHandler" />
+         <handler name="compare-text-property" class="org.alfresco.web.bean.rules.handlers.property.TextPropertyValueConditionHandler" />
       </condition-handlers>
    </config>
 

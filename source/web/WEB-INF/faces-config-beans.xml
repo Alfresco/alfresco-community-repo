@@ -518,6 +518,11 @@
       <managed-bean-name>ClipboardBean</managed-bean-name>
       <managed-bean-class>org.alfresco.web.bean.clipboard.ClipboardBean</managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
+
+      <managed-property>
+         <property-name>nodeService</property-name>
+         <value>#{NodeService}</value>
+      </managed-property>
    </managed-bean>
 
    <managed-bean>
@@ -995,7 +1000,7 @@
          The bean that backs up the Create Rule Wizard
       </description>
       <managed-bean-name>CreateRuleWizard</managed-bean-name>
-      <managed-bean-class>org.alfresco.web.bean.rules.CreateRuleWizard</managed-bean-class>
+      <managed-bean-class>org.alfresco.web.bean.rules.CreateCompositeRuleWizard</managed-bean-class>
       <managed-bean-scope>session</managed-bean-scope>
       <managed-property>
          <property-name>nodeService</property-name>

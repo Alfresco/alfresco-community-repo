@@ -25,6 +25,7 @@
 package org.alfresco.web.bean.rules;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,20 +38,21 @@ import org.alfresco.service.cmr.action.ActionCondition;
 import org.alfresco.service.cmr.action.ActionConditionDefinition;
 import org.alfresco.service.cmr.action.ActionDefinition;
 import org.alfresco.service.cmr.action.CompositeAction;
+import org.alfresco.service.cmr.action.CompositeActionCondition;
 import org.alfresco.service.cmr.rule.Rule;
 import org.alfresco.web.bean.actions.IHandler;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.rules.handlers.BaseConditionHandler;
+import org.alfresco.web.bean.rules.handlers.CompositeConditionHandler;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 
 /**
  * Bean implementation for the "Edit Rule" wizard
  * 
  * @author gavinc
  */
-public class EditRuleWizard extends CreateRuleWizard
+public class EditRuleWizard extends CreateCompositeRuleWizard
 {
    private static final long serialVersionUID = -7222762769396254445L;
    
@@ -59,6 +61,8 @@ public class EditRuleWizard extends CreateRuleWizard
    // ------------------------------------------------------------------------------
    // Wizard implementation
 
+   /*  Loads up conditions and actions from the repository
+    */
    @Override
    public void init(Map<String, String> parameters)
    {
@@ -84,42 +88,20 @@ public class EditRuleWizard extends CreateRuleWizard
       
       // Get the composite action
       CompositeAction compositeAction = getCompositeAction(rule);
-      
-      // populate the conditions list with maps of properties representing each condition
-      List<ActionCondition> conditions = compositeAction.getActionConditions();
-      for (ActionCondition condition : conditions)
-      {
-         this.currentConditionProperties = new HashMap<String, Serializable>(3);
-         this.condition = condition.getActionConditionDefinitionName();
-         this.currentConditionProperties.put(PROP_CONDITION_NAME, this.condition);
-         this.currentConditionProperties.put(BaseConditionHandler.PROP_CONDITION_NOT, 
-               Boolean.valueOf(condition.getInvertCondition()));
-         
-         IHandler handler = this.conditionHandlers.get(this.condition);
-         if (handler != null)
-         {
-            // use the handler to populate the properties and summary
-            handler.prepareForEdit(this.currentConditionProperties, 
-                  condition.getParameterValues());
-            this.currentConditionProperties.put(PROP_CONDITION_SUMMARY,
-                  handler.generateSummary(context, this, this.currentConditionProperties));
-         }
-         else
-         {
-            // there's no handler, so we presume it is a no-paramter
-            // condition, use the condition title as the summary
-            ActionConditionDefinition conditionDef = this.getActionService().
-                  getActionConditionDefinition(this.condition);
-            this.currentConditionProperties.put(PROP_CONDITION_SUMMARY,
-                  conditionDef.getTitle());
-            // add the no params marker so we can disable the edit action
-            this.currentConditionProperties.put(NO_PARAMS_MARKER, "no-params");
-         }
-         
-         // add the populated currentConditionProperties to the list
-         this.allConditionsProperties.add(this.currentConditionProperties);
-      }
-      
+
+      populateConditions(context, compositeAction);
+
+      populateActions(context, compositeAction);
+
+      // reset the current condition
+      this.selectedCondition = null;
+
+      // reset the current action
+      this.action = null;
+   }
+
+   protected void populateActions(FacesContext context, CompositeAction compositeAction)
+   {
       // populate the actions list with maps of properties representing each action
       List<Action> actions = compositeAction.getActions();
       for (Action action : actions)
@@ -133,28 +115,98 @@ public class EditRuleWizard extends CreateRuleWizard
          {
             // use the handler to populate the properties and summary
             handler.prepareForEdit(this.currentActionProperties, action.getParameterValues());
-            this.currentActionProperties.put(PROP_ACTION_SUMMARY, 
-                  handler.generateSummary(context, this, this.currentActionProperties));
+            this.currentActionProperties.put(PROP_ACTION_SUMMARY, handler.generateSummary(context, this,
+                  this.currentActionProperties));
          }
          else
          {
-            // there's no handler, so we presume it is a no-paramter
+            // there's no handler, so we presume it is a no-parameter
             // action, use the action title as the summary
             ActionDefinition actionDef = this.getActionService().getActionDefinition(this.action);
             this.currentActionProperties.put(PROP_ACTION_SUMMARY, actionDef.getTitle());
             // add the no params marker so we can disable the edit action
             this.currentActionProperties.put(NO_PARAMS_MARKER, "no-params");
          }
-         
+
          // add the populated currentActionProperties to the list
          this.allActionsProperties.add(this.currentActionProperties);
       }
-      
-      // reset the current condition
-      this.condition = null;
-      
-      // reset the current action
-      this.action = null;
+   }
+
+   protected void populateConditions(FacesContext context, CompositeAction compositeAction)
+   {
+      // populate the conditions list with maps of properties representing each condition
+      List<ActionCondition> conditions = compositeAction.getActionConditions();
+      for (ActionCondition toplevel_condition : conditions)
+      {
+         this.selectedCondition = toplevel_condition.getActionConditionDefinitionName();
+         this.currentConditionProperties = new HashMap<String, Serializable>();
+            
+         if (logger.isDebugEnabled())
+            logger.debug("Preparing for Edit Condition " + this.selectedCondition);
+
+         if (toplevel_condition instanceof CompositeActionCondition)
+         {
+            if (logger.isDebugEnabled())
+               logger.debug("\tDetected CompositeCondition");
+
+            CompositeActionCondition compositeCondition = (CompositeActionCondition) toplevel_condition;
+            this.currentCompositeConditionPropertiesList = new ArrayList<Map<String, Serializable>>();
+            
+            //TODO:  add OR property
+
+            for (ActionCondition subcondition : compositeCondition.getActionConditions())
+            {
+               if (logger.isDebugEnabled())
+                  logger.debug("\tSetting ... SubConditions " + subcondition.getActionConditionDefinitionName());
+
+               this.selectedCondition = subcondition.getActionConditionDefinitionName();
+               Map<String, Serializable> subConditionProperties = new HashMap<String, Serializable>();
+               populateProperties(context, subcondition, subConditionProperties);
+               this.currentCompositeConditionPropertiesList.add(subConditionProperties);
+            }
+            
+            this.selectedCondition = CompositeConditionHandler.NAME;
+
+            this.currentConditionProperties.put(CompositeConditionHandler.PROP_COMPOSITE_CONDITION,
+                  (Serializable) this.currentCompositeConditionPropertiesList);
+
+            populateProperties(context, compositeCondition, currentConditionProperties);            
+            
+         } else 
+            populateProperties(context, toplevel_condition, this.currentConditionProperties);
+
+         // add the populated currentConditionProperties to the list
+         this.allConditionsPropertiesList.add(this.currentConditionProperties);
+
+         printConditionState();
+
+      }
+   }
+
+
+   protected void populateProperties(FacesContext context, ActionCondition condition,
+         Map<String, Serializable> uiConditionProperties)
+   {
+      uiConditionProperties.put(PROP_CONDITION_NAME, this.selectedCondition);
+      uiConditionProperties.put(BaseConditionHandler.PROP_CONDITION_NOT, Boolean.valueOf(condition.getInvertCondition()));
+
+      IHandler handler = this.conditionHandlers.get(this.selectedCondition);
+      if (handler != null)
+      {
+         // use the handler to populate the properties and summary
+         handler.prepareForEdit(uiConditionProperties, condition.getParameterValues());
+         uiConditionProperties.put(PROP_CONDITION_SUMMARY, handler
+               .generateSummary(context, this, uiConditionProperties));
+      } else
+      {
+         // there's no handler, so we presume it is a no-parameter
+         // condition, use the condition title as the summary
+         ActionConditionDefinition conditionDef = this.getActionService().getActionConditionDefinition(this.selectedCondition);
+         uiConditionProperties.put(PROP_CONDITION_SUMMARY, conditionDef.getTitle());
+         // add the no params marker so we can disable the edit action
+         uiConditionProperties.put(NO_PARAMS_MARKER, "no-params");
+      }
    }
    
    @Override

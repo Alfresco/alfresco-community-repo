@@ -18,7 +18,7 @@
  * As a special exception to the terms and conditions of version 2.0 of 
  * the GPL, you may redistribute this Program in connection with Free/Libre 
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
+ * FLOSS exception.  You should have received a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
@@ -46,6 +46,7 @@ import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionCondition;
 import org.alfresco.service.cmr.action.ActionConditionDefinition;
 import org.alfresco.service.cmr.action.CompositeAction;
+import org.alfresco.service.cmr.action.CompositeActionCondition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.rule.Rule;
 import org.alfresco.service.cmr.rule.RuleService;
@@ -57,6 +58,7 @@ import org.alfresco.web.bean.actions.IHandler;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.rules.handlers.BaseConditionHandler;
+import org.alfresco.web.bean.rules.handlers.CompositeConditionHandler;
 import org.alfresco.web.data.IDataContainer;
 import org.alfresco.web.data.QuickSort;
 import org.alfresco.web.ui.common.Utils;
@@ -74,25 +76,33 @@ public class CreateRuleWizard extends BaseActionWizard
    
    protected static final String PROP_CONDITION_NAME = "conditionName";
    protected static final String PROP_CONDITION_SUMMARY = "conditionSummary";
-   
+
    transient private RuleService ruleService;
    protected RulesDialog rulesDialog;
-   
-   private List<SelectItem> modelTypes;
-   private List<SelectItem> mimeTypes;
+
+   private List<SelectItem> modelTypes; //this is for subtype condition
+   private List<SelectItem> mimeTypes; //for checking mime types condition
    private List<SelectItem> types;
+
    private List<SelectItem> conditions;
-   
-   protected Map<String, IHandler> conditionHandlers;
+
+   protected Map<String, IHandler> conditionHandlers; //contains UI handlers, i.e. classes that know which JSP to to forward to 
+
+   //This is where all the current condition properties go.  When addConditions is called, 
+   //these are saved into allConditionsPropertiesList
    protected Map<String, Serializable> currentConditionProperties;
-   protected List<Map<String, Serializable>> allConditionsProperties;
 
    transient protected DataModel allConditionsDataModel;
-   
+
+   //   protected List<Map<String, Serializable>> allConditionsProperties;
+   //allConditionsProperties needs to be able to store both Map<String, Serializable> and List<Map<String, Serializable>> 
+   //(for composite conditions)      
+   protected List<Map<String, Serializable>> allConditionsPropertiesList;
+
    protected String title;
    protected String description;
    protected String type;
-   protected String condition;
+   protected String selectedCondition;
    protected boolean runInBackground;
    protected boolean applyToSubSpaces;
    protected boolean editingCondition;
@@ -111,21 +121,23 @@ public class CreateRuleWizard extends BaseActionWizard
       this.title = null;
       this.description = null;
       this.type = "inbound";
-      this.condition = null;
+      this.selectedCondition = null;
       this.applyToSubSpaces = false;
       this.runInBackground = false;
       this.ruleDisabled = false;
       this.conditions = null;
       
-      this.allConditionsProperties = new ArrayList<Map<String, Serializable>>();
+      this.allConditionsPropertiesList = new ArrayList<Map<String, Serializable>>();
       
       initialiseConditionHandlers();
    }
    
    @Override
-   protected String finishImpl(FacesContext context, String outcome)
-         throws Exception
+   protected String finishImpl(FacesContext context, String outcome) throws Exception
    {
+      if (logger.isDebugEnabled())
+         logger.debug("finishImpl called - saving rules");
+      
       // get hold of the space the rule will apply to and make sure
       // it is actionable
       Node currentSpace = this.browseBean.getActionSpace();
@@ -156,38 +168,34 @@ public class CreateRuleWizard extends BaseActionWizard
       
       boolean disabled = true;
       int step = Application.getWizardManager().getCurrentStep();
-      switch(step)
+      switch (step)
       {
-         case 1:
-         {
-            disabled = (this.allConditionsDataModel == null || 
-                        this.allConditionsDataModel.getRowCount() == 0);
-            break;
-         }
-         case 2:
-         {
-            disabled = (this.allActionsDataModel == null || 
-                        this.allActionsDataModel.getRowCount() == 0);
-            break;
-         }
-         case 3:
-         {
-            disabled = (this.title == null || this.title.length() == 0);
-            break;
-         }
+      case 1:
+      {
+         disabled = (this.allConditionsDataModel == null || this.allConditionsDataModel.getRowCount() == 0);
+         break;
       }
-      
+      case 2:
+      {
+         disabled = (this.allActionsDataModel == null || this.allActionsDataModel.getRowCount() == 0);
+         break;
+      }
+      case 3:
+      {
+         disabled = (this.title == null || this.title.length() == 0);
+         break;
+      }
+      }
+
       return disabled;
    }
 
    @Override
    public boolean getFinishButtonDisabled()
    {
-      if (this.allActionsDataModel != null && 
-          this.allActionsDataModel.getRowCount() > 0 &&
-          this.allConditionsDataModel != null && 
-          this.allConditionsDataModel.getRowCount() > 0 &&
-          this.title != null && this.title.length() > 0)
+      if (this.allActionsDataModel != null && this.allActionsDataModel.getRowCount() > 0
+            && this.allConditionsDataModel != null && this.allConditionsDataModel.getRowCount() > 0
+            && this.title != null && this.title.length() > 0)
       {
          return false;
       }
@@ -204,7 +212,7 @@ public class CreateRuleWizard extends BaseActionWizard
    {
       // create the summary using all the conditions
       StringBuilder conditionsSummary = new StringBuilder();
-      for (Map<String, Serializable> props : this.allConditionsProperties)
+      for (Map<String, Serializable> props : this.allConditionsPropertiesList)
       {
          conditionsSummary.append(Utils.encode((String)props.get(PROP_CONDITION_SUMMARY)));
          conditionsSummary.append("<br>");
@@ -223,35 +231,35 @@ public class CreateRuleWizard extends BaseActionWizard
       String backgroundYesNo = this.runInBackground ? bundle.getString("yes") : bundle.getString("no");
       String subSpacesYesNo = this.applyToSubSpaces ? bundle.getString("yes") : bundle.getString("no");
       String ruleDisabledYesNo = this.ruleDisabled ? bundle.getString("yes") : bundle.getString("no");
-      
-      return buildSummary(
-            new String[] {bundle.getString("rule_type"), bundle.getString("name"), bundle.getString("description"),
-                          bundle.getString("apply_to_sub_spaces"), bundle.getString("run_in_background"), bundle.getString("rule_disabled"),
-                          bundle.getString("conditions"), bundle.getString("actions")},
-            new String[] {this.type, Utils.encode(this.title), Utils.encode(this.description),
-                          subSpacesYesNo, backgroundYesNo, ruleDisabledYesNo,
-                          conditionsSummary.toString(), actionsSummary.toString()});
+
+      return buildSummary(new String[]
+      { bundle.getString("rule_type"), bundle.getString("name"), bundle.getString("description"),
+            bundle.getString("apply_to_sub_spaces"), bundle.getString("run_in_background"),
+            bundle.getString("rule_disabled"), bundle.getString("conditions"), bundle.getString("actions") },
+            new String[]
+            { this.type, Utils.encode(this.title), Utils.encode(this.description), subSpacesYesNo, backgroundYesNo,
+                  ruleDisabledYesNo, conditionsSummary.toString(), actionsSummary.toString() });
    }
-   
+
    @Override
    protected String getErrorMessageId()
    {
       return "error_rule";
    }
-   
+
    protected CompositeAction getCompositeAction(Rule rule)
    {
-       // Get the composite action
-       Action ruleAction = rule.getAction();
-       if (ruleAction == null)
-       {
-           throw new AlfrescoRuntimeException("Rule does not have associated action.");          
-       }
-       else if ((ruleAction instanceof CompositeAction) == false)
-       {
-           throw new AlfrescoRuntimeException("Rules with non-composite actions are not currently supported by the UI");
-       }
-       return (CompositeAction)ruleAction;
+      // Get the composite action
+      Action ruleAction = rule.getAction();
+      if (ruleAction == null)
+      {
+         throw new AlfrescoRuntimeException("Rule does not have associated action.");
+      }
+      else if ((ruleAction instanceof CompositeAction) == false)
+      {
+         throw new AlfrescoRuntimeException("Rules with non-composite actions are not currently supported by the UI");
+      }
+      return (CompositeAction) ruleAction;
    }
 
    // ------------------------------------------------------------------------------
@@ -278,12 +286,12 @@ public class CreateRuleWizard extends BaseActionWizard
       {
          this.allConditionsDataModel = new ListDataModel();
       }
-      
-      this.allConditionsDataModel.setWrappedData(this.allConditionsProperties);
-      
+
+      this.allConditionsDataModel.setWrappedData(this.allConditionsPropertiesList);
+
       return this.allConditionsDataModel;
    }
-   
+
    /**
     * Returns a list of the types available in the repository
     * 
@@ -351,22 +359,22 @@ public class CreateRuleWizard extends BaseActionWizard
     */
    public List<SelectItem> getMimeTypes()
    {
-       if (this.mimeTypes == null)
-       {
-           this.mimeTypes = new ArrayList<SelectItem>(50);
+      if (this.mimeTypes == null)
+      {
+         this.mimeTypes = new ArrayList<SelectItem>(50);
            
-           Map<String, String> mimeTypes = getMimetypeService().getDisplaysByMimetype();
-           for (String mimeType : mimeTypes.keySet())
-           {
-              this.mimeTypes.add(new SelectItem(mimeType, mimeTypes.get(mimeType)));
-           }
+         Map<String, String> mimeTypes = getMimetypeService().getDisplaysByMimetype();
+         for (String mimeType : mimeTypes.keySet())
+         {
+            this.mimeTypes.add(new SelectItem(mimeType, mimeTypes.get(mimeType)));
+         }
            
-           // make sure the list is sorted by the values
-           QuickSort sorter = new QuickSort(this.mimeTypes, "label", true, IDataContainer.SORT_CASEINSENSITIVE);
-           sorter.sort();
-       }
+         // make sure the list is sorted by the values
+         QuickSort sorter = new QuickSort(this.mimeTypes, "label", true, IDataContainer.SORT_CASEINSENSITIVE);
+         sorter.sort();
+      }
        
-       return this.mimeTypes;
+      return this.mimeTypes;
    }
    
    /**
@@ -381,8 +389,7 @@ public class CreateRuleWizard extends BaseActionWizard
          for (ActionConditionDefinition ruleConditionDef : ruleConditions)
          {
             // add to SelectItem list
-            this.conditions.add(new SelectItem(ruleConditionDef.getName(), 
-                  ruleConditionDef.getTitle()));
+            this.conditions.add(new SelectItem(ruleConditionDef.getName(), ruleConditionDef.getTitle()));
          }
          
          // make sure the list is sorted by the label
@@ -390,8 +397,8 @@ public class CreateRuleWizard extends BaseActionWizard
          sorter.sort();
          
          // add the "Select a condition" entry at the beginning of the list
-         this.conditions.add(0, new SelectItem("null", 
-               Application.getMessage(FacesContext.getCurrentInstance(), "select_a_condition")));
+         this.conditions.add(0, new SelectItem("null", Application.getMessage(FacesContext.getCurrentInstance(),
+               "select_a_condition")));
       }
       
       return this.conditions;
@@ -492,7 +499,7 @@ public class CreateRuleWizard extends BaseActionWizard
     */
    public boolean getRuleDisabled()
    {
-       return this.ruleDisabled;
+      return this.ruleDisabled;
    }
    
    /**
@@ -500,7 +507,7 @@ public class CreateRuleWizard extends BaseActionWizard
     */
    public void setRuleDisabled(boolean ruleDisabled)
    {
-       this.ruleDisabled = ruleDisabled;
+      this.ruleDisabled = ruleDisabled;
    }
    
    /**
@@ -524,7 +531,7 @@ public class CreateRuleWizard extends BaseActionWizard
     */
    public String getCondition()
    {
-      return this.condition;
+      return this.selectedCondition;
    }
 
    /**
@@ -532,7 +539,7 @@ public class CreateRuleWizard extends BaseActionWizard
     */
    public void setCondition(String condition)
    {
-      this.condition = condition;
+      this.selectedCondition = condition;
    }
    
    
@@ -551,37 +558,45 @@ public class CreateRuleWizard extends BaseActionWizard
       this.returnViewId = context.getViewRoot().getViewId();
       String viewId = null;
       
-      HashMap<String, Serializable> condProps = new HashMap<String, Serializable>(3);
-      condProps.put(PROP_CONDITION_NAME, this.condition);
-      this.currentConditionProperties = condProps;
-      
+      this.currentConditionProperties = new HashMap<String, Serializable>(3);
+      this.currentConditionProperties.put(PROP_CONDITION_NAME, this.selectedCondition);
+      this.currentConditionProperties.put(BaseConditionHandler.PROP_CONDITION_NOT, Boolean.FALSE);
+
       // get the handler for the condition, if there isn't one we presume it
       // is a no-parameter condition
-      IHandler handler = this.conditionHandlers.get(this.condition);
+      IHandler handler = this.conditionHandlers.get(this.selectedCondition);
       if (handler != null)
       {
+         if (logger.isDebugEnabled())
+            logger.debug("Found Handler for selected condition - '" + this.selectedCondition + "'");
+
          // setup any UI defaults the condition may have and get the location of
          // the JSP used to collect the parameters
-         handler.setupUIDefaults(condProps);
+         handler.setupUIDefaults(this.currentConditionProperties);
          viewId = handler.getJSPPath();
+         if (logger.isDebugEnabled())
+            logger.debug("Handler returned JSP page- '" + viewId + "'  Handler Type " + handler.getClass().toString());
       }
       else
       {
+         if (logger.isDebugEnabled())
+            logger.debug("Did Not Find a handler for selected condition - '" + this.selectedCondition + "'");
+
          // just add the action to the list and use the title as the summary
-         ActionConditionDefinition conditionDef = this.getActionService().
-               getActionConditionDefinition(this.condition);
-         condProps.put(PROP_CONDITION_SUMMARY, conditionDef.getTitle());
-         condProps.put(BaseConditionHandler.PROP_CONDITION_NOT, Boolean.FALSE);
+         ActionConditionDefinition conditionDef = this.getActionService()
+               .getActionConditionDefinition(this.selectedCondition);
+         this.currentConditionProperties.put(PROP_CONDITION_SUMMARY, conditionDef.getTitle());
+         this.currentConditionProperties.put(BaseConditionHandler.PROP_CONDITION_NOT, Boolean.FALSE);
          // add the no params marker so we can disable the edit action
-         condProps.put(NO_PARAMS_MARKER, "no-params");
-         this.allConditionsProperties.add(condProps);
-         
+         this.currentConditionProperties.put(NO_PARAMS_MARKER, "no-params");
+         this.allConditionsPropertiesList.add(this.currentConditionProperties);
+
          // come back to the same page we're on now as there are no params to collect
          viewId = this.returnViewId;
       }
       
       if (logger.isDebugEnabled())
-            logger.debug("Added '" + this.condition + "' condition to list");
+         logger.debug("Currently creating '" + this.selectedCondition + "' condition");
       
       // go to the page to collect the settings
       goToPage(context, viewId);
@@ -593,53 +608,68 @@ public class CreateRuleWizard extends BaseActionWizard
    @SuppressWarnings("unchecked")
    public void editCondition()
    {
-      // use the built in JSF support for retrieving the object for the
-      // row that was clicked by the user
-      Map conditionToEdit = (Map)this.allConditionsDataModel.getRowData();
-      this.condition = (String)conditionToEdit.get(PROP_CONDITION_NAME);
-      this.currentConditionProperties = conditionToEdit;
-      
+      Map conditionToEdit = (Map) this.allConditionsDataModel.getRowData();
+      editCondition(conditionToEdit);
+   }
+
+   protected void editCondition(Map conditionToEdit)
+   {
       // set the flag to show we are editing a condition
       this.editingCondition = true;
-      
+
+      // use the built in JSF support for retrieving the object for the
+      // row that was clicked by the user
+      this.selectedCondition = (String) conditionToEdit.get(PROP_CONDITION_NAME);
+      this.currentConditionProperties = conditionToEdit;
+
+      if (logger.isDebugEnabled())
+         logger.debug("Editing Condition '" + selectedCondition + "'");
+
       // remember the page we're on
       FacesContext context = FacesContext.getCurrentInstance();
       this.returnViewId = context.getViewRoot().getViewId();
-      
+
       // go to the condition page (as there is an edit option visible,
       // there must be a handler for the condition so we don't check)
-      goToPage(context, this.conditionHandlers.get(this.condition).getJSPPath());
+      goToPage(context, this.conditionHandlers.get(this.selectedCondition).getJSPPath());
    }
-   
+
    /**
     * Adds the condition just setup by the user to the list of conditions for the rule
     */
    public void addCondition()
    {
       FacesContext context = FacesContext.getCurrentInstance();
-      
+
+      if (logger.isDebugEnabled())
+         logger.debug("Adding Condition '" + selectedCondition + "'");
+
+      IHandler handler = this.conditionHandlers.get(this.selectedCondition);
+
       // this is called from the actions page so there must be a handler
       // present so there's no need to check for null
-      String summary = this.conditionHandlers.get(this.condition).generateSummary(
-            context, this, this.currentConditionProperties);
-      
+      String summary = handler.generateSummary(context, this, this.currentConditionProperties);
+
       if (summary != null)
       {
          this.currentConditionProperties.put(PROP_CONDITION_SUMMARY, summary);
       }
-      
+      if (logger.isDebugEnabled())
+         logger.debug("Generated Summary - [" + summary + "] + selectedCondition " + this.selectedCondition);
+
       if (this.editingCondition == false)
       {
-         this.allConditionsProperties.add(this.currentConditionProperties);
+         this.allConditionsPropertiesList.add(this.currentConditionProperties);
+
       }
-      
+
       // reset the action drop down
-      this.condition = null;
-      
+      this.selectedCondition = null;
+
       // refresh the wizard
       goToPage(context, this.returnViewId);
    }
-   
+
    /**
     * Removes the requested condition from the list
     */
@@ -647,12 +677,12 @@ public class CreateRuleWizard extends BaseActionWizard
    {
       // use the built in JSF support for retrieving the object for the
       // row that was clicked by the user
-      Map conditionToRemove = (Map)this.allConditionsDataModel.getRowData();
-      this.allConditionsProperties.remove(conditionToRemove);
+      Map conditionToRemove = (Map) this.allConditionsDataModel.getRowData();
+      this.allConditionsPropertiesList.remove(conditionToRemove);
       
       // reset the action drop down
-      this.condition = null;
-      
+      this.selectedCondition = null;
+
       // refresh the wizard
       FacesContext context = FacesContext.getCurrentInstance();
       goToPage(context, context.getViewRoot().getViewId());
@@ -669,7 +699,7 @@ public class CreateRuleWizard extends BaseActionWizard
       }
       
       // reset the action drop down
-      this.condition = null;
+      this.selectedCondition = null;
       
       // refresh the wizard
       goToPage(FacesContext.getCurrentInstance(), this.returnViewId);
@@ -718,8 +748,12 @@ public class CreateRuleWizard extends BaseActionWizard
     * @param outcome The default outcome
     * @return The outcome
     */
+   @SuppressWarnings("unchecked")
    protected String setupRule(FacesContext context, Rule rule, String outcome)
    {
+      if (logger.isDebugEnabled())
+         logger.debug("Saving Rules - setupRule");
+
       // setup the rule and add it to the space
       rule.setTitle(this.title);
       rule.setDescription(this.description);
@@ -729,39 +763,45 @@ public class CreateRuleWizard extends BaseActionWizard
       
       CompositeAction compositeAction = this.getActionService().createCompositeAction();
       rule.setAction(compositeAction);
-      
+      int i = 1;
       // add all the conditions to the rule
-      for (Map<String, Serializable> condParams : this.allConditionsProperties)
+      for (Object condParamsObj : this.allConditionsPropertiesList)
       {
-         String conditionName = (String)condParams.get(PROP_CONDITION_NAME);
-         this.condition = conditionName;
-         
-         // get the condition handler to prepare for the save
-         Map<String, Serializable> repoCondParams = new HashMap<String, Serializable>();
-         IHandler handler = this.conditionHandlers.get(this.condition);
-         if (handler != null)
+         if (logger.isDebugEnabled())
+            logger.debug("Saving Condition " + i++ + " of " + this.allConditionsPropertiesList.size());
+
+         Map<String, Serializable> uiConditionParams = (Map<String, Serializable>) condParamsObj;
+
+         ActionCondition condition = createCondition(uiConditionParams);
+
+         if (condition instanceof CompositeActionCondition)
          {
-            handler.prepareForSave(condParams, repoCondParams);
+            CompositeActionCondition compositeCondition = (CompositeActionCondition) condition;
+
+            List<Map<String, Serializable>> subconditionProps = (List<Map<String, Serializable>>) uiConditionParams
+                  .get(CompositeConditionHandler.PROP_COMPOSITE_CONDITION);
+            int j = 1;
+            compositeCondition.setORCondition(((Boolean)uiConditionParams.get(CompositeConditionHandler.PROP_CONDITION_OR)).booleanValue());
+            compositeCondition.setInvertCondition((((Boolean)uiConditionParams.get(CompositeConditionHandler.PROP_CONDITION_NOT)).booleanValue()));
+            
+            for (Map<String, Serializable> props : subconditionProps)
+            {
+               if (logger.isDebugEnabled())
+                  logger.debug("Saving Composite Condition " + j++ + " of " + subconditionProps.size());
+               
+               compositeCondition.addActionCondition(createCondition(props));
+            }
          }
-         
-         // add the condition to the rule
-         ActionCondition condition = this.getActionService().
-               createActionCondition(conditionName);
-         condition.setParameterValues(repoCondParams);
-         
-         // specify whether the condition result should be inverted
-         Boolean not = (Boolean)condParams.get(BaseConditionHandler.PROP_CONDITION_NOT);
-         condition.setInvertCondition(((Boolean)not).booleanValue());
-         
          compositeAction.addActionCondition(condition);
       }
       
       // add all the actions to the rule
       for (Map<String, Serializable> actionParams : this.allActionsProperties)
       {
-         // use the base class version of buildActionParams(), but for this we need 
+         // use the base class version of buildActionParams(), but for this
+         // we need
          // to setup the currentActionProperties and action variables
-         String actionName = (String)actionParams.get(PROP_ACTION_NAME);
+         String actionName = (String) actionParams.get(PROP_ACTION_NAME);
          this.action = actionName;
          
          // get the action handler to prepare for the save
@@ -779,6 +819,38 @@ public class CreateRuleWizard extends BaseActionWizard
       }
       
       return outcome;
+   }
+
+   private ActionCondition createCondition(Map<String, Serializable> uiConditionParams)
+   {
+      // get the condition handler to prepare for the save
+
+      String conditionName = (String) uiConditionParams.get(PROP_CONDITION_NAME);
+
+      Map<String, Serializable> repoCondParams = new HashMap<String, Serializable>();
+      if (logger.isDebugEnabled())
+      {
+         logger.debug("\tSaving " + conditionName);
+      }
+      IHandler handler = this.conditionHandlers.get(conditionName);
+      if (handler != null)
+      {
+         handler.prepareForSave(uiConditionParams, repoCondParams);
+      }
+
+      // add the condition to the rule
+      ActionCondition condition = this.getActionService().createActionCondition(conditionName);
+      condition.setParameterValues(repoCondParams);
+
+      // specify whether the condition result should be inverted
+      Boolean not = (Boolean) uiConditionParams.get(BaseConditionHandler.PROP_CONDITION_NOT);
+      if (not == null)
+      {
+         logger.warn("Property missing NOT parameter value (currently null)");
+         not = Boolean.TRUE;
+      }
+      condition.setInvertCondition(((Boolean) not).booleanValue());
+      return condition;
    }
    
    /**
@@ -803,19 +875,20 @@ public class CreateRuleWizard extends BaseActionWizard
                   String conditionName = child.getAttribute("name");
                   String handlerClass = child.getAttribute("class");
                   
-                  if (conditionName != null && conditionName.length() > 0 &&
-                      handlerClass != null && handlerClass.length() > 0)
+                  if (conditionName != null && conditionName.length() > 0 && handlerClass != null
+                        && handlerClass.length() > 0)
                   {
                      try
                      {
+                        @SuppressWarnings("unchecked")
                         Class klass = Class.forName(handlerClass);
-                        IHandler handler = (IHandler)klass.newInstance();
+                        IHandler handler = (IHandler) klass.newInstance();
                         this.conditionHandlers.put(conditionName, handler);
                      }
                      catch (Exception e)
                      {
-                        throw new AlfrescoRuntimeException("Failed to setup condition handler for '" + 
-                              conditionName + "'", e);
+                        throw new AlfrescoRuntimeException("Failed to setup condition handler for '" + conditionName
+                              + "'", e);
                      }
                   }
                }
@@ -837,7 +910,7 @@ public class CreateRuleWizard extends BaseActionWizard
       in.defaultReadObject();
 
       this.allConditionsDataModel = new ListDataModel();
-      this.allConditionsDataModel.setWrappedData(this.allConditionsProperties);
+      this.allConditionsDataModel.setWrappedData(this.allConditionsPropertiesList);
    }
 
 }

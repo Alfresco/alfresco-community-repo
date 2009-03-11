@@ -697,6 +697,7 @@ public abstract class BaseActionWizard extends BaseWizardBean
    {
       // use the built in JSF support for retrieving the object for the
       // row that was clicked by the user
+      @SuppressWarnings("unchecked")
       Map actionToRemove = (Map)this.allActionsDataModel.getRowData();
       this.allActionsProperties.remove(actionToRemove);
       
@@ -951,6 +952,7 @@ public abstract class BaseActionWizard extends BaseWizardBean
                   {
                      try
                      {
+                        @SuppressWarnings("unchecked")
                         Class klass = Class.forName(handlerClass);
                         IHandler handler = (IHandler)klass.newInstance();
                         this.actionHandlers.put(actionName, handler);
@@ -1046,6 +1048,15 @@ public abstract class BaseActionWizard extends BaseWizardBean
       return aspects;
    }
    
+   public boolean isFinishButtonDisabled()
+   {
+      if (emailRecipients != null)
+      {
+         return emailRecipients.isEmpty();
+      }
+      return true; 
+   }
+   
    // ------------------------------------------------------------------------------
    // Inner classes
    
@@ -1092,7 +1103,7 @@ public abstract class BaseActionWizard extends BaseWizardBean
       private String name;
       private String authority;
    }
-   
+
    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException
    {
       in.defaultReadObject();

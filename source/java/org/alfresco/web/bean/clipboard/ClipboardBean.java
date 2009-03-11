@@ -35,9 +35,11 @@ import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.UIContextService;
+import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIActionLink;
 import org.alfresco.web.ui.repo.component.shelf.UIClipboardShelfItem;
@@ -64,6 +66,8 @@ public class ClipboardBean implements Serializable
    /** Current state of the clipboard items */
    private List<ClipboardItem> items = new ArrayList<ClipboardItem>(4);
    
+   transient private NodeService nodeService;
+   
    
    // ------------------------------------------------------------------------------
    // Bean property getters and setters 
@@ -84,7 +88,21 @@ public class ClipboardBean implements Serializable
       this.items = items;
    }
    
+   public void setNodeService(NodeService nodeService)
+   {
+
+       this.nodeService = nodeService;
+   }
    
+   private NodeService getNodeService()
+   {
+       if (nodeService == null)
+       {
+           nodeService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getNodeService();
+       }
+       return nodeService;
+   }
+
    // ------------------------------------------------------------------------------
    // Navigation action event handlers 
    
@@ -158,6 +176,12 @@ public class ClipboardBean implements Serializable
             List<ClipboardItem> toRemove = new ArrayList<ClipboardItem>();
             for (ClipboardItem item : this.items)
             {
+               if (!getNodeService().exists(item.getNodeRef()))
+               {
+                  toRemove.add(item);
+                  continue;
+               }
+
                if (performClipboardOperation(item, action) == true)
                {
                   // if cut operation then remove item from the clipboard
@@ -202,8 +226,7 @@ public class ClipboardBean implements Serializable
       }
       catch (Throwable err)
       {
-         Utils.addErrorMessage(Application.getMessage(context, 
-               MSG_ERROR_PASTE) + err.getMessage(), err);
+         Utils.addErrorMessage(Application.getMessage(context, MSG_ERROR_PASTE) + err.getMessage(), err);
       }
    }
 

@@ -151,7 +151,7 @@
   						<f:selectItem itemValue="EQUALS" itemLabel="#{msg.property_condition_equals}"/>
   						<f:selectItem itemValue="CONTAINS" itemLabel="#{msg.property_condition_contains}"/>
   						<f:selectItem itemValue="BEGINS" itemLabel="#{msg.property_condition_beginswith}"/>
-  						<f:selectItem itemValue="ENDS" itemLabel="#{msg.property_condition_endswith}h"/>
+  						<f:selectItem itemValue="ENDS" itemLabel="#{msg.property_condition_endswith}"/>
                                        </h:selectOneMenu>
                                     </td>
                                  </tr>

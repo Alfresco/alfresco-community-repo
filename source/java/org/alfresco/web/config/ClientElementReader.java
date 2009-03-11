@@ -68,6 +68,8 @@ public class ClientElementReader implements ConfigElementReader
    public static final String ELEMENT_CIFSURLSUFFIX = "cifs-url-suffix";
    public static final String ELEMENT_LANGUAGESELECT = "language-select";
    public static final String ELEMENT_ZEROBYTEFILEUPLOADS = "zero-byte-file-uploads";
+   public static final String ELEMENT_USERGROUPADMIN = "user-group-admin";
+   public static final String ELEMENT_ALLOWUSERCONFIG = "allow-user-config";
    
    
    /**
@@ -290,6 +292,20 @@ public class ClientElementReader implements ConfigElementReader
          if (zeroByteFiles != null)
          {
             configElement.setZeroByteFileUploads(Boolean.parseBoolean(zeroByteFiles.getTextTrim()));
+         }
+         
+         // get allow user group admin mode
+         Element userGroupAdmin = element.element(ELEMENT_USERGROUPADMIN);
+         if (userGroupAdmin != null)
+         {
+            configElement.setUserGroupAdmin(Boolean.parseBoolean(userGroupAdmin.getTextTrim()));
+         }
+         
+         // get allow user config mode
+         Element userConfig = element.element(ELEMENT_ALLOWUSERCONFIG);
+         if (userConfig != null)
+         {
+            configElement.setAllowUserConfig(Boolean.parseBoolean(userConfig.getTextTrim()));
          }
       }
       

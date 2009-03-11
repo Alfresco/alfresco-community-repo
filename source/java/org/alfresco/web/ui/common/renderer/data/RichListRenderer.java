@@ -591,7 +591,16 @@ public class RichListRenderer extends BaseRenderer
             
             if (column.isRendered() == true)
             {
-               out.write("<tr><td rowspan=10");
+               int rowspan = 0;
+               for (UIColumn col : columns)
+               {
+                  if (col.isRendered())
+                  {
+                     rowspan++;
+                  }
+               }
+               
+               out.write("<tr><td rowspan=" + rowspan);
                outputAttribute(out, column.getAttributes().get("style"), "style");
                outputAttribute(out, column.getAttributes().get("styleClass"), "class");
                out.write('>');

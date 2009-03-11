@@ -6,7 +6,7 @@
          <#list child.children as doc>
             <#if doc.isDocument>
                <tr>
-                   <td><a class="title" href="/alfresco/${doc.url}">${doc.properties.title}</a></td>
+                   <td><a class="title" href="${url.context}/${doc.url}">${doc.properties.title}</a></td>
                </tr>
                <tr>
                    <td style="padding-left:4px"><b>${doc.properties.description}</b></td>

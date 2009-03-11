@@ -83,6 +83,8 @@ public class ClientConfigElement extends ConfigElementAdapter
    private String cifsURLSuffix;
    private boolean languageSelect = true;
    private boolean zeroByteFileUploads = true;
+   private boolean userGroupAdmin = true;
+   private boolean allowUserConfig = true;
    
    
    /**
@@ -267,6 +269,16 @@ public class ClientConfigElement extends ConfigElementAdapter
       if (newElement.isZeroByteFileUploads() != combinedElement.isZeroByteFileUploads())
       {
          combinedElement.setZeroByteFileUploads(newElement.isZeroByteFileUploads());
+      }
+      
+      if (newElement.getAllowUserConfig() != combinedElement.getAllowUserConfig())
+      {
+         combinedElement.setAllowUserConfig(newElement.getAllowUserConfig());
+      }
+      
+      if (newElement.isUserGroupAdmin() != combinedElement.isUserGroupAdmin())
+      {
+         combinedElement.setUserGroupAdmin(newElement.isUserGroupAdmin());
       }
       
       return combinedElement;
@@ -765,5 +777,37 @@ public class ClientConfigElement extends ConfigElementAdapter
    /*package*/ void setZeroByteFileUploads(boolean zeroByteFileUploads)
    {
       this.zeroByteFileUploads = zeroByteFileUploads;
+   }
+
+   /**
+    * @return true if allowing User Group administration by an admin user
+    */
+   public boolean isUserGroupAdmin()
+   {
+      return this.userGroupAdmin;
+   }
+
+   /**
+    * @param userGroupAdmin   true to allow User Group administration by an admin user
+    */
+   /*package*/ void setUserGroupAdmin(boolean userGroupAdmin)
+   {
+      this.userGroupAdmin = userGroupAdmin;
+   }
+
+   /**
+    * @return true to allow users to modify their personal settings in the User Console screen
+    */
+   public boolean getAllowUserConfig()
+   {
+      return this.allowUserConfig;
+   }
+
+   /**
+    * @param allowUserConfig  true to allow users to modify their personal settings in the User Console screen
+    */
+   /*package*/ void setAllowUserConfig(boolean allowUserConfig)
+   {
+      this.allowUserConfig = allowUserConfig;
    }
 }

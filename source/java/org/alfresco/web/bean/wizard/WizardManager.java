@@ -460,8 +460,15 @@ public final class WizardManager implements Serializable
     */
    public boolean getNextButtonDisabled()
    {
+	   IWizardBean wb = this.currentWizardState.getWizard();
+	   
+	   if (wb.isFinished())
+	   {
+		   return true;
+	   }
+	   
       return (this.currentWizardState.getCurrentStep() == this.currentWizardState.getSteps().size() ||
-              this.currentWizardState.getWizard().getNextButtonDisabled());
+              wb.getNextButtonDisabled());
    }
    
    /**
@@ -481,6 +488,11 @@ public final class WizardManager implements Serializable
     */
    public boolean getBackButtonDisabled()
    {
+      if (this.currentWizardState.getWizard().isFinished())
+      {
+         return true;
+      }
+      
       return this.currentWizardState.getCurrentStep() == 1;
    }
    
@@ -511,8 +523,15 @@ public final class WizardManager implements Serializable
     */
    public boolean getFinishButtonDisabled()
    {
+	   IWizardBean wb = this.currentWizardState.getWizard();
+	   
+	   if (wb.isFinished())
+	   {
+		   return true;
+	   }
+	   
       return (this.currentWizardState.getCurrentStep() != this.currentWizardState.getSteps().size() &&
-              this.currentWizardState.getWizard().getFinishButtonDisabled());
+              wb.getFinishButtonDisabled());
    }
    
    /**

@@ -85,4 +85,12 @@ public class MoveHandler extends BaseActionHandler
       return MessageFormat.format(Application.getMessage(context, "action_move"),
             new Object[] {spaceName});
    }
+   
+   /*
+    * @see org.alfresco.web.bean.actions.IHandler#isAllowMultiple()
+    */
+   public boolean isAllowMultiple()
+   {
+      return false;
+   }
 }

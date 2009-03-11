@@ -91,7 +91,7 @@
       <%-- Main area --%>
       <tr valign=top>
          <%-- Shelf --%>
-         <td>
+         <td style="white-space: nowrap;">
             <%@ include file="../parts/shelf.jsp" %>
          </td>
          

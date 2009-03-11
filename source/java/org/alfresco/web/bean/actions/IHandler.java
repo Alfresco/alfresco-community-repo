@@ -91,4 +91,11 @@ public interface IHandler extends Serializable
     */
    public String generateSummary(FacesContext context, IWizardBean wizard, 
                                  Map<String, Serializable> props);
+   
+   /**
+    * Returns value of possibility of repeated performance of action
+    * 
+    * @return true is allow multiple
+    */
+   public boolean isAllowMultiple();
 }

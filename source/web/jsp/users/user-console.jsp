@@ -34,7 +34,7 @@
          <f:facet name="title" >
             <a:actionLink value="#{msg.modify}" action="dialog:editUserDetails"
                   showLink="false" image="/images/icons/Change_details.gif"
-                  rendered="#{NavigationBean.isGuest == false}" />
+                  rendered="#{!NavigationBean.isGuest && NavigationBean.allowUserConfig}" />
          </f:facet>
       </h:panelGroup> 
       <a:panel label="#{msg.my_details}" id="mydetails-panel" 
@@ -101,7 +101,7 @@
          <a:actionLink id="change-password" value="#{msg.change_password}"
                action="dialog:changeMyPassword"
                image="/images/icons/change_password.gif"
-               rendered="#{NavigationBean.isGuest == false}" />
+               rendered="#{!NavigationBean.isGuest && NavigationBean.allowUserConfig}" />
       </a:panel>
    </h:panelGroup>
    

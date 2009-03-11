@@ -64,7 +64,7 @@
 </tr>
 <tr><td colspan=2 class="paddingRow"></td></tr>
 <tr>
-<td>
+<td style="white-space:nowrap">
 </f:verbatim><h:outputText value="#{msg.destination}" /><f:verbatim>:&nbsp;
 </td>
 <td width=100%>

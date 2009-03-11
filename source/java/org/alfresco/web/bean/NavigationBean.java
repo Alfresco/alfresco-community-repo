@@ -961,7 +961,7 @@ public class NavigationBean implements Serializable
    {
       if (this.cifsServerPath == null)
       {
-         StringBuilder buf = new StringBuilder(24);
+         StringBuilder buf = new StringBuilder(32);
          
          String serverName = this.getCifsServer().getConfiguration().getServerName();
          if (serverName != null && serverName.length() != 0)
@@ -970,9 +970,10 @@ public class NavigationBean implements Serializable
             buf.append(serverName);
             
             // Check if there is a suffix to apply to the host name
-            
-            if ( clientConfig != null && clientConfig.getCifsURLSuffix() != null)
+            if (clientConfig != null && clientConfig.getCifsURLSuffix() != null)
+            {
             	buf.append(clientConfig.getCifsURLSuffix());
+            }
             
             buf.append("\\");
             buf.append(diskShare.getName());
@@ -998,6 +999,22 @@ public class NavigationBean implements Serializable
    public String getRSSFeedURL()
    {
       return SpaceDetailsDialog.buildRSSFeedURL(getCurrentNode());
+   }
+   
+   /**
+    * @return true if User/Group admin is allowed by admin users
+    */
+   public boolean isAllowUserGroupAdmin()
+   {
+      return this.clientConfig.isUserGroupAdmin();
+   }
+   
+   /**
+    * @return true if users can configure their own settings and password in the User Console
+    */
+   public boolean isAllowUserConfig()
+   {
+      return this.clientConfig.getAllowUserConfig();
    }
    
    

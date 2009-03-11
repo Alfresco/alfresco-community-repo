@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+import javax.faces.context.FacesContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -334,7 +335,7 @@ public abstract class BaseTemplateContentServlet extends BaseServlet
       root.put(TemplateService.KEY_IMAGE_RESOLVER, imageResolver);
       
       // method to allow client urls to be generated
-      root.put("url", new URLHelper(req.getContextPath()));
+      root.put("url", new URLHelper(req));
       
       return root;
    }
@@ -353,16 +354,34 @@ public abstract class BaseTemplateContentServlet extends BaseServlet
     */
    public static class URLHelper
    {
-       String context;
-       
-       public URLHelper(String context)
-       {
-           this.context = context;
-       }
-       
-       public String getContext()
-       {
-           return context;
-       }
+      String contextPath;
+      String serverPath;
+
+      public URLHelper(HttpServletRequest request)
+      {
+         this.contextPath = request.getContextPath();
+         this.serverPath = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
+      }
+
+      public URLHelper(FacesContext context)
+      {
+         this.contextPath = context.getExternalContext().getRequestContextPath();
+         final Object request = context.getExternalContext().getRequest();
+         if (request instanceof HttpServletRequest)
+         {
+            final HttpServletRequest httpServletRequest = (HttpServletRequest) request;
+            this.serverPath = httpServletRequest.getScheme() + "://" + httpServletRequest.getServerName() + ":" + httpServletRequest.getServerPort();
+         }
+      }
+
+      public String getContext()
+      {
+         return this.contextPath;
+      }
+
+      public String getServerPath()
+      {
+         return this.serverPath;
+      }
    }
 }

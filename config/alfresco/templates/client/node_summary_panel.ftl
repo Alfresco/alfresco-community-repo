@@ -51,23 +51,24 @@
 	      <td valign='top'>
 	         <table cellpadding='2' cellspacing='0'>
 	            <#if node.properties.title?exists>
-	               <tr><td>&nbsp;Title:</td><td>${node.properties.title?html}</td></tr>
+	               <tr><td>&nbsp;${msg("title")}:</td><td>${node.properties.title?html}</td></tr>
 	            </#if>
 	            <#if node.properties.description?exists>
-	               <tr><td>&nbsp;Description:</td><td>${node.properties.description?html}</td></tr>
+	               <tr><td>&nbsp;${msg("description")}:</td><td>${node.properties.description?html}</td></tr>
 	            </#if>
-	            <tr><td>&nbsp;Created:</td><td>${node.properties.created?datetime}</td></tr>
-	            <tr><td>&nbsp;Creator:</td><td>${node.properties.creator}</td></tr>
-	            <tr><td>&nbsp;Modified:</td><td>${node.properties.modified?datetime}</td></tr>
-	            <tr><td>&nbsp;Modifier:</td><td>${node.properties.modifier}</td></tr>
+	            <tr><td>	            	            
+	            &nbsp;${msg("created")}:</td><td>${node.properties.created?datetime}</td></tr>
+	            <tr><td>&nbsp;${msg("creator")}:</td><td>${node.properties.creator}</td></tr>
+	            <tr><td>&nbsp;${msg("modified")}:</td><td>${node.properties.modified?datetime}</td></tr>
+	            <tr><td>&nbsp;${msg("modifier")}:</td><td>${node.properties.modifier}</td></tr>
 	            <#if node.properties.owner?exists>
-	               <tr><td>&nbsp;Owner:</td><td>${node.properties.owner}</td></tr>
+	               <tr><td>&nbsp;${msg("owner")}:</td><td>${node.properties.owner}</td></tr>
 	            </#if>
 	            <#if node.properties.author?exists>
-	               <tr><td>&nbsp;Author:</td><td>${node.properties.author?html}</td></tr>
+	               <tr><td>&nbsp;${msg("author")}:</td><td>${node.properties.author?html}</td></tr>
 	            </#if>
 	            <#if node.isDocument>
-	               <tr><td>&nbsp;Size:</td><td>${(node.size / 1000)?string("0.##")} KB</td></tr>
+	               <tr><td>&nbsp;${msg("size")}:</td><td>${(node.size / 1000)?string("0.##")} KB</td></tr>
 	            </#if>
 	         </table>
 	      </td>
@@ -77,7 +78,7 @@
 	      <#assign c=cropContent(node.properties.content, 512)>
 	      <#if c?length != 0>
 	         <tr>
-	            <td colspan='2'>Preview:</td>
+	            <td colspan='2'>${msg("snapshot_preview")}:</td>
 	         </tr>
 	         <tr>
 	            <td colspan='2'>

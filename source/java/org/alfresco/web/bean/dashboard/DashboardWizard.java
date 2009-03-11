@@ -127,7 +127,7 @@ public class DashboardWizard extends BaseWizardBean
          label = Application.getMessage(FacesContext.getCurrentInstance(), def.LabelId);
       }
       return buildSummary(
-            new String[]{"Layout"},
+    		new String[]{Application.getMessage(FacesContext.getCurrentInstance(),"step_layout")},   
             new String[]{label});
    }
    

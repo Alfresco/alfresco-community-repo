@@ -63,6 +63,10 @@ Alfresco.OpenSearchClient.prototype =
    
    msgLastPage: null,
 
+   msgInvalidTermLength: null,
+   
+   minTermLength: 0,
+
    /**
     * Registers an OpenSearch engine to be called when performing queries
     */
@@ -71,6 +75,18 @@ Alfresco.OpenSearchClient.prototype =
       var se = new Alfresco.OpenSearchEngine(id, label, url);
       this.engines[this.engines.length] = se;
       this.enginesById[id] = se;
+   },
+
+   /**
+    * Registers an OpenSearch engine to be called when performing queries.
+    * Extra parameter is the minimum search term length. 
+    */
+   registerOpenSearchEngine: function(id, label, url, minLengh)
+   {
+      var se = new Alfresco.OpenSearchEngine(id, label, url);
+      this.engines[this.engines.length] = se;
+      this.enginesById[id] = se;
+      this.minTermLength = minLengh;
    },
 
    /**
@@ -137,6 +153,14 @@ Alfresco.OpenSearchClient.prototype =
       this.msgLastPage = msg;
    },
    
+   /**
+    * Sets the invalid term length message
+    */
+   setMsgInvalidTermLength: function(msg)
+   {
+      this.msgInvalidTermLength = msg;
+   },
+
    /**
     * Handles the key press event, if ENTER is pressed execute the query
     */
@@ -205,6 +229,14 @@ Alfresco.OpenSearchClient.prototype =
       var term = document.getElementById(this.id + _SEARCH_TERM_FIELD_ID).value;
       var count = document.getElementById(this.id + _PAGE_SIZE_FIELD_ID).value;
       
+   	  // ADB-134 fix (Error message about not enough search criteria)
+   	  if (term.length < this.minTermLength)
+	  {
+         var errorMsg = this.msgInvalidTermLength.replace("{0}", this.minTermLength);
+         handleCaughtError(errorMsg);
+         return;
+	  } 
+   	
       // default the count if its invalid
       if (count.length == 0 || isNaN(count) || count < 1)
       {
@@ -212,8 +244,8 @@ Alfresco.OpenSearchClient.prototype =
          document.getElementById(this.id + _PAGE_SIZE_FIELD_ID).value = count;
       }
       
-      // issue the queries if there is enough search criteria
-      if (this.searchInProgress == false && term != null && term.length > 1)
+      // issue the queries if there is enough search criteria (& ADB-133 fix: parametrized minTermLength)
+      if (this.searchInProgress == false && term != null && term.length >= this.minTermLength)
       {
          // remove previous results (if necessary)
          var resultsPanel = document.getElementById(this.id + _RESULTS_DIV_ID_SUFFIX);

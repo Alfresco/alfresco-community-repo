@@ -5,7 +5,7 @@
    <b>Ref:</b> ${document.nodeRef}<br>
    <b>Type:</b> ${document.type}<br>
    <b>DBID:</b> ${document.properties["sys:node-dbid"]}<br>
-   <b>Content URL:</b> <a href="/alfresco${document.url}">/alfresco${document.url}</a><br>
+   <b>Content URL:</b> <a href="${url.context}${document.url}">${url.context}${document.url}</a><br>
    <b>Locked:</b> <#if document.isLocked>Yes<#else>No</#if><br>
    <#if hasAspect(document, "cm:countable") == 1 && document.properties['cm:counter']?exists>
    <b>Counter:</b> ${document.properties['cm:counter']}<br>

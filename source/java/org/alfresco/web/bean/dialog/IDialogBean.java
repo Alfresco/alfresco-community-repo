@@ -139,4 +139,11 @@ public interface IDialogBean extends Serializable
     * @return Id of an action group
     */
    public String getMoreActionsConfigId();
+   
+   /**
+    * Determines whether the has finished
+    *  
+    * @return true if the wizard has finished
+    */
+   public boolean isFinished();
 }

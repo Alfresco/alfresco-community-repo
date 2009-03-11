@@ -32,10 +32,9 @@ import javax.faces.context.FacesContext;
 
 import org.alfresco.repo.action.evaluator.ComparePropertyValueEvaluator;
 import org.alfresco.repo.action.evaluator.compare.ComparePropertyValueOperation;
-import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
-import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.rules.handlers.PropertyValueHandler;
 import org.alfresco.web.bean.wizard.IWizardBean;
 import org.apache.commons.logging.Log;
@@ -53,6 +52,7 @@ public class TextPropertyValueConditionHandler extends PropertyValueHandler
 
    public static final String UI_PARAM_OPERATION = "operation";
    public static final String UI_PARAM_QNAME = "qname";
+   private static final String DEFAULT_NAMESPACE = NamespaceService.CONTENT_MODEL_PREFIX;
 
    public String getJSPPath()
    {
@@ -72,15 +72,17 @@ public class TextPropertyValueConditionHandler extends PropertyValueHandler
       super.prepareForSave(conditionParams, repoProps);
       String propertyString = (String) conditionParams.get(UI_PARAM_QNAME);
 
-      FacesContext fc = FacesContext.getCurrentInstance();
-      ServiceRegistry serviceRegistry = Repository.getServiceRegistry(fc);
       QName qname = null;
       
-      if ((propertyString.indexOf(':')) == -1)  // TODO: there might be a better way to resolve namespaces 
-         qname = QName.createQName(propertyString);
-      else
-         qname = QName.createQName(propertyString, serviceRegistry.getNamespaceService());
+      // TODO: there might be a better way to resolve namespaces instead of propertyString.indexOf(':')?
       
+      // The part of ADB-131 fix. We use default namespase prefix of content model 'cm'.
+      // It is necessary to enable an ability to set the property as its localName (e.g. description).
+      // It keeps also an ability to enter a user content model text properties such as 'my:description'
+      propertyString = propertyString.indexOf(':') == -1 ?
+                       DEFAULT_NAMESPACE + QName.NAMESPACE_PREFIX + propertyString :
+                       propertyString;
+      qname = QName.createQName(propertyString, getNamespaceService());
       if (logger.isDebugEnabled())
          logger.warn("Storing Property QName  " + qname);
       
@@ -96,8 +98,10 @@ public class TextPropertyValueConditionHandler extends PropertyValueHandler
          logger.debug("Retrieving Text Condition Parameters for editing");
       
       super.prepareForEdit(conditionProps, repoProps);
-      conditionProps.put(UI_PARAM_QNAME, ((QName) repoProps.get(ComparePropertyValueEvaluator.PARAM_PROPERTY))
-            .toPrefixString());
+      // The part of ADB-131 fix. The NamespaceService is used to get a valid prefix string.
+      // When the user attempt to edit a rule a 'Summary' string contain an invalid property name
+      // and then the property will be saved with default prefix 'cm'. But the property may be as 'my:description' 
+      conditionProps.put(UI_PARAM_QNAME, ((QName) repoProps.get(ComparePropertyValueEvaluator.PARAM_PROPERTY)).toPrefixString(getNamespaceService()));
       conditionProps.put(UI_PARAM_OPERATION, repoProps.get(ComparePropertyValueEvaluator.PARAM_OPERATION).toString());
    }
 

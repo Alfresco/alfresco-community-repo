@@ -12,8 +12,8 @@
    <#list userhome.children as child>
       <#if child.isDocument>
          <#if rowcount % 2 = 0><tr><#else><tr style='background-color: #DEE5EC'></#if>
-            <td><a href="/alfresco${child.url}" target="new"><img src="/alfresco${child.icon16}" border=0></a></td>
-            <td><a href="/alfresco${child.url}" target="new">${child.properties.name}</a></td>
+            <td><a href="${url.context}${child.url}" target="new"><img src="${url.context}${child.icon16}" border=0></a></td>
+            <td><a href="${url.context}${child.url}" target="new">${child.properties.name}</a></td>
             <td>${(child.size / 1000)?string("0.##")} KB</td>
             <td>${child.properties.modified?datetime}</td>
             <td>&nbsp;<#if child.isLocked>${child.properties.lockOwner}</#if></td>

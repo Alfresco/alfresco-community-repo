@@ -103,6 +103,14 @@
          
          <!-- Allow zero byte file uploads - set to false log warning and ignore on upload otherwise -->
          <zero-byte-file-uploads>true</zero-byte-file-uploads>
+         
+         <!-- Allow User Group administration by an admin user - you may wish to disable this if you -->
+         <!-- only ever use external User/Group control such as synchronized LDAP -->
+         <user-group-admin>true</user-group-admin>
+         
+         <!-- Allow Users to modify their personal settings in the User Console screen - you may wish to -->
+         <!-- disable this if your admin does not wish to allow users to edit their own details -->
+         <allow-user-config>true</allow-user-config>
       </client>
    </config>
 

@@ -55,4 +55,12 @@ public abstract class BaseActionHandler implements IHandler
    {
       return ACTION_PAGES_LOCATION + actionName + ".jsp";
    }
+   
+   /*
+    * @see org.alfresco.web.bean.actions.IHandler#isAllowMultiple()
+    */
+   public boolean isAllowMultiple()
+   {
+      return true;
+   }
 }

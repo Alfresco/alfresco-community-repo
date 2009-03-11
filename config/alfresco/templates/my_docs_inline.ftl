@@ -8,7 +8,7 @@
     <#if child.mimetype = "text/plain">
        <tr><td style='padding-left:16px'>${child.content}</td></tr>
     <#elseif child.mimetype = "image/jpeg">
-       <tr><td style='padding-left:16px'><img width=100 height=65 src="/alfresco${child.url}"><td></tr>
+       <tr><td style='padding-left:16px'><img width=100 height=65 src="${url.context}${child.url}"><td></tr>
     </#if>
   </#if>
 </#list>

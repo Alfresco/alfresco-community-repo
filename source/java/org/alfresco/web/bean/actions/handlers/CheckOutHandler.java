@@ -86,4 +86,12 @@ public class CheckOutHandler extends BaseActionHandler
       return MessageFormat.format(Application.getMessage(context, "action_check_out"),
             new Object[] {spaceName});
    }
+   
+   /*
+    * @see org.alfresco.web.bean.actions.IHandler#isAllowMultiple()
+    */
+   public boolean isAllowMultiple()
+   {
+      return false;
+   }
 }

@@ -4,7 +4,7 @@
 <table>
 <#list companyhome.childByNamePath["Data Dictionary/Content Templates"].children as child>
    <#if child.isDocument>
-      <tr><td><a href="/alfresco${child.url}" target="new">${child.properties.name}</a></td></tr>
+      <tr><td><a href="${url.context}${child.url}" target="new">${child.properties.name}</a></td></tr>
    </#if>
 </#list>
 </table>
@@ -13,7 +13,7 @@
 <table>
 <#list companyhome.childrenByXPath["*[@cm:name='Data Dictionary']/*[@cm:name='Space Templates']/*[@cm:name='Software Engineering Project']/*"] as child>
    <#if child.isContainer>
-      <tr><td><img src="/alfresco${child.icon32}"> ${child.properties.name}</td></tr>
+      <tr><td><img src="${url.context}${child.icon32}"> ${child.properties.name}</td></tr>
    </#if>
 </#list>
 </table>

@@ -422,6 +422,15 @@ public class CategoriesDialog extends BaseDialogBean implements IContextListener
    }
    
    /**
+    * Reset the current category navigation point - e.g. ready for redisplay of the root UI
+    */
+   public void resetCategoryNavigation(ActionEvent event)
+   {
+      setCurrentCategory(null);
+      this.location = null;
+   }
+   
+   /**
     * Action called when a category folder is clicked.
     * Navigate into the category.
     */
@@ -517,7 +526,6 @@ public class CategoriesDialog extends BaseDialogBean implements IContextListener
       {
          this.categoriesRichList.setValue(null);
       }
-      
    }
    
    /**

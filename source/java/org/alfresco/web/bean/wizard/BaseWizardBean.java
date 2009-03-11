@@ -29,6 +29,7 @@ import javax.faces.context.FacesContext;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
+import org.alfresco.web.ui.common.Utils;
 
 /**
  * Base class for all wizard beans providing common functionality
@@ -41,11 +42,23 @@ public abstract class BaseWizardBean extends BaseDialogBean implements IWizardBe
    
    public String next()
    {
+      if (isFinished())
+      {
+         Utils.addErrorMessage(Application.getMessage(FacesContext.getCurrentInstance(), 
+                  "error_wizard_completed_already"));
+      }
+      
       return null;
    }
    
    public String back()
    {
+      if (isFinished())
+      {
+         Utils.addErrorMessage(Application.getMessage(FacesContext.getCurrentInstance(), 
+                  "error_wizard_completed_already"));
+      }
+      
       return null;
    }
    

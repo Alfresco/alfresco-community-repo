@@ -10,8 +10,8 @@
    <#list space.childrenByXPath[".//*[subtypeOf('cm:content')]"] as child>
       <#if (dateCompare(child.properties["cm:modified"], date, 1000*60*60*24*7) == 1) || (dateCompare(child.properties["cm:created"], date, 1000*60*60*24*7) == 1)>
          <tr>
-            <td><a href="/alfresco${child.url}" target="new"><img src="/alfresco${child.icon16}" border=0></a></td>
-            <td><a href="/alfresco${child.url}" target="new">${child.properties.name}</a></td>
+            <td><a href="${url.context}${child.url}" target="new"><img src="${url.context}${child.icon16}" border=0></a></td>
+            <td><a href="${url.context}${child.url}" target="new">${child.properties.name}</a></td>
             <td>${child.properties["cm:created"]?datetime}</td>
             <td>${child.properties["cm:modified"]?datetime}</td>
          </tr>

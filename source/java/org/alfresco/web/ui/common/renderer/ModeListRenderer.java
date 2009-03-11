@@ -152,7 +152,7 @@ public class ModeListRenderer extends BaseRenderer
          }
          
          String menuId = UIMenu.getNextMenuId(list, context);
-         out.write("<td><a href='#' onclick=\"javascript:_toggleMenu(event, '");
+         out.write("<td style='white-space: nowrap;'><a href='#' onclick=\"javascript:_toggleMenu(event, '");
          out.write(menuId);
          out.write("');return false;\">");
          
@@ -375,7 +375,7 @@ public class ModeListRenderer extends BaseRenderer
       }
       
       // output item link
-      out.write("<td>");
+      out.write("<td style='white-space: nowrap;'>");
       if (!list.isDisabled() && !item.isDisabled())
       {
          out.write("<a href='#' onclick=\"");

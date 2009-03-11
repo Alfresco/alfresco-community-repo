@@ -143,8 +143,7 @@ public class TaskInfoBean implements Serializable
       
       // create template api methods and objects
       model.put("date", new Date());
-      model.put("url", new BaseTemplateContentServlet.URLHelper(
-              context.getExternalContext().getRequestContextPath()));
+      model.put("url", new BaseTemplateContentServlet.URLHelper(context));
       model.put("task", new Workflow.WorkflowTaskItem(
             Repository.getServiceRegistry(context),
             this.imageResolver,

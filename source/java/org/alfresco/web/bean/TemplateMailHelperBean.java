@@ -147,8 +147,7 @@ public class TemplateMailHelperBean implements Serializable
             model.put("role", roleText);
             model.put("space", node);
             // object to allow client urls to be generated in emails
-            model.put("url", new BaseTemplateContentServlet.URLHelper(
-              fc.getExternalContext().getRequestContextPath()));
+            model.put("url", new BaseTemplateContentServlet.URLHelper(fc));
             
             body = services.getTemplateService().processTemplate("freemarker", templateRef.toString(), model);
          }

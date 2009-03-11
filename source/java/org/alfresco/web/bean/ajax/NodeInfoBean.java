@@ -33,7 +33,9 @@ import java.util.Map;
 import javax.faces.context.FacesContext;
 import javax.faces.context.ResponseWriter;
 
+import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.content.transform.TransformerInfoException;
+import org.alfresco.repo.template.I18NMessageMethod;
 import org.alfresco.repo.template.TemplateNode;
 import org.alfresco.repo.web.scripts.FileTypeImageUtils;
 import org.alfresco.service.cmr.repository.ContentIOException;
@@ -145,10 +147,11 @@ public class NodeInfoBean implements Serializable
       FacesContext context = FacesContext.getCurrentInstance();
       Map<String, Object> model = new HashMap<String, Object>(8, 1.0f);
       
+      I18NUtil.registerResourceBundle("alfresco.messages.webclient"); 
       // create api methods
       model.put("date", new Date());
-      model.put("url", new BaseTemplateContentServlet.URLHelper(
-              context.getExternalContext().getRequestContextPath()));
+      model.put("msg", new I18NMessageMethod());
+      model.put("url", new BaseTemplateContentServlet.URLHelper(context));
       if (nodeRef != null)
       {
          model.put("node", new TemplateNode(

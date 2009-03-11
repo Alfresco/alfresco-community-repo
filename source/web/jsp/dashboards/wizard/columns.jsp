@@ -38,6 +38,11 @@
       {
          document.getElementById("wizard:finish-button").disabled = false;
       }
+      function outputSelectedItem()
+      {
+      	 var all_dashlets = document.getElementById('wizard:wizard-body:all-dashlets');
+      	 document.getElementById('wizard:wizard-body:selected-dashlets').innerHTML = all_dashlets.options[all_dashlets.selectedIndex].innerHTML;
+      }
    </script>
 </f:verbatim>
 
@@ -64,7 +69,7 @@
       <h:panelGrid id="panel3" columns="1" cellpadding="2" border="0">
          <h:outputText value="#{msg.dashlet_list}:" />
          <%-- note this component ID is referenced in DashboardWizard --%>
-         <h:selectManyListbox id="all-dashlets" style="width:300px" size="8">
+         <h:selectManyListbox id="all-dashlets" style="width:300px" size="8" onchange="outputSelectedItem()">
             <f:selectItems value="#{WizardManager.bean.allDashlets}" />
          </h:selectManyListbox>
       </h:panelGrid>
@@ -87,4 +92,7 @@
          <h:commandButton id="remove-btn" value="#{msg.dashlet_btn_remove}" actionListener="#{WizardManager.bean.removeDashlet}" disabled="#{WizardManager.bean.columnDashletCount < 1}"/>
       </h:panelGrid>
    </h:panelGrid>
+   <h:outputText value="#{msg.selected_item}:" />
+   <h:outputText id="selected-dashlets" style="font-style:italic" />
+   
 </h:panelGrid>

@@ -80,7 +80,8 @@ public abstract class BaseActionWizard extends BaseWizardBean
    protected static final String PROP_ACTION_NAME = "actionName";
    protected static final String PROP_ACTION_SUMMARY = "actionSummary";
    protected static final String NO_PARAMS_MARKER = "noParamsMarker"; 
-
+   protected static final String ERROR_ACTION_CANNOT_BE_EXECUTE_REPEATEDLY = "action_cannot_be_execute_repeatedly";
+   
    transient private ActionService actionService;
    transient private MimetypeService mimetypeService;
    transient private PersonService personService;
@@ -610,6 +611,14 @@ public abstract class BaseActionWizard extends BaseWizardBean
       // get the handler for the action, if there isn't one we presume it
       // is a no-parameter action
       IHandler handler = this.actionHandlers.get(this.action);
+      
+      if (!handler.isAllowMultiple() && isActionPresent(this.action))
+      {
+         Utils.addErrorMessage(Application.getMessage(
+                  FacesContext.getCurrentInstance(), ERROR_ACTION_CANNOT_BE_EXECUTE_REPEATEDLY));
+         return;
+      }
+      
       if (handler != null)
       {
          // setup any UI defaults the action may have and get the location of
@@ -1056,6 +1065,24 @@ public abstract class BaseActionWizard extends BaseWizardBean
       }
       return true; 
    }
+   
+   protected boolean isActionPresent(String actionName)
+   {
+      for(Map<String, Serializable> prop : allActionsProperties)
+      {
+         Serializable name = prop.get(PROP_ACTION_NAME);
+         if (name != null)
+         {
+            if (name.equals(actionName))
+            {
+               return true;
+            }
+         }
+      }
+      
+      return false;
+   }
+   
    
    // ------------------------------------------------------------------------------
    // Inner classes

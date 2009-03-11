@@ -105,7 +105,8 @@ public class UIOpenSearch extends SelfRenderingComponent
       out.write(" = new Alfresco.OpenSearchClient('");
       out.write(clientId);
       out.write("');\n");
-      
+      // ADB-133: Synchronizing lengths of search fields
+      final Integer searchMinimum = Application.getClientConfig(FacesContext.getCurrentInstance()).getSearchMinimum();
       // register the engines on the client
       for (OpenSearchEngine engine : engines)
       {
@@ -116,7 +117,9 @@ public class UIOpenSearch extends SelfRenderingComponent
          out.write(engine.getLabel());
          out.write("', '");
          out.write(engine.getUrl());
-         out.write("');\n");
+         out.write("', ");
+         out.write(searchMinimum.toString());
+         out.write(");\n");
       }
       
       // pass in NLS strings
@@ -160,6 +163,11 @@ public class UIOpenSearch extends SelfRenderingComponent
       out.write(Application.getMessage(context, "last_page"));
       out.write("\");\n");
          
+      out.write(clientId);
+      out.write(".setMsgInvalidTermLength(\"");
+      out.write(Application.getMessage(context, "search_minimum"));
+      out.write("\");\n");
+
       out.write("</script>\n");
       
       // write out the HTML

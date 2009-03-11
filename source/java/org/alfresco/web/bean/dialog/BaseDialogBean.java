@@ -147,8 +147,17 @@ public abstract class BaseDialogBean implements IDialogBean, Serializable
             ReportedException.throwIfNecessary(e);
          }
       }
+      else
+      {
+         Utils.addErrorMessage(Application.getMessage(context, "error_wizard_completed_already"));
+      }
       
       return outcome;
+   }
+   
+   public boolean isFinished()
+   {
+      return isFinished;
    }
    
    public List<DialogButtonConfig> getAdditionalButtons()

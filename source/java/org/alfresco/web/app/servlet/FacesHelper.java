@@ -29,6 +29,7 @@ import javax.faces.component.UIComponent;
 import javax.faces.component.UIViewRoot;
 import javax.faces.context.FacesContext;
 import javax.faces.context.FacesContextFactory;
+import javax.faces.el.EvaluationException;
 import javax.faces.el.ValueBinding;
 import javax.faces.lifecycle.Lifecycle;
 import javax.faces.lifecycle.LifecycleFactory;
@@ -159,8 +160,21 @@ public final class FacesHelper
     */
    public static Object getManagedBean(FacesContext fc, String name)
    {
-      ValueBinding vb = fc.getApplication().createValueBinding("#{" + name + "}");
-      return vb.getValue(fc);
+      Object obj = null;
+      
+      try
+      {
+         ValueBinding vb = fc.getApplication().createValueBinding("#{" + name + "}");
+         obj = vb.getValue(fc);
+      }
+      catch (EvaluationException ee)
+      {
+         // catch exception to resolve ADB-158/ACT-7343
+         // not much we can do here, just make sure return is null
+         obj = null;
+      }
+      
+      return obj;
    }
 
    /**

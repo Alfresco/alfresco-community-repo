@@ -27,7 +27,11 @@ package org.alfresco.web.bean.rules.handlers;
 import java.io.Serializable;
 import java.util.Map;
 
+import javax.faces.context.FacesContext;
+
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.web.bean.actions.IHandler;
+import org.alfresco.web.bean.repository.Repository;
 
 /**
  * Base class for all condition handler implementations.
@@ -54,5 +58,25 @@ public abstract class BaseConditionHandler implements IHandler
    protected String getJSPPath(String conditionName)
    {
       return CONDITION_PAGES_LOCATION + conditionName + ".jsp";
+   }
+   
+   /**
+    * Returns the NamespaceService for further retrieve a prefix strings.
+    * 
+    * @see org.alfresco.web.bean.rules.handlers.property.TextPropertyValueConditionHandler#prepareForEdit(Map, Map)
+    * 
+    * @return The NamespaseService for further usage
+    */
+   protected NamespaceService getNamespaceService()
+   {
+       return Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getNamespaceService();
+   }
+
+   /*
+    * @see org.alfresco.web.bean.actions.IHandler#isAllowMultiple()
+    */
+   public boolean isAllowMultiple()
+   {
+      return true;
    }
 }

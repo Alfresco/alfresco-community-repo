@@ -46,6 +46,7 @@ import org.alfresco.web.ui.common.Utils;
 public class ErrorsRenderer extends BaseRenderer
 {
    private static final String DEFAULT_MESSAGE = "wizard_errors";
+   private static final String ERROR_HINT = "error";
    
    /**
     * @see javax.faces.render.Renderer#encodeBegin(javax.faces.context.FacesContext, javax.faces.component.UIComponent)
@@ -66,6 +67,7 @@ public class ErrorsRenderer extends BaseRenderer
          String errorClass = (String)component.getAttributes().get("errorClass");
          String infoClass = (String)component.getAttributes().get("infoClass");
          String message = (String)component.getAttributes().get("message");
+         String errorHint = Application.getMessage(context, ERROR_HINT);
          
          if (message == null)
          {
@@ -97,7 +99,9 @@ public class ErrorsRenderer extends BaseRenderer
          {
             out.write("<img src='");
             out.write(contextPath);
-            out.write("/images/icons/info_icon.gif' alt='Error' align='absmiddle'/>&nbsp;&nbsp;");
+            out.write("/images/icons/info_icon.gif' alt='");
+            out.write(Utils.encode(errorHint));
+            out.write("' align='absmiddle'/>&nbsp;&nbsp;");
             out.write(Utils.encode(message));
             out.write("\n<ul style='margin:2px;'>");
             
@@ -119,7 +123,9 @@ public class ErrorsRenderer extends BaseRenderer
             // the info icon on the left and the list of messages on the right
             out.write("<table border='0' cellpadding='3' cellspacing='0'><tr><td valign='top'><img src='");
             out.write(contextPath);
-            out.write("/images/icons/info_icon.gif' alt='Error' />");
+            out.write("/images/icons/info_icon.gif' alt='");
+            out.write(Utils.encode(errorHint));
+            out.write("'/>");
             out.write("</td><td>");
             
             while (messages.hasNext())

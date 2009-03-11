@@ -608,6 +608,7 @@ var MySpaces = {
          fileInput.type = "file";
          fileInput.name = "_upload";
          fileInput.size = "35";
+         fileInput.contentEditable = false;
          fileInput.setStyle("width", "100%");
          fileInput.addClass("spaceFormItem");
          fileInput.injectTop(panel);
@@ -793,6 +794,7 @@ var MySpaces = {
          fileInput.type = "file";
          fileInput.name = "_upload";
          fileInput.size = "35";
+         fileInput.contentEditable = false;
          fileInput.setStyle("width", "100%");
          fileInput.addClass("spaceFormItem");
          fileInput.injectTop(panel);

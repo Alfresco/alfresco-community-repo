@@ -614,6 +614,7 @@ var MyDocs = {
          fileInput.type = "file";
          fileInput.name = "_upload";
          fileInput.size = "35";
+         fileInput.contentEditable = false;
          fileInput.setStyle("width", "100%");
          fileInput.addClass("docFormItem");
          fileInput.injectTop(panel);

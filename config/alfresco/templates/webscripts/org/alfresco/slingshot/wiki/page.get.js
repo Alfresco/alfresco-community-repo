@@ -18,7 +18,8 @@ function main()
    var site = siteService.getSite(params.siteId);
    if (site === null)
    {
-      return jsonError("Could not find site: " + params.siteId);
+      // Wiki "not found" error is used elsewhere
+      return status.setCode(status.STATUS_PRECONDITION_FAILED, "Could not find site: " + params.siteId);
    }
 
    var wiki = getWikiContainer(site);

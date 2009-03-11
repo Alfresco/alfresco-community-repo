@@ -21,7 +21,7 @@ function findNodeInSite()
    var site = siteService.getSite(siteId);
    if (site === null)
    {
-      status.setCode(status.STATUS_NOT_FOUND, "Site " + siteId + " does not exist");
+      status.setCode(status.STATUS_NOT_FOUND, "Site not found: '" + siteId + "'");
       return null;
    }
 

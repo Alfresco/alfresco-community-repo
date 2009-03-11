@@ -18,7 +18,7 @@ function getWikiPages(siteId)
    var site = siteService.getSite(siteId);
    if (site === null)
    {
-      status.setCode(status.STATUS_BAD_REQUEST, "Site not found: '" + siteId + "'");
+      status.setCode(status.STATUS_NOT_FOUND, "Site not found: '" + siteId + "'");
       return;
    }
    

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -32,7 +32,6 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -41,24 +40,16 @@ import javax.faces.context.FacesContext;
 import org.alfresco.config.ConfigElement;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.WCMAppModel;
-import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.domain.PropertyValue;
-import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
-import org.alfresco.service.cmr.avmsync.AVMDifference;
-import org.alfresco.service.cmr.avmsync.AVMSyncService;
-import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
-import org.alfresco.service.cmr.workflow.WorkflowPath;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
-import org.alfresco.wcm.sandbox.SandboxInfo;
 import org.alfresco.wcm.util.WCMWorkflowUtil;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
@@ -78,34 +69,6 @@ public class AVMWorkflowUtil extends WorkflowUtil
 
    // cached configured lists
    private static List<WorkflowDefinition> configuredWorkflowDefs = null;
-   
-   public static NodeRef createWorkflowPackage(final List<String> srcPaths,
-                                               final SandboxInfo sandboxInfo,
-                                               final WorkflowPath path)
-   {
-      final FacesContext fc = FacesContext.getCurrentInstance();
-      final WorkflowService workflowService = Repository.getServiceRegistry(fc).getWorkflowService();
-      final AVMService avmService = Repository.getServiceRegistry(fc).getAVMLockingAwareService();
-
-      // create package paths (layered to user sandbox area as target)
-      final String workflowMainStoreName = sandboxInfo.getMainStoreName();
-      final String packagesPath = AVMUtil.buildStoreRootPath(workflowMainStoreName);
-                    
-      // convert package to workflow package
-      final AVMNodeDescriptor packageDesc = avmService.lookup(-1, packagesPath);
-      final NodeRef packageNodeRef = workflowService.createPackage(AVMNodeConverter.ToNodeRef(-1, packageDesc.getPath()));
-      
-      avmService.setNodeProperty(packagesPath, WorkflowModel.PROP_IS_SYSTEM_PACKAGE, new PropertyValue(DataTypeDefinition.BOOLEAN, true));
-
-      // NOTE: WCM-1019: As permissions are now implemented for AVM nodes we no longer need to set permisssions here
-      //                 as they will be inherited from the store the workflow store is layered over.
-      
-      //final ServiceRegistry services = Repository.getServiceRegistry(FacesContext.getCurrentInstance());
-      //final PermissionService permissionService = services.getPermissionService();
-      //permissionService.setPermission(packageNodeRef, PermissionService.ALL_AUTHORITIES, PermissionService.ALL_PERMISSIONS, true);
-      
-      return packageNodeRef;
-   }
 
    /**
     * Serialize the workflow params to a content stream
@@ -226,11 +189,5 @@ public class AVMWorkflowUtil extends WorkflowUtil
       FacesContext fc = FacesContext.getCurrentInstance();
       AVMService avmService = Repository.getServiceRegistry(fc).getAVMService();
       return WCMWorkflowUtil.getAssociatedTasksForNode(avmService, node, tasks);
-   }
-   
-   public static List<WorkflowTask> getAssociatedTasksForNode(AVMNodeDescriptor node)
-   {
-      final List<WorkflowTask> tasks = AVMWorkflowUtil.getAssociatedTasksForSandbox(AVMUtil.getStoreName(node.getPath()));
-      return AVMWorkflowUtil.getAssociatedTasksForNode(node, tasks);
    }
 }

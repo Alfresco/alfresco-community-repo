@@ -62,7 +62,7 @@ public class UploadInput extends UIInput implements NamingContainer
       
       super.encodeBegin(context);
       
-      writer.write("\n<input id='" + framework + ":" + framework + "-body:file-input' type='file' size='35' name='alfFileInput' onchange='javascript:handle_upload(this)'/>");
+      writer.write("\n<input id='" + framework + ":" + framework + "-body:file-input' contentEditable='false' type='file' size='35' name='alfFileInput' onchange='javascript:handle_upload(this)'/>");
    }
 
    public Object saveState(FacesContext context)

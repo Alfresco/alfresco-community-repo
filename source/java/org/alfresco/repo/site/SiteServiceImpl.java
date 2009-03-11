@@ -27,6 +27,7 @@ package org.alfresco.repo.site;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -74,6 +75,8 @@ import org.json.JSONObject;
  */
 public class SiteServiceImpl implements SiteService, SiteModel
 {
+    private static final String GROUP_SITE_PREFIX = PermissionService.GROUP_PREFIX + "site_";
+
     /** Logger */
     private static Log logger = LogFactory.getLog(SiteServiceImpl.class);
 
@@ -369,9 +372,29 @@ public class SiteServiceImpl implements SiteService, SiteModel
      * 
      * @return  Map<QName, Serializable>    map containing the custom properties of the site
      */
+    private Map<QName, Serializable> getSiteCustomProperties(Map<QName, Serializable> properties)
+    {
+        Map<QName, Serializable> customProperties = new HashMap<QName, Serializable>(4);
+        
+        for (Map.Entry<QName, Serializable> entry : properties.entrySet())                
+        {
+            if (entry.getKey().getNamespaceURI().equals(SITE_CUSTOM_PROPERTY_URL) == true)
+            {                
+                customProperties.put(entry.getKey(), entry.getValue());
+            }
+        }  
+        
+        return customProperties;
+    }
+    
+    /**
+     * Gets a map containing the site's custom properties
+     * 
+     * @return  Map<QName, Serializable>    map containing the custom properties of the site
+     */
     private Map<QName, Serializable> getSiteCustomProperties(NodeRef siteNodeRef)
     {
-        Map<QName, Serializable> customProperties = new HashMap<QName, Serializable>(5);
+        Map<QName, Serializable> customProperties = new HashMap<QName, Serializable>(4);
         Map<QName, Serializable> properties = nodeService.getProperties(siteNodeRef);
         
         for (Map.Entry<QName, Serializable> entry : properties.entrySet())                
@@ -429,7 +452,7 @@ public class SiteServiceImpl implements SiteService, SiteModel
      */
     public String getSiteRoleGroup(String shortName, String permission, boolean withGroupPrefix)
     {
-        return getSiteGroup(shortName, withGroupPrefix) + "_" + permission;
+        return getSiteGroup(shortName, withGroupPrefix) + '_' + permission;
     }
 
     /**
@@ -535,19 +558,17 @@ public class SiteServiceImpl implements SiteService, SiteModel
     private SiteInfo createSiteInfo(NodeRef siteNodeRef)
     {
         // Get the properties
-        Map<QName, Serializable> properties = this.nodeService
-                .getProperties(siteNodeRef);
+        Map<QName, Serializable> properties = this.nodeService.getProperties(siteNodeRef);
         String shortName = (String) properties.get(ContentModel.PROP_NAME);
         String sitePreset = (String) properties.get(PROP_SITE_PRESET);
         String title = (String) properties.get(ContentModel.PROP_TITLE);
-        String description = (String) properties
-                .get(ContentModel.PROP_DESCRIPTION);
+        String description = (String) properties.get(ContentModel.PROP_DESCRIPTION);
 
         // Get the visibility of the site
         SiteVisibility visibility = getSiteVisibility(siteNodeRef);
         
         // Create and return the site information
-        Map<QName, Serializable> customProperties = getSiteCustomProperties(siteNodeRef);
+        Map<QName, Serializable> customProperties = getSiteCustomProperties(properties);
         SiteInfo siteInfo = new SiteInfoImpl(sitePreset, shortName, title, description, visibility, customProperties, siteNodeRef);
         return siteInfo;
     }
@@ -904,45 +925,29 @@ public class SiteServiceImpl implements SiteService, SiteModel
         return result;
     }
     
+    /**
+     * Helper method to get the permission groups for a given authority on a site.
+     * Returns empty List if the user does not have a explicit membership to the site.
+     * 
+     * @param siteShortName     site short name
+     * @param authorityName     authority name
+     * @return List<String>     Permission groups, empty list if no explicit membership set
+     */
     private List<String> getPermissionGroups(String siteShortName, String authorityName)
     {
         List<String> result = new ArrayList<String>(5);
-        Set<String> roles = permissionService.getSettablePermissions(SiteModel.TYPE_SITE);  
+        Set<String> roles = this.permissionService.getSettablePermissions(SiteModel.TYPE_SITE);  
         for (String role : roles)
         {
             String roleGroup = getSiteRoleGroup(siteShortName, role, true);
-            Set <String> authorities = this.authorityService.getContainedAuthorities(null, roleGroup, false);
+            Set<String> authorities = this.authorityService.getContainedAuthorities(null, roleGroup, false);
             if (authorities.contains(authorityName) == true)
             {
                 result.add(roleGroup);
             }
-        }        
+        }
         return result;
-    }    
-    
-    /**
-     * Helper method to get the permission group for a given authority on a site.
-     * Returns null if the user does not have a explicit membership to the site.
-     * 
-     * @param siteShortName     site short name
-     * @param authorityName     authority name
-     * @return String           permission group, null if no explicit membership set
-     */
-//    private String getPermissionGroup(String siteShortName, String authorityName)
-//    {
-//        String result = null;
-//        Set<String> groups = this.authorityService.getContainingAuthorities(AuthorityType.GROUP, authorityName, true);
-//        for (String group : groups)
-//        {
-//            if (group.startsWith(PermissionService.GROUP_PREFIX + "site_"
-//                    + siteShortName) == true)
-//            {
-//                result = group;
-//                break;
-//            }
-//        }
-//        return result;
-//    }
+    }
 
     /**
      * @see org.alfresco.service.cmr.site.SiteService#getSiteRoles()

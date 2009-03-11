@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -27,9 +27,12 @@ package org.alfresco.web.ui.wcm.component;
 import java.io.IOException;
 import java.io.Serializable;
 import java.text.DateFormat;
+import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +41,7 @@ import java.util.Set;
 
 import javax.faces.component.UIComponent;
 import javax.faces.component.UIParameter;
+import javax.faces.component.html.HtmlCommandButton;
 import javax.faces.context.FacesContext;
 import javax.faces.context.ResponseWriter;
 import javax.faces.el.ValueBinding;
@@ -48,6 +52,7 @@ import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.web.scripts.FileTypeImageUtils;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
+import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AccessStatus;
@@ -145,12 +150,15 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
    private static final String MSG_NO_MODIFIED_ITEMS = "sandbox_no_modified_items";
    private static final String MSG_NO_WEB_FORMS = "sandbox_no_web_forms";
    private static final String MSG_MY_SANDBOX = "sandbox_my_sandbox";
+   private static final String MSG_COUNT_CONFLICTED_ITEMS="count_conflicted_items";
+   private static final String MSG_REVERT_ALL_CONFLICTS="revert_all_conflicts";
    
    private static final String REQUEST_FORM_REF = "formref";
    private static final String REQUEST_PREVIEW_REF = "prevhref";
    private static final String REQUEST_UPDATE_TEST_SERVER = "updatetestserver";
    
    private static final String SPACE_ICON = "/images/icons/" + BrowseBean.SPACE_SMALL_DEFAULT + ".gif";
+   private static final String CONFLICTED_ICON = "/images/icons/conflict-16.gif";
    
    public static final String PARAM_FORM_NAME = "form-name";
    
@@ -576,6 +584,7 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
                   out.write("&nbsp;<b>");
                   out.write(bundle.getString(MSG_MODIFIED_ITEMS));
                   out.write("</b>");
+                  
                   if (this.expandedPanels.contains(username + PANEL_MODIFIED))
                   {
                      out.write("<div style='padding:2px'></div>");
@@ -721,10 +730,45 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
       
       // compare user sandbox to staging sandbox - filter by current webapp, include deleted items
       String userStore = AVMUtil.buildUserMainStoreName(storeRoot, username);
+      String userStorePath = AVMUtil.buildStoreWebappPath(userStore, getWebapp());
+      String stagingStore = AVMUtil.buildStagingStoreName(storeRoot);
+      String stagingStorePath = AVMUtil.buildStoreWebappPath(stagingStore, getWebapp());
+      
       List<AssetInfo> assets = sandboxService.listChangedWebApp(userStore, getWebapp(), true);
       
       if (assets.size() != 0)
       {
+         // output confict header, only if conflicts exist
+         int diffCount = 0;
+         for (AssetInfo asset : assets)
+         {
+            if (asset.getDiffCode() == AVMDifference.CONFLICT)
+            {
+               diffCount++;
+            }
+         }
+          
+         if (diffCount > 0)
+         {
+            out.write("<table cellspacing=\"0\" cellpadding=\"2\"");
+            out.write(" class='conflictItemsList' width=\"100%\"");
+            out.write(">");
+            out.write("<tr width=\"100%\">");
+            out.write("<td width=\"100%\">");
+      
+            out.write(Utils.buildImageTag(fc, CONFLICTED_ICON, 16, 16, "", null, "-25%"));
+            out.write("&nbsp;");
+            out.write(MessageFormat.format(bundle.getString(MSG_COUNT_CONFLICTED_ITEMS), diffCount));
+          
+            out.write("</td>");
+            out.write("<td>");
+            Utils.encodeRecursive(fc, createRevertAllItemsButton(fc, bundle, username, userStorePath, stagingStorePath));
+            out.write("</td>");
+            out.write("</tr>");
+            out.write("</table>");
+            out.write("<div style='padding:2px'></div>");
+         }
+          
          // info we need to calculate preview paths for assets
          int rootPathIndex = AVMUtil.buildSandboxRootPath(userStore).length();
          
@@ -748,7 +792,7 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
          
          // output the table of modified items
          // TODO: apply tag style - removed hardcoded
-         out.write("<table class='modifiedItemsList' cellspacing=2 cellpadding=1 border=0 width=100%>");
+         out.write("<table class='modifiedItemsList' cellspacing=0 cellpadding=2 border=0 width=100%>");
          
          // output multi-select actions for this user
          out.write("<tr><td colspan=8>");
@@ -775,7 +819,7 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
          out.write(Integer.toString(index));
          out.write("' onclick='");
          out.write("javascript:_sb_select(this);");
-         out.write("'></th><th width=16></th><th>");
+         out.write("'></th><th></th><th></th><th></th><th>");
          out.write(bundle.getString(MSG_NAME));
          out.write("</th><th>");
          out.write(bundle.getString(MSG_CREATED));
@@ -787,6 +831,23 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
          out.write(bundle.getString(MSG_ACTIONS));
          out.write("</th></tr>");
          
+         // move conflicts to top of list
+         if (diffCount > 0)
+         {
+	         List<AssetInfo> conflicted = new ArrayList<AssetInfo>();
+	         
+	         for(Iterator<AssetInfo> it = assets.iterator(); it.hasNext();)
+	         {
+	             AssetInfo diff = (AssetInfo) it.next();
+	        	 if (diff.getDiffCode() == AVMDifference.CONFLICT)
+	        	 {
+	        		 conflicted.add(diff);
+	        		 it.remove();
+	        	 }
+	         }
+	         assets.addAll(0, conflicted);
+         }
+         
          // output each of the modified files as a row in the table
          int rowIndex = 0;
          for (AssetInfo node : assets)
@@ -796,7 +857,12 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
             String sourcePath = node.getAvmPath();
             
             // output multi-select checkbox
-            out.write("<tr><td><input type='checkbox' name='");
+            out.write("<tr");
+            if (node.getDiffCode() == AVMDifference.CONFLICT)
+            {
+            	out.write(" class='conflictItem'");
+            }
+            out.write("><td><input type='checkbox' name='");
             out.write(id);
             out.write("' id='");
             out.write(id);
@@ -814,23 +880,33 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
                      fc.getExternalContext().getRequestContextPath() +
                      DownloadContentServlet.generateBrowserURL(AVMNodeConverter.ToNodeRef(-1, sourcePath), name) +
                      "\" target='new'>";
-               out.write("<td width=16>");
+               
                if (node.isFile())
                {
-                  out.write(linkPrefix);
-                  out.write(Utils.buildImageTag(fc, FileTypeImageUtils.getFileTypeImage(fc, name, true), ""));
-                  out.write("</a></td><td>");
-                  out.write(linkPrefix);
-                  out.write(Utils.encode(name));
-                  UIAVMLockIcon lockIcon = (UIAVMLockIcon)fc.getApplication().createComponent(
-                        UIAVMLockIcon.ALFRESCO_FACES_AVMLOCKICON);
-                  lockIcon.setId("avmlock_" + Integer.toString(rowIndex));
-                  lockIcon.setValue(sourcePath);
-                  Utils.encodeRecursive(fc, lockIcon);
-                  out.write("</a>");
+            	   out.write("<td width=16>");
+            	   if (node.getDiffCode() == AVMDifference.CONFLICT)
+                   {
+            		   out.write(Utils.buildImageTag(fc, CONFLICTED_ICON, 16, 16, ""));
+                   }
+                   out.write("</td><td width=20>");
+            	   UIAVMLockIcon lockIcon = (UIAVMLockIcon)fc.getApplication().createComponent(UIAVMLockIcon.ALFRESCO_FACES_AVMLOCKICON);
+                   lockIcon.setId("avmlock_" + Integer.toString(rowIndex));
+                   lockIcon.setValue(sourcePath);
+                   Utils.encodeRecursive(fc, lockIcon);
+                   out.write("</td><td width=16>");
+                   out.write(linkPrefix);
+                   out.write(Utils.buildImageTag(fc, FileTypeImageUtils.getFileTypeImage(fc, name, true), ""));
+                   out.write("</a>");
+                   out.write("</td><td>");
+                   out.write(linkPrefix);
+                   out.write(Utils.encode(name));
+                   out.write("</a>");
                }
                else
                {
+                  out.write("<td width=16></td>");
+                  out.write("<td width=20></td>");
+            	  out.write("<td width=16>");
                   out.write(Utils.buildImageTag(fc, SPACE_ICON, 16, 16, ""));
                   out.write("</td><td>");
                   out.write(Utils.encode(name));
@@ -850,6 +926,7 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
                String assetPath = sourcePath.substring(rootPathIndex);
                String previewUrl = AVMUtil.getPreviewURI(userStore, JNDIConstants.DIR_DEFAULT_WWW_APPBASE + assetPath);
                avmNode.getProperties().put("previewUrl", previewUrl);
+               avmNode.getProperties().put("avmDiff", node.getDiffCode());
                
                // size of files
                if (node.isFile())
@@ -874,6 +951,8 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
             {
                // must have been deleted from this sandbox - show as ghosted
                String name = node.getName();
+               out.write("<td width=16></td>");
+               out.write("<td width=20></td>");
                out.write("<td width=16>");
                if (node.isFile() && node.isDeleted())
                {
@@ -1105,6 +1184,31 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
          String name, String icon, String actionListener, String outcome)
    {
       return aquireAction(fc, store, username, name, icon, actionListener, outcome, null, null);
+   }
+   
+   private HtmlCommandButton createRevertAllItemsButton(FacesContext fc, ResourceBundle bundle, String name, String userStorePath, String stagingStorePath)
+   {
+	   javax.faces.application.Application facesApp = fc.getApplication();
+	   String id = "revert_all_conflict" + new Date().getTime() + FacesHelper.makeLegalId(name);
+	   HtmlCommandButton cb = (HtmlCommandButton) facesApp.createComponent(HtmlCommandButton.COMPONENT_TYPE);
+	   cb.setId(id);
+	   cb.setValue(bundle.getString(MSG_REVERT_ALL_CONFLICTS));
+	   cb.setActionListener(facesApp.createMethodBinding(
+			   "#{AVMBrowseBean.revertAllConflict}", UIActions.ACTION_CLASS_ARGS));
+	   
+	   UIParameter param = (UIParameter)facesApp.createComponent(ComponentConstants.JAVAX_FACES_PARAMETER);
+       param.setId(id + "_1");
+       param.setName("userStorePath");
+       param.setValue(userStorePath);
+       cb.getChildren().add(param);
+       param = (UIParameter)facesApp.createComponent(ComponentConstants.JAVAX_FACES_PARAMETER);
+       param.setId(id + "_2");
+       param.setName("stagingStorePath");
+       param.setValue(stagingStorePath);
+       cb.getChildren().add(param);
+	   
+	   this.getChildren().add(cb);
+	   return cb;
    }
    
    /**

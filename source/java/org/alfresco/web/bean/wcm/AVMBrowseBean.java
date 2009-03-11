@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -36,6 +36,8 @@ import java.util.Map;
 import java.util.ResourceBundle;
 
 import javax.faces.application.FacesMessage;
+import javax.faces.component.UIParameter;
+import javax.faces.component.html.HtmlCommandButton;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.faces.model.SelectItem;
@@ -56,6 +58,8 @@ import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
+import org.alfresco.service.cmr.avmsync.AVMDifference;
+import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.repository.FileTypeImageSize;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -70,6 +74,8 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.workflow.WorkflowService;
+import org.alfresco.service.cmr.workflow.WorkflowTask;
+import org.alfresco.util.NameMatcher;
 import org.alfresco.util.Pair;
 import org.alfresco.util.VirtServerUtils;
 import org.alfresco.wcm.sandbox.SandboxInfo;
@@ -226,6 +232,9 @@ public class AVMBrowseBean implements IContextListener
    /** AVM service bean reference */
    transient protected AVMService avmService;
    
+   /** AVM sync service bean reference */
+   transient protected AVMSyncService avmSyncService;
+   
    /** Action service bean reference */
    transient protected ActionService actionService;
 
@@ -304,6 +313,23 @@ public class AVMBrowseBean implements IContextListener
          avmService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAVMService();
       }
       return avmService;
+   }
+   
+   /**
+    * @param avmSyncService   The AVMSyncService to set.
+    */
+   public void setAvmSyncService(AVMSyncService avmSyncService)
+   {
+      this.avmSyncService = avmSyncService;
+   }
+   
+   protected AVMSyncService getAvmSyncService()
+   {
+      if (avmSyncService == null)
+      {
+         avmSyncService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAVMSyncService();
+      }
+      return avmSyncService;
    }
    
    /**
@@ -2124,5 +2150,58 @@ public class AVMBrowseBean implements IContextListener
                            Application.getMessage(FacesContext.getCurrentInstance(), MSG_SEARCH_FORM_CONTENT),
                            this.formName));
       }
+   }
+   
+   /**
+    * Revert All Conflicts
+    * 
+    * @param event
+    */
+   public void revertAllConflict(ActionEvent event)
+   {
+      final HtmlCommandButton button = (HtmlCommandButton) event.getComponent();
+
+      List<Object> params = button.getChildren();
+      String userStore = null;
+      String stagingStore = null;
+      for (Object obj : params)
+      {
+         UIParameter uip = (UIParameter) obj;
+         if (uip.getName().equals("userStorePath"))
+         {
+            userStore = (String) uip.getValue();
+         }
+         if (uip.getName().equals("stagingStorePath"))
+         {
+            stagingStore = (String) uip.getValue();
+         }
+      }
+      NameMatcher matcher = (NameMatcher) FacesContextUtils.getRequiredWebApplicationContext(FacesContext.getCurrentInstance()).getBean("globalPathExcluder");
+
+      // calcluate the list of differences between the user store and the staging area
+      List<AVMDifference> diffs = this.getAvmSyncService().compare(-1, userStore, -1, stagingStore, matcher);
+      List<Pair<Integer, String>> versionPaths = new ArrayList<Pair<Integer, String>>();
+      List<WorkflowTask> tasks = null;
+      for (AVMDifference diff : diffs)
+      {
+         if (diff.getDifferenceCode() == AVMDifference.CONFLICT)
+         {
+            AVMNodeDescriptor node = getAvmService().lookup(-1, diff.getSourcePath(), true);
+            if (tasks == null)
+            {
+               tasks = AVMWorkflowUtil.getAssociatedTasksForSandbox(AVMUtil.getStoreName(diff.getSourcePath()));
+            }
+            if (AVMWorkflowUtil.getAssociatedTasksForNode(node, tasks).size() == 0)
+            {
+               String revertPath = diff.getSourcePath();
+               versionPaths.add(new Pair<Integer, String>(-1, revertPath));
+            }
+         }
+      }
+
+      Map<String, Serializable> args = new HashMap<String, Serializable>(1, 1.0f);
+      args.put(AVMUndoSandboxListAction.PARAM_NODE_LIST, (Serializable) versionPaths);
+      Action action = this.getActionService().createAction(AVMUndoSandboxListAction.NAME, args);
+      this.getActionService().executeAction(action, null);
    }
 }

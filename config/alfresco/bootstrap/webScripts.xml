@@ -5,10 +5,10 @@
       <app:uifacets></app:uifacets>
     </view:aspects>
     <view:properties>
-      <cm:description>URL addressable Web Services</cm:description>
+      <cm:description>${webscripts.url_addressable_web_services}</cm:description>
       <app:icon>space-icon-default</app:icon>
-      <cm:title>URL addressable Web Services</cm:title>
-      <cm:name>Web Scripts</cm:name>
+      <cm:title>${webscripts.url_addressable_web_services}</cm:title>
+      <cm:name>${webscripts.web_scripts}</cm:name>
     </view:properties>
     <view:associations>
       <cm:contains>
@@ -20,7 +20,7 @@
           </view:aspects>
           <view:properties>
             <app:editInline>true</app:editInline>
-            <cm:description>What are Web Scripts and how do you develop them?</cm:description>
+            <cm:description>${webscripts.what_are_web_scripts}</cm:description>
             <cm:content>contentUrl=classpath:alfresco/bootstrap/webscripts/readme.html|mimetype=text/html|size=|encoding=UTF-8|locale=en_US_</cm:content>
             <cm:title></cm:title>
             <cm:author></cm:author>

@@ -275,6 +275,7 @@
                 <props>
                     <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.content.childname}</prop>
                     <prop key="location">alfresco/templates/content_template_examples.xml</prop>
+                    <prop key="messages">alfresco/messages/bootstrap-content-template-examples</prop>
                 </props>
                 <props>
                     <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.content.childname}</prop>
@@ -283,10 +284,12 @@
                 <props>
                     <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.email.childname}</prop>
                     <prop key="location">alfresco/templates/email_templates.acp</prop>
+                    <prop key="messages">alfresco/messages/bootstrap-content-template-examples</prop>
                 </props>
                 <props>
                     <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.rss.childname}</prop>
                     <prop key="location">alfresco/templates/rss_templates.acp</prop>
+                    <prop key="messages">alfresco/messages/bootstrap-content-template-examples</prop>
                 </props>
                 <props>
                     <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.scripts.childname}</prop>
@@ -295,10 +298,12 @@
                 <props>
                     <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}</prop>
                     <prop key="location">alfresco/bootstrap/webScripts.xml</prop>
+                    <prop key="messages">alfresco/messages/bootstrap-webScripts</prop>
                 </props>
                 <props>
                     <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}</prop>
                     <prop key="location">alfresco/bootstrap/webScriptsExtensions.xml</prop>
+                    <prop key="messages">alfresco/messages/bootstrap-webScriptsExtensions</prop>
                 </props>
                 <props>
                     <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}</prop>

@@ -19,7 +19,7 @@
 <#list userhome.children as child>
    <#if child.isContainer>
       <tr>
-         <td><img src="/alfresco${child.icon32}"></td>
+         <td><img src="${url.context}${child.icon32}"></td>
          <td><b>${child.properties.name}</b> (${child.children?size})</td>
          <td><b>Path:</b> ${child.displayPath}</td>
       </tr>
@@ -31,11 +31,11 @@
 <table>
 <#list userhome.children as child>
    <#if child.isDocument>
-      <tr><td><img src="/alfresco${child.icon16}"></td><td><a href="/alfresco${child.url}">${child.properties.name}</a></td></tr>
+      <tr><td><img src="${url.context}${child.icon16}"></td><td><a href="${url.context}${child.url}">${child.properties.name}</a></td></tr>
       <#if child.mimetype = "text/plain">
          <tr><td></td><td>${child.content}</td></tr>
       <#elseif child.mimetype = "image/jpeg">
-         <tr><td></td><td><img width=100 height=65 src="/alfresco${child.url}"></td></tr>
+         <tr><td></td><td><img width=100 height=65 src="${url.context}${child.url}"></td></tr>
       </#if>
    </#if>
 </#list>

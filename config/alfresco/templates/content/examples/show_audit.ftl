@@ -1,6 +1,6 @@
  <#-- Shows some general audit info about the current document -->
  <#if document?exists>
-   <h4>Current Docuement Audit Info</h4>
+   <h4>Current Document Audit Info</h4>
    <b>Name:</b> ${document.name}<br>
    <table border="1" cellspacing="0" cellpadding="4">
    <tr>

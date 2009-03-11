@@ -46,31 +46,31 @@ body {font:small/1.2em arial,helvetica,clean,sans-serif;font:x-small;margin-top:
     <#assign fileplanPath="${fpWorkspace}/${fpStorenode}">
 
     <td width=16> <#-- Record properties icon -->
-        <a href="/alfresco/navigate/showDocDetails/${childPath}">
-        <img src="/alfresco/images/icons/View_details.gif" border=0 align=absmiddle alt="Record Details" title="Record Details"></a>
+        <a href="${url.context}/navigate/showDocDetails/${childPath}">
+        <img src="${url.context}/images/icons/View_details.gif" border=0 align=absmiddle alt="Record Details" title="Record Details"></a>
     </td>
     <td> <#-- Record identifier -->
-        <a href="/alfresco/navigate/showDocDetails/${childPath}">
+        <a href="${url.context}/navigate/showDocDetails/${childPath}">
         ${child.properties["rma:recordIdentifier"]}</a>
     </td>
     <td width=16> <#-- Record icon -->
-        <a href="/alfresco/download/direct/${childPath}/${child.name}">
-        <img src="/alfresco${child.icon16}" width=16 height=16 border=0 align=absmiddle alt="View Record" title="View Record"></a>
+        <a href="${url.context}/download/direct/${childPath}/${child.name}">
+        <img src="${url.context}${child.icon16}" width=16 height=16 border=0 align=absmiddle alt="View Record" title="View Record"></a>
     </td>
     <td> <#-- Record title -->
-        <a href="/alfresco/download/direct/${childPath}/${child.name}">
+        <a href="${url.context}/download/direct/${childPath}/${child.name}">
         ${child.properties["cm:title"]}</a>
     </td>
     <td width=16> <#-- Fileplan icon -->
-        <a href="/alfresco/navigate/browse/${fileplanPath}">
-        <img src="/alfresco${fileplan.icon16}" width=16 height=16 border=0 align=absmiddle alt="Fileplan Contents" title="Fileplan Contents"></a>
+        <a href="${url.context}/navigate/browse/${fileplanPath}">
+        <img src="${url.context}${fileplan.icon16}" width=16 height=16 border=0 align=absmiddle alt="Fileplan Contents" title="Fileplan Contents"></a>
     </td>
     <td width=16> <#-- Fileplan properties icon -->
-        <a href="/alfresco/navigate/showDocDetails/${fileplanPath}">
-        <img src="/alfresco/images/icons/View_details.gif" border=0 align=absmiddle alt="Fileplan Details" title="Fileplan Details"></a>
+        <a href="${url.context}/navigate/showDocDetails/${fileplanPath}">
+        <img src="${url.context}/images/icons/View_details.gif" border=0 align=absmiddle alt="Fileplan Details" title="Fileplan Details"></a>
     </td>
     <td>
-        <a href="/alfresco/navigate/showDocDetails/${fileplanPath}">
+        <a href="${url.context}/navigate/showDocDetails/${fileplanPath}">
         ${fileplan.name}</a>
     </td>
     <td>

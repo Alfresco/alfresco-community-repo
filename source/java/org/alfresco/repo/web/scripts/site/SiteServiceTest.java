@@ -205,11 +205,11 @@ public class SiteServiceTest extends BaseWebScriptTest
         String[] shortNames = new String[]{GUID.generate(), GUID.generate(), GUID.generate(), GUID.generate(), GUID.generate()};
         
         // Create the sites
-        createSite("myPreset", shortNames[0], "myTitle", "myDescription", true, 200);
-        createSite("myPreset", shortNames[1], "myTitle", "myDescription", true, 200);
-        createSite("myPreset", shortNames[2], "myTitle", "myDescription", true, 200);
-        createSite("myPreset", shortNames[3], "myTitle", "myDescription", true, 200);
-        createSite("myPreset", shortNames[4], "myTitle", "myDescription", true, 200);
+        createSite("myPreset", shortNames[0], "myTitle", "myDescription", SiteVisibility.PUBLIC, 200);
+        createSite("myPreset", shortNames[1], "myTitle", "myDescription", SiteVisibility.PUBLIC, 200);
+        createSite("myPreset", shortNames[2], "myTitle", "myDescription", SiteVisibility.PUBLIC, 200);
+        createSite("myPreset", shortNames[3], "myTitle", "myDescription", SiteVisibility.PUBLIC, 200);
+        createSite("myPreset", shortNames[4], "myTitle", "myDescription", SiteVisibility.PUBLIC, 200);
         
         // build query json
         JSONObject shortNameQuery = new JSONObject();

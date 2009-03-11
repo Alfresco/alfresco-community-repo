@@ -349,7 +349,23 @@ public class ActionLinkRenderer extends BaseRenderer
       if (link.getHref() == null)
       {
          out.write("<a href='#' onclick=\"");
-         out.write(Utils.generateFormSubmit(context, link, Utils.getActionHiddenFieldName(context, link), link.getClientId(context), getParameterComponents(link)));
+         
+         // if we have an overriden onclick add that
+         if (link.getOnclick() != null)
+         {
+            out.write(link.getOnclick());
+         }
+         else
+         {
+            // generate JavaScript to set a hidden form field and submit
+            // a form which request attributes that we can decode
+            out.write(Utils.generateFormSubmit(context, 
+                                               link, 
+                                               Utils.getActionHiddenFieldName(context, link), 
+                                               link.getClientId(context), 
+                                               getParameterComponents(link)));
+         }
+         
          out.write('"');
       }
       else

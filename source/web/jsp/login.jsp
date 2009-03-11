@@ -31,6 +31,7 @@
 <%@ page import="org.alfresco.web.app.servlet.BaseServlet" %>
 <%@ page import="org.alfresco.web.app.servlet.AuthenticationHelper" %>
 <%@ page import="org.alfresco.web.ui.common.PanelGenerator" %>
+<%@ page import="org.alfresco.web.app.Application" %>
 <%@ page import="javax.faces.context.FacesContext" %>
 <%@ page import="javax.servlet.http.Cookie" %>
 <%@ page import="java.util.Locale" %>

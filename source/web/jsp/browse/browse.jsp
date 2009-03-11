@@ -139,7 +139,7 @@
                               </td>
                               <td style="padding-left:4px" width=52>
                                  <%-- Create actions menu --%>
-                                 <a:menu id="createMenu" itemSpacing="4" label="#{msg.create_options}" image="/images/icons/menu.gif" menuStyleClass="moreActionsMenu" style="white-space:nowrap">
+                                 <a:menu id="createMenu" itemSpacing="4" label="#{msg.create_options}" image="/images/icons/menu.gif" menuStyleClass="moreActionsMenu" style="white-space:nowrap" rendered="#{NavigationBean.createChildrenPermissionEnabled}">
                                     <r:actions id="acts_create" value="browse_create_menu" context="#{NavigationBean.currentNode}" />
                                  </a:menu>
                               </td>
@@ -238,7 +238,9 @@
                            <a:panel id="page-controls1" style="font-size:9px">
                               <h:outputText value="#{msg.items_per_page}" id="items-txt1"/>
                               <h:inputText id="spaces-pages" value="#{BrowseBean.pageSizeSpacesStr}" style="width:24px;margin-left:4px" maxlength="3" onkeyup="return applySizeSpaces(event);" />
-                              <div style="display:none"><a:actionLink id="spaces-apply" value="" actionListener="#{BrowseBean.updateSpacesPageSize}" /></div>
+                              <f:verbatim><div style="display:none"></f:verbatim>
+                              <a:actionLink id="spaces-apply" value="" actionListener="#{BrowseBean.updateSpacesPageSize}" />
+                              <f:verbatim></div></f:verbatim>
                            </a:panel>
                         </f:facet>
                      </h:panelGroup>
@@ -382,7 +384,9 @@
                            <a:panel id="page-controls2" style="font-size:9px">
                               <h:outputText value="#{msg.items_per_page}" id="items-txt2"/>
                               <h:inputText id="content-pages" value="#{BrowseBean.pageSizeContentStr}" style="width:24px;margin-left:4px" maxlength="3" onkeyup="return applySizeContent(event);" />
-                              <div style="display:none"><a:actionLink id="content-apply" value="" actionListener="#{BrowseBean.updateContentPageSize}" /></div>
+                              <f:verbatim><div style="display:none"></f:verbatim>
+                              <a:actionLink id="content-apply" value="" actionListener="#{BrowseBean.updateContentPageSize}" />
+                              <f:verbatim></div></f:verbatim>
                            </a:panel>
                         </f:facet>
                      </h:panelGroup>

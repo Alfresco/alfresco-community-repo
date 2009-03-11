@@ -50,6 +50,7 @@ public class SystemErrorTag extends TagSupport
    private static final long serialVersionUID = -7336055169875448199L;
    
    private static final String MSG_RETURN_TO_APP = "return_to_application";
+   private static final String MSG_RETURN_HOME   = "return_home";
    private static final String MSG_HIDE_DETAILS  = "hide_details";
    private static final String MSG_SHOW_DETAILS  = "show_details";
    private static final String MSG_LOGOUT        = "logout";
@@ -267,6 +268,12 @@ public class SystemErrorTag extends TagSupport
          // this can be used by the user if the app has got into a total mess
          if (Application.inPortalServer() == false)
          {
+            out.write("\n<div style='padding-top:16px;'><a href='");
+            out.write(((HttpServletRequest)pageContext.getRequest()).getContextPath());
+            out.write("'>");
+            out.write(bundle.getString(MSG_RETURN_HOME));
+            out.write("</a></div>");
+            
             out.write("\n<div style='padding-top:16px;'><a href='");
             out.write(((HttpServletRequest)pageContext.getRequest()).getContextPath());
             out.write(ExternalAccessServlet.generateExternalURL("logout", null));

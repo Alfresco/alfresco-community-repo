@@ -197,6 +197,8 @@ public class UITemplate extends SelfRenderingComponent
       
       Map root = DefaultModelHelper.buildDefaultModel(services, user, templateRef);
       
+      root.put("url", new URLHelper(fc.getExternalContext().getRequestContextPath()));
+      
       // merge models
       if (model instanceof Map)
       {
@@ -302,4 +304,23 @@ public class UITemplate extends SelfRenderingComponent
          return FileTypeImageUtils.getFileTypeImage(FacesContext.getCurrentInstance(), filename, size);
       }
    };
+
+   
+   /**
+    * URL Helper - to supply ${url.context} value for templates in JSF client
+    */
+   public static class URLHelper
+   {
+      String context;
+
+      public URLHelper(String context)
+      {
+         this.context = context;
+      }
+
+      public String getContext()
+      {
+         return context;
+      }
+   }
 }

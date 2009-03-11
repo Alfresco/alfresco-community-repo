@@ -734,7 +734,15 @@ public class NavigationBean implements Serializable
       
       return this.currentNode;
    }
-
+   
+   /**
+    * @return Boolean value according to CREATE_CHILDREN permission on the current node.
+    */
+   public boolean isCreateChildrenPermissionEnabled()
+   {
+       return getCurrentNode().hasPermission(PermissionService.CREATE_CHILDREN);
+   }
+   
    /**
     * @return Returns the breadcrumb handler elements representing the location path of the UI.
     */

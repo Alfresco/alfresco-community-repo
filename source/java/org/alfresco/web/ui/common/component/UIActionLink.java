@@ -74,6 +74,7 @@ public class UIActionLink extends UICommand
       this.tooltip = (String)values[5];
       this.target = (String)values[6];
       this.verticalAlign = (String)values[7];
+      this.onclick = (String)values[8];
    }
    
    /**
@@ -91,7 +92,8 @@ public class UIActionLink extends UICommand
          this.href,
          this.tooltip,
          this.target,
-         this.verticalAlign
+         this.verticalAlign,
+         this.onclick
       };
    }
 

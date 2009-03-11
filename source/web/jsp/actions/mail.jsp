@@ -289,6 +289,6 @@
 InviteSpaceUsersWizard wizard = (InviteSpaceUsersWizard)FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "InviteSpaceUsersWizard");
 if (wizard != null) 
 {
-   wizard.init(new HashMap<String, String>());
+   wizard.init(new HashMap());
 }
 %>

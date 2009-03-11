@@ -114,10 +114,20 @@ else
       try { tx.rollback(); } catch (Throwable tex) {}
    }
 }
-if(request.getMethod().equalsIgnoreCase("GET"))
+
+if (request.getMethod().equalsIgnoreCase("GET"))
 {
    if (NavigationBean.LOCATION_MYALFRESCO.equals(location))
    {
+      // Clear previous location - Fixes the issue ADB-61
+      FacesContext fc = FacesContext.getCurrentInstance();
+      if (fc != null)
+      {
+         NavigationBean navigationBean = (NavigationBean)FacesHelper.getManagedBean(fc, "NavigationBean");
+         navigationBean.setLocation(null);
+         navigationBean.setToolbarLocation(null);
+      }
+      // Send redirect
       response.sendRedirect(request.getContextPath() + "/faces/jsp/dashboards/container.jsp");
    }
    else

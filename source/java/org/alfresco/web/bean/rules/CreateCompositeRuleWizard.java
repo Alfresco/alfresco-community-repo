@@ -196,14 +196,28 @@ public class CreateCompositeRuleWizard extends CreateRuleWizard
    {
       if (isAddingCompositeCondition())
       {
-         //don't clear when editing, since we are looking at a REFERENCE to an existing condition
-         if (this.editingCondition == false) {
+         // don't clear when editing, since we are looking at a REFERENCE to an existing condition
+         if (this.editingCondition == false) 
+         {
             this.currentConditionProperties.clear();
          }
+         
          // reset the action drop down
-         this.selectedCondition = null;         
+         this.selectedCondition = null;
+         
+         // determine what page to go back to
+         FacesContext context = FacesContext.getCurrentInstance();
+         String currentViewId = context.getViewRoot().getViewId();
+         
          IHandler handler = this.conditionHandlers.get(CompositeConditionHandler.NAME);
-         goToPage(FacesContext.getCurrentInstance(), handler.getJSPPath());
+         String compositePage = handler.getJSPPath();
+         
+         if (currentViewId.equals(compositePage))
+         {
+            this.returnViewId = getWizardContainerViewId(context);
+         }
+
+         goToPage(FacesContext.getCurrentInstance(), this.returnViewId);
       } 
       else
       {

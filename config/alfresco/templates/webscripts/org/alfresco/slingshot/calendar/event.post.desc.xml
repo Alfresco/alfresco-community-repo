@@ -1,8 +1,8 @@
 <webscript>
-	<shortname>Save Calendar Event</shortname> 
-	<description>Save Calendar Event</description> 
-	<url>/calendar/create?what={whatEvent}&amp;where={whereEvent}&amp;desc={descriptionEvent}&amp;from={fromDate}&amp;start={startTime}&amp;to={toDate}&amp;end={endTime}&amp;site={siteId}</url> 
-	<format default="html">extension</format> 
-    <authentication>user</authentication>
-    <transaction>required</transaction>
+   <shortname>Create Calendar Event</shortname> 
+   <description>Creates a Calendar Event</description> 
+   <url>/calendar/create</url> 
+   <format default="html">extension</format> 
+   <authentication>user</authentication>
+   <transaction>required</transaction>
 </webscript>

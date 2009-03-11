@@ -1,8 +1,8 @@
 <webscript>
-  <shortname>updateevent</shortname>
-  <description>Event Action - Update event</description>
-  <url>/calendar/event/{siteid}/{eventname}</url>
-  <format default="json">argument</format>
-  <authentication>user</authentication>
-  <transaction>required</transaction>
+   <shortname>Update Calendar Event</shortname>
+   <description>Updates an existing Calendar Event</description>
+   <url>/calendar/event/{siteid}/{eventname}</url>
+   <format default="json">argument</format>
+   <authentication>user</authentication>
+   <transaction>required</transaction>
 </webscript>

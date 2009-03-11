@@ -88,6 +88,7 @@ function createEvent(siteId, params)
    {
       fromDate += " " + params["start"];
       toDate += " " + params["end"];
+      allday = '';
    }
 
    if (params['tags'])
@@ -147,6 +148,7 @@ function createEvent(siteId, params)
       "uri": "calendar/event/" + siteId + "/" + event.name,
       "tags": event.tags,
       "desc": params['desc'],
-      "where":params['where']
+      "where":params['where'],
+      "allday":allday
    });
 };

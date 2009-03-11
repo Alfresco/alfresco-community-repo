@@ -1560,4 +1560,42 @@
         </property>
     </bean>
 
+    <!-- For support of asynchronous wcm submit -->
+    <bean id="patch.redeploySubmitProcess5" class="org.alfresco.repo.admin.patch.impl.GenericWorkflowPatch" parent="basePatch" >
+        <property name="id"><value>patch.redeploySubmitProcess5</value></property>
+        <property name="description"><value>patch.redeploySubmitProcess.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>2000</value></property>
+        <property name="targetSchema"><value>2001</value></property>
+        <property name="workflowDefinitions">
+            <list>
+               <props>
+                    <!-- WCM workflow definition -->
+                    <prop key="engineId">jbpm</prop>
+                    <prop key="location">alfresco/workflow/submit_processdefinition.xml</prop>
+                    <prop key="mimetype">text/xml</prop>
+               </props>
+            </list>
+        </property>
+    </bean>
+
+    <!-- For support of direct wcm submit -->
+    <bean id="patch.deploySubmitDirectProcess" class="org.alfresco.repo.admin.patch.impl.GenericWorkflowPatch" parent="basePatch" >
+        <property name="id"><value>patch.deploySubmitDirectProcess</value></property>
+        <property name="description"><value>patch.deploySubmitDirectProcess.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>2000</value></property>
+        <property name="targetSchema"><value>2001</value></property>
+        <property name="workflowDefinitions">
+            <list>
+               <props>
+                    <!-- WCM workflow definition -->
+                    <prop key="engineId">jbpm</prop>
+                    <prop key="location">alfresco/workflow/submitdirect_processdefinition.xml</prop>
+                    <prop key="mimetype">text/xml</prop>
+               </props>
+            </list>
+        </property>
+    </bean>
+
 </beans>

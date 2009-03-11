@@ -229,6 +229,11 @@ public final class SandboxFactory extends WCMUtil
     */
    /* package */ SandboxInfo getSandbox(String sandboxId)
    {
+       return getSandbox(sandboxId, true);
+   }
+   
+   /* package */ SandboxInfo getSandbox(final String sandboxId, boolean withPreview)
+   {
        AVMStoreDescriptor storeDesc = avmService.getStore(sandboxId);
        if (storeDesc == null)
        {
@@ -246,11 +251,17 @@ public final class SandboxFactory extends WCMUtil
        // derive name for now
        String name = null;
        
+       String previewSandboxId = null;
+       if (withPreview && (! WCMUtil.isPreviewStore(sandboxId)))
+       {
+           previewSandboxId = WCMUtil.getCorrespondingPreviewStoreName(sandboxId);
+       }
+       
        if (props.containsKey(SandboxConstants.PROP_SANDBOX_STAGING_MAIN))
        {
            sandboxType = SandboxConstants.PROP_SANDBOX_STAGING_MAIN;
            name = sandboxId;
-           storeNames = new String[] {sandboxId, WCMUtil.getCorrespondingPreviewStoreName(sandboxId)};
+           storeNames = new String[] {sandboxId, previewSandboxId};
        }
        else if ( props.containsKey( SandboxConstants.PROP_SANDBOX_STAGING_PREVIEW))
        {
@@ -261,7 +272,7 @@ public final class SandboxFactory extends WCMUtil
        {
            sandboxType = SandboxConstants.PROP_SANDBOX_AUTHOR_MAIN;
            name = WCMUtil.getUserName(sandboxId);
-           storeNames = new String[] {sandboxId, WCMUtil.getCorrespondingPreviewStoreName(sandboxId)};
+           storeNames = new String[] {sandboxId, previewSandboxId};
        } 
        else if (props.containsKey(SandboxConstants.PROP_SANDBOX_AUTHOR_PREVIEW))
        {
@@ -273,7 +284,7 @@ public final class SandboxFactory extends WCMUtil
        {
            sandboxType = SandboxConstants.PROP_SANDBOX_WORKFLOW_MAIN;
            name = WCMUtil.getWorkflowId(sandboxId);
-           storeNames = new String[] {sandboxId, WCMUtil.getCorrespondingPreviewStoreName(sandboxId)};
+           storeNames = new String[] {sandboxId, previewSandboxId};
        }
        else if (props.containsKey(SandboxConstants.PROP_SANDBOX_WORKFLOW_PREVIEW))
        {
@@ -631,6 +642,81 @@ public final class SandboxFactory extends WCMUtil
       
       return getSandbox(mainStoreName);
    }
+   
+   /**
+    * Create a read-only workflow sandbox for the named store.
+    * 
+    * Note: read-only means it's only safe to use in a workflow where the sandbox
+    *       is not expected to be updated.  The sandbox does not protected itself
+    *       from writes.
+    * 
+    * Note: this sandbox does not support the preview layer
+    * Note: a snapshot within this sandbox is NOT taken
+    * 
+    * Various store meta-data properties are set including:
+    * Identifier for store-types: .sandbox.workflow.main and .sandbox.workflow.preview
+    * Store-id: .sandbox-id.<guid> (unique across all stores in the sandbox)
+    * DNS: .dns.<store> = <path-to-webapps-root>
+    * Website Name: .website.name = website name
+    * 
+    * @param storeId The id of the store to create a sandbox for
+    * @return Information about the sandbox
+    */
+   public SandboxInfo createReadOnlyWorkflowSandbox(final String storeId)
+   {
+      final String stagingStoreName = WCMUtil.buildStagingStoreName(storeId);
+
+      // create the workflow 'main' store
+      final String packageName = WCMUtil.STORE_WORKFLOW + "-" + GUID.generate();
+      final String mainStoreName = 
+          WCMUtil.buildWorkflowMainStoreName(storeId, packageName);
+      
+      avmService.createStore(mainStoreName);
+      if (logger.isDebugEnabled())
+         logger.debug("Created read-only workflow sandbox store: " + mainStoreName);
+         
+      // create a layered directory pointing to 'www' in the staging area
+      avmService.createLayeredDirectory(WCMUtil.buildStoreRootPath(stagingStoreName), 
+                                        mainStoreName + ":/", 
+                                        JNDIConstants.DIR_DEFAULT_WWW);
+         
+      // tag the store with the store type
+      avmService.setStoreProperty(mainStoreName,
+                                  SandboxConstants.PROP_SANDBOX_WORKFLOW_MAIN,
+                                  new PropertyValue(DataTypeDefinition.TEXT, null));
+         
+      // tag the store with the base name of the website so that corresponding
+      // staging areas can be found.
+      avmService.setStoreProperty(mainStoreName,
+                                  SandboxConstants.PROP_WEBSITE_NAME,
+                                  new PropertyValue(DataTypeDefinition.TEXT, storeId));
+         
+      // tag the store, oddly enough, with its own store name for querying.
+      avmService.setStoreProperty(mainStoreName,
+                                  QName.createQName(null, SandboxConstants.PROP_SANDBOX_STORE_PREFIX + mainStoreName),
+                                  new PropertyValue(DataTypeDefinition.TEXT, null));
+         
+      // tag the store with the DNS name property
+      tagStoreDNSPath(avmService, mainStoreName, storeId, packageName);
+         
+
+      // The main workflow store depends on the main staging store (dist=1)
+      tagStoreBackgroundLayer(avmService,mainStoreName, stagingStoreName ,1);
+
+      // tag all related stores to indicate that they are part of a single sandbox
+      final QName sandboxIdProp = QName.createQName(SandboxConstants.PROP_SANDBOXID + GUID.generate());
+      avmService.setStoreProperty(mainStoreName, 
+                                  sandboxIdProp,
+                                  new PropertyValue(DataTypeDefinition.TEXT, null));
+      
+      if (logger.isDebugEnabled())
+      {
+         dumpStoreProperties(avmService, mainStoreName);
+      }
+      
+      return getSandbox(mainStoreName, false); // no preview store
+   }
+
    
    /**
     * Creates a workflow sandbox for the given user store. This will create a

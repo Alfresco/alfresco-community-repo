@@ -66,21 +66,17 @@
           </constraints>
         </property>
       </properties>
-      <associations>
-        <association name="wcmwf:webproject">
-          <source>
-            <mandatory>false</mandatory>
-            <many>false</many>
-          </source>
-          <target>
-            <class>wca:webfolder</class>
-            <mandatory>true</mandatory>
-            <many>false</many>
-          </target>
-        </association>
-      </associations>
       <mandatory-aspects>
         <aspect>bpm:assignees</aspect>
+        <aspect>wcmwf:webproject</aspect>
+        <aspect>wcmwf:submission</aspect>
+      </mandatory-aspects>
+    </type>
+
+    <type name="wcmwf:submitDirectTask">
+      <parent>wcmwf:startTask</parent>
+      <mandatory-aspects>
+        <aspect>wcmwf:webproject</aspect>
         <aspect>wcmwf:submission</aspect>
       </mandatory-aspects>
     </type>
@@ -169,8 +165,15 @@
       </mandatory-aspects>
     </type>
 
-   <!-- NOTE: kept for backwards compatibility only - for v2.0 wcm submit process definition -->
-   <type name="wcmwf:approvedTask">
+    <type name="wcmwf:submittedDirectTask">
+      <parent>wcmwf:workflowTask</parent>
+      <mandatory-aspects>
+        <aspect>wcmwf:submission</aspect>
+      </mandatory-aspects>
+    </type>
+
+    <!-- NOTE: kept for backwards compatibility only - for v2.0 wcm submit process definition -->
+    <type name="wcmwf:approvedTask">
       <parent>wcmwf:workflowTask</parent>
       <mandatory-aspects>
         <aspect>bpm:assignees</aspect>
@@ -220,6 +223,22 @@
   </types>
 
   <aspects>
+    
+    <aspect name="wcmwf:webproject">
+      <associations>
+        <association name="wcmwf:webproject">
+          <source>
+            <mandatory>false</mandatory>
+            <many>false</many>
+          </source>
+          <target>
+            <class>wca:webfolder</class>
+            <mandatory>true</mandatory>
+            <many>false</many>
+          </target>
+        </association>
+      </associations>
+    </aspect>    
     
     <aspect name="wcmwf:submission">
       <properties>

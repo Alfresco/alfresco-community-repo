@@ -39,7 +39,6 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.ui.common.SortableSelectItem;
@@ -55,7 +54,6 @@ import org.apache.commons.logging.LogFactory;
  */
 public class SetPermissionsDialog extends UpdatePermissionsDialog
 {
-
     private static final long serialVersionUID = -8139619811033232880L;
 
     /** logger */
@@ -251,13 +249,7 @@ public class SetPermissionsDialog extends UpdatePermissionsDialog
                 // Use lucene search to retrieve user details
                 String term = QueryParser.escape(contains.trim());
                 StringBuilder query = new StringBuilder(128);
-                query.append("@").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:firstName:\"*");
-                query.append(term);
-                query.append("*\" @").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:lastName:\"*");
-                query.append(term);
-                query.append("*\" @").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:userName:");
-                query.append(term);
-                query.append("*");
+                Utils.generatePersonSearch(query, term);
                 ResultSet resultSet = Repository.getServiceRegistry(context).getSearchService().query(Repository.getStoreRef(), SearchService.LANGUAGE_LUCENE, query.toString());
                 List<NodeRef> nodes;
                 try
@@ -284,18 +276,23 @@ public class SetPermissionsDialog extends UpdatePermissionsDialog
             }
             else
             {
-                // groups - simple text based match on name
-                Set<String> groups = getAuthorityService().getAllAuthorities(AuthorityType.GROUP);
+                // groups - text search match on supplied name
+                String term = PermissionService.GROUP_PREFIX + "*" + contains.trim() + "*";
+                Set<String> groups;
+                groups = getAuthorityService().findAuthorities(AuthorityType.GROUP, term);
                 groups.addAll(getAuthorityService().getAllAuthorities(AuthorityType.EVERYONE));
 
-                String containsLower = contains.trim().toLowerCase();
-                int offset = PermissionService.GROUP_PREFIX.length();
+                String groupDisplayName;
                 for (String group : groups)
                 {
-                    if (group.toLowerCase().indexOf(containsLower, offset) != -1)
+                    // get display name, if not present strip prefix from group id
+                    groupDisplayName = getAuthorityService().getAuthorityDisplayName(group);
+                    if (groupDisplayName == null || groupDisplayName.length() == 0)
                     {
-                        results.add(new SortableSelectItem(group, group.substring(offset), group));
+                        groupDisplayName = group.substring(PermissionService.GROUP_PREFIX.length());
                     }
+
+                    results.add(new SortableSelectItem(group, groupDisplayName, groupDisplayName));
                 }
             }
 

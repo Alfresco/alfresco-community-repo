@@ -70,6 +70,7 @@ public class ClientElementReader implements ConfigElementReader
    public static final String ELEMENT_ZEROBYTEFILEUPLOADS = "zero-byte-file-uploads";
    public static final String ELEMENT_USERGROUPADMIN = "user-group-admin";
    public static final String ELEMENT_ALLOWUSERCONFIG = "allow-user-config";
+   public static final String ELEMENT_PICKERSEARCHMINIMUM = "picker-search-minimum";
    
    
    /**
@@ -306,6 +307,13 @@ public class ClientElementReader implements ConfigElementReader
          if (userConfig != null)
          {
             configElement.setAllowUserConfig(Boolean.parseBoolean(userConfig.getTextTrim()));
+         }
+         
+         // get the minimum number of characters for valid picker search string
+         Element pickerSearchMin = element.element(ELEMENT_PICKERSEARCHMINIMUM);
+         if (pickerSearchMin != null)
+         {
+            configElement.setPickerSearchMinimum(Integer.parseInt(pickerSearchMin.getTextTrim()));
          }
       }
       

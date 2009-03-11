@@ -67,6 +67,7 @@ import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NoTransformerException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.util.URLEncoder;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.DownloadContentServlet;
@@ -1050,5 +1051,23 @@ public final class Utils extends StringUtils
          }
       }
       return userAgent;
+   }
+   
+   /**
+    * Generate the Lucene query for a standard Person search. The query used is standardised
+    * across multiple JSF components and beans.
+    * 
+    * @param query   Buffer for the query
+    * @param term    Search term
+    */
+   public static void generatePersonSearch(StringBuilder query, String term)
+   {
+      query.append("@").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:firstName:\"*");
+      query.append(term);
+      query.append("*\" @").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:lastName:\"*");
+      query.append(term);
+      query.append("*\" @").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:userName:");
+      query.append(term);
+      query.append("*");
    }
 }

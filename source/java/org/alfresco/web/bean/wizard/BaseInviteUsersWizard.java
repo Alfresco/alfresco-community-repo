@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
 
+import javax.faces.application.FacesMessage;
 import javax.faces.component.UISelectOne;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
@@ -86,6 +87,7 @@ public abstract class BaseInviteUsersWizard extends BaseWizardBean
    private static final String MSG_INVITED_TO = "invited_to";
    private static final String MSG_INVITED_ROLE  = "invite_role";
    private static final String MSG_MAX_USERS  = "max_users_returned";
+   private static final String MSG_SEARCH_MINIMUM = "picker_search_min";
    
    protected static final String STEP_NOTIFY = "notify";
    
@@ -365,6 +367,15 @@ public abstract class BaseInviteUsersWizard extends BaseWizardBean
    {
       FacesContext context = FacesContext.getCurrentInstance();
       
+      // quick exit if not enough characters entered for a search
+      String search = contains.trim();
+      int searchMin = Application.getClientConfig(context).getPickerSearchMinimum();
+      if (search.length() < searchMin)
+      {
+         Utils.addErrorMessage(MessageFormat.format(Application.getMessage(context, MSG_SEARCH_MINIMUM), searchMin));
+         return new SelectItem[0];
+      }
+      
       SelectItem[] items;
       this.maxUsersReturned = false;
       
@@ -374,12 +385,14 @@ public abstract class BaseInviteUsersWizard extends BaseWizardBean
          tx = Repository.getUserTransaction(context, true);
          tx.begin();
          
-         List<SelectItem> results = new ArrayList<SelectItem>();
+         int maxResults = Application.getClientConfig(context).getInviteUsersMaxResults();
+         
+         List<SelectItem> results;
          
          if (filterIndex == 0)
          {
             // Use lucene search to retrieve user details
-            String term = QueryParser.escape(contains.trim());
+            String term = QueryParser.escape(search);
             StringBuilder query = new StringBuilder(128);
             if (contains == null || contains.length() == 0)
             {
@@ -390,17 +403,9 @@ public abstract class BaseInviteUsersWizard extends BaseWizardBean
             }
             else
             {
-               query.append("@").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:firstName:\"*");
-               query.append(term);
-               query.append("*\" @").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:lastName:\"*");
-               query.append(term);
-               query.append("*\" @").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:userName:");
-               query.append(term);
-               query.append("*");
+               Utils.generatePersonSearch(query, term);
             }
                
-            int maxResults = Application.getClientConfig(context).getInviteUsersMaxResults();
-            
             if (logger.isDebugEnabled())
             {
                logger.debug("Maximum invite users results size: " + maxResults);
@@ -428,12 +433,7 @@ public abstract class BaseInviteUsersWizard extends BaseWizardBean
                 resultSet.close();
             }
             
-            // set the maximum users returned flag if appropriate
-            if (nodes.size() == maxResults)
-            {
-               this.maxUsersReturned = true;
-            }
-
+            results = new ArrayList<SelectItem>(nodes.size());
             for (int index=0; index<nodes.size(); index++)
             {
                NodeRef personRef = nodes.get(index);
@@ -449,31 +449,40 @@ public abstract class BaseInviteUsersWizard extends BaseWizardBean
          }
          else
          {
-            // groups - simple text based match on name
-            Set<String> groups = getAuthorityService().getAllAuthorities(AuthorityType.GROUP);
+            // groups - text search match on supplied name
+            String term = PermissionService.GROUP_PREFIX + "*" + search + "*";
+            Set<String> groups;
+            groups = getAuthorityService().findAuthorities(AuthorityType.GROUP, term);
             groups.addAll(getAuthorityService().getAllAuthorities(AuthorityType.EVERYONE));
-
-            String containsLower = contains.trim().toLowerCase();
+            
+            results = new ArrayList<SelectItem>(groups.size());
+            
+            int count = 0;
             String groupDisplayName;
             for (String group : groups)
             {
                // get display name, if not present strip prefix from group id
-               groupDisplayName = authorityService.getAuthorityDisplayName(group);
+               groupDisplayName = getAuthorityService().getAuthorityDisplayName(group);
                if (groupDisplayName == null || groupDisplayName.length() == 0)
                {
                   groupDisplayName = group.substring(PermissionService.GROUP_PREFIX.length());
                }
                
-               if (groupDisplayName.toLowerCase().indexOf(containsLower) != -1)
-               {
-                  results.add(new SortableSelectItem(group, groupDisplayName, groupDisplayName));
-               }
+               results.add(new SortableSelectItem(group, groupDisplayName, groupDisplayName));
+               
+               if (++count == maxResults) break;
             }
          }
          
          items = new SelectItem[results.size()];
          results.toArray(items);
          Arrays.sort(items);
+         
+         // set the maximum users returned flag if appropriate
+         if (results.size() == maxResults)
+         {
+            this.maxUsersReturned = true;
+         }
          
          // commit the transaction
          tx.commit();

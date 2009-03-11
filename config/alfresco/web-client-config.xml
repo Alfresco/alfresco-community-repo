@@ -111,6 +111,9 @@
          <!-- Allow Users to modify their personal settings in the User Console screen - you may wish to -->
          <!-- disable this if your admin does not wish to allow users to edit their own details -->
          <allow-user-config>true</allow-user-config>
+         
+         <!-- the minimum number of characters required for a valid search in the pickers -->
+         <picker-search-minimum>2</picker-search-minimum>
       </client>
    </config>
 

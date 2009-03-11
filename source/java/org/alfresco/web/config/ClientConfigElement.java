@@ -85,6 +85,7 @@ public class ClientConfigElement extends ConfigElementAdapter
    private boolean zeroByteFileUploads = true;
    private boolean userGroupAdmin = true;
    private boolean allowUserConfig = true;
+   private int pickerSearchMinimum = 2;
    
    
    /**
@@ -279,6 +280,11 @@ public class ClientConfigElement extends ConfigElementAdapter
       if (newElement.isUserGroupAdmin() != combinedElement.isUserGroupAdmin())
       {
          combinedElement.setUserGroupAdmin(newElement.isUserGroupAdmin());
+      }
+      
+      if (newElement.getPickerSearchMinimum() != combinedElement.getPickerSearchMinimum())
+      {
+         combinedElement.setPickerSearchMinimum(newElement.getPickerSearchMinimum());
       }
       
       return combinedElement;
@@ -809,5 +815,21 @@ public class ClientConfigElement extends ConfigElementAdapter
    /*package*/ void setAllowUserConfig(boolean allowUserConfig)
    {
       this.allowUserConfig = allowUserConfig;
+   }
+   
+   /**
+    * @return Returns the minimum number of characters for a picker search.
+    */
+   public int getPickerSearchMinimum()
+   {
+      return this.pickerSearchMinimum;
+   }
+
+   /**
+    * @param searchMinimum The minimum number of characters for a picker search.
+    */
+   /*package*/ void setPickerSearchMinimum(int searchMinimum)
+   {
+      this.pickerSearchMinimum = searchMinimum;
    }
 }

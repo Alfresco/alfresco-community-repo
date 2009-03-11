@@ -46,7 +46,6 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.groups.GroupsDialog.UserAuthorityDetails;
@@ -213,13 +212,7 @@ public class AddUsersDialog extends BaseDialogBean
                // Use lucene search to retrieve user details
                String term = QueryParser.escape(contains.trim());
                StringBuilder query = new StringBuilder(128);
-               query.append("@").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:firstName:\"*");
-               query.append(term);
-               query.append("*\" @").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:lastName:\"*");
-               query.append(term);
-               query.append("*\" @").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:userName:");
-               query.append(term);
-               query.append("*");
+               Utils.generatePersonSearch(query, term);
                List<NodeRef> nodes;
                ResultSet resultSet = Repository.getServiceRegistry(context).getSearchService().query(
                        Repository.getStoreRef(),

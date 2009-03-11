@@ -37,12 +37,13 @@ import javax.transaction.UserTransaction;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.impl.lucene.QueryParser;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.workflow.WorkflowService;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.repository.Repository;
@@ -57,6 +58,8 @@ import org.alfresco.web.ui.common.Utils;
  */
 public abstract class BaseReassignDialog extends BaseDialogBean
 {
+   private static final String MSG_SEARCH_MINIMUM = "picker_search_min";
+   
    transient private WorkflowService workflowService;
    transient private PersonService personService;
    
@@ -125,6 +128,15 @@ public abstract class BaseReassignDialog extends BaseDialogBean
    {
       FacesContext context = FacesContext.getCurrentInstance();
       
+      // quick exit if not enough characters entered for a search
+      String search = contains.trim();
+      int searchMin = Application.getClientConfig(context).getPickerSearchMinimum();
+      if (search.length() < searchMin)
+      {
+         Utils.addErrorMessage(MessageFormat.format(Application.getMessage(context, MSG_SEARCH_MINIMUM), searchMin));
+         return new SelectItem[0];
+      }
+      
       SelectItem[] items;
       
       UserTransaction tx = null;
@@ -133,19 +145,25 @@ public abstract class BaseReassignDialog extends BaseDialogBean
       {
          tx = Repository.getUserTransaction(context, true);
          tx.begin();
-
+         
+         int maxResults = Application.getClientConfig(context).getInviteUsersMaxResults();
+         
          // Use lucene search to retrieve user details
          String term = QueryParser.escape(contains.trim());
          StringBuilder query = new StringBuilder(128);
-         query.append("@").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:firstName:\"*");
-         query.append(term);
-         query.append("*\" @").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:lastName:\"*");
-         query.append(term);
-         query.append("*\" @").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:userName:");
-         query.append(term);
-         query.append("*");
-         resultSet = Repository.getServiceRegistry(context).getSearchService().query(
-                 Repository.getStoreRef(), SearchService.LANGUAGE_LUCENE, query.toString());
+         Utils.generatePersonSearch(query, term);
+         
+         SearchParameters searchParams = new SearchParameters();
+         searchParams.addStore(Repository.getStoreRef());
+         searchParams.setLanguage(SearchService.LANGUAGE_LUCENE);
+         searchParams.setQuery(query.toString());
+         if (maxResults > 0)
+         {
+            searchParams.setLimit(maxResults);
+            searchParams.setLimitBy(LimitBy.FINAL_SIZE);
+         }
+         
+         resultSet = Repository.getServiceRegistry(context).getSearchService().query(searchParams);
          List<NodeRef> nodes = resultSet.getNodeRefs();
          
          ArrayList<SelectItem> itemList = new ArrayList<SelectItem>(nodes.size());

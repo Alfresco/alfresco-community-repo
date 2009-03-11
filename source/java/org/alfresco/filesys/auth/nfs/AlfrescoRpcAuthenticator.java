@@ -42,6 +42,7 @@ import org.alfresco.jlan.server.SrvSession;
 import org.alfresco.jlan.server.auth.ClientInfo;
 import org.alfresco.jlan.server.config.InvalidConfigurationException;
 import org.alfresco.jlan.server.config.ServerConfiguration;
+import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -255,7 +256,7 @@ public class AlfrescoRpcAuthenticator implements RpcAuthenticator {
     {
     	// Start a transaction
     	
-      UserTransaction tx = m_alfrescoConfig.getTransactionService().getUserTransaction( false); 
+      UserTransaction tx = createTransaction(); 
 
       try
       {
@@ -458,5 +459,26 @@ public class AlfrescoRpcAuthenticator implements RpcAuthenticator {
 		
 		if ( m_idMap == null || m_idMap.size() == 0)
 			throw new InvalidConfigurationException("No user mappings for RPC authenticator");
+	}
+	
+	/**
+	 * Create a transaction, this will be a wrteable transaction unless the system is in read-only mode.
+	 * 
+	 * return UserTransaction
+	 */
+	protected final UserTransaction createTransaction()
+	{
+		// Get the transaction service
+		
+		TransactionService txService = m_alfrescoConfig.getTransactionService(); 
+		
+		// DEBUG
+		
+		if ( logger.isDebugEnabled())
+			logger.debug("Using " + (txService.isReadOnly() ? "ReadOnly" : "Write") + " transaction");
+		
+		// Create the transaction
+		
+		return txService.getUserTransaction( txService.isReadOnly() ? true : false);
 	}
 }

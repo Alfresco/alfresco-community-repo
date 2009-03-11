@@ -155,6 +155,21 @@ public class ContentData implements Serializable
     }
     
     /**
+     * Helper method to determine if the data represents any physical content or not.
+     * 
+     * @param contentData           the content to check (may be <tt>null</tt>)
+     * @return                      <tt>true</tt> if the value is non-null and has a content URL of non-zero length
+     */
+    public static boolean hasContent(ContentData contentData)
+    {
+        if (contentData == null)
+        {
+            return false;
+        }
+        return (contentData.contentUrl != null) && (contentData.size > 0L);
+    }
+    
+    /**
      * Create a content data using the {@link I18NUtil#getLocale() default locale}.
      * 
      * @see #ContentData(String, String, long, String, Locale)

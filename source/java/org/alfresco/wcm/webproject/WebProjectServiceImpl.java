@@ -642,7 +642,7 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
             {
                 public Object doWork() throws Exception
                 {
-                    List<SandboxInfo> sbInfos = sandboxFactory.listSandboxes(wpStoreId, AuthenticationUtil.getSystemUserName());
+                    List<SandboxInfo> sbInfos = sandboxFactory.listAllSandboxes(wpStoreId);
                     
                     for (SandboxInfo sbInfo : sbInfos)
                     {
@@ -700,23 +700,42 @@ public class WebProjectServiceImpl extends WCMUtil implements WebProjectService
     }
     
     /* (non-Javadoc)
+     * @see org.alfresco.wcm.webproject.WebProjectService#isWebUser(java.lang.String)
+     */
+    public boolean isWebUser(String wpStoreId)
+    {
+        return isWebUser(getWebProjectNodeFromStore(wpStoreId));
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.wcm.webproject.WebProjectService#isWebUser(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    public boolean isWebUser(NodeRef wpNodeRef)
+    {
+        // note: admin is an implied web user (content manager) although will not appear in listWebUsers unless explicitly invited
+        return (permissionService.hasPermission(wpNodeRef, PermissionService.READ) == AccessStatus.ALLOWED);
+    }
+    
+    /* (non-Javadoc)
      * @see org.alfresco.wcm.webproject.WebProjectService#isWebUser(java.lang.String, java.lang.String)
      */
     public boolean isWebUser(String wpStoreId, String username)
     {
-        ParameterCheck.mandatoryString("username", username);
-        
         return isWebUser(getWebProjectNodeFromStore(wpStoreId), username);
     }
     
     /* (non-Javadoc)
      * @see org.alfresco.wcm.webproject.WebProjectService#isWebUser(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
      */
-    public boolean isWebUser(NodeRef wpNodeRef, String userName)
+    public boolean isWebUser(final NodeRef wpNodeRef, String userName)
     {
-        ParameterCheck.mandatoryString("userName", userName);
-        
-        return (getWebUserRoleImpl(wpNodeRef, userName) != null);
+        return AuthenticationUtil.runAs(new RunAsWork<Boolean>()
+        {
+            public Boolean doWork() throws Exception
+            {
+                return isWebUser(wpNodeRef);
+            }
+        }, userName);
     }
     
     /* (non-Javadoc)

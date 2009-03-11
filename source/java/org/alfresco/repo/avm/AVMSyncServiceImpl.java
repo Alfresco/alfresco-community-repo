@@ -117,14 +117,6 @@ public class AVMSyncServiceImpl implements AVMSyncService
         if (fgLogger.isDebugEnabled())
         {
             fgLogger.debug(srcPath + " : " + dstPath);
-            try
-            {
-                throw new Exception();
-            }
-            catch (Exception e)
-            {
-                fgLogger.debug("Stack Trace: ", e);
-            }
         }
         if (srcPath == null || dstPath == null)
         {
@@ -410,17 +402,6 @@ public class AVMSyncServiceImpl implements AVMSyncService
                        boolean overrideConflicts, boolean overrideOlder, String tag, String description)
     {
         long start = System.currentTimeMillis();
-        if (fgLogger.isDebugEnabled())
-        {
-            try
-            {
-                throw new Exception("Stack Trace.");
-            }
-            catch (Exception e)
-            {
-                fgLogger.debug("Stack trace: ", e);
-            }
-        }
         Map<String, Integer> storeVersions = new HashMap<String, Integer>();
         Set<String> destStores = new HashSet<String>();
         for (AVMDifference diff : diffList)
@@ -1028,14 +1009,6 @@ public class AVMSyncServiceImpl implements AVMSyncService
         if (fgLogger.isDebugEnabled())
         {
             fgLogger.debug("flatten: " + layerNode + " " + underlyingNode);
-            try
-            {
-                throw new Exception("Stack Trace:");
-            }
-            catch (Exception e)
-            {
-                fgLogger.debug("Stack Trace: ", e);
-            }
         }
         flatten(layerNode, underlyingNode);
     }

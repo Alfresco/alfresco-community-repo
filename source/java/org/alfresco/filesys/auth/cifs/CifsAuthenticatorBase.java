@@ -369,7 +369,7 @@ public abstract class CifsAuthenticatorBase extends CifsAuthenticator
 		
 		// Check if the user name is an administrator
 
-		UserTransaction tx = getTransactionService().getUserTransaction();
+		UserTransaction tx = createTransaction();
 
 		try {
 			tx.begin();
@@ -399,5 +399,26 @@ public abstract class CifsAuthenticatorBase extends CifsAuthenticator
 				throw new RuntimeException("Error during execution of transaction.", ex);
 			}
 		}
+	}
+	
+	/**
+	 * Create a transaction, this will be a wrteable transaction unless the system is in read-only mode.
+	 * 
+	 * return UserTransaction
+	 */
+	protected final UserTransaction createTransaction()
+	{
+		// Get the transaction service
+		
+		TransactionService txService = getTransactionService();
+		
+		// DEBUG
+		
+		if ( logger.isDebugEnabled())
+			logger.debug("Using " + (txService.isReadOnly() ? "ReadOnly" : "Write") + " transaction");
+		
+		// Create the transaction
+		
+		return txService.getUserTransaction( txService.isReadOnly() ? true : false);
 	}
 }

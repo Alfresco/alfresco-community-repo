@@ -109,6 +109,20 @@
                <child-name>fred</child-name>
                <duplicate>true</duplicate>
             </child-association>
+            <child-association name="test:childassocPropagate">
+               <source>
+                  <mandatory>true</mandatory>
+                  <many>true</many>
+               </source>
+               <target>
+                  <class>test:referenceable</class>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </target>
+               <child-name>fred</child-name>
+               <duplicate>true</duplicate>
+               <propagateTimestamps>true</propagateTimestamps>
+            </child-association>
          </associations>
          
          <mandatory-aspects>

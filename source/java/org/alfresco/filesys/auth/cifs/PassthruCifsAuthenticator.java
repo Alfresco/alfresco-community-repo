@@ -174,7 +174,7 @@ public class PassthruCifsAuthenticator extends CifsAuthenticatorBase implements 
 
         // Start a transaction
     	
-        UserTransaction tx = getTransactionService().getUserTransaction( false);
+        UserTransaction tx = createTransaction();
         int authSts = AUTH_DISALLOW;
         
         try
@@ -1015,7 +1015,7 @@ public class PassthruCifsAuthenticator extends CifsAuthenticatorBase implements 
                 {
                     // Wrap the service calls in a transaction
                     
-                    UserTransaction tx = getTransactionService().getUserTransaction( false);
+                    UserTransaction tx = createTransaction();
                     
                     try
                     {

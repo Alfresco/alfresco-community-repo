@@ -173,6 +173,7 @@
       <structure map-as="org.alfresco.repo.dictionary.M2ClassAssociation"/>
       <value name="child-name" field="requiredChildName" usage="optional"/>
       <value name="duplicate" field="allowDuplicateChildName" usage="optional"/>
+      <value name="propagateTimestamps" field="propagateTimestamps" usage="optional"/>
    </mapping>
 
 </binding>

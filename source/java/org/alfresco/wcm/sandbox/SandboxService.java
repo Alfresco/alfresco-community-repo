@@ -314,7 +314,7 @@ public interface SandboxService
      * 
      * @param assets         list of assets
      */
-    public void revertListNodes(String sbStoreId, List<AssetInfo> assets);
+    public void revertListAssets(String sbStoreId, List<AssetInfo> assets);
     
     /**
      * Revert sandbox to a specific snapshot version ID (ie. for staging sandbox)

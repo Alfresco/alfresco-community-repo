@@ -272,4 +272,20 @@ public abstract class AbstractContentStore implements ContentStore
         ContentReader reader = getReader(contentUrl);
         return reader.exists();
     }
+
+    /**
+     * @return      Returns <tt>-1</tt> always
+     */
+    public long getTotalSize()
+    {
+        return -1L;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public String getRootLocation()
+    {
+        return ".";
+    }
 }

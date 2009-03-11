@@ -88,4 +88,23 @@ public class FileContentStoreTest extends AbstractWritableContentStoreTest
             // expected
         }
     }
+
+    @Override
+    public void testRootLocation() throws Exception
+    {
+        ContentStore store = getStore();
+        String root = store.getRootLocation();
+        assertNotNull("Root value can't be null", root);
+        File dir = new File(root);
+        assertTrue("Root location for FileContentStore must exist", dir.exists());
+    }
+
+    @Override
+    public void testTotalSize() throws Exception
+    {
+        ContentStore store = getStore();
+        store.getWriter(new ContentContext(null, null)).putContent("Test content");
+        long size = store.getTotalSize();
+        assertTrue("Size must be positive", size > 0L);
+    }
 }

@@ -246,7 +246,29 @@ public class SandboxServiceImpl implements SandboxService
     {
         ParameterCheck.mandatoryString("wpStoreId", wpStoreId);
         
-        return sandboxFactory.listSandboxes(wpStoreId, AuthenticationUtil.getRunAsUser());
+        String currentUser = AuthenticationUtil.getRunAsUser();
+        
+        List<SandboxInfo> sbInfos = null;
+        
+        if (wpService.isContentManager(wpStoreId, currentUser))
+        {
+            sbInfos = sandboxFactory.listAllSandboxes(wpStoreId);
+        }
+        else
+        {
+            sbInfos = new ArrayList<SandboxInfo>(1);
+            
+            SandboxInfo authorSandbox = getAuthorSandbox(wpStoreId, currentUser);
+            
+            if (authorSandbox != null)
+            {
+                sbInfos.add(authorSandbox);
+            }
+            
+            sbInfos.add(getSandbox(WCMUtil.buildStagingStoreName(wpStoreId))); // get staging sandbox
+        }
+        
+        return sbInfos;
     }
     
     /* (non-Javadoc)
@@ -262,7 +284,13 @@ public class SandboxServiceImpl implements SandboxService
             throw new AccessDeniedException("Only content managers may list sandboxes for '"+userName+"' (web project id: "+wpStoreId+")");
         }
        
-        return sandboxFactory.listSandboxes(wpStoreId, userName);
+        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<List<SandboxInfo>>()
+        {
+             public List<SandboxInfo> doWork() throws Exception
+             {
+                 return listSandboxes(wpStoreId);
+             }
+        }, userName);
     }
     
     /* (non-Javadoc)
@@ -273,7 +301,7 @@ public class SandboxServiceImpl implements SandboxService
         ParameterCheck.mandatoryString("sbStoreId", sbStoreId);
         ParameterCheck.mandatory("sandboxType", sandboxType);
         
-        SandboxInfo sbInfo = sandboxFactory.getSandbox(sbStoreId);
+        SandboxInfo sbInfo = getSandbox(sbStoreId);
         if (sbInfo != null)
         {
             return sbInfo.getSandboxType().equals(sandboxType);
@@ -287,6 +315,24 @@ public class SandboxServiceImpl implements SandboxService
     public SandboxInfo getSandbox(String sbStoreId)
     {
         ParameterCheck.mandatoryString("sbStoreId", sbStoreId);
+        
+        String wpStoreId = WCMUtil.getWebProjectStoreId(sbStoreId);
+        
+        // check user has read access to web project (ie. is a web user)
+        if (! wpService.isWebUser(wpStoreId))
+        {
+            return null;
+        }
+        
+        if (! WCMUtil.isStagingStore(sbStoreId))
+        {
+            String currentUser = AuthenticationUtil.getRunAsUser();
+            
+            if (! ((WCMUtil.getUserName(sbStoreId).equals(currentUser)) || (wpService.isContentManager(wpStoreId, currentUser))))
+            {
+                throw new AccessDeniedException("Only content managers may get sandbox '"+sbStoreId+"' (web project id: "+wpStoreId+")");
+            }
+        }
         
         return sandboxFactory.getSandbox(sbStoreId);
     }
@@ -309,11 +355,6 @@ public class SandboxServiceImpl implements SandboxService
     {
         ParameterCheck.mandatoryString("wpStoreId", wpStoreId);
         ParameterCheck.mandatoryString("userName", userName);
-        
-        if (! wpService.isContentManager(wpStoreId))
-        {
-            throw new AccessDeniedException("Only content managers may get author sandbox for '"+userName+"' (web project id: "+wpStoreId+")");
-        }
         
         return getSandbox(WCMUtil.buildUserMainStoreName(WCMUtil.buildStagingStoreName(wpStoreId), userName));
     }
@@ -420,6 +461,10 @@ public class SandboxServiceImpl implements SandboxService
         
         ParameterCheck.mandatoryString("dstSandboxStoreId", dstSandboxStoreId);
         ParameterCheck.mandatoryString("dstRelativePath", dstRelativePath);
+        
+        // checks sandbox access (TODO review)
+        getSandbox(srcSandboxStoreId); // ignore result
+        getSandbox(dstSandboxStoreId); // ignore result
         
         String avmSrcPath = srcSandboxStoreId + WCMUtil.AVM_STORE_SEPARATOR + srcRelativePath;
         String avmDstPath = dstSandboxStoreId + WCMUtil.AVM_STORE_SEPARATOR + dstRelativePath;
@@ -567,6 +612,9 @@ public class SandboxServiceImpl implements SandboxService
                                    final String submitLabel, final String submitComment,
                                    final Map<String, Date> expirationDates, final Date launchDate, final boolean validateLinks, final boolean autoDeploy)
     {
+        // checks sandbox access (TODO review)
+        getSandbox(sbStoreId); // ignore result
+        
         final String wpStoreId = WCMUtil.getWebProjectStoreId(sbStoreId);
         final String stagingSandboxId = WCMUtil.buildStagingStoreName(wpStoreId);
         
@@ -881,7 +929,7 @@ public class SandboxServiceImpl implements SandboxService
         
         List<AssetInfo> assets = listChanged(sbStoreId, relativePath, true);
         
-        revertListNodes(sbStoreId, assets);
+        revertListAssets(sbStoreId, assets);
     }
     
     /* (non-Javadoc)
@@ -903,15 +951,18 @@ public class SandboxServiceImpl implements SandboxService
             }
         }
         
-        revertListNodes(sbStoreId, assets);
+        revertListAssets(sbStoreId, assets);
     }
     
     /* (non-Javadoc)
-     * @see org.alfresco.wcm.sandbox.SandboxService#revertListNodes(java.lang.String, java.util.List)
+     * @see org.alfresco.wcm.sandbox.SandboxService#revertListAssets(java.lang.String, java.util.List)
      */
-    public void revertListNodes(String sbStoreId, List<AssetInfo> assets)
+    public void revertListAssets(String sbStoreId, List<AssetInfo> assets)
     {
         ParameterCheck.mandatoryString("sbStoreId", sbStoreId);
+        
+        // checks sandbox access (TODO review)
+        getSandbox(sbStoreId); // ignore result
         
         List<Pair<Integer, String>> versionPaths = new ArrayList<Pair<Integer, String>>(assets.size());
         
@@ -1072,41 +1123,6 @@ public class SandboxServiceImpl implements SandboxService
        }
     }
     
-    /**
-     * Recursively remove locks from a path. Walking child folders looking for files
-     * to remove locks from.
-     */
-    /*
-    private void recursivelyRemoveLocks(String wpStoreId, int version, AVMNodeDescriptor desc, String absoluteAVMPath)
-    {
-       if (desc.isFile() || desc.isDeletedFile())
-       {
-          avmLockingService.removeLock(wpStoreId, WCMUtil.getStoreRelativePath(absoluteAVMPath));
-       }
-       else
-       {
-          if (desc.isDeletedDirectory())
-          {
-             // lookup the previous child and get its contents
-             final List<AVMNodeDescriptor> history = avmService.getHistory(desc, 2);
-             if (history.size() <= 1)
-             {
-                return;
-             }
-             desc = history.get(1);
-          }
-
-          Map<String, AVMNodeDescriptor> list = avmService.getDirectoryListingDirect(desc, true);
-          for (Map.Entry<String, AVMNodeDescriptor> child : list.entrySet())
-          {
-             String name = child.getKey();
-             AVMNodeDescriptor childDesc = child.getValue();
-             recursivelyRemoveLocks(wpStoreId, version, childDesc, absoluteAVMPath + "/" + name);
-          }
-       }
-    }
-    */
-
     /**
      * Create Sandbox Transaction listener - invoked after commit
      */

@@ -326,6 +326,22 @@ public interface WebProjectService
     public String getWebUserRole(NodeRef wpNodeRef, String userName);
     
     /**
+     * Indicates whether current user is a web user of the web project or not
+     * 
+     * @param store id      web project store id
+     * @return boolean      <tt>true</tt> if the current user is a web user of the web project, <tt>false</tt> otherwise
+     */
+    public boolean isWebUser(String wpStoreId);
+    
+    /**
+     * Indicates whether current user is a web user of the web project or not
+     * 
+     * @param wpNodeRef     web project node ref
+     * @return boolean      <tt>true</tt> if the current user is a web user of the web project, <tt>false</tt> otherwise
+     */
+    public boolean isWebUser(NodeRef wpNodeRef);
+    
+    /**
      * Indicates whether given user is a web user of the web project or not
      * 
      * @param store id      web project store id

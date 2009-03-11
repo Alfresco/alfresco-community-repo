@@ -24,6 +24,11 @@
  */
 package org.alfresco.repo.workflow.jbpm;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.jbpm.JbpmConfiguration;
 import org.jbpm.job.Job;
@@ -38,6 +43,13 @@ import org.jbpm.job.executor.JobExecutorThread;
 public class AlfrescoJobExecutorThread extends JobExecutorThread
 {
     private AlfrescoJobExecutor alfrescoJobExecutor;
+    private boolean isActive = true;
+    
+    @Override
+    public void setActive(boolean isActive)
+    {
+        this.isActive = isActive;
+    }
     
     /**
      * Constructor
@@ -48,14 +60,51 @@ public class AlfrescoJobExecutorThread extends JobExecutorThread
         this.alfrescoJobExecutor = jobExecutor;
     }
 
+    @Override
+    protected Collection acquireJobs()
+    {
+        if (!isActive)
+        {
+            return Collections.EMPTY_LIST;
+        }
+        return alfrescoJobExecutor.getTransactionService().getRetryingTransactionHelper().doInTransaction(
+            new RetryingTransactionHelper.RetryingTransactionCallback<Collection>() {
+                public Collection execute() throws Throwable
+                {
+                    return AlfrescoJobExecutorThread.super.acquireJobs();
+                }
+            });
+    }
+
+    @Override
+    protected Date getNextDueDate()
+    {
+        if (!isActive)
+        {
+            return null;
+        }
+        return alfrescoJobExecutor.getTransactionService().getRetryingTransactionHelper().doInTransaction(
+            new RetryingTransactionHelper.RetryingTransactionCallback<Date>() {
+                public Date execute() throws Throwable
+                {
+                    return AlfrescoJobExecutorThread.super.getNextDueDate();
+                }
+            }, true);
+    }
+
     /**
      * {@inheritDoc}
      */
     @Override
     protected void executeJob(Job job)
     {
+        if (!isActive)
+        {
+            return;
+        }
         alfrescoJobExecutor.getTransactionService().getRetryingTransactionHelper().doInTransaction(new TransactionJob(job));
     }
+    
     
     /**
      * Helper class for holding Job reference
@@ -76,14 +125,15 @@ public class AlfrescoJobExecutorThread extends JobExecutorThread
             this.job = job;
         }
 
-        /**
-         * {@inheritDoc}
+        /* (non-Javadoc)
+         * @see org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback#execute()
          */
         public Object execute() throws Throwable
         {
             AlfrescoJobExecutorThread.super.executeJob(job);
             return null;
         }
+
     }
-    
+        
 }

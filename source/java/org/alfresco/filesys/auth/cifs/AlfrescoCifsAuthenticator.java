@@ -166,7 +166,7 @@ public class AlfrescoCifsAuthenticator extends CifsAuthenticatorBase
             {
                 // Start a transaction
               
-                tx = getTransactionService().getUserTransaction( false);
+                tx = createTransaction();
                 tx.begin();
                 
                 // Perform local MD4 password check
@@ -177,7 +177,7 @@ public class AlfrescoCifsAuthenticator extends CifsAuthenticatorBase
             {
                 // Start a transaction
                 
-                tx = getTransactionService().getUserTransaction( false);
+                tx = createTransaction();
                 tx.begin();
               
                 // Perform passthru authentication password check

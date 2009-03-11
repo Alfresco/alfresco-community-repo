@@ -24,7 +24,7 @@
         </assignment>
     </swimlane>
 
-    <task-node name="launchpending">
+    <task-node name="launchpending" end-tasks="true">
         <task swimlane="assignee">
            <timer duedate="#{launchDate}" transition="launched">
              <action class="org.alfresco.repo.workflow.jbpm.AlfrescoJavaScript">
@@ -40,12 +40,12 @@
 
     <node name="doit">
         <event type="node-enter">
-        <action class="org.alfresco.repo.workflow.jbpm.AlfrescoJavaScript">
-               <script>
-                 companyhome.name = companyhome.name + "b";
-                 logger.log("Company Home: " + companyhome.name);
-               </script>
-             </action>
+            <action class="org.alfresco.repo.workflow.jbpm.AlfrescoJavaScript">
+                <script>
+                    companyhome.name = companyhome.name + "b";
+                    logger.log("Company Home: " + companyhome.name);
+                </script>
+            </action>
         </event>
         <transition name="" to="end" />
     </node>

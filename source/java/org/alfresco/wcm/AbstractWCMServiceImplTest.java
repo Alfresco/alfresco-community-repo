@@ -41,12 +41,14 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  */
 public class AbstractWCMServiceImplTest extends TestCase
 {
-    // override jbpm.job.executor idleInterval to 10s (was 1.5m) for WCM unit tests
-    protected static ApplicationContext ctx =new ClassPathXmlApplicationContext(
-            new String[] {ApplicationContextHelper.CONFIG_LOCATIONS[0], "classpath:wcm/wcm-jbpm-context.xml"}
-            );
+    // override jbpm.job.executor idleInterval to 5s (was 1.5m) for WCM unit tests
+    private static final String SUBMIT_CONFIG_LOCATION = "classpath:wcm/wcm-jbpm-context.xml";
+    protected static final long SUBMIT_DELAY = 10000L; // (in millis) 10s - to allow async submit direct workflow to complete (as per 5s idleInterval above)
     
-    protected static final long SUBMIT_DELAY = 20000L; // 20s - to allow async submit direct workflow to complete (as per 10s idleInterval above)
+    
+    protected static ApplicationContext ctx =new ClassPathXmlApplicationContext(
+            new String[] {ApplicationContextHelper.CONFIG_LOCATIONS[0], SUBMIT_CONFIG_LOCATION}
+            );
     
     //
     // test data

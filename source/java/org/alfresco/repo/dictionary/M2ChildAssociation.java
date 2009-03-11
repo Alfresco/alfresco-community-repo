@@ -35,6 +35,7 @@ public class M2ChildAssociation extends M2ClassAssociation
 {
     private String requiredChildName = null;
     private Boolean allowDuplicateChildName = null;
+    private Boolean propagateTimestamps = null;
     
     
     /*package*/ M2ChildAssociation()
@@ -71,4 +72,13 @@ public class M2ChildAssociation extends M2ClassAssociation
         this.allowDuplicateChildName = allowDuplicateChildName;
     }
 
+    public boolean isPropagateTimestamps()
+    {
+        return propagateTimestamps == null ? false : propagateTimestamps;
+    }
+    
+    public void setPropagateTimestamps(boolean propagateTimestamps)
+    {
+        this.propagateTimestamps = propagateTimestamps;
+    }
 }

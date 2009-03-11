@@ -34,6 +34,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.AbstractContentStore;
 import org.alfresco.repo.content.ContentContext;
 import org.alfresco.repo.content.ContentStore;
+import org.alfresco.repo.content.ContentStoreCreatedEvent;
 import org.alfresco.repo.content.EmptyContentReader;
 import org.alfresco.repo.content.UnsupportedContentUrlException;
 import org.alfresco.service.cmr.repository.ContentIOException;
@@ -353,6 +354,53 @@ public class FileContentStore extends AbstractContentStore implements Applicatio
     }
 
     /**
+     * Performs a full, deep size calculation
+     */
+    @Override
+    public long getTotalSize()
+    {
+        return calculateDirectorySize(rootDirectory);
+    }
+    
+    /**
+     * Recursive directory size calculation
+     */
+    private long calculateDirectorySize(File dir)
+    {
+        int size = 0;
+        File[] files = dir.listFiles();
+        for (File file : files)
+        {
+            if (file.isDirectory())
+            {
+                size += calculateDirectorySize(file);
+            }
+            else
+            {
+                size += file.length();
+            }
+        }
+        return size;
+    }
+
+    /**
+     * @return          Returns the canonical path to the root directory
+     */
+    @Override
+    public String getRootLocation()
+    {
+        try
+        {
+            return rootDirectory.getCanonicalPath();
+        }
+        catch (Throwable e)
+        {
+            logger.warn("Unabled to return root location", e);
+            return super.getRootLocation();
+        }
+    }
+
+    /**
      * This implementation requires that the URL start with
      * {@link FileContentStore#STORE_PROTOCOL }.
      */
@@ -585,7 +633,7 @@ public class FileContentStore extends AbstractContentStore implements Applicatio
         try
         {
             // Neither context.isActive() or context.isRunning() seem to detect whether the refresh() has completed
-            context.publishEvent(new FileContentStoreCreatedEvent(this, rootDirectory));
+            context.publishEvent(new ContentStoreCreatedEvent(this));
         }
         catch (IllegalStateException e)
         {
@@ -593,11 +641,6 @@ public class FileContentStore extends AbstractContentStore implements Applicatio
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see
-     * org.springframework.context.ApplicationListener#onApplicationEvent(org.springframework.context.ApplicationEvent)
-     */
     public void onApplicationEvent(ApplicationEvent event)
     {
         // Once the context has been refreshed, we tell other interested beans about the existence of this content store
@@ -605,7 +648,7 @@ public class FileContentStore extends AbstractContentStore implements Applicatio
         if (event instanceof ContextRefreshedEvent)
         {
             ((ContextRefreshedEvent) event).getApplicationContext().publishEvent(
-                    new FileContentStoreCreatedEvent(this, rootDirectory));
+                    new ContentStoreCreatedEvent(this));
         }
     }
 }

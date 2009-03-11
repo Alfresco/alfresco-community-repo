@@ -30,8 +30,8 @@
     <field name="name"><string value="AlfrescoJbpmJobExector" /></field>
     <field name="nbrOfThreads"><int value="1" /></field>
     
-    <!-- overridden for WCM unit tests to 10 secs (was 1.5 mins) -->
-    <field name="idleInterval"><int value="10000" /></field>
+    <!-- overridden for WCM unit tests to 5 secs (was 1.5 mins) -->
+    <field name="idleInterval"><int value="5000" /></field>
     
     <field name="maxIdleInterval"><int value="3600000" /></field> <!-- 1 hour -->
     <field name="historyMaxSize"><int value="20" /></field>

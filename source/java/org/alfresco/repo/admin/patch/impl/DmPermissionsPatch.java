@@ -41,34 +41,31 @@ public class DmPermissionsPatch extends AbstractPatch
 {
 
     private static final String MSG_SUCCESS = "patch.updateDmPermissions.result";
-    
+
     private AccessControlListDAO accessControlListDao;
 
     private AclDaoComponentImpl aclDaoComponent;
-    
+
     @Override
     protected String applyInternal() throws Exception
     {
         Thread progressThread = null;
-        if (aclDaoComponent.supportsProgressTracking())
+        if (this.aclDaoComponent.supportsProgressTracking())
         {
-            Long toDo = aclDaoComponent.getDmNodeCount();
-            Long maxId = aclDaoComponent.getMaxAclId();
-
-            progressThread = new Thread(new ProgressWatcher(toDo, maxId), "DMPatchProgressWatcher");
+            progressThread = new Thread(new ProgressWatcher(), "DMPatchProgressWatcher");
             progressThread.start();
         }
-        
-        Map<ACLType, Integer> summary = accessControlListDao.patchAcls();
-        
+
+        Map<ACLType, Integer> summary = this.accessControlListDao.patchAcls();
+
         if (progressThread != null)
         {
             progressThread.interrupt();
             progressThread.join();
         }
-        
+
         // build the result message
-        String msg = I18NUtil.getMessage(MSG_SUCCESS, summary.get(ACLType.DEFINING));
+        String msg = I18NUtil.getMessage(DmPermissionsPatch.MSG_SUCCESS, summary.get(ACLType.DEFINING));
         // done
         return msg;
     }
@@ -85,14 +82,14 @@ public class DmPermissionsPatch extends AbstractPatch
 
     /**
      * Set the acl dao component
+     * 
      * @param aclDaoComponent
      */
     public void setAclDaoComponent(AclDaoComponentImpl aclDaoComponent)
     {
         this.aclDaoComponent = aclDaoComponent;
     }
-    
-    
+
     private class ProgressWatcher implements Runnable
     {
         private boolean running = true;
@@ -101,15 +98,9 @@ public class DmPermissionsPatch extends AbstractPatch
 
         Long max;
 
-        ProgressWatcher(Long toDo, Long max)
-        {
-            this.toDo = toDo;
-            this.max = max;
-        }
-
         public void run()
         {
-            while (running)
+            while (this.running)
             {
                 try
                 {
@@ -117,27 +108,35 @@ public class DmPermissionsPatch extends AbstractPatch
                 }
                 catch (InterruptedException e)
                 {
-                    running = false;
+                    this.running = false;
                 }
 
-                if (running)
+                if (this.running)
                 {
-                    RetryingTransactionHelper txHelper = transactionService.getRetryingTransactionHelper();
+                    RetryingTransactionHelper txHelper = DmPermissionsPatch.this.transactionService
+                            .getRetryingTransactionHelper();
                     txHelper.setMaxRetries(1);
                     Long done = txHelper.doInTransaction(new RetryingTransactionCallback<Long>()
                     {
 
                         public Long execute() throws Throwable
                         {
-                            return aclDaoComponent.getDmNodeCountWithNewACLS(max);
+                            if (ProgressWatcher.this.toDo == null)
+                            {
+                                ProgressWatcher.this.toDo = DmPermissionsPatch.this.aclDaoComponent
+                                        .getDmNodeCount();
+                                ProgressWatcher.this.max = DmPermissionsPatch.this.aclDaoComponent.getMaxAclId();
+                            }
+                            return DmPermissionsPatch.this.aclDaoComponent
+                                    .getDmNodeCountWithNewACLS(ProgressWatcher.this.max);
                         }
                     }, true, true);
 
-                    reportProgress(toDo, done);
+                    reportProgress(this.toDo, done);
                 }
             }
         }
 
     }
-    
+
 }

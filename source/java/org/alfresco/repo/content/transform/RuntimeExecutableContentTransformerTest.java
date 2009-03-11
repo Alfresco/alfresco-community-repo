@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -56,6 +56,7 @@ public class RuntimeExecutableContentTransformerTest extends BaseAlfrescoTestCas
         // the command to execute
         RuntimeExec transformCommand = new RuntimeExec();
         Map<String, String> commandMap = new HashMap<String, String>(5);
+        commandMap.put("Mac OS X", "mv -f ${source} ${target}");
         commandMap.put("Linux", "mv -f ${source} ${target}");
         commandMap.put(".*", "cmd /c copy /Y \"${source}\" \"${target}\"");
         transformCommand.setCommandMap(commandMap);

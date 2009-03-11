@@ -1,7 +1,14 @@
-<jbpm-configuration>
+ <jbpm-configuration>
 
   <jbpm-context>
-    <service name="persistence" factory="org.jbpm.persistence.db.DbPersistenceServiceFactory" />
+    <service name="persistence">
+      <factory>
+        <bean class="org.jbpm.persistence.db.DbPersistenceServiceFactory">
+          <field name="isCurrentSessionEnabled"><true/></field> 
+          <field name="isTransactionEnabled"><false/></field>
+        </bean>
+      </factory>
+    </service>  
     <service name="tx" factory="org.jbpm.tx.TxServiceFactory" />
     <service name="message" factory="org.jbpm.msg.db.DbMessageServiceFactory" />
     <service name="scheduler" factory="org.jbpm.scheduler.db.DbSchedulerServiceFactory" />
@@ -27,7 +34,7 @@
   
   <bean name="jbpm.job.executor" class="org.alfresco.repo.workflow.jbpm.AlfrescoJobExecutor">
     <field name="jbpmConfiguration"><ref bean="jbpmConfiguration" /></field>
-    <field name="name"><string value="AlfrescoJbpmJobExector" /></field>
+    <field name="name"><string value="AlfrescoJbpmJobExecutor" /></field>
     <field name="nbrOfThreads"><int value="1" /></field>
     <field name="idleInterval"><int value="90000" /></field> <!-- 15 minutes -->
     <field name="maxIdleInterval"><int value="3600000" /></field> <!-- 1 hour -->

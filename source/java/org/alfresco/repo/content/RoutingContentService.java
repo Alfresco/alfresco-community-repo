@@ -200,7 +200,7 @@ public class RoutingContentService implements ContentService, ApplicationContext
             Map<QName, Serializable> after)
     {
         boolean fire = false;
-        boolean newContent = false;
+        boolean isNewContent = false;
         // check if any of the content properties have changed
         for (QName propertyQName : after.keySet())
         {
@@ -221,49 +221,39 @@ public class RoutingContentService implements ContentService, ApplicationContext
             {
                 ContentData beforeValue = (ContentData) before.get(propertyQName);
                 ContentData afterValue = (ContentData) after.get(propertyQName);
-                if (afterValue != null && afterValue.getContentUrl() == null)
+                boolean hasContentBefore = ContentData.hasContent(beforeValue);
+                boolean hasContentAfter = ContentData.hasContent(afterValue);
+                
+                // There are some shortcuts here
+                if (!hasContentBefore && !hasContentAfter)
                 {
-                    // no URL - ignore
+                    // Really, nothing happened
+                    continue;
                 }
-                else if (!EqualsHelper.nullSafeEquals(beforeValue, afterValue))
+                else if (EqualsHelper.nullSafeEquals(beforeValue, afterValue))
                 {
-                    // So debug ...
-                    if (logger.isDebugEnabled() == true)
-                    {
-                        String beforeString = "";
-                        if (beforeValue != null)
-                        {
-                            beforeString = beforeValue.toString();
-                        }
-                        String afterString = "";
-                        if (afterValue != null)
-                        {
-                            afterString = afterValue.toString();
-                        }
-                        logger.debug("onContentUpate: before = " + beforeString + "; after = " + afterString);
-                    }
-                    
-                    // Figure out if the content is new or not
-                    String beforeContentUrl = null;
-                    if (beforeValue != null)
-                    {
-                        beforeContentUrl = beforeValue.getContentUrl();
-                    }
-                    String afterContentUrl = null;
-                    if (afterValue != null)
-                    {
-                        afterContentUrl = afterValue.getContentUrl();
-                    }
-                    if (beforeContentUrl == null && afterContentUrl != null)
-                    {
-                        newContent = true;
-                    }
-                    
-                    // the content changed
-                    // at the moment, we are only interested in this one change
-                    fire = true;
-                    break;
+                    // Still, nothing happening
+                    continue;
                 }
+                
+                // Check for new content
+                isNewContent = !hasContentBefore && hasContentAfter;
+
+                // So debug ...
+                if (logger.isDebugEnabled() == true)
+                {
+                    String name = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+                    logger.debug(
+                            "onContentUpdate will fire: \n" +
+                            "   Name:   " + name + "\n" +
+                            "   Is new: " + isNewContent + "\n" +
+                            "   Before: " + beforeValue + "\n" +
+                            "   After:  " + afterValue);
+                }
+                
+                // We are interested in any content change
+                fire = true;
+                break;
             }
             catch (ClassCastException e)
             {
@@ -278,7 +268,7 @@ public class RoutingContentService implements ContentService, ApplicationContext
             Set<QName> types = new HashSet<QName>(this.nodeService.getAspects(nodeRef));
             types.add(this.nodeService.getType(nodeRef));
             OnContentUpdatePolicy policy = this.onContentUpdateDelegate.get(nodeRef, types);
-            policy.onContentUpdate(nodeRef, newContent);
+            policy.onContentUpdate(nodeRef, isNewContent);
         }
     }
 
@@ -327,10 +317,11 @@ public class RoutingContentService implements ContentService, ApplicationContext
         Serializable propValue = nodeService.getProperty(nodeRef, propertyQName);
         if (propValue instanceof Collection)
         {
-            Collection colPropValue = (Collection)propValue;
+            @SuppressWarnings("unchecked")
+            Collection<Serializable> colPropValue = (Collection<Serializable>)propValue;
             if (colPropValue.size() > 0)
             {
-                propValue = (Serializable)colPropValue.iterator().next();
+                propValue = colPropValue.iterator().next();
             }
         }
 

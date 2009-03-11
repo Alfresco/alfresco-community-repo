@@ -52,7 +52,6 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.DNSNameMangler;
 import org.alfresco.util.GUID;
-import org.alfresco.util.ParameterCheck;
 import org.alfresco.wcm.util.WCMUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -1013,34 +1012,26 @@ public final class SandboxFactory extends WCMUtil
        return workflowStoreName;
    }
    
-   public List<SandboxInfo> listSandboxes(final String wpStoreId, String userName)
+   // list all sandboxes for a web project
+   public List<SandboxInfo> listAllSandboxes(final String wpStoreId)
    {
-       ParameterCheck.mandatoryString("wpStoreId", wpStoreId);
-       ParameterCheck.mandatoryString("userName", userName);
+       List<AVMStoreDescriptor> stores = avmService.getStores();
        
-       return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<List<SandboxInfo>>()
+       List<SandboxInfo> sbInfos = new ArrayList<SandboxInfo>();
+       for (AVMStoreDescriptor store : stores)
        {
-           public List<SandboxInfo> doWork() throws Exception
+           String storeName = store.getName();
+           
+           // list main stores - not preview stores or workflow stores
+           if ((storeName.startsWith(wpStoreId)) && 
+               (! WCMUtil.isPreviewStore(storeName)) &&
+               (! WCMUtil.isWorkflowStore(storeName)))
            {
-               List<AVMStoreDescriptor> stores = avmService.getStores();
-               
-               List<SandboxInfo> sbInfos = new ArrayList<SandboxInfo>();
-               for (AVMStoreDescriptor store : stores)
-               {
-                   String storeName = store.getName();
-                   
-                   // list main stores - not preview stores or workflow stores
-                   if ((storeName.startsWith(wpStoreId)) && 
-                       (! WCMUtil.isPreviewStore(storeName)) &&
-                       (! WCMUtil.isWorkflowStore(storeName)))
-                   {
-                       sbInfos.add(getSandbox(storeName));
-                   }
-               }
-               
-               return sbInfos;
+               sbInfos.add(getSandbox(storeName));
            }
-       }, userName);
+       }
+       
+       return sbInfos;
    }
 
    public void deleteSandbox(String sbStoreId)
@@ -1146,13 +1137,7 @@ public final class SandboxFactory extends WCMUtil
    public void updateSandboxRoles(final String wpStoreId, List<UserRoleWrapper> usersToUpdate, Set<String> permissionsList)
    {
        // walk existing user sandboxes and remove manager permissions to exclude old managers
-       List<SandboxInfo> sbInfos = AuthenticationUtil.runAs(new RunAsWork<List<SandboxInfo>>()
-       {
-           public List<SandboxInfo> doWork() throws Exception
-           {
-               return listSandboxes(wpStoreId, AuthenticationUtil.getSystemUserName());
-           }
-       }, AuthenticationUtil.getSystemUserName());
+       List<SandboxInfo> sbInfos = listAllSandboxes(wpStoreId); // all sandboxes
        
        for (SandboxInfo sbInfo : sbInfos)
        {

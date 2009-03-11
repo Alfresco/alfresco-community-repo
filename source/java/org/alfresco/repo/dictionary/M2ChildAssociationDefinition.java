@@ -50,21 +50,20 @@ import org.alfresco.service.namespace.NamespacePrefixResolver;
     }
 
     
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.dictionary.ChildAssociationDefinition#getRequiredChildName()
-     */
     public String getRequiredChildName()
     {
         return ((M2ChildAssociation)getM2Association()).getRequiredChildName();
     }
 
     
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.dictionary.ChildAssociationDefinition#getDuplicateChildNamesAllowed()
-     */
     public boolean getDuplicateChildNamesAllowed()
     {
         return ((M2ChildAssociation)getM2Association()).allowDuplicateChildName();
     }
-        
+
+
+    public boolean getPropagateTimestamps()
+    {
+        return ((M2ChildAssociation)getM2Association()).isPropagateTimestamps();
+    }
 }

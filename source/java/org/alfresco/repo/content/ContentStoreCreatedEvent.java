@@ -22,10 +22,9 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.repo.content.filestore;
+package org.alfresco.repo.content;
 
-import java.io.File;
-
+import org.alfresco.repo.content.filestore.FileContentStore;
 import org.springframework.context.ApplicationEvent;
 
 /**
@@ -33,13 +32,11 @@ import org.springframework.context.ApplicationEvent;
  * purposes.
  * 
  * @author dward
+ * @since 3.1
  */
-public class FileContentStoreCreatedEvent extends ApplicationEvent
+public class ContentStoreCreatedEvent extends ApplicationEvent
 {
     private static final long serialVersionUID = 7090069096441126707L;
-
-    /** The root directory of the store. */
-    private final File rootDirectory;
 
     /**
      * The Constructor.
@@ -49,19 +46,16 @@ public class FileContentStoreCreatedEvent extends ApplicationEvent
      * @param rootDirectory
      *            the root directory
      */
-    public FileContentStoreCreatedEvent(FileContentStore source, File rootDirectory)
+    public ContentStoreCreatedEvent(ContentStore source)
     {
         super(source);
-        this.rootDirectory = rootDirectory;
     }
-
+    
     /**
-     * Gets the root directory.
-     * 
-     * @return the root directory
+     * @return      Returns the source {@link ContentStore}
      */
-    public File getRootDirectory()
+    public ContentStore getContentStore()
     {
-        return this.rootDirectory;
+        return (ContentStore) getSource();
     }
 }

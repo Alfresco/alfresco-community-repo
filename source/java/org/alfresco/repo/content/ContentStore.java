@@ -103,6 +103,28 @@ public interface ContentStore
     public boolean isWriteSupported();
     
     /**
+     * Calculates the total size of content stored.
+     * <p>
+     * <b>NOTE:</b> For efficiency, some implementations may provide a guess.  If not, this call could
+     * take a long time.
+     * <p>
+     * Implementations should focus on calculating a size value quickly, rather than accurately.
+     * 
+     * @return
+     *      Returns the total, possibly approximate size (in bytes) of the binary data stored or <tt>-1</tt>
+     *      if no size data is available.
+     */
+    public long getTotalSize();
+    
+    /**
+     * Get the location where the store is rooted.  The format of the returned value will depend on the
+     * specific implementation of the store.
+     * 
+     * @return          Returns the store's root location or <b>.</b> if no information is available
+     */
+    public String getRootLocation();
+    
+    /**
      * Check for the existence of content in the store.
      * <p>
      * The implementation of this may be more efficient than first getting a

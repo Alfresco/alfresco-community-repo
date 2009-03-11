@@ -246,6 +246,22 @@ public abstract class AbstractRoutingContentStore implements ContentStore
     }
 
     /**
+     * @return      Returns <b>.</b> always
+     */
+    public String getRootLocation()
+    {
+        return ".";
+    }
+
+    /**
+     * @return      Returns <tt>-1</tt> always
+     */
+    public long getTotalSize()
+    {
+        return -1L;
+    }
+
+    /**
      * @see #selectReadStore(String)
      */
     public boolean exists(String contentUrl) throws ContentIOException

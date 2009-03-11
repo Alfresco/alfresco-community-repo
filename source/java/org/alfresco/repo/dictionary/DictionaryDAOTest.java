@@ -39,6 +39,7 @@ import org.alfresco.repo.dictionary.constraint.StringLengthConstraint;
 import org.alfresco.repo.tenant.SingleTServiceImpl;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
+import org.alfresco.service.cmr.dictionary.ChildAssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.Constraint;
 import org.alfresco.service.cmr.dictionary.ConstraintDefinition;
@@ -355,4 +356,20 @@ public class DictionaryDAOTest extends TestCase
         assertEquals("three", def3);
     }
 
+    public void testChildAssocPropagate()
+    {
+        // Check the default value
+        AssociationDefinition assocDef = service.getAssociation(QName.createQName(TEST_URL, "childassoc1"));
+        assertNotNull("No such child association found", assocDef);
+        assertTrue("Expected a child association", assocDef instanceof ChildAssociationDefinition);
+        ChildAssociationDefinition childAssocDef = (ChildAssociationDefinition) assocDef;
+        assertFalse("Expected 'false' for default timestamp propagation", childAssocDef.getPropagateTimestamps());
+
+        // Check the explicit value
+        assocDef = service.getAssociation(QName.createQName(TEST_URL, "childassocPropagate"));
+        assertNotNull("No such child association found", assocDef);
+        assertTrue("Expected a child association", assocDef instanceof ChildAssociationDefinition);
+        childAssocDef = (ChildAssociationDefinition) assocDef;
+        assertTrue("Expected 'true' for timestamp propagation", childAssocDef.getPropagateTimestamps());
+    }
 }

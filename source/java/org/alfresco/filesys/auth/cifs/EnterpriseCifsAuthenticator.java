@@ -561,7 +561,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
             {
                 // Start a transaction
                 
-                tx = getTransactionService().getUserTransaction( false);
+                tx = createTransaction();
                 tx.begin();
 
                 //  Process the hashed password session setup
@@ -718,7 +718,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
             
             // Start a transaction
             
-            tx = getTransactionService().getUserTransaction( false);
+            tx = createTransaction();
             tx.begin();
             
             // Process the security blob

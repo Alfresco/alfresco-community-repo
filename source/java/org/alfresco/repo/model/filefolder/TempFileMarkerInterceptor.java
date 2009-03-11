@@ -91,6 +91,7 @@ public class TempFileMarkerInterceptor implements MethodInterceptor
         {
             FileInfo fileInfo = (FileInfo) ret;
             String filename = fileInfo.getName();
+            NodeRef nodeRef = fileInfo.getNodeRef();
             
             if (logger.isDebugEnabled())
             {
@@ -98,6 +99,7 @@ public class TempFileMarkerInterceptor implements MethodInterceptor
             }
             
             // check against all the regular expressions
+            boolean matched = false;
             for (String regexp : filterRegularExpressions)
             {
                 if (!filename.matches(regexp))
@@ -107,8 +109,8 @@ public class TempFileMarkerInterceptor implements MethodInterceptor
                 }
                 else
                 {
+                    matched = true;
                     // it matched, so apply the aspect
-                    NodeRef nodeRef = fileInfo.getNodeRef();
                     nodeService.addAspect(nodeRef, ContentModel.ASPECT_TEMPORARY, null);
                     // no further checking required
                     if (logger.isDebugEnabled())
@@ -116,6 +118,17 @@ public class TempFileMarkerInterceptor implements MethodInterceptor
                         logger.debug("Applied temporary marker: " + fileInfo);
                     }
                     break;
+                }
+            }
+            // If there was NOT a match then the file should not be marked as temporary
+            // after any of the operations in question.
+            if (!matched && nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TEMPORARY))
+            {
+                // Remove the aspect
+                nodeService.removeAspect(nodeRef, ContentModel.ASPECT_TEMPORARY);
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Removed temporary marker: " + fileInfo);
                 }
             }
         }

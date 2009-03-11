@@ -556,15 +556,13 @@ public class CifsHelper
 
         try
         {
-        	// remove the tempory aspects from the nodes, this will be reapplied if the new name dictates it
-            nodeService.removeAspect(tempNodeRef, ContentModel.ASPECT_TEMPORARY);
+            // Rename operation will add or remove the sys:temporary aspect appropriately
             
             // rename temp file to the new name
             fileFolderService.rename(tempNodeRef, newName);
             
             // rename new file to old name
             fileFolderService.rename(nodeToMoveRef, tempName);
-            this.nodeService.addAspect(nodeToMoveRef, ContentModel.ASPECT_TEMPORARY, null);
         }
         catch (org.alfresco.service.cmr.model.FileNotFoundException e)
         {

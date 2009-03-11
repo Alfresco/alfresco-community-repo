@@ -28,6 +28,7 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jbpm.JbpmConfiguration;
 import org.jbpm.job.executor.JobExecutor;
 import org.springframework.beans.factory.access.BeanFactoryLocator;
 import org.springframework.beans.factory.access.BeanFactoryReference;
@@ -45,6 +46,7 @@ public class AlfrescoJobExecutor extends JobExecutor
 
     private static Log log = LogFactory.getLog(JobExecutor.class);
     private TransactionService transactionService;
+    private JbpmConfiguration jbpmConfiguration;
 
     
     /**
@@ -55,6 +57,7 @@ public class AlfrescoJobExecutor extends JobExecutor
         BeanFactoryLocator factoryLocator = new JbpmFactoryLocator();
         BeanFactoryReference factory = factoryLocator.useBeanFactory(null);
         transactionService = (TransactionService)factory.getFactory().getBean(ServiceRegistry.TRANSACTION_SERVICE.getLocalName());
+        jbpmConfiguration = (JbpmConfiguration)factory.getFactory().getBean("jbpm_configuration");
     }
 
     /**
@@ -74,7 +77,7 @@ public class AlfrescoJobExecutor extends JobExecutor
     protected synchronized void startThread()
     {
         String threadName = getNextThreadName();
-        Thread thread = new AlfrescoJobExecutorThread(threadName, this, getJbpmConfiguration(), getIdleInterval(), getMaxIdleInterval(), getMaxLockTime(), getHistoryMaxSize());
+        Thread thread = new AlfrescoJobExecutorThread(threadName, this, jbpmConfiguration, getIdleInterval(), getMaxIdleInterval(), getMaxLockTime(), getHistoryMaxSize());
         getThreads().put(threadName, thread);
         log.debug("starting new job executor thread '" + threadName + "'");
         thread.start();

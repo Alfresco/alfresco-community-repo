@@ -26,6 +26,7 @@ package org.alfresco.wcm.sandbox;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -76,6 +77,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
     private static final String USER_ONE   = TEST_USER+"-One";
     private static final String USER_TWO   = TEST_USER+"-Two";
     private static final String USER_THREE = TEST_USER+"-Three";
+    private static final String USER_FOUR  = TEST_USER+"-Four";
     
     private static final int SCALE_USERS = 5;
     private static final int SCALE_WEBPROJECTS = 2;
@@ -124,6 +126,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         createUser(USER_ONE);
         createUser(USER_TWO);
         createUser(USER_THREE);
+        createUser(USER_FOUR);
     }
     
     @Override
@@ -159,6 +162,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
             deleteUser(USER_ONE);
             deleteUser(USER_TWO);
             deleteUser(USER_THREE);
+            deleteUser(USER_FOUR);
         }
         
         AuthenticationUtil.clearCurrentSecurityContext();
@@ -307,6 +311,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
     {
         // Create web project - implicitly creates staging sandbox and also author sandbox for web project creator (in this case, admin)
         WebProjectInfo wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-list", TEST_WEBPROJ_NAME+" list", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION);
+        String wpStoreId = wpInfo.getStoreId();
         
         List<SandboxInfo> sbInfos = sbService.listSandboxes(wpInfo.getStoreId());
         assertEquals(2, sbInfos.size()); // staging sandbox, author sandbox (for admin)
@@ -332,7 +337,45 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
             }
         }
         
-        // TODO add more here
+        // test roles
+        
+        // Invite web users
+        wpService.inviteWebUser(wpStoreId, USER_ONE, WCMUtil.ROLE_CONTENT_MANAGER, true);
+        wpService.inviteWebUser(wpStoreId, USER_TWO, WCMUtil.ROLE_CONTENT_PUBLISHER, true);
+        wpService.inviteWebUser(wpStoreId, USER_THREE, WCMUtil.ROLE_CONTENT_REVIEWER, true);
+        wpService.inviteWebUser(wpStoreId, USER_FOUR, WCMUtil.ROLE_CONTENT_CONTRIBUTOR, true);
+        
+        // admin can list all sandboxes
+        sbInfos = sbService.listSandboxes(wpInfo.getStoreId());
+        assertEquals(6, sbInfos.size());
+        
+        // Switch to USER_ONE
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_ONE);
+        
+        // content manager can list all sandboxes
+        sbInfos = sbService.listSandboxes(wpInfo.getStoreId());
+        assertEquals(6, sbInfos.size());
+        
+        // Switch to USER_TWO
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_TWO);
+
+        // Content publisher - can only list own sandbox and staging
+        sbInfos = sbService.listSandboxes(wpInfo.getStoreId());
+        assertEquals(2, sbInfos.size());
+        
+        // Switch to USER_THREE
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_THREE);
+        
+        // Content reviewer - can only list own sandbox and staging
+        sbInfos = sbService.listSandboxes(wpInfo.getStoreId());
+        assertEquals(2, sbInfos.size());
+               
+        // Switch to USER_FOUR
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_FOUR);
+        
+        // Content contributor - can only list own sandbox and staging
+        sbInfos = sbService.listSandboxes(wpInfo.getStoreId());
+        assertEquals(2, sbInfos.size());
     }
     
     public void testGetSandbox()
@@ -343,15 +386,88 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         
         // Create web project - implicitly creates staging sandbox and also admin sandbox (author sandbox for web project creator)
         WebProjectInfo wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-get", TEST_WEBPROJ_NAME+" get", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION);
-
+        String wpStoreId = wpInfo.getStoreId();
+        
         // Get staging sandbox
         sbInfo = sbService.getStagingSandbox(wpInfo.getStoreId());
         checkSandboxInfo(sbInfo, TEST_SANDBOX+"-get", TEST_SANDBOX+"-get", USER_ADMIN, TEST_SANDBOX+"-get", SandboxConstants.PROP_SANDBOX_STAGING_MAIN);
         
-         // Get (staging) sandbox
+        // Get (staging) sandbox
         String stagingSandboxId = wpInfo.getStagingStoreName();
         sbInfo = sbService.getSandbox(stagingSandboxId);
         checkSandboxInfo(sbInfo, TEST_SANDBOX+"-get", TEST_SANDBOX+"-get", USER_ADMIN, TEST_SANDBOX+"-get", SandboxConstants.PROP_SANDBOX_STAGING_MAIN);
+
+        // Get (author) sandbox
+        sbInfo = sbService.getAuthorSandbox(wpStoreId);      
+        sbInfo = sbService.getSandbox(sbInfo.getSandboxId());       
+        String userSandboxId = TEST_SANDBOX+"-get" + "--" + USER_ADMIN;
+        checkSandboxInfo(sbInfo, userSandboxId, USER_ADMIN, USER_ADMIN, userSandboxId, SandboxConstants.PROP_SANDBOX_AUTHOR_MAIN);
+
+        // test roles
+        
+        // Invite web users
+        wpService.inviteWebUser(wpStoreId, USER_ONE, WCMUtil.ROLE_CONTENT_MANAGER, true);
+        wpService.inviteWebUser(wpStoreId, USER_TWO, WCMUtil.ROLE_CONTENT_PUBLISHER, true);
+        wpService.inviteWebUser(wpStoreId, USER_THREE, WCMUtil.ROLE_CONTENT_REVIEWER, true);
+        wpService.inviteWebUser(wpStoreId, USER_FOUR, WCMUtil.ROLE_CONTENT_CONTRIBUTOR, true);
+        
+        // admin can get any sandbox
+        userSandboxId = TEST_SANDBOX+"-get" + "--" + USER_THREE;
+        sbInfo = sbService.getSandbox(userSandboxId);
+        checkSandboxInfo(sbInfo, userSandboxId, USER_THREE, USER_ADMIN, userSandboxId, SandboxConstants.PROP_SANDBOX_AUTHOR_MAIN);
+        
+        // Switch to USER_ONE
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_ONE);
+        
+        // content manager can get any (author) sandbox
+        userSandboxId = TEST_SANDBOX+"-get" + "--" + USER_THREE;
+        sbInfo = sbService.getSandbox(userSandboxId);
+        checkSandboxInfo(sbInfo, userSandboxId, USER_THREE, USER_ADMIN, userSandboxId, SandboxConstants.PROP_SANDBOX_AUTHOR_MAIN);
+     
+        // Switch to USER_TWO
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_TWO);
+        
+        try
+        {
+            // Content publisher - try to get another user's sandbox (-ve test)
+            userSandboxId = TEST_SANDBOX+"-get" + "--" + USER_THREE;
+            sbInfo = sbService.getSandbox(userSandboxId);
+            fail("Shouldn't be able to get another author's sandbox");
+        }
+        catch (AccessDeniedException exception)
+        {
+            // Expected
+        }
+        
+        // Switch to USER_THREE
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_THREE);
+        
+        try
+        {
+            // Content reviewer - try to get another user's sandbox (-ve test)
+            userSandboxId = TEST_SANDBOX+"-get" + "--" + USER_TWO;
+            sbInfo = sbService.getSandbox(userSandboxId);
+            fail("Shouldn't be able to get another author's sandbox");
+        }
+        catch (AccessDeniedException exception)
+        {
+            // Expected
+        }
+        
+        // Switch to USER_FOUR
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_FOUR);
+        
+        try
+        {
+            // Content contributor - try to get another user's sandbox (-ve test)
+            userSandboxId = TEST_SANDBOX+"-get" + "--" + USER_THREE;
+            sbInfo = sbService.getSandbox(userSandboxId);
+            fail("Shouldn't be able to get another author's sandbox");
+        }
+        catch (AccessDeniedException exception)
+        {
+            // Expected
+        }
     }
     
     public void testIsSandboxType()
@@ -430,8 +546,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         // Switch to USER_TWO
         AuthenticationUtil.setFullyAuthenticatedUser(USER_TWO);
         
-        // NOTE: content publisher can list other sandboxes
-        assertEquals(4, sbService.listSandboxes(wpStoreId).size());
+        assertEquals(2, sbService.listSandboxes(wpStoreId).size());
         
         sbInfo = sbService.getAuthorSandbox(wpStoreId);
         assertNotNull(sbInfo);
@@ -439,7 +554,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         // can delete own sandbox
         sbService.deleteSandbox(sbInfo.getSandboxId());
         
-        assertEquals(3, sbService.listSandboxes(wpStoreId).size());
+        assertEquals(1, sbService.listSandboxes(wpStoreId).size());
         
         sbInfo = sbService.getAuthorSandbox(wpStoreId);
         assertNull(sbInfo);
@@ -482,12 +597,26 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         
         // Invite web users
         wpService.inviteWebUser(wpStoreId, USER_ONE, WCMUtil.ROLE_CONTENT_CONTRIBUTOR);
-        sbService.createAuthorSandbox(wpStoreId, USER_ONE);
+        SandboxInfo sbInfo = sbService.createAuthorSandbox(wpStoreId, USER_ONE);
+        String userOneSandboxId = sbInfo.getSandboxId();
+        
+        wpService.inviteWebUser(wpStoreId, USER_TWO, WCMUtil.ROLE_CONTENT_PUBLISHER);
+        sbInfo = sbService.createAuthorSandbox(wpStoreId, USER_TWO);
+        String userTwoSandboxId = sbInfo.getSandboxId();
+        
+        wpService.inviteWebUser(wpStoreId, USER_THREE, WCMUtil.ROLE_CONTENT_MANAGER);
+        sbService.createAuthorSandbox(wpStoreId, USER_THREE);
+        
+        wpService.inviteWebUser(wpStoreId, USER_FOUR, WCMUtil.ROLE_CONTENT_REVIEWER, true);
+   
+        assertEquals(6, sbService.listSandboxes(wpStoreId).size());
         
         // Switch to USER_ONE
         AuthenticationUtil.setFullyAuthenticatedUser(USER_ONE);
         
-        SandboxInfo sbInfo = sbService.getAuthorSandbox(wpStoreId);
+        assertEquals(2, sbService.listSandboxes(wpStoreId).size());
+        
+        sbInfo = sbService.getAuthorSandbox(wpStoreId);
         String sbStoreId = sbInfo.getSandboxId();
         
         // no changes yet
@@ -557,6 +686,84 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
             {
                 fail("The asset '" + asset.getName() + "' is not recognised");
             }
+        }
+      
+        // Switch to USER_TWO
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_TWO);
+        
+        assertEquals(2, sbService.listSandboxes(wpStoreId).size());
+        
+        try
+        {
+            // Content Contributor should not be able to list another user's changes (-ve test)
+            assets = sbService.listChangedAll(userOneSandboxId, true);
+            fail("Shouldn't allow non-content-manager to get modified list for another sandbox");
+        }
+        catch (AccessDeniedException exception)
+        {
+            // Expected
+        }
+        
+        // test roles
+        
+        // Switch to USER_ADMIN
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_ADMIN);
+        
+        assertEquals(6, sbService.listSandboxes(wpStoreId).size());
+        
+        // admin (Content Manager) should be able to list another user's changes
+        assets = sbService.listChangedAll(userOneSandboxId, true);
+        assertEquals(2, assets.size());
+        
+        // Switch to USER_THREE
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_THREE);
+        
+        assertEquals(6, sbService.listSandboxes(wpStoreId).size());
+        
+        // Content Manager should be able to list another user's changes
+        assets = sbService.listChangedAll(userOneSandboxId, true);
+        assertEquals(2, assets.size());
+        
+        // Switch to USER_ONE
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_ONE);
+        
+        try
+        {
+            // Content publisher - try to list changes in another user's sandbox (-ve test)
+            assets = sbService.listChangedAll(userTwoSandboxId, true);
+            fail("Shouldn't be able to list another author's sandbox changes");
+        }
+        catch (AccessDeniedException exception)
+        {
+            // Expected
+        }
+        
+        // Switch to USER_TWO
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_TWO);
+        
+        try
+        {
+            // Content contributor - try to list changes in another user's sandbox (-ve test)
+            assets = sbService.listChangedAll(userOneSandboxId, true);
+            fail("Shouldn't be able to list another author's sandbox changes");
+        }
+        catch (AccessDeniedException exception)
+        {
+            // Expected
+        }
+        
+        // Switch to USER_FOUR
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_FOUR);
+        
+        try
+        {
+            // Content reviewer - try to list changes in another user's sandbox (-ve test)
+            assets = sbService.listChangedAll(userOneSandboxId, true);
+            fail("Shouldn't be able to list another author's sandbox changes");
+        }
+        catch (AccessDeniedException exception)
+        {
+            // Expected
         }
     }
     
@@ -756,8 +963,11 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         String webApp = wpInfo.getDefaultWebApp();
         String stagingSandboxId = wpInfo.getStagingStoreName();
         
-        // Invite web user
+        // Invite web users
         wpService.inviteWebUser(wpStoreId, USER_ONE, WCMUtil.ROLE_CONTENT_CONTRIBUTOR, true);
+        wpService.inviteWebUser(wpStoreId, USER_TWO, WCMUtil.ROLE_CONTENT_PUBLISHER, true);
+        wpService.inviteWebUser(wpStoreId, USER_THREE, WCMUtil.ROLE_CONTENT_MANAGER, true);
+        wpService.inviteWebUser(wpStoreId, USER_FOUR, WCMUtil.ROLE_CONTENT_REVIEWER, true);
         
         // Switch to USER_ONE
         AuthenticationUtil.setFullyAuthenticatedUser(USER_ONE);
@@ -813,6 +1023,68 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
                 fail("The asset '" + asset.getName() + "' is not recognised");
             }
         }
+        
+        // test roles
+        
+        // Switch to USER_ONE
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_ADMIN);
+        
+        // admin (content manager) can submit any sandbox
+        String userSandboxId = wpStoreId + "--" + USER_THREE;
+        sbService.submitAll(userSandboxId, "my submit", null);
+        
+        // Switch to USER_THREE
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_THREE);
+        
+        // content manager can submit any (author) sandbox
+        userSandboxId = wpStoreId + "--" + USER_ONE;
+        sbService.submitAll(userSandboxId, "my submit", null);
+     
+        // Switch to USER_ONE
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_ONE);
+        
+        try
+        {
+            // Content contributor - try to submit another user's sandbox (-ve test)
+            userSandboxId = wpStoreId + "--" + USER_THREE;
+            List<AssetInfo> noAssets = new ArrayList<AssetInfo>(0);
+            sbService.submitListAssets(userSandboxId, noAssets, "my submit", null);
+            fail("Shouldn't be able to submit another author's sandbox");
+        }
+        catch (AccessDeniedException exception)
+        {
+            // Expected
+        }
+        
+        // Switch to USER_TWO
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_TWO);
+        
+        try
+        {
+            // Content publisher - try to submit another user's sandbox (-ve test)
+            userSandboxId = wpStoreId + "--" + USER_ONE;
+            sbService.submitAll(userSandboxId, "my submit", null);
+            fail("Shouldn't be able to submit another author's sandbox");
+        }
+        catch (AccessDeniedException exception)
+        {
+            // Expected
+        }
+        
+        // Switch to USER_FOUR
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_FOUR);
+        
+        try
+        {
+            // Content reviewer - try to submit another user's sandbox (-ve test)
+            userSandboxId = TEST_SANDBOX+"-get" + "--" + USER_THREE;
+            sbService.submitAll(userSandboxId, "my submit", null);
+            fail("Shouldn't be able to submit another author's sandbox");
+        }
+        catch (AccessDeniedException exception)
+        {
+            // Expected
+        }
     }
     
     // submit changed assets in user sandbox to staging sandbox
@@ -826,13 +1098,10 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         
         // Invite web users
         
-        // TODO - pending merge of ETWOTWO-1088 fix
-        /*
         wpService.inviteWebUser(wpStoreId, USER_ONE, WCMUtil.ROLE_CONTENT_CONTRIBUTOR, true);
-        wpService.inviteWebUser(wpStoreId, USER_TWO, WCMUtil.ROLE_CONTENT_PUBLISHER, true);
-        */
-        
-        wpService.inviteWebUser(wpStoreId, USER_ONE, WCMUtil.ROLE_CONTENT_MANAGER, true);
+
+        // TODO - pending merge of ETWOTWO-1109 fix
+        //wpService.inviteWebUser(wpStoreId, USER_TWO, WCMUtil.ROLE_CONTENT_PUBLISHER, true);
         wpService.inviteWebUser(wpStoreId, USER_TWO, WCMUtil.ROLE_CONTENT_MANAGER, true);
         
         // Switch to USER_ONE
@@ -844,8 +1113,6 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         // no changes yet
         List<AssetInfo> assets = sbService.listChangedAll(authorSandboxId, true);
         assertEquals(0, assets.size());
-      
-        //String authorSandboxWebppPath = authorSandboxId + AVM_STORE_SEPARATOR + sbInfo.getSandboxRootPath() + "/" + webApp;
         
         final String MYFILE1 = "This is myFile1";
         ContentWriter writer = assetService.createFileWebApp(authorSandboxId, webApp, "/", "myFile1");
@@ -1140,8 +1407,8 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         assertNotNull(assetService.getAssetWebApp(stagingSandboxId, webApp, "/myDir1/myFile2"));
     }
     
-    // revert all (changed) assets in user sandbox
-    public void testRevertAll() throws IOException, InterruptedException
+    // revert (changed) assets in user sandbox
+    public void testRevert() throws IOException, InterruptedException
     {
         WebProjectInfo wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-revertChangedAssets", TEST_WEBPROJ_NAME+" revertChangedAssets", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION);
         
@@ -1156,6 +1423,9 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         //wpService.inviteWebUser(wpStoreId, USER_TWO, WCMUtil.ROLE_CONTENT_PUBLISHER, true);
         
         wpService.inviteWebUser(wpStoreId, USER_TWO, WCMUtil.ROLE_CONTENT_MANAGER, true);
+        
+        wpService.inviteWebUser(wpStoreId, USER_THREE, WCMUtil.ROLE_CONTENT_MANAGER, true);
+        wpService.inviteWebUser(wpStoreId, USER_FOUR, WCMUtil.ROLE_CONTENT_REVIEWER, true);
         
         // Switch to USER_ONE
         AuthenticationUtil.setFullyAuthenticatedUser(USER_ONE);
@@ -1266,6 +1536,71 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         in.read(buff);
         in.close();
         assertEquals(MYFILE2, new String(buff, 0, MYFILE2.length()));
+        
+        // test roles
+        
+        // Switch to USER_ONE
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_ADMIN);
+        
+        // admin (content manager) can revert any sandbox
+        String userSandboxId = wpStoreId + "--" + USER_THREE;
+        sbService.revertAll(userSandboxId);
+        
+        // Switch to USER_THREE
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_THREE);
+        
+        // content manager can revert any (author) sandbox
+        userSandboxId = wpStoreId + "--" + USER_ONE;
+        sbService.revertAll(userSandboxId);
+     
+        // Switch to USER_ONE
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_ONE);
+        
+        try
+        {
+            // Content contributor - try to revert another user's sandbox (-ve test)
+            userSandboxId = wpStoreId + "--" + USER_THREE;
+            List<AssetInfo> noAssets = new ArrayList<AssetInfo>(0);
+            sbService.revertListAssets(userSandboxId, noAssets);
+            fail("Shouldn't be able to revert another author's sandbox");
+        }
+        catch (AccessDeniedException exception)
+        {
+            // Expected
+        }
+        
+        // TODO - pending fix for ETWOTWO-981 - see above
+        /*
+        // Switch to USER_TWO
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_TWO);
+        
+        try
+        {
+            // Content publisher - try to revert another user's sandbox (-ve test)
+            userSandboxId = wpStoreId + "--" + USER_ONE;
+            sbService.revertAll(userSandboxId);
+            fail("Shouldn't be able to revert another author's sandbox");
+        }
+        catch (AccessDeniedException exception)
+        {
+            // Expected
+        }
+        */
+        
+        // Switch to USER_FOUR
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_FOUR);
+        
+        try
+        {
+            // Content reviewer - try to revert another user's sandbox (-ve test)
+            userSandboxId = TEST_SANDBOX+"-get" + "--" + USER_THREE;
+            sbService.revertAll(userSandboxId);
+            fail("Shouldn't be able to revert another author's sandbox");
+        }
+        catch (AccessDeniedException exception)
+        {
+            // Expected
+        }
     }
     
     public void testListSnapshots() throws IOException, InterruptedException

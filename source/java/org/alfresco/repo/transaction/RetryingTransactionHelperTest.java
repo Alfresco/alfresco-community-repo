@@ -24,6 +24,8 @@
  */
 package org.alfresco.repo.transaction;
 
+import java.util.ConcurrentModificationException;
+
 import javax.transaction.Status;
 import javax.transaction.UserTransaction;
 
@@ -43,6 +45,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
+import org.apache.commons.lang.mutable.MutableInt;
 import org.hibernate.SessionFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.dao.ConcurrencyFailureException;
@@ -468,11 +471,50 @@ public class RetryingTransactionHelperTest extends TestCase
         txnHelper.doInTransaction(killConnectionCallback);
     }
     
+    public void testZeroAndNegativeRetries()
+    {
+        final MutableInt callCount = new MutableInt(0);
+        RetryingTransactionCallback<Long> callback = new RetryingTransactionCallback<Long>()
+        {
+            public Long execute() throws Throwable
+            {
+                callCount.setValue(callCount.intValue() + 1);
+                throw new ConcurrentModificationException();
+            }
+        };
+        // No retries
+        callCount.setValue(0);
+        txnHelper.setMaxRetries(0);
+        try
+        {
+            txnHelper.doInTransaction(callback);
+        }
+        catch (ConcurrentModificationException e)
+        {
+            // Expected
+        }
+        assertEquals("Should have been called exactly once", 1, callCount.intValue());
+        
+        // Negative retries
+        callCount.setValue(0);
+        txnHelper.setMaxRetries(-1);
+        try
+        {
+            txnHelper.doInTransaction(callback);
+        }
+        catch (ConcurrentModificationException e)
+        {
+            // Expected
+        }
+        assertEquals("Should have been called exactly once", 1, callCount.intValue());
+    }
+    
     /**
      * Helper class to kill the session's DB connection
      */
     private class HibernateConnectionKiller extends HibernateDaoSupport
     {
+        @SuppressWarnings("deprecation")
         private void killConnection() throws Exception
         {
             getSession().connection().rollback();

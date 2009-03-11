@@ -273,7 +273,7 @@ public class RetryingTransactionHelper
         // Track the last exception caught, so that we
         // can throw it if we run out of retries.
         RuntimeException lastException = null;
-        for (int count = 0; maxRetries < 0 || count < maxRetries; ++count)
+        for (int count = 0; count == 0 || count < maxRetries; count++)
         {
             UserTransaction txn = null;
             try

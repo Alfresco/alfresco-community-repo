@@ -43,4 +43,8 @@ public interface ChildAssociationDefinition extends AssociationDefinition
      */
     public boolean getDuplicateChildNamesAllowed();
 
+    /**
+     * @return  whether timestamps should be propagated upwards along primary associations
+     */
+    public boolean getPropagateTimestamps();
 }

@@ -30,6 +30,7 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -196,20 +197,15 @@ public class RepositoryDescriptorDAOImpl implements DescriptorDAO
         // set the properties
         if (!this.transactionService.isReadOnly())
         {
-            this.nodeService.setProperty(currentDescriptorNodeRef, ContentModel.PROP_SYS_NAME, serverDescriptor
-                    .getName());
-            this.nodeService.setProperty(currentDescriptorNodeRef, ContentModel.PROP_SYS_VERSION_MAJOR,
-                    serverDescriptor.getVersionMajor());
-            this.nodeService.setProperty(currentDescriptorNodeRef, ContentModel.PROP_SYS_VERSION_MINOR,
-                    serverDescriptor.getVersionMinor());
-            this.nodeService.setProperty(currentDescriptorNodeRef, ContentModel.PROP_SYS_VERSION_REVISION,
-                    serverDescriptor.getVersionRevision());
-            this.nodeService.setProperty(currentDescriptorNodeRef, ContentModel.PROP_SYS_VERSION_LABEL,
-                    serverDescriptor.getVersionLabel());
-            this.nodeService.setProperty(currentDescriptorNodeRef, ContentModel.PROP_SYS_VERSION_BUILD,
-                    serverDescriptor.getVersionBuild());
-            this.nodeService.setProperty(currentDescriptorNodeRef, ContentModel.PROP_SYS_VERSION_SCHEMA,
-                    serverDescriptor.getSchema());
+            Map<QName, Serializable> props = new HashMap<QName, Serializable>(11);
+            props.put(ContentModel.PROP_SYS_NAME, serverDescriptor.getName());
+            props.put(ContentModel.PROP_SYS_VERSION_MAJOR, serverDescriptor.getVersionMajor());
+            props.put(ContentModel.PROP_SYS_VERSION_MINOR, serverDescriptor.getVersionMinor());
+            props.put(ContentModel.PROP_SYS_VERSION_REVISION, serverDescriptor.getVersionRevision());
+            props.put(ContentModel.PROP_SYS_VERSION_LABEL, serverDescriptor.getVersionLabel());
+            props.put(ContentModel.PROP_SYS_VERSION_BUILD, serverDescriptor.getVersionBuild());
+            props.put(ContentModel.PROP_SYS_VERSION_SCHEMA, serverDescriptor.getSchema());
+            this.nodeService.addProperties(currentDescriptorNodeRef, props);
 
             // The version edition property may already have been overwritten with a license, so only set the property
             // if it doesn't already contain ContentData

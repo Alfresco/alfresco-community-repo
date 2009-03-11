@@ -44,11 +44,9 @@ import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
-import org.alfresco.service.transaction.TransactionService;
 
 /**
  * Remove ACLs on all but staging area stores On staging area stores, set ACls according to the users and roles as set
@@ -73,7 +71,8 @@ public class WCMPermissionPatch extends AbstractPatch
         this.avmService = avmService;
     }
 
-    public void setAvmSnapShotTriggeredIndexingMethodInterceptor(AVMSnapShotTriggeredIndexingMethodInterceptor avmSnapShotTriggeredIndexingMethodInterceptor)
+    public void setAvmSnapShotTriggeredIndexingMethodInterceptor(
+            AVMSnapShotTriggeredIndexingMethodInterceptor avmSnapShotTriggeredIndexingMethodInterceptor)
     {
         this.avmSnapShotTriggeredIndexingMethodInterceptor = avmSnapShotTriggeredIndexingMethodInterceptor;
     }
@@ -92,19 +91,16 @@ public class WCMPermissionPatch extends AbstractPatch
     protected String applyInternal() throws Exception
     {
         Thread progressThread = null;
-        if (aclDaoComponent.supportsProgressTracking())
+        if (this.aclDaoComponent.supportsProgressTracking())
         {
-            Long toDo = aclDaoComponent.getAVMHeadNodeCount();
-            Long maxId = aclDaoComponent.getMaxAclId();
-
-            progressThread = new Thread(new ProgressWatcher(toDo, maxId), "WCMPactchProgressWatcher");
+            progressThread = new Thread(new ProgressWatcher(), "WCMPactchProgressWatcher");
             progressThread.start();
         }
 
-        List<AVMStoreDescriptor> stores = avmService.getStores();
+        List<AVMStoreDescriptor> stores = this.avmService.getStores();
         for (AVMStoreDescriptor store : stores)
         {
-            Map<QName, PropertyValue> storeProperties = avmService.getStoreProperties(store.getName());
+            Map<QName, PropertyValue> storeProperties = this.avmService.getStoreProperties(store.getName());
 
             switch (StoreType.getStoreType(store.getName(), store, storeProperties))
             {
@@ -145,20 +141,20 @@ public class WCMPermissionPatch extends AbstractPatch
         }
 
         // build the result message
-        String msg = I18NUtil.getMessage(MSG_SUCCESS);
+        String msg = I18NUtil.getMessage(WCMPermissionPatch.MSG_SUCCESS);
         // done
         return msg;
     }
 
     private void clearPermissions(AVMStoreDescriptor store)
     {
-        AVMNodeDescriptor www = avmService.lookup(-1, store.getName() + ":/www");
+        AVMNodeDescriptor www = this.avmService.lookup(-1, store.getName() + ":/www");
         if (www.isLayeredDirectory() && www.isPrimary())
         {
             // throw away any acl
             AVMRepository.GetInstance().setACL(store.getName() + ":/www", null);
             // build the default layer acl
-            avmService.retargetLayeredDirectory(store.getName() + ":/www", www.getIndirection());
+            this.avmService.retargetLayeredDirectory(store.getName() + ":/www", www.getIndirection());
         }
     }
 
@@ -167,23 +163,24 @@ public class WCMPermissionPatch extends AbstractPatch
         QName propQName = QName.createQName(null, ".web_project.noderef");
 
         NodeRef dirRef = AVMNodeConverter.ToNodeRef(-1, store.getName() + ":/www");
-        permissionService.setPermission(dirRef, PermissionService.ALL_AUTHORITIES, PermissionService.READ, true);
+        this.permissionService.setPermission(dirRef, PermissionService.ALL_AUTHORITIES, PermissionService.READ, true);
 
-        PropertyValue pValue = avmService.getStoreProperty(store.getName(), propQName);
+        PropertyValue pValue = this.avmService.getStoreProperty(store.getName(), propQName);
 
         if (pValue != null)
         {
             NodeRef webProjectNodeRef = (NodeRef) pValue.getValue(DataTypeDefinition.NODE_REF);
 
             // Apply sepcific user permissions as set on the web project
-            List<ChildAssociationRef> userInfoRefs = nodeService.getChildAssocs(webProjectNodeRef, WCMAppModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
+            List<ChildAssociationRef> userInfoRefs = this.nodeService.getChildAssocs(webProjectNodeRef,
+                    WCMAppModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
             for (ChildAssociationRef ref : userInfoRefs)
             {
                 NodeRef userInfoRef = ref.getChildRef();
-                String username = (String) nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERNAME);
-                String userrole = (String) nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERROLE);
+                String username = (String) this.nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERNAME);
+                String userrole = (String) this.nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERROLE);
 
-                permissionService.setPermission(dirRef, username, userrole, true);
+                this.permissionService.setPermission(dirRef, username, userrole, true);
             }
         }
     }
@@ -191,28 +188,32 @@ public class WCMPermissionPatch extends AbstractPatch
     private void setStagingAreaMasks(AVMStoreDescriptor store)
     {
         NodeRef dirRef = AVMNodeConverter.ToNodeRef(-1, store.getName() + ":/www");
-        permissionService.setPermission(dirRef.getStoreRef(), PermissionService.ALL_AUTHORITIES, PermissionService.READ, true);
+        this.permissionService.setPermission(dirRef.getStoreRef(), PermissionService.ALL_AUTHORITIES,
+                PermissionService.READ, true);
 
         QName propQName = QName.createQName(null, ".web_project.noderef");
 
-        PropertyValue pValue = avmService.getStoreProperty(store.getName(), propQName);
+        PropertyValue pValue = this.avmService.getStoreProperty(store.getName(), propQName);
 
         if (pValue != null)
         {
             NodeRef webProjectNodeRef = (NodeRef) pValue.getValue(DataTypeDefinition.NODE_REF);
 
             // Apply sepcific user permissions as set on the web project
-            List<ChildAssociationRef> userInfoRefs = nodeService.getChildAssocs(webProjectNodeRef, WCMAppModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
+            List<ChildAssociationRef> userInfoRefs = this.nodeService.getChildAssocs(webProjectNodeRef,
+                    WCMAppModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
             for (ChildAssociationRef ref : userInfoRefs)
             {
                 NodeRef userInfoRef = ref.getChildRef();
-                String username = (String) nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERNAME);
-                String userrole = (String) nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERROLE);
+                String username = (String) this.nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERNAME);
+                String userrole = (String) this.nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERROLE);
 
                 if (userrole.equals("ContentManager"))
                 {
-                    permissionService.setPermission(dirRef.getStoreRef(), username, PermissionService.CHANGE_PERMISSIONS, true);
-                    permissionService.setPermission(dirRef.getStoreRef(), username, PermissionService.READ_PERMISSIONS, true);
+                    this.permissionService.setPermission(dirRef.getStoreRef(), username,
+                            PermissionService.CHANGE_PERMISSIONS, true);
+                    this.permissionService.setPermission(dirRef.getStoreRef(), username,
+                            PermissionService.READ_PERMISSIONS, true);
                 }
             }
         }
@@ -230,30 +231,33 @@ public class WCMPermissionPatch extends AbstractPatch
 
         NodeRef dirRef = AVMNodeConverter.ToNodeRef(-1, sandBoxStore.getName() + ":/www");
 
-        Map<QName, PropertyValue> woof = avmService.getStoreProperties(stagingAreaName);
-        PropertyValue pValue = avmService.getStoreProperty(stagingAreaName, propQName);
+        this.avmService.getStoreProperties(stagingAreaName);
+        PropertyValue pValue = this.avmService.getStoreProperty(stagingAreaName, propQName);
 
-        permissionService.setPermission(dirRef.getStoreRef(), PermissionService.ALL_AUTHORITIES, PermissionService.READ, true);
+        this.permissionService.setPermission(dirRef.getStoreRef(), PermissionService.ALL_AUTHORITIES,
+                PermissionService.READ, true);
 
         if (pValue != null)
         {
             NodeRef webProjectNodeRef = (NodeRef) pValue.getValue(DataTypeDefinition.NODE_REF);
 
             // Apply sepcific user permissions as set on the web project
-            List<ChildAssociationRef> userInfoRefs = nodeService.getChildAssocs(webProjectNodeRef, WCMAppModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
+            List<ChildAssociationRef> userInfoRefs = this.nodeService.getChildAssocs(webProjectNodeRef,
+                    WCMAppModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
             for (ChildAssociationRef ref : userInfoRefs)
             {
                 NodeRef userInfoRef = ref.getChildRef();
-                String username = (String) nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERNAME);
-                String userrole = (String) nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERROLE);
+                String username = (String) this.nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERNAME);
+                String userrole = (String) this.nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERROLE);
 
                 if (username.equals(owner))
                 {
-                    permissionService.setPermission(dirRef.getStoreRef(), username, PermissionService.ALL_PERMISSIONS, true);
+                    this.permissionService.setPermission(dirRef.getStoreRef(), username,
+                            PermissionService.ALL_PERMISSIONS, true);
                 }
                 else if (userrole.equals("ContentManager"))
                 {
-                    permissionService.setPermission(dirRef.getStoreRef(), username, userrole, true);
+                    this.permissionService.setPermission(dirRef.getStoreRef(), username, userrole, true);
                 }
             }
         }
@@ -292,15 +296,9 @@ public class WCMPermissionPatch extends AbstractPatch
 
         Long max;
 
-        ProgressWatcher(Long toDo, Long max)
-        {
-            this.toDo = toDo;
-            this.max = max;
-        }
-
         public void run()
         {
-            while (running)
+            while (this.running)
             {
                 try
                 {
@@ -308,23 +306,31 @@ public class WCMPermissionPatch extends AbstractPatch
                 }
                 catch (InterruptedException e)
                 {
-                    running = false;
+                    this.running = false;
                 }
 
-                if (running)
+                if (this.running)
                 {
-                    RetryingTransactionHelper txHelper = transactionService.getRetryingTransactionHelper();
+                    RetryingTransactionHelper txHelper = WCMPermissionPatch.this.transactionService
+                            .getRetryingTransactionHelper();
                     txHelper.setMaxRetries(1);
                     Long done = txHelper.doInTransaction(new RetryingTransactionCallback<Long>()
                     {
 
                         public Long execute() throws Throwable
                         {
-                            return aclDaoComponent.getAVMNodeCountWithNewACLS(max);
+                            if (ProgressWatcher.this.toDo == null)
+                            {
+                                ProgressWatcher.this.toDo = WCMPermissionPatch.this.aclDaoComponent
+                                        .getAVMHeadNodeCount();
+                                ProgressWatcher.this.max = WCMPermissionPatch.this.aclDaoComponent.getMaxAclId();
+                            }
+                            return WCMPermissionPatch.this.aclDaoComponent
+                                    .getAVMNodeCountWithNewACLS(ProgressWatcher.this.max);
                         }
                     }, true, true);
 
-                    reportProgress(toDo, done);
+                    reportProgress(this.toDo, done);
                 }
             }
         }

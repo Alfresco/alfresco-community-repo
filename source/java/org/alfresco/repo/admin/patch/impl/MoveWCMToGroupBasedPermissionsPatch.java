@@ -24,33 +24,25 @@
  */
 package org.alfresco.repo.admin.patch.impl;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import net.sf.acegisecurity.providers.jaas.AuthorityGranter;
 
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.avm.AVMNodeConverter;
-import org.alfresco.repo.avm.AVMRepository;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.domain.hibernate.AclDaoComponentImpl;
 import org.alfresco.repo.search.AVMSnapShotTriggeredIndexingMethodInterceptor;
 import org.alfresco.repo.search.AVMSnapShotTriggeredIndexingMethodInterceptor.StoreType;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
-import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AuthorityService;
@@ -58,7 +50,6 @@ import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
-import org.alfresco.service.transaction.TransactionService;
 
 /**
  * Remove ACLs on all but staging area stores On staging area stores, set ACls according to the users and roles as set
@@ -68,8 +59,11 @@ import org.alfresco.service.transaction.TransactionService;
  */
 public class MoveWCMToGroupBasedPermissionsPatch extends AbstractPatch
 {
-    public static final String[] PERMISSIONS = new String[] { PermissionService.WCM_CONTENT_MANAGER, PermissionService.WCM_CONTENT_PUBLISHER,
-            PermissionService.WCM_CONTENT_CONTRIBUTOR, PermissionService.WCM_CONTENT_REVIEWER };
+    public static final String[] PERMISSIONS = new String[]
+    {
+        PermissionService.WCM_CONTENT_MANAGER, PermissionService.WCM_CONTENT_PUBLISHER,
+        PermissionService.WCM_CONTENT_CONTRIBUTOR, PermissionService.WCM_CONTENT_REVIEWER
+    };
 
     private static final String MSG_SUCCESS = "patch.moveWCMToGroupBasedPermissionsPatch.result";
 
@@ -82,7 +76,7 @@ public class MoveWCMToGroupBasedPermissionsPatch extends AbstractPatch
     AclDaoComponentImpl aclDaoComponent;
 
     AuthorityService authorityService;
-    
+
     String replaceAllWith = PermissionService.WCM_CONTENT_MANAGER;
 
     public void setAvmService(AVMService avmService)
@@ -90,7 +84,8 @@ public class MoveWCMToGroupBasedPermissionsPatch extends AbstractPatch
         this.avmService = avmService;
     }
 
-    public void setAvmSnapShotTriggeredIndexingMethodInterceptor(AVMSnapShotTriggeredIndexingMethodInterceptor avmSnapShotTriggeredIndexingMethodInterceptor)
+    public void setAvmSnapShotTriggeredIndexingMethodInterceptor(
+            AVMSnapShotTriggeredIndexingMethodInterceptor avmSnapShotTriggeredIndexingMethodInterceptor)
     {
         this.avmSnapShotTriggeredIndexingMethodInterceptor = avmSnapShotTriggeredIndexingMethodInterceptor;
     }
@@ -110,8 +105,6 @@ public class MoveWCMToGroupBasedPermissionsPatch extends AbstractPatch
         this.authorityService = authorityService;
     }
 
-    
-    
     public void setReplaceAllWith(String replaceAllWith)
     {
         this.replaceAllWith = replaceAllWith;
@@ -121,20 +114,17 @@ public class MoveWCMToGroupBasedPermissionsPatch extends AbstractPatch
     protected String applyInternal() throws Exception
     {
         Thread progressThread = null;
-        if (aclDaoComponent.supportsProgressTracking())
+        if (this.aclDaoComponent.supportsProgressTracking())
         {
-            Long toDo = aclDaoComponent.getAVMHeadNodeCount();
-            Long maxId = aclDaoComponent.getMaxAclId();
-
-            progressThread = new Thread(new ProgressWatcher(toDo, maxId), "WCMPactchProgressWatcher");
+            progressThread = new Thread(new ProgressWatcher(), "WCMPactchProgressWatcher");
             progressThread.start();
         }
 
-        List<AVMStoreDescriptor> stores = avmService.getStores();
+        List<AVMStoreDescriptor> stores = this.avmService.getStores();
         for (AVMStoreDescriptor store : stores)
         {
 
-            Map<QName, PropertyValue> storeProperties = avmService.getStoreProperties(store.getName());
+            Map<QName, PropertyValue> storeProperties = this.avmService.getStoreProperties(store.getName());
 
             switch (StoreType.getStoreType(store.getName(), store, storeProperties))
             {
@@ -174,14 +164,14 @@ public class MoveWCMToGroupBasedPermissionsPatch extends AbstractPatch
         }
 
         // build the result message
-        String msg = I18NUtil.getMessage(MSG_SUCCESS);
+        String msg = I18NUtil.getMessage(MoveWCMToGroupBasedPermissionsPatch.MSG_SUCCESS);
         // done
         return msg;
     }
 
     private boolean isPermissionSet(NodeRef nodeRef, String authority, String permission)
     {
-        Set<AccessPermission> set = permissionService.getAllSetPermissions(nodeRef);
+        Set<AccessPermission> set = this.permissionService.getAllSetPermissions(nodeRef);
         for (AccessPermission ap : set)
         {
             if (ap.getAuthority().equals(authority) && ap.isSetDirectly() && ap.getPermission().equals(permission))
@@ -194,7 +184,7 @@ public class MoveWCMToGroupBasedPermissionsPatch extends AbstractPatch
 
     private boolean isMaskSet(StoreRef storeRef, String authority, String permission)
     {
-        Set<AccessPermission> set = permissionService.getAllSetPermissions(storeRef);
+        Set<AccessPermission> set = this.permissionService.getAllSetPermissions(storeRef);
         for (AccessPermission ap : set)
         {
             if (ap.getAuthority().equals(authority) && ap.isSetDirectly() && ap.getPermission().equals(permission))
@@ -207,14 +197,14 @@ public class MoveWCMToGroupBasedPermissionsPatch extends AbstractPatch
 
     private void makeGroupsIfRequired(String stagingStoreName, NodeRef dirRef)
     {
-        for (String permission : PERMISSIONS)
+        for (String permission : MoveWCMToGroupBasedPermissionsPatch.PERMISSIONS)
         {
             String shortName = stagingStoreName + "-" + permission;
-            String group = authorityService.getName(AuthorityType.GROUP, shortName);
-            if (!authorityService.authorityExists(group))
+            String group = this.authorityService.getName(AuthorityType.GROUP, shortName);
+            if (!this.authorityService.authorityExists(group))
             {
-                String newGroup = authorityService.createAuthority(AuthorityType.GROUP, null, shortName);
-                permissionService.setPermission(dirRef, newGroup, permission, true);
+                String newGroup = this.authorityService.createAuthority(AuthorityType.GROUP, null, shortName);
+                this.permissionService.setPermission(dirRef, newGroup, permission, true);
             }
         }
     }
@@ -222,11 +212,11 @@ public class MoveWCMToGroupBasedPermissionsPatch extends AbstractPatch
     private void addToGroupIfRequired(String stagingStoreName, String user, String permission)
     {
         String shortName = stagingStoreName + "-" + permission;
-        String group = authorityService.getName(AuthorityType.GROUP, shortName);
-        Set<String> members = authorityService.getContainedAuthorities(AuthorityType.USER, group, true);
+        String group = this.authorityService.getName(AuthorityType.GROUP, shortName);
+        Set<String> members = this.authorityService.getContainedAuthorities(AuthorityType.USER, group, true);
         if (!members.contains(user))
         {
-            authorityService.addAuthority(group, user);
+            this.authorityService.addAuthority(group, user);
         }
     }
 
@@ -246,23 +236,24 @@ public class MoveWCMToGroupBasedPermissionsPatch extends AbstractPatch
     {
         QName propQName = QName.createQName(null, ".web_project.noderef");
 
-        PropertyValue pValue = avmService.getStoreProperty(stagingStoreName, propQName);
+        PropertyValue pValue = this.avmService.getStoreProperty(stagingStoreName, propQName);
 
         if (pValue != null)
         {
             NodeRef webProjectNodeRef = (NodeRef) pValue.getValue(DataTypeDefinition.NODE_REF);
 
             // Apply sepcific user permissions as set on the web project
-            List<ChildAssociationRef> userInfoRefs = nodeService.getChildAssocs(webProjectNodeRef, WCMAppModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
+            List<ChildAssociationRef> userInfoRefs = this.nodeService.getChildAssocs(webProjectNodeRef,
+                    WCMAppModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
             for (ChildAssociationRef ref : userInfoRefs)
             {
                 NodeRef userInfoRef = ref.getChildRef();
-                String username = (String) nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERNAME);
-                String userrole = (String) nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERROLE);
+                String username = (String) this.nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERNAME);
+                String userrole = (String) this.nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERROLE);
 
                 if (userrole.equals(PermissionService.ALL_PERMISSIONS))
                 {
-                    nodeService.setProperty(userInfoRef, WCMAppModel.PROP_WEBUSERROLE, replaceAllWith);
+                    this.nodeService.setProperty(userInfoRef, WCMAppModel.PROP_WEBUSERROLE, this.replaceAllWith);
                 }
 
             }
@@ -279,35 +270,37 @@ public class MoveWCMToGroupBasedPermissionsPatch extends AbstractPatch
 
         if (!isPermissionSet(dirRef, PermissionService.ALL_AUTHORITIES, PermissionService.READ))
         {
-            permissionService.setPermission(dirRef, PermissionService.ALL_AUTHORITIES, PermissionService.READ, true);
+            this.permissionService.setPermission(dirRef, PermissionService.ALL_AUTHORITIES, PermissionService.READ,
+                    true);
         }
 
         // Add group permissions
-        for (String permission : PERMISSIONS)
+        for (String permission : MoveWCMToGroupBasedPermissionsPatch.PERMISSIONS)
         {
-            String cms = authorityService.getName(AuthorityType.GROUP, store.getName() + "-" + permission);
-            permissionService.setPermission(dirRef, cms, permission, true);
+            String cms = this.authorityService.getName(AuthorityType.GROUP, store.getName() + "-" + permission);
+            this.permissionService.setPermission(dirRef, cms, permission, true);
         }
 
-        PropertyValue pValue = avmService.getStoreProperty(store.getName(), propQName);
+        PropertyValue pValue = this.avmService.getStoreProperty(store.getName(), propQName);
 
         if (pValue != null)
         {
             NodeRef webProjectNodeRef = (NodeRef) pValue.getValue(DataTypeDefinition.NODE_REF);
 
             // Apply sepcific user permissions as set on the web project
-            List<ChildAssociationRef> userInfoRefs = nodeService.getChildAssocs(webProjectNodeRef, WCMAppModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
+            List<ChildAssociationRef> userInfoRefs = this.nodeService.getChildAssocs(webProjectNodeRef,
+                    WCMAppModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
             for (ChildAssociationRef ref : userInfoRefs)
             {
                 NodeRef userInfoRef = ref.getChildRef();
-                String username = (String) nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERNAME);
-                String userrole = (String) nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERROLE);
+                String username = (String) this.nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERNAME);
+                String userrole = (String) this.nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERROLE);
 
                 // remove existing
 
                 if (isPermissionSet(dirRef, username, userrole))
                 {
-                    permissionService.deletePermission(dirRef, username, userrole);
+                    this.permissionService.deletePermission(dirRef, username, userrole);
                 }
 
                 addToGroupIfRequired(store.getName(), username, userrole);
@@ -322,35 +315,38 @@ public class MoveWCMToGroupBasedPermissionsPatch extends AbstractPatch
 
         if (!isMaskSet(dirRef.getStoreRef(), PermissionService.ALL_AUTHORITIES, PermissionService.READ))
         {
-            permissionService.setPermission(dirRef.getStoreRef(), PermissionService.ALL_AUTHORITIES, PermissionService.READ, true);
+            this.permissionService.setPermission(dirRef.getStoreRef(), PermissionService.ALL_AUTHORITIES,
+                    PermissionService.READ, true);
         }
 
-        String cms = authorityService.getName(AuthorityType.GROUP, store.getName() + "-" + PermissionService.WCM_CONTENT_MANAGER);
+        String cms = this.authorityService.getName(AuthorityType.GROUP, store.getName() + "-"
+                + PermissionService.WCM_CONTENT_MANAGER);
         if (!isMaskSet(dirRef.getStoreRef(), cms, PermissionService.CHANGE_PERMISSIONS))
         {
-            permissionService.setPermission(dirRef.getStoreRef(), cms, PermissionService.CHANGE_PERMISSIONS, true);
+            this.permissionService.setPermission(dirRef.getStoreRef(), cms, PermissionService.CHANGE_PERMISSIONS, true);
         }
 
         if (!isMaskSet(dirRef.getStoreRef(), cms, PermissionService.READ_PERMISSIONS))
         {
-            permissionService.setPermission(dirRef.getStoreRef(), cms, PermissionService.READ_PERMISSIONS, true);
+            this.permissionService.setPermission(dirRef.getStoreRef(), cms, PermissionService.READ_PERMISSIONS, true);
         }
 
         QName propQName = QName.createQName(null, ".web_project.noderef");
 
-        PropertyValue pValue = avmService.getStoreProperty(store.getName(), propQName);
+        PropertyValue pValue = this.avmService.getStoreProperty(store.getName(), propQName);
 
         if (pValue != null)
         {
             NodeRef webProjectNodeRef = (NodeRef) pValue.getValue(DataTypeDefinition.NODE_REF);
 
             // Apply sepcific user permissions as set on the web project
-            List<ChildAssociationRef> userInfoRefs = nodeService.getChildAssocs(webProjectNodeRef, WCMAppModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
+            List<ChildAssociationRef> userInfoRefs = this.nodeService.getChildAssocs(webProjectNodeRef,
+                    WCMAppModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
             for (ChildAssociationRef ref : userInfoRefs)
             {
                 NodeRef userInfoRef = ref.getChildRef();
-                String username = (String) nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERNAME);
-                String userrole = (String) nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERROLE);
+                String username = (String) this.nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERNAME);
+                String userrole = (String) this.nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERROLE);
 
                 if (userrole.equals(PermissionService.WCM_CONTENT_MANAGER))
                 {
@@ -358,12 +354,14 @@ public class MoveWCMToGroupBasedPermissionsPatch extends AbstractPatch
 
                     if (isMaskSet(dirRef.getStoreRef(), username, PermissionService.CHANGE_PERMISSIONS))
                     {
-                        permissionService.deletePermission(dirRef.getStoreRef(), username, PermissionService.CHANGE_PERMISSIONS);
+                        this.permissionService.deletePermission(dirRef.getStoreRef(), username,
+                                PermissionService.CHANGE_PERMISSIONS);
                     }
 
                     if (isMaskSet(dirRef.getStoreRef(), username, PermissionService.READ_PERMISSIONS))
                     {
-                        permissionService.deletePermission(dirRef.getStoreRef(), username, PermissionService.READ_PERMISSIONS);
+                        this.permissionService.deletePermission(dirRef.getStoreRef(), username,
+                                PermissionService.READ_PERMISSIONS);
                     }
                 }
             }
@@ -382,18 +380,21 @@ public class MoveWCMToGroupBasedPermissionsPatch extends AbstractPatch
 
         NodeRef dirRef = AVMNodeConverter.ToNodeRef(-1, sandBoxStore.getName() + ":/www");
 
-        Map<QName, PropertyValue> woof = avmService.getStoreProperties(stagingAreaName);
-        PropertyValue pValue = avmService.getStoreProperty(stagingAreaName, propQName);
+        Map<QName, PropertyValue> woof = this.avmService.getStoreProperties(stagingAreaName);
+        PropertyValue pValue = this.avmService.getStoreProperty(stagingAreaName, propQName);
 
         if (!isMaskSet(dirRef.getStoreRef(), PermissionService.ALL_AUTHORITIES, PermissionService.READ))
         {
-            permissionService.setPermission(dirRef.getStoreRef(), PermissionService.ALL_AUTHORITIES, PermissionService.READ, true);
+            this.permissionService.setPermission(dirRef.getStoreRef(), PermissionService.ALL_AUTHORITIES,
+                    PermissionService.READ, true);
         }
 
-        String cms = authorityService.getName(AuthorityType.GROUP, stagingAreaName + "-" + PermissionService.WCM_CONTENT_MANAGER);
+        String cms = this.authorityService.getName(AuthorityType.GROUP, stagingAreaName + "-"
+                + PermissionService.WCM_CONTENT_MANAGER);
         if (!isMaskSet(dirRef.getStoreRef(), cms, PermissionService.WCM_CONTENT_MANAGER))
         {
-            permissionService.setPermission(dirRef.getStoreRef(), cms, PermissionService.WCM_CONTENT_MANAGER, true);
+            this.permissionService
+                    .setPermission(dirRef.getStoreRef(), cms, PermissionService.WCM_CONTENT_MANAGER, true);
         }
 
         if (pValue != null)
@@ -401,22 +402,24 @@ public class MoveWCMToGroupBasedPermissionsPatch extends AbstractPatch
             NodeRef webProjectNodeRef = (NodeRef) pValue.getValue(DataTypeDefinition.NODE_REF);
 
             // Apply sepcific user permissions as set on the web project
-            List<ChildAssociationRef> userInfoRefs = nodeService.getChildAssocs(webProjectNodeRef, WCMAppModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
+            List<ChildAssociationRef> userInfoRefs = this.nodeService.getChildAssocs(webProjectNodeRef,
+                    WCMAppModel.ASSOC_WEBUSER, RegexQNamePattern.MATCH_ALL);
             for (ChildAssociationRef ref : userInfoRefs)
             {
                 NodeRef userInfoRef = ref.getChildRef();
-                String username = (String) nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERNAME);
-                String userrole = (String) nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERROLE);
+                String username = (String) this.nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERNAME);
+                String userrole = (String) this.nodeService.getProperty(userInfoRef, WCMAppModel.PROP_WEBUSERROLE);
 
                 if (username.equals(owner))
                 {
-                    permissionService.setPermission(dirRef.getStoreRef(), username, PermissionService.ALL_PERMISSIONS, true);
+                    this.permissionService.setPermission(dirRef.getStoreRef(), username,
+                            PermissionService.ALL_PERMISSIONS, true);
                 }
                 else if (userrole.equals("ContentManager"))
                 {
                     if (isMaskSet(dirRef.getStoreRef(), username, userrole))
                     {
-                        permissionService.deletePermission(dirRef.getStoreRef(), username, userrole);
+                        this.permissionService.deletePermission(dirRef.getStoreRef(), username, userrole);
                     }
                 }
             }
@@ -456,15 +459,13 @@ public class MoveWCMToGroupBasedPermissionsPatch extends AbstractPatch
 
         Long max;
 
-        ProgressWatcher(Long toDo, Long max)
+        ProgressWatcher()
         {
-            this.toDo = toDo;
-            this.max = max;
         }
 
         public void run()
         {
-            while (running)
+            while (this.running)
             {
                 try
                 {
@@ -472,23 +473,32 @@ public class MoveWCMToGroupBasedPermissionsPatch extends AbstractPatch
                 }
                 catch (InterruptedException e)
                 {
-                    running = false;
+                    this.running = false;
                 }
 
-                if (running)
+                if (this.running)
                 {
-                    RetryingTransactionHelper txHelper = transactionService.getRetryingTransactionHelper();
+                    RetryingTransactionHelper txHelper = MoveWCMToGroupBasedPermissionsPatch.this.transactionService
+                            .getRetryingTransactionHelper();
                     txHelper.setMaxRetries(1);
                     Long done = txHelper.doInTransaction(new RetryingTransactionCallback<Long>()
                     {
 
                         public Long execute() throws Throwable
                         {
-                            return aclDaoComponent.getAVMNodeCountWithNewACLS(max);
+                            if (ProgressWatcher.this.toDo == null)
+                            {
+                                ProgressWatcher.this.toDo = MoveWCMToGroupBasedPermissionsPatch.this.aclDaoComponent
+                                        .getAVMHeadNodeCount();
+                                ProgressWatcher.this.max = MoveWCMToGroupBasedPermissionsPatch.this.aclDaoComponent
+                                        .getMaxAclId();
+                            }
+                            return MoveWCMToGroupBasedPermissionsPatch.this.aclDaoComponent
+                                    .getAVMNodeCountWithNewACLS(org.alfresco.repo.admin.patch.impl.MoveWCMToGroupBasedPermissionsPatch.ProgressWatcher.this.max);
                         }
                     }, true, true);
 
-                    reportProgress(toDo, done);
+                    reportProgress(this.toDo, done);
                 }
             }
         }

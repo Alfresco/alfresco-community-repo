@@ -102,6 +102,25 @@ public abstract class AbstractWritableContentStoreTest extends AbstractReadOnlyC
         ContentStore store = getStore();
         assertTrue("The store cannot be read-only", store.isWriteSupported());
     }
+    
+    /**
+     * Just check that the method doesn't blow up
+     */
+    public void testTotalSize() throws Exception
+    {
+        ContentStore store = getStore();
+        store.getTotalSize();
+    }
+    
+    /**
+     * Just check that the method doesn't blow up
+     */
+    public void testRootLocation() throws Exception
+    {
+        ContentStore store = getStore();
+        String rootLocation = store.getRootLocation();
+        assertNotNull("The root location may not be null", rootLocation);
+    }
 
     /**
      * Helper to ensure that illegal content URLs are flagged for <b>getWriter</b> requests

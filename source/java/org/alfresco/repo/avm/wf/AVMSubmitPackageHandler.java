@@ -108,18 +108,9 @@ public class AVMSubmitPackageHandler extends JBPMSpringActionHandler implements 
         final String tag = (String) executionContext.getContextInstance().getVariable("wcmwf_label");
 
         final Map<QName, PropertyValue> dnsProperties = this.fAVMService.queryStorePropertyKey(targetPath.split(":")[0], QName.createQName(null, ".dns%"));
-        String webProject = dnsProperties.keySet().iterator().next().getLocalName();
-        webProject = webProject.substring(webProject.lastIndexOf('.') + 1, webProject.length());
+        String localName = dnsProperties.keySet().iterator().next().getLocalName();
+        final String webProject = localName.substring(localName.lastIndexOf('.') + 1, localName.length());
         final List<AVMDifference> stagingDiffs = fAVMSyncService.compare(pkgPath.getFirst(), pkgPath.getSecond(), -1, targetPath, null);
-        for (final AVMDifference diff : stagingDiffs)
-        {
-            String p = diff.getSourcePath();
-            if (from != null && from.length() != 0)
-            {
-                p = from + p.substring(pkgPath.getSecond().length());
-            }
-            this.recursivelyRemoveLocks(webProject, -1, p);
-        }
 
         // Allow AVMSubmitTransactionListener to inspect the staging diffs
         // so it can notify the virtualization server via JMX if when this
@@ -134,13 +125,22 @@ public class AVMSubmitPackageHandler extends JBPMSpringActionHandler implements 
         // may not have permission to flatten the store the workflow was submitted from
         AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
         {
-
             public Object doWork() throws Exception
             {
                 fAVMSyncService.update(stagingDiffs, null, false, false, true, true, tag, description);
                 AVMDAOs.Instance().fAVMNodeDAO.flush();
                 fAVMSyncService.flatten(pkgPath.getSecond(), targetPath);
-                
+
+                for (final AVMDifference diff : stagingDiffs)
+                {
+                    String p = diff.getSourcePath();
+                    if (from != null && from.length() != 0)
+                    {
+                        p = from + p.substring(pkgPath.getSecond().length());
+                    }
+                    recursivelyRemoveLocks(webProject, -1, p);
+                }
+
                 // flatten source folder where changes were submitted from
                 if (from != null && from.length() > 0)
                 {

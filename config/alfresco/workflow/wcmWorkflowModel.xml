@@ -172,6 +172,13 @@
       </mandatory-aspects>
     </type>
 
+    <type name="wcmwf:submitfailedTask">
+      <parent>wcmwf:workflowTask</parent>
+      <mandatory-aspects>
+        <aspect>wcmwf:submission</aspect>
+      </mandatory-aspects>
+    </type>
+
     <!-- NOTE: kept for backwards compatibility only - for v2.0 wcm submit process definition -->
     <type name="wcmwf:approvedTask">
       <parent>wcmwf:workflowTask</parent>

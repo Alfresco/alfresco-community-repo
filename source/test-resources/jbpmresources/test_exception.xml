@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<process-definition xmlns="urn:jbpm.org:jpdl-3.1" name="test_exception">
+
+    <start-state name="start">
+       <task name="bpm:startTask" swimlane="initiator" />
+       <transition to="raiseerror"/>
+    </start-state>
+
+    <swimlane name="assignee">
+        <assignment class="org.alfresco.repo.workflow.jbpm.AlfrescoAssignment">
+           <actor>#{bpm_assignee}</actor>
+        </assignment>
+    </swimlane>
+
+    <task-node name="raiseerror">
+        <task name="wf:workflowTask" swimlane="assignee">
+           <event type="task-end">
+            <script>
+               <variable name="submitexception" access="write"/>
+               <expression>submitexception = false;</expression>
+            </script>
+              <script>
+                 //raise exception!
+              </script>
+           </event>
+        </task>
+        <transition name="" to="checkexception">
+        </transition>
+            <exception-handler>
+	           <script>
+	              <variable name="submitexception" access="write"/>
+	              <expression>
+	               System.out.println("Exception");
+	               submitexception = true
+	              </expression>
+	           </script>
+        </exception-handler>
+    </task-node>
+
+    <decision name="checkexception">
+        <event type="node-enter">
+           <script>System.out.println("Value = " + submitexception);</script>
+        </event>
+        <transition name="failure" to="error">
+           <condition>#{submitexception == true}</condition>
+        </transition>
+        <transition name="success" to="end">
+           <condition>#{submitexception == false}</condition>
+        </transition>
+    </decision>
+
+    <task-node name="error">
+        <task name="wf:workflowTask" swimlane="assignee"/>
+        <transition name="" to="end"/>
+    </task-node>
+
+    <end-state name="end"/>
+
+</process-definition>

@@ -1648,4 +1648,27 @@
         </property>
     </bean>
     
+    <!--  Redeploy both direct and indirect submit processes for addition submit failure handling -->
+    <bean id="patch.redeploySubmitProcess6" class="org.alfresco.repo.admin.patch.impl.GenericWorkflowPatch" parent="basePatch" >
+        <property name="id"><value>patch.redeploySubmitProcess6</value></property>
+        <property name="description"><value>patch.redeploySubmitProcess.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>2002</value></property>
+        <property name="targetSchema"><value>2003</value></property>
+        <property name="workflowDefinitions">
+            <list>
+               <props>
+                    <prop key="engineId">jbpm</prop>
+                    <prop key="location">alfresco/workflow/submit_processdefinition.xml</prop>
+                    <prop key="mimetype">text/xml</prop>
+               </props>
+               <props>
+                    <prop key="engineId">jbpm</prop>
+                    <prop key="location">alfresco/workflow/submitdirect_processdefinition.xml</prop>
+                    <prop key="mimetype">text/xml</prop>
+               </props>
+            </list>
+        </property>
+    </bean>
+    
 </beans>

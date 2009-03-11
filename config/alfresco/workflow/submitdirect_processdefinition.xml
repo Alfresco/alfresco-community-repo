@@ -26,6 +26,11 @@
             </timer>
 
 	        <event type="task-end">
+	            <script>
+	               <variable name="submitfailed" access="write"/>
+	               <expression>submitfailed = false;</expression>
+	            </script>
+	        
 	            <action class="org.alfresco.repo.workflow.jbpm.AlfrescoJavaScript">
 	                <script>
 	                    logger.log("WCM Submit Process: Start submit for " + bpm_workflowDescription + " (by " + person.properties.userName + ")");
@@ -41,9 +46,32 @@
 	                </script>
 	            </action>
 	        </event>
-
         </task>
-        <transition name="" to="end" />
+        <transition name="" to="checkfailedsubmit">
+            <exception-handler>
+                <script>
+                    <variable name="submitfailed" access="write"/>
+                    <expression>
+                        logger.log("WCM Submit Process: Submit failed for " + bpm_workflowDescription + " (by " + person.properties.userName + ")");
+                        submitfailed = true;
+                    </expression>
+                </script>
+            </exception-handler>
+        </transition>
+    </task-node>
+
+    <decision name="checkfailedsubmit">
+        <transition name="failure" to="submitfailed">
+           <condition>#{submitfailed == true}</condition>
+        </transition>
+        <transition name="success" to="end">
+           <condition>#{submitfailed == false}</condition>
+        </transition>
+    </decision>
+
+    <task-node name="submitfailed">
+        <task name="wcmwf:submitfailedTask" swimlane="initiator"/>
+        <transition name="" to="end"/>
     </task-node>
 
     <!--                 -->

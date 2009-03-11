@@ -28,16 +28,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
 import java.net.SocketException;
-import java.util.List;
 import java.util.SortedMap;
-import java.util.regex.Pattern;
 
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
-import org.alfresco.repo.web.scripts.RepoStore;
 import org.alfresco.service.cmr.avm.AVMExistsException;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMNotFoundException;
@@ -45,9 +42,6 @@ import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.web.scripts.Status;
 import org.alfresco.web.scripts.WebScriptException;
@@ -365,7 +359,7 @@ public class AVMRemoteStore extends BaseRemoteStore
         
         try
         {
-            traverseNode(res.getWriter(), store, node, null, recurse);
+            traverseNode(res.getWriter(), store, node, recurse);
             if (logger.isDebugEnabled())
                 logger.debug("AVMRemoteStore.listDocuments() " + path + " Recursive: " + recurse);
         }
@@ -398,11 +392,20 @@ public class AVMRemoteStore extends BaseRemoteStore
             pattern = "*";
         }
         
-        String matcher = pattern.replace(".","\\.").replace("*",".*");
-        
         try
         {
-            traverseNode(res.getWriter(), store, node, Pattern.compile(matcher), true);
+            final Writer out = res.getWriter();
+            int cropPoint = store.length() + this.rootPath.length() + 1;
+            SortedMap<String, AVMNodeDescriptor> listing = this.avmService.getDirectoryListing(node, pattern);
+            for (AVMNodeDescriptor n : listing.values())
+            {
+                if (n.isFile())
+                {
+                    out.write(n.getPath().substring(cropPoint));
+                    out.write("\n");
+                }
+            }
+            
             if (logger.isDebugEnabled())
                 logger.debug("AVMRemoteStore.listDocuments() " + path + " Pattern: " + pattern);
         }
@@ -437,12 +440,11 @@ public class AVMRemoteStore extends BaseRemoteStore
      * @param out       Writer for output - relative paths separated by newline characters
      * @param store     AVM Store name
      * @param node      The AVM Node to traverse
-     * @param pattern   Optional Pattern to match filenames against
      * @param recurse   True to recurse sub-directories  
      * 
      * @throws IOException
      */
-    private void traverseNode(Writer out, String store, AVMNodeDescriptor node, Pattern pattern, boolean recurse)
+    private void traverseNode(Writer out, String store, AVMNodeDescriptor node, boolean recurse)
         throws IOException
     {
         /**
@@ -455,25 +457,12 @@ public class AVMRemoteStore extends BaseRemoteStore
         {
             if (n.isFile())
             {
-                String path = n.getPath();
-                if (pattern != null)
-                {
-                    String name = path.substring(path.lastIndexOf('/') + 1);
-                    if (pattern.matcher(name).matches())
-                    {
-                        out.write(path.substring(cropPoint));
-                        out.write("\n");
-                    }
-                }
-                else
-                {
-                    out.write(path.substring(cropPoint));
-                    out.write("\n");
-                }
+                out.write(n.getPath().substring(cropPoint));
+                out.write("\n");
             }
             else if (recurse && n.isDirectory())
             {
-                traverseNode(out, store, n, pattern, recurse);
+                traverseNode(out, store, n, recurse);
             }
         }
     }

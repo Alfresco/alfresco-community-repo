@@ -226,8 +226,12 @@ public abstract class BaseRemoteStore extends AbstractWebScript
         
         String path = pathBuilder.toString();
         
+        long start = 0;
         if (logger.isDebugEnabled())
+        {
         	logger.debug("Remote method: " + methodName.toUpperCase() + "   Store Id: " + store + "   Path: " + path);
+        	start = System.nanoTime();
+        }
         
         try
         {
@@ -285,6 +289,12 @@ public abstract class BaseRemoteStore extends AbstractWebScript
         catch (IOException ioErr)
         {
             throw new WebScriptException("Error during remote store API: " + ioErr.getMessage());
+        }
+        
+        if (logger.isDebugEnabled())
+        {
+            long end = System.nanoTime();
+            logger.debug("Time to execute method: " + (end - start)/1000000f + "ms");
         }
     }
 

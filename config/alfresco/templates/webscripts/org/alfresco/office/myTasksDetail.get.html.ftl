@@ -65,7 +65,7 @@
          <#else>
                <a href="#" onclick="OfficeMyTasks.runAction('${doc_actions}','checkout','${res.id}');"><img src="${url.context}/images/office/checkout.gif" style="padding:3px 6px 2px 0px;" alt="${message("office.action.checkout")}" title="${message("office.action.checkout")}" /></a>
          </#if>
-               <a href="#" onclick="ExternalComponent.insertDocument('${relativePath}')"><img src="${url.context}/images/office/insert_document.gif" style="padding:3px 6px 2px 0px;" alt="${message("office.action.insert")}" title="${message("office.action.insert")}" /></a>
+               <a href="#" onclick="ExternalComponent.insertDocument('${relativePath}', '${res.nodeRef}')"><img src="${url.context}/images/office/insert_document.gif" style="padding:3px 6px 2px 0px;" alt="${message("office.action.insert")}" title="${message("office.action.insert")}" /></a>
          <#if !res.name?ends_with(".pdf")>
                <a href="#" onclick="OfficeMyTasks.runAction('${doc_actions}','makepdf','${res.id}');"><img src="${url.context}/images/office/makepdf.gif" style="padding:3px 6px 2px 0px;" alt="${message("office.action.transform_pdf")}" title="${message("office.action.transform_pdf")}" /></a>
          </#if>

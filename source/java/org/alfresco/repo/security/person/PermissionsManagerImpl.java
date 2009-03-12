@@ -41,7 +41,7 @@ public class PermissionsManagerImpl implements PermissionsManager
     /**
      * Set if permissions are inherited when nodes are created.
      */
-    private Boolean inheritPermissions = false;
+    private Boolean inheritPermissions;
 
     /**
      * A set of permissions to set for the owner when a home folder is created
@@ -61,7 +61,7 @@ public class PermissionsManagerImpl implements PermissionsManager
     /**
      * Clear existing permissions on new home folders (useful of created from a template.
      */
-    private Boolean clearExistingPermissions = false;
+    private Boolean clearExistingPermissions;
 
     private OwnableService ownableService;
 

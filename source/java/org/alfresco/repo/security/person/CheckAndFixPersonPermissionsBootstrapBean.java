@@ -56,6 +56,8 @@ public class CheckAndFixPersonPermissionsBootstrapBean extends AbstractLifecycle
 
     private PermissionsManager permissionsManager;
 
+    private Set<String> excludedUsers;
+
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
@@ -74,6 +76,11 @@ public class CheckAndFixPersonPermissionsBootstrapBean extends AbstractLifecycle
     public void setPermissionsManager(PermissionsManager permissionsManager)
     {
         this.permissionsManager = permissionsManager;
+    }
+    
+    public void setExcludedUsers(Set<String> excludedUsers)
+    {
+        this.excludedUsers = excludedUsers;
     }
 
     @Override
@@ -96,6 +103,10 @@ public class CheckAndFixPersonPermissionsBootstrapBean extends AbstractLifecycle
                 for (NodeRef person : people)
                 {
                     String uid = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(person, ContentModel.PROP_USERNAME));
+                    if((excludedUsers != null) && excludedUsers.contains(uid))
+                    {
+                        continue;
+                    }
                     if(!permissionsManager.validatePermissions(person, uid, uid))
                     {
                         permissionsManager.setPermissions(person, uid, uid);

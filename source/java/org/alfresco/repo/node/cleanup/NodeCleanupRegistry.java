@@ -53,10 +53,10 @@ public class NodeCleanupRegistry implements NodeCleanupWorker
                 StackTraceUtil.buildStackTrace(
                     "Node cleanup failed: " +
                     "   Worker: " + cleanupWorker.getClass().getName() + "\n" +
-                    "   Error:  ",
+                    "   Error:  " + e.getMessage(),
                     e.getStackTrace(),
                     sb,
-                    20);
+                    0);
                 results.add(sb.toString());
             }
         }

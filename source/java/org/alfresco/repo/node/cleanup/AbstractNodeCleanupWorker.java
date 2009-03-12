@@ -92,7 +92,7 @@ public abstract class AbstractNodeCleanupWorker implements NodeCleanupWorker
                     StackTraceUtil.buildStackTrace(
                             "Node cleanup failed: " +
                             "   Worker: " + this.getClass().getName() + "\n" +
-                            "   Error:  ",
+                            "   Error:  " + e.getMessage(),
                             e.getStackTrace(),
                             sb,
                             Integer.MAX_VALUE);
@@ -102,7 +102,7 @@ public abstract class AbstractNodeCleanupWorker implements NodeCleanupWorker
                 StackTraceUtil.buildStackTrace(
                     "Node cleanup failed: " +
                     "   Worker: " + this.getClass().getName() + "\n" +
-                    "   Error:  ",
+                    "   Error:  " + e.getMessage(),
                     e.getStackTrace(),
                     sb,
                     20);

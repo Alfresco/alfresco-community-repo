@@ -36,6 +36,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
+import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.NoSuchPersonException;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
@@ -48,7 +49,7 @@ import org.alfresco.util.GUID;
 public class PersonTest extends BaseSpringTest
 {
     private TransactionService transactionService;
-    
+
     private PersonService personService;
 
     private NodeService nodeService;
@@ -56,6 +57,8 @@ public class PersonTest extends BaseSpringTest
     private NodeRef rootNodeRef;
 
     private PermissionService permissionService;
+
+    private AuthorityService authorityService;
 
     public PersonTest()
     {
@@ -69,13 +72,18 @@ public class PersonTest extends BaseSpringTest
         personService = (PersonService) applicationContext.getBean("personService");
         nodeService = (NodeService) applicationContext.getBean("nodeService");
         permissionService = (PermissionService) applicationContext.getBean("permissionService");
+        authorityService = (AuthorityService) applicationContext.getBean("authorityService");
 
         StoreRef storeRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.currentTimeMillis());
         rootNodeRef = nodeService.getRootNode(storeRef);
 
         for (NodeRef nodeRef : personService.getAllPeople())
         {
-            nodeService.deleteNode(nodeRef);
+            String uid = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(nodeRef, ContentModel.PROP_USERNAME));
+            if (!uid.equals("admin"))
+            {
+                nodeService.deleteNode(nodeRef);
+            }
         }
 
         personService.setCreateMissingPeople(true);
@@ -90,8 +98,7 @@ public class PersonTest extends BaseSpringTest
     {
         personService.setCreateMissingPeople(false);
 
-        personService
-                .createPerson(createDefaultProperties("derek", "Derek", "Hulley", "dh@dh", "alfresco", rootNodeRef));
+        personService.createPerson(createDefaultProperties("derek", "Derek", "Hulley", "dh@dh", "alfresco", rootNodeRef));
 
         long create = 0;
 
@@ -142,7 +149,7 @@ public class PersonTest extends BaseSpringTest
         endTransaction();
         startNewTransaction();
     }
-    
+
     public void testCreateAndThenDelete()
     {
         personService.setCreateMissingPeople(false);
@@ -174,7 +181,7 @@ public class PersonTest extends BaseSpringTest
 
         }
     }
-    
+
     public void testCreateMissingPeople1()
     {
         personService.setCreateMissingPeople(false);
@@ -198,7 +205,7 @@ public class PersonTest extends BaseSpringTest
     public void testCreateMissingPeople2()
     {
         System.out.print(personService.getAllPeople());
-        
+
         personService.setCreateMissingPeople(false);
         assertFalse(personService.createMissingPeople());
 
@@ -211,10 +218,10 @@ public class PersonTest extends BaseSpringTest
 
         nodeRef = personService.getPerson("andy");
         testProperties(nodeRef, "andy", "andy", "", "", "");
-        
+
         nodeRef = personService.getPerson("Andy");
         testProperties(nodeRef, "andy", "andy", "", "", "");
-        
+
         assertEquals(nodeRef, personService.getPerson("Andy"));
         nodeRef = personService.getPerson("Andy");
         assertNotNull(nodeRef);
@@ -230,8 +237,7 @@ public class PersonTest extends BaseSpringTest
         personService.setCreateMissingPeople(false);
         try
         {
-            personService.setPersonProperties("derek", createDefaultProperties("derek", "Derek", "Hulley", "dh@dh",
-                    "alfresco", rootNodeRef));
+            personService.setPersonProperties("derek", createDefaultProperties("derek", "Derek", "Hulley", "dh@dh", "alfresco", rootNodeRef));
             fail("Getting Derek should fail");
         }
         catch (PersonException pe)
@@ -253,13 +259,12 @@ public class PersonTest extends BaseSpringTest
         testProperties(nodeRef, "andy", "andy", "", "", "");
 
         personService.setCreateMissingPeople(true);
-        personService.setPersonProperties("derek", createDefaultProperties("derek", "Derek", "Hulley", "dh@dh",
-                "alfresco", rootNodeRef));
+        personService.setPersonProperties("derek", createDefaultProperties("derek", "Derek", "Hulley", "dh@dh", "alfresco", rootNodeRef));
         testProperties(personService.getPerson("derek"), "derek", "Derek", "Hulley", "dh@dh", "alfresco");
 
         testProperties(personService.getPerson("andy"), "andy", "andy", "", "", "");
 
-        assertEquals(2, personService.getAllPeople().size());
+        assertEquals(3, personService.getAllPeople().size());
         assertTrue(personService.getAllPeople().contains(personService.getPerson("andy")));
         assertTrue(personService.getAllPeople().contains(personService.getPerson("derek")));
 
@@ -293,21 +298,18 @@ public class PersonTest extends BaseSpringTest
     public void testPersonCRUD2()
     {
         personService.setCreateMissingPeople(false);
-        personService
-                .createPerson(createDefaultProperties("derek", "Derek", "Hulley", "dh@dh", "alfresco", rootNodeRef));
+        personService.createPerson(createDefaultProperties("derek", "Derek", "Hulley", "dh@dh", "alfresco", rootNodeRef));
         testProperties(personService.getPerson("derek"), "derek", "Derek", "Hulley", "dh@dh", "alfresco");
 
-        personService.setPersonProperties("derek", createDefaultProperties("derek", "Derek_", "Hulley_", "dh@dh_",
-                "alfresco_", rootNodeRef));
+        personService.setPersonProperties("derek", createDefaultProperties("derek", "Derek_", "Hulley_", "dh@dh_", "alfresco_", rootNodeRef));
 
         testProperties(personService.getPerson("derek"), "derek", "Derek_", "Hulley_", "dh@dh_", "alfresco_");
 
-        personService.setPersonProperties("derek", createDefaultProperties("derek", "Derek", "Hulley", "dh@dh",
-                "alfresco", rootNodeRef));
+        personService.setPersonProperties("derek", createDefaultProperties("derek", "Derek", "Hulley", "dh@dh", "alfresco", rootNodeRef));
 
         testProperties(personService.getPerson("derek"), "derek", "Derek", "Hulley", "dh@dh", "alfresco");
 
-        assertEquals(1, personService.getAllPeople().size());
+        assertEquals(2, personService.getAllPeople().size());
         assertTrue(personService.getAllPeople().contains(personService.getPerson("derek")));
         assertEquals(1, personService.getPeopleFilteredByProperty(ContentModel.PROP_USERNAME, "derek").size());
         assertEquals(1, personService.getPeopleFilteredByProperty(ContentModel.PROP_EMAIL, "dh@dh").size());
@@ -317,7 +319,7 @@ public class PersonTest extends BaseSpringTest
         assertEquals(0, personService.getPeopleFilteredByProperty(ContentModel.PROP_ORGID, "microsoft").size());
 
         personService.deletePerson("derek");
-        assertEquals(0, personService.getAllPeople().size());
+        assertEquals(1, personService.getAllPeople().size());
         try
         {
             personService.getPerson("derek");
@@ -332,21 +334,18 @@ public class PersonTest extends BaseSpringTest
     public void testPersonCRUD()
     {
         personService.setCreateMissingPeople(false);
-        personService
-                .createPerson(createDefaultProperties("Derek", "Derek", "Hulley", "dh@dh", "alfresco", rootNodeRef));
+        personService.createPerson(createDefaultProperties("Derek", "Derek", "Hulley", "dh@dh", "alfresco", rootNodeRef));
         testProperties(personService.getPerson("Derek"), "Derek", "Derek", "Hulley", "dh@dh", "alfresco");
 
-        personService.setPersonProperties("Derek", createDefaultProperties("derek", "Derek_", "Hulley_", "dh@dh_",
-                "alfresco_", rootNodeRef));
+        personService.setPersonProperties("Derek", createDefaultProperties("derek", "Derek_", "Hulley_", "dh@dh_", "alfresco_", rootNodeRef));
 
         testProperties(personService.getPerson("Derek"), "Derek", "Derek_", "Hulley_", "dh@dh_", "alfresco_");
 
-        personService.setPersonProperties("Derek", createDefaultProperties("derek", "Derek", "Hulley", "dh@dh",
-                "alfresco", rootNodeRef));
+        personService.setPersonProperties("Derek", createDefaultProperties("derek", "Derek", "Hulley", "dh@dh", "alfresco", rootNodeRef));
 
         testProperties(personService.getPerson("Derek"), "Derek", "Derek", "Hulley", "dh@dh", "alfresco");
 
-        assertEquals(1, personService.getAllPeople().size());
+        assertEquals(2, personService.getAllPeople().size());
         assertTrue(personService.getAllPeople().contains(personService.getPerson("Derek")));
         assertEquals(1, personService.getPeopleFilteredByProperty(ContentModel.PROP_USERNAME, "Derek").size());
         assertEquals(1, personService.getPeopleFilteredByProperty(ContentModel.PROP_EMAIL, "dh@dh").size());
@@ -359,29 +358,22 @@ public class PersonTest extends BaseSpringTest
         assertEquals(personService.personExists("DEREK"), EqualsHelper.nullSafeEquals(personService.getUserIdentifier("DEREK"), "Derek"));
 
         personService.deletePerson("Derek");
-        assertEquals(0, personService.getAllPeople().size());
+        assertEquals(1, personService.getAllPeople().size());
 
     }
 
-    private void testProperties(NodeRef nodeRef, String userName, String firstName, String lastName, String email,
-            String orgId)
+    private void testProperties(NodeRef nodeRef, String userName, String firstName, String lastName, String email, String orgId)
     {
         Map<QName, Serializable> props = nodeService.getProperties(nodeRef);
-        assertEquals(userName, DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(nodeRef,
-                ContentModel.PROP_USERNAME)));
+        assertEquals(userName, DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(nodeRef, ContentModel.PROP_USERNAME)));
         assertNotNull(nodeService.getProperty(nodeRef, ContentModel.PROP_HOMEFOLDER));
-        assertEquals(firstName, DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(nodeRef,
-                ContentModel.PROP_FIRSTNAME)));
-        assertEquals(lastName, DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(nodeRef,
-                ContentModel.PROP_LASTNAME)));
-        assertEquals(email, DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(nodeRef,
-                ContentModel.PROP_EMAIL)));
-        assertEquals(orgId, DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(nodeRef,
-                ContentModel.PROP_ORGID)));
+        assertEquals(firstName, DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(nodeRef, ContentModel.PROP_FIRSTNAME)));
+        assertEquals(lastName, DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(nodeRef, ContentModel.PROP_LASTNAME)));
+        assertEquals(email, DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(nodeRef, ContentModel.PROP_EMAIL)));
+        assertEquals(orgId, DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(nodeRef, ContentModel.PROP_ORGID)));
     }
 
-    private Map<QName, Serializable> createDefaultProperties(String userName, String firstName, String lastName,
-            String email, String orgId, NodeRef home)
+    private Map<QName, Serializable> createDefaultProperties(String userName, String firstName, String lastName, String email, String orgId, NodeRef home)
     {
         HashMap<QName, Serializable> properties = new HashMap<QName, Serializable>();
         properties.put(ContentModel.PROP_USERNAME, userName);
@@ -396,8 +388,7 @@ public class PersonTest extends BaseSpringTest
     public void testCaseSensitive()
     {
 
-        personService
-                .createPerson(createDefaultProperties("Derek", "Derek", "Hulley", "dh@dh", "alfresco", rootNodeRef));
+        personService.createPerson(createDefaultProperties("Derek", "Derek", "Hulley", "dh@dh", "alfresco", rootNodeRef));
 
         try
         {
@@ -450,16 +441,16 @@ public class PersonTest extends BaseSpringTest
         }
         personService.getPerson("Derek");
     }
-    
+
     public void testReadOnlyTransactionHandling() throws Exception
     {
         // Kill the annoying Spring-managed txn
         super.setComplete();
         super.endTransaction();
-        
+
         boolean createMissingPeople = personService.createMissingPeople();
         assertTrue("Default should be to create missing people", createMissingPeople);
-        
+
         final String username = "Derek";
         // Make sure that the person is missing
         RetryingTransactionCallback<Object> deletePersonWork = new RetryingTransactionCallback<Object>()
@@ -497,13 +488,13 @@ public class PersonTest extends BaseSpringTest
         // Kill the annoying Spring-managed txn
         super.setComplete();
         super.endTransaction();
-        
+
         boolean createMissingPeople = personService.createMissingPeople();
         assertTrue("Default should be to create missing people", createMissingPeople);
-        
+
         PersonServiceImpl personServiceImpl = (PersonServiceImpl) personService;
         personServiceImpl.setDuplicateMode("LEAVE");
-        
+
         // The user to duplicate
         final String duplicateUsername = GUID.generate();
         // Make sure that the person is missing
@@ -530,8 +521,14 @@ public class PersonTest extends BaseSpringTest
                     public NodeRef execute() throws Throwable
                     {
                         // Wait for the trigger to start
-                        try { startLatch.await(); } catch (InterruptedException e) {}
-                        
+                        try
+                        {
+                            startLatch.await();
+                        }
+                        catch (InterruptedException e)
+                        {
+                        }
+
                         // Trigger
                         NodeRef personNodeRef = personService.getPerson(duplicateUsername);
                         return personNodeRef;
@@ -562,11 +559,17 @@ public class PersonTest extends BaseSpringTest
             thread.start();
         }
         // Wait for the threads to have finished
-        try { endLatch.await(60, TimeUnit.SECONDS); } catch (InterruptedException e) {}
-        
+        try
+        {
+            endLatch.await(60, TimeUnit.SECONDS);
+        }
+        catch (InterruptedException e)
+        {
+        }
+
         // Now, get the user with full split person handling
         personServiceImpl.setDuplicateMode("DELETE");
-        
+
         RetryingTransactionCallback<NodeRef> getPersonWork = new RetryingTransactionCallback<NodeRef>()
         {
             public NodeRef execute() throws Throwable

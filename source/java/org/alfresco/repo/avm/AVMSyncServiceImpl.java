@@ -558,6 +558,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
             fAVMService.removeNode(parentPath, name);
             return;
         }
+        mkdirs(parentPath, AVMNodeConverter.SplitBase(toLink.getPath())[0]);
         
         if (toLink.isLayeredDirectory() && !toLink.isPrimary())
         {

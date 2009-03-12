@@ -138,7 +138,7 @@
           </bean>
       </property>
       <property name="transactionHelper" ref="retryingTransactionHelper" />
-      <property name="authorityService" ref="authorityService" />
+      <property name="authorityService" ref="AuthorityService" />
       <property name="repository" ref="repositoryHelper" />
       <property name="repositoryImageResolver" ref="webscripts.repo.imageresolver" />
       <property name="templateProcessor" ref="webscripts.repo.templateprocessor" />

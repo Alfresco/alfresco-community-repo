@@ -1,6 +1,6 @@
 <#import "membership.lib.ftl" as membershipLib/>
 {
-  data:[
+  "data":[
   <#if memberships??>
 	<#assign userNames = memberships?keys />
     <#list userNames as userName>		 	   

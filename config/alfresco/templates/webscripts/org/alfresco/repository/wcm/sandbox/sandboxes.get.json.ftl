@@ -1,6 +1,6 @@
 <#import "sandbox.lib.ftl" as sandboxLib/>
 {
-  data:[
+  "data":[
   <#if sandboxes??>
 	<#assign boxNames = sandboxes?keys />
     <#list boxNames as boxName>		 	   

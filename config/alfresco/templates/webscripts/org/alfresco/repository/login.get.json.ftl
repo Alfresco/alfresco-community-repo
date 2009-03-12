@@ -1,6 +1,6 @@
 {
-   data:
+   "data":
    {
-	ticket:${ticket}
+	"ticket":<#escape x as jsonUtils.encodeJSONString(x)>"${ticket}"</escape>
    }
 }

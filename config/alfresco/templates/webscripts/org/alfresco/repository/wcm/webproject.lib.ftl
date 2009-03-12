@@ -1,6 +1,7 @@
 <#macro webprojectJSON webproject>
 
 {
+    
    "url" : <#escape x as jsonUtils.encodeJSONString(x)> "${url.serviceContext + "/api/wcm/webprojects/" + webproject.webProjectRef}", </#escape>
    "webprojectref" : <#escape x as jsonUtils.encodeJSONString(x)> "${webproject.webProjectRef}", </#escape>
    "name" : <#escape x as jsonUtils.encodeJSONString(x)> "${webproject.name}", </#escape>

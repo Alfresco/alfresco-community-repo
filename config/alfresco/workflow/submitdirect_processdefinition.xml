@@ -17,7 +17,7 @@
     
     <task-node name="submitted" end-tasks="true">
         <task name="wcmwf:submittedDirectTask" swimlane="initiator">
-            <timer duedate="5 seconds" transition="">
+            <timer duedate="5 seconds" transition="onsubmit">
                 <action class="org.alfresco.repo.workflow.jbpm.AlfrescoJavaScript">
                     <script>
                         logger.log("WCM Submit Process: Triggering submit for " + bpm_workflowDescription);
@@ -47,7 +47,7 @@
 	            </action>
 	        </event>
         </task>
-        <transition name="" to="checkfailedsubmit">
+        <transition name="onsubmit" to="checkfailedsubmit">
             <exception-handler>
                 <script>
                     <variable name="submitfailed" access="write"/>

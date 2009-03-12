@@ -1670,5 +1670,28 @@
             </list>
         </property>
     </bean>
+
+    <!--  Redeploy both direct and indirect submit processes for Oracle handling of empty transition names -->
+    <bean id="patch.redeploySubmitProcess7" class="org.alfresco.repo.admin.patch.impl.GenericWorkflowPatch" parent="basePatch" >
+        <property name="id"><value>patch.redeploySubmitProcess7</value></property>
+        <property name="description"><value>patch.redeploySubmitProcess.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>2003</value></property>
+        <property name="targetSchema"><value>2004</value></property>
+        <property name="workflowDefinitions">
+            <list>
+               <props>
+                    <prop key="engineId">jbpm</prop>
+                    <prop key="location">alfresco/workflow/submit_processdefinition.xml</prop>
+                    <prop key="mimetype">text/xml</prop>
+               </props>
+               <props>
+                    <prop key="engineId">jbpm</prop>
+                    <prop key="location">alfresco/workflow/submitdirect_processdefinition.xml</prop>
+                    <prop key="mimetype">text/xml</prop>
+               </props>
+            </list>
+        </property>
+    </bean>
     
 </beans>

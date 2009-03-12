@@ -861,12 +861,21 @@ public class MessageServiceImpl implements MessageService
                 {
                     if ((line.length() > 0) && (line.charAt(0) != '#'))
                     {
-                        String[] splits = line.split("=");
-                        if (splits.length != 2)
+                        String[] splits = line.split("=", 2);
+                        
+                        if (splits.length == 2)
                         {
+                            properties.put(splits[0], splits[1]);
+                        }
+                        else if (splits.length == 1)
+                        {
+                            properties.put(splits[0], "");
+                        }
+                        else
+                        {
+                            logger.warn("Unexpected message properties file format: " + line);
                             throw new AlfrescoRuntimeException("Unexpected message properties file format: " + line);
                         }
-                        properties.put(splits[0], splits[1]);
                     }
                     line = br.readLine();
                 }

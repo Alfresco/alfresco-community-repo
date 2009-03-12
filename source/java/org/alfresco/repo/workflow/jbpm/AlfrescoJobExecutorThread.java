@@ -67,6 +67,10 @@ public class AlfrescoJobExecutorThread extends JobExecutorThread
         {
             return Collections.EMPTY_LIST;
         }
+        else if (alfrescoJobExecutor.getTransactionService().isReadOnly())
+        {
+            return Collections.EMPTY_LIST;
+        }
         return alfrescoJobExecutor.getTransactionService().getRetryingTransactionHelper().doInTransaction(
             new RetryingTransactionHelper.RetryingTransactionCallback<Collection>() {
                 public Collection execute() throws Throwable
@@ -102,6 +106,10 @@ public class AlfrescoJobExecutorThread extends JobExecutorThread
         {
             return;
         }
+        else if (alfrescoJobExecutor.getTransactionService().isReadOnly())
+        {
+            return;
+        }
         alfrescoJobExecutor.getTransactionService().getRetryingTransactionHelper().doInTransaction(new TransactionJob(job));
     }
     
@@ -125,9 +133,6 @@ public class AlfrescoJobExecutorThread extends JobExecutorThread
             this.job = job;
         }
 
-        /* (non-Javadoc)
-         * @see org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback#execute()
-         */
         public Object execute() throws Throwable
         {
             AlfrescoJobExecutorThread.super.executeJob(job);

@@ -27,6 +27,7 @@ package org.alfresco.repo.site;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -87,8 +88,6 @@ public class SiteServiceImpl implements SiteService, SiteModel
     /** Logger */
     private static Log logger = LogFactory.getLog(SiteServiceImpl.class);
     
-    private static final String GROUP_SITE_PREFIX = PermissionService.GROUP_PREFIX + "site_";
-    
     /** The DM store where site's are kept */
     public static final StoreRef SITE_STORE = new StoreRef("workspace://SpacesStore");
 
@@ -96,7 +95,8 @@ public class SiteServiceImpl implements SiteService, SiteModel
     private static final String ACTIVITY_TOOL = "siteService";
     
     private static final String SITE_PREFIX = "site_";
-    private static final int GROUP_PREFIX_LENGTH = SITE_PREFIX.length() + PermissionService.GROUP_PREFIX.length();
+    private static final String GROUP_SITE_PREFIX = PermissionService.GROUP_PREFIX + SITE_PREFIX;
+    private static final int GROUP_SITE_PREFIX_LENGTH = GROUP_SITE_PREFIX.length();
     
     /** Site home ref cache (Tennant aware) */
     private Map<String, NodeRef> siteHomeRefs = new ConcurrentHashMap<String, NodeRef>(4);
@@ -639,15 +639,43 @@ public class SiteServiceImpl implements SiteService, SiteModel
      */
     public List<SiteInfo> listSites(String userName)
     {
-        List<SiteInfo> sites = listSites(null, null);
-        List<SiteInfo> result = new ArrayList<SiteInfo>(sites.size());
-        for (SiteInfo site : sites)
+        // get the Groups this user is contained within (at any level)
+        Set<String> groups = this.authorityService.getContainingAuthorities(null, userName, false);
+        Set<String> siteNames = new HashSet<String>(groups.size());
+        // purge non Site related Groups and strip the group name down to the site "shortName" it relates too
+        for (String group : groups)
         {
-            if (isMember(site.getShortName(), userName) == true)
+            if (group.startsWith(GROUP_SITE_PREFIX))
             {
-                result.add(site);
+                int roleIndex = group.lastIndexOf('_');
+                siteNames.add(group.substring(GROUP_SITE_PREFIX_LENGTH, roleIndex));
             }
         }
+        
+        // retrieve the site nodes based on the list from the containing site groups
+        NodeRef siteRoot = getSiteRoot();
+        List<String> siteList = new ArrayList<String>(siteNames);
+        // ensure we do not trip over the getChildrenByName() 1000 item API limit!
+        if (siteList.size() > 1000)
+        {
+            siteList = siteList.subList(0, 1000);
+        }
+        List<ChildAssociationRef> assocs = this.nodeService.getChildrenByName(
+                siteRoot,
+                ContentModel.ASSOC_CONTAINS,
+                siteList);
+        List<SiteInfo> result = new ArrayList<SiteInfo>(assocs.size());
+        for (ChildAssociationRef assoc : assocs)
+        {
+            // Ignore any node that is not a "site" type
+            NodeRef site = assoc.getChildRef();
+            QName siteClassName = this.nodeService.getType(site);
+            if (this.dictionaryService.isSubClass(siteClassName, SiteModel.TYPE_SITE))
+            {
+                result.add(createSiteInfo(site));
+            }
+        }
+        
         return result;
     }
 
@@ -957,7 +985,7 @@ public class SiteServiceImpl implements SiteService, SiteModel
                         if (nameFilter != null && nameFilter.length() != 0)
                         {
                             // found a filter - does it match Group name part?
-                            if (group.substring(GROUP_PREFIX_LENGTH).toLowerCase().contains(nameFilter.toLowerCase()))
+                            if (group.substring(GROUP_SITE_PREFIX_LENGTH).toLowerCase().contains(nameFilter.toLowerCase()))
                             {
                                 members.put(group, permission);
                             }

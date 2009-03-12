@@ -770,18 +770,28 @@ public class SiteServiceImpl implements SiteService, SiteModel
     {
         final String cacheKey = this.tenantAdminService.getCurrentUserDomain() + '_' + shortName;
         NodeRef siteNodeRef = this.siteNodeRefs.get(cacheKey);
-        if (siteNodeRef == null)
+        if (siteNodeRef != null)
         {
-           NodeRef siteRoot = getSiteParent(shortName);
-           
-           // the site "short name" directly maps to the cm:name property 
-           siteNodeRef = this.nodeService.getChildByName(siteRoot, ContentModel.ASSOC_CONTAINS, shortName);
-           
-           // cache the result if found - null results will be requeried to ensure new sites are found later
-           if (siteNodeRef != null)
-           {
-               this.siteNodeRefs.put(cacheKey, siteNodeRef);
-           }
+            // test for existance - and remove from cache if no longer exists
+            if (!this.nodeService.exists(siteNodeRef))
+            {
+                this.siteNodeRefs.remove(cacheKey);
+                siteNodeRef = null;
+            }
+        }
+        else
+        {
+            // not in cache - find and store
+            NodeRef siteRoot = getSiteParent(shortName);
+            
+            // the site "short name" directly maps to the cm:name property
+            siteNodeRef = this.nodeService.getChildByName(siteRoot, ContentModel.ASSOC_CONTAINS, shortName);
+            
+            // cache the result if found - null results will be requeried to ensure new sites are found later
+            if (siteNodeRef != null)
+            {
+                this.siteNodeRefs.put(cacheKey, siteNodeRef);
+            }
         }
         return siteNodeRef;
     }

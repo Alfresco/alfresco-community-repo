@@ -109,10 +109,7 @@ public final class ResourceBundleWrapper extends ResourceBundle implements Seria
       {
          this.delegates = new ArrayList<ResourceBundle>(ResourceBundleWrapper.addedBundleNames.size() + 2); 
          
-         // Add the bundle
-         this.delegates.add(getResourceBundle(locale, this.bundleName));
-         
-         // first try in the repo otherwise try the classpath
+         // Check for custom bundle (if any) - first try in the repo otherwise try the classpath
          ResourceBundle customBundle = null;
          
          if (getMessageService() != null)
@@ -154,11 +151,14 @@ public final class ResourceBundleWrapper extends ResourceBundle implements Seria
             customBundle = getResourceBundle(locale, customName);
          }
          
-         // Add the custom bundle to the list
+         // Add the custom bundle (if any) - add first to allow override (eg. in MT/dynamic web client env)
          if (customBundle != null)
          {
             this.delegates.add(customBundle);
          }
+         
+         // Add the normal bundle
+         this.delegates.add(getResourceBundle(locale, this.bundleName));
                   
          // Add the added bundles
          for (String addedBundleName : ResourceBundleWrapper.addedBundleNames)

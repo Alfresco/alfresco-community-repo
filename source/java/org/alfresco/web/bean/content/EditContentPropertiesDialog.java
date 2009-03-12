@@ -46,6 +46,7 @@ import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.ui.common.Utils;
 
 /**
  * Bean implementation of the "Edit Content Properties" dialog.
@@ -72,14 +73,18 @@ public class EditContentPropertiesDialog extends BaseDialogBean
       // setup the editable node
       this.editableNode = initEditableNode();
       
-      // special case for Mimetype - since this is a sub-property of the ContentData object
-      // we must extract it so it can be edited in the client, then we check for it later
-      // and create a new ContentData object to wrap it and it's associated URL
-      ContentData content = (ContentData)this.editableNode.getProperties().get(ContentModel.PROP_CONTENT);
-      if (content != null)
+      if(editableNode != null)
       {
-         this.editableNode.getProperties().put(TEMP_PROP_MIMETYPE, content.getMimetype());
-         this.editableNode.getProperties().put(TEMP_PROP_ENCODING, content.getEncoding());
+      
+    	  // special case for Mimetype - since this is a sub-property of the ContentData object
+    	  // we must extract it so it can be edited in the client, then we check for it later
+    	  // and create a new ContentData object to wrap it and it's associated URL
+    	  ContentData content = (ContentData)this.editableNode.getProperties().get(ContentModel.PROP_CONTENT);
+    	  if (content != null)
+    	  {
+    		  this.editableNode.getProperties().put(TEMP_PROP_MIMETYPE, content.getMimetype());
+    		  this.editableNode.getProperties().put(TEMP_PROP_ENCODING, content.getEncoding());
+    	  }
       }
    }
    
@@ -88,7 +93,12 @@ public class EditContentPropertiesDialog extends BaseDialogBean
     */
    protected Node initEditableNode()
    {
-      return new Node(this.browseBean.getDocument().getNodeRef());
+       final Node document = this.browseBean.getDocument();
+       if (document != null)
+       {   
+    	   return new Node(document.getNodeRef());
+       }
+       return null;
    }
    
    @Override

@@ -2,6 +2,8 @@ package org.alfresco.web.bean.coci;
 
 import javax.faces.context.FacesContext;
 
+import org.alfresco.web.bean.repository.Node;
+
 import org.alfresco.web.app.Application;
 
 public class CCUpdateFileDialog extends CheckinCheckoutDialog
@@ -19,7 +21,12 @@ public class CCUpdateFileDialog extends CheckinCheckoutDialog
    @Override
    public String getContainerTitle()
    {
-      return Application.getMessage(FacesContext.getCurrentInstance(), MSG_UPDATE) + " '" + property.getDocument().getName() + "'";
+	  Node document = property.getDocument();
+	  if(document != null)
+	  {
+		  return Application.getMessage(FacesContext.getCurrentInstance(), MSG_UPDATE) + " '" + document.getName() + "'";
+	  }
+	  return null;
    }
    
    @Override

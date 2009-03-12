@@ -311,70 +311,78 @@ public class CheckinCheckoutDialog extends BaseDialogBean
       UIActionLink link = (UIActionLink)event.getComponent();
       Map<String, String> params = link.getParameterMap();
       String id = params.get("id");
-      if (id != null && id.length() != 0)
+      try 
       {
-         boolean editingInline = false;
-         Node node = setupContentDocument(id);
+    	  if (id != null && id.length() != 0)
+    	  {
+    		  boolean editingInline = false;
+    		  Node node = setupContentDocument(id);
          
-         if (node.hasAspect(WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
-         {
-            editingInline = true;
+    		  if (node.hasAspect(WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
+    		  {
+    			  editingInline = true;
             
-            // editable form document
-            FacesContext fc = FacesContext.getCurrentInstance();
-            this.navigator.setupDispatchContext(node);
+    			  // editable form document
+    			  FacesContext fc = FacesContext.getCurrentInstance();
+    			  this.navigator.setupDispatchContext(node);
             
-            // TODO - rename editContent Wizard since it only deals with editing form content
-            fc.getApplication().getNavigationHandler().handleNavigation(fc, null, "wizard:editContent");
-         }
+    			  // TODO - rename editContent Wizard since it only deals with editing form content
+    			  fc.getApplication().getNavigationHandler().handleNavigation(fc, null, "wizard:editContent");
+    		  }
          
-         // detect the inline editing aspect to see which edit mode to use
-         else if (node.hasAspect(ApplicationModel.ASPECT_INLINEEDITABLE) && 
-             node.getProperties().get(ApplicationModel.PROP_EDITINLINE) != null &&
-             ((Boolean)node.getProperties().get(ApplicationModel.PROP_EDITINLINE)).booleanValue() == true)
-         {
-            // retrieve the content reader for this node
-            ContentReader reader = property.getContentService().getReader(node.getNodeRef(), ContentModel.PROP_CONTENT);
-            if (reader != null)
-            {
-               editingInline = true;
-               String mimetype = reader.getMimetype();
+    		  // detect the inline editing aspect to see which edit mode to use
+    		  else if (node.hasAspect(ApplicationModel.ASPECT_INLINEEDITABLE) && 
+    				  node.getProperties().get(ApplicationModel.PROP_EDITINLINE) != null &&
+    				  ((Boolean)node.getProperties().get(ApplicationModel.PROP_EDITINLINE)).booleanValue() == true)
+    		  {
+    			  // retrieve the content reader for this node
+    			  ContentReader reader = property.getContentService().getReader(node.getNodeRef(), ContentModel.PROP_CONTENT);
+    			  if (reader != null)
+    			  {
+    				  editingInline = true;
+    				  String mimetype = reader.getMimetype();
                
-               // calculate which editor screen to display
-               if (MimetypeMap.MIMETYPE_TEXT_PLAIN.equals(mimetype) ||
-                   MimetypeMap.MIMETYPE_XML.equals(mimetype) ||
-                   MimetypeMap.MIMETYPE_TEXT_CSS.equals(mimetype) ||
-                   MimetypeMap.MIMETYPE_JAVASCRIPT.equals(mimetype))
-               {
-                  // make content available to the text editing screen
-                  property.setEditorOutput(reader.getContentString());
+    				  // calculate which editor screen to display
+    				  if (MimetypeMap.MIMETYPE_TEXT_PLAIN.equals(mimetype) ||
+    						  MimetypeMap.MIMETYPE_XML.equals(mimetype) ||
+    						  MimetypeMap.MIMETYPE_TEXT_CSS.equals(mimetype) ||
+    						  MimetypeMap.MIMETYPE_JAVASCRIPT.equals(mimetype))
+    				  {
+    					  // make content available to the text editing screen
+    					  property.setEditorOutput(reader.getContentString());
                   
-                  // navigate to appropriate screen
-                  FacesContext fc = FacesContext.getCurrentInstance();
-                  this.navigator.setupDispatchContext(node);
-                  fc.getApplication().getNavigationHandler().handleNavigation(fc, null, "dialog:editTextInline");
-               }
-               else
-               {
-                  // make content available to the html editing screen
-                  property.setDocumentContent(reader.getContentString());
-                  property.setEditorOutput(null);
+    					  // navigate to appropriate screen
+    					  FacesContext fc = FacesContext.getCurrentInstance();
+    					  this.navigator.setupDispatchContext(node);
+    					  fc.getApplication().getNavigationHandler().handleNavigation(fc, null, "dialog:editTextInline");
+    				  }
+    				  else
+    				  {
+    					  // make content available to the html editing screen
+    					  property.setDocumentContent(reader.getContentString());
+    					  property.setEditorOutput(null);
                   
-                  // navigate to appropriate screen
-                  FacesContext fc = FacesContext.getCurrentInstance();
-                  this.navigator.setupDispatchContext(node);
-                  fc.getApplication().getNavigationHandler().handleNavigation(fc, null, "dialog:editHtmlInline");
-               }
-            }
-         }
+    					  // navigate to appropriate screen
+    					  FacesContext fc = FacesContext.getCurrentInstance();
+    					  this.navigator.setupDispatchContext(node);
+    					  fc.getApplication().getNavigationHandler().handleNavigation(fc, null, "dialog:editHtmlInline");
+    				  }
+    			  }
+    		  }
          
-         if (editingInline == false)
-         {
-            // normal downloadable document
-            FacesContext fc = FacesContext.getCurrentInstance();
-            this.navigator.setupDispatchContext(node);
-            fc.getApplication().getNavigationHandler().handleNavigation(fc, null, "dialog:editFile");
-         }
+    		  if (editingInline == false)
+    		  {
+    			  // normal downloadable document
+    			  FacesContext fc = FacesContext.getCurrentInstance();
+    			  this.navigator.setupDispatchContext(node);
+    			  fc.getApplication().getNavigationHandler().handleNavigation(fc, null, "dialog:editFile");
+    		  }
+    	  }
+      }
+      catch (InvalidNodeRefException refErr)
+      {
+         Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
+               FacesContext.getCurrentInstance(), Repository.ERROR_NODEREF), new Object[] {id}) );
       }
    }
    

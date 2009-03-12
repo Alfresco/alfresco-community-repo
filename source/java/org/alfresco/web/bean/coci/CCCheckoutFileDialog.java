@@ -73,7 +73,11 @@ public class CCCheckoutFileDialog extends CheckinCheckoutDialog
     @Override
     public String getContainerTitle()
     {
-        return Application.getMessage(FacesContext.getCurrentInstance(), LBL_CHECKOUT) + " '" + property.getDocument().getName() + "'";
+        final Node document = property.getDocument();
+        if (document != null){
+        	return Application.getMessage(FacesContext.getCurrentInstance(), LBL_CHECKOUT) + " '" + document.getName() + "'";
+        }
+        return null;
     }
     
     /**

@@ -1163,12 +1163,12 @@ alfresco.xforms.AbstractSelectWidget = alfresco.xforms.Widget.extend({
                                           alfresco.xforms.constants.XFORMS_NS,
                                           alfresco.xforms.constants.XFORMS_PREFIX,
                                           "label")[0];
-      label = label.firstChild.nodeValue;
+      label = label.firstChild === null ? "" : label.firstChild.nodeValue;
       var value = _getElementsByTagNameNS(values[i], 
                                           alfresco.xforms.constants.XFORMS_NS,
                                           alfresco.xforms.constants.XFORMS_PREFIX, 
                                           "value")[0];
-      var valueText = value.firstChild.nodeValue;
+      var valueText = value.firstChild === null ? "" : value.firstChild.nodeValue;
       var itemId = value.getAttribute("id");
       var valid = true;
       if (binding.constraint)

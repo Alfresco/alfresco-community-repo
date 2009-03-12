@@ -191,7 +191,7 @@ public final class AuthenticationHelper
                   else
                   {
                      // Set the current thread locale (also for JSF context)
-                     fc.getViewRoot().setLocale(BaseServlet.setLanguageFromRequestHeader(req));
+                     fc.getViewRoot().setLocale(BaseServlet.setLanguageFromRequestHeader(req, sc));
                   }
                   
                   // remove the session invalidated flag
@@ -260,7 +260,7 @@ public final class AuthenticationHelper
          else
          {
             // Set the current thread locale (also for JSF context)
-            fc.getViewRoot().setLocale(BaseServlet.setLanguageFromRequestHeader(req));
+            fc.getViewRoot().setLocale(BaseServlet.setLanguageFromRequestHeader(req, sc));
          }
          
          if (loginBean != null && (loginBean.getUserPreferencesBean() != null))
@@ -359,7 +359,7 @@ public final class AuthenticationHelper
       else
       {
          // Set the current thread locale (also for JSF context)
-         fc.getViewRoot().setLocale(BaseServlet.setLanguageFromRequestHeader(httpRequest));
+         fc.getViewRoot().setLocale(BaseServlet.setLanguageFromRequestHeader(httpRequest, context));
       }
       
       return AuthenticationStatus.Success;

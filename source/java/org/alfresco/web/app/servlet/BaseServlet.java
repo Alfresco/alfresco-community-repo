@@ -38,11 +38,16 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.alfresco.i18n.I18NUtil;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.util.URLDecoder;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.LoginBean;
@@ -52,13 +57,6 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.springframework.web.jsf.FacesContextUtils;
-
-import org.alfresco.i18n.I18NUtil;
-import org.alfresco.repo.tenant.TenantService;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.SearchService;
-import org.alfresco.service.namespace.NamespaceService;
 
 
 /**
@@ -202,20 +200,28 @@ public abstract class BaseServlet extends HttpServlet
    /**
     * Apply Client and Repository language locale based on the 'Accept-Language' request header
     */
-   public static Locale setLanguageFromRequestHeader(HttpServletRequest req)
+   public static Locale setLanguageFromRequestHeader(HttpServletRequest req, ServletContext sc)
    {
       Locale locale = null;
       
-      // set language locale from browser header
-      String acceptLang = req.getHeader("Accept-Language");
-      if (acceptLang != null && acceptLang.length() != 0)
+      // Set the current locale and language
+      if (Application.getClientConfig(sc).isLanguageSelect())
       {
-         StringTokenizer t = new StringTokenizer(acceptLang, ",; ");
-         // get language and convert to java locale format
-         String language = t.nextToken().replace('-', '_');
-         Application.setLanguage(req.getSession(), language);
-         locale = I18NUtil.parseLocale(language);
-         I18NUtil.setLocale(locale);
+         locale = Application.getLanguage(req.getSession());
+      }
+      else
+      {
+         // set language locale from browser header
+         String acceptLang = req.getHeader("Accept-Language");
+         if (acceptLang != null && acceptLang.length() != 0)
+         {
+            StringTokenizer t = new StringTokenizer(acceptLang, ",; ");
+            // get language and convert to java locale format
+            String language = t.nextToken().replace('-', '_');
+            Application.setLanguage(req.getSession(), language);
+            locale = I18NUtil.parseLocale(language);
+            I18NUtil.setLocale(locale);
+         }
       }
       
       return locale;

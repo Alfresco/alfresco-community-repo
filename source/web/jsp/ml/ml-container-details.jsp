@@ -277,6 +277,8 @@
                            <a:param id="param-lg${idx}" name="lang" value="#{tr.versionLanguage}" />
                         </a:actionLink>
                      </a:column>
+                     
+                     <a:dataPager id="pager1" styleClass="pager" />
                   </a:richList>
                </a:panel>
                <f:verbatim>

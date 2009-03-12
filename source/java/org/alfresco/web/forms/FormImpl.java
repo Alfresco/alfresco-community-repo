@@ -66,7 +66,7 @@ import freemarker.template.SimpleHash;
 
 public class FormImpl implements Form
 {
-   private static final long serialVersionUID = 1L;
+   private static final long serialVersionUID = 7654769105419391840L;
    
    private static final Log LOGGER = LogFactory.getLog(FormImpl.class);
    
@@ -74,15 +74,14 @@ public class FormImpl implements Form
    private transient FormsService formsService;
    private transient Map<String, RenderingEngineTemplate> renderingEngineTemplates;
 
-   private final static LinkedList<FormProcessor> PROCESSORS = 
-      new LinkedList<FormProcessor>();
+   private final static LinkedList<FormProcessor> PROCESSORS = new LinkedList<FormProcessor>();
+   
    static 
    {
       FormImpl.PROCESSORS.add(new XFormsProcessor());
    }
    
-   protected FormImpl(final NodeRef folderNodeRef, 
-                      final FormsService formsService)
+   protected FormImpl(final NodeRef folderNodeRef, final FormsService formsService)
    {
       if (folderNodeRef == null)
       {
@@ -91,12 +90,6 @@ public class FormImpl implements Form
       if (formsService == null)
       {
          throw new NullPointerException();
-      }
-      final NodeService nodeService = this.getServiceRegistry().getNodeService();
-      if (!nodeService.hasAspect(folderNodeRef, WCMAppModel.ASPECT_FORM))
-      {
-         throw new IllegalArgumentException("node " + folderNodeRef +
-                                            " does not have aspect " + WCMAppModel.ASPECT_FORM);
       }
       this.folderNodeRef = folderNodeRef;
       this.formsService = formsService;

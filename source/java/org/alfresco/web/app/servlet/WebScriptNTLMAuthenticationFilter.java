@@ -98,7 +98,8 @@ public class WebScriptNTLMAuthenticationFilter extends NTLMAuthenticationFilter
         String pathInfo = requestURI.substring((req.getContextPath() + req.getServletPath()).length());
         
         if (getLogger().isDebugEnabled())
-            getLogger().debug("Processing request: " + requestURI + " SID:" + req.getSession().getId());
+            getLogger().debug("Processing request: " + requestURI + " SID:" +
+                    (req.getSession(false) != null ? req.getSession().getId() : null));
         
         Match match = container.getRegistry().findWebScript(req.getMethod(), URLDecoder.decode(pathInfo));
         if (match != null && match.getWebScript() != null)

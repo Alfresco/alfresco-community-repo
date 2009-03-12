@@ -237,7 +237,7 @@ public class CreateWebsiteWizard extends BaseWizardBean
       wiz.setStandalone(false);
       // the wizard is responsible for notifying the invited users, setting the appropriate
       // node permissions and also for creating user sandboxes and associations to the web folder node
-      outcome = wiz.finish();
+      outcome = wiz.finishImpl(context, outcome);
       if (outcome != null)
       {
          // persist the forms, templates, workflows, workflow defaults and deployment 

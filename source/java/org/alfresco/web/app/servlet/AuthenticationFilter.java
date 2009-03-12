@@ -89,7 +89,7 @@ public class AuthenticationFilter implements Filter
       }
       else
       {
-         BaseServlet.setLanguageFromRequestHeader(httpReq);
+         BaseServlet.setLanguageFromRequestHeader(httpReq, context);
          
          // continue filter chaining
          chain.doFilter(req, res);

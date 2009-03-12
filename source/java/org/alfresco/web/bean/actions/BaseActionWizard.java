@@ -612,7 +612,7 @@ public abstract class BaseActionWizard extends BaseWizardBean
       // is a no-parameter action
       IHandler handler = this.actionHandlers.get(this.action);
       
-      if (!handler.isAllowMultiple() && isActionPresent(this.action))
+      if (handler != null && !handler.isAllowMultiple() && isActionPresent(this.action))
       {
          Utils.addErrorMessage(Application.getMessage(
                   FacesContext.getCurrentInstance(), ERROR_ACTION_CANNOT_BE_EXECUTE_REPEATEDLY));

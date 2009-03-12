@@ -61,7 +61,7 @@
    }
    
    // setup system locale from the Accept-Language header value
-   Locale locale = BaseServlet.setLanguageFromRequestHeader(request);
+   Locale locale = BaseServlet.setLanguageFromRequestHeader(request, application);
 %>
 
 <body bgcolor="#ffffff" style="background-image: url(<%=request.getContextPath()%>/images/logo/AlfrescoFadedBG.png); background-repeat: no-repeat; background-attachment: fixed">

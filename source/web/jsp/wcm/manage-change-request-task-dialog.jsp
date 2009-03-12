@@ -134,7 +134,7 @@
          <r:actions id="col7-actions" value="#{DialogManager.bean.packageItemActionGroup}" 
                     context="#{r}" showLink="false" styleClass="inlineAction" />
       </a:column>
-      <a:dataPager styleClass="pager" />
+      <a:dataPager styleClass="pager" id="pager1" />
    </a:richList>
 
    <h:panelGrid id="package-actions-group" columns="1" styleClass="paddingRow">

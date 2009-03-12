@@ -876,6 +876,18 @@ public class Application
    }
    
    /**
+    * Helper to get the client config element from the config service
+    * 
+    * @param context ServletContext
+    * @return The ClientConfigElement
+    */
+   public static ClientConfigElement getClientConfig(ServletContext context)
+   {
+      return (ClientConfigElement)getConfigService(context).getGlobalConfig().
+         getConfigElement(ClientConfigElement.CONFIG_ELEMENT_ID);
+   }
+   
+   /**
     * Returns the repository store URL
     * 
     * @param context The spring context

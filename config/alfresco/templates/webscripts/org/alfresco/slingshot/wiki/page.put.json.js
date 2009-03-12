@@ -157,7 +157,7 @@ function sortByLabel(version1, version2)
 {
    if ((version1.label.indexOf(".") == -1) || (version2.label.indexOf(".") == -1))
    {
-      return 0;
+      return -1;
    }
    
    var major1 = new Number(version1.label.substring(0, version1.label.indexOf(".")));

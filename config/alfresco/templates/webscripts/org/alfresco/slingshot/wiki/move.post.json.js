@@ -7,7 +7,6 @@
  * @method POST
  * @param uri {string} /slingshot/wiki/page/{siteid}/{pageTitle}
  */
-
 model.result = main();
 
 function main()
@@ -41,6 +40,15 @@ function main()
       return jsonError("Could not find specified page.");
    }
    
+   var existing = wiki.childByNamePath(newName);
+   {
+      if (existing)
+      {
+         status.setCode(status.STATUS_CONFLICT, "Duplicate name.");
+         return;
+      }
+   }
+   
    // Finally, now we can do what we are supposed to do
    var currentName = new String(page.name);
    
@@ -62,7 +70,8 @@ function main()
 
    activities.postActivity("org.alfresco.wiki.page-renamed", params.siteId, "wiki", jsonUtils.toJSONString(data));
    
-   return {
+   return (
+   {
       name: newName // Return the new name to the client (?)
-   }
+   });
 }

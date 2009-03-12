@@ -43,7 +43,6 @@
           src="${pageContext.request.contextPath}/scripts/ajax/common.js">&#160;</script>
 
   <script language="javascript" type="text/javascript">
-
     <!-- Init the Tiny MCE in-line HTML editor -->
     var alfresco = typeof alfresco == "undefined" ? {} : alfresco;
     alfresco.constants = typeof alfresco.constants == "undefined" ? {} : alfresco.constants;
@@ -85,6 +84,7 @@
     function saveContent(id, content)
     {
       document.getElementById("wizard:wizard-body:editor-output").value = content;
+      return content;
     }
   </script>
   <script language="javascript" 

@@ -33,7 +33,6 @@
 <f:verbatim>
 <script language="javascript" type="text/javascript" src="<%=request.getContextPath()%>/scripts/tiny_mce/tiny_mce.js"></script>
 <script language="javascript" type="text/javascript">
-
 <%-- Init the Tiny MCE in-line HTML editor --%>
 tinyMCE.init({
 theme : "advanced",
@@ -55,6 +54,7 @@ function saveContent(id, content)
 {
  //document.forms['edit-file']['edit-file:editorOutput'].value = content;
  document.getElementById("dialog:dialog-body:editorOutput").value=content;
+ return content;
 }
 
 </script>

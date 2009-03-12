@@ -30,7 +30,6 @@
 <f:verbatim>
 <script language="javascript" type="text/javascript" src="<%=request.getContextPath()%>/scripts/tiny_mce/tiny_mce.js"></script>
 <script language="javascript" type="text/javascript">
-
    <%-- Init the Tiny MCE in-line HTML editor --%>
    tinyMCE.init({
       theme : "advanced",
@@ -51,6 +50,7 @@
    function saveContent(id, content)
    {
       document.getElementById("wizard:wizard-body:editor-output").value = content;
+      return content;
    }
    
    var isIE = (document.all);

@@ -24,7 +24,10 @@
 // This script requires tiny_mce.js, and some alfresco.constants to be
 // loaded in advance.
 ////////////////////////////////////////////////////////////////////////////////
-
+if (!alfresco.log)
+{
+   alfresco.log = alfresco.constants.DEBUG ? log : Class.empty;
+}
 function alfresco_TinyMCE_urlconverter_callback(href, element, onsave)
 {
   var result = null;
@@ -57,13 +60,21 @@ function alfresco_TinyMCE_urlconverter_callback(href, element, onsave)
   }
 
 //  dojo.debug("alfresco_TinyMCE_urlconverter_callback('" + href + "', ... , " + onsave + ") = " + result);
-  
   return result;
 }
 
 function alfresco_TinyMCE_file_browser_callback(field_name, url, type, win)
 {
-  tinyMCE.importCSS(win.document, alfresco.constants.WEBAPP_CONTEXT + "/css/xforms.css");
+  //tinyMCE.loadCSS doesn't seem to work with plugins so add css manually
+  //tinyMCE.activeEditor.dom.loadCSS(alfresco.constants.WEBAPP_CONTEXT + "/css/xforms.css");
+  var headEl = win.document.getElementsByTagName("head")[0];         
+  var cssEl = win.document.createElement('link');
+  cssEl.type = 'text/css';
+  cssEl.rel = 'stylesheet';
+  cssEl.href = alfresco.constants.WEBAPP_CONTEXT + "/css/xforms.css";
+  cssEl.media = 'screen';
+  headEl.appendChild(cssEl);
+  
   var div = win.document.createElement("div");
   div.style.width = "100%";
   div.style.height = "100%";

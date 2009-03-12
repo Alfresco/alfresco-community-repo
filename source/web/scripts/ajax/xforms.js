@@ -815,6 +815,16 @@ alfresco.xforms.RichTextEditor = alfresco.xforms.Widget.extend({
     this._focused = false;
     this._params = params;
     this._oldValue = null;
+    this._created = false;
+    if (!document.getElementById('xformsRichTextEditorHoverLayer'))
+    {
+      alfresco.xforms.RichTextEditor.clickMask = new Element("div");
+      alfresco.xforms.RichTextEditor.clickMask.addClass("xformsRichTextEditorHoverLayer");
+      alfresco.xforms.RichTextEditor.clickMask.setText(alfresco.resources["click_to_edit"]);
+      alfresco.xforms.RichTextEditor.clickMask.id = 'xformsRichTextEditorHoverLayer';
+      alfresco.xforms.RichTextEditor.clickMask.style.display='none';
+      document.body.appendChild(alfresco.xforms.RichTextEditor.clickMask);
+    }
   },
 
   /////////////////////////////////////////////////////////////////
@@ -830,20 +840,12 @@ alfresco.xforms.RichTextEditor = alfresco.xforms.Widget.extend({
       this._commitValueChange(value);
       this._oldValue = value;
     }
-    tinyMCE.removeMCEControl(this.id);
+    tinyMCE.get(this.widget.id).hide();
     this._focused = false;
   },
 
   _createTinyMCE:function()
   {
-    if (alfresco.xforms.RichTextEditor.currentInstance &&
-        alfresco.xforms.RichTextEditor.currentInstance != this)
-    {
-        alfresco.xforms.RichTextEditor.currentInstance._removeTinyMCE();
-    }
-
-    alfresco.xforms.RichTextEditor.currentInstance = this;
-
     for (var i in alfresco.constants.TINY_MCE_DEFAULT_SETTINGS)
     {
       if (!(i in this._params))
@@ -851,6 +853,7 @@ alfresco.xforms.RichTextEditor = alfresco.xforms.Widget.extend({
         this._params[i] = alfresco.constants.TINY_MCE_DEFAULT_SETTINGS[i];
       }
     }
+
     for (var i in this._params)
     {
       if (i in tinyMCE.settings)
@@ -859,18 +862,17 @@ alfresco.xforms.RichTextEditor = alfresco.xforms.Widget.extend({
         tinyMCE.settings[i] = this._params[i];
       }
     }
-    tinyMCE.settings.height = this._params["height"] ? parseInt(this._params["height"]) : -1;
-    tinyMCE.settings.auto_focus = this.id;
-    tinyMCE.addMCEControl(this.widget, this.id);
-    
-    tinyMCE.getInstanceById(this.id).getWin().focus();
-    var editorDocument = tinyMCE.getInstanceById(this.id).getDoc();
-    editorDocument.widget = this;
+    tinyMCE.settings.height = (this._params["height"]>0) ? parseInt(this._params["height"]) : this.widget.style.height;
+    tinyMCE.settings.width = (this._params["width"]>0) ? parseInt(this._params["width"]) : this.widget.style.width;    
 
-    tinyMCE.addEvent(editorDocument, 
-                     window.ie ? "beforedeactivate" : "blur", 
+    tinyMCE.settings.auto_focus = this.widget.id;
+    tinyMCE.execCommand("mceAddControl", false, this.widget.id)
+    var editorDocument = tinyMCE.get(this.widget.id).getDoc();
+    editorDocument.widget = this;
+    tinymce.dom.Event.add(editorDocument,window.ie ? "beforedeactivate" : "blur", 
                      this._tinyMCE_blurHandler);
-    tinyMCE.addEvent(editorDocument, "focus", this._tinyMCE_focusHandler);
+    tinymce.dom.Event.add(editorDocument, "focus", this._tinyMCE_focusHandler);
+    this._created = true;
   },
 
   /////////////////////////////////////////////////////////////////
@@ -888,6 +890,7 @@ alfresco.xforms.RichTextEditor = alfresco.xforms.Widget.extend({
     this.widget = new Element("div");
     this.domNode.appendChild(this.widget);
     this.widget.addClass("xformsTextArea");
+    
     if (this._params["height"])
     {
       this.widget.setStyle("height", parseInt(this._params["height"]) + "px");
@@ -897,7 +900,7 @@ alfresco.xforms.RichTextEditor = alfresco.xforms.Widget.extend({
     this.widget.style.overflow = "auto";
     this._oldValue = this.getInitialValue() || "";
     this.widget.innerHTML = this._oldValue;
-
+    this.widget.id = this.id+'-editorWidget';
     $each(this.widget.getElementsByTagName("img"), 
           function(img, index)
           {
@@ -906,9 +909,10 @@ alfresco.xforms.RichTextEditor = alfresco.xforms.Widget.extend({
               img.setAttribute("src", alfresco.constants.AVM_WEBAPP_URL + img.getAttribute("src"));
             }
           });
+          
     if (!this.isReadonly())
     {
-      this.widget.onmouseover = this._div_mouseoverHandler.bindAsEventListener(this);
+      this.domNode.onmouseover = this._div_mouseoverHandler.bindAsEventListener(this);
     }
   },
 
@@ -918,10 +922,10 @@ alfresco.xforms.RichTextEditor = alfresco.xforms.Widget.extend({
     {
       if (alfresco.xforms.RichTextEditor.currentInstance == this)
       {
-        tinyMCE.selectedInstance = tinyMCE.getInstanceById(this.id);
+        tinyMCE.selectedInstance = tinyMCE.get(this.id);
         try
         {
-          tinyMCE.setContent(value);
+          tinyMCE.activeEditor.setContent(value);
         }
         catch (e)
         {
@@ -940,7 +944,7 @@ alfresco.xforms.RichTextEditor = alfresco.xforms.Widget.extend({
   getValue: function()
   {
     var result = (alfresco.xforms.RichTextEditor.currentInstance == this 
-                  ? tinyMCE.getContent(this.id) 
+                  ? 	tinyMCE.get(this.widget.id).getContent() 
                   : this.widget.innerHTML);
     result = result.replace(new RegExp(alfresco.constants.AVM_WEBAPP_URL, "g"), "");
     return result;
@@ -961,7 +965,8 @@ alfresco.xforms.RichTextEditor = alfresco.xforms.Widget.extend({
     if (!this.isReadonly())
     {
       alfresco.log("removing mce control " + this.id);
-      tinyMCE.removeMCEControl(this.id);
+      // tinyMCE.removeMCEControl(this.id);
+      tinyMCE.execCommand('mceRemoveControl', false, this.widget.id);      
     }
   },
 
@@ -1014,40 +1019,64 @@ alfresco.xforms.RichTextEditor = alfresco.xforms.Widget.extend({
 
   _div_mouseoverHandler: function(event)
   {
-    if (!this.hoverLayer)
+    var target = event.target || event.srcElement;
+    if (target)
     {
-      this.hoverLayer = new Element("div");
-      this.hoverLayer.addClass("xformsRichTextEditorHoverLayer");
-      this.hoverLayer.setText(alfresco.resources["click_to_edit"]);
-    }
-    if (this.hoverLayer.parentNode != this.widget)
-    {
-      this.widget.appendChild(this.hoverLayer);
+      if (target.className.indexOf('xformsTextArea')==-1)
+      {
+        do
+        {
+          target=target.parentNode;
+        }
+        while(target && target.className!='xformsTextArea');
+      }
+      if (target && target.className=='xformsTextArea' && (alfresco.xforms.RichTextEditor.currentInstance != this))
+      {
+        alfresco.xforms.RichTextEditor.clickMask.style.display='block';
+        alfresco.xforms.RichTextEditor.clickMask.style.top=target.getTop()+'px';
+        alfresco.xforms.RichTextEditor.clickMask.style.left=target.getLeft()+'px';
+        alfresco.xforms.RichTextEditor.clickMask.style.width=target.offsetWidth+'px'; 
+        alfresco.xforms.RichTextEditor.clickMask.style.height=target.offsetHeight+'px';      
+        alfresco.xforms.RichTextEditor.clickMask.style.lineHeight = alfresco.xforms.RichTextEditor.clickMask.offsetHeight + "px";      
+        alfresco.xforms.RichTextEditor.clickMask.setOpacity(.8);
       
-      this.hoverLayer.style.lineHeight = this.hoverLayer.offsetHeight + "px";
-      this.hoverLayer.setOpacity(.8);
-      this.hoverLayer.onmouseout = this._hoverLayer_mouseoutHandler.bindAsEventListener(this);
-      this.hoverLayer.onclick = this._hoverLayer_clickHandler.bindAsEventListener(this);
+        alfresco.xforms.RichTextEditor.clickMask.onclick = this._hoverLayer_clickHandler.bindAsEventListener(this);
+        alfresco.xforms.RichTextEditor.clickMask.onmouseout = this._hoverLayer_mouseoutHandler.bindAsEventListener(this);
+
+      }      
     }
   },
 
   _hoverLayer_mouseoutHandler: function(event)
   {
-    if (this.hoverLayer.parentNode == this.widget)
+    var relatedTarget = (event.relatedTarget) ? event.relatedTarget : event.toElement;
+    if (relatedTarget && relatedTarget.id!=alfresco.xforms.RichTextEditor.clickMask.id)
     {
-      this.hoverLayer.setOpacity(1);
-      this.widget.removeChild(this.hoverLayer);
+      alfresco.xforms.RichTextEditor.clickMask.style.display='none'
+      document.body.appendChild(alfresco.xforms.RichTextEditor.clickMask);      
     }
   },
 
   _hoverLayer_clickHandler: function(event)
   {
-    if (this.hoverLayer.parentNode == this.widget)
+    alfresco.xforms.RichTextEditor.clickMask.style.display='none'
+    document.body.appendChild(alfresco.xforms.RichTextEditor.clickMask);
+    if (alfresco.xforms.RichTextEditor.currentInstance &&
+        alfresco.xforms.RichTextEditor.currentInstance != this)
     {
-      this.hoverLayer.setOpacity(1);
-      this.widget.removeChild(this.hoverLayer);
-      this._createTinyMCE();
+        alfresco.xforms.RichTextEditor.currentInstance._removeTinyMCE();
     }
+    if (this._created===false)
+    {
+      this._createTinyMCE();        
+    }
+    else 
+    {
+      tinyMCE.get(this.widget.id).show();
+    }
+    alfresco.xforms.RichTextEditor.currentInstance = this;
+    alfresco.xforms.RichTextEditor.clickMask.style.display='none'
+    document.body.appendChild(alfresco.xforms.RichTextEditor.clickMask);
   }
 });
 
@@ -3404,9 +3433,9 @@ alfresco.xforms.Repeat = alfresco.xforms.VGroup.extend({
 
     result.style.paddingBottom = (.5 * this._repeatControls[position].offsetHeight) + "px";
 
-    this._repeatControls[position].style.top = -((.5 * this._repeatControls[position].offsetHeight) +
-                                                 result.getStyle("margin-bottom").toInt() +
-                                                 result.getStyle("border-bottom").toInt()) + "px";
+    // this._repeatControls[position].style.top = -((.5 * this._repeatControls[position].offsetHeight) +
+    //                                              result.getStyle("margin-bottom").toInt() +
+    //                                              result.getStyle("border-bottom").toInt()) + "px";
     // may need to use this for centering repeat controls in quirks mode on IE
     // this._repeatControls[position].style.margin = "0px " + Math.floor(100 * ((result.offsetWidth - 
     // this._repeatControls[position].offsetWidth) / 

@@ -35,6 +35,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.activities.ActivityType;
 import org.alfresco.repo.search.QueryParameterDefImpl;
+import org.alfresco.repo.search.impl.lucene.QueryParser;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -578,12 +579,12 @@ public class SiteServiceImpl implements SiteService, SiteModel
                     dictionaryService.getDataType(
                             DataTypeDefinition.TEXT),
                             true,
-                            nameFilter);
+                            QueryParser.escape(nameFilter.replace('"', ' ')));
             
             // get the sites that match the specified names
             StringBuilder query = new StringBuilder(128);
             query.append("+PARENT:\"").append(siteRoot.toString())
-                 .append("\" +@cm\\:name:\"*").append(nameFilter).append("*\"");
+                 .append("\" +@cm\\:name:\"*${cm:name}*\"");
             ResultSet results = this.searchService.query(
                     siteRoot.getStoreRef(),
                     SearchService.LANGUAGE_LUCENE,

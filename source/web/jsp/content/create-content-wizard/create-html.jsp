@@ -33,6 +33,7 @@
    <%-- Init the Tiny MCE in-line HTML editor --%>
    tinyMCE.init({
       theme : "advanced",
+      language : "<%=request.getLocale().getLanguage()%>",
       mode : "exact",
       relative_urls: false,
       elements : "editor",

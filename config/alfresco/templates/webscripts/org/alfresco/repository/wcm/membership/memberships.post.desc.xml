@@ -12,7 +12,7 @@
   Returns 200, STATUS_OK
   ]]></description>
   <url>/api/wcm/webprojects/{webprojectref}/memberships</url>
-  <format default="json"/>
+  <format default="json">argument</format>
   <authentication>user</authentication>
   <transaction>required</transaction>
   <family>WCM/Membership</family>

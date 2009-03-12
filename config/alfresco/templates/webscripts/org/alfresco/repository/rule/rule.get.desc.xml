@@ -4,7 +4,7 @@
    <url>/api/rules/{store_type}/{store_id}/{rule_id}</url>
    <url>/api/node/{store_type}/{store_id}/{id}/rules/{rule_id}</url>
    <url>/api/path/{store_type}/{store_id}/{id}/rules/{rule_id}</url>
-   <format default="json"/>
+   <format default="json">argument</format>
    <authentication>user</authentication>
    <transaction>required</transaction>
 </webscript>

@@ -5,7 +5,7 @@
   <BR>webprojectref specifies which project to delete and will have been returned by a prior call to get, create or list web project.
   ]]>
   </description>
-  <format default="json" />
+  <format default="json">argument</format>
   <url>/api/wcm/webprojects/{webprojectref}</url>
   <authentication>user</authentication>
   <transaction>required</transaction>

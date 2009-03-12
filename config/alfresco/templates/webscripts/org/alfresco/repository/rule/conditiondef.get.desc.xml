@@ -2,7 +2,7 @@
    <shortname>Get Condition Definition</shortname>
    <description>Get a condition definition given its name</description>
    <url>/api/rules/conditiondefs/{conditionDefinitionName}</url>
-   <format default="json"/>
+   <format default="json">argument</format>
    <authentication>user</authentication>
    <transaction>required</transaction>
 </webscript>

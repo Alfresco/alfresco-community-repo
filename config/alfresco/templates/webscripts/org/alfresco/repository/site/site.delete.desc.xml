@@ -2,7 +2,7 @@
   <shortname>Site</shortname>
   <description>Delete the details of a site.</description>
   <url>/api/sites/{shortname}</url>
-  <format default="json"/>
+  <format default="json">argument</format>
   <authentication>user</authentication>
   <transaction>required</transaction>
 </webscript>

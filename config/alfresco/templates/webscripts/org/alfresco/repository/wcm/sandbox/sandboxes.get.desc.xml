@@ -6,7 +6,7 @@
   ]]></description>
   <url>/api/wcm/webprojects/{webprojectref}/sandboxes?userName={userName?}</url>
   <url>/api/wcm/webprojects/{webprojectref}/sandboxes</url>
-  <format default="json"/>
+  <format default="json">argument</format>
   <authentication>user</authentication>
   <transaction>required</transaction>
   <family>WCM/Sandboxes</family>

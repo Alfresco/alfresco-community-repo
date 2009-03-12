@@ -3,7 +3,7 @@
   <description>Get the forum posts</description>
   <url>/api/forum/post/site/{site}/{container}/{path}/replies</url>
   <url>/api/forum/post/node/{store_type}/{store_id}/{id}/replies</url>
-  <format default="json"/>
+  <format default="json">argument</format>
   <authentication>user</authentication>
   <transaction>required</transaction>
 </webscript>

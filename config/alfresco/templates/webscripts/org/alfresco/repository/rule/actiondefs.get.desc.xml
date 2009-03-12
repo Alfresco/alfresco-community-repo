@@ -4,7 +4,7 @@
    <url>/api/rules/actiondefs</url>
    <url>/api/node/{store_type}/{store_id}/{id}/actiondefs</url>
    <url>/api/path/{store_type}/{store_id}/{id}/actiondefs</url>
-   <format default="json"/>
+   <format default="json">argument</format>
    <authentication>user</authentication>
    <transaction>required</transaction>
 </webscript>

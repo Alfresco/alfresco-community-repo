@@ -20,7 +20,7 @@
   ]]></description>
   
   <url>/api/wcm/webprojects/{webprojectref}/sandboxes/{sandboxref}</url>
-  <format default="json"/>
+  <format default="json">argument</format>
   <authentication>user</authentication>
   <transaction>required</transaction>
   <family>WCM/Sandbox</family>

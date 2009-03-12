@@ -6,7 +6,7 @@
   specified user are returned else all web projects are returned.
   ]]>
   </description>
-  <format default="json" />
+  <format default="json">argument</format>
   <url>/api/wcm/webprojects?userName={userName?}</url>
   <url>/api/wcm/webprojects</url>
   <authentication>user</authentication>

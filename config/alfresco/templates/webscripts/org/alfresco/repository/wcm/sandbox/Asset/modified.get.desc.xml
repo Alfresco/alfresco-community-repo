@@ -11,7 +11,7 @@
   </description>
   <url>/api/wcm/webprojects/{webprojectref}/sandboxes/{sandboxref}/modified</url>
   <url>/api/wcm/webprojects/{webprojectref}/sandboxes/{sandboxref}/modified?webApp={webApp?}</url>
-  <format default="json"/>
+  <format default="json">argument</format>
   <authentication>user</authentication>
   <transaction>required</transaction>
   <family>WCM/Asset</family>

@@ -4,7 +4,7 @@
   <url>/api/forum/site/{site}/{container}/{path}/posts</url>
   <url>/api/forum/site/{site}/{container}/posts</url>
   <url>/api/forum/node/{store_type}/{store_id}/{id}/posts</url>
-  <format default="json"/>
+  <format default="json">argument</format>
   <authentication>user</authentication>
   <transaction>required</transaction>
 </webscript>

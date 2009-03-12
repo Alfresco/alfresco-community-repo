@@ -4,7 +4,7 @@
    <url>/api/node/{store_type}/{store_id}/{id}/rules?includeInherited={includeInherited?}&amp;ruleTypeName={ruleTypeName?}</url>  
    <url>/api/path/{store_type}/{store_id}/{id}/rules?includeInherited={includeInherited?}&amp;ruleTypeName={ruleTypeName?}</url>  
    <url>/api/rules/appliedtonode/{store_type}/{store_id}/{id}?includeInherited={includeInherited?}&amp;ruleTypeName={ruleTypeName?}</url>
-   <format default="json"/>
+   <format default="json">argument</format>
    <authentication>user</authentication>
    <transaction>required</transaction>
 </webscript>

@@ -2,7 +2,7 @@
    <shortname>Get Child Assocation Definitions</shortname>
    <description>Get the collection of child association definitions for a given classname</description>
    <url>/api/classes/{classname}/childassociations</url>
-   <format default="json"/>
+   <format default="json">argument</format>
   <authentication>user</authentication>
    <transaction>required</transaction>
 </webscript>

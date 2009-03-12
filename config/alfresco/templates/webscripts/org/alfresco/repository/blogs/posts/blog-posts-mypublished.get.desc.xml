@@ -4,7 +4,7 @@
   <url>/api/blog/site/{site}/{container}/{path}/posts/mypublished</url>
   <url>/api/blog/site/{site}/{container}/posts/mypublished</url>
   <url>/api/blog/node/{store_type}/{store_id}/{id}/posts/mypublished</url>
-  <format default="json"/>
+  <format default="json">argument</format>
   <authentication>user</authentication>
   <transaction>required</transaction>
 </webscript>

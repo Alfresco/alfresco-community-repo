@@ -2,7 +2,7 @@
   <shortname>Sites</shortname>
   <description>Creates a new site based on the site preset and details provided.</description>
   <url>/api/sites</url>
-  <format default="json"/>
+  <format default="json">argument</format>
   <authentication>user</authentication>
   <transaction>required</transaction>
 </webscript>

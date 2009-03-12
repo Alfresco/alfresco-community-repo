@@ -5,7 +5,7 @@
       filtered according to some given filter query string
    </description>
    <url>/api/people?filter={filterQuery?}</url>
-   <format default="json" />
+   <format default="json">argument</format>
    <authentication>user</authentication>
    <transaction>required</transaction>
 </webscript>

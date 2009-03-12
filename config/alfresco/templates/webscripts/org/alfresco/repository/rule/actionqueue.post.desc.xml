@@ -2,7 +2,7 @@
    <shortname>Add to Action Queue</shortname>
    <description>Add an Action Queue Item to the Action Queue for execution</description>
    <url>/api/actionqueue</url>
-   <format default="json"/>
+   <format default="json">argument</format>
    <authentication>user</authentication>
    <transaction>required</transaction>
 </webscript>

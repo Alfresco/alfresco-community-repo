@@ -2,7 +2,7 @@
    <shortname>Add Person</shortname>
    <description>Adds a new person based on the details provided.</description>
    <url>/api/people</url>
-   <format default="json" />
+   <format default="json">argument</format>
    <authentication>admin</authentication>
    <transaction>required</transaction>
 </webscript>

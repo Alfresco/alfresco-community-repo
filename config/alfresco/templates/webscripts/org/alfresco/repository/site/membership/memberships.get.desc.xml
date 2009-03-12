@@ -2,7 +2,7 @@
   <shortname>Memberships</shortname>
   <description>Get a colleciton of a sites memberships.</description>
   <url>/api/sites/{shortname}/memberships?nf={namefilter?}&amp;rf={rolefilter?}&amp;size={pagesize?}&amp;pos={position?}</url>
-  <format default="json"/>
+  <format default="json">argument</format>
   <authentication>user</authentication>
   <transaction>required</transaction>
 </webscript>

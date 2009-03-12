@@ -2,7 +2,7 @@
   <shortname>Delete Sandbox</shortname>
   <description>Deletes a WCM sandbox and all its contents.
   </description>
-  <format default="json" />
+  <format default="json">argument</format>
   <url>/api/wcm/webprojects/{webprojectref}/sandboxes/{sandboxRef}</url>
   <authentication>user</authentication>
   <transaction>required</transaction>

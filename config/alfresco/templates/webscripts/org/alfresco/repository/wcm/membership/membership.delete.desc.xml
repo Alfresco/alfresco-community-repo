@@ -9,7 +9,7 @@
   ]]>
   </description>
   <url>/api/wcm/webprojects/{webprojectref}/memberships/{username}</url>
-  <format default="json"/>
+  <format default="json">argument</format>
   <authentication>user</authentication>
   <transaction>required</transaction>
   <family>WCM/Membership</family>

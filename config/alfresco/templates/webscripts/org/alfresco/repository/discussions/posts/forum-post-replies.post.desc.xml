@@ -2,7 +2,7 @@
   <shortname>Forum post replies</shortname>
   <description>Adds a reply to a post</description>
   <url>/api/forum/post/node/{store_type}/{store_id}/{id}/replies</url>
-  <format default="json"/>
+  <format default="json">argument</format>
   <authentication>user</authentication>
   <transaction>required</transaction>
 </webscript>

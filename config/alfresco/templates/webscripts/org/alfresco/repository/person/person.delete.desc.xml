@@ -2,7 +2,7 @@
    <shortname>Delete Person</shortname>
    <description>Delete a person.</description>
    <url>/api/people/{userName}</url>
-   <format default="json"/>
+   <format default="json">argument</format>
    <authentication>admin</authentication>
    <transaction>required</transaction>
 </webscript>

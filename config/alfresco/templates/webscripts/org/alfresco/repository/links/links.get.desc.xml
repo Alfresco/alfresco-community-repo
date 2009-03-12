@@ -2,7 +2,7 @@
   <shortname>Links</shortname>
   <description>Get all links</description>
   <url>/api/links/site/{site}/{container}</url>
-  <format default="json"/>
+  <format default="json">argument</format>
   <authentication>user</authentication>
   <transaction>required</transaction>
 </webscript>

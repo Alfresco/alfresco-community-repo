@@ -19,7 +19,7 @@
   Returns 201, STATUS_CREATED on success.   The body of the return will contain the new Web Project.
   ]]>
   </description>
-  <format default="json" />
+  <format default="json">argument</format>
   <url>/api/wcm/webprojects</url>
   <authentication>user</authentication>
   <transaction>required</transaction>

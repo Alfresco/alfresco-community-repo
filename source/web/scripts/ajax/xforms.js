@@ -337,11 +337,27 @@ alfresco.xforms.Widget = new Class({
     }
     else
     {
+      var getNodeText = function(xmlNode)
+      {
+        if(xmlNode) 
+        {
+          if (xmlNode.firstChild)
+          {
+            return (typeof(xmlNode.textContent) != "undefined") ? xmlNode.textContent : xmlNode.firstChild.nodeValue;            
+          }
+          else 
+          {
+            return (typeof(xmlNode.textContent) != "undefined") ? xmlNode.textContent : xmlNode.nodeValue;                        
+          }
+        }
+        return '';
+      }
+
       this._initialValue = (this._initialValue.nodeType == document.ELEMENT_NODE
                             ? (this._initialValue.firstChild 
-                               ? this._initialValue.firstChild.nodeValue
+                               ? getNodeText(this._initialValue)
                                : null)
-                            : this._initialValue.nodeValue);
+                            : getNodeText(this._initialValue));
       if (typeof this._initialValue == "string" && this._initialValue.length == 0)
       {
         this._initialValue = null;

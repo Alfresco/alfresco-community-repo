@@ -11,7 +11,31 @@
    <namespaces>
       <namespace uri="http://www.alfresco.org/model/cmis/0.5" prefix="cmis" />
    </namespaces>
+
+   <data-types>
     
+	   <data-type name="cmis:id">
+	      <analyser-class>org.alfresco.repo.search.impl.lucene.analysis.AlfrescoStandardAnalyser</analyser-class>
+	      <java-class>java.lang.String</java-class>
+	   </data-type>
+	   
+	   <data-type name="cmis:uri">
+	      <analyser-class>org.alfresco.repo.search.impl.lucene.analysis.AlfrescoStandardAnalyser</analyser-class>
+	      <java-class>java.lang.String</java-class>
+	   </data-type>
+	
+	   <data-type name="cmis:xml">
+	      <analyser-class>org.alfresco.repo.search.impl.lucene.analysis.AlfrescoStandardAnalyser</analyser-class>
+	      <java-class>java.lang.String</java-class>
+	   </data-type>
+	
+	   <data-type name="cmis:html">
+	      <analyser-class>org.alfresco.repo.search.impl.lucene.analysis.AlfrescoStandardAnalyser</analyser-class>
+	      <java-class>java.lang.String</java-class>
+	   </data-type>
+	   
+   </data-types>
+   
    <constraints>
 
         <constraint name="cmis:allowedValuesForContentStreamAllowed" type="LIST">
@@ -82,7 +106,7 @@
             <property name="cmis:VersionSeriesId">
                <title>Version series id</title>
                <description>The version series id</description>
-               <type>d:noderef</type>
+               <type>cmis:id</type>
                <protected>true</protected>
                <mandatory enforced="true">true</mandatory>
                <multiple>false</multiple>
@@ -111,7 +135,7 @@
             <property name="cmis:VersionSeriesCheckedOutId">
                <title>Version Series Checked Out Id</title>
                <description>The checked out version series id</description>
-               <type>d:noderef</type>
+               <type>cmis:id</type>
                <protected>true</protected>
                <mandatory enforced="false">false</mandatory>
                <multiple>false</multiple>
@@ -174,7 +198,7 @@
             <property name="cmis:ContentStreamUri">
                <title>Content Stream URI</title>
                <description>The content stream URI</description>
-               <type>d:text</type>
+               <type>cmis:uri</type>
                <protected>true</protected>
                <mandatory enforced="false">false</mandatory>
                <multiple>false</multiple>
@@ -182,6 +206,7 @@
             </property>
          </properties>
          <mandatory-aspects>
+            <aspect>cmis:Core</aspect>
             <aspect>cmis:Named</aspect>
          </mandatory-aspects>
       </type>
@@ -193,7 +218,7 @@
             <property name="cmis:ParentId">
                <title>Parent Id</title>
                <description>The parent id of the folder</description>
-               <type>d:noderef</type>
+               <type>cmis:id</type>
                <protected>true</protected>
                <mandatory enforced="true">true</mandatory>
                <multiple>false</multiple>
@@ -204,7 +229,7 @@
             <property name="cmis:AllowedChildObjectTypeIds">
                <title>Allowed Child Object Types Ids</title>
                <description>The allowed child object type ids</description>
-               <type>d:qname</type>
+               <type>cmis:id</type>
                <protected>true</protected>
                <mandatory enforced="false">false</mandatory>
                <multiple>true</multiple>
@@ -212,6 +237,7 @@
             </property>
          </properties>
          <mandatory-aspects>
+            <aspect>cmis:Core</aspect>
             <aspect>cmis:Named</aspect>
          </mandatory-aspects>
       </type>
@@ -223,7 +249,7 @@
             <property name="cmis:SourceId">
                <title>Source Id</title>
                <description>The source id for the relationship</description>
-               <type>d:noderef</type>
+               <type>cmis:id</type>
                <protected>true</protected>
                 <mandatory enforced="true">true</mandatory>
                <multiple>false</multiple>
@@ -232,7 +258,7 @@
             <property name="cmis:TargetId">
                <title>Target Id</title>
                <description>The target id for the relationship</description>
-               <type>d:noderef</type>
+               <type>cmis:id</type>
                <protected>true</protected>
                <mandatory enforced="true">true</mandatory>
                <multiple>false</multiple>
@@ -288,7 +314,7 @@
             <property name="cmis:ObjectId">
                <title>Object Id</title>
                <description>The unique object id (a node ref)</description>
-               <type>d:noderef</type>
+               <type>cmis:id</type>
                <protected>true</protected>
                <mandatory enforced="true">true</mandatory>
                <multiple>false</multiple>
@@ -299,7 +325,7 @@
             <property name="cmis:Uri">
                <title>URI</title>
                <description>URI</description>
-               <type>d:text</type>
+               <type>cmis:uri</type>
                <protected>true</protected>
                <mandatory enforced="false">false</mandatory>
                <multiple>false</multiple>
@@ -308,7 +334,7 @@
             <property name="cmis:ObjectTypeId">
                <title>Object Type Id</title>
                <description>The object type id</description>
-               <type>d:qname</type>
+               <type>cmis:id</type>
                <protected>true</protected>
                <mandatory enforced="true">true</mandatory>
                <multiple>false</multiple>
@@ -373,7 +399,6 @@
       </aspect>
       
       <aspect name="cmis:Named">
-         <parent>cmis:Core</parent>
          <properties>
             <property name="cmis:Name">
                <title>Name</title>

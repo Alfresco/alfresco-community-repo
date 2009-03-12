@@ -60,6 +60,14 @@ public class CMISMapping
      * The QName for the Alfresco CMIS Model.
      */
     public static QName CMIS_MODEL_QNAME = QName.createQName(CMIS_MODEL_URI, CMIS_MODEL_NAME);
+        
+    /**
+     * The QNames for CMIS Data Types.
+     */
+    public static QName CMIS_DATATYPE_ID = QName.createQName(CMIS_MODEL_URI, "id");
+    public static QName CMIS_DATATYPE_URI = QName.createQName(CMIS_MODEL_URI, "uri");
+    public static QName CMIS_DATATYPE_XML = QName.createQName(CMIS_MODEL_URI, "xml");
+    public static QName CMIS_DATATYPE_HTML = QName.createQName(CMIS_MODEL_URI, "html");
 
     /**
      * Type id for CMIS documents, from the spec.
@@ -179,7 +187,7 @@ public class CMISMapping
 
     private static HashMap<QName, QName> alfrescoToCmisTypes = new HashMap<QName, QName>();
 
-    private static HashMap<QName, CMISPropertyTypeEnum> alfrescoPropertyTypesToCimsPropertyTypes = new HashMap<QName, CMISPropertyTypeEnum>();
+    private static HashMap<QName, CMISPropertyTypeEnum> alfrescoPropertyTypesToCmisPropertyTypes = new HashMap<QName, CMISPropertyTypeEnum>();
 
     /**
      * Set up mappings
@@ -199,24 +207,28 @@ public class CMISMapping
         alfrescoToCmisTypes.put(ContentModel.TYPE_CONTENT, DOCUMENT_QNAME);
         alfrescoToCmisTypes.put(ContentModel.TYPE_FOLDER, FOLDER_QNAME);
 
-        alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.ANY, null);
-        alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.ASSOC_REF, null);
-        alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.BOOLEAN, CMISPropertyTypeEnum.BOOLEAN);
-        alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.CATEGORY, CMISPropertyTypeEnum.ID);
-        alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.CHILD_ASSOC_REF, null);
-        alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.CONTENT, null);
-        alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.DATE, CMISPropertyTypeEnum.DATETIME);
-        alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.DATETIME, CMISPropertyTypeEnum.DATETIME);
-        alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.DOUBLE, CMISPropertyTypeEnum.DECIMAL);
-        alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.FLOAT, CMISPropertyTypeEnum.DECIMAL);
-        alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.INT, CMISPropertyTypeEnum.INTEGER);
-        alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.LOCALE, null);
-        alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.LONG, CMISPropertyTypeEnum.INTEGER);
-        alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.MLTEXT, CMISPropertyTypeEnum.STRING);
-        alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.NODE_REF, CMISPropertyTypeEnum.ID);
-        alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.PATH, null);
-        alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.QNAME, null);
-        alfrescoPropertyTypesToCimsPropertyTypes.put(DataTypeDefinition.TEXT, CMISPropertyTypeEnum.STRING);
+        alfrescoPropertyTypesToCmisPropertyTypes.put(DataTypeDefinition.ANY, null);
+        alfrescoPropertyTypesToCmisPropertyTypes.put(DataTypeDefinition.ASSOC_REF, null);
+        alfrescoPropertyTypesToCmisPropertyTypes.put(DataTypeDefinition.BOOLEAN, CMISPropertyTypeEnum.BOOLEAN);
+        alfrescoPropertyTypesToCmisPropertyTypes.put(DataTypeDefinition.CATEGORY, CMISPropertyTypeEnum.ID);
+        alfrescoPropertyTypesToCmisPropertyTypes.put(DataTypeDefinition.CHILD_ASSOC_REF, null);
+        alfrescoPropertyTypesToCmisPropertyTypes.put(DataTypeDefinition.CONTENT, null);
+        alfrescoPropertyTypesToCmisPropertyTypes.put(DataTypeDefinition.DATE, CMISPropertyTypeEnum.DATETIME);
+        alfrescoPropertyTypesToCmisPropertyTypes.put(DataTypeDefinition.DATETIME, CMISPropertyTypeEnum.DATETIME);
+        alfrescoPropertyTypesToCmisPropertyTypes.put(DataTypeDefinition.DOUBLE, CMISPropertyTypeEnum.DECIMAL);
+        alfrescoPropertyTypesToCmisPropertyTypes.put(DataTypeDefinition.FLOAT, CMISPropertyTypeEnum.DECIMAL);
+        alfrescoPropertyTypesToCmisPropertyTypes.put(DataTypeDefinition.INT, CMISPropertyTypeEnum.INTEGER);
+        alfrescoPropertyTypesToCmisPropertyTypes.put(DataTypeDefinition.LOCALE, null);
+        alfrescoPropertyTypesToCmisPropertyTypes.put(DataTypeDefinition.LONG, CMISPropertyTypeEnum.INTEGER);
+        alfrescoPropertyTypesToCmisPropertyTypes.put(DataTypeDefinition.MLTEXT, CMISPropertyTypeEnum.STRING);
+        alfrescoPropertyTypesToCmisPropertyTypes.put(DataTypeDefinition.NODE_REF, CMISPropertyTypeEnum.ID);
+        alfrescoPropertyTypesToCmisPropertyTypes.put(DataTypeDefinition.PATH, null);
+        alfrescoPropertyTypesToCmisPropertyTypes.put(DataTypeDefinition.QNAME, null);
+        alfrescoPropertyTypesToCmisPropertyTypes.put(DataTypeDefinition.TEXT, CMISPropertyTypeEnum.STRING);
+        alfrescoPropertyTypesToCmisPropertyTypes.put(CMIS_DATATYPE_ID, CMISPropertyTypeEnum.ID);
+        alfrescoPropertyTypesToCmisPropertyTypes.put(CMIS_DATATYPE_URI, CMISPropertyTypeEnum.URI);
+        alfrescoPropertyTypesToCmisPropertyTypes.put(CMIS_DATATYPE_XML, CMISPropertyTypeEnum.XML);
+        alfrescoPropertyTypesToCmisPropertyTypes.put(CMIS_DATATYPE_HTML, CMISPropertyTypeEnum.HTML);
     }
 
     private DictionaryService dictionaryService;
@@ -624,18 +636,7 @@ public class CMISMapping
         }
 
         QName dQName = dataTypeDefinition.getName();
-        if (propertyQName.getNamespaceURI().equals(CMIS_MODEL_URI))
-        {
-            if (dQName.equals(DataTypeDefinition.QNAME) || dQName.equals(DataTypeDefinition.NODE_REF))
-            {
-                return CMISPropertyTypeEnum.ID;
-            }
-            else
-            {
-                alfrescoPropertyTypesToCimsPropertyTypes.get(dQName);
-            }
-        }
-        return alfrescoPropertyTypesToCimsPropertyTypes.get(dQName);
+        return alfrescoPropertyTypesToCmisPropertyTypes.get(dQName);
 
     }
 

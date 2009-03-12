@@ -245,7 +245,7 @@ public class CMISPropertyServiceImpl implements CMISPropertyService, Initializin
         addNamedPropertyAccessor(getContentStreamLengthPropertyAccessor());
         addNamedPropertyAccessor(getContentStreamMimetypePropertyAccessor());
         addNamedPropertyAccessor(getSimplePropertyAccessor(CMISMapping.PROP_CONTENT_STREAM_FILENAME, ContentModel.PROP_NAME, CMISScope.DOCUMENT));
-        addNamedPropertyAccessor(getFixedValuePropertyAccessor(CMISMapping.PROP_CONTENT_STREAM_URI, null, CMISScope.DOCUMENT));
+        addNamedPropertyAccessor(getContentStreamUriPropertyAccessor());
 
         // CMIS Folder
         addNamedPropertyAccessor(getParentPropertyAccessor());
@@ -388,6 +388,14 @@ public class CMISPropertyServiceImpl implements CMISPropertyService, Initializin
     public NamedPropertyAccessor getContentStreamMimetypePropertyAccessor()
     {
         ContentStreamMimetypePropertyAccessor accessor = new ContentStreamMimetypePropertyAccessor();
+        accessor.setServiceRegistry(serviceRegistry);
+        accessor.setCMISMapping(cmisMapping);
+        return accessor;
+    }
+
+    public NamedPropertyAccessor getContentStreamUriPropertyAccessor()
+    {
+        ContentStreamUriPropertyAccessor accessor = new ContentStreamUriPropertyAccessor();
         accessor.setServiceRegistry(serviceRegistry);
         accessor.setCMISMapping(cmisMapping);
         return accessor;

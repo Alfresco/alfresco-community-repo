@@ -611,7 +611,7 @@
                  description-id="checkinfile_description" />
                  
          <dialog name="doneEditingFile" page="/jsp/coci/done-editing.jsp" managed-bean="DoneEditingDialog"
-                 icon="/images/icons/done_editing_large.gif" description-id="checkinfile_description" />
+                 icon="/images/icons/done_editing_large.gif" description-id="doneediting_description" />
                  
          <dialog name="previewSpace" page="/jsp/spaces/preview-space.jsp" managed-bean="SpacePreviewBean"
                  icon="/images/icons/preview_large.gif" title-id="preview_of" description-id="previewdocument_description" show-ok-button="false" />

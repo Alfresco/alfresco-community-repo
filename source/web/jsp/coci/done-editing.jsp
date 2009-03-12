@@ -31,7 +31,7 @@
 
 <%@ page buffer="32kb" contentType="text/html;charset=UTF-8"%>
 
-<a:booleanEvaluator value="#{DialogManager.bean.sourceFounded}">
+<a:booleanEvaluator value="#{DialogManager.bean.sourceFound}">
 <f:verbatim>
    <table cellspacing="0" cellpadding="0" border="0" width="100%">
       <tr>

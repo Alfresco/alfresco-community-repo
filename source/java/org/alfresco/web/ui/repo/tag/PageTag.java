@@ -61,8 +61,6 @@ public class PageTag extends TagSupport
       "/scripts/menu.js",
       // webdav javascript
       "/scripts/webdav.js",
-      // functionality for window.onload
-      "/scripts/onload.js",
       // base yahoo file
       "/scripts/ajax/yahoo/yahoo/yahoo-min.js",
       // io handling (AJAX)

@@ -3,6 +3,7 @@
 // Gavin Cornwell 14-07-2006
 //
 
+
 // Global Alfresco namespace object
 if (typeof Alfresco == "undefined") 
 {
@@ -10,6 +11,22 @@ if (typeof Alfresco == "undefined")
 }
 
 var _alfContextPath = null;
+
+
+/**
+ * window.onload function for r:page tag
+ */
+function onloadFunc(webdavUrl, cifsPath)
+{
+   if (webdavUrl != "")
+   {
+      openDoc(webdavUrl);
+   }
+   if (cifsPath != "")
+   {
+      window.open(cifsPath, "_blank");
+   }
+}
 
 /**
  * Error handler for errors caught in a catch block
@@ -118,6 +135,89 @@ if (typeof document.ELEMENT_NODE == "undefined")
   document.DOCUMENT_FRAGMENT_NODE = 11;
   document.NOTATION_NODE = 12;
 }
+
+/**
+ * UIDataPager functions
+ */
+function validateAndSubmit(e, pageInputId, formClientId, hiddenFieldName)
+{
+   var keycode;
+   if (window.event) keycode = window.event.keyCode;
+   else if (e) keycode = e.which;
+   if (keycode == 13)
+   {
+      var inputControl = $(pageInputId);
+      var dialogForm = $('dialog');
+      if (dialogForm)
+      {
+         dialogForm.removeProperty('onsubmit');
+      }
+      var val = parseInt(inputControl.value);
+      if (val == 'NaN' || document.forms[formClientId][hiddenFieldName] == undefined)
+      {
+         inputControl.value = 1;
+         //console.log("validateAndSubmit: reverting to 1");
+         return false;
+      }
+      else
+      {
+         val = (val-1)>=0 ? val-1 : 0; 
+         document.forms[formClientId][hiddenFieldName].value = val;
+         document.forms[formClientId].submit();
+         //console.log("validateAndSubmit: submitting value: " + val);
+         return false;
+      }
+   }
+   //console.log("validateAndSubmit: passthrough...");
+   return true;
+}
+
+function onlyDigitsIE6(e, pageInputId, formClientId, hiddenFieldName)
+{
+   var keycode;
+   if (window.event) keycode = window.event.keyCode;
+   else if (e) keycode = e.which;
+   var keychar = String.fromCharCode(keycode);
+   var numcheck = /\d/;
+   if (keycode == 13)
+   {
+      var inputControl = $(pageInputId);
+      var val = parseInt(inputControl.value);
+      if (val == 'NaN' || document.forms[formClientId][hiddenFieldName] == undefined)
+      {
+         inputControl.value = 1;
+         return false;
+      }
+      else
+      {
+         val = (val-1)>=0 ? val-1 : 0; 
+         document.forms[formClientId][hiddenFieldName].value = val;
+         document.forms[formClientId].submit();
+         return false;
+      }
+   }
+   var result = (keycode==13 || keycode==8 || keycode==37 || keycode==39 || keycode==46 || (keycode>=96 && keycode<=105) || numcheck.test(keychar));
+   //console.log("onlyDigits: " + result);
+   return result;
+}
+
+function onlyDigits(e)
+{
+   var keycode;
+   if (window.event) keycode = window.event.keyCode;
+   else if (e) keycode = e.which;
+   var keychar = String.fromCharCode(keycode);
+   var numcheck = /\d/;
+   var dialogForm = $('dialog');
+   if (dialogForm && keyCode == 13)
+   { 
+      dialogForm.setProperty('onsubmit', 'return false;');
+   }
+   var result = (keycode==13 || keycode==8 || keycode==37 || keycode==39 || keycode==46 || (keycode>=96 && keycode<=105) || numcheck.test(keychar));
+   //console.log("onlyDigits: " + result);
+   return result;
+}
+
 
 /**
  * Alfresco Utility libraries

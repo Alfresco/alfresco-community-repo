@@ -50,7 +50,8 @@ public class ForumsCheckinDocEvaluator extends BaseActionEvaluator
    {
       boolean allow = false;
       
-      if (node.hasAspect(ContentModel.ASPECT_WORKING_COPY))
+      if (node.hasAspect(ContentModel.ASPECT_WORKING_COPY) &&
+          node.getProperties().get(ContentModel.PROP_WORKING_COPY_MODE) == null)
       {
          if (node.hasAspect(ForumModel.ASPECT_DISCUSSABLE))
          {

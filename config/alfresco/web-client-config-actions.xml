@@ -175,7 +175,7 @@
          <action id="cancelcheckout_doc">
             <evaluator>org.alfresco.web.action.evaluator.CancelCheckoutDocEvaluator</evaluator>
             <label-id>undocheckout</label-id>
-            <image>/images/icons/undo_checkout.gif</image>
+            <image>/images/icons/cancel_checkout.gif</image>
             <action-listener>#{CCUndoCheckoutFileDialog.setupContentAction}</action-listener>
             <action>dialog:undoCheckoutFile</action>
             <params>
@@ -198,7 +198,7 @@
          <!-- Done-editing document -->
          <action id="done_editing_doc">
             <evaluator>org.alfresco.web.action.evaluator.DoneEditingDocEvaluator</evaluator>
-            <label-id>checkin</label-id>
+            <label-id>done_editing</label-id>
             <image>/images/icons/done_editing.gif</image>
             <action-listener>#{DoneEditingDialog.handle}</action-listener>
             <params>
@@ -974,41 +974,30 @@
             <show-link>false</show-link>
             <style-class>inlineAction</style-class>
 
+            <!-- New style edit online/offline actions -->
             <action idref="upload_new_version" />
             <action idref="edit_doc_online_webdav" />
             <action idref="edit_doc_online_cifs" />
             <action idref="edit_doc_online_http" />
-            <action idref="edit_doc_offline" />             
+            <action idref="edit_doc_offline" />
             <action idref="done_editing_doc" />
             <action idref="cancel_editing_doc" />
-            <action idref="download_doc" />
-            
-            <!-- Actions previously used for checkin/checkout -->
-            <!-- If old behaviour is required uncomment the --> 
-            <!-- actions below and comment out the ones above --> 		
-            
-            <!--        
+
+            <!-- Remove these if you don't want old style Checkin/Checkout to appear at all -->
+            <action idref="checkin_doc" />
+            <action idref="cancelcheckout_doc" /> 
+
+            <!-- Old actions previously used for online/offline editing  -->
+            <!-- If old behaviour is required uncomment the actions below and comment out the new ones above --> 		
+            <!--
             <action idref="edit_doc_http" />
             <action idref="edit_doc_webdav" />
             <action idref="edit_doc_cifs" />
-            <action idref="checkout_doc" />
-            <action idref="checkin_doc" />
             -->
 
+            <action idref="download_doc" />
             <action idref="details_doc" />
             <action idref="delete_doc" />
-
-            <!-- Example action defined in-line rather than by reference
-            <action id="example2_checkout_doc">
-               <permissions>
-                  <permission allow="true">CheckOut</permission>
-               </permissions>
-               <evaluator>org.alfresco.web.action.evaluator.CheckoutDocEvaluator</evaluator>
-               <label-id>checkout</label-id>
-               <image>/images/icons/CheckOut_icon.gif</image>
-               <action-listener>#{CheckinCheckoutDialog.setupContentAction}</action-listener>
-               <action>checkoutFile</action>
-            </action>-->
 
          </action-group>
 
@@ -1016,17 +1005,16 @@
          <action-group id="document_browse_menu">
             <action idref="preview_doc" />
             <action idref="update_doc" />
-            <!-- Old Cancel Checkout action -->
-            <!--
-            <action idref="cancelcheckout_doc" /> 
-            -->
+            
+            <!-- Remove this action if you don't want old style Checkin/Checkout to appear at all -->
             <action idref="checkout_doc" />
+            
             <action idref="approve_doc" />
             <action idref="reject_doc" />
             <action idref="cut_node" />
             <action idref="copy_node" />
          </action-group>
-      
+         
          <!-- Action menu for Invite Space user in Manage invite users screen-->
          <action-group id="invite_user_menu">
             <action idref="invite_user"/>
@@ -1036,7 +1024,7 @@
          <action-group id="invite_content_user_menu">
             <action idref="invite_content_user"/>
          </action-group>
-      
+         
          <!-- Actions for a space in the Browse screen -->
          <action-group id="space_browse">
             <show-link>false</show-link>
@@ -1080,29 +1068,29 @@
 
          <!-- Actions Menu for Document Details screen -->
          <action-group id="doc_details_actions">
+            <!-- New style edit online/offline actions -->
             <action idref="upload_new_version" />
             <action idref="edit_doc_online_http" />
             <action idref="edit_doc_online_webdav" />
             <action idref="edit_doc_online_cifs" />
             <action idref="edit_doc_offline" />
-            <action idref="checkout_doc" />
             <action idref="done_editing_doc" />
-            <action idref="download_doc" />
             <action idref="cancel_editing_doc" />
 
-            <!-- Actions previously used for checkin/checkout -->
-            <!-- If old behaviour is required uncomment the --> 
-            <!-- actions below and comment out the ones above -->
+            <!-- Remove these if you don't want old style Checkin/Checkout to appear at all -->
+            <action idref="checkout_doc" />
+            <action idref="checkin_doc" />
+            <action idref="cancelcheckout_doc" /> 
 
-            <!-- 
-            <action idref="checkout_doc" />       
-            <action idref="checkin_doc" />              
-            <action idref="cancelcheckout_doc" />
+            <!-- Old actions previously used for online/offline editing  -->
+            <!-- If old behaviour is required uncomment the actions below and comment out the new ones above --> 		
+            <!--
             <action idref="edit_doc_http" />
             <action idref="edit_doc_webdav" />
-            <action idref="edit_doc_cifs" />  
+            <action idref="edit_doc_cifs" />
             -->
-            
+
+            <action idref="download_doc" />
             <action idref="approve_doc_details" />
             <action idref="reject_doc_details" />
             <action idref="update_doc" />

@@ -64,13 +64,13 @@
       {
          finishButtonPressed = false;
          var valid = validateName(document.getElementById("wizard:wizard-body:name"), 
-                             decodeURI('</f:verbatim><a:outputText value="#{msg.validation_invalid_character}" encodeForJavaScript="true" /><f:verbatim>'),
+                             unescape('</f:verbatim><a:outputText value="#{msg.validation_invalid_character}" encodeForJavaScript="true" /><f:verbatim>'),
                              true);
          if (valid == true)
          {
             valid = validateRegex(document.getElementById("wizard:wizard-body:dnsname"),
                   "^[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?$", true, null,
-                  decodeURI('</f:verbatim><a:outputText value="#{msg.validation_invalid_dns_name}" encodeForJavaScript="true" /><f:verbatim>'), true);
+                  unescape('</f:verbatim><a:outputText value="#{msg.validation_invalid_dns_name}" encodeForJavaScript="true" /><f:verbatim>'), true);
          }
          return valid;
       }

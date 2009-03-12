@@ -35,7 +35,7 @@ import org.apache.commons.logging.LogFactory;
 
 public class CancelEditingDialog extends CheckinCheckoutDialog
 {
-    public static final String LBL_CANCEL_EDITING = "cancel_editing";
+    public static final String MSG_CANCEL_EDITING = "cancel_editing";
     public static final String MSG_CANCEL_EDITING_FOR = "cancel_editing_for";
 
     private static Log logger = LogFactory.getLog(CheckinCheckoutDialog.class);
@@ -62,7 +62,7 @@ public class CancelEditingDialog extends CheckinCheckoutDialog
     @Override
     public String getFinishButtonLabel()
     {
-        return Application.getMessage(FacesContext.getCurrentInstance(), LBL_CANCEL_EDITING);
+        return Application.getMessage(FacesContext.getCurrentInstance(), MSG_CANCEL_EDITING);
     }
 
     /**

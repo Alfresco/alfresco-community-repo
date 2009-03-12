@@ -24,8 +24,6 @@
  */
 package org.alfresco.web.action.evaluator;
 
-import java.util.Map;
-
 import javax.faces.context.FacesContext;
 
 import org.alfresco.model.ContentModel;
@@ -51,12 +49,11 @@ public class UpdateDocEvaluator extends BaseActionEvaluator
       DictionaryService dd = Repository.getServiceRegistry(
             FacesContext.getCurrentInstance()).getDictionaryService();
 
-      Map<String, Object> props = node.getProperties();
-      
-      boolean isOfflineEditing = props.get(ContentModel.PROP_WORKING_COPY_MODE) != null && props.get(ContentModel.PROP_WORKING_COPY_MODE).equals(EditOfflineDialog.OFFLINE_EDITING);
+      boolean isOfflineEditing =
+          (EditOfflineDialog.OFFLINE_EDITING.equals(node.getProperties().get(ContentModel.PROP_WORKING_COPY_MODE)));
       
       return dd.isSubClass(node.getType(), ContentModel.TYPE_CONTENT) && 
-             ((node.isWorkingCopyOwner() == true && !isOfflineEditing) ||
-              (node.isLocked() == false && node.hasAspect(ContentModel.ASPECT_WORKING_COPY) == false));
+             ((node.isWorkingCopyOwner() && !isOfflineEditing) ||
+              (!node.isLocked() && !node.hasAspect(ContentModel.ASPECT_WORKING_COPY)));
    }
 }

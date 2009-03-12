@@ -97,6 +97,7 @@
             <a:convertXMLDate type="both" pattern="#{msg.date_time_pattern}" />
          </h:outputText>
       </a:column>
+      <a:dataPager id="pager1" styleClass="pager" />
    </a:richList>   
 </a:panel>
 

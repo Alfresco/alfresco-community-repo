@@ -63,12 +63,12 @@
       
       if (inputField.value == "no-condition")
       {
-         document.getElementById("composite-condition:set-add-button").value = decodeURI(short_label);
+         document.getElementById("composite-condition:set-add-button").value = unescape(short_label);
          document.getElementById("composite-condition:instruction-text").innerHTML = short_text;
       }
       else
       {
-         document.getElementById("composite-condition:set-add-button").value = decodeURI(long_label);
+         document.getElementById("composite-condition:set-add-button").value = unescape(long_label);
          document.getElementById("composite-condition:instruction-text").innerHTML = long_text;
       }
    }

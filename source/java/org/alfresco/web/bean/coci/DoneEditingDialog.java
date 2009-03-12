@@ -47,12 +47,12 @@ import org.alfresco.web.ui.common.Utils;
  */
 public class DoneEditingDialog extends CheckinCheckoutDialog
 {
-
-   private final static String MSG_DONE = "done";
-   private static final String MSG_CHECK_IN = "check_in";
+   private final static String MSG_OK = "ok";
+   private static final String MSG_DONE_EDITING = "done_editing";
    private final static String MSG_MISSING_ORIGINAL_NODE = "missing_original_node";
 
    private final static String DIALOG_NAME = AlfrescoNavigationHandler.DIALOG_PREFIX + "doneEditingFile";
+
 
    /**
     * this flag indicates occurrence when source node isn't versionable, but working copy yet is versionable
@@ -95,7 +95,7 @@ public class DoneEditingDialog extends CheckinCheckoutDialog
    /**
     * @return Returns true if source node for selected working copy founded
     */
-   public boolean isSourceFounded()
+   public boolean isSourceFound()
    {
       return (sourceNodeRef != null);
    }
@@ -132,28 +132,30 @@ public class DoneEditingDialog extends CheckinCheckoutDialog
       {
          sourceNodeRef = getSourceNodeRef(node.getNodeRef());
          if (sourceNodeRef != null)
+         {
             sourceVersionable = getNodeService().hasAspect(sourceNodeRef, ContentModel.ASPECT_VERSIONABLE);
+         }
       }
    }
 
    @Override
    public String getFinishButtonLabel()
    {
-      return Application.getMessage(FacesContext.getCurrentInstance(), MSG_DONE);
+      return Application.getMessage(FacesContext.getCurrentInstance(), MSG_OK);
    }
 
    @Override
    public boolean getFinishButtonDisabled()
    {
-      return !isSourceFounded();
+      return !isSourceFound();
    }
 
    @Override
    public String getContainerTitle()
    {
-      if (isSourceFounded())
+      if (isSourceFound())
       {
-         return Application.getMessage(FacesContext.getCurrentInstance(), MSG_CHECK_IN) + " '" + getNodeService().getProperty(sourceNodeRef, ContentModel.PROP_NAME) + "'";
+         return Application.getMessage(FacesContext.getCurrentInstance(), MSG_DONE_EDITING) + " '" + getNodeService().getProperty(sourceNodeRef, ContentModel.PROP_NAME) + "'";
       }
       else
       {
@@ -183,7 +185,7 @@ public class DoneEditingDialog extends CheckinCheckoutDialog
     */
    private String getCurrentVersionLabel()
    {
-      if (isSourceFounded())
+      if (isSourceFound())
       {
          Version curVersion = property.getVersionQueryService().getCurrentVersion(sourceNodeRef);
          return curVersion.getVersionLabel();

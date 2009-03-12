@@ -30,7 +30,6 @@ import org.alfresco.web.bean.repository.Node;
 
 /**
  * UI Action Evaluator - Done editing document.
- *
  */
 public class DoneEditingDocEvaluator extends BaseActionEvaluator
 {
@@ -39,7 +38,8 @@ public class DoneEditingDocEvaluator extends BaseActionEvaluator
     */
    public boolean evaluate(Node node)
    {
-      return (node.hasPermission(PermissionService.CHECK_IN) &&
-              node.hasAspect(ContentModel.ASPECT_WORKING_COPY) == true);
+      return (node.getProperties().get(ContentModel.PROP_WORKING_COPY_MODE) != null &&
+              node.hasAspect(ContentModel.ASPECT_WORKING_COPY) &&
+              node.hasPermission(PermissionService.CHECK_IN));
    }
 }

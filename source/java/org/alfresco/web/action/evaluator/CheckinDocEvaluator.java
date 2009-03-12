@@ -42,7 +42,8 @@ public class CheckinDocEvaluator extends BaseActionEvaluator
     */
    public boolean evaluate(Node node)
    {
-      return (node.hasPermission(PermissionService.CHECK_IN) &&
-              node.hasAspect(ContentModel.ASPECT_WORKING_COPY) == true);
+      return (node.hasAspect(ContentModel.ASPECT_WORKING_COPY) &&
+              node.getProperties().get(ContentModel.PROP_WORKING_COPY_MODE) == null &&
+              node.hasPermission(PermissionService.CHECK_IN));
    }
 }

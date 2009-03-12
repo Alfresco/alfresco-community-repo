@@ -49,12 +49,12 @@
       
       if (inputField.value == "no-condition")
       {
-         document.getElementById("wizard:wizard-body:set-add-button").value = decodeURI(short_label);
+         document.getElementById("wizard:wizard-body:set-add-button").value = unescape(short_label);
          document.getElementById("wizard:wizard-body:instruction-text").innerHTML = short_text;
       }
       else
       {
-         document.getElementById("wizard:wizard-body:set-add-button").value = decodeURI(long_label);
+         document.getElementById("wizard:wizard-body:set-add-button").value = unescape(long_label);
          document.getElementById("wizard:wizard-body:instruction-text").innerHTML = long_text;
       }
    }

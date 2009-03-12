@@ -60,108 +60,30 @@ if (fileUploaded)
 }
 %>
 <table cellpadding="2" cellspacing="2" border="0" width="100%">
-		</f:verbatim>
-   <a:booleanEvaluator value="#{empty DialogManager.bean.fileName}" ><f:verbatim> 
-      <tr>
-         <td class="wizardSectionHeading"></f:verbatim><h:outputText value="#{msg.local_copy_location}" /><f:verbatim></td>
-      </tr>
-   
-      <tr>
-         <td></f:verbatim>
-            <h:panelGrid id="upload_panel" columns="2" cellpadding="2" cellspacing="2" border="0" width="100%" columnClasses="panelGridLabelColumn,panelGridValueColumn" >
+</f:verbatim>
+<a:booleanEvaluator value="#{empty DialogManager.bean.fileName}">
+   <f:verbatim>
+   <tr>
+      <td class="wizardSectionHeading"></f:verbatim><h:outputText value="#{msg.local_copy_location}" /><f:verbatim></td>
+   </tr>
 
-               <h:outputText value="#{msg.locate_content_upload}" style="padding-left:8px"/>
-               <f:verbatim> <br/> </f:verbatim>
-
-               <h:outputText id="out_schema" value="#{msg.file_location}:" style="padding-left:8px" />
-               <h:column id="upload_empty" rendered="#{empty DialogManager.bean.fileName}">
-                  <r:upload id="uploader" value="#{DialogManager.bean.fileName}" framework="dialog"/>
-               </h:column>
-            </h:panelGrid>
-            <f:verbatim>
-         </td>
-      </tr>
-         </f:verbatim>
-   </a:booleanEvaluator>
-      <%
-      
-      if (fileUploaded)
-      {
-      %>
-       <f:verbatim>
    <tr>
       <td>
-      </f:verbatim>
-         <a:booleanEvaluator value="#{DialogManager.bean.versionable}" > 
-	        <f:verbatim>
-            <table cellpadding="2" cellspacing="2" border="0" width="100%">
-               <tr>
-                  <td class="wizardSectionHeading"> </f:verbatim>
-                     <h:outputText value="#{msg.version_info}" /> <f:verbatim>
-                  </td>
-               </tr>
-               <tr>
-                  <td> </f:verbatim>
-                     <h:outputText value="#{msg.new_version_has}" escape="false" rendered="#{DialogManager.bean.sourceVersionable}" />
-                     <h:outputText value="#{msg.initial_version}" escape="false" rendered="#{!DialogManager.bean.sourceVersionable}" /> <f:verbatim>
+   </f:verbatim>
+         <h:panelGrid id="upload_panel" columns="2" cellpadding="2" cellspacing="2" border="0" width="100%" columnClasses="panelGridLabelColumn,panelGridValueColumn" >
+            <h:outputText value="#{msg.locate_content_upload}" style="padding-left:8px"/>
+            <f:verbatim> <br/> </f:verbatim>
 
-                  </td>
-               </tr>
-               <tr>
-                  <td> </f:verbatim>
-                     <h:selectOneRadio value="#{CCProperties.minorChange}" required="true" layout="pageDirection" rendered="#{DialogManager.bean.sourceVersionable}">
-                        <f:selectItem itemValue="#{true}" itemLabel="#{msg.minor_changes} (#{DialogManager.bean.minorNewVersionLabel})" />
-                        <f:selectItem itemValue="#{false}" itemLabel="#{msg.major_changes} (#{DialogManager.bean.majorNewVersionLabel})" />
-                     </h:selectOneRadio> 
-
-                     <f:verbatim>
-                     </span> <br/>
-                  </td>
-               </tr>
-               <tr>
-                  <td> </f:verbatim>
-                     <h:outputText value="#{msg.version_notes}" /> <f:verbatim>
-                  </td>
-               </tr>
-               <tr>
-                  <td> </f:verbatim>
-                  <h:inputTextarea value="#{CCProperties.versionNotes}" rows="4" cols="50" /> <f:verbatim>
-                  </span></td>
-               </tr>
-               <tr>
-                  <td class="paddingRow"></td>
-               </tr>
-            </table> </f:verbatim>
-         </a:booleanEvaluator>
-         <f:verbatim>
+            <h:outputText id="out_schema" value="#{msg.file_location}:" style="padding-left:8px" />
+            <h:column id="upload_empty" rendered="#{empty DialogManager.bean.fileName}">
+               <r:upload id="uploader" value="#{DialogManager.bean.fileName}" framework="dialog"/>
+            </h:column>
+         </h:panelGrid>
+   <f:verbatim>
       </td>
-   </tr> 
-   <tr>
-  	   <td>
-  	      <table cellpadding="2" cellspacing="2" border="0" width="100%">
-  	         <tr>
-               <td class="wizardSectionHeading" colspan="2"></f:verbatim><h:outputText value="#{msg.other_options}" /><f:verbatim></td>
-            </tr>  
-  	         <tr>
-  	            <td>
-     	            </f:verbatim>
-     		         <h:selectBooleanCheckbox value="#{DialogManager.bean.finishedEditing}"/>
-     		         <f:verbatim>
-  		         </td>
-  		         <td width="100%">
-  		            </f:verbatim>
-  		            <h:outputText value="#{msg.checkin_this_file}"/>
-  		            <f:verbatim>
-  		         </td>
-  		      </tr>
-  		   </table>
-  	   </td>
    </tr>
    </f:verbatim>
-   	  
-   	      <% 
-      }
-          %>
-     <f:verbatim>
+</a:booleanEvaluator>
+<f:verbatim>
 </table>
 </f:verbatim>

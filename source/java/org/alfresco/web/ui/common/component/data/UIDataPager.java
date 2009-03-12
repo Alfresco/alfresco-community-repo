@@ -38,14 +38,12 @@ import javax.faces.event.AbortProcessingException;
 import javax.faces.event.ActionEvent;
 import javax.faces.event.FacesEvent;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import org.alfresco.web.app.Application;
 import org.alfresco.web.data.IDataContainer;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.WebResources;
-import org.springframework.util.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * @author Kevin Roast
@@ -96,6 +94,10 @@ public class UIDataPager extends UICommand
          return;
       }
       
+      final String formClientId = Utils.getParentForm(context, this).getClientId(context);
+      final String pageInputId = getPageInputId();
+      final String hiddenFieldName = getHiddenFieldName();
+      
       ResponseWriter out = context.getResponseWriter();
       ResourceBundle bundle = Application.getBundle(context);
       StringBuilder buf = new StringBuilder(512);
@@ -130,15 +132,15 @@ public class UIDataPager extends UICommand
             imageVericalAlign = "middle";
             imageStyle = "margin-top:0px;";
             inputPageNumber.append("<input type=\"text\" maxlength=\"3\" value=\"").append(currentPage + 1).append("\" style=\"width: 24px; margin-left: 4px;").append(inputStyle).append("\" ");
-            inputPageNumber.append("onkeydown=\"").append(generateIE6InputOnkeydownScript()).append("\" ");
-            inputPageNumber.append("id=\"").append(getPageInputId()).append("\" />");
+            inputPageNumber.append("onkeydown=\"").append(generateIE6InputOnkeydownScript(pageInputId, formClientId, hiddenFieldName)).append("\" ");
+            inputPageNumber.append("id=\"").append(pageInputId).append("\" />");
          }
          else
          {
              inputPageNumber.append("<input type=\"text\" maxlength=\"3\" value=\"").append(currentPage + 1).append("\" style=\"width: 24px; margin-left: 4px;").append(inputStyle).append("\" ");
-             inputPageNumber.append("onkeyup=\"").append(generateInputOnkeyupScript()).append("\" ");
+             inputPageNumber.append("onkeyup=\"").append(generateInputOnkeyupScript(pageInputId, formClientId, hiddenFieldName)).append("\" ");
              inputPageNumber.append("onkeydown=\"").append(generateInputOnkeydownScript()).append("\" ");
-             inputPageNumber.append("id=\"").append(getPageInputId()).append("\" />");
+             inputPageNumber.append("id=\"").append(pageInputId).append("\" />");
          }
       }
       
@@ -170,7 +172,7 @@ public class UIDataPager extends UICommand
       if (currentPage != 0)
       {
          buf.append("<a href='#' onclick=\"");
-         buf.append(generateEventScript(0));
+         buf.append(generateEventScript(0, hiddenFieldName));
          buf.append("\">");
          buf.append(Utils.buildImageTag(context, WebResources.IMAGE_FIRSTPAGE, 16, 16, bundle.getString(FIRST_PAGE), null, imageVericalAlign, imageStyle));
          buf.append("</a>");
@@ -186,7 +188,7 @@ public class UIDataPager extends UICommand
       if (currentPage != 0)
       {
          buf.append("<a href='#' onclick=\"");
-         buf.append(generateEventScript(currentPage - 1));
+         buf.append(generateEventScript(currentPage - 1, hiddenFieldName));
          buf.append("\">");
          buf.append(Utils.buildImageTag(context, WebResources.IMAGE_PREVIOUSPAGE, 16, 16, bundle.getString(PREVIOUS_PAGE), null, imageVericalAlign, imageStyle));
          buf.append("</a>");
@@ -232,7 +234,7 @@ public class UIDataPager extends UICommand
       if ((dataContainer.getCurrentPage() < dataContainer.getPageCount() - 1) == true)
       {
          buf.append("<a href='#' onclick=\"");
-         buf.append(generateEventScript(currentPage + 1));
+         buf.append(generateEventScript(currentPage + 1, hiddenFieldName));
          buf.append("\">");
          buf.append(Utils.buildImageTag(context, WebResources.IMAGE_NEXTPAGE, 16, 16, bundle.getString(NEXT_PAGE), null, imageVericalAlign, imageStyle));
          buf.append("</a>");
@@ -248,7 +250,7 @@ public class UIDataPager extends UICommand
       if ((dataContainer.getCurrentPage() < dataContainer.getPageCount() - 1) == true)
       {
          buf.append("<a href='#' onclick=\"");
-         buf.append(generateEventScript(dataContainer.getPageCount() - 1));
+         buf.append(generateEventScript(dataContainer.getPageCount() - 1, hiddenFieldName));
          buf.append("\">");
          buf.append(Utils.buildImageTag(context, WebResources.IMAGE_LASTPAGE, 16, 16, bundle.getString(LAST_PAGE), null, imageVericalAlign, imageStyle));
          buf.append("</a>");
@@ -266,17 +268,17 @@ public class UIDataPager extends UICommand
    private void createClicableDigitForPage(int num, StringBuilder buf)
    {
 	   buf.append("<a href='#' onclick=\"")
-         .append(generateEventScript(num))
-         .append("\">")
-         .append(num + 1)
-         .append("</a>&nbsp;");
+          .append(generateEventScript(num, getHiddenFieldName()))
+          .append("\">")
+          .append(num + 1)
+          .append("</a>&nbsp;");
    }
    
    private void createDigitForPage(int num, StringBuilder buf)
    {
 	   buf.append("<b>")
-         .append(num + 1)
-         .append("</b>&nbsp;");
+          .append(num + 1)
+          .append("</b>&nbsp;");
    }
    
    private void encodeType0(StringBuilder buf, int currentPage, int pageCount)
@@ -555,9 +557,9 @@ public class UIDataPager extends UICommand
     * 
     * @param page    page index to generate script to jump too
     */
-   private String generateEventScript(int page)
+   private String generateEventScript(int page, String hiddenFieldName)
    {
-      return Utils.generateFormSubmit(getFacesContext(), this, getHiddenFieldName(), Integer.toString(page));
+      return Utils.generateFormSubmit(getFacesContext(), this, hiddenFieldName, Integer.toString(page));
    }
    
    /**
@@ -579,31 +581,16 @@ public class UIDataPager extends UICommand
     * 
     * @return JavaScript code
     */
-   private String generateInputOnkeyupScript()
+   private String generateInputOnkeyupScript(String pageInputId, String formClientId, String hiddenFieldName)
    {
-       final String formClientId = Utils.getParentForm(getFacesContext(), this).getClientId(getFacesContext());
        final StringBuilder script = new StringBuilder(128);
-       script.append("function validateAndSubmit(e)");
-       script.append("{");
-       script.append("  var keycode;");
-       script.append("  if (window.event) keycode = window.event.keyCode;");
-       script.append("  else if (e) keycode = e.which;");
-       script.append("  if (keycode == 13)");
-       script.append("  {");
-       script.append("      var inputControl = $('").append(getPageInputId()).append("');");
-       script.append("      var dialogForm = $('dialog');");
-       script.append("      if (dialogForm) {dialogForm.removeProperty('onsubmit');}");
-       script.append("      var val = parseInt(inputControl.value);");
-       script.append("      if (val == 'NaN' || document.forms['").append(formClientId).append("']['").append(getHiddenFieldName()).append("']==undefined)");
-       script.append("      { inputControl.value = 1; return false; }");
-       script.append("      else");
-       script.append("      {   val = (val-1)>=0 ? val-1 : 0; ");
-       script.append("          document.forms['").append(formClientId).append("']['").append(getHiddenFieldName()).append("'].value=val;");
-       script.append("          document.forms['").append(formClientId).append("'].submit(); return false;");
-       script.append("      }");
-       script.append("  }");
-       script.append("  return true;");
-       script.append("}; return validateAndSubmit(event);");
+       script.append("return validateAndSubmit(event,'")
+             .append(getPageInputId())
+             .append("','")
+             .append(formClientId)
+             .append("','")
+             .append(hiddenFieldName)
+             .append("');");
        return script.toString();
    }
    
@@ -614,21 +601,7 @@ public class UIDataPager extends UICommand
     */
    private String generateInputOnkeydownScript()
    {
-       final StringBuilder script = new StringBuilder(128);
-       script.append("function onlyDigits(e)");
-       script.append("{");
-       script.append("  var keycode;");
-       script.append("  if (window.event) keycode = window.event.keyCode;");
-       script.append("  else if (e) keycode = e.which;");
-       script.append("  var keychar = String.fromCharCode(keycode);");
-       script.append("  var numcheck = /\\d/;");
-       script.append("  var dialogForm = $('dialog');");
-       script.append("  if (dialogForm && keycode==13) { ");
-       script.append("      dialogForm.setProperty('onsubmit','return false;')");
-       script.append("  }");
-       script.append("  return keycode==13 || keycode==8 || keycode==37 || keycode==39 || keycode==46 || (keycode>=96 && keycode<=105) || numcheck.test(keychar);");
-       script.append("}; return onlyDigits(event);");
-       return script.toString();
+       return "return onlyDigits(event);";
    }
 
    /**
@@ -636,31 +609,16 @@ public class UIDataPager extends UICommand
     * It handles only digits and some 'useful' keys.
     * @return JavaScript code
     */
-   private String generateIE6InputOnkeydownScript()
+   private String generateIE6InputOnkeydownScript(String pageInputId, String formClientId, String hiddenFieldName)
    {
-       final String formClientId = Utils.getParentForm(getFacesContext(), this).getClientId(getFacesContext());
        final StringBuilder script = new StringBuilder(128);
-       script.append("function onlyDigits(e)");
-       script.append("{");
-       script.append("  var keycode;");
-       script.append("  if (window.event) keycode = window.event.keyCode;");
-       script.append("  else if (e) keycode = e.which;");
-       script.append("  var keychar = String.fromCharCode(keycode);");
-       script.append("  var numcheck = /\\d/;");
-       script.append("  if (keycode == 13)");
-       script.append("  {");
-       script.append("      var inputControl = $('").append(getPageInputId()).append("');");
-       script.append("      var val = parseInt(inputControl.value);");
-       script.append("      if (val == 'NaN' || document.forms['").append(formClientId).append("']['").append(getHiddenFieldName()).append("']==undefined)");
-       script.append("      { inputControl.value = 1; return false; }");
-       script.append("      else");
-       script.append("      {   val = (val-1)>=0 ? val-1 : 0; ");
-       script.append("          document.forms['").append(formClientId).append("']['").append(getHiddenFieldName()).append("'].value=val;");
-       script.append("          document.forms['").append(formClientId).append("'].submit(); return false;");
-       script.append("      }");
-       script.append("  }");
-       script.append("  return keycode==13 || keycode==8 || keycode==37 || keycode==39 || keycode==46 || (keycode>=96 && keycode<=105) || numcheck.test(keychar);");
-       script.append("}; return onlyDigits(event);");
+       script.append("return onlyDigitsIE6(event,'")
+             .append(getPageInputId())
+             .append("','")
+             .append(formClientId)
+             .append("','")
+             .append(hiddenFieldName)
+             .append("');");
        return script.toString();
    }
    

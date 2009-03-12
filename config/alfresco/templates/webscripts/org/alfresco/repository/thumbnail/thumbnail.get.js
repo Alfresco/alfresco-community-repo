@@ -49,6 +49,12 @@ function main()
    var thumbnail = node.getThumbnail(thumbnailName);
    if (thumbnail == null || thumbnail.size == 0)
    {
+      // Remove broken thumbnail
+      if (thumbnail != null)
+      {
+         thumbnail.remove();
+      }
+      
       // Queue the creation of the thumbnail if appropriate
       if (fc)
       {

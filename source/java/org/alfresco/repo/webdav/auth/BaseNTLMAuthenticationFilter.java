@@ -318,8 +318,8 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
             	
             if (getLogger().isDebugEnabled())
                 getLogger().debug("New NTLM auth request from " + req.getRemoteHost() + " (" +
-                        req.getRemoteAddr() + ":" + req.getRemotePort() + ")");
-                
+                        req.getRemoteAddr() + ":" + req.getRemotePort() + ") SID:" + req.getSession().getId());
+            
             // Send back a request for NTLM authentication
             restartLoginChallenge(resp, httpSess);
         }

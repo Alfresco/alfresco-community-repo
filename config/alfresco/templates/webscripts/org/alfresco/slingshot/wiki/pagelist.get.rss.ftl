@@ -10,7 +10,7 @@
       <title>Alfresco - Wiki Page Recent Changes</title>
       <url>${absurl(url.context)?replace("alfresco", "share/proxy/alfresco")}/images/logo/AlfrescoLogo200.png</url>
    </image>
-   <#list pageList.pages?sort_by(['modified'])?reverse as p>
+   <#list wiki.pages?sort_by(['modified'])?reverse as p>
    <#assign page = p.page>
    <item>
       <title>${page.properties.title!""?html}</title>

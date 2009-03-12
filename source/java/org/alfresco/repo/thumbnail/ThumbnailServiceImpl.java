@@ -156,10 +156,10 @@ public class ThumbnailServiceImpl implements ThumbnailService
         {
             if (logger.isDebugEnabled() == true)
             {
-                logger.debug("Creating thumbnail: There is already a thumbnail with the name '" + thumbnail + "' (node=" + node.toString() + "; contentProperty=" + contentProperty.toString() + "; mimetype=" + mimetype);
+                logger.debug("Creating thumbnail: There is already a thumbnail with the name '" + thumbnailName + "' (node=" + node.toString() + "; contentProperty=" + contentProperty.toString() + "; mimetype=" + mimetype);
             }
             
-            // We can't continue because there is already an thumnail with the given name for that content property
+            // We can't continue because there is already an thumbnail with the given name for that content property
             throw new ThumbnailException(ERR_DUPLICATE_NAME);
         }
         
@@ -233,7 +233,7 @@ public class ThumbnailServiceImpl implements ThumbnailService
         }
         else
         {
-            // Do the thumnail transformation
+            // Do the thumbnail transformation
             this.contentService.transform(reader, writer, transformationOptions);
         }
         
@@ -309,7 +309,7 @@ public class ThumbnailServiceImpl implements ThumbnailService
             }
             else
             {
-                // Do the thumnail transformation
+                // Do the thumbnail transformation
                 this.contentService.transform(reader, writer, transformationOptions);
             }
         }
@@ -344,7 +344,7 @@ public class ThumbnailServiceImpl implements ThumbnailService
         // Check that the node has the thumbnailed aspect applied
         if (nodeService.hasAspect(node, ContentModel.ASPECT_THUMBNAILED) == true)
         {
-            // Get all the thumnails that match the thumbnail name
+            // Get all the thumbnails that match the thumbnail name
             List<ChildAssociationRef> assocs = this.nodeService.getChildAssocs(node, ContentModel.ASSOC_THUMBNAILS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, thumbnailName));
             for (ChildAssociationRef assoc : assocs)
             {
@@ -384,7 +384,7 @@ public class ThumbnailServiceImpl implements ThumbnailService
         // Check that the node has the thumbnailed aspect applied
         if (nodeService.hasAspect(node, ContentModel.ASPECT_THUMBNAILED) == true)
         {
-            // Get all the thumnails that match the thumbnail name
+            // Get all the thumbnails that match the thumbnail name
             List<ChildAssociationRef> assocs = this.nodeService.getChildAssocs(node, ContentModel.ASSOC_THUMBNAILS, RegexQNamePattern.MATCH_ALL);
             for (ChildAssociationRef assoc : assocs)
             {

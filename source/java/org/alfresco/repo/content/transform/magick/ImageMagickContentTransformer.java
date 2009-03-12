@@ -166,7 +166,7 @@ public class ImageMagickContentTransformer extends AbstractImageMagickContentTra
             }
             properties.put(KEY_OPTIONS, commandOptions);
         }
-        properties.put(VAR_SOURCE, sourceFile.getAbsolutePath());
+        properties.put(VAR_SOURCE, sourceFile.getAbsolutePath() + "[0]");
         properties.put(VAR_TARGET, targetFile.getAbsolutePath());
         
         // execute the statement

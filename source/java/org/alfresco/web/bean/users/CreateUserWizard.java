@@ -843,7 +843,8 @@ public class CreateUserWizard extends BaseWizardBean
                 NodeRef newPerson = getPersonService().createPerson(props);
 
                 // ensure the user can access their own Person object
-                getPermissionService().setPermission(newPerson, this.userName, getPermissionService().getAllPermission(), true);
+                // getPermissionService().setPermission(newPerson, this.userName, getPermissionService().getAllPermission(), true);
+                // Not required - now done by the person service.
 
                 if (logger.isDebugEnabled())
                     logger.debug("Created Person node for username: " + this.userName);

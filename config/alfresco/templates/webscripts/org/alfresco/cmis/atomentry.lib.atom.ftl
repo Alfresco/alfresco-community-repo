@@ -50,31 +50,13 @@
 
 [#macro documentCMISProps node propfilter]
 <cmis:properties>
-  [@filter propfilter "ObjectId"][@prop "ObjectId" node "ID"/][/@filter]
-  [#-- TODO: Spec issue - add root type id to meta-model --]
+  [#-- TODO: Spec issue: BaseType not a property --]
   [@filter propfilter "BaseType"][@propvalue "BaseType" "document" "STRING"/][/@filter]
-  [@filter propfilter "ObjectTypeId"][@prop "ObjectTypeId" node "STRING"/][/@filter]
-  [@filter propfilter "CreatedBy"][@prop "CreatedBy" node "STRING"/][/@filter]
-  [@filter propfilter "CreationDate"][@prop "CreationDate" node "DATETIME"/][/@filter]
-  [@filter propfilter "LastModifiedBy"][@prop "LastModifiedBy" node "STRING"/][/@filter]
-  [@filter propfilter "LastModificationDate"][@prop "LastModificationDate" node "DATETIME"/][/@filter]
-  [#-- TODO: ChangeToken --]
-  [@filter propfilter "Name"][@prop "Name" node "STRING"/][/@filter]
-  [@filter propfilter "IsImmutable"][@prop "IsImmutable" node "BOOLEAN"/][/@filter]
-  [@filter propfilter "isLatestVersion"][@prop "IsLatestVersion" node "BOOLEAN"/][/@filter]
-  [@filter propfilter "IsMajorVersion"][@prop "IsMajorVersion" node "BOOLEAN"/][/@filter]
-  [@filter propfilter "isLatestMajorVersion"][@prop "IsLatestMajorVersion" node "BOOLEAN"/][/@filter]
-  [@filter propfilter "VersionLabel"][@prop "VersionLabel" node "STRING"/][/@filter]
-  [@filter propfilter "VersionSeriesId"][@prop "VersionSeriesId" node "ID"/][/@filter]
-  [@filter propfilter "IsVersionSeriesCheckedOut"][@prop "IsVersionSeriesCheckedOut" node "BOOLEAN"/][/@filter]
-  [@filter propfilter "VersionSeriesCheckedOutBy"][@prop "VersionSeriesCheckedOutBy" node "STRING"/][/@filter]
-  [@filter propfilter "VersionSeriesCheckedOutId"][@prop "VersionSeriesCheckedOutId" node "ID"/][/@filter]
-  [@filter propfilter "CheckinComment"][@prop "CheckinComment" node "STRING"/][/@filter]
-  [#-- TODO: ContentStreamAllowed --]
-  [@filter propfilter "ContentStreamLength"][@prop "ContentStreamLength" node "INTEGER"/][/@filter]
-  [@filter propfilter "ContentStreamMimeType"][@prop "ContentStreamMimeType" node "STRING"/][/@filter]
-  [@filter propfilter "ContentStreamFilename"][@prop "ContentStreamFilename" node "STRING"/][/@filter]
-  [@filter propfilter "ContentStreamURI"][@propvalue "ContentStreamURI" absurl(url.serviceContext) + "/api/node/" + node.nodeRef.storeRef.protocol + "/" + node.nodeRef.storeRef.identifier + "/" + node.nodeRef.id + "/content." + node.properties.name "STRING"/][/@filter]
+
+  [#assign typedef = cmistype(node)]
+  [#list typedef.propertyDefinitions?values as propdef]
+    [@filter propfilter propdef.propertyName][@prop propdef.propertyName node propdef.propertyType/][/@filter]
+  [/#list]
 </cmis:properties>
 [/#macro]
 
@@ -185,16 +167,13 @@
 
 [#macro folderCMISProps node propfilter]
 <cmis:properties>
-  [@filter propfilter "ObjectId"][@prop "ObjectId" node "ID"/][/@filter]
-  [#-- TODO: Spec issue - add root type id to meta-model --]
+  [#-- TODO: Spec issue: BaseType not a property --]
   [@filter propfilter "BaseType"][@propvalue "BaseType" "folder" "STRING"/][/@filter]
-  [@filter propfilter "ObjectTypeId"][@prop "ObjectTypeId" node "STRING"/][/@filter]
-  [@filter propfilter "CreatedBy"][@prop "CreatedBy" node "STRING"/][/@filter]
-  [@filter propfilter "CreationDate"][@prop "CreationDate" node "DATETIME"/][/@filter]
-  [@filter propfilter "LastModifiedBy"][@prop "LastModifiedBy" node "STRING"/][/@filter]
-  [@filter propfilter "LastModificationDate"][@prop "LastModificationDate" node "DATETIME"/][/@filter]
-  [@filter propfilter "Name"][@prop "Name" node "STRING"/][/@filter]
-  [@filter propfilter "ParentId"][@prop "ParentId" node "ID"/][/@filter]
+
+  [#assign typedef = cmistype(node)]
+  [#list typedef.propertyDefinitions?values as propdef]
+    [@filter propfilter propdef.propertyName][@prop propdef.propertyName node propdef.propertyType/][/@filter]
+  [/#list]
 </cmis:properties>
 [/#macro]
 
@@ -279,7 +258,8 @@
 [#elseif type == "DATETIME"]
 <cmis:propertyDateTime cmis:name="${name}">[@datetimevalue value/]</cmis:propertyDateTime>
 [#elseif type == "URI"]
-<cmis:propertyUri cmis:name="${name}">[@urivalue value/]</cmis:propertyUri>
+[#-- TODO: check validity of abs url prefix --]
+<cmis:propertyUri cmis:name="${name}">[@urivalue absurl(url.serviceContext) + value/]</cmis:propertyUri>
 [#elseif type == "ID"]
 <cmis:propertyId cmis:name="${name}">[@idvalue value/]</cmis:propertyId>
 [#-- TODO: remaining property types --]

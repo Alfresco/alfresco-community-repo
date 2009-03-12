@@ -26,35 +26,32 @@ package org.alfresco.repo.cmis.rest;
 
 import java.util.List;
 
-import org.alfresco.cmis.dictionary.CMISMapping;
+import org.alfresco.cmis.dictionary.CMISDictionaryService;
 import org.alfresco.cmis.dictionary.CMISTypeId;
-import org.alfresco.repo.template.TemplateNode;
-import org.alfresco.service.namespace.QName;
 
-import freemarker.ext.beans.BeanModel;
-import freemarker.template.TemplateMethodModelEx;
 import freemarker.template.TemplateModelException;
 
 /**
  * Custom FreeMarker Template language method.
  * <p>
- * Retrieve the CMIS Type Id for an Alfresco node
+ * Retrieve the CMIS Type for an Alfresco node
  * <p>
- * Usage: cmistypeid(TemplateNode node)
- *        cmistypeid(QName nodeType)
+ * Usage: cmistype(TemplateNode node)
+ *        cmistype(QName nodeType)
  *        
  * @author davidc
  */
-public class CMISTypeIdMethod implements TemplateMethodModelEx
+public class CMISTypeMethod extends CMISTypeIdMethod
 {
-    private CMISMapping mappingService;
+    private CMISDictionaryService dictionaryService;
     
     /**
      * Construct
      */
-    public CMISTypeIdMethod(CMISMapping mappingService)
+    public CMISTypeMethod(CMISDictionaryService dictionaryService)
     {
-        this.mappingService = mappingService;
+        super(dictionaryService.getCMISMapping());
+        this.dictionaryService = dictionaryService;
     }
     
     /**
@@ -63,36 +60,12 @@ public class CMISTypeIdMethod implements TemplateMethodModelEx
     @SuppressWarnings("unchecked")
     public Object exec(List args) throws TemplateModelException
     {
-        CMISTypeId result = null;
-        
-        if (args.size() == 1)
+        Object result = null;
+        Object typeId = super.exec(args);
+        if (typeId != null)
         {
-            Object arg0 = args.get(0);
-            if (arg0 instanceof BeanModel)
-            {
-                // extract node type qname
-                QName nodeType = null;
-                Object wrapped = ((BeanModel)arg0).getWrappedObject();
-                if (wrapped != null)
-                {
-                    if (wrapped instanceof TemplateNode)
-                    {
-                        nodeType = ((TemplateNode)wrapped).getType();
-                    }
-                    else if (wrapped instanceof QName)
-                    {
-                        nodeType = (QName)wrapped;
-                    }
-                }
-                
-                // convert to CMIS type id
-                if (nodeType != null)
-                {
-                    result = mappingService.getCmisTypeId(nodeType);
-                }
-            }
+            result = dictionaryService.getType((CMISTypeId)typeId);
         }
-        
         return result;
     }
 }

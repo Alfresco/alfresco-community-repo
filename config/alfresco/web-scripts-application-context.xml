@@ -107,6 +107,11 @@
                  <constructor-arg><ref bean="CMISMapping"/></constructor-arg>    
               </bean>
            </entry>
+           <entry key="cmistype">
+              <bean class="org.alfresco.repo.cmis.rest.CMISTypeMethod">
+                 <constructor-arg><ref bean="CMISDictionaryService"/></constructor-arg>    
+              </bean>
+           </entry>
            <entry key="cmisproperty">
               <bean class="org.alfresco.repo.cmis.rest.CMISPropertyValueMethod">
                  <constructor-arg><ref bean="CMISPropertyService"/></constructor-arg>    

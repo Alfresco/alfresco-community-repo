@@ -39,7 +39,7 @@
 <f:view>
    
    <%-- load a bundle of properties with I18N strings --%>
-   <f:loadBundle basename="alfresco.messages.webclient" var="msg"/>
+   <r:loadBundle var="msg"/>
 
 
 <script type="text/javascript">

@@ -38,7 +38,7 @@
 <f:view>
    
    <%-- load a bundle of properties with I18N strings --%>
-   <f:loadBundle basename="alfresco.messages.webclient" var="msg"/>
+   <r:loadBundle var="msg"/>
    
    <h:form acceptcharset="UTF-8" id="dialog">
       <table cellspacing="0" cellpadding="3" border="0" width="100%">

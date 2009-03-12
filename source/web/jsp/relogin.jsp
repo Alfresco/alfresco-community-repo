@@ -53,7 +53,7 @@
 
 <f:view>
    <%-- load a bundle of properties I18N strings here --%>
-   <f:loadBundle basename="alfresco.messages.webclient" var="msg"/>
+   <r:loadBundle var="msg"/>
    
    <h:form acceptcharset="UTF-8" id="loggedOutForm" >
    

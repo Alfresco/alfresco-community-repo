@@ -32,7 +32,7 @@
 <%@ page isELIgnored="false"%>
 <%@ page import="org.alfresco.web.ui.common.PanelGenerator"%>
 
-<f:loadBundle basename="alfresco.messages.webclient" var="msg"/>
+<r:loadBundle var="msg"/>
 
 <f:verbatim>
 	<table cellspacing="0" cellpadding="0" border="0" width="100%">

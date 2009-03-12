@@ -35,7 +35,7 @@
 
 
 <%-- load a bundle of properties with I18N strings --%>
-<f:loadBundle basename="alfresco.messages.webclient" var="msg" />
+<r:loadBundle var="msg" />
 
 <a:panel id="users-panel" border="white" bgcolor="white"
    titleBorder="lbgrey" expandedTitleBorder="dotted" titleBgcolor="white"

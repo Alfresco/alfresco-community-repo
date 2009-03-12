@@ -2534,4 +2534,15 @@
       </attribute>
    </tag>
    
+   <tag>
+      <name>loadBundle</name>
+      <tag-class>org.alfresco.web.ui.repo.tag.LoadBundleTag</tag-class>
+      <body-content>JSP</body-content>
+      
+      <attribute>
+         <name>var</name>
+         <required>true</required>
+         <rtexprvalue>true</rtexprvalue>
+      </attribute>
+   </tag>
 </taglib>

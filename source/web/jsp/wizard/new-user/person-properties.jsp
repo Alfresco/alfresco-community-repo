@@ -62,7 +62,7 @@
 <f:view>
    
    <%-- load a bundle of properties with I18N strings --%>
-   <f:loadBundle basename="alfresco.messages.webclient" var="msg"/>
+   <r:loadBundle var="msg"/>
    
    <%-- set the form name here --%>
    <h:form acceptcharset="UTF-8" id="person-props">

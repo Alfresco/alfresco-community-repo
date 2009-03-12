@@ -31,6 +31,7 @@ import java.util.List;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
@@ -59,7 +60,6 @@ public class SandboxTest  extends BaseWebScriptTest {
     private static final String USER_TWO = "WebProjectTestTwo";
     private static final String USER_THREE = "WebProjectTestThree";
     private static final String USER_FOUR = "WebProjectTestFour";
-    private static final String USER_ADMIN = "admin";
     public static final String ROLE_CONTENT_MANAGER     = "ContentManager";
     public static final String ROLE_CONTENT_PUBLISHER   = "ContentPublisher";
     public static final String ROLE_CONTENT_REVIEWER    = "ContentReviewer";
@@ -133,7 +133,7 @@ public class SandboxTest  extends BaseWebScriptTest {
     protected void tearDown() throws Exception
     {
         super.tearDown();
-        this.authenticationComponent.setCurrentUser("admin");
+        this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
         
         // Tidy-up any web projects created during the execution of the test
         for (String webProjectRef : this.createdWebProjects)
@@ -187,7 +187,7 @@ public class SandboxTest  extends BaseWebScriptTest {
      */
     public void testCreateSandbox() throws Exception
     {
-        this.authenticationComponent.setCurrentUser("admin");
+        this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
         
     	String webprojref = createWebProject();
     	   	
@@ -259,7 +259,7 @@ public class SandboxTest  extends BaseWebScriptTest {
      */
     public void testListSandbox() throws Exception
     {
-        this.authenticationComponent.setCurrentUser("admin");
+        this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
     	String webprojref = createWebProject();
     	
     	/**
@@ -363,7 +363,7 @@ public class SandboxTest  extends BaseWebScriptTest {
      */
     public void testGetSandbox() throws Exception
     {
-        this.authenticationComponent.setCurrentUser("admin");
+        this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
         
     	String webprojref = createWebProject();
     	
@@ -432,7 +432,7 @@ public class SandboxTest  extends BaseWebScriptTest {
      */
     public void testDeleteSandbox() throws Exception
     {
-        this.authenticationComponent.setCurrentUser("admin");
+        this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
     	String webprojref = createWebProject();
     	
     	createMembership(webprojref, USER_ONE, ROLE_CONTENT_MANAGER);

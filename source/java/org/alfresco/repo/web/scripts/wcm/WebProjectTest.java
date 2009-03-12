@@ -29,6 +29,7 @@ import java.util.List;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
@@ -112,7 +113,7 @@ public class WebProjectTest extends BaseWebScriptTest
     protected void tearDown() throws Exception
     {
         super.tearDown();
-        this.authenticationComponent.setCurrentUser("admin");
+        this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
         
         // Tidy-up any web projects created during the execution of the test
         for (String webProjectRef : this.createdWebProjects)
@@ -133,7 +134,7 @@ public class WebProjectTest extends BaseWebScriptTest
     
     public void testBasicCRUDWebProject() throws Exception
     {     
-        this.authenticationComponent.setCurrentUser("admin");
+        this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
         
     	sendRequest(new DeleteRequest(URL_WEB_PROJECTS + "/" + BASIC_DNSNAME),0 );  
         
@@ -201,7 +202,7 @@ public class WebProjectTest extends BaseWebScriptTest
     {
     	int LOOP_COUNT = 5;
     	        
-        this.authenticationComponent.setCurrentUser("admin");
+        this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
 
         for(int i = 0; i < LOOP_COUNT; i++)
         {
@@ -262,7 +263,7 @@ public class WebProjectTest extends BaseWebScriptTest
     
     public void testUpdateWebProject() throws Exception
     {
-        this.authenticationComponent.setCurrentUser("admin");
+        this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
         
         /**
          * Create a web site

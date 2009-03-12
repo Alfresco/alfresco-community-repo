@@ -31,6 +31,7 @@ import java.util.List;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
@@ -57,7 +58,6 @@ public class AssetTest  extends BaseWebScriptTest {
     private static final String USER_TWO = "WebProjectTestTwo";
     private static final String USER_THREE = "WebProjectTestThree";
     private static final String USER_FOUR = "WebProjectTestFour";
-    private static final String USER_ADMIN = "admin";
     public static final String ROLE_CONTENT_MANAGER     = "ContentManager";
     public static final String ROLE_CONTENT_PUBLISHER   = "ContentPublisher";
     public static final String ROLE_CONTENT_REVIEWER    = "ContentReviewer";
@@ -199,7 +199,7 @@ public class AssetTest  extends BaseWebScriptTest {
     protected void tearDown() throws Exception
     {
         super.tearDown();
-        this.authenticationComponent.setCurrentUser("admin");
+        this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
         
         // Tidy-up any web projects created during the execution of the test
         for (String webProjectRef : this.createdWebProjects)
@@ -224,7 +224,7 @@ public class AssetTest  extends BaseWebScriptTest {
      */
     public void testModifiedAssetsWebAppTest() throws Exception
     {
-        this.authenticationComponent.setCurrentUser("admin");
+        this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
     	String webprojref = createWebProject();
     	createMembership(webprojref, USER_ONE, ROLE_CONTENT_MANAGER);
     	String sandboxref = createSandbox(webprojref, USER_ONE);
@@ -268,7 +268,7 @@ public class AssetTest  extends BaseWebScriptTest {
     		
     		assertNotNull("name is null", name);
     		assertEquals("name is wrong", "yellowFile1", name);
-    		assertEquals("creator is wrong", "admin", creator);
+    		assertEquals("creator is wrong", AuthenticationUtil.getAdminUserName(), creator);
     		assertTrue("not isFile", isFile);
     		assertFalse("not isFolder", isFolder);
     		assertFalse("not isDeleted", isDeleted);
@@ -284,7 +284,7 @@ public class AssetTest  extends BaseWebScriptTest {
      */
     public void testModifiedAssetsTest() throws Exception
     {
-        this.authenticationComponent.setCurrentUser("admin");
+        this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
     	String webprojref = createWebProject();
     	createMembership(webprojref, USER_ONE, ROLE_CONTENT_MANAGER);
     	String sandboxref = createSandbox(webprojref, USER_ONE);
@@ -344,7 +344,7 @@ public class AssetTest  extends BaseWebScriptTest {
     		
     		assertNotNull("name is null", name);
     		assertEquals("name is wrong", "myFile1", name);
-    		assertEquals("creator is wrong", "admin", creator);
+    		assertEquals("creator is wrong", AuthenticationUtil.getAdminUserName(), creator);
     		assertTrue("not isFile", isFile);
     		assertFalse("not isDirectory", isFolder);
     		assertFalse("not isDeleted", isDeleted);
@@ -398,7 +398,7 @@ public class AssetTest  extends BaseWebScriptTest {
      */
     public void testSubmitAssetsTest() throws Exception
     { 
-        this.authenticationComponent.setCurrentUser("admin");
+        this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
     	String webprojref = createWebProject();
     	createMembership(webprojref, USER_ONE, ROLE_CONTENT_MANAGER);
     	String sandboxref = createSandbox(webprojref, USER_ONE);
@@ -671,7 +671,7 @@ public class AssetTest  extends BaseWebScriptTest {
      */
     public void testSubmitAssetsWebAppTest() throws Exception
     {
-        this.authenticationComponent.setCurrentUser("admin");
+        this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
     	String webprojref = createWebProject();
     	createMembership(webprojref, USER_ONE, ROLE_CONTENT_MANAGER);
     	String sandboxref = createSandbox(webprojref, USER_ONE);
@@ -727,7 +727,7 @@ public class AssetTest  extends BaseWebScriptTest {
      */
     public void testRevertAssetsTest() throws Exception
     {
-        this.authenticationComponent.setCurrentUser("admin");
+        this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
     	String webprojref = createWebProject();
     	createMembership(webprojref, USER_ONE, ROLE_CONTENT_MANAGER);
     	String sandboxref = createSandbox(webprojref, USER_ONE);
@@ -961,7 +961,7 @@ public class AssetTest  extends BaseWebScriptTest {
      */
     public void testRevertAssetsWebAppTest() throws Exception
     {
-        this.authenticationComponent.setCurrentUser("admin");
+        this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
     	String webprojref = createWebProject();
     	createMembership(webprojref, USER_ONE, ROLE_CONTENT_MANAGER);
     	String sandboxref = createSandbox(webprojref, USER_ONE);
@@ -1017,7 +1017,7 @@ public class AssetTest  extends BaseWebScriptTest {
     	final String YELLOW_FILE = "YellowFile.xyz";
     	final String ROOT_FILE = "index.htm";
     	
-        this.authenticationComponent.setCurrentUser("admin");
+        this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
     	String webprojref = createWebProject();
     	createMembership(webprojref, USER_ONE, ROLE_CONTENT_MANAGER);
     	String sandboxref = createSandbox(webprojref, USER_ONE);
@@ -1119,7 +1119,7 @@ public class AssetTest  extends BaseWebScriptTest {
     	final String YELLOW_FILE2 = "Buffy.jpg";
     	final String ROOT_FILE = "index.htm";
     	
-        this.authenticationComponent.setCurrentUser("admin");
+        this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
     	String webprojref = createWebProject();
     	createMembership(webprojref, USER_ONE, ROLE_CONTENT_MANAGER);
     	String sandboxref = createSandbox(webprojref, USER_ONE);
@@ -1206,7 +1206,7 @@ public class AssetTest  extends BaseWebScriptTest {
     	final String YELLOW_FILE = "YellowFile.xyz";
     	final String ROOT_FILE = "index.htm";
     	
-        this.authenticationComponent.setCurrentUser("admin");
+        this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
     	String webprojref = createWebProject();
     	createMembership(webprojref, USER_ONE, ROLE_CONTENT_MANAGER);
     	String sandboxref = createSandbox(webprojref, USER_ONE);
@@ -1311,7 +1311,7 @@ public class AssetTest  extends BaseWebScriptTest {
     	final String PURPLE_FILE2 = "willow.htm";
     	final String ROOT_MOVED_FILE = "smashing.htm";
     	
-        this.authenticationComponent.setCurrentUser("admin");
+        this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
     	String webprojref = createWebProject();
     	createMembership(webprojref, USER_ONE, ROLE_CONTENT_MANAGER);
     	String sandboxref = createSandbox(webprojref, USER_ONE);
@@ -1391,7 +1391,7 @@ public class AssetTest  extends BaseWebScriptTest {
     	final String YELLOW_FILE = "buffy.jpg";
     	final String ROOT_FILE = "index.htm";
     	
-        this.authenticationComponent.setCurrentUser("admin");
+        this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
     	String webprojref = createWebProject();
     	createMembership(webprojref, USER_ONE, ROLE_CONTENT_MANAGER);
     	String sandboxref = createSandbox(webprojref, USER_ONE);

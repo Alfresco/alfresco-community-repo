@@ -30,12 +30,14 @@ import java.util.List;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
+import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.util.PropertyMap;
 import org.alfresco.web.scripts.TestWebScriptServer.DeleteRequest;
 import org.alfresco.web.scripts.TestWebScriptServer.GetRequest;
@@ -62,7 +64,6 @@ public class BlogServiceTest extends BaseWebScriptTest
     private PersonService personService;
     private SiteService siteService;
     
-    private static final String USER_ADMIN = "admin";
     private static final String USER_ONE = "UserOneSecondToo";
     private static final String USER_TWO = "UserTwoSecondToo";
     private static final String SITE_SHORT_NAME_BLOG = "BlogSiteShortNameTest";
@@ -88,14 +89,14 @@ public class BlogServiceTest extends BaseWebScriptTest
         this.siteService = (SiteService)getServer().getApplicationContext().getBean("SiteService");
         
         // Authenticate as user
-        this.authenticationComponent.setCurrentUser(USER_ADMIN);
+        this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
         
         // Create test site
         // - only create the site if it doesn't already exist
         SiteInfo siteInfo = this.siteService.getSite(SITE_SHORT_NAME_BLOG);
         if (siteInfo == null)
         {
-            this.siteService.createSite("BlogSitePreset", SITE_SHORT_NAME_BLOG, "BlogSiteTitle", "BlogSiteDescription", true);
+            this.siteService.createSite("BlogSitePreset", SITE_SHORT_NAME_BLOG, "BlogSiteTitle", "BlogSiteDescription", SiteVisibility.PUBLIC);
         }
         
         // Create users
@@ -112,7 +113,7 @@ public class BlogServiceTest extends BaseWebScriptTest
         super.tearDown();
         
         // admin user required to delete user
-        this.authenticationComponent.setCurrentUser(USER_ADMIN);
+        this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
         
         // TODO don't delete them as it seems they don't get cleaned up correctly
         // delete the inviter user

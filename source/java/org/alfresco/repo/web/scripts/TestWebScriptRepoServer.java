@@ -67,6 +67,14 @@ public class TestWebScriptRepoServer extends TestWebScriptServer
     }
 
     /**
+     * Get default user name
+     */
+    protected String getDefaultUserName()
+    {
+        return AuthenticationUtil.getAdminUserName();
+    }
+
+    /**
      * Main entry point.
      */
     public static void main(String[] args)
@@ -91,12 +99,12 @@ public class TestWebScriptRepoServer extends TestWebScriptServer
     }
 
     private final static String[] CONFIG_LOCATIONS = new String[]
-                                           {
-                                               "classpath:alfresco/application-context.xml",
-                                               "classpath:alfresco/webscript-framework-application-context.xml",
-                                               "classpath:alfresco/web-scripts-application-context.xml",
-                                               "classpath:alfresco/web-scripts-application-context-test.xml"
-                                           };
+    {
+        "classpath:alfresco/application-context.xml",
+        "classpath:alfresco/webscript-framework-application-context.xml",
+        "classpath:alfresco/web-scripts-application-context.xml",
+        "classpath:alfresco/web-scripts-application-context-test.xml"
+    };
     
     /**
      * Retrieve an instance of the TestWebScriptServer
@@ -155,7 +163,7 @@ public class TestWebScriptRepoServer extends TestWebScriptServer
         }
         catch(AuthenticationException e)
         {
-            executeCommand("user admin");
+            executeCommand("user " + getDefaultUserName());
         }
         
         // execute command in context of currently selected user

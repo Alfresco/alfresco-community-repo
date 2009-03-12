@@ -29,6 +29,7 @@ import java.util.List;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
@@ -55,7 +56,6 @@ public class WebProjectMembershipTest extends BaseWebScriptTest
     private static final String USER_ONE = "WebProjectTestOne";
     private static final String USER_TWO = "WebProjectTestTwo";
     private static final String USER_THREE = "WebProjectTestThree";
-    private static final String USER_ADMIN = "admin";
     public static final String ROLE_CONTENT_MANAGER     = "ContentManager";
     public static final String ROLE_CONTENT_PUBLISHER   = "ContentPublisher";
     public static final String ROLE_CONTENT_REVIEWER    = "ContentReviewer";
@@ -113,7 +113,7 @@ public class WebProjectMembershipTest extends BaseWebScriptTest
     protected void tearDown() throws Exception
     {
         super.tearDown();
-        this.authenticationComponent.setCurrentUser("admin");
+        this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
         
         // Tidy-up any web projects created during the execution of the test
         for (String webProjectRef : this.createdWebProjects)
@@ -161,7 +161,7 @@ public class WebProjectMembershipTest extends BaseWebScriptTest
        
     public void testListMemberships() throws Exception
     {
-        this.authenticationComponent.setCurrentUser("admin");
+        this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
         
         // Create a site
     	String webProjectRef = createWebProject();
@@ -268,7 +268,7 @@ public class WebProjectMembershipTest extends BaseWebScriptTest
     
     public void testCreateMemberships() throws Exception
     {
-    	this.authenticationComponent.setCurrentUser(USER_ADMIN);
+    	this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
     
     	String webProjectRef = createWebProject();
     	
@@ -356,7 +356,7 @@ public class WebProjectMembershipTest extends BaseWebScriptTest
  
     public void testGetMembership() throws Exception
     {
-        this.authenticationComponent.setCurrentUser(USER_ADMIN);
+        this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
         
         // Create a site
     	String webProjectRef = createWebProject();
@@ -371,13 +371,13 @@ public class WebProjectMembershipTest extends BaseWebScriptTest
         /**
          * Now lookup the admin user and check they are a content manager
          */
-        Response response = sendRequest(new GetRequest(validURL + "/" + USER_ADMIN), Status.STATUS_OK);
+        Response response = sendRequest(new GetRequest(validURL + "/" + AuthenticationUtil.getAdminUserName()), Status.STATUS_OK);
         JSONObject result = new JSONObject(response.getContentAsString());
 	    JSONObject data = result.getJSONObject("data");
 	    
         // Check the result
         assertEquals(ROLE_CONTENT_MANAGER, data.get("role"));
-        assertEquals(USER_ADMIN, data.getJSONObject("person").get("userName")); 
+        assertEquals(AuthenticationUtil.getAdminUserName(), data.getJSONObject("person").get("userName")); 
     }
 
 //    Update Not yet implemented
@@ -468,7 +468,7 @@ public class WebProjectMembershipTest extends BaseWebScriptTest
   
       public void testDeleteMembership() throws Exception
       {
-      	this.authenticationComponent.setCurrentUser(USER_ADMIN);
+      	this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
         
     	String webProjectRef = createWebProject();
     	

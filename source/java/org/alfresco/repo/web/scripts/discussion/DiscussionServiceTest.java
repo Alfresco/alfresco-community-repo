@@ -29,6 +29,7 @@ import java.util.List;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
 import org.alfresco.service.cmr.security.AuthenticationService;
@@ -59,7 +60,6 @@ public class DiscussionServiceTest extends BaseWebScriptTest
     private PersonService personService;
     private SiteService siteService;
     
-    private static final String USER_ADMIN = "admin";
     private static final String USER_ONE = "UserOneThird";
     private static final String USER_TWO = "UserTwoThird";
     private static final String SITE_SHORT_NAME_DISCUSSION = "DiscussionSiteShortNameThree";
@@ -84,7 +84,7 @@ public class DiscussionServiceTest extends BaseWebScriptTest
         this.siteService = (SiteService)getServer().getApplicationContext().getBean("SiteService");
         
         // Authenticate as user
-        this.authenticationComponent.setCurrentUser(USER_ADMIN);
+        this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
         
         // Create test site
         // - only create the site if it doesn't already exist
@@ -109,7 +109,7 @@ public class DiscussionServiceTest extends BaseWebScriptTest
         super.tearDown();
         
         // admin user required to delete user
-        this.authenticationComponent.setCurrentUser(USER_ADMIN);
+        this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
         
         // delete the inviter user
         //personService.deletePerson(USER_ONE);

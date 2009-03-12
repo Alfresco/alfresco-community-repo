@@ -26,6 +26,7 @@ package org.alfresco.repo.web.scripts.preference;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
@@ -92,7 +93,7 @@ public class PreferenceServiceTest extends BaseWebScriptTest
     protected void tearDown() throws Exception
     {
         super.tearDown();
-        this.authenticationComponent.setCurrentUser("admin");
+        this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
         
     }
     

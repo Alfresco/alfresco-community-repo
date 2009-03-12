@@ -38,6 +38,7 @@ import java.util.Date;
 
 import junit.framework.TestCase;
 
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.util.Base64;
 import org.alfresco.util.ISO8601DateFormat;

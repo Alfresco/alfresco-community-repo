@@ -27,6 +27,7 @@ package org.alfresco.repo.web.scripts.tagging;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -128,7 +129,7 @@ public class TaggingServiceTest extends BaseWebScriptTest
     protected void tearDown() throws Exception
     {
         super.tearDown();
-        this.authenticationComponent.setCurrentUser("admin");
+        this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
         
         this.taggingService.deleteTag(new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore"), TAG_1);
         this.taggingService.deleteTag(new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore"), TAG_2);

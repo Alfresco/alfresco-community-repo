@@ -26,6 +26,7 @@ package org.alfresco.repo.web.scripts;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.util.PropertyMap;
@@ -117,9 +118,9 @@ public class LoginTest extends BaseWebScriptTest
     	String ticketURL = "/api/login/ticket/"+ticket;
     	
     	/**
-    	 * Negative test - validate as "admin" - should fail with a 404
+    	 * Negative test - validate as AuthenticationUtil.getAdminUserName() - should fail with a 404
     	 */
-      	setDefaultRunAs("admin");
+      	setDefaultRunAs(AuthenticationUtil.getAdminUserName());
     	sendRequest(new GetRequest(ticketURL), Status.STATUS_NOT_FOUND);
       	
     	/**

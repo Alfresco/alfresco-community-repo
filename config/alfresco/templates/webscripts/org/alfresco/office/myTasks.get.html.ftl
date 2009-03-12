@@ -117,7 +117,7 @@
             <div class="taskValue">
                <select id="wrkType" style="width: 178px;">
                   <option value="review" selected>${message("office.workflow.review")}</option>
-                  <option value="adhoc">${message("office.workflow.review")}</option>
+                  <option value="adhoc">${message("office.workflow.adhoc")}</option>
                </select>
             </div>
             <div class="taskParam">${message("office.property.assign_to")}:</div>

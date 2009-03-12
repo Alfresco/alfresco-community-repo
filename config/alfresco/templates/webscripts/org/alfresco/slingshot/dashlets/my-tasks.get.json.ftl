@@ -45,8 +45,8 @@
       [
 <#list task.transitions as transition>
          {
-            "id": "${transition.id}",
-            "label": "${transition.label}"
+            "id": "${transition.id!""}",
+            "label": "${transition.label!""}"
          }<#if transition_has_next>,</#if>
 </#list>
       ]

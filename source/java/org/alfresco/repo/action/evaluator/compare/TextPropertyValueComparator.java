@@ -186,6 +186,7 @@ public class TextPropertyValueComparator implements PropertyValueComparator
      */
     public void registerComparator(ComparePropertyValueEvaluator evaluator)
     {
-        evaluator.registerComparator(DataTypeDefinition.TEXT, this);        
+        evaluator.registerComparator(DataTypeDefinition.TEXT, this);
+        evaluator.registerComparator(DataTypeDefinition.MLTEXT, this);
     }
 }

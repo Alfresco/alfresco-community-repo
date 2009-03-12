@@ -38,11 +38,9 @@ import org.alfresco.web.bean.repository.Repository;
 
 /**
  * UI Action Evaluator - Edit document online via CIFS.
- *
  */
 public class EditDocOnlineCIFSEvaluator extends CheckoutDocEvaluator
 {
-
    /**
     * @see org.alfresco.web.action.ActionEvaluator#evaluate(org.alfresco.web.bean.repository.Node)
     */
@@ -57,13 +55,14 @@ public class EditDocOnlineCIFSEvaluator extends CheckoutDocEvaluator
       if (dd.isSubClass(node.getType(), ContentModel.TYPE_CONTENT))
       {
          Map<String, Object> props = node.getProperties();
-         if ((node.hasAspect(ApplicationModel.ASPECT_INLINEEDITABLE) == false || props.get(ApplicationModel.PROP_EDITINLINE) == null ||
-               ((Boolean)props.get(ApplicationModel.PROP_EDITINLINE)).booleanValue() == false) && "cifs".equals(Application.getClientConfig(fc).getEditLinkType()))
+         if ("cifs".equals(Application.getClientConfig(fc).getEditLinkType()) &&
+             (!node.hasAspect(ApplicationModel.ASPECT_INLINEEDITABLE) ||
+              props.get(ApplicationModel.PROP_EDITINLINE) == null ||
+              !((Boolean)props.get(ApplicationModel.PROP_EDITINLINE)).booleanValue()))
          {
             if (node.hasAspect(ContentModel.ASPECT_WORKING_COPY))
             {
-               if (props.get(ContentModel.PROP_WORKING_COPY_MODE) != null && props.get(ContentModel.PROP_WORKING_COPY_MODE).equals(EditOnlineDialog.ONLINE_EDITING))
-                  result = true;
+               result = (EditOnlineDialog.ONLINE_EDITING.equals(props.get(ContentModel.PROP_WORKING_COPY_MODE)));
             }
             else
             {
@@ -71,8 +70,7 @@ public class EditDocOnlineCIFSEvaluator extends CheckoutDocEvaluator
             }
          }
       }
-
+      
       return result;
    }
-
 }

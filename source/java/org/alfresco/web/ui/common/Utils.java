@@ -269,7 +269,10 @@ public final class Utils extends StringUtils
             buf.append("']['");
             buf.append(name);
             buf.append("'].value='");
-            buf.append(replace(params.get(name), "'", "\\'"));
+            String val = params.get(name);
+            val = replace(val, "\\", "\\\\");   // encode escape character
+            val = replace(val, "'", "\\'");     // encode single quote as we wrap string with that
+            buf.append(val);
             buf.append("';");
             
             // weak, but this seems to be the way Sun RI do it...
@@ -390,24 +393,25 @@ public final class Utils extends StringUtils
             
             if (nodeService != null && navBean != null && cifsServer != null)
             {
-                // Resolve CIFS network folder location for this node
-                
-                FilesystemsConfigSection filesysConfig = (FilesystemsConfigSection) cifsServer.getConfiguration().getConfigSection(FilesystemsConfigSection.SectionName); 
-                DiskSharedDevice diskShare = null;
-                 
-                SharedDeviceList shares = filesysConfig.getShares();
-                Enumeration<SharedDevice> shareEnum = shares.enumerateShares();
-                 
-                while ( shareEnum.hasMoreElements() && diskShare == null) {
-                   SharedDevice curShare = shareEnum.nextElement();
-                   if ( curShare.getContext() instanceof ContentContext)
-                     diskShare = (DiskSharedDevice) curShare;
-                }
+               // Resolve CIFS network folder location for this node
+               FilesystemsConfigSection filesysConfig = (FilesystemsConfigSection)cifsServer.getConfiguration().getConfigSection(FilesystemsConfigSection.SectionName); 
+               DiskSharedDevice diskShare = null;
                
+               SharedDeviceList shares = filesysConfig.getShares();
+               Enumeration<SharedDevice> shareEnum = shares.enumerateShares();
+               
+               while (shareEnum.hasMoreElements() && diskShare == null)
+               {
+                  SharedDevice curShare = shareEnum.nextElement();
+                  if (curShare.getContext() instanceof ContentContext)
+                  {
+                     diskShare = (DiskSharedDevice)curShare;
+                  }
+               }
                
                if (diskShare != null)
                {
-                  ContentContext contentCtx = (ContentContext) diskShare.getContext();
+                  ContentContext contentCtx = (ContentContext)diskShare.getContext();
                   NodeRef rootNode = contentCtx.getRootNode();
                   try
                   {
@@ -1038,19 +1042,23 @@ public final class Utils extends StringUtils
     */
    public static String getUserAgent(FacesContext context)
    {
-      final String userAgent = context.getExternalContext().getRequestHeaderMap().get("User-Agent").toString();
+      Object userAgent = context.getExternalContext().getRequestHeaderMap().get("User-Agent");
       if (userAgent != null)
       {
-         if (userAgent.indexOf("Firefox/") != -1)
+         if (userAgent.toString().indexOf("Firefox/") != -1)
          {
             return USER_AGENT_FIREFOX;
          }
-         else if (userAgent.indexOf("MSIE") != -1)
+         else if (userAgent.toString().indexOf("MSIE") != -1)
          {
             return USER_AGENT_MSIE;
          }
+         else
+         {
+            return userAgent.toString();
+         }
       }
-      return userAgent;
+      return "";
    }
    
    /**

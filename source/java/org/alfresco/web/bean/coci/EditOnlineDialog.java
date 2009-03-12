@@ -40,15 +40,14 @@ import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIActionLink;
 
 /**
- * This is fiction dialog class for provides method for online editing. He
- * doesn't have entry in web-client-config-dialogs.xml
- *
+ * This base dialog class provides methods for online editing. It does
+ * doesn't have entry in web-client-config-dialogs.xml as is not instantiated directly.
  */
 public class EditOnlineDialog extends CCCheckoutFileDialog
 {
-
    public final static String ONLINE_EDITING = "onlineEditing";
 
+   
    /**
     * Action listener for handle webdav online editing action. E.g "edit_doc_online_webdav" action
     *
@@ -57,24 +56,23 @@ public class EditOnlineDialog extends CCCheckoutFileDialog
    public void handleWebdavEditing(ActionEvent event)
    {
       handle(event);
-
+      
       Node workingCopyNode = property.getDocument();
       if (workingCopyNode != null)
       {
          UIActionLink link = (UIActionLink) event.getComponent();
          Map<String, String> params = link.getParameterMap();
          String webdavUrl = params.get("webdavUrl");
-
+         
          if (webdavUrl != null)
          {
             // modify webDav for editing working copy
-            property.setWebdavUrl(webdavUrl.substring(0, webdavUrl.lastIndexOf("/") + 1) + workingCopyNode.getName());
+            property.setWebdavUrl(webdavUrl.substring(0, webdavUrl.lastIndexOf('/') + 1) + workingCopyNode.getName());
          }
          
-        FacesContext fc = FacesContext.getCurrentInstance();
-     	
-        fc.getApplication().getNavigationHandler().handleNavigation(fc, null,"dialog:close:browse");
+         FacesContext fc = FacesContext.getCurrentInstance();
          
+         fc.getApplication().getNavigationHandler().handleNavigation(fc, null, "dialog:close:browse");
       }
    }
 
@@ -86,23 +84,23 @@ public class EditOnlineDialog extends CCCheckoutFileDialog
    public void handleCifsEditing(ActionEvent event)
    {
       handle(event);
-
+      
       Node workingCopyNode = property.getDocument();
       if (workingCopyNode != null)
       {
          UIActionLink link = (UIActionLink) event.getComponent();
          Map<String, String> params = link.getParameterMap();
          String cifsPath = params.get("cifsPath");
-
+         
          if (cifsPath != null)
          {
             // modify cifsPath for editing working copy
-            property.setCifsPath(cifsPath.substring(0, cifsPath.lastIndexOf("/") + 1) + workingCopyNode.getName());
+            property.setCifsPath(cifsPath.substring(0, cifsPath.lastIndexOf('\\') + 1) + workingCopyNode.getName());
          }
          
-        FacesContext fc = FacesContext.getCurrentInstance();
-     	
-        fc.getApplication().getNavigationHandler().handleNavigation(fc, null,"dialog:close:browse");
+         FacesContext fc = FacesContext.getCurrentInstance();
+     	   
+         fc.getApplication().getNavigationHandler().handleNavigation(fc, null, "dialog:close:browse");
       }
    }
 
@@ -114,23 +112,22 @@ public class EditOnlineDialog extends CCCheckoutFileDialog
    public void handleHttpEditing(ActionEvent event)
    {
       handle(event);
-
+      
       Node workingCopyNode = property.getDocument();
       if (workingCopyNode != null)
       {
-
          ContentReader reader = property.getContentService().getReader(workingCopyNode.getNodeRef(), ContentModel.PROP_CONTENT);
          if (reader != null)
          {
             String mimetype = reader.getMimetype();
-
+            
             // calculate which editor screen to display
-            if (MimetypeMap.MIMETYPE_TEXT_PLAIN.equals(mimetype) || MimetypeMap.MIMETYPE_XML.equals(mimetype) || MimetypeMap.MIMETYPE_TEXT_CSS.equals(mimetype)
-                  || MimetypeMap.MIMETYPE_JAVASCRIPT.equals(mimetype))
+            if (MimetypeMap.MIMETYPE_TEXT_PLAIN.equals(mimetype) || MimetypeMap.MIMETYPE_XML.equals(mimetype) ||
+                MimetypeMap.MIMETYPE_TEXT_CSS.equals(mimetype) || MimetypeMap.MIMETYPE_JAVASCRIPT.equals(mimetype))
             {
                // make content available to the text editing screen
                property.setEditorOutput(reader.getContentString());
-
+               
                // navigate to appropriate screen
                FacesContext fc = FacesContext.getCurrentInstance();
                fc.getApplication().getNavigationHandler().handleNavigation(fc, null, "dialog:close:browse");
@@ -142,7 +139,7 @@ public class EditOnlineDialog extends CCCheckoutFileDialog
                // make content available to the html editing screen
                property.setDocumentContent(reader.getContentString());
                property.setEditorOutput(null);
-
+               
                // navigate to appropriate screen
                FacesContext fc = FacesContext.getCurrentInstance();
                fc.getApplication().getNavigationHandler().handleNavigation(fc, null, "dialog:close:browse");
@@ -150,7 +147,6 @@ public class EditOnlineDialog extends CCCheckoutFileDialog
                fc.getApplication().getNavigationHandler().handleNavigation(fc, null, "dialog:editHtmlInline");
             }
          }
-
       }
    }
 
@@ -162,7 +158,7 @@ public class EditOnlineDialog extends CCCheckoutFileDialog
    public void handle(ActionEvent event)
    {
       super.setupContentAction(event);
-
+      
       Node node = property.getDocument();
       if (node != null)
       {
@@ -202,5 +198,4 @@ public class EditOnlineDialog extends CCCheckoutFileDialog
          }
       }
    }
-
 }

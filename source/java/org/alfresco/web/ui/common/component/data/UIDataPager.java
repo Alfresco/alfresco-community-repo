@@ -108,7 +108,7 @@ public class UIDataPager extends UICommand
       String beginTag = "<span";
       String endTag = "</span>";
       String divStyle = "";
-      String inputStyle = "height:18px;";
+      String inputStyle = "height:13px;";
       String imageVericalAlign = null;
       String imageStyle = "margin-top:0px;";
       StringBuilder inputPageNumber = new StringBuilder(128);
@@ -126,14 +126,20 @@ public class UIDataPager extends UICommand
             beginTag = "<div";
             endTag = "</div>";
             divStyle = "padding:1px;";
-            inputStyle = "height:18px; vertical-align:middle;";
+            inputStyle = "height:13px; vertical-align:middle;";
             imageVericalAlign = "middle";
             imageStyle = "margin-top:0px;";
+            inputPageNumber.append("<input type=\"text\" maxlength=\"3\" value=\"").append(currentPage + 1).append("\" style=\"width: 24px; margin-left: 4px;").append(inputStyle).append("\" ");
+            inputPageNumber.append("onkeydown=\"").append(generateIE6InputOnkeydownScript()).append("\" ");
+            inputPageNumber.append("id=\"").append(getPageInputId()).append("\" />");
          }
-         inputPageNumber.append("<input type=\"text\" maxlength=\"3\" value=\"").append(currentPage + 1).append("\" style=\"width: 24px; margin-left: 4px;").append(inputStyle).append("\" ");
-         inputPageNumber.append("onkeyup=\"").append(generateInputOnkeyupScript()).append("\" ");
-         inputPageNumber.append("onkeydown=\"").append(generateInputOnkeydownScript()).append("\" ");
-         inputPageNumber.append("id=\"").append(getPageInputId()).append("\" />");
+         else
+         {
+             inputPageNumber.append("<input type=\"text\" maxlength=\"3\" value=\"").append(currentPage + 1).append("\" style=\"width: 24px; margin-left: 4px;").append(inputStyle).append("\" ");
+             inputPageNumber.append("onkeyup=\"").append(generateInputOnkeyupScript()).append("\" ");
+             inputPageNumber.append("onkeydown=\"").append(generateInputOnkeydownScript()).append("\" ");
+             inputPageNumber.append("id=\"").append(getPageInputId()).append("\" />");
+         }
       }
       
       buf.append(beginTag);
@@ -584,7 +590,9 @@ public class UIDataPager extends UICommand
        script.append("  else if (e) keycode = e.which;");
        script.append("  if (keycode == 13)");
        script.append("  {");
-       script.append("      var inputControl = document.getElementById('").append(getPageInputId()).append("');");
+       script.append("      var inputControl = $('").append(getPageInputId()).append("');");
+       script.append("      var dialogForm = $('dialog');");
+       script.append("      if (dialogForm) {dialogForm.removeProperty('onsubmit');}");
        script.append("      var val = parseInt(inputControl.value);");
        script.append("      if (val == 'NaN' || document.forms['").append(formClientId).append("']['").append(getHiddenFieldName()).append("']==undefined)");
        script.append("      { inputControl.value = 1; return false; }");
@@ -614,6 +622,43 @@ public class UIDataPager extends UICommand
        script.append("  else if (e) keycode = e.which;");
        script.append("  var keychar = String.fromCharCode(keycode);");
        script.append("  var numcheck = /\\d/;");
+       script.append("  var dialogForm = $('dialog');");
+       script.append("  if (dialogForm && keycode==13) { ");
+       script.append("      dialogForm.setProperty('onsubmit','return false;')");
+       script.append("  }");
+       script.append("  return keycode==13 || keycode==8 || keycode==37 || keycode==39 || keycode==46 || (keycode>=96 && keycode<=105) || numcheck.test(keychar);");
+       script.append("}; return onlyDigits(event);");
+       return script.toString();
+   }
+
+   /**
+    * Output the JavaScript event script to handle onkeydown event in the Page Number input (For IE6 browser).
+    * It handles only digits and some 'useful' keys.
+    * @return JavaScript code
+    */
+   private String generateIE6InputOnkeydownScript()
+   {
+       final String formClientId = Utils.getParentForm(getFacesContext(), this).getClientId(getFacesContext());
+       final StringBuilder script = new StringBuilder(128);
+       script.append("function onlyDigits(e)");
+       script.append("{");
+       script.append("  var keycode;");
+       script.append("  if (window.event) keycode = window.event.keyCode;");
+       script.append("  else if (e) keycode = e.which;");
+       script.append("  var keychar = String.fromCharCode(keycode);");
+       script.append("  var numcheck = /\\d/;");
+       script.append("  if (keycode == 13)");
+       script.append("  {");
+       script.append("      var inputControl = $('").append(getPageInputId()).append("');");
+       script.append("      var val = parseInt(inputControl.value);");
+       script.append("      if (val == 'NaN' || document.forms['").append(formClientId).append("']['").append(getHiddenFieldName()).append("']==undefined)");
+       script.append("      { inputControl.value = 1; return false; }");
+       script.append("      else");
+       script.append("      {   val = (val-1)>=0 ? val-1 : 0; ");
+       script.append("          document.forms['").append(formClientId).append("']['").append(getHiddenFieldName()).append("'].value=val;");
+       script.append("          document.forms['").append(formClientId).append("'].submit(); return false;");
+       script.append("      }");
+       script.append("  }");
        script.append("  return keycode==13 || keycode==8 || keycode==37 || keycode==39 || keycode==46 || (keycode>=96 && keycode<=105) || numcheck.test(keychar);");
        script.append("}; return onlyDigits(event);");
        return script.toString();

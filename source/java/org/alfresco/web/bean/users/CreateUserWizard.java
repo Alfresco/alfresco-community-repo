@@ -73,7 +73,9 @@ public class CreateUserWizard extends BaseWizardBean
     private static Log logger = LogFactory.getLog(BaseWizardBean.class);
     protected static final String ERROR = "error_person";
     protected static final String ERROR_DOMAIN_MISMATCH = "error_domain_mismatch";
-
+    
+    private static final String MSG_ERROR_NEWUSER_HOME_SPACE = "error_newuser_home_space";
+    
     protected static final String QUOTA_UNITS_KB = "kilobyte";
     protected static final String QUOTA_UNITS_MB = "megabyte";
     protected static final String QUOTA_UNITS_GB = "gigabyte";
@@ -751,7 +753,7 @@ public class CreateUserWizard extends BaseWizardBean
     {
         // Admin Authority has full permissions by default (automatic - set in the permission config)
         // give full permissions to the new user
-       getPermissionService().setPermission(homeSpaceRef, this.userName, getPermissionService().getAllPermission(), true);
+        getPermissionService().setPermission(homeSpaceRef, this.userName, getPermissionService().getAllPermission(), true);
 
         // by default other users will only have GUEST access to the space contents
         // or whatever is configured as the default in the web-client-xml config
@@ -815,8 +817,12 @@ public class CreateUserWizard extends BaseWizardBean
                 }
                 else if (this.homeSpaceLocation != null)
                 {
-                    // set to existing
-                    homeSpaceNodeRef = homeSpaceLocation;
+                    // set to existing - first ensure it is NOT "User Homes" space!
+                    if (this.defaultHomeSpaceRef.equals(this.homeSpaceLocation))
+                    {
+                        throw new AlfrescoRuntimeException(Application.getMessage(context, MSG_ERROR_NEWUSER_HOME_SPACE));
+                    }
+                    homeSpaceNodeRef = this.homeSpaceLocation;
                     setupHomeSpacePermissions(homeSpaceNodeRef);
                 }
                 else
@@ -866,7 +872,8 @@ public class CreateUserWizard extends BaseWizardBean
             outcome = null;
         }
         
-        if (outcome == null) {
+        if (outcome == null)
+        {
             this.isFinished = false;
         }
         
@@ -887,15 +894,15 @@ public class CreateUserWizard extends BaseWizardBean
     {
        if (quota != null)
        {
-    	  if (quota >= 0L)
-    	  {
-    		  quota = convertToBytes(quota, quotaUnits);
-    	  }
-    	  else
-    	  {
-    		  // ignore negative quota
-    		  return;
-    	  }
+          if (quota >= 0L)
+          {
+             quota = convertToBytes(quota, quotaUnits);
+          }
+          else
+          {
+             // ignore negative quota
+             return;
+          }
        }
        
        getContentUsageService().setUserQuota(userName, (quota == null ? -1 : quota));

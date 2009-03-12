@@ -25,6 +25,7 @@ package org.alfresco.web.app.servlet;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Enumeration;
 import java.util.List;
 
 import javax.servlet.ServletConfig;
@@ -59,7 +60,7 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
  */
 public class UploadFileServlet extends BaseServlet
 {
-   private static final long serialVersionUID = -5482538466491052873L;
+   private static final long serialVersionUID = -5482538466491052875L;
    private static final Log logger = LogFactory.getLog(UploadFileServlet.class); 
    
    private ConfigService configService;
@@ -165,8 +166,30 @@ public class UploadFileServlet extends BaseServlet
             }
          }
 
-         session.setAttribute(FileUploadBean.getKey(uploadId), bean);         
-
+         // examine the appropriate session to try and find the User object
+         if (Application.inPortalServer() == false)
+         {
+            session.setAttribute(FileUploadBean.getKey(uploadId), bean);
+         }
+         else
+         {
+            // naff solution as we need to enumerate all session keys until we find the one that
+            // should match our User objects - this is weak but we don't know how the underlying
+            // Portal vendor has decided to encode the objects in the session
+            Enumeration enumNames = session.getAttributeNames();
+            while (enumNames.hasMoreElements())
+            {
+               String name = (String)enumNames.nextElement();
+               // find an Alfresco value we know must be there...
+               if (name.startsWith("javax.portlet.p") && name.endsWith(AuthenticationHelper.AUTHENTICATION_USER))
+               {
+                  String key = name.substring(0, name.lastIndexOf(AuthenticationHelper.AUTHENTICATION_USER));
+                  session.setAttribute(key + FileUploadBean.getKey(uploadId), bean);
+                  break;
+               }
+            }
+         }
+         
          if (bean.getFile() == null && uploadId != null && logger.isWarnEnabled())
          {
             logger.warn("no file uploaded for upload id: " + uploadId);

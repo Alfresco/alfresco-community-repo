@@ -61,7 +61,7 @@ public class PageTag extends TagSupport
       "/scripts/menu.js",
       // webdav javascript
       "/scripts/webdav.js",
-      // functional for window.onload
+      // functionality for window.onload
       "/scripts/onload.js",
       // base yahoo file
       "/scripts/ajax/yahoo/yahoo/yahoo-min.js",
@@ -282,7 +282,7 @@ public class PageTag extends TagSupport
          out.write("');");
 
          // generate window onload code
-         out.write(getWindowOnloadCode());
+         generateWindowOnloadCode(out);
 
          out.write("</script>\n"); // end - generate naked javascript code
 
@@ -366,34 +366,41 @@ public class PageTag extends TagSupport
    }
 
    /**
-    * This method generate code for setting window.onload reference if we need (we need to open WebDav or Cifs url or may be else)
-    * Using javascript code(function onloadFunc) from onload.js file
+    * This method generate code for setting window.onload reference as
+    * we need to open WebDav or CIFS URL in a new window.
+    * 
+    * Executes via javascript code(function onloadFunc()) in "onload.js" include file.
+    * 
     * @return Returns window.onload javascript code
     */
-   private String getWindowOnloadCode()
+   private static void generateWindowOnloadCode(Writer out)
+      throws IOException
    {
       FacesContext fc = FacesContext.getCurrentInstance();
       if (fc != null)
       {
-          CCProperties ccProps = (CCProperties) FacesHelper.getManagedBean(fc, "CCProperties");
-          
-          StringBuilder onloadCode = new StringBuilder();
+          CCProperties ccProps = (CCProperties)FacesHelper.getManagedBean(fc, "CCProperties");
           if (ccProps.getWebdavUrl() != null || ccProps.getCifsPath() != null)
           {
-             String webdavUrl = (ccProps.getWebdavUrl() != null) ? (ccProps.getWebdavUrl()) : ("");
-             String cifsPath = (ccProps.getCifsPath() != null) ? (ccProps.getCifsPath()) : ("");
+             out.write("window.onload=onloadFunc('");
+             if (ccProps.getWebdavUrl() != null)
+             {
+                out.write(ccProps.getWebdavUrl());
+             }
+             out.write("','");
+             if (ccProps.getCifsPath() != null)
+             {
+                String val = ccProps.getCifsPath();
+                val = Utils.replace(val, "\\", "\\\\");   // encode escape character
+                val = Utils.replace(val, "'", "\\'");     // encode single quote as we wrap string with that
+                out.write(val);
+             }
+             out.write("');");
              
-             onloadCode.append("window.onload=onloadFunc('").append(webdavUrl).append("','").append(cifsPath).append("');");
-             
-             ccProps.setCifsPath(null); // we need reset cifsPath flag
-             ccProps.setWebdavUrl(null); // we need reset webdavUrl flag
+             // reset session bean state
+             ccProps.setCifsPath(null);
+             ccProps.setWebdavUrl(null);
           }
-          
-          return onloadCode.toString();
-      }
-      else
-      {
-          return "";
       }
    }
 }

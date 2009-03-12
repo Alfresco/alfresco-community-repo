@@ -39,6 +39,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.util.AbstractLifecycleBean;
+import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jgroups.Address;
@@ -269,7 +270,7 @@ public class AlfrescoJGroupsChannelFactory extends AbstractLifecycleBean
             JChannelFactory channelFactory = getChannelFactory();
             // Get the protocol stack to use
             String stack = stacksByAppRegion.get(appRegion);
-            if (stack == null)
+            if (!PropertyCheck.isValidPropertyString(stack))
             {
                 stack = stacksByAppRegion.get(AlfrescoJGroupsChannelFactory.APP_REGION_DEFAULT);
             }
@@ -449,7 +450,7 @@ public class AlfrescoJGroupsChannelFactory extends AbstractLifecycleBean
         writeLock.lock();
         try
         {
-            if (clusterNamePrefix == null || clusterNamePrefix.trim().length() == 0 || clusterNamePrefix.startsWith("${"))
+            if (!PropertyCheck.isValidPropertyString(clusterNamePrefix))
             {
                 // Clear everything out
                 AlfrescoJGroupsChannelFactory.clusterNamePrefix = null;
@@ -498,6 +499,13 @@ public class AlfrescoJGroupsChannelFactory extends AbstractLifecycleBean
     public static void changeJgroupsConfigurationUrl(String configUrl)
     {
         writeLock.lock();
+        if (!PropertyCheck.isValidPropertyString(configUrl))
+        {
+            // It's not really being set
+            AlfrescoJGroupsChannelFactory.configUrl = null;
+            return;
+        }
+        // It's a real attempt to set it
         try
         {
             AlfrescoJGroupsChannelFactory.configUrl = ResourceUtils.getURL(configUrl);

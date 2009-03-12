@@ -35,6 +35,7 @@ import org.alfresco.linkvalidation.LinkValidationService;
 import org.alfresco.repo.security.authentication.AbstractAuthenticationService;
 import org.alfresco.repo.transaction.TransactionServiceImpl;
 import org.alfresco.service.license.LicenseService;
+import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -55,10 +56,6 @@ public class RepoServerMgmt implements RepoServerMgmtMBean, ApplicationContextAw
     private LinkValidationService linkValidationService;
 
     private boolean initialised = false;
-
-    // property key should be the same as the one in core-services-context.xml (to allow repo to start in multi-user
-    // mode even if the property is not set)
-    private final static String PROPERTY_KEY_SINGLE_USER_ONLY = "${server.singleuseronly.name}";
 
     public void setTransactionService(TransactionServiceImpl transactionService)
     {
@@ -81,11 +78,6 @@ public class RepoServerMgmt implements RepoServerMgmtMBean, ApplicationContextAw
         this.ctx = ctx;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.alfresco.repo.admin.RepoServerMgmtMBean#setReadOnly(boolean)
-     */
     public void setReadOnly(boolean readOnly)
     {
         if (readOnly && isReadOnly())
@@ -125,11 +117,6 @@ public class RepoServerMgmt implements RepoServerMgmtMBean, ApplicationContextAw
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.alfresco.mbeans.RepoServerMgmtMBean#isReadOnly(java.lang.Boolean)
-     */
     public boolean isReadOnly()
     {
         return transactionService.isReadOnly();
@@ -138,41 +125,21 @@ public class RepoServerMgmt implements RepoServerMgmtMBean, ApplicationContextAw
     // Note: implementing counts as managed attributes (without params) means that
     // certain JMX consoles can monitor
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.alfresco.mbeans.RepoServerMgmtMBean#getTicketCountNonExpired()
-     */
     public int getTicketCountNonExpired()
     {
         return authenticationService.countTickets(true);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.alfresco.mbeans.RepoServerMgmtMBean#getTicketCountAll()
-     */
     public int getTicketCountAll()
     {
         return authenticationService.countTickets(false);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.alfresco.mbeans.RepoServerMgmtMBean#getUserCountNonExpired()
-     */
     public int getUserCountNonExpired()
     {
         return authenticationService.getUsersWithTickets(true).size();
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.alfresco.mbeans.RepoServerMgmtMBean#getUserCountAll()
-     */
     public int getUserCountAll()
     {
         return authenticationService.getUsersWithTickets(false).size();
@@ -181,11 +148,6 @@ public class RepoServerMgmt implements RepoServerMgmtMBean, ApplicationContextAw
     // Note: implement operations without boolean/Boolean parameter, due to problem with some JMX consoles (e.g. MC4J
     // 1.9 Beta)
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.alfresco.repo.admin.RepoServerMgmtMBean#listUserNamesNonExpired()
-     */
     public String[] listUserNamesNonExpired()
     {
         Set<String> userSet = authenticationService.getUsersWithTickets(true);
@@ -193,11 +155,6 @@ public class RepoServerMgmt implements RepoServerMgmtMBean, ApplicationContextAw
         return sorted.toArray(new String[0]);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.alfresco.repo.admin.RepoServerMgmtMBean#listUserNamesAll()
-     */
     public String[] listUserNamesAll()
     {
         Set<String> userSet = authenticationService.getUsersWithTickets(false);
@@ -205,11 +162,6 @@ public class RepoServerMgmt implements RepoServerMgmtMBean, ApplicationContextAw
         return sorted.toArray(new String[0]);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.alfresco.mbeans.RepoServerMgmtMBean#invalidateTicketsExpired()
-     */
     public int invalidateTicketsExpired()
     {
         int count = authenticationService.invalidateTickets(true);
@@ -217,11 +169,6 @@ public class RepoServerMgmt implements RepoServerMgmtMBean, ApplicationContextAw
         return count;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.alfresco.mbeans.RepoServerMgmtMBean#invalidateTicketsAll()
-     */
     public int invalidateTicketsAll()
     {
         int count = authenticationService.invalidateTickets(false);
@@ -229,46 +176,33 @@ public class RepoServerMgmt implements RepoServerMgmtMBean, ApplicationContextAw
         return count;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.alfresco.repo.admin.RepoServerMgmtMBean#invalidateUser(java.lang.String)
-     */
     public void invalidateUser(String username)
     {
         authenticationService.invalidateUserSession(username);
         log.info("User invalidated: " + username);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.alfresco.repo.admin.RepoServerMgmtMBean#setSingleUserOnly(java.lang.String)
-     */
     public void setSingleUserOnly(String allowedUsername)
     {
 
         List<String> allowedUsers = null;
-        if ((allowedUsername != null) && (!allowedUsername.equals("")))
+        if (PropertyCheck.isValidPropertyString(allowedUsername))
         {
-            if (!allowedUsername.equals(PROPERTY_KEY_SINGLE_USER_ONLY))
+            allowedUsers = new ArrayList<String>(0);
+            allowedUsers.add(allowedUsername);
+
+            if (initialised)
             {
-                allowedUsers = new ArrayList<String>(0);
-                allowedUsers.add(allowedUsername);
+                int maxUsers = getMaxUsers();
+                invalidateTicketsAll();
 
-                if (initialised)
+                if (maxUsers != 0)
                 {
-                    int maxUsers = getMaxUsers();
-                    invalidateTicketsAll();
-
-                    if (maxUsers != 0)
-                    {
-                        log.warn("Alfresco set to allow single-user (" + allowedUsername + ") logins only");
-                    }
-                    else
-                    {
-                        log.warn("Alfresco set to allow single-user (" + allowedUsername + ") logins - although further logins are currently prevented (limit = 0)");
-                    }
+                    log.warn("Alfresco set to allow single-user (" + allowedUsername + ") logins only");
+                }
+                else
+                {
+                    log.warn("Alfresco set to allow single-user (" + allowedUsername + ") logins - although further logins are currently prevented (limit = 0)");
                 }
             }
         }
@@ -295,11 +229,6 @@ public class RepoServerMgmt implements RepoServerMgmtMBean, ApplicationContextAw
         authenticationService.setAllowedUsers(allowedUsers);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.alfresco.repo.admin.RepoServerMgmtMBean#getSingleUserOnly()
-     */
     public String getSingleUserOnly()
     {
         List<String> allowedUsers = authenticationService.getAllowedUsers();
@@ -317,11 +246,6 @@ public class RepoServerMgmt implements RepoServerMgmtMBean, ApplicationContextAw
         return null;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.alfresco.repo.admin.RepoServerMgmtMBean#setMaxUsers(int)
-     */
     public void setMaxUsers(int maxUsers)
     {
         authenticationService.setMaxUsers(maxUsers);
@@ -358,21 +282,11 @@ public class RepoServerMgmt implements RepoServerMgmtMBean, ApplicationContextAw
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.alfresco.repo.admin.RepoServerMgmtMBean#getMaxUsers()
-     */
     public int getMaxUsers()
     {
         return authenticationService.getMaxUsers();
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.alfresco.repo.admin.RepoServerMgmtMBean#setLinkValidationDisabled(boolean)
-     */
     public void setLinkValidationDisabled(boolean disable)
     {
         if (linkValidationService == null)
@@ -392,11 +306,6 @@ public class RepoServerMgmt implements RepoServerMgmtMBean, ApplicationContextAw
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.alfresco.repo.admin.RepoServerMgmtMBean#isLinkValidationDisabled()
-     */
     public boolean isLinkValidationDisabled()
     {
         if (linkValidationService == null)

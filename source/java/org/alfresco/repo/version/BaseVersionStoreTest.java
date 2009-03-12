@@ -36,6 +36,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.node.archive.NodeArchiveService;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.version.common.counter.VersionCounterService;
@@ -121,7 +122,7 @@ public abstract class BaseVersionStoreTest extends BaseSpringTest
      * Test user details
      */
     private static final String PWD = "admin";
-    private static final String USER_NAME = "admin";	
+//    private static final String USER_NAME = "admin";	
     
 	/**
 	 * Sets the meta model dao
@@ -196,12 +197,12 @@ public abstract class BaseVersionStoreTest extends BaseSpringTest
         
         // Create an authenticate the user
         
-        if(!authenticationDAO.userExists(USER_NAME))
+        if(!authenticationDAO.userExists(AuthenticationUtil.getAdminUserName()))
         {
-            authenticationService.createAuthentication(USER_NAME, PWD.toCharArray());
+            authenticationService.createAuthentication(AuthenticationUtil.getAdminUserName(), PWD.toCharArray());
         }
         
-        TestWithUserUtils.authenticateUser(USER_NAME, PWD, this.rootNodeRef, this.authenticationService);
+        TestWithUserUtils.authenticateUser(AuthenticationUtil.getAdminUserName(), PWD, this.rootNodeRef, this.authenticationService);
     }
 	
 	/**
@@ -395,7 +396,7 @@ public abstract class BaseVersionStoreTest extends BaseSpringTest
         }
         
         // Check the creator 
-        assertEquals(USER_NAME, newVersion.getCreator());
+        assertEquals(AuthenticationUtil.getAdminUserName(), newVersion.getCreator());
         
         // Check the metadata properties of the version
         Map<String, Serializable> props = newVersion.getVersionProperties();

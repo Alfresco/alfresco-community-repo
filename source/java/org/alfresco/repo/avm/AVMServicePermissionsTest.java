@@ -182,11 +182,11 @@ public class AVMServicePermissionsTest extends TestCase
         }
         authenticationService.createAuthentication("lemur", "lemur".toCharArray());
 
-        if (authenticationDAO.userExists("admin"))
+        if (authenticationDAO.userExists(AuthenticationUtil.getAdminUserName()))
         {
-            authenticationService.deleteAuthentication("admin");
+            authenticationService.deleteAuthentication(AuthenticationUtil.getAdminUserName());
         }
-        authenticationService.createAuthentication("admin", "admin".toCharArray());
+        authenticationService.createAuthentication(AuthenticationUtil.getAdminUserName(), "admin".toCharArray());
 
         if (authenticationDAO.userExists("manager"))
         {
@@ -401,7 +401,7 @@ public class AVMServicePermissionsTest extends TestCase
 
     public void testStoreAcls() throws Exception
     {
-        runAs("admin");
+        runAs(AuthenticationUtil.getAdminUserName());
         String storeName = "PermissionsTest-" + getName() + "-" + (new Date().getTime());
         try
         {
@@ -415,8 +415,8 @@ public class AVMServicePermissionsTest extends TestCase
             assertTrue(checkHasPermission("andy", nodeRef, PermissionService.ALL_PERMISSIONS, true));
             assertTrue(checkPermission("lemur", storeName + ":/base", PermissionService.ALL_PERMISSIONS, true));
             assertTrue(checkHasPermission("lemur", nodeRef, PermissionService.ALL_PERMISSIONS, true));
-            assertTrue(checkPermission("admin", storeName + ":/base", PermissionService.ALL_PERMISSIONS, true));
-            assertTrue(checkHasPermission("admin", nodeRef, PermissionService.ALL_PERMISSIONS, true));
+            assertTrue(checkPermission(AuthenticationUtil.getAdminUserName(), storeName + ":/base", PermissionService.ALL_PERMISSIONS, true));
+            assertTrue(checkHasPermission(AuthenticationUtil.getAdminUserName(), nodeRef, PermissionService.ALL_PERMISSIONS, true));
 
             permissionService.setPermission(nodeRef.getStoreRef(), "andy", PermissionService.ALL_PERMISSIONS, true);
 
@@ -424,8 +424,8 @@ public class AVMServicePermissionsTest extends TestCase
             assertTrue(checkHasPermission("andy", nodeRef, PermissionService.ALL_PERMISSIONS, true));
             assertTrue(checkPermission("lemur", storeName + ":/base", PermissionService.ALL_PERMISSIONS, false));
             assertTrue(checkHasPermission("lemur", nodeRef, PermissionService.ALL_PERMISSIONS, false));
-            assertTrue(checkPermission("admin", storeName + ":/base", PermissionService.ALL_PERMISSIONS, true));
-            assertTrue(checkHasPermission("admin", nodeRef, PermissionService.ALL_PERMISSIONS, true));
+            assertTrue(checkPermission(AuthenticationUtil.getAdminUserName(), storeName + ":/base", PermissionService.ALL_PERMISSIONS, true));
+            assertTrue(checkHasPermission(AuthenticationUtil.getAdminUserName(), nodeRef, PermissionService.ALL_PERMISSIONS, true));
 
             permissionService.deletePermission(nodeRef.getStoreRef(), "andy", PermissionService.ALL_PERMISSIONS);
 
@@ -433,8 +433,8 @@ public class AVMServicePermissionsTest extends TestCase
             assertTrue(checkHasPermission("andy", nodeRef, PermissionService.ALL_PERMISSIONS, false));
             assertTrue(checkPermission("lemur", storeName + ":/base", PermissionService.ALL_PERMISSIONS, false));
             assertTrue(checkHasPermission("lemur", nodeRef, PermissionService.ALL_PERMISSIONS, false));
-            assertTrue(checkPermission("admin", storeName + ":/base", PermissionService.ALL_PERMISSIONS, true));
-            assertTrue(checkHasPermission("admin", nodeRef, PermissionService.ALL_PERMISSIONS, true));
+            assertTrue(checkPermission(AuthenticationUtil.getAdminUserName(), storeName + ":/base", PermissionService.ALL_PERMISSIONS, true));
+            assertTrue(checkHasPermission(AuthenticationUtil.getAdminUserName(), nodeRef, PermissionService.ALL_PERMISSIONS, true));
 
             permissionService.deletePermissions(nodeRef.getStoreRef());
 
@@ -442,8 +442,8 @@ public class AVMServicePermissionsTest extends TestCase
             assertTrue(checkHasPermission("andy", nodeRef, PermissionService.ALL_PERMISSIONS, true));
             assertTrue(checkPermission("lemur", storeName + ":/base", PermissionService.ALL_PERMISSIONS, true));
             assertTrue(checkHasPermission("lemur", nodeRef, PermissionService.ALL_PERMISSIONS, true));
-            assertTrue(checkPermission("admin", storeName + ":/base", PermissionService.ALL_PERMISSIONS, true));
-            assertTrue(checkHasPermission("admin", nodeRef, PermissionService.ALL_PERMISSIONS, true));
+            assertTrue(checkPermission(AuthenticationUtil.getAdminUserName(), storeName + ":/base", PermissionService.ALL_PERMISSIONS, true));
+            assertTrue(checkHasPermission(AuthenticationUtil.getAdminUserName(), nodeRef, PermissionService.ALL_PERMISSIONS, true));
 
             permissionService.setPermission(nodeRef.getStoreRef(), "andy", PermissionService.ALL_PERMISSIONS, true);
             assertTrue(checkHasPermission("andy", nodeRef, PermissionService.ALL_PERMISSIONS, true));
@@ -454,8 +454,8 @@ public class AVMServicePermissionsTest extends TestCase
             assertTrue(checkHasPermission("andy", nodeRef, PermissionService.ALL_PERMISSIONS, true));
             assertTrue(checkPermission("lemur", storeName + ":/base", PermissionService.ALL_PERMISSIONS, true));
             assertTrue(checkHasPermission("lemur", nodeRef, PermissionService.ALL_PERMISSIONS, true));
-            assertTrue(checkPermission("admin", storeName + ":/base", PermissionService.ALL_PERMISSIONS, true));
-            assertTrue(checkHasPermission("admin", nodeRef, PermissionService.ALL_PERMISSIONS, true));
+            assertTrue(checkPermission(AuthenticationUtil.getAdminUserName(), storeName + ":/base", PermissionService.ALL_PERMISSIONS, true));
+            assertTrue(checkHasPermission(AuthenticationUtil.getAdminUserName(), nodeRef, PermissionService.ALL_PERMISSIONS, true));
             assertEquals(permissionService.getAllSetPermissions(nodeRef.getStoreRef()).size(), 3);
 
             permissionService.clearPermission(nodeRef.getStoreRef(), "andy");
@@ -464,8 +464,8 @@ public class AVMServicePermissionsTest extends TestCase
             assertTrue(checkHasPermission("andy", nodeRef, PermissionService.ALL_PERMISSIONS, false));
             assertTrue(checkPermission("lemur", storeName + ":/base", PermissionService.ALL_PERMISSIONS, true));
             assertTrue(checkHasPermission("lemur", nodeRef, PermissionService.ALL_PERMISSIONS, true));
-            assertTrue(checkPermission("admin", storeName + ":/base", PermissionService.ALL_PERMISSIONS, true));
-            assertTrue(checkHasPermission("admin", nodeRef, PermissionService.ALL_PERMISSIONS, true));
+            assertTrue(checkPermission(AuthenticationUtil.getAdminUserName(), storeName + ":/base", PermissionService.ALL_PERMISSIONS, true));
+            assertTrue(checkHasPermission(AuthenticationUtil.getAdminUserName(), nodeRef, PermissionService.ALL_PERMISSIONS, true));
             assertEquals(permissionService.getAllSetPermissions(nodeRef.getStoreRef()).size(), 1);
 
             permissionService.clearPermission(nodeRef.getStoreRef(), "lemur");
@@ -474,8 +474,8 @@ public class AVMServicePermissionsTest extends TestCase
             assertTrue(checkHasPermission("andy", nodeRef, PermissionService.ALL_PERMISSIONS, false));
             assertTrue(checkPermission("lemur", storeName + ":/base", PermissionService.ALL_PERMISSIONS, false));
             assertTrue(checkHasPermission("lemur", nodeRef, PermissionService.ALL_PERMISSIONS, false));
-            assertTrue(checkPermission("admin", storeName + ":/base", PermissionService.ALL_PERMISSIONS, true));
-            assertTrue(checkHasPermission("admin", nodeRef, PermissionService.ALL_PERMISSIONS, true));
+            assertTrue(checkPermission(AuthenticationUtil.getAdminUserName(), storeName + ":/base", PermissionService.ALL_PERMISSIONS, true));
+            assertTrue(checkHasPermission(AuthenticationUtil.getAdminUserName(), nodeRef, PermissionService.ALL_PERMISSIONS, true));
 
         }
         finally
@@ -496,7 +496,7 @@ public class AVMServicePermissionsTest extends TestCase
 
     public void testSimpleUpdate() throws Throwable
     {
-        runAs("admin");
+        runAs(AuthenticationUtil.getAdminUserName());
         String storeName = "PermissionsTest-" + getName() + "-" + (new Date().getTime());
         try
         {
@@ -572,7 +572,7 @@ public class AVMServicePermissionsTest extends TestCase
 
     public void testUpdateWithPermissions() throws Exception
     {
-        runAs("admin");
+        runAs(AuthenticationUtil.getAdminUserName());
         String storeName = "PermissionsTest-" + getName() + "-" + (new Date().getTime());
         try
         {
@@ -653,7 +653,7 @@ public class AVMServicePermissionsTest extends TestCase
 
     public void testComplexStore_AlterInheritance()
     {
-        runAs("admin");
+        runAs(AuthenticationUtil.getAdminUserName());
         String storeName = "PermissionsTest-" + getName() + "-" + (new Date().getTime());
         try
         {
@@ -674,9 +674,9 @@ public class AVMServicePermissionsTest extends TestCase
             NodeRef nodeRef = AVMNodeConverter.ToNodeRef(-1, desc.getPath());
             permissionService.setPermission(nodeRef, PermissionService.ALL_AUTHORITIES, PermissionService.ALL_PERMISSIONS, true);
 
-            assertTrue(checkPermission("admin", storeName + ":/base", PermissionService.READ, true));
-            assertTrue(checkPermission("admin", storeName + "-layer-base:/layer-to-base", PermissionService.READ, true));
-            assertTrue(checkPermission("admin", storeName + "-layer-base:/layer-to-base", PermissionService.ALL_PERMISSIONS, true));
+            assertTrue(checkPermission(AuthenticationUtil.getAdminUserName(), storeName + ":/base", PermissionService.READ, true));
+            assertTrue(checkPermission(AuthenticationUtil.getAdminUserName(), storeName + "-layer-base:/layer-to-base", PermissionService.READ, true));
+            assertTrue(checkPermission(AuthenticationUtil.getAdminUserName(), storeName + "-layer-base:/layer-to-base", PermissionService.ALL_PERMISSIONS, true));
             // True as unset defaults to allow
             assertTrue(checkPermission("lemur", storeName + ":/base", PermissionService.READ, true));
             assertTrue(checkPermission("lemur", storeName + "-layer-base:/layer-to-base", PermissionService.READ, true));
@@ -687,9 +687,9 @@ public class AVMServicePermissionsTest extends TestCase
             permissionService.setPermission(nodeRef, PermissionService.ALL_AUTHORITIES, PermissionService.ALL_PERMISSIONS, true);
             permissionService.deletePermission(nodeRef, PermissionService.ALL_AUTHORITIES, PermissionService.ALL_PERMISSIONS);
 
-            assertTrue(checkPermission("admin", storeName + ":/base", PermissionService.READ, true));
-            assertTrue(checkPermission("admin", storeName + "-layer-base:/layer-to-base", PermissionService.READ, true));
-            assertTrue(checkPermission("admin", storeName + "-layer-base:/layer-to-base", PermissionService.ALL_PERMISSIONS, true));
+            assertTrue(checkPermission(AuthenticationUtil.getAdminUserName(), storeName + ":/base", PermissionService.READ, true));
+            assertTrue(checkPermission(AuthenticationUtil.getAdminUserName(), storeName + "-layer-base:/layer-to-base", PermissionService.READ, true));
+            assertTrue(checkPermission(AuthenticationUtil.getAdminUserName(), storeName + "-layer-base:/layer-to-base", PermissionService.ALL_PERMISSIONS, true));
             // True as unset defaults to allow
             assertTrue(checkPermission("lemur", storeName + ":/base", PermissionService.READ, false));
             assertTrue(checkPermission("lemur", storeName + "-layer-base:/layer-to-base", PermissionService.READ, true));
@@ -767,7 +767,7 @@ public class AVMServicePermissionsTest extends TestCase
 
     public void testComplexStore_AddPermissionsToMiddle()
     {
-        runAs("admin");
+        runAs(AuthenticationUtil.getAdminUserName());
         String storeName = "PermissionsTest-" + getName() + "-" + (new Date().getTime());
         try
         {
@@ -935,7 +935,7 @@ public class AVMServicePermissionsTest extends TestCase
 
     public void testComplexStore_AddPermissionsToBottom()
     {
-        runAs("admin");
+        runAs(AuthenticationUtil.getAdminUserName());
         String storeName = "PermissionsTest-" + getName() + "-" + (new Date().getTime());
         try
         {
@@ -1102,7 +1102,7 @@ public class AVMServicePermissionsTest extends TestCase
      */
     public void testSimpleFilePermissionDiff() throws Throwable
     {
-        runAs("admin");
+        runAs(AuthenticationUtil.getAdminUserName());
         
         String baseStore = "main";
         String layeredStore = "layer";
@@ -1205,7 +1205,7 @@ public class AVMServicePermissionsTest extends TestCase
      */
     public void testSimpleDirectoryPermissionDiff0() throws Throwable
     {
-        runAs("admin");
+        runAs(AuthenticationUtil.getAdminUserName());
         
         String baseStore = "main";
         String layeredStore = "layer";
@@ -1299,7 +1299,7 @@ public class AVMServicePermissionsTest extends TestCase
      */
     public void testSimpleDirectoryPermissionDiff1() throws Throwable
     {
-        runAs("admin");
+        runAs(AuthenticationUtil.getAdminUserName());
         
         String baseStore = "main";
         String layeredStore = "layer";
@@ -1400,7 +1400,7 @@ public class AVMServicePermissionsTest extends TestCase
      */
     public void testSimpleDirectoryPermissionDiff2() throws Throwable
     {
-        runAs("admin");
+        runAs(AuthenticationUtil.getAdminUserName());
         
         String baseStore = "main";
         String layeredStore = "layer";
@@ -1500,7 +1500,7 @@ public class AVMServicePermissionsTest extends TestCase
      */
     public void testSimpleDirectoryPermissionDiff3() throws Throwable
     {
-        runAs("admin");
+        runAs(AuthenticationUtil.getAdminUserName());
         
         String baseStore = "main";
         String layeredStore = "layer";
@@ -1648,7 +1648,7 @@ public class AVMServicePermissionsTest extends TestCase
      */
     public void testSimpleDirectoryPermissionDiff4() throws Throwable
     {
-        runAs("admin");
+        runAs(AuthenticationUtil.getAdminUserName());
         
         String baseStore = "main";
         String layeredStore = "layer";
@@ -1824,7 +1824,7 @@ public class AVMServicePermissionsTest extends TestCase
      */
     public void testSimpleDirectoryPermissionDiff5() throws Throwable
     {
-        runAs("admin");
+        runAs(AuthenticationUtil.getAdminUserName());
         
         String baseStore = "main";
         String layeredStore = "layer";
@@ -1980,7 +1980,7 @@ public class AVMServicePermissionsTest extends TestCase
      */
     public void testSimpleDirectoryPermissionDiff6() throws Throwable
     {
-        runAs("admin");
+        runAs(AuthenticationUtil.getAdminUserName());
         
         String baseStore = "main";
         String layeredStore = "layer";
@@ -2226,7 +2226,7 @@ public class AVMServicePermissionsTest extends TestCase
 
     public void testRedirectLayeredDirectory()
     {
-        runAs("admin");
+        runAs(AuthenticationUtil.getAdminUserName());
         String storeName = "PermissionsTest-" + getName() + "-" + (new Date().getTime());
         try
         {
@@ -2531,7 +2531,7 @@ public class AVMServicePermissionsTest extends TestCase
 
     public void testCopy()
     {
-        runAs("admin");
+        runAs(AuthenticationUtil.getAdminUserName());
         String storeName = "PermissionsTest-" + getName() + "-" + (new Date().getTime());
         try
         {
@@ -2648,7 +2648,7 @@ public class AVMServicePermissionsTest extends TestCase
 
     public void testBranches()
     {
-        runAs("admin");
+        runAs(AuthenticationUtil.getAdminUserName());
         String storeName = "PermissionsTest-" + getName() + "-" + (new Date().getTime());
         try
         {
@@ -2766,7 +2766,7 @@ public class AVMServicePermissionsTest extends TestCase
     @SuppressWarnings("unused")
     public void testWCMStyleTemplateAsBranch()
     {
-        runAs("admin");
+        runAs(AuthenticationUtil.getAdminUserName());
         String storeName = "PermissionsTest-" + getName() + "-" + (new Date().getTime());
         String branchName = storeName + "-Branch";
         try
@@ -2861,7 +2861,7 @@ public class AVMServicePermissionsTest extends TestCase
      */
     public void testSimpleExternalLayer() throws Exception
     {
-        runAs("admin");
+        runAs(AuthenticationUtil.getAdminUserName());
         String storeName = "PermissionsTest-" + getName() + "-" + (new Date().getTime());
         try
         {
@@ -3098,7 +3098,7 @@ public class AVMServicePermissionsTest extends TestCase
 
     public void testSimpleInternalLayer()
     {
-        runAs("admin");
+        runAs(AuthenticationUtil.getAdminUserName());
         String storeName = "PermissionsTest-" + getName() + "-" + (new Date().getTime());
         try
         {
@@ -3341,7 +3341,7 @@ public class AVMServicePermissionsTest extends TestCase
 
     public void testMutationsWithSimpleLayers()
     {
-        runAs("admin");
+        runAs(AuthenticationUtil.getAdminUserName());
         String storeName = "PermissionsTest-" + getName() + "-" + (new Date().getTime());
         try
         {
@@ -3465,7 +3465,7 @@ public class AVMServicePermissionsTest extends TestCase
 
     public void testRenamePlainDirectory()
     {
-        runAs("admin");
+        runAs(AuthenticationUtil.getAdminUserName());
         String storeName = "PermissionsTest-" + getName() + "-" + (new Date().getTime());
         try
         {
@@ -3586,7 +3586,7 @@ public class AVMServicePermissionsTest extends TestCase
 
     public void testRenamePlainFile()
     {
-        runAs("admin");
+        runAs(AuthenticationUtil.getAdminUserName());
         String storeName = "PermissionsTest-" + getName() + "-" + (new Date().getTime());
         try
         {
@@ -3706,7 +3706,7 @@ public class AVMServicePermissionsTest extends TestCase
 
     public void testRenamePlainDirectoryIntoLayer()
     {
-        runAs("admin");
+        runAs(AuthenticationUtil.getAdminUserName());
         String storeName = "PermissionsTest-" + getName() + "-" + (new Date().getTime());
         try
         {
@@ -3784,7 +3784,7 @@ public class AVMServicePermissionsTest extends TestCase
 
     public void testRenamePlainFileIntoLayer()
     {
-        runAs("admin");
+        runAs(AuthenticationUtil.getAdminUserName());
         String storeName = "PermissionsTest-" + getName() + "-" + (new Date().getTime());
         try
         {

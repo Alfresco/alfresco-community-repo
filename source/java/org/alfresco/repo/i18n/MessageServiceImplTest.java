@@ -59,7 +59,6 @@ public class MessageServiceImplTest extends TestCase implements MessageDeployer
      * Test user details
      */
     private static final String PWD = "admin";
-    private static final String USER_NAME = "admin";	
     
     /**
      * Test store ref
@@ -92,14 +91,14 @@ public class MessageServiceImplTest extends TestCase implements MessageDeployer
         // Get a reference to the root node
         NodeRef rootNodeRef = this.nodeService.getRootNode(this.testStoreRef);
         
-        // Create an authenticate the user        
-        if(!authenticationService.authenticationExists(USER_NAME))
+        // Create and authenticate the user        
+        if(!authenticationService.authenticationExists(AuthenticationUtil.getAdminUserName()))
         {
-            authenticationService.createAuthentication(USER_NAME, PWD.toCharArray());
+            authenticationService.createAuthentication(AuthenticationUtil.getAdminUserName(), PWD.toCharArray());
         }
              
         // Authenticate - as admin
-        authenticationService.authenticate(USER_NAME, PWD.toCharArray());
+        authenticationService.authenticate(AuthenticationUtil.getAdminUserName(), PWD.toCharArray());
         
         // Store test messages in repo
         String pattern = "classpath*:" + BASE_RESOURCE_CLASSPATH + BASE_BUNDLE_NAME + "*";

@@ -30,6 +30,7 @@ import junit.framework.TestCase;
 
 import org.alfresco.jcr.repository.RepositoryFactory;
 import org.alfresco.jcr.repository.RepositoryImpl;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -44,12 +45,18 @@ public class BaseJCRTest extends TestCase
     private RepositoryImpl repositoryImpl;
     protected Repository repository;
     protected StoreRef storeRef;
+    protected String adminUserName;
     
     protected static ApplicationContext applicationContext = new ClassPathXmlApplicationContext("classpath:org/alfresco/jcr/test/test-context.xml");
     
     protected String getWorkspace()
     {
         return storeRef.getIdentifier();
+    }
+    
+    protected String getAdminUserName()
+    {
+        return adminUserName;
     }
 
     @Override
@@ -60,6 +67,7 @@ public class BaseJCRTest extends TestCase
         repositoryImpl = (RepositoryImpl)applicationContext.getBean(RepositoryFactory.REPOSITORY_BEAN);
         repositoryImpl.setDefaultWorkspace(storeRef.getIdentifier());
         repository = repositoryImpl;
+        adminUserName = AuthenticationUtil.getAdminUserName();
     }
 
 }

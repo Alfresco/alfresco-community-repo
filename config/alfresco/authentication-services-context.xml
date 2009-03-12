@@ -531,4 +531,11 @@
             <value>8</value>
         </property>
     </bean>
+    
+    <!-- Authentication Util initialization -->
+    <bean id="authenticationUtil" class="org.alfresco.repo.security.authentication.AuthenticationUtil">
+        <property name="defaultAdminUserName"><value>${alfresco_user_store.adminusername}</value></property>
+        <property name="defaultGuestUserName"><value>${alfresco_user_store.adminpassword}</value></property>
+    </bean>
+    
 </beans>

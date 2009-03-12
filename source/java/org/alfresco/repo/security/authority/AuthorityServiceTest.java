@@ -35,6 +35,7 @@ import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
 import org.alfresco.repo.security.permissions.impl.AclDaoComponent;
 import org.alfresco.service.ServiceRegistry;
@@ -100,11 +101,11 @@ public class AuthorityServiceTest extends TestCase
         tx.begin();
         for (String user : pubAuthorityService.getAllAuthorities(AuthorityType.USER))
         {
-            if (user.equals("guest"))
+            if (user.equals(AuthenticationUtil.getGuestUserName()))
             {
                 continue;
             }
-            else if (user.equals("admin"))
+            else if (user.equals(AuthenticationUtil.getAdminUserName()))
             {
                 continue;
             }
@@ -138,9 +139,9 @@ public class AuthorityServiceTest extends TestCase
             authenticationService.createAuthentication("andy", "andy".toCharArray());
         }
 
-        if (!authenticationDAO.userExists("admin"))
+        if (!authenticationDAO.userExists(AuthenticationUtil.getAdminUserName()))
         {
-            authenticationService.createAuthentication("admin", "admin".toCharArray());
+            authenticationService.createAuthentication(AuthenticationUtil.getAdminUserName(), "admin".toCharArray());
         }
 
         if (!authenticationDAO.userExists("administrator"))
@@ -211,7 +212,7 @@ public class AuthorityServiceTest extends TestCase
 
     public void testAdminUser()
     {
-        authenticationComponent.setCurrentUser("admin");
+        authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
         assertTrue(authorityService.hasAdminAuthority());
         assertTrue(pubAuthorityService.hasAdminAuthority());
         assertEquals(3, authorityService.getAuthorities().size());

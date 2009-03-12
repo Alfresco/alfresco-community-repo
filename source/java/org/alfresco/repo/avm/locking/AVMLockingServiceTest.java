@@ -34,6 +34,7 @@ import java.util.Map;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.attributes.AttributeService;
 import org.alfresco.service.cmr.avm.locking.AVMLock;
 import org.alfresco.service.cmr.avm.locking.AVMLockingService;
@@ -323,7 +324,7 @@ public class AVMLockingServiceTest extends TestCase
             assertFalse(fService.hasAccess("alfresco", "LA:/ScrapHeap/Adam/plans.txt", "Willow"));
             assertTrue(fService.hasAccess("alfresco", "LA:/ScrapHeap/Adam/plans.txt", "Tara"));
             assertFalse(fService.hasAccess("alfresco", "LA:/ScrapHeap/Adam/plans.txt", "Xander"));
-            assertTrue(fService.hasAccess("alfresco", "LA:/ScrapHeap/Adam/plans.txt", "admin"));
+            assertTrue(fService.hasAccess("alfresco", "LA:/ScrapHeap/Adam/plans.txt", AuthenticationUtil.getAdminUserName()));
         }
         catch (Exception e)
         {

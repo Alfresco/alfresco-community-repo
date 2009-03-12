@@ -80,7 +80,6 @@ import org.apache.commons.logging.LogFactory;
 public class AVMExpiredContentProcessor
 {
     // defaults in case these properties are not configured in Spring
-    protected String adminUserName = "admin";
     protected String workflowName = "jbpm$wcmwf:changerequest";
     
     protected List<String> workflowStores;
@@ -109,7 +108,7 @@ public class AVMExpiredContentProcessor
     
     public void setAdminUserName(String adminUserName)
     {
-        this.adminUserName = adminUserName;
+        // NOTE: ignore, just for backwards compatible Spring config
     }
 
     public void setWorkflowName(String workflowName)
@@ -201,7 +200,7 @@ public class AVMExpiredContentProcessor
          };
          
          // perform the work as the system user
-         AuthenticationUtil.runAs(authorisedWork, this.adminUserName);
+         AuthenticationUtil.runAs(authorisedWork, AuthenticationUtil.getAdminRoleName());
 
          // now we know everything worked ok, let the virtualisation server
          // know about all the new workflow sandboxes created (just the main stores)

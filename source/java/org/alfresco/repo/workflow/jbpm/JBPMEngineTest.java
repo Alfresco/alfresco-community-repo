@@ -36,6 +36,7 @@ import org.alfresco.i18n.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.workflow.BPMEngineRegistry;
 import org.alfresco.repo.workflow.TaskComponent;
 import org.alfresco.repo.workflow.WorkflowComponent;
@@ -79,7 +80,7 @@ public class JBPMEngineTest extends BaseSpringTest
     {
         // run as system
         authenticationComponent = (AuthenticationComponent)applicationContext.getBean("authenticationComponent");
-        authenticationComponent.setCurrentUser("admin");
+        authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
         
         BPMEngineRegistry registry = (BPMEngineRegistry)applicationContext.getBean("bpm_engineRegistry");
         workflowComponent = registry.getWorkflowComponent("jbpm");
@@ -190,7 +191,7 @@ public class JBPMEngineTest extends BaseSpringTest
         params.put(QName.createQName("", "Message"), "Hello World");  // context variable outside of task definition
         params.put(QName.createQName("", "Array"), new String[] { "one", "two" });  // context variable outside of task definition
         params.put(QName.createQName("", "NodeRef"), new NodeRef("workspace://1/1001"));  // context variable outside of task definition
-        params.put(ContentModel.PROP_OWNER, "admin");  // task assignment
+        params.put(ContentModel.PROP_OWNER, AuthenticationUtil.getAdminUserName());  // task assignment
         
         WorkflowPath path = workflowComponent.startWorkflow(workflowDef.id, params);
         assertNotNull(path);
@@ -211,7 +212,7 @@ public class JBPMEngineTest extends BaseSpringTest
         
         NodeRef initiator = path.instance.initiator;
         String initiatorUsername = (String)nodeService.getProperty(initiator, ContentModel.PROP_USERNAME);
-        assertEquals("admin", initiatorUsername);
+        assertEquals(AuthenticationUtil.getAdminUserName(), initiatorUsername);
     }
 
     
@@ -227,7 +228,7 @@ public class JBPMEngineTest extends BaseSpringTest
         params.put(QName.createQName("", "Message"), "Hello World");  // context variable outside of task definition
         params.put(QName.createQName("", "Array"), new String[] { "one", "two" });  // context variable outside of task definition
         params.put(QName.createQName("", "NodeRef"), new NodeRef("workspace://1/1001"));  // context variable outside of task definition
-        params.put(ContentModel.PROP_OWNER, "admin");  // task assignment
+        params.put(ContentModel.PROP_OWNER, AuthenticationUtil.getAdminUserName());  // task assignment
         
         WorkflowPath path = workflowComponent.startWorkflow(workflowDef.id, params);
         assertNotNull(path);
@@ -334,7 +335,7 @@ public class JBPMEngineTest extends BaseSpringTest
         List<WorkflowInstance> instances1 = workflowComponent.getActiveWorkflows(workflowDef.id);
         assertNotNull(instances1);
         assertEquals(1, instances1.size());
-        List<WorkflowTask> tasks = taskComponent.getAssignedTasks("admin", WorkflowTaskState.IN_PROGRESS);
+        List<WorkflowTask> tasks = taskComponent.getAssignedTasks(AuthenticationUtil.getAdminUserName(), WorkflowTaskState.IN_PROGRESS);
         assertNotNull(tasks);
         assertTrue(tasks.size() > 0);
         WorkflowInstance cancelledInstance = workflowComponent.cancelWorkflow(instances1.get(0).id);
@@ -343,7 +344,7 @@ public class JBPMEngineTest extends BaseSpringTest
         List<WorkflowInstance> instances2 = workflowComponent.getActiveWorkflows(workflowDef.id);
         assertNotNull(instances2);
         assertEquals(0, instances2.size());
-        List<WorkflowTask> tasks1 = taskComponent.getAssignedTasks("admin", WorkflowTaskState.IN_PROGRESS);
+        List<WorkflowTask> tasks1 = taskComponent.getAssignedTasks(AuthenticationUtil.getAdminUserName(), WorkflowTaskState.IN_PROGRESS);
         assertNotNull(tasks1);
         tasks1 = filterTasksByWorkflowInstance(tasks1, cancelledInstance.id);
         assertEquals(0, tasks1.size());
@@ -366,7 +367,7 @@ public class JBPMEngineTest extends BaseSpringTest
     {
         WorkflowDefinition workflowDef = getTestDefinition();
         Map<QName, Serializable> parameters = new HashMap<QName, Serializable>();
-        parameters.put(QName.createQName(NamespaceService.DEFAULT_URI, "reviewer"), "admin");
+        parameters.put(QName.createQName(NamespaceService.DEFAULT_URI, "reviewer"), AuthenticationUtil.getAdminUserName());
         parameters.put(QName.createQName(NamespaceService.DEFAULT_URI, "testNode"), testNodeRef);
         parameters.put(QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "package"), packageComponent.createPackage(null));
         WorkflowPath path = workflowComponent.startWorkflow(workflowDef.id, parameters);
@@ -376,11 +377,11 @@ public class JBPMEngineTest extends BaseSpringTest
         assertEquals(1, tasks.size());
         WorkflowTask updatedTask = taskComponent.endTask(tasks.get(0).id, path.node.transitions[0].id);
         assertNotNull(updatedTask);
-        List<WorkflowTask> completedTasks = taskComponent.getAssignedTasks("admin", WorkflowTaskState.COMPLETED);
+        List<WorkflowTask> completedTasks = taskComponent.getAssignedTasks(AuthenticationUtil.getAdminUserName(), WorkflowTaskState.COMPLETED);
         assertNotNull(completedTasks);
         completedTasks = filterTasksByWorkflowInstance(completedTasks, path.instance.id);
         assertEquals(1, completedTasks.size());
-        List<WorkflowTask> assignedTasks = taskComponent.getAssignedTasks("admin", WorkflowTaskState.IN_PROGRESS);
+        List<WorkflowTask> assignedTasks = taskComponent.getAssignedTasks(AuthenticationUtil.getAdminUserName(), WorkflowTaskState.IN_PROGRESS);
         assertNotNull(assignedTasks);
         assignedTasks = filterTasksByWorkflowInstance(assignedTasks, path.instance.id);
         assertEquals(1, assignedTasks.size());
@@ -392,7 +393,7 @@ public class JBPMEngineTest extends BaseSpringTest
     {
         WorkflowDefinition workflowDef = getTestDefinition();
         List<String> bpm_assignees = new ArrayList<String>();
-        bpm_assignees.add("admin");
+        bpm_assignees.add(AuthenticationUtil.getAdminUserName());
         bpm_assignees.add("bob");
         bpm_assignees.add("fred");
         Map<QName, Serializable> parameters = new HashMap<QName, Serializable>();
@@ -412,7 +413,7 @@ public class JBPMEngineTest extends BaseSpringTest
     {
         WorkflowDefinition workflowDef = getTestDefinition();
         Map<QName, Serializable> parameters = new HashMap<QName, Serializable>();
-        parameters.put(QName.createQName(NamespaceService.DEFAULT_URI, "reviewer"), "admin");
+        parameters.put(QName.createQName(NamespaceService.DEFAULT_URI, "reviewer"), AuthenticationUtil.getAdminUserName());
         parameters.put(QName.createQName(NamespaceService.DEFAULT_URI, "testNode"), testNodeRef);
         parameters.put(QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "package"), packageComponent.createPackage(null));
         WorkflowPath path = workflowComponent.startWorkflow(workflowDef.id, parameters);
@@ -424,7 +425,7 @@ public class JBPMEngineTest extends BaseSpringTest
         WorkflowTask updatedTask = taskComponent.endTask(tasks1.get(0).id, null);
         assertNotNull(updatedTask);
         assertEquals(WorkflowTaskState.COMPLETED, updatedTask.state);
-        List<WorkflowTask> completedTasks = taskComponent.getAssignedTasks("admin", WorkflowTaskState.COMPLETED);
+        List<WorkflowTask> completedTasks = taskComponent.getAssignedTasks(AuthenticationUtil.getAdminUserName(), WorkflowTaskState.COMPLETED);
         assertNotNull(completedTasks);
         completedTasks = filterTasksByWorkflowInstance(completedTasks, path.instance.id);
         assertEquals(1, completedTasks.size());
@@ -436,7 +437,7 @@ public class JBPMEngineTest extends BaseSpringTest
     {
         WorkflowDefinition workflowDef = getTestDefinition();
         Map<QName, Serializable> parameters = new HashMap<QName, Serializable>();
-        parameters.put(QName.createQName(NamespaceService.DEFAULT_URI, "reviewer"), "admin");
+        parameters.put(QName.createQName(NamespaceService.DEFAULT_URI, "reviewer"), AuthenticationUtil.getAdminUserName());
         parameters.put(QName.createQName(NamespaceService.DEFAULT_URI, "testNode"), testNodeRef);
         WorkflowPath path = workflowComponent.startWorkflow(workflowDef.id, parameters);
         assertNotNull(path);
@@ -454,7 +455,7 @@ public class JBPMEngineTest extends BaseSpringTest
     {
         WorkflowDefinition workflowDef = getTestDefinition();
         Map<QName, Serializable> parameters = new HashMap<QName, Serializable>();
-        parameters.put(QName.createQName(NamespaceService.DEFAULT_URI, "reviewer"), "admin");
+        parameters.put(QName.createQName(NamespaceService.DEFAULT_URI, "reviewer"), AuthenticationUtil.getAdminUserName());
         parameters.put(QName.createQName(NamespaceService.DEFAULT_URI, "testNode"), testNodeRef);
         parameters.put(QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "package"), packageComponent.createPackage(null));
         WorkflowPath path = workflowComponent.startWorkflow(workflowDef.id, parameters);

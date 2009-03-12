@@ -30,6 +30,7 @@ import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -114,9 +115,9 @@ public class SearchServiceTest extends TestCase
             authenticationService.createAuthentication("andy", "andy".toCharArray());
         }
 
-        if (!authenticationDAO.userExists("admin"))
+        if (!authenticationDAO.userExists(AuthenticationUtil.getAdminUserName()))
         {
-            authenticationService.createAuthentication("admin", "admin".toCharArray());
+            authenticationService.createAuthentication(AuthenticationUtil.getAdminUserName(), "admin".toCharArray());
         }
 
         if (!authenticationDAO.userExists("administrator"))
@@ -165,7 +166,7 @@ public class SearchServiceTest extends TestCase
 
     public void testAdmim()
     {
-        authenticationComponent.setCurrentUser("admin");
+        authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
         SearchParameters sp = new SearchParameters();
         sp.setLanguage(SearchService.LANGUAGE_LUCENE);
         sp.setQuery("PATH:\"//*\"");

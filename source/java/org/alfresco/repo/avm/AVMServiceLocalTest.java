@@ -36,6 +36,7 @@ import junit.framework.TestCase;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.avm.util.RemoteBulkLoader;
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
@@ -88,7 +89,7 @@ public class AVMServiceLocalTest extends TestCase
             excluder = (NameMatcher) fContext.getBean("globalPathExcluder");
             
             AuthenticationService authService = (AuthenticationService)fContext.getBean("AuthenticationService");
-            authService.authenticate("admin", "admin".toCharArray());
+            authService.authenticate(AuthenticationUtil.getAdminUserName(), "admin".toCharArray());
         }
         
         if (fService.getStore("main") == null)

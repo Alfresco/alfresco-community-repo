@@ -35,6 +35,7 @@ import org.alfresco.repo.action.evaluator.ComparePropertyValueEvaluator;
 import org.alfresco.repo.action.executer.AddFeaturesActionExecuter;
 import org.alfresco.repo.configuration.ConfigurableService;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionCondition;
 import org.alfresco.service.cmr.action.ActionService;
@@ -127,7 +128,7 @@ public class BaseRuleTest extends BaseSpringTest
         this.authenticationComponent = (AuthenticationComponent)this.applicationContext.getBean("authenticationComponent");
 
         //authenticationComponent.setSystemUserAsCurrentUser();
-        authenticationComponent.setCurrentUser("admin");
+        authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
         
         // Get the rule type
         this.ruleType = this.ruleService.getRuleType(RULE_TYPE_NAME);

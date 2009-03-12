@@ -357,7 +357,7 @@ public class PreferenceServiceImpl implements PreferenceService
                     
                     return null;
                 }
-            }, "admin");               
+            }, AuthenticationUtil.getAdminUserName());               
         }
         else
         {

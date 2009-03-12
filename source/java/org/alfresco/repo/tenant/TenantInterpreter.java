@@ -37,6 +37,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.security.AuthenticationService;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.io.ClassPathResource;
 
 /**
@@ -51,7 +52,7 @@ public class TenantInterpreter extends BaseInterpreter
     protected TenantService tenantService;
     private AuthenticationService authenticationService;
     
-    private String baseAdminUsername = "admin"; // default for backwards compatibility only - eg. upgrade of existing MT instance (mt-admin-context.xml.sample)
+    private String baseAdminUsername = null; // default for backwards compatibility only - eg. upgrade of existing MT instance (mt-admin-context.xml.sample)
 
     public void setTenantAdminService(TenantAdminService tenantAdminService)
     {
@@ -71,6 +72,15 @@ public class TenantInterpreter extends BaseInterpreter
     public void setBaseAdminUsername(String baseAdminUsername)
     {
         this.baseAdminUsername = baseAdminUsername;
+    }
+    
+    public String getBaseAdminUsername()
+    {
+        if (baseAdminUsername != null)
+        {
+            return baseAdminUsername;
+        }
+        return AuthenticationUtil.getAdminUserName();
     }
     
     /**
@@ -336,7 +346,7 @@ public class TenantInterpreter extends BaseInterpreter
             String tenantDomain = new String(command[1]).toLowerCase();
             
             final String newPassword = new String(command[2]);
-            final String tenantAdminUsername = tenantService.getDomainUser(baseAdminUsername, tenantDomain);
+            final String tenantAdminUsername = tenantService.getDomainUser(getBaseAdminUsername(), tenantDomain);
 
             AuthenticationUtil.runAs(new RunAsWork<Object>()
             {

@@ -33,6 +33,7 @@ import java.util.Map;
 
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.workflow.BPMEngineRegistry;
 import org.alfresco.repo.workflow.TaskComponent;
 import org.alfresco.repo.workflow.WorkflowComponent;
@@ -98,7 +99,7 @@ public class NodeListConverterTest extends BaseSpringTest
         params.put(WorkflowModel.ASSOC_PACKAGE, testNodeRef);
         Date reviewDueDate = new Date();
         params.put(QName.createQName("http://www.alfresco.org/model/workflow/1.0", "reviewDueDate"), reviewDueDate);
-        NodeRef reviewer = personService.getPerson("admin");
+        NodeRef reviewer = personService.getPerson(AuthenticationUtil.getAdminUserName());
         params.put(QName.createQName("http://www.alfresco.org/model/workflow/1.0", "reviewer"), reviewer);
         
         WorkflowPath path = workflowComponent.startWorkflow(testWorkflowDef.id, params);

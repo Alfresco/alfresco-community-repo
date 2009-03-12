@@ -51,6 +51,7 @@ import org.alfresco.repo.avm.util.BulkLoader;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.sandbox.SandboxConstants;
@@ -371,7 +372,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             fService = oldService;
             fLockingService.removeStoreLocks("main");
             fLockingService.removeWebProject("main");
-            authService.authenticate("admin", "admin".toCharArray());
+            authService.authenticate(AuthenticationUtil.getAdminUserName(), "admin".toCharArray());
             fService.purgeStore("main--admin");
         }
     }

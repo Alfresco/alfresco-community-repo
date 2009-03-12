@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.alfresco.repo.jscript.ClasspathScriptLocation;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.activities.ActivityService;
 import org.alfresco.service.cmr.activities.FeedControl;
 import org.alfresco.service.cmr.repository.ScriptLocation;
@@ -46,7 +47,6 @@ public class ActivityServiceImplTest extends BaseSpringTest
     private ScriptService scriptService;
     private AuthenticationService authenticationService;
     
-    private static final String ADMIN_UN = "admin";
     private static final String ADMIN_PW = "admin";
     
     private static final String USER_UN = "bob";
@@ -62,7 +62,7 @@ public class ActivityServiceImplTest extends BaseSpringTest
         
         this.authenticationService = (AuthenticationService)applicationContext.getBean("authenticationService");
         
-        authenticationService.authenticate(ADMIN_UN, ADMIN_PW.toCharArray());
+        authenticationService.authenticate(AuthenticationUtil.getAdminUserName(), ADMIN_PW.toCharArray());
     }
     
     protected void onTearDownInTransaction() throws Exception

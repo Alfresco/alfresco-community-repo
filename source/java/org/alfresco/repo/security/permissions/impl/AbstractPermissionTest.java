@@ -31,6 +31,7 @@ import java.util.Map;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.db.NodeDaoService;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
 import org.alfresco.repo.security.permissions.PermissionReference;
 import org.alfresco.repo.security.permissions.PermissionServiceSPI;
@@ -140,11 +141,11 @@ public class AbstractPermissionTest extends BaseSpringTest
         }
         authenticationService.createAuthentication("lemur", "lemur".toCharArray());
         
-        if(authenticationDAO.userExists("admin"))
+        if(authenticationDAO.userExists(AuthenticationUtil.getAdminUserName()))
         {
-            authenticationService.deleteAuthentication("admin");
+            authenticationService.deleteAuthentication(AuthenticationUtil.getAdminUserName());
         }
-        authenticationService.createAuthentication("admin", "admin".toCharArray());
+        authenticationService.createAuthentication(AuthenticationUtil.getAdminUserName(), "admin".toCharArray());
         
         authenticationComponent.clearCurrentSecurityContext();
     }

@@ -47,16 +47,16 @@ public class CMISPropertyServiceTest extends BaseCMISTest
     {
         NodeRef folder = fileFolderService.create(rootNodeRef, "BaseFolder", ContentModel.TYPE_FOLDER).getNodeRef();
         Map<String, Serializable> properties = cmisPropertyService.getProperties(folder);
-        assertEquals(properties.get(CMISMapping.PROP_OBJECT_ID), folder.toString());
+        assertEquals(folder.toString(), properties.get(CMISMapping.PROP_OBJECT_ID));
         assertNull(properties.get(CMISMapping.PROP_URI));
-        assertEquals(properties.get(CMISMapping.PROP_OBJECT_TYPE_ID), CMISMapping.FOLDER_TYPE_ID.getTypeId());
-        assertEquals(properties.get(CMISMapping.PROP_CREATED_BY), authenticationComponent.getCurrentUserName());
+        assertEquals(CMISMapping.FOLDER_TYPE_ID.getTypeId(), properties.get(CMISMapping.PROP_OBJECT_TYPE_ID));
+        assertEquals(authenticationComponent.getCurrentUserName(), properties.get(CMISMapping.PROP_CREATED_BY));
         assertNotNull(properties.get(CMISMapping.PROP_CREATION_DATE));
-        assertEquals(properties.get(CMISMapping.PROP_LAST_MODIFIED_BY), authenticationComponent.getCurrentUserName());
+        assertEquals(authenticationComponent.getCurrentUserName(), properties.get(CMISMapping.PROP_LAST_MODIFIED_BY));
         assertNotNull(properties.get(CMISMapping.PROP_LAST_MODIFICATION_DATE));
         assertNull(properties.get(CMISMapping.PROP_CHANGE_TOKEN));
 
-        assertEquals(properties.get(CMISMapping.PROP_NAME), "BaseFolder");
+        assertEquals("BaseFolder", properties.get(CMISMapping.PROP_NAME));
 
         assertNull(properties.get(CMISMapping.PROP_IS_IMMUTABLE));
         assertNull(properties.get(CMISMapping.PROP_IS_LATEST_VERSION));
@@ -74,7 +74,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertNull(properties.get(CMISMapping.PROP_CONTENT_STREAM_FILENAME));
         assertNull(properties.get(CMISMapping.PROP_CONTENT_STREAM_URI));
 
-        assertEquals(properties.get(CMISMapping.PROP_PARENT_ID), rootNodeRef.toString());
+        assertEquals(rootNodeRef.toString(), properties.get(CMISMapping.PROP_PARENT_ID));
         assertNull(properties.get(CMISMapping.PROP_ALLOWED_CHILD_OBJECT_TYPE_IDS));
 
     }
@@ -109,7 +109,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_LENGTH), 0L);
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_MIME_TYPE), "application/octet-stream");
         assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_FILENAME), "BaseContent");
-        assertEquals(properties.get(CMISMapping.PROP_CONTENT_STREAM_URI), null);
+        assertEquals(null, properties.get(CMISMapping.PROP_CONTENT_STREAM_URI));
 
         assertNull(properties.get(CMISMapping.PROP_PARENT_ID));
         assertNull(properties.get(CMISMapping.PROP_ALLOWED_CHILD_OBJECT_TYPE_IDS));

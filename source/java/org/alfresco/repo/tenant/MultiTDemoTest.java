@@ -104,7 +104,6 @@ public class MultiTDemoTest extends TestCase
     
     public static final String ROOT_DIR = "./tenantstores";
 
-    public static final String DEFAULT_ADMIN_UN = "admin";
     public static final String DEFAULT_ADMIN_PW = "admin";
     
     public static final String DEFAULT_GUEST_UN = "guest";
@@ -152,7 +151,7 @@ public class MultiTDemoTest extends TestCase
     
     public void testCreateTenants() throws Throwable
     {   
-        AuthenticationUtil.setFullyAuthenticatedUser(DEFAULT_ADMIN_UN); // authenticate as super-admin
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName()); // authenticate as super-admin
         
         logger.info("Create tenants");
         
@@ -217,7 +216,7 @@ public class MultiTDemoTest extends TestCase
         {
             for (final String tenantDomain : tenants)
             {        
-                String tenantAdminName = tenantService.getDomainUser(DEFAULT_ADMIN_UN, tenantDomain);
+                String tenantAdminName = tenantService.getDomainUser(AuthenticationUtil.getAdminUserName(), tenantDomain);
                 
                 AuthenticationUtil.runAs(new RunAsWork<Object>()
                 {
@@ -238,7 +237,7 @@ public class MultiTDemoTest extends TestCase
             
             for (final String tenantDomain : tenants)
             {        
-                String tenantAdminName = tenantService.getDomainUser(DEFAULT_ADMIN_UN, tenantDomain);
+                String tenantAdminName = tenantService.getDomainUser(AuthenticationUtil.getAdminUserName(), tenantDomain);
                 
                 AuthenticationUtil.runAs(new RunAsWork<Object>()
                 {
@@ -343,7 +342,7 @@ public class MultiTDemoTest extends TestCase
             
             for (final String tenantDomain : tenants)
             {
-                loginLogoutUser(tenantService.getDomainUser(DEFAULT_ADMIN_UN, tenantDomain), DEFAULT_ADMIN_PW+" "+tenantDomain);
+                loginLogoutUser(tenantService.getDomainUser(AuthenticationUtil.getAdminUserName(), tenantDomain), DEFAULT_ADMIN_PW+" "+tenantDomain);
             }
         }   
         catch (Throwable t)
@@ -361,7 +360,7 @@ public class MultiTDemoTest extends TestCase
 
         for (final String tenantDomain : tenants)
         {        
-            String tenantAdminName = tenantService.getDomainUser(DEFAULT_ADMIN_UN, tenantDomain);
+            String tenantAdminName = tenantService.getDomainUser(AuthenticationUtil.getAdminUserName(), tenantDomain);
             
             AuthenticationUtil.runAs(new RunAsWork<Object>()
                     {
@@ -392,7 +391,7 @@ public class MultiTDemoTest extends TestCase
         
         for (final String tenantDomain : tenants)
         {        
-            String tenantAdminName = tenantService.getDomainUser(DEFAULT_ADMIN_UN, tenantDomain);
+            String tenantAdminName = tenantService.getDomainUser(AuthenticationUtil.getAdminUserName(), tenantDomain);
             
             AuthenticationUtil.runAs(new RunAsWork<Object>()
                     {
@@ -522,11 +521,11 @@ public class MultiTDemoTest extends TestCase
                 assertTrue("Super admin: ", (nodeService.getStores().size() >= DEFAULT_STORE_COUNT));
                 return null;                      
             }
-        }, DEFAULT_ADMIN_UN);
+        }, AuthenticationUtil.getAdminUserName());
         
         for (final String tenantDomain : tenants)
         {        
-            String tenantAdminName = tenantService.getDomainUser(DEFAULT_ADMIN_UN, tenantDomain);
+            String tenantAdminName = tenantService.getDomainUser(AuthenticationUtil.getAdminUserName(), tenantDomain);
             
             AuthenticationUtil.runAs(new RunAsWork<Object>()
             {
@@ -546,7 +545,7 @@ public class MultiTDemoTest extends TestCase
         
         for (final String tenantDomain : tenants)
         {
-            String tenantAdminName = tenantService.getDomainUser(DEFAULT_ADMIN_UN, tenantDomain);
+            String tenantAdminName = tenantService.getDomainUser(AuthenticationUtil.getAdminUserName(), tenantDomain);
             
             AuthenticationUtil.runAs(new RunAsWork<Object>()
             {

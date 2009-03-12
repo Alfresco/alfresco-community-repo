@@ -24,6 +24,7 @@
  */
 package org.alfresco.repo.avm;
 
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.security.AuthenticationService;
@@ -50,7 +51,7 @@ public abstract class AbstractSpringContextTest extends AbstractDependencyInject
         permissionService = servReg.getPermissionService();
         assertNotNull(permissionService);
         
-        authenticationService.authenticate("admin", "admin".toCharArray());
+        authenticationService.authenticate(AuthenticationUtil.getAdminUserName(), "admin".toCharArray());
     }
 
     @Override

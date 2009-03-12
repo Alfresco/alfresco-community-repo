@@ -41,11 +41,12 @@ import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.log.NDC;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.InitializingBean;
 
 /**
  * Utility helper methods to change the authenticated context for threads.
  */
-public abstract class AuthenticationUtil
+public class AuthenticationUtil implements InitializingBean
 {
     static Log s_logger = LogFactory.getLog(AuthenticationUtil.class);
 
@@ -59,9 +60,31 @@ public abstract class AuthenticationUtil
         Result doWork() throws Exception;
     }
 
+    private static boolean initialized = false;
+    
     public static final String SYSTEM_USER_NAME = "System";
-
+    private static String defaultAdminUserName = PermissionService.ADMINISTRATOR_AUTHORITY;
+    private static String defaultGuestUserName = PermissionService.GUEST_AUTHORITY; 
     private static boolean mtEnabled = false;
+    
+    /* (non-Javadoc)
+     * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
+     */
+    public void afterPropertiesSet() throws Exception
+    {
+        // at this point default admin and guest names have been assigned
+        initialized = true;
+    }
+    
+    public void setDefaultAdminUserName(String defaultAdminUserName)
+    {
+        AuthenticationUtil.defaultAdminUserName = defaultAdminUserName;
+    }
+    
+    public void setDefaultGuestUserName(String defaultGuestUserName)
+    {
+        AuthenticationUtil.defaultGuestUserName = defaultGuestUserName;
+    }
     
     public static void setMtEnabled(boolean mtEnabled)
     {
@@ -375,19 +398,45 @@ public abstract class AuthenticationUtil
     /**
      * Get the name of the system user
      * 
-     * @return String
+     * @return system user name
      */
     public static String getSystemUserName()
     {
         return SYSTEM_USER_NAME;
     }
+    
+    /**
+     * Get the name of the default admin user (the admin user created during bootstrap)
+     * 
+     * @return admin user name
+     */
+    public static String getAdminUserName()
+    {
+        if (!initialized)
+        {
+            throw new IllegalStateException("AuthenticationUtil not yet initialised; default admin username not available");
+        }
+        return defaultAdminUserName;
+    }
 
+    /*
+     * Get the name of admin role
+     */
+    public static String getAdminRoleName()
+    {
+        return PermissionService.ADMINISTRATOR_AUTHORITY;
+    }
+    
     /**
      * Get the name of the Guest User
      */
     public static String getGuestUserName()
     {
-        return PermissionService.GUEST_AUTHORITY.toLowerCase();
+        if (!initialized)
+        {
+            throw new IllegalStateException("AuthenticationUtil not yet initialised; default guest username not available");
+        }
+        return defaultGuestUserName;
     }
 
     /**
@@ -545,4 +594,5 @@ public abstract class AuthenticationUtil
             NDC.push("User:" + userName);
         }
     }
+
 }

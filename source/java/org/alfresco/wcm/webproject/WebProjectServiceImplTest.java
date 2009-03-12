@@ -112,7 +112,7 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
         if (CLEAN)
         {
             // Switch back to Admin
-            AuthenticationUtil.setFullyAuthenticatedUser(USER_ADMIN);
+            AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
             
             deleteGroup(GROUP_ONE);
             
@@ -262,7 +262,7 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
         }
         
         // Switch back to Admin
-        AuthenticationUtil.setFullyAuthenticatedUser(USER_ADMIN);
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         NodeRef wpRootNodeRef = wpService.getWebProjectsRoot();
         
         // note: implies "coordinator", "collaborator" or "contributor" (not "editor" or "consumer") - see permissionsDefinition.xml
@@ -285,7 +285,7 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
         assertEquals(WCMUtil.ROLE_CONTENT_PUBLISHER, wpService.listWebUsers(wpInfo.getStoreId()).get(USER_TWO));
         
         // Switch back to Admin
-        AuthenticationUtil.setFullyAuthenticatedUser(USER_ADMIN);
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         
         permissionService.setPermission(wpRootNodeRef, USER_TWO, PermissionService.EDITOR, true);
         permissionService.setPermission(wpRootNodeRef, USER_THREE, PermissionService.CONSUMER, true);
@@ -421,7 +421,7 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
         }
         
         // Switch back to admin
-        AuthenticationUtil.setFullyAuthenticatedUser(USER_ADMIN);
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         
         webProjects = wpService.listWebProjects();
         cnt = webProjects.size();
@@ -520,7 +520,7 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
         }
         
         // Switch back to admin
-        AuthenticationUtil.setFullyAuthenticatedUser(USER_ADMIN);
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
 
         // Delete the web project
         wpService.deleteWebProject(wpStoreId);
@@ -584,7 +584,7 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
         }
         
         // Switch back to admin
-        AuthenticationUtil.setFullyAuthenticatedUser(USER_ADMIN);
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         
         // Create another webapp - test using wpStoreId
         wpService.createWebApp(wpInfo.getStoreId(), TEST_WEBAPP2, TEST_WEBPROJ_DESCRIPTION);
@@ -683,7 +683,7 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
         }
         
         // Switch back to admin
-        AuthenticationUtil.setFullyAuthenticatedUser(USER_ADMIN);
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         
         try
         {
@@ -745,14 +745,14 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
         int userOneWebProjectCount = webProjects.size();
         
         // Switch back to admin
-        AuthenticationUtil.setFullyAuthenticatedUser(USER_ADMIN);
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         
         // Create a web project
         WebProjectInfo wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-inviteWebUsers", TEST_WEBPROJ_NAME+"-inviteWebUsers", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION);
         NodeRef wpNodeRef = wpInfo.getNodeRef();
         
         assertEquals(1, wpService.listWebUsers(wpNodeRef).size());
-        assertEquals(WCMUtil.ROLE_CONTENT_MANAGER, wpService.listWebUsers(wpNodeRef).get(USER_ADMIN));
+        assertEquals(WCMUtil.ROLE_CONTENT_MANAGER, wpService.listWebUsers(wpNodeRef).get(AuthenticationUtil.getAdminUserName()));
         
         Map<String, String> userGroupRoles = new HashMap<String, String>();
         userGroupRoles.put(USER_ONE, WCMUtil.ROLE_CONTENT_MANAGER);
@@ -768,7 +768,7 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
         wpService.inviteWebUsersGroups(wpNodeRef, userGroupRoles, false);
 
         assertEquals(4, wpService.listWebUsers(wpNodeRef).size());
-        assertEquals(WCMUtil.ROLE_CONTENT_MANAGER, wpService.listWebUsers(wpNodeRef).get(USER_ADMIN));
+        assertEquals(WCMUtil.ROLE_CONTENT_MANAGER, wpService.listWebUsers(wpNodeRef).get(AuthenticationUtil.getAdminUserName()));
         assertEquals(WCMUtil.ROLE_CONTENT_MANAGER, wpService.listWebUsers(wpNodeRef).get(USER_ONE));
         assertEquals(WCMUtil.ROLE_CONTENT_PUBLISHER, wpService.listWebUsers(wpNodeRef).get(USER_TWO));
         assertEquals(WCMUtil.ROLE_CONTENT_REVIEWER, wpService.listWebUsers(wpNodeRef).get(USER_THREE));
@@ -790,14 +790,14 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
         // Finish: Test fix ETWOTWO-567
         
         // Switch back to admin
-        AuthenticationUtil.setFullyAuthenticatedUser(USER_ADMIN);
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         
         // Create a web project
         wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-inviteWebUsers2", TEST_WEBPROJ_NAME+"-inviteWebUsers2", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION);
         wpNodeRef = wpInfo.getNodeRef();
         
         assertEquals(1, wpService.listWebUsers(wpNodeRef).size());
-        assertEquals(WCMUtil.ROLE_CONTENT_MANAGER, wpService.listWebUsers(wpNodeRef).get(USER_ADMIN));
+        assertEquals(WCMUtil.ROLE_CONTENT_MANAGER, wpService.listWebUsers(wpNodeRef).get(AuthenticationUtil.getAdminUserName()));
         
         userGroupRoles = new HashMap<String, String>();
  
@@ -807,7 +807,7 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
         wpService.inviteWebUsersGroups(wpInfo.getStoreId(), userGroupRoles);
 
         assertEquals(3, wpService.listWebUsers(wpNodeRef).size());
-        assertEquals(WCMUtil.ROLE_CONTENT_MANAGER, wpService.listWebUsers(wpNodeRef).get(USER_ADMIN));
+        assertEquals(WCMUtil.ROLE_CONTENT_MANAGER, wpService.listWebUsers(wpNodeRef).get(AuthenticationUtil.getAdminUserName()));
         assertEquals(WCMUtil.ROLE_CONTENT_PUBLISHER, wpService.listWebUsers(wpNodeRef).get(USER_ONE));
         assertEquals(WCMUtil.ROLE_CONTENT_PUBLISHER, wpService.listWebUsers(wpNodeRef).get(USER_TWO));
     }
@@ -825,17 +825,17 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
         int userOneWebProjectCount = webProjects.size();
         
         // Switch back to admin
-        AuthenticationUtil.setFullyAuthenticatedUser(USER_ADMIN);
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         
         // Create a web project
         WebProjectInfo wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-inviteWebUser1", TEST_WEBPROJ_NAME+"-inviteWebUser1", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION);
         NodeRef wpNodeRef = wpInfo.getNodeRef();
         
-        assertTrue(wpService.isWebUser(wpNodeRef, USER_ADMIN));
+        assertTrue(wpService.isWebUser(wpNodeRef, AuthenticationUtil.getAdminUserName()));
         assertFalse(wpService.isWebUser(wpNodeRef, USER_ONE));
         
         assertEquals(1, wpService.listWebUsers(wpNodeRef).size());
-        assertEquals(WCMUtil.ROLE_CONTENT_MANAGER, wpService.listWebUsers(wpNodeRef).get(USER_ADMIN));
+        assertEquals(WCMUtil.ROLE_CONTENT_MANAGER, wpService.listWebUsers(wpNodeRef).get(AuthenticationUtil.getAdminUserName()));
         
         // Invite one web user - test using wpStoreId
         wpService.inviteWebUser(wpInfo.getStoreId(), USER_ONE, WCMUtil.ROLE_CONTENT_PUBLISHER);
@@ -855,7 +855,7 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
         NodeRef wpNodeRef2 = wpInfo.getNodeRef();
         
         assertEquals(1, wpService.listWebUsers(wpNodeRef2).size());
-        assertEquals(WCMUtil.ROLE_CONTENT_MANAGER, wpService.listWebUsers(wpNodeRef2).get(USER_ADMIN));
+        assertEquals(WCMUtil.ROLE_CONTENT_MANAGER, wpService.listWebUsers(wpNodeRef2).get(AuthenticationUtil.getAdminUserName()));
         
         assertFalse(wpService.isWebUser(wpInfo.getStoreId(), USER_ONE));
         assertFalse(wpService.isWebUser(wpNodeRef2, USER_TWO));
@@ -919,7 +919,7 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
         assertTrue(wpService.isWebUser(wpNodeRef2, USER_THREE));
         
         // Switch back to admin
-        AuthenticationUtil.setFullyAuthenticatedUser(USER_ADMIN);
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         
         assertEquals(4, wpService.listWebUsers(wpNodeRef2).size());
         assertEquals(WCMUtil.ROLE_CONTENT_REVIEWER, wpService.listWebUsers(wpNodeRef2).get(USER_THREE));
@@ -938,16 +938,16 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
         int userFourWebProjectCount = webProjects.size();
         
         // Switch back to admin
-        AuthenticationUtil.setFullyAuthenticatedUser(USER_ADMIN);
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         
         // Create a web project
         WebProjectInfo wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-uninviteWebUser", TEST_WEBPROJ_NAME+"-uninviteWebUser", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION);
         NodeRef wpNodeRef = wpInfo.getNodeRef();
         
         assertEquals(1, wpService.listWebUsers(wpNodeRef).size());
-        assertEquals(WCMUtil.ROLE_CONTENT_MANAGER, wpService.listWebUsers(wpNodeRef).get(USER_ADMIN));
+        assertEquals(WCMUtil.ROLE_CONTENT_MANAGER, wpService.listWebUsers(wpNodeRef).get(AuthenticationUtil.getAdminUserName()));
         
-        assertTrue(wpService.isWebUser(wpNodeRef, USER_ADMIN));
+        assertTrue(wpService.isWebUser(wpNodeRef, AuthenticationUtil.getAdminUserName()));
         assertFalse(wpService.isWebUser(wpNodeRef, USER_FOUR));
         assertFalse(wpService.isWebUser(wpNodeRef, USER_ONE));
         
@@ -998,7 +998,7 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
         }
         
         // Switch back to admin
-        AuthenticationUtil.setFullyAuthenticatedUser(USER_ADMIN);
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         
         // Uninvite web user - test using wpStoreId
         wpService.uninviteWebUser(wpInfo.getStoreId(), USER_FOUR);
@@ -1014,17 +1014,17 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
         assertEquals(userFourWebProjectCount, webProjects.size());
         
         // Switch back to admin
-        AuthenticationUtil.setFullyAuthenticatedUser(USER_ADMIN);
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
 
         // Content manager can uninvite themself
         // Uninvite web user - test using wpNodeRef
-        wpService.uninviteWebUser(wpNodeRef, USER_ADMIN, false);
+        wpService.uninviteWebUser(wpNodeRef, AuthenticationUtil.getAdminUserName(), false);
             
         // Note: All admin authorities are implicitly a web user and content manager (across all web projects) even if not explicitly invited
         assertEquals(1, wpService.listWebUsers(wpNodeRef).size());
-        assertEquals(null, wpService.listWebUsers(wpNodeRef).get(USER_ADMIN));        
-        assertTrue(wpService.isWebUser(wpNodeRef, USER_ADMIN));
-        assertTrue(wpService.isContentManager(wpNodeRef, USER_ADMIN));
+        assertEquals(null, wpService.listWebUsers(wpNodeRef).get(AuthenticationUtil.getAdminUserName()));        
+        assertTrue(wpService.isWebUser(wpNodeRef, AuthenticationUtil.getAdminUserName()));
+        assertTrue(wpService.isContentManager(wpNodeRef, AuthenticationUtil.getAdminUserName()));
         
         // Switch to USER_ONE
         AuthenticationUtil.setFullyAuthenticatedUser(USER_ONE);
@@ -1048,12 +1048,12 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
         }
               
         // Switch back to admin
-        AuthenticationUtil.setFullyAuthenticatedUser(USER_ADMIN);
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         
         // Note: All admin authorities are implicitly a web user and content manager (across all web projects) even if not explicitly invited
         assertEquals(0, wpService.listWebUsers(wpNodeRef).size());
-        assertTrue(wpService.isWebUser(wpNodeRef, USER_ADMIN));
-        assertTrue(wpService.isContentManager(wpInfo.getStoreId(), USER_ADMIN));
+        assertTrue(wpService.isWebUser(wpNodeRef, AuthenticationUtil.getAdminUserName()));
+        assertTrue(wpService.isContentManager(wpInfo.getStoreId(), AuthenticationUtil.getAdminUserName()));
         
         // delete web project
         wpService.deleteWebProject(wpNodeRef);

@@ -70,7 +70,7 @@ public class ItemTest extends BaseJCRTest
     
     public void test_ALFCOM_1655() throws RepositoryException
     {
-        SimpleCredentials user = new SimpleCredentials("admin", "admin".toCharArray());
+        SimpleCredentials user = new SimpleCredentials(getAdminUserName(), "admin".toCharArray());
         
         session = repository.login(user, getWorkspace());
         
@@ -143,7 +143,7 @@ public class ItemTest extends BaseJCRTest
     
     public void test_ALFCOM_1507() throws RepositoryException
     {
-        SimpleCredentials user = new SimpleCredentials("admin", "admin".toCharArray());
+        SimpleCredentials user = new SimpleCredentials(getAdminUserName(), "admin".toCharArray());
         
         session = repository.login(user, "SpacesStore");
         
@@ -233,7 +233,7 @@ public class ItemTest extends BaseJCRTest
     
     public void test_JAWS_191() throws RepositoryException
     {
-        SimpleCredentials user = new SimpleCredentials("admin", "admin".toCharArray());
+        SimpleCredentials user = new SimpleCredentials(getAdminUserName(), "admin".toCharArray());
         
         session = repository.login(user, "SpacesStore");
         

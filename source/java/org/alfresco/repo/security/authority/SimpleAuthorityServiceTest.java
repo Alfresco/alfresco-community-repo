@@ -86,9 +86,9 @@ public class SimpleAuthorityServiceTest extends TestCase
             authenticationService.createAuthentication("andy", "andy".toCharArray());
         }
 
-        if (!authenticationDAO.userExists("admin"))
+        if (!authenticationDAO.userExists(AuthenticationUtil.getAdminUserName()))
         {
-            authenticationService.createAuthentication("admin", "admin".toCharArray());
+            authenticationService.createAuthentication(AuthenticationUtil.getAdminUserName(), "admin".toCharArray());
         }
 
         if (!authenticationDAO.userExists("administrator"))
@@ -117,7 +117,7 @@ public class SimpleAuthorityServiceTest extends TestCase
     {
         assertFalse(authorityService.authorityExists("woof"));
         
-        authenticationComponent.setCurrentUser("admin");
+        authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
         assertTrue(authorityService.hasAdminAuthority());
         assertTrue(pubAuthorityService.hasAdminAuthority());
         assertEquals(3, authorityService.getAuthorities().size());

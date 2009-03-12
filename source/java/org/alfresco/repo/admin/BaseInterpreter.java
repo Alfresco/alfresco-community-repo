@@ -57,7 +57,6 @@ public abstract class BaseInterpreter extends AbstractLifecycleBean
      * Current context
      */
     private String username = null;       
-    protected final static String DEFAULT_ADMIN = "admin";
     
     /**
      * Last command issued
@@ -75,7 +74,7 @@ public abstract class BaseInterpreter extends AbstractLifecycleBean
     {
         BaseInterpreter console = getConsoleBean(context, beanName);
 
-        console.username = DEFAULT_ADMIN;
+        console.username = AuthenticationUtil.getAdminUserName();
         console.rep();
         System.exit(0);
     }

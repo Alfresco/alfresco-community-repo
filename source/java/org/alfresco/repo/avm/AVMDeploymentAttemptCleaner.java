@@ -49,7 +49,6 @@ import org.apache.commons.logging.LogFactory;
 public class AVMDeploymentAttemptCleaner
 {
     // defaults in case these properties are not configured in Spring
-    protected String adminUserName = "admin";
     protected long maxAge = 180L;
     
     protected NodeService nodeService;
@@ -61,11 +60,6 @@ public class AVMDeploymentAttemptCleaner
 
     public AVMDeploymentAttemptCleaner()
     {
-    }
-    
-    public void setAdminUserName(String adminUserName)
-    {
-        this.adminUserName = adminUserName;
     }
     
     public void setMaxAge(long maxAge)
@@ -117,7 +111,7 @@ public class AVMDeploymentAttemptCleaner
          };
          
          // perform the work as the system user
-         AuthenticationUtil.runAs(authorisedWork, this.adminUserName);
+         AuthenticationUtil.runAs(authorisedWork, AuthenticationUtil.getAdminUserName());
     }
     
     /**

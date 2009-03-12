@@ -37,6 +37,7 @@ import net.sf.acegisecurity.ConfigAttributeDefinition;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.results.ChildAssocRefResultSet;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.impl.AbstractPermissionTest;
 import org.alfresco.repo.security.permissions.impl.SimplePermissionEntry;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -446,7 +447,7 @@ public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
 
     public void testResultSetFilterAll() throws Exception
     {
-        runAs("admin");
+        runAs(AuthenticationUtil.getAdminUserName());
         
         NodeRef n1 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN,
                 QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER).getChildRef();
@@ -508,7 +509,7 @@ public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
 
     public void testResultSetFilterForNullParentOnly() throws Exception
     {
-        runAs("admin");
+        runAs(AuthenticationUtil.getAdminUserName());
         NodeRef n1 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN,
                 QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER).getChildRef();
 
@@ -570,7 +571,7 @@ public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
 
     public void testResultSetFilterNone1() throws Exception
     {
-        runAs("admin");
+        runAs(AuthenticationUtil.getAdminUserName());
         NodeRef n1 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN,
                 QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER).getChildRef();
 
@@ -694,7 +695,7 @@ public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
 
     public void testResultSetFilterNone2() throws Exception
     {
-        runAs("admin");
+        runAs(AuthenticationUtil.getAdminUserName());
 
         NodeRef n1 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN,
                 QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER).getChildRef();

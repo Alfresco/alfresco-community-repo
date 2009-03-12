@@ -59,6 +59,7 @@ import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthorityService;
+import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.NoSuchPersonException;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
@@ -584,7 +585,12 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     public NodeRef createPerson(Map<QName, Serializable> properties)
     {
         String userName = DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_USERNAME));
-
+        AuthorityType authorityType = AuthorityType.getAuthorityType(userName);
+        if (authorityType != AuthorityType.USER)
+        {
+            throw new AlfrescoRuntimeException("Attempt to create person for an authority which is not a user");
+        }
+        
         tenantService.checkDomainUser(userName);
 
         properties.put(ContentModel.PROP_USERNAME, userName);

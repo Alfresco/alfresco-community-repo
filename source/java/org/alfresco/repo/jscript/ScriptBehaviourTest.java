@@ -32,6 +32,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -74,7 +75,7 @@ public class ScriptBehaviourTest extends BaseSpringTest
 		this.serviceRegistry = (ServiceRegistry)this.applicationContext.getBean("ServiceRegistry");
 		
 		AuthenticationComponent authenticationComponent = (AuthenticationComponent)this.applicationContext.getBean("authenticationComponent");
-		authenticationComponent.setCurrentUser("admin");
+		authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
 		
 		// Create the store and get the root node reference
 		this.storeRef = this.nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.currentTimeMillis());

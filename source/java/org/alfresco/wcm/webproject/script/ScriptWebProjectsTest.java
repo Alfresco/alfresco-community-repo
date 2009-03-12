@@ -18,7 +18,7 @@ public class ScriptWebProjectsTest extends AbstractWCMServiceImplTest
         
         this.scriptService = (ScriptService)ctx.getBean("ScriptService");
         
-        AuthenticationUtil.setFullyAuthenticatedUser("admin");
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
     }
 	
     public void testJSAPI() throws Exception

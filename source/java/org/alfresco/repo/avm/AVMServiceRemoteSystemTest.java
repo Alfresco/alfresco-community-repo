@@ -24,6 +24,7 @@
 package org.alfresco.repo.avm;
 
 import org.alfresco.repo.remote.ClientTicketHolder;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.remote.AVMRemote;
 import org.alfresco.service.cmr.security.AuthenticationService;
@@ -47,7 +48,7 @@ public class AVMServiceRemoteSystemTest extends AVMServiceLocalTest
             excluder = (NameMatcher) fContext.getBean("globalPathExcluder");
             
             AuthenticationService authService = (AuthenticationService)fContext.getBean("authenticationService");
-            authService.authenticate("admin", "admin".toCharArray());
+            authService.authenticate(AuthenticationUtil.getAdminUserName(), "admin".toCharArray());
             String ticket = authService.getCurrentTicket();
             ((ClientTicketHolder)fContext.getBean("clientTicketHolder")).setTicket(ticket);
         }

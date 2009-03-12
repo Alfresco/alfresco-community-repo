@@ -35,6 +35,7 @@ import org.alfresco.repo.action.evaluator.ComparePropertyValueEvaluator;
 import org.alfresco.repo.action.executer.ImageTransformActionExecuter;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionCondition;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -363,7 +364,7 @@ public class RuleServiceImplTest extends BaseRuleTest
     	this.permissionService.setPermission(this.nodeRef, "coordUser", PermissionService.COORDINATOR, true);
     	this.permissionService.setInheritParentPermissions(this.nodeRef, true);
     	
-    	this.authenticationService.authenticate("admin", "admin".toCharArray());    	
+    	this.authenticationService.authenticate(AuthenticationUtil.getAdminUserName(), "admin".toCharArray());    	
 		Rule rule2 = createTestRule();
 		this.ruleService.saveRule(this.nodeRef, rule2);    	
 		this.authenticationService.clearCurrentSecurityContext();  		

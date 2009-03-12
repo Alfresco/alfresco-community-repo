@@ -33,6 +33,7 @@ import java.util.Map;
 
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.workflow.BPMEngineRegistry;
 import org.alfresco.repo.workflow.TaskComponent;
 import org.alfresco.repo.workflow.WorkflowComponent;
@@ -106,7 +107,7 @@ public class ReviewAndApproveTest extends BaseSpringTest
         params.put(WorkflowModel.ASSOC_PACKAGE, testNodeRef);
         Date reviewDueDate = new Date();
         params.put(WorkflowModel.PROP_WORKFLOW_DUE_DATE, reviewDueDate);
-        NodeRef reviewer = personService.getPerson("admin");
+        NodeRef reviewer = personService.getPerson(AuthenticationUtil.getAdminUserName());
         params.put(WorkflowModel.ASSOC_ASSIGNEE, reviewer);
         params.put(WorkflowModel.PROP_WORKFLOW_DESCRIPTION, "Test review");
         
@@ -125,7 +126,7 @@ public class ReviewAndApproveTest extends BaseSpringTest
         assertEquals("Test review", endedTask.properties.get(WorkflowModel.PROP_DESCRIPTION));
         assertEquals("Test review", endedTask.path.instance.description);
         
-        List<WorkflowTask> assignedTasks = taskComponent.getAssignedTasks("admin", WorkflowTaskState.IN_PROGRESS);
+        List<WorkflowTask> assignedTasks = taskComponent.getAssignedTasks(AuthenticationUtil.getAdminUserName(), WorkflowTaskState.IN_PROGRESS);
         assertNotNull(assignedTasks);
         assignedTasks = filterTasksByWorkflowInstance(assignedTasks, path.instance.id);
         
@@ -146,7 +147,7 @@ public class ReviewAndApproveTest extends BaseSpringTest
         params.put(WorkflowModel.PROP_COMPLETED_ITEMS, (Serializable)nodeRefs);
         Date reviewDueDate = new Date();
         params.put(WorkflowModel.PROP_WORKFLOW_DUE_DATE, reviewDueDate);
-        NodeRef reviewer = personService.getPerson("admin");
+        NodeRef reviewer = personService.getPerson(AuthenticationUtil.getAdminUserName());
         params.put(WorkflowModel.ASSOC_ASSIGNEE, reviewer);
         
         WorkflowPath path = workflowComponent.startWorkflow(workflowDef.id, params);

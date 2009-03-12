@@ -153,11 +153,11 @@ public class AuditServiceTest extends BaseSpringTest
         }
         authenticationService.createAuthentication("lemur", "lemur".toCharArray());
 
-        if (authenticationDAO.userExists("admin"))
+        if (authenticationDAO.userExists(AuthenticationUtil.getAdminUserName()))
         {
-            authenticationService.deleteAuthentication("admin");
+            authenticationService.deleteAuthentication(AuthenticationUtil.getAdminUserName());
         }
-        authenticationService.createAuthentication("admin", "admin".toCharArray());
+        authenticationService.createAuthentication(AuthenticationUtil.getAdminUserName(), "admin".toCharArray());
 
         authenticationComponent.clearCurrentSecurityContext();
     }

@@ -103,7 +103,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         if (CLEAN)
         {
             // Switch back to Admin
-            AuthenticationUtil.setFullyAuthenticatedUser(USER_ADMIN);
+            AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
             
             List<WebProjectInfo> webProjects = wpService.listWebProjects();
             for (final WebProjectInfo wpInfo : webProjects)
@@ -185,10 +185,10 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         // Create a web project
         WebProjectInfo wpInfo1 = wpService.createWebProject(TEST_SANDBOX+"-create-author", TEST_WEBPROJ_NAME+"-author", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION, TEST_WEBPROJ_DEFAULT_WEBAPP, TEST_WEBPROJ_DONT_USE_AS_TEMPLATE, null);
         
-        String expectedUserSandboxId = TEST_SANDBOX+"-create-author" + "--" + USER_ADMIN;
+        String expectedUserSandboxId = TEST_SANDBOX+"-create-author" + "--" + AuthenticationUtil.getAdminUserName();
         
         SandboxInfo sbInfo1 = sbService.getAuthorSandbox(wpInfo1.getStoreId());
-        checkSandboxInfo(sbInfo1, expectedUserSandboxId, USER_ADMIN, USER_ADMIN, expectedUserSandboxId, SandboxConstants.PROP_SANDBOX_AUTHOR_MAIN);
+        checkSandboxInfo(sbInfo1, expectedUserSandboxId, AuthenticationUtil.getAdminUserName(), AuthenticationUtil.getAdminUserName(), expectedUserSandboxId, SandboxConstants.PROP_SANDBOX_AUTHOR_MAIN);
         
         sbInfo1 = sbService.getAuthorSandbox(wpInfo1.getStoreId(), USER_ONE);
         assertNull(sbInfo1);
@@ -200,7 +200,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         assertNull(sbInfo1);
         
         // Switch back to admin
-        AuthenticationUtil.setFullyAuthenticatedUser(USER_ADMIN);
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         
         // Invite web user
         wpService.inviteWebUser(wpInfo1.getStoreId(), USER_ONE, WCMUtil.ROLE_CONTENT_MANAGER);
@@ -211,24 +211,24 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         expectedUserSandboxId = TEST_SANDBOX+"-create-author" + "--" + USER_ONE;
         
         sbInfo1 = sbService.getAuthorSandbox(wpInfo1.getStoreId(), USER_ONE);
-        checkSandboxInfo(sbInfo1, expectedUserSandboxId, USER_ONE, USER_ADMIN, expectedUserSandboxId, SandboxConstants.PROP_SANDBOX_AUTHOR_MAIN);
+        checkSandboxInfo(sbInfo1, expectedUserSandboxId, USER_ONE, AuthenticationUtil.getAdminUserName(), expectedUserSandboxId, SandboxConstants.PROP_SANDBOX_AUTHOR_MAIN);
         
         // Switch to USER_ONE
         AuthenticationUtil.setFullyAuthenticatedUser(USER_ONE);
         
         // Get author sandbox
         sbInfo1 = sbService.getAuthorSandbox(wpInfo1.getStoreId());
-        checkSandboxInfo(sbInfo1, expectedUserSandboxId, USER_ONE, USER_ADMIN, expectedUserSandboxId, SandboxConstants.PROP_SANDBOX_AUTHOR_MAIN);
+        checkSandboxInfo(sbInfo1, expectedUserSandboxId, USER_ONE, AuthenticationUtil.getAdminUserName(), expectedUserSandboxId, SandboxConstants.PROP_SANDBOX_AUTHOR_MAIN);
         
         String userSandboxId = sbInfo1.getSandboxId();
         
         // Get (author) sandbox
         sbInfo1 = sbService.getSandbox(userSandboxId);
-        checkSandboxInfo(sbInfo1, expectedUserSandboxId, USER_ONE, USER_ADMIN, expectedUserSandboxId, SandboxConstants.PROP_SANDBOX_AUTHOR_MAIN);
+        checkSandboxInfo(sbInfo1, expectedUserSandboxId, USER_ONE, AuthenticationUtil.getAdminUserName(), expectedUserSandboxId, SandboxConstants.PROP_SANDBOX_AUTHOR_MAIN);
         
         // Should return same as before
         sbInfo1 = sbService.createAuthorSandbox(wpInfo1.getStoreId());
-        checkSandboxInfo(sbInfo1, expectedUserSandboxId, USER_ONE, USER_ADMIN, expectedUserSandboxId, SandboxConstants.PROP_SANDBOX_AUTHOR_MAIN);
+        checkSandboxInfo(sbInfo1, expectedUserSandboxId, USER_ONE, AuthenticationUtil.getAdminUserName(), expectedUserSandboxId, SandboxConstants.PROP_SANDBOX_AUTHOR_MAIN);
         
         // Switch to USER_TWO
         AuthenticationUtil.setFullyAuthenticatedUser(USER_TWO);
@@ -245,7 +245,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         }
         
         // Switch back to admin
-        AuthenticationUtil.setFullyAuthenticatedUser(USER_ADMIN);
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         
         // Invite web user
         wpService.inviteWebUser(wpInfo1.getStoreId(), USER_TWO, WCMUtil.ROLE_CONTENT_REVIEWER);
@@ -284,7 +284,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         List<SandboxInfo> sbInfos = sbService.listSandboxes(wpInfo.getStoreId());
         assertEquals(2, sbInfos.size()); // staging sandbox, author sandbox (for admin)
         
-        String expectedUserSandboxId = TEST_SANDBOX+"-list" + "--" + USER_ADMIN;
+        String expectedUserSandboxId = TEST_SANDBOX+"-list" + "--" + AuthenticationUtil.getAdminUserName();
         
         // Do detailed check of the sandbox info objects
         for (SandboxInfo sbInfo : sbInfos)
@@ -293,11 +293,11 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
             
             if (sbType.equals(SandboxConstants.PROP_SANDBOX_STAGING_MAIN) == true)
             {
-                checkSandboxInfo(sbInfo, TEST_SANDBOX+"-list", TEST_SANDBOX+"-list", USER_ADMIN, TEST_SANDBOX+"-list", SandboxConstants.PROP_SANDBOX_STAGING_MAIN);
+                checkSandboxInfo(sbInfo, TEST_SANDBOX+"-list", TEST_SANDBOX+"-list", AuthenticationUtil.getAdminUserName(), TEST_SANDBOX+"-list", SandboxConstants.PROP_SANDBOX_STAGING_MAIN);
             }
             else if (sbType.equals(SandboxConstants.PROP_SANDBOX_AUTHOR_MAIN) == true)
             {
-                checkSandboxInfo(sbInfo, expectedUserSandboxId, USER_ADMIN, USER_ADMIN, expectedUserSandboxId, SandboxConstants.PROP_SANDBOX_AUTHOR_MAIN);
+                checkSandboxInfo(sbInfo, expectedUserSandboxId, AuthenticationUtil.getAdminUserName(), AuthenticationUtil.getAdminUserName(), expectedUserSandboxId, SandboxConstants.PROP_SANDBOX_AUTHOR_MAIN);
             }
             else
             {
@@ -358,18 +358,18 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         
         // Get staging sandbox
         sbInfo = sbService.getStagingSandbox(wpInfo.getStoreId());
-        checkSandboxInfo(sbInfo, TEST_SANDBOX+"-get", TEST_SANDBOX+"-get", USER_ADMIN, TEST_SANDBOX+"-get", SandboxConstants.PROP_SANDBOX_STAGING_MAIN);
+        checkSandboxInfo(sbInfo, TEST_SANDBOX+"-get", TEST_SANDBOX+"-get", AuthenticationUtil.getAdminUserName(), TEST_SANDBOX+"-get", SandboxConstants.PROP_SANDBOX_STAGING_MAIN);
         
         // Get (staging) sandbox
         String stagingSandboxId = wpInfo.getStagingStoreName();
         sbInfo = sbService.getSandbox(stagingSandboxId);
-        checkSandboxInfo(sbInfo, TEST_SANDBOX+"-get", TEST_SANDBOX+"-get", USER_ADMIN, TEST_SANDBOX+"-get", SandboxConstants.PROP_SANDBOX_STAGING_MAIN);
+        checkSandboxInfo(sbInfo, TEST_SANDBOX+"-get", TEST_SANDBOX+"-get", AuthenticationUtil.getAdminUserName(), TEST_SANDBOX+"-get", SandboxConstants.PROP_SANDBOX_STAGING_MAIN);
 
         // Get (author) sandbox
         sbInfo = sbService.getAuthorSandbox(wpStoreId);      
         sbInfo = sbService.getSandbox(sbInfo.getSandboxId());       
-        String userSandboxId = TEST_SANDBOX+"-get" + "--" + USER_ADMIN;
-        checkSandboxInfo(sbInfo, userSandboxId, USER_ADMIN, USER_ADMIN, userSandboxId, SandboxConstants.PROP_SANDBOX_AUTHOR_MAIN);
+        String userSandboxId = TEST_SANDBOX+"-get" + "--" + AuthenticationUtil.getAdminUserName();
+        checkSandboxInfo(sbInfo, userSandboxId, AuthenticationUtil.getAdminUserName(), AuthenticationUtil.getAdminUserName(), userSandboxId, SandboxConstants.PROP_SANDBOX_AUTHOR_MAIN);
 
         // test roles
         
@@ -382,7 +382,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         // admin can get any sandbox
         userSandboxId = TEST_SANDBOX+"-get" + "--" + USER_THREE;
         sbInfo = sbService.getSandbox(userSandboxId);
-        checkSandboxInfo(sbInfo, userSandboxId, USER_THREE, USER_ADMIN, userSandboxId, SandboxConstants.PROP_SANDBOX_AUTHOR_MAIN);
+        checkSandboxInfo(sbInfo, userSandboxId, USER_THREE, AuthenticationUtil.getAdminUserName(), userSandboxId, SandboxConstants.PROP_SANDBOX_AUTHOR_MAIN);
         
         // Switch to USER_ONE
         AuthenticationUtil.setFullyAuthenticatedUser(USER_ONE);
@@ -390,7 +390,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         // content manager can get any (author) sandbox
         userSandboxId = TEST_SANDBOX+"-get" + "--" + USER_THREE;
         sbInfo = sbService.getSandbox(userSandboxId);
-        checkSandboxInfo(sbInfo, userSandboxId, USER_THREE, USER_ADMIN, userSandboxId, SandboxConstants.PROP_SANDBOX_AUTHOR_MAIN);
+        checkSandboxInfo(sbInfo, userSandboxId, USER_THREE, AuthenticationUtil.getAdminUserName(), userSandboxId, SandboxConstants.PROP_SANDBOX_AUTHOR_MAIN);
      
         // Switch to USER_TWO
         AuthenticationUtil.setFullyAuthenticatedUser(USER_TWO);
@@ -674,8 +674,8 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         
         // test roles
         
-        // Switch to USER_ADMIN
-        AuthenticationUtil.setFullyAuthenticatedUser(USER_ADMIN);
+        // Switch to AuthenticationUtil.getAdminUserName()
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         
         assertEquals(6, sbService.listSandboxes(wpStoreId).size());
         
@@ -792,7 +792,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         }
         
         // Switch back to admin
-        AuthenticationUtil.setFullyAuthenticatedUser(USER_ADMIN);
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         
         sbInfo1 = sbService.getAuthorSandbox(wpStoreId, USER_ONE);
         sbInfo2 = sbService.getAuthorSandbox(wpStoreId, USER_TWO);
@@ -888,7 +888,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         }
         
         // Switch back to admin
-        AuthenticationUtil.setFullyAuthenticatedUser(USER_ADMIN);
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         
         sbInfo1 = sbService.getAuthorSandbox(wpStoreId, USER_ONE);
         sbInfo2 = sbService.getAuthorSandbox(wpStoreId, USER_TWO);
@@ -995,7 +995,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         // test roles
         
         // Switch to USER_ONE
-        AuthenticationUtil.setFullyAuthenticatedUser(USER_ADMIN);
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         
         // admin (content manager) can submit any sandbox
         String userSandboxId = wpStoreId + "--" + USER_THREE;
@@ -1505,7 +1505,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         // test roles
         
         // Switch to USER_ONE
-        AuthenticationUtil.setFullyAuthenticatedUser(USER_ADMIN);
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         
         // admin (content manager) can revert any sandbox
         String userSandboxId = wpStoreId + "--" + USER_THREE;
@@ -1865,7 +1865,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
                 AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER+"-"+j);
                 assertEquals(SCALE_USERS+2, sbService.listSandboxes(wpInfo.getStoreId()).size()); // including staging sandbox and admin sandbox (web project creator)
             }
-            AuthenticationUtil.setFullyAuthenticatedUser(USER_ADMIN);
+            AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         } 
         
         System.out.println("testPseudoScaleTest: list sandboxes for "+SCALE_USERS+" content managers for each of "+SCALE_WEBPROJECTS+" web projects in "+(System.currentTimeMillis()-split)+" msecs");
@@ -1881,7 +1881,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
                 AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER+"-"+j);
                 assertEquals(SCALE_USERS+1, wpService.listWebUsers(wpInfo.getStoreId()).size()); // including admin user (web project creator)
             }
-            AuthenticationUtil.setFullyAuthenticatedUser(USER_ADMIN);
+            AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         }
         
         System.out.println("testPseudoScaleTest: list web users for "+SCALE_USERS+" content managers for each of "+SCALE_WEBPROJECTS+" web projects in "+(System.currentTimeMillis()-split)+" msecs");

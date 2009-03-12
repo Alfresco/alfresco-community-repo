@@ -96,10 +96,9 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
     private RepositoryExporterService repositoryExporterService;
     private ModuleService moduleService;
     private SiteAVMBootstrap siteAVMBootstrap;
-    
     private List<WorkflowDeployer> workflowDeployers = new ArrayList<WorkflowDeployer>();
     
-    private String baseAdminUsername = "admin"; // default for backwards compatibility only - eg. upgrade of existing MT instance (mt-admin-context.xml.sample)
+    private String baseAdminUsername = null; 
 
     /*
      * Tenant domain/ids are unique strings that are case-insensitive. Tenant ids must be valid filenames. 
@@ -232,6 +231,10 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
     
     protected void checkProperties()
     {
+        if (moduleService == null || siteAVMBootstrap == null || baseAdminUsername == null)
+        {
+            logger.warn(WARN_MSG);
+        }
         PropertyCheck.mandatory(this, "NodeService", nodeService);
         PropertyCheck.mandatory(this, "DictionaryComponent", dictionaryComponent);
         PropertyCheck.mandatory(this, "RepoAdminService", repoAdminService);
@@ -242,22 +245,9 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         PropertyCheck.mandatory(this, "TenantFileContentStore", tenantFileContentStore);
         PropertyCheck.mandatory(this, "WorkflowService", workflowService);
         PropertyCheck.mandatory(this, "RepositoryExporterService", repositoryExporterService);
-        
-        // for backwards compatibility only
-        
-        if (moduleService == null)
-        {
-            // default for now
-            logger.warn(WARN_MSG);
-            moduleService = (ModuleService)ctx.getBean("moduleService");
-        }
-        
-        if (siteAVMBootstrap == null)
-        {
-            // default for now
-            logger.warn(WARN_MSG);
-            siteAVMBootstrap = (SiteAVMBootstrap)ctx.getBean("siteAVMBootstrap");
-        }
+        PropertyCheck.mandatory(this, "siteAVMBootstrap", siteAVMBootstrap);
+        PropertyCheck.mandatory(this, "moduleService", moduleService);
+        PropertyCheck.mandatory(this, "baseAdminUsername", baseAdminUsername);
     }
     
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
@@ -1232,6 +1222,16 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
     
     // local helpers
     
+    public String getBaseAdminUser()
+    {
+        // default for backwards compatibility only - eg. upgrade of existing MT instance (mt-admin-context.xml.sample)
+        if (baseAdminUsername != null)
+        {
+            return baseAdminUsername;
+        }
+        return AuthenticationUtil.getAdminUserName();
+    }
+    
     private String getSystemUser(String tenantDomain)
     {
         return tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain);
@@ -1239,7 +1239,8 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
     
     private String getTenantAdminUser(String tenantDomain)
     {
-        return tenantService.getDomainUser(this.baseAdminUsername, tenantDomain);
+        
+        return tenantService.getDomainUser(getBaseAdminUser(), tenantDomain);
     }
 
     private String getTenantGuestUser(String tenantDomain)

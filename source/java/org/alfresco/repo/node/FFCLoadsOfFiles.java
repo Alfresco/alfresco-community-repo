@@ -32,6 +32,7 @@ import java.util.Map;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -73,7 +74,7 @@ public class FFCLoadsOfFiles
 
         // authenticate
         AuthenticationService authenticationService = serviceRegistry.getAuthenticationService();
-        authenticationService.authenticate("admin", "admin".toCharArray());
+        authenticationService.authenticate(AuthenticationUtil.getAdminUserName(), "admin".toCharArray());
 
         
         // use TransactionWork to wrap service calls in a user transaction

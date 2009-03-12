@@ -76,7 +76,7 @@ public class AbstractWCMServiceImplTest extends TestCase
     protected static final boolean TEST_WEBPROJ_DONT_USE_AS_TEMPLATE = false;
     
     // base web users
-    protected static final String USER_ADMIN = "admin";
+    //protected static final String USER_ADMIN = "admin";
     
     protected static final String TEST_USER = "testWebUser-"+TEST_RUN;
     
@@ -106,7 +106,7 @@ public class AbstractWCMServiceImplTest extends TestCase
         transactionService = (TransactionService)ctx.getBean("TransactionService");
         
         // By default run as Admin
-        AuthenticationUtil.setFullyAuthenticatedUser(USER_ADMIN);
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         
         createUser(USER_ONE);
         createUser(USER_TWO);
@@ -120,7 +120,7 @@ public class AbstractWCMServiceImplTest extends TestCase
         if (CLEAN)
         {
             // Switch back to Admin
-            AuthenticationUtil.setFullyAuthenticatedUser(USER_ADMIN);
+            AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
             
             List<WebProjectInfo> webProjects = wpService.listWebProjects();
             for (final WebProjectInfo wpInfo : webProjects)

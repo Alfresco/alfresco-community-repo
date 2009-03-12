@@ -289,7 +289,7 @@ public class AuthenticationTest extends TestCase
 
         long start;
         long end;
-        authenticationComponent.authenticate("admin", "admin".toCharArray());
+        authenticationComponent.authenticate(AuthenticationUtil.getAdminUserName(), "admin".toCharArray());
         for (int i = 0; i < 10000; i++)
         {
             String id = "TestUser-" + i;

@@ -156,7 +156,7 @@ public class AVMServiceTestBase extends TestCase
             );
         }
         
-        fAuthService.authenticate("admin", "admin".toCharArray());
+        fAuthService.authenticate(AuthenticationUtil.getAdminUserName(), "admin".toCharArray());
         
         if (fService.getStore("main") != null)
         {

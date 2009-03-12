@@ -29,6 +29,7 @@ import junit.framework.TestCase;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.archive.NodeArchiveService;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.ml.ContentFilterLanguagesService;
@@ -83,7 +84,7 @@ public abstract class AbstractMultilingualTestCases extends TestCase
         editionService = (EditionService) ctx.getBean("EditionService");
 
         // Run as admin
-        authenticationComponent.setCurrentUser("admin");
+        authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
 
         // Create a folder to work in
         RetryingTransactionCallback<NodeRef> createFolderCallback = new RetryingTransactionCallback<NodeRef>()

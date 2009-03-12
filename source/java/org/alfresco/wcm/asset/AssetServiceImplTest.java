@@ -118,10 +118,10 @@ public class AssetServiceImplTest extends AbstractWCMServiceImplTest
         // get assets
         
         AssetInfo myFolder1Asset = assetService.getAsset(sbStoreId, path+"/myFolder1");
-        checkAssetInfo(myFolder1Asset, "myFolder1", path+"/myFolder1", USER_ADMIN, false, true, false, false, null);
+        checkAssetInfo(myFolder1Asset, "myFolder1", path+"/myFolder1", AuthenticationUtil.getAdminUserName(), false, true, false, false, null);
         
         AssetInfo myFile1Asset = assetService.getAsset(sbStoreId, path+"/myFolder1/myFile1");
-        checkAssetInfo(myFile1Asset, "myFile1", path+"/myFolder1/myFile1", USER_ADMIN, true, false, false, true, USER_ADMIN);
+        checkAssetInfo(myFile1Asset, "myFile1", path+"/myFolder1/myFile1", AuthenticationUtil.getAdminUserName(), true, false, false, true, AuthenticationUtil.getAdminUserName());
         
         // delete folder
         assetService.deleteAsset(myFolder1Asset); // also deletes myFile1
@@ -427,7 +427,7 @@ public class AssetServiceImplTest extends AbstractWCMServiceImplTest
     private void runCRUDforRoles(String user, String role, String wpStoreId, String defaultWebApp, boolean canCreate, boolean canUpdateExisting, boolean canDeleteExisting) throws IOException, InterruptedException
     {
         // switch to user - content manager
-        AuthenticationUtil.setFullyAuthenticatedUser(USER_ADMIN);
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         
         // invite web user and auto-create their (author) sandbox
         wpService.inviteWebUser(wpStoreId, user, role, true);
@@ -533,10 +533,10 @@ public class AssetServiceImplTest extends AbstractWCMServiceImplTest
         
         // get existing assets
         AssetInfo existingFolder1Asset = assetService.getAssetWebApp(sbStoreId, defaultWebApp, "/"+PREFIX+user);
-        checkAssetInfo(existingFolder1Asset, PREFIX+user, path+"/"+PREFIX+user, USER_ADMIN, false, true, false, false, null);
+        checkAssetInfo(existingFolder1Asset, PREFIX+user, path+"/"+PREFIX+user, AuthenticationUtil.getAdminUserName(), false, true, false, false, null);
         
         AssetInfo existingFile1Asset = assetService.getAssetWebApp(sbStoreId, defaultWebApp, "/"+PREFIX+user+"/fileA");
-        checkAssetInfo(existingFile1Asset, "fileA", path+"/"+PREFIX+user+"/fileA", USER_ADMIN, true, false, false, false, null);
+        checkAssetInfo(existingFile1Asset, "fileA", path+"/"+PREFIX+user+"/fileA", AuthenticationUtil.getAdminUserName(), true, false, false, false, null);
         
         // get existing content
         

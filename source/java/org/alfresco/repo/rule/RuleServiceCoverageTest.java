@@ -63,6 +63,7 @@ import org.alfresco.repo.dictionary.M2Aspect;
 import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.dictionary.M2Property;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.Action;
@@ -171,7 +172,7 @@ public class RuleServiceCoverageTest extends TestCase
         {
             public Object execute() throws Exception
             {
-                authenticationComponent.setCurrentUser("admin");
+                authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
                 return null;
             }
         };

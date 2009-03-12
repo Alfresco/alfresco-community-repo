@@ -41,14 +41,11 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.util.ApplicationContextHelper;
-import org.alfresco.util.PropertyMap;
 import org.alfresco.wcm.AbstractWCMServiceImplTest;
 import org.alfresco.wcm.asset.AssetInfo;
 import org.alfresco.wcm.asset.AssetService;
 import org.alfresco.wcm.util.WCMUtil;
 import org.alfresco.wcm.webproject.WebProjectInfo;
-import org.alfresco.wcm.webproject.WebProjectService;
 
 /**
  * Sandbox Service implementation unit test
@@ -57,27 +54,8 @@ import org.alfresco.wcm.webproject.WebProjectService;
  */
 public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
 {   
-    // base web project
-    private static final String TEST_WEBPROJ_DNS  = "testSandbox-"+TEST_RUN;
-    private static final String TEST_WEBPROJ_NAME = "testSandbox Web Project Display Name - "+TEST_RUN;
-    private static final String TEST_WEBPROJ_TITLE = "This is my title";
-    private static final String TEST_WEBPROJ_DESCRIPTION = "This is my description";
-    private static final String TEST_WEBPROJ_DEFAULT_WEBAPP = WCMUtil.DIR_ROOT;
-    //private static final boolean TEST_WEBPROJ_USE_AS_TEMPLATE = true;
-    private static final boolean TEST_WEBPROJ_DONT_USE_AS_TEMPLATE = false;
-    
     // base sandbox
-    private static final String TEST_SANDBOX = TEST_WEBPROJ_DNS;
-    
-
-    private static final String USER_ADMIN = "admin";
-    
-    private static final String TEST_USER = "testSandboxUser-"+TEST_RUN;
-    
-    private static final String USER_ONE   = TEST_USER+"-One";
-    private static final String USER_TWO   = TEST_USER+"-Two";
-    private static final String USER_THREE = TEST_USER+"-Three";
-    private static final String USER_FOUR  = TEST_USER+"-Four";
+    private static final String TEST_SANDBOX = TEST_WEBPROJ_DNS+"-sandbox";
     
     private static final int SCALE_USERS = 5;
     private static final int SCALE_WEBPROJECTS = 2;
@@ -86,7 +64,6 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
     // services
     //
     
-    private WebProjectService wpService;
     private SandboxService sbService;
     private AssetService assetService;
     
@@ -105,7 +82,6 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         super.setUp();
         
         // Get the required services
-        wpService = (WebProjectService)ctx.getBean("WebProjectService");
         sbService = (SandboxService)ctx.getBean("SandboxService");
         assetService = (AssetService)ctx.getBean("AssetService");
         
@@ -119,14 +95,6 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         
         // without WCM locking
         //avmNonLockingAwareService = (AVMService)ctx.getBean("AVMService");
-       
-        // By default run as Admin
-        AuthenticationUtil.setFullyAuthenticatedUser(USER_ADMIN);
-        
-        createUser(USER_ONE);
-        createUser(USER_TWO);
-        createUser(USER_THREE);
-        createUser(USER_FOUR);
     }
     
     @Override
@@ -174,7 +142,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         int storeCnt = avmService.getStores().size();
         
         // create web project (also creates staging sandbox and admin's author sandbox)
-        WebProjectInfo wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-simple", TEST_WEBPROJ_NAME+"-simple", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION, TEST_WEBPROJ_DEFAULT_WEBAPP, TEST_WEBPROJ_DONT_USE_AS_TEMPLATE, null);
+        WebProjectInfo wpInfo = wpService.createWebProject(TEST_SANDBOX+"-sandboxSimple", TEST_WEBPROJ_NAME+"-sandboxSimple", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION, TEST_WEBPROJ_DEFAULT_WEBAPP, TEST_WEBPROJ_DONT_USE_AS_TEMPLATE, null);
         String wpStoreId = wpInfo.getStoreId();
         
         // list 2 sandboxes
@@ -215,7 +183,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
     public void testCreateAuthorSandbox()
     {
         // Create a web project
-        WebProjectInfo wpInfo1 = wpService.createWebProject(TEST_WEBPROJ_DNS+"-create-author", TEST_WEBPROJ_NAME+"-author", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION, TEST_WEBPROJ_DEFAULT_WEBAPP, TEST_WEBPROJ_DONT_USE_AS_TEMPLATE, null);
+        WebProjectInfo wpInfo1 = wpService.createWebProject(TEST_SANDBOX+"-create-author", TEST_WEBPROJ_NAME+"-author", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION, TEST_WEBPROJ_DEFAULT_WEBAPP, TEST_WEBPROJ_DONT_USE_AS_TEMPLATE, null);
         
         String expectedUserSandboxId = TEST_SANDBOX+"-create-author" + "--" + USER_ADMIN;
         
@@ -310,7 +278,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
     public void testListSandboxes() throws Exception
     {
         // Create web project - implicitly creates staging sandbox and also author sandbox for web project creator (in this case, admin)
-        WebProjectInfo wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-list", TEST_WEBPROJ_NAME+" list", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION);
+        WebProjectInfo wpInfo = wpService.createWebProject(TEST_SANDBOX+"-list", TEST_WEBPROJ_NAME+" list", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION);
         String wpStoreId = wpInfo.getStoreId();
         
         List<SandboxInfo> sbInfos = sbService.listSandboxes(wpInfo.getStoreId());
@@ -385,7 +353,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         assertNull(sbInfo);
         
         // Create web project - implicitly creates staging sandbox and also admin sandbox (author sandbox for web project creator)
-        WebProjectInfo wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-get", TEST_WEBPROJ_NAME+" get", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION);
+        WebProjectInfo wpInfo = wpService.createWebProject(TEST_SANDBOX+"-get", TEST_WEBPROJ_NAME+" get", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION);
         String wpStoreId = wpInfo.getStoreId();
         
         // Get staging sandbox
@@ -477,7 +445,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         assertNull(sbInfo);
         
         // Create web project - implicitly creates staging sandbox and also admin sandbox (author sandbox for web project creator)
-        WebProjectInfo wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-is", TEST_WEBPROJ_NAME+" is", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION);
+        WebProjectInfo wpInfo = wpService.createWebProject(TEST_SANDBOX+"-is", TEST_WEBPROJ_NAME+" is", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION);
 
         // Get staging sandbox
         sbInfo = sbService.getStagingSandbox(wpInfo.getStoreId());
@@ -495,7 +463,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
     public void testDeleteSandbox()
     {
         // Create web project - implicitly creates staging sandbox and also admin sandbox (author sandbox for web project creator)
-        WebProjectInfo wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-delete", TEST_WEBPROJ_NAME+" delete", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION);
+        WebProjectInfo wpInfo = wpService.createWebProject(TEST_SANDBOX+"-delete", TEST_WEBPROJ_NAME+" delete", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION);
         String wpStoreId = wpInfo.getStoreId();
         
         assertEquals(2, sbService.listSandboxes(wpStoreId).size());
@@ -586,7 +554,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
     // list changed (in this test, new) assets in user sandbox compared to staging sandbox
     public void testListNewItems1()
     {
-        WebProjectInfo wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-listNewItems1", TEST_WEBPROJ_NAME+" listNewItems1", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION);
+        WebProjectInfo wpInfo = wpService.createWebProject(TEST_SANDBOX+"-listNewItems1", TEST_WEBPROJ_NAME+" listNewItems1", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION);
         String wpStoreId = wpInfo.getStoreId();
         
         assertEquals(2, sbService.listSandboxes(wpStoreId).size());
@@ -770,7 +738,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
     // list changed (in this test, new) assets in two different user sandboxes compared to each other
     public void testListNewItems2()
     {
-        WebProjectInfo wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-listNewItems2", TEST_WEBPROJ_NAME+" listNewItems2", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION);
+        WebProjectInfo wpInfo = wpService.createWebProject(TEST_SANDBOX+"-listNewItems2", TEST_WEBPROJ_NAME+" listNewItems2", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION);
         String wpStoreId = wpInfo.getStoreId();
 
         // Invite web users
@@ -857,7 +825,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
     // list changed (in this test, new) assets in two different user sandboxes compared to each other - without locking
     public void testListNewItems3()
     {
-        WebProjectInfo wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-listNewItems2", TEST_WEBPROJ_NAME+" listNewItems2", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION);
+        WebProjectInfo wpInfo = wpService.createWebProject(TEST_SANDBOX+"-listNewItems2", TEST_WEBPROJ_NAME+" listNewItems2", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION);
         String wpStoreId = wpInfo.getStoreId();
 
         // Invite web users
@@ -957,7 +925,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
     // submit new assets in user sandbox to staging sandbox
     public void testSubmitNewItems1() throws InterruptedException
     {
-        WebProjectInfo wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-submitNewItems1", TEST_WEBPROJ_NAME+" submitNewItems1", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION);
+        WebProjectInfo wpInfo = wpService.createWebProject(TEST_SANDBOX+"-submitNewItems1", TEST_WEBPROJ_NAME+" submitNewItems1", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION);
         
         String wpStoreId = wpInfo.getStoreId();
         String webApp = wpInfo.getDefaultWebApp();
@@ -1090,7 +1058,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
     // submit changed assets in user sandbox to staging sandbox
     public void testSubmitChangedAssets1() throws IOException, InterruptedException
     {
-        WebProjectInfo wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-submitChangedAssets1", TEST_WEBPROJ_NAME+" submitChangedAssets1", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION);
+        WebProjectInfo wpInfo = wpService.createWebProject(TEST_SANDBOX+"-submitChangedAssets1", TEST_WEBPROJ_NAME+" submitChangedAssets1", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION);
         
         final String wpStoreId = wpInfo.getStoreId();
         final String webApp = wpInfo.getDefaultWebApp();
@@ -1217,7 +1185,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
     // submit "all" changed assets in user sandbox to staging sandbox (not using default webapp)
     public void testSubmitChangedAssets2() throws IOException, InterruptedException
     {
-        WebProjectInfo wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-submitChangedAssets1", TEST_WEBPROJ_NAME+" submitChangedAssets1", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION);
+        WebProjectInfo wpInfo = wpService.createWebProject(TEST_SANDBOX+"-submitChangedAssets1", TEST_WEBPROJ_NAME+" submitChangedAssets1", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION);
         
         final String wpStoreId = wpInfo.getStoreId();
         final String stagingSandboxId = wpInfo.getStagingStoreName();
@@ -1303,7 +1271,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
     // submit deleted assets in user sandbox to staging sandbox
     public void testSubmitDeletedItems1() throws IOException, InterruptedException
     {
-        WebProjectInfo wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-submitDeletedItems1", TEST_WEBPROJ_NAME+" submitDeletedItems1", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION);
+        WebProjectInfo wpInfo = wpService.createWebProject(TEST_SANDBOX+"-submitDeletedItems1", TEST_WEBPROJ_NAME+" submitDeletedItems1", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION);
         
         final String wpStoreId = wpInfo.getStoreId();
         final String webApp = wpInfo.getDefaultWebApp();
@@ -1410,7 +1378,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
     // revert (changed) assets in user sandbox
     public void testRevert() throws IOException, InterruptedException
     {
-        WebProjectInfo wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-revertChangedAssets", TEST_WEBPROJ_NAME+" revertChangedAssets", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION);
+        WebProjectInfo wpInfo = wpService.createWebProject(TEST_SANDBOX+"-revertChangedAssets", TEST_WEBPROJ_NAME+" revertChangedAssets", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION);
         
         final String wpStoreId = wpInfo.getStoreId();
         final String webApp = wpInfo.getDefaultWebApp();
@@ -1607,7 +1575,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
     {
         Date fromDate = new Date();
         
-        WebProjectInfo wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-listSnapshots", TEST_WEBPROJ_NAME+" listSnapshots", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION);
+        WebProjectInfo wpInfo = wpService.createWebProject(TEST_SANDBOX+"-listSnapshots", TEST_WEBPROJ_NAME+" listSnapshots", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION);
         
         final String wpStoreId = wpInfo.getStoreId();
         final String webApp = wpInfo.getDefaultWebApp();
@@ -1675,7 +1643,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
     {
         Date fromDate = new Date();
         
-        WebProjectInfo wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-revertSnapshot", TEST_WEBPROJ_NAME+" revertSnapshot", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION);
+        WebProjectInfo wpInfo = wpService.createWebProject(TEST_SANDBOX+"-revertSnapshot", TEST_WEBPROJ_NAME+" revertSnapshot", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION);
         
         final String wpStoreId = wpInfo.getStoreId();
         final String webApp = wpInfo.getDefaultWebApp();
@@ -1849,7 +1817,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         
         for (int i = 1; i <= SCALE_WEBPROJECTS; i++)
         {
-            wpService.createWebProject(TEST_WEBPROJ_DNS+"-"+i, TEST_WEBPROJ_NAME+"-"+i, TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION); // ignore return
+            wpService.createWebProject(TEST_SANDBOX+"-"+i, TEST_WEBPROJ_NAME+"-"+i, TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION); // ignore return
         }
         
         System.out.println("testPseudoScaleTest: created "+SCALE_WEBPROJECTS+" web projects in "+(System.currentTimeMillis()-split)+" msecs");
@@ -1858,7 +1826,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         
         for (int i = 1; i <= SCALE_WEBPROJECTS; i++)
         {
-            WebProjectInfo wpInfo = wpService.getWebProject(TEST_WEBPROJ_DNS+"-"+i);
+            WebProjectInfo wpInfo = wpService.getWebProject(TEST_SANDBOX+"-"+i);
             Map<String, String> userRoles = new HashMap<String, String>(SCALE_USERS);
             for (int j = 1; j <= SCALE_USERS; j++)
             {
@@ -1873,7 +1841,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         
         for (int i = 1; i <= SCALE_WEBPROJECTS; i++)
         {
-            WebProjectInfo wpInfo = wpService.getWebProject(TEST_WEBPROJ_DNS+"-"+i);
+            WebProjectInfo wpInfo = wpService.getWebProject(TEST_SANDBOX+"-"+i);
             assertEquals(SCALE_USERS+2, sbService.listSandboxes(wpInfo.getStoreId()).size()); // including staging sandbox and admin sandbox (web project creator)
         }
 
@@ -1883,7 +1851,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         
         for (int i = 1; i <= SCALE_WEBPROJECTS; i++)
         {
-            WebProjectInfo wpInfo = wpService.getWebProject(TEST_WEBPROJ_DNS+"-"+i);
+            WebProjectInfo wpInfo = wpService.getWebProject(TEST_SANDBOX+"-"+i);
             assertEquals(SCALE_USERS+1, wpService.listWebUsers(wpInfo.getStoreId()).size()); // including admin user (web project creator)
         }
 
@@ -1893,7 +1861,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
 
         for (int i = 1; i <= SCALE_WEBPROJECTS; i++)
         {
-            WebProjectInfo wpInfo = wpService.getWebProject(TEST_WEBPROJ_DNS+"-"+i);
+            WebProjectInfo wpInfo = wpService.getWebProject(TEST_SANDBOX+"-"+i);
             
             for (int j = 1; j <= SCALE_USERS; j++)
             {
@@ -1909,7 +1877,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
 
         for (int i = 1; i <= SCALE_WEBPROJECTS; i++)
         {
-            WebProjectInfo wpInfo = wpService.getWebProject(TEST_WEBPROJ_DNS+"-"+i);
+            WebProjectInfo wpInfo = wpService.getWebProject(TEST_SANDBOX+"-"+i);
             
             for (int j = 1; j <= SCALE_USERS; j++)
             {
@@ -1925,7 +1893,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         
         for (int i = 1; i <= SCALE_WEBPROJECTS; i++)
         {
-            WebProjectInfo wpInfo = wpService.getWebProject(TEST_WEBPROJ_DNS+"-"+i);
+            WebProjectInfo wpInfo = wpService.getWebProject(TEST_SANDBOX+"-"+i);
             
             for (int j = 1; j <= SCALE_USERS; j++)
             {
@@ -1940,7 +1908,7 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         
         for (int i = 1; i <= SCALE_WEBPROJECTS; i++)
         {
-            WebProjectInfo wpInfo = wpService.getWebProject(TEST_WEBPROJ_DNS+"-"+i);
+            WebProjectInfo wpInfo = wpService.getWebProject(TEST_SANDBOX+"-"+i);
             wpService.deleteWebProject(wpInfo.getNodeRef());
         }
         

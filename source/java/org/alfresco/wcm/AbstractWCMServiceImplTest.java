@@ -24,13 +24,21 @@
  */
 package org.alfresco.wcm;
 
+import java.util.List;
+
 import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.PropertyMap;
+import org.alfresco.wcm.util.WCMUtil;
+import org.alfresco.wcm.webproject.WebProjectInfo;
+import org.alfresco.wcm.webproject.WebProjectService;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -57,25 +65,90 @@ public class AbstractWCMServiceImplTest extends TestCase
     protected static final String TEST_RUN = ""+System.currentTimeMillis();
     protected static final boolean CLEAN = true; // cleanup during teardown
     
+    // base web project
+    protected static final String TEST_WEBPROJ_DNS  = "testWebProj-"+TEST_RUN;
+    
+    protected static final String TEST_WEBPROJ_NAME = "testSandbox Web Project Display Name - "+TEST_RUN;
+    protected static final String TEST_WEBPROJ_TITLE = "This is my title";
+    protected static final String TEST_WEBPROJ_DESCRIPTION = "This is my description";
+    protected static final String TEST_WEBPROJ_DEFAULT_WEBAPP = WCMUtil.DIR_ROOT;
+    protected static final boolean TEST_WEBPROJ_USE_AS_TEMPLATE = true;
+    protected static final boolean TEST_WEBPROJ_DONT_USE_AS_TEMPLATE = false;
+    
+    // base web users
+    protected static final String USER_ADMIN = "admin";
+    
+    protected static final String TEST_USER = "testWebUser-"+TEST_RUN;
+    
+    protected static final String USER_ONE   = TEST_USER+"-One";
+    protected static final String USER_TWO   = TEST_USER+"-Two";
+    protected static final String USER_THREE = TEST_USER+"-Three";
+    protected static final String USER_FOUR  = TEST_USER+"-Four";
+    
     //
     // services
     //
 
+    protected WebProjectService wpService;
     protected AuthenticationService authenticationService;
     protected PersonService personService;
+    
+    private TransactionService transactionService;
 
     
     @Override
     protected void setUp() throws Exception
     {
         // Get the required services
+        wpService = (WebProjectService)ctx.getBean("WebProjectService");
         authenticationService = (AuthenticationService)ctx.getBean("AuthenticationService");
         personService = (PersonService)ctx.getBean("PersonService");
+        transactionService = (TransactionService)ctx.getBean("TransactionService");
+        
+        // By default run as Admin
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_ADMIN);
+        
+        createUser(USER_ONE);
+        createUser(USER_TWO);
+        createUser(USER_THREE);
+        createUser(USER_FOUR);
     }
     
     @Override
     protected void tearDown() throws Exception
     {
+        if (CLEAN)
+        {
+            // Switch back to Admin
+            AuthenticationUtil.setFullyAuthenticatedUser(USER_ADMIN);
+            
+            List<WebProjectInfo> webProjects = wpService.listWebProjects();
+            for (final WebProjectInfo wpInfo : webProjects)
+            {
+                if (wpInfo.getStoreId().startsWith(TEST_WEBPROJ_DNS))
+                {
+                    // note: added retry for now, due to intermittent concurrent update (during tearDown) possibly due to OrphanReaper ?
+                    // org.hibernate.StaleObjectStateException: Row was updated or deleted by another transaction (or unsaved-value mapping was incorrect): [org.alfresco.repo.avm.PlainFileNodeImpl#3752]
+                    RetryingTransactionCallback<Object> deleteWebProjectWork = new RetryingTransactionCallback<Object>()
+                    {
+                        public Object execute() throws Exception
+                        {
+                            wpService.deleteWebProject(wpInfo.getNodeRef());
+                            return null;
+                        }
+                    };
+                    transactionService.getRetryingTransactionHelper().doInTransaction(deleteWebProjectWork);
+                    
+                }
+            }
+            
+            deleteUser(USER_ONE);
+            deleteUser(USER_TWO);
+            deleteUser(USER_THREE);
+            deleteUser(USER_FOUR);
+        }
+        
+        AuthenticationUtil.clearCurrentSecurityContext();
     }
     
     protected void createUser(String userName)

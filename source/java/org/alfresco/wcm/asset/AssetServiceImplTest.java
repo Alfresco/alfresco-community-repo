@@ -29,7 +29,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
@@ -44,7 +43,6 @@ import org.alfresco.wcm.sandbox.SandboxInfo;
 import org.alfresco.wcm.sandbox.SandboxService;
 import org.alfresco.wcm.util.WCMUtil;
 import org.alfresco.wcm.webproject.WebProjectInfo;
-import org.alfresco.wcm.webproject.WebProjectService;
 
 /**
  * Asset Service implementation unit test
@@ -53,27 +51,10 @@ import org.alfresco.wcm.webproject.WebProjectService;
  */
 public class AssetServiceImplTest extends AbstractWCMServiceImplTest
 {
-    // base web project
-    private static final String TEST_WEBPROJ_DNS  = "testAsset-"+TEST_RUN;
-    private static final String TEST_WEBPROJ_NAME = "testAsset Web Project Display Name - "+TEST_RUN;
-    private static final String TEST_WEBPROJ_TITLE = "This is my title";
-    private static final String TEST_WEBPROJ_DESCRIPTION = "This is my description";
-    private static final String TEST_WEBPROJ_DEFAULT_WEBAPP = WCMUtil.DIR_ROOT;
-    private static final boolean TEST_WEBPROJ_DONT_USE_AS_TEMPLATE = false;
-    
-    private static final String USER_ADMIN = "admin";
-    
-    private static final String TEST_USER = "testAssetUser-"+TEST_RUN;
-    
-    private static final String USER_ONE = TEST_USER+"-One";
-    private static final String USER_TWO = TEST_USER+"-Two";
-    private static final String USER_THREE = TEST_USER+"-Three";
-     
     //
     // services
     //
     
-    private WebProjectService wpService;
     private SandboxService sbService;
     private AssetService assetService;
     
@@ -83,41 +64,13 @@ public class AssetServiceImplTest extends AbstractWCMServiceImplTest
         super.setUp();
         
         // Get the required services
-        wpService = (WebProjectService)ctx.getBean("WebProjectService");
         sbService = (SandboxService)ctx.getBean("SandboxService");
         assetService = (AssetService)ctx.getBean("AssetService");
-
-        // By default run as Admin
-        AuthenticationUtil.setFullyAuthenticatedUser(USER_ADMIN);
-        
-        createUser(USER_ONE);
-        createUser(USER_TWO);
-        createUser(USER_THREE);
     }
     
     @Override
     protected void tearDown() throws Exception
     {
-        if (CLEAN)
-        {
-            // Switch back to Admin
-            AuthenticationUtil.setFullyAuthenticatedUser(USER_ADMIN);
-            
-            List<WebProjectInfo> webProjects = wpService.listWebProjects();
-            for (WebProjectInfo wpInfo : webProjects)
-            {
-                if (wpInfo.getStoreId().startsWith(TEST_WEBPROJ_DNS))
-                {
-                    wpService.deleteWebProject(wpInfo.getNodeRef());
-                }
-            }
-
-            deleteUser(USER_ONE);
-            deleteUser(USER_TWO);
-            deleteUser(USER_THREE);
-        }
-        
-        AuthenticationUtil.clearCurrentSecurityContext();
         super.tearDown();
     }
     
@@ -142,7 +95,7 @@ public class AssetServiceImplTest extends AbstractWCMServiceImplTest
     public void testSimple()
     {
         // create web project (also creates staging sandbox and admin's author sandbox)
-        WebProjectInfo wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-simple", TEST_WEBPROJ_NAME+"-simple", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION, TEST_WEBPROJ_DEFAULT_WEBAPP, TEST_WEBPROJ_DONT_USE_AS_TEMPLATE, null);
+        WebProjectInfo wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-assetSimple", TEST_WEBPROJ_NAME+"-assetSimple", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION, TEST_WEBPROJ_DEFAULT_WEBAPP, TEST_WEBPROJ_DONT_USE_AS_TEMPLATE, null);
         
         // get admin's author sandbox
         SandboxInfo sbInfo = sbService.getAuthorSandbox(wpInfo.getStoreId());

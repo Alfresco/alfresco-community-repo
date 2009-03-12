@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -55,10 +55,6 @@ import org.alfresco.wcm.util.WCMUtil;
  */
 public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest 
 {
-    // base web project dns / name 
-    private static final String TEST_WEBPROJ_DNS  = "testWebProjDNS-"+TEST_RUN;
-    private static final String TEST_WEBPROJ_NAME = "test Web Project Display Name - "+TEST_RUN;
-    
     // web app names
     private static final String TEST_WEBAPP = "myWebApp";
     
@@ -66,21 +62,9 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
     private static final String TEST_WEBAPP2 = TEST_WEBAPP+"-AppTwo";
     private static final String TEST_WEBAPP3 = TEST_WEBAPP+"-AppThree";
     
-    // general
-    private static final String TEST_TITLE = "This is my title";
-    private static final String TEST_DESCRIPTION = "This is my description";
-    private static final String TEST_DEFAULT_WEBAPP = "defWebApp";
-    private static final boolean TEST_USE_AS_TEMPLATE = true;
-    
-    private static final String USER_ADMIN = "admin";
-    
-    private static final String TEST_USER = "testWebProjUser-"+TEST_RUN;
-    private static final String TEST_GROUP = "testWebProjGroup-"+TEST_RUN;
-    
-    private static final String USER_ONE   = TEST_USER+"-One";
-    private static final String USER_TWO   = TEST_USER+"-Two";
-    private static final String USER_THREE = TEST_USER+"-Three";
-    private static final String USER_FOUR  = TEST_USER+"-Four";
+    // groups and additional users
+    private static final String TEST_GROUP = "testWebGroup-"+TEST_RUN;
+
     private static final String USER_FIVE  = TEST_USER+"-Five";
     private static final String USER_SIX   = TEST_USER+"-Six";
     
@@ -95,7 +79,6 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
     // services
     //
     
-    private WebProjectService wpService;
     private FileFolderService fileFolderService;
     private AuthorityService authorityService;
     private PermissionService permissionService;
@@ -107,21 +90,12 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
         super.setUp();
         
         // Get the required services
-        wpService = (WebProjectService)ctx.getBean("WebProjectService");
         authenticationService = (AuthenticationService)ctx.getBean("AuthenticationService");
         personService = (PersonService)ctx.getBean("PersonService");
         fileFolderService = (FileFolderService)ctx.getBean("FileFolderService");
         authorityService = (AuthorityService)ctx.getBean("AuthorityService");
         permissionService = (PermissionService)ctx.getBean("PermissionService");
-         
-       
-        // By default run as Admin
-        AuthenticationUtil.setFullyAuthenticatedUser(USER_ADMIN);
         
-        createUser(USER_ONE);
-        createUser(USER_TWO);
-        createUser(USER_THREE);
-        createUser(USER_FOUR);
         createUser(USER_FIVE);
         createUser(USER_SIX);
         
@@ -140,21 +114,8 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
             // Switch back to Admin
             AuthenticationUtil.setFullyAuthenticatedUser(USER_ADMIN);
             
-            List<WebProjectInfo> webProjects = wpService.listWebProjects();
-            for (WebProjectInfo wpInfo : webProjects)
-            {
-                if (wpInfo.getStoreId().startsWith(TEST_WEBPROJ_DNS))
-                {
-                    wpService.deleteWebProject(wpInfo.getNodeRef());
-                }
-            }
-            
             deleteGroup(GROUP_ONE);
             
-            deleteUser(USER_ONE);
-            deleteUser(USER_TWO);
-            deleteUser(USER_THREE);
-            deleteUser(USER_FOUR);
             deleteUser(USER_FIVE);
             deleteUser(USER_SIX);
             
@@ -169,7 +130,6 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
             }
         }
         
-        AuthenticationUtil.clearCurrentSecurityContext();
         super.tearDown();
     }
     
@@ -199,21 +159,21 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
     public void testCreateWebProjectSimple()
     {
         // Create a web project
-        WebProjectInfo wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-simple", TEST_WEBPROJ_NAME+"-simple", TEST_TITLE, TEST_DESCRIPTION);
+        WebProjectInfo wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-webProjSimple", TEST_WEBPROJ_NAME+"-webProjSimple", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION);
         assertNotNull(wpInfo);
     }
 	
     public void testCreateWebProject()
     {
         // Create a web project
-        WebProjectInfo wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-create", TEST_WEBPROJ_NAME+"-create", TEST_TITLE, TEST_DESCRIPTION, TEST_DEFAULT_WEBAPP, TEST_USE_AS_TEMPLATE, null);
-        checkWebProjectInfo(wpInfo, TEST_WEBPROJ_DNS+"-create", TEST_WEBPROJ_NAME+"-create", TEST_TITLE, TEST_DESCRIPTION, TEST_DEFAULT_WEBAPP, TEST_USE_AS_TEMPLATE);
+        WebProjectInfo wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-create", TEST_WEBPROJ_NAME+"-create", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION, TEST_WEBPROJ_DEFAULT_WEBAPP, TEST_WEBPROJ_USE_AS_TEMPLATE, null);
+        checkWebProjectInfo(wpInfo, TEST_WEBPROJ_DNS+"-create", TEST_WEBPROJ_NAME+"-create", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION, TEST_WEBPROJ_DEFAULT_WEBAPP, TEST_WEBPROJ_USE_AS_TEMPLATE);
         
         // Duplicate web project dns/store name
         try
         {
             // Try to create duplicate web project dns/store (-ve test)
-            wpService.createWebProject(TEST_WEBPROJ_DNS+"-create", TEST_WEBPROJ_NAME+"-x", TEST_TITLE+"x", TEST_DESCRIPTION+"x", TEST_DEFAULT_WEBAPP+"x", TEST_USE_AS_TEMPLATE, null);
+            wpService.createWebProject(TEST_WEBPROJ_DNS+"-create", TEST_WEBPROJ_NAME+"-x", TEST_WEBPROJ_TITLE+"x", TEST_WEBPROJ_DESCRIPTION+"x", TEST_WEBPROJ_DEFAULT_WEBAPP+"x", TEST_WEBPROJ_USE_AS_TEMPLATE, null);
             fail("Shouldn't allow duplicate web project dns/store name");
         }
         catch (AlfrescoRuntimeException exception)
@@ -225,7 +185,7 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
         try
         {
             // Try to create duplicate web project folder/name (-ve test)
-            wpService.createWebProject(TEST_WEBPROJ_DNS+"x", TEST_WEBPROJ_NAME+"-create", TEST_TITLE+"x", TEST_DESCRIPTION+"x", TEST_DEFAULT_WEBAPP+"x", TEST_USE_AS_TEMPLATE, null);
+            wpService.createWebProject(TEST_WEBPROJ_DNS+"x", TEST_WEBPROJ_NAME+"-create", TEST_WEBPROJ_TITLE+"x", TEST_WEBPROJ_DESCRIPTION+"x", TEST_WEBPROJ_DEFAULT_WEBAPP+"x", TEST_WEBPROJ_USE_AS_TEMPLATE, null);
             fail("Shouldn't allow duplicate web project folder/name");
         }
         catch (DuplicateChildNodeNameException exception)
@@ -238,10 +198,10 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
         String name = dnsName + " name";
         String mangledDnsName = TEST_WEBPROJ_DNS+"some-unexpected-chars";
         
-        wpInfo = wpService.createWebProject(dnsName, name, TEST_TITLE, TEST_DESCRIPTION, TEST_DEFAULT_WEBAPP, TEST_USE_AS_TEMPLATE, null);
-        checkWebProjectInfo(wpInfo, mangledDnsName, name, TEST_TITLE, TEST_DESCRIPTION, TEST_DEFAULT_WEBAPP, TEST_USE_AS_TEMPLATE);
+        wpInfo = wpService.createWebProject(dnsName, name, TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION, TEST_WEBPROJ_DEFAULT_WEBAPP, TEST_WEBPROJ_USE_AS_TEMPLATE, null);
+        checkWebProjectInfo(wpInfo, mangledDnsName, name, TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION, TEST_WEBPROJ_DEFAULT_WEBAPP, TEST_WEBPROJ_USE_AS_TEMPLATE);
         wpInfo = wpService.getWebProject(mangledDnsName);
-        checkWebProjectInfo(wpInfo, mangledDnsName, name, TEST_TITLE, TEST_DESCRIPTION, TEST_DEFAULT_WEBAPP, TEST_USE_AS_TEMPLATE);
+        checkWebProjectInfo(wpInfo, mangledDnsName, name, TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION, TEST_WEBPROJ_DEFAULT_WEBAPP, TEST_WEBPROJ_USE_AS_TEMPLATE);
 
         // Another mangled case
         dnsName = TEST_WEBPROJ_DNS+"some.moreé1í2ó3ú4Á5É6Í7Ó8Ú9";
@@ -249,10 +209,10 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
         
         name = dnsName + " name";
         
-        wpInfo = wpService.createWebProject(dnsName, name, TEST_TITLE, TEST_DESCRIPTION, TEST_DEFAULT_WEBAPP, TEST_USE_AS_TEMPLATE, null);
-        checkWebProjectInfo(wpInfo, mangledDnsName, name, TEST_TITLE, TEST_DESCRIPTION, TEST_DEFAULT_WEBAPP, TEST_USE_AS_TEMPLATE);
+        wpInfo = wpService.createWebProject(dnsName, name, TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION, TEST_WEBPROJ_DEFAULT_WEBAPP, TEST_WEBPROJ_USE_AS_TEMPLATE, null);
+        checkWebProjectInfo(wpInfo, mangledDnsName, name, TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION, TEST_WEBPROJ_DEFAULT_WEBAPP, TEST_WEBPROJ_USE_AS_TEMPLATE);
         wpInfo = wpService.getWebProject(mangledDnsName);
-        checkWebProjectInfo(wpInfo, mangledDnsName, name, TEST_TITLE, TEST_DESCRIPTION, TEST_DEFAULT_WEBAPP, TEST_USE_AS_TEMPLATE);
+        checkWebProjectInfo(wpInfo, mangledDnsName, name, TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION, TEST_WEBPROJ_DEFAULT_WEBAPP, TEST_WEBPROJ_USE_AS_TEMPLATE);
         
         // Invalid dns name (with '--')
         dnsName = "my--dns";
@@ -260,7 +220,7 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
         try
         {
             // Try to create invalid web project with invalid dns name (-ve test)
-            wpInfo = wpService.createWebProject(dnsName, name, TEST_TITLE, TEST_DESCRIPTION, TEST_DEFAULT_WEBAPP, TEST_USE_AS_TEMPLATE, null);
+            wpInfo = wpService.createWebProject(dnsName, name, TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION, TEST_WEBPROJ_DEFAULT_WEBAPP, TEST_WEBPROJ_USE_AS_TEMPLATE, null);
             fail("Shouldn't be able to create web project with '--'");
         }
         catch (IllegalArgumentException exception)
@@ -274,7 +234,7 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
         try
         {
             // Try to create invalid web project (-ve test)
-            wpInfo = wpService.createWebProject(dnsName, name, TEST_TITLE, TEST_DESCRIPTION, TEST_DEFAULT_WEBAPP, TEST_USE_AS_TEMPLATE, null);
+            wpInfo = wpService.createWebProject(dnsName, name, TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION, TEST_WEBPROJ_DEFAULT_WEBAPP, TEST_WEBPROJ_USE_AS_TEMPLATE, null);
             fail("Shouldn't be able to create web project with '--'");
         }
         catch (IllegalArgumentException exception)
@@ -293,7 +253,7 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
         try
         {
             // Try to create web project (-ve test)
-            wpService.createWebProject(TEST_WEBPROJ_DNS+"-createAsNonAdmin", TEST_WEBPROJ_NAME+"-createAsNonAdmin", TEST_TITLE, TEST_DESCRIPTION, TEST_DEFAULT_WEBAPP, TEST_USE_AS_TEMPLATE, null);
+            wpService.createWebProject(TEST_WEBPROJ_DNS+"-createAsNonAdmin", TEST_WEBPROJ_NAME+"-createAsNonAdmin", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION, TEST_WEBPROJ_DEFAULT_WEBAPP, TEST_WEBPROJ_USE_AS_TEMPLATE, null);
             fail("Shouldn't allow anyone to create web project by default");
         }
         catch (AccessDeniedException exception)
@@ -312,8 +272,8 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
         AuthenticationUtil.setFullyAuthenticatedUser(USER_ONE);
         
         // Create a web project
-        WebProjectInfo wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-createAsNonAdmin", TEST_WEBPROJ_NAME+"-createAsNonAdmin", TEST_TITLE, TEST_DESCRIPTION, TEST_DEFAULT_WEBAPP, TEST_USE_AS_TEMPLATE, null);
-        checkWebProjectInfo(wpInfo, TEST_WEBPROJ_DNS+"-createAsNonAdmin", TEST_WEBPROJ_NAME+"-createAsNonAdmin", TEST_TITLE, TEST_DESCRIPTION, TEST_DEFAULT_WEBAPP, TEST_USE_AS_TEMPLATE);
+        WebProjectInfo wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-createAsNonAdmin", TEST_WEBPROJ_NAME+"-createAsNonAdmin", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION, TEST_WEBPROJ_DEFAULT_WEBAPP, TEST_WEBPROJ_USE_AS_TEMPLATE, null);
+        checkWebProjectInfo(wpInfo, TEST_WEBPROJ_DNS+"-createAsNonAdmin", TEST_WEBPROJ_NAME+"-createAsNonAdmin", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION, TEST_WEBPROJ_DEFAULT_WEBAPP, TEST_WEBPROJ_USE_AS_TEMPLATE);
         
         // test list and invite users
         assertEquals(1, wpService.listWebUsers(wpInfo.getStoreId()).size());
@@ -340,7 +300,7 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
         try
         {
             // Try to create web project with "editor" rights to web project root (-ve test)
-            wpService.createWebProject(TEST_WEBPROJ_DNS+"-ano", TEST_WEBPROJ_NAME+"-ano", TEST_TITLE, TEST_DESCRIPTION, TEST_DEFAULT_WEBAPP, TEST_USE_AS_TEMPLATE, null);
+            wpService.createWebProject(TEST_WEBPROJ_DNS+"-ano", TEST_WEBPROJ_NAME+"-ano", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION, TEST_WEBPROJ_DEFAULT_WEBAPP, TEST_WEBPROJ_USE_AS_TEMPLATE, null);
             fail("Shouldn't allow anyone to create web project by default");
         }
         catch (AccessDeniedException exception)
@@ -354,7 +314,7 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
         try
         {
             // Try to create web project with "comsumer" rights to web project root (-ve test)
-            wpService.createWebProject(TEST_WEBPROJ_DNS+"-ano", TEST_WEBPROJ_NAME+"-ano", TEST_TITLE, TEST_DESCRIPTION, TEST_DEFAULT_WEBAPP, TEST_USE_AS_TEMPLATE, null);
+            wpService.createWebProject(TEST_WEBPROJ_DNS+"-ano", TEST_WEBPROJ_NAME+"-ano", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION, TEST_WEBPROJ_DEFAULT_WEBAPP, TEST_WEBPROJ_USE_AS_TEMPLATE, null);
             fail("Shouldn't allow anyone to create web project by default");
         }
         catch (AccessDeniedException exception)
@@ -366,8 +326,8 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
         AuthenticationUtil.setFullyAuthenticatedUser(USER_FOUR);
         
         // Create a web project
-        wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-createAsCoordinator", TEST_WEBPROJ_NAME+"-createAsCoordinator", TEST_TITLE, TEST_DESCRIPTION, TEST_DEFAULT_WEBAPP, TEST_USE_AS_TEMPLATE, null);
-        checkWebProjectInfo(wpInfo, TEST_WEBPROJ_DNS+"-createAsCoordinator", TEST_WEBPROJ_NAME+"-createAsCoordinator", TEST_TITLE, TEST_DESCRIPTION, TEST_DEFAULT_WEBAPP, TEST_USE_AS_TEMPLATE);
+        wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-createAsCoordinator", TEST_WEBPROJ_NAME+"-createAsCoordinator", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION, TEST_WEBPROJ_DEFAULT_WEBAPP, TEST_WEBPROJ_USE_AS_TEMPLATE, null);
+        checkWebProjectInfo(wpInfo, TEST_WEBPROJ_DNS+"-createAsCoordinator", TEST_WEBPROJ_NAME+"-createAsCoordinator", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION, TEST_WEBPROJ_DEFAULT_WEBAPP, TEST_WEBPROJ_USE_AS_TEMPLATE);
 
     }
     
@@ -392,10 +352,10 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
         int cnt = webProjects.size();
 
         // Create some web projects
-        wpService.createWebProject(TEST_WEBPROJ_DNS+"-list1", TEST_WEBPROJ_NAME+" list1", TEST_TITLE, TEST_DESCRIPTION);
-        wpService.createWebProject(TEST_WEBPROJ_DNS+"-list2", TEST_WEBPROJ_NAME+" list2", TEST_TITLE, TEST_DESCRIPTION, TEST_DEFAULT_WEBAPP, true, null);
-        wpService.createWebProject(TEST_WEBPROJ_DNS+"-list3", TEST_WEBPROJ_NAME+" list3", TEST_TITLE, TEST_DESCRIPTION);
-        wpService.createWebProject(TEST_WEBPROJ_DNS+"-list4", TEST_WEBPROJ_NAME+" list4", TEST_TITLE, TEST_DESCRIPTION, TEST_DEFAULT_WEBAPP, true, null);
+        wpService.createWebProject(TEST_WEBPROJ_DNS+"-list1", TEST_WEBPROJ_NAME+" list1", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION);
+        wpService.createWebProject(TEST_WEBPROJ_DNS+"-list2", TEST_WEBPROJ_NAME+" list2", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION, TEST_WEBPROJ_DEFAULT_WEBAPP, true, null);
+        wpService.createWebProject(TEST_WEBPROJ_DNS+"-list3", TEST_WEBPROJ_NAME+" list3", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION);
+        wpService.createWebProject(TEST_WEBPROJ_DNS+"-list4", TEST_WEBPROJ_NAME+" list4", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION, TEST_WEBPROJ_DEFAULT_WEBAPP, true, null);
         
         // Get all the web projects for the current user
         webProjects = wpService.listWebProjects();
@@ -408,19 +368,19 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
             String wpStoreId = wpInfo.getStoreId();
             if (wpStoreId.equals(TEST_WEBPROJ_DNS+"-list1") == true)
             {
-                checkWebProjectInfo(wpInfo, TEST_WEBPROJ_DNS+"-list1", TEST_WEBPROJ_NAME+" list1", TEST_TITLE, TEST_DESCRIPTION, WCMUtil.DIR_ROOT, false);
+                checkWebProjectInfo(wpInfo, TEST_WEBPROJ_DNS+"-list1", TEST_WEBPROJ_NAME+" list1", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION, WCMUtil.DIR_ROOT, false);
             }
             else if (wpStoreId.equals(TEST_WEBPROJ_DNS+"-list2") == true)
             {
-                checkWebProjectInfo(wpInfo, TEST_WEBPROJ_DNS+"-list2", TEST_WEBPROJ_NAME+" list2", TEST_TITLE, TEST_DESCRIPTION, TEST_DEFAULT_WEBAPP, true);
+                checkWebProjectInfo(wpInfo, TEST_WEBPROJ_DNS+"-list2", TEST_WEBPROJ_NAME+" list2", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION, TEST_WEBPROJ_DEFAULT_WEBAPP, true);
             }
             else if (wpStoreId.equals(TEST_WEBPROJ_DNS+"-list3") == true)
             {
-                checkWebProjectInfo(wpInfo, TEST_WEBPROJ_DNS+"-list3", TEST_WEBPROJ_NAME+" list3", TEST_TITLE, TEST_DESCRIPTION, WCMUtil.DIR_ROOT, false);
+                checkWebProjectInfo(wpInfo, TEST_WEBPROJ_DNS+"-list3", TEST_WEBPROJ_NAME+" list3", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION, WCMUtil.DIR_ROOT, false);
             }
             else if (wpStoreId.equals(TEST_WEBPROJ_DNS+"-list4") == true)
             {
-                checkWebProjectInfo(wpInfo, TEST_WEBPROJ_DNS+"-list4", TEST_WEBPROJ_NAME+" list4", TEST_TITLE, TEST_DESCRIPTION, TEST_DEFAULT_WEBAPP, true);              
+                checkWebProjectInfo(wpInfo, TEST_WEBPROJ_DNS+"-list4", TEST_WEBPROJ_NAME+" list4", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION, TEST_WEBPROJ_DEFAULT_WEBAPP, true);              
             }
             else
             {
@@ -482,22 +442,22 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
         assertNull(wpInfo);
         
         // Create a web project
-        wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-get", TEST_WEBPROJ_NAME+"-get", TEST_TITLE, TEST_DESCRIPTION, TEST_DEFAULT_WEBAPP, TEST_USE_AS_TEMPLATE, null);
+        wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-get", TEST_WEBPROJ_NAME+"-get", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION, TEST_WEBPROJ_DEFAULT_WEBAPP, TEST_WEBPROJ_USE_AS_TEMPLATE, null);
         
         // Get the web project - test using wpStoreId
         wpInfo = wpService.getWebProject(wpInfo.getStoreId());
         assertNotNull(wpInfo);
-        checkWebProjectInfo(wpInfo, TEST_WEBPROJ_DNS+"-get", TEST_WEBPROJ_NAME+"-get", TEST_TITLE, TEST_DESCRIPTION, TEST_DEFAULT_WEBAPP, TEST_USE_AS_TEMPLATE);
+        checkWebProjectInfo(wpInfo, TEST_WEBPROJ_DNS+"-get", TEST_WEBPROJ_NAME+"-get", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION, TEST_WEBPROJ_DEFAULT_WEBAPP, TEST_WEBPROJ_USE_AS_TEMPLATE);
         
         // Get the web project - test using wpStoreNodeRef
         wpInfo = wpService.getWebProject(wpInfo.getNodeRef());
         assertNotNull(wpInfo);
-        checkWebProjectInfo(wpInfo, TEST_WEBPROJ_DNS+"-get", TEST_WEBPROJ_NAME+"-get", TEST_TITLE, TEST_DESCRIPTION, TEST_DEFAULT_WEBAPP, TEST_USE_AS_TEMPLATE);
+        checkWebProjectInfo(wpInfo, TEST_WEBPROJ_DNS+"-get", TEST_WEBPROJ_NAME+"-get", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION, TEST_WEBPROJ_DEFAULT_WEBAPP, TEST_WEBPROJ_USE_AS_TEMPLATE);
     }
     
     public void testUpdateWebProject()
     {
-        WebProjectInfo wpInfo = new WebProjectInfoImpl(TEST_WEBPROJ_DNS+"-update", TEST_WEBPROJ_NAME+"-update", TEST_TITLE, TEST_DESCRIPTION, TEST_DEFAULT_WEBAPP, false, null);
+        WebProjectInfo wpInfo = new WebProjectInfoImpl(TEST_WEBPROJ_DNS+"-update", TEST_WEBPROJ_NAME+"-update", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION, TEST_WEBPROJ_DEFAULT_WEBAPP, false, null);
         
         try
         {
@@ -511,7 +471,7 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
         }
         
         // Create a test web project
-        wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-update", TEST_WEBPROJ_NAME+"-update", TEST_TITLE, TEST_DESCRIPTION, TEST_DEFAULT_WEBAPP, true, null);
+        wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-update", TEST_WEBPROJ_NAME+"-update", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION, TEST_WEBPROJ_DEFAULT_WEBAPP, true, null);
         
         wpInfo.setName("changedName"+TEST_RUN);
         wpInfo.setTitle("changedTitle");
@@ -521,13 +481,13 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
         // Update the details of the web project
         wpService.updateWebProject(wpInfo);
         wpInfo = wpService.getWebProject(wpInfo.getStoreId());
-        checkWebProjectInfo(wpInfo, TEST_WEBPROJ_DNS+"-update", "changedName"+TEST_RUN, "changedTitle", "changedDescription", TEST_DEFAULT_WEBAPP, false);    
+        checkWebProjectInfo(wpInfo, TEST_WEBPROJ_DNS+"-update", "changedName"+TEST_RUN, "changedTitle", "changedDescription", TEST_WEBPROJ_DEFAULT_WEBAPP, false);    
     }
     
     public void testDeleteWebProject()
     {
         // Create a test web project
-        WebProjectInfo wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-delete", TEST_WEBPROJ_NAME+"-delete", TEST_TITLE, TEST_DESCRIPTION, TEST_DEFAULT_WEBAPP, true, null);
+        WebProjectInfo wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-delete", TEST_WEBPROJ_NAME+"-delete", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION, TEST_WEBPROJ_DEFAULT_WEBAPP, true, null);
         String wpStoreId = wpInfo.getStoreId();
         assertNotNull(wpService.getWebProject(wpStoreId));
         
@@ -578,7 +538,7 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
         }
         
         // Create another test web project
-        wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-delete2", TEST_WEBPROJ_NAME+"-delete2", TEST_TITLE, TEST_DESCRIPTION, TEST_DEFAULT_WEBAPP, true, null);
+        wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-delete2", TEST_WEBPROJ_NAME+"-delete2", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION, TEST_WEBPROJ_DEFAULT_WEBAPP, true, null);
         assertNotNull(wpService.getWebProject(wpInfo.getStoreId()));
         
         wpService.inviteWebUser(wpInfo.getNodeRef(), USER_ONE, WCMUtil.ROLE_CONTENT_MANAGER, false);
@@ -607,7 +567,7 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
     public void testCreateWebApp()
     {
         // Create a web project with a default webapp
-        WebProjectInfo wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-createWebApp", TEST_WEBPROJ_NAME+"-createWebApp", TEST_TITLE, TEST_DESCRIPTION, TEST_WEBAPP1, TEST_USE_AS_TEMPLATE, null);
+        WebProjectInfo wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-createWebApp", TEST_WEBPROJ_NAME+"-createWebApp", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION, TEST_WEBAPP1, TEST_WEBPROJ_USE_AS_TEMPLATE, null);
         
         // Switch user to System
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
@@ -615,7 +575,7 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
         try
         {
             // Try to create another webapp as a non-content-manager (such as System) (-ve test)
-            wpService.createWebApp(wpInfo.getStoreId(), TEST_WEBAPP2, TEST_DESCRIPTION);
+            wpService.createWebApp(wpInfo.getStoreId(), TEST_WEBAPP2, TEST_WEBPROJ_DESCRIPTION);
             fail("Shouldn't be able to create a webapp since not a content manager");
         }
         catch (AccessDeniedException exception)
@@ -627,12 +587,12 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
         AuthenticationUtil.setFullyAuthenticatedUser(USER_ADMIN);
         
         // Create another webapp - test using wpStoreId
-        wpService.createWebApp(wpInfo.getStoreId(), TEST_WEBAPP2, TEST_DESCRIPTION);
+        wpService.createWebApp(wpInfo.getStoreId(), TEST_WEBAPP2, TEST_WEBPROJ_DESCRIPTION);
         
         try
         {
             // Try to create duplicate webapp (-ve test)
-            wpService.createWebApp(wpInfo.getStoreId(), TEST_WEBAPP2, TEST_DESCRIPTION);
+            wpService.createWebApp(wpInfo.getStoreId(), TEST_WEBAPP2, TEST_WEBPROJ_DESCRIPTION);
             fail("Shouldn't allow duplicate webapp name");
         }
         catch (AVMExistsException exception)
@@ -641,7 +601,7 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
         }
         
         // Create another webapp - test using wpNodeRef
-        wpService.createWebApp(wpInfo.getNodeRef(), TEST_WEBAPP3, TEST_DESCRIPTION);
+        wpService.createWebApp(wpInfo.getNodeRef(), TEST_WEBAPP3, TEST_WEBPROJ_DESCRIPTION);
     }
     
     public void testListWebApps()
@@ -658,7 +618,7 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
         }
         
         // Create a web project with default ROOT webapp
-        WebProjectInfo wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-listWebApps", TEST_WEBPROJ_NAME+"-listWebApps", TEST_TITLE, TEST_DESCRIPTION);
+        WebProjectInfo wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-listWebApps", TEST_WEBPROJ_NAME+"-listWebApps", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION);
         NodeRef wpNodeRef = wpInfo.getNodeRef();
         
         // List web apps - test using wpStoreId
@@ -674,9 +634,9 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
         assertTrue(webAppNames.contains(WCMUtil.DIR_ROOT));
         
         // Create some more webapps
-        wpService.createWebApp(wpNodeRef, TEST_WEBAPP1, TEST_DESCRIPTION);
-        wpService.createWebApp(wpNodeRef, TEST_WEBAPP2, TEST_DESCRIPTION);
-        wpService.createWebApp(wpNodeRef, TEST_WEBAPP3, TEST_DESCRIPTION);
+        wpService.createWebApp(wpNodeRef, TEST_WEBAPP1, TEST_WEBPROJ_DESCRIPTION);
+        wpService.createWebApp(wpNodeRef, TEST_WEBAPP2, TEST_WEBPROJ_DESCRIPTION);
+        wpService.createWebApp(wpNodeRef, TEST_WEBAPP3, TEST_WEBPROJ_DESCRIPTION);
         
         webAppNames = wpService.listWebApps(wpNodeRef);
         assertEquals(4, webAppNames.size());
@@ -697,16 +657,16 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
     public void testDeleteWebApp()
     {
         // Create a webapp
-        WebProjectInfo wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-deleteWebApp", TEST_WEBPROJ_NAME+"-deleteWebApp", TEST_TITLE, TEST_DESCRIPTION, TEST_WEBAPP1, TEST_USE_AS_TEMPLATE, null);
+        WebProjectInfo wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-deleteWebApp", TEST_WEBPROJ_NAME+"-deleteWebApp", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION, TEST_WEBAPP1, TEST_WEBPROJ_USE_AS_TEMPLATE, null);
        
         String wpStoreId = wpInfo.getStoreId();
         NodeRef wpNodeRef = wpInfo.getNodeRef();
         
         // Create a webapp
-        wpService.createWebApp(wpNodeRef, TEST_WEBAPP2, TEST_DESCRIPTION);
+        wpService.createWebApp(wpNodeRef, TEST_WEBAPP2, TEST_WEBPROJ_DESCRIPTION);
         
         // Create another webapp
-        wpService.createWebApp(wpNodeRef, TEST_WEBAPP3, TEST_DESCRIPTION);
+        wpService.createWebApp(wpNodeRef, TEST_WEBAPP3, TEST_WEBPROJ_DESCRIPTION);
         
         // Switch user to System
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
@@ -788,7 +748,7 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
         AuthenticationUtil.setFullyAuthenticatedUser(USER_ADMIN);
         
         // Create a web project
-        WebProjectInfo wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-inviteWebUsers", TEST_WEBPROJ_NAME+"-inviteWebUsers", TEST_TITLE, TEST_DESCRIPTION);
+        WebProjectInfo wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-inviteWebUsers", TEST_WEBPROJ_NAME+"-inviteWebUsers", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION);
         NodeRef wpNodeRef = wpInfo.getNodeRef();
         
         assertEquals(1, wpService.listWebUsers(wpNodeRef).size());
@@ -833,7 +793,7 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
         AuthenticationUtil.setFullyAuthenticatedUser(USER_ADMIN);
         
         // Create a web project
-        wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-inviteWebUsers2", TEST_WEBPROJ_NAME+"-inviteWebUsers2", TEST_TITLE, TEST_DESCRIPTION);
+        wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-inviteWebUsers2", TEST_WEBPROJ_NAME+"-inviteWebUsers2", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION);
         wpNodeRef = wpInfo.getNodeRef();
         
         assertEquals(1, wpService.listWebUsers(wpNodeRef).size());
@@ -868,7 +828,7 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
         AuthenticationUtil.setFullyAuthenticatedUser(USER_ADMIN);
         
         // Create a web project
-        WebProjectInfo wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-inviteWebUser1", TEST_WEBPROJ_NAME+"-inviteWebUser1", TEST_TITLE, TEST_DESCRIPTION);
+        WebProjectInfo wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-inviteWebUser1", TEST_WEBPROJ_NAME+"-inviteWebUser1", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION);
         NodeRef wpNodeRef = wpInfo.getNodeRef();
         
         assertTrue(wpService.isWebUser(wpNodeRef, USER_ADMIN));
@@ -891,7 +851,7 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
         assertTrue(wpService.isWebUser(wpNodeRef, USER_TWO));
         
         // Create another web project
-        wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-inviteWebUser2", TEST_WEBPROJ_NAME+"-inviteWebUser2", TEST_TITLE, TEST_DESCRIPTION);
+        wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-inviteWebUser2", TEST_WEBPROJ_NAME+"-inviteWebUser2", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION);
         NodeRef wpNodeRef2 = wpInfo.getNodeRef();
         
         assertEquals(1, wpService.listWebUsers(wpNodeRef2).size());
@@ -981,7 +941,7 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
         AuthenticationUtil.setFullyAuthenticatedUser(USER_ADMIN);
         
         // Create a web project
-        WebProjectInfo wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-uninviteWebUser", TEST_WEBPROJ_NAME+"-uninviteWebUser", TEST_TITLE, TEST_DESCRIPTION);
+        WebProjectInfo wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-uninviteWebUser", TEST_WEBPROJ_NAME+"-uninviteWebUser", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION);
         NodeRef wpNodeRef = wpInfo.getNodeRef();
         
         assertEquals(1, wpService.listWebUsers(wpNodeRef).size());
@@ -1116,7 +1076,7 @@ public class WebProjectServiceImplTest extends AbstractWCMServiceImplTest
         
         for (int i = 1; i <= SCALE_WEBPROJECTS; i++)
         {
-            wpService.createWebProject(TEST_WEBPROJ_DNS+"-"+i, TEST_WEBPROJ_NAME+"-"+i, TEST_TITLE, TEST_DESCRIPTION); // ignore return
+            wpService.createWebProject(TEST_WEBPROJ_DNS+"-"+i, TEST_WEBPROJ_NAME+"-"+i, TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION); // ignore return
         }
         
         System.out.println("testPseudoScaleTest: created "+SCALE_WEBPROJECTS+" web projects in "+(System.currentTimeMillis()-split)+" msecs");

@@ -26,6 +26,7 @@ package org.alfresco.repo.template;
 
 import java.io.Serializable;
 import java.io.StringReader;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
@@ -33,9 +34,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.domain.PropertyValue;
+import org.alfresco.repo.template.BaseContentNode.TemplateContentData;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.audit.AuditInfo;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
@@ -43,6 +46,8 @@ import org.alfresco.service.cmr.avm.locking.AVMLock;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
@@ -51,8 +56,10 @@ import org.alfresco.service.namespace.NamespacePrefixResolverProvider;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNameMap;
 import org.alfresco.util.Pair;
+import org.alfresco.util.URLEncoder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.util.StringUtils;
 import org.xml.sax.InputSource;
 
 import freemarker.ext.dom.NodeModel;
@@ -427,6 +434,105 @@ public class AVMTemplateNode extends BasePermissionsNode implements NamespacePre
         }
         
         return this.aspects;
+    }
+    
+    
+    // ------------------------------------------------------------------------------
+    // Content API 
+    
+    /**
+     * @return the content String for this node from the default content property
+     *         (@see ContentModel.PROP_CONTENT)
+     */
+    public String getContent()
+    {
+        ContentReader reader = this.services.getAVMService().getContentReader(this.version, this.path);
+        
+        return (reader != null && reader.exists()) ? reader.getContentString() : "";
+    }
+    
+    /**
+     * @return For a content document, this method returns the URL to the content stream for
+     *         the default content property (@see ContentModel.PROP_CONTENT)
+     *         <p>
+     *         For a container node, this method return the URL to browse to the folder in the web-client
+     */
+    public String getUrl()
+    {
+        if (getIsDocument() == true)
+        {
+            return MessageFormat.format(CONTENT_GET_URL, new Object[] {
+                    getNodeRef().getStoreRef().getProtocol(),
+                    getNodeRef().getStoreRef().getIdentifier(),
+                    getNodeRef().getId(),
+                    URLEncoder.encode(getName()) } );
+        }
+        else
+        {
+            return MessageFormat.format(FOLDER_BROWSE_URL, new Object[] {
+                    getNodeRef().getStoreRef().getProtocol(),
+                    getNodeRef().getStoreRef().getIdentifier(),
+                    getNodeRef().getId() } );
+        }
+    }
+    
+    /**
+     * @return For a content document, this method returns the download URL to the content for
+     *         the default content property (@see ContentModel.PROP_CONTENT)
+     *         <p>
+     *         For a container node, this method returns an empty string
+     */
+    public String getDownloadUrl()
+    {
+        if (getIsDocument() == true)
+        {
+            return MessageFormat.format(CONTENT_DOWNLOAD_URL, new Object[] {
+                    getNodeRef().getStoreRef().getProtocol(),
+                    getNodeRef().getStoreRef().getIdentifier(),
+                    getNodeRef().getId(),
+                    URLEncoder.encode(getName()) } );
+        }
+        else
+        {
+            return "";
+        }
+    }
+    
+    /**
+     * @return The mimetype encoding for content attached to the node from the default content property
+     *         (@see ContentModel.PROP_CONTENT)
+     */
+    public String getMimetype()
+    {
+        return this.services.getAVMService().getContentDataForRead(this.avmRef).getMimetype();
+    }
+    
+    /**
+     * @return The display label of the mimetype encoding for content attached to the node from the default
+     *         content property (@see ContentModel.PROP_CONTENT)
+     */
+    public String getDisplayMimetype()
+    {
+        final String mimetype = this.services.getAVMService().getContentDataForRead(this.avmRef).getMimetype();
+        return services.getMimetypeService().getDisplaysByMimetype().get(mimetype);
+    }
+    
+    /**
+     * @return The character encoding for content attached to the node from the default content property
+     *         (@see ContentModel.PROP_CONTENT)
+     */
+    public String getEncoding()
+    {
+        return this.services.getAVMService().getContentDataForRead(this.avmRef).getEncoding();
+    }
+    
+    /**
+     * @return The size in bytes of the content attached to the node from the default content property
+     *         (@see ContentModel.PROP_CONTENT)
+     */
+    public long getSize()
+    {
+        return this.services.getAVMService().getContentDataForRead(this.avmRef).getSize();
     }
     
     

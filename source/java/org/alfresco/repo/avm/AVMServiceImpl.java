@@ -1371,6 +1371,21 @@ public class AVMServiceImpl implements AVMService
         }
         fAVMRepository.link(parentPath, name, toLink);
     }
+    
+    /**
+     * This replaces a node into a parent directly.
+     * @param parentPath The path to the parent directory.
+     * @param name The name to give the node.
+     * @param toLink A descriptor for the node to insert.
+     */
+    public void updateLink(String parentPath, String name, AVMNodeDescriptor toLink)
+    {
+        if (parentPath == null || name == null || toLink == null)
+        {
+            throw new AVMBadArgumentException("Illegal Null Argument.");
+        }
+        fAVMRepository.updateLink(parentPath, name, toLink);
+    }
 
     /**
      * Force copy on write of a path.

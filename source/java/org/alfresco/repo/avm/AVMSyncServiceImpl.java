@@ -558,18 +558,36 @@ public class AVMSyncServiceImpl implements AVMSyncService
             fAVMService.removeNode(parentPath, name);
             return;
         }
-        mkdirs(parentPath, AVMNodeConverter.SplitBase(toLink.getPath())[0]);
-        if (removeFirst)
-        {
-            fAVMService.removeNode(parentPath, name);
-        }
+        
         if (toLink.isLayeredDirectory() && !toLink.isPrimary())
         {
+            // Combining the remove and add into a single update API causes all sorts of potential security issues
+            if (removeFirst)
+            {
+                fAVMService.removeNode(parentPath, name);
+            }
             recursiveCopy(parentPath, name, toLink, excluder);
             return;
         }
-       
-        fAVMService.link(parentPath, name, toLink);
+
+        if (removeFirst)
+        {
+            if (toLink.isDirectory())
+            {
+                // Combining the remove and add into a single update API causes all sorts of potential security issues
+                fAVMService.removeNode(parentPath, name);
+                fAVMService.link(parentPath, name, toLink);
+            }
+            else
+            {
+                // this API only requires write access to the file
+                fAVMService.updateLink(parentPath, name, toLink);
+            }
+        }
+        else
+        {
+            fAVMService.link(parentPath, name, toLink);
+        }
         
         String newPath = AVMNodeConverter.ExtendAVMPath(parentPath, name);
         

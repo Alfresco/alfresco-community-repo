@@ -1173,6 +1173,20 @@ public interface AVMService
     public void link(String parentPath, String name, AVMNodeDescriptor toLink);
     
     /**
+     * <em>Low-level internal function</em>:&nbsp;&nbsp; replace a node 
+     * in a parent directly.  Caution: this is not something 
+     * one ordinary applications should do, but it is used 
+     * internally by the AVMSyncService.update() method. 
+     * This function may disappear from the public interface.
+     *
+     * @param parentPath The path to the parent directory.
+     * @param name       The name to give the node.
+     * @param toLink     A descriptor for the node to insert.
+     * @throws           AVMNotFoundException
+     */
+    public void updateLink(String parentPath, String name, AVMNodeDescriptor toLink);
+    
+    /**
      * <em>Low-level internal function</em>:&nbsp;&nbsp;  Force a copy on write 
      * write event on the given node.  This function is not usually 
      * needed, and may be removed from the public interface.

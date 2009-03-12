@@ -68,6 +68,7 @@ import org.alfresco.repo.domain.hibernate.DirtySessionMethodInterceptor;
 import org.alfresco.repo.domain.hibernate.NodeAssocImpl;
 import org.alfresco.repo.domain.hibernate.NodeImpl;
 import org.alfresco.repo.domain.hibernate.ServerImpl;
+import org.alfresco.repo.domain.hibernate.SessionSizeResourceManager;
 import org.alfresco.repo.domain.hibernate.StoreImpl;
 import org.alfresco.repo.domain.hibernate.TransactionImpl;
 import org.alfresco.repo.node.db.NodeDaoService;
@@ -78,8 +79,11 @@ import org.alfresco.repo.security.permissions.SimpleAccessControlListProperties;
 import org.alfresco.repo.security.permissions.impl.AclChange;
 import org.alfresco.repo.security.permissions.impl.AclDaoComponent;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.TransactionAwareSingleton;
+import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.repo.transaction.TransactionalDao;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ChildAssociationDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -108,6 +112,7 @@ import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Criteria;
+import org.hibernate.LockMode;
 import org.hibernate.ObjectNotFoundException;
 import org.hibernate.Query;
 import org.hibernate.ScrollMode;
@@ -179,6 +184,8 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     private AclDaoComponent aclDaoComponent;
     private LocaleDAO localeDAO;
     private DictionaryService dictionaryService;
+    private boolean enableTimestampPropagation;
+    private RetryingTransactionHelper auditableTransactionHelper;
     /** A cache mapping StoreRef and NodeRef instances to the entity IDs (primary key) */
     private SimpleCache<EntityRef, Long> storeAndNodeIdCache;
     /** A cache for more performant lookups of the parent associations */
@@ -211,6 +218,7 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         }
         
         changeTxnIdSet = new HashSet<String>(0);
+        enableTimestampPropagation = true;
     }
 
     /**
@@ -270,6 +278,24 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;
+    }
+
+    /**
+     * Enable/disable propagation of timestamps from child to parent nodes.<br/>
+     * Note: This only has an effect on child associations that use the <b>propagateTimestamps</b> element.
+     */
+    public void setEnableTimestampPropagation(boolean enableTimestampPropagation)
+    {
+        this.enableTimestampPropagation = enableTimestampPropagation;
+    }
+
+    /**
+     * Set the component to start new transactions when setting auditable properties (timestamps)
+     * in the post-transaction phase.
+     */
+    public void setAuditableTransactionHelper(RetryingTransactionHelper auditableTransactionHelper)
+    {
+        this.auditableTransactionHelper = auditableTransactionHelper;
     }
 
     /**
@@ -551,6 +577,19 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     }
     
     /**
+     * Fetch the node.  If the ID is invalid, <tt>null</tt> is returned.
+     * 
+     * @param nodeId        the node's ID
+     * @return              the node
+     * @throws              ObjectNotFoundException if the ID doesn't refer to a node.
+     */
+    private Node getNodeOrNull(Long nodeId)
+    {
+        Node node = (Node) getHibernateTemplate().get(NodeImpl.class, nodeId);
+        return node;
+    }
+    
+    /**
      * Fetch the child assoc.  If the ID is invalid, we assume that the state of the current session
      * is invalid i.e. the data is stale
      * 
@@ -766,11 +805,11 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         }
     }
     
-    private static final String UNKOWN_USER = "unkown";
+    private static final String UNKNOWN_USER = "unknown";
     private String getCurrentUser()
     {
         String user = AuthenticationUtil.getFullyAuthenticatedUser();
-        return (user == null) ? UNKOWN_USER : user;
+        return (user == null) ? UNKNOWN_USER : user;
     }
     
     private void recordNodeCreate(Node node)
@@ -803,6 +842,8 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
             }
             auditableProperties.setAuditValues(currentUser, currentDate, false);
         }
+        // Propagate timestamps
+        propagateTimestamps(node);
     }
 
     private void recordNodeDelete(Node node)
@@ -821,6 +862,159 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
             }
             auditableProperties.setAuditValues(currentUser, currentDate, false);
         }
+    }
+    
+    /**
+     * Ensures that timestamps are propagated for the <b>cm:auditable</b> aspect as required
+     * and defined by the model.
+     */
+    private void propagateTimestamps(Node node)
+    {
+        // Shortcut
+        if (!enableTimestampPropagation)
+        {
+            return;
+        }
+        Long nodeId = node.getId();
+        Collection<ChildAssoc> parentAssocs = getParentAssocsInternal(nodeId);
+        for (ChildAssoc parentAssoc : parentAssocs)
+        {
+            propagateTimestamps(parentAssoc);
+        }
+    }
+    
+    /**
+     * Sets the timestamps for nodes set during the transaction.
+     * <p>
+     * The implementation attempts to propagate the timestamps in the same transaction, but during periods of high
+     * concurrent modification to children of a particular parent node, the contention-resolution at the database
+     * can lead to delays in the processes.  When this occurs, the process is pushed to after the transaction for an
+     * arbitrary period of time, after which the server will again attempt to do the work in the transaction.
+     * 
+     * @author Derek Hulley
+     */
+    private class TimestampPropagator extends TransactionListenerAdapter implements RetryingTransactionCallback<Integer>
+    {
+        private final Set<Long> nodeIds;
+        
+        private TimestampPropagator()
+        {
+            this.nodeIds = new HashSet<Long>(23);
+        }
+        
+        public void addNode(Long nodeId)
+        {
+            nodeIds.add(nodeId);
+        }
+        
+        @Override
+        public void afterCommit()
+        {
+            if (nodeIds.size() == 0)
+            {
+                return;
+            }
+            // Execute using the explicit transaction attributes
+            try
+            {
+                auditableTransactionHelper.doInTransaction(this, false, true);
+            }
+            catch (Throwable e)
+            {
+                logger.info("Failed to update auditable properties for nodes: " + nodeIds);
+            }
+        }
+
+        public static final String QUERY_UPDATE_AUDITABLE_MODIFIED = "node.UpdateAuditableModified";
+        public Integer execute() throws Throwable
+        {
+            long now = System.currentTimeMillis();
+            return executeImpl(now, true);
+        }
+        
+        private Integer executeImpl(long now, boolean isPostTransaction) throws Throwable
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Updating timestamps for nodes: " + nodeIds);
+            }
+            Session session = getSession();
+            final Date modifiedDate = new Date(now);
+            final String modifier = getCurrentUser();
+            int count = 0;
+            for (final Long nodeId : nodeIds)
+            {
+                Node node = getNodeOrNull(nodeId);
+                if (node == null)
+                {
+                    continue;
+                }
+                AuditableProperties auditableProperties = node.getAuditableProperties();
+                if (auditableProperties == null)
+                {
+                    // Don't bother setting anything if there are no values
+                    continue;
+                }
+                // Only set the value if our modified date is later
+                Date currentModifiedDate = (Date) auditableProperties.getAuditableProperty(ContentModel.PROP_MODIFIED);
+                if (currentModifiedDate != null && currentModifiedDate.compareTo(modifiedDate) >= 0)
+                {
+                    // The value on the node is greater
+                    continue;
+                }
+                // Lock it
+                session.lock(node, LockMode.UPGRADE_NOWAIT);            // Might fail immediately, but that is better than waiting
+                auditableProperties.setAuditValues(modifier, modifiedDate, false);
+                count++;
+                if (count % 1000 == 0)
+                {
+                    DirtySessionMethodInterceptor.flushSession(session);
+                    SessionSizeResourceManager.clear(session);
+                }
+            }
+            return new Integer(count);
+        }
+    }
+    
+    private static final String RESOURCE_KEY_TIMESTAMP_PROPAGATOR = "hibernate.timestamp.propagator";
+    /**
+     * Ensures that the timestamps are propogated to the parent node of the association, but only
+     * if the association requires it.
+     */
+    private void propagateTimestamps(ChildAssoc parentAssoc)
+    {
+        // Shortcut
+        if (!enableTimestampPropagation)
+        {
+            return;
+        }
+        QName assocTypeQName = parentAssoc.getTypeQName(qnameDAO);
+        AssociationDefinition assocDef = dictionaryService.getAssociation(assocTypeQName);
+        if (assocDef == null)
+        {
+            // Not found, so just ignore
+            return;
+        }
+        else if (!assocDef.isChild())
+        {
+            // Unexpected, but not our immediate concern
+            return;
+        }
+        ChildAssociationDefinition childAssocDef = (ChildAssociationDefinition) assocDef;
+        // Do we send timestamps up?
+        if (!childAssocDef.getPropagateTimestamps())
+        {
+            return;
+        }
+        // We have to update the parent
+        TimestampPropagator propagator =
+            (TimestampPropagator) AlfrescoTransactionSupport.getResource(RESOURCE_KEY_TIMESTAMP_PROPAGATOR);
+        if (propagator == null)
+        {
+            propagator = new TimestampPropagator();
+            AlfrescoTransactionSupport.bindListener(propagator);
+        }
+        propagator.addNode(parentAssoc.getParent().getId());
     }
 
     public Pair<Long, NodeRef> newNode(StoreRef storeRef, String uuid, QName nodeTypeQName) throws InvalidTypeException
@@ -1365,6 +1559,10 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
     public void deleteNode(Long nodeId)
     {
         Node node = getNodeNotNull(nodeId);
+        
+        // Propagate timestamps
+        propagateTimestamps(node);
+        
         Set<Long> deletedChildAssocIds = new HashSet<Long>(10);
         deleteNodeInternal(node, false, deletedChildAssocIds);
         
@@ -4159,7 +4357,10 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
                 {
                     if (collapsedValue != null && !(collapsedValue instanceof Collection))
                     {
-                        collapsedValue = (Serializable) Collections.singletonList(collapsedValue);
+                        // Can't use Collections.singletonList: ETHREEOH-1172
+                        ArrayList<Serializable> collection = new ArrayList<Serializable>(1);
+                        collection.add(collapsedValue);
+                        collapsedValue = collection;
                     }
                 }
                 // Store the value
@@ -4251,7 +4452,10 @@ public class HibernateNodeDaoServiceImpl extends HibernateDaoSupport implements 
         // Make sure that multi-valued properties are returned as a collection
         if (propertyDef != null && propertyDef.isMultiValued() && result != null && !(result instanceof Collection))
         {
-            result = (Serializable) Collections.singletonList(result);
+            // Can't use Collections.singletonList: ETHREEOH-1172
+            ArrayList<Serializable> collection = new ArrayList<Serializable>(1);
+            collection.add(result);
+            result = collection;
         }
         // Done
         return result;

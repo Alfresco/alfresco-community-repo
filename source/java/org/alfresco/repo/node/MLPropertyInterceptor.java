@@ -317,14 +317,18 @@ public class MLPropertyInterceptor implements MethodInterceptor
      */
     private NodeRef getPivotNodeRef(NodeRef nodeRef)
     {
-       if (!nodeRef.getStoreRef().getProtocol().equals(StoreRef.PROTOCOL_AVM) && nodeService.hasAspect(nodeRef, ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION))
-       {
-          return multilingualContentService.getPivotTranslation(nodeRef);
-       }
-       else
-       {
-          return null;
-       }
+        if (nodeRef == null)
+        {
+            throw new IllegalArgumentException("NodeRef may not be null for calls to NodeService.  Check client code.");
+        }
+        if (!nodeRef.getStoreRef().getProtocol().equals(StoreRef.PROTOCOL_AVM) && nodeService.hasAspect(nodeRef, ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION))
+        {
+            return multilingualContentService.getPivotTranslation(nodeRef);
+        }
+        else
+        {
+            return null;
+        }
     }
     
     /**

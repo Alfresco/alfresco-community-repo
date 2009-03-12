@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -29,6 +29,7 @@ import java.util.Date;
 
 import org.alfresco.repo.domain.Server;
 import org.alfresco.repo.domain.Transaction;
+import org.alfresco.util.ISO8601DateFormat;
 
 /**
  * Bean containing all the persistence data representing a <b>Transaction</b>.
@@ -59,7 +60,7 @@ public class TransactionImpl extends LifecycleAdapter implements Transaction, Se
         StringBuilder sb = new StringBuilder(50);
         sb.append("Transaction")
           .append("[id=").append(id)
-          .append(", txnTimeMs=").append(commitTimeMs == null ? "---" : new Date(commitTimeMs))
+          .append(", txnTimeMs=").append(commitTimeMs == null ? "---" : ISO8601DateFormat.format(new Date(commitTimeMs)))
           .append(", changeTxnId=").append(changeTxnId)
           .append("]");
         return sb.toString();

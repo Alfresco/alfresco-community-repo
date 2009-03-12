@@ -63,6 +63,7 @@
                   <many>true</many>
                </target>
                <duplicate>false</duplicate>
+               <propagateTimestamps>true</propagateTimestamps>
             </child-association>
          </associations>
       </type>

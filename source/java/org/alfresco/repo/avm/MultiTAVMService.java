@@ -177,6 +177,11 @@ public class MultiTAVMService implements AVMService
         fService.deleteStoreProperty(getTenantStoreName(storeName), name);
     }
 
+    public void updateLink(String parentPath, String name, AVMNodeDescriptor toLink)
+    {
+        fService.updateLink(getTenantPath(parentPath), name, toLink);
+    }
+
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.avm.AVMService#forceCopy(java.lang.String)
      */

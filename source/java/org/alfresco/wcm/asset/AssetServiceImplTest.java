@@ -34,6 +34,7 @@ import java.util.Map;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.avm.AVMNotFoundException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -57,6 +58,11 @@ public class AssetServiceImplTest extends AbstractWCMServiceImplTest
     
     private SandboxService sbService;
     private AssetService assetService;
+    
+    // test data
+    private static final String PREFIX = "created-by-admin-";
+    private static final String FILE = "This is file1 - admin";
+    
     
     @Override
     protected void setUp() throws Exception
@@ -375,6 +381,295 @@ public class AssetServiceImplTest extends AbstractWCMServiceImplTest
         {
             // expected
         }
+    }
+    
+    /**
+     * Test CRUD - create, retrieve (get, list), update and delete for each role
+     */
+    public void testCRUDforRoles() throws IOException, InterruptedException
+    {
+        // create web project (also creates staging sandbox and admin's author sandbox)
+        WebProjectInfo wpInfo = wpService.createWebProject(TEST_WEBPROJ_DNS+"-crudroles", TEST_WEBPROJ_NAME+"-crudroles", TEST_WEBPROJ_TITLE, TEST_WEBPROJ_DESCRIPTION, TEST_WEBPROJ_DEFAULT_WEBAPP, TEST_WEBPROJ_DONT_USE_AS_TEMPLATE, null);
+        
+        String wpStoreId = wpInfo.getStoreId();
+        String defaultWebApp = wpInfo.getDefaultWebApp();
+        
+        // get admin sandbox
+        SandboxInfo sbInfo = sbService.getAuthorSandbox(wpStoreId);
+        String sbStoreId = sbInfo.getSandboxId();
+        
+        // create some existing folders and files
+        String[] users = new String[]{USER_ONE, USER_TWO, USER_THREE, USER_FOUR};
+        for (String user : users)
+        {
+            assetService.createFolderWebApp(sbStoreId, defaultWebApp, "/", PREFIX+user);
+            
+            // create file (and add content)
+            ContentWriter writer = assetService.createFileWebApp(sbStoreId, defaultWebApp, "/"+PREFIX+user, "fileA");
+            writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+            writer.setEncoding("UTF-8");
+            writer.putContent(FILE);
+        }
+        
+        sbService.submitWebApp(sbStoreId, defaultWebApp, "some existing folders and files", null);
+        
+        Thread.sleep(SUBMIT_DELAY);
+        
+        runCRUDforRoles(USER_ONE, WCMUtil.ROLE_CONTENT_MANAGER, wpStoreId, defaultWebApp, true, true, true);
+        
+        // TODO - pending ETHREEOH-1314 (see below) if updating folder properties
+        runCRUDforRoles(USER_TWO, WCMUtil.ROLE_CONTENT_PUBLISHER, wpStoreId, defaultWebApp, true, true, false);
+        runCRUDforRoles(USER_THREE, WCMUtil.ROLE_CONTENT_REVIEWER, wpStoreId, defaultWebApp, false, true, false);
+        
+        runCRUDforRoles(USER_FOUR, WCMUtil.ROLE_CONTENT_CONTRIBUTOR, wpStoreId, defaultWebApp, true, false, false);
+    }
+        
+    private void runCRUDforRoles(String user, String role, String wpStoreId, String defaultWebApp, boolean canCreate, boolean canUpdateExisting, boolean canDeleteExisting) throws IOException, InterruptedException
+    {
+        // switch to user - content manager
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_ADMIN);
+        
+        // invite web user and auto-create their (author) sandbox
+        wpService.inviteWebUser(wpStoreId, user, role, true);
+        
+        // switch to user
+        AuthenticationUtil.setFullyAuthenticatedUser(user);
+
+        // get user's author sandbox
+        SandboxInfo sbInfo = sbService.getAuthorSandbox(wpStoreId);
+        String sbStoreId = sbInfo.getSandboxId();
+        String path = sbInfo.getSandboxRootPath() + "/" + defaultWebApp; // for checks only
+        
+        if (canCreate)
+        {
+            // create folder
+            assetService.createFolderWebApp(sbStoreId, defaultWebApp, "/", user);
+            
+            // create file (and add content)
+            final String MYFILE1 = "This is myFile1 - "+user;
+            ContentWriter writer = assetService.createFileWebApp(sbStoreId, defaultWebApp, "/"+user, "fileA");
+            writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+            writer.setEncoding("UTF-8");
+            writer.putContent(MYFILE1);
+            
+            // list assets
+            assertEquals(1, assetService.listAssetsWebApp(sbStoreId, defaultWebApp, "/"+user, false).size());
+            
+            // get assets
+            AssetInfo myFolder1Asset = assetService.getAssetWebApp(sbStoreId, defaultWebApp, "/"+user);
+            checkAssetInfo(myFolder1Asset, user, path+"/"+user, user, false, true, false, false, null);
+            
+            AssetInfo myFile1Asset = assetService.getAssetWebApp(sbStoreId, defaultWebApp, "/"+user+"/fileA");
+            checkAssetInfo(myFile1Asset, "fileA", path+"/"+user+"/fileA", user, true, false, false, true, user);
+            
+            // get content
+            
+            ContentReader reader = assetService.getContentReader(myFile1Asset);
+            InputStream in = reader.getContentInputStream();
+            byte[] buff = new byte[1024];
+            in.read(buff);
+            in.close();
+            assertEquals(MYFILE1, new String(buff, 0, MYFILE1.length())); // assumes 1byte=1char
+            
+            // update content
+            
+            final String MYFILE1_MODIFIED = "This is myFile1 ... modified";
+            writer = assetService.getContentWriter(myFile1Asset);
+            writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+            writer.setEncoding("UTF-8");
+            writer.putContent(MYFILE1_MODIFIED);
+            
+            // get updated content
+            
+            reader = assetService.getContentReader(myFile1Asset);
+            in = reader.getContentInputStream();
+            buff = new byte[1024];
+            in.read(buff);
+            in.close();
+            assertEquals(MYFILE1_MODIFIED, new String(buff, 0, MYFILE1_MODIFIED.length())); // assumes 1byte=1char
+            
+            // update folder properties - eg. title and description
+            
+            Map<QName, Serializable> newProps = new HashMap<QName, Serializable>(2);
+            newProps.put(ContentModel.PROP_TITLE, "folder title");
+            newProps.put(ContentModel.PROP_DESCRIPTION, "folder description");
+            
+            assetService.updateAssetProperties(myFolder1Asset, newProps);
+            Map<QName, Serializable> props = assetService.getAssetProperties(myFolder1Asset);
+            assertEquals("folder title", props.get(ContentModel.PROP_TITLE));
+            assertEquals("folder description", props.get(ContentModel.PROP_DESCRIPTION));
+            
+            // Delete created file and folder
+            assetService.deleteAsset(myFile1Asset);
+            assetService.deleteAsset(myFolder1Asset);
+        }
+        else
+        {
+            try
+            {
+                // try to create folder (-ve test)
+                assetService.createFolderWebApp(sbStoreId, defaultWebApp, "/", user);
+                fail("User "+user+" with role "+role+" should not be able to create folder");
+            }
+            catch (AccessDeniedException ade)
+            {
+                // expected
+            }
+            
+            try
+            {
+                // try to create file (-ve test)
+                assetService.createFileWebApp(sbStoreId, defaultWebApp, "/", "file-"+user);
+                fail("User "+user+" with role "+role+" should not be able to create file");
+            }
+            catch (AccessDeniedException ade)
+            {
+                // expected
+            }
+        }
+         
+        // list existing assets
+        assertEquals(1, assetService.listAssetsWebApp(sbStoreId, defaultWebApp, "/"+PREFIX+user, false).size());
+        
+        // get existing assets
+        AssetInfo existingFolder1Asset = assetService.getAssetWebApp(sbStoreId, defaultWebApp, "/"+PREFIX+user);
+        checkAssetInfo(existingFolder1Asset, PREFIX+user, path+"/"+PREFIX+user, USER_ADMIN, false, true, false, false, null);
+        
+        AssetInfo existingFile1Asset = assetService.getAssetWebApp(sbStoreId, defaultWebApp, "/"+PREFIX+user+"/fileA");
+        checkAssetInfo(existingFile1Asset, "fileA", path+"/"+PREFIX+user+"/fileA", USER_ADMIN, true, false, false, false, null);
+        
+        // get existing content
+        
+        ContentReader reader = assetService.getContentReader(existingFile1Asset);
+        InputStream in = reader.getContentInputStream();
+        byte[] buff = new byte[1024];
+        in.read(buff);
+        in.close();
+        assertEquals(FILE, new String(buff, 0, FILE.length())); // assumes 1byte=1char
+        
+        if (canUpdateExisting)
+        {
+            // update content
+            
+            final String MYFILE1_MODIFIED = "This is myFile1 ... modified";
+            ContentWriter writer = assetService.getContentWriter(existingFile1Asset);
+            writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+            writer.setEncoding("UTF-8");
+            writer.putContent(MYFILE1_MODIFIED);
+            
+            // get updated content
+            
+            reader = assetService.getContentReader(existingFile1Asset);
+            in = reader.getContentInputStream();
+            buff = new byte[1024];
+            in.read(buff);
+            in.close();
+            assertEquals(MYFILE1_MODIFIED, new String(buff, 0, MYFILE1_MODIFIED.length())); // assumes 1byte=1char
+            
+            // update file properties - eg. title and description
+            
+            Map<QName, Serializable> newProps = new HashMap<QName, Serializable>(2);
+            newProps.put(ContentModel.PROP_TITLE, "file title");
+            newProps.put(ContentModel.PROP_DESCRIPTION, "file description");
+            
+            assetService.updateAssetProperties(existingFile1Asset, newProps);
+            Map<QName, Serializable> props = assetService.getAssetProperties(existingFile1Asset);
+            assertEquals("file title", props.get(ContentModel.PROP_TITLE));
+            assertEquals("file description", props.get(ContentModel.PROP_DESCRIPTION));
+            
+            /* TODO - pending ETHREEOH-1314 - fails for content contributor / content publisher during submit if updating folder properties
+            
+            // update folder properties - eg. title and description
+            
+            newProps = new HashMap<QName, Serializable>(2);
+            newProps.put(ContentModel.PROP_TITLE, "folder title");
+            newProps.put(ContentModel.PROP_DESCRIPTION, "folder description");
+            
+            assetService.updateAssetProperties(existingFolder1Asset, newProps);
+            props = assetService.getAssetProperties(existingFolder1Asset);
+            assertEquals("folder title", props.get(ContentModel.PROP_TITLE));
+            assertEquals("folder description", props.get(ContentModel.PROP_DESCRIPTION));
+            */
+        }
+        else
+        {
+            try
+            {
+                // try to update file (-ve test)
+                assetService.getContentWriter(existingFile1Asset);
+                fail("User "+user+" with role "+role+" should not be able to update existing file");
+            }
+            catch (AccessDeniedException ade)
+            {
+                // expected
+            }
+            
+            try
+            {
+                // try to update file properties (-ve test)
+                Map<QName, Serializable> newProps = new HashMap<QName, Serializable>(2);
+                newProps.put(ContentModel.PROP_TITLE, "file title");
+                newProps.put(ContentModel.PROP_DESCRIPTION, "file description");
+                
+                assetService.updateAssetProperties(existingFile1Asset, newProps);
+                fail("User "+user+" with role "+role+" should not be able to update existing file properties");
+            }
+            catch (AccessDeniedException ade)
+            {
+                // expected
+            }
+            
+            try
+            {
+                // try to update folder properties (-ve test)
+                Map<QName, Serializable> newProps = new HashMap<QName, Serializable>(2);
+                newProps.put(ContentModel.PROP_TITLE, "folder title");
+                newProps.put(ContentModel.PROP_DESCRIPTION, "folder description");
+                
+                assetService.updateAssetProperties(existingFolder1Asset, newProps);
+                fail("User "+user+" with role "+role+" should not be able to update existing folder properties");
+            }
+            catch (AccessDeniedException ade)
+            {
+                // expected
+            }
+        }
+        
+        if (canDeleteExisting)
+        {
+            // Delete existing file and folder
+            assetService.deleteAsset(existingFile1Asset);
+            assetService.deleteAsset(existingFolder1Asset);
+        }
+        else
+        {
+            try
+            {
+                // try to delete file (-ve test)
+                assetService.deleteAsset(existingFile1Asset);
+                fail("User "+user+" with role "+role+" should not be able to delete existing file");
+            }
+            catch (AVMNotFoundException nfe)
+            {
+                // expected
+            }
+            
+            try
+            {
+                // try to delete folder (-ve test)
+                assetService.deleteAsset(existingFolder1Asset);
+                fail("User "+user+" with role "+role+" should not be able to delete existing folder");
+            }
+            catch (AVMNotFoundException ade)
+            {
+                // expected
+            }
+        }
+        
+        // submit the changes
+        sbService.submitWebApp(sbStoreId, defaultWebApp, "some updates by "+user, null);
+        
+        Thread.sleep(SUBMIT_DELAY);
     }
     
     public void testRenameFile()

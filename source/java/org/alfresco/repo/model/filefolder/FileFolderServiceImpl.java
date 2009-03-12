@@ -242,6 +242,10 @@ public class FileFolderServiceImpl implements FileFolderService
         }
     }
 
+    public boolean exists(NodeRef nodeRef)
+    {
+        return nodeService.exists(nodeRef);
+    }
     
     public FileFolderServiceType getType(QName typeQName)
     {
@@ -753,6 +757,12 @@ public class FileFolderServiceImpl implements FileFolderService
     public void delete(NodeRef nodeRef)
     {
         nodeService.deleteNode(nodeRef);
+        // Done
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Deleted: \n" +
+                    "   node: " + nodeRef);
+        }
     }
 
     public FileInfo makeFolders(NodeRef parentNodeRef, List<String> pathElements, QName folderTypeQName)

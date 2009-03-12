@@ -1732,7 +1732,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             // Get the node for the folder
         	
             NodeRef nodeRef = cifsHelper.getNodeRef(deviceRootNodeRef, dir);
-            if (nodeService.exists(nodeRef))
+            if (fileFolderService.exists(nodeRef))
             {
             	// Check if the folder is empty
             	
@@ -1740,7 +1740,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             		
 	           		// Delete the folder node
 	
-	           		nodeService.deleteNode(nodeRef);
+	           		fileFolderService.delete(nodeRef);
 	                
 	                // Remove the file state
 		                
@@ -1849,13 +1849,13 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                 
                 // We don't know how long the network file has had the reference, so check for existence
                 
-                if (nodeService.exists(nodeRef))
+                if (fileFolderService.exists(nodeRef))
                 {
                     try
                     {
                         // Delete the file
                         
-                        nodeService.deleteNode(nodeRef);
+                        fileFolderService.delete(nodeRef);
     
                         // Remove the file state
                         
@@ -1866,9 +1866,6 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                         
 //                        sess.endTransaction();
 //                        beginReadTransaction( sess);
-                        
-                        if ( nodeService.exists( nodeRef))
-                        	System.out.println("Node still exists - " + file.getFullName());
                     }
                     catch (org.alfresco.repo.security.permissions.AccessDeniedException ex)
                     {
@@ -1930,9 +1927,9 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             // Get the node
         	
             NodeRef nodeRef = getNodeForPath(tree, name);
-            if (nodeService.exists(nodeRef))
+            if (fileFolderService.exists(nodeRef))
             {
-                nodeService.deleteNode(nodeRef);
+                fileFolderService.delete(nodeRef);
                 
                 // Remove the file state
                 
@@ -2551,7 +2548,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             {
                 // Check that the node exists
             	
-                if (nodeService.exists(fstate.getNodeRef()))
+                if (fileFolderService.exists(fstate.getNodeRef()))
                 {
                 	// Bump the file states expiry time
                 	

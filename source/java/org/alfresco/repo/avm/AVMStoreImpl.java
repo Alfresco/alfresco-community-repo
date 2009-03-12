@@ -1711,7 +1711,7 @@ public class AVMStoreImpl implements AVMStore, Serializable
     }
 
     /**
-     * Link a node intro a directory, directly.
+     * Link a node into a directory, directly.
      * @param parentPath The path to the directory.
      * @param name The name to give the parent.
      * @param toLink The node to link.
@@ -1728,6 +1728,37 @@ public class AVMStoreImpl implements AVMStore, Serializable
         {
             throw new AccessDeniedException("Not allowed to add children: " + parentPath);
         }
+        dir.link(lPath, name, toLink);
+    }
+    
+    /**
+     * Update a link to a node in a directory, directly.
+     * @param parentPath The path to the directory.
+     * @param name The name to give the parent.
+     * @param toLink The node to link.
+     */
+    public void updateLink(String parentPath, String name, AVMNodeDescriptor toLink)
+    {
+        Lookup lPath = lookupDirectory(-1, parentPath, true);
+        if (lPath == null)
+        {
+            throw new AVMNotFoundException("Path " + parentPath + " not found.");
+        }
+        DirectoryNode dir = (DirectoryNode)lPath.getCurrentNode();
+        
+        Lookup cPath = new Lookup(lPath, AVMDAOs.Instance().fAVMNodeDAO, AVMDAOs.Instance().fAVMStoreDAO);
+        Pair<AVMNode, Boolean> result = dir.lookupChild(cPath, name, true);
+        if (result == null)
+        {
+            throw new AVMNotFoundException("Path " + parentPath + "/" +name + " not found.");
+        }
+        AVMNode child = result.getFirst();
+        if (!fAVMRepository.can(null, child, PermissionService.WRITE, cPath.getDirectlyContained()))
+        {
+            throw new AccessDeniedException("Not allowed to update node: " +  parentPath + "/" +name );
+        }
+        
+        dir.removeChild(lPath, name);
         dir.link(lPath, name, toLink);
     }
 

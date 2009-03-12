@@ -36,6 +36,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.domain.Transaction;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.util.ISO8601DateFormat;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -195,24 +196,12 @@ public class IndexTransactionTracker extends AbstractReindexComponent
         }
     };
     
-    public void reindexFromTxn(long txnId)
+    public void resetFromTxn(long txnId)
     {
-        try
-        {
-            logger.info("reindexFromTxn: "+txnId);
+        logger.info("resetFromTxn: "+txnId);
             
-            this.fromTxnId = txnId;
-            this.started = false;
-        
-            reindex();
-            
-            this.started = false;
-        }
-        finally
-        {
-            this.fromTxnId = 0L;
-            
-        }
+        this.fromTxnId = txnId;
+        this.started = false; // this will cause index tracker to break out (so that it can be re-started)
     }
 
     @Override
@@ -225,7 +214,7 @@ public class IndexTransactionTracker extends AbstractReindexComponent
         
         RetryingTransactionHelper retryingTransactionHelper = transactionService.getRetryingTransactionHelper();
         
-        if ((!started) || (this.fromTxnId != 0L))
+        if (!started)
         {
             // Disable in-transaction indexing
             if (disableInTransactionIndexing && nodeIndexer != null)
@@ -240,6 +229,8 @@ public class IndexTransactionTracker extends AbstractReindexComponent
             
             if (this.fromTxnId != 0L)
             {
+                logger.info("reindexImpl: start fromTxnId: "+fromTxnId+" "+this);
+                
                 Long fromTxnCommitTime = getTxnCommitTime(this.fromTxnId);
                 
                 if (fromTxnCommitTime == null)
@@ -254,12 +245,10 @@ public class IndexTransactionTracker extends AbstractReindexComponent
                 fromTimeInclusive = retryingTransactionHelper.doInTransaction(getStartingCommitTimeWork, true, true);
             }
         
+            fromTxnId = 0L;
             started = true;
             
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("reindexImpl: fromTimeInclusive: "+fromTimeInclusive+" "+this);
-            }
+            logger.info("reindexImpl: start fromTimeInclusive: "+ISO8601DateFormat.format(new Date(fromTimeInclusive))+" "+this);
         }
         
         while (true)
@@ -274,9 +263,9 @@ public class IndexTransactionTracker extends AbstractReindexComponent
         // Wait for the asynchronous reindexing to complete
         waitForAsynchronousReindexing();
         
-        if (logger.isDebugEnabled())
+        if (logger.isTraceEnabled())
         {
-            logger.debug("reindexImpl: completed: " + this);
+            logger.trace("reindexImpl: completed: "+this);
         }
         
         statusMsg = NO_REINDEX;
@@ -383,9 +372,9 @@ public class IndexTransactionTracker extends AbstractReindexComponent
             previousTxnIds.add(txn.getId());
         }
         
-        if (isShuttingDown())
+        if (isShuttingDown() || (! started))
         {
-            // break out if the VM is shutting down
+            // break out if the VM is shutting down or tracker has been reset (ie. !started)
             return false;
         }
         else
@@ -644,8 +633,9 @@ found:
                 }
             }
             
-            if (isShuttingDown())
+            if (isShuttingDown() || (! started))
             {
+                // break out if the VM is shutting down or tracker has been reset (ie. !started)
                 break;
             }
             // Flush the reindex buffer, if it is full or if we are on the last transaction and there are no more

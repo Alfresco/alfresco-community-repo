@@ -228,8 +228,8 @@ public interface FileFolderService
     /**
      * Resolve a file or folder name path from a given root node down to the final node.
      * 
-     * @param rootNodeRef the start of the path given, i.e. the '/' in '/A/B/C' for example
-     * @param pathElements a list of names in the path
+     * @param rootNodeRef the start point node - a cm:folder type or subtype, e.g. the Company Home's nodeRef
+     * @param pathElements a list of names in the path. Do not include the referenced rootNodeRef's path element.
      * @return Returns the info of the file or folder
      * @throws FileNotFoundException if no file or folder exists along the path
      */
@@ -265,6 +265,14 @@ public interface FileFolderService
     @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef"})
     public ContentWriter getWriter(NodeRef nodeRef);
     
+    
+    /**
+     * Check the validity of a node reference
+     * 
+     * @return          returns <tt>true</tt> if the NodeRef is valid
+     */
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"nodeRef"})
+    public boolean exists(NodeRef nodeRef);
     
     /**
      * Checks the type for whether it is a recognised file or folder type or is invalid for the FileFolderService.

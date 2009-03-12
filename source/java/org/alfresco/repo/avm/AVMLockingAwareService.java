@@ -587,6 +587,15 @@ public class AVMLockingAwareService implements AVMService, ApplicationContextAwa
         // TODO Does this need a lock?  I don't think so, but revisit.
         fService.link(parentPath, name, toLink);
     }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.avm.AVMService#updateLink(java.lang.String, java.lang.String, org.alfresco.service.cmr.avm.AVMNodeDescriptor)
+     */
+    public void updateLink(String parentPath, String name, AVMNodeDescriptor toLink)
+    {
+        // TODO Does this need a lock?  I don't think so, but revisit.
+        fService.updateLink(parentPath, name, toLink);
+    }
 
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.avm.AVMService#lookup(int, java.lang.String)

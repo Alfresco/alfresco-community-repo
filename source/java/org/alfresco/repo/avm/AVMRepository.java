@@ -586,7 +586,7 @@ public class AVMRepository
             // dstNode.setVersionID(dstRepo.getNextVersionID());
             dstNode.setAncestor(srcNode);
             dirNode.putChild(name, dstNode);
-            dirNode.updateModTime();
+            // dirNode.updateModTime();
             String beginingPath = AVMNodeConverter.NormalizePath(srcPath);
             String finalPath = AVMNodeConverter.ExtendAVMPath(dstPath, name);
             finalPath = AVMNodeConverter.NormalizePath(finalPath);
@@ -853,13 +853,13 @@ public class AVMRepository
                 dstNode = new PlainFileNodeImpl((PlainFileNode) srcNode, dstRepo, parentAcl, ACLCopyMode.COPY);
             }
             srcDir.removeChild(sPath, srcName);
-            srcDir.updateModTime();
+            // srcDir.updateModTime();
             // dstNode.setVersionID(dstRepo.getNextVersionID());
             if (child != null)
             {
                 dstNode.setAncestor(child);
             }
-            dstDir.updateModTime();
+            //dstDir.updateModTime();
             dstDir.putChild(dstName, dstNode);
             if (child == null)
             {
@@ -2819,6 +2819,36 @@ public class AVMRepository
                 throw new AVMNotFoundException("Store not found.");
             }
             store.link(pathParts[1], name, toLink);
+            fLookupCache.onWrite(pathParts[0]);
+        }
+        finally
+        {
+            fLookupCount.set(null);
+        }
+    }
+    
+    /**
+     * Update a link, directly.
+     * 
+     * @param parentPath
+     *            The path to the parent.
+     * @param name
+     *            The name to give the node.
+     * @param toLink
+     *            The node to link.
+     */
+    public void updateLink(String parentPath, String name, AVMNodeDescriptor toLink)
+    {
+        fLookupCount.set(1);
+        try
+        {
+            String[] pathParts = SplitPath(parentPath);
+            AVMStore store = getAVMStoreByName(pathParts[0]);
+            if (store == null)
+            {
+                throw new AVMNotFoundException("Store not found.");
+            }
+            store.updateLink(pathParts[1], name, toLink);
             fLookupCache.onWrite(pathParts[0]);
         }
         finally

@@ -2,6 +2,11 @@
 var filter = args["filter"];
 var maxResults = args["maxResults"];
 
+if (filter)
+{
+   filter = filter.replace('"', '');
+}
+
 // Get the collection of people
 var peopleCollection = people.getPeople(filter, maxResults != null ? parseInt(maxResults) : 0);
 

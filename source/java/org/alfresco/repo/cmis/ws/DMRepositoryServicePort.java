@@ -117,7 +117,7 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
         throws RuntimeException, InvalidArgumentException, OperationNotSupportedException, UpdateConflictException, PermissionDeniedException
     {
         CmisRepositoryEntryType repositoryEntryType = new CmisRepositoryEntryType();
-        Descriptor serverDescriptor = descriptorService.getServerDescriptor();
+        Descriptor serverDescriptor = descriptorService.getCurrentRepositoryDescriptor();
         repositoryEntryType.setRepositoryID(serverDescriptor.getId());
         repositoryEntryType.setRepositoryName(serverDescriptor.getName());
         return Collections.singletonList(repositoryEntryType);
@@ -139,12 +139,9 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
     public CmisRepositoryInfoType getRepositoryInfo(GetRepositoryInfo parameters)
         throws PermissionDeniedException, UpdateConflictException, ObjectNotFoundException, OperationNotSupportedException, InvalidArgumentException, RuntimeException, ConstraintViolationException
     {
-        Descriptor serverDescriptor = descriptorService.getServerDescriptor();
-        if (serverDescriptor.getId().equals(parameters.getRepositoryId()) == false)
-        {
-            throw new InvalidArgumentException("Invalid repository id");
-        }
+        checkRepositoryId(parameters.getRepositoryId());
 
+        Descriptor serverDescriptor = descriptorService.getCurrentRepositoryDescriptor();
         CmisRepositoryInfoType repositoryInfoType = new CmisRepositoryInfoType();
         repositoryInfoType.setRepositoryId(serverDescriptor.getId());
         repositoryInfoType.setRepositoryName(serverDescriptor.getName());
@@ -408,10 +405,7 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
     public GetTypesResponse getTypes(GetTypes parameters)
         throws RuntimeException, InvalidArgumentException, ObjectNotFoundException, ConstraintViolationException, OperationNotSupportedException, UpdateConflictException, PermissionDeniedException
     {
-        if (descriptorService.getServerDescriptor().getId().equals(parameters.getRepositoryId()) == false)
-        {
-            throw new InvalidArgumentException("Invalid repository id");
-        }
+        checkRepositoryId(parameters.getRepositoryId());
 
         Collection<CMISTypeId> typeIds;
         if (parameters.getTypeId() == null)
@@ -469,10 +463,7 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
     public GetTypeDefinitionResponse getTypeDefinition(GetTypeDefinition parameters)
         throws PermissionDeniedException, UpdateConflictException, ObjectNotFoundException, OperationNotSupportedException, TypeNotFoundException, InvalidArgumentException, RuntimeException, ConstraintViolationException
     {
-        if (descriptorService.getServerDescriptor().getId().equals(parameters.getRepositoryId()) == false)
-        {
-            throw new InvalidArgumentException("Invalid repository id");
-        }
+        checkRepositoryId(parameters.getRepositoryId());
 
         GetTypeDefinitionResponse response = new GetTypeDefinitionResponse();
         response.setType(getCmisTypeDefinition(parameters.getTypeId(), true));

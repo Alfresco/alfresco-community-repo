@@ -251,7 +251,7 @@ public class DMAbstractServicePort
      */
     protected void checkRepositoryId(String repositoryId) throws InvalidArgumentException
     {
-        if (!this.descriptorService.getServerDescriptor().getId().equals(repositoryId))
+        if (!this.descriptorService.getCurrentRepositoryDescriptor().getId().equals(repositoryId))
         {
             throw new InvalidArgumentException("Invalid repository id");
         }

@@ -105,9 +105,9 @@ var MSOffice = new Class(
       return window.external.compareDocument(url);
    },
    
-   insertDocument: function(relativePath)
+   insertDocument: function(relativePath, nodeRef)
    {
-      return window.external.insertDocument();
+      return window.external.insertDocument(relativePath, nodeRef);
    }
 });
 

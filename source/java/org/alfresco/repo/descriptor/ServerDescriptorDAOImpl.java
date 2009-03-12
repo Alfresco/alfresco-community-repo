@@ -119,7 +119,7 @@ public class ServerDescriptorDAOImpl implements DescriptorDAO
          */
         public String getId()
         {
-            return "<Unknown";
+            return "Unknown";
         }
 
         /*

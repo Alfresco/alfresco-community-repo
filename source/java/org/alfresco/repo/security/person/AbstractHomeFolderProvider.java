@@ -26,7 +26,6 @@ package org.alfresco.repo.security.person;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.alfresco.model.ContentModel;
@@ -37,13 +36,13 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
-import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.util.PropertyCheck;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.InitializingBean;
 
 /**
- * Common support for creating home folders This is hooked into node creation events from Person type objects via the homeFolderManager. Provider must all be wired up to the
- * homeFolderManager.
+ * Common support for creating home folders This is hooked into node creation events from Person type objects via the
+ * homeFolderManager. Provider must all be wired up to the homeFolderManager.
  * 
  * @author Andy Hind
  */
@@ -89,30 +88,9 @@ public abstract class AbstractHomeFolderProvider implements HomeFolderProvider, 
      */
     private String ownerOnCreate;
 
-    /**
-     * Set if permissions are inherited when nodes are created.
-     */
-    private boolean inheritsPermissionsOnCreate = false;
+    private PermissionsManager onCreatePermissionsManager;
 
-    /**
-     * A set of permissions to set for the owner when a home folder is created
-     */
-    private Set<String> ownerPermissionsToSetOnCreate;
-
-    /**
-     * General permissions to set on the node Map<(String)uid, Set<(String)permission>>.
-     */
-    private Map<String, Set<String>> permissionsToSetOnCreate;
-
-    /**
-     * Permissions to set for the user - on create and reference.
-     */
-    private Set<String> userPermissions;
-
-    /**
-     * Clear existing permissions on new home folders (useful of created from a template.
-     */
-    private boolean clearExistingPermissionsOnCreate = false;
+    private PermissionsManager onReferencePermissionsManager;
 
     public AbstractHomeFolderProvider()
     {
@@ -126,6 +104,7 @@ public abstract class AbstractHomeFolderProvider implements HomeFolderProvider, 
      */
     public void afterPropertiesSet() throws Exception
     {
+        PropertyCheck.mandatory(this, "homeFolderManager", homeFolderManager);
         homeFolderManager.addProvider(this);
     }
 
@@ -169,8 +148,6 @@ public abstract class AbstractHomeFolderProvider implements HomeFolderProvider, 
 
     /**
      * Get the path
-     * 
-     * @return
      */
     protected String getPath()
     {
@@ -179,8 +156,6 @@ public abstract class AbstractHomeFolderProvider implements HomeFolderProvider, 
 
     /**
      * Set the path
-     * 
-     * @param path
      */
     public void setPath(String path)
     {
@@ -189,8 +164,6 @@ public abstract class AbstractHomeFolderProvider implements HomeFolderProvider, 
 
     /**
      * Get the store ref
-     * 
-     * @return
      */
     protected StoreRef getStoreRef()
     {
@@ -199,8 +172,6 @@ public abstract class AbstractHomeFolderProvider implements HomeFolderProvider, 
 
     /**
      * Set the store ref
-     * 
-     * @param storeRef
      */
     public void setStoreRef(StoreRef storeRef)
     {
@@ -209,8 +180,6 @@ public abstract class AbstractHomeFolderProvider implements HomeFolderProvider, 
 
     /**
      * Set the store from the string url.
-     * 
-     * @param storeUrl
      */
     public void setStoreUrl(String storeUrl)
     {
@@ -219,8 +188,6 @@ public abstract class AbstractHomeFolderProvider implements HomeFolderProvider, 
 
     /**
      * Get the service registry.
-     * 
-     * @return
      */
     protected ServiceRegistry getServiceRegistry()
     {
@@ -229,8 +196,6 @@ public abstract class AbstractHomeFolderProvider implements HomeFolderProvider, 
 
     /**
      * Set the service registry.
-     * 
-     * @param serviceRegistry
      */
     public void setServiceRegistry(ServiceRegistry serviceRegistry)
     {
@@ -239,8 +204,6 @@ public abstract class AbstractHomeFolderProvider implements HomeFolderProvider, 
 
     /**
      * Set the tenant service
-     * 
-     * @param tenantService
      */
     public void setTenantService(TenantService tenantService)
     {
@@ -248,19 +211,20 @@ public abstract class AbstractHomeFolderProvider implements HomeFolderProvider, 
     }
 
     /**
-     * Inherit permissions when home folder are created?
-     * 
-     * @param inheritsPermissionsOnCreate
+     * Set the permission manager
      */
-    public void setInheritsPermissionsOnCreate(boolean inheritsPermissionsOnCreate)
+    public void setOnCreatePermissionsManager(PermissionsManager onCreatePermissionsManager)
     {
-        this.inheritsPermissionsOnCreate = inheritsPermissionsOnCreate;
+        this.onCreatePermissionsManager = onCreatePermissionsManager;
+    }
+
+    public void setOnReferencePermissionsManager(PermissionsManager onReferencePermissionsManager)
+    {
+        this.onReferencePermissionsManager = onReferencePermissionsManager;
     }
 
     /**
-     * The owner to set on create.
-     * 
-     * @param ownerOnCreate
+     * Set the authority to use as the owner of all home folder nodes.
      */
     public void setOwnerOnCreate(String ownerOnCreate)
     {
@@ -268,49 +232,7 @@ public abstract class AbstractHomeFolderProvider implements HomeFolderProvider, 
     }
 
     /**
-     * The owner permissions to set on create.
-     * 
-     * @param ownerPermissionsToSetOnCreate
-     */
-    public void setOwnerPermissionsToSetOnCreate(Set<String> ownerPermissionsToSetOnCreate)
-    {
-        this.ownerPermissionsToSetOnCreate = ownerPermissionsToSetOnCreate;
-    }
-
-    /**
-     * General permissions to set on create.
-     * 
-     * @param permissionsToSetOnCreate
-     */
-    public void setPermissionsToSetOnCreate(Map<String, Set<String>> permissionsToSetOnCreate)
-    {
-        this.permissionsToSetOnCreate = permissionsToSetOnCreate;
-    }
-
-    /**
-     * User permissions to set on create and on reference.
-     * 
-     * @param userPermissions
-     */
-    public void setUserPermissions(Set<String> userPermissions)
-    {
-        this.userPermissions = userPermissions;
-    }
-
-    /**
-     * Clear exising permissions on create. Useful to clear permissions from a template.
-     * 
-     * @param clearExistingPermissionsOnCreate
-     */
-    public void setClearExistingPermissionsOnCreate(boolean clearExistingPermissionsOnCreate)
-    {
-        this.clearExistingPermissionsOnCreate = clearExistingPermissionsOnCreate;
-    }
-
-    /**
      * Cache path to node resolution
-     * 
-     * @return
      */
     protected NodeRef getPathNodeRef()
     {
@@ -327,14 +249,10 @@ public abstract class AbstractHomeFolderProvider implements HomeFolderProvider, 
 
     /**
      * Utility metho to resolve paths to nodes.
-     * 
-     * @param pathToResolve
-     * @return
      */
     protected NodeRef resolvePath(String pathToResolve)
     {
-        List<NodeRef> refs = serviceRegistry.getSearchService().selectNodes(
-                serviceRegistry.getNodeService().getRootNode(storeRef), pathToResolve, null,
+        List<NodeRef> refs = serviceRegistry.getSearchService().selectNodes(serviceRegistry.getNodeService().getRootNode(storeRef), pathToResolve, null,
                 serviceRegistry.getNamespaceService(), false);
         if (refs.size() != 1)
         {
@@ -354,9 +272,6 @@ public abstract class AbstractHomeFolderProvider implements HomeFolderProvider, 
 
     /**
      * Abstract implementation to find/create the approriate home space.
-     * 
-     * @param person
-     * @return
      */
     protected abstract HomeSpaceNodeRef getHomeFolder(NodeRef person);
 
@@ -385,82 +300,31 @@ public abstract class AbstractHomeFolderProvider implements HomeFolderProvider, 
             if (homeFolder.getNodeRef() != null)
             {
                 // Get uid and keep
-                String uid = DefaultTypeConverter.INSTANCE.convert(String.class, serviceRegistry.getNodeService()
-                        .getProperty(personNodeRef, ContentModel.PROP_USERNAME));
+                String uid = DefaultTypeConverter.INSTANCE.convert(String.class, serviceRegistry.getNodeService().getProperty(personNodeRef, ContentModel.PROP_USERNAME));
 
                 // If created or found then set (other wise it was already set correctly)
                 if (homeFolder.getStatus() != HomeSpaceNodeRef.Status.VALID)
                 {
-                    serviceRegistry.getNodeService().setProperty(personNodeRef, ContentModel.PROP_HOMEFOLDER,
-                            homeFolder.getNodeRef());
+                    serviceRegistry.getNodeService().setProperty(personNodeRef, ContentModel.PROP_HOMEFOLDER, homeFolder.getNodeRef());
                 }
 
+                String ownerToSet = ownerOnCreate == null ? uid : ownerOnCreate;
                 // If created..
                 if (homeFolder.getStatus() == HomeSpaceNodeRef.Status.CREATED)
                 {
-                    // Set to a specified owner or make owned by the person.
-                    if (ownerOnCreate != null)
+                    if (onCreatePermissionsManager != null)
                     {
-                        serviceRegistry.getOwnableService().setOwner(homeFolder.getNodeRef(), ownerOnCreate);
-                    }
-                    else
-                    {
-
-                        serviceRegistry.getOwnableService().setOwner(homeFolder.getNodeRef(), uid);
-                    }
-
-                    // clear permissions - useful of not required from a template
-
-                    if (clearExistingPermissionsOnCreate)
-                    {
-                        serviceRegistry.getPermissionService().deletePermissions(homeFolder.getNodeRef());
-                    }
-
-                    // inherit permissions
-
-                    serviceRegistry.getPermissionService().setInheritParentPermissions(homeFolder.getNodeRef(),
-                            inheritsPermissionsOnCreate);
-
-                    // Set owner permissions
-
-                    if (ownerPermissionsToSetOnCreate != null)
-                    {
-                        for (String permission : ownerPermissionsToSetOnCreate)
-                        {
-                            serviceRegistry.getPermissionService().setPermission(homeFolder.getNodeRef(),
-                                    PermissionService.OWNER_AUTHORITY, permission, true);
-                        }
-                    }
-
-                    // Add other permissions
-
-                    if (permissionsToSetOnCreate != null)
-                    {
-                        for (String user : permissionsToSetOnCreate.keySet())
-                        {
-                            Set<String> set = permissionsToSetOnCreate.get(user);
-                            if (set != null)
-                            {
-                                for (String permission : set)
-                                {
-                                    serviceRegistry.getPermissionService().setPermission(homeFolder.getNodeRef(), user,
-                                            permission, true);
-                                }
-                            }
-                        }
+                        onCreatePermissionsManager.setPermissions(homeFolder.getNodeRef(), ownerToSet, uid);
                     }
                 }
-
-                // Add user permissions on create and reference
-
-                if (userPermissions != null)
+                else
                 {
-                    for (String permission : userPermissions)
+                    if (onReferencePermissionsManager != null)
                     {
-                        serviceRegistry.getPermissionService().setPermission(homeFolder.getNodeRef(), uid, permission,
-                                true);
+                        onReferencePermissionsManager.setPermissions(homeFolder.getNodeRef(), ownerToSet, uid);
                     }
                 }
+
             }
             return homeFolder.getNodeRef();
 

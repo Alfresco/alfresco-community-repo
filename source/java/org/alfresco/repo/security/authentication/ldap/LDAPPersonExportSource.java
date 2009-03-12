@@ -218,27 +218,6 @@ public class LDAPPersonExportSource implements ExportSource
                     writer.startElement(ContentModel.TYPE_PERSON.getNamespaceURI(), ContentModel.TYPE_PERSON
                             .getLocalName(), ContentModel.TYPE_PERSON.toPrefixString(namespaceService), attrs);
 
-                    // permissions
-
-                    // owner
-
-                    writer.startElement(ContentModel.ASPECT_OWNABLE.getNamespaceURI(), ContentModel.ASPECT_OWNABLE
-                            .getLocalName(), ContentModel.ASPECT_OWNABLE.toPrefixString(namespaceService),
-                            new AttributesImpl());
-
-                    writer.endElement(ContentModel.ASPECT_OWNABLE.getNamespaceURI(), ContentModel.ASPECT_OWNABLE
-                            .getLocalName(), ContentModel.ASPECT_OWNABLE.toPrefixString(namespaceService));
-
-                    writer.startElement(ContentModel.PROP_OWNER.getNamespaceURI(), ContentModel.PROP_OWNER
-                            .getLocalName(), ContentModel.PROP_OWNER.toPrefixString(namespaceService),
-                            new AttributesImpl());
-
-                    writer.characters(uid.toCharArray(), 0, uid.length());
-
-                    writer.endElement(ContentModel.PROP_OWNER.getNamespaceURI(),
-                            ContentModel.PROP_OWNER.getLocalName(), ContentModel.PROP_OWNER
-                                    .toPrefixString(namespaceService));
-
                     for (String key : attributeMapping.keySet())
                     {
                         QName keyQName = QName.createQName(key, namespaceService);

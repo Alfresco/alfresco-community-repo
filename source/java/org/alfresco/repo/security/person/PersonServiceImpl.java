@@ -105,7 +105,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     private PermissionServiceSPI permissionServiceSPI;
 
     private NamespacePrefixResolver namespacePrefixResolver;
-    
+
     private HomeFolderManager homeFolderManager;
 
     private PolicyComponent policyComponent;
@@ -113,7 +113,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     private boolean createMissingPeople;
 
     private static Set<QName> mutableProperties;
-    
+
     private String defaultHomeFolderProvider;
 
     private boolean processDuplicates = true;
@@ -125,6 +125,8 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     private boolean includeAutoCreated = false;
 
     private PersonDao personDao;
+
+    private PermissionsManager permissionsManager;
 
     /** a transactionally-safe cache to be injected */
     private SimpleCache<String, NodeRef> personCache;
@@ -171,11 +173,12 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         PropertyCheck.mandatory(this, "personCache", personCache);
         PropertyCheck.mandatory(this, "personDao", personDao);
 
-        // Avoid clash with home folder registration
-        //this.policyComponent
-        //        .bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateNode"), ContentModel.TYPE_PERSON, new JavaBehaviour(this, "onCreateNode"));
+     
+        this.policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateNode"), ContentModel.TYPE_PERSON, new JavaBehaviour(this, "onCreateNode"));
         this.policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteNode"), ContentModel.TYPE_PERSON, new JavaBehaviour(this,
                 "beforeDeleteNode"));
+        
+        
     }
 
     public UserNameMatcher getUserNameMatcher()
@@ -217,10 +220,15 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     {
         this.homeFolderManager = homeFolderManager;
     }
-    
+
     public void setPersonDao(PersonDao personDao)
     {
         this.personDao = personDao;
+    }
+
+    public void setPermissionsManager(PermissionsManager permissionsManager)
+    {
+        this.permissionsManager = permissionsManager;
     }
 
     /**
@@ -326,13 +334,13 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         }
         else
         {
-            String userNameSensitivity  = " (user name is case-" + (userNameMatcher.getUserNamesAreCaseSensitive() ? "sensitive" : "insensitive") + ")";
+            String userNameSensitivity = " (user name is case-" + (userNameMatcher.getUserNamesAreCaseSensitive() ? "sensitive" : "insensitive") + ")";
             String domainNameSensitivity = "";
-            if (! userNameMatcher.getDomainSeparator().equals(""))
+            if (!userNameMatcher.getDomainSeparator().equals(""))
             {
                 domainNameSensitivity = " (domain name is case-" + (userNameMatcher.getDomainNamesAreCaseSensitive() ? "sensitive" : "insensitive") + ")";
             }
-            
+
             throw new AlfrescoRuntimeException("Found more than one user for " + searchUserName + userNameSensitivity + domainNameSensitivity);
         }
     }
@@ -556,7 +564,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
             }
         }
     }
-    
+
     private HashMap<QName, Serializable> getDefaultProperties(String userName)
     {
         HashMap<QName, Serializable> properties = new HashMap<QName, Serializable>();
@@ -582,8 +590,9 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         properties.put(ContentModel.PROP_USERNAME, userName);
         properties.put(ContentModel.PROP_SIZE_CURRENT, 0L);
 
-        return nodeService.createNode(getPeopleContainer(), ContentModel.ASSOC_CHILDREN, QName.createQName("cm", userName, namespacePrefixResolver), ContentModel.TYPE_PERSON,
+        NodeRef personRef =  nodeService.createNode(getPeopleContainer(), ContentModel.ASSOC_CHILDREN, QName.createQName("cm", userName, namespacePrefixResolver), ContentModel.TYPE_PERSON,
                 properties).getChildRef();
+        return personRef;
     }
 
     public NodeRef getPeopleContainer()
@@ -695,6 +704,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         NodeRef personRef = childAssocRef.getChildRef();
         String username = (String) this.nodeService.getProperty(personRef, ContentModel.PROP_USERNAME);
         this.personCache.put(username, personRef);
+        permissionsManager.setPermissions(personRef, username, username);
     }
 
     /*
@@ -824,5 +834,4 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         return userNameMatcher.getUserNamesAreCaseSensitive();
     }
 
-   
 }

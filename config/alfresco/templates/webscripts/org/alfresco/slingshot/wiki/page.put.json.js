@@ -155,6 +155,11 @@ function pageVersionMatchesSubmitted(page)
 
 function sortByLabel(version1, version2)
 {
+   if ((version1.label.indexOf(".") == -1) || (version2.label.indexOf(".") == -1))
+   {
+      return 0;
+   }
+   
    var major1 = new Number(version1.label.substring(0, version1.label.indexOf(".")));
    var major2 = new Number(version2.label.substring(0, version2.label.indexOf(".")));
    if (major1 - 0 == major2 - 0)

@@ -143,9 +143,9 @@ function getDocumentItem(siteId, containerId, restOfPath, node)
          displayName: node.name,
          description: node.properties["cm:description"],
          modifiedOn: node.properties["cm:modified"],
-         modifiedByUser: node.properties["cm:modifier"],
-         modifiedBy: getPersonDisplayName(item.modifiedByUser)
+         modifiedByUser: node.properties["cm:modifier"]
       };
+      item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
    }
    if (node.isContainer)
    {
@@ -208,11 +208,11 @@ function getBlogPostItem(siteId, containerId, restOfPath, node)
       name: child.name,
       modifiedOn: child.properties["cm:modified"],
       modifiedByUser: child.properties["cm:modifier"],
-      modifiedBy: getPersonDisplayName(child.properties["cm:modifier"]),
       size: child.size,
       displayName: child.properties["cm:title"],
       browseUrl: "blog-postview?container=" + containerId + "&postId=" + child.name
    };
+   item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
    
    return item;
 }
@@ -253,11 +253,11 @@ function getForumPostItem(siteId, containerId, restOfPath, node)
       description: topicNode.properties["cm:description"],
       modifiedOn: topicNode.properties["cm:modified"],
       modifiedByUser: topicNode.properties["cm:modifier"],
-      modifiedBy: getPersonDisplayName(topicNode.properties["cm:modifier"]),
       size: topicNode.size,
       displayName: postNode.properties["cm:title"],
       browseUrl: "discussions-topicview?container=" + containerId + "&topicId=" + topicNode.name
    };
+   item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
    
    return item;
 }
@@ -288,11 +288,11 @@ function getCalendarItem(siteId, containerId, restOfPath, node)
       description: node.properties["ia:descriptionEvent"],
       modifiedOn: node.properties["cm:modified"],
       modifiedByUser: node.properties["cm:modifier"],
-      modifiedBy: getPersonDisplayName(modifiedByUser),
       size: -1,
       displayName: node.properties["ia:whatEvent"],
       browseUrl: containerId // this is "calendar"
    };
+   item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
    
    return item;
 }
@@ -323,11 +323,11 @@ function getWikiItem(siteId, containerId, restOfPath, node)
       description: node.properties["cm:description"],
       modifiedOn: node.properties["cm:modified"],
       modifiedByUser: node.properties["cm:modifier"],
-      modifiedBy: getPersonDisplayName(node.properties["cm:modifier"]),
       size: node.size,
-      displayName: node.properties["cm:name"], // cm:title at some point?
+      displayName: ("" + node.properties["cm:name"]).replace(/_/g, " "),
       browseUrl: "wiki-page?title=" + node.properties["cm:name"]
    };
+   item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
    
    return item;
 }
@@ -358,10 +358,11 @@ function getLinkItem(siteId, containerId, restOfPath, node)
       description: node.properties["cm:description"],
       modifiedOn: node.properties["cm:modified"],
       modifiedByUser: node.properties["cm:modifier"],
-      modifiedBy: getPersonDisplayName(node.properties["cm:modifier"]),
+      size: -1,
       displayName: node.properties["lnk:title"],
       browseUrl: "links-view?linkId=" + node.properties["cm:name"]
    };
+   item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
    
    return item;
 }

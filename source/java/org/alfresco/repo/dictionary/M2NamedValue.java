@@ -34,8 +34,8 @@ import java.util.List;
 public class M2NamedValue
 {
     private String name;
-    private String simpleValue;
-    private List<String> listValue;
+    private String simpleValue = null;
+    private List<String> listValue = null;
     
     /*package*/ M2NamedValue()
     {

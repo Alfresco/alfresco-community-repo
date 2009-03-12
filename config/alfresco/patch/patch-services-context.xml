@@ -1138,6 +1138,23 @@
             </list>
         </property>
     </bean>
+	
+	<bean id="patch.db-V2.2-ACL-From-2.1-A" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V2.2-ACL-From-2.1-A</value></property>
+        <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>${V2.1-A.fixes.to.schema}</value></property>
+        <property name="targetSchema"><value>120</value></property>
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/2.2/${db.script.dialect}/AlfrescoSchemaUpdate-2.1-A--to--2.2-ACL.sql</value>
+        </property>
+        <property name="dependsOn" >
+            <list>
+                <ref bean="patch.db-V2.1-NotNullColumns" />
+            </list>
+        </property>
+    </bean>
+	
     <bean id="patch.db-V2.2-ACL" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
         <property name="id"><value>patch.db-V2.2-ACL</value></property>
         <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
@@ -1150,6 +1167,11 @@
         <property name="dependsOn" >
             <list>
                 <ref bean="patch.db-V2.1-NotNullColumns" />
+            </list>
+        </property>
+		<property name="alternatives" >
+            <list>
+                <ref bean="patch.db-V2.2-ACL-From-2.1-A" />
             </list>
         </property>
     </bean>

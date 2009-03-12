@@ -2576,7 +2576,8 @@ public class JBPMEngine extends BPMEngine
     {
         String name = null;
         QName type = nodeService.getType(authority);
-        if (type.equals(ContentModel.TYPE_PERSON))
+        
+        if (dictionaryService.isSubClass(type, ContentModel.TYPE_PERSON))
         {
             name = (String)nodeService.getProperty(authority, ContentModel.PROP_USERNAME);
         }

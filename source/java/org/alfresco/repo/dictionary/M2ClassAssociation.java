@@ -171,6 +171,10 @@ public abstract class M2ClassAssociation
         this.targetRoleName = name;
     }
 
+    public Boolean getTargetMandatory()
+    {
+        return isTargetMandatory();
+    }
     
     public boolean isTargetMandatory()
     {
@@ -183,6 +187,10 @@ public abstract class M2ClassAssociation
         this.isTargetMandatory = isTargetMandatory;
     }
 
+    public Boolean getTargetMandatoryEnforced()
+    {
+        return isTargetMandatoryEnforced();
+    }
     
     public boolean isTargetMandatoryEnforced()
     {

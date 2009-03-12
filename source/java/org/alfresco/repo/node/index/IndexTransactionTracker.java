@@ -198,7 +198,10 @@ public class IndexTransactionTracker extends AbstractReindexComponent
     
     public void resetFromTxn(long txnId)
     {
-        logger.info("resetFromTxn: "+txnId);
+        if (logger.isInfoEnabled())
+        {
+            logger.info("resetFromTxn: " + txnId);
+        }
             
         this.fromTxnId = txnId;
         this.started = false; // this will cause index tracker to break out (so that it can be re-started)
@@ -207,9 +210,9 @@ public class IndexTransactionTracker extends AbstractReindexComponent
     @Override
     protected void reindexImpl()
     {
-        if (logger.isDebugEnabled())
+        if (logger.isInfoEnabled())
         {
-            logger.debug("reindexImpl started: " + this);
+            logger.info("reindexImpl started: " + this);
         }
         
         RetryingTransactionHelper retryingTransactionHelper = transactionService.getRetryingTransactionHelper();
@@ -229,7 +232,10 @@ public class IndexTransactionTracker extends AbstractReindexComponent
             
             if (this.fromTxnId != 0L)
             {
-                logger.info("reindexImpl: start fromTxnId: "+fromTxnId+" "+this);
+                if (logger.isInfoEnabled())
+                {
+                    logger.info("reindexImpl: start fromTxnId: " + fromTxnId);
+                }
                 
                 Long fromTxnCommitTime = getTxnCommitTime(this.fromTxnId);
                 
@@ -248,7 +254,12 @@ public class IndexTransactionTracker extends AbstractReindexComponent
             fromTxnId = 0L;
             started = true;
             
-            logger.info("reindexImpl: start fromTimeInclusive: "+ISO8601DateFormat.format(new Date(fromTimeInclusive))+" "+this);
+            if (logger.isInfoEnabled())
+            {
+                logger.info(
+                        "reindexImpl: start fromTimeInclusive: " +
+                        ISO8601DateFormat.format(new Date(fromTimeInclusive)));
+            }
         }
         
         while (true)

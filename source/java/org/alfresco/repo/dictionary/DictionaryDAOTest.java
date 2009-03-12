@@ -24,6 +24,10 @@
  */
 package org.alfresco.repo.dictionary;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +37,7 @@ import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
 
 import org.alfresco.i18n.I18NUtil;
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.EhCacheAdapter;
 import org.alfresco.repo.dictionary.constraint.RegexConstraint;
 import org.alfresco.repo.dictionary.constraint.StringLengthConstraint;
@@ -44,10 +49,12 @@ import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.Constraint;
 import org.alfresco.service.cmr.dictionary.ConstraintDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.cmr.dictionary.DictionaryException;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.ModelDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 
 
@@ -372,4 +379,82 @@ public class DictionaryDAOTest extends TestCase
         childAssocDef = (ChildAssociationDefinition) assocDef;
         assertTrue("Expected 'true' for timestamp propagation", childAssocDef.getPropagateTimestamps());
     }
+
+    public void testADB159() throws UnsupportedEncodingException
+    {
+        // source dictionary
+        TenantService tenantService = new SingleTServiceImpl();   
+        NamespaceDAOImpl namespaceDAO = new NamespaceDAOImpl();
+        namespaceDAO.setTenantService(tenantService);
+        initNamespaceCaches(namespaceDAO);
+        DictionaryDAOImpl dictionaryDAO = new DictionaryDAOImpl(namespaceDAO);
+        dictionaryDAO.setTenantService(tenantService);
+        initDictionaryCaches(dictionaryDAO);
+
+        // destination dictionary
+        NamespaceDAOImpl namespaceDAO2 = new NamespaceDAOImpl();
+        namespaceDAO2.setTenantService(tenantService);
+        initNamespaceCaches(namespaceDAO2);
+        DictionaryDAOImpl dictionaryDAO2 = new DictionaryDAOImpl(namespaceDAO2);
+        dictionaryDAO2.setTenantService(tenantService);
+        initDictionaryCaches(dictionaryDAO2);
+
+        List<String> models = new ArrayList<String>();
+        models.add("alfresco/model/dictionaryModel.xml");
+        models.add("alfresco/model/systemModel.xml");
+        models.add("alfresco/model/contentModel.xml");
+        models.add("alfresco/model/wcmModel.xml");
+        models.add("alfresco/model/applicationModel.xml");
+        models.add("org/alfresco/repo/security/authentication/userModel.xml");
+        models.add("org/alfresco/repo/action/actionModel.xml");
+        models.add("org/alfresco/repo/rule/ruleModel.xml");
+        models.add("org/alfresco/repo/version/version_model.xml");
+        
+        // round-trip default models
+        for (String bootstrapModel : models)
+        {
+            InputStream modelStream = getClass().getClassLoader().getResourceAsStream(bootstrapModel);
+            if (modelStream == null)
+            {
+                throw new DictionaryException("Could not find bootstrap model " + bootstrapModel);
+            }
+            try
+            {
+                // parse model from xml
+                M2Model model = M2Model.createModel(modelStream);
+                dictionaryDAO.putModel(model);
+                
+                // regenerate xml from model
+                ByteArrayOutputStream xml1 = new ByteArrayOutputStream();
+                model.toXML(xml1);
+                
+                // register regenerated xml with other dictionary
+                M2Model model2 = M2Model.createModel(new ByteArrayInputStream(xml1.toByteArray()));
+                dictionaryDAO2.putModel(model2);
+            }
+            catch(DictionaryException e)
+            {
+                throw new DictionaryException("Could not import bootstrap model " + bootstrapModel, e);
+            }
+        }
+        
+        // specific test case
+        M2Model model = M2Model.createModel("test:adb25");
+        model.createNamespace(TEST_URL, "test");
+        model.createImport(NamespaceService.DICTIONARY_MODEL_1_0_URI, NamespaceService.DICTIONARY_MODEL_PREFIX);
+        model.createImport(NamespaceService.SYSTEM_MODEL_1_0_URI, NamespaceService.SYSTEM_MODEL_PREFIX);
+        model.createImport(NamespaceService.CONTENT_MODEL_1_0_URI, NamespaceService.CONTENT_MODEL_PREFIX);
+
+        M2Type testType = model.createType("test:adb25" );
+        testType.setParentName("cm:" + ContentModel.TYPE_CONTENT.getLocalName());
+
+        M2Property prop1 = testType.createProperty("test:prop1");
+        prop1.setMandatory(false);
+        prop1.setType("d:" + DataTypeDefinition.TEXT.getLocalName());
+        prop1.setMultiValued(false);
+
+        ByteArrayOutputStream xml1 = new ByteArrayOutputStream();
+        model.toXML(xml1); 
+    }
+
 }

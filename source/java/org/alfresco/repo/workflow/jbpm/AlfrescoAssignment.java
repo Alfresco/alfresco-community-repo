@@ -32,6 +32,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.repo.security.authority.AuthorityDAO;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.workflow.WorkflowException;
 import org.alfresco.service.namespace.QName;
 import org.dom4j.Element;
@@ -50,6 +51,7 @@ public class AlfrescoAssignment extends JBPMSpringAssignmentHandler
 {
     private static final long serialVersionUID = 1025667849552265719L;
     private ServiceRegistry services;
+    private DictionaryService dictionaryService;
     private AuthorityDAO authorityDAO;
 
     private Element actor;
@@ -63,6 +65,7 @@ public class AlfrescoAssignment extends JBPMSpringAssignmentHandler
     protected void initialiseHandler(BeanFactory factory)
     {
         services = (ServiceRegistry)factory.getBean(ServiceRegistry.SERVICE_REGISTRY);
+        dictionaryService = services.getDictionaryService();
         authorityDAO = (AuthorityDAO)factory.getBean("authorityDAO");
     }
 
@@ -162,6 +165,10 @@ public class AlfrescoAssignment extends JBPMSpringAssignmentHandler
                             if (node instanceof ScriptNode)
                             {
                                 String actor = mapAuthorityToName((ScriptNode)node, true);
+                                if (actor == null)
+                                {
+                                    throw new WorkflowException("pooledactors expression does not evaluate to a collection of authorities");
+                                }
                                 actors.add(actor);
                             }
                         }
@@ -218,15 +225,16 @@ public class AlfrescoAssignment extends JBPMSpringAssignmentHandler
     {
         String name = null;
         QName type = authority.getQNameType();
-        if (type.equals(ContentModel.TYPE_PERSON))
+
+        if (dictionaryService.isSubClass(type, ContentModel.TYPE_PERSON))
         {
             name = (String)authority.getProperties().get(ContentModel.PROP_USERNAME);
         }
-        else if (type.equals(ContentModel.TYPE_AUTHORITY))
+        else if (allowGroup && dictionaryService.isSubClass(type, ContentModel.TYPE_AUTHORITY_CONTAINER))
         {
             name = authorityDAO.getAuthorityName(authority.getNodeRef());
         }
-        else if (allowGroup && type.equals(ContentModel.TYPE_AUTHORITY_CONTAINER))
+        else if (type.equals(ContentModel.TYPE_AUTHORITY))
         {
             name = authorityDAO.getAuthorityName(authority.getNodeRef());
         }

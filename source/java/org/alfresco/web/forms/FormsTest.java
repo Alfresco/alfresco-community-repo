@@ -52,6 +52,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.model.*;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
 import org.alfresco.util.TestWithUserUtils;
 import org.apache.shale.test.mock.*;
@@ -123,12 +124,12 @@ public class FormsTest
       final NodeRef rootNodeRef = this.nodeService.getRootNode(testStoreRef);
 
       // Create an authenticate the user
-      if(!authenticationDAO.userExists("admin"))
+      if(!authenticationDAO.userExists(AuthenticationUtil.getAdminUserName()))
       {
-         authenticationService.createAuthentication("admin", "admin".toCharArray());
+         authenticationService.createAuthentication(AuthenticationUtil.getAdminUserName(), "admin".toCharArray());
       }
         
-      TestWithUserUtils.authenticateUser("admin", 
+      TestWithUserUtils.authenticateUser(AuthenticationUtil.getAdminUserName(), 
                                          "admin", 
                                          rootNodeRef, 
                                          authenticationService);

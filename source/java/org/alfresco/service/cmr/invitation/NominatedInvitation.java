@@ -56,6 +56,8 @@ public interface NominatedInvitation extends Invitation
 	public String getRejectUrl();
 
 	public Date getSentInviteDate();
+	
+	public String getInviterUserName();
 
 	public String getTicket();
 	

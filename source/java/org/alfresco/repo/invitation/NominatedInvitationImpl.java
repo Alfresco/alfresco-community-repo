@@ -49,6 +49,7 @@ import java.util.Map;
 	private String inviteeFirstName;
 	private String inviteeLastName;
     private String inviteeEmail;
+    private String inviterUserName;
     private String roleName; 
     private String serverPath;
     private String acceptUrl; 
@@ -76,6 +77,7 @@ import java.util.Map;
 	     inviteeFirstName = (String)workflowProps.get(WorkflowModelNominatedInvitation.WF_PROP_INVITEE_FIRSTNAME);
 	     inviteeLastName = (String)workflowProps.get(WorkflowModelNominatedInvitation.WF_PROP_INVITEE_LASTNAME);
 	     inviteeEmail = (String)workflowProps.get(WorkflowModelNominatedInvitation.WF_PROP_INVITEE_EMAIL);
+	     inviterUserName = (String)workflowProps.get(WorkflowModelNominatedInvitation.WF_PROP_INVITER_USER_NAME);
 //	     inviteePassword =  (String)workflowProps.get(WorkflowModelNominatedInvitation.WF_PROP_INVITEE_GEN_PASSWORD);
 	     setResourceName( (String)workflowProps.get(WorkflowModelNominatedInvitation.WF_PROP_RESOURCE_NAME));
 	     
@@ -176,4 +178,12 @@ import java.util.Map;
 		return inviteeUserName;
 	}
 
+	public String getInviterUserName() {
+		return inviterUserName;
+	}
+	
+	public void setInviterUserName(String inviterUserName) {
+		this.inviterUserName= inviterUserName;
+	}
+	
 }

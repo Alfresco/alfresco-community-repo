@@ -163,7 +163,7 @@ public class InvitationServiceImplTest extends BaseAlfrescoSpringTest
     	
     	String inviteeFirstName = PERSON_FIRSTNAME;
     	String inviteeLastName = PERSON_LASTNAME; 
-    	String inviteeEmail = "123";
+    	String inviteeEmail = "123@alfrescotesting.com";
     	String inviteeUserName = null;
     	Invitation.ResourceType resourceType = Invitation.ResourceType.WEB_SITE; 
     	String resourceName = SITE_SHORT_NAME_INVITE;
@@ -255,6 +255,12 @@ public class InvitationServiceImplTest extends BaseAlfrescoSpringTest
     	
     	List<Invitation> it4 = invitationService.listPendingInvitationsForResource(resourceType, resourceName);
     	assertTrue("invitations is not empty", it4.isEmpty());
+    	
+    	/**
+    	 * Now get the invitation that we accepted 
+    	 */
+    	NominatedInvitation acceptedInvitation2 = (NominatedInvitation)invitationService.getInvitation(firstInvite.getInviteId());
+        assertNotNull("get after accept does not return", acceptedInvitation2);
     	
     	/**
     	 * Now verify access control list

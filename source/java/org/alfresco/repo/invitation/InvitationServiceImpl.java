@@ -396,18 +396,34 @@ public class InvitationServiceImpl implements InvitationService
 
 		if (invitation instanceof NominatedInvitation) {
 
-			// TODO Who is allowed to cancel ??
+			// Check canceller is a site manager
+			String approverUserName = this.authenticationService.getCurrentUserName();
+			checkManagerRole(approverUserName, invitation.getResourceType(), invitation.getResourceName());
 
-			// Should you be allowed to cancel multiple times ?
+	        // create workflow task query
+	        WorkflowTaskQuery wfTaskQuery = new WorkflowTaskQuery();
+	        
+	        // set the given invite ID as the workflow process ID in the workflow query
+	        wfTaskQuery.setProcessId(invitationId);
 
-			// complete the wf:invitePendingTask along the 'cancel' transition
-			// because the invitation has been cancelled
-			InviteHelper
-					.completeInviteTask(
-							invitationId,
-							WorkflowModelNominatedInvitation.WF_INVITE_TASK_INVITE_PENDING,
-							WorkflowModelNominatedInvitation.WF_TRANSITION_CANCEL,
-							this.workflowService);
+	        // find incomplete invite workflow tasks with given task name 
+	        wfTaskQuery.setActive(Boolean.TRUE);
+	        wfTaskQuery.setTaskState(WorkflowTaskState.IN_PROGRESS);
+	        wfTaskQuery.setTaskName(WorkflowModelNominatedInvitation.WF_INVITE_TASK_INVITE_PENDING);
+
+	        // set process name to "wf:invite" so that only
+	        // invite workflow instances are considered by this query
+	        wfTaskQuery.setProcessName(WorkflowModelNominatedInvitation.WF_PROCESS_INVITE);
+
+	        // query for invite workflow tasks with the constructed query
+	        List<WorkflowTask> wf_invite_tasks = workflowService
+	                .queryTasks(wfTaskQuery);
+	        
+	        // end all tasks found with this name 
+	        for (WorkflowTask workflowTask : wf_invite_tasks)
+	        {
+	            workflowService.endTask(workflowTask.id, WorkflowModelNominatedInvitation.WF_TRANSITION_CANCEL);
+	        }
 		}
 
 		if (invitation instanceof ModeratedInvitation) 
@@ -421,9 +437,11 @@ public class InvitationServiceImpl implements InvitationService
 
 	/**
 	 * Get an invitation from its invitation id
+	 * <BR />
 	 * 
-	 * @throws InvitationExceptionNotFound
-	 *             the invitation does not exist.
+	 * Invitations are returned which may be in progress or completed.
+	 * 
+	 * @throws InvitationExceptionNotFound the invitation does not exist.
 	 * @throws InvitationExceptionUserError            
 	 * @return the invitation.
 	 */
@@ -453,11 +471,10 @@ public class InvitationServiceImpl implements InvitationService
 			// This is a nominated invitation
 			WorkflowTaskQuery wfTaskQuery = new WorkflowTaskQuery();
 			wfTaskQuery.setProcessId(invitationId);
-
+						
 			// filter to find only the start task which contains the properties.
 			wfTaskQuery.setTaskState(WorkflowTaskState.COMPLETED);
-			wfTaskQuery
-					.setTaskName(WorkflowModelNominatedInvitation.WF_INVITE_TASK_INVITE_TO_SITE);
+			wfTaskQuery.setTaskName(WorkflowModelNominatedInvitation.WF_INVITE_TASK_INVITE_TO_SITE);
 
 			// query for invite workflow task associate
 			List<WorkflowTask> inviteStartTasks = workflowService
@@ -610,7 +627,7 @@ public class InvitationServiceImpl implements InvitationService
 			// query only active workflows
 			wfTaskQuery.setActive(Boolean.TRUE);
 
-			// pick up the start task
+			// pick up the pending task
 			wfTaskQuery.setTaskState(WorkflowTaskState.IN_PROGRESS);
 			wfTaskQuery.setTaskName(WorkflowModelNominatedInvitation.WF_INVITE_TASK_INVITE_PENDING);
 			wfTaskQuery.setProcessName(WorkflowModelNominatedInvitation.WF_PROCESS_INVITE);

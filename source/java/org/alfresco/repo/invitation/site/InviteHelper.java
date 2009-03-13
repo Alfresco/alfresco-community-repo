@@ -66,7 +66,7 @@ public class InviteHelper
         
         // set process name to "wf:invite" so that only tasks associated with
         // invite workflow instances are returned by query
-        wfTaskQuery.setProcessName(QName.createQName(NamespaceService.WORKFLOW_MODEL_1_0_URI, "invite"));
+        wfTaskQuery.setProcessName(WorkflowModelNominatedInvitation.WF_PROCESS_INVITE);
 
         // filter to find only the invite start task
         wfTaskQuery.setTaskState(WorkflowTaskState.COMPLETED);

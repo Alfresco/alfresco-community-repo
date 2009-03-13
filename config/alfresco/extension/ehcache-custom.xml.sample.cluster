@@ -10,7 +10,7 @@
         properties="heartbeatInterval=5000,
                     peerDiscovery=automatic,
                     multicastGroupAddress=230.0.0.1,
-                    multicastGroupPort=4446"/>
+                    multicastGroupPort=4446"
     />
 
     <cacheManagerPeerListenerFactory

@@ -245,7 +245,7 @@ public class AuthenticationTest extends TestCase
         userName = pubAuthenticationService.getCurrentUserName();
         assertEquals("andy", userName);
         // get Person
-        assertFalse(pubPersonService.personExists(userName));
+        assertTrue(pubPersonService.personExists(userName));
         
         AuthenticationUtil.runAs(new RunAsWork() {
 

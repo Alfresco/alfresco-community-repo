@@ -14,17 +14,14 @@
         </property>
     </bean>
     
-    <!-- DAO that rejects changes - LDAP is read only at the moment. It does allow users to be deleted with out warnings from the UI. -->
-    
-    <bean name="authenticationDao" class="org.alfresco.repo.security.authentication.DefaultMutableAuthenticationDao" >
-        <property name="allowDeleteUser">
-            <value>true</value>
-        </property>
-        <property name="allowGetEnabled">
-            <value>true</value>
-        </property>
-    </bean>    
+    <!-- DAO that rejects changes - LDAP is read only at the moment. It does allow users to be deleted with out warnings from the UI. --> 
    
+    <bean id="authenticationDao" class="org.alfresco.repo.security.authentication.DefaultMutableAuthenticationDao" >
+        <property name="allowSetEnabled" value="true" />
+        <property name="allowGetEnabled" value="true" />
+        <property name="allowDeleteUser" value="true" />
+        <property name="allowCreateUser" value="true" />
+    </bean>
 
     <!-- LDAP authentication configuration -->
     

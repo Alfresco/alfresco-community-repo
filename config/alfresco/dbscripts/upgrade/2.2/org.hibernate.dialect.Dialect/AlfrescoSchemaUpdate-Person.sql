@@ -22,7 +22,7 @@ UPDATE
       qname_localname =
       (
          SELECT
-            p.string_value
+            LOWER(p.string_value)
          FROM
             alf_node_properties p
             JOIN alf_qname q on p.qname_id = q.id
@@ -55,11 +55,11 @@ UPDATE
 --
 -- Record script finish
 --
-DELETE FROM alf_applied_patch WHERE id = 'patch.db-V2.2-Person';
+DELETE FROM alf_applied_patch WHERE id = 'patch.db-V2.2-Person-2';
 INSERT INTO alf_applied_patch
   (id, description, fixes_from_schema, fixes_to_schema, applied_to_schema, target_schema, applied_on_date, applied_to_server, was_executed, succeeded, report)
   VALUES
   (
-    'patch.db-V2.2-Person', 'Manually executed script upgrade V2.2: Person user name also in the association qname',
-    0, 90, -1, 91, null, 'UNKOWN', 1, 1, 'Script completed'
+    'patch.db-V2.2-Person-2', 'Manually executed script upgrade V2.2: Person user name also in the association qname',
+    0, 1007, -1, 1008, null, 'UNKOWN', 1, 1, 'Script completed'
   );

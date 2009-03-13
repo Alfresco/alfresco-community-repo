@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -27,16 +27,12 @@ package org.alfresco.repo.security.person;
 /**
  * Check if userNames match
  * @author andyh
- *
+ * @since 3.1
  */
 public interface UserNameMatcher
 {
     /**
      * Do the two user names match?
-     * 
-     * @param userName1
-     * @param userName2
-     * @return
      */
     public boolean matches(String userName1, String userName2);
     

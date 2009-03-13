@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -36,6 +36,7 @@ import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionDoesNotExistException;
 import org.alfresco.service.cmr.version.VersionHistory;
 import org.alfresco.service.cmr.version.VersionServiceException;
+import org.alfresco.util.VersionNumber;
 
 /**
  * Version History implementation. 
@@ -72,7 +73,7 @@ public class VersionHistoryImpl implements VersionHistory
     /*
      * Versions ordered by creation date (descending)
      */
-    private static VersionComparator versionComparator = new VersionComparator();
+    private static Comparator<Version> versionComparatorDesc = new VersionComparatorDesc();
     private List<Version> versions = new ArrayList<Version>();
 
     /**
@@ -124,7 +125,7 @@ public class VersionHistoryImpl implements VersionHistory
      */
     public Collection<Version> getAllVersions()
     {
-    	Collections.sort(versions, versionComparator);
+    	Collections.sort(versions, versionComparatorDesc);
         return versions;
     }
     
@@ -223,13 +224,38 @@ public class VersionHistoryImpl implements VersionHistory
      * 
      * Note: Descending create date order 
      */
-    public static class VersionComparator implements Comparator<Version>, Serializable
+    public static class VersionComparatorDesc implements Comparator<Version>, Serializable
     {
         private static final long serialVersionUID = 6227528170880231770L;
 
         public int compare(Version v1, Version v2)
         {
-            return v2.getCreatedDate().compareTo(v1.getCreatedDate());
+            int result = v2.getCreatedDate().compareTo(v1.getCreatedDate());
+            if (result == 0)
+            {
+                result = new VersionNumber(v2.getVersionLabel()).compareTo(new VersionNumber(v1.getVersionLabel()));
+            }
+            return result;
+        }
+    }
+    
+    /**
+     * Version Comparator
+     * 
+     * Note: Ascending create date order 
+     */
+    public static class VersionComparatorAsc implements Comparator<Version>, Serializable
+    {
+        private static final long serialVersionUID = 6227528170880231770L;
+
+        public int compare(Version v1, Version v2)
+        {
+            int result = v1.getCreatedDate().compareTo(v2.getCreatedDate());
+            if (result == 0)
+            {
+                result = new VersionNumber(v1.getVersionLabel()).compareTo(new VersionNumber(v2.getVersionLabel()));
+            }
+            return result;
         }
     }
 

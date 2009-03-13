@@ -51,7 +51,7 @@ import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
 public class PersonDaoImpl extends HibernateDaoSupport implements PersonDao
 {
-    private static final String QUERY_PERSON_GET_PERSON = "person.getPerson";
+    private static final String QUERY_PERSON_GET_PERSON_IGNORE_CASE = "person.getPersonIgnoreCase";
 
     private static final String QUERY_PERSON_GET_ALL_PEOPLE = "person.getAllPeople";
 
@@ -75,9 +75,32 @@ public class PersonDaoImpl extends HibernateDaoSupport implements PersonDao
         this.tenantService = tenantService;
     }
 
+    public void init()
+    {
+        qNamePropId = qnameDAO.getOrCreateQName(ContentModel.PROP_USERNAME).getFirst();
+        qNameTypeId = qnameDAO.getOrCreateQName(ContentModel.TYPE_PERSON).getFirst();
+    }
+
     @SuppressWarnings("unchecked")
     public List<NodeRef> getPersonOrNull(final String searchUserName, UserNameMatcher matcher)
     {
+        /*
+         * Related JIRA:
+         *    https://issues.alfresco.com/jira/browse/MOB-387
+         *    https://issues.alfresco.com/jira/browse/ETHREEOH-1431
+         *    https://issues.alfresco.com/jira/browse/ETWOTWO-1012
+         * 
+         * When usernames are case-insensitive, it could happen that the DB is NOT.
+         * DB queries should therefore return values regardless of the DB collation.
+         * The original, case-preserving username is stored with the node properties.
+         * To solve the query issue, a LOWERCASE version of the username is stored on
+         * the path (alf_child_assoc.qname_localname).  This is queried for using the
+         * lowercase version of the searched-for username.  The case results pruning
+         * is done (as it always was) as a post-search task.
+         * 
+         * Note that the upgrade scripts had to change to force lowercase names as well.
+         */
+        
         final StoreRef personStoreRef = tenantService.getName(storeRef);
 
         List<NodeRef> answer = new ArrayList<NodeRef>();
@@ -86,11 +109,10 @@ public class PersonDaoImpl extends HibernateDaoSupport implements PersonDao
         {
             public Object doInHibernate(Session session)
             {
-                SQLQuery query = (SQLQuery) session.getNamedQuery(QUERY_PERSON_GET_PERSON);
+                SQLQuery query = (SQLQuery) session.getNamedQuery(QUERY_PERSON_GET_PERSON_IGNORE_CASE);
                 query.setParameter("qnamePropId", qNamePropId);
                 query.setParameter("qnameTypeId", qNameTypeId);
-                query.setParameter("userName1", searchUserName);
-                query.setParameter("userName2", searchUserName);
+                query.setParameter("userNameLowerCase", searchUserName.toLowerCase());      // Lowercase: ETHREEOH-1431
                 query.setParameter("False", Boolean.FALSE);
                 query.setParameter("storeProtocol", personStoreRef.getProtocol());
                 query.setParameter("storeIdentifier", personStoreRef.getIdentifier());
@@ -119,12 +141,6 @@ public class PersonDaoImpl extends HibernateDaoSupport implements PersonDao
         }
         return answer;
 
-    }
-
-    public void init()
-    {
-        qNamePropId = qnameDAO.getOrCreateQName(ContentModel.PROP_USERNAME).getFirst();
-        qNameTypeId = qnameDAO.getOrCreateQName(ContentModel.TYPE_PERSON).getFirst();
     }
 
     @SuppressWarnings("unchecked")

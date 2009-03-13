@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -26,14 +26,19 @@ package org.alfresco.repo.version;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.repo.version.common.counter.VersionCounterService;
+import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionHistory;
 import org.alfresco.service.namespace.QName;
@@ -55,6 +60,8 @@ public class VersionMigratorTest extends BaseVersionStoreTest
     protected VersionMigrator versionMigrator;
     protected PolicyComponent policyComponent;
     protected DictionaryService dictionaryService;
+    protected CheckOutCheckInService cociService;
+    protected VersionCounterService versionCounterService;
     
     public VersionMigratorTest()
     {
@@ -70,6 +77,9 @@ public class VersionMigratorTest extends BaseVersionStoreTest
         this.dictionaryService = (DictionaryService)applicationContext.getBean("dictionaryService");
         this.version2Service = (Version2ServiceImpl)applicationContext.getBean("versionService");
         this.versionNodeService = (NodeService)applicationContext.getBean("versionNodeService"); // note: auto-switches between V1 and V2
+        
+        this.cociService = (CheckOutCheckInService)applicationContext.getBean("CheckoutCheckinService");
+        this.versionCounterService = (VersionCounterService)applicationContext.getBean("versionCounterService");
         
         // Version1Service is used to create the version nodes in Version1Store (workspace://lightWeightVersionStore) 
         version1Service.setDbNodeService(dbNodeService);
@@ -243,4 +253,100 @@ public class VersionMigratorTest extends BaseVersionStoreTest
         
         logger.info("testMigrateMultipleVersions: Migrated from oldVHNodeRef = " + oldVHNodeRef + " to newVHNodeRef = " + newVHNodeRef);
     }
+    
+    public void test_ETHREEOH_1540() throws Exception
+    {
+        // Create the node used for tests
+        NodeRef nodeRef = nodeService.createNode(
+                rootNodeRef, 
+                ContentModel.ASSOC_CHILDREN, 
+                QName.createQName("{test}MyVersionableNode"),
+                TEST_TYPE_QNAME,
+                this.nodeProperties).getChildRef();
+        
+        nodeService.addAspect(nodeRef, ContentModel.ASPECT_TITLED, null);
+        nodeService.setProperty(nodeRef, ContentModel.PROP_NAME, "name");
+        
+        // Add the initial content to the node
+        ContentWriter contentWriter = this.contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
+        contentWriter.setMimetype("text/plain");
+        contentWriter.setEncoding("UTF-8");
+        contentWriter.putContent("my content");
+        
+        VersionHistory vh1 = version1Service.getVersionHistory(nodeRef);
+        assertNull(vh1);
+        
+        version2Service.useDeprecatedV1 = true;
+        
+        // note: for testing only - not recommended !!!
+        versionCounterService.setVersionNumber(new StoreRef(StoreRef.PROTOCOL_WORKSPACE, VersionModel.STORE_ID), 100);
+        
+        // Add the version aspect to the created node
+        nodeService.addAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE, null);
+        
+        vh1 = version1Service.getVersionHistory(nodeRef);
+        assertNull(vh1);
+        
+        NodeRef workingCopyNodeRef = cociService.checkout(nodeRef);
+        
+        vh1 = version1Service.getVersionHistory(nodeRef);
+        assertNull(vh1);
+
+        int v1count = 3;
+        
+        for (int i = 1; i <= v1count; i++)
+        {
+            Map<String, Serializable> versionProperties = new HashMap<String, Serializable>();
+            versionProperties.put(Version.PROP_DESCRIPTION, "This is a test checkin - " + i);
+            
+            cociService.checkin(workingCopyNodeRef, versionProperties);
+            
+            vh1 = version1Service.getVersionHistory(nodeRef);
+            assertEquals(i, vh1.getAllVersions().size());
+            
+            workingCopyNodeRef = cociService.checkout(nodeRef);
+            
+            vh1 = version1Service.getVersionHistory(nodeRef);
+            assertEquals(i, vh1.getAllVersions().size());
+        }
+
+        NodeRef oldVHNodeRef = version1Service.getVersionHistoryNodeRef(nodeRef);
+        
+        version2Service.useDeprecatedV1 = false;
+
+        // Migrate and delete old version history !
+        NodeRef versionedNodeRef = versionMigrator.v1GetVersionedNodeRef(oldVHNodeRef);
+        
+        //int nextVersionNumber = versionCounterService.nextVersionNumber(new StoreRef(StoreRef.PROTOCOL_WORKSPACE, VersionModel.STORE_ID));
+        //versionCounterService.setVersionNumber(new StoreRef(StoreRef.PROTOCOL_WORKSPACE, Version2Model.STORE_ID), nextVersionNumber);
+        
+        // to force the error: https://issues.alfresco.com/jira/browse/ETHREEOH-1540
+        versionCounterService.setVersionNumber(new StoreRef(StoreRef.PROTOCOL_WORKSPACE, Version2Model.STORE_ID), 0);
+        
+        NodeRef newVHNodeRef = versionMigrator.migrateVersionHistory(oldVHNodeRef, versionedNodeRef);
+        versionMigrator.v1DeleteVersionHistory(oldVHNodeRef);
+        
+        VersionHistory vh2 = version2Service.getVersionHistory(nodeRef);
+        assertEquals(v1count, vh2.getAllVersions().size());
+        
+        int v2count = 3;
+        
+        for (int i = 1; i <= v2count; i++)
+        {
+            versionProperties = new HashMap<String, Serializable>();
+            versionProperties.put(Version.PROP_DESCRIPTION, "This is a test checkin - " + (v1count + i));
+            
+            cociService.checkin(workingCopyNodeRef, versionProperties);
+            
+            vh2 = version2Service.getVersionHistory(nodeRef);
+            assertEquals((v1count + i), vh2.getAllVersions().size());
+            
+            workingCopyNodeRef = cociService.checkout(nodeRef);
+            
+            vh2 = version2Service.getVersionHistory(nodeRef);
+            assertEquals((v1count + i), vh2.getAllVersions().size());
+        }
+        
+        logger.info("testMigrateOneCheckoutVersion: Migrated from oldVHNodeRef = " + oldVHNodeRef + " to newVHNodeRef = " + newVHNodeRef);
+    }    
 }

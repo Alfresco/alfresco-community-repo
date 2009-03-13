@@ -200,7 +200,7 @@ public class AVMExpiredContentProcessor
          };
          
          // perform the work as the system user
-         AuthenticationUtil.runAs(authorisedWork, AuthenticationUtil.getAdminRoleName());
+         AuthenticationUtil.runAs(authorisedWork, AuthenticationUtil.getAdminUserName());
 
          // now we know everything worked ok, let the virtualisation server
          // know about all the new workflow sandboxes created (just the main stores)

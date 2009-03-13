@@ -30,10 +30,11 @@
     <!-- It does allow users to be deleted with out warnings from the UI. -->
     <!-- The user is still present in JAAS, only the personal information is removed from alfresco. --> 
     
-    <bean name="authenticationDao" class="org.alfresco.repo.security.authentication.DefaultMutableAuthenticationDao" >
-        <property name="allowDeleteUser">
-            <value>true</value>
-        </property>
-    </bean>    
+    <bean id="authenticationDao" class="org.alfresco.repo.security.authentication.DefaultMutableAuthenticationDao" >
+        <property name="allowSetEnabled" value="true" />
+        <property name="allowGetEnabled" value="true" />
+        <property name="allowDeleteUser" value="true" />
+        <property name="allowCreateUser" value="true" />
+    </bean>
 
 </beans>

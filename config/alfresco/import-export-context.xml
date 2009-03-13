@@ -341,5 +341,183 @@
             <value>${version.store.version2Store}</value>
         </property>
     </bean>
+    
+    <!--
+        Abstract bootstrap beans.
+        These define the bootstrap beans, but will not be instantiated.  Alfresco will, on startup,
+        use concrete derivations of these beans as singletons.  The MultiTAdminService creates prototype
+        instances for its internal use.
+     -->
+    <bean id="systemInfoBootstrap-base" parent="systemInfoImporter" abstract="true" />
+
+    <bean id="userBootstrap-base" parent="userStoreImporter" abstract="true" >
+        <property name="bootstrapViews">
+            <list>
+                <props>
+                    <prop key="path">/</prop>
+                    <prop key="location">alfresco/bootstrap/alfrescoUserStore.xml</prop>
+                </props>
+                <props>
+                    <prop key="path">/${alfresco_user_store.system_container.childname}</prop>
+                    <prop key="location">alfresco/bootstrap/alfrescoAuthorityStore.xml</prop>
+                </props>
+                <props>
+                    <prop key="path">/${alfresco_user_store.system_container.childname}</prop>
+                    <prop key="location">alfresco/bootstrap/alfrescoAuthorityStorePermission.xml</prop>
+                </props>
+                <props>
+                    <prop key="path">/${alfresco_user_store.system_container.childname}/sys:authorities</prop>
+                    <prop key="location">alfresco/bootstrap/emailServer.xml</prop>
+                </props>
+                <props>
+                    <prop key="path">/${alfresco_user_store.system_container.childname}/sys:authorities</prop>
+                    <prop key="location">alfresco/bootstrap/adminGroup.xml</prop>
+                </props>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="systemBootstrap-base" parent="systemStoreImporter" abstract="true" >
+        <property name="bootstrapViews">
+            <list>
+                <props>
+                    <prop key="path">/</prop>
+                    <prop key="location">alfresco/bootstrap/descriptor.xml</prop>
+                </props>
+                <props>
+                    <prop key="path">/</prop>
+                    <prop key="location">alfresco/bootstrap/systemRegistry.xml</prop>
+                </props>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="versionBootstrap-base" parent="versionStoreImporter" abstract="true" >
+        <property name="bootstrapViews">
+            <list>
+                <props>
+                    <prop key="path">/</prop>
+                    <prop key="location">alfresco/bootstrap/lightWeightVersionStore.xml</prop>
+                </props>
+            </list>
+        </property>
+    </bean>
+    
+    <bean id="version2Bootstrap-base" parent="version2StoreImporter" abstract="true" >
+        <property name="bootstrapViews">
+            <list>
+                <props>
+                    <prop key="path">/</prop>
+                    <prop key="location">alfresco/bootstrap/version2Store.xml</prop>
+                </props>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="spacesArchiveBootstrap-base" parent="spacesArchiveStoreImporter" abstract="true" >
+        <property name="bootstrapViews">
+            <list>
+                <props>
+                    <prop key="path">/</prop>
+                    <prop key="location">alfresco/bootstrap/spacesArchive.xml</prop>
+                </props>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="spacesBootstrap-base" parent="spacesStoreImporter" abstract="true" >
+        <property name="bootstrapViews">
+            <list>
+                <props>
+                    <prop key="path">/</prop>
+                    <prop key="location">alfresco/bootstrap/spaces.xml</prop>
+                    <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+                </props>
+                <props>
+                    <prop key="path">/</prop>
+                    <prop key="location">alfresco/bootstrap/system.xml</prop>
+                </props>
+                <props>
+                    <prop key="path">/</prop>
+                    <prop key="location">alfresco/bootstrap/categories.xml</prop>
+                </props>
+                <props>
+                    <prop key="path">/</prop>
+                    <prop key="location">alfresco/bootstrap/multilingualRoot.xml</prop>
+                </props>
+                <props>
+                    <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.childname}</prop>
+                    <prop key="location">alfresco/templates/software_engineering_project.xml</prop>
+                    <prop key="messages">alfresco/messages/bootstrap-templates</prop>
+                </props>
+                <props>
+                    <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.content.childname}</prop>
+                    <prop key="location">alfresco/templates/content_template_examples.xml</prop>
+                    <prop key="messages">alfresco/messages/bootstrap-content-template-examples</prop>
+                </props>
+                <props>
+                    <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.content.childname}</prop>
+                    <prop key="location">alfresco/templates/readme_template.xml</prop>
+                </props>
+                <props>
+                    <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.email.childname}</prop>
+                    <prop key="location">alfresco/templates/email_templates.acp</prop>
+                    <prop key="messages">alfresco/messages/bootstrap-content-template-examples</prop>
+                </props>
+                <props>
+                    <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.rss.childname}</prop>
+                    <prop key="location">alfresco/templates/rss_templates.acp</prop>
+                    <prop key="messages">alfresco/messages/bootstrap-content-template-examples</prop>
+                </props>
+                <props>
+                    <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.scripts.childname}</prop>
+                    <prop key="location">alfresco/bootstrap/example_javascripts.acp</prop>
+                </props>
+                <props>
+                    <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}</prop>
+                    <prop key="location">alfresco/bootstrap/webScripts.xml</prop>
+                    <prop key="messages">alfresco/messages/bootstrap-webScripts</prop>
+                </props>
+                <props>
+                    <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}</prop>
+                    <prop key="location">alfresco/bootstrap/webScriptsExtensions.xml</prop>
+                    <prop key="messages">alfresco/messages/bootstrap-webScriptsExtensions</prop>
+                </props>
+                <props>
+                    <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}</prop>
+                    <prop key="location">alfresco/bootstrap/webScriptsReadme.xml</prop>
+                </props>
+
+                <props>
+                    <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}</prop>
+                    <prop key="location">alfresco/bootstrap/customModelsSpace.acp</prop>
+                </props>
+                <props>
+                    <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}</prop>
+                    <prop key="location">alfresco/bootstrap/customMessagesSpace.xml</prop>
+                </props>
+                <props>
+                    <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}</prop>
+                    <prop key="location">alfresco/bootstrap/customWebClientExtensionSpace.xml</prop>
+                </props>
+
+                <props>
+                    <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}</prop>
+                    <prop key="location">alfresco/bootstrap/customWorkflowDefsSpace.acp</prop>
+                </props>
+                
+                <props>
+                    <prop key="path">/cm:categoryRoot</prop>
+                    <prop key="location">alfresco/bootstrap/tagRootCategory.xml</prop>
+                </props>
+
+                <props>
+                    <prop key="path">/${spaces.company_home.childname}</prop>
+                    <prop key="location">alfresco/bootstrap/sitesSpace.xml</prop>
+                    <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+                </props>
+            </list>
+        </property>
+    </bean>
 
 </beans>

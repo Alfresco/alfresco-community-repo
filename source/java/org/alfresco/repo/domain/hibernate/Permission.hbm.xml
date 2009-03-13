@@ -461,7 +461,8 @@
     ]]>
     </query>
 	
-    <sql-query name="person.getPerson">
+    <!-- Lowercase: ETHREEOH-1431 and ETWOTWO-1012 -->
+    <sql-query name="person.getPersonIgnoreCase">
         <return alias="n" class="org.alfresco.repo.domain.hibernate.NodeImpl"/>
         SELECT
            {n.*}
@@ -471,15 +472,14 @@
            JOIN alf_child_assoc c on c.child_node_id = n.id
 		   JOIN alf_store s on s.id = n.store_id
         WHERE
-           c.qname_localname = :userName1 AND
+           c.qname_localname = :userNameLowerCase AND
            p.qname_id = :qnamePropId AND
-           p.string_value = :userName2 AND
            n.type_qname_id = :qnameTypeId AND
            n.node_deleted = :False AND
            s.protocol = :storeProtocol AND
            s.identifier = :storeIdentifier
     </sql-query>
-    
+	
     <sql-query name="person.getAllPeople">
         <return alias="n" class="org.alfresco.repo.domain.hibernate.NodeImpl"/>
         SELECT

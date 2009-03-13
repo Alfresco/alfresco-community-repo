@@ -68,7 +68,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.GUID;
-import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -596,7 +595,11 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         properties.put(ContentModel.PROP_USERNAME, userName);
         properties.put(ContentModel.PROP_SIZE_CURRENT, 0L);
 
-        NodeRef personRef =  nodeService.createNode(getPeopleContainer(), ContentModel.ASSOC_CHILDREN, QName.createQName("cm", userName, namespacePrefixResolver), ContentModel.TYPE_PERSON,
+        NodeRef personRef =  nodeService.createNode(
+                getPeopleContainer(),
+                ContentModel.ASSOC_CHILDREN,
+                QName.createQName("cm", userName.toLowerCase(), namespacePrefixResolver),       // Lowercase: ETHREEOH-1431
+                ContentModel.TYPE_PERSON,
                 properties).getChildRef();
         return personRef;
     }

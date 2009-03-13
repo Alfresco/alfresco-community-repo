@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -27,12 +27,13 @@ package org.alfresco.repo.version;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -40,6 +41,7 @@ import org.alfresco.repo.policy.PolicyScope;
 import org.alfresco.repo.version.common.VersionHistoryImpl;
 import org.alfresco.repo.version.common.VersionImpl;
 import org.alfresco.repo.version.common.VersionUtil;
+import org.alfresco.repo.version.common.VersionHistoryImpl.VersionComparatorAsc;
 import org.alfresco.service.cmr.repository.AspectMissingException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -66,6 +68,8 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
     protected boolean useDeprecatedV1 = false; // bypass V2, only use V1
     
     private PermissionService permissionService;
+    
+    private static Comparator<Version> versionComparatorAsc = new VersionComparatorAsc();
     
     public void setPermissionService(PermissionService permissionService)
     {
@@ -607,27 +611,25 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
         VersionHistory versionHistory = null;
 
     	List<ChildAssociationRef> versionsAssoc = this.dbNodeService.getChildAssocs(versionHistoryRef, Version2Model.CHILD_QNAME_VERSIONS, RegexQNamePattern.MATCH_ALL);
-    	
-    	Map<Integer,NodeRef> versionHistoryMap = new HashMap<Integer,NodeRef>(versionsAssoc.size());
-    	for (ChildAssociationRef versionAssoc : versionsAssoc)
-    	{
-    		String localName = versionAssoc.getQName().getLocalName();
-    		if (localName.indexOf(Version2Model.CHILD_VERSIONS+"-") != -1) // TODO - could remove this belts-and-braces, should match correctly above !
-    		{
-	    		int versionNumber = Integer.parseInt(localName.substring((Version2Model.CHILD_VERSIONS+"-").length()));
-	    		versionHistoryMap.put(versionNumber, versionAssoc.getChildRef());
-    		}
-    	}
-    	
-    	Map<Integer,NodeRef> sortedMap = new TreeMap<Integer,NodeRef>(versionHistoryMap);
+
+        List<Version> versions = new ArrayList<Version>(versionsAssoc.size());
+        
+        for (ChildAssociationRef versionAssoc : versionsAssoc)
+        {
+            String localName = versionAssoc.getQName().getLocalName();
+            if (localName.indexOf(Version2Model.CHILD_VERSIONS+"-") != -1) // TODO - could remove this belts-and-braces, should match correctly above !
+            {
+                versions.add(getVersion(versionAssoc.getChildRef()));
+            }
+        }
+        
+        Collections.sort(versions, versionComparatorAsc);
 
         // Build the version history object
         boolean isRoot = true;
         Version preceeding = null;
-        for (NodeRef versionRef : sortedMap.values())
+        for (Version version : versions)
         {
-            Version version = getVersion(versionRef);
-
             if (isRoot == true)
             {
                 versionHistory = new VersionHistoryImpl(version);

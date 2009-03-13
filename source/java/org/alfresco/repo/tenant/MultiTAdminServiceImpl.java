@@ -356,23 +356,23 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
             tenantFileContentStore.init();
             
             // create tenant-specific stores
-            ImporterBootstrap userImporterBootstrap = (ImporterBootstrap)ctx.getBean("userBootstrap");
+            ImporterBootstrap userImporterBootstrap = (ImporterBootstrap)ctx.getBean("userBootstrap-mt");
             bootstrapUserTenantStore(userImporterBootstrap, tenantDomain, tenantAdminRawPassword);
             
-            ImporterBootstrap systemImporterBootstrap = (ImporterBootstrap)ctx.getBean("systemBootstrap");
+            ImporterBootstrap systemImporterBootstrap = (ImporterBootstrap)ctx.getBean("systemBootstrap-mt");
             bootstrapSystemTenantStore(systemImporterBootstrap, tenantDomain);
 
             // deprecated
-            ImporterBootstrap versionImporterBootstrap = (ImporterBootstrap)ctx.getBean("versionBootstrap");
+            ImporterBootstrap versionImporterBootstrap = (ImporterBootstrap)ctx.getBean("versionBootstrap-mt");
             bootstrapVersionTenantStore(versionImporterBootstrap, tenantDomain);
             
-            ImporterBootstrap version2ImporterBootstrap = (ImporterBootstrap)ctx.getBean("version2Bootstrap");
+            ImporterBootstrap version2ImporterBootstrap = (ImporterBootstrap)ctx.getBean("version2Bootstrap-mt");
             bootstrapVersionTenantStore(version2ImporterBootstrap, tenantDomain);
 
-            ImporterBootstrap spacesArchiveImporterBootstrap = (ImporterBootstrap)ctx.getBean("spacesArchiveBootstrap");
+            ImporterBootstrap spacesArchiveImporterBootstrap = (ImporterBootstrap)ctx.getBean("spacesArchiveBootstrap-mt");
             bootstrapSpacesArchiveTenantStore(spacesArchiveImporterBootstrap, tenantDomain);
             
-            ImporterBootstrap spacesImporterBootstrap = (ImporterBootstrap)ctx.getBean("spacesBootstrap");
+            ImporterBootstrap spacesImporterBootstrap = (ImporterBootstrap)ctx.getBean("spacesBootstrap-mt");
             bootstrapSpacesTenantStore(spacesImporterBootstrap, tenantDomain);
             
             siteAVMBootstrap.bootstrap();

@@ -24,7 +24,7 @@
  */
 package org.alfresco.repo.admin.patch.impl;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
@@ -118,7 +118,8 @@ public class GenericBootstrapPatch extends AbstractPatch
             }
         }
         String path = bootstrapView.getProperty("path");
-        List<Properties> bootstrapViews = Collections.singletonList(bootstrapView);
+        List<Properties> bootstrapViews = new ArrayList<Properties>(1);
+        bootstrapViews.add(bootstrapView);
         // modify the bootstrapper
         importerBootstrap.setBootstrapViews(bootstrapViews);
         importerBootstrap.setUseExistingStore(true);              // allow import into existing store

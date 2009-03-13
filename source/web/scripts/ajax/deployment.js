@@ -140,6 +140,7 @@ Alfresco.validateDeployConfig = function()
       
       var valid = true;
       var port = document.getElementById('wizard:wizard-body:deployServerPort');
+      var localhost = document.getElementById('wizard:wizard-body:deployServerHost');
       
       if (port != null && port.value.length > 0)
       {
@@ -151,6 +152,16 @@ Alfresco.validateDeployConfig = function()
          }
       }
       
+      if (localhost != null && localhost.value.length > 0)
+      {
+    	  if(!localhost.value.test(/^[A-Za-z0-9][A-Za-z0-9\.\-]*$/))
+    	  {
+    		  alert(MSG_HOST_WRONG_FORMAT);
+    		  localhost.focus();
+    		  valid = false;
+    	  }
+      }
+        
       return valid;
    }
    else

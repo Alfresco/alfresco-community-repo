@@ -82,19 +82,21 @@ public class RevertSelectedDialog extends BaseDialogBean
       String userSandboxId = this.avmBrowseBean.getSandbox();
       
       List<AVMNodeDescriptor> selected = this.avmBrowseBean.getSelectedSandboxItems();
-      
-      List<String> relativePaths = new ArrayList<String>(selected.size());
-      for (AVMNodeDescriptor node : selected)
+      if (selected != null && selected.size() > 0)
       {
-          relativePaths.add(AVMUtil.getStoreRelativePath(node.getPath()));
+          List<String> relativePaths = new ArrayList<String>(selected.size());
+          for (AVMNodeDescriptor node : selected)
+          {
+              relativePaths.add(AVMUtil.getStoreRelativePath(node.getPath()));
+          }
+          
+          getSandboxService().revertList(userSandboxId, relativePaths);
+          
+          String msg = MessageFormat.format(Application.getMessage(
+                      context, MSG_REVERTSELECTED_SUCCESS), this.avmBrowseBean.getUsername());
+          FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_INFO, msg, msg);
+          context.addMessage(AVMBrowseBean.FORM_ID + ':' + AVMBrowseBean.COMPONENT_SANDBOXESPANEL, facesMsg);
       }
-      
-      getSandboxService().revertList(userSandboxId, relativePaths);
-      
-      String msg = MessageFormat.format(Application.getMessage(
-                  context, MSG_REVERTSELECTED_SUCCESS), this.avmBrowseBean.getUsername());
-      FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_INFO, msg, msg);
-      context.addMessage(AVMBrowseBean.FORM_ID + ':' + AVMBrowseBean.COMPONENT_SANDBOXESPANEL, facesMsg);
       
       return outcome;
    }

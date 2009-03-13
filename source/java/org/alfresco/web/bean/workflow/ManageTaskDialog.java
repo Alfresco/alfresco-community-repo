@@ -49,6 +49,7 @@ import org.alfresco.service.cmr.workflow.WorkflowInstance;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowTaskDefinition;
+import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.cmr.workflow.WorkflowTransition;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -179,6 +180,14 @@ public class ManageTaskDialog extends BaseDialogBean
       if (LOGGER.isDebugEnabled())
          LOGGER.debug("Saving task: " + this.getWorkflowTask().id);
       
+      // before updating the task still exists and is not completed
+      WorkflowTask checkTask = this.getWorkflowService().getTaskById(this.getWorkflowTask().id);
+      if (checkTask == null || checkTask.state == WorkflowTaskState.COMPLETED)
+      {
+         Utils.addErrorMessage(Application.getMessage(context, "invalid_task"));
+         return outcome;
+      }
+      
       // prepare the edited parameters for saving
       Map<QName, Serializable> params = WorkflowUtil.prepareTaskParams(this.taskNode);
       
@@ -224,10 +233,17 @@ public class ManageTaskDialog extends BaseDialogBean
 
              if (this.transitions != null)
              {
+                Object hiddenTransitions = this.taskNode.getProperties().get(WorkflowModel.PROP_HIDDEN_TRANSITIONS);
                 for (WorkflowTransition trans : this.transitions)
                 {
-                   buttons.add(new DialogButtonConfig(ID_PREFIX + trans.title, trans.title, null,
-                         "#{DialogManager.bean.transition}", "false", null));
+                   if (hiddenTransitions == null ||
+                           (hiddenTransitions instanceof String && ((String)hiddenTransitions).equals("")) ||
+                           (hiddenTransitions instanceof String && !((String)hiddenTransitions).equals(trans.id)) ||
+                           (hiddenTransitions instanceof List) && !((List<String>)hiddenTransitions).contains(trans.id))
+                   {
+                       buttons.add(new DialogButtonConfig(ID_PREFIX + trans.title, trans.title, null,
+                               "#{DialogManager.bean.transition}", "false", null));
+                   }
                 }
              }
          }
@@ -274,6 +290,15 @@ public class ManageTaskDialog extends BaseDialogBean
          LOGGER.debug("Taking ownership of task: " + this.getWorkflowTask().id);
       
       FacesContext context = FacesContext.getCurrentInstance();
+      
+      // before taking ownership check the task still exists and is not completed
+      WorkflowTask checkTask = this.getWorkflowService().getTaskById(this.getWorkflowTask().id);
+      if (checkTask == null || checkTask.state == WorkflowTaskState.COMPLETED)
+      {
+         Utils.addErrorMessage(Application.getMessage(context, "invalid_task"));
+         return outcome;
+      }
+      
       UserTransaction tx = null;
   
       try
@@ -314,6 +339,14 @@ public class ManageTaskDialog extends BaseDialogBean
          LOGGER.debug("Returning ownership of task to pool: " + this.getWorkflowTask().id);
       
       FacesContext context = FacesContext.getCurrentInstance();
+      // before returning ownership check the task still exists and is not completed
+      WorkflowTask checkTask = this.getWorkflowService().getTaskById(this.getWorkflowTask().id);
+      if (checkTask == null || checkTask.state == WorkflowTaskState.COMPLETED)
+      {
+         Utils.addErrorMessage(Application.getMessage(context, "invalid_task"));
+         return outcome;
+      }
+      
       UserTransaction tx = null;
   
       try
@@ -351,10 +384,18 @@ public class ManageTaskDialog extends BaseDialogBean
       if (LOGGER.isDebugEnabled())
          LOGGER.debug("Transitioning task: " + this.getWorkflowTask().id);
       
+      // before transitioning check the task still exists and is not completed
+      FacesContext context = FacesContext.getCurrentInstance();
+      WorkflowTask checkTask = this.getWorkflowService().getTaskById(this.getWorkflowTask().id);
+      if (checkTask == null || checkTask.state == WorkflowTaskState.COMPLETED)
+      {
+         Utils.addErrorMessage(Application.getMessage(context, "invalid_task"));
+         return outcome;
+      }
+      
       // to find out which transition button was pressed we need
       // to look for the button's id in the request parameters,
       // the first non-null result is the button that was pressed.
-      FacesContext context = FacesContext.getCurrentInstance();
       Map reqParams = context.getExternalContext().getRequestParameterMap();
       
       String selectedTransition = null;

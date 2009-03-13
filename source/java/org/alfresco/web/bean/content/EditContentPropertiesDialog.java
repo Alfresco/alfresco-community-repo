@@ -261,6 +261,20 @@ public class EditContentPropertiesDialog extends BaseDialogBean
    @Override
    protected String formatErrorMessage(Throwable exception)
    {
+      if(editableNode != null)
+      {
+       
+          // special case for Mimetype - since this is a sub-property of the ContentData object
+          // we must extract it so it can be edited in the client, then we check for it later
+          // and create a new ContentData object to wrap it and it's associated URL
+          ContentData content = (ContentData)this.editableNode.getProperties().get(ContentModel.PROP_CONTENT);
+          if (content != null)
+          {
+             this.editableNode.getProperties().put(TEMP_PROP_MIMETYPE, content.getMimetype());
+             this.editableNode.getProperties().put(TEMP_PROP_ENCODING, content.getEncoding());
+          }
+      } 
+       
       if (exception instanceof FileExistsException)
       {
          return MessageFormat.format(Application.getMessage(

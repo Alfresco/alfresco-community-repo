@@ -160,9 +160,12 @@ public class UIDeploymentServers extends UIInput
          tx.begin();
          
          String contextPath = context.getExternalContext().getRequestContextPath();
-         out.write("\n<script type='text/javascript'>var MSG_PORT_MUST_BE_NUMBER = '");
-         out.write(Application.getMessage(context, "port_must_be_number"));
-         out.write("';</script>\n<script type='text/javascript' src='");
+         out.write("\n<script type='text/javascript'>");
+         out.write("var MSG_PORT_MUST_BE_NUMBER = '" + Application.getMessage(context, "port_must_be_number") + "'; \n");
+         out.write("var MSG_HOST_WRONG_FORMAT = '" + Application.getMessage(context, "host_wrong_format") + "'; \n");
+         out.write("</script>\n");
+         		
+         out.write("<script type='text/javascript' src='");
          out.write(contextPath);
          out.write("/scripts/ajax/deployment.js'></script>\n");
          out.write("<div class='deployConfig'>");

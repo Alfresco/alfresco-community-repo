@@ -30,9 +30,10 @@ import java.util.StringTokenizer;
 
 import org.apache.lucene.analysis.TokenFilter;
 import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.analysis.standard.StandardTokenizerConstants;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.analysis.standard.StandardTokenizer;
 
-public class AlfrescoStandardFilter extends TokenFilter implements StandardTokenizerConstants
+public class AlfrescoStandardFilter extends TokenFilter
 {
 
     /** Construct filtering <i>in</i>. */
@@ -41,13 +42,13 @@ public class AlfrescoStandardFilter extends TokenFilter implements StandardToken
         super(in);
     }
 
-    private static final String APOSTROPHE_TYPE = tokenImage[APOSTROPHE];
+    private static final String APOSTROPHE_TYPE = StandardTokenizer.TOKEN_TYPES[StandardTokenizer.APOSTROPHE];
 
-    private static final String ACRONYM_TYPE = tokenImage[ACRONYM];
+    private static final String ACRONYM_TYPE = StandardTokenizer.TOKEN_TYPES[StandardTokenizer.ACRONYM];
 
-    private static final String HOST_TYPE = tokenImage[HOST];
+    private static final String HOST_TYPE = StandardTokenizer.TOKEN_TYPES[StandardTokenizer.HOST];
 
-    private static final String ALPHANUM_TYPE = tokenImage[ALPHANUM];
+    private static final String ALPHANUM_TYPE = StandardTokenizer.TOKEN_TYPES[StandardTokenizer.ALPHANUM];
 
     private Queue<org.apache.lucene.analysis.Token> hostTokens = null;
 

@@ -45,6 +45,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import net.sf.ehcache.CacheManager;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.search.impl.lucene.LuceneConfig;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -101,6 +102,8 @@ public class ReferenceCountingReadOnlyIndexReaderFactory
 
         private static final long serialVersionUID = 7693185658022810428L;
 
+        private static java.lang.reflect.Field s_field;
+        
         String id;
 
         int refCount = 0;
@@ -109,7 +112,7 @@ public class ReferenceCountingReadOnlyIndexReaderFactory
 
         boolean allowsDeletions;
 
-        boolean closed = false;
+        boolean wrapper_closed = false;
 
         ConcurrentHashMap<Integer, Boolean> isCategory = new ConcurrentHashMap<Integer, Boolean>();
 
@@ -125,10 +128,28 @@ public class ReferenceCountingReadOnlyIndexReaderFactory
 
         ConcurrentHashMap<Integer, WithUseCount<List<Field>>> linkAspectCache = new ConcurrentHashMap<Integer, WithUseCount<List<Field>>>();
 
-        boolean enableCaching;
+        private boolean enableCaching;
 
         private LuceneConfig config;
 
+        static
+        {
+            Class c = IndexReader.class;
+            try
+            {
+                s_field = c.getDeclaredField("closed");
+                s_field.setAccessible(true);
+            }
+            catch (SecurityException e)
+            {
+                throw new AlfrescoRuntimeException("Reference counting index reader needs access to org.apache.lucene.index.IndexReader.closed to work correctly", e);
+            }
+            catch (NoSuchFieldException e)
+            {
+                throw new AlfrescoRuntimeException("Reference counting index reader needs access to org.apache.lucene.index.IndexReader.closed to work correctly (incompatible version of lucene)", e);
+            }
+        }
+        
         ReferenceCountingReadOnlyIndexReader(String id, IndexReader indexReader, boolean enableCaching, LuceneConfig config)
         {
             super(indexReader);
@@ -142,7 +163,7 @@ public class ReferenceCountingReadOnlyIndexReaderFactory
 
         public synchronized void incrementReferenceCount()
         {
-            if (closed)
+            if (wrapper_closed)
             {
                 throw new IllegalStateException(Thread.currentThread().getName() + "Indexer is closed " + id);
             }
@@ -150,6 +171,21 @@ public class ReferenceCountingReadOnlyIndexReaderFactory
             if (s_logger.isDebugEnabled())
             {
                 s_logger.debug(Thread.currentThread().getName() + ": Reader " + id + " - increment - ref count is " + refCount + "        ... " + super.toString());
+            }
+            if(!wrapper_closed)
+            {
+                try
+                {
+                    s_field.set(this, false);
+                }
+                catch (IllegalArgumentException e)
+                {
+                   throw new AlfrescoRuntimeException("Failed to mark index as open ..", e);
+                }
+                catch (IllegalAccessException e)
+                {
+                    throw new AlfrescoRuntimeException("Failed to mark index as open ..", e);
+                }
             }
         }
 
@@ -180,7 +216,7 @@ public class ReferenceCountingReadOnlyIndexReaderFactory
                     // No tidy up
                 }
                 in.close();
-                closed = true;
+                wrapper_closed = true;
             }
             else
             {
@@ -204,12 +240,12 @@ public class ReferenceCountingReadOnlyIndexReaderFactory
 
         public synchronized boolean getClosed()
         {
-            return closed;
+            return wrapper_closed;
         }
 
         public synchronized void setInvalidForReuse() throws IOException
         {
-            if (closed)
+            if (wrapper_closed)
             {
                 throw new IllegalStateException(Thread.currentThread().getName() + "Indexer is closed " + id);
             }
@@ -228,11 +264,15 @@ public class ReferenceCountingReadOnlyIndexReaderFactory
             {
                 s_logger.debug(Thread.currentThread().getName() + ": Reader " + id + " closing" + "        ... " + super.toString());
             }
-            if (closed)
+            if (wrapper_closed)
             {
                 throw new IllegalStateException(Thread.currentThread().getName() + "Indexer is closed " + id);
             }
             decrementReferenceCount();
+            if(!wrapper_closed)
+            {
+                incRef();
+            }
         }
 
         @Override

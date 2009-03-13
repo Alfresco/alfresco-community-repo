@@ -184,5 +184,20 @@ public class CachingTermPositions implements TermPositions
         delegate.close();
         clear();
     }
+    
+    public byte[] getPayload(byte[] data, int offset) throws IOException
+    {
+        return delegate.getPayload(data, offset);
+    }
+
+    public int getPayloadLength()
+    {
+        return delegate.getPayloadLength();
+    }
+
+    public boolean isPayloadAvailable()
+    {
+        return delegate.isPayloadAvailable();
+    }
 
 }

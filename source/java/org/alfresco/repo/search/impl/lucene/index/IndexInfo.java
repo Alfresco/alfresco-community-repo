@@ -73,7 +73,9 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.LogDocMergePolicy;
 import org.apache.lucene.index.MultiReader;
+import org.apache.lucene.index.SerialMergeScheduler;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermEnum;
 import org.apache.lucene.search.Hits;
@@ -450,6 +452,8 @@ public class IndexInfo implements IndexMonitor
             writer.setWriteLockTimeout(writeLockTimeout);
             writer.setMaxFieldLength(maxFieldLength);
             writer.setTermIndexInterval(termIndexInterval);
+            writer.setMergeScheduler(new SerialMergeScheduler());
+            writer.setMergePolicy(new LogDocMergePolicy());
             writer.close();
         }
         catch (IOException e)
@@ -515,6 +519,8 @@ public class IndexInfo implements IndexMonitor
                                 writer.setWriteLockTimeout(writeLockTimeout);
                                 writer.setMaxFieldLength(maxFieldLength);
                                 writer.setTermIndexInterval(termIndexInterval);
+                                writer.setMergeScheduler(new SerialMergeScheduler());
+                                writer.setMergePolicy(new LogDocMergePolicy());
                                 writer.optimize();
                                 long docs = writer.docCount();
                                 writer.close();
@@ -839,6 +845,8 @@ public class IndexInfo implements IndexMonitor
         writer.setWriteLockTimeout(writeLockTimeout);
         writer.setMaxFieldLength(maxFieldLength);
         writer.setTermIndexInterval(termIndexInterval);
+        writer.setMergeScheduler(new SerialMergeScheduler());
+        writer.setMergePolicy(new LogDocMergePolicy());
         return writer;
 
     }
@@ -3455,6 +3463,8 @@ public class IndexInfo implements IndexMonitor
                         writer.setMergeFactor(mergerMergeFactor);
                         writer.setMaxMergeDocs(mergerMaxMergeDocs);
                         writer.setWriteLockTimeout(writeLockTimeout);
+                        writer.setMergeScheduler(new SerialMergeScheduler());
+                        writer.setMergePolicy(new LogDocMergePolicy());
                     }
                 }
                 writer.addIndexes(readers);

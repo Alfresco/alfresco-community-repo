@@ -282,6 +282,21 @@ public class FilterIndexReaderByStringId extends FilterIndexReader
         {
             return ((TermPositions) this.in).nextPosition();
         }
+
+        public byte[] getPayload(byte[] data, int offset) throws IOException
+        {
+            return ((TermPositions) this.in).getPayload(data, offset);
+        }
+
+        public int getPayloadLength()
+        {
+            return ((TermPositions) this.in).getPayloadLength();
+        }
+
+        public boolean isPayloadAvailable()
+        {
+            return ((TermPositions) this.in).isPayloadAvailable();
+        }
     }
 
     @Override

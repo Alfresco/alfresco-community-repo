@@ -24,7 +24,8 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Hashtable;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.lucene.index.IndexFileNameFilter;
 
@@ -46,7 +47,6 @@ import org.apache.lucene.index.IndexWriter;
  * synchronization on directories.</p>
  *
  * @see Directory
- * @author Doug Cutting
  */
 public class FSDirectory extends Directory {
     
@@ -58,7 +58,7 @@ public class FSDirectory extends Directory {
    * instance from the cache.  See LUCENE-776
    * for some relevant discussion.
    */
-  private static final Hashtable DIRECTORIES = new Hashtable();
+  private static final Map DIRECTORIES = new HashMap();
 
   private static boolean disableLocks = false;
 
@@ -239,7 +239,7 @@ public class FSDirectory extends Directory {
     if (directory.exists()) {
       String[] files = directory.list(IndexFileNameFilter.getFilter());            // clear old files
       if (files == null)
-        throw new IOException("Cannot read directory " + directory.getAbsolutePath());
+        throw new IOException("cannot read directory " + directory.getAbsolutePath() + ": list() returned null");
       for (int i = 0; i < files.length; i++) {
         File file = new File(directory, files[i]);
         if (!file.delete())
@@ -291,6 +291,12 @@ public class FSDirectory extends Directory {
           } catch (ClassCastException e) {
             throw new IOException("unable to cast LockClass " + lockClassName + " instance to a LockFactory");
           }
+
+          if (lockFactory instanceof NativeFSLockFactory) {
+            ((NativeFSLockFactory) lockFactory).setLockDir(path);
+          } else if (lockFactory instanceof SimpleFSLockFactory) {
+            ((SimpleFSLockFactory) lockFactory).setLockDir(path);
+          }
         } else {
           // Our default lock is SimpleFSLockFactory;
           // default lockDir is our index directory:
@@ -311,17 +317,20 @@ public class FSDirectory extends Directory {
 
   /** Returns an array of strings, one for each Lucene index file in the directory. */
   public String[] list() {
+    ensureOpen();
     return directory.list(IndexFileNameFilter.getFilter());
   }
 
   /** Returns true iff a file with the given name exists. */
   public boolean fileExists(String name) {
+    ensureOpen();
     File file = new File(directory, name);
     return file.exists();
   }
 
   /** Returns the time the named file was last modified. */
   public long fileModified(String name) {
+    ensureOpen();
     File file = new File(directory, name);
     return file.lastModified();
   }
@@ -334,18 +343,21 @@ public class FSDirectory extends Directory {
 
   /** Set the modified time of an existing file to now. */
   public void touchFile(String name) {
+    ensureOpen();
     File file = new File(directory, name);
     file.setLastModified(System.currentTimeMillis());
   }
 
   /** Returns the length in bytes of a file in the directory. */
   public long fileLength(String name) {
+    ensureOpen();
     File file = new File(directory, name);
     return file.length();
   }
 
   /** Removes an existing file in the directory. */
   public void deleteFile(String name) throws IOException {
+    ensureOpen();
     File file = new File(directory, name);
     if (!file.delete())
       throw new IOException("Cannot delete " + file);
@@ -357,6 +369,7 @@ public class FSDirectory extends Directory {
    */
   public synchronized void renameFile(String from, String to)
       throws IOException {
+    ensureOpen();
     File old = new File(directory, from);
     File nu = new File(directory, to);
 
@@ -421,7 +434,7 @@ public class FSDirectory extends Directory {
   /** Creates a new, empty file in the directory with the given name.
       Returns a stream writing this file. */
   public IndexOutput createOutput(String name) throws IOException {
-
+    ensureOpen();
     File file = new File(directory, name);
     if (file.exists() && !file.delete())          // delete existing, if any
       throw new IOException("Cannot overwrite: " + file);
@@ -429,9 +442,50 @@ public class FSDirectory extends Directory {
     return new FSIndexOutput(file);
   }
 
-  /** Returns a stream reading an existing file. */
+  public void sync(String name) throws IOException {
+    ensureOpen();
+    File fullFile = new File(directory, name);
+    boolean success = false;
+    int retryCount = 0;
+    IOException exc = null;
+    while(!success && retryCount < 5) {
+      retryCount++;
+      RandomAccessFile file = null;
+      try {
+        try {
+          file = new RandomAccessFile(fullFile, "rw");
+          file.getFD().sync();
+          success = true;
+        } finally {
+          if (file != null)
+            file.close();
+        }
+      } catch (IOException ioe) {
+        if (exc == null)
+          exc = ioe;
+        try {
+          // Pause 5 msec
+          Thread.sleep(5);
+        } catch (InterruptedException ie) {
+          Thread.currentThread().interrupt();
+        }
+      }
+    }
+    if (!success)
+      // Throw original exception
+      throw exc;
+  }
+
+  // Inherit javadoc
   public IndexInput openInput(String name) throws IOException {
-    return new FSIndexInput(new File(directory, name));
+    ensureOpen();
+    return openInput(name, BufferedIndexInput.BUFFER_SIZE);
+  }
+
+  // Inherit javadoc
+  public IndexInput openInput(String name, int bufferSize) throws IOException {
+    ensureOpen();
+    return new FSIndexInput(new File(directory, name), bufferSize);
   }
 
   /**
@@ -442,6 +496,7 @@ public class FSDirectory extends Directory {
 
   
   public String getLockID() {
+    ensureOpen();
     String dirName;                               // name to be hashed
     try {
       dirName = directory.getCanonicalPath();
@@ -466,7 +521,8 @@ public class FSDirectory extends Directory {
 
   /** Closes the store to future operations. */
   public synchronized void close() {
-    if (--refCount <= 0) {
+    if (isOpen && --refCount <= 0) {
+      isOpen = false;
       synchronized (DIRECTORIES) {
         DIRECTORIES.remove(directory);
       }
@@ -474,6 +530,7 @@ public class FSDirectory extends Directory {
   }
 
   public File getFile() {
+    ensureOpen();
     return directory;
   }
 
@@ -481,128 +538,144 @@ public class FSDirectory extends Directory {
   public String toString() {
     return this.getClass().getName() + "@" + directory;
   }
-}
 
+  protected static class FSIndexInput extends BufferedIndexInput {
+  
+    protected static class Descriptor extends RandomAccessFile {
+      // remember if the file is open, so that we don't try to close it
+      // more than once
+      protected volatile boolean isOpen;
+      long position;
+      final long length;
+      
+      public Descriptor(File file, String mode) throws IOException {
+        super(file, mode);
+        isOpen=true;
+        length=length();
+      }
+  
+      public void close() throws IOException {
+        if (isOpen) {
+          isOpen=false;
+          super.close();
+        }
+      }
+  
+      protected void finalize() throws Throwable {
+        try {
+          close();
+        } finally {
+          super.finalize();
+        }
+      }
+    }
+  
+    protected final Descriptor file;
+    boolean isClone;
+  
+    public FSIndexInput(File path) throws IOException {
+      this(path, BufferedIndexInput.BUFFER_SIZE);
+    }
+  
+    public FSIndexInput(File path, int bufferSize) throws IOException {
+      super(bufferSize);
+      file = new Descriptor(path, "r");
+    }
+  
+    /** IndexInput methods */
+    protected void readInternal(byte[] b, int offset, int len)
+         throws IOException {
+      synchronized (file) {
+        long position = getFilePointer();
+        if (position != file.position) {
+          file.seek(position);
+          file.position = position;
+        }
+        int total = 0;
+        do {
+          int i = file.read(b, offset+total, len-total);
+          if (i == -1)
+            throw new IOException("read past EOF");
+          file.position += i;
+          total += i;
+        } while (total < len);
+      }
+    }
+  
+    public void close() throws IOException {
+      // only close the file if this is not a clone
+      if (!isClone) file.close();
+    }
+  
+    protected void seekInternal(long position) {
+    }
+  
+    public long length() {
+      return file.length;
+    }
+  
+    public Object clone() {
+      FSIndexInput clone = (FSIndexInput)super.clone();
+      clone.isClone = true;
+      return clone;
+    }
+  
+    /** Method used for testing. Returns true if the underlying
+     *  file descriptor is valid.
+     */
+    boolean isFDValid() throws IOException {
+      return file.getFD().valid();
+    }
+  }
 
-class FSIndexInput extends BufferedIndexInput {
-
-  private static class Descriptor extends RandomAccessFile {
+  protected static class FSIndexOutput extends BufferedIndexOutput {
+    RandomAccessFile file = null;
+  
     // remember if the file is open, so that we don't try to close it
     // more than once
-    private boolean isOpen;
-    long position;
-    final long length;
-    
-    public Descriptor(File file, String mode) throws IOException {
-      super(file, mode);
-      isOpen=true;
-      length=length();
-      getChannel();
-    }
+    private volatile boolean isOpen;
 
+    public FSIndexOutput(File path) throws IOException {
+      file = new RandomAccessFile(path, "rw");
+      file.getChannel();
+      isOpen = true;
+    }
+  
+    /** output methods: */
+    public void flushBuffer(byte[] b, int offset, int size) throws IOException {
+      file.write(b, offset, size);
+    }
     public void close() throws IOException {
+      // only close the file if it has not been closed yet
       if (isOpen) {
-        isOpen=false;
-        super.close();
+        boolean success = false;
+        try {
+          super.close();
+          success = true;
+        } finally {
+          isOpen = false;
+          if (!success) {
+            try {
+              file.close();
+            } catch (Throwable t) {
+              // Suppress so we don't mask original exception
+            }
+          } else
+            file.close();
+        }
       }
     }
-
-    protected void finalize() throws Throwable {
-      try {
-        close();
-      } finally {
-        super.finalize();
-      }
+  
+    /** Random-access methods */
+    public void seek(long pos) throws IOException {
+      super.seek(pos);
+      file.seek(pos);
+    }
+    public long length() throws IOException {
+      return file.length();
+    }
+    public void setLength(long length) throws IOException {
+      file.setLength(length);
     }
   }
-
-  private final Descriptor file;
-  boolean isClone;
-
-  public FSIndexInput(File path) throws IOException {
-    file = new Descriptor(path, "r");
-  }
-
-  /** IndexInput methods */
-  protected void readInternal(byte[] b, int offset, int len)
-       throws IOException {
-    synchronized (file) {
-      long position = getFilePointer();
-      if (position != file.position) {
-        file.seek(position);
-        file.position = position;
-      }
-      int total = 0;
-      do {
-        int i = file.read(b, offset+total, len-total);
-        if (i == -1)
-          throw new IOException("read past EOF");
-        file.position += i;
-        total += i;
-      } while (total < len);
-    }
-  }
-
-  public void close() throws IOException {
-    // only close the file if this is not a clone
-    if (!isClone) file.close();
-  }
-
-  protected void seekInternal(long position) {
-  }
-
-  public long length() {
-    return file.length;
-  }
-
-  public Object clone() {
-    FSIndexInput clone = (FSIndexInput)super.clone();
-    clone.isClone = true;
-    return clone;
-  }
-
-  /** Method used for testing. Returns true if the underlying
-   *  file descriptor is valid.
-   */
-  boolean isFDValid() throws IOException {
-    return file.getFD().valid();
-  }
-}
-
-
-class FSIndexOutput extends BufferedIndexOutput {
-  RandomAccessFile file = null;
-
-  // remember if the file is open, so that we don't try to close it
-  // more than once
-  private boolean isOpen;
-
-  public FSIndexOutput(File path) throws IOException {
-    file = new RandomAccessFile(path, "rw");
-    file.getChannel();
-    isOpen = true;
-  }
-
-  /** output methods: */
-  public void flushBuffer(byte[] b, int size) throws IOException {
-    file.write(b, 0, size);
-  }
-  public void close() throws IOException {
-    // only close the file if it has not been closed yet
-    if (isOpen) {
-      super.close();
-      file.close();
-      isOpen = false;
-    }
-  }
-
-  /** Random-access methods */
-  public void seek(long pos) throws IOException {
-    super.seek(pos);
-    file.seek(pos);
-  }
-  public long length() throws IOException {
-    return file.length();
-  }
-
 }

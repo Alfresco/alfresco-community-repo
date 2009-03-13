@@ -209,9 +209,7 @@ function main()
       
       // Reapply mimetype as upload may have been via Flash - which always sends binary mimetype
       newFile.properties.content.guessMimetype(filename);
-      newFile.properties.content.encoding = "UTF-8";
-      newFile.properties.title = title;
-      newFile.properties.description = description;
+      newFile.properties.content.encoding = "UTF-8";      
       newFile.save();
       
       // Ensure the file is versionable - but do not autoversion or create initial version
@@ -239,6 +237,14 @@ function main()
       if (emAction != null)
       {
          emAction.execute(newFile);
+      }
+      
+      // Set the title if none set during meta-data extract
+      newFile.reset();
+      if (newFile.properties.title == null)
+      {
+        newFile.properties.title = title;
+        newFile.save();
       }
       
       model.document = newFile;

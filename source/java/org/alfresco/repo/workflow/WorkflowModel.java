@@ -58,6 +58,7 @@ public interface WorkflowModel
     static final QName PROP_OUTCOME = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "outcome");
     static final QName PROP_PACKAGE_ACTION_GROUP = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "packageActionGroup");
     static final QName PROP_PACKAGE_ITEM_ACTION_GROUP = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "packageItemActionGroup");
+    static final QName PROP_HIDDEN_TRANSITIONS = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "hiddenTransitions");
     static final QName ASSOC_PACKAGE = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "package");
 
     // workflow task contstants

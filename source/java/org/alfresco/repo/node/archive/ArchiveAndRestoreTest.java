@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -141,7 +141,7 @@ public class ArchiveAndRestoreTest extends TestCase
             
             // Map the work store to the archive store.  This will already be wired into the NodeService.
             StoreArchiveMap archiveMap = (StoreArchiveMap) ctx.getBean("storeArchiveMap");
-            archiveMap.getArchiveMap().put(workStoreRef, archiveStoreRef);
+            archiveMap.put(workStoreRef, archiveStoreRef);
             
             TestWithUserUtils.createUser(USER_A, USER_A, workStoreRootNodeRef, nodeService, authenticationService);
             TestWithUserUtils.createUser(USER_B, USER_B, workStoreRootNodeRef, nodeService, authenticationService);
@@ -508,7 +508,7 @@ public class ArchiveAndRestoreTest extends TestCase
         
         // Now force full deletions and creations
         StoreArchiveMap archiveMap = (StoreArchiveMap) ctx.getBean("storeArchiveMap");
-        archiveMap.getArchiveMap().clear();
+        archiveMap.clear();
         long cumulatedDeleteTimeNs = 0;
         long cumulatedCreateTimeNs = 0;
         for (int i = 0; i < iterations; i++)

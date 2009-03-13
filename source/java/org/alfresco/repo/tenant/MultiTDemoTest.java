@@ -42,6 +42,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -85,6 +86,7 @@ public class MultiTDemoTest extends TestCase
     private TenantService tenantService;
     private AuthorityService authorityService;
     private CategoryService categoryService;
+    private CheckOutCheckInService cociService;
     
     public static int NUM_TENANTS = 11;
     
@@ -140,6 +142,7 @@ public class MultiTDemoTest extends TestCase
         ownableService = (OwnableService) ctx.getBean("OwnableService");
         authorityService = (AuthorityService) ctx.getBean("AuthorityService");
         categoryService = (CategoryService) ctx.getBean("CategoryService");
+        cociService = (CheckOutCheckInService) ctx.getBean("CheckoutCheckinService");
     }
 
     @Override
@@ -569,6 +572,85 @@ public class MultiTDemoTest extends TestCase
                     return null;                      
                 }
             }, tenantAdminName);
+        }
+    }
+    
+    public void testCOCIandSearch()
+    {
+        logger.info("Test checkout/checkin and search");
+        
+        for (final String tenantDomain : tenants)
+        {
+            final String tenantAdminName = tenantService.getDomainUser(AuthenticationUtil.getAdminUserName(), tenantDomain);
+            
+            AuthenticationUtil.runAs(new RunAsWork<Object>()
+            {
+                public Object doWork() throws Exception
+                {
+                    // search for local copy of bootstrapped file 'invite_user_email.ftl' (see email_templates.acp)
+                    String origText = "You have been invited to";
+                    String query = "+PATH:\"/app:company_home/app:dictionary/app:email_templates/*\" +TEXT:\""+origText+"\"";
+                    ResultSet resultSet = searchService.query(SPACES_STORE, SearchService.LANGUAGE_LUCENE, query);
+                    assertEquals(1, resultSet.length());
+                    
+                    NodeRef nodeRef = resultSet.getNodeRef(0);
+                    
+                    // checkout, update and checkin
+                    
+                    NodeRef workingCopyNodeRef = cociService.checkout(nodeRef);
+                    
+                    ContentWriter writer = contentService.getWriter(workingCopyNodeRef, ContentModel.PROP_CONTENT, true);
+
+                    writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+                    writer.setEncoding("UTF-8");
+                    
+                    String updateText = "Updated by "+tenantAdminName;
+                    writer.putContent(updateText);
+                    
+                    cociService.checkin(workingCopyNodeRef, null);
+                    
+                    query = "+PATH:\"/app:company_home/app:dictionary/app:email_templates/*\" +TEXT:\""+origText+"\"";
+                    resultSet = searchService.query(SPACES_STORE, SearchService.LANGUAGE_LUCENE, query);
+                    assertEquals(0, resultSet.length());
+                    
+                    query = "+PATH:\"/app:company_home/app:dictionary/app:email_templates/*\" +TEXT:\""+updateText+"\"";
+                    resultSet = searchService.query(SPACES_STORE, SearchService.LANGUAGE_LUCENE, query);
+                    assertEquals(1, resultSet.length());
+                    
+                    return null;                      
+                }
+            }, tenantAdminName);
+        }
+    }
+    
+    public void testDeleteArchiveAndRestoreContent()
+    {
+        logger.info("test delete/archive & restore content");
+        
+        for (final String tenantDomain : tenants)
+        {    
+            final String tenantUserName = tenantService.getDomainUser(TEST_USER1, tenantDomain);
+            
+            AuthenticationUtil.runAs(new RunAsWork<Object>()
+            {
+                public Object doWork() throws Exception
+                {
+                    NodeRef homeSpaceRef = getHomeSpaceFolderNode(tenantUserName);
+                    NodeRef contentRef = addTextContent(homeSpaceRef, tenantUserName+" tqbfjotld.txt", "The quick brown fox jumps over the lazy dog (tenant " + tenantDomain + ")");
+
+                    NodeRef storeArchiveNode = nodeService.getStoreArchiveNode(contentRef.getStoreRef());
+                    
+                    nodeService.deleteNode(contentRef);
+                    
+                    // deduce archived nodeRef
+                    StoreRef archiveStoreRef = storeArchiveNode.getStoreRef();
+                    NodeRef archivedContentRef = new NodeRef(archiveStoreRef, contentRef.getId());
+                    
+                    nodeService.restoreNode(archivedContentRef, null, null, null);
+                    
+                    return null;                      
+                }
+            }, tenantUserName);
         }
     }
     

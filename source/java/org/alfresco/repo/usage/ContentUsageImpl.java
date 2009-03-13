@@ -344,7 +344,7 @@ public class ContentUsageImpl implements ContentUsageService,
     
     private void incrementUserUsage(String userName, long contentSize, NodeRef contentNodeRef)
     {
-        if (! userName.equals(authenticationComponent.getSystemUserName()))
+        if (! authenticationComponent.isSystemUserName(userName))
         {
             // increment usage - add positive delta
             if (logger.isDebugEnabled()) logger.debug("incrementUserUsage: username="+userName+", contentSize="+contentSize+", contentNodeRef="+contentNodeRef);
@@ -366,14 +366,17 @@ public class ContentUsageImpl implements ContentUsageService,
                 throw new ContentQuotaException("User quota exceeded");
             }
             
-            NodeRef personNodeRef = personService.getPerson(userName);
-            usageService.insertDelta(personNodeRef, contentSize);
+            NodeRef personNodeRef = getPerson(userName);
+            if (personNodeRef != null)
+            {
+                usageService.insertDelta(personNodeRef, contentSize);
+            }
         }
     }
     
     private void decrementUserUsage(String userName, long contentSize, NodeRef contentNodeRef)
     {
-        if (! userName.equals(authenticationComponent.getSystemUserName()))
+        if (! authenticationComponent.isSystemUserName(userName))
         {
             // decrement usage - add negative delta
             if (logger.isDebugEnabled()) logger.debug("decrementUserUsage: username="+userName+", contentSize="+contentSize+", contentNodeRef="+contentNodeRef);
@@ -390,8 +393,11 @@ public class ContentUsageImpl implements ContentUsageService,
                }
             }
     
-            NodeRef personNodeRef = personService.getPerson(userName);
-            usageService.insertDelta(personNodeRef, (-contentSize));
+            NodeRef personNodeRef = getPerson(userName);
+            if (personNodeRef != null)
+            {
+                usageService.insertDelta(personNodeRef, (-contentSize));
+            }
         }
     }
     
@@ -424,7 +430,7 @@ public class ContentUsageImpl implements ContentUsageService,
     {
         long currentUsage = -1;
         
-        NodeRef personNodeRef = personService.getPerson(userName);     
+        NodeRef personNodeRef = getPerson(userName);
         if (personNodeRef != null)
         {    
             currentUsage = getUserStoredUsage(personNodeRef);
@@ -457,7 +463,7 @@ public class ContentUsageImpl implements ContentUsageService,
      */
     public void setUserQuota(String userName, long currentQuota)
     {
-        NodeRef personNodeRef = personService.getPerson(userName);
+        NodeRef personNodeRef = getPerson(userName);
         if (personNodeRef != null)
         {       
             nodeService.setProperty(personNodeRef, ContentModel.PROP_SIZE_QUOTA, new Long(currentQuota));
@@ -468,7 +474,7 @@ public class ContentUsageImpl implements ContentUsageService,
     {
         Long currentQuota = null;
         
-        NodeRef personNodeRef = personService.getPerson(userName);
+        NodeRef personNodeRef = getPerson(userName);
         if (personNodeRef != null)
         {       
             currentQuota = (Long)nodeService.getProperty(personNodeRef, ContentModel.PROP_SIZE_QUOTA);
@@ -480,5 +486,28 @@ public class ContentUsageImpl implements ContentUsageService,
     public boolean getEnabled()
     {
         return enabled;
+    }
+    
+    private NodeRef getPerson(String userName)
+    {
+        NodeRef personNodeRef = null;
+        try
+        {
+            personNodeRef = personService.getPerson(userName);
+        }
+        catch (RuntimeException e)
+        {
+            // workaround for ETHREEOH-1457 where existing tenants (created using 3.0.1) may have been bootstrapped with creator set 
+            // to super admin (eg. "admin") rather than "System@xxx". This workaround should remain until we patch any such existing tenants
+            if (tenantService.isEnabled())
+            {
+                personNodeRef = null;
+            }
+            else
+            {
+                throw e;
+            }
+        }
+        return personNodeRef;
     }
 }

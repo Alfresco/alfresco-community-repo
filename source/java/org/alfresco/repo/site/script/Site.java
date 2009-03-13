@@ -49,6 +49,7 @@ import org.alfresco.service.cmr.invitation.InvitationSearchCriteria;
 import org.alfresco.service.cmr.invitation.InvitationService;
 import org.alfresco.service.cmr.invitation.InvitationSearchCriteria.InvitationType;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
@@ -450,7 +451,10 @@ public class Site implements Serializable
                             }
                         }
                     }
-                }            
+                }
+                
+                // Make the "admin" the owner of the node
+                serviceRegistry.getOwnableService().setOwner(containerNodeRef, AuthenticationUtil.getAdminUserName());
         
                 return containerNodeRef;
             }

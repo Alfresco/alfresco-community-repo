@@ -205,6 +205,12 @@
                     <default>read_package_item_actions</default>
                 </property>
 
+                <!-- List of "hidden" transitions to consider masking from user -->
+                <property name="bpm:hiddenTransitions">
+                    <type>d:text</type>
+                    <multiple>true</multiple>
+                    <default></default>
+                </property>
             </properties>
 
             <associations>

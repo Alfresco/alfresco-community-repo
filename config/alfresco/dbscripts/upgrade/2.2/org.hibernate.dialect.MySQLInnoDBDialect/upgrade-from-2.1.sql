@@ -964,7 +964,7 @@ ALTER TABLE t_alf_store RENAME TO alf_store;
 -- Modify index and constraint names --
 -- -------------------------------------
 ALTER TABLE alf_attributes DROP INDEX fk_attributes_n_acl, DROP FOREIGN KEY fk_attributes_n_acl;  -- (optional)
-ALTER TABLE alf_attributes DROP INDEX fk_attr_n_acl;  -- (optional)
+ALTER TABLE alf_attributes DROP INDEX fk_attr_n_acl, DROP FOREIGN KEY fk_attr_n_acl;  -- (optional)
 ALTER TABLE alf_attributes
    ADD INDEX fk_alf_attr_acl (acl_id)
 ;

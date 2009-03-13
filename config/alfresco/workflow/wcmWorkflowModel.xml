@@ -157,6 +157,11 @@
 
     <type name="wcmwf:submittedTask">
       <parent>wcmwf:workflowTask</parent>
+      <overrides>
+         <property name="bpm:hiddenTransitions">
+            <default>onsubmit</default>
+         </property>
+      </overrides>
       <mandatory-aspects>
         <aspect>bpm:assignees</aspect>
         <aspect>wcmwf:reviewType</aspect>
@@ -167,6 +172,11 @@
 
     <type name="wcmwf:submittedDirectTask">
       <parent>wcmwf:workflowTask</parent>
+      <overrides>
+         <property name="bpm:hiddenTransitions">
+            <default>onsubmit</default>
+         </property>
+      </overrides>
       <mandatory-aspects>
         <aspect>wcmwf:submission</aspect>
       </mandatory-aspects>

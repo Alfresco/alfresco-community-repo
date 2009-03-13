@@ -128,7 +128,14 @@ public class ShutdownBackstop extends AbstractLifecycleBean
 				// nothing to do here
 			}
 			
-			log.error("Alfresco terminating via Shutdown Backstop");	
+			try 
+			{
+				log.error("Alfresco terminating via Shutdown Backstop");	
+			} 
+			catch (Throwable t)
+			{
+				// Do nothing
+			}
 			
 			try 
 			{
@@ -149,7 +156,14 @@ public class ShutdownBackstop extends AbstractLifecycleBean
 				t.printStackTrace();
         	}
 
-			log.error("Alfresco terminated");
+			try 
+			{
+				log.error("Alfresco terminated");
+			}
+			catch (Throwable t)
+			{
+				// Do nothing
+			}
             System.exit(1);
         }
 		

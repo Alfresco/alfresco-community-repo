@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -37,7 +37,6 @@ import javax.transaction.UserTransaction;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.domain.Store;
 import org.alfresco.repo.node.BaseNodeServiceTest;
 import org.alfresco.repo.node.StoreArchiveMap;
 import org.alfresco.repo.node.cleanup.NodeCleanupRegistry;
@@ -465,7 +464,7 @@ public class DbNodeServiceImplTest extends BaseNodeServiceTest
         
         // Ensure that the archive feature is enabled
         StoreRef archiveStoreRef = ns.createStore("test", getName() + "-" + System.currentTimeMillis());
-        storeArchiveMap.getArchiveMap().put(parentNodeRef.getStoreRef(), archiveStoreRef);
+        storeArchiveMap.put(parentNodeRef.getStoreRef(), archiveStoreRef);
         
         // Delete parent.  Cascade is OFF, so children should be left in their current store.
         ns.deleteNode(parentNodeRef);

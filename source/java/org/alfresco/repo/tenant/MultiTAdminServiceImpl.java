@@ -51,6 +51,8 @@ import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.site.SiteAVMBootstrap;
+import org.alfresco.repo.usage.UserUsageBootstrapJob;
+import org.alfresco.repo.usage.UserUsageTrackingComponent;
 import org.alfresco.repo.workflow.WorkflowDeployer;
 import org.alfresco.service.cmr.admin.RepoAdminService;
 import org.alfresco.service.cmr.attributes.AttributeService;
@@ -344,53 +346,56 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         
         initTenant(tenantDomain, rootContentStoreDir);
 
-        AuthenticationUtil.runAs(new RunAsWork<Object>()
-                {
-                    public Object doWork()
-                    {           
-                        dictionaryComponent.init();
-                        tenantFileContentStore.init();
-                        
-                        // create tenant-specific stores
-                        ImporterBootstrap userImporterBootstrap = (ImporterBootstrap)ctx.getBean("userBootstrap");
-                        bootstrapUserTenantStore(userImporterBootstrap, tenantDomain, tenantAdminRawPassword);
-                        
-                        ImporterBootstrap systemImporterBootstrap = (ImporterBootstrap)ctx.getBean("systemBootstrap");
-                        bootstrapSystemTenantStore(systemImporterBootstrap, tenantDomain);
+        try
+        {
+            // note: runAs would cause auditable property "creator" to be "admin" instead of "System@xxx"
+            AuthenticationUtil.pushAuthentication();
+            AuthenticationUtil.setFullyAuthenticatedUser(getSystemUser(tenantDomain));
+            
+            dictionaryComponent.init();
+            tenantFileContentStore.init();
+            
+            // create tenant-specific stores
+            ImporterBootstrap userImporterBootstrap = (ImporterBootstrap)ctx.getBean("userBootstrap");
+            bootstrapUserTenantStore(userImporterBootstrap, tenantDomain, tenantAdminRawPassword);
+            
+            ImporterBootstrap systemImporterBootstrap = (ImporterBootstrap)ctx.getBean("systemBootstrap");
+            bootstrapSystemTenantStore(systemImporterBootstrap, tenantDomain);
 
-                        // deprecated
-                        ImporterBootstrap versionImporterBootstrap = (ImporterBootstrap)ctx.getBean("versionBootstrap");
-                        bootstrapVersionTenantStore(versionImporterBootstrap, tenantDomain);
-                        
-                        ImporterBootstrap version2ImporterBootstrap = (ImporterBootstrap)ctx.getBean("version2Bootstrap");
-                        bootstrapVersionTenantStore(version2ImporterBootstrap, tenantDomain);
+            // deprecated
+            ImporterBootstrap versionImporterBootstrap = (ImporterBootstrap)ctx.getBean("versionBootstrap");
+            bootstrapVersionTenantStore(versionImporterBootstrap, tenantDomain);
+            
+            ImporterBootstrap version2ImporterBootstrap = (ImporterBootstrap)ctx.getBean("version2Bootstrap");
+            bootstrapVersionTenantStore(version2ImporterBootstrap, tenantDomain);
 
-                        ImporterBootstrap spacesArchiveImporterBootstrap = (ImporterBootstrap)ctx.getBean("spacesArchiveBootstrap");
-                        bootstrapSpacesArchiveTenantStore(spacesArchiveImporterBootstrap, tenantDomain);
-                        
-                        ImporterBootstrap spacesImporterBootstrap = (ImporterBootstrap)ctx.getBean("spacesBootstrap");
-                        bootstrapSpacesTenantStore(spacesImporterBootstrap, tenantDomain);       
-                        
-                        siteAVMBootstrap.bootstrap();
-                        
-                        // notify listeners that tenant has been created & hence enabled
-                        for (TenantDeployer tenantDeployer : tenantDeployers)
-                        {
-                            tenantDeployer.onEnableTenant();
-                        }
-                        
-                        // bootstrap workflows
-                        for (WorkflowDeployer workflowDeployer : workflowDeployers)
-                        {
-                            workflowDeployer.init();
-                        }
-                        
-                        // bootstrap modules (if any)
-                        moduleService.startModules();
-                        
-                        return null;
-                    }                               
-                }, getSystemUser(tenantDomain));
+            ImporterBootstrap spacesArchiveImporterBootstrap = (ImporterBootstrap)ctx.getBean("spacesArchiveBootstrap");
+            bootstrapSpacesArchiveTenantStore(spacesArchiveImporterBootstrap, tenantDomain);
+            
+            ImporterBootstrap spacesImporterBootstrap = (ImporterBootstrap)ctx.getBean("spacesBootstrap");
+            bootstrapSpacesTenantStore(spacesImporterBootstrap, tenantDomain);
+            
+            siteAVMBootstrap.bootstrap();
+            
+            // notify listeners that tenant has been created & hence enabled
+            for (TenantDeployer tenantDeployer : tenantDeployers)
+            {
+                tenantDeployer.onEnableTenant();
+            }
+            
+            // bootstrap workflows
+            for (WorkflowDeployer workflowDeployer : workflowDeployers)
+            {
+                workflowDeployer.init();
+            }
+            
+            // bootstrap modules (if any)
+            moduleService.startModules();
+        }
+        finally
+        {
+            AuthenticationUtil.popAuthentication();
+        }
 
         logger.info("Tenant created: " + tenantDomain);
     }
@@ -419,39 +424,42 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
     {             
         initTenant(tenantDomain, rootContentStoreDir);      
         
-        AuthenticationUtil.runAs(new RunAsWork<Object>()
-                {
-                    public Object doWork()
-                    {           
-                        dictionaryComponent.init();
-                        tenantFileContentStore.init();
-                        
-                        // import tenant-specific stores
-                        importBootstrapUserTenantStore(tenantDomain, directorySource);
-                        importBootstrapSystemTenantStore(tenantDomain, directorySource);
-                        importBootstrapVersionTenantStore(tenantDomain, directorySource);
-                        importBootstrapSpacesArchiveTenantStore(tenantDomain, directorySource);
-                        importBootstrapSpacesModelsTenantStore(tenantDomain, directorySource);
-                        importBootstrapSpacesTenantStore(tenantDomain, directorySource);
-                        
-                        // notify listeners that tenant has been created & hence enabled
-                        for (TenantDeployer tenantDeployer : tenantDeployers)
-                        {
-                            tenantDeployer.onEnableTenant();
-                        }
-                        
-                        // bootstrap workflows
-                        for (WorkflowDeployer workflowDeployer : workflowDeployers)
-                        {
-                            workflowDeployer.init();
-                        }
-                        
-                        // bootstrap modules (if any)
-                        moduleService.startModules();
-                        
-                        return null;
-                    }                               
-                }, getSystemUser(tenantDomain));
+        try
+        {
+            // note: runAs would cause auditable property "creator" to be "admin" instead of "System@xxx"
+            AuthenticationUtil.pushAuthentication();
+            AuthenticationUtil.setFullyAuthenticatedUser(getSystemUser(tenantDomain));
+            
+            dictionaryComponent.init();
+            tenantFileContentStore.init();
+            
+            // import tenant-specific stores
+            importBootstrapUserTenantStore(tenantDomain, directorySource);
+            importBootstrapSystemTenantStore(tenantDomain, directorySource);
+            importBootstrapVersionTenantStore(tenantDomain, directorySource);
+            importBootstrapSpacesArchiveTenantStore(tenantDomain, directorySource);
+            importBootstrapSpacesModelsTenantStore(tenantDomain, directorySource);
+            importBootstrapSpacesTenantStore(tenantDomain, directorySource);
+            
+            // notify listeners that tenant has been created & hence enabled
+            for (TenantDeployer tenantDeployer : tenantDeployers)
+            {
+                tenantDeployer.onEnableTenant();
+            }
+            
+            // bootstrap workflows
+            for (WorkflowDeployer workflowDeployer : workflowDeployers)
+            {
+                workflowDeployer.init();
+            }
+            
+            // bootstrap modules (if any)
+            moduleService.startModules();    
+        }
+        finally
+        {
+            AuthenticationUtil.popAuthentication();
+        }
 
         logger.info("Tenant imported: " + tenantDomain);
     }
@@ -919,11 +927,9 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
    
         spacesImporterBootstrap.bootstrap();
         
-        /* TODO - pending fix for ETHREEOH-283
         // calculate any missing usages
         UserUsageTrackingComponent userUsageTrackingComponent = (UserUsageTrackingComponent)ctx.getBean(UserUsageBootstrapJob.KEY_COMPONENT);
         userUsageTrackingComponent.bootstrapInternal();
-        */
        
         logger.debug("Bootstrapped store: " + tenantService.getBaseName(bootstrapStoreRef));
     }
@@ -968,8 +974,7 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
                 {
                     try
                     {
-                        // switch to admin in order to deploy within context of tenant domain
-                        // assumes each tenant has default "admin" user
+                        // deploy within context of tenant domain
                         AuthenticationUtil.runAs(new RunAsWork<Object>()
                         {
                             public Object doWork()
@@ -1036,8 +1041,7 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
                     {
                         try
                         {
-                            // switch to admin in order to deploy within context of tenant domain
-                            // assumes each tenant has default "admin" user
+                            // undeploy within context of tenant domain
                             AuthenticationUtil.runAs(new RunAsWork<Object>()
                             {
                                 public Object doWork()

@@ -748,7 +748,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         else
         {
            StoreRef storeRef = nodeRef.getStoreRef();
-           archiveStoreRef = storeArchiveMap.getArchiveMap().get(storeRef);
+           archiveStoreRef = storeArchiveMap.get(storeRef);
            // get the type and check if we need archiving
            TypeDefinition typeDef = dictionaryService.getType(nodeTypeQName);
            if (typeDef == null || !typeDef.isArchive() || archiveStoreRef == null)
@@ -2202,7 +2202,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     
     public NodeRef getStoreArchiveNode(StoreRef storeRef)
     {
-        StoreRef archiveStoreRef = storeArchiveMap.getArchiveMap().get(storeRef);
+        StoreRef archiveStoreRef = storeArchiveMap.get(storeRef);
         if (archiveStoreRef == null)
         {
             // no mapping for the given store

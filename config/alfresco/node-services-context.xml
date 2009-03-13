@@ -87,6 +87,9 @@
             <entry key="workspace://SpacesStore"><value>archive://SpacesStore</value></entry>
          </map>
       </property>
+      <property name="tenantService">
+         <ref bean="tenantService" />
+      </property>
    </bean>
 
    <!-- Wrapper component to handle restore and purge of archived nodes -->

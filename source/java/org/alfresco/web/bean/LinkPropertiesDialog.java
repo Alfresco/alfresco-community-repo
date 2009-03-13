@@ -43,6 +43,7 @@ import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.ui.common.ReportedException;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.Utils.URLMode;
 
@@ -220,6 +221,7 @@ public class LinkPropertiesDialog extends BaseDialogBean
          Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
                context, Repository.ERROR_GENERIC), e.getMessage()), e);
          outcome = null;
+         ReportedException.throwIfNecessary(e);
       }
       
       return outcome;

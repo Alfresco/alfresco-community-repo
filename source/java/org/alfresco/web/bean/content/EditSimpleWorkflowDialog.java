@@ -38,6 +38,7 @@ import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.actions.handlers.SimpleWorkflowHandler;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.repository.Node;
+import org.alfresco.web.ui.common.ReportedException;
 import org.alfresco.web.ui.common.Utils;
 
 public class EditSimpleWorkflowDialog extends BaseDialogBean
@@ -137,6 +138,7 @@ public class EditSimpleWorkflowDialog extends BaseDialogBean
         catch (Throwable e)
         {
             Utils.addErrorMessage(MessageFormat.format(Application.getMessage(FacesContext.getCurrentInstance(), MSG_ERROR_UPDATE_SIMPLEWORKFLOW), e.getMessage()), e);
+            ReportedException.throwIfNecessary(e);
         }
 
         return outcome;

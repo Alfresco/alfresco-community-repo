@@ -49,6 +49,7 @@ import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.repository.MapNode;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.ui.common.ReportedException;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIActionLink;
 import org.apache.commons.logging.Log;
@@ -106,6 +107,7 @@ public class DeleteUserDialog extends BaseDialogBean
             catch (AuthenticationException authErr)
             {
                Utils.addErrorMessage(Application.getMessage(context, ERROR_USER_DELETE));
+               ReportedException.throwIfNecessary(authErr);
             }
          }
 
@@ -119,6 +121,7 @@ public class DeleteUserDialog extends BaseDialogBean
       {
          // rollback the transaction
          Utils.addErrorMessage(MessageFormat.format(Application.getMessage(context, ERROR_DELETE), e.getMessage()), e);
+         ReportedException.throwIfNecessary(e);
       }
 
       return outcome;

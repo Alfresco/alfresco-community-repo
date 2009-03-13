@@ -47,6 +47,7 @@ import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.ui.common.ReportedException;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.IBreadcrumbHandler;
 import org.alfresco.web.ui.common.component.data.UIRichList;
@@ -406,6 +407,7 @@ public class DeleteCategoryDialog extends BaseDialogBean
             {
                 Utils.addErrorMessage(MessageFormat.format(Application.getMessage(FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), err.getMessage()), err);
                 outcome = null;
+                ReportedException.throwIfNecessary(err);
             }
         }
 

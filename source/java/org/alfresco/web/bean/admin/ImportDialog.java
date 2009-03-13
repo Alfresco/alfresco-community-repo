@@ -50,6 +50,7 @@ import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.FileUploadBean;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.ui.common.ReportedException;
 import org.alfresco.web.ui.common.Utils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -139,6 +140,7 @@ public class ImportDialog extends BaseDialogBean
                Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
                      FacesContext.getCurrentInstance(), MSG_ERROR), e.toString()), e);
                outcome = null;
+               ReportedException.throwIfNecessary(e);
             }
          }
          else

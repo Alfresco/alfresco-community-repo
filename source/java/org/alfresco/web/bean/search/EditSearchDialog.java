@@ -39,6 +39,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.ui.common.ReportedException;
 import org.alfresco.web.ui.common.Utils;
 
 public class EditSearchDialog extends AdvancedSearchDialog
@@ -110,6 +111,7 @@ public class EditSearchDialog extends AdvancedSearchDialog
                 Utils.addErrorMessage(MessageFormat.format(Application.getMessage(newContext, MSG_ERROR_SAVE_SEARCH), e.getMessage()), e);
                 outcome = null;
                 this.isFinished = false;
+                ReportedException.throwIfNecessary(e);
             }
         }
 

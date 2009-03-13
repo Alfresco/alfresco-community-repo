@@ -30,6 +30,7 @@ import javax.faces.context.FacesContext;
 
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.ui.common.ReportedException;
 import org.alfresco.web.ui.common.Utils;
 
 public class TrashcanDeleteAllItemsDialog extends TrashcanDialog
@@ -53,6 +54,7 @@ public class TrashcanDeleteAllItemsDialog extends TrashcanDialog
         catch (Throwable err)
         {
             Utils.addErrorMessage(MessageFormat.format(Application.getMessage(context, Repository.ERROR_GENERIC), err.getMessage()), err);
+            ReportedException.throwIfNecessary(err);
         }
         finally
         {

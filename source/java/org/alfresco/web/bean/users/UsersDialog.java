@@ -56,6 +56,7 @@ import org.alfresco.web.bean.repository.MapNode;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.NodePropertyResolver;
 import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.ui.common.ReportedException;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIActionLink;
 import org.alfresco.web.ui.common.component.UIListItem;
@@ -238,6 +239,7 @@ public class UsersDialog extends BaseDialogBean implements IContextListener, Cha
             catch (AuthenticationException authErr)
             {
                Utils.addErrorMessage(Application.getMessage(context, ERROR_USER_DELETE));
+               ReportedException.throwIfNecessary(authErr);
             }
          }
          
@@ -252,6 +254,7 @@ public class UsersDialog extends BaseDialogBean implements IContextListener, Cha
          // rollback the transaction
          Utils.addErrorMessage(MessageFormat.format(Application.getMessage(context,
                ERROR_DELETE), e.getMessage()), e);
+         ReportedException.throwIfNecessary(e);
       }
       
       return DIALOG_CLOSE;

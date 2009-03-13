@@ -66,6 +66,7 @@ import org.alfresco.web.bean.ml.SingleEditionBean;
 import org.alfresco.web.bean.repository.MapNode;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.ui.common.ReportedException;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.Utils.URLMode;
 import org.alfresco.web.ui.common.component.UIActionLink;
@@ -525,6 +526,7 @@ public class DocumentDetailsDialog extends BaseDetailsBean implements  Navigatio
       {
          Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
                FacesContext.getCurrentInstance(), MSG_ERROR_ASPECT_CLASSIFY), e.getMessage()), e);
+         ReportedException.throwIfNecessary(e);
       }
    }
 
@@ -562,6 +564,7 @@ public class DocumentDetailsDialog extends BaseDetailsBean implements  Navigatio
       {
          Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
                FacesContext.getCurrentInstance(), MSG_ERROR_ASPECT_VERSIONING), e.getMessage()), e);
+         ReportedException.throwIfNecessary(e);
       }
    }
 
@@ -596,6 +599,7 @@ public class DocumentDetailsDialog extends BaseDetailsBean implements  Navigatio
       {
          Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
                fc, Repository.ERROR_GENERIC), e.getMessage()), e);
+         ReportedException.throwIfNecessary(e);
       }
    }
 
@@ -645,6 +649,7 @@ public class DocumentDetailsDialog extends BaseDetailsBean implements  Navigatio
       {
          Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
                FacesContext.getCurrentInstance(), MSG_ERROR_ASPECT_INLINEEDITABLE), e.getMessage()), e);
+         ReportedException.throwIfNecessary(e);
       }
 
       // force recreation of the details view - this means the properties sheet component will reinit

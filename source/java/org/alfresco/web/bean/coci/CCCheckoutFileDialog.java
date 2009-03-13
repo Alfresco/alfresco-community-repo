@@ -37,6 +37,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.DownloadContentServlet;
 import org.alfresco.web.bean.repository.Node;
+import org.alfresco.web.ui.common.ReportedException;
 import org.alfresco.web.ui.common.Utils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -156,6 +157,7 @@ public class CCCheckoutFileDialog extends CheckinCheckoutDialog
             catch (Throwable err)
             {
                 Utils.addErrorMessage(Application.getMessage(context, MSG_ERROR_CHECKOUT) + err.getMessage(), err);
+                ReportedException.throwIfNecessary(err);
             }
         }
         else

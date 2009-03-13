@@ -59,6 +59,7 @@ import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.spaces.CreateSpaceWizard;
 import org.alfresco.web.bean.wizard.BaseWizardBean;
 import org.alfresco.web.config.ClientConfigElement;
+import org.alfresco.web.ui.common.ReportedException;
 import org.alfresco.web.ui.common.Utils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -786,7 +787,7 @@ public class CreateUserWizard extends BaseWizardBean
     }
 
     @Override
-    protected String finishImpl(FacesContext context, String outcome) throws Exception
+    protected String finishImpl(FacesContext context, String outcome) throws Throwable
     {
         // TODO: implement create new Person object from specified details
         try
@@ -840,7 +841,7 @@ public class CreateUserWizard extends BaseWizardBean
                 props.put(ContentModel.PROP_PRESENCEUSERNAME, this.presenceUsername);
 
                 // create the node to represent the Person
-                NodeRef newPerson = getPersonService().createPerson(props);
+                getPersonService().createPerson(props);
 
                 // ensure the user can access their own Person object
                 // getPermissionService().setPermission(newPerson, this.userName, getPermissionService().getAllPermission(), true);
@@ -871,11 +872,13 @@ public class CreateUserWizard extends BaseWizardBean
         {
             Utils.addErrorMessage(MessageFormat.format(Application.getMessage(FacesContext.getCurrentInstance(), ERROR), e.getMessage()), e);
             outcome = null;
+            this.isFinished = false;
+            ReportedException.throwIfNecessary(e);
         }
         
         if (outcome == null)
         {
-            this.isFinished = false;
+            this.isFinished = false; 
         }
         
         return outcome;

@@ -31,6 +31,7 @@ import javax.faces.context.FacesContext;
 import org.alfresco.model.ContentModel;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.ui.common.ReportedException;
 import org.alfresco.web.ui.common.Utils;
 
 public class ChangePasswordDialog extends UsersDialog
@@ -79,6 +80,7 @@ public class ChangePasswordDialog extends UsersDialog
             {
                 outcome = null;
                 Utils.addErrorMessage(MessageFormat.format(Application.getMessage(newContext, Repository.ERROR_GENERIC), e.getMessage()), e);
+                ReportedException.throwIfNecessary(e);
             }
         }
         else

@@ -44,7 +44,6 @@ import javax.faces.el.EvaluationException;
 import javax.faces.el.MethodBinding;
 import javax.faces.event.AbortProcessingException;
 import javax.faces.event.ActionEvent;
-import javax.transaction.UserTransaction;
 
 import org.alfresco.config.ConfigElement;
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -57,7 +56,6 @@ import org.alfresco.jlan.server.filesys.FilesystemsConfigSection;
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
-import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.webdav.WebDAVServlet;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.model.FileFolderService;
@@ -821,20 +819,6 @@ public final class Utils extends StringUtils
     */
    public static void addErrorMessage(String msg, Throwable err)
    {
-      UserTransaction txn = RetryingTransactionHelper.getActiveUserTransaction();
-      if (txn != null)
-      {
-          // We're in a transaction and need to ensure that we ONLY rollback
-          try
-          {
-              txn.setRollbackOnly();
-          }
-          catch (Throwable e)
-          {
-              // Ignore
-          }
-      }
-       
       FacesContext context = FacesContext.getCurrentInstance( );
       FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_ERROR, msg, msg);
       context.addMessage(null, facesMsg);

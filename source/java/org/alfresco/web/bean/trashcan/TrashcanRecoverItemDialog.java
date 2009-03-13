@@ -32,6 +32,7 @@ import javax.faces.context.FacesContext;
 import org.alfresco.repo.node.archive.RestoreNodeReport;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Node;
+import org.alfresco.web.ui.common.ReportedException;
 
 public class TrashcanRecoverItemDialog extends TrashcanDialog
 {
@@ -117,6 +118,7 @@ public class TrashcanRecoverItemDialog extends TrashcanDialog
                 String msg = MessageFormat.format(Application.getMessage(fc, MSG_RECOVERED_ITEM_FAILURE), item.getName(), reason);
                 FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_ERROR, msg, msg);
                 fc.addMessage(null, facesMsg);
+                ReportedException.throwIfNecessary(err);
             }
         }
 

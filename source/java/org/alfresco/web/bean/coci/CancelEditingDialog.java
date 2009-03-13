@@ -29,6 +29,7 @@ import javax.faces.context.FacesContext;
 import org.alfresco.model.ContentModel;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Node;
+import org.alfresco.web.ui.common.ReportedException;
 import org.alfresco.web.ui.common.Utils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -104,6 +105,7 @@ public class CancelEditingDialog extends CheckinCheckoutDialog
             catch (Throwable err)
             {
                 Utils.addErrorMessage(Application.getMessage(FacesContext.getCurrentInstance(), MSG_ERROR_CANCELCHECKOUT) + err.getMessage(), err);
+                ReportedException.throwIfNecessary(err);
             }
         }
         else

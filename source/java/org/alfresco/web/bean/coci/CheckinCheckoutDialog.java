@@ -57,6 +57,7 @@ import org.alfresco.web.bean.NavigationBean;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.ui.common.ReportedException;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIActionLink;
 import org.apache.commons.logging.Log;
@@ -414,6 +415,7 @@ public class CheckinCheckoutDialog extends BaseDialogBean
             Utils.addErrorMessage(Application.getMessage(
                   FacesContext.getCurrentInstance(), MSG_ERROR_UPDATE) + err.getMessage());
             outcome = null;
+            ReportedException.throwIfNecessary(err);
          }
       }
       else
@@ -446,6 +448,7 @@ public class CheckinCheckoutDialog extends BaseDialogBean
          {
             Utils.addErrorMessage(Application.getMessage(
                   FacesContext.getCurrentInstance(), MSG_ERROR_CANCELCHECKOUT) + err.getMessage(), err);
+            ReportedException.throwIfNecessary(err);
          }
       }
       else
@@ -538,6 +541,7 @@ public class CheckinCheckoutDialog extends BaseDialogBean
          {
             Utils.addErrorMessage(Application.getMessage(
                   FacesContext.getCurrentInstance(), MSG_ERROR_CHECKIN) + err.getMessage(), err);
+            ReportedException.throwIfNecessary(err);
          }
       }
       else
@@ -591,6 +595,7 @@ public class CheckinCheckoutDialog extends BaseDialogBean
          {
             Utils.addErrorMessage(Application.getMessage(
                   FacesContext.getCurrentInstance(), MSG_ERROR_UPDATE) + err.getMessage(), err);
+            ReportedException.throwIfNecessary(err);
          }
       }
       else

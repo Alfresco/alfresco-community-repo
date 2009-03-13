@@ -35,6 +35,7 @@ import org.alfresco.web.bean.TemplateSupportBean;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
+import org.alfresco.web.ui.common.ReportedException;
 import org.alfresco.web.ui.common.Utils;
 
 public class ApplyDocTemplateDialog extends BaseDialogBean
@@ -73,6 +74,7 @@ public class ApplyDocTemplateDialog extends BaseDialogBean
             catch (Exception e)
             {
                 Utils.addErrorMessage(MessageFormat.format(Application.getMessage(FacesContext.getCurrentInstance(), Repository.ERROR_GENERIC), e.getMessage()), e);
+                ReportedException.throwIfNecessary(e);
             }
         }
         return DIALOG_CLOSE;

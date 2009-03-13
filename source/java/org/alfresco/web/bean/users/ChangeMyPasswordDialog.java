@@ -28,6 +28,7 @@ import javax.faces.context.FacesContext;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.web.app.Application;
+import org.alfresco.web.ui.common.ReportedException;
 import org.alfresco.web.ui.common.Utils;
 
 public class ChangeMyPasswordDialog extends UsersDialog
@@ -78,6 +79,7 @@ public class ChangeMyPasswordDialog extends UsersDialog
                 outcome = null;
                 Utils.addErrorMessage(Application.getMessage(FacesContext.getCurrentInstance(), 
                          MSG_ERROR_INCORRECT_OLD_PASSWORD));
+                ReportedException.throwIfNecessary(e);
             }
         }
         else

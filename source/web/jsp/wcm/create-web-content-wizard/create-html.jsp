@@ -66,7 +66,7 @@
 
     tinyMCE.init({
       theme : "advanced",
-      language : "<%=request.getLocale().getLanguage()%>",
+      language : "${pageContext.request.locale.language}",
       mode : "exact",
       elements : "editor",
       save_callback : "saveContent",

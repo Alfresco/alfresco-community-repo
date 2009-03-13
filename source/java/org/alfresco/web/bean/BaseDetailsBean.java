@@ -54,6 +54,7 @@ import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.workflow.WorkflowUtil;
+import org.alfresco.web.ui.common.ReportedException;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.Utils.URLMode;
 import org.alfresco.web.ui.common.component.UIActionLink;
@@ -496,6 +497,7 @@ public abstract class BaseDetailsBean extends BaseDialogBean
       {
          Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
                FacesContext.getCurrentInstance(), MSG_ERROR_UPDATE_SIMPLEWORKFLOW), e.getMessage()), e);
+         ReportedException.throwIfNecessary(e);
       }
       
       return outcome;
@@ -563,6 +565,7 @@ public abstract class BaseDetailsBean extends BaseDialogBean
       {
          Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
                FacesContext.getCurrentInstance(), MSG_ERROR_WORKFLOW_APPROVE), e.getMessage()), e);
+         ReportedException.throwIfNecessary(e);
       }
    }
    
@@ -629,6 +632,7 @@ public abstract class BaseDetailsBean extends BaseDialogBean
          // rollback the transaction
          Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
                FacesContext.getCurrentInstance(), MSG_ERROR_WORKFLOW_REJECT), e.getMessage()), e);
+         ReportedException.throwIfNecessary(e);
       }
    }
    
@@ -720,6 +724,7 @@ public abstract class BaseDetailsBean extends BaseDialogBean
       {
          Utils.addErrorMessage(MessageFormat.format(Application.getMessage(
                fc, Repository.ERROR_GENERIC), e.getMessage()), e);
+         ReportedException.throwIfNecessary(e);
       }
    }
    

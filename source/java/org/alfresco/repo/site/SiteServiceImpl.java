@@ -648,7 +648,17 @@ public class SiteServiceImpl implements SiteService, SiteModel
             if (group.startsWith(GROUP_SITE_PREFIX))
             {
                 int roleIndex = group.lastIndexOf('_');
-                siteNames.add(group.substring(GROUP_SITE_PREFIX_LENGTH, roleIndex));
+                String siteName;
+                if (roleIndex + 1 <= GROUP_SITE_PREFIX_LENGTH)
+                {
+                    // There is no role associated
+                    siteName = group.substring(GROUP_SITE_PREFIX_LENGTH);
+                }
+                else
+                {
+                    siteName = group.substring(GROUP_SITE_PREFIX_LENGTH, roleIndex);
+                }
+                siteNames.add(siteName);
             }
         }
         

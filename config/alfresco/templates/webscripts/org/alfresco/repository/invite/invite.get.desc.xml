@@ -6,4 +6,5 @@
    <format default="json"/>
    <authentication>user</authentication>
    <transaction>required</transaction>
+   <lifecycle>deprecated</lifecycle>
 </webscript>

@@ -25,14 +25,24 @@
 package org.alfresco.repo.web.scripts.invite;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.repo.invitation.InvitationSearchCriteriaImpl;
+import org.alfresco.service.cmr.invitation.InvitationSearchCriteria;
 import org.alfresco.repo.invitation.WorkflowModelNominatedInvitation;
 import org.alfresco.repo.invitation.site.InviteHelper;
 import org.alfresco.repo.invitation.site.InviteInfo;
+import org.alfresco.repo.template.TemplateNode;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.invitation.Invitation;
+import org.alfresco.service.cmr.invitation.InvitationService;
+import org.alfresco.service.cmr.invitation.NominatedInvitation;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
@@ -80,6 +90,7 @@ public class Invites extends DeclarativeWebScript
     private WorkflowService workflowService;
     private ServiceRegistry serviceRegistry;
     private SiteService siteService;
+    private InvitationService invitationService;
 
     /**
      * Set the workflow service property
@@ -99,6 +110,14 @@ public class Invites extends DeclarativeWebScript
     public void setSiteService(SiteService siteService) {
         this.siteService = siteService;
     }
+    
+	public void setInvitationService(InvitationService invitationService) {
+		this.invitationService = invitationService;
+	}
+
+	public InvitationService getInvitationService() {
+		return invitationService;
+	}
     
 	/*
      * (non-Javadoc)
@@ -158,10 +177,9 @@ public class Invites extends DeclarativeWebScript
                     "At least one of the following URL request parameters must be provided in URL "
                             + "'inviterUserName', 'inviteeUserName', 'siteShortName' or 'inviteId'");
         }
-
-        // query for workflow tasks by given parameters
-        // create workflow task query
-        WorkflowTaskQuery wfTaskQuery = new WorkflowTaskQuery();
+        
+        // InviteInfo List to place onto model
+        List<InviteInfo> inviteInfoList = new ArrayList<InviteInfo>();
 
         // if 'inviteId' has been provided then set that as the workflow query
         // process ID
@@ -169,7 +187,8 @@ public class Invites extends DeclarativeWebScript
         // query properties
         if (inviteIdProvided)
         {
-            wfTaskQuery.setProcessId(inviteId);
+        	NominatedInvitation invitation = (NominatedInvitation)invitationService.getInvitation(inviteId);
+        	inviteInfoList.add(toInviteInfo(invitation));
         }
         else
         // 'inviteId' has not been provided, so create the query properties from
@@ -181,62 +200,37 @@ public class Invites extends DeclarativeWebScript
         // properties will be set
         // at this point
         {
-            // workflow query properties
-            HashMap<QName, Object> wfQueryProps = new HashMap<QName, Object>(3,
-                    1.0f);
+        	InvitationSearchCriteriaImpl criteria = new InvitationSearchCriteriaImpl();  
+        	criteria.setInvitationType(InvitationSearchCriteria.InvitationType.NOMINATED);
+        	criteria.setResourceType(Invitation.ResourceType.WEB_SITE);
+
+
             if (inviterUserNameProvided)
             {
-                wfQueryProps.put(WorkflowModelNominatedInvitation.WF_PROP_INVITER_USER_NAME,
-                        inviterUserName);
+            	criteria.setInviter(inviterUserName);
+
             }
             if (inviteeUserNameProvided)
             {
-                wfQueryProps.put(WorkflowModelNominatedInvitation.WF_PROP_INVITEE_USER_NAME,
-                        inviteeUserName);
+            	criteria.setInvitee(inviteeUserName);
+
             }
             if (siteShortNameProvided)
             {
-                wfQueryProps.put(WorkflowModelNominatedInvitation.WF_PROP_RESOURCE_NAME,
-                        siteShortName);
+            	criteria.setResourceName(siteShortName);
+
             }
-
-            // set workflow task query parameters
-            wfTaskQuery.setProcessCustomProps(wfQueryProps);
-        }
-
-        // query only active workflows
-        wfTaskQuery.setActive(Boolean.TRUE);
-
-        // pick up the start task
-        wfTaskQuery.setTaskState(WorkflowTaskState.IN_PROGRESS);
-        wfTaskQuery.setTaskName(WorkflowModelNominatedInvitation.WF_INVITE_TASK_INVITE_PENDING);
-
-        // set process name to "wf:invite" so that only tasks associated with
-        // invite workflow instances
-        // are returned by query
-        wfTaskQuery.setProcessName(WorkflowModelNominatedInvitation.WF_PROCESS_INVITE);
-
-        // query for invite workflow tasks
-        List<WorkflowTask> wf_invite_tasks = this.workflowService
-                .queryTasks(wfTaskQuery);
-
-        // InviteInfo List to place onto model
-        List<InviteInfo> inviteInfoList = new ArrayList<InviteInfo>();
-
-        // Put InviteInfo objects (containing workflow path properties
-        // wf:inviterUserName, wf:inviteeUserName, wf:siteShortName,
-        // and invite id property (from workflow instance id))
-        // onto model for each invite workflow task returned by the query
-        for (WorkflowTask workflowTask : wf_invite_tasks)
-        {
-            // get workflow instance (ID) that pendingInvite task (in query result set)
-            // belongs to, and get startTask associated with the same workflow instance -
-            // to create a InviteInfo instance from that startTask's properties
             
-            String workflowId = workflowTask.path.instance.id;
-            WorkflowTask startInvite = InviteHelper.findInviteStartTask(workflowId, workflowService);
-            InviteInfo inviteInfo = InviteHelper.getPendingInviteInfo(startInvite, serviceRegistry, siteService);
-            inviteInfoList.add(inviteInfo);
+        	List<Invitation> invitations = invitationService.searchInvitation(criteria);
+
+        	// Put InviteInfo objects (containing workflow path properties
+        	// wf:inviterUserName, wf:inviteeUserName, wf:siteShortName,
+        	// and invite id property (from workflow instance id))
+        	// onto model for each invite workflow task returned by the query
+        	for (Invitation invitation : invitations)
+        	{
+            	inviteInfoList.add(toInviteInfo((NominatedInvitation)invitation));
+        	}
         }
 
         // put the list of invite infos onto model to be passed onto template
@@ -245,5 +239,44 @@ public class Invites extends DeclarativeWebScript
 
         return model;
     }
+    
 
+    
+    private InviteInfo toInviteInfo(NominatedInvitation invitation)
+    {
+        final PersonService personService = serviceRegistry.getPersonService();
+        
+        // get the site info
+        SiteInfo siteInfo = siteService.getSite(invitation.getResourceName());
+        String invitationStatus = InviteInfo.INVITATION_STATUS_PENDING;
+        
+        NodeRef inviterRef = personService.getPerson(invitation.getInviterUserName());
+        TemplateNode inviterPerson = null;
+        if (inviterRef != null)
+        {
+            inviterPerson = new TemplateNode(inviterRef, serviceRegistry, null); 
+        }
+        
+        // fetch the person node for the invitee
+        NodeRef inviteeRef = personService.getPerson(invitation.getInviteeUserName());
+        TemplateNode inviteePerson = null;
+        if (inviteeRef != null)
+        {
+        	inviteePerson = new TemplateNode(inviteeRef, serviceRegistry, null);
+        }
+        
+        InviteInfo ret = new InviteInfo(invitationStatus, 
+        		invitation.getInviterUserName(), 
+        		inviterPerson,
+         		invitation.getInviteeUserName(), 
+         		inviteePerson, 
+         		invitation.getRoleName(),
+         		invitation.getResourceName(), 
+         		siteInfo, 
+         		invitation.getSentInviteDate(),
+         		invitation.getInviteId()
+         		);
+         
+         return ret;
+    }
 }

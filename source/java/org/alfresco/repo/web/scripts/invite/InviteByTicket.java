@@ -31,7 +31,15 @@ import org.alfresco.repo.invitation.WorkflowModelNominatedInvitation;
 import org.alfresco.repo.invitation.site.InviteHelper;
 import org.alfresco.repo.invitation.site.InviteInfo;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.template.TemplateNode;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.invitation.Invitation;
+import org.alfresco.service.cmr.invitation.InvitationExceptionNotFound;
+import org.alfresco.service.cmr.invitation.InvitationService;
+import org.alfresco.service.cmr.invitation.NominatedInvitation;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
@@ -54,6 +62,7 @@ public class InviteByTicket extends DeclarativeWebScript
     private WorkflowService workflowService;
     private ServiceRegistry serviceRegistry;
     private SiteService siteService;
+    private InvitationService invitationService;
     
     /**
      * Set the workflow service property
@@ -96,26 +105,81 @@ public class InviteByTicket extends DeclarativeWebScript
         // authenticate as system for the rest of the webscript
         AuthenticationUtil.setRunAsUserSystem();
         
-        // find the workflow for the given id
-        WorkflowTask workflowTask = InviteHelper.findInviteStartTask(inviteId, workflowService);
-        if (workflowTask == null)
+        try 
         {
-            throw new WebScriptException(Status.STATUS_NOT_FOUND,
-                    "No invite found for given id");
+        	Invitation invitation = invitationService.getInvitation(inviteId);
+        	
+        	if (invitation instanceof NominatedInvitation)
+        	{
+        		NominatedInvitation theInvitation = (NominatedInvitation)invitation;
+        		String ticket = theInvitation.getTicket();
+        		if (ticket == null || (! ticket.equals(inviteTicket)))
+        		{
+        			throw new WebScriptException(Status.STATUS_NOT_FOUND,
+        			"Ticket mismatch");
+        		}
+                // return the invite info
+                model.put("invite", toInviteInfo(theInvitation));
+                return model;
+        	}
+        	else
+        	{
+        		// Not a nominated invitation
+    			throw new WebScriptException(Status.STATUS_FORBIDDEN,
+    			"Not a nominated invitation");
+        	}
         }
-
-        // check whether tickets match, throw error otherwise
-        String ticket = (String) workflowTask.properties.get(
-                WorkflowModelNominatedInvitation.WF_PROP_INVITE_TICKET);
-        if (ticket == null || (! ticket.equals(inviteTicket)))
+        catch (InvitationExceptionNotFound nfe)
         {
             throw new WebScriptException(Status.STATUS_NOT_FOUND,
-            "Ticket mismatch");
+            "No invite found for given id");
+        }
+    }
+
+	public void setInvitationService(InvitationService invitationService) {
+		this.invitationService = invitationService;
+	}
+
+	public InvitationService getInvitationService() {
+		return invitationService;
+	}
+	
+    private InviteInfo toInviteInfo(NominatedInvitation invitation)
+    {
+        final PersonService personService = serviceRegistry.getPersonService();
+        
+        // get the site info
+        SiteInfo siteInfo = siteService.getSite(invitation.getResourceName());
+        String invitationStatus = InviteInfo.INVITATION_STATUS_PENDING;
+        
+        NodeRef inviterRef = personService.getPerson(invitation.getInviterUserName());
+        TemplateNode inviterPerson = null;
+        if (inviterRef != null)
+        {
+            inviterPerson = new TemplateNode(inviterRef, serviceRegistry, null); 
         }
         
-        // return the invite info
-        InviteInfo inviteInfo = InviteHelper.getPendingInviteInfo(workflowTask, serviceRegistry, siteService);
-        model.put("invite", inviteInfo);
-        return model;
+        // fetch the person node for the invitee
+        NodeRef inviteeRef = personService.getPerson(invitation.getInviteeUserName());
+        TemplateNode inviteePerson = null;
+        if (inviteeRef != null)
+        {
+        	inviteePerson = new TemplateNode(inviteeRef, serviceRegistry, null);
+        }
+        
+        InviteInfo ret = new InviteInfo(invitationStatus, 
+        		invitation.getInviterUserName(), 
+        		inviterPerson,
+         		invitation.getInviteeUserName(), 
+         		inviteePerson, 
+         		invitation.getRoleName(),
+         		invitation.getResourceName(), 
+         		siteInfo, 
+         		invitation.getSentInviteDate(),
+         		invitation.getInviteId()
+         		);
+         
+         return ret;
     }
+
 }

@@ -31,6 +31,10 @@ import org.alfresco.repo.invitation.WorkflowModelNominatedInvitation;
 import org.alfresco.repo.invitation.site.InviteHelper;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.service.cmr.invitation.Invitation;
+import org.alfresco.service.cmr.invitation.InvitationExceptionForbidden;
+import org.alfresco.service.cmr.invitation.InvitationExceptionUserError;
+import org.alfresco.service.cmr.invitation.InvitationService;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.web.scripts.DeclarativeWebScript;
@@ -58,7 +62,7 @@ public class InviteResponse extends DeclarativeWebScript
 
     // properties for services
     private WorkflowService workflowService;
-    
+    private InvitationService invitationService;
     private TenantService tenantService;
 
     /**
@@ -129,33 +133,36 @@ public class InviteResponse extends DeclarativeWebScript
         
         String inviteId = req.getServiceMatch().getTemplateVars().get("inviteId");
         String inviteTicket = req.getServiceMatch().getTemplateVars().get("inviteTicket");
-        
-        // fetch the start task - it might not exist if the workflow has been finished/cancelled already
-        WorkflowTask inviteStartTask = InviteHelper.findInviteStartTask(inviteId, workflowService);
-        if (inviteStartTask == null)
-        {
-            throw new WebScriptException(Status.STATUS_NOT_FOUND,
-                    "No invite workflow for given id found"); 
-        }
-        
-        // check the ticket for a match
-        String ticket = (String) inviteStartTask.properties.get(WorkflowModelNominatedInvitation.WF_PROP_INVITE_TICKET);
-        if (ticket == null || (! ticket.equals(inviteTicket)))
-        {
-            throw new WebScriptException(Status.STATUS_NOT_FOUND,
-                "Response to invite has supplied an invalid ticket. The response to the "
-                    + "invitation could thus not be processed"); 
-        }
-        
+               
         // process response
         String action = req.getServiceMatch().getTemplateVars().get("action");
         if (action.equals("accept"))
         {
-            acceptInvite(model, inviteId, inviteStartTask);
+        	try
+        	{
+        		Invitation invitation = invitationService.accept(inviteId, inviteTicket);
+                // add model properties for template to render
+                model.put(MODEL_PROP_KEY_RESPONSE, RESPONSE_ACCEPT);
+                model.put(MODEL_PROP_KEY_SITE_SHORT_NAME, invitation.getResourceName());
+        	}
+            catch (InvitationExceptionForbidden fe)
+            {
+        		throw new WebScriptException(Status.STATUS_FORBIDDEN, fe.toString());            
+            }
         }
         else if (action.equals("reject"))
         {
-            rejectInvite(model, inviteId, inviteStartTask);
+        	try 
+        	{
+        		Invitation invitation = invitationService.reject(inviteId, "Rejected");
+                // add model properties for template to render
+                model.put(MODEL_PROP_KEY_RESPONSE, RESPONSE_REJECT);
+                model.put(MODEL_PROP_KEY_SITE_SHORT_NAME, invitation.getResourceName());
+        	}
+            catch (InvitationExceptionForbidden fe)
+            {
+        		throw new WebScriptException(Status.STATUS_FORBIDDEN, fe.toString());            
+            }  
         }
         else
         {
@@ -167,57 +174,11 @@ public class InviteResponse extends DeclarativeWebScript
         return model;
     }
 
-    /**
-     * Processes 'accept invite' response from invitee
-     * 
-     * @param model
-     *            model to add objects to, which will be passed to the template
-     *            for rendering
-     * @param inviteId
-     *            ID of invite
-     * @param inviteStartTask
-     *            wf:inviteToSiteTask instance containing the invite parameters the
-     *            invite workflow instance (it belongs to) was started with 
-     */
-    private void acceptInvite(Map<String, Object> model, String inviteId, WorkflowTask inviteStartTask)
-    {
-        String siteShortName = (String) inviteStartTask.properties.get(
-                WorkflowModelNominatedInvitation.WF_PROP_RESOURCE_NAME);
-        
-        // complete the wf:invitePendingTask along the 'accept' transition because the invitation has been accepted
-        InviteHelper.completeInviteTask(inviteId, WorkflowModelNominatedInvitation.WF_INVITE_TASK_INVITE_PENDING,
-                WorkflowModelNominatedInvitation.WF_TRANSITION_ACCEPT, this.workflowService);
-        
-        // add model properties for template to render
-        model.put(MODEL_PROP_KEY_RESPONSE, RESPONSE_ACCEPT);
-        model.put(MODEL_PROP_KEY_SITE_SHORT_NAME, siteShortName);
-    }
+	public void setInvitationService(InvitationService invitationService) {
+		this.invitationService = invitationService;
+	}
 
-    /**
-     * Processes 'reject' invite response from invitee
-     * 
-     * @param model
-     *            model to add objects to, which will be passed to the template
-     *            for rendering
-     * @param inviteId
-     *            ID of invite
-     * @param inviteeUserName
-     *            user name of invitee
-     * @param siteShortName
-     *            short name of site for which invitee is rejecting
-     *            invitation to join
-     */
-    private void rejectInvite(Map<String, Object> model, String inviteId, WorkflowTask inviteStartTask)
-    {
-        String siteShortName = (String) inviteStartTask.properties.get(
-                WorkflowModelNominatedInvitation.WF_PROP_RESOURCE_NAME);
-        
-        // complete the wf:invitePendingTask task along the 'reject' transition because the invitation has been rejected
-        InviteHelper.completeInviteTask(inviteId, WorkflowModelNominatedInvitation.WF_INVITE_TASK_INVITE_PENDING,
-                WorkflowModelNominatedInvitation.WF_TRANSITION_REJECT, this.workflowService);
-        
-        // add model properties for template to render
-        model.put(MODEL_PROP_KEY_RESPONSE, RESPONSE_REJECT);
-        model.put(MODEL_PROP_KEY_SITE_SHORT_NAME, siteShortName);
-    }    
+	public InvitationService getInvitationService() {
+		return invitationService;
+	}    
 }

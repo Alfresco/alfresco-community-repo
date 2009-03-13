@@ -41,7 +41,11 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.invitation.Invitation;
+import org.alfresco.service.cmr.invitation.InvitationException;
 import org.alfresco.service.cmr.invitation.InvitationExceptionForbidden;
+import org.alfresco.service.cmr.invitation.InvitationExceptionUserError;
+import org.alfresco.service.cmr.invitation.InvitationService;
+import org.alfresco.service.cmr.invitation.NominatedInvitation;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
@@ -114,11 +118,8 @@ public class Invite extends DeclarativeWebScript
     // user name and password generation beans
     private UserNameGenerator usernameGenerator;
     private PasswordGenerator passwordGenerator;
-    
-    // maximum number of tries to generate a invitee user name which 
-    // does not already belong to an existing person
-    public static final int MAX_NUM_INVITEE_USER_NAME_GEN_TRIES = 10;
-    
+    private InvitationService invitationService;
+       
     /**
      * Sets the workflowService property
      * 
@@ -359,9 +360,42 @@ public class Invite extends DeclarativeWebScript
             
             // check for the invitee user name (if present)
             String inviteeUserName = req.getParameter(MODEL_PROP_KEY_INVITEE_USERNAME);
+            
+            NominatedInvitation newInvite = null;
+            try
+            {
+            	if(inviteeUserName != null)
+            	{
+            		newInvite = invitationService.inviteNominated(inviteeUserName, Invitation.ResourceType.WEB_SITE, siteShortName, inviteeSiteRole, serverPath, acceptUrl, rejectUrl);
+            	}
+            	else
+            	{
+            		newInvite = invitationService.inviteNominated(inviteeFirstName, inviteeLastName, inviteeEmail, Invitation.ResourceType.WEB_SITE, siteShortName, inviteeSiteRole, serverPath, acceptUrl, rejectUrl);
+            	}
+            	// add model properties for template to render
+            	model.put(MODEL_PROP_KEY_ACTION, ACTION_START);
+            	model.put(MODEL_PROP_KEY_INVITE_ID, newInvite.getInviteId());
+            	model.put(MODEL_PROP_KEY_INVITE_TICKET, newInvite.getTicket());
+            	model.put(MODEL_PROP_KEY_INVITEE_USER_NAME, newInvite.getInviteeUserName());
+            	model.put(MODEL_PROP_KEY_INVITEE_FIRSTNAME, inviteeFirstName);
+            	model.put(MODEL_PROP_KEY_INVITEE_LASTNAME, inviteeLastName);
+            	model.put(MODEL_PROP_KEY_INVITEE_EMAIL, inviteeEmail);
+            	model.put(MODEL_PROP_KEY_SITE_SHORT_NAME, siteShortName);
+            }
+            catch (InvitationExceptionUserError ie)
+        	{
+        		throw new WebScriptException(Status.STATUS_CONFLICT,
+                    "Cannot proceed with invitation. A person with user name: '" + inviteeUserName
+                    + "' and invitee email address: '"
+                    + inviteeEmail + "' is already a member of the site: '" + siteShortName + "'.");
+        	}
+            catch (InvitationExceptionForbidden fe)
+            {
+        		throw new WebScriptException(Status.STATUS_FORBIDDEN, fe.toString());            
+            }
 
             // process action 'start' with provided parameters
-            startInvite(model, inviteeFirstName, inviteeLastName, inviteeEmail, inviteeUserName, siteShortName, inviteeSiteRole, serverPath, acceptUrl, rejectUrl);
+            //startInvite(model, inviteeFirstName, inviteeLastName, inviteeEmail, inviteeUserName, siteShortName, inviteeSiteRole, serverPath, acceptUrl, rejectUrl);
         }
         // else handle if provided 'action' is 'cancel'
         else if (action.equals(ACTION_CANCEL))
@@ -380,6 +414,10 @@ public class Invite extends DeclarativeWebScript
             // process action 'cancel' with provided parameters
             try
             {
+            	invitationService.cancel(inviteId);
+                // add model properties for template to render
+                model.put(MODEL_PROP_KEY_ACTION, ACTION_CANCEL);
+                model.put(MODEL_PROP_KEY_INVITE_ID, inviteId);
             	cancelInvite(model, inviteId);
             }
             catch(InvitationExceptionForbidden fe)
@@ -398,318 +436,6 @@ public class Invite extends DeclarativeWebScript
         return model;
     }
     
-    /**
-     * Creates a person for the invitee with a generated user name.
-     * 
-     * @param inviteeFirstName first name of invitee
-     * @param inviteeLastName last name of invitee
-     * @param inviteeEmail email address of invitee
-     * @return invitee user name
-     */
-    private String createInviteePerson(String inviteeFirstName, String inviteeLastName, String inviteeEmail)
-    {
-        // Attempt to generate user name for invitee
-        // which does not belong to an existing person
-        // Tries up to MAX_NUM_INVITEE_USER_NAME_GEN_TRIES
-        // at which point a web script exception is thrown
-        String inviteeUserName = null;
-        int i = 0;
-        do
-        {
-            inviteeUserName = usernameGenerator.generateUserName();
-            i++;
-        }
-        while (this.personService.personExists(inviteeUserName) && (i < MAX_NUM_INVITEE_USER_NAME_GEN_TRIES));
-        
-        // if after 10 tries is not able to generate a user name for a 
-        // person who doesn't already exist, then throw a web script exception
-        if (this.personService.personExists(inviteeUserName))
-        {
-            if (logger.isInfoEnabled())
-                logger.info("Failed - unable to generate username for invitee.");
-            
-            throw new WebScriptException(Status.STATUS_INTERNAL_SERVER_ERROR,
-                    "Failed to generate a user name for invitee, which doesn't already belong to "
-                        + "an existing person after " + MAX_NUM_INVITEE_USER_NAME_GEN_TRIES
-                        + " tries");
-        }
-
-        // create a person node for the invitee with generated invitee user name
-        // and other provided person property values
-        final Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
-        properties.put(ContentModel.PROP_USERNAME, inviteeUserName);
-        properties.put(ContentModel.PROP_FIRSTNAME, inviteeFirstName);
-        properties.put(ContentModel.PROP_LASTNAME, inviteeLastName);
-        properties.put(ContentModel.PROP_EMAIL, inviteeEmail);
-        
-        final String finalUserName = inviteeUserName;
-        AuthenticationUtil.runAs(new RunAsWork<Object>()
-        {
-            public Object doWork() throws Exception
-            {
-                NodeRef person = personService.createPerson(properties);
-                permissionService.setPermission(person, finalUserName, PermissionService.ALL_PERMISSIONS, true);
-                
-                return null;
-            }
-    
-        }, AuthenticationUtil.getSystemUserName());
-                
-        return inviteeUserName;
-    }
-    
-    /**
-     * Creates a disabled user account for the given invitee user name
-     * with a generated password
-     * 
-     * @param inviteeUserName
-     * @return password generated for invitee user account
-     */
-    private String createInviteeDisabledAccount(String inviteeUserName)
-    {
-        // generate password using password generator
-        char[] generatedPassword = passwordGenerator.generatePassword().toCharArray();
-
-        // create disabled user account for invitee user name with generated password
-        this.mutableAuthenticationDao.createUser(inviteeUserName, generatedPassword);
-        this.mutableAuthenticationDao.setEnabled(inviteeUserName, false);
-        
-        return String.valueOf(generatedPassword);
-    }
-    
-    /**
-     * Starts the Invite workflow
-     * 
-     * @param model
-     *            model to add objects to, which will be passed to the template
-     *            for rendering
-     * @param inviteeFirstName
-     *            first name of invitee
-     * @param inviteeLastNamme
-     *            last name of invitee
-     * @param inviteeEmail
-     *            email address of invitee
-     * @param siteShortName
-     *            short name of site that the invitee is being invited to by the
-     *            inviter
-     * @param inviteeSiteRole
-     *            role under which invitee is being invited to the site by the inviter
-     * @param serverPath
-     *            externally accessible server address of server hosting invite web scripts
-     */
-    private void startInvite(Map<String, Object> model, String inviteeFirstName, String inviteeLastName,
-            String inviteeEmail, String inviteeUserName, String siteShortName, String inviteeSiteRole, String serverPath, String acceptUrl, String rejectUrl)
-    {
-        // get the inviter user name (the name of user web script is executed under)
-        // - needs to be assigned here because various system calls further on
-        // - in this method set the current user to the system user for some
-        // - odd reason
-        String inviterUserName = this.authenticationService.getCurrentUserName();
-        
-        // if inviter is not the site manager then throw web script exception
-        String inviterRole = this.siteService.getMembersRole(siteShortName, inviterUserName);
-        if ((inviterRole == null) || (inviterRole.equals(SiteModel.SITE_MANAGER) == false))
-        {
-            if (logger.isInfoEnabled())
-                logger.info("Failed - Inviter is not a SiteManager role.");
-            
-            throw new WebScriptException(Status.STATUS_FORBIDDEN,
-                    "Cannot proceed with invitation. Inviter with user name : '" + inviterUserName
-                    + "' is not the Site Manager of site: '" + siteShortName + "'. Inviter's role on that site is: '"
-                    + inviterRole + "'");
-        }
-        
-        if (logger.isDebugEnabled())
-            logger.debug("startInvite() inviterUserName=" + inviterUserName + " inviteeUserName=" + inviteeUserName + 
-                         " inviteeFirstName=" + inviteeFirstName + " inviteeLastName=" + inviteeLastName +
-                         " inviteeEmail=" + inviteeEmail + 
-                         " siteShortName=" + siteShortName + " inviteeSiteRole=" + inviteeSiteRole);
-        
-        //
-        // if we have not explicitly been passed an existing user's user name then ....
-        //
-        // if a person already exists who has the given invitee email address
-        //
-        // 1) obtain invitee user name from first person found having the invitee email address (there
-        //          should only be one)
-        // 2) handle error conditions - (invitee already has an invitation in progress for the given site, 
-        // or he/she is already a member of the given site
-        //        
-        if (inviteeUserName == null || inviteeUserName.trim().length() == 0)
-        {
-            Set<NodeRef> peopleWithInviteeEmail = this.personService.getPeopleFilteredByProperty(
-                    ContentModel.PROP_EMAIL, inviteeEmail);
-            if (peopleWithInviteeEmail.isEmpty() == false)
-            {
-                // get person already existing who has the given 
-                // invitee email address (there should only be one, so just take
-                // the first from the set of people).
-                NodeRef person = (NodeRef) peopleWithInviteeEmail.toArray()[0];
-    
-                // get invitee user name of that person                
-                Serializable userNamePropertyVal = this.nodeService.getProperty(
-                        person, ContentModel.PROP_USERNAME);
-                inviteeUserName = DefaultTypeConverter.INSTANCE.convert(String.class, userNamePropertyVal);
-                
-                if (logger.isDebugEnabled())
-                    logger.debug("not explictly passed username - found matching email, resolved inviteeUserName=" + inviteeUserName);  
-            }
-            // else there are no existing people who have the given invitee email address
-            // so create invitee person
-            else
-            {
-                inviteeUserName = createInviteePerson(inviteeFirstName, inviteeLastName, inviteeEmail);
-                
-                if (logger.isDebugEnabled())
-                    logger.debug("not explictly passed username - created new person, inviteeUserName=" + inviteeUserName);
-            }
-        }
-        
-        // throw web script exception if person is already a member of the given site
-        if (this.siteService.isMember(siteShortName, inviteeUserName))
-        {
-            if (logger.isInfoEnabled())
-                logger.info("Failed - invitee user is already a member of the site.");
-            
-            throw new WebScriptException(Status.STATUS_CONFLICT,
-                    "Cannot proceed with invitation. A person with user name: '" + inviteeUserName
-                    + "' and invitee email address: '"
-                    + inviteeEmail + "' is already a member of the site: '" + siteShortName + "'.");
-        }
-        
-        //
-        // If a user account does not already exist for invitee user name
-        // then create a disabled user account for the invitee.
-        // Hold a local reference to generated password if disabled invitee account
-        // is created, otherwise if a user account already exists for invitee
-        // user name, then local reference to invitee password will be "null"
-        //
-        String inviteePassword = null;
-        if (this.mutableAuthenticationDao.userExists(inviteeUserName) == false)
-        {
-            if (logger.isDebugEnabled())
-                logger.debug("Invitee user account does not exist, creating disabled account.");
-            inviteePassword = createInviteeDisabledAccount(inviteeUserName);
-        }
-        
-        // create a ticket for the invite - this is used
-        String inviteTicket = GUID.generate();
-        
-        //
-        // Start the invite workflow with inviter, invitee and site properties 
-        //
-        
-        WorkflowDefinition wfDefinition = this.workflowService
-                .getDefinitionByName(WorkflowModelNominatedInvitation.WORKFLOW_DEFINITION_NAME);
-        
-        // handle workflow definition does not exist
-        if (wfDefinition == null)
-        {
-            if (logger.isInfoEnabled())
-                logger.info("Workflow definition for name " + WorkflowModelNominatedInvitation.WORKFLOW_DEFINITION_NAME + " does not exist.");
-            
-            throw new WebScriptException(Status.STATUS_INTERNAL_SERVER_ERROR,
-                    "Workflow definition for name " + WorkflowModelNominatedInvitation.WORKFLOW_DEFINITION_NAME + " does not exist.");
-        }
-
-        // Get invitee person NodeRef to add as assignee
-        NodeRef inviteeNodeRef = this.personService.getPerson(inviteeUserName);
-        
-        // create workflow properties
-        Map<QName, Serializable> workflowProps = new HashMap<QName, Serializable>(16);
-        workflowProps.put(WorkflowModelNominatedInvitation.WF_PROP_INVITER_USER_NAME, inviterUserName);
-        workflowProps.put(WorkflowModelNominatedInvitation.WF_PROP_INVITEE_USER_NAME, inviteeUserName);
-        workflowProps.put(WorkflowModel.ASSOC_ASSIGNEE, inviteeNodeRef);
-        workflowProps.put(WorkflowModelNominatedInvitation.WF_PROP_INVITEE_FIRSTNAME, inviteeFirstName);
-        workflowProps.put(WorkflowModelNominatedInvitation.WF_PROP_INVITEE_LASTNAME, inviteeLastName);
-        workflowProps.put(WorkflowModelNominatedInvitation.WF_PROP_INVITEE_GEN_PASSWORD, inviteePassword);
-        workflowProps.put(WorkflowModelNominatedInvitation.WF_PROP_RESOURCE_TYPE, Invitation.ResourceType.WEB_SITE);
-        workflowProps.put(WorkflowModelNominatedInvitation.WF_PROP_RESOURCE_NAME, siteShortName);
-        workflowProps.put(WorkflowModelNominatedInvitation.WF_PROP_INVITEE_ROLE, inviteeSiteRole);
-        workflowProps.put(WorkflowModelNominatedInvitation.WF_PROP_SERVER_PATH, serverPath);
-        workflowProps.put(WorkflowModelNominatedInvitation.WF_PROP_ACCEPT_URL, acceptUrl);
-        workflowProps.put(WorkflowModelNominatedInvitation.WF_PROP_REJECT_URL, rejectUrl);
-        workflowProps.put(WorkflowModelNominatedInvitation.WF_PROP_INVITE_TICKET, inviteTicket);
-
-        // start the workflow
-        WorkflowPath wfPath = this.workflowService.startWorkflow(wfDefinition.getId(), workflowProps);
-        
-        //
-        // complete invite workflow start task to send out the invite email
-        //
-        
-        // get the workflow tasks
-        String workflowId = wfPath.instance.id;
-        String wfPathId = wfPath.id;
-        List<WorkflowTask> wfTasks = this.workflowService.getTasksForWorkflowPath(wfPathId);
-        
-        // throw an exception if no tasks where found on the workflow path
-        if (wfTasks.size() == 0)
-        {
-            if (logger.isInfoEnabled())
-                logger.info("Failed - unable to find workflow tasks on workflow path ID: " + wfPathId);
-            
-            throw new WebScriptException(Status.STATUS_INTERNAL_SERVER_ERROR,
-                    "No workflow tasks where found on workflow path ID: " + wfPathId);
-        }
-        
-        //
-        // first task in workflow task list (there should only be one) associated 
-        // with the workflow path id (above) should be "wf:inviteToSiteTask", otherwise 
-        // throw web script exception
-        //
-        
-        String wfTaskName = wfTasks.get(0).name;
-        QName wfTaskNameQName = QName.createQName(wfTaskName, this.namespaceService);
-        QName inviteToSiteTaskQName = WorkflowModelNominatedInvitation.WF_INVITE_TASK_INVITE_TO_SITE;
-        if (!wfTaskNameQName.equals(inviteToSiteTaskQName))
-        {
-            if (logger.isInfoEnabled())
-                logger.info("Failed - first workflow task found on workflow path ID: " + wfPathId + 
-                		     " should be wf:inviteToSiteTask");
-            
-            throw new WebScriptException(Status.STATUS_INTERNAL_SERVER_ERROR,
-                    "First workflow task found on workflow path ID: " + wfPathId
-                  + " should be " + "wf:inviteToSiteTask");
-        }
-        
-        // get "inviteToSite" task
-        WorkflowTask wfStartTask = wfTasks.get(0);
-        
-        // attach empty package to start task, end it and follow with transition that sends out the invite
-        if (logger.isDebugEnabled())
-            logger.debug("Starting Invite workflow task by attaching empty package...");
-        NodeRef wfPackage = this.workflowService.createPackage(null);
-        Map<QName, Serializable> wfTaskProps = new HashMap<QName, Serializable>(1, 1.0f);
-        wfTaskProps.put(WorkflowModel.ASSOC_PACKAGE, wfPackage);
-        
-        if (logger.isDebugEnabled())
-            logger.debug("Updating Invite workflow task...");
-        this.workflowService.updateTask(wfStartTask.id, wfTaskProps, null, null);
-        
-        if (logger.isDebugEnabled())
-            logger.debug("Transitioning Invite workflow task...");
-        try
-        {
-            this.workflowService.endTask(wfStartTask.id, WorkflowModelNominatedInvitation.WF_TRANSITION_SEND_INVITE);
-        }
-        catch (RuntimeException err)
-        {
-            if (logger.isInfoEnabled())
-                logger.info("Failed - caught error during Invite workflow transition: " + err.getMessage());
-            throw err;
-        }
-        
-        // add model properties for template to render
-        model.put(MODEL_PROP_KEY_ACTION, ACTION_START);
-        model.put(MODEL_PROP_KEY_INVITE_ID, workflowId);
-        model.put(MODEL_PROP_KEY_INVITE_TICKET, inviteTicket);
-        model.put(MODEL_PROP_KEY_INVITEE_USER_NAME, inviteeUserName);
-        model.put(MODEL_PROP_KEY_INVITEE_FIRSTNAME, inviteeFirstName);
-        model.put(MODEL_PROP_KEY_INVITEE_LASTNAME, inviteeLastName);
-        model.put(MODEL_PROP_KEY_INVITEE_EMAIL, inviteeEmail);
-        model.put(MODEL_PROP_KEY_SITE_SHORT_NAME, siteShortName);
-    }
 
     /**
      * Cancels pending invite. Note that only a Site Manager of the 
@@ -771,4 +497,12 @@ public class Invite extends DeclarativeWebScript
         model.put(MODEL_PROP_KEY_ACTION, ACTION_CANCEL);
         model.put(MODEL_PROP_KEY_INVITE_ID, inviteId);
     }
+
+	public void setInvitationService(InvitationService invitationService) {
+		this.invitationService = invitationService;
+	}
+
+	public InvitationService getInvitationService() {
+		return invitationService;
+	}
 }

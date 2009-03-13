@@ -47,9 +47,14 @@ function main()
       var repoFormData = new Packages.org.alfresco.repo.forms.FormData();
       for (var i = 0; i < formdata.fields.length; i++)
       {
-    	  // Replace the first 2 underscores with colons.
-    	  var alteredName = formdata.fields[i].name.replaceFirst("_", ":").replaceFirst("_", ":");
-    	  repoFormData.addData(alteredName, formdata.fields[i].value);
+         // Replace the first 2 underscores with colons.
+         var alteredName = formdata.fields[i].name.replaceFirst("_", ":").replaceFirst("_", ":");
+         var dataValue = formdata.fields[i].value;
+         if (dataValue.length() === 0)
+         {
+            dataValue = null;
+         }
+         repoFormData.addData(alteredName, dataValue);
       }
       
       formService.saveForm(nodeRef, repoFormData);

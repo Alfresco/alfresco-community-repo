@@ -48,8 +48,13 @@ function main()
 	   // Replace the first 2 underscores with colons.
 	   var nextKey = jsonKeys.next();
 	   var alteredKey = nextKey.replaceFirst("_", ":").replaceFirst("_", ":");
-	   
-	   repoFormData.addData(alteredKey, json.get(nextKey));
+	   var dataValue = json.get(nextKey);
+	   if (dataValue.length() === 0)
+      {
+         dataValue = null;
+      }
+      
+	   repoFormData.addData(alteredKey, dataValue);
    }
 
    formService.saveForm(nodeRef, repoFormData);

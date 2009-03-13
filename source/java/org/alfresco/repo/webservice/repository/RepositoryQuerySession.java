@@ -29,6 +29,8 @@ import org.alfresco.repo.webservice.ServerQuery;
 import org.alfresco.repo.webservice.types.ResultSet;
 import org.alfresco.repo.webservice.types.ResultSetRow;
 import org.alfresco.service.ServiceRegistry;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * A query session for use with {@linkplain RepositoryWebService node-related queries} against the
@@ -41,6 +43,8 @@ public class RepositoryQuerySession extends AbstractQuerySession<ResultSet, Resu
 {
     private static final long serialVersionUID = -3621997639261137000L;
 
+    private static Log logger = LogFactory.getLog(RepositoryQuerySession.class);
+
     public RepositoryQuerySession(long maxResults, long batchSize, ServerQuery<ResultSet> query)
     {
         super(maxResults, batchSize, query);
@@ -52,6 +56,9 @@ public class RepositoryQuerySession extends AbstractQuerySession<ResultSet, Resu
         return new ResultSetRow[size];
     }
 
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.webservice.QuerySession#getNextResults(org.alfresco.service.ServiceRegistry)
+     */
     public ResultSet getNextResults(ServiceRegistry serviceRegistry)
     {
         ResultSet queryResults = getQueryResults(serviceRegistry);
@@ -61,7 +68,8 @@ public class RepositoryQuerySession extends AbstractQuerySession<ResultSet, Resu
         ResultSet batchedResults = new ResultSet();
         batchedResults.setMetaData(queryResults.getMetaData());
         batchedResults.setRows(batchedRows);
-        batchedResults.setTotalRowCount(batchedRows.length);
+        batchedResults.setTotalRowCount(allRows.length); 
+        logger.debug("total row count :"+allRows.length);
         // Done
         return batchedResults;
     }

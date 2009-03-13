@@ -155,8 +155,7 @@ public abstract class AbstractQuerySession<RESULTSET, RESULTSETROW> implements Q
         else if ((position + batchSize) >= allResultsSize)
         {
             // There isn't an excess of rows remaining, so copy to the last one
-            long lastResultIndex = allResultsSize - 1L;
-            long rowCopyCount = lastResultIndex - position + 1L;
+            long rowCopyCount = allResultsSize - position; //ETWOONE-396 second part
             batchedResults = makeArray((int)rowCopyCount);
             System.arraycopy(allResults, (int)position, batchedResults, 0, (int)rowCopyCount);
             // Position is after last

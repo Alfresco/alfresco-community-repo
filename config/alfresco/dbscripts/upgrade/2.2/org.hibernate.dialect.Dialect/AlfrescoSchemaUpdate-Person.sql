@@ -61,5 +61,5 @@ INSERT INTO alf_applied_patch
   VALUES
   (
     'patch.db-V2.2-Person-2', 'Manually executed script upgrade V2.2: Person user name also in the association qname',
-    0, 1007, -1, 1008, null, 'UNKOWN', 1, 1, 'Script completed'
+    0, 2005, -1, 2006, null, 'UNKOWN', 1, 1, 'Script completed'
   );

@@ -31,51 +31,7 @@ function main()
        logger.log("formUrl = " + formUrl);
     }
     
-    // Determine whether this is a standard GET or an application/x-www-form-urlencoded
-    // GET-based submit.
-    // In the former case, there will be an "alf_ticket" query parameter on the URL
-    // and in the latter case there will also be a number of field name/values.
-    //
-    // TODO Is there a better way to recognise urlencoded submits than examining the
-    //      names of the parameters?
-    if (logger.isLoggingEnabled())
-    {
-       logger.log("url.args = " + url.args);
-    }
-    var isUrlEncodedSubmit = false;
-    var repoFormData = new Packages.org.alfresco.repo.forms.FormData();
-    
-    var queryParams = url.args.split("&");
-    for (var i = 0; i < queryParams.length; i++)
-    {
-       if (queryParams[i].startsWith("prop") ||
-          queryParams[i].startsWith("assoc"))
-       {
-    	   isUrlEncodedSubmit = true;
-    	   
-    	   var singleQueryParam = queryParams[i].split("=");
-     	   // Replace the first 2 underscores with colons.
-     	   var alteredFieldName = singleQueryParam[0].replaceFirst("_", ":").replaceFirst("_", ":");
-     	   var decodedFieldValue = Packages.java.net.URLDecoder.decode(singleQueryParam[1], "UTF-8");
-     	   
-           if (logger.isLoggingEnabled())
-           {
-     	      logger.log("Field: " + alteredFieldName + " = " + decodedFieldValue);
-           }
-     	   repoFormData.addData(alteredFieldName, decodedFieldValue);
-       }
-    }
-
-    if (isUrlEncodedSubmit)
-    {
-    	var formScriptObj = formService.saveForm(formUrl, repoFormData);
-    }
-    else
-    {
-    	var formScriptObj = formService.getForm(formUrl);
-    }
-    
-    
+   	var formScriptObj = formService.getForm(formUrl);
 	
 	if (formScriptObj == null)
 	{

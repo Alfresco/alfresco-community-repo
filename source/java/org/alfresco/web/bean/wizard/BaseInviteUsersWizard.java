@@ -35,7 +35,6 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
 
-import javax.faces.application.FacesMessage;
 import javax.faces.component.UISelectOne;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
@@ -45,7 +44,7 @@ import javax.faces.model.SelectItem;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.search.impl.lucene.QueryParser;
+import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.ResultSet;
@@ -66,6 +65,7 @@ import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIGenericPicker;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.BooleanQuery;
 import org.springframework.mail.javamail.JavaMailSender;
 
@@ -392,7 +392,7 @@ public abstract class BaseInviteUsersWizard extends BaseWizardBean
          if (filterIndex == 0)
          {
             // Use lucene search to retrieve user details
-            String term = QueryParser.escape(search);
+            String term = LuceneQueryParser.escape(search);
             StringBuilder query = new StringBuilder(128);
             if (contains == null || contains.length() == 0)
             {

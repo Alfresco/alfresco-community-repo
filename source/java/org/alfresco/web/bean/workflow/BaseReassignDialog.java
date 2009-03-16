@@ -35,7 +35,7 @@ import javax.faces.model.SelectItem;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.search.impl.lucene.QueryParser;
+import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.ResultSet;
@@ -49,6 +49,7 @@ import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.ui.common.SortableSelectItem;
 import org.alfresco.web.ui.common.Utils;
+import org.apache.lucene.queryParser.QueryParser;
 
 /**
  * Base dialog bean for workflow user reassignment.
@@ -149,7 +150,7 @@ public abstract class BaseReassignDialog extends BaseDialogBean
          int maxResults = Application.getClientConfig(context).getInviteUsersMaxResults();
          
          // Use lucene search to retrieve user details
-         String term = QueryParser.escape(contains.trim());
+         String term = LuceneQueryParser.escape(contains.trim());
          StringBuilder query = new StringBuilder(128);
          Utils.generatePersonSearch(query, term);
          

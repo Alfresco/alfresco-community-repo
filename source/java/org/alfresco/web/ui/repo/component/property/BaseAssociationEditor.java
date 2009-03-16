@@ -44,7 +44,6 @@ import javax.faces.event.FacesEvent;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.search.impl.lucene.QueryParser;
 import org.alfresco.repo.security.authority.AuthorityDAO;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;

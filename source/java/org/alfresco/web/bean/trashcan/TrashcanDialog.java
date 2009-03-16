@@ -39,7 +39,7 @@ import javax.transaction.UserTransaction;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.archive.RestoreNodeReport;
 import org.alfresco.repo.node.archive.RestoreNodeReport.RestoreStatus;
-import org.alfresco.repo.search.impl.lucene.QueryParser;
+import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.web.scripts.FileTypeImageUtils;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -594,7 +594,7 @@ public class TrashcanDialog extends BaseDialogBean implements IContextListener
       else
       {
          // search by name in the archive store
-         String safeText = QueryParser.escape(property.getSearchText());
+         String safeText = LuceneQueryParser.escape(property.getSearchText());
          if (safeText.indexOf(' ') == -1)
          {
             if (property.isFullTextSearch())
@@ -656,8 +656,8 @@ public class TrashcanDialog extends BaseDialogBean implements IContextListener
          if (fromDate != null)
          {
             SimpleDateFormat df = CachingDateFormat.getDateFormat();
-            String strFromDate = QueryParser.escape(df.format(fromDate));
-            String strToDate = QueryParser.escape(df.format(toDate));
+            String strFromDate = LuceneQueryParser.escape(df.format(fromDate));
+            String strToDate = LuceneQueryParser.escape(df.format(toDate));
             StringBuilder buf = new StringBuilder(128);
             buf.append("@").append(DATE_ATTR)
                .append(":").append("[").append(strFromDate)

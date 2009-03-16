@@ -37,7 +37,7 @@ import javax.faces.event.ActionEvent;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.search.impl.lucene.QueryParser;
+import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -328,7 +328,7 @@ public class UsersDialog extends BaseDialogBean implements IContextListener, Cha
             StringBuilder query = new StringBuilder(128);
             for (StringTokenizer t = new StringTokenizer(search, " "); t.hasMoreTokens(); /**/)
             {
-               String term = QueryParser.escape(t.nextToken());
+               String term = LuceneQueryParser.escape(t.nextToken());
                query.append("@").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:firstName:\"*");
                query.append(term);
                query.append("*\" @").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:lastName:\"*");

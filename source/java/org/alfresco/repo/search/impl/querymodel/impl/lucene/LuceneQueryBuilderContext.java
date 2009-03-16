@@ -55,6 +55,7 @@ public class LuceneQueryBuilderContext
         lqp.setSearchParameters(searchParameters);
         lqp.setLuceneConfig(config);
         lqp.setIndexReader(indexReader);
+        lqp.setAllowLeadingWildcard(true);
         this.namespacePrefixResolver = namespacePrefixResolver;
     }
 

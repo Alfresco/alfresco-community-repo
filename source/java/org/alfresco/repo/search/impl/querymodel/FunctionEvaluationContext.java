@@ -29,10 +29,10 @@ import java.util.Collection;
 import java.util.Map;
 
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
-import org.alfresco.repo.search.impl.lucene.ParseException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
+import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.search.Query;
 
 /**

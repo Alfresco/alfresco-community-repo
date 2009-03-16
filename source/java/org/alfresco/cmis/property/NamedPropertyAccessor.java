@@ -29,9 +29,9 @@ import java.util.Collection;
 
 import org.alfresco.cmis.dictionary.CMISScope;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
-import org.alfresco.repo.search.impl.lucene.ParseException;
 import org.alfresco.repo.search.impl.querymodel.PredicateMode;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.search.Query;
 
 /**

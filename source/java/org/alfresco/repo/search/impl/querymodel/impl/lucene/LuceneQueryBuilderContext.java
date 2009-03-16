@@ -27,7 +27,6 @@ package org.alfresco.repo.search.impl.querymodel.impl.lucene;
 import org.alfresco.repo.search.impl.lucene.LuceneAnalyser;
 import org.alfresco.repo.search.impl.lucene.LuceneConfig;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
-import org.alfresco.repo.search.impl.lucene.QueryParser;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.search.SearchParameters;
@@ -49,7 +48,7 @@ public class LuceneQueryBuilderContext
         LuceneAnalyser analyzer = new LuceneAnalyser(dictionaryService, searchParameters.getMlAnalaysisMode() == null ? config.getDefaultMLSearchAnalysisMode() : searchParameters
                 .getMlAnalaysisMode());
         lqp = new LuceneQueryParser("TEXT", analyzer);
-        lqp.setDefaultOperator(QueryParser.OR_OPERATOR);
+        lqp.setDefaultOperator(LuceneQueryParser.OR_OPERATOR);
         lqp.setDictionaryService(dictionaryService);
         lqp.setNamespacePrefixResolver(namespacePrefixResolver);
         lqp.setTenantService(tenantService);

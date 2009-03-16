@@ -66,6 +66,10 @@ import org.apache.lucene.analysis.Token;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.queryParser.CharStream;
+import org.apache.lucene.queryParser.ParseException;
+import org.apache.lucene.queryParser.QueryParser;
+import org.apache.lucene.queryParser.QueryParserTokenManager;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.ConstantScoreRangeQuery;
@@ -125,6 +129,7 @@ public class LuceneQueryParser extends QueryParser
         parser.setSearchParameters(searchParameters);
         parser.setLuceneConfig(config);
         parser.setIndexReader(indexReader);
+        parser.setAllowLeadingWildcard(true);
         // TODO: Apply locale contstraints at the top level if required for the non ML doc types.
         Query result = parser.parse(query);
         if (s_logger.isDebugEnabled())
@@ -676,7 +681,7 @@ public class LuceneQueryParser extends QueryParser
             }
         }
 
-        TokenStream source = analyzer.tokenStream(field, new StringReader(queryText));
+        TokenStream source = getAnalyzer().tokenStream(field, new StringReader(queryText));
         ArrayList<org.apache.lucene.analysis.Token> v = new ArrayList<org.apache.lucene.analysis.Token>();
         org.apache.lucene.analysis.Token t;
         int positionCount = 0;
@@ -1303,7 +1308,7 @@ public class LuceneQueryParser extends QueryParser
                 else if (propertyDef.getDataType().getName().equals(DataTypeDefinition.TEXT)
                         || propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT) || propertyDef.getDataType().getName().equals(DataTypeDefinition.ANY))
                 {
-                    if (lowercaseExpandedTerms)
+                    if (getLowercaseExpandedTerms())
                     {
                         part1 = part1.toLowerCase();
                         part2 = part2.toLowerCase();
@@ -1318,7 +1323,7 @@ public class LuceneQueryParser extends QueryParser
         }
         else
         {
-            if (lowercaseExpandedTerms)
+            if (getLowercaseExpandedTerms())
             {
                 part1 = part1.toLowerCase();
                 part2 = part2.toLowerCase();
@@ -2029,7 +2034,7 @@ public class LuceneQueryParser extends QueryParser
 
     private String getToken(String field, String value) throws ParseException
     {
-        TokenStream source = analyzer.tokenStream(field, new StringReader(value));
+        TokenStream source = getAnalyzer().tokenStream(field, new StringReader(value));
         org.apache.lucene.analysis.Token t;
         String tokenised = null;
 

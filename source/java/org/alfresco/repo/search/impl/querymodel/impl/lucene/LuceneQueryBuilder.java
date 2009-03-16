@@ -26,8 +26,8 @@ package org.alfresco.repo.search.impl.querymodel.impl.lucene;
 
 import java.util.Set;
 
-import org.alfresco.repo.search.impl.lucene.ParseException;
 import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
+import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Sort;
 

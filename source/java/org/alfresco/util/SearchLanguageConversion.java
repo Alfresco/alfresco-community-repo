@@ -24,7 +24,8 @@
  */
 package org.alfresco.util;
 
-import org.alfresco.repo.search.impl.lucene.QueryParser;
+import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
+import org.apache.lucene.queryParser.QueryParser;
 
 /**
  * Helper class to provide conversions between different search languages
@@ -306,7 +307,7 @@ public class SearchLanguageConversion
                 char[] chars = new char[] { ch };
                 String unescaped = new String(chars);
                 // check it
-                String escaped = QueryParser.escape(unescaped);
+                String escaped = LuceneQueryParser.escape(unescaped);
                 if (!escaped.equals(unescaped))
                 {
                     // it was escaped

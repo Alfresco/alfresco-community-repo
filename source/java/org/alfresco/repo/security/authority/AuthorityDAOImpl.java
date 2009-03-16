@@ -38,7 +38,7 @@ import java.util.regex.Pattern;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.SimpleCache;
-import org.alfresco.repo.search.impl.lucene.QueryParser;
+import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -55,7 +55,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.ISO9075;
 import org.alfresco.util.SearchLanguageConversion;
-import org.hibernate.loader.hql.QueryLoader;
 
 public class AuthorityDAOImpl implements AuthorityDAO
 {
@@ -225,7 +224,7 @@ public class AuthorityDAOImpl implements AuthorityDAO
         sp.setLanguage("lucene");
         sp.setQuery("+TYPE:\""
                 + ContentModel.TYPE_AUTHORITY_CONTAINER + "\"" + " +@"
-                + QueryParser.escape("{" + ContentModel.PROP_AUTHORITY_NAME.getNamespaceURI() + "}" + ISO9075.encode(ContentModel.PROP_AUTHORITY_NAME.getLocalName())) + ":\""
+                + LuceneQueryParser.escape("{" + ContentModel.PROP_AUTHORITY_NAME.getNamespaceURI() + "}" + ISO9075.encode(ContentModel.PROP_AUTHORITY_NAME.getLocalName())) + ":\""
                 + namePattern + "\"");
         ResultSet rs = null;
         try
@@ -385,7 +384,7 @@ public class AuthorityDAOImpl implements AuthorityDAO
         sp.setLanguage("lucene");
         sp.setQuery("+TYPE:\""
                 + ContentModel.TYPE_AUTHORITY_CONTAINER + "\"" + " +@"
-                + QueryParser.escape("{" + ContentModel.PROP_MEMBERS.getNamespaceURI() + "}" + ISO9075.encode(ContentModel.PROP_MEMBERS.getLocalName())) + ":\"" + name + "\"");
+                + LuceneQueryParser.escape("{" + ContentModel.PROP_MEMBERS.getNamespaceURI() + "}" + ISO9075.encode(ContentModel.PROP_MEMBERS.getLocalName())) + ":\"" + name + "\"");
         ResultSet rs = null;
         try
         {
@@ -563,7 +562,7 @@ public class AuthorityDAOImpl implements AuthorityDAO
         sp.setLanguage("lucene");
         sp.setQuery("+TYPE:\""
                 + ContentModel.TYPE_AUTHORITY_CONTAINER + "\"" + " +@"
-                + QueryParser.escape("{" + ContentModel.PROP_AUTHORITY_NAME.getNamespaceURI() + "}" + ISO9075.encode(ContentModel.PROP_AUTHORITY_NAME.getLocalName())) + ":\""
+                + LuceneQueryParser.escape("{" + ContentModel.PROP_AUTHORITY_NAME.getNamespaceURI() + "}" + ISO9075.encode(ContentModel.PROP_AUTHORITY_NAME.getLocalName())) + ":\""
                 + name + "\"");
         ResultSet rs = null;
         try

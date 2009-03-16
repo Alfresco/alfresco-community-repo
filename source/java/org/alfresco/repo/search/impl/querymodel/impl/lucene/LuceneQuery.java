@@ -27,7 +27,6 @@ package org.alfresco.repo.search.impl.querymodel.impl.lucene;
 import java.util.List;
 import java.util.Set;
 
-import org.alfresco.repo.search.impl.lucene.ParseException;
 import org.alfresco.repo.search.impl.querymodel.Column;
 import org.alfresco.repo.search.impl.querymodel.Constraint;
 import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
@@ -42,6 +41,7 @@ import org.alfresco.repo.search.impl.querymodel.impl.BaseQuery;
 import org.alfresco.repo.search.impl.querymodel.impl.functions.PropertyAccessor;
 import org.alfresco.repo.search.impl.querymodel.impl.functions.Score;
 import org.alfresco.service.namespace.QName;
+import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Sort;

@@ -28,7 +28,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.search.impl.lucene.QueryParser;
+import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
 import org.alfresco.repo.security.authentication.PasswordGenerator;
 import org.alfresco.repo.security.authentication.UserNameGenerator;
@@ -292,7 +292,7 @@ public final class People extends BaseScopableProcessorExtension
                 StringBuilder query = new StringBuilder(128);
                 for (StringTokenizer t = new StringTokenizer(filter, " "); t.hasMoreTokens(); /**/)
                 {
-                    String term = QueryParser.escape(t.nextToken().replace('"', ' '));
+                    String term = LuceneQueryParser.escape(t.nextToken().replace('"', ' '));
                     query.append("@").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:firstName:\"*");
                     query.append(term);
                     query.append("*\" @").append(NamespaceService.CONTENT_MODEL_PREFIX).append("\\:lastName:\"*");

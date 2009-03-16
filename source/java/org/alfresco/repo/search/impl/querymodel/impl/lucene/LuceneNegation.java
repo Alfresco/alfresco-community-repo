@@ -27,11 +27,11 @@ package org.alfresco.repo.search.impl.querymodel.impl.lucene;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.repo.search.impl.lucene.ParseException;
 import org.alfresco.repo.search.impl.querymodel.Argument;
 import org.alfresco.repo.search.impl.querymodel.Constraint;
 import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
 import org.alfresco.repo.search.impl.querymodel.impl.BaseNegation;
+import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.search.Query;
 
 /**

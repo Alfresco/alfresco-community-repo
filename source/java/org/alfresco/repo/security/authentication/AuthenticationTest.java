@@ -375,9 +375,9 @@ public class AuthenticationTest extends TestCase
 
         if (! tenantService.isEnabled())
         {
-            authenticationService.createAuthentication("Andy `\u00ac\u00a6!\u00a3$%^&*()-_=+\t\n\u0000[]{};'#:@~,./<>?\\|", "".toCharArray());
-            authenticationService.authenticate("Andy `\u00ac\u00a6!\u00a3$%^&*()-_=+\t\n\u0000[]{};'#:@~,./<>?\\|", "".toCharArray());
-            assertEquals("Andy `\u00ac\u00a6!\u00a3$%^&*()-_=+\t\n\u0000[]{};'#:@~,./<>?\\|", authenticationService.getCurrentUserName());
+            authenticationService.createAuthentication("Andy `\u00ac\u00a6!\u00a3$%^&*()-_=+\t\n\u0000[]{};'#:@~,./<>?|", "".toCharArray());
+            authenticationService.authenticate("Andy `\u00ac\u00a6!\u00a3$%^&*()-_=+\t\n\u0000[]{};'#:@~,./<>?|", "".toCharArray());
+            assertEquals("Andy `\u00ac\u00a6!\u00a3$%^&*()-_=+\t\n\u0000[]{};'#:@~,./<>?|", authenticationService.getCurrentUserName());
         }
         else
         {

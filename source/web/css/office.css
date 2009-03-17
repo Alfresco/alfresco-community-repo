@@ -559,7 +559,8 @@ input.button {
    border: 1px solid #ccc;
    margin: 4px;
    height: 128px;
-   overflow: auto;
+   overflow-x: hidden;
+   overflow-y: auto;
 }
 
 .taskActionContainer {

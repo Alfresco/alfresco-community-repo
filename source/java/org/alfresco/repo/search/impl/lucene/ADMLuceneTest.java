@@ -3760,12 +3760,99 @@ public class ADMLuceneTest extends TestCase
         results = searcher.query(sp);
         assertEquals(0, results.length());
         results.close();
+    
 
         sp.addTextAttribute("@" + ContentModel.PROP_CONTENT.toString());
         results = searcher.query(sp);
         assertEquals(1, results.length());
         results.close();
 
+        
+        sp = new SearchParameters();
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setLanguage("lucene");
+        sp.setQuery("TEXT:\"cabbage\"");
+        sp.addTextAttribute("@" + orderText.toString());
+        results = searcher.query(sp);
+        assertEquals(12, results.length());
+        results.close();
+        
+        
+        
+        sp = new SearchParameters();
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setLanguage("lucene");
+        sp.setQuery("TEXT:\"cab*\"");
+        sp.addTextAttribute("@" + orderText.toString());
+        results = searcher.query(sp);
+        assertEquals(12, results.length());
+        results.close();
+        
+        sp = new SearchParameters();
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setLanguage("lucene");
+        sp.setQuery("TEXT:\"*bage\"");
+        sp.addTextAttribute("@" + orderText.toString());
+        results = searcher.query(sp);
+        assertEquals(12, results.length());
+        results.close();
+        
+        sp = new SearchParameters();
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setLanguage("lucene");
+        sp.setQuery("TEXT:\"*ba*\"");
+        sp.addTextAttribute("@" + orderText.toString());
+        results = searcher.query(sp);
+        assertEquals(12, results.length());
+        results.close();
+        
+        // term
+        
+        sp = new SearchParameters();
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setLanguage("lucene");
+        sp.setQuery("TEXT:cabbage");
+        sp.addTextAttribute("@" + orderText.toString());
+        results = searcher.query(sp);
+        assertEquals(12, results.length());
+        results.close();
+        
+        sp = new SearchParameters();
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setLanguage("lucene");
+        sp.setQuery("TEXT:cab*");
+        sp.addTextAttribute("@" + orderText.toString());
+        results = searcher.query(sp);
+        assertEquals(12, results.length());
+        results.close();
+        
+        sp = new SearchParameters();
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setLanguage("lucene");
+        sp.setQuery("TEXT:*bage");
+        sp.addTextAttribute("@" + orderText.toString());
+        results = searcher.query(sp);
+        assertEquals(12, results.length());
+        results.close();
+        
+        sp = new SearchParameters();
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setLanguage("lucene");
+        sp.setQuery("TEXT:*ba*");
+        sp.addTextAttribute("@" + orderText.toString());
+        results = searcher.query(sp);
+        assertEquals(12, results.length());
+        results.close();
+        
+        sp = new SearchParameters();
+        sp.addStore(rootNodeRef.getStoreRef());
+        sp.setLanguage("lucene");
+        sp.setQuery("TEXT:dabbage~0.8");
+        sp.addTextAttribute("@" + orderText.toString());
+        results = searcher.query(sp);
+        assertEquals(12, results.length());
+        results.close();
+        
         // Wild cards in TEXT phrase
 
         sp = new SearchParameters();

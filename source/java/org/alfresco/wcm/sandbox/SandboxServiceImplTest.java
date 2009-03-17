@@ -35,12 +35,10 @@ import java.util.Map;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
-import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.wcm.AbstractWCMServiceImplTest;
 import org.alfresco.wcm.asset.AssetInfo;
 import org.alfresco.wcm.asset.AssetService;
@@ -67,9 +65,6 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
     private SandboxService sbService;
     private AssetService assetService;
     
-    // TODO: temporary - remove from here when r13170 is merged from V3.1->HEAD
-    private TransactionService transactionService;
-    
     private AVMService avmService; // non-locking-aware
     
     //private AVMService avmLockingAwareService;
@@ -87,9 +82,6 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
         
         avmService = (AVMService)ctx.getBean("AVMService");
         
-        // TODO: temporary - remove from here when r13170 is merged from V3.1->HEAD
-        transactionService = (TransactionService)ctx.getBean("TransactionService");
-        
         // WCM locking
         //avmLockingAwareService = (AVMService)ctx.getBean("AVMLockingAwareService");
         
@@ -105,35 +97,12 @@ public class SandboxServiceImplTest extends AbstractWCMServiceImplTest
             // Switch back to Admin
             AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
             
-            List<WebProjectInfo> webProjects = wpService.listWebProjects();
-            for (final WebProjectInfo wpInfo : webProjects)
-            {
-                if (wpInfo.getStoreId().startsWith(TEST_WEBPROJ_DNS))
-                {
-                    // TODO: temporary - remove from here when r13170 is merged from V3.1->HEAD
-                    
-                    // note: added retry for now, due to intermittent concurrent update (during tearDown) possibly due to OrphanReaper ?
-                    // org.hibernate.StaleObjectStateException: Row was updated or deleted by another transaction (or unsaved-value mapping was incorrect): [org.alfresco.repo.avm.PlainFileNodeImpl#3752]
-                    RetryingTransactionCallback<Object> deleteWebProjectWork = new RetryingTransactionCallback<Object>()
-                    {
-                        public Object execute() throws Exception
-                        {
-                            wpService.deleteWebProject(wpInfo.getNodeRef());
-                            return null;
-                        }
-                    };
-                    transactionService.getRetryingTransactionHelper().doInTransaction(deleteWebProjectWork);
-
-                }
-            }
-
             deleteUser(USER_ONE);
             deleteUser(USER_TWO);
             deleteUser(USER_THREE);
             deleteUser(USER_FOUR);
         }
         
-        AuthenticationUtil.clearCurrentSecurityContext();
         super.tearDown();
     }
     

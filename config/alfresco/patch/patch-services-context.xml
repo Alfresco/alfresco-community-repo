@@ -1727,4 +1727,37 @@
             <value>classpath:alfresco/dbscripts/upgrade/2.2/${db.script.dialect}/AlfrescoSchemaUpdate-Person.sql</value>
         </property>
     </bean>
+    
+    <bean id="patch.webSiteAddModerated" class="org.alfresco.repo.admin.patch.impl.WebSiteAddModeratedPatch" parent="basePatch">
+        <property name="id"><value>patch.webSiteAddModerated</value></property>
+        <property name="description"><value>patch.webSiteAddModerated.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>2005</value></property>
+        <property name="targetSchema"><value>2006</value></property>
+        <property name="permissionService">
+        	<ref bean="permissionService"/>
+        </property>
+        <property name="nodeService">
+            <ref bean="nodeService"/>
+        </property>
+        <property name="siteService">
+            <ref bean="siteService"/>
+        </property>
+    </bean>
+    
+    <bean id="patch.invitationMigration" class="org.alfresco.repo.admin.patch.impl.InvitationMigrationPatch" parent="basePatch">
+        <property name="id"><value>patch.invitationMigration</value></property>
+        <property name="description"><value>patch.invitationMigration.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>2005</value></property>
+        <property name="targetSchema"><value>2006</value></property>
+        <property name="workflowService">
+            <ref bean="WorkflowService"/>
+        </property>
+        <property name="invitationService">
+            <ref bean="invitationService"/>
+        </property>
+    </bean>
+    
+    
 </beans>

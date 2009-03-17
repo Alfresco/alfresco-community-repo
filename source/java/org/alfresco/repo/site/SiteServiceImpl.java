@@ -742,10 +742,7 @@ public class SiteServiceImpl implements SiteService, SiteModel
                     visibility = SiteVisibility.PUBLIC;
                     break;
                 }
-            }
-            
-            // Store the visibility value on the node ref for next time
-            this.nodeService.setProperty(siteNodeRef, SiteModel.PROP_SITE_VISIBILITY, visibility.toString());            
+            }            
         }
         else
         {

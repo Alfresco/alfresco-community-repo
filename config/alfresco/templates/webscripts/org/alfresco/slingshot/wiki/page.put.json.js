@@ -143,6 +143,12 @@ function pageVersionMatchesSubmitted(page)
    {
       repoVersion = getLatestVersion(page.versionHistory);
    }
+   else
+   {
+      page.addAspect("cm:versionable");
+      page.save();
+      return 0;
+   }
    
    return (sortByLabel(
    {

@@ -24,10 +24,8 @@
  */
 
 /*
- * Parser for the CMIS query language
+ * Parser for the Alfresco query language
  *
- * The semantics of multivalued properties are ignored for the initial parse of the language.
- * They are applied in a second pass, when we have enough information to determine the column type. 
  */
  
 grammar FTS;
@@ -97,7 +95,7 @@ tokens
        if(e instanceof NoViableAltException)
        {
             NoViableAltException nvae = (NoViableAltException)e;
-            msg = " no viable alt; token="+e.token+
+            msg = "No viable alt; token="+e.token+
              " (decision="+nvae.decisionNumber+
              " state "+nvae.stateNumber+")"+
              " decision=<<"+nvae.grammarDecisionDescription+">>";
@@ -149,8 +147,7 @@ ftsExplicitDisjunction
 ftsExplictConjunction
 	:	ftsNot (AND ftsNot)*
 		-> ^(CONJUNCTION ftsNot)
-	;
-	
+	;	
 	
 ftsNot  
     :	MINUS ftsTest

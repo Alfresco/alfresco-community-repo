@@ -1703,7 +1703,15 @@ public class QueryTest extends BaseCMISTest
         query = "SELECT D.*, T.* FROM CM_TITLED T JOIN DOCUMENT D ON (D.OBJECTID = T.OBJECTID)";
         parse(query);
     }
+    
+    public void testParseIssues() throws RecognitionException
+    {
+        String query = "SELECT Name, ObjectId, asdf asdfasdf asdfasdf asdfasdfasdf FROM DOCUMENT";
+        parse(query);
+    }
 
+    
+    
     public void testAspectProperties()
     {
         CMISQueryOptions options = new CMISQueryOptions("SELECT * FROM CM_OWNABLE O", rootNodeRef.getStoreRef());

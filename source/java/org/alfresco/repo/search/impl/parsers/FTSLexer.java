@@ -1,4 +1,4 @@
-// $ANTLR 3.1b1 W:\\workspace-cmis\\ANTLR\\FTS.g 2008-07-15 16:32:02
+// $ANTLR 3.1.2 W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g 2009-03-18 14:58:19
 package org.alfresco.repo.search.impl.parsers;
 
 import org.antlr.runtime.*;
@@ -56,15 +56,15 @@ public class FTSLexer extends Lexer {
         super(input,state);
 
     }
-    public String getGrammarFileName() { return "W:\\workspace-cmis\\ANTLR\\FTS.g"; }
+    public String getGrammarFileName() { return "W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g"; }
 
-    // $ANTLR start OR
+    // $ANTLR start "OR"
     public final void mOR() throws RecognitionException {
         try {
             int _type = OR;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:289:4: ( ( 'O' | 'o' ) ( 'R' | 'r' ) )
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:289:6: ( 'O' | 'o' ) ( 'R' | 'r' )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:286:4: ( ( 'O' | 'o' ) ( 'R' | 'r' ) )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:286:6: ( 'O' | 'o' ) ( 'R' | 'r' )
             {
             if ( input.LA(1)=='O'||input.LA(1)=='o' ) {
                 input.consume();
@@ -93,15 +93,15 @@ public class FTSLexer extends Lexer {
         finally {
         }
     }
-    // $ANTLR end OR
+    // $ANTLR end "OR"
 
-    // $ANTLR start AND
+    // $ANTLR start "AND"
     public final void mAND() throws RecognitionException {
         try {
             int _type = AND;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:290:5: ( ( 'A' | 'a' ) ( 'N' | 'n' ) ( 'D' | 'd' ) )
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:290:7: ( 'A' | 'a' ) ( 'N' | 'n' ) ( 'D' | 'd' )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:287:5: ( ( 'A' | 'a' ) ( 'N' | 'n' ) ( 'D' | 'd' ) )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:287:7: ( 'A' | 'a' ) ( 'N' | 'n' ) ( 'D' | 'd' )
             {
             if ( input.LA(1)=='A'||input.LA(1)=='a' ) {
                 input.consume();
@@ -139,15 +139,15 @@ public class FTSLexer extends Lexer {
         finally {
         }
     }
-    // $ANTLR end AND
+    // $ANTLR end "AND"
 
-    // $ANTLR start NOT
+    // $ANTLR start "NOT"
     public final void mNOT() throws RecognitionException {
         try {
             int _type = NOT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:291:5: ( ( 'N' | 'n' ) ( 'O' | 'o' ) ( 'T' | 't' ) )
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:291:7: ( 'N' | 'n' ) ( 'O' | 'o' ) ( 'T' | 't' )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:288:5: ( ( 'N' | 'n' ) ( 'O' | 'o' ) ( 'T' | 't' ) )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:288:7: ( 'N' | 'n' ) ( 'O' | 'o' ) ( 'T' | 't' )
             {
             if ( input.LA(1)=='N'||input.LA(1)=='n' ) {
                 input.consume();
@@ -185,15 +185,15 @@ public class FTSLexer extends Lexer {
         finally {
         }
     }
-    // $ANTLR end NOT
+    // $ANTLR end "NOT"
 
-    // $ANTLR start TILDA
+    // $ANTLR start "TILDA"
     public final void mTILDA() throws RecognitionException {
         try {
             int _type = TILDA;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:292:7: ( '~' )
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:292:9: '~'
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:289:7: ( '~' )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:289:9: '~'
             {
             match('~'); 
 
@@ -205,15 +205,15 @@ public class FTSLexer extends Lexer {
         finally {
         }
     }
-    // $ANTLR end TILDA
+    // $ANTLR end "TILDA"
 
-    // $ANTLR start LPAREN
+    // $ANTLR start "LPAREN"
     public final void mLPAREN() throws RecognitionException {
         try {
             int _type = LPAREN;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:293:8: ( '(' )
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:293:10: '('
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:290:8: ( '(' )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:290:10: '('
             {
             match('('); 
 
@@ -225,15 +225,15 @@ public class FTSLexer extends Lexer {
         finally {
         }
     }
-    // $ANTLR end LPAREN
+    // $ANTLR end "LPAREN"
 
-    // $ANTLR start RPAREN
+    // $ANTLR start "RPAREN"
     public final void mRPAREN() throws RecognitionException {
         try {
             int _type = RPAREN;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:294:8: ( ')' )
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:294:10: ')'
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:291:8: ( ')' )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:291:10: ')'
             {
             match(')'); 
 
@@ -245,15 +245,15 @@ public class FTSLexer extends Lexer {
         finally {
         }
     }
-    // $ANTLR end RPAREN
+    // $ANTLR end "RPAREN"
 
-    // $ANTLR start PLUS
+    // $ANTLR start "PLUS"
     public final void mPLUS() throws RecognitionException {
         try {
             int _type = PLUS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:295:6: ( '+' )
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:295:8: '+'
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:292:6: ( '+' )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:292:8: '+'
             {
             match('+'); 
 
@@ -265,15 +265,15 @@ public class FTSLexer extends Lexer {
         finally {
         }
     }
-    // $ANTLR end PLUS
+    // $ANTLR end "PLUS"
 
-    // $ANTLR start MINUS
+    // $ANTLR start "MINUS"
     public final void mMINUS() throws RecognitionException {
         try {
             int _type = MINUS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:296:7: ( '-' )
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:296:9: '-'
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:293:7: ( '-' )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:293:9: '-'
             {
             match('-'); 
 
@@ -285,15 +285,15 @@ public class FTSLexer extends Lexer {
         finally {
         }
     }
-    // $ANTLR end MINUS
+    // $ANTLR end "MINUS"
 
-    // $ANTLR start COLON
+    // $ANTLR start "COLON"
     public final void mCOLON() throws RecognitionException {
         try {
             int _type = COLON;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:297:7: ( ':' )
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:297:9: ':'
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:294:7: ( ':' )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:294:9: ':'
             {
             match(':'); 
 
@@ -305,15 +305,15 @@ public class FTSLexer extends Lexer {
         finally {
         }
     }
-    // $ANTLR end COLON
+    // $ANTLR end "COLON"
 
-    // $ANTLR start STAR
+    // $ANTLR start "STAR"
     public final void mSTAR() throws RecognitionException {
         try {
             int _type = STAR;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:298:6: ( '*' )
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:298:8: '*'
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:295:6: ( '*' )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:295:8: '*'
             {
             match('*'); 
 
@@ -325,15 +325,15 @@ public class FTSLexer extends Lexer {
         finally {
         }
     }
-    // $ANTLR end STAR
+    // $ANTLR end "STAR"
 
-    // $ANTLR start DOTDOT
+    // $ANTLR start "DOTDOT"
     public final void mDOTDOT() throws RecognitionException {
         try {
             int _type = DOTDOT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:299:8: ( '..' )
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:299:10: '..'
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:296:8: ( '..' )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:296:10: '..'
             {
             match(".."); 
 
@@ -346,15 +346,15 @@ public class FTSLexer extends Lexer {
         finally {
         }
     }
-    // $ANTLR end DOTDOT
+    // $ANTLR end "DOTDOT"
 
-    // $ANTLR start DOT
+    // $ANTLR start "DOT"
     public final void mDOT() throws RecognitionException {
         try {
             int _type = DOT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:300:5: ( '.' )
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:300:7: '.'
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:297:5: ( '.' )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:297:7: '.'
             {
             match('.'); 
 
@@ -366,15 +366,15 @@ public class FTSLexer extends Lexer {
         finally {
         }
     }
-    // $ANTLR end DOT
+    // $ANTLR end "DOT"
 
-    // $ANTLR start ID
+    // $ANTLR start "ID"
     public final void mID() throws RecognitionException {
         try {
             int _type = ID;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:302:5: ( ( 'a' .. 'z' | 'A' .. 'Z' | '_' ) ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '0' | '_' | '$' | '#' )* )
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:302:9: ( 'a' .. 'z' | 'A' .. 'Z' | '_' ) ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '0' | '_' | '$' | '#' )*
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:299:5: ( ( 'a' .. 'z' | 'A' .. 'Z' | '_' ) ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '0' | '_' | '$' | '#' )* )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:299:9: ( 'a' .. 'z' | 'A' .. 'Z' | '_' ) ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '0' | '_' | '$' | '#' )*
             {
             if ( (input.LA(1)>='A' && input.LA(1)<='Z')||input.LA(1)=='_'||(input.LA(1)>='a' && input.LA(1)<='z') ) {
                 input.consume();
@@ -385,7 +385,7 @@ public class FTSLexer extends Lexer {
                 recover(mse);
                 throw mse;}
 
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:302:32: ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '0' | '_' | '$' | '#' )*
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:299:32: ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '0' | '_' | '$' | '#' )*
             loop1:
             do {
                 int alt1=2;
@@ -398,7 +398,7 @@ public class FTSLexer extends Lexer {
 
                 switch (alt1) {
             	case 1 :
-            	    // W:\\workspace-cmis\\ANTLR\\FTS.g:
+            	    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:
             	    {
             	    if ( (input.LA(1)>='#' && input.LA(1)<='$')||input.LA(1)=='0'||(input.LA(1)>='A' && input.LA(1)<='Z')||input.LA(1)=='_'||(input.LA(1)>='a' && input.LA(1)<='z') ) {
             	        input.consume();
@@ -427,17 +427,17 @@ public class FTSLexer extends Lexer {
         finally {
         }
     }
-    // $ANTLR end ID
+    // $ANTLR end "ID"
 
-    // $ANTLR start FTSWORD
+    // $ANTLR start "FTSWORD"
     public final void mFTSWORD() throws RecognitionException {
         try {
             int _type = FTSWORD;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:304:9: ( ( INWORD )+ )
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:304:12: ( INWORD )+
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:301:9: ( ( INWORD )+ )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:301:12: ( INWORD )+
             {
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:304:12: ( INWORD )+
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:301:12: ( INWORD )+
             int cnt2=0;
             loop2:
             do {
@@ -451,7 +451,7 @@ public class FTSLexer extends Lexer {
 
                 switch (alt2) {
             	case 1 :
-            	    // W:\\workspace-cmis\\ANTLR\\FTS.g:304:12: INWORD
+            	    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:301:12: INWORD
             	    {
             	    mINWORD(); 
 
@@ -476,13 +476,13 @@ public class FTSLexer extends Lexer {
         finally {
         }
     }
-    // $ANTLR end FTSWORD
+    // $ANTLR end "FTSWORD"
 
-    // $ANTLR start INWORD
+    // $ANTLR start "INWORD"
     public final void mINWORD() throws RecognitionException {
         try {
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:307:8: ( '\\u0041' .. '\\u005A' | '\\u0061' .. '\\u007A' | '\\u00C0' .. '\\u00D6' | '\\u00D8' .. '\\u00F6' | '\\u00F8' .. '\\u00FF' | '\\u0100' .. '\\u1FFF' | '\\u3040' .. '\\u318F' | '\\u3300' .. '\\u337F' | '\\u3400' .. '\\u3D2D' | '\\u4E00' .. '\\u9FFF' | '\\uF900' .. '\\uFAFF' | '\\uAC00' .. '\\uD7AF' | '\\u0030' .. '\\u0039' | '\\u0660' .. '\\u0669' | '\\u06F0' .. '\\u06F9' | '\\u0966' .. '\\u096F' | '\\u09E6' .. '\\u09EF' | '\\u0A66' .. '\\u0A6F' | '\\u0AE6' .. '\\u0AEF' | '\\u0B66' .. '\\u0B6F' | '\\u0BE7' .. '\\u0BEF' | '\\u0C66' .. '\\u0C6F' | '\\u0CE6' .. '\\u0CEF' | '\\u0D66' .. '\\u0D6F' | '\\u0E50' .. '\\u0E59' | '\\u0ED0' .. '\\u0ED9' | '\\u1040' .. '\\u1049' )
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:304:8: ( '\\u0041' .. '\\u005A' | '\\u0061' .. '\\u007A' | '\\u00C0' .. '\\u00D6' | '\\u00D8' .. '\\u00F6' | '\\u00F8' .. '\\u00FF' | '\\u0100' .. '\\u1FFF' | '\\u3040' .. '\\u318F' | '\\u3300' .. '\\u337F' | '\\u3400' .. '\\u3D2D' | '\\u4E00' .. '\\u9FFF' | '\\uF900' .. '\\uFAFF' | '\\uAC00' .. '\\uD7AF' | '\\u0030' .. '\\u0039' | '\\u0660' .. '\\u0669' | '\\u06F0' .. '\\u06F9' | '\\u0966' .. '\\u096F' | '\\u09E6' .. '\\u09EF' | '\\u0A66' .. '\\u0A6F' | '\\u0AE6' .. '\\u0AEF' | '\\u0B66' .. '\\u0B6F' | '\\u0BE7' .. '\\u0BEF' | '\\u0C66' .. '\\u0C6F' | '\\u0CE6' .. '\\u0CEF' | '\\u0D66' .. '\\u0D6F' | '\\u0E50' .. '\\u0E59' | '\\u0ED0' .. '\\u0ED9' | '\\u1040' .. '\\u1049' )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:
             {
             if ( (input.LA(1)>='0' && input.LA(1)<='9')||(input.LA(1)>='A' && input.LA(1)<='Z')||(input.LA(1)>='a' && input.LA(1)<='z')||(input.LA(1)>='\u00C0' && input.LA(1)<='\u00D6')||(input.LA(1)>='\u00D8' && input.LA(1)<='\u00F6')||(input.LA(1)>='\u00F8' && input.LA(1)<='\u1FFF')||(input.LA(1)>='\u3040' && input.LA(1)<='\u318F')||(input.LA(1)>='\u3300' && input.LA(1)<='\u337F')||(input.LA(1)>='\u3400' && input.LA(1)<='\u3D2D')||(input.LA(1)>='\u4E00' && input.LA(1)<='\u9FFF')||(input.LA(1)>='\uAC00' && input.LA(1)<='\uD7AF')||(input.LA(1)>='\uF900' && input.LA(1)<='\uFAFF') ) {
                 input.consume();
@@ -500,18 +500,18 @@ public class FTSLexer extends Lexer {
         finally {
         }
     }
-    // $ANTLR end INWORD
+    // $ANTLR end "INWORD"
 
-    // $ANTLR start FTSPHRASE
+    // $ANTLR start "FTSPHRASE"
     public final void mFTSPHRASE() throws RecognitionException {
         try {
             int _type = FTSPHRASE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:337:2: ( '\"' (~ '\"' | '\"\"' )* '\"' )
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:337:4: '\"' (~ '\"' | '\"\"' )* '\"'
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:334:2: ( '\"' (~ '\"' | '\"\"' )* '\"' )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:334:4: '\"' (~ '\"' | '\"\"' )* '\"'
             {
             match('\"'); 
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:337:8: (~ '\"' | '\"\"' )*
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:334:8: (~ '\"' | '\"\"' )*
             loop3:
             do {
                 int alt3=3;
@@ -526,16 +526,16 @@ public class FTSLexer extends Lexer {
 
 
                 }
-                else if ( ((LA3_0>='\u0000' && LA3_0<='!')||(LA3_0>='#' && LA3_0<='\uFFFE')) ) {
+                else if ( ((LA3_0>='\u0000' && LA3_0<='!')||(LA3_0>='#' && LA3_0<='\uFFFF')) ) {
                     alt3=1;
                 }
 
 
                 switch (alt3) {
             	case 1 :
-            	    // W:\\workspace-cmis\\ANTLR\\FTS.g:337:9: ~ '\"'
+            	    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:334:9: ~ '\"'
             	    {
-            	    if ( (input.LA(1)>='\u0000' && input.LA(1)<='!')||(input.LA(1)>='#' && input.LA(1)<='\uFFFE') ) {
+            	    if ( (input.LA(1)>='\u0000' && input.LA(1)<='!')||(input.LA(1)>='#' && input.LA(1)<='\uFFFF') ) {
             	        input.consume();
 
             	    }
@@ -548,7 +548,7 @@ public class FTSLexer extends Lexer {
             	    }
             	    break;
             	case 2 :
-            	    // W:\\workspace-cmis\\ANTLR\\FTS.g:337:16: '\"\"'
+            	    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:334:16: '\"\"'
             	    {
             	    match("\"\""); 
 
@@ -571,17 +571,17 @@ public class FTSLexer extends Lexer {
         finally {
         }
     }
-    // $ANTLR end FTSPHRASE
+    // $ANTLR end "FTSPHRASE"
 
-    // $ANTLR start WS
+    // $ANTLR start "WS"
     public final void mWS() throws RecognitionException {
         try {
             int _type = WS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:339:4: ( ( ' ' | '\\t' | '\\r' | '\\n' )+ )
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:339:6: ( ' ' | '\\t' | '\\r' | '\\n' )+
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:336:4: ( ( ' ' | '\\t' | '\\r' | '\\n' )+ )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:336:6: ( ' ' | '\\t' | '\\r' | '\\n' )+
             {
-            // W:\\workspace-cmis\\ANTLR\\FTS.g:339:6: ( ' ' | '\\t' | '\\r' | '\\n' )+
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:336:6: ( ' ' | '\\t' | '\\r' | '\\n' )+
             int cnt4=0;
             loop4:
             do {
@@ -595,7 +595,7 @@ public class FTSLexer extends Lexer {
 
                 switch (alt4) {
             	case 1 :
-            	    // W:\\workspace-cmis\\ANTLR\\FTS.g:
+            	    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:
             	    {
             	    if ( (input.LA(1)>='\t' && input.LA(1)<='\n')||input.LA(1)=='\r'||input.LA(1)==' ' ) {
             	        input.consume();
@@ -629,120 +629,120 @@ public class FTSLexer extends Lexer {
         finally {
         }
     }
-    // $ANTLR end WS
+    // $ANTLR end "WS"
 
     public void mTokens() throws RecognitionException {
-        // W:\\workspace-cmis\\ANTLR\\FTS.g:1:8: ( OR | AND | NOT | TILDA | LPAREN | RPAREN | PLUS | MINUS | COLON | STAR | DOTDOT | DOT | ID | FTSWORD | FTSPHRASE | WS )
+        // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:1:8: ( OR | AND | NOT | TILDA | LPAREN | RPAREN | PLUS | MINUS | COLON | STAR | DOTDOT | DOT | ID | FTSWORD | FTSPHRASE | WS )
         int alt5=16;
         alt5 = dfa5.predict(input);
         switch (alt5) {
             case 1 :
-                // W:\\workspace-cmis\\ANTLR\\FTS.g:1:10: OR
+                // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:1:10: OR
                 {
                 mOR(); 
 
                 }
                 break;
             case 2 :
-                // W:\\workspace-cmis\\ANTLR\\FTS.g:1:13: AND
+                // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:1:13: AND
                 {
                 mAND(); 
 
                 }
                 break;
             case 3 :
-                // W:\\workspace-cmis\\ANTLR\\FTS.g:1:17: NOT
+                // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:1:17: NOT
                 {
                 mNOT(); 
 
                 }
                 break;
             case 4 :
-                // W:\\workspace-cmis\\ANTLR\\FTS.g:1:21: TILDA
+                // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:1:21: TILDA
                 {
                 mTILDA(); 
 
                 }
                 break;
             case 5 :
-                // W:\\workspace-cmis\\ANTLR\\FTS.g:1:27: LPAREN
+                // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:1:27: LPAREN
                 {
                 mLPAREN(); 
 
                 }
                 break;
             case 6 :
-                // W:\\workspace-cmis\\ANTLR\\FTS.g:1:34: RPAREN
+                // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:1:34: RPAREN
                 {
                 mRPAREN(); 
 
                 }
                 break;
             case 7 :
-                // W:\\workspace-cmis\\ANTLR\\FTS.g:1:41: PLUS
+                // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:1:41: PLUS
                 {
                 mPLUS(); 
 
                 }
                 break;
             case 8 :
-                // W:\\workspace-cmis\\ANTLR\\FTS.g:1:46: MINUS
+                // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:1:46: MINUS
                 {
                 mMINUS(); 
 
                 }
                 break;
             case 9 :
-                // W:\\workspace-cmis\\ANTLR\\FTS.g:1:52: COLON
+                // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:1:52: COLON
                 {
                 mCOLON(); 
 
                 }
                 break;
             case 10 :
-                // W:\\workspace-cmis\\ANTLR\\FTS.g:1:58: STAR
+                // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:1:58: STAR
                 {
                 mSTAR(); 
 
                 }
                 break;
             case 11 :
-                // W:\\workspace-cmis\\ANTLR\\FTS.g:1:63: DOTDOT
+                // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:1:63: DOTDOT
                 {
                 mDOTDOT(); 
 
                 }
                 break;
             case 12 :
-                // W:\\workspace-cmis\\ANTLR\\FTS.g:1:70: DOT
+                // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:1:70: DOT
                 {
                 mDOT(); 
 
                 }
                 break;
             case 13 :
-                // W:\\workspace-cmis\\ANTLR\\FTS.g:1:74: ID
+                // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:1:74: ID
                 {
                 mID(); 
 
                 }
                 break;
             case 14 :
-                // W:\\workspace-cmis\\ANTLR\\FTS.g:1:77: FTSWORD
+                // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:1:77: FTSWORD
                 {
                 mFTSWORD(); 
 
                 }
                 break;
             case 15 :
-                // W:\\workspace-cmis\\ANTLR\\FTS.g:1:85: FTSPHRASE
+                // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:1:85: FTSPHRASE
                 {
                 mFTSPHRASE(); 
 
                 }
                 break;
             case 16 :
-                // W:\\workspace-cmis\\ANTLR\\FTS.g:1:95: WS
+                // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:1:95: WS
                 {
                 mWS(); 
 

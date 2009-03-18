@@ -106,7 +106,7 @@ tokens
 	   if(e instanceof NoViableAltException)
 	   {
 	        NoViableAltException nvae = (NoViableAltException)e;
-	        msg = " no viable alt; token="+e.token+
+	        msg = "No viable alt; token="+e.token+
 	         " (decision="+nvae.decisionNumber+
 	         " state "+nvae.stateNumber+")"+
 	         " decision=<<"+nvae.grammarDecisionDescription+">>";

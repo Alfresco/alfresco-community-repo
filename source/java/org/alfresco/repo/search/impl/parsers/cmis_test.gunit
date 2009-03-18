@@ -1,0 +1,12 @@
+/** CMIS */
+
+gunit CMIS;
+
+@header{package org.alfresco.repo.search.impl.parsers;}
+
+/** Parser */
+
+query:
+"SELECT Name, ObjectId, asdf asdfasdf asdfasdf asdfasdfasdf FROM DOCUMENT" FAIL
+
+

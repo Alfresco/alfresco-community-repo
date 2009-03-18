@@ -1,4 +1,4 @@
-// $ANTLR 3.1b1 W:\\workspace-cmis2\\ANTLR\\CMIS.g 2008-08-07 14:37:14
+// $ANTLR 3.1.2 W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g 2009-03-18 14:58:50
 package org.alfresco.repo.search.impl.parsers;
 
 import org.antlr.runtime.*;
@@ -107,6 +107,7 @@ public class CMISParser extends Parser {
         }
         public CMISParser(TokenStream input, RecognizerSharedState state) {
             super(input, state);
+             
         }
         
     protected TreeAdaptor adaptor = new CommonTreeAdaptor();
@@ -119,7 +120,7 @@ public class CMISParser extends Parser {
     }
 
     public String[] getTokenNames() { return CMISParser.tokenNames; }
-    public String getGrammarFileName() { return "W:\\workspace-cmis2\\ANTLR\\CMIS.g"; }
+    public String getGrammarFileName() { return "W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g"; }
 
 
         private Stack<String> paraphrases = new Stack<String>();
@@ -149,7 +150,7 @@ public class CMISParser extends Parser {
     	   if(e instanceof NoViableAltException)
     	   {
     	        NoViableAltException nvae = (NoViableAltException)e;
-    	        msg = " no viable alt; token="+e.token+
+    	        msg = "No viable alt; token="+e.token+
     	         " (decision="+nvae.decisionNumber+
     	         " state "+nvae.stateNumber+")"+
     	         " decision=<<"+nvae.grammarDecisionDescription+">>";
@@ -178,8 +179,8 @@ public class CMISParser extends Parser {
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start query
-    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:142:1: query : SELECT selectList fromClause ( whereClause )? ( orderByClause )? EOF -> ^( QUERY selectList fromClause ( whereClause )? ( orderByClause )? ) ;
+    // $ANTLR start "query"
+    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:142:1: query : SELECT selectList fromClause ( whereClause )? ( orderByClause )? EOF -> ^( QUERY selectList fromClause ( whereClause )? ( orderByClause )? ) ;
     public final CMISParser.query_return query() throws RecognitionException {
         CMISParser.query_return retval = new CMISParser.query_return();
         retval.start = input.LT(1);
@@ -206,8 +207,8 @@ public class CMISParser extends Parser {
         RewriteRuleSubtreeStream stream_selectList=new RewriteRuleSubtreeStream(adaptor,"rule selectList");
         RewriteRuleSubtreeStream stream_fromClause=new RewriteRuleSubtreeStream(adaptor,"rule fromClause");
         try {
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:149:2: ( SELECT selectList fromClause ( whereClause )? ( orderByClause )? EOF -> ^( QUERY selectList fromClause ( whereClause )? ( orderByClause )? ) )
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:149:4: SELECT selectList fromClause ( whereClause )? ( orderByClause )? EOF
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:149:2: ( SELECT selectList fromClause ( whereClause )? ( orderByClause )? EOF -> ^( QUERY selectList fromClause ( whereClause )? ( orderByClause )? ) )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:149:4: SELECT selectList fromClause ( whereClause )? ( orderByClause )? EOF
             {
             SELECT1=(Token)match(input,SELECT,FOLLOW_SELECT_in_query172); if (state.failed) return retval; 
             if ( state.backtracking==0 ) stream_SELECT.add(SELECT1);
@@ -224,7 +225,7 @@ public class CMISParser extends Parser {
             state._fsp--;
             if (state.failed) return retval;
             if ( state.backtracking==0 ) stream_fromClause.add(fromClause3.getTree());
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:149:33: ( whereClause )?
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:149:33: ( whereClause )?
             int alt1=2;
             int LA1_0 = input.LA(1);
 
@@ -233,7 +234,7 @@ public class CMISParser extends Parser {
             }
             switch (alt1) {
                 case 1 :
-                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:149:33: whereClause
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:149:33: whereClause
                     {
                     pushFollow(FOLLOW_whereClause_in_query178);
                     whereClause4=whereClause();
@@ -247,7 +248,7 @@ public class CMISParser extends Parser {
 
             }
 
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:149:46: ( orderByClause )?
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:149:46: ( orderByClause )?
             int alt2=2;
             int LA2_0 = input.LA(1);
 
@@ -256,7 +257,7 @@ public class CMISParser extends Parser {
             }
             switch (alt2) {
                 case 1 :
-                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:149:46: orderByClause
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:149:46: orderByClause
                     {
                     pushFollow(FOLLOW_orderByClause_in_query181);
                     orderByClause5=orderByClause();
@@ -276,32 +277,33 @@ public class CMISParser extends Parser {
 
 
             // AST REWRITE
-            // elements: whereClause, orderByClause, selectList, fromClause
+            // elements: orderByClause, fromClause, whereClause, selectList
             // token labels: 
             // rule labels: retval
             // token list labels: 
             // rule list labels: 
+            // wildcard labels: 
             if ( state.backtracking==0 ) {
             retval.tree = root_0;
-            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
+            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
             root_0 = (Object)adaptor.nil();
             // 150:3: -> ^( QUERY selectList fromClause ( whereClause )? ( orderByClause )? )
             {
-                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:150:6: ^( QUERY selectList fromClause ( whereClause )? ( orderByClause )? )
+                // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:150:6: ^( QUERY selectList fromClause ( whereClause )? ( orderByClause )? )
                 {
                 Object root_1 = (Object)adaptor.nil();
                 root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(QUERY, "QUERY"), root_1);
 
                 adaptor.addChild(root_1, stream_selectList.nextTree());
                 adaptor.addChild(root_1, stream_fromClause.nextTree());
-                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:150:36: ( whereClause )?
+                // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:150:36: ( whereClause )?
                 if ( stream_whereClause.hasNext() ) {
                     adaptor.addChild(root_1, stream_whereClause.nextTree());
 
                 }
                 stream_whereClause.reset();
-                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:150:49: ( orderByClause )?
+                // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:150:49: ( orderByClause )?
                 if ( stream_orderByClause.hasNext() ) {
                     adaptor.addChild(root_1, stream_orderByClause.nextTree());
 
@@ -313,7 +315,7 @@ public class CMISParser extends Parser {
 
             }
 
-            retval.tree = root_0;retval.tree = root_0;}
+            retval.tree = root_0;}
             }
 
             retval.stop = input.LT(-1);
@@ -333,15 +335,15 @@ public class CMISParser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end query
+    // $ANTLR end "query"
 
     public static class selectList_return extends ParserRuleReturnScope {
         Object tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start selectList
-    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:154:1: selectList : ( STAR -> ^( ALL_COLUMNS ) | selectSubList ( COMMA selectSubList )* -> ^( COLUMNS ( selectSubList )+ ) );
+    // $ANTLR start "selectList"
+    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:154:1: selectList : ( STAR -> ^( ALL_COLUMNS ) | selectSubList ( COMMA selectSubList )* -> ^( COLUMNS ( selectSubList )+ ) );
     public final CMISParser.selectList_return selectList() throws RecognitionException {
         CMISParser.selectList_return retval = new CMISParser.selectList_return();
         retval.start = input.LT(1);
@@ -362,7 +364,7 @@ public class CMISParser extends Parser {
         RewriteRuleSubtreeStream stream_selectSubList=new RewriteRuleSubtreeStream(adaptor,"rule selectSubList");
             paraphrases.push("in select list"); 
         try {
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:157:2: ( STAR -> ^( ALL_COLUMNS ) | selectSubList ( COMMA selectSubList )* -> ^( COLUMNS ( selectSubList )+ ) )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:157:2: ( STAR -> ^( ALL_COLUMNS ) | selectSubList ( COMMA selectSubList )* -> ^( COLUMNS ( selectSubList )+ ) )
             int alt4=2;
             int LA4_0 = input.LA(1);
 
@@ -381,7 +383,7 @@ public class CMISParser extends Parser {
             }
             switch (alt4) {
                 case 1 :
-                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:157:4: STAR
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:157:4: STAR
                     {
                     STAR7=(Token)match(input,STAR,FOLLOW_STAR_in_selectList233); if (state.failed) return retval; 
                     if ( state.backtracking==0 ) stream_STAR.add(STAR7);
@@ -394,14 +396,15 @@ public class CMISParser extends Parser {
                     // rule labels: retval
                     // token list labels: 
                     // rule list labels: 
+                    // wildcard labels: 
                     if ( state.backtracking==0 ) {
                     retval.tree = root_0;
-                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
+                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
                     // 158:3: -> ^( ALL_COLUMNS )
                     {
-                        // W:\\workspace-cmis2\\ANTLR\\CMIS.g:158:6: ^( ALL_COLUMNS )
+                        // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:158:6: ^( ALL_COLUMNS )
                         {
                         Object root_1 = (Object)adaptor.nil();
                         root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(ALL_COLUMNS, "ALL_COLUMNS"), root_1);
@@ -411,11 +414,11 @@ public class CMISParser extends Parser {
 
                     }
 
-                    retval.tree = root_0;retval.tree = root_0;}
+                    retval.tree = root_0;}
                     }
                     break;
                 case 2 :
-                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:159:5: selectSubList ( COMMA selectSubList )*
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:159:5: selectSubList ( COMMA selectSubList )*
                     {
                     pushFollow(FOLLOW_selectSubList_in_selectList249);
                     selectSubList8=selectSubList();
@@ -423,7 +426,7 @@ public class CMISParser extends Parser {
                     state._fsp--;
                     if (state.failed) return retval;
                     if ( state.backtracking==0 ) stream_selectSubList.add(selectSubList8.getTree());
-                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:159:19: ( COMMA selectSubList )*
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:159:19: ( COMMA selectSubList )*
                     loop3:
                     do {
                         int alt3=2;
@@ -436,7 +439,7 @@ public class CMISParser extends Parser {
 
                         switch (alt3) {
                     	case 1 :
-                    	    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:159:21: COMMA selectSubList
+                    	    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:159:21: COMMA selectSubList
                     	    {
                     	    COMMA9=(Token)match(input,COMMA,FOLLOW_COMMA_in_selectList253); if (state.failed) return retval; 
                     	    if ( state.backtracking==0 ) stream_COMMA.add(COMMA9);
@@ -464,14 +467,15 @@ public class CMISParser extends Parser {
                     // rule labels: retval
                     // token list labels: 
                     // rule list labels: 
+                    // wildcard labels: 
                     if ( state.backtracking==0 ) {
                     retval.tree = root_0;
-                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
+                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
                     // 160:3: -> ^( COLUMNS ( selectSubList )+ )
                     {
-                        // W:\\workspace-cmis2\\ANTLR\\CMIS.g:160:6: ^( COLUMNS ( selectSubList )+ )
+                        // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:160:6: ^( COLUMNS ( selectSubList )+ )
                         {
                         Object root_1 = (Object)adaptor.nil();
                         root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(COLUMNS, "COLUMNS"), root_1);
@@ -490,7 +494,7 @@ public class CMISParser extends Parser {
 
                     }
 
-                    retval.tree = root_0;retval.tree = root_0;}
+                    retval.tree = root_0;}
                     }
                     break;
 
@@ -515,15 +519,15 @@ public class CMISParser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end selectList
+    // $ANTLR end "selectList"
 
     public static class selectSubList_return extends ParserRuleReturnScope {
         Object tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start selectSubList
-    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:164:1: selectSubList : ( ( valueExpression )=> valueExpression ( ( AS )? columnName )? -> ^( COLUMN valueExpression ( columnName )? ) | qualifier DOTSTAR -> ^( ALL_COLUMNS qualifier ) | multiValuedColumnReference ->);
+    // $ANTLR start "selectSubList"
+    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:164:1: selectSubList : ( ( valueExpression )=> valueExpression ( ( AS )? columnName )? -> ^( COLUMN valueExpression ( columnName )? ) | qualifier DOTSTAR -> ^( ALL_COLUMNS qualifier ) | multiValuedColumnReference ->);
     public final CMISParser.selectSubList_return selectSubList() throws RecognitionException {
         CMISParser.selectSubList_return retval = new CMISParser.selectSubList_return();
         retval.start = input.LT(1);
@@ -550,7 +554,7 @@ public class CMISParser extends Parser {
         RewriteRuleSubtreeStream stream_columnName=new RewriteRuleSubtreeStream(adaptor,"rule columnName");
         RewriteRuleSubtreeStream stream_qualifier=new RewriteRuleSubtreeStream(adaptor,"rule qualifier");
         try {
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:165:2: ( ( valueExpression )=> valueExpression ( ( AS )? columnName )? -> ^( COLUMN valueExpression ( columnName )? ) | qualifier DOTSTAR -> ^( ALL_COLUMNS qualifier ) | multiValuedColumnReference ->)
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:165:2: ( ( valueExpression )=> valueExpression ( ( AS )? columnName )? -> ^( COLUMN valueExpression ( columnName )? ) | qualifier DOTSTAR -> ^( ALL_COLUMNS qualifier ) | multiValuedColumnReference ->)
             int alt7=3;
             int LA7_0 = input.LA(1);
 
@@ -659,7 +663,7 @@ public class CMISParser extends Parser {
             }
             switch (alt7) {
                 case 1 :
-                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:165:4: ( valueExpression )=> valueExpression ( ( AS )? columnName )?
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:165:4: ( valueExpression )=> valueExpression ( ( AS )? columnName )?
                     {
                     pushFollow(FOLLOW_valueExpression_in_selectSubList291);
                     valueExpression11=valueExpression();
@@ -667,7 +671,7 @@ public class CMISParser extends Parser {
                     state._fsp--;
                     if (state.failed) return retval;
                     if ( state.backtracking==0 ) stream_valueExpression.add(valueExpression11.getTree());
-                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:165:40: ( ( AS )? columnName )?
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:165:40: ( ( AS )? columnName )?
                     int alt6=2;
                     int LA6_0 = input.LA(1);
 
@@ -676,9 +680,9 @@ public class CMISParser extends Parser {
                     }
                     switch (alt6) {
                         case 1 :
-                            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:165:42: ( AS )? columnName
+                            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:165:42: ( AS )? columnName
                             {
-                            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:165:42: ( AS )?
+                            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:165:42: ( AS )?
                             int alt5=2;
                             int LA5_0 = input.LA(1);
 
@@ -687,7 +691,7 @@ public class CMISParser extends Parser {
                             }
                             switch (alt5) {
                                 case 1 :
-                                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:165:42: AS
+                                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:165:42: AS
                                     {
                                     AS12=(Token)match(input,AS,FOLLOW_AS_in_selectSubList295); if (state.failed) return retval; 
                                     if ( state.backtracking==0 ) stream_AS.add(AS12);
@@ -718,20 +722,21 @@ public class CMISParser extends Parser {
                     // rule labels: retval
                     // token list labels: 
                     // rule list labels: 
+                    // wildcard labels: 
                     if ( state.backtracking==0 ) {
                     retval.tree = root_0;
-                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
+                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
                     // 166:3: -> ^( COLUMN valueExpression ( columnName )? )
                     {
-                        // W:\\workspace-cmis2\\ANTLR\\CMIS.g:166:6: ^( COLUMN valueExpression ( columnName )? )
+                        // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:166:6: ^( COLUMN valueExpression ( columnName )? )
                         {
                         Object root_1 = (Object)adaptor.nil();
                         root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(COLUMN, "COLUMN"), root_1);
 
                         adaptor.addChild(root_1, stream_valueExpression.nextTree());
-                        // W:\\workspace-cmis2\\ANTLR\\CMIS.g:166:31: ( columnName )?
+                        // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:166:31: ( columnName )?
                         if ( stream_columnName.hasNext() ) {
                             adaptor.addChild(root_1, stream_columnName.nextTree());
 
@@ -743,11 +748,11 @@ public class CMISParser extends Parser {
 
                     }
 
-                    retval.tree = root_0;retval.tree = root_0;}
+                    retval.tree = root_0;}
                     }
                     break;
                 case 2 :
-                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:167:4: qualifier DOTSTAR
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:167:4: qualifier DOTSTAR
                     {
                     pushFollow(FOLLOW_qualifier_in_selectSubList319);
                     qualifier14=qualifier();
@@ -766,14 +771,15 @@ public class CMISParser extends Parser {
                     // rule labels: retval
                     // token list labels: 
                     // rule list labels: 
+                    // wildcard labels: 
                     if ( state.backtracking==0 ) {
                     retval.tree = root_0;
-                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
+                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
                     // 168:3: -> ^( ALL_COLUMNS qualifier )
                     {
-                        // W:\\workspace-cmis2\\ANTLR\\CMIS.g:168:6: ^( ALL_COLUMNS qualifier )
+                        // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:168:6: ^( ALL_COLUMNS qualifier )
                         {
                         Object root_1 = (Object)adaptor.nil();
                         root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(ALL_COLUMNS, "ALL_COLUMNS"), root_1);
@@ -785,11 +791,11 @@ public class CMISParser extends Parser {
 
                     }
 
-                    retval.tree = root_0;retval.tree = root_0;}
+                    retval.tree = root_0;}
                     }
                     break;
                 case 3 :
-                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:169:4: multiValuedColumnReference
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:169:4: multiValuedColumnReference
                     {
                     pushFollow(FOLLOW_multiValuedColumnReference_in_selectSubList337);
                     multiValuedColumnReference16=multiValuedColumnReference();
@@ -805,9 +811,10 @@ public class CMISParser extends Parser {
                     // rule labels: retval
                     // token list labels: 
                     // rule list labels: 
+                    // wildcard labels: 
                     if ( state.backtracking==0 ) {
                     retval.tree = root_0;
-                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
+                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
                     // 170:3: ->
@@ -815,7 +822,7 @@ public class CMISParser extends Parser {
                         root_0 = null;
                     }
 
-                    retval.tree = root_0;retval.tree = root_0;}
+                    retval.tree = root_0;}
                     }
                     break;
 
@@ -837,15 +844,15 @@ public class CMISParser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end selectSubList
+    // $ANTLR end "selectSubList"
 
     public static class valueExpression_return extends ParserRuleReturnScope {
         Object tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start valueExpression
-    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:173:1: valueExpression : ( columnReference -> columnReference | valueFunction -> valueFunction );
+    // $ANTLR start "valueExpression"
+    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:173:1: valueExpression : ( columnReference -> columnReference | valueFunction -> valueFunction );
     public final CMISParser.valueExpression_return valueExpression() throws RecognitionException {
         CMISParser.valueExpression_return retval = new CMISParser.valueExpression_return();
         retval.start = input.LT(1);
@@ -860,7 +867,7 @@ public class CMISParser extends Parser {
         RewriteRuleSubtreeStream stream_valueFunction=new RewriteRuleSubtreeStream(adaptor,"rule valueFunction");
         RewriteRuleSubtreeStream stream_columnReference=new RewriteRuleSubtreeStream(adaptor,"rule columnReference");
         try {
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:174:2: ( columnReference -> columnReference | valueFunction -> valueFunction )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:174:2: ( columnReference -> columnReference | valueFunction -> valueFunction )
             int alt8=2;
             switch ( input.LA(1) ) {
             case ID:
@@ -928,7 +935,7 @@ public class CMISParser extends Parser {
 
             switch (alt8) {
                 case 1 :
-                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:174:4: columnReference
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:174:4: columnReference
                     {
                     pushFollow(FOLLOW_columnReference_in_valueExpression356);
                     columnReference17=columnReference();
@@ -944,9 +951,10 @@ public class CMISParser extends Parser {
                     // rule labels: retval
                     // token list labels: 
                     // rule list labels: 
+                    // wildcard labels: 
                     if ( state.backtracking==0 ) {
                     retval.tree = root_0;
-                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
+                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
                     // 175:3: -> columnReference
@@ -955,11 +963,11 @@ public class CMISParser extends Parser {
 
                     }
 
-                    retval.tree = root_0;retval.tree = root_0;}
+                    retval.tree = root_0;}
                     }
                     break;
                 case 2 :
-                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:176:5: valueFunction
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:176:5: valueFunction
                     {
                     pushFollow(FOLLOW_valueFunction_in_valueExpression369);
                     valueFunction18=valueFunction();
@@ -975,9 +983,10 @@ public class CMISParser extends Parser {
                     // rule labels: retval
                     // token list labels: 
                     // rule list labels: 
+                    // wildcard labels: 
                     if ( state.backtracking==0 ) {
                     retval.tree = root_0;
-                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
+                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
                     // 177:3: -> valueFunction
@@ -986,7 +995,7 @@ public class CMISParser extends Parser {
 
                     }
 
-                    retval.tree = root_0;retval.tree = root_0;}
+                    retval.tree = root_0;}
                     }
                     break;
 
@@ -1008,15 +1017,15 @@ public class CMISParser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end valueExpression
+    // $ANTLR end "valueExpression"
 
     public static class columnReference_return extends ParserRuleReturnScope {
         Object tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start columnReference
-    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:180:1: columnReference : ( qualifier DOT )? columnName -> ^( COLUMN_REF columnName ( qualifier )? ) ;
+    // $ANTLR start "columnReference"
+    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:180:1: columnReference : ( qualifier DOT )? columnName -> ^( COLUMN_REF columnName ( qualifier )? ) ;
     public final CMISParser.columnReference_return columnReference() throws RecognitionException {
         CMISParser.columnReference_return retval = new CMISParser.columnReference_return();
         retval.start = input.LT(1);
@@ -1034,10 +1043,10 @@ public class CMISParser extends Parser {
         RewriteRuleSubtreeStream stream_columnName=new RewriteRuleSubtreeStream(adaptor,"rule columnName");
         RewriteRuleSubtreeStream stream_qualifier=new RewriteRuleSubtreeStream(adaptor,"rule qualifier");
         try {
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:181:2: ( ( qualifier DOT )? columnName -> ^( COLUMN_REF columnName ( qualifier )? ) )
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:181:4: ( qualifier DOT )? columnName
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:181:2: ( ( qualifier DOT )? columnName -> ^( COLUMN_REF columnName ( qualifier )? ) )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:181:4: ( qualifier DOT )? columnName
             {
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:181:4: ( qualifier DOT )?
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:181:4: ( qualifier DOT )?
             int alt9=2;
             int LA9_0 = input.LA(1);
 
@@ -1076,7 +1085,7 @@ public class CMISParser extends Parser {
             }
             switch (alt9) {
                 case 1 :
-                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:181:6: qualifier DOT
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:181:6: qualifier DOT
                     {
                     pushFollow(FOLLOW_qualifier_in_columnReference392);
                     qualifier19=qualifier();
@@ -1107,20 +1116,21 @@ public class CMISParser extends Parser {
             // rule labels: retval
             // token list labels: 
             // rule list labels: 
+            // wildcard labels: 
             if ( state.backtracking==0 ) {
             retval.tree = root_0;
-            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
+            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
             root_0 = (Object)adaptor.nil();
             // 182:3: -> ^( COLUMN_REF columnName ( qualifier )? )
             {
-                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:182:6: ^( COLUMN_REF columnName ( qualifier )? )
+                // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:182:6: ^( COLUMN_REF columnName ( qualifier )? )
                 {
                 Object root_1 = (Object)adaptor.nil();
                 root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(COLUMN_REF, "COLUMN_REF"), root_1);
 
                 adaptor.addChild(root_1, stream_columnName.nextTree());
-                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:182:30: ( qualifier )?
+                // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:182:30: ( qualifier )?
                 if ( stream_qualifier.hasNext() ) {
                     adaptor.addChild(root_1, stream_qualifier.nextTree());
 
@@ -1132,7 +1142,7 @@ public class CMISParser extends Parser {
 
             }
 
-            retval.tree = root_0;retval.tree = root_0;}
+            retval.tree = root_0;}
             }
 
             retval.stop = input.LT(-1);
@@ -1152,15 +1162,15 @@ public class CMISParser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end columnReference
+    // $ANTLR end "columnReference"
 
     public static class multiValuedColumnReference_return extends ParserRuleReturnScope {
         Object tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start multiValuedColumnReference
-    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:189:1: multiValuedColumnReference : ( qualifier DOT )? multiValuedColumnName -> ^( COLUMN_REF multiValuedColumnName ( qualifier )? ) ;
+    // $ANTLR start "multiValuedColumnReference"
+    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:189:1: multiValuedColumnReference : ( qualifier DOT )? multiValuedColumnName -> ^( COLUMN_REF multiValuedColumnName ( qualifier )? ) ;
     public final CMISParser.multiValuedColumnReference_return multiValuedColumnReference() throws RecognitionException {
         CMISParser.multiValuedColumnReference_return retval = new CMISParser.multiValuedColumnReference_return();
         retval.start = input.LT(1);
@@ -1178,10 +1188,10 @@ public class CMISParser extends Parser {
         RewriteRuleSubtreeStream stream_qualifier=new RewriteRuleSubtreeStream(adaptor,"rule qualifier");
         RewriteRuleSubtreeStream stream_multiValuedColumnName=new RewriteRuleSubtreeStream(adaptor,"rule multiValuedColumnName");
         try {
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:190:2: ( ( qualifier DOT )? multiValuedColumnName -> ^( COLUMN_REF multiValuedColumnName ( qualifier )? ) )
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:190:10: ( qualifier DOT )? multiValuedColumnName
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:190:2: ( ( qualifier DOT )? multiValuedColumnName -> ^( COLUMN_REF multiValuedColumnName ( qualifier )? ) )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:190:10: ( qualifier DOT )? multiValuedColumnName
             {
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:190:10: ( qualifier DOT )?
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:190:10: ( qualifier DOT )?
             int alt10=2;
             int LA10_0 = input.LA(1);
 
@@ -1220,7 +1230,7 @@ public class CMISParser extends Parser {
             }
             switch (alt10) {
                 case 1 :
-                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:190:12: qualifier DOT
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:190:12: qualifier DOT
                     {
                     pushFollow(FOLLOW_qualifier_in_multiValuedColumnReference435);
                     qualifier22=qualifier();
@@ -1251,20 +1261,21 @@ public class CMISParser extends Parser {
             // rule labels: retval
             // token list labels: 
             // rule list labels: 
+            // wildcard labels: 
             if ( state.backtracking==0 ) {
             retval.tree = root_0;
-            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
+            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
             root_0 = (Object)adaptor.nil();
             // 191:3: -> ^( COLUMN_REF multiValuedColumnName ( qualifier )? )
             {
-                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:191:6: ^( COLUMN_REF multiValuedColumnName ( qualifier )? )
+                // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:191:6: ^( COLUMN_REF multiValuedColumnName ( qualifier )? )
                 {
                 Object root_1 = (Object)adaptor.nil();
                 root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(COLUMN_REF, "COLUMN_REF"), root_1);
 
                 adaptor.addChild(root_1, stream_multiValuedColumnName.nextTree());
-                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:191:41: ( qualifier )?
+                // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:191:41: ( qualifier )?
                 if ( stream_qualifier.hasNext() ) {
                     adaptor.addChild(root_1, stream_qualifier.nextTree());
 
@@ -1276,7 +1287,7 @@ public class CMISParser extends Parser {
 
             }
 
-            retval.tree = root_0;retval.tree = root_0;}
+            retval.tree = root_0;}
             }
 
             retval.stop = input.LT(-1);
@@ -1296,15 +1307,15 @@ public class CMISParser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end multiValuedColumnReference
+    // $ANTLR end "multiValuedColumnReference"
 
     public static class valueFunction_return extends ParserRuleReturnScope {
         Object tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start valueFunction
-    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:194:1: valueFunction : functionName= keyWordOrId LPAREN ( functionArgument )* RPAREN -> ^( FUNCTION $functionName LPAREN ( functionArgument )* RPAREN ) ;
+    // $ANTLR start "valueFunction"
+    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:194:1: valueFunction : functionName= keyWordOrId LPAREN ( functionArgument )* RPAREN -> ^( FUNCTION $functionName LPAREN ( functionArgument )* RPAREN ) ;
     public final CMISParser.valueFunction_return valueFunction() throws RecognitionException {
         CMISParser.valueFunction_return retval = new CMISParser.valueFunction_return();
         retval.start = input.LT(1);
@@ -1325,8 +1336,8 @@ public class CMISParser extends Parser {
         RewriteRuleSubtreeStream stream_keyWordOrId=new RewriteRuleSubtreeStream(adaptor,"rule keyWordOrId");
         RewriteRuleSubtreeStream stream_functionArgument=new RewriteRuleSubtreeStream(adaptor,"rule functionArgument");
         try {
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:195:2: (functionName= keyWordOrId LPAREN ( functionArgument )* RPAREN -> ^( FUNCTION $functionName LPAREN ( functionArgument )* RPAREN ) )
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:195:4: functionName= keyWordOrId LPAREN ( functionArgument )* RPAREN
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:195:2: (functionName= keyWordOrId LPAREN ( functionArgument )* RPAREN -> ^( FUNCTION $functionName LPAREN ( functionArgument )* RPAREN ) )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:195:4: functionName= keyWordOrId LPAREN ( functionArgument )* RPAREN
             {
             pushFollow(FOLLOW_keyWordOrId_in_valueFunction470);
             functionName=keyWordOrId();
@@ -1337,7 +1348,7 @@ public class CMISParser extends Parser {
             LPAREN25=(Token)match(input,LPAREN,FOLLOW_LPAREN_in_valueFunction472); if (state.failed) return retval; 
             if ( state.backtracking==0 ) stream_LPAREN.add(LPAREN25);
 
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:195:36: ( functionArgument )*
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:195:36: ( functionArgument )*
             loop11:
             do {
                 int alt11=2;
@@ -1350,7 +1361,7 @@ public class CMISParser extends Parser {
 
                 switch (alt11) {
             	case 1 :
-            	    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:195:36: functionArgument
+            	    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:195:36: functionArgument
             	    {
             	    pushFollow(FOLLOW_functionArgument_in_valueFunction474);
             	    functionArgument26=functionArgument();
@@ -1373,27 +1384,28 @@ public class CMISParser extends Parser {
 
 
             // AST REWRITE
-            // elements: functionArgument, RPAREN, LPAREN, functionName
+            // elements: functionName, functionArgument, RPAREN, LPAREN
             // token labels: 
             // rule labels: retval, functionName
             // token list labels: 
             // rule list labels: 
+            // wildcard labels: 
             if ( state.backtracking==0 ) {
             retval.tree = root_0;
-            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
-            RewriteRuleSubtreeStream stream_functionName=new RewriteRuleSubtreeStream(adaptor,"token functionName",functionName!=null?functionName.tree:null);
+            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
+            RewriteRuleSubtreeStream stream_functionName=new RewriteRuleSubtreeStream(adaptor,"rule functionName",functionName!=null?functionName.tree:null);
 
             root_0 = (Object)adaptor.nil();
             // 196:3: -> ^( FUNCTION $functionName LPAREN ( functionArgument )* RPAREN )
             {
-                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:196:6: ^( FUNCTION $functionName LPAREN ( functionArgument )* RPAREN )
+                // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:196:6: ^( FUNCTION $functionName LPAREN ( functionArgument )* RPAREN )
                 {
                 Object root_1 = (Object)adaptor.nil();
                 root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(FUNCTION, "FUNCTION"), root_1);
 
                 adaptor.addChild(root_1, stream_functionName.nextTree());
                 adaptor.addChild(root_1, stream_LPAREN.nextNode());
-                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:196:38: ( functionArgument )*
+                // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:196:38: ( functionArgument )*
                 while ( stream_functionArgument.hasNext() ) {
                     adaptor.addChild(root_1, stream_functionArgument.nextTree());
 
@@ -1406,7 +1418,7 @@ public class CMISParser extends Parser {
 
             }
 
-            retval.tree = root_0;retval.tree = root_0;}
+            retval.tree = root_0;}
             }
 
             retval.stop = input.LT(-1);
@@ -1426,15 +1438,15 @@ public class CMISParser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end valueFunction
+    // $ANTLR end "valueFunction"
 
     public static class functionArgument_return extends ParserRuleReturnScope {
         Object tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start functionArgument
-    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:199:1: functionArgument : ( qualifier DOT columnName -> ^( COLUMN_REF columnName qualifier ) | identifier | literalOrParameterName );
+    // $ANTLR start "functionArgument"
+    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:199:1: functionArgument : ( qualifier DOT columnName -> ^( COLUMN_REF columnName qualifier ) | identifier | literalOrParameterName );
     public final CMISParser.functionArgument_return functionArgument() throws RecognitionException {
         CMISParser.functionArgument_return retval = new CMISParser.functionArgument_return();
         retval.start = input.LT(1);
@@ -1456,7 +1468,7 @@ public class CMISParser extends Parser {
         RewriteRuleSubtreeStream stream_columnName=new RewriteRuleSubtreeStream(adaptor,"rule columnName");
         RewriteRuleSubtreeStream stream_qualifier=new RewriteRuleSubtreeStream(adaptor,"rule qualifier");
         try {
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:200:5: ( qualifier DOT columnName -> ^( COLUMN_REF columnName qualifier ) | identifier | literalOrParameterName )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:200:5: ( qualifier DOT columnName -> ^( COLUMN_REF columnName qualifier ) | identifier | literalOrParameterName )
             int alt12=3;
             switch ( input.LA(1) ) {
             case ID:
@@ -1565,7 +1577,7 @@ public class CMISParser extends Parser {
 
             switch (alt12) {
                 case 1 :
-                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:200:9: qualifier DOT columnName
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:200:9: qualifier DOT columnName
                     {
                     pushFollow(FOLLOW_qualifier_in_functionArgument512);
                     qualifier28=qualifier();
@@ -1590,14 +1602,15 @@ public class CMISParser extends Parser {
                     // rule labels: retval
                     // token list labels: 
                     // rule list labels: 
+                    // wildcard labels: 
                     if ( state.backtracking==0 ) {
                     retval.tree = root_0;
-                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
+                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
                     // 201:5: -> ^( COLUMN_REF columnName qualifier )
                     {
-                        // W:\\workspace-cmis2\\ANTLR\\CMIS.g:201:8: ^( COLUMN_REF columnName qualifier )
+                        // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:201:8: ^( COLUMN_REF columnName qualifier )
                         {
                         Object root_1 = (Object)adaptor.nil();
                         root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(COLUMN_REF, "COLUMN_REF"), root_1);
@@ -1610,11 +1623,11 @@ public class CMISParser extends Parser {
 
                     }
 
-                    retval.tree = root_0;retval.tree = root_0;}
+                    retval.tree = root_0;}
                     }
                     break;
                 case 2 :
-                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:202:9: identifier
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:202:9: identifier
                     {
                     root_0 = (Object)adaptor.nil();
 
@@ -1628,7 +1641,7 @@ public class CMISParser extends Parser {
                     }
                     break;
                 case 3 :
-                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:203:9: literalOrParameterName
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:203:9: literalOrParameterName
                     {
                     root_0 = (Object)adaptor.nil();
 
@@ -1660,15 +1673,15 @@ public class CMISParser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end functionArgument
+    // $ANTLR end "functionArgument"
 
     public static class qualifier_return extends ParserRuleReturnScope {
         Object tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start qualifier
-    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:206:1: qualifier : ( ( tableName )=> tableName -> tableName | correlationName -> correlationName );
+    // $ANTLR start "qualifier"
+    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:206:1: qualifier : ( ( tableName )=> tableName -> tableName | correlationName -> correlationName );
     public final CMISParser.qualifier_return qualifier() throws RecognitionException {
         CMISParser.qualifier_return retval = new CMISParser.qualifier_return();
         retval.start = input.LT(1);
@@ -1683,7 +1696,7 @@ public class CMISParser extends Parser {
         RewriteRuleSubtreeStream stream_correlationName=new RewriteRuleSubtreeStream(adaptor,"rule correlationName");
         RewriteRuleSubtreeStream stream_tableName=new RewriteRuleSubtreeStream(adaptor,"rule tableName");
         try {
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:207:2: ( ( tableName )=> tableName -> tableName | correlationName -> correlationName )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:207:2: ( ( tableName )=> tableName -> tableName | correlationName -> correlationName )
             int alt13=2;
             int LA13_0 = input.LA(1);
 
@@ -1780,7 +1793,7 @@ public class CMISParser extends Parser {
             }
             switch (alt13) {
                 case 1 :
-                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:207:4: ( tableName )=> tableName
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:207:4: ( tableName )=> tableName
                     {
                     pushFollow(FOLLOW_tableName_in_qualifier571);
                     tableName33=tableName();
@@ -1796,9 +1809,10 @@ public class CMISParser extends Parser {
                     // rule labels: retval
                     // token list labels: 
                     // rule list labels: 
+                    // wildcard labels: 
                     if ( state.backtracking==0 ) {
                     retval.tree = root_0;
-                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
+                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
                     // 208:3: -> tableName
@@ -1807,11 +1821,11 @@ public class CMISParser extends Parser {
 
                     }
 
-                    retval.tree = root_0;retval.tree = root_0;}
+                    retval.tree = root_0;}
                     }
                     break;
                 case 2 :
-                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:209:5: correlationName
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:209:5: correlationName
                     {
                     pushFollow(FOLLOW_correlationName_in_qualifier583);
                     correlationName34=correlationName();
@@ -1827,9 +1841,10 @@ public class CMISParser extends Parser {
                     // rule labels: retval
                     // token list labels: 
                     // rule list labels: 
+                    // wildcard labels: 
                     if ( state.backtracking==0 ) {
                     retval.tree = root_0;
-                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
+                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
                     // 210:3: -> correlationName
@@ -1838,7 +1853,7 @@ public class CMISParser extends Parser {
 
                     }
 
-                    retval.tree = root_0;retval.tree = root_0;}
+                    retval.tree = root_0;}
                     }
                     break;
 
@@ -1860,15 +1875,15 @@ public class CMISParser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end qualifier
+    // $ANTLR end "qualifier"
 
     public static class fromClause_return extends ParserRuleReturnScope {
         Object tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start fromClause
-    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:213:1: fromClause : FROM tableReference -> tableReference ;
+    // $ANTLR start "fromClause"
+    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:213:1: fromClause : FROM tableReference -> tableReference ;
     public final CMISParser.fromClause_return fromClause() throws RecognitionException {
         CMISParser.fromClause_return retval = new CMISParser.fromClause_return();
         retval.start = input.LT(1);
@@ -1884,8 +1899,8 @@ public class CMISParser extends Parser {
         RewriteRuleSubtreeStream stream_tableReference=new RewriteRuleSubtreeStream(adaptor,"rule tableReference");
             paraphrases.push("in from"); 
         try {
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:216:2: ( FROM tableReference -> tableReference )
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:216:4: FROM tableReference
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:216:2: ( FROM tableReference -> tableReference )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:216:4: FROM tableReference
             {
             FROM35=(Token)match(input,FROM,FOLLOW_FROM_in_fromClause620); if (state.failed) return retval; 
             if ( state.backtracking==0 ) stream_FROM.add(FROM35);
@@ -1904,9 +1919,10 @@ public class CMISParser extends Parser {
             // rule labels: retval
             // token list labels: 
             // rule list labels: 
+            // wildcard labels: 
             if ( state.backtracking==0 ) {
             retval.tree = root_0;
-            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
+            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
             root_0 = (Object)adaptor.nil();
             // 217:3: -> tableReference
@@ -1915,7 +1931,7 @@ public class CMISParser extends Parser {
 
             }
 
-            retval.tree = root_0;retval.tree = root_0;}
+            retval.tree = root_0;}
             }
 
             retval.stop = input.LT(-1);
@@ -1938,15 +1954,15 @@ public class CMISParser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end fromClause
+    // $ANTLR end "fromClause"
 
     public static class tableReference_return extends ParserRuleReturnScope {
         Object tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start tableReference
-    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:220:1: tableReference : singleTable ( ( joinedTable )=> joinedTable )* -> ^( SOURCE singleTable ( joinedTable )* ) ;
+    // $ANTLR start "tableReference"
+    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:220:1: tableReference : singleTable ( ( joinedTable )=> joinedTable )* -> ^( SOURCE singleTable ( joinedTable )* ) ;
     public final CMISParser.tableReference_return tableReference() throws RecognitionException {
         CMISParser.tableReference_return retval = new CMISParser.tableReference_return();
         retval.start = input.LT(1);
@@ -1961,8 +1977,8 @@ public class CMISParser extends Parser {
         RewriteRuleSubtreeStream stream_singleTable=new RewriteRuleSubtreeStream(adaptor,"rule singleTable");
         RewriteRuleSubtreeStream stream_joinedTable=new RewriteRuleSubtreeStream(adaptor,"rule joinedTable");
         try {
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:221:2: ( singleTable ( ( joinedTable )=> joinedTable )* -> ^( SOURCE singleTable ( joinedTable )* ) )
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:221:4: singleTable ( ( joinedTable )=> joinedTable )*
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:221:2: ( singleTable ( ( joinedTable )=> joinedTable )* -> ^( SOURCE singleTable ( joinedTable )* ) )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:221:4: singleTable ( ( joinedTable )=> joinedTable )*
             {
             pushFollow(FOLLOW_singleTable_in_tableReference640);
             singleTable37=singleTable();
@@ -1970,7 +1986,7 @@ public class CMISParser extends Parser {
             state._fsp--;
             if (state.failed) return retval;
             if ( state.backtracking==0 ) stream_singleTable.add(singleTable37.getTree());
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:221:16: ( ( joinedTable )=> joinedTable )*
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:221:16: ( ( joinedTable )=> joinedTable )*
             loop14:
             do {
                 int alt14=2;
@@ -2013,7 +2029,7 @@ public class CMISParser extends Parser {
 
                 switch (alt14) {
             	case 1 :
-            	    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:221:17: ( joinedTable )=> joinedTable
+            	    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:221:17: ( joinedTable )=> joinedTable
             	    {
             	    pushFollow(FOLLOW_joinedTable_in_tableReference649);
             	    joinedTable38=joinedTable();
@@ -2038,20 +2054,21 @@ public class CMISParser extends Parser {
             // rule labels: retval
             // token list labels: 
             // rule list labels: 
+            // wildcard labels: 
             if ( state.backtracking==0 ) {
             retval.tree = root_0;
-            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
+            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
             root_0 = (Object)adaptor.nil();
             // 222:3: -> ^( SOURCE singleTable ( joinedTable )* )
             {
-                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:222:6: ^( SOURCE singleTable ( joinedTable )* )
+                // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:222:6: ^( SOURCE singleTable ( joinedTable )* )
                 {
                 Object root_1 = (Object)adaptor.nil();
                 root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(SOURCE, "SOURCE"), root_1);
 
                 adaptor.addChild(root_1, stream_singleTable.nextTree());
-                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:222:27: ( joinedTable )*
+                // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:222:27: ( joinedTable )*
                 while ( stream_joinedTable.hasNext() ) {
                     adaptor.addChild(root_1, stream_joinedTable.nextTree());
 
@@ -2063,7 +2080,7 @@ public class CMISParser extends Parser {
 
             }
 
-            retval.tree = root_0;retval.tree = root_0;}
+            retval.tree = root_0;}
             }
 
             retval.stop = input.LT(-1);
@@ -2083,15 +2100,15 @@ public class CMISParser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end tableReference
+    // $ANTLR end "tableReference"
 
     public static class singleTable_return extends ParserRuleReturnScope {
         Object tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start singleTable
-    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:228:1: singleTable : ( tableName ( ( AS )? correlationName )? -> ^( TABLE_REF tableName ( correlationName )? ) | LPAREN joinedTables RPAREN -> ^( TABLE joinedTables ) );
+    // $ANTLR start "singleTable"
+    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:228:1: singleTable : ( tableName ( ( AS )? correlationName )? -> ^( TABLE_REF tableName ( correlationName )? ) | LPAREN joinedTables RPAREN -> ^( TABLE joinedTables ) );
     public final CMISParser.singleTable_return singleTable() throws RecognitionException {
         CMISParser.singleTable_return retval = new CMISParser.singleTable_return();
         retval.start = input.LT(1);
@@ -2118,7 +2135,7 @@ public class CMISParser extends Parser {
         RewriteRuleSubtreeStream stream_tableName=new RewriteRuleSubtreeStream(adaptor,"rule tableName");
         RewriteRuleSubtreeStream stream_joinedTables=new RewriteRuleSubtreeStream(adaptor,"rule joinedTables");
         try {
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:229:2: ( tableName ( ( AS )? correlationName )? -> ^( TABLE_REF tableName ( correlationName )? ) | LPAREN joinedTables RPAREN -> ^( TABLE joinedTables ) )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:229:2: ( tableName ( ( AS )? correlationName )? -> ^( TABLE_REF tableName ( correlationName )? ) | LPAREN joinedTables RPAREN -> ^( TABLE joinedTables ) )
             int alt17=2;
             int LA17_0 = input.LA(1);
 
@@ -2137,7 +2154,7 @@ public class CMISParser extends Parser {
             }
             switch (alt17) {
                 case 1 :
-                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:229:4: tableName ( ( AS )? correlationName )?
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:229:4: tableName ( ( AS )? correlationName )?
                     {
                     pushFollow(FOLLOW_tableName_in_singleTable678);
                     tableName39=tableName();
@@ -2145,7 +2162,7 @@ public class CMISParser extends Parser {
                     state._fsp--;
                     if (state.failed) return retval;
                     if ( state.backtracking==0 ) stream_tableName.add(tableName39.getTree());
-                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:229:14: ( ( AS )? correlationName )?
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:229:14: ( ( AS )? correlationName )?
                     int alt16=2;
                     int LA16_0 = input.LA(1);
 
@@ -2154,9 +2171,9 @@ public class CMISParser extends Parser {
                     }
                     switch (alt16) {
                         case 1 :
-                            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:229:16: ( AS )? correlationName
+                            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:229:16: ( AS )? correlationName
                             {
-                            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:229:16: ( AS )?
+                            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:229:16: ( AS )?
                             int alt15=2;
                             int LA15_0 = input.LA(1);
 
@@ -2165,7 +2182,7 @@ public class CMISParser extends Parser {
                             }
                             switch (alt15) {
                                 case 1 :
-                                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:229:16: AS
+                                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:229:16: AS
                                     {
                                     AS40=(Token)match(input,AS,FOLLOW_AS_in_singleTable682); if (state.failed) return retval; 
                                     if ( state.backtracking==0 ) stream_AS.add(AS40);
@@ -2196,20 +2213,21 @@ public class CMISParser extends Parser {
                     // rule labels: retval
                     // token list labels: 
                     // rule list labels: 
+                    // wildcard labels: 
                     if ( state.backtracking==0 ) {
                     retval.tree = root_0;
-                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
+                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
                     // 230:3: -> ^( TABLE_REF tableName ( correlationName )? )
                     {
-                        // W:\\workspace-cmis2\\ANTLR\\CMIS.g:230:6: ^( TABLE_REF tableName ( correlationName )? )
+                        // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:230:6: ^( TABLE_REF tableName ( correlationName )? )
                         {
                         Object root_1 = (Object)adaptor.nil();
                         root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(TABLE_REF, "TABLE_REF"), root_1);
 
                         adaptor.addChild(root_1, stream_tableName.nextTree());
-                        // W:\\workspace-cmis2\\ANTLR\\CMIS.g:230:28: ( correlationName )?
+                        // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:230:28: ( correlationName )?
                         if ( stream_correlationName.hasNext() ) {
                             adaptor.addChild(root_1, stream_correlationName.nextTree());
 
@@ -2221,11 +2239,11 @@ public class CMISParser extends Parser {
 
                     }
 
-                    retval.tree = root_0;retval.tree = root_0;}
+                    retval.tree = root_0;}
                     }
                     break;
                 case 2 :
-                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:231:4: LPAREN joinedTables RPAREN
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:231:4: LPAREN joinedTables RPAREN
                     {
                     LPAREN42=(Token)match(input,LPAREN,FOLLOW_LPAREN_in_singleTable706); if (state.failed) return retval; 
                     if ( state.backtracking==0 ) stream_LPAREN.add(LPAREN42);
@@ -2247,14 +2265,15 @@ public class CMISParser extends Parser {
                     // rule labels: retval
                     // token list labels: 
                     // rule list labels: 
+                    // wildcard labels: 
                     if ( state.backtracking==0 ) {
                     retval.tree = root_0;
-                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
+                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
                     // 232:3: -> ^( TABLE joinedTables )
                     {
-                        // W:\\workspace-cmis2\\ANTLR\\CMIS.g:232:6: ^( TABLE joinedTables )
+                        // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:232:6: ^( TABLE joinedTables )
                         {
                         Object root_1 = (Object)adaptor.nil();
                         root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(TABLE, "TABLE"), root_1);
@@ -2266,7 +2285,7 @@ public class CMISParser extends Parser {
 
                     }
 
-                    retval.tree = root_0;retval.tree = root_0;}
+                    retval.tree = root_0;}
                     }
                     break;
 
@@ -2288,15 +2307,15 @@ public class CMISParser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end singleTable
+    // $ANTLR end "singleTable"
 
     public static class joinedTable_return extends ParserRuleReturnScope {
         Object tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start joinedTable
-    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:235:1: joinedTable : ( joinType )? JOIN tableReference ( ( joinSpecification )=> joinSpecification )? -> ^( JOIN tableReference ( joinType )? ( joinSpecification )? ) ;
+    // $ANTLR start "joinedTable"
+    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:235:1: joinedTable : ( joinType )? JOIN tableReference ( ( joinSpecification )=> joinSpecification )? -> ^( JOIN tableReference ( joinType )? ( joinSpecification )? ) ;
     public final CMISParser.joinedTable_return joinedTable() throws RecognitionException {
         CMISParser.joinedTable_return retval = new CMISParser.joinedTable_return();
         retval.start = input.LT(1);
@@ -2317,10 +2336,10 @@ public class CMISParser extends Parser {
         RewriteRuleSubtreeStream stream_joinType=new RewriteRuleSubtreeStream(adaptor,"rule joinType");
         RewriteRuleSubtreeStream stream_joinSpecification=new RewriteRuleSubtreeStream(adaptor,"rule joinSpecification");
         try {
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:236:2: ( ( joinType )? JOIN tableReference ( ( joinSpecification )=> joinSpecification )? -> ^( JOIN tableReference ( joinType )? ( joinSpecification )? ) )
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:236:4: ( joinType )? JOIN tableReference ( ( joinSpecification )=> joinSpecification )?
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:236:2: ( ( joinType )? JOIN tableReference ( ( joinSpecification )=> joinSpecification )? -> ^( JOIN tableReference ( joinType )? ( joinSpecification )? ) )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:236:4: ( joinType )? JOIN tableReference ( ( joinSpecification )=> joinSpecification )?
             {
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:236:4: ( joinType )?
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:236:4: ( joinType )?
             int alt18=2;
             int LA18_0 = input.LA(1);
 
@@ -2329,7 +2348,7 @@ public class CMISParser extends Parser {
             }
             switch (alt18) {
                 case 1 :
-                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:236:4: joinType
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:236:4: joinType
                     {
                     pushFollow(FOLLOW_joinType_in_joinedTable732);
                     joinType45=joinType();
@@ -2352,7 +2371,7 @@ public class CMISParser extends Parser {
             state._fsp--;
             if (state.failed) return retval;
             if ( state.backtracking==0 ) stream_tableReference.add(tableReference47.getTree());
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:236:34: ( ( joinSpecification )=> joinSpecification )?
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:236:34: ( ( joinSpecification )=> joinSpecification )?
             int alt19=2;
             int LA19_0 = input.LA(1);
 
@@ -2365,7 +2384,7 @@ public class CMISParser extends Parser {
             }
             switch (alt19) {
                 case 1 :
-                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:236:35: ( joinSpecification )=> joinSpecification
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:236:35: ( joinSpecification )=> joinSpecification
                     {
                     pushFollow(FOLLOW_joinSpecification_in_joinedTable746);
                     joinSpecification48=joinSpecification();
@@ -2387,26 +2406,27 @@ public class CMISParser extends Parser {
             // rule labels: retval
             // token list labels: 
             // rule list labels: 
+            // wildcard labels: 
             if ( state.backtracking==0 ) {
             retval.tree = root_0;
-            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
+            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
             root_0 = (Object)adaptor.nil();
             // 237:3: -> ^( JOIN tableReference ( joinType )? ( joinSpecification )? )
             {
-                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:237:6: ^( JOIN tableReference ( joinType )? ( joinSpecification )? )
+                // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:237:6: ^( JOIN tableReference ( joinType )? ( joinSpecification )? )
                 {
                 Object root_1 = (Object)adaptor.nil();
                 root_1 = (Object)adaptor.becomeRoot(stream_JOIN.nextNode(), root_1);
 
                 adaptor.addChild(root_1, stream_tableReference.nextTree());
-                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:237:28: ( joinType )?
+                // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:237:28: ( joinType )?
                 if ( stream_joinType.hasNext() ) {
                     adaptor.addChild(root_1, stream_joinType.nextTree());
 
                 }
                 stream_joinType.reset();
-                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:237:38: ( joinSpecification )?
+                // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:237:38: ( joinSpecification )?
                 if ( stream_joinSpecification.hasNext() ) {
                     adaptor.addChild(root_1, stream_joinSpecification.nextTree());
 
@@ -2418,7 +2438,7 @@ public class CMISParser extends Parser {
 
             }
 
-            retval.tree = root_0;retval.tree = root_0;}
+            retval.tree = root_0;}
             }
 
             retval.stop = input.LT(-1);
@@ -2438,15 +2458,15 @@ public class CMISParser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end joinedTable
+    // $ANTLR end "joinedTable"
 
     public static class joinedTables_return extends ParserRuleReturnScope {
         Object tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start joinedTables
-    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:241:1: joinedTables : singleTable ( joinedTable )+ -> ^( SOURCE singleTable ( joinedTable )+ ) ;
+    // $ANTLR start "joinedTables"
+    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:241:1: joinedTables : singleTable ( joinedTable )+ -> ^( SOURCE singleTable ( joinedTable )+ ) ;
     public final CMISParser.joinedTables_return joinedTables() throws RecognitionException {
         CMISParser.joinedTables_return retval = new CMISParser.joinedTables_return();
         retval.start = input.LT(1);
@@ -2461,8 +2481,8 @@ public class CMISParser extends Parser {
         RewriteRuleSubtreeStream stream_singleTable=new RewriteRuleSubtreeStream(adaptor,"rule singleTable");
         RewriteRuleSubtreeStream stream_joinedTable=new RewriteRuleSubtreeStream(adaptor,"rule joinedTable");
         try {
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:242:2: ( singleTable ( joinedTable )+ -> ^( SOURCE singleTable ( joinedTable )+ ) )
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:242:4: singleTable ( joinedTable )+
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:242:2: ( singleTable ( joinedTable )+ -> ^( SOURCE singleTable ( joinedTable )+ ) )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:242:4: singleTable ( joinedTable )+
             {
             pushFollow(FOLLOW_singleTable_in_joinedTables777);
             singleTable49=singleTable();
@@ -2470,7 +2490,7 @@ public class CMISParser extends Parser {
             state._fsp--;
             if (state.failed) return retval;
             if ( state.backtracking==0 ) stream_singleTable.add(singleTable49.getTree());
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:242:16: ( joinedTable )+
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:242:16: ( joinedTable )+
             int cnt20=0;
             loop20:
             do {
@@ -2484,7 +2504,7 @@ public class CMISParser extends Parser {
 
                 switch (alt20) {
             	case 1 :
-            	    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:242:16: joinedTable
+            	    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:242:16: joinedTable
             	    {
             	    pushFollow(FOLLOW_joinedTable_in_joinedTables779);
             	    joinedTable50=joinedTable();
@@ -2509,19 +2529,20 @@ public class CMISParser extends Parser {
 
 
             // AST REWRITE
-            // elements: singleTable, joinedTable
+            // elements: joinedTable, singleTable
             // token labels: 
             // rule labels: retval
             // token list labels: 
             // rule list labels: 
+            // wildcard labels: 
             if ( state.backtracking==0 ) {
             retval.tree = root_0;
-            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
+            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
             root_0 = (Object)adaptor.nil();
             // 243:3: -> ^( SOURCE singleTable ( joinedTable )+ )
             {
-                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:243:6: ^( SOURCE singleTable ( joinedTable )+ )
+                // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:243:6: ^( SOURCE singleTable ( joinedTable )+ )
                 {
                 Object root_1 = (Object)adaptor.nil();
                 root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(SOURCE, "SOURCE"), root_1);
@@ -2541,7 +2562,7 @@ public class CMISParser extends Parser {
 
             }
 
-            retval.tree = root_0;retval.tree = root_0;}
+            retval.tree = root_0;}
             }
 
             retval.stop = input.LT(-1);
@@ -2561,15 +2582,15 @@ public class CMISParser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end joinedTables
+    // $ANTLR end "joinedTables"
 
     public static class joinType_return extends ParserRuleReturnScope {
         Object tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start joinType
-    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:246:1: joinType : ( INNER -> INNER | LEFT ( OUTER )? -> LEFT );
+    // $ANTLR start "joinType"
+    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:246:1: joinType : ( INNER -> INNER | LEFT ( OUTER )? -> LEFT );
     public final CMISParser.joinType_return joinType() throws RecognitionException {
         CMISParser.joinType_return retval = new CMISParser.joinType_return();
         retval.start = input.LT(1);
@@ -2588,7 +2609,7 @@ public class CMISParser extends Parser {
         RewriteRuleTokenStream stream_LEFT=new RewriteRuleTokenStream(adaptor,"token LEFT");
 
         try {
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:247:2: ( INNER -> INNER | LEFT ( OUTER )? -> LEFT )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:247:2: ( INNER -> INNER | LEFT ( OUTER )? -> LEFT )
             int alt22=2;
             int LA22_0 = input.LA(1);
 
@@ -2607,7 +2628,7 @@ public class CMISParser extends Parser {
             }
             switch (alt22) {
                 case 1 :
-                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:247:4: INNER
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:247:4: INNER
                     {
                     INNER51=(Token)match(input,INNER,FOLLOW_INNER_in_joinType806); if (state.failed) return retval; 
                     if ( state.backtracking==0 ) stream_INNER.add(INNER51);
@@ -2620,9 +2641,10 @@ public class CMISParser extends Parser {
                     // rule labels: retval
                     // token list labels: 
                     // rule list labels: 
+                    // wildcard labels: 
                     if ( state.backtracking==0 ) {
                     retval.tree = root_0;
-                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
+                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
                     // 248:3: -> INNER
@@ -2631,16 +2653,16 @@ public class CMISParser extends Parser {
 
                     }
 
-                    retval.tree = root_0;retval.tree = root_0;}
+                    retval.tree = root_0;}
                     }
                     break;
                 case 2 :
-                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:249:5: LEFT ( OUTER )?
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:249:5: LEFT ( OUTER )?
                     {
                     LEFT52=(Token)match(input,LEFT,FOLLOW_LEFT_in_joinType818); if (state.failed) return retval; 
                     if ( state.backtracking==0 ) stream_LEFT.add(LEFT52);
 
-                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:249:10: ( OUTER )?
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:249:10: ( OUTER )?
                     int alt21=2;
                     int LA21_0 = input.LA(1);
 
@@ -2649,7 +2671,7 @@ public class CMISParser extends Parser {
                     }
                     switch (alt21) {
                         case 1 :
-                            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:249:10: OUTER
+                            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:249:10: OUTER
                             {
                             OUTER53=(Token)match(input,OUTER,FOLLOW_OUTER_in_joinType820); if (state.failed) return retval; 
                             if ( state.backtracking==0 ) stream_OUTER.add(OUTER53);
@@ -2668,9 +2690,10 @@ public class CMISParser extends Parser {
                     // rule labels: retval
                     // token list labels: 
                     // rule list labels: 
+                    // wildcard labels: 
                     if ( state.backtracking==0 ) {
                     retval.tree = root_0;
-                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
+                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
                     // 250:3: -> LEFT
@@ -2679,7 +2702,7 @@ public class CMISParser extends Parser {
 
                     }
 
-                    retval.tree = root_0;retval.tree = root_0;}
+                    retval.tree = root_0;}
                     }
                     break;
 
@@ -2701,15 +2724,15 @@ public class CMISParser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end joinType
+    // $ANTLR end "joinType"
 
     public static class joinSpecification_return extends ParserRuleReturnScope {
         Object tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start joinSpecification
-    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:253:1: joinSpecification : ON LPAREN lhs= columnReference EQUALS rhs= columnReference RPAREN -> ^( ON $lhs EQUALS $rhs) ;
+    // $ANTLR start "joinSpecification"
+    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:253:1: joinSpecification : ON LPAREN lhs= columnReference EQUALS rhs= columnReference RPAREN -> ^( ON $lhs EQUALS $rhs) ;
     public final CMISParser.joinSpecification_return joinSpecification() throws RecognitionException {
         CMISParser.joinSpecification_return retval = new CMISParser.joinSpecification_return();
         retval.start = input.LT(1);
@@ -2735,8 +2758,8 @@ public class CMISParser extends Parser {
         RewriteRuleTokenStream stream_LPAREN=new RewriteRuleTokenStream(adaptor,"token LPAREN");
         RewriteRuleSubtreeStream stream_columnReference=new RewriteRuleSubtreeStream(adaptor,"rule columnReference");
         try {
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:254:2: ( ON LPAREN lhs= columnReference EQUALS rhs= columnReference RPAREN -> ^( ON $lhs EQUALS $rhs) )
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:254:4: ON LPAREN lhs= columnReference EQUALS rhs= columnReference RPAREN
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:254:2: ( ON LPAREN lhs= columnReference EQUALS rhs= columnReference RPAREN -> ^( ON $lhs EQUALS $rhs) )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:254:4: ON LPAREN lhs= columnReference EQUALS rhs= columnReference RPAREN
             {
             ON54=(Token)match(input,ON,FOLLOW_ON_in_joinSpecification840); if (state.failed) return retval; 
             if ( state.backtracking==0 ) stream_ON.add(ON54);
@@ -2765,21 +2788,22 @@ public class CMISParser extends Parser {
 
 
             // AST REWRITE
-            // elements: rhs, ON, EQUALS, lhs
+            // elements: rhs, EQUALS, ON, lhs
             // token labels: 
             // rule labels: retval, rhs, lhs
             // token list labels: 
             // rule list labels: 
+            // wildcard labels: 
             if ( state.backtracking==0 ) {
             retval.tree = root_0;
-            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
-            RewriteRuleSubtreeStream stream_rhs=new RewriteRuleSubtreeStream(adaptor,"token rhs",rhs!=null?rhs.tree:null);
-            RewriteRuleSubtreeStream stream_lhs=new RewriteRuleSubtreeStream(adaptor,"token lhs",lhs!=null?lhs.tree:null);
+            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
+            RewriteRuleSubtreeStream stream_rhs=new RewriteRuleSubtreeStream(adaptor,"rule rhs",rhs!=null?rhs.tree:null);
+            RewriteRuleSubtreeStream stream_lhs=new RewriteRuleSubtreeStream(adaptor,"rule lhs",lhs!=null?lhs.tree:null);
 
             root_0 = (Object)adaptor.nil();
             // 255:3: -> ^( ON $lhs EQUALS $rhs)
             {
-                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:255:6: ^( ON $lhs EQUALS $rhs)
+                // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:255:6: ^( ON $lhs EQUALS $rhs)
                 {
                 Object root_1 = (Object)adaptor.nil();
                 root_1 = (Object)adaptor.becomeRoot(stream_ON.nextNode(), root_1);
@@ -2793,7 +2817,7 @@ public class CMISParser extends Parser {
 
             }
 
-            retval.tree = root_0;retval.tree = root_0;}
+            retval.tree = root_0;}
             }
 
             retval.stop = input.LT(-1);
@@ -2813,15 +2837,15 @@ public class CMISParser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end joinSpecification
+    // $ANTLR end "joinSpecification"
 
     public static class whereClause_return extends ParserRuleReturnScope {
         Object tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start whereClause
-    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:262:1: whereClause : WHERE searchOrCondition -> searchOrCondition ;
+    // $ANTLR start "whereClause"
+    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:262:1: whereClause : WHERE searchOrCondition -> searchOrCondition ;
     public final CMISParser.whereClause_return whereClause() throws RecognitionException {
         CMISParser.whereClause_return retval = new CMISParser.whereClause_return();
         retval.start = input.LT(1);
@@ -2837,8 +2861,8 @@ public class CMISParser extends Parser {
         RewriteRuleSubtreeStream stream_searchOrCondition=new RewriteRuleSubtreeStream(adaptor,"rule searchOrCondition");
             paraphrases.push("in where"); 
         try {
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:265:2: ( WHERE searchOrCondition -> searchOrCondition )
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:265:4: WHERE searchOrCondition
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:265:2: ( WHERE searchOrCondition -> searchOrCondition )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:265:4: WHERE searchOrCondition
             {
             WHERE58=(Token)match(input,WHERE,FOLLOW_WHERE_in_whereClause904); if (state.failed) return retval; 
             if ( state.backtracking==0 ) stream_WHERE.add(WHERE58);
@@ -2857,9 +2881,10 @@ public class CMISParser extends Parser {
             // rule labels: retval
             // token list labels: 
             // rule list labels: 
+            // wildcard labels: 
             if ( state.backtracking==0 ) {
             retval.tree = root_0;
-            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
+            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
             root_0 = (Object)adaptor.nil();
             // 266:3: -> searchOrCondition
@@ -2868,7 +2893,7 @@ public class CMISParser extends Parser {
 
             }
 
-            retval.tree = root_0;retval.tree = root_0;}
+            retval.tree = root_0;}
             }
 
             retval.stop = input.LT(-1);
@@ -2891,15 +2916,15 @@ public class CMISParser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end whereClause
+    // $ANTLR end "whereClause"
 
     public static class searchOrCondition_return extends ParserRuleReturnScope {
         Object tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start searchOrCondition
-    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:269:1: searchOrCondition : searchAndCondition ( OR searchAndCondition )* -> ^( DISJUNCTION ( searchAndCondition )+ ) ;
+    // $ANTLR start "searchOrCondition"
+    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:269:1: searchOrCondition : searchAndCondition ( OR searchAndCondition )* -> ^( DISJUNCTION ( searchAndCondition )+ ) ;
     public final CMISParser.searchOrCondition_return searchOrCondition() throws RecognitionException {
         CMISParser.searchOrCondition_return retval = new CMISParser.searchOrCondition_return();
         retval.start = input.LT(1);
@@ -2916,8 +2941,8 @@ public class CMISParser extends Parser {
         RewriteRuleTokenStream stream_OR=new RewriteRuleTokenStream(adaptor,"token OR");
         RewriteRuleSubtreeStream stream_searchAndCondition=new RewriteRuleSubtreeStream(adaptor,"rule searchAndCondition");
         try {
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:273:2: ( searchAndCondition ( OR searchAndCondition )* -> ^( DISJUNCTION ( searchAndCondition )+ ) )
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:273:4: searchAndCondition ( OR searchAndCondition )*
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:273:2: ( searchAndCondition ( OR searchAndCondition )* -> ^( DISJUNCTION ( searchAndCondition )+ ) )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:273:4: searchAndCondition ( OR searchAndCondition )*
             {
             pushFollow(FOLLOW_searchAndCondition_in_searchOrCondition926);
             searchAndCondition60=searchAndCondition();
@@ -2925,7 +2950,7 @@ public class CMISParser extends Parser {
             state._fsp--;
             if (state.failed) return retval;
             if ( state.backtracking==0 ) stream_searchAndCondition.add(searchAndCondition60.getTree());
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:273:23: ( OR searchAndCondition )*
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:273:23: ( OR searchAndCondition )*
             loop23:
             do {
                 int alt23=2;
@@ -2938,7 +2963,7 @@ public class CMISParser extends Parser {
 
                 switch (alt23) {
             	case 1 :
-            	    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:273:24: OR searchAndCondition
+            	    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:273:24: OR searchAndCondition
             	    {
             	    OR61=(Token)match(input,OR,FOLLOW_OR_in_searchOrCondition929); if (state.failed) return retval; 
             	    if ( state.backtracking==0 ) stream_OR.add(OR61);
@@ -2966,14 +2991,15 @@ public class CMISParser extends Parser {
             // rule labels: retval
             // token list labels: 
             // rule list labels: 
+            // wildcard labels: 
             if ( state.backtracking==0 ) {
             retval.tree = root_0;
-            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
+            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
             root_0 = (Object)adaptor.nil();
             // 274:3: -> ^( DISJUNCTION ( searchAndCondition )+ )
             {
-                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:274:6: ^( DISJUNCTION ( searchAndCondition )+ )
+                // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:274:6: ^( DISJUNCTION ( searchAndCondition )+ )
                 {
                 Object root_1 = (Object)adaptor.nil();
                 root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(DISJUNCTION, "DISJUNCTION"), root_1);
@@ -2992,7 +3018,7 @@ public class CMISParser extends Parser {
 
             }
 
-            retval.tree = root_0;retval.tree = root_0;}
+            retval.tree = root_0;}
             }
 
             retval.stop = input.LT(-1);
@@ -3012,15 +3038,15 @@ public class CMISParser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end searchOrCondition
+    // $ANTLR end "searchOrCondition"
 
     public static class searchAndCondition_return extends ParserRuleReturnScope {
         Object tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start searchAndCondition
-    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:278:1: searchAndCondition : searchNotCondition ( AND searchNotCondition )* -> ^( CONJUNCTION ( searchNotCondition )+ ) ;
+    // $ANTLR start "searchAndCondition"
+    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:278:1: searchAndCondition : searchNotCondition ( AND searchNotCondition )* -> ^( CONJUNCTION ( searchNotCondition )+ ) ;
     public final CMISParser.searchAndCondition_return searchAndCondition() throws RecognitionException {
         CMISParser.searchAndCondition_return retval = new CMISParser.searchAndCondition_return();
         retval.start = input.LT(1);
@@ -3037,8 +3063,8 @@ public class CMISParser extends Parser {
         RewriteRuleTokenStream stream_AND=new RewriteRuleTokenStream(adaptor,"token AND");
         RewriteRuleSubtreeStream stream_searchNotCondition=new RewriteRuleSubtreeStream(adaptor,"rule searchNotCondition");
         try {
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:282:2: ( searchNotCondition ( AND searchNotCondition )* -> ^( CONJUNCTION ( searchNotCondition )+ ) )
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:282:4: searchNotCondition ( AND searchNotCondition )*
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:282:2: ( searchNotCondition ( AND searchNotCondition )* -> ^( CONJUNCTION ( searchNotCondition )+ ) )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:282:4: searchNotCondition ( AND searchNotCondition )*
             {
             pushFollow(FOLLOW_searchNotCondition_in_searchAndCondition959);
             searchNotCondition63=searchNotCondition();
@@ -3046,7 +3072,7 @@ public class CMISParser extends Parser {
             state._fsp--;
             if (state.failed) return retval;
             if ( state.backtracking==0 ) stream_searchNotCondition.add(searchNotCondition63.getTree());
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:282:23: ( AND searchNotCondition )*
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:282:23: ( AND searchNotCondition )*
             loop24:
             do {
                 int alt24=2;
@@ -3059,7 +3085,7 @@ public class CMISParser extends Parser {
 
                 switch (alt24) {
             	case 1 :
-            	    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:282:24: AND searchNotCondition
+            	    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:282:24: AND searchNotCondition
             	    {
             	    AND64=(Token)match(input,AND,FOLLOW_AND_in_searchAndCondition962); if (state.failed) return retval; 
             	    if ( state.backtracking==0 ) stream_AND.add(AND64);
@@ -3087,14 +3113,15 @@ public class CMISParser extends Parser {
             // rule labels: retval
             // token list labels: 
             // rule list labels: 
+            // wildcard labels: 
             if ( state.backtracking==0 ) {
             retval.tree = root_0;
-            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
+            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
             root_0 = (Object)adaptor.nil();
             // 283:3: -> ^( CONJUNCTION ( searchNotCondition )+ )
             {
-                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:283:6: ^( CONJUNCTION ( searchNotCondition )+ )
+                // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:283:6: ^( CONJUNCTION ( searchNotCondition )+ )
                 {
                 Object root_1 = (Object)adaptor.nil();
                 root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(CONJUNCTION, "CONJUNCTION"), root_1);
@@ -3113,7 +3140,7 @@ public class CMISParser extends Parser {
 
             }
 
-            retval.tree = root_0;retval.tree = root_0;}
+            retval.tree = root_0;}
             }
 
             retval.stop = input.LT(-1);
@@ -3133,15 +3160,15 @@ public class CMISParser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end searchAndCondition
+    // $ANTLR end "searchAndCondition"
 
     public static class searchNotCondition_return extends ParserRuleReturnScope {
         Object tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start searchNotCondition
-    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:286:1: searchNotCondition : ( NOT searchTest -> ^( NEGATION searchTest ) | searchTest -> searchTest );
+    // $ANTLR start "searchNotCondition"
+    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:286:1: searchNotCondition : ( NOT searchTest -> ^( NEGATION searchTest ) | searchTest -> searchTest );
     public final CMISParser.searchNotCondition_return searchNotCondition() throws RecognitionException {
         CMISParser.searchNotCondition_return retval = new CMISParser.searchNotCondition_return();
         retval.start = input.LT(1);
@@ -3158,12 +3185,12 @@ public class CMISParser extends Parser {
         RewriteRuleTokenStream stream_NOT=new RewriteRuleTokenStream(adaptor,"token NOT");
         RewriteRuleSubtreeStream stream_searchTest=new RewriteRuleSubtreeStream(adaptor,"rule searchTest");
         try {
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:287:2: ( NOT searchTest -> ^( NEGATION searchTest ) | searchTest -> searchTest )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:287:2: ( NOT searchTest -> ^( NEGATION searchTest ) | searchTest -> searchTest )
             int alt25=2;
             alt25 = dfa25.predict(input);
             switch (alt25) {
                 case 1 :
-                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:287:4: NOT searchTest
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:287:4: NOT searchTest
                     {
                     NOT66=(Token)match(input,NOT,FOLLOW_NOT_in_searchNotCondition991); if (state.failed) return retval; 
                     if ( state.backtracking==0 ) stream_NOT.add(NOT66);
@@ -3182,14 +3209,15 @@ public class CMISParser extends Parser {
                     // rule labels: retval
                     // token list labels: 
                     // rule list labels: 
+                    // wildcard labels: 
                     if ( state.backtracking==0 ) {
                     retval.tree = root_0;
-                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
+                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
                     // 288:3: -> ^( NEGATION searchTest )
                     {
-                        // W:\\workspace-cmis2\\ANTLR\\CMIS.g:288:6: ^( NEGATION searchTest )
+                        // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:288:6: ^( NEGATION searchTest )
                         {
                         Object root_1 = (Object)adaptor.nil();
                         root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(NEGATION, "NEGATION"), root_1);
@@ -3201,11 +3229,11 @@ public class CMISParser extends Parser {
 
                     }
 
-                    retval.tree = root_0;retval.tree = root_0;}
+                    retval.tree = root_0;}
                     }
                     break;
                 case 2 :
-                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:289:4: searchTest
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:289:4: searchTest
                     {
                     pushFollow(FOLLOW_searchTest_in_searchNotCondition1008);
                     searchTest68=searchTest();
@@ -3221,9 +3249,10 @@ public class CMISParser extends Parser {
                     // rule labels: retval
                     // token list labels: 
                     // rule list labels: 
+                    // wildcard labels: 
                     if ( state.backtracking==0 ) {
                     retval.tree = root_0;
-                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
+                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
                     // 290:3: -> searchTest
@@ -3232,7 +3261,7 @@ public class CMISParser extends Parser {
 
                     }
 
-                    retval.tree = root_0;retval.tree = root_0;}
+                    retval.tree = root_0;}
                     }
                     break;
 
@@ -3254,15 +3283,15 @@ public class CMISParser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end searchNotCondition
+    // $ANTLR end "searchNotCondition"
 
     public static class searchTest_return extends ParserRuleReturnScope {
         Object tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start searchTest
-    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:293:1: searchTest : ( predicate -> predicate | LPAREN searchOrCondition RPAREN -> searchOrCondition );
+    // $ANTLR start "searchTest"
+    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:293:1: searchTest : ( predicate -> predicate | LPAREN searchOrCondition RPAREN -> searchOrCondition );
     public final CMISParser.searchTest_return searchTest() throws RecognitionException {
         CMISParser.searchTest_return retval = new CMISParser.searchTest_return();
         retval.start = input.LT(1);
@@ -3283,7 +3312,7 @@ public class CMISParser extends Parser {
         RewriteRuleSubtreeStream stream_predicate=new RewriteRuleSubtreeStream(adaptor,"rule predicate");
         RewriteRuleSubtreeStream stream_searchOrCondition=new RewriteRuleSubtreeStream(adaptor,"rule searchOrCondition");
         try {
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:294:2: ( predicate -> predicate | LPAREN searchOrCondition RPAREN -> searchOrCondition )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:294:2: ( predicate -> predicate | LPAREN searchOrCondition RPAREN -> searchOrCondition )
             int alt26=2;
             int LA26_0 = input.LA(1);
 
@@ -3302,7 +3331,7 @@ public class CMISParser extends Parser {
             }
             switch (alt26) {
                 case 1 :
-                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:294:4: predicate
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:294:4: predicate
                     {
                     pushFollow(FOLLOW_predicate_in_searchTest1026);
                     predicate69=predicate();
@@ -3318,9 +3347,10 @@ public class CMISParser extends Parser {
                     // rule labels: retval
                     // token list labels: 
                     // rule list labels: 
+                    // wildcard labels: 
                     if ( state.backtracking==0 ) {
                     retval.tree = root_0;
-                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
+                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
                     // 295:3: -> predicate
@@ -3329,11 +3359,11 @@ public class CMISParser extends Parser {
 
                     }
 
-                    retval.tree = root_0;retval.tree = root_0;}
+                    retval.tree = root_0;}
                     }
                     break;
                 case 2 :
-                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:296:4: LPAREN searchOrCondition RPAREN
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:296:4: LPAREN searchOrCondition RPAREN
                     {
                     LPAREN70=(Token)match(input,LPAREN,FOLLOW_LPAREN_in_searchTest1037); if (state.failed) return retval; 
                     if ( state.backtracking==0 ) stream_LPAREN.add(LPAREN70);
@@ -3355,9 +3385,10 @@ public class CMISParser extends Parser {
                     // rule labels: retval
                     // token list labels: 
                     // rule list labels: 
+                    // wildcard labels: 
                     if ( state.backtracking==0 ) {
                     retval.tree = root_0;
-                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
+                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
                     // 297:3: -> searchOrCondition
@@ -3366,7 +3397,7 @@ public class CMISParser extends Parser {
 
                     }
 
-                    retval.tree = root_0;retval.tree = root_0;}
+                    retval.tree = root_0;}
                     }
                     break;
 
@@ -3388,15 +3419,15 @@ public class CMISParser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end searchTest
+    // $ANTLR end "searchTest"
 
     public static class predicate_return extends ParserRuleReturnScope {
         Object tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start predicate
-    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:300:1: predicate : ( comparisonPredicate | inPredicate | likePredicate | nullPredicate | quantifiedComparisonPredicate | quantifiedInPredicate | textSearchPredicate | folderPredicate );
+    // $ANTLR start "predicate"
+    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:300:1: predicate : ( comparisonPredicate | inPredicate | likePredicate | nullPredicate | quantifiedComparisonPredicate | quantifiedInPredicate | textSearchPredicate | folderPredicate );
     public final CMISParser.predicate_return predicate() throws RecognitionException {
         CMISParser.predicate_return retval = new CMISParser.predicate_return();
         retval.start = input.LT(1);
@@ -3422,12 +3453,12 @@ public class CMISParser extends Parser {
 
 
         try {
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:301:2: ( comparisonPredicate | inPredicate | likePredicate | nullPredicate | quantifiedComparisonPredicate | quantifiedInPredicate | textSearchPredicate | folderPredicate )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:301:2: ( comparisonPredicate | inPredicate | likePredicate | nullPredicate | quantifiedComparisonPredicate | quantifiedInPredicate | textSearchPredicate | folderPredicate )
             int alt27=8;
             alt27 = dfa27.predict(input);
             switch (alt27) {
                 case 1 :
-                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:301:4: comparisonPredicate
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:301:4: comparisonPredicate
                     {
                     root_0 = (Object)adaptor.nil();
 
@@ -3441,7 +3472,7 @@ public class CMISParser extends Parser {
                     }
                     break;
                 case 2 :
-                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:302:4: inPredicate
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:302:4: inPredicate
                     {
                     root_0 = (Object)adaptor.nil();
 
@@ -3455,7 +3486,7 @@ public class CMISParser extends Parser {
                     }
                     break;
                 case 3 :
-                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:303:4: likePredicate
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:303:4: likePredicate
                     {
                     root_0 = (Object)adaptor.nil();
 
@@ -3469,7 +3500,7 @@ public class CMISParser extends Parser {
                     }
                     break;
                 case 4 :
-                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:304:4: nullPredicate
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:304:4: nullPredicate
                     {
                     root_0 = (Object)adaptor.nil();
 
@@ -3483,7 +3514,7 @@ public class CMISParser extends Parser {
                     }
                     break;
                 case 5 :
-                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:305:5: quantifiedComparisonPredicate
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:305:5: quantifiedComparisonPredicate
                     {
                     root_0 = (Object)adaptor.nil();
 
@@ -3497,7 +3528,7 @@ public class CMISParser extends Parser {
                     }
                     break;
                 case 6 :
-                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:306:4: quantifiedInPredicate
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:306:4: quantifiedInPredicate
                     {
                     root_0 = (Object)adaptor.nil();
 
@@ -3511,7 +3542,7 @@ public class CMISParser extends Parser {
                     }
                     break;
                 case 7 :
-                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:307:4: textSearchPredicate
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:307:4: textSearchPredicate
                     {
                     root_0 = (Object)adaptor.nil();
 
@@ -3525,7 +3556,7 @@ public class CMISParser extends Parser {
                     }
                     break;
                 case 8 :
-                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:308:4: folderPredicate
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:308:4: folderPredicate
                     {
                     root_0 = (Object)adaptor.nil();
 
@@ -3557,15 +3588,15 @@ public class CMISParser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end predicate
+    // $ANTLR end "predicate"
 
     public static class comparisonPredicate_return extends ParserRuleReturnScope {
         Object tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start comparisonPredicate
-    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:311:1: comparisonPredicate : valueExpression compOp literalOrParameterName -> ^( PRED_COMPARISON ANY valueExpression compOp literalOrParameterName ) ;
+    // $ANTLR start "comparisonPredicate"
+    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:311:1: comparisonPredicate : valueExpression compOp literalOrParameterName -> ^( PRED_COMPARISON ANY valueExpression compOp literalOrParameterName ) ;
     public final CMISParser.comparisonPredicate_return comparisonPredicate() throws RecognitionException {
         CMISParser.comparisonPredicate_return retval = new CMISParser.comparisonPredicate_return();
         retval.start = input.LT(1);
@@ -3583,8 +3614,8 @@ public class CMISParser extends Parser {
         RewriteRuleSubtreeStream stream_compOp=new RewriteRuleSubtreeStream(adaptor,"rule compOp");
         RewriteRuleSubtreeStream stream_literalOrParameterName=new RewriteRuleSubtreeStream(adaptor,"rule literalOrParameterName");
         try {
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:312:2: ( valueExpression compOp literalOrParameterName -> ^( PRED_COMPARISON ANY valueExpression compOp literalOrParameterName ) )
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:312:4: valueExpression compOp literalOrParameterName
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:312:2: ( valueExpression compOp literalOrParameterName -> ^( PRED_COMPARISON ANY valueExpression compOp literalOrParameterName ) )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:312:4: valueExpression compOp literalOrParameterName
             {
             pushFollow(FOLLOW_valueExpression_in_comparisonPredicate1106);
             valueExpression81=valueExpression();
@@ -3607,19 +3638,20 @@ public class CMISParser extends Parser {
 
 
             // AST REWRITE
-            // elements: literalOrParameterName, compOp, valueExpression
+            // elements: valueExpression, compOp, literalOrParameterName
             // token labels: 
             // rule labels: retval
             // token list labels: 
             // rule list labels: 
+            // wildcard labels: 
             if ( state.backtracking==0 ) {
             retval.tree = root_0;
-            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
+            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
             root_0 = (Object)adaptor.nil();
             // 313:3: -> ^( PRED_COMPARISON ANY valueExpression compOp literalOrParameterName )
             {
-                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:313:6: ^( PRED_COMPARISON ANY valueExpression compOp literalOrParameterName )
+                // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:313:6: ^( PRED_COMPARISON ANY valueExpression compOp literalOrParameterName )
                 {
                 Object root_1 = (Object)adaptor.nil();
                 root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(PRED_COMPARISON, "PRED_COMPARISON"), root_1);
@@ -3634,7 +3666,7 @@ public class CMISParser extends Parser {
 
             }
 
-            retval.tree = root_0;retval.tree = root_0;}
+            retval.tree = root_0;}
             }
 
             retval.stop = input.LT(-1);
@@ -3654,15 +3686,15 @@ public class CMISParser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end comparisonPredicate
+    // $ANTLR end "comparisonPredicate"
 
     public static class compOp_return extends ParserRuleReturnScope {
         Object tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start compOp
-    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:316:1: compOp : ( EQUALS | NOTEQUALS | LESSTHAN | GREATERTHAN | LESSTHANOREQUALS | GREATERTHANOREQUALS );
+    // $ANTLR start "compOp"
+    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:316:1: compOp : ( EQUALS | NOTEQUALS | LESSTHAN | GREATERTHAN | LESSTHANOREQUALS | GREATERTHANOREQUALS );
     public final CMISParser.compOp_return compOp() throws RecognitionException {
         CMISParser.compOp_return retval = new CMISParser.compOp_return();
         retval.start = input.LT(1);
@@ -3674,8 +3706,8 @@ public class CMISParser extends Parser {
         Object set84_tree=null;
 
         try {
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:317:2: ( EQUALS | NOTEQUALS | LESSTHAN | GREATERTHAN | LESSTHANOREQUALS | GREATERTHANOREQUALS )
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:317:2: ( EQUALS | NOTEQUALS | LESSTHAN | GREATERTHAN | LESSTHANOREQUALS | GREATERTHANOREQUALS )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:
             {
             root_0 = (Object)adaptor.nil();
 
@@ -3711,15 +3743,15 @@ public class CMISParser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end compOp
+    // $ANTLR end "compOp"
 
     public static class literalOrParameterName_return extends ParserRuleReturnScope {
         Object tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start literalOrParameterName
-    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:325:1: literalOrParameterName : ( literal | parameterName );
+    // $ANTLR start "literalOrParameterName"
+    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:325:1: literalOrParameterName : ( literal | parameterName );
     public final CMISParser.literalOrParameterName_return literalOrParameterName() throws RecognitionException {
         CMISParser.literalOrParameterName_return retval = new CMISParser.literalOrParameterName_return();
         retval.start = input.LT(1);
@@ -3733,7 +3765,7 @@ public class CMISParser extends Parser {
 
 
         try {
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:326:2: ( literal | parameterName )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:326:2: ( literal | parameterName )
             int alt28=2;
             int LA28_0 = input.LA(1);
 
@@ -3752,7 +3784,7 @@ public class CMISParser extends Parser {
             }
             switch (alt28) {
                 case 1 :
-                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:326:4: literal
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:326:4: literal
                     {
                     root_0 = (Object)adaptor.nil();
 
@@ -3766,7 +3798,7 @@ public class CMISParser extends Parser {
                     }
                     break;
                 case 2 :
-                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:327:4: parameterName
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:327:4: parameterName
                     {
                     root_0 = (Object)adaptor.nil();
 
@@ -3798,15 +3830,15 @@ public class CMISParser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end literalOrParameterName
+    // $ANTLR end "literalOrParameterName"
 
     public static class literal_return extends ParserRuleReturnScope {
         Object tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start literal
-    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:330:1: literal : ( signedNumericLiteral | characterStringLiteral );
+    // $ANTLR start "literal"
+    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:330:1: literal : ( signedNumericLiteral | characterStringLiteral );
     public final CMISParser.literal_return literal() throws RecognitionException {
         CMISParser.literal_return retval = new CMISParser.literal_return();
         retval.start = input.LT(1);
@@ -3820,7 +3852,7 @@ public class CMISParser extends Parser {
 
 
         try {
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:331:2: ( signedNumericLiteral | characterStringLiteral )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:331:2: ( signedNumericLiteral | characterStringLiteral )
             int alt29=2;
             int LA29_0 = input.LA(1);
 
@@ -3839,7 +3871,7 @@ public class CMISParser extends Parser {
             }
             switch (alt29) {
                 case 1 :
-                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:331:4: signedNumericLiteral
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:331:4: signedNumericLiteral
                     {
                     root_0 = (Object)adaptor.nil();
 
@@ -3853,7 +3885,7 @@ public class CMISParser extends Parser {
                     }
                     break;
                 case 2 :
-                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:332:4: characterStringLiteral
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:332:4: characterStringLiteral
                     {
                     root_0 = (Object)adaptor.nil();
 
@@ -3885,15 +3917,15 @@ public class CMISParser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end literal
+    // $ANTLR end "literal"
 
     public static class inPredicate_return extends ParserRuleReturnScope {
         Object tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start inPredicate
-    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:335:1: inPredicate : columnReference ( NOT )? IN LPAREN inValueList RPAREN -> ^( PRED_IN ANY columnReference inValueList ( NOT )? ) ;
+    // $ANTLR start "inPredicate"
+    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:335:1: inPredicate : columnReference ( NOT )? IN LPAREN inValueList RPAREN -> ^( PRED_IN ANY columnReference inValueList ( NOT )? ) ;
     public final CMISParser.inPredicate_return inPredicate() throws RecognitionException {
         CMISParser.inPredicate_return retval = new CMISParser.inPredicate_return();
         retval.start = input.LT(1);
@@ -3920,8 +3952,8 @@ public class CMISParser extends Parser {
         RewriteRuleSubtreeStream stream_columnReference=new RewriteRuleSubtreeStream(adaptor,"rule columnReference");
         RewriteRuleSubtreeStream stream_inValueList=new RewriteRuleSubtreeStream(adaptor,"rule inValueList");
         try {
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:336:2: ( columnReference ( NOT )? IN LPAREN inValueList RPAREN -> ^( PRED_IN ANY columnReference inValueList ( NOT )? ) )
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:336:4: columnReference ( NOT )? IN LPAREN inValueList RPAREN
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:336:2: ( columnReference ( NOT )? IN LPAREN inValueList RPAREN -> ^( PRED_IN ANY columnReference inValueList ( NOT )? ) )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:336:4: columnReference ( NOT )? IN LPAREN inValueList RPAREN
             {
             pushFollow(FOLLOW_columnReference_in_inPredicate1211);
             columnReference89=columnReference();
@@ -3929,7 +3961,7 @@ public class CMISParser extends Parser {
             state._fsp--;
             if (state.failed) return retval;
             if ( state.backtracking==0 ) stream_columnReference.add(columnReference89.getTree());
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:336:20: ( NOT )?
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:336:20: ( NOT )?
             int alt30=2;
             int LA30_0 = input.LA(1);
 
@@ -3938,7 +3970,7 @@ public class CMISParser extends Parser {
             }
             switch (alt30) {
                 case 1 :
-                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:336:20: NOT
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:336:20: NOT
                     {
                     NOT90=(Token)match(input,NOT,FOLLOW_NOT_in_inPredicate1213); if (state.failed) return retval; 
                     if ( state.backtracking==0 ) stream_NOT.add(NOT90);
@@ -3967,19 +3999,20 @@ public class CMISParser extends Parser {
 
 
             // AST REWRITE
-            // elements: inValueList, NOT, columnReference
+            // elements: columnReference, inValueList, NOT
             // token labels: 
             // rule labels: retval
             // token list labels: 
             // rule list labels: 
+            // wildcard labels: 
             if ( state.backtracking==0 ) {
             retval.tree = root_0;
-            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
+            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
             root_0 = (Object)adaptor.nil();
             // 337:3: -> ^( PRED_IN ANY columnReference inValueList ( NOT )? )
             {
-                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:337:6: ^( PRED_IN ANY columnReference inValueList ( NOT )? )
+                // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:337:6: ^( PRED_IN ANY columnReference inValueList ( NOT )? )
                 {
                 Object root_1 = (Object)adaptor.nil();
                 root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(PRED_IN, "PRED_IN"), root_1);
@@ -3987,7 +4020,7 @@ public class CMISParser extends Parser {
                 adaptor.addChild(root_1, (Object)adaptor.create(ANY, "ANY"));
                 adaptor.addChild(root_1, stream_columnReference.nextTree());
                 adaptor.addChild(root_1, stream_inValueList.nextTree());
-                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:337:48: ( NOT )?
+                // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:337:48: ( NOT )?
                 if ( stream_NOT.hasNext() ) {
                     adaptor.addChild(root_1, stream_NOT.nextNode());
 
@@ -3999,7 +4032,7 @@ public class CMISParser extends Parser {
 
             }
 
-            retval.tree = root_0;retval.tree = root_0;}
+            retval.tree = root_0;}
             }
 
             retval.stop = input.LT(-1);
@@ -4019,15 +4052,15 @@ public class CMISParser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end inPredicate
+    // $ANTLR end "inPredicate"
 
     public static class inValueList_return extends ParserRuleReturnScope {
         Object tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start inValueList
-    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:340:1: inValueList : literalOrParameterName ( COMMA literalOrParameterName )* -> ^( LIST ( literalOrParameterName )+ ) ;
+    // $ANTLR start "inValueList"
+    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:340:1: inValueList : literalOrParameterName ( COMMA literalOrParameterName )* -> ^( LIST ( literalOrParameterName )+ ) ;
     public final CMISParser.inValueList_return inValueList() throws RecognitionException {
         CMISParser.inValueList_return retval = new CMISParser.inValueList_return();
         retval.start = input.LT(1);
@@ -4044,8 +4077,8 @@ public class CMISParser extends Parser {
         RewriteRuleTokenStream stream_COMMA=new RewriteRuleTokenStream(adaptor,"token COMMA");
         RewriteRuleSubtreeStream stream_literalOrParameterName=new RewriteRuleSubtreeStream(adaptor,"rule literalOrParameterName");
         try {
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:341:2: ( literalOrParameterName ( COMMA literalOrParameterName )* -> ^( LIST ( literalOrParameterName )+ ) )
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:341:4: literalOrParameterName ( COMMA literalOrParameterName )*
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:341:2: ( literalOrParameterName ( COMMA literalOrParameterName )* -> ^( LIST ( literalOrParameterName )+ ) )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:341:4: literalOrParameterName ( COMMA literalOrParameterName )*
             {
             pushFollow(FOLLOW_literalOrParameterName_in_inValueList1251);
             literalOrParameterName95=literalOrParameterName();
@@ -4053,7 +4086,7 @@ public class CMISParser extends Parser {
             state._fsp--;
             if (state.failed) return retval;
             if ( state.backtracking==0 ) stream_literalOrParameterName.add(literalOrParameterName95.getTree());
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:341:27: ( COMMA literalOrParameterName )*
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:341:27: ( COMMA literalOrParameterName )*
             loop31:
             do {
                 int alt31=2;
@@ -4066,7 +4099,7 @@ public class CMISParser extends Parser {
 
                 switch (alt31) {
             	case 1 :
-            	    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:341:28: COMMA literalOrParameterName
+            	    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:341:28: COMMA literalOrParameterName
             	    {
             	    COMMA96=(Token)match(input,COMMA,FOLLOW_COMMA_in_inValueList1254); if (state.failed) return retval; 
             	    if ( state.backtracking==0 ) stream_COMMA.add(COMMA96);
@@ -4094,14 +4127,15 @@ public class CMISParser extends Parser {
             // rule labels: retval
             // token list labels: 
             // rule list labels: 
+            // wildcard labels: 
             if ( state.backtracking==0 ) {
             retval.tree = root_0;
-            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
+            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
             root_0 = (Object)adaptor.nil();
             // 342:3: -> ^( LIST ( literalOrParameterName )+ )
             {
-                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:342:6: ^( LIST ( literalOrParameterName )+ )
+                // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:342:6: ^( LIST ( literalOrParameterName )+ )
                 {
                 Object root_1 = (Object)adaptor.nil();
                 root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(LIST, "LIST"), root_1);
@@ -4120,7 +4154,7 @@ public class CMISParser extends Parser {
 
             }
 
-            retval.tree = root_0;retval.tree = root_0;}
+            retval.tree = root_0;}
             }
 
             retval.stop = input.LT(-1);
@@ -4140,15 +4174,15 @@ public class CMISParser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end inValueList
+    // $ANTLR end "inValueList"
 
     public static class likePredicate_return extends ParserRuleReturnScope {
         Object tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start likePredicate
-    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:345:1: likePredicate : columnReference ( NOT )? LIKE characterStringLiteral -> ^( PRED_LIKE columnReference characterStringLiteral ( NOT )? ) ;
+    // $ANTLR start "likePredicate"
+    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:345:1: likePredicate : columnReference ( NOT )? LIKE characterStringLiteral -> ^( PRED_LIKE columnReference characterStringLiteral ( NOT )? ) ;
     public final CMISParser.likePredicate_return likePredicate() throws RecognitionException {
         CMISParser.likePredicate_return retval = new CMISParser.likePredicate_return();
         retval.start = input.LT(1);
@@ -4169,8 +4203,8 @@ public class CMISParser extends Parser {
         RewriteRuleSubtreeStream stream_columnReference=new RewriteRuleSubtreeStream(adaptor,"rule columnReference");
         RewriteRuleSubtreeStream stream_characterStringLiteral=new RewriteRuleSubtreeStream(adaptor,"rule characterStringLiteral");
         try {
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:346:2: ( columnReference ( NOT )? LIKE characterStringLiteral -> ^( PRED_LIKE columnReference characterStringLiteral ( NOT )? ) )
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:346:4: columnReference ( NOT )? LIKE characterStringLiteral
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:346:2: ( columnReference ( NOT )? LIKE characterStringLiteral -> ^( PRED_LIKE columnReference characterStringLiteral ( NOT )? ) )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:346:4: columnReference ( NOT )? LIKE characterStringLiteral
             {
             pushFollow(FOLLOW_columnReference_in_likePredicate1282);
             columnReference98=columnReference();
@@ -4178,7 +4212,7 @@ public class CMISParser extends Parser {
             state._fsp--;
             if (state.failed) return retval;
             if ( state.backtracking==0 ) stream_columnReference.add(columnReference98.getTree());
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:346:20: ( NOT )?
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:346:20: ( NOT )?
             int alt32=2;
             int LA32_0 = input.LA(1);
 
@@ -4187,7 +4221,7 @@ public class CMISParser extends Parser {
             }
             switch (alt32) {
                 case 1 :
-                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:346:20: NOT
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:346:20: NOT
                     {
                     NOT99=(Token)match(input,NOT,FOLLOW_NOT_in_likePredicate1284); if (state.failed) return retval; 
                     if ( state.backtracking==0 ) stream_NOT.add(NOT99);
@@ -4210,26 +4244,27 @@ public class CMISParser extends Parser {
 
 
             // AST REWRITE
-            // elements: NOT, columnReference, characterStringLiteral
+            // elements: characterStringLiteral, columnReference, NOT
             // token labels: 
             // rule labels: retval
             // token list labels: 
             // rule list labels: 
+            // wildcard labels: 
             if ( state.backtracking==0 ) {
             retval.tree = root_0;
-            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
+            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
             root_0 = (Object)adaptor.nil();
             // 347:3: -> ^( PRED_LIKE columnReference characterStringLiteral ( NOT )? )
             {
-                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:347:6: ^( PRED_LIKE columnReference characterStringLiteral ( NOT )? )
+                // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:347:6: ^( PRED_LIKE columnReference characterStringLiteral ( NOT )? )
                 {
                 Object root_1 = (Object)adaptor.nil();
                 root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(PRED_LIKE, "PRED_LIKE"), root_1);
 
                 adaptor.addChild(root_1, stream_columnReference.nextTree());
                 adaptor.addChild(root_1, stream_characterStringLiteral.nextTree());
-                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:347:57: ( NOT )?
+                // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:347:57: ( NOT )?
                 if ( stream_NOT.hasNext() ) {
                     adaptor.addChild(root_1, stream_NOT.nextNode());
 
@@ -4241,7 +4276,7 @@ public class CMISParser extends Parser {
 
             }
 
-            retval.tree = root_0;retval.tree = root_0;}
+            retval.tree = root_0;}
             }
 
             retval.stop = input.LT(-1);
@@ -4261,15 +4296,15 @@ public class CMISParser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end likePredicate
+    // $ANTLR end "likePredicate"
 
     public static class nullPredicate_return extends ParserRuleReturnScope {
         Object tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start nullPredicate
-    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:350:1: nullPredicate : ( ( ( columnReference )=> columnReference | multiValuedColumnReference ) IS NULL -> ^( PRED_EXISTS columnReference NOT ) | ( ( columnReference )=> columnReference | multiValuedColumnReference ) IS NOT NULL -> ^( PRED_EXISTS columnReference ) );
+    // $ANTLR start "nullPredicate"
+    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:350:1: nullPredicate : ( ( ( columnReference )=> columnReference | multiValuedColumnReference ) IS NULL -> ^( PRED_EXISTS columnReference NOT ) | ( ( columnReference )=> columnReference | multiValuedColumnReference ) IS NOT NULL -> ^( PRED_EXISTS columnReference ) );
     public final CMISParser.nullPredicate_return nullPredicate() throws RecognitionException {
         CMISParser.nullPredicate_return retval = new CMISParser.nullPredicate_return();
         retval.start = input.LT(1);
@@ -4301,14 +4336,14 @@ public class CMISParser extends Parser {
         RewriteRuleSubtreeStream stream_columnReference=new RewriteRuleSubtreeStream(adaptor,"rule columnReference");
         RewriteRuleSubtreeStream stream_multiValuedColumnReference=new RewriteRuleSubtreeStream(adaptor,"rule multiValuedColumnReference");
         try {
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:351:2: ( ( ( columnReference )=> columnReference | multiValuedColumnReference ) IS NULL -> ^( PRED_EXISTS columnReference NOT ) | ( ( columnReference )=> columnReference | multiValuedColumnReference ) IS NOT NULL -> ^( PRED_EXISTS columnReference ) )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:351:2: ( ( ( columnReference )=> columnReference | multiValuedColumnReference ) IS NULL -> ^( PRED_EXISTS columnReference NOT ) | ( ( columnReference )=> columnReference | multiValuedColumnReference ) IS NOT NULL -> ^( PRED_EXISTS columnReference ) )
             int alt35=2;
             alt35 = dfa35.predict(input);
             switch (alt35) {
                 case 1 :
-                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:351:4: ( ( columnReference )=> columnReference | multiValuedColumnReference ) IS NULL
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:351:4: ( ( columnReference )=> columnReference | multiValuedColumnReference ) IS NULL
                     {
-                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:351:4: ( ( columnReference )=> columnReference | multiValuedColumnReference )
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:351:4: ( ( columnReference )=> columnReference | multiValuedColumnReference )
                     int alt33=2;
                     int LA33_0 = input.LA(1);
 
@@ -4405,7 +4440,7 @@ public class CMISParser extends Parser {
                     }
                     switch (alt33) {
                         case 1 :
-                            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:351:6: ( columnReference )=> columnReference
+                            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:351:6: ( columnReference )=> columnReference
                             {
                             pushFollow(FOLLOW_columnReference_in_nullPredicate1323);
                             columnReference102=columnReference();
@@ -4417,7 +4452,7 @@ public class CMISParser extends Parser {
                             }
                             break;
                         case 2 :
-                            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:351:44: multiValuedColumnReference
+                            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:351:44: multiValuedColumnReference
                             {
                             pushFollow(FOLLOW_multiValuedColumnReference_in_nullPredicate1327);
                             multiValuedColumnReference103=multiValuedColumnReference();
@@ -4445,14 +4480,15 @@ public class CMISParser extends Parser {
                     // rule labels: retval
                     // token list labels: 
                     // rule list labels: 
+                    // wildcard labels: 
                     if ( state.backtracking==0 ) {
                     retval.tree = root_0;
-                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
+                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
                     // 352:3: -> ^( PRED_EXISTS columnReference NOT )
                     {
-                        // W:\\workspace-cmis2\\ANTLR\\CMIS.g:352:6: ^( PRED_EXISTS columnReference NOT )
+                        // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:352:6: ^( PRED_EXISTS columnReference NOT )
                         {
                         Object root_1 = (Object)adaptor.nil();
                         root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(PRED_EXISTS, "PRED_EXISTS"), root_1);
@@ -4465,13 +4501,13 @@ public class CMISParser extends Parser {
 
                     }
 
-                    retval.tree = root_0;retval.tree = root_0;}
+                    retval.tree = root_0;}
                     }
                     break;
                 case 2 :
-                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:353:9: ( ( columnReference )=> columnReference | multiValuedColumnReference ) IS NOT NULL
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:353:9: ( ( columnReference )=> columnReference | multiValuedColumnReference ) IS NOT NULL
                     {
-                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:353:9: ( ( columnReference )=> columnReference | multiValuedColumnReference )
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:353:9: ( ( columnReference )=> columnReference | multiValuedColumnReference )
                     int alt34=2;
                     int LA34_0 = input.LA(1);
 
@@ -4568,7 +4604,7 @@ public class CMISParser extends Parser {
                     }
                     switch (alt34) {
                         case 1 :
-                            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:353:11: ( columnReference )=> columnReference
+                            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:353:11: ( columnReference )=> columnReference
                             {
                             pushFollow(FOLLOW_columnReference_in_nullPredicate1361);
                             columnReference106=columnReference();
@@ -4580,7 +4616,7 @@ public class CMISParser extends Parser {
                             }
                             break;
                         case 2 :
-                            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:353:49: multiValuedColumnReference
+                            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:353:49: multiValuedColumnReference
                             {
                             pushFollow(FOLLOW_multiValuedColumnReference_in_nullPredicate1365);
                             multiValuedColumnReference107=multiValuedColumnReference();
@@ -4611,14 +4647,15 @@ public class CMISParser extends Parser {
                     // rule labels: retval
                     // token list labels: 
                     // rule list labels: 
+                    // wildcard labels: 
                     if ( state.backtracking==0 ) {
                     retval.tree = root_0;
-                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
+                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
                     // 354:9: -> ^( PRED_EXISTS columnReference )
                     {
-                        // W:\\workspace-cmis2\\ANTLR\\CMIS.g:354:12: ^( PRED_EXISTS columnReference )
+                        // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:354:12: ^( PRED_EXISTS columnReference )
                         {
                         Object root_1 = (Object)adaptor.nil();
                         root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(PRED_EXISTS, "PRED_EXISTS"), root_1);
@@ -4630,7 +4667,7 @@ public class CMISParser extends Parser {
 
                     }
 
-                    retval.tree = root_0;retval.tree = root_0;}
+                    retval.tree = root_0;}
                     }
                     break;
 
@@ -4652,15 +4689,15 @@ public class CMISParser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end nullPredicate
+    // $ANTLR end "nullPredicate"
 
     public static class quantifiedComparisonPredicate_return extends ParserRuleReturnScope {
         Object tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start quantifiedComparisonPredicate
-    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:357:1: quantifiedComparisonPredicate : literalOrParameterName compOp ANY multiValuedColumnReference -> ^( PRED_COMPARISON ANY literalOrParameterName compOp multiValuedColumnReference ) ;
+    // $ANTLR start "quantifiedComparisonPredicate"
+    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:357:1: quantifiedComparisonPredicate : literalOrParameterName compOp ANY multiValuedColumnReference -> ^( PRED_COMPARISON ANY literalOrParameterName compOp multiValuedColumnReference ) ;
     public final CMISParser.quantifiedComparisonPredicate_return quantifiedComparisonPredicate() throws RecognitionException {
         CMISParser.quantifiedComparisonPredicate_return retval = new CMISParser.quantifiedComparisonPredicate_return();
         retval.start = input.LT(1);
@@ -4681,8 +4718,8 @@ public class CMISParser extends Parser {
         RewriteRuleSubtreeStream stream_literalOrParameterName=new RewriteRuleSubtreeStream(adaptor,"rule literalOrParameterName");
         RewriteRuleSubtreeStream stream_multiValuedColumnReference=new RewriteRuleSubtreeStream(adaptor,"rule multiValuedColumnReference");
         try {
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:358:2: ( literalOrParameterName compOp ANY multiValuedColumnReference -> ^( PRED_COMPARISON ANY literalOrParameterName compOp multiValuedColumnReference ) )
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:358:4: literalOrParameterName compOp ANY multiValuedColumnReference
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:358:2: ( literalOrParameterName compOp ANY multiValuedColumnReference -> ^( PRED_COMPARISON ANY literalOrParameterName compOp multiValuedColumnReference ) )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:358:4: literalOrParameterName compOp ANY multiValuedColumnReference
             {
             pushFollow(FOLLOW_literalOrParameterName_in_quantifiedComparisonPredicate1400);
             literalOrParameterName111=literalOrParameterName();
@@ -4708,19 +4745,20 @@ public class CMISParser extends Parser {
 
 
             // AST REWRITE
-            // elements: multiValuedColumnReference, ANY, compOp, literalOrParameterName
+            // elements: multiValuedColumnReference, compOp, literalOrParameterName, ANY
             // token labels: 
             // rule labels: retval
             // token list labels: 
             // rule list labels: 
+            // wildcard labels: 
             if ( state.backtracking==0 ) {
             retval.tree = root_0;
-            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
+            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
             root_0 = (Object)adaptor.nil();
             // 359:2: -> ^( PRED_COMPARISON ANY literalOrParameterName compOp multiValuedColumnReference )
             {
-                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:359:5: ^( PRED_COMPARISON ANY literalOrParameterName compOp multiValuedColumnReference )
+                // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:359:5: ^( PRED_COMPARISON ANY literalOrParameterName compOp multiValuedColumnReference )
                 {
                 Object root_1 = (Object)adaptor.nil();
                 root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(PRED_COMPARISON, "PRED_COMPARISON"), root_1);
@@ -4735,7 +4773,7 @@ public class CMISParser extends Parser {
 
             }
 
-            retval.tree = root_0;retval.tree = root_0;}
+            retval.tree = root_0;}
             }
 
             retval.stop = input.LT(-1);
@@ -4755,15 +4793,15 @@ public class CMISParser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end quantifiedComparisonPredicate
+    // $ANTLR end "quantifiedComparisonPredicate"
 
     public static class quantifiedInPredicate_return extends ParserRuleReturnScope {
         Object tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start quantifiedInPredicate
-    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:363:1: quantifiedInPredicate : ANY multiValuedColumnReference ( NOT )? IN LPAREN inValueList RPAREN -> ^( PRED_IN ANY multiValuedColumnReference inValueList ( NOT )? ) ;
+    // $ANTLR start "quantifiedInPredicate"
+    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:363:1: quantifiedInPredicate : ANY multiValuedColumnReference ( NOT )? IN LPAREN inValueList RPAREN -> ^( PRED_IN ANY multiValuedColumnReference inValueList ( NOT )? ) ;
     public final CMISParser.quantifiedInPredicate_return quantifiedInPredicate() throws RecognitionException {
         CMISParser.quantifiedInPredicate_return retval = new CMISParser.quantifiedInPredicate_return();
         retval.start = input.LT(1);
@@ -4793,8 +4831,8 @@ public class CMISParser extends Parser {
         RewriteRuleSubtreeStream stream_multiValuedColumnReference=new RewriteRuleSubtreeStream(adaptor,"rule multiValuedColumnReference");
         RewriteRuleSubtreeStream stream_inValueList=new RewriteRuleSubtreeStream(adaptor,"rule inValueList");
         try {
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:364:2: ( ANY multiValuedColumnReference ( NOT )? IN LPAREN inValueList RPAREN -> ^( PRED_IN ANY multiValuedColumnReference inValueList ( NOT )? ) )
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:364:4: ANY multiValuedColumnReference ( NOT )? IN LPAREN inValueList RPAREN
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:364:2: ( ANY multiValuedColumnReference ( NOT )? IN LPAREN inValueList RPAREN -> ^( PRED_IN ANY multiValuedColumnReference inValueList ( NOT )? ) )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:364:4: ANY multiValuedColumnReference ( NOT )? IN LPAREN inValueList RPAREN
             {
             ANY115=(Token)match(input,ANY,FOLLOW_ANY_in_quantifiedInPredicate1435); if (state.failed) return retval; 
             if ( state.backtracking==0 ) stream_ANY.add(ANY115);
@@ -4805,7 +4843,7 @@ public class CMISParser extends Parser {
             state._fsp--;
             if (state.failed) return retval;
             if ( state.backtracking==0 ) stream_multiValuedColumnReference.add(multiValuedColumnReference116.getTree());
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:364:35: ( NOT )?
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:364:35: ( NOT )?
             int alt36=2;
             int LA36_0 = input.LA(1);
 
@@ -4814,7 +4852,7 @@ public class CMISParser extends Parser {
             }
             switch (alt36) {
                 case 1 :
-                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:364:35: NOT
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:364:35: NOT
                     {
                     NOT117=(Token)match(input,NOT,FOLLOW_NOT_in_quantifiedInPredicate1439); if (state.failed) return retval; 
                     if ( state.backtracking==0 ) stream_NOT.add(NOT117);
@@ -4843,19 +4881,20 @@ public class CMISParser extends Parser {
 
 
             // AST REWRITE
-            // elements: ANY, multiValuedColumnReference, NOT, inValueList
+            // elements: NOT, multiValuedColumnReference, inValueList, ANY
             // token labels: 
             // rule labels: retval
             // token list labels: 
             // rule list labels: 
+            // wildcard labels: 
             if ( state.backtracking==0 ) {
             retval.tree = root_0;
-            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
+            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
             root_0 = (Object)adaptor.nil();
             // 365:3: -> ^( PRED_IN ANY multiValuedColumnReference inValueList ( NOT )? )
             {
-                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:365:6: ^( PRED_IN ANY multiValuedColumnReference inValueList ( NOT )? )
+                // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:365:6: ^( PRED_IN ANY multiValuedColumnReference inValueList ( NOT )? )
                 {
                 Object root_1 = (Object)adaptor.nil();
                 root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(PRED_IN, "PRED_IN"), root_1);
@@ -4863,7 +4902,7 @@ public class CMISParser extends Parser {
                 adaptor.addChild(root_1, stream_ANY.nextNode());
                 adaptor.addChild(root_1, stream_multiValuedColumnReference.nextTree());
                 adaptor.addChild(root_1, stream_inValueList.nextTree());
-                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:365:59: ( NOT )?
+                // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:365:59: ( NOT )?
                 if ( stream_NOT.hasNext() ) {
                     adaptor.addChild(root_1, stream_NOT.nextNode());
 
@@ -4875,7 +4914,7 @@ public class CMISParser extends Parser {
 
             }
 
-            retval.tree = root_0;retval.tree = root_0;}
+            retval.tree = root_0;}
             }
 
             retval.stop = input.LT(-1);
@@ -4895,15 +4934,15 @@ public class CMISParser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end quantifiedInPredicate
+    // $ANTLR end "quantifiedInPredicate"
 
     public static class textSearchPredicate_return extends ParserRuleReturnScope {
         Object tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start textSearchPredicate
-    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:368:1: textSearchPredicate : CONTAINS LPAREN ( qualifier COMMA | COMMA )? textSearchExpression RPAREN -> ^( PRED_FTS textSearchExpression ( qualifier )? ) ;
+    // $ANTLR start "textSearchPredicate"
+    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:368:1: textSearchPredicate : CONTAINS LPAREN ( qualifier COMMA | COMMA )? textSearchExpression RPAREN -> ^( PRED_FTS textSearchExpression ( qualifier )? ) ;
     public final CMISParser.textSearchPredicate_return textSearchPredicate() throws RecognitionException {
         CMISParser.textSearchPredicate_return retval = new CMISParser.textSearchPredicate_return();
         retval.start = input.LT(1);
@@ -4932,8 +4971,8 @@ public class CMISParser extends Parser {
         RewriteRuleSubtreeStream stream_qualifier=new RewriteRuleSubtreeStream(adaptor,"rule qualifier");
         RewriteRuleSubtreeStream stream_textSearchExpression=new RewriteRuleSubtreeStream(adaptor,"rule textSearchExpression");
         try {
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:369:2: ( CONTAINS LPAREN ( qualifier COMMA | COMMA )? textSearchExpression RPAREN -> ^( PRED_FTS textSearchExpression ( qualifier )? ) )
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:369:4: CONTAINS LPAREN ( qualifier COMMA | COMMA )? textSearchExpression RPAREN
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:369:2: ( CONTAINS LPAREN ( qualifier COMMA | COMMA )? textSearchExpression RPAREN -> ^( PRED_FTS textSearchExpression ( qualifier )? ) )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:369:4: CONTAINS LPAREN ( qualifier COMMA | COMMA )? textSearchExpression RPAREN
             {
             CONTAINS122=(Token)match(input,CONTAINS,FOLLOW_CONTAINS_in_textSearchPredicate1478); if (state.failed) return retval; 
             if ( state.backtracking==0 ) stream_CONTAINS.add(CONTAINS122);
@@ -4941,7 +4980,7 @@ public class CMISParser extends Parser {
             LPAREN123=(Token)match(input,LPAREN,FOLLOW_LPAREN_in_textSearchPredicate1480); if (state.failed) return retval; 
             if ( state.backtracking==0 ) stream_LPAREN.add(LPAREN123);
 
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:369:20: ( qualifier COMMA | COMMA )?
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:369:20: ( qualifier COMMA | COMMA )?
             int alt37=3;
             int LA37_0 = input.LA(1);
 
@@ -4953,7 +4992,7 @@ public class CMISParser extends Parser {
             }
             switch (alt37) {
                 case 1 :
-                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:369:21: qualifier COMMA
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:369:21: qualifier COMMA
                     {
                     pushFollow(FOLLOW_qualifier_in_textSearchPredicate1483);
                     qualifier124=qualifier();
@@ -4968,7 +5007,7 @@ public class CMISParser extends Parser {
                     }
                     break;
                 case 2 :
-                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:369:39: COMMA
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:369:39: COMMA
                     {
                     COMMA126=(Token)match(input,COMMA,FOLLOW_COMMA_in_textSearchPredicate1489); if (state.failed) return retval; 
                     if ( state.backtracking==0 ) stream_COMMA.add(COMMA126);
@@ -4991,25 +5030,26 @@ public class CMISParser extends Parser {
 
 
             // AST REWRITE
-            // elements: textSearchExpression, qualifier
+            // elements: qualifier, textSearchExpression
             // token labels: 
             // rule labels: retval
             // token list labels: 
             // rule list labels: 
+            // wildcard labels: 
             if ( state.backtracking==0 ) {
             retval.tree = root_0;
-            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
+            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
             root_0 = (Object)adaptor.nil();
             // 370:3: -> ^( PRED_FTS textSearchExpression ( qualifier )? )
             {
-                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:370:6: ^( PRED_FTS textSearchExpression ( qualifier )? )
+                // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:370:6: ^( PRED_FTS textSearchExpression ( qualifier )? )
                 {
                 Object root_1 = (Object)adaptor.nil();
                 root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(PRED_FTS, "PRED_FTS"), root_1);
 
                 adaptor.addChild(root_1, stream_textSearchExpression.nextTree());
-                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:370:38: ( qualifier )?
+                // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:370:38: ( qualifier )?
                 if ( stream_qualifier.hasNext() ) {
                     adaptor.addChild(root_1, stream_qualifier.nextTree());
 
@@ -5021,7 +5061,7 @@ public class CMISParser extends Parser {
 
             }
 
-            retval.tree = root_0;retval.tree = root_0;}
+            retval.tree = root_0;}
             }
 
             retval.stop = input.LT(-1);
@@ -5041,15 +5081,15 @@ public class CMISParser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end textSearchPredicate
+    // $ANTLR end "textSearchPredicate"
 
     public static class folderPredicate_return extends ParserRuleReturnScope {
         Object tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start folderPredicate
-    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:373:1: folderPredicate : ( IN_FOLDER folderPredicateArgs -> ^( PRED_CHILD folderPredicateArgs ) | IN_TREE folderPredicateArgs -> ^( PRED_DESCENDANT folderPredicateArgs ) );
+    // $ANTLR start "folderPredicate"
+    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:373:1: folderPredicate : ( IN_FOLDER folderPredicateArgs -> ^( PRED_CHILD folderPredicateArgs ) | IN_TREE folderPredicateArgs -> ^( PRED_DESCENDANT folderPredicateArgs ) );
     public final CMISParser.folderPredicate_return folderPredicate() throws RecognitionException {
         CMISParser.folderPredicate_return retval = new CMISParser.folderPredicate_return();
         retval.start = input.LT(1);
@@ -5069,7 +5109,7 @@ public class CMISParser extends Parser {
         RewriteRuleTokenStream stream_IN_FOLDER=new RewriteRuleTokenStream(adaptor,"token IN_FOLDER");
         RewriteRuleSubtreeStream stream_folderPredicateArgs=new RewriteRuleSubtreeStream(adaptor,"rule folderPredicateArgs");
         try {
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:374:2: ( IN_FOLDER folderPredicateArgs -> ^( PRED_CHILD folderPredicateArgs ) | IN_TREE folderPredicateArgs -> ^( PRED_DESCENDANT folderPredicateArgs ) )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:374:2: ( IN_FOLDER folderPredicateArgs -> ^( PRED_CHILD folderPredicateArgs ) | IN_TREE folderPredicateArgs -> ^( PRED_DESCENDANT folderPredicateArgs ) )
             int alt38=2;
             int LA38_0 = input.LA(1);
 
@@ -5088,7 +5128,7 @@ public class CMISParser extends Parser {
             }
             switch (alt38) {
                 case 1 :
-                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:374:4: IN_FOLDER folderPredicateArgs
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:374:4: IN_FOLDER folderPredicateArgs
                     {
                     IN_FOLDER129=(Token)match(input,IN_FOLDER,FOLLOW_IN_FOLDER_in_folderPredicate1520); if (state.failed) return retval; 
                     if ( state.backtracking==0 ) stream_IN_FOLDER.add(IN_FOLDER129);
@@ -5107,14 +5147,15 @@ public class CMISParser extends Parser {
                     // rule labels: retval
                     // token list labels: 
                     // rule list labels: 
+                    // wildcard labels: 
                     if ( state.backtracking==0 ) {
                     retval.tree = root_0;
-                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
+                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
                     // 375:3: -> ^( PRED_CHILD folderPredicateArgs )
                     {
-                        // W:\\workspace-cmis2\\ANTLR\\CMIS.g:375:6: ^( PRED_CHILD folderPredicateArgs )
+                        // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:375:6: ^( PRED_CHILD folderPredicateArgs )
                         {
                         Object root_1 = (Object)adaptor.nil();
                         root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(PRED_CHILD, "PRED_CHILD"), root_1);
@@ -5126,11 +5167,11 @@ public class CMISParser extends Parser {
 
                     }
 
-                    retval.tree = root_0;retval.tree = root_0;}
+                    retval.tree = root_0;}
                     }
                     break;
                 case 2 :
-                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:376:10: IN_TREE folderPredicateArgs
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:376:10: IN_TREE folderPredicateArgs
                     {
                     IN_TREE131=(Token)match(input,IN_TREE,FOLLOW_IN_TREE_in_folderPredicate1544); if (state.failed) return retval; 
                     if ( state.backtracking==0 ) stream_IN_TREE.add(IN_TREE131);
@@ -5149,14 +5190,15 @@ public class CMISParser extends Parser {
                     // rule labels: retval
                     // token list labels: 
                     // rule list labels: 
+                    // wildcard labels: 
                     if ( state.backtracking==0 ) {
                     retval.tree = root_0;
-                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
+                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
                     // 377:3: -> ^( PRED_DESCENDANT folderPredicateArgs )
                     {
-                        // W:\\workspace-cmis2\\ANTLR\\CMIS.g:377:6: ^( PRED_DESCENDANT folderPredicateArgs )
+                        // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:377:6: ^( PRED_DESCENDANT folderPredicateArgs )
                         {
                         Object root_1 = (Object)adaptor.nil();
                         root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(PRED_DESCENDANT, "PRED_DESCENDANT"), root_1);
@@ -5168,7 +5210,7 @@ public class CMISParser extends Parser {
 
                     }
 
-                    retval.tree = root_0;retval.tree = root_0;}
+                    retval.tree = root_0;}
                     }
                     break;
 
@@ -5190,15 +5232,15 @@ public class CMISParser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end folderPredicate
+    // $ANTLR end "folderPredicate"
 
     public static class folderPredicateArgs_return extends ParserRuleReturnScope {
         Object tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start folderPredicateArgs
-    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:380:1: folderPredicateArgs : LPAREN ( qualifier COMMA | COMMA )? folderId RPAREN -> folderId ( qualifier )? ;
+    // $ANTLR start "folderPredicateArgs"
+    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:380:1: folderPredicateArgs : LPAREN ( qualifier COMMA | COMMA )? folderId RPAREN -> folderId ( qualifier )? ;
     public final CMISParser.folderPredicateArgs_return folderPredicateArgs() throws RecognitionException {
         CMISParser.folderPredicateArgs_return retval = new CMISParser.folderPredicateArgs_return();
         retval.start = input.LT(1);
@@ -5224,13 +5266,13 @@ public class CMISParser extends Parser {
         RewriteRuleSubtreeStream stream_qualifier=new RewriteRuleSubtreeStream(adaptor,"rule qualifier");
         RewriteRuleSubtreeStream stream_folderId=new RewriteRuleSubtreeStream(adaptor,"rule folderId");
         try {
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:381:2: ( LPAREN ( qualifier COMMA | COMMA )? folderId RPAREN -> folderId ( qualifier )? )
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:381:4: LPAREN ( qualifier COMMA | COMMA )? folderId RPAREN
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:381:2: ( LPAREN ( qualifier COMMA | COMMA )? folderId RPAREN -> folderId ( qualifier )? )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:381:4: LPAREN ( qualifier COMMA | COMMA )? folderId RPAREN
             {
             LPAREN133=(Token)match(input,LPAREN,FOLLOW_LPAREN_in_folderPredicateArgs1568); if (state.failed) return retval; 
             if ( state.backtracking==0 ) stream_LPAREN.add(LPAREN133);
 
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:381:11: ( qualifier COMMA | COMMA )?
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:381:11: ( qualifier COMMA | COMMA )?
             int alt39=3;
             int LA39_0 = input.LA(1);
 
@@ -5242,7 +5284,7 @@ public class CMISParser extends Parser {
             }
             switch (alt39) {
                 case 1 :
-                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:381:12: qualifier COMMA
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:381:12: qualifier COMMA
                     {
                     pushFollow(FOLLOW_qualifier_in_folderPredicateArgs1571);
                     qualifier134=qualifier();
@@ -5257,7 +5299,7 @@ public class CMISParser extends Parser {
                     }
                     break;
                 case 2 :
-                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:381:30: COMMA
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:381:30: COMMA
                     {
                     COMMA136=(Token)match(input,COMMA,FOLLOW_COMMA_in_folderPredicateArgs1577); if (state.failed) return retval; 
                     if ( state.backtracking==0 ) stream_COMMA.add(COMMA136);
@@ -5280,20 +5322,21 @@ public class CMISParser extends Parser {
 
 
             // AST REWRITE
-            // elements: qualifier, folderId
+            // elements: folderId, qualifier
             // token labels: 
             // rule labels: retval
             // token list labels: 
             // rule list labels: 
+            // wildcard labels: 
             if ( state.backtracking==0 ) {
             retval.tree = root_0;
-            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
+            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
             root_0 = (Object)adaptor.nil();
             // 382:3: -> folderId ( qualifier )?
             {
                 adaptor.addChild(root_0, stream_folderId.nextTree());
-                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:382:15: ( qualifier )?
+                // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:382:15: ( qualifier )?
                 if ( stream_qualifier.hasNext() ) {
                     adaptor.addChild(root_0, stream_qualifier.nextTree());
 
@@ -5302,7 +5345,7 @@ public class CMISParser extends Parser {
 
             }
 
-            retval.tree = root_0;retval.tree = root_0;}
+            retval.tree = root_0;}
             }
 
             retval.stop = input.LT(-1);
@@ -5322,15 +5365,15 @@ public class CMISParser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end folderPredicateArgs
+    // $ANTLR end "folderPredicateArgs"
 
     public static class orderByClause_return extends ParserRuleReturnScope {
         Object tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start orderByClause
-    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:385:1: orderByClause : ORDER BY sortSpecification ( COMMA sortSpecification )* -> ^( ORDER ( sortSpecification )+ ) ;
+    // $ANTLR start "orderByClause"
+    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:385:1: orderByClause : ORDER BY sortSpecification ( COMMA sortSpecification )* -> ^( ORDER ( sortSpecification )+ ) ;
     public final CMISParser.orderByClause_return orderByClause() throws RecognitionException {
         CMISParser.orderByClause_return retval = new CMISParser.orderByClause_return();
         retval.start = input.LT(1);
@@ -5354,8 +5397,8 @@ public class CMISParser extends Parser {
         RewriteRuleSubtreeStream stream_sortSpecification=new RewriteRuleSubtreeStream(adaptor,"rule sortSpecification");
             paraphrases.push("in order by"); 
         try {
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:388:2: ( ORDER BY sortSpecification ( COMMA sortSpecification )* -> ^( ORDER ( sortSpecification )+ ) )
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:388:4: ORDER BY sortSpecification ( COMMA sortSpecification )*
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:388:2: ( ORDER BY sortSpecification ( COMMA sortSpecification )* -> ^( ORDER ( sortSpecification )+ ) )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:388:4: ORDER BY sortSpecification ( COMMA sortSpecification )*
             {
             ORDER139=(Token)match(input,ORDER,FOLLOW_ORDER_in_orderByClause1622); if (state.failed) return retval; 
             if ( state.backtracking==0 ) stream_ORDER.add(ORDER139);
@@ -5369,7 +5412,7 @@ public class CMISParser extends Parser {
             state._fsp--;
             if (state.failed) return retval;
             if ( state.backtracking==0 ) stream_sortSpecification.add(sortSpecification141.getTree());
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:388:31: ( COMMA sortSpecification )*
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:388:31: ( COMMA sortSpecification )*
             loop40:
             do {
                 int alt40=2;
@@ -5382,7 +5425,7 @@ public class CMISParser extends Parser {
 
                 switch (alt40) {
             	case 1 :
-            	    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:388:33: COMMA sortSpecification
+            	    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:388:33: COMMA sortSpecification
             	    {
             	    COMMA142=(Token)match(input,COMMA,FOLLOW_COMMA_in_orderByClause1630); if (state.failed) return retval; 
             	    if ( state.backtracking==0 ) stream_COMMA.add(COMMA142);
@@ -5410,14 +5453,15 @@ public class CMISParser extends Parser {
             // rule labels: retval
             // token list labels: 
             // rule list labels: 
+            // wildcard labels: 
             if ( state.backtracking==0 ) {
             retval.tree = root_0;
-            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
+            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
             root_0 = (Object)adaptor.nil();
             // 389:3: -> ^( ORDER ( sortSpecification )+ )
             {
-                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:389:6: ^( ORDER ( sortSpecification )+ )
+                // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:389:6: ^( ORDER ( sortSpecification )+ )
                 {
                 Object root_1 = (Object)adaptor.nil();
                 root_1 = (Object)adaptor.becomeRoot(stream_ORDER.nextNode(), root_1);
@@ -5436,7 +5480,7 @@ public class CMISParser extends Parser {
 
             }
 
-            retval.tree = root_0;retval.tree = root_0;}
+            retval.tree = root_0;}
             }
 
             retval.stop = input.LT(-1);
@@ -5459,15 +5503,15 @@ public class CMISParser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end orderByClause
+    // $ANTLR end "orderByClause"
 
     public static class sortSpecification_return extends ParserRuleReturnScope {
         Object tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start sortSpecification
-    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:392:1: sortSpecification : ( columnReference -> ^( SORT_SPECIFICATION columnReference ASC ) | columnReference (by= ASC | by= DESC ) -> ^( SORT_SPECIFICATION columnReference $by) );
+    // $ANTLR start "sortSpecification"
+    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:392:1: sortSpecification : ( columnReference -> ^( SORT_SPECIFICATION columnReference ASC ) | columnReference (by= ASC | by= DESC ) -> ^( SORT_SPECIFICATION columnReference $by) );
     public final CMISParser.sortSpecification_return sortSpecification() throws RecognitionException {
         CMISParser.sortSpecification_return retval = new CMISParser.sortSpecification_return();
         retval.start = input.LT(1);
@@ -5485,12 +5529,12 @@ public class CMISParser extends Parser {
         RewriteRuleTokenStream stream_DESC=new RewriteRuleTokenStream(adaptor,"token DESC");
         RewriteRuleSubtreeStream stream_columnReference=new RewriteRuleSubtreeStream(adaptor,"rule columnReference");
         try {
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:393:2: ( columnReference -> ^( SORT_SPECIFICATION columnReference ASC ) | columnReference (by= ASC | by= DESC ) -> ^( SORT_SPECIFICATION columnReference $by) )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:393:2: ( columnReference -> ^( SORT_SPECIFICATION columnReference ASC ) | columnReference (by= ASC | by= DESC ) -> ^( SORT_SPECIFICATION columnReference $by) )
             int alt42=2;
             alt42 = dfa42.predict(input);
             switch (alt42) {
                 case 1 :
-                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:393:4: columnReference
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:393:4: columnReference
                     {
                     pushFollow(FOLLOW_columnReference_in_sortSpecification1658);
                     columnReference144=columnReference();
@@ -5506,14 +5550,15 @@ public class CMISParser extends Parser {
                     // rule labels: retval
                     // token list labels: 
                     // rule list labels: 
+                    // wildcard labels: 
                     if ( state.backtracking==0 ) {
                     retval.tree = root_0;
-                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
+                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
                     // 394:3: -> ^( SORT_SPECIFICATION columnReference ASC )
                     {
-                        // W:\\workspace-cmis2\\ANTLR\\CMIS.g:394:6: ^( SORT_SPECIFICATION columnReference ASC )
+                        // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:394:6: ^( SORT_SPECIFICATION columnReference ASC )
                         {
                         Object root_1 = (Object)adaptor.nil();
                         root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(SORT_SPECIFICATION, "SORT_SPECIFICATION"), root_1);
@@ -5526,11 +5571,11 @@ public class CMISParser extends Parser {
 
                     }
 
-                    retval.tree = root_0;retval.tree = root_0;}
+                    retval.tree = root_0;}
                     }
                     break;
                 case 2 :
-                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:395:4: columnReference (by= ASC | by= DESC )
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:395:4: columnReference (by= ASC | by= DESC )
                     {
                     pushFollow(FOLLOW_columnReference_in_sortSpecification1676);
                     columnReference145=columnReference();
@@ -5538,7 +5583,7 @@ public class CMISParser extends Parser {
                     state._fsp--;
                     if (state.failed) return retval;
                     if ( state.backtracking==0 ) stream_columnReference.add(columnReference145.getTree());
-                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:395:20: (by= ASC | by= DESC )
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:395:20: (by= ASC | by= DESC )
                     int alt41=2;
                     int LA41_0 = input.LA(1);
 
@@ -5557,7 +5602,7 @@ public class CMISParser extends Parser {
                     }
                     switch (alt41) {
                         case 1 :
-                            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:395:22: by= ASC
+                            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:395:22: by= ASC
                             {
                             by=(Token)match(input,ASC,FOLLOW_ASC_in_sortSpecification1682); if (state.failed) return retval; 
                             if ( state.backtracking==0 ) stream_ASC.add(by);
@@ -5566,7 +5611,7 @@ public class CMISParser extends Parser {
                             }
                             break;
                         case 2 :
-                            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:395:31: by= DESC
+                            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:395:31: by= DESC
                             {
                             by=(Token)match(input,DESC,FOLLOW_DESC_in_sortSpecification1688); if (state.failed) return retval; 
                             if ( state.backtracking==0 ) stream_DESC.add(by);
@@ -5580,20 +5625,21 @@ public class CMISParser extends Parser {
 
 
                     // AST REWRITE
-                    // elements: columnReference, by
+                    // elements: by, columnReference
                     // token labels: by
                     // rule labels: retval
                     // token list labels: 
                     // rule list labels: 
+                    // wildcard labels: 
                     if ( state.backtracking==0 ) {
                     retval.tree = root_0;
                     RewriteRuleTokenStream stream_by=new RewriteRuleTokenStream(adaptor,"token by",by);
-                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
+                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
                     // 396:3: -> ^( SORT_SPECIFICATION columnReference $by)
                     {
-                        // W:\\workspace-cmis2\\ANTLR\\CMIS.g:396:6: ^( SORT_SPECIFICATION columnReference $by)
+                        // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:396:6: ^( SORT_SPECIFICATION columnReference $by)
                         {
                         Object root_1 = (Object)adaptor.nil();
                         root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(SORT_SPECIFICATION, "SORT_SPECIFICATION"), root_1);
@@ -5606,7 +5652,7 @@ public class CMISParser extends Parser {
 
                     }
 
-                    retval.tree = root_0;retval.tree = root_0;}
+                    retval.tree = root_0;}
                     }
                     break;
 
@@ -5628,15 +5674,15 @@ public class CMISParser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end sortSpecification
+    // $ANTLR end "sortSpecification"
 
     public static class correlationName_return extends ParserRuleReturnScope {
         Object tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start correlationName
-    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:399:1: correlationName : identifier ;
+    // $ANTLR start "correlationName"
+    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:399:1: correlationName : identifier ;
     public final CMISParser.correlationName_return correlationName() throws RecognitionException {
         CMISParser.correlationName_return retval = new CMISParser.correlationName_return();
         retval.start = input.LT(1);
@@ -5648,8 +5694,8 @@ public class CMISParser extends Parser {
 
 
         try {
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:400:2: ( identifier )
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:400:4: identifier
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:400:2: ( identifier )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:400:4: identifier
             {
             root_0 = (Object)adaptor.nil();
 
@@ -5679,15 +5725,15 @@ public class CMISParser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end correlationName
+    // $ANTLR end "correlationName"
 
     public static class tableName_return extends ParserRuleReturnScope {
         Object tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start tableName
-    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:407:1: tableName : identifier -> identifier ;
+    // $ANTLR start "tableName"
+    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:407:1: tableName : identifier -> identifier ;
     public final CMISParser.tableName_return tableName() throws RecognitionException {
         CMISParser.tableName_return retval = new CMISParser.tableName_return();
         retval.start = input.LT(1);
@@ -5699,8 +5745,8 @@ public class CMISParser extends Parser {
 
         RewriteRuleSubtreeStream stream_identifier=new RewriteRuleSubtreeStream(adaptor,"rule identifier");
         try {
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:408:2: ( identifier -> identifier )
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:408:4: identifier
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:408:2: ( identifier -> identifier )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:408:4: identifier
             {
             pushFollow(FOLLOW_identifier_in_tableName1729);
             identifier147=identifier();
@@ -5716,9 +5762,10 @@ public class CMISParser extends Parser {
             // rule labels: retval
             // token list labels: 
             // rule list labels: 
+            // wildcard labels: 
             if ( state.backtracking==0 ) {
             retval.tree = root_0;
-            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
+            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
             root_0 = (Object)adaptor.nil();
             // 409:3: -> identifier
@@ -5727,7 +5774,7 @@ public class CMISParser extends Parser {
 
             }
 
-            retval.tree = root_0;retval.tree = root_0;}
+            retval.tree = root_0;}
             }
 
             retval.stop = input.LT(-1);
@@ -5747,15 +5794,15 @@ public class CMISParser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end tableName
+    // $ANTLR end "tableName"
 
     public static class columnName_return extends ParserRuleReturnScope {
         Object tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start columnName
-    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:412:1: columnName : identifier -> identifier ;
+    // $ANTLR start "columnName"
+    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:412:1: columnName : identifier -> identifier ;
     public final CMISParser.columnName_return columnName() throws RecognitionException {
         CMISParser.columnName_return retval = new CMISParser.columnName_return();
         retval.start = input.LT(1);
@@ -5767,8 +5814,8 @@ public class CMISParser extends Parser {
 
         RewriteRuleSubtreeStream stream_identifier=new RewriteRuleSubtreeStream(adaptor,"rule identifier");
         try {
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:413:2: ( identifier -> identifier )
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:413:4: identifier
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:413:2: ( identifier -> identifier )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:413:4: identifier
             {
             pushFollow(FOLLOW_identifier_in_columnName1747);
             identifier148=identifier();
@@ -5784,9 +5831,10 @@ public class CMISParser extends Parser {
             // rule labels: retval
             // token list labels: 
             // rule list labels: 
+            // wildcard labels: 
             if ( state.backtracking==0 ) {
             retval.tree = root_0;
-            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
+            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
             root_0 = (Object)adaptor.nil();
             // 414:3: -> identifier
@@ -5795,7 +5843,7 @@ public class CMISParser extends Parser {
 
             }
 
-            retval.tree = root_0;retval.tree = root_0;}
+            retval.tree = root_0;}
             }
 
             retval.stop = input.LT(-1);
@@ -5815,15 +5863,15 @@ public class CMISParser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end columnName
+    // $ANTLR end "columnName"
 
     public static class multiValuedColumnName_return extends ParserRuleReturnScope {
         Object tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start multiValuedColumnName
-    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:417:1: multiValuedColumnName : identifier -> identifier ;
+    // $ANTLR start "multiValuedColumnName"
+    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:417:1: multiValuedColumnName : identifier -> identifier ;
     public final CMISParser.multiValuedColumnName_return multiValuedColumnName() throws RecognitionException {
         CMISParser.multiValuedColumnName_return retval = new CMISParser.multiValuedColumnName_return();
         retval.start = input.LT(1);
@@ -5835,8 +5883,8 @@ public class CMISParser extends Parser {
 
         RewriteRuleSubtreeStream stream_identifier=new RewriteRuleSubtreeStream(adaptor,"rule identifier");
         try {
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:418:2: ( identifier -> identifier )
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:418:4: identifier
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:418:2: ( identifier -> identifier )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:418:4: identifier
             {
             pushFollow(FOLLOW_identifier_in_multiValuedColumnName1766);
             identifier149=identifier();
@@ -5852,9 +5900,10 @@ public class CMISParser extends Parser {
             // rule labels: retval
             // token list labels: 
             // rule list labels: 
+            // wildcard labels: 
             if ( state.backtracking==0 ) {
             retval.tree = root_0;
-            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
+            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
             root_0 = (Object)adaptor.nil();
             // 419:3: -> identifier
@@ -5863,7 +5912,7 @@ public class CMISParser extends Parser {
 
             }
 
-            retval.tree = root_0;retval.tree = root_0;}
+            retval.tree = root_0;}
             }
 
             retval.stop = input.LT(-1);
@@ -5883,15 +5932,15 @@ public class CMISParser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end multiValuedColumnName
+    // $ANTLR end "multiValuedColumnName"
 
     public static class parameterName_return extends ParserRuleReturnScope {
         Object tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start parameterName
-    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:422:1: parameterName : COLON identifier -> ^( PARAMETER identifier ) ;
+    // $ANTLR start "parameterName"
+    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:422:1: parameterName : COLON identifier -> ^( PARAMETER identifier ) ;
     public final CMISParser.parameterName_return parameterName() throws RecognitionException {
         CMISParser.parameterName_return retval = new CMISParser.parameterName_return();
         retval.start = input.LT(1);
@@ -5906,8 +5955,8 @@ public class CMISParser extends Parser {
         RewriteRuleTokenStream stream_COLON=new RewriteRuleTokenStream(adaptor,"token COLON");
         RewriteRuleSubtreeStream stream_identifier=new RewriteRuleSubtreeStream(adaptor,"rule identifier");
         try {
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:423:2: ( COLON identifier -> ^( PARAMETER identifier ) )
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:423:4: COLON identifier
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:423:2: ( COLON identifier -> ^( PARAMETER identifier ) )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:423:4: COLON identifier
             {
             COLON150=(Token)match(input,COLON,FOLLOW_COLON_in_parameterName1784); if (state.failed) return retval; 
             if ( state.backtracking==0 ) stream_COLON.add(COLON150);
@@ -5926,14 +5975,15 @@ public class CMISParser extends Parser {
             // rule labels: retval
             // token list labels: 
             // rule list labels: 
+            // wildcard labels: 
             if ( state.backtracking==0 ) {
             retval.tree = root_0;
-            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
+            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
             root_0 = (Object)adaptor.nil();
             // 424:3: -> ^( PARAMETER identifier )
             {
-                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:424:6: ^( PARAMETER identifier )
+                // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:424:6: ^( PARAMETER identifier )
                 {
                 Object root_1 = (Object)adaptor.nil();
                 root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(PARAMETER, "PARAMETER"), root_1);
@@ -5945,7 +5995,7 @@ public class CMISParser extends Parser {
 
             }
 
-            retval.tree = root_0;retval.tree = root_0;}
+            retval.tree = root_0;}
             }
 
             retval.stop = input.LT(-1);
@@ -5965,15 +6015,15 @@ public class CMISParser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end parameterName
+    // $ANTLR end "parameterName"
 
     public static class folderId_return extends ParserRuleReturnScope {
         Object tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start folderId
-    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:427:1: folderId : characterStringLiteral -> characterStringLiteral ;
+    // $ANTLR start "folderId"
+    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:427:1: folderId : characterStringLiteral -> characterStringLiteral ;
     public final CMISParser.folderId_return folderId() throws RecognitionException {
         CMISParser.folderId_return retval = new CMISParser.folderId_return();
         retval.start = input.LT(1);
@@ -5985,8 +6035,8 @@ public class CMISParser extends Parser {
 
         RewriteRuleSubtreeStream stream_characterStringLiteral=new RewriteRuleSubtreeStream(adaptor,"rule characterStringLiteral");
         try {
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:428:3: ( characterStringLiteral -> characterStringLiteral )
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:428:5: characterStringLiteral
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:428:3: ( characterStringLiteral -> characterStringLiteral )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:428:5: characterStringLiteral
             {
             pushFollow(FOLLOW_characterStringLiteral_in_folderId1809);
             characterStringLiteral152=characterStringLiteral();
@@ -6002,9 +6052,10 @@ public class CMISParser extends Parser {
             // rule labels: retval
             // token list labels: 
             // rule list labels: 
+            // wildcard labels: 
             if ( state.backtracking==0 ) {
             retval.tree = root_0;
-            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
+            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
             root_0 = (Object)adaptor.nil();
             // 429:4: -> characterStringLiteral
@@ -6013,7 +6064,7 @@ public class CMISParser extends Parser {
 
             }
 
-            retval.tree = root_0;retval.tree = root_0;}
+            retval.tree = root_0;}
             }
 
             retval.stop = input.LT(-1);
@@ -6033,15 +6084,15 @@ public class CMISParser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end folderId
+    // $ANTLR end "folderId"
 
     public static class textSearchExpression_return extends ParserRuleReturnScope {
         Object tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start textSearchExpression
-    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:432:1: textSearchExpression : QUOTED_STRING ;
+    // $ANTLR start "textSearchExpression"
+    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:432:1: textSearchExpression : QUOTED_STRING ;
     public final CMISParser.textSearchExpression_return textSearchExpression() throws RecognitionException {
         CMISParser.textSearchExpression_return retval = new CMISParser.textSearchExpression_return();
         retval.start = input.LT(1);
@@ -6053,8 +6104,8 @@ public class CMISParser extends Parser {
         Object QUOTED_STRING153_tree=null;
 
         try {
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:433:2: ( QUOTED_STRING )
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:433:4: QUOTED_STRING
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:433:2: ( QUOTED_STRING )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:433:4: QUOTED_STRING
             {
             root_0 = (Object)adaptor.nil();
 
@@ -6083,15 +6134,15 @@ public class CMISParser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end textSearchExpression
+    // $ANTLR end "textSearchExpression"
 
     public static class identifier_return extends ParserRuleReturnScope {
         Object tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start identifier
-    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:436:1: identifier : ( ID -> ID | DOUBLE_QUOTE keyWordOrId DOUBLE_QUOTE -> ^( keyWordOrId ) );
+    // $ANTLR start "identifier"
+    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:436:1: identifier : ( ID -> ID | DOUBLE_QUOTE keyWordOrId DOUBLE_QUOTE -> ^( keyWordOrId ) );
     public final CMISParser.identifier_return identifier() throws RecognitionException {
         CMISParser.identifier_return retval = new CMISParser.identifier_return();
         retval.start = input.LT(1);
@@ -6111,7 +6162,7 @@ public class CMISParser extends Parser {
         RewriteRuleTokenStream stream_DOUBLE_QUOTE=new RewriteRuleTokenStream(adaptor,"token DOUBLE_QUOTE");
         RewriteRuleSubtreeStream stream_keyWordOrId=new RewriteRuleSubtreeStream(adaptor,"rule keyWordOrId");
         try {
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:437:2: ( ID -> ID | DOUBLE_QUOTE keyWordOrId DOUBLE_QUOTE -> ^( keyWordOrId ) )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:437:2: ( ID -> ID | DOUBLE_QUOTE keyWordOrId DOUBLE_QUOTE -> ^( keyWordOrId ) )
             int alt43=2;
             int LA43_0 = input.LA(1);
 
@@ -6130,7 +6181,7 @@ public class CMISParser extends Parser {
             }
             switch (alt43) {
                 case 1 :
-                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:437:4: ID
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:437:4: ID
                     {
                     ID154=(Token)match(input,ID,FOLLOW_ID_in_identifier1842); if (state.failed) return retval; 
                     if ( state.backtracking==0 ) stream_ID.add(ID154);
@@ -6143,9 +6194,10 @@ public class CMISParser extends Parser {
                     // rule labels: retval
                     // token list labels: 
                     // rule list labels: 
+                    // wildcard labels: 
                     if ( state.backtracking==0 ) {
                     retval.tree = root_0;
-                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
+                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
                     // 438:3: -> ID
@@ -6154,11 +6206,11 @@ public class CMISParser extends Parser {
 
                     }
 
-                    retval.tree = root_0;retval.tree = root_0;}
+                    retval.tree = root_0;}
                     }
                     break;
                 case 2 :
-                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:439:4: DOUBLE_QUOTE keyWordOrId DOUBLE_QUOTE
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:439:4: DOUBLE_QUOTE keyWordOrId DOUBLE_QUOTE
                     {
                     DOUBLE_QUOTE155=(Token)match(input,DOUBLE_QUOTE,FOLLOW_DOUBLE_QUOTE_in_identifier1853); if (state.failed) return retval; 
                     if ( state.backtracking==0 ) stream_DOUBLE_QUOTE.add(DOUBLE_QUOTE155);
@@ -6180,14 +6232,15 @@ public class CMISParser extends Parser {
                     // rule labels: retval
                     // token list labels: 
                     // rule list labels: 
+                    // wildcard labels: 
                     if ( state.backtracking==0 ) {
                     retval.tree = root_0;
-                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
+                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
                     // 440:3: -> ^( keyWordOrId )
                     {
-                        // W:\\workspace-cmis2\\ANTLR\\CMIS.g:440:6: ^( keyWordOrId )
+                        // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:440:6: ^( keyWordOrId )
                         {
                         Object root_1 = (Object)adaptor.nil();
                         root_1 = (Object)adaptor.becomeRoot(stream_keyWordOrId.nextNode(), root_1);
@@ -6197,7 +6250,7 @@ public class CMISParser extends Parser {
 
                     }
 
-                    retval.tree = root_0;retval.tree = root_0;}
+                    retval.tree = root_0;}
                     }
                     break;
 
@@ -6219,15 +6272,15 @@ public class CMISParser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end identifier
+    // $ANTLR end "identifier"
 
     public static class signedNumericLiteral_return extends ParserRuleReturnScope {
         Object tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start signedNumericLiteral
-    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:443:1: signedNumericLiteral : ( FLOATING_POINT_LITERAL -> ^( NUMERIC_LITERAL FLOATING_POINT_LITERAL ) | integerLiteral -> integerLiteral );
+    // $ANTLR start "signedNumericLiteral"
+    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:443:1: signedNumericLiteral : ( FLOATING_POINT_LITERAL -> ^( NUMERIC_LITERAL FLOATING_POINT_LITERAL ) | integerLiteral -> integerLiteral );
     public final CMISParser.signedNumericLiteral_return signedNumericLiteral() throws RecognitionException {
         CMISParser.signedNumericLiteral_return retval = new CMISParser.signedNumericLiteral_return();
         retval.start = input.LT(1);
@@ -6242,7 +6295,7 @@ public class CMISParser extends Parser {
         RewriteRuleTokenStream stream_FLOATING_POINT_LITERAL=new RewriteRuleTokenStream(adaptor,"token FLOATING_POINT_LITERAL");
         RewriteRuleSubtreeStream stream_integerLiteral=new RewriteRuleSubtreeStream(adaptor,"rule integerLiteral");
         try {
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:444:2: ( FLOATING_POINT_LITERAL -> ^( NUMERIC_LITERAL FLOATING_POINT_LITERAL ) | integerLiteral -> integerLiteral )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:444:2: ( FLOATING_POINT_LITERAL -> ^( NUMERIC_LITERAL FLOATING_POINT_LITERAL ) | integerLiteral -> integerLiteral )
             int alt44=2;
             int LA44_0 = input.LA(1);
 
@@ -6261,7 +6314,7 @@ public class CMISParser extends Parser {
             }
             switch (alt44) {
                 case 1 :
-                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:444:4: FLOATING_POINT_LITERAL
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:444:4: FLOATING_POINT_LITERAL
                     {
                     FLOATING_POINT_LITERAL158=(Token)match(input,FLOATING_POINT_LITERAL,FOLLOW_FLOATING_POINT_LITERAL_in_signedNumericLiteral1877); if (state.failed) return retval; 
                     if ( state.backtracking==0 ) stream_FLOATING_POINT_LITERAL.add(FLOATING_POINT_LITERAL158);
@@ -6274,14 +6327,15 @@ public class CMISParser extends Parser {
                     // rule labels: retval
                     // token list labels: 
                     // rule list labels: 
+                    // wildcard labels: 
                     if ( state.backtracking==0 ) {
                     retval.tree = root_0;
-                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
+                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
                     // 445:3: -> ^( NUMERIC_LITERAL FLOATING_POINT_LITERAL )
                     {
-                        // W:\\workspace-cmis2\\ANTLR\\CMIS.g:445:6: ^( NUMERIC_LITERAL FLOATING_POINT_LITERAL )
+                        // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:445:6: ^( NUMERIC_LITERAL FLOATING_POINT_LITERAL )
                         {
                         Object root_1 = (Object)adaptor.nil();
                         root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(NUMERIC_LITERAL, "NUMERIC_LITERAL"), root_1);
@@ -6293,11 +6347,11 @@ public class CMISParser extends Parser {
 
                     }
 
-                    retval.tree = root_0;retval.tree = root_0;}
+                    retval.tree = root_0;}
                     }
                     break;
                 case 2 :
-                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:446:4: integerLiteral
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:446:4: integerLiteral
                     {
                     pushFollow(FOLLOW_integerLiteral_in_signedNumericLiteral1892);
                     integerLiteral159=integerLiteral();
@@ -6313,9 +6367,10 @@ public class CMISParser extends Parser {
                     // rule labels: retval
                     // token list labels: 
                     // rule list labels: 
+                    // wildcard labels: 
                     if ( state.backtracking==0 ) {
                     retval.tree = root_0;
-                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
+                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
                     // 447:3: -> integerLiteral
@@ -6324,7 +6379,7 @@ public class CMISParser extends Parser {
 
                     }
 
-                    retval.tree = root_0;retval.tree = root_0;}
+                    retval.tree = root_0;}
                     }
                     break;
 
@@ -6346,15 +6401,15 @@ public class CMISParser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end signedNumericLiteral
+    // $ANTLR end "signedNumericLiteral"
 
     public static class integerLiteral_return extends ParserRuleReturnScope {
         Object tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start integerLiteral
-    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:450:1: integerLiteral : DECIMAL_INTEGER_LITERAL -> ^( NUMERIC_LITERAL DECIMAL_INTEGER_LITERAL ) ;
+    // $ANTLR start "integerLiteral"
+    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:450:1: integerLiteral : DECIMAL_INTEGER_LITERAL -> ^( NUMERIC_LITERAL DECIMAL_INTEGER_LITERAL ) ;
     public final CMISParser.integerLiteral_return integerLiteral() throws RecognitionException {
         CMISParser.integerLiteral_return retval = new CMISParser.integerLiteral_return();
         retval.start = input.LT(1);
@@ -6367,8 +6422,8 @@ public class CMISParser extends Parser {
         RewriteRuleTokenStream stream_DECIMAL_INTEGER_LITERAL=new RewriteRuleTokenStream(adaptor,"token DECIMAL_INTEGER_LITERAL");
 
         try {
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:451:2: ( DECIMAL_INTEGER_LITERAL -> ^( NUMERIC_LITERAL DECIMAL_INTEGER_LITERAL ) )
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:451:4: DECIMAL_INTEGER_LITERAL
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:451:2: ( DECIMAL_INTEGER_LITERAL -> ^( NUMERIC_LITERAL DECIMAL_INTEGER_LITERAL ) )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:451:4: DECIMAL_INTEGER_LITERAL
             {
             DECIMAL_INTEGER_LITERAL160=(Token)match(input,DECIMAL_INTEGER_LITERAL,FOLLOW_DECIMAL_INTEGER_LITERAL_in_integerLiteral1911); if (state.failed) return retval; 
             if ( state.backtracking==0 ) stream_DECIMAL_INTEGER_LITERAL.add(DECIMAL_INTEGER_LITERAL160);
@@ -6381,14 +6436,15 @@ public class CMISParser extends Parser {
             // rule labels: retval
             // token list labels: 
             // rule list labels: 
+            // wildcard labels: 
             if ( state.backtracking==0 ) {
             retval.tree = root_0;
-            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
+            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
             root_0 = (Object)adaptor.nil();
             // 452:3: -> ^( NUMERIC_LITERAL DECIMAL_INTEGER_LITERAL )
             {
-                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:452:6: ^( NUMERIC_LITERAL DECIMAL_INTEGER_LITERAL )
+                // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:452:6: ^( NUMERIC_LITERAL DECIMAL_INTEGER_LITERAL )
                 {
                 Object root_1 = (Object)adaptor.nil();
                 root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(NUMERIC_LITERAL, "NUMERIC_LITERAL"), root_1);
@@ -6400,7 +6456,7 @@ public class CMISParser extends Parser {
 
             }
 
-            retval.tree = root_0;retval.tree = root_0;}
+            retval.tree = root_0;}
             }
 
             retval.stop = input.LT(-1);
@@ -6420,15 +6476,15 @@ public class CMISParser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end integerLiteral
+    // $ANTLR end "integerLiteral"
 
     public static class characterStringLiteral_return extends ParserRuleReturnScope {
         Object tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start characterStringLiteral
-    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:455:1: characterStringLiteral : QUOTED_STRING -> ^( STRING_LITERAL QUOTED_STRING ) ;
+    // $ANTLR start "characterStringLiteral"
+    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:455:1: characterStringLiteral : QUOTED_STRING -> ^( STRING_LITERAL QUOTED_STRING ) ;
     public final CMISParser.characterStringLiteral_return characterStringLiteral() throws RecognitionException {
         CMISParser.characterStringLiteral_return retval = new CMISParser.characterStringLiteral_return();
         retval.start = input.LT(1);
@@ -6441,8 +6497,8 @@ public class CMISParser extends Parser {
         RewriteRuleTokenStream stream_QUOTED_STRING=new RewriteRuleTokenStream(adaptor,"token QUOTED_STRING");
 
         try {
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:456:2: ( QUOTED_STRING -> ^( STRING_LITERAL QUOTED_STRING ) )
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:456:4: QUOTED_STRING
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:456:2: ( QUOTED_STRING -> ^( STRING_LITERAL QUOTED_STRING ) )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:456:4: QUOTED_STRING
             {
             QUOTED_STRING161=(Token)match(input,QUOTED_STRING,FOLLOW_QUOTED_STRING_in_characterStringLiteral1934); if (state.failed) return retval; 
             if ( state.backtracking==0 ) stream_QUOTED_STRING.add(QUOTED_STRING161);
@@ -6455,14 +6511,15 @@ public class CMISParser extends Parser {
             // rule labels: retval
             // token list labels: 
             // rule list labels: 
+            // wildcard labels: 
             if ( state.backtracking==0 ) {
             retval.tree = root_0;
-            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
+            RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
             root_0 = (Object)adaptor.nil();
             // 457:3: -> ^( STRING_LITERAL QUOTED_STRING )
             {
-                // W:\\workspace-cmis2\\ANTLR\\CMIS.g:457:6: ^( STRING_LITERAL QUOTED_STRING )
+                // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:457:6: ^( STRING_LITERAL QUOTED_STRING )
                 {
                 Object root_1 = (Object)adaptor.nil();
                 root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(STRING_LITERAL, "STRING_LITERAL"), root_1);
@@ -6474,7 +6531,7 @@ public class CMISParser extends Parser {
 
             }
 
-            retval.tree = root_0;retval.tree = root_0;}
+            retval.tree = root_0;}
             }
 
             retval.stop = input.LT(-1);
@@ -6494,15 +6551,15 @@ public class CMISParser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end characterStringLiteral
+    // $ANTLR end "characterStringLiteral"
 
     public static class keyWord_return extends ParserRuleReturnScope {
         Object tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start keyWord
-    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:461:1: keyWord : ( SELECT | AS | UPPER | LOWER | FROM | JOIN | INNER | LEFT | OUTER | ON | WHERE | OR | AND | NOT | IN | LIKE | IS | NULL | ANY | CONTAINS | IN_FOLDER | IN_TREE | ORDER | BY | ASC | DESC | SCORE );
+    // $ANTLR start "keyWord"
+    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:461:1: keyWord : ( SELECT | AS | UPPER | LOWER | FROM | JOIN | INNER | LEFT | OUTER | ON | WHERE | OR | AND | NOT | IN | LIKE | IS | NULL | ANY | CONTAINS | IN_FOLDER | IN_TREE | ORDER | BY | ASC | DESC | SCORE );
     public final CMISParser.keyWord_return keyWord() throws RecognitionException {
         CMISParser.keyWord_return retval = new CMISParser.keyWord_return();
         retval.start = input.LT(1);
@@ -6514,8 +6571,8 @@ public class CMISParser extends Parser {
         Object set162_tree=null;
 
         try {
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:461:9: ( SELECT | AS | UPPER | LOWER | FROM | JOIN | INNER | LEFT | OUTER | ON | WHERE | OR | AND | NOT | IN | LIKE | IS | NULL | ANY | CONTAINS | IN_FOLDER | IN_TREE | ORDER | BY | ASC | DESC | SCORE )
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:461:9: ( SELECT | AS | UPPER | LOWER | FROM | JOIN | INNER | LEFT | OUTER | ON | WHERE | OR | AND | NOT | IN | LIKE | IS | NULL | ANY | CONTAINS | IN_FOLDER | IN_TREE | ORDER | BY | ASC | DESC | SCORE )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:
             {
             root_0 = (Object)adaptor.nil();
 
@@ -6551,15 +6608,15 @@ public class CMISParser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end keyWord
+    // $ANTLR end "keyWord"
 
     public static class keyWordOrId_return extends ParserRuleReturnScope {
         Object tree;
         public Object getTree() { return tree; }
     };
 
-    // $ANTLR start keyWordOrId
-    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:490:1: keyWordOrId : ( keyWord -> keyWord | ID -> ID );
+    // $ANTLR start "keyWordOrId"
+    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:490:1: keyWordOrId : ( keyWord -> keyWord | ID -> ID );
     public final CMISParser.keyWordOrId_return keyWordOrId() throws RecognitionException {
         CMISParser.keyWordOrId_return retval = new CMISParser.keyWordOrId_return();
         retval.start = input.LT(1);
@@ -6574,7 +6631,7 @@ public class CMISParser extends Parser {
         RewriteRuleTokenStream stream_ID=new RewriteRuleTokenStream(adaptor,"token ID");
         RewriteRuleSubtreeStream stream_keyWord=new RewriteRuleSubtreeStream(adaptor,"rule keyWord");
         try {
-            // W:\\workspace-cmis2\\ANTLR\\CMIS.g:491:2: ( keyWord -> keyWord | ID -> ID )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:491:2: ( keyWord -> keyWord | ID -> ID )
             int alt45=2;
             int LA45_0 = input.LA(1);
 
@@ -6593,7 +6650,7 @@ public class CMISParser extends Parser {
             }
             switch (alt45) {
                 case 1 :
-                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:491:4: keyWord
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:491:4: keyWord
                     {
                     pushFollow(FOLLOW_keyWord_in_keyWordOrId2143);
                     keyWord163=keyWord();
@@ -6609,9 +6666,10 @@ public class CMISParser extends Parser {
                     // rule labels: retval
                     // token list labels: 
                     // rule list labels: 
+                    // wildcard labels: 
                     if ( state.backtracking==0 ) {
                     retval.tree = root_0;
-                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
+                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
                     // 492:3: -> keyWord
@@ -6620,11 +6678,11 @@ public class CMISParser extends Parser {
 
                     }
 
-                    retval.tree = root_0;retval.tree = root_0;}
+                    retval.tree = root_0;}
                     }
                     break;
                 case 2 :
-                    // W:\\workspace-cmis2\\ANTLR\\CMIS.g:493:4: ID
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:493:4: ID
                     {
                     ID164=(Token)match(input,ID,FOLLOW_ID_in_keyWordOrId2155); if (state.failed) return retval; 
                     if ( state.backtracking==0 ) stream_ID.add(ID164);
@@ -6637,9 +6695,10 @@ public class CMISParser extends Parser {
                     // rule labels: retval
                     // token list labels: 
                     // rule list labels: 
+                    // wildcard labels: 
                     if ( state.backtracking==0 ) {
                     retval.tree = root_0;
-                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"token retval",retval!=null?retval.tree:null);
+                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
                     // 494:3: -> ID
@@ -6648,7 +6707,7 @@ public class CMISParser extends Parser {
 
                     }
 
-                    retval.tree = root_0;retval.tree = root_0;}
+                    retval.tree = root_0;}
                     }
                     break;
 
@@ -6670,12 +6729,12 @@ public class CMISParser extends Parser {
         }
         return retval;
     }
-    // $ANTLR end keyWordOrId
+    // $ANTLR end "keyWordOrId"
 
     // $ANTLR start synpred1_CMIS
     public final void synpred1_CMIS_fragment() throws RecognitionException {   
-        // W:\\workspace-cmis2\\ANTLR\\CMIS.g:165:4: ( valueExpression )
-        // W:\\workspace-cmis2\\ANTLR\\CMIS.g:165:5: valueExpression
+        // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:165:4: ( valueExpression )
+        // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:165:5: valueExpression
         {
         pushFollow(FOLLOW_valueExpression_in_synpred1_CMIS287);
         valueExpression();
@@ -6689,8 +6748,8 @@ public class CMISParser extends Parser {
 
     // $ANTLR start synpred2_CMIS
     public final void synpred2_CMIS_fragment() throws RecognitionException {   
-        // W:\\workspace-cmis2\\ANTLR\\CMIS.g:207:4: ( tableName )
-        // W:\\workspace-cmis2\\ANTLR\\CMIS.g:207:5: tableName
+        // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:207:4: ( tableName )
+        // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:207:5: tableName
         {
         pushFollow(FOLLOW_tableName_in_synpred2_CMIS566);
         tableName();
@@ -6704,8 +6763,8 @@ public class CMISParser extends Parser {
 
     // $ANTLR start synpred3_CMIS
     public final void synpred3_CMIS_fragment() throws RecognitionException {   
-        // W:\\workspace-cmis2\\ANTLR\\CMIS.g:221:17: ( joinedTable )
-        // W:\\workspace-cmis2\\ANTLR\\CMIS.g:221:18: joinedTable
+        // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:221:17: ( joinedTable )
+        // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:221:18: joinedTable
         {
         pushFollow(FOLLOW_joinedTable_in_synpred3_CMIS644);
         joinedTable();
@@ -6719,8 +6778,8 @@ public class CMISParser extends Parser {
 
     // $ANTLR start synpred4_CMIS
     public final void synpred4_CMIS_fragment() throws RecognitionException {   
-        // W:\\workspace-cmis2\\ANTLR\\CMIS.g:236:35: ( joinSpecification )
-        // W:\\workspace-cmis2\\ANTLR\\CMIS.g:236:36: joinSpecification
+        // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:236:35: ( joinSpecification )
+        // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:236:36: joinSpecification
         {
         pushFollow(FOLLOW_joinSpecification_in_synpred4_CMIS741);
         joinSpecification();
@@ -6734,8 +6793,8 @@ public class CMISParser extends Parser {
 
     // $ANTLR start synpred5_CMIS
     public final void synpred5_CMIS_fragment() throws RecognitionException {   
-        // W:\\workspace-cmis2\\ANTLR\\CMIS.g:351:6: ( columnReference )
-        // W:\\workspace-cmis2\\ANTLR\\CMIS.g:351:7: columnReference
+        // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:351:6: ( columnReference )
+        // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:351:7: columnReference
         {
         pushFollow(FOLLOW_columnReference_in_synpred5_CMIS1319);
         columnReference();
@@ -6749,8 +6808,8 @@ public class CMISParser extends Parser {
 
     // $ANTLR start synpred6_CMIS
     public final void synpred6_CMIS_fragment() throws RecognitionException {   
-        // W:\\workspace-cmis2\\ANTLR\\CMIS.g:353:11: ( columnReference )
-        // W:\\workspace-cmis2\\ANTLR\\CMIS.g:353:12: columnReference
+        // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:353:11: ( columnReference )
+        // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:353:12: columnReference
         {
         pushFollow(FOLLOW_columnReference_in_synpred6_CMIS1357);
         columnReference();
@@ -7190,8 +7249,8 @@ public class CMISParser extends Parser {
     public static final BitSet FOLLOW_selectSubList_in_selectList249 = new BitSet(new long[]{0x0000000080000002L});
     public static final BitSet FOLLOW_COMMA_in_selectList253 = new BitSet(new long[]{0xFFE0F7E160000000L,0x0000000000000399L});
     public static final BitSet FOLLOW_selectSubList_in_selectList255 = new BitSet(new long[]{0x0000000080000002L});
-    public static final BitSet FOLLOW_valueExpression_in_selectSubList291 = new BitSet(new long[]{0xFFE0F7E160000002L,0x0000000000000399L});
-    public static final BitSet FOLLOW_AS_in_selectSubList295 = new BitSet(new long[]{0xFFE0F7E160000000L,0x0000000000000399L});
+    public static final BitSet FOLLOW_valueExpression_in_selectSubList291 = new BitSet(new long[]{0x0000000100000002L,0x0000000000000018L});
+    public static final BitSet FOLLOW_AS_in_selectSubList295 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000018L});
     public static final BitSet FOLLOW_columnName_in_selectSubList298 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_qualifier_in_selectSubList319 = new BitSet(new long[]{0x0000000200000000L});
     public static final BitSet FOLLOW_DOTSTAR_in_selectSubList321 = new BitSet(new long[]{0x0000000000000002L});
@@ -7199,34 +7258,34 @@ public class CMISParser extends Parser {
     public static final BitSet FOLLOW_columnReference_in_valueExpression356 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_valueFunction_in_valueExpression369 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_qualifier_in_columnReference392 = new BitSet(new long[]{0x0000000400000000L});
-    public static final BitSet FOLLOW_DOT_in_columnReference394 = new BitSet(new long[]{0xFFE0F7E160000000L,0x0000000000000399L});
+    public static final BitSet FOLLOW_DOT_in_columnReference394 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000018L});
     public static final BitSet FOLLOW_columnName_in_columnReference399 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_qualifier_in_multiValuedColumnReference435 = new BitSet(new long[]{0x0000000400000000L});
     public static final BitSet FOLLOW_DOT_in_multiValuedColumnReference437 = new BitSet(new long[]{0xFFE0F7E160000000L,0x0000000000000399L});
     public static final BitSet FOLLOW_multiValuedColumnName_in_multiValuedColumnReference443 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_keyWordOrId_in_valueFunction470 = new BitSet(new long[]{0x0000000800000000L});
-    public static final BitSet FOLLOW_LPAREN_in_valueFunction472 = new BitSet(new long[]{0xFFE0F7F160000000L,0x00000000000003FFL});
-    public static final BitSet FOLLOW_functionArgument_in_valueFunction474 = new BitSet(new long[]{0xFFE0F7F160000000L,0x00000000000003FFL});
+    public static final BitSet FOLLOW_LPAREN_in_valueFunction472 = new BitSet(new long[]{0x0000001000000000L,0x000000000000007EL});
+    public static final BitSet FOLLOW_functionArgument_in_valueFunction474 = new BitSet(new long[]{0x0000001000000000L,0x000000000000007EL});
     public static final BitSet FOLLOW_RPAREN_in_valueFunction477 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_qualifier_in_functionArgument512 = new BitSet(new long[]{0x0000000400000000L});
-    public static final BitSet FOLLOW_DOT_in_functionArgument514 = new BitSet(new long[]{0xFFE0F7E160000000L,0x0000000000000399L});
+    public static final BitSet FOLLOW_DOT_in_functionArgument514 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000018L});
     public static final BitSet FOLLOW_columnName_in_functionArgument516 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_identifier_in_functionArgument540 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_literalOrParameterName_in_functionArgument550 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_tableName_in_qualifier571 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_correlationName_in_qualifier583 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_FROM_in_fromClause620 = new BitSet(new long[]{0xFFE0F7E960000000L,0x0000000000000399L});
+    public static final BitSet FOLLOW_FROM_in_fromClause620 = new BitSet(new long[]{0x0000000800000000L,0x0000000000000018L});
     public static final BitSet FOLLOW_tableReference_in_fromClause622 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_singleTable_in_tableReference640 = new BitSet(new long[]{0x000001C000000000L});
+    public static final BitSet FOLLOW_singleTable_in_tableReference640 = new BitSet(new long[]{0x000001C000000002L});
     public static final BitSet FOLLOW_joinedTable_in_tableReference649 = new BitSet(new long[]{0x000001C000000002L});
-    public static final BitSet FOLLOW_tableName_in_singleTable678 = new BitSet(new long[]{0xFFE0F7E160000002L,0x0000000000000399L});
-    public static final BitSet FOLLOW_AS_in_singleTable682 = new BitSet(new long[]{0xFFE0F7E160000000L,0x0000000000000399L});
+    public static final BitSet FOLLOW_tableName_in_singleTable678 = new BitSet(new long[]{0x0000000100000002L,0x0000000000000018L});
+    public static final BitSet FOLLOW_AS_in_singleTable682 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000018L});
     public static final BitSet FOLLOW_correlationName_in_singleTable685 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_LPAREN_in_singleTable706 = new BitSet(new long[]{0xFFE0F7E960000000L,0x0000000000000399L});
+    public static final BitSet FOLLOW_LPAREN_in_singleTable706 = new BitSet(new long[]{0x0000000800000000L,0x0000000000000018L});
     public static final BitSet FOLLOW_joinedTables_in_singleTable708 = new BitSet(new long[]{0x0000001000000000L});
     public static final BitSet FOLLOW_RPAREN_in_singleTable710 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_joinType_in_joinedTable732 = new BitSet(new long[]{0x0000004000000000L});
-    public static final BitSet FOLLOW_JOIN_in_joinedTable735 = new BitSet(new long[]{0xFFE0F7E960000000L,0x0000000000000399L});
+    public static final BitSet FOLLOW_JOIN_in_joinedTable735 = new BitSet(new long[]{0x0000000800000000L,0x0000000000000018L});
     public static final BitSet FOLLOW_tableReference_in_joinedTable737 = new BitSet(new long[]{0x0000040000000002L});
     public static final BitSet FOLLOW_joinSpecification_in_joinedTable746 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_singleTable_in_joinedTables777 = new BitSet(new long[]{0x000001C000000000L});
@@ -7235,24 +7294,24 @@ public class CMISParser extends Parser {
     public static final BitSet FOLLOW_LEFT_in_joinType818 = new BitSet(new long[]{0x0000020000000002L});
     public static final BitSet FOLLOW_OUTER_in_joinType820 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_ON_in_joinSpecification840 = new BitSet(new long[]{0x0000000800000000L});
-    public static final BitSet FOLLOW_LPAREN_in_joinSpecification842 = new BitSet(new long[]{0xFFE0F7E160000000L,0x0000000000000399L});
+    public static final BitSet FOLLOW_LPAREN_in_joinSpecification842 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000018L});
     public static final BitSet FOLLOW_columnReference_in_joinSpecification846 = new BitSet(new long[]{0x0000080000000000L});
-    public static final BitSet FOLLOW_EQUALS_in_joinSpecification848 = new BitSet(new long[]{0xFFE0F7E160000000L,0x0000000000000399L});
+    public static final BitSet FOLLOW_EQUALS_in_joinSpecification848 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000018L});
     public static final BitSet FOLLOW_columnReference_in_joinSpecification852 = new BitSet(new long[]{0x0000001000000000L});
     public static final BitSet FOLLOW_RPAREN_in_joinSpecification854 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_WHERE_in_whereClause904 = new BitSet(new long[]{0xFFE0F7F960000000L,0x00000000000003FFL});
+    public static final BitSet FOLLOW_WHERE_in_whereClause904 = new BitSet(new long[]{0xFFE0F7E960000000L,0x00000000000003FFL});
     public static final BitSet FOLLOW_searchOrCondition_in_whereClause906 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_searchAndCondition_in_searchOrCondition926 = new BitSet(new long[]{0x0000200000000002L});
-    public static final BitSet FOLLOW_OR_in_searchOrCondition929 = new BitSet(new long[]{0xFFE0F7F960000000L,0x00000000000003FFL});
+    public static final BitSet FOLLOW_OR_in_searchOrCondition929 = new BitSet(new long[]{0xFFE0F7E960000000L,0x00000000000003FFL});
     public static final BitSet FOLLOW_searchAndCondition_in_searchOrCondition931 = new BitSet(new long[]{0x0000200000000002L});
     public static final BitSet FOLLOW_searchNotCondition_in_searchAndCondition959 = new BitSet(new long[]{0x0000400000000002L});
-    public static final BitSet FOLLOW_AND_in_searchAndCondition962 = new BitSet(new long[]{0xFFE0F7F960000000L,0x00000000000003FFL});
+    public static final BitSet FOLLOW_AND_in_searchAndCondition962 = new BitSet(new long[]{0xFFE0F7E960000000L,0x00000000000003FFL});
     public static final BitSet FOLLOW_searchNotCondition_in_searchAndCondition964 = new BitSet(new long[]{0x0000400000000002L});
-    public static final BitSet FOLLOW_NOT_in_searchNotCondition991 = new BitSet(new long[]{0xFFE0F7F960000000L,0x00000000000003FFL});
+    public static final BitSet FOLLOW_NOT_in_searchNotCondition991 = new BitSet(new long[]{0xFFE0F7E960000000L,0x00000000000003FFL});
     public static final BitSet FOLLOW_searchTest_in_searchNotCondition993 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_searchTest_in_searchNotCondition1008 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_predicate_in_searchTest1026 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_LPAREN_in_searchTest1037 = new BitSet(new long[]{0xFFE0F7F960000000L,0x00000000000003FFL});
+    public static final BitSet FOLLOW_LPAREN_in_searchTest1037 = new BitSet(new long[]{0xFFE0F7E960000000L,0x00000000000003FFL});
     public static final BitSet FOLLOW_searchOrCondition_in_searchTest1039 = new BitSet(new long[]{0x0000001000000000L});
     public static final BitSet FOLLOW_RPAREN_in_searchTest1041 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_comparisonPredicate_in_predicate1058 = new BitSet(new long[]{0x0000000000000002L});
@@ -7264,7 +7323,7 @@ public class CMISParser extends Parser {
     public static final BitSet FOLLOW_textSearchPredicate_in_predicate1089 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_folderPredicate_in_predicate1094 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_valueExpression_in_comparisonPredicate1106 = new BitSet(new long[]{0x001F080000000000L});
-    public static final BitSet FOLLOW_compOp_in_comparisonPredicate1108 = new BitSet(new long[]{0xFFE0F7F160000000L,0x00000000000003FFL});
+    public static final BitSet FOLLOW_compOp_in_comparisonPredicate1108 = new BitSet(new long[]{0x0000000000000000L,0x000000000000007EL});
     public static final BitSet FOLLOW_literalOrParameterName_in_comparisonPredicate1110 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_set_in_compOp0 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_literal_in_literalOrParameterName1176 = new BitSet(new long[]{0x0000000000000002L});
@@ -7274,15 +7333,15 @@ public class CMISParser extends Parser {
     public static final BitSet FOLLOW_columnReference_in_inPredicate1211 = new BitSet(new long[]{0x0020800000000000L});
     public static final BitSet FOLLOW_NOT_in_inPredicate1213 = new BitSet(new long[]{0x0020000000000000L});
     public static final BitSet FOLLOW_IN_in_inPredicate1216 = new BitSet(new long[]{0x0000000800000000L});
-    public static final BitSet FOLLOW_LPAREN_in_inPredicate1218 = new BitSet(new long[]{0xFFE0F7F160000000L,0x00000000000003FFL});
+    public static final BitSet FOLLOW_LPAREN_in_inPredicate1218 = new BitSet(new long[]{0x0000000000000000L,0x000000000000007EL});
     public static final BitSet FOLLOW_inValueList_in_inPredicate1220 = new BitSet(new long[]{0x0000001000000000L});
     public static final BitSet FOLLOW_RPAREN_in_inPredicate1222 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_literalOrParameterName_in_inValueList1251 = new BitSet(new long[]{0x0000000080000002L});
-    public static final BitSet FOLLOW_COMMA_in_inValueList1254 = new BitSet(new long[]{0xFFE0F7F160000000L,0x00000000000003FFL});
+    public static final BitSet FOLLOW_COMMA_in_inValueList1254 = new BitSet(new long[]{0x0000000000000000L,0x000000000000007EL});
     public static final BitSet FOLLOW_literalOrParameterName_in_inValueList1256 = new BitSet(new long[]{0x0000000080000002L});
     public static final BitSet FOLLOW_columnReference_in_likePredicate1282 = new BitSet(new long[]{0x0040800000000000L});
     public static final BitSet FOLLOW_NOT_in_likePredicate1284 = new BitSet(new long[]{0x0040000000000000L});
-    public static final BitSet FOLLOW_LIKE_in_likePredicate1287 = new BitSet(new long[]{0xFFE0F7E1E0000000L,0x00000000000003FDL});
+    public static final BitSet FOLLOW_LIKE_in_likePredicate1287 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000064L});
     public static final BitSet FOLLOW_characterStringLiteral_in_likePredicate1289 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_columnReference_in_nullPredicate1323 = new BitSet(new long[]{0x0080000000000000L});
     public static final BitSet FOLLOW_multiValuedColumnReference_in_nullPredicate1327 = new BitSet(new long[]{0x0080000000000000L});
@@ -7301,30 +7360,30 @@ public class CMISParser extends Parser {
     public static final BitSet FOLLOW_multiValuedColumnReference_in_quantifiedInPredicate1437 = new BitSet(new long[]{0x0020800000000000L});
     public static final BitSet FOLLOW_NOT_in_quantifiedInPredicate1439 = new BitSet(new long[]{0x0020000000000000L});
     public static final BitSet FOLLOW_IN_in_quantifiedInPredicate1442 = new BitSet(new long[]{0x0000000800000000L});
-    public static final BitSet FOLLOW_LPAREN_in_quantifiedInPredicate1445 = new BitSet(new long[]{0xFFE0F7F160000000L,0x00000000000003FFL});
+    public static final BitSet FOLLOW_LPAREN_in_quantifiedInPredicate1445 = new BitSet(new long[]{0x0000000000000000L,0x000000000000007EL});
     public static final BitSet FOLLOW_inValueList_in_quantifiedInPredicate1447 = new BitSet(new long[]{0x0000001000000000L});
     public static final BitSet FOLLOW_RPAREN_in_quantifiedInPredicate1449 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_CONTAINS_in_textSearchPredicate1478 = new BitSet(new long[]{0x0000000800000000L});
-    public static final BitSet FOLLOW_LPAREN_in_textSearchPredicate1480 = new BitSet(new long[]{0xFFE0F7E1E0000000L,0x000000000000039DL});
+    public static final BitSet FOLLOW_LPAREN_in_textSearchPredicate1480 = new BitSet(new long[]{0x0000000080000000L,0x000000000000001CL});
     public static final BitSet FOLLOW_qualifier_in_textSearchPredicate1483 = new BitSet(new long[]{0x0000000080000000L});
-    public static final BitSet FOLLOW_COMMA_in_textSearchPredicate1485 = new BitSet(new long[]{0xFFE0F7E1E0000000L,0x000000000000039DL});
-    public static final BitSet FOLLOW_COMMA_in_textSearchPredicate1489 = new BitSet(new long[]{0xFFE0F7E1E0000000L,0x000000000000039DL});
+    public static final BitSet FOLLOW_COMMA_in_textSearchPredicate1485 = new BitSet(new long[]{0x0000000080000000L,0x000000000000001CL});
+    public static final BitSet FOLLOW_COMMA_in_textSearchPredicate1489 = new BitSet(new long[]{0x0000000080000000L,0x000000000000001CL});
     public static final BitSet FOLLOW_textSearchExpression_in_textSearchPredicate1493 = new BitSet(new long[]{0x0000001000000000L});
     public static final BitSet FOLLOW_RPAREN_in_textSearchPredicate1495 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_IN_FOLDER_in_folderPredicate1520 = new BitSet(new long[]{0x0000000800000000L});
     public static final BitSet FOLLOW_folderPredicateArgs_in_folderPredicate1523 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_IN_TREE_in_folderPredicate1544 = new BitSet(new long[]{0x0000000800000000L});
     public static final BitSet FOLLOW_folderPredicateArgs_in_folderPredicate1546 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_LPAREN_in_folderPredicateArgs1568 = new BitSet(new long[]{0xFFE0F7E1E0000000L,0x00000000000003FDL});
+    public static final BitSet FOLLOW_LPAREN_in_folderPredicateArgs1568 = new BitSet(new long[]{0x0000000080000000L,0x000000000000007CL});
     public static final BitSet FOLLOW_qualifier_in_folderPredicateArgs1571 = new BitSet(new long[]{0x0000000080000000L});
-    public static final BitSet FOLLOW_COMMA_in_folderPredicateArgs1573 = new BitSet(new long[]{0xFFE0F7E1E0000000L,0x00000000000003FDL});
-    public static final BitSet FOLLOW_COMMA_in_folderPredicateArgs1577 = new BitSet(new long[]{0xFFE0F7E1E0000000L,0x00000000000003FDL});
+    public static final BitSet FOLLOW_COMMA_in_folderPredicateArgs1573 = new BitSet(new long[]{0x0000000080000000L,0x000000000000007CL});
+    public static final BitSet FOLLOW_COMMA_in_folderPredicateArgs1577 = new BitSet(new long[]{0x0000000080000000L,0x000000000000007CL});
     public static final BitSet FOLLOW_folderId_in_folderPredicateArgs1581 = new BitSet(new long[]{0x0000001000000000L});
     public static final BitSet FOLLOW_RPAREN_in_folderPredicateArgs1583 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_ORDER_in_orderByClause1622 = new BitSet(new long[]{0x4000000000000000L});
-    public static final BitSet FOLLOW_BY_in_orderByClause1624 = new BitSet(new long[]{0xFFE0F7E160000000L,0x0000000000000399L});
+    public static final BitSet FOLLOW_BY_in_orderByClause1624 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000018L});
     public static final BitSet FOLLOW_sortSpecification_in_orderByClause1626 = new BitSet(new long[]{0x0000000080000002L});
-    public static final BitSet FOLLOW_COMMA_in_orderByClause1630 = new BitSet(new long[]{0xFFE0F7E160000000L,0x0000000000000399L});
+    public static final BitSet FOLLOW_COMMA_in_orderByClause1630 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000018L});
     public static final BitSet FOLLOW_sortSpecification_in_orderByClause1632 = new BitSet(new long[]{0x0000000080000002L});
     public static final BitSet FOLLOW_columnReference_in_sortSpecification1658 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_columnReference_in_sortSpecification1676 = new BitSet(new long[]{0x8000000000000000L,0x0000000000000001L});
@@ -7334,7 +7393,7 @@ public class CMISParser extends Parser {
     public static final BitSet FOLLOW_identifier_in_tableName1729 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_identifier_in_columnName1747 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_identifier_in_multiValuedColumnName1766 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_COLON_in_parameterName1784 = new BitSet(new long[]{0xFFE0F7E160000000L,0x0000000000000399L});
+    public static final BitSet FOLLOW_COLON_in_parameterName1784 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000018L});
     public static final BitSet FOLLOW_identifier_in_parameterName1786 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_characterStringLiteral_in_folderId1809 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_QUOTED_STRING_in_textSearchExpression1830 = new BitSet(new long[]{0x0000000000000002L});

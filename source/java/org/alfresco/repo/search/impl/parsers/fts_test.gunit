@@ -1,0 +1,16 @@
+/** FTS */
+
+gunit FTS;
+
+@header{package org.alfresco.repo.search.impl.parsers;}
+
+/** Parser */
+
+identifier:
+"banana"   OK
+
+/** Lexer */
+
+ID :
+"banana"   OK
+

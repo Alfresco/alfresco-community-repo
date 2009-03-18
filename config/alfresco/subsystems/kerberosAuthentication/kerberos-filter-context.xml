@@ -1,0 +1,70 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+<beans>
+   <bean id="authenticationFilter" class="org.alfresco.web.app.servlet.KerberosAuthenticationFilter">
+      <property name="serverConfigurationBean">
+         <ref bean="fileServerConfiguration" />
+      </property>
+      <property name="authenticationService">
+         <ref bean="AuthenticationService" />
+      </property>
+      <property name="authenticationComponent">
+         <ref bean="AuthenticationComponent" />
+      </property>
+      <property name="personService">
+         <ref bean="personService" />
+      </property>
+      <property name="nodeService">
+         <ref bean="NodeService" />
+      </property>
+      <property name="transactionService">
+         <ref bean="TransactionService" />
+      </property>
+      <property name="realm">
+         <value>${kerberos.authentication.realm}</value>
+      </property>
+      <property name="password">
+         <value>${kerberos.authentication.http.password}</value>
+      </property>
+      <property name="jaasConfigEntryName">
+         <value>${kerberos.authentication.http.configEntryName}</value>
+      </property>
+      <property name="configService">
+         <ref bean="webClientConfigService" />
+      </property>
+   </bean>
+
+   <!-- NullFilter used for these beans, as they are currenly only required by NTLM -->
+   <bean id="globalAuthenticationFilter" class="org.alfresco.repo.web.filter.beans.NullFilter"/>
+   <bean id="webscriptAuthenticationFilter" class="org.alfresco.repo.web.filter.beans.NullFilter"/>
+
+   <bean id="webDavAuthenticationFilter" class="org.alfresco.repo.webdav.auth.KerberosAuthenticationFilter">
+      <property name="serverConfigurationBean">
+         <ref bean="fileServerConfiguration" />
+      </property>
+      <property name="authenticationService">
+         <ref bean="AuthenticationService" />
+      </property>
+      <property name="authenticationComponent">
+         <ref bean="AuthenticationComponent" />
+      </property>
+      <property name="personService">
+         <ref bean="personService" />
+      </property>
+      <property name="nodeService">
+         <ref bean="NodeService" />
+      </property>
+      <property name="transactionService">
+         <ref bean="TransactionService" />
+      </property>
+      <property name="realm">
+         <value>${kerberos.authentication.realm}</value>
+      </property>
+      <property name="password">
+         <value>${kerberos.authentication.http.password}</value>
+      </property>
+      <property name="jaasConfigEntryName">
+         <value>${kerberos.authentication.http.configEntryName}</value>
+      </property>
+   </bean>
+</beans>

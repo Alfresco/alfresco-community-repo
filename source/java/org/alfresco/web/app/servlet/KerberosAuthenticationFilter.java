@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -25,67 +25,24 @@
 package org.alfresco.web.app.servlet;
 
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.security.Principal;
 import java.util.List;
 import java.util.Locale;
-import java.util.Random;
-import java.util.Vector;
 
-import javax.security.auth.Subject;
-import javax.security.auth.callback.Callback;
-import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.callback.NameCallback;
-import javax.security.auth.callback.PasswordCallback;
-import javax.security.auth.callback.UnsupportedCallbackException;
-import javax.security.auth.login.LoginContext;
-import javax.security.auth.login.LoginException;
-import javax.security.sasl.RealmCallback;
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import javax.transaction.UserTransaction;
 
 import org.alfresco.config.ConfigService;
-import org.alfresco.filesys.ServerConfigurationBean;
 import org.alfresco.i18n.I18NUtil;
-import org.alfresco.jlan.server.auth.kerberos.KerberosDetails;
-import org.alfresco.jlan.server.auth.kerberos.SessionSetupPrivilegedAction;
-import org.alfresco.jlan.server.auth.spnego.NegTokenInit;
-import org.alfresco.jlan.server.auth.spnego.NegTokenTarg;
-import org.alfresco.jlan.server.auth.spnego.OID;
-import org.alfresco.jlan.server.auth.spnego.SPNEGO;
-import org.alfresco.model.ContentModel;
 import org.alfresco.repo.SessionUser;
-import org.alfresco.repo.security.authentication.AuthenticationComponent;
-import org.alfresco.repo.security.authentication.AuthenticationException;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authentication.NTLMMode;
 import org.alfresco.repo.webdav.auth.BaseKerberosAuthenticationFilter;
-import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.security.AuthenticationService;
-import org.alfresco.service.cmr.security.PersonService;
-import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.web.app.Application;
-import org.alfresco.web.bean.LoginBean;
 import org.alfresco.web.bean.repository.User;
+import org.alfresco.web.config.ClientConfigElement;
 import org.alfresco.web.config.LanguagesConfigElement;
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.ietf.jgss.Oid;
-import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.context.support.WebApplicationContextUtils;
 
 /**
  * Kerberos Authentication Filter Class
@@ -110,36 +67,39 @@ public class KerberosAuthenticationFilter extends BaseKerberosAuthenticationFilt
     
     // List of available locales (from the web-client configuration)
     
-    private List<String> m_languages;
+    private List<String> m_languages;        
     
     /**
-     * Initialize the filter
-     * 
-     * @param args FilterConfig
-     * @exception ServletException
+     * @param configService the configService to set
      */
-    public void init(FilterConfig args) throws ServletException
+    public void setConfigService(ConfigService configService)
     {
-    	// Call the base Kerberos filter initialization
-    	
-    	super.init( args);
-    	
-        
-        // Setup the authentication context
-        
-        WebApplicationContext ctx = WebApplicationContextUtils.getRequiredWebApplicationContext(m_context);
-        m_configService = (ConfigService)ctx.getBean("webClientConfigService");
-        
+        m_configService = configService;
+    }
+
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.webdav.auth.BaseKerberosAuthenticationFilter#afterPropertiesSet()
+     */
+    @Override
+    public void afterPropertiesSet() throws Exception
+    {
+        // Call the base Kerberos filter initialization
+        super.afterPropertiesSet();
+
         // Get a list of the available locales
-        
-        LanguagesConfigElement config = (LanguagesConfigElement) m_configService.
-              getConfig("Languages").getConfigElement(LanguagesConfigElement.CONFIG_ELEMENT_ID);
-        
+        LanguagesConfigElement config = (LanguagesConfigElement) m_configService.getConfig("Languages")
+                .getConfigElement(LanguagesConfigElement.CONFIG_ELEMENT_ID);
+
         m_languages = config.getLanguages();
-        
-        // Set hte login page address
-        
-        setLoginPage( Application.getLoginPage(m_context));
+
+        ClientConfigElement clientConfig = (ClientConfigElement) m_configService.getGlobalConfig().getConfigElement(
+                ClientConfigElement.CONFIG_ELEMENT_ID);
+
+        if (clientConfig != null)
+        {
+            setLoginPage(clientConfig.getLoginPage());
+        }
     }
 
 	/* (non-Javadoc)

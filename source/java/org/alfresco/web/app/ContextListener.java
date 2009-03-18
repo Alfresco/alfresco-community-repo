@@ -71,9 +71,16 @@ public class ContextListener implements ServletContextListener, HttpSessionListe
     */
    public void contextInitialized(ServletContextEvent event)
    {
-      // make sure that the spaces store in the repository exists
+       // make sure that the spaces store in the repository exists
       this.servletContext = event.getServletContext();
-      WebApplicationContext ctx = WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext);
+      WebApplicationContext ctx = WebApplicationContextUtils.getWebApplicationContext(servletContext);
+      
+      // If no context has been initialised, exit silently so config changes can be made
+      if (ctx == null)
+      {
+          return;
+      }
+      
       ServiceRegistry registry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
       TransactionService transactionService = registry.getTransactionService();
       NodeService nodeService = registry.getNodeService();

@@ -27,20 +27,16 @@ package org.alfresco.web.app.servlet;
 import java.io.IOException;
 
 import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
-import org.alfresco.config.ConfigService;
 import org.alfresco.util.URLDecoder;
 import org.alfresco.web.scripts.Match;
 import org.alfresco.web.scripts.RuntimeContainer;
 import org.alfresco.web.scripts.Description.RequiredAuthentication;
-import org.springframework.context.ApplicationContext;
-import org.springframework.web.context.support.WebApplicationContextUtils;
 
 /**
  * WebScript aware NTLM Authentication Filter Class.
@@ -53,45 +49,26 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
  */
 public class WebScriptNTLMAuthenticationFilter extends NTLMAuthenticationFilter
 {
-    private RuntimeContainer container;
-    
+    private RuntimeContainer container;        
     
     /**
-     * Initialize the filter
-     * 
-     * @param args FilterConfig
-     * @exception ServletException
+     * @param container the container to set
      */
-    public void init(FilterConfig args) throws ServletException
+    public void setContainer(RuntimeContainer container)
     {
-        super.init(args);
-        
-        ApplicationContext context = WebApplicationContextUtils.getRequiredWebApplicationContext(args.getServletContext());
-        ConfigService configService = (ConfigService)context.getBean("web.config");
-        String containerName = args.getInitParameter("container");
-        if (containerName == null)
-        {
-            containerName = "webscripts.container";
-        }
-        container = (RuntimeContainer)context.getBean(containerName);
+        this.container = container;
     }
 
-    /**
-     * Run the filter
-     * 
-     * @param sreq ServletRequest
-     * @param sresp ServletResponse
-     * @param chain FilterChain
-     * 
-     * @exception IOException
-     * @exception ServletException
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.webdav.auth.BaseNTLMAuthenticationFilter#doFilter(javax.servlet.ServletContext, javax.servlet.ServletRequest, javax.servlet.ServletResponse, javax.servlet.FilterChain)
      */
-    public void doFilter(ServletRequest sreq, ServletResponse sres, FilterChain chain)
-        throws IOException, ServletException
+    @Override
+    public void doFilter(ServletContext context, ServletRequest sreq, ServletResponse sresp, FilterChain chain)
+            throws IOException, ServletException
     {
         // Get the HTTP request/response
         HttpServletRequest req = (HttpServletRequest)sreq;
-        HttpServletResponse res = (HttpServletResponse)sres;
         
         // find a webscript match for the requested URI
         String requestURI = req.getRequestURI();
@@ -114,6 +91,6 @@ public class WebScriptNTLMAuthenticationFilter extends NTLMAuthenticationFilter
             }
         }
         
-        super.doFilter(sreq, sres, chain);
+        super.doFilter(context, sreq, sresp, chain);
     }
 }

@@ -91,35 +91,46 @@
 
    <filter>
       <filter-name>Authentication Filter</filter-name>
-      <filter-class>org.alfresco.web.app.servlet.AuthenticationFilter</filter-class>
-      
-      <!-- For NTLM authentication support use the following filter, also see the filter-mapping section -->
-      <!--
-      <filter-class>org.alfresco.web.app.servlet.NTLMAuthenticationFilter</filter-class>
-      -->
-      
+      <description>Authentication filter mapped only to faces URLs. Other URLs generally use proprietary means to talk to the AuthenticationComponent</description>
+      <filter-class>org.alfresco.repo.web.filter.beans.BeanProxyFilter</filter-class>
+      <init-param>
+         <param-name>beanName</param-name>
+         <param-value>authenticationFilter</param-value>
+      </init-param>
+
       <!-- For Novell IChain support use the following filter -->
       <!--
       <filter-class>org.alfresco.web.app.servlet.NovellIChainsHTTPRequestAuthenticationFilter</filter-class>
       -->
    </filter>
    
-   <!-- For NTLM authentication support use the following filter, also see the filter-mapping section -->
-   <!--
    <filter>
-      <filter-name>WebScript NTLM Authentication Filter</filter-name>
-      <filter-class>org.alfresco.web.app.servlet.WebScriptNTLMAuthenticationFilter</filter-class>
+      <filter-name>Global Authentication Filter</filter-name>
+      <description>Authentication filter mapped to all authenticated URLs (except web scripts). Mainly for NTLM support</description>
+      <filter-class>org.alfresco.repo.web.filter.beans.BeanProxyFilter</filter-class>
+      <init-param>
+         <param-name>beanName</param-name>
+         <param-value>globalAuthenticationFilter</param-value>
+      </init-param>
    </filter>
-   -->
 
    <filter>
+      <filter-name>WebScript Authentication Filter</filter-name>
+      <description>Authentication filter mapped to web script URLs. Mainly for NTLM support</description>
+      <filter-class>org.alfresco.repo.web.filter.beans.BeanProxyFilter</filter-class>
+      <init-param>
+         <param-name>beanName</param-name>
+         <param-value>webscriptAuthenticationFilter</param-value>
+      </init-param>
+   </filter>
+   
+   <filter>
       <filter-name>WebDAV Authentication Filter</filter-name>
-      <filter-class>org.alfresco.repo.webdav.auth.AuthenticationFilter</filter-class>
-      
-      <!-- For NTLM authentication support use the following filter -->
-      <!--
-      <filter-class>org.alfresco.repo.webdav.auth.NTLMAuthenticationFilter</filter-class>
-      -->
+      <filter-class>org.alfresco.repo.web.filter.beans.BeanProxyFilter</filter-class>
+      <init-param>
+         <param-name>beanName</param-name>
+         <param-value>webDavAuthenticationFilter</param-value>
+      </init-param>
    </filter>
 
    <filter>
@@ -127,66 +138,66 @@
       <filter-class>org.alfresco.web.app.servlet.AdminAuthenticationFilter</filter-class>
    </filter>
 
-
-   <!-- For NTLM authentication support enable the following mappings -->
-   <!-- after enabling the NTLMAuthenticationFilter filter class above -->
-   <!--
    <filter-mapping>
-      <filter-name>Authentication Filter</filter-name>
+      <filter-name>Global Authentication Filter</filter-name>
       <url-pattern>/navigate/*</url-pattern>
    </filter-mapping>
 
    <filter-mapping>
-      <filter-name>Authentication Filter</filter-name>
+      <filter-name>Global Authentication Filter</filter-name>
       <url-pattern>/command/*</url-pattern>
    </filter-mapping>
 
    <filter-mapping>
-      <filter-name>Authentication Filter</filter-name>
+      <filter-name>Global Authentication Filter</filter-name>
       <url-pattern>/download/*</url-pattern>
    </filter-mapping>
    
    <filter-mapping>
-      <filter-name>Authentication Filter</filter-name>
+      <filter-name>Global Authentication Filter</filter-name>
       <url-pattern>/template/*</url-pattern>
    </filter-mapping>
    
    <filter-mapping>
-      <filter-name>Authentication Filter</filter-name>
+      <filter-name>Global Authentication Filter</filter-name>
       <url-pattern>/n/*</url-pattern>
    </filter-mapping>
    
    <filter-mapping>
-      <filter-name>Authentication Filter</filter-name>
+      <filter-name>Global Authentication Filter</filter-name>
       <url-pattern>/c/*</url-pattern>
    </filter-mapping>
 
    <filter-mapping>
-      <filter-name>Authentication Filter</filter-name>
+      <filter-name>Global Authentication Filter</filter-name>
       <url-pattern>/t/*</url-pattern>
    </filter-mapping>
    
    <filter-mapping>
-      <filter-name>Authentication Filter</filter-name>
+      <filter-name>Global Authentication Filter</filter-name>
       <url-pattern>/d/*</url-pattern>
    </filter-mapping>
    
    <filter-mapping>
-      <filter-name>WebScript NTLM Authentication Filter</filter-name>
+      <filter-name>WebScript Authentication Filter</filter-name>
       <url-pattern>/wcservice/*</url-pattern>
    </filter-mapping>
    
    <filter-mapping>
-      <filter-name>WebScript NTLM Authentication Filter</filter-name>
+      <filter-name>WebScript Authentication Filter</filter-name>
       <url-pattern>/wcs/*</url-pattern>
    </filter-mapping>
    
    <filter-mapping>
-      <filter-name>Authentication Filter</filter-name>
+      <filter-name>Global Authentication Filter</filter-name>
       <url-pattern>/ajax/*</url-pattern>
    </filter-mapping>
-   -->
    
+   <filter-mapping>
+      <filter-name>Global Authentication Filter</filter-name>
+      <url-pattern>/faces/*</url-pattern>
+   </filter-mapping>
+
    <filter-mapping>
       <filter-name>Authentication Filter</filter-name>
       <url-pattern>/faces/*</url-pattern>
@@ -237,7 +248,7 @@
    </listener>
    
    <listener>
-      <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+      <listener-class>org.alfresco.web.app.ContextLoaderListener</listener-class>
    </listener>
 
    <listener>
@@ -556,5 +567,59 @@
       <exception-type>java.lang.Exception</exception-type>
       <location>/jsp/error.jsp</location>
    </error-page>
+
+   <resource-ref>
+      <description>The Alfresco database connection</description>
+      <res-ref-name>jdbc/dataSource</res-ref-name>
+      <res-type>javax.sql.DataSource</res-type>
+      <res-auth>Container</res-auth>
+   </resource-ref>
+
+   <env-entry>
+      <description>A flag that globally enables or disables startup of the major Alfresco subsystems.</description>
+      <env-entry-name>properties/startup.enable</env-entry-name>
+      <env-entry-value>true</env-entry-value>
+      <env-entry-type>java.lang.Boolean</env-entry-type>
+   </env-entry>
+
+   <env-entry>
+      <description>The filesystem directory below which content and index data is stored. Should be on a shared disk
+         if this is a clustered installation.</description>
+      <env-entry-name>properties/dir.root</env-entry-name>
+      <env-entry-type>java.lang.String</env-entry-type>
+   </env-entry>
+
+   <env-entry>
+      <description>The fully qualified name of a org.hibernate.dialect.Dialect subclass that allows Hibernate to
+         generate SQL optimized for a particular relational database. Choose from org.hibernate.dialect.DerbyDialect,
+         org.hibernate.dialect.MySQLInnoDBDialect,
+         org.alfresco.repo.domain.hibernate.dialect.AlfrescoOracle9Dialect,
+         org.alfresco.repo.domain.hibernate.dialect.AlfrescoSybaseAnywhereDialect,
+         org.alfresco.repo.domain.hibernate.dialect.AlfrescoSQLServerDialect, org.hibernate.dialect.PostgreSQLDialect</description>
+      <env-entry-name>properties/hibernate.dialect</env-entry-name>
+      <env-entry-type>java.lang.String</env-entry-type>
+   </env-entry>
+
+   <env-entry>
+      <description>Mapping from tokens in Hibernate queries to SQL tokens. For PostgreSQL, set this to "true
+         TRUE, false FALSE".</description>
+      <env-entry-name>properties/hibernate.query.substitutions</env-entry-name>
+      <env-entry-type>java.lang.String</env-entry-type>
+   </env-entry>
+
+   <env-entry>
+      <description>Enable use of JDBC3 PreparedStatement.getGeneratedKeys() to retrieve natively generated keys
+         after insert. Requires JDBC3+ driver. Set to false if your driver has problems with the Hibernate identifier
+         generators. By default, tries to determine the driver capabilities using connection metadata. </description>
+      <env-entry-name>properties/hibernate.jdbc.use_get_generated_keys</env-entry-name>
+      <env-entry-type>java.lang.Boolean</env-entry-type>
+   </env-entry>
+
+   <env-entry>
+      <description>Qualify unqualified table names with the given schema/tablespace in generated SQL. It may be
+         necessary to set this when the target database has more than one schema.</description>
+      <env-entry-name>properties/hibernate.default_schema</env-entry-name>
+      <env-entry-type>java.lang.String</env-entry-type>
+   </env-entry>
 
 </web-app>

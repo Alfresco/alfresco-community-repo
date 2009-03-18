@@ -28,8 +28,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -41,11 +39,10 @@ import org.alfresco.repo.webdav.auth.BaseNTLMAuthenticationFilter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.User;
+import org.alfresco.web.config.ClientConfigElement;
 import org.alfresco.web.config.LanguagesConfigElement;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.context.support.WebApplicationContextUtils;
 
 /**
  * Web-client NTLM Authentication Filter Class
@@ -61,38 +58,42 @@ public class NTLMAuthenticationFilter extends BaseNTLMAuthenticationFilter
     // Debug logging
     private static Log logger = LogFactory.getLog(NTLMAuthenticationFilter.class);
     
-    // Various services required by NTLM authenticator
-    private ConfigService m_configService;
+    protected ConfigService m_configService;
     
     // List of available locales (from the web-client configuration)
     private List<String> m_languages;
-    
-    
+        
     /**
-     * Initialize the filter
-     * 
-     * @param args FilterConfig
-     * @exception ServletException
+     * @param configService the configService to set
      */
-    public void init(FilterConfig args) throws ServletException
+    public void setConfigService(ConfigService configService)
     {
-        super.init(args);
-        
-        // Setup the authentication context
-        
-        WebApplicationContext ctx = WebApplicationContextUtils.getRequiredWebApplicationContext(m_context);
-        m_configService = (ConfigService)ctx.getBean("webClientConfigService");
-        
-        // Get a list of the available locales
-        
-        LanguagesConfigElement config = (LanguagesConfigElement) m_configService.
-              getConfig("Languages").getConfigElement(LanguagesConfigElement.CONFIG_ELEMENT_ID);
-        
-        m_languages = config.getLanguages();
-        setLoginPage( Application.getLoginPage(m_context));
+        m_configService = configService;
     }
 
 	/* (non-Javadoc)
+     * @see org.alfresco.repo.webdav.auth.BaseNTLMAuthenticationFilter#afterPropertiesSet()
+     */
+    @Override
+    public void afterPropertiesSet() throws Exception
+    {
+        // Call the base NTLM filter initialization
+        super.afterPropertiesSet();
+
+        // Get a list of the available locales
+        LanguagesConfigElement config = (LanguagesConfigElement) m_configService.getConfig("Languages")
+                .getConfigElement(LanguagesConfigElement.CONFIG_ELEMENT_ID);
+
+        m_languages = config.getLanguages();
+        ClientConfigElement clientConfig = (ClientConfigElement) m_configService.getGlobalConfig().getConfigElement(
+                ClientConfigElement.CONFIG_ELEMENT_ID);
+        if (clientConfig != null)
+        {
+            setLoginPage(clientConfig.getLoginPage());
+        }
+    }
+
+    /* (non-Javadoc)
 	 * @see org.alfresco.repo.webdav.auth.BaseSSOAuthenticationFilter#createUserObject(java.lang.String, java.lang.String, org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
 	 */
 	@Override

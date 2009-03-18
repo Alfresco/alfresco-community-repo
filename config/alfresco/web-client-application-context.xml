@@ -302,4 +302,61 @@
       <property name="authenticationService" ref="AuthenticationService" />
       <property name="transactionService" ref="TransactionService" />
    </bean>
+
+   <bean id="authenticationFilter" class="org.alfresco.repo.management.ManagedSubsystemProxyFactory">
+      <property name="sourceApplicationContextFactory">
+         <ref bean="authenticationSelector" />
+      </property>
+      <property name="interfaces">
+         <list>
+            <value>org.alfresco.repo.web.filter.beans.DependencyInjectedFilter</value>
+         </list>
+      </property>
+      <property name="sourceBeanName">
+         <value>authenticationFilter</value>
+      </property>
+   </bean>
+
+   <bean id="globalAuthenticationFilter" class="org.alfresco.repo.management.ManagedSubsystemProxyFactory">
+      <property name="sourceApplicationContextFactory">
+         <ref bean="authenticationSelector" />
+      </property>
+      <property name="interfaces">
+         <list>
+            <value>org.alfresco.repo.web.filter.beans.DependencyInjectedFilter</value>
+         </list>
+      </property>
+      <property name="sourceBeanName">
+         <value>globalAuthenticationFilter</value>
+      </property>
+   </bean>
+
+   <bean id="webscriptAuthenticationFilter" class="org.alfresco.repo.management.ManagedSubsystemProxyFactory">
+      <property name="sourceApplicationContextFactory">
+         <ref bean="authenticationSelector" />
+      </property>
+      <property name="interfaces">
+         <list>
+            <value>org.alfresco.repo.web.filter.beans.DependencyInjectedFilter</value>
+         </list>
+      </property>
+      <property name="sourceBeanName">
+         <value>webscriptAuthenticationFilter</value>
+      </property>
+   </bean>
+
+   <bean id="webDavAuthenticationFilter" class="org.alfresco.repo.management.ManagedSubsystemProxyFactory">
+      <property name="sourceApplicationContextFactory">
+         <ref bean="authenticationSelector" />
+      </property>
+      <property name="interfaces">
+         <list>
+            <value>org.alfresco.repo.web.filter.beans.DependencyInjectedFilter</value>
+         </list>
+      </property>
+      <property name="sourceBeanName">
+         <value>webDavAuthenticationFilter</value>
+      </property>
+   </bean>
+   
 </beans>

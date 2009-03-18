@@ -24,6 +24,7 @@
  */
 package org.alfresco.repo.management;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Map;
 
@@ -57,22 +58,30 @@ public class ManagedSubsystemProxyFactory extends ProxyFactoryBean
             public Object invoke(MethodInvocation mi) throws Throwable
             {
                 Method method = mi.getMethod();
-                if (ManagedSubsystemProxyFactory.this.sourceBeanName == null)
+                try
                 {
-                    Map<?, ?> beans = ManagedSubsystemProxyFactory.this.sourceApplicationContextFactory
-                            .getApplicationContext().getBeansOfType(method.getDeclaringClass());
-                    if (beans.size() != 1)
+                    if (ManagedSubsystemProxyFactory.this.sourceBeanName == null)
                     {
-                        throw new RuntimeException("Don't know where to route call to method " + method);
+                        Map<?, ?> beans = ManagedSubsystemProxyFactory.this.sourceApplicationContextFactory
+                                .getApplicationContext().getBeansOfType(method.getDeclaringClass());
+                        if (beans.size() != 1)
+                        {
+                            throw new RuntimeException("Don't know where to route call to method " + method);
+                        }
+                        return method.invoke(beans.values().iterator().next(), mi.getArguments());
                     }
-                    return method.invoke(beans.values().iterator().next(), mi.getArguments());
-                }
-                else
-                {
-                    Object bean = ManagedSubsystemProxyFactory.this.sourceApplicationContextFactory
-                            .getApplicationContext().getBean(ManagedSubsystemProxyFactory.this.sourceBeanName);
-                    return method.invoke(bean, mi.getArguments());
+                    else
+                    {
+                        Object bean = ManagedSubsystemProxyFactory.this.sourceApplicationContextFactory
+                                .getApplicationContext().getBean(ManagedSubsystemProxyFactory.this.sourceBeanName);
+                        return method.invoke(bean, mi.getArguments());
 
+                    }
+                }
+                catch (InvocationTargetException e)
+                {
+                    // Unwrap invocation target exceptions
+                    throw e.getTargetException();
                 }
             }
         }));

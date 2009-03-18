@@ -54,6 +54,7 @@ public class AuthenticationFilter implements DependencyInjectedFilter
 {
 
     private String loginPage;
+    private ConfigService configService;
 
     /**
      * @param configService
@@ -61,13 +62,22 @@ public class AuthenticationFilter implements DependencyInjectedFilter
      */
     public void setConfigService(ConfigService configService)
     {
-        ClientConfigElement clientConfig = (ClientConfigElement) configService.getGlobalConfig().getConfigElement(
-                ClientConfigElement.CONFIG_ELEMENT_ID);
-
-        if (clientConfig != null)
+        this.configService = configService;
+    }
+    
+    public synchronized String getLoginPage()
+    {
+        if (this.loginPage == null)
         {
-            loginPage = clientConfig.getLoginPage();
+            ClientConfigElement clientConfig = (ClientConfigElement) this.configService.getGlobalConfig()
+                    .getConfigElement(ClientConfigElement.CONFIG_ELEMENT_ID);
+
+            if (clientConfig != null)
+            {
+                this.loginPage = clientConfig.getLoginPage();
+            }
         }
+        return this.loginPage;
     }
 
     public void doFilter(ServletContext context, ServletRequest req, ServletResponse res, FilterChain chain)
@@ -77,7 +87,7 @@ public class AuthenticationFilter implements DependencyInjectedFilter
         HttpServletResponse httpRes = (HttpServletResponse) res;
 
         // allow the login page to proceed
-        if (!httpReq.getRequestURI().endsWith(this.loginPage))
+        if (!httpReq.getRequestURI().endsWith(getLoginPage()))
         {
             AuthenticationStatus status = AuthenticationHelper.authenticate(context, httpReq, httpRes, false);
 

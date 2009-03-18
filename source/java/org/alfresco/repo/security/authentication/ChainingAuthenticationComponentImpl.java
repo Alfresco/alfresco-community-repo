@@ -26,6 +26,8 @@ package org.alfresco.repo.security.authentication;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import net.sf.acegisecurity.Authentication;
 
@@ -434,4 +436,17 @@ public class ChainingAuthenticationComponentImpl implements AuthenticationCompon
         }
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.repo.security.authentication.AuthenticationComponent#getDefaultAdministratorUserNames()
+     */
+    public Set<String> getDefaultAdministratorUserNames()
+    {
+        Set<String> defaultAdministratorUserNames = new TreeSet<String>();
+        for (AuthenticationComponent authComponent : getUsableAuthenticationComponents())
+        {
+            defaultAdministratorUserNames.addAll(authComponent.getDefaultAdministratorUserNames());
+        }
+        return defaultAdministratorUserNames;
+    }
 }

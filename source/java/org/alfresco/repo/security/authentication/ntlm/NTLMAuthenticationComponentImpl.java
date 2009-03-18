@@ -52,16 +52,11 @@ import org.alfresco.jlan.server.auth.passthru.PassthruServers;
 import org.alfresco.jlan.smb.Protocol;
 import org.alfresco.jlan.smb.SMBException;
 import org.alfresco.jlan.smb.SMBStatus;
-import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AbstractAuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.NTLMMode;
 import org.alfresco.service.Managed;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.NoSuchPersonException;
-import org.alfresco.service.cmr.security.PersonService;
-import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -284,21 +279,23 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
      */
     @Managed(category="Security")
     public void setDomain(String domain) {
-        
-        // Check if the passthru server list is already configured
-        
-        if ( m_passthruServers.getTotalServerCount() > 0)
-            throw new AlfrescoRuntimeException("Passthru server list already configured");
-        
-        // Configure the passthru authentication server list using the domain controllers
-        
-        try
-        {
-            m_passthruServers.setDomain(domain);
-        }
-        catch ( IOException ex)
-        {
-            throw new AlfrescoRuntimeException("Failed to set passthru domain, " + ex);
+        if (!domain.isEmpty())
+        {        
+            // Check if the passthru server list is already configured
+            
+            if ( m_passthruServers.getTotalServerCount() > 0)
+                throw new AlfrescoRuntimeException("Passthru server list already configured");
+            
+            // Configure the passthru authentication server list using the domain controllers
+            
+            try
+            {
+                m_passthruServers.setDomain(domain);
+            }
+            catch ( IOException ex)
+            {
+                throw new AlfrescoRuntimeException("Failed to set passthru domain, " + ex);
+            }
         }
     }
     
@@ -308,16 +305,18 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
      * @param servers String
      */
     @Managed(category="Security")
-    public void setServers(String servers) {
-        
-        // Check if the passthru server list is already configured
-        
-        if ( m_passthruServers.getTotalServerCount() > 0)
-            throw new AlfrescoRuntimeException("Passthru server list already configured");
-        
-        // Configure the passthru authenticaiton list using a list of server names/addresses
-        
-        m_passthruServers.setServerList(servers);
+    public void setServers(String servers) {        
+        if (!servers.isEmpty())
+        {
+            // Check if the passthru server list is already configured
+
+            if (m_passthruServers.getTotalServerCount() > 0)
+                throw new AlfrescoRuntimeException("Passthru server list already configured");
+
+            // Configure the passthru authenticaiton list using a list of server names/addresses
+
+            m_passthruServers.setServerList(servers);
+        }
     }
     
     /**

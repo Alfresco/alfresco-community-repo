@@ -2,22 +2,49 @@
 <!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
 
 <beans>
-	
-	<bean name="ldapSynchronisationPlaceholderConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-	    <property name="ignoreUnresolvablePlaceholders">
-            <value>true</value>
-        </property>  
-        <property name="locations">
-            <value>classpath:alfresco/extension/ldap-synchronisation.properties</value>
-        </property>
-    </bean>
+
+    <!--
     
-    <!-- 
-		Wire up the same context as used for LDAP authentication. You could use another context: just replace this
-		 alias with the bean definition 
+    This bean is used to provide read only access to users and groups to pull them out of the LDAP reopsitory
+    
     -->
     
-    <alias alias="ldapSyncInitialDirContextFactory" name="ldapInitialDirContextFactory"/>
+    <bean id="ldapInitialDirContextFactory" class="org.alfresco.repo.security.authentication.ldap.LDAPInitialDirContextFactoryImpl">
+        <property name="initialDirContextEnvironment">
+            <map>
+                <!-- The LDAP provider -->
+                <entry key="java.naming.factory.initial">
+                    <value>${ldap.synchronisation.java.naming.factory.initial}</value>
+                </entry>
+                
+                <!-- The url to the LDAP server -->
+                <!-- Note you can use space separated urls - they will be tried in turn until one works -->
+                <!-- This could be used to authenticate against one or more ldap servers (you will not know which one ....) -->
+                <entry key="java.naming.provider.url">
+                    <value>${ldap.synchronisation.java.naming.provider.url}</value>
+                </entry>
+                
+                <!-- The authentication mechanism to use      -->
+                <!-- Some sasl authentication mechanisms may require a realm to be set -->
+                <!--                java.naming.security.sasl.realm -->
+                <!-- The available options will depend on your LDAP provider -->
+                <entry key="java.naming.security.authentication">
+                    <value>${ldap.synchronisation.java.naming.security.authentication}</value>
+                </entry>
+                
+                <!-- The id of a user who can read group and user information -->
+                <!-- This does not go through the pattern substitution defined above and is used "as is" -->
+                <entry key="java.naming.security.principal">
+                    <value>${ldap.synchronisation.java.naming.security.principal}</value>
+                </entry>
+                
+                <!-- The password for the user defined above -->
+                <entry key="java.naming.security.credentials">
+                    <value>${ldap.authentication.java.naming.security.credentials}</value>
+                </entry>
+            </map>
+        </property>
+    </bean>
     
     <!-- Ldap Syncronisation support -->
     

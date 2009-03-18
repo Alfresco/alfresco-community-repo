@@ -14,15 +14,32 @@
       <property name="maxFeedItems" value="100"/>
    </bean>
    
-   <bean id="iBatisDataSource" parent="dataSource">
-      <property name="defaultAutoCommit" >
-         <value>true</value>
-      </property>
-   </bean>
+   <bean id="iBatisDataSource" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>javax.sql.DataSource</value>
+        </property>
+        <property name="target"><ref bean="dataSource"/></property>
+        <property name="interceptorNames">
+            <list>
+                <idref local="iBatisDataSource_autcommit" />
+            </list>
+        </property>
+    </bean>
 
-   <bean id="sqlMapClient" class="org.alfresco.repo.domain.ibatis.AlfrescoSqlMapClientFactoryBean" singleton="true">
+    <bean id="iBatisDataSource_autcommit" class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
+        <property name="advice">
+            <bean class="org.alfresco.util.AutoCommitInterceptor" />
+        </property>
+        <property name="mappedName">
+            <value>getConnection</value>
+        </property>
+    </bean>
+
+   <bean id="sqlMapClient" class="org.springframework.orm.ibatis.SqlMapClientFactoryBean" singleton="true">
       <property name="configLocation"><value>classpath:alfresco/activities/activities-SqlMapConfig.xml</value></property> 
       <property name="dataSource" ref="iBatisDataSource"/>
+      <!-- NOTE: although we use iBatis here rather than Hibernate, for consistency we make use of single SQL dialect property (hibernate.dialect) for consistency -->
+      <property name="sqlMapClientProperties" ref="hibernateConfigProperties"/>
    </bean> 
    
    <bean id="postDaoService" class="org.alfresco.repo.activities.ibatis.IBatisActivityPostDaoServiceImpl">

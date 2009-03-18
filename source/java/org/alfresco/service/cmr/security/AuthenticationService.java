@@ -231,5 +231,13 @@ public interface AuthenticationService
      */
     @Auditable
     public Set<String> getDomiansThatAllowUserPasswordChanges();
+    
+    /**
+     * Gets a set of user names who should be considered administrators by default.
+     * 
+     * @return a set of user names
+     */
+    @Auditable
+    public Set<String> getDefaultAdministratorUserNames();
 }
 

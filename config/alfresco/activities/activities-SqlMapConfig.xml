@@ -5,7 +5,7 @@
     "http://ibatis.apache.org/dtd/sql-map-config-2.dtd">
 
 <sqlMapConfig>
-  <!-- note: dialect property is provided by SqlMapClientFactoryBean -->
+  <!-- note: dialect property must be set in properties passed to SqlMapClientFactoryBean -->
   <sqlMap resource="alfresco/activities/${hibernate.dialect}/ActivityPost.xml"/>
   <sqlMap resource="alfresco/activities/${hibernate.dialect}/ActivityFeed.xml"/>
   <sqlMap resource="alfresco/activities/${hibernate.dialect}/ActivityFeedControl.xml"/>

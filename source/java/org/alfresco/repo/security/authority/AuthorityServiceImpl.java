@@ -36,6 +36,7 @@ import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
+import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
@@ -61,6 +62,8 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
 
     private AuthorityDAO authorityDAO;
     
+    private AuthenticationService authenticationService;
+    
     private PermissionServiceSPI permissionServiceSPI;
 
     private Set<String> adminSet = Collections.singleton(PermissionService.ADMINISTRATOR_AUTHORITY);
@@ -68,8 +71,6 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
     private Set<String> guestSet = Collections.singleton(PermissionService.GUEST_AUTHORITY);
 
     private Set<String> allSet = Collections.singleton(PermissionService.ALL_AUTHORITIES);
-
-    private Set<String> adminUsers = Collections.emptySet();
 
     private Set<String> adminGroups = Collections.emptySet();
     
@@ -97,7 +98,12 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
     {
         this.authorityDAO = authorityDAO;
     }
-    
+        
+    public void setAuthenticationService(AuthenticationService authenticationService)
+    {
+        this.authenticationService = authenticationService;
+    }
+
     public void setPermissionServiceSPI(PermissionServiceSPI permissionServiceSPI)
     {
         this.permissionServiceSPI = permissionServiceSPI;
@@ -106,11 +112,6 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
     public void setAuthenticationComponent(AuthenticationComponent authenticationComponent)
     {
         logger.warn("Bean property 'authenticationService' no longer required on 'AuthorityServiceImpl'.");
-    }
-
-    public void setAdminUsers(Set<String> adminUsers)
-    {
-        this.adminUsers = adminUsers;
     }
 
     public void setAdminGroups(Set<String> adminGroups)
@@ -170,6 +171,8 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
         // Work out mapped roles
         
         // Check named admin users
+        Set<String> adminUsers = this.authenticationService.getDefaultAdministratorUserNames();
+
         // note: for multi-tenancy, this currently relies on a naming convention which assumes that all tenant admins will 
         // have the same base name as the default non-tenant specific admin. Typically "admin" is the default required admin user, 
         // although, if for example "bob" is also listed as an admin then all tenant-specific bob's will also have admin authority

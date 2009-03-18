@@ -473,6 +473,11 @@ public class TestAuthenticationServiceImpl implements AuthenticationService
         return authentication;
     }
 
+    public Set<String> getDefaultAdministratorUserNames()
+    {
+        return Collections.singleton(AuthenticationUtil.getAdminUserName());
+    }
+
     private static final String SYSTEM_USER_NAME = "System";
 
 }

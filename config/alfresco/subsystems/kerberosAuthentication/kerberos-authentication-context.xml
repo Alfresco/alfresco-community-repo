@@ -10,10 +10,10 @@
           class="org.alfresco.repo.security.authentication.jaas.JAASAuthenticationComponent"
           parent="authenticationComponentBase">
         <property name="realm">
-            <value>DEFAULT.REALM</value>
+            <value>${kerberos.authentication.realm}</value>
         </property>
         <property name="jaasConfigEntryName">
-            <value>Alfresco</value>
+            <value>${kerberos.authentication.user.configEntryName}</value>
         </property>
         <property name="nodeService">
             <ref bean="nodeService" />
@@ -24,6 +24,9 @@
         <property name="transactionService">
             <ref bean="transactionService" />
         </property>    
+        <property name="defaultAdministratorUserNames">
+            <value>${kerberos.authentication.defaultAdministratorUserNames}</value>
+        </property>
     </bean>
 
     <!-- DAO that rejects changes - JAAS is read only at the moment.      -->

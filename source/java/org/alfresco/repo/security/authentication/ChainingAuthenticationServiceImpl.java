@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.alfresco.service.Managed;
 import org.alfresco.service.cmr.security.AuthenticationService;
@@ -470,4 +471,13 @@ public class ChainingAuthenticationServiceImpl extends AbstractAuthenticationSer
         return tcs;
     }
 
+    public Set<String> getDefaultAdministratorUserNames()
+    {
+        Set<String> defaultAdministratorUserNames = new TreeSet<String>();
+        for (AuthenticationService authService : getUsableAuthenticationServices())
+        {
+            defaultAdministratorUserNames.addAll(authService.getDefaultAdministratorUserNames());
+        }
+        return defaultAdministratorUserNames;
+    }
 }

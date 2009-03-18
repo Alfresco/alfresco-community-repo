@@ -26,6 +26,8 @@ package org.alfresco.repo.security.authentication;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.Collections;
+import java.util.Set;
 
 import net.sf.acegisecurity.AuthenticationManager;
 import net.sf.acegisecurity.UserDetails;
@@ -59,28 +61,29 @@ public class AuthenticationComponentImpl extends AbstractAuthenticationComponent
      * 
      * @param authenticationDao
      */
-    @Managed(category="Security")
+    @Managed(category = "Security")
     public void setAuthenticationDao(MutableAuthenticationDao authenticationDao)
     {
         this.authenticationDao = authenticationDao;
     }
-    
+
     /**
      * Authenticate
      */
+    @Override
     protected void authenticateImpl(String userName, char[] password) throws AuthenticationException
     {
         try
         {
             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userName,
                     new String(password));
-            authenticationManager.authenticate(authentication);
+            this.authenticationManager.authenticate(authentication);
             setCurrentUser(userName);
 
         }
         catch (net.sf.acegisecurity.AuthenticationException ae)
         {
-            // This is a bit gross, I admit, but when LDAP is 
+            // This is a bit gross, I admit, but when LDAP is
             // configured ae, above, is non-serializable and breaks
             // remote authentication.
             StringWriter sw = new StringWriter();
@@ -92,28 +95,28 @@ public class AuthenticationComponentImpl extends AbstractAuthenticationComponent
         }
     }
 
- 
     /**
-     * We actually have an acegi object so override the default method.  
+     * We actually have an acegi object so override the default method.
      */
+    @Override
     protected UserDetails getUserDetails(String userName)
     {
-        return (UserDetails) authenticationDao.loadUserByUsername(userName);
+        return this.authenticationDao.loadUserByUsername(userName);
     }
 
-    
     /**
      * Get the password hash from the DAO
      */
+    @Override
     public String getMD4HashedPassword(String userName)
     {
-        return authenticationDao.getMD4HashedPassword(userName);
+        return this.authenticationDao.getMD4HashedPassword(userName);
     }
 
-    
     /**
-     * This implementation supported MD4 password hashes. 
+     * This implementation supported MD4 password hashes.
      */
+    @Override
     public NTLMMode getNTLMMode()
     {
         return NTLMMode.MD4_PROVIDER;
@@ -124,6 +127,14 @@ public class AuthenticationComponentImpl extends AbstractAuthenticationComponent
     {
         return true;
     }
-   
-    
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.repo.security.authentication.AuthenticationComponent#getDefaultAdministratorUserNames()
+     */
+    @Override
+    public Set<String> getDefaultAdministratorUserNames()
+    {
+        return Collections.singleton(AuthenticationUtil.getAdminUserName());
+    }
 }

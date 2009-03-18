@@ -303,4 +303,13 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService
     {
         return Collections.singleton(ticketComponent);
     }
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.service.cmr.security.AuthenticationService#getDefaultAdministratorUserNames()
+     */
+    public Set<String> getDefaultAdministratorUserNames()
+    {
+        return authenticationComponent.getDefaultAdministratorUserNames();
+    }
 }

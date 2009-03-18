@@ -15,7 +15,7 @@
 
     <!-- load common properties -->
     <bean id="repository-properties"
-          class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+          class="org.alfresco.config.JndiPropertyPlaceholderConfigurer">
         <property name="ignoreUnresolvablePlaceholders">
             <value>true</value>
         </property>
@@ -42,7 +42,7 @@
     <!--        or custom-db-and-data-context.xml file.         -->
 
     <bean id="shared-properties"
-          class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+          class="org.alfresco.config.JndiPropertyPlaceholderConfigurer">
         <property name="ignoreUnresolvablePlaceholders">
             <value>true</value>
         </property>
@@ -181,7 +181,7 @@
 
 
     <!-- Datasource bean -->
-    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+    <bean id="defaultDataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
         <property name="driverClassName">
             <value>${db.driver}</value>
         </property>
@@ -205,6 +205,15 @@
         </property>
         <property name="defaultTransactionIsolation" >
             <value>${db.txn.isolation}</value>
+        </property>
+    </bean>
+
+    <bean id="dataSource" class="org.springframework.jndi.JndiObjectFactoryBean">
+        <property name="jndiName">
+            <value>java:comp/env/jdbc/dataSource</value>
+        </property>
+        <property name="defaultObject">
+            <ref bean="defaultDataSource" />
         </property>
     </bean>
 

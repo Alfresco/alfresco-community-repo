@@ -1,0 +1,55 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+   <bean id="authenticationDao" class="org.alfresco.repo.security.authentication.DefaultMutableAuthenticationDao" >
+         <property name="allowSetEnabled" value="true" />
+         <property name="allowGetEnabled" value="true" />
+         <property name="allowDeleteUser" value="true" />
+         <property name="allowCreateUser" value="true" />
+   </bean>
+
+
+   <!-- The authentication component.                                      -->
+
+   <!-- Use the passthru authentication component to authenticate using    -->
+   <!-- user accounts on one or more Windows servers.                      -->
+
+   <!-- Properties that specify the server(s) to use for passthru          -->
+   <!-- authentication :-                                                  -->
+   <!--   useLocalServer   use the local server for authentication         -->
+   <!--   domain           use domain controllers from the specified domain-->
+   <!--   servers          comma delimted list of server addresses or      -->
+   <!--                    names                                           -->
+
+   <bean id="authenticationComponent"
+         class="org.alfresco.repo.security.authentication.ntlm.NTLMAuthenticationComponentImpl"
+         parent="authenticationComponentBase">
+       <property name="useLocalServer">
+           <value>${ntlm.authentication.useLocalServer}</value>
+       </property>
+       <property name="domain">
+           <value>${ntlm.authentication.domain}</value>
+       </property>
+       <property name="servers">
+           <value>${ntlm.authentication.servers}</value>
+       </property>
+       <property name="personService">
+           <ref bean="personService" />
+       </property>
+       <property name="nodeService">
+           <ref bean="nodeService" />
+       </property>
+       <property name="transactionService">
+           <ref bean="transactionComponent" />
+       </property>
+       <property name="guestAccess">
+           <value>${ntlm.authentication.guestAccess}</value>
+       </property>
+       <property name="defaultAdministratorUserNames">
+           <value>${ntlm.authentication.defaultAdministratorUserNames}</value>
+       </property>
+   </bean>
+
+</beans>

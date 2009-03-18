@@ -25,27 +25,11 @@
         <property name="authorityDAO">
             <ref bean="authorityDAO" />
         </property>
+        <property name="authenticationService">
+            <ref bean="authenticationService" />
+        </property>
         <property name="permissionServiceSPI">
             <ref bean="permissionServiceImpl" />
-        </property>
-        <!--                                                                  -->
-        <!-- A list of users with admin rights.                               -->
-        <!--                                                                  -->
-        <!-- If the security framework is case sensitive these values should  -->
-        <!-- be case sensitive user names. If the security framework is not   -->
-        <!-- case sensitive these values should be the lower-case user names. -->
-        <!--                                                                  -->
-        <!-- By default this includes:                                        -->
-        <!--    admin (the user name of default alfresco admin user)          -->
-        <!--    administrator (the windows default admin user)                -->
-        <!--                                                                  -->
-        <!-- This assumes that user names are not case sensitive.             -->
-        <!--                                                                  -->
-        <property name="adminUsers">
-            <set>
-    			<value>admin</value>
-    			<value>administrator</value>
-    		</set>
         </property>
         <!--                                                                  -->
         <!-- A list of groups with admin rights.                              -->

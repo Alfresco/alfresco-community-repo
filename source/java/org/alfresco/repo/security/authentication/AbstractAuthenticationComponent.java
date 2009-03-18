@@ -24,6 +24,11 @@
  */
 package org.alfresco.repo.security.authentication;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Set;
+import java.util.TreeSet;
+
 import net.sf.acegisecurity.Authentication;
 import net.sf.acegisecurity.GrantedAuthority;
 import net.sf.acegisecurity.GrantedAuthorityImpl;
@@ -65,6 +70,8 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
     private NodeService nodeService;
 
     private TransactionService transactionService;
+    
+    private Set<String> defaultAdministratorUserNames = Collections.emptySet();
 
     private boolean autoCreatePeopleOnLogin = true;
 
@@ -493,5 +500,40 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
                 return null;
             }
         }
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.repo.security.authentication.AuthenticationComponent#getDefaultAdministratorUserNames()
+     */
+    public Set<String> getDefaultAdministratorUserNames()
+    {
+        return this.defaultAdministratorUserNames;
+    }
+
+    /**
+     * Sets the user names who for this particular authentication system should be considered administrators by default.
+     * 
+     * @param defaultAdministratorUserNames
+     *            a set of user names
+     */
+    public void setDefaultAdministratorUserNames(Set<String> defaultAdministratorUserNames)
+    {
+        this.defaultAdministratorUserNames = defaultAdministratorUserNames;
+    }
+    
+    /**
+     * Convenience method to allow the administrator user names to be specified as a comma separated list
+     * 
+     * @param defaultAdministratorUserNames
+     */
+    public void setDefaultAdministratorUserNames(String defaultAdministratorUserNames)
+    {
+        Set<String> nameSet = new TreeSet<String>();
+        if (!defaultAdministratorUserNames.isEmpty())
+        {
+            nameSet.addAll(Arrays.asList(defaultAdministratorUserNames.split(",")));
+        }
+        setDefaultAdministratorUserNames(nameSet);
     }
 }

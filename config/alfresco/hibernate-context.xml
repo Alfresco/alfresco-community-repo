@@ -4,7 +4,7 @@
 <beans>
 
     <!-- load hibernate configuration properties -->
-    <bean id="hibernateConfigProperties" class="org.alfresco.config.SystemPropertiesFactoryBean">
+    <bean id="hibernateConfigProperties" class="org.alfresco.config.JndiPropertiesFactoryBean">
         <property name="systemProperties">
             <list>
                 <value>hibernate.dialect</value>

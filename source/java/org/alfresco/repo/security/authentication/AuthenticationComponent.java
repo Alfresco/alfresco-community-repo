@@ -24,6 +24,8 @@
  */
 package org.alfresco.repo.security.authentication;
 
+import java.util.Set;
+
 import net.sf.acegisecurity.Authentication;
 
 public interface AuthenticationComponent
@@ -134,4 +136,13 @@ public interface AuthenticationComponent
      * Get the MD4 password hash, as required by NTLM based authentication methods.
      */
     public String getMD4HashedPassword(String userName);
+    
+    /**
+     * Gets a set of user names who for this particular authentication system should be considered administrators by
+     * default. If the security framework is case sensitive these values should be case sensitive user names. If the
+     * security framework is not case sensitive these values should be the lower-case user names.
+     * 
+     * @return a set of user names
+     */
+    public Set<String> getDefaultAdministratorUserNames();
 }

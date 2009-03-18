@@ -35,11 +35,9 @@
         </property>
     </bean>
 
-   <bean id="sqlMapClient" class="org.springframework.orm.ibatis.SqlMapClientFactoryBean" singleton="true">
+   <bean id="sqlMapClient" class="org.alfresco.repo.domain.ibatis.AlfrescoSqlMapClientFactoryBean" singleton="true">
       <property name="configLocation"><value>classpath:alfresco/activities/activities-SqlMapConfig.xml</value></property> 
       <property name="dataSource" ref="iBatisDataSource"/>
-      <!-- NOTE: although we use iBatis here rather than Hibernate, for consistency we make use of single SQL dialect property (hibernate.dialect) for consistency -->
-      <property name="sqlMapClientProperties" ref="hibernateConfigProperties"/>
    </bean> 
    
    <bean id="postDaoService" class="org.alfresco.repo.activities.ibatis.IBatisActivityPostDaoServiceImpl">

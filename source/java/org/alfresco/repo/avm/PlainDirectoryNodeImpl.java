@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -52,7 +52,7 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
      */
     public PlainDirectoryNodeImpl(AVMStore store)
     {
-        super(store.getAVMRepository().issueID(), store);
+        super(store);
         setVersionID(1);
         AVMDAOs.Instance().fAVMNodeDAO.save(this);
         AVMDAOs.Instance().fAVMNodeDAO.flush();
@@ -74,7 +74,7 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
     public PlainDirectoryNodeImpl(PlainDirectoryNode other,
                                   AVMStore store, Long parentAcl, ACLCopyMode mode)
     {
-        super(store.getAVMRepository().issueID(), store);
+        super(store);
         AVMDAOs.Instance().fAVMNodeDAO.save(this);
         for (ChildEntry child : AVMDAOs.Instance().fChildEntryDAO.getByParent(other, null))
         {
@@ -295,8 +295,7 @@ class PlainDirectoryNodeImpl extends DirectoryNodeImpl implements PlainDirectory
             AVMDAOs.Instance().fChildEntryDAO.delete(entry);
             if (child.getStoreNew() == null || child.getAncestor() != null)
             {
-                DeletedNodeImpl ghost = new DeletedNodeImpl(lPath.getAVMStore().getAVMRepository().issueID(),
-                                                    lPath.getAVMStore(), child.getAcl());
+                DeletedNodeImpl ghost = new DeletedNodeImpl(lPath.getAVMStore(), child.getAcl());
                 AVMDAOs.Instance().fAVMNodeDAO.save(ghost);
                 AVMDAOs.Instance().fAVMNodeDAO.flush();
                 ghost.setAncestor(child);

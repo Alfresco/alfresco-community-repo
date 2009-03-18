@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -66,7 +66,7 @@ class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
      */
     public LayeredFileNodeImpl(LayeredFileNode other, AVMStore store, Long parentAcl, ACLCopyMode mode)
     {
-        super(store.getAVMRepository().issueID(), store);
+        super(store);
         fIndirection = other.getIndirection();
         fIndirectionVersion = -1;
         setVersionID(other.getVersionID() + 1);
@@ -88,7 +88,7 @@ class LayeredFileNodeImpl extends FileNodeImpl implements LayeredFileNode
      */
     public LayeredFileNodeImpl(String indirection, AVMStore store, DbAccessControlList acl)
     {
-        super(store.getAVMRepository().issueID(), store);
+        super(store);
         fIndirection = indirection;
         fIndirectionVersion = -1;
         setVersionID(1);

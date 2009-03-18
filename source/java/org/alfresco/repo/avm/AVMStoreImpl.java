@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -429,7 +429,9 @@ public class AVMStoreImpl implements AVMStore, Serializable
         else
         {
             // Otherwise we issue a brand new layer id.
-            newDir.setLayerID(fAVMRepository.issueLayerID());
+            
+            // note: re-use generated node id as a layer id
+            newDir.setLayerID(newDir.getId());
         }
         if (child != null)
         {

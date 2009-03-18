@@ -13,10 +13,11 @@
         optimistic-lock="version"
         lazy="false">
         <cache usage="read-write"/>
-        <!-- The id is set programmatically using an Issuer.  See below. -->
-        <id name="id"
-            column="id"
-            type="long"/>
+
+        <id name="id" column="id" type="long">
+            <generator class="native"/>
+        </id>
+        
         <!-- I suppose this would be more efficient to encode type by an int.
              We'll see if using a string makes a difference. -->
         <discriminator column="class_type"
@@ -219,12 +220,7 @@
         </composite-id>
         <property name="path" type="string" length="512" column="path"/>
     </class>
-
-    <class name="IssuerIDImpl" proxy="IssuerID" table="avm_issuer_ids" optimistic-lock="version" lazy="false">
-        <id name="issuer" type="string" length="32" column="issuer"/>
-        <version name="version" column="version" type="long"/>
-        <property name="next" type="long" column="next_id" not-null="true"/>
-    </class>
+	
     <query name="ChildEntry.DeleteByParent">
     <![CDATA[
         delete ChildEntryImpl ce

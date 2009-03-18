@@ -4,54 +4,6 @@
 
 <beans>
 
-	<!-- ID Issuers. -->
-
-	<bean id="nodeIssuer" class="org.alfresco.repo.avm.Issuer" depends-on="avmDAOs" >
-		<property name="name">
-			<value>node</value>
-		</property>
-        <property name="issuerDAO">
-            <ref bean="issuerDAO"/>
-        </property>
-        <property name="issuerIDDAO">
-            <ref bean="issuerIDDAO"/>
-        </property>
-        <property name="transactionService">
-            <ref bean="transactionService"/>
-        </property>
-	</bean>
-
-	<bean id="layerIssuer" class="org.alfresco.repo.avm.Issuer" depends-on="avmDAOs" >
-		<property name="name">
-			<value>layer</value>
-		</property>
-		<property name="issuerDAO">
-		    <ref bean="issuerDAO"/>
-		</property>
-		<property name="issuerIDDAO">
-		    <ref bean="issuerIDDAO"/>
-		</property>
-		<property name="transactionService">
-		    <ref bean="transactionService"/>
-		</property>
-	</bean>
-
-	<!-- DAOs for persistent data types -->
-
-    <bean id="issuerIDDAO" class="org.alfresco.repo.avm.hibernate.IssuerIDDAOHibernate">
-        <property name="sessionFactory">
-            <ref bean="sessionFactory"/>
-        </property>
-    </bean>
-
-	<!-- Issuers are not actual entities. More like pseudo entities. -->
-
-	<bean id="issuerDAO" class="org.alfresco.repo.avm.hibernate.IssuerDAOHibernate">
-		<property name="sessionFactory">
-			<ref bean="sessionFactory"/>
-		</property>
-	</bean>
-
 	<bean id="avmNodeDAO" class="org.alfresco.repo.avm.hibernate.AVMNodeDAOHibernate">
 		<property name="sessionFactory">
 			<ref bean="sessionFactory"/>
@@ -113,9 +65,6 @@
 	</bean>
 
 	<bean id="avmDAOs" class="org.alfresco.repo.avm.AVMDAOs" factory-method="Instance">
-		<property name="issuerDAO">
-			<ref bean="issuerDAO"/>
-		</property>
 		<property name="nodeDAO">
 			<ref bean="avmNodeDAO"/>
 		</property>
@@ -186,12 +135,6 @@
 	<bean id="purgeVersionTxnListener" class="org.alfresco.repo.avm.PurgeVersionTxnListener"/>
 
 	<bean id="avmRepository" class="org.alfresco.repo.avm.AVMRepository">
-		<property name="nodeIssuer">
-			<ref bean="nodeIssuer"/>
-		</property>
-		<property name="layerIssuer">
-			<ref bean="layerIssuer"/>
-		</property>
 		<property name="lookupCache">
 		    <ref bean="lookupCache"/>
 		</property>

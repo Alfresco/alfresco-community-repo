@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -49,20 +49,18 @@ public class DeletedNodeImpl extends AVMNodeImpl implements DeletedNode
     
     /**
      * Create a new one from scratch.
-     * @param id The node id.
      * @param store The store it's being created in.
      */
-    public DeletedNodeImpl(long id,
-                           AVMStore store, DbAccessControlList acl)
+    public DeletedNodeImpl(AVMStore store, DbAccessControlList acl)
     {
-        super(id, store);
+        super(store);
         this.setAcl(acl);
     }
     
     public DeletedNodeImpl(DeletedNode other,
                            AVMStore store, Long parentAcl, ACLCopyMode mode)
     {
-        super(store.getAVMRepository().issueID(), store);
+        super(store);
         AVMDAOs.Instance().fAVMNodeDAO.save(this);
         AVMDAOs.Instance().fAVMNodeDAO.flush();
         copyProperties(other);

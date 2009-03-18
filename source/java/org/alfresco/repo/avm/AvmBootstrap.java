@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -24,7 +24,6 @@
  */
 package org.alfresco.repo.avm;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.alfresco.service.cmr.security.PermissionService;
@@ -43,8 +42,6 @@ import org.springframework.context.ApplicationEvent;
  */
 public class AvmBootstrap extends AbstractLifecycleBean
 {
-    private List<Issuer> issuers;
-
     private AVMLockingAwareService avmLockingAwareService;
 
     private AVMRepository avmRepository;
@@ -56,7 +53,6 @@ public class AvmBootstrap extends AbstractLifecycleBean
 
     public AvmBootstrap()
     {
-        issuers = new ArrayList<Issuer>(0);
     }
 
     public void setAvmLockingAwareService(AVMLockingAwareService service)
@@ -80,25 +76,11 @@ public class AvmBootstrap extends AbstractLifecycleBean
     }
 
     /**
-     * Provide a list of {@link Issuer issuers} to bootstrap on context initialization.
-     *
-     * @see #onBootstrap(ApplicationEvent)
-     */
-    public void setIssuers(List<Issuer> issuers)
-    {
-        this.issuers = issuers;
-    }
-
-    /**
      * Initialize the issuers.
      */
     @Override
     protected void onBootstrap(ApplicationEvent event)
     {
-        for (Issuer issuer : issuers)
-        {
-            issuer.init();
-        }
         avmLockingAwareService.init();
         avmRepository.setPermissionService(permissionService);
         avmSyncService.setPermissionService(permissionService);

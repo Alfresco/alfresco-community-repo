@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -23,7 +23,6 @@
 
 package org.alfresco.repo.avm;
 
-import org.alfresco.repo.domain.DbAccessControlList;
 
 /**
  * Base class for file objects.
@@ -40,11 +39,10 @@ abstract class FileNodeImpl extends AVMNodeImpl implements FileNode
     
     /**
      * Pass through constructor.
-     * @param id The newly assigned object id.
      * @param store The AVMStore we belong to.
      */
-    public FileNodeImpl(long id, AVMStore store)
+    public FileNodeImpl(AVMStore store)
     {
-        super(id, store);
+        super(store);
     }
 }

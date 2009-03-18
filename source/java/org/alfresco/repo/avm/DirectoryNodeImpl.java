@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -44,12 +44,11 @@ abstract class DirectoryNodeImpl extends AVMNodeImpl implements DirectoryNode
     /**
      * A pass through constructor. Called when a new concrete subclass
      * instance is created.
-     * @param id
      * @param repo
      */
-    protected DirectoryNodeImpl(long id, AVMStore repo)
+    protected DirectoryNodeImpl(AVMStore repo)
     {
-        super(id, repo);
+        super(repo);
     }
 
     /**

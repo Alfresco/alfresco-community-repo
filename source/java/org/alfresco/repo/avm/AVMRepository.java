@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -75,7 +75,6 @@ import org.apache.commons.logging.LogFactory;
  */
 public class AVMRepository
 {
-    @SuppressWarnings("unused")
     private static Log fgLogger = LogFactory.getLog(AVMRepository.class);
 
     /**
@@ -87,16 +86,6 @@ public class AVMRepository
      * The current lookup count.
      */
     private ThreadLocal<Integer> fLookupCount;
-
-    /**
-     * The node id issuer.
-     */
-    private Issuer fNodeIssuer;
-
-    /**
-     * The layer id issuer.
-     */
-    private Issuer fLayerIssuer;
 
     /**
      * Reference to the ContentStoreImpl
@@ -155,28 +144,6 @@ public class AVMRepository
     {
         fLookupCount = new ThreadLocal<Integer>();
         fgInstance = this;
-    }
-
-    /**
-     * Set the node issuer. For Spring.
-     * 
-     * @param nodeIssuer
-     *            The issuer.
-     */
-    public void setNodeIssuer(Issuer nodeIssuer)
-    {
-        fNodeIssuer = nodeIssuer;
-    }
-
-    /**
-     * Set the layer issuer. For Spring.
-     * 
-     * @param layerIssuer
-     *            The issuer.
-     */
-    public void setLayerIssuer(Issuer layerIssuer)
-    {
-        fLayerIssuer = layerIssuer;
     }
 
     /**
@@ -481,7 +448,6 @@ public class AVMRepository
             throw new AVMExistsException("AVMStore exists: " + name);
         }
         // Newing up the object causes it to be written to the db.
-        @SuppressWarnings("unused")
         AVMStore rep = new AVMStoreImpl(this, name);
         // Special handling for AVMStore creation.
         rep.getRoot().setStoreNew(null);
@@ -572,7 +538,9 @@ public class AVMRepository
             else if (srcNode.getType() == AVMNodeType.LAYERED_DIRECTORY)
             {
                 dstNode = new LayeredDirectoryNodeImpl((LayeredDirectoryNode) srcNode, dstRepo, sPath, false, inheritAcl, ACLCopyMode.INHERIT);
-                ((LayeredDirectoryNode) dstNode).setLayerID(issueLayerID());
+                
+                // note: re-use generated node id as a layer id
+                ((LayeredDirectoryNode) dstNode).setLayerID(dstNode.getId());
             }
             else if (srcNode.getType() == AVMNodeType.LAYERED_FILE)
             {
@@ -798,7 +766,9 @@ public class AVMRepository
                     else
                     {
                         dstNode = new LayeredDirectoryNodeImpl((DirectoryNode) srcNode, dstRepo, sPath, srcName, parentAcl, ACLCopyMode.COPY);
-                        ((LayeredDirectoryNode) dstNode).setLayerID(issueLayerID());
+                        
+                        // note: re-use generated node id as a layer id
+                        ((LayeredDirectoryNode) dstNode).setLayerID(dstNode.getId());
                     }
                 }
                 else
@@ -839,7 +809,8 @@ public class AVMRepository
                     }
                     else
                     {
-                        ((LayeredDirectoryNode) dstNode).setLayerID(issueLayerID());
+                        // note: re-use generated node id as a layer id
+                        ((LayeredDirectoryNode) dstNode).setLayerID(dstNode.getId());
                     }
                 }
             }
@@ -971,7 +942,6 @@ public class AVMRepository
      * @param name
      *            The name of the AVMStore to purge.
      */
-    @SuppressWarnings("unchecked")
     public void purgeAVMStore(String name)
     {
         AlfrescoTransactionSupport.bindListener(fPurgeStoreTxnListener);
@@ -1271,7 +1241,6 @@ public class AVMRepository
      * 
      * @return A list of all descriptors.
      */
-    @SuppressWarnings("unchecked")
     public List<AVMStoreDescriptor> getAVMStores()
     {
         List<AVMStore> l = fAVMStoreDAO.getAll();
@@ -1336,26 +1305,6 @@ public class AVMRepository
             throw new AVMNotFoundException("Store not found.");
         }
         return store.getVersions(from, to);
-    }
-
-    /**
-     * Issue a node id.
-     * 
-     * @return The new id.
-     */
-    public long issueID()
-    {
-        return fNodeIssuer.issue();
-    }
-
-    /**
-     * Issue a new layer id.
-     * 
-     * @return The new id.
-     */
-    public long issueLayerID()
-    {
-        return fLayerIssuer.issue();
     }
 
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -106,15 +106,12 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
 
     /**
      * Constructor used when creating a new concrete subclass instance.
-     * @param id The object id.
      * @param store The AVMStore that owns this.
      */
-    protected AVMNodeImpl(long id,
-                          AVMStore store)
+    protected AVMNodeImpl(AVMStore store)
     {
         fAspects = new HashSet<Long>();
         fProperties = new HashMap<Long, PropertyValue>();
-        fID = id;
         fVersionID = -1;
         fIsRoot = false;
         long time = System.currentTimeMillis();

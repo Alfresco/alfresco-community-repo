@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -79,7 +79,7 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
      */
     public PlainFileNodeImpl(AVMStore store)
     {
-        super(store.getAVMRepository().issueID(), store);
+        super(store);
         setVersionID(1);        
         AVMDAOs.Instance().fAVMNodeDAO.save(this);
         AVMDAOs.Instance().fAVMNodeDAO.flush();
@@ -93,7 +93,7 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
     public PlainFileNodeImpl(PlainFileNode other,
                              AVMStore store, Long parentAcl, ACLCopyMode mode)
     {
-        super(store.getAVMRepository().issueID(), store);
+        super(store);
         // The null is OK because the Lookup argument is only use by
         // layered files.
         setContentData(other.getContentData(null));
@@ -123,7 +123,7 @@ class PlainFileNodeImpl extends FileNodeImpl implements PlainFileNode
                              DbAccessControlList acl,
                              int versionID, Long parentAcl, ACLCopyMode mode)
     {
-        super(store.getAVMRepository().issueID(), store);
+        super(store);
         setContentData(content);
         setBasicAttributes(attrs);
         setVersionID(versionID + 1);

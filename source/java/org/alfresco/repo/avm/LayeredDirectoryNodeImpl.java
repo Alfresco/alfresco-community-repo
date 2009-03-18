@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -95,7 +95,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
      */
     public LayeredDirectoryNodeImpl(String indirection, AVMStore store, AVMNode toCopy, Long parentAcl, ACLCopyMode mode)
     {
-        super(store.getAVMRepository().issueID(), store);
+        super(store);
         fLayerID = -1;
         fIndirection = indirection;
         fIndirectionVersion = -1;
@@ -159,7 +159,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
      */
     public LayeredDirectoryNodeImpl(LayeredDirectoryNode other, AVMStore repos, Lookup lookup, boolean copyAll, Long parentAcl, ACLCopyMode mode)
     {
-        super(repos.getAVMRepository().issueID(), repos);
+        super(repos);
         fIndirection = other.getIndirection();
         fPrimaryIndirection = other.getPrimaryIndirection();
         fIndirectionVersion = -1;
@@ -201,7 +201,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
      */
     public LayeredDirectoryNodeImpl(PlainDirectoryNode other, AVMStore store, Lookup lPath, boolean copyContents, Long parentAcl, ACLCopyMode mode)
     {
-        super(store.getAVMRepository().issueID(), store);
+        super(store);
         fIndirection = null;
         fPrimaryIndirection = false;
         fIndirectionVersion = -1;
@@ -240,7 +240,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
      */
     public LayeredDirectoryNodeImpl(DirectoryNode dir, AVMStore store, Lookup srcLookup, String name, Long inheritedAcl, ACLCopyMode mode)
     {
-        super(store.getAVMRepository().issueID(), store);
+        super(store);
         fIndirection = srcLookup.getIndirectionPath() + "/" + name;
         fPrimaryIndirection = true;
         fIndirectionVersion = -1;
@@ -793,7 +793,7 @@ class LayeredDirectoryNodeImpl extends DirectoryNodeImpl implements LayeredDirec
         }
         if (child != null && (indirect || child.getStoreNew() == null || child.getAncestor() != null))
         {
-            DeletedNodeImpl ghost = new DeletedNodeImpl(lPath.getAVMStore().getAVMRepository().issueID(), lPath.getAVMStore(), child.getAcl());
+            DeletedNodeImpl ghost = new DeletedNodeImpl(lPath.getAVMStore(), child.getAcl());
             AVMDAOs.Instance().fAVMNodeDAO.save(ghost);
             AVMDAOs.Instance().fAVMNodeDAO.flush();
             ghost.setAncestor(child);

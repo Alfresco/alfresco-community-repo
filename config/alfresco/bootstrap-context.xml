@@ -95,6 +95,7 @@
              <ref bean="patch.db-V2.1-RemoveWcmSubmittedAspect" />
              <ref bean="patch.db-V2.1-AuditPathIndex" />
              <ref bean="patch.db-V3.0-0-CreateActivitiesExtras" />
+             <ref bean="patch.db-V3.2-Remove-AVM-Issuer" />
           </list>
        </property>
     </bean>
@@ -118,12 +119,6 @@
 
     <!-- Bootstrap the AVM -->
     <bean id="avmBootstrap" class="org.alfresco.repo.avm.AvmBootstrap" >
-       <property name="issuers">
-          <list>
-             <ref bean="nodeIssuer" />
-             <ref bean="layerIssuer" />
-          </list>
-       </property>
        <property name="avmLockingAwareService">
             <ref bean="avmLockingAwareService"/>
        </property>

@@ -1759,5 +1759,15 @@
         </property>
     </bean>
     
+	<bean id="patch.db-V3.2-Remove-AVM-Issuer" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V3.2-Remove-AVM-Issuer</value></property>
+        <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>2007</value></property>
+        <property name="targetSchema"><value>2008</value></property>
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/3.2/${db.script.dialect}/remove-AVM-issuer.sql</value>
+        </property>
+    </bean>
     
 </beans>

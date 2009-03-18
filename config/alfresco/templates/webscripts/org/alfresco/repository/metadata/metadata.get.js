@@ -9,7 +9,15 @@ if (args["nodeRef"] != null)
 	if (node != null)
 	{
 	   // if the node was found get JSON representation
-	   json = node.toJSON();
+		
+		if (args["shortQNames"] != null)
+		{
+			json = node.toJSON(true);
+		}
+		else
+		{
+			json = node.toJSON();
+		}
 	}
 }
 

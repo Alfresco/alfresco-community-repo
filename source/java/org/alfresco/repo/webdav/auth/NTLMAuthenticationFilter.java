@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -26,8 +26,6 @@ package org.alfresco.repo.webdav.auth;
 
 import java.io.IOException;
 
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -46,16 +44,15 @@ public class NTLMAuthenticationFilter extends BaseNTLMAuthenticationFilter
 {
     // Debug logging
     private static Log logger = LogFactory.getLog(NTLMAuthenticationFilter.class);
+
     
-    /**
-     * Initialize the filter
-     * 
-     * @param args FilterConfig
-     * @exception ServletException
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.webdav.auth.BaseNTLMAuthenticationFilter#afterPropertiesSet()
      */
-    public void init(FilterConfig args) throws ServletException
+    @Override
+    public void afterPropertiesSet() throws Exception
     {
-        super.init(args);
+        super.afterPropertiesSet();
 
         // Enable ticket based logons
         

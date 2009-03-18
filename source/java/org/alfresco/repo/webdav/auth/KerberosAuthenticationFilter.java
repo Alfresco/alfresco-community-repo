@@ -26,8 +26,6 @@ package org.alfresco.repo.webdav.auth;
 
 import java.io.IOException;
 
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -48,17 +46,16 @@ public class KerberosAuthenticationFilter extends BaseKerberosAuthenticationFilt
     
     private static Log logger = LogFactory.getLog(KerberosAuthenticationFilter.class);
 
-    /**
-     * Initialize the filter
-     * 
-     * @param args FilterConfig
-     * @exception ServletException
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.webdav.auth.BaseKerberosAuthenticationFilter#afterPropertiesSet()
      */
-    public void init(FilterConfig args) throws ServletException
+    @Override
+    public void afterPropertiesSet() throws Exception
     {
-    	// Call the base Kerberos filter initialization
-    	
-    	super.init( args);
+        // Call the base Kerberos filter initialization
+
+        super.afterPropertiesSet();
     	
     	// Enable ticket based logons
     	

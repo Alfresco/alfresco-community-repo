@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.Random;
 
 import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -114,54 +114,47 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
     
     // Disable NTLMv2 support
     private boolean m_disableNTLMv2 = false;
-    
-    /**
-     * Initialize the filter
-     * 
-     * @param args FilterConfig
-     * 
-     * @exception ServletException
-     */
-    public void init(FilterConfig args) throws ServletException
-    {
-    	// Call the base SSO filter initialization
-    	
-    	super.init( args);
 
-    	// Check that the authentication component supports the required mode
+       
+    /**
+     * @param mapUnknownUserToGuest should an unknown user be mapped to guest?
+     */
+    public void setMapUnknownUserToGuest(boolean mapUnknownUserToGuest)
+    {
+        m_mapUnknownUserToGuest = mapUnknownUserToGuest;
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.web.filter.beans.BaseSSOAuthenticationFilter#afterPropertiesSet()
+     */
+    @Override
+    public void afterPropertiesSet() throws Exception
+    {
+        // Call the base SSO filter initialization
+        super.afterPropertiesSet();
+
+        // Check that the authentication component supports the required mode
     	
-        if (m_authComponent.getNTLMMode() != NTLMMode.MD4_PROVIDER &&
-            m_authComponent.getNTLMMode() != NTLMMode.PASS_THROUGH)
+        if (authenticationComponent.getNTLMMode() != NTLMMode.MD4_PROVIDER &&
+            authenticationComponent.getNTLMMode() != NTLMMode.PASS_THROUGH)
         {
             throw new ServletException("Required authentication mode not available");
         }
         
         // Check if guest access is to be allowed
-        
-        String guestAccess = args.getInitParameter("AllowGuest");
-        if (guestAccess != null)
-        {
-            m_allowGuest = Boolean.parseBoolean(guestAccess);
-            
-            if (getLogger().isDebugEnabled() && m_allowGuest)
-                getLogger().debug("NTLM filter guest access allowed");
-        }
+        m_allowGuest = this.authenticationComponent.guestUserAuthenticationAllowed();
+
+        if (getLogger().isDebugEnabled() && m_allowGuest)
+            getLogger().debug("NTLM filter guest access allowed");
         
         // Check if unknown users should be mapped to guest access
-        
-        String mapUnknownToGuest = args.getInitParameter("MapUnknownUserToGuest");
-        if (mapUnknownToGuest != null)
-        {
-            m_mapUnknownUserToGuest = Boolean.parseBoolean(mapUnknownToGuest);
-            
-            if (getLogger().isDebugEnabled() && m_mapUnknownUserToGuest)
-                getLogger().debug("NTLM filter map unknown users to guest");
-        }
+        if (getLogger().isDebugEnabled() && m_mapUnknownUserToGuest)
+            getLogger().debug("NTLM filter map unknown users to guest");
         
         // Set the NTLM flags depending on the authentication component supporting MD4 passwords,
         // or is using passthru auth
         
-        if (m_authComponent.getNTLMMode() == NTLMMode.MD4_PROVIDER && m_disableNTLMv2 == false)
+        if (authenticationComponent.getNTLMMode() == NTLMMode.MD4_PROVIDER && m_disableNTLMv2 == false)
         {
             // Allow the client to use an NTLMv2 logon
         	
@@ -174,18 +167,13 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
             m_ntlmFlags = NTLM_FLAGS_NTLM1;
         }
     }
+
     
-    /**
-     * Run the filter
-     * 
-     * @param sreq ServletRequest
-     * @param sresp ServletResponse
-     * @param chain FilterChain
-     * @exception IOException
-     * @exception ServletException
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.web.filter.beans.DependencyInjectedFilter#doFilter(javax.servlet.ServletContext, javax.servlet.ServletRequest, javax.servlet.ServletResponse, javax.servlet.FilterChain)
      */
-    public void doFilter(ServletRequest sreq, ServletResponse sresp, FilterChain chain) throws IOException,
-            ServletException
+    public void doFilter(ServletContext context, ServletRequest sreq, ServletResponse sresp, FilterChain chain)
+            throws IOException, ServletException
     {
         // Get the HTTP request/response/session
         HttpServletRequest req = (HttpServletRequest) sreq;
@@ -239,7 +227,7 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
                     getLogger().debug("User " + user.getUserName() + " validate ticket");
                 
                 // Validate the user ticket
-                m_authService.validate(user.getTicket());
+                authenticationService.validate(user.getTicket());
                 reqAuth = false;
                 
                 // Filter validate hook
@@ -349,13 +337,6 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
             }
         }
     }
-
-    /**
-     * Delete the servlet filter
-     */
-    public void destroy()
-    {
-    }
     
     /**
      * Process a type 1 NTLM message
@@ -369,8 +350,6 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
     protected void processType1(Type1NTLMMessage type1Msg, HttpServletRequest req,
             HttpServletResponse res, HttpSession session) throws IOException
     {
-        Log logger = getLogger();
-        
         if (getLogger().isDebugEnabled())
             getLogger().debug("Received type1 " + type1Msg);
         
@@ -409,7 +388,7 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
             byte[] challenge = null;
             NTLMPassthruToken authToken = null;
             
-            if (m_authComponent.getNTLMMode() == NTLMMode.MD4_PROVIDER)
+            if (authenticationComponent.getNTLMMode() == NTLMMode.MD4_PROVIDER)
             {
                 // Generate a random 8 byte challenge
             	
@@ -432,7 +411,7 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
                 authToken = new NTLMPassthruToken(domain);
                 
                 // Run the first stage of the passthru authentication to get the challenge
-                m_authComponent.authenticate(authToken);
+                authenticationComponent.authenticate(authToken);
                 
                 // Get the challenge from the token
                 if (authToken.getChallenge() != null)
@@ -529,7 +508,7 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
                     logger.debug("User " + user.getUserName() + " validate ticket");
                 
                 // Validate the user ticket
-                m_authService.validate(user.getTicket());
+                authenticationService.validate(user.getTicket());
                 
                 onValidate(req, session);
             }
@@ -551,10 +530,10 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
         else
         {
             // Check if we are using local MD4 password hashes or passthru authentication
-            if (m_authComponent.getNTLMMode() == NTLMMode.MD4_PROVIDER)
+            if (authenticationComponent.getNTLMMode() == NTLMMode.MD4_PROVIDER)
             {
                 // Check if guest logons are allowed and this is a guest logon
-                if (m_allowGuest && userName.equalsIgnoreCase(m_authComponent.getGuestUserName()))
+                if (m_allowGuest && userName.equalsIgnoreCase(authenticationComponent.getGuestUserName()))
                 {
                     // Indicate that the user has been authenticated
                     authenticated = true;
@@ -577,7 +556,7 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
                         if (m_mapUnknownUserToGuest)
                         {
                             // Reset the user name to be the guest user
-                            userName = m_authComponent.getGuestUserName();
+                            userName = authenticationComponent.getGuestUserName();
                             authenticated = true;
                             
                             if (logger.isDebugEnabled())
@@ -614,17 +593,17 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
                     try
                     {
                         // Run the second stage of the passthru authentication
-                        m_authComponent.authenticate(authToken);
+                        authenticationComponent.authenticate(authToken);
                         authenticated = true;
                         
                         // Check if the user has been logged on as guest
                         if (authToken.isGuestLogon())
                         {
-                            userName = m_authComponent.getGuestUserName();
+                            userName = authenticationComponent.getGuestUserName();
                         }
                         
                         // Set the authentication context
-                        m_authComponent.setCurrentUser(userName);
+                        authenticationComponent.setCurrentUser(userName);
                     }
                     catch (BadCredentialsException ex)
                     {
@@ -656,7 +635,7 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
                     // user already exists - revalidate ticket to authenticate the current user thread
                     try
                     {
-                        m_authService.validate(user.getTicket());
+                        authenticationService.validate(user.getTicket());
                     }
                     catch (AuthenticationException ex)
                     {
@@ -1018,13 +997,13 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
         String md4hash = null;
         
         // Wrap the auth component calls in a transaction
-        UserTransaction tx = m_transactionService.getUserTransaction();
+        UserTransaction tx = transactionService.getUserTransaction();
         try
         {
             tx.begin();
             
             // Get the stored MD4 hashed password for the user, or null if the user does not exist
-            md4hash = m_authComponent.getMD4HashedPassword(userName);
+            md4hash = authenticationComponent.getMD4HashedPassword(userName);
         }
         catch (Throwable ex)
         {

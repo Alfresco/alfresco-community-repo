@@ -258,10 +258,16 @@ public class WebDAVServlet extends HttpServlet
     public void init(ServletConfig config) throws ServletException
     {
         super.init(config);
+
+        // Get service registry        
+        WebApplicationContext context = WebApplicationContextUtils.getWebApplicationContext(getServletContext());
         
-        // Get service registry
-        
-        WebApplicationContext context = WebApplicationContextUtils.getRequiredWebApplicationContext(getServletContext());
+        // If no context has been initialised, exit silently so config changes can be made
+        if (context == null)
+        {
+            return;
+        }
+
         m_serviceRegistry = (ServiceRegistry)context.getBean(ServiceRegistry.SERVICE_REGISTRY);
         
         m_transactionService = m_serviceRegistry.getTransactionService();

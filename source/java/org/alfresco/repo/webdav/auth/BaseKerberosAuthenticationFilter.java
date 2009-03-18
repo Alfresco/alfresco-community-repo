@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006-2008 Alfresco Software Limited.
+ * Copyright (C) 2006-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -41,7 +41,7 @@ import javax.security.auth.login.LoginContext;
 import javax.security.auth.login.LoginException;
 import javax.security.sasl.RealmCallback;
 import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -84,10 +84,9 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
     private String m_accountName;
     private String m_password;
     
-    // Kerberos realm and KDC address
+    // Kerberos realm
     
     private String m_krbRealm;
-    private String m_krbKDC;
     
     // Login configuration entry name
     
@@ -96,180 +95,163 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
     // Server login context
     
     private LoginContext m_loginContext;
-    
-    // SPNEGO NegTokenInit blob, sent to the client in the SMB negotiate response
-    
-    private byte[] m_negTokenInit;
-    
+        
     /**
-     * Initialize the filter
+     * Sets the HTTP service account password. (the Principal should be configured in java.login.config)
      * 
-     * @param args FilterConfig
-     * @exception ServletException
+     * @param password
+     *            the password to set
      */
-    public void init(FilterConfig args) throws ServletException
+    public void setPassword(String password)
     {
-    	// Call the base SSO filter initialization
+        this.m_password = password;
+    }
 
-    	super.init( args);
+    /**
+     * Sets the HTTP service account realm.
+     * 
+     * @param realm the realm to set
+     */
+    public void setRealm(String realm)
+    {
+        m_krbRealm = realm;
+    }
 
-        // Check if Kerberos is enabled, get the Kerberos KDC address
+    /**
+     * Sets the HTTP service login configuration entry name. The default is <code>"AlfrescoHTTP"</code>.
+     * 
+     * @param loginEntryName
+     *            the loginEntryName to set
+     */
+    public void setJaasConfigEntryName(String jaasConfigEntryName)
+    {
+        m_loginEntryName = jaasConfigEntryName;
+    }
 
-        String kdcAddress = args.getInitParameter("KDC");
-        
-        if (kdcAddress != null && kdcAddress.length() > 0)
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.web.filter.beans.BaseSSOAuthenticationFilter#afterPropertiesSet()
+     */
+    @Override
+    public void afterPropertiesSet() throws Exception
+    {
+        super.afterPropertiesSet();
+
+        if ( m_krbRealm == null)
         {
-            // Set the Kerberos KDC address
-            
-            m_krbKDC = kdcAddress;
+            throw new ServletException("Kerberos realm not specified");
+        }
         
-            // Get the Kerberos realm
+        if ( m_password == null)
+        {
+            throw new ServletException("HTTP service account password not specified");
+        }
+        
+        if (m_loginEntryName == null)
+        {
+            throw new ServletException("Invalid login entry specified");
+        }
+        
+        // Get the local host name        
+        String localName = null;
+        
+        try
+        {
+        	localName = InetAddress.getLocalHost().getCanonicalHostName();
+        }
+        catch ( UnknownHostException ex)
+        {
+        	throw new ServletException( "Failed to get local host name");
+        }
+        
+        // Create a login context for the HTTP server service
+        
+        try
+        {
+            // Login the HTTP server service
             
-            String krbRealm = args.getInitParameter("Realm");
-            if ( krbRealm != null && krbRealm.length() > 0)
-            {
-                // Set the Kerberos realm
-                
-                m_krbRealm = krbRealm;
-            }
-            else
-                throw new ServletException("Kerberos realm not specified");
-            
-            // Get the HTTP service account password
-            
-            String srvPassword = args.getInitParameter("Password");
-            if ( srvPassword != null && srvPassword.length() > 0)
-            {
-                // Set the HTTP service account password
-                
-                m_password = srvPassword;
-            }
-            else
-                throw new ServletException("HTTP service account password not specified");
-            
-            // Get the login configuration entry name
-            
-            String loginEntry = args.getInitParameter("LoginEntry");
-            
-            if ( loginEntry != null)
-            {
-                if ( loginEntry.length() > 0)
-                {
-                    // Set the login configuration entry name to use
-                    
-                    m_loginEntryName = loginEntry;
-                }
-                else
-                    throw new ServletException("Invalid login entry specified");
-            }
-            
-            // Get the local host name
-            
-            String localName = null;
-            
-            try
-            {
-            	localName = InetAddress.getLocalHost().getCanonicalHostName();
-            }
-            catch ( UnknownHostException ex)
-            {
-            	throw new ServletException( "Failed to get local host name");
-            }
-            
-            // Create a login context for the HTTP server service
-            
-            try
-            {
-                // Login the HTTP server service
-                
-                m_loginContext = new LoginContext( m_loginEntryName, this);
-                m_loginContext.login();
-                
-                // DEBUG
-                
-                if ( getLogger().isDebugEnabled())
-                	getLogger().debug( "HTTP Kerberos login successful");
-            }
-            catch ( LoginException ex)
-            {
-                // Debug
-                
-                if ( getLogger().isErrorEnabled())
-                    getLogger().error("HTTP Kerberos web filter error", ex);
-                
-                throw new ServletException("Failed to login HTTP server service");
-            }
-            
-            // Get the HTTP service account name from the subject
-            
-            Subject subj = m_loginContext.getSubject();
-            Principal princ = subj.getPrincipals().iterator().next();
-            
-            m_accountName = princ.getName();
+            m_loginContext = new LoginContext( m_loginEntryName, this);
+            m_loginContext.login();
             
             // DEBUG
             
             if ( getLogger().isDebugEnabled())
-            	getLogger().debug("Logged on using principal " + m_accountName);
+            	getLogger().debug( "HTTP Kerberos login successful");
+        }
+        catch ( LoginException ex)
+        {
+            // Debug
             
-            // Create the Oid list for the SPNEGO NegTokenInit, include NTLMSSP for fallback
+            if ( getLogger().isErrorEnabled())
+                getLogger().error("HTTP Kerberos web filter error", ex);
             
-            Vector<Oid> mechTypes = new Vector<Oid>();
-
-            mechTypes.add(OID.KERBEROS5);
-            mechTypes.add(OID.MSKERBEROS5);
+            throw new ServletException("Failed to login HTTP server service");
+        }
         
-            // Build the SPNEGO NegTokenInit blob
+        // Get the HTTP service account name from the subject
+        
+        Subject subj = m_loginContext.getSubject();
+        Principal princ = subj.getPrincipals().iterator().next();
+        
+        m_accountName = princ.getName();
+        
+        // DEBUG
+        
+        if ( getLogger().isDebugEnabled())
+        	getLogger().debug("Logged on using principal " + m_accountName);
+        
+        // Create the Oid list for the SPNEGO NegTokenInit, include NTLMSSP for fallback
+        
+        Vector<Oid> mechTypes = new Vector<Oid>();
+
+        mechTypes.add(OID.KERBEROS5);
+        mechTypes.add(OID.MSKERBEROS5);
     
-            try
-            {
-                // Build the mechListMIC principle
-                //
-                // Note: This field is not as specified
-                
-                String mecListMIC = null;
-                
-                StringBuilder mic = new StringBuilder();
-                mic.append( localName);
-                mic.append("$@");
-                mic.append( m_krbRealm);
-                
-                mecListMIC = mic.toString();
-                
-                // Build the SPNEGO NegTokenInit that contains the authentication types that the HTTP server accepts
-                
-                NegTokenInit negTokenInit = new NegTokenInit(mechTypes, mecListMIC);
-                
-                // Encode the NegTokenInit blob
-                
-                m_negTokenInit = negTokenInit.encode();
-            }
-            catch (IOException ex)
-            {
-                // Debug
-                
-                if ( getLogger().isErrorEnabled())
-                    getLogger().error("Error creating SPNEGO NegTokenInit blob", ex);
-                
-                throw new ServletException("Failed to create SPNEGO NegTokenInit blob");
-            }
-        }        
+        // Build the SPNEGO NegTokenInit blob
+
+        try
+        {
+            // Build the mechListMIC principle
+            //
+            // Note: This field is not as specified
+            
+            String mecListMIC = null;
+            
+            StringBuilder mic = new StringBuilder();
+            mic.append( localName);
+            mic.append("$@");
+            mic.append( m_krbRealm);
+            
+            mecListMIC = mic.toString();
+            
+            // Build the SPNEGO NegTokenInit that contains the authentication types that the HTTP server accepts
+            
+            NegTokenInit negTokenInit = new NegTokenInit(mechTypes, mecListMIC);
+            
+            // Encode the NegTokenInit blob
+            negTokenInit.encode();
+        }
+        catch (IOException ex)
+        {
+            // Debug
+            
+            if ( getLogger().isErrorEnabled())
+                getLogger().error("Error creating SPNEGO NegTokenInit blob", ex);
+            
+            throw new ServletException("Failed to create SPNEGO NegTokenInit blob");
+        }
     }
 
-    /**
-     * Run the filter
-     * 
-     * @param sreq ServletRequest
-     * @param sresp ServletResponse
-     * @param chain FilterChain
-     * @exception IOException
-     * @exception ServletException
+    
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.repo.web.filter.beans.DependencyInjectedFilter#doFilter(javax.servlet.ServletContext,
+     * javax.servlet.ServletRequest, javax.servlet.ServletResponse, javax.servlet.FilterChain)
      */
-    public void doFilter(ServletRequest sreq, ServletResponse sresp, FilterChain chain) throws IOException,
-            ServletException
+    public void doFilter(ServletContext context, ServletRequest sreq, ServletResponse sresp, FilterChain chain)
+            throws IOException, ServletException
     {
-        // Get the HTTP request/response/session
-        
+        // Get the HTTP request/response/session        
         HttpServletRequest req = (HttpServletRequest) sreq;
         HttpServletResponse resp = (HttpServletResponse) sresp;
         
@@ -327,7 +309,7 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
                 
                 // Validate the user ticket
                 
-                m_authService.validate( user.getTicket());
+                authenticationService.validate( user.getTicket());
                 reqAuth = false;
                 
                 // Filter validate hook

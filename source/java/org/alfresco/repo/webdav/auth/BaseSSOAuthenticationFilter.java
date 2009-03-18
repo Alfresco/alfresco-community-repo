@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -28,9 +28,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-import javax.servlet.Filter;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -48,15 +45,14 @@ import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
-import org.alfresco.service.ServiceRegistry;
+import org.alfresco.repo.web.filter.beans.DependencyInjectedFilter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
-import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.context.support.WebApplicationContextUtils;
+import org.springframework.beans.factory.InitializingBean;
 
 /**
  * Base class with common code and initialisation for single signon authentication filters.
@@ -64,7 +60,7 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
  * @author gkspencer
  * @author kroast
  */
-public abstract class BaseSSOAuthenticationFilter implements Filter
+public abstract class BaseSSOAuthenticationFilter implements DependencyInjectedFilter, InitializingBean
 {
 	// Constants
 	//
@@ -85,29 +81,25 @@ public abstract class BaseSSOAuthenticationFilter implements Filter
     
     protected static final String WEBDAV_AUTH_USER    = "_alfDAVAuthTicket";
     
-    // Allow an authenitcation ticket to be passed as part of a request to bypass authentication
+    // Allow an authentication ticket to be passed as part of a request to bypass authentication
 
     private static final String ARG_TICKET = "ticket";
-    
-    // Servlet context, required to get authentication service
-
-	protected ServletContext m_context;
-    
+        
     // File server configuration
 
-	private ServerConfigurationBean m_srvConfig;
+	private ServerConfigurationBean serverConfigurationBean;
     
     // Security configuration section, for domain mappings
 
-	private SecurityConfigSection m_secConfig;
+	private SecurityConfigSection securityConfigSection;
     
     // Various services required by NTLM authenticator
 
-	protected AuthenticationService m_authService;
-    protected AuthenticationComponent m_authComponent;
-    protected PersonService m_personService;
-    protected NodeService m_nodeService;
-    protected TransactionService m_transactionService;
+	protected AuthenticationService authenticationService;
+    protected AuthenticationComponent authenticationComponent;
+    protected PersonService personService;
+    protected NodeService nodeService;
+    protected TransactionService transactionService;
     
     // Local server name, from either the file servers config or DNS host name
 
@@ -124,39 +116,66 @@ public abstract class BaseSSOAuthenticationFilter implements Filter
     // User object attribute name
     
     private String m_userAttributeName = AUTHENTICATION_USER;
+            
+    /**
+     * @param serverConfigurationBean the serverConfigurationBean to set
+     */
+    public void setServerConfigurationBean(ServerConfigurationBean serverConfigurationBean)
+    {
+        this.serverConfigurationBean = serverConfigurationBean;
+    }
     
     /**
-     * Initialize the filter
-     * 
-     * @param args FilterConfig
-     * 
-     * @exception ServletException
+     * @param authenticationService the authenticationService to set
      */
-    public void init(FilterConfig args) throws ServletException
+    public void setAuthenticationService(AuthenticationService authenticationService)
     {
-        // Save the servlet context, needed to get hold of the authentication service
+        this.authenticationService = authenticationService;
+    }
 
-    	m_context = args.getServletContext();
-        
-        // Setup the authentication context
+    /**
+     * @param authenticationComponent the authenticationComponent to set
+     */
+    public void setAuthenticationComponent(AuthenticationComponent authenticationComponent)
+    {
+        this.authenticationComponent = authenticationComponent;
+    }
 
-    	WebApplicationContext ctx = WebApplicationContextUtils.getRequiredWebApplicationContext(m_context);
-        
-        ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
-        m_nodeService = serviceRegistry.getNodeService();
-        m_transactionService = serviceRegistry.getTransactionService();
-        m_authService = serviceRegistry.getAuthenticationService();
-        
-        m_authComponent = (AuthenticationComponent) ctx.getBean("AuthenticationComponent");
-        m_personService = (PersonService) ctx.getBean("personService");
-        
-        m_srvConfig = (ServerConfigurationBean) ctx.getBean(ServerConfigurationBean.SERVER_CONFIGURATION);
-        
+    /**
+     * @param personService the personService to set
+     */
+    public void setPersonService(PersonService personService)
+    {
+        this.personService = personService;
+    }
+
+    /**
+     * @param nodeService the nodeService to set
+     */
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
+    }
+
+    /**
+     * @param transactionService the transactionService to set
+     */
+    public void setTransactionService(TransactionService transactionService)
+    {
+        this.transactionService = transactionService;
+    }
+    
+    
+
+    /* (non-Javadoc)
+     * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
+     */
+    public void afterPropertiesSet() throws Exception
+    {
         // Get the local server name, try the file server config first
-
-        if (m_srvConfig != null)
+        if (serverConfigurationBean != null)
         {
-            m_srvName = m_srvConfig.getServerName();
+            m_srvName = serverConfigurationBean.getServerName();
             
             if (m_srvName != null)
             {
@@ -167,13 +186,13 @@ public abstract class BaseSSOAuthenticationFilter implements Filter
                     {
                         // Failed to resolve the configured name
 
-                    	m_srvName = m_srvConfig.getLocalServerName(true);
+                    	m_srvName = serverConfigurationBean.getLocalServerName(true);
                     }
                 }
                 catch (UnknownHostException ex)
                 {
-                    if (getLogger().isErrorEnabled())
-                        getLogger().error("NTLM filter, error resolving CIFS host name", ex);
+                    if (getLogger().isWarnEnabled())
+                        getLogger().warn("NTLM filter, error resolving CIFS host name" + m_srvName);
                 }
             }
             
@@ -181,12 +200,17 @@ public abstract class BaseSSOAuthenticationFilter implements Filter
             
             if ( m_srvName == null)
             {
-                m_srvName = m_srvConfig.getLocalServerName(true);
+                m_srvName = serverConfigurationBean.getLocalServerName(true);
+                
+                // DEBUG
+                
+                if ( getLogger().isInfoEnabled())
+                	getLogger().info("NTLM filter using server name " + m_srvName);
             }
             
             // Find the security configuration section
 
-            m_secConfig = (SecurityConfigSection)m_srvConfig.getConfigSection(SecurityConfigSection.SectionName);
+            securityConfigSection = (SecurityConfigSection)serverConfigurationBean.getConfigSection(SecurityConfigSection.SectionName);
         }
         else
         {
@@ -221,13 +245,6 @@ public abstract class BaseSSOAuthenticationFilter implements Filter
         }
     }
     
-    /**
-     * Delete the servlet filter
-     */
-    public void destroy()
-    {
-    }
-
     /**
      * Create the user object that will be stored in the session
      * 
@@ -291,7 +308,7 @@ public abstract class BaseSSOAuthenticationFilter implements Filter
     {
         SessionUser user = null;
         
-        UserTransaction tx = m_transactionService.getUserTransaction();
+        UserTransaction tx = transactionService.getUserTransaction();
         
         try
         {
@@ -299,22 +316,22 @@ public abstract class BaseSSOAuthenticationFilter implements Filter
             
             // Setup User object and Home space ID etc.
             
-            final NodeRef personNodeRef = m_personService.getPerson(userName);
+            final NodeRef personNodeRef = personService.getPerson(userName);
             
             // Use the system user context to do the user lookup
             RunAsWork<String> getUserNameRunAsWork = new RunAsWork<String>()
             {
                 public String doWork() throws Exception
                 {
-                    return (String) m_nodeService.getProperty(personNodeRef, ContentModel.PROP_USERNAME);
+                    return (String) nodeService.getProperty(personNodeRef, ContentModel.PROP_USERNAME);
                 }
             };
             userName = AuthenticationUtil.runAs(getUserNameRunAsWork, AuthenticationUtil.SYSTEM_USER_NAME);
             
-            m_authComponent.setCurrentUser(userName);
-            String currentTicket = m_authService.getCurrentTicket();
+            authenticationComponent.setCurrentUser(userName);
+            String currentTicket = authenticationService.getCurrentTicket();
             
-            NodeRef homeSpaceRef = (NodeRef) m_nodeService.getProperty(personNodeRef, ContentModel.PROP_HOMEFOLDER);
+            NodeRef homeSpaceRef = (NodeRef) nodeService.getProperty(personNodeRef, ContentModel.PROP_HOMEFOLDER);
             
             // Create the user object to be stored in the session
             
@@ -403,17 +420,17 @@ public abstract class BaseSSOAuthenticationFilter implements Filter
     {
         // Check if there are any domain mappings
     	
-        if (m_secConfig != null && m_secConfig.hasDomainMappings() == false)
+        if (securityConfigSection != null && securityConfigSection.hasDomainMappings() == false)
         {
             return null;
         }
         
-        if (m_secConfig != null)
+        if (securityConfigSection != null)
         {
             // Convert the client IP address to an integer value
         	
             int clientAddr = IPAddress.parseNumericAddress(clientIP);
-            for (DomainMapping domainMap : m_secConfig.getDomainMappings())
+            for (DomainMapping domainMap : securityConfigSection.getDomainMappings())
             {
                 if (domainMap.isMemberOfDomain(clientAddr))
                 {
@@ -458,7 +475,7 @@ public abstract class BaseSSOAuthenticationFilter implements Filter
     		{
     		    // Validate the ticket
     			
-    		    m_authService.validate(ticket);
+    		    authenticationService.validate(ticket);
 
     		    SessionUser user = getSessionUser( sess);
     		    
@@ -466,15 +483,15 @@ public abstract class BaseSSOAuthenticationFilter implements Filter
                 {
         		    // Start a transaction
                 	
-        		    tx = m_transactionService.getUserTransaction();
+        		    tx = transactionService.getUserTransaction();
         		    tx.begin();
         		    
                     // Need to create the User instance if not already available
         		    
-                    String currentUsername = m_authService.getCurrentUserName();
+                    String currentUsername = authenticationService.getCurrentUserName();
                     
-        		    NodeRef personRef = m_personService.getPerson(currentUsername);
-        		    user = createUserObject( currentUsername, m_authService.getCurrentTicket(), personRef, null);
+        		    NodeRef personRef = personService.getPerson(currentUsername);
+        		    user = createUserObject( currentUsername, authenticationService.getCurrentTicket(), personRef, null);
         		    
         		    tx.commit();
         		    tx = null; 

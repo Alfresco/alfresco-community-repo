@@ -27,9 +27,7 @@ package org.alfresco.repo.webdav.auth;
 
 import java.io.IOException;
 
-import javax.servlet.Filter;
 import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
@@ -40,7 +38,7 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationException;
-import org.alfresco.service.ServiceRegistry;
+import org.alfresco.repo.web.filter.beans.DependencyInjectedFilter;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -51,15 +49,13 @@ import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.context.support.WebApplicationContextUtils;
 
 /**
  * WebDAV Authentication Filter Class
  * 
  * @author GKSpencer
  */
-public class AuthenticationFilter implements Filter
+public class AuthenticationFilter implements DependencyInjectedFilter
 {
     // Debug logging
     
@@ -75,51 +71,58 @@ public class AuthenticationFilter implements Filter
     private static final String PPT_EXTN = ".ppt";
     private static final String VTI_IGNORE = "&vtiIgnore";
     
-    // Servlet context
-
-    private ServletContext m_context;
-
     // Various services required by NTLM authenticator
     
-    private AuthenticationService m_authService;
-    private PersonService m_personService;
-    private NodeService m_nodeService;
-    private TransactionService m_transactionService;
+    private AuthenticationService authService;
+    private PersonService personService;
+    private NodeService nodeService;
+    private TransactionService transactionService;
+    
     
     /**
-     * Initialize the filter
-     * 
-     * @param config FitlerConfig
-     * @exception ServletException
+     * @param authService the authService to set
      */
-    public void init(FilterConfig config) throws ServletException
+    public void setAuthenticationService(AuthenticationService authService)
     {
-        // Save the context
+        this.authService = authService;
+    }
 
-        m_context = config.getServletContext();
+    /**
+     * @param personService the personService to set
+     */
+    public void setPersonService(PersonService personService)
+    {
+        this.personService = personService;
+    }
 
-        // Setup the authentication context
+    /**
+     * @param nodeService the nodeService to set
+     */
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
+    }
 
-        WebApplicationContext ctx = WebApplicationContextUtils.getRequiredWebApplicationContext(m_context);
-        
-        ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
-        m_nodeService = serviceRegistry.getNodeService();
-        m_authService = serviceRegistry.getAuthenticationService();
-        m_transactionService = serviceRegistry.getTransactionService();
-        m_personService = (PersonService) ctx.getBean("PersonService");   // transactional and permission-checked
+    /**
+     * @param transactionService the transactionService to set
+     */
+    public void setTransactionService(TransactionService transactionService)
+    {
+        this.transactionService = transactionService;
     }
 
     /**
      * Run the authentication filter
      * 
+     * @param context ServletContext
      * @param req ServletRequest
      * @param resp ServletResponse
      * @param chain FilterChain
      * @exception ServletException
      * @exception IOException
      */
-    public void doFilter(ServletRequest req, ServletResponse resp, FilterChain chain) throws IOException,
-            ServletException
+    public void doFilter(ServletContext context, ServletRequest req, ServletResponse resp, FilterChain chain)
+            throws IOException, ServletException
     {
         // Assume it's an HTTP request
 
@@ -163,19 +166,19 @@ public class AuthenticationFilter implements Filter
                 {
                     // Authenticate the user
 
-                	m_authService.authenticate(username, password.toCharArray());
+                	authService.authenticate(username, password.toCharArray());
                     
                     // Set the user name as stored by the back end
-                    username = m_authService.getCurrentUserName();
+                    username = authService.getCurrentUserName();
                     
                     // Get the user node and home folder
                 	
-                    NodeRef personNodeRef = m_personService.getPerson(username);
-                    NodeRef homeSpaceRef = (NodeRef) m_nodeService.getProperty(personNodeRef, ContentModel.PROP_HOMEFOLDER);
+                    NodeRef personNodeRef = personService.getPerson(username);
+                    NodeRef homeSpaceRef = (NodeRef) nodeService.getProperty(personNodeRef, ContentModel.PROP_HOMEFOLDER);
                     
                     // Setup User object and Home space ID etc.
                     
-                    user = new WebDAVUser(username, m_authService.getCurrentTicket(), homeSpaceRef);
+                    user = new WebDAVUser(username, authService.getCurrentTicket(), homeSpaceRef);
                     
                     httpReq.getSession().setAttribute(AUTHENTICATION_USER, user);
                 }
@@ -213,24 +216,24 @@ public class AuthenticationFilter implements Filter
             	    {
             	    	// Validate the ticket
             	    	  
-            	    	m_authService.validate(ticket);
+            	    	authService.validate(ticket);
 
             	    	// Need to create the User instance if not already available
             	    	  
-            	        String currentUsername = m_authService.getCurrentUserName();
+            	        String currentUsername = authService.getCurrentUserName();
 
             	        // Start a transaction
             	          
-          	            tx = m_transactionService.getUserTransaction();
+          	            tx = transactionService.getUserTransaction();
             	        tx.begin();
             	            
-            	        NodeRef personRef = m_personService.getPerson(currentUsername);
-            	        user = new WebDAVUser( currentUsername, m_authService.getCurrentTicket(), personRef);
-            	        NodeRef homeRef = (NodeRef) m_nodeService.getProperty(personRef, ContentModel.PROP_HOMEFOLDER);
+            	        NodeRef personRef = personService.getPerson(currentUsername);
+            	        user = new WebDAVUser( currentUsername, authService.getCurrentTicket(), personRef);
+            	        NodeRef homeRef = (NodeRef) nodeService.getProperty(personRef, ContentModel.PROP_HOMEFOLDER);
             	            
             	        // Check that the home space node exists - else Login cannot proceed
             	            
-            	        if (m_nodeService.exists(homeRef) == false)
+            	        if (nodeService.exists(homeRef) == false)
             	        {
             	        	throw new InvalidNodeRefException(homeRef);
             	        }
@@ -289,7 +292,7 @@ public class AuthenticationFilter implements Filter
             try
             {
                // Setup the authentication context
-               m_authService.validate(user.getTicket());
+               authService.validate(user.getTicket());
 
                // Set the current locale
 

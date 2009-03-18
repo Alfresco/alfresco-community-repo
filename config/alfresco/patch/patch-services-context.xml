@@ -1732,8 +1732,8 @@
         <property name="id"><value>patch.webSiteAddModerated</value></property>
         <property name="description"><value>patch.webSiteAddModerated.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>2005</value></property>
-        <property name="targetSchema"><value>2006</value></property>
+        <property name="fixesToSchema"><value>2006</value></property>
+        <property name="targetSchema"><value>2007</value></property>
         <property name="permissionService">
         	<ref bean="permissionService"/>
         </property>
@@ -1749,8 +1749,8 @@
         <property name="id"><value>patch.invitationMigration</value></property>
         <property name="description"><value>patch.invitationMigration.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>2005</value></property>
-        <property name="targetSchema"><value>2006</value></property>
+        <property name="fixesToSchema"><value>2006</value></property>
+        <property name="targetSchema"><value>2007</value></property>
         <property name="workflowService">
             <ref bean="WorkflowService"/>
         </property>

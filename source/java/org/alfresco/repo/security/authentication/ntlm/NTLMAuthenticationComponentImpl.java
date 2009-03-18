@@ -279,7 +279,7 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
      */
     @Managed(category="Security")
     public void setDomain(String domain) {
-        if (!domain.isEmpty())
+        if (domain.length() > 0)
         {        
             // Check if the passthru server list is already configured
             
@@ -306,7 +306,7 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
      */
     @Managed(category="Security")
     public void setServers(String servers) {        
-        if (!servers.isEmpty())
+        if (servers.length() > 0)
         {
             // Check if the passthru server list is already configured
 

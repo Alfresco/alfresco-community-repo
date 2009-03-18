@@ -27,6 +27,7 @@ package org.alfresco.repo.management;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.Array;
+import java.util.Comparator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -75,8 +76,16 @@ public class JmxDumpUtil
         // Get all the object names
         Set<ObjectName> objectNames = connection.queryNames(null, null);
 
-        // Sort the names
-        objectNames = new TreeSet<ObjectName>(objectNames);
+        // Sort the names (don't assume ObjectName implements Comparable in JDK 1.5)
+        Set<ObjectName> newObjectNames = new TreeSet<ObjectName>(new Comparator<ObjectName>()
+        {
+            public int compare(ObjectName o1, ObjectName o2)
+            {
+                return o1.toString().compareTo(o2.toString());
+            }
+        });
+        newObjectNames.addAll(objectNames);
+        objectNames = newObjectNames;
 
         // Dump each MBean
         for (ObjectName objectName : objectNames)
@@ -148,10 +157,11 @@ public class JmxDumpUtil
      * @throws IOException
      *             Signals that an I/O exception has occurred.
      */
+    @SuppressWarnings("unchecked")
     private static void printCompositeInfo(CompositeData composite, PrintWriter out, int nestLevel) throws IOException
     {
         Map<String, Object> attributes = new TreeMap<String, Object>();
-        for (String key : composite.getCompositeType().keySet())
+        for (String key : (Set<String>)composite.getCompositeType().keySet())
         {
             Object value;
             try

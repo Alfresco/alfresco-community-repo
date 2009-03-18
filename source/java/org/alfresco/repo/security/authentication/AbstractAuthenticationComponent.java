@@ -530,7 +530,7 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
     public void setDefaultAdministratorUserNames(String defaultAdministratorUserNames)
     {
         Set<String> nameSet = new TreeSet<String>();
-        if (!defaultAdministratorUserNames.isEmpty())
+        if (defaultAdministratorUserNames.length() > 0)
         {
             nameSet.addAll(Arrays.asList(defaultAdministratorUserNames.split(",")));
         }

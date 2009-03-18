@@ -31,6 +31,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -2367,12 +2369,12 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
     /**
      * Returns the JSON representation of this node.
      * 
-     * NOTE: This is a temporary method to support the /api/metadata web script
-     * 
+     * @param useShortQNames if true short-form qnames will be returned, else long-form.
      * @return The JSON representation of this node
      */
-    public String toJSON()
+    public String toJSON(boolean useShortQNames)
     {
+        // This method is used by the /api/metadata web script
        String jsonStr = "{}";
        
        if (this.nodeService.exists(nodeRef))
@@ -2385,14 +2387,47 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
                {
                    // add type info
                    json.put("nodeRef", this.getNodeRef().toString());
-                   json.put("type", this.getType());
+                   
+                   String typeString = useShortQNames ? getShortQName(this.getQNameType())
+                           : this.getType();
+                   json.put("type", typeString);
                    json.put("mimetype", this.getMimetype());
                    
                    // add properties
-                   json.put("properties", this.nodeService.getProperties(this.nodeRef));
+                   Map<QName, Serializable> nodeProperties = this.nodeService.getProperties(this.nodeRef);
+                   if (useShortQNames)
+                   {
+                       Map<String, Serializable> nodePropertiesShortQNames
+                               = new LinkedHashMap<String, Serializable>(nodeProperties.size());
+                       for (QName nextLongQName : nodeProperties.keySet())
+                       {
+                           String nextShortQName = getShortQName(nextLongQName);
+                           nodePropertiesShortQNames.put(nextShortQName, nodeProperties.get(nextLongQName));
+                       }
+                       json.put("properties", nodePropertiesShortQNames);
+                   }
+                   else
+                   {
+                       json.put("properties", nodeProperties);
+                   }
                    
                    // add aspects as an array
-                   json.put("aspects", this.nodeService.getAspects(this.nodeRef));
+                   Set<QName> nodeAspects = this.nodeService.getAspects(this.nodeRef);
+                   if (useShortQNames)
+                   {
+                       Set<String> nodeAspectsShortQNames
+                               = new LinkedHashSet<String>(nodeAspects.size());
+                       for (QName nextLongQName : nodeAspects)
+                       {
+                           String nextShortQName = getShortQName(nextLongQName);
+                           nodeAspectsShortQNames.add(nextShortQName);
+                       }
+                       json.put("aspects", nodeAspectsShortQNames);
+                   }
+                   else
+                   {
+                       json.put("aspects", nodeAspects);
+                   }
                }
                catch (JSONException error)
                {
@@ -2404,6 +2439,29 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
        }
        
        return jsonStr;
+    }
+    
+    /**
+     * Returns the JSON representation of this node. Long-form QNames are used in the
+     * result.
+     * 
+     * @return The JSON representation of this node
+     */
+    public String toJSON()
+    {
+        return this.toJSON(false);
+    }
+    
+    /**
+     * Given a long-form QName, this method uses the namespace service to create a
+     * short-form QName string.
+     * 
+     * @param longQName
+     * @return the short form of the QName string, e.g. "cm:content"
+     */
+    private String getShortQName(QName longQName)
+    {
+        return longQName.toPrefixString(services.getNamespaceService());
     }
     
     /**

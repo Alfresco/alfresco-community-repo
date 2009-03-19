@@ -382,7 +382,29 @@ public abstract class AbstractItemSelector extends UIInput
                      {
                         Pair<Integer, String> avmNode = AVMNodeConverter.ToAVMVersionPath(value);
                         String avmPath = avmNode.getSecond();
-                        label = avmPath.substring(avmPath.indexOf(AVMUtil.DIR_ROOT)+4);
+                        
+                        int rootPosition = avmPath.indexOf(AVMUtil.DIR_ROOT);
+                        if(rootPosition > 0)
+                        {
+                        	label = avmPath.substring(rootPosition + AVMUtil.DIR_ROOT.length());
+                        	if(label.length() == 0)
+                        	{
+                        		int storeEnd = avmPath.indexOf(":");
+                        		if(storeEnd > 0)
+                        		{
+                        			label = avmPath.substring(0, storeEnd);
+                        		}
+                        		else
+                        		{
+                        			label = "ROOT";
+                        		}
+                        	}
+                        }
+                        else
+                        {
+                        	// AVM path does not have ROOT
+                        	label = avmPath;
+                        }
                      }
                      else
                      {

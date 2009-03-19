@@ -49,12 +49,7 @@ function main()
       {
          // Replace the first 2 underscores with colons.
          var alteredName = formdata.fields[i].name.replaceFirst("_", ":").replaceFirst("_", ":");
-         var dataValue = formdata.fields[i].value;
-         if (dataValue.length() === 0)
-         {
-            dataValue = null;
-         }
-         repoFormData.addData(alteredName, dataValue);
+         repoFormData.addData(alteredName, formdata.fields[i].value);
       }
       
       formService.saveForm(nodeRef, repoFormData);

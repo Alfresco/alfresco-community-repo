@@ -37,7 +37,7 @@ public abstract class FieldDefinition
     protected String binding;
     protected String defaultValue;
     protected FieldGroup group;
-    protected boolean protectedField;
+    protected boolean protectedField = false;
 
     /**
      * Default constructor

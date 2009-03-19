@@ -34,11 +34,15 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.forms.AssociationFieldDefinition.Direction;
 import org.alfresco.repo.forms.FormData.FieldData;
-import org.alfresco.repo.jscript.ClasspathScriptLocation;
 import org.alfresco.repo.forms.PropertyFieldDefinition.FieldConstraint;
+import org.alfresco.repo.jscript.ClasspathScriptLocation;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.ScriptLocation;
 import org.alfresco.service.cmr.repository.ScriptService;
@@ -61,9 +65,11 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
     private NamespaceService namespaceService;
     private ScriptService scriptService;
     private PersonService personService;
+    private ContentService contentService;
 
     private NodeRef document;
     private NodeRef associatedDoc;
+    private String documentName;
     
     private static String VALUE_TITLE = "This is the title for the test document";
     private static String VALUE_DESCRIPTION = "This is the description for the test document";
@@ -72,11 +78,17 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
     private static String VALUE_ADDRESSEES1 = "harry@example.com";
     private static String VALUE_ADDRESSEES2 = "jane@example.com";
     private static String VALUE_SUBJECT = "The subject is...";
+    private static String VALUE_MIMETYPE = MimetypeMap.MIMETYPE_TEXT_PLAIN;
+    private static String VALUE_ENCODING = "UTF-8";
+    private static String VALUE_CONTENT = "This is the content for the test document";
     private static Date VALUE_SENT_DATE = new Date();
     
     private static String LABEL_NAME = "Name";
     private static String LABEL_TITLE = "Title";
     private static String LABEL_DESCRIPTION = "Description";
+    private static String LABEL_MIMETYPE = "Mimetype";
+    private static String LABEL_ENCODING = "Encoding";
+    private static String LABEL_SIZE = "Size";
     private static String LABEL_ORIGINATOR = "Originator";
     private static String LABEL_ADDRESSEE = "Addressee";
     private static String LABEL_ADDRESSEES = "Addressees";
@@ -100,6 +112,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         this.namespaceService = (NamespaceService)this.applicationContext.getBean("NamespaceService");
         this.scriptService = (ScriptService)this.applicationContext.getBean("ScriptService");
         this.personService = (PersonService)this.applicationContext.getBean("PersonService");
+        this.contentService = (ContentService)this.applicationContext.getBean("ContentService");
         
         AuthenticationComponent authenticationComponent = (AuthenticationComponent) this.applicationContext
                 .getBean("authenticationComponent");
@@ -124,7 +137,8 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         
         // Create a node
         Map<QName, Serializable> docProps = new HashMap<QName, Serializable>(1);
-        docProps.put(ContentModel.PROP_NAME, "testDocument" + guid + ".txt");
+        this.documentName = "testDocument" + guid + ".txt";
+        docProps.put(ContentModel.PROP_NAME, this.documentName);
         this.document = this.nodeService.createNode(
                 folder, 
                 ContentModel.ASSOC_CONTAINS, 
@@ -140,6 +154,12 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
                     QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "associatedDocument" + guid + ".txt"), 
                     ContentModel.TYPE_CONTENT,
                     docProps).getChildRef();
+        
+        // add some content to the node
+        ContentWriter writer = this.contentService.getWriter(this.document, ContentModel.PROP_CONTENT, true);
+        writer.setMimetype(VALUE_MIMETYPE);
+        writer.setEncoding(VALUE_ENCODING);
+        writer.putContent(VALUE_CONTENT);
         
         // add standard titled aspect
         Map<QName, Serializable> aspectProps = new HashMap<QName, Serializable>(2);
@@ -164,8 +184,8 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         this.nodeService.addAspect(document, ContentModel.ASPECT_REFERENCING, aspectProps);
         this.nodeService.createAssociation(this.document, this.associatedDoc, ContentModel.ASSOC_REFERENCES);
         
-        setComplete();
-        endTransaction();
+        //setComplete();
+        //endTransaction();
     }
     
     private void createUser(String userName)
@@ -206,7 +226,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         // check the field definitions
         Collection<FieldDefinition> fieldDefs = form.getFieldDefinitions();
         assertNotNull("Expecting to find fields", fieldDefs);
-        assertEquals("Expecting to find 19 fields", 19, fieldDefs.size());
+        assertEquals("Expecting to find 22 fields", 22, fieldDefs.size());
         
         // create a Map of the field definitions
         // NOTE: we can safely do this as we know there are no duplicate field names and we're not
@@ -221,6 +241,9 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         PropertyFieldDefinition nameField = (PropertyFieldDefinition)fieldDefMap.get("cm:name");
         PropertyFieldDefinition titleField = (PropertyFieldDefinition)fieldDefMap.get("cm:title");
         PropertyFieldDefinition descField = (PropertyFieldDefinition)fieldDefMap.get("cm:description");
+        PropertyFieldDefinition mimetypeField = (PropertyFieldDefinition)fieldDefMap.get("mimetype");
+        PropertyFieldDefinition encodingField = (PropertyFieldDefinition)fieldDefMap.get("encoding");
+        PropertyFieldDefinition sizeField = (PropertyFieldDefinition)fieldDefMap.get("size");
         PropertyFieldDefinition originatorField = (PropertyFieldDefinition)fieldDefMap.get("cm:originator");
         PropertyFieldDefinition addresseeField = (PropertyFieldDefinition)fieldDefMap.get("cm:addressee");
         PropertyFieldDefinition addresseesField = (PropertyFieldDefinition)fieldDefMap.get("cm:addressees");
@@ -232,6 +255,9 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         assertNotNull("Expecting to find the cm:name field", nameField);
         assertNotNull("Expecting to find the cm:title field", titleField);
         assertNotNull("Expecting to find the cm:description field", descField);
+        assertNotNull("Expecting to find the mimetype field", mimetypeField);
+        assertNotNull("Expecting to find the encoding field", encodingField);
+        assertNotNull("Expecting to find the size field", sizeField);
         assertNotNull("Expecting to find the cm:originator field", originatorField);
         assertNotNull("Expecting to find the cm:addressee field", addresseeField);
         assertNotNull("Expecting to find the cm:addressees field", addresseesField);
@@ -246,6 +272,12 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
                     LABEL_TITLE, titleField.getLabel());
         assertEquals("Expecting cm:description label to be " + LABEL_DESCRIPTION, 
                     LABEL_DESCRIPTION, descField.getLabel());
+        assertEquals("Expecting mimetype label to be " + LABEL_MIMETYPE, 
+                    LABEL_MIMETYPE, mimetypeField.getLabel());
+        assertEquals("Expecting encoding label to be " + LABEL_ENCODING, 
+                    LABEL_ENCODING, encodingField.getLabel());
+        assertEquals("Expecting size label to be " + LABEL_SIZE, 
+                    LABEL_SIZE, sizeField.getLabel());
         assertEquals("Expecting cm:originator label to be " + LABEL_ORIGINATOR, 
                     LABEL_ORIGINATOR, originatorField.getLabel());
         assertEquals("Expecting cm:addressee label to be " + LABEL_ADDRESSEE, 
@@ -299,11 +331,14 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         assertNotNull("Expecting field data", fieldData);
         assertEquals(VALUE_TITLE, fieldData.get("prop:cm:title").getValue());
         assertEquals(VALUE_DESCRIPTION, fieldData.get("prop:cm:description").getValue());
+        assertEquals(VALUE_MIMETYPE, fieldData.get("prop:mimetype").getValue());
+        assertEquals(VALUE_ENCODING, fieldData.get("prop:encoding").getValue());
         assertEquals(VALUE_ORIGINATOR, fieldData.get("prop:cm:originator").getValue());
         assertEquals(VALUE_ADDRESSEE, fieldData.get("prop:cm:addressee").getValue());
         assertEquals(VALUE_ADDRESSEES1, fieldData.get("prop:cm:addressees_0").getValue());
         assertEquals(VALUE_ADDRESSEES2, fieldData.get("prop:cm:addressees_1").getValue());
         assertEquals(VALUE_SUBJECT, fieldData.get("prop:cm:subjectline").getValue());
+        assertTrue("Expecting size to be > 0", ((Long)fieldData.get("prop:size").getValue()).longValue() > 0);
         
         Calendar calTestValue = Calendar.getInstance();
         calTestValue.setTime(VALUE_SENT_DATE);
@@ -314,6 +349,98 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         List<String> targets = (List<String>)fieldData.get("assoc:cm:references").getValue();
         assertEquals("Expecting 1 target", 1, targets.size());
         assertEquals(this.associatedDoc.toString(), targets.get(0));
+    }
+    
+    public void testSaveForm() throws Exception
+    {
+        // create FormData object containing the values to update
+        FormData data = new FormData();
+        
+        // update the name
+        String newName = "new-" + this.documentName;
+        data.addData("prop:cm:name", newName);
+        
+        // update the title property
+        String newTitle = "This is the new title property";
+        data.addData("prop:cm:title", newTitle);
+        
+        // update the mimetype
+        String newMimetype = MimetypeMap.MIMETYPE_HTML;
+        data.addData("prop:mimetype", newMimetype);
+        
+        // update the originator
+        String newOriginator = "jane@example.com";
+        data.addData("prop:cm:originator", newOriginator);
+        
+        // set the date to null (using an empty string)
+        data.addData("prop:cm:sentdate", "");
+        
+        // try and update non-existent properties (make sure there are no exceptions)
+        data.addData("prop:cm:wrong", "This should not be persisted");
+        data.addData("cm:wrong", "This should not be persisted");
+        
+        // persist the data
+        this.formService.saveForm(this.document.toString(), data);
+        
+        // retrieve the data directly from the node service to ensure its been changed
+        Map<QName, Serializable> updatedProps = this.nodeService.getProperties(this.document);
+        String updatedName = (String)updatedProps.get(ContentModel.PROP_NAME);
+        String updatedTitle = (String)updatedProps.get(ContentModel.PROP_TITLE);
+        String updatedOriginator = (String)updatedProps.get(ContentModel.PROP_ORIGINATOR);
+        String wrong = (String)updatedProps.get(QName.createQName("cm", "wrong", this.namespaceService));
+        Date sentDate = (Date)updatedProps.get(ContentModel.PROP_SENTDATE);
+        assertEquals(newName, updatedName);
+        assertEquals(newTitle, updatedTitle);
+        assertEquals(newOriginator, updatedOriginator);
+        assertNull("Expecting sentdate to be null", sentDate);
+        assertNull("Expecting my:wrong to be null", wrong);
+        
+        // check mimetype was updated
+        ContentData contentData = (ContentData)updatedProps.get(ContentModel.PROP_CONTENT);
+        if (contentData != null)
+        {
+            String updatedMimetype = contentData.getMimetype();
+            assertEquals(MimetypeMap.MIMETYPE_HTML, updatedMimetype);
+        }
+    }
+    
+    public void testNoForm() throws Exception
+    {
+        // test that a form can not be retrieved for a non-existent item
+        try
+        {
+            this.formService.getForm("Invalid Item");
+            fail("Expecting getForm for 'Invalid Item' to fail");
+        }
+        catch (Exception e)
+        {
+            // expected
+        }
+        
+        String missingNode = this.document.toString().replace("-", "x");
+        Form form = this.formService.getForm(missingNode);
+        assertNull("Expecting getForm for a missing node to be null", form);
+        
+        // test that a form can not be saved for a non-existent item
+        try
+        {
+            this.formService.saveForm("Invalid Item", new FormData());
+            fail("Expecting saveForm for 'Invalid Item' to fail");
+        }
+        catch (Exception e)
+        {
+            // expected
+        }
+        
+        try
+        {
+            this.formService.saveForm(missingNode, new FormData());
+            fail("Expecting saveForm for a missing node to fail");
+        }
+        catch (Exception e)
+        {
+            // expected
+        }
     }
     
 	public void off_testSaveUpdatedForm() throws Exception

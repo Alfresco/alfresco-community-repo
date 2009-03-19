@@ -3,6 +3,14 @@
 
 <beans>
     
+    <bean id="formResourceBundles" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
+        <property name="resourceBundles">
+            <list>
+                <value>alfresco.messages.form-service</value>
+            </list>
+        </property>
+    </bean>
+   
     <!-- form service bean -->
     <bean id="FormService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
@@ -76,6 +84,7 @@
           parent="baseFormHandler">
         <property name="handlerRegistry" ref="nodeHandlerRegistry" />
         <property name="nodeService" ref="NodeService" />
+        <property name="fileFolderService" ref="FileFolderService" />
         <property name="dictionaryService" ref="DictionaryService" />
         <property name="namespaceService" ref="NamespaceService" />
     </bean>
@@ -85,7 +94,6 @@
           class="org.alfresco.repo.forms.processor.ImageAspectHandler"
           parent="baseFormHandler" />
     -->
-     
      
     <bean id="formServiceScript" parent="baseJavaScriptExtension" class="org.alfresco.repo.forms.script.ScriptFormService">
         <property name="extensionName">

@@ -22,7 +22,7 @@ function testGetFormForContentNode()
 	var fieldDefs = form.fieldDefinitions;
 	test.assertNotNull(fieldDefs, "field definitions should not be null.");
 	
-	test.assertEquals(19, fieldDefs.length);
+	test.assertEquals(22, fieldDefs.length);
 	
 	var fieldDefnDataHash = form.fieldDefinitionData;
 	

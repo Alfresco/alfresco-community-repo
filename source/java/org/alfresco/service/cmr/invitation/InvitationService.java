@@ -26,6 +26,8 @@ package org.alfresco.service.cmr.invitation;
 
 import java.util.List;
 
+import org.alfresco.service.Auditable;
+
 /**
  * The invitation service provides the ability to invite
  * people to resources.    For example adding a user to a shared web site.
@@ -64,6 +66,14 @@ public interface InvitationService
 	 * @throws InvitationExceptionUserError
 	 * @throws InvitationExceptionForbidden
 	 */
+    @Auditable(parameters = {"inviteeUserName", 
+			"resourceType",
+			"resourceName", 
+			"inviteeRole", 
+			"serverPath",
+			"acceptUrl", 
+			"rejectUrl"})
+			
 	public NominatedInvitation inviteNominated(
 			String inviteeUserName, 
 			Invitation.ResourceType resourceType,
@@ -94,6 +104,16 @@ public interface InvitationService
 	 * @throws InvitationExceptionUserError
 	 * @throws InvitationExceptionForbidden
 	 */
+    @Auditable(parameters = {
+    		"inviteeFirstName", 
+			"inviteeLastName",
+            "inviteeEmail", 
+            "resourceType",
+            "resourceName", 
+            "inviteeRole", 
+            "serverPath", 
+            "acceptUrl", 
+            "rejectUrl"})
 	public NominatedInvitation inviteNominated(
 			String inviteeFirstName, 
 			String inviteeLastName,
@@ -112,6 +132,12 @@ public interface InvitationService
      * @param resourceName which resource
      * @param inviteeRole which role ?
 	 */
+    @Auditable(parameters = {
+    		"inviteeComments",
+			"inviteeUserName",
+			"resourceType",
+			"resourceName", 
+			"inviteeRole"})
 	public ModeratedInvitation inviteModerated(
 			String inviteeComments,
 			String inviteeUserName,
@@ -126,6 +152,7 @@ public interface InvitationService
 	 * @param ticket
 	 * @return the invitation
 	 */
+    @Auditable(parameters = {"invitationId", "reason"})    
 	public Invitation accept(String invitationId, String ticket);
 	
 
@@ -135,22 +162,22 @@ public interface InvitationService
 	 * @param invitationId the request to approve
 	 * @param reason - comments about the acceptance
 	 */
+    @Auditable(parameters = {"invitationId", "reason"})
 	public Invitation approve(String invitationId, String reason);
-	
-	
 
-	
 	/**
 	 * User or moderator rejects this request
 	 * @param invitationId
 	 * @param reason
-	 */
+	 */        
+    @Auditable(parameters = {"invitationId", "reason"})
 	public Invitation reject(String invitationId, String reason);
-	
+
 	
 	/**
 	 * cancel this request
 	 */
+    @Auditable(parameters = {"invitationId"})
 	public Invitation cancel (String invitationId);
 	
 	/**

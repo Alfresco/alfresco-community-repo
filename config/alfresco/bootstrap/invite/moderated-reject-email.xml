@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view:view xmlns:view="http://www.alfresco.org/view/repository/1.0"
+    xmlns:app="http://www.alfresco.org/model/application/1.0"
+    xmlns:cm="http://www.alfresco.org/model/content/1.0"> 
+    <cm:folder view:childName="cm:invite">
+        <view:aspects>
+            <app:uifacets></app:uifacets>
+        </view:aspects>
+        <view:properties>
+            <cm:description>Invitation Moderated reject email template</cm:description>
+            <app:icon>space-icon-default</app:icon>
+            <cm:title>Invitation Moderated reject email</cm:title>
+            <cm:name>invite</cm:name>
+        </view:properties>
+        <view:associations>
+            <cm:contains>
+                <cm:content
+                    view:childName="cm:moderated-reject-email.ftl">
+                    <view:aspects>
+                        <cm:titled></cm:titled>
+                        <cm:author></cm:author>
+                        <app:inlineeditable></app:inlineeditable>
+                    </view:aspects>
+                    <view:properties>
+                        <app:editInline>
+                            true
+                        </app:editInline>
+                        <cm:description>Email template used to generate the reject email for Alfresco Share, Moderated Invitation</cm:description>
+                        <cm:content>contentUrl=classpath:alfresco\bootstrap\invite\moderated-reject-email.ftl|mimetype=text/plain|size=|encoding=UTF-8|locale=en_US_</cm:content>
+                        <cm:title>moderated-reject-email.ftl</cm:title>
+                        <cm:author></cm:author>
+                        <cm:name>moderated-reject-email.ftl</cm:name>
+                    </view:properties>
+                    <view:associations></view:associations>
+                </cm:content>
+            </cm:contains>
+        </view:associations>
+    </cm:folder>
+</view:view>

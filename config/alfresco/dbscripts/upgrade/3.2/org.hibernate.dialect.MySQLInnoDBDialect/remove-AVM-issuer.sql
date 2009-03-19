@@ -1,7 +1,7 @@
 --
 -- Title:      Upgrade to V3.2 - Remove AVM Issuer 
 -- Database:   MySQL
--- Since:      V3.2 schema X
+-- Since:      V3.2 schema 2008
 -- Author:     janv
 --
 -- remove AVM node issuer - replace with auto-increment id
@@ -39,6 +39,10 @@ update avm_version_roots set root_id = (select max(id) from avm_nodes) where roo
 delete from avm_nodes where id = 0;
 
 alter table avm_nodes modify column id bigint not null auto_increment;
+
+-- drop issuer table
+
+drop table avm_issuer_ids;
 
 --
 -- Record script finish

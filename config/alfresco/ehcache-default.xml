@@ -354,34 +354,6 @@
         overflowToDisk="false"
         />
         
-    <cache 
-        name="org.alfresco.cache.evaluatorsCache" 
-        maxElementsInMemory="100"
-        eternal="true"
-        overflowToDisk="false"
-        />
-        
-    <cache 
-        name="org.alfresco.cache.sectionsByAreaCache" 
-        maxElementsInMemory="100"
-        eternal="true"
-        overflowToDisk="false"
-        />
-        
-    <cache 
-        name="org.alfresco.cache.sectionsCache" 
-        maxElementsInMemory="100"
-        eternal="true"
-        overflowToDisk="false"
-        />
-        
-    <cache 
-        name="org.alfresco.cache.elementReadersCache" 
-        maxElementsInMemory="100"
-        eternal="true"
-        overflowToDisk="false"
-        />
-        
     <!-- Messages I18N (tenant-based) -->
     
     <cache

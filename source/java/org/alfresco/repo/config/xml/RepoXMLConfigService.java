@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -71,14 +71,13 @@ public class RepoXMLConfigService extends XMLConfigService implements TenantDepl
     private AuthenticationComponent authenticationComponent;
     private TenantAdminService tenantAdminService;
     
-    // Internal caches that are clusterable
-    private SimpleCache<String, ConfigImpl> globalConfigCache;   
-    private SimpleCache<String, Map<String, Evaluator>> evaluatorsCache;
-    private SimpleCache<String, Map<String, List<ConfigSection>>> sectionsByAreaCache;
-    private SimpleCache<String, List<ConfigSection>> sectionsCache;
-    private SimpleCache<String, Map<String, ConfigElementReader>> elementReadersCache;
+    // Internal cache (clusterable)
+    private SimpleCache<String, ConfigData> configDataCache;
 
-
+    // used to reset the cache
+    private ThreadLocal<String> tenantDomainThreadLocal = new ThreadLocal<String>();
+    private ThreadLocal<ConfigData> configDataThreadLocal = new ThreadLocal<ConfigData>();
+    
     public void setTransactionService(TransactionService transactionService)
     {
         this.transactionService = transactionService;
@@ -94,31 +93,11 @@ public class RepoXMLConfigService extends XMLConfigService implements TenantDepl
         this.tenantAdminService = tenantAdminService;
     }
 
-    public void setGlobalConfigCache(SimpleCache<String, ConfigImpl> globalConfigCache)
+    public void setConfigDataCache(SimpleCache<String, ConfigData> configDataCache)
     {
-        this.globalConfigCache = globalConfigCache;
+        this.configDataCache = configDataCache;
     }
-    
-    public void setEvaluatorsCache(SimpleCache<String, Map<String, Evaluator>> evaluatorsCache)
-    {
-        this.evaluatorsCache = evaluatorsCache;
-    }
-    
-    public void setSectionsByAreaCache(SimpleCache<String, Map<String, List<ConfigSection>>> sectionsByAreaCache)
-    {
-        this.sectionsByAreaCache = sectionsByAreaCache;
-    }
-    
-    public void setSectionsCache(SimpleCache<String, List<ConfigSection>> sectionsCache)
-    {
-        this.sectionsCache = sectionsCache;
-    }
-
-    public void setElementReadersCache(SimpleCache<String, Map<String, ConfigElementReader>> elementReadersCache)
-    {
-        this.elementReadersCache = elementReadersCache;
-    }
-    
+        
     
     /**
      * Constructs an XMLConfigService using the given config source
@@ -133,7 +112,12 @@ public class RepoXMLConfigService extends XMLConfigService implements TenantDepl
 
     public List<ConfigDeployment> initConfig()
     {
-    	List<ConfigDeployment> configDeployments = null;
+        return resetRepoConfig().getConfigDeployments();
+    }
+    
+    private ConfigData initRepoConfig(String tenantDomain)
+    {
+        ConfigData configData = null;
     	
     	// can be null e.g. initial login, after fresh bootstrap
         String currentUser = authenticationComponent.getCurrentUserName();
@@ -148,9 +132,15 @@ public class RepoXMLConfigService extends XMLConfigService implements TenantDepl
         {
             userTransaction.begin();
             
-            // parse config and initialise caches
-            configDeployments = super.initConfig();
-                       
+            // parse config
+            List<ConfigDeployment> configDeployments = super.initConfig();
+            
+            configData = getConfigDataLocal(tenantDomain);
+            if (configData != null)
+            {
+                configData.setConfigDeployments(configDeployments);
+            }
+            
             userTransaction.commit();
             
             logger.info("Config initialised");
@@ -168,7 +158,7 @@ public class RepoXMLConfigService extends XMLConfigService implements TenantDepl
             }
         }
         
-        return configDeployments;
+        return configData;
     }
     
     public void destroy()
@@ -176,6 +166,75 @@ public class RepoXMLConfigService extends XMLConfigService implements TenantDepl
         super.destroy();
         
         logger.info("Config destroyed");
+    }
+    
+    /**
+     * Resets the config service
+     */
+    public void reset()
+    {
+       resetRepoConfig();
+    }
+    
+    /**
+     * Resets the config service
+     */
+    private ConfigData resetRepoConfig()
+    {
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Resetting repo config service");
+        }
+       
+        String tenantDomain = getTenantDomain();
+        try
+        {
+            destroy();
+            
+            // create threadlocal, if needed
+            ConfigData configData = getConfigDataLocal(tenantDomain);
+            if (configData == null)
+            {
+                configData = new ConfigData();
+                this.tenantDomainThreadLocal.set(tenantDomain);
+                this.configDataThreadLocal.set(configData);
+            }
+            
+            configData = initRepoConfig(tenantDomain);
+            
+            if (configData == null)
+            {     
+                // unexpected
+                throw new AlfrescoRuntimeException("Failed to reset configData " + tenantDomain);
+            }
+            
+            try
+            {
+                writeLock.lock();        
+                configDataCache.put(tenantDomain, configData);
+            }
+            finally
+            {
+                writeLock.unlock();
+            }
+
+            return configData;
+        }
+        finally
+        {
+            try
+            {
+                readLock.lock();
+                if (configDataCache.get(tenantDomain) != null)
+                {
+                    this.configDataThreadLocal.set(null); // it's in the cache, clear the threadlocal
+                }
+            }
+            finally
+            {
+                readLock.unlock();
+            }
+        }
     }
 
    
@@ -215,364 +274,230 @@ public class RepoXMLConfigService extends XMLConfigService implements TenantDepl
         destroy(); // will be called in context of tenant
     }
     
+    // re-entrant (eg. via reset)
+    private ConfigData getConfigData()
+    {
+        String tenantDomain = getTenantDomain();
+        
+        // check threadlocal first - return if set
+        ConfigData configData = getConfigDataLocal(tenantDomain);
+        if (configData != null)
+        {
+            return configData; // return local config
+        }
+
+        try
+        {
+            // check cache second - return if set
+            readLock.lock();
+            configData = configDataCache.get(tenantDomain);
+
+            if (configData != null)
+            {
+                return configData; // return cached config
+            }
+        }
+        finally
+        {
+            readLock.unlock();
+        }
+        
+        // reset caches - may have been invalidated (e.g. in a cluster)
+        configData = resetRepoConfig(); 
+        
+        if (configData == null)
+        {     
+            // unexpected
+            throw new AlfrescoRuntimeException("Failed to get configData " + tenantDomain);
+        }
+        
+        return configData;
+    }
+    
+    // get threadlocal 
+    private ConfigData getConfigDataLocal(String tenantDomain)
+    {
+        ConfigData configData = this.configDataThreadLocal.get();
+        
+        // check to see if domain switched (eg. during login)
+        if ((configData != null) && (tenantDomain.equals(tenantDomainThreadLocal.get())))
+        {
+            return configData; // return threadlocal, if set
+        }   
+        
+        return null;
+    }
+    
+    private void removeConfigData()
+    {
+        try
+        {
+            writeLock.lock();
+            String tenantDomain = getTenantDomain();
+            if (configDataCache.get(tenantDomain) != null)
+            {
+                configDataCache.remove(tenantDomain);
+            }
+        }
+        finally
+        {
+            writeLock.unlock();
+        }          
+    }
     
     @Override
     protected ConfigImpl getGlobalConfigImpl()
     {
-        String tenantDomain = getTenantDomain();
-        ConfigImpl globalConfig = null;
-        try
-        {
-            readLock.lock();
-            globalConfig = globalConfigCache.get(tenantDomain);
-        }
-        finally
-        {
-            readLock.unlock();
-        }        
-        
-        if (globalConfig == null)
-        {
-            reset(); // reset caches - may have been invalidated (e.g. in a cluster)
-         
-            try
-            {
-                readLock.lock();           
-                globalConfig = globalConfigCache.get(tenantDomain);
-            }
-            finally
-            {
-                readLock.unlock();
-            }           
-            
-            if (globalConfig == null)
-            {     
-                // unexpected
-                throw new AlfrescoRuntimeException("Failed to reset caches (globalConfigCache) " + tenantDomain);
-            }
-        }
-        return globalConfig;
-    } 
+        return getConfigData().getGlobalConfig();
+    }
     
     @Override
     protected void putGlobalConfig(ConfigImpl globalConfig)
     {
-        try
-        {
-            writeLock.lock();        
-            globalConfigCache.put(getTenantDomain(), globalConfig);
-        }
-        finally
-        {
-            writeLock.unlock();
-        }          
-    }  
+        getConfigData().setGlobalConfig(globalConfig);
+    }
     
     @Override
     protected void removeGlobalConfig()
     {
-        try
-        {
-            writeLock.lock();
-            String tenantDomain = getTenantDomain();
-            if (globalConfigCache.get(tenantDomain) != null)
-            {
-                globalConfigCache.remove(tenantDomain);
-            }
-        }
-        finally
-        {
-            writeLock.unlock();
-        }          
-    } 
+        removeConfigData();
+    }
     
     @Override
     protected Map<String, Evaluator> getEvaluators()
     {
-        String tenantDomain = getTenantDomain();
-        Map<String, Evaluator> evaluators = null;
-        try
-        {
-            readLock.lock();
-            evaluators = evaluatorsCache.get(tenantDomain);
-        }
-        finally
-        {
-            readLock.unlock();
-        }  
-        
-        if (evaluators == null)
-        {
-            reset(); // reset caches - may have been invalidated (e.g. in a cluster) 
-
-            try
-            {
-                readLock.lock();            
-                evaluators = evaluatorsCache.get(tenantDomain);
-            }
-            finally
-            {
-                readLock.unlock();
-            }   
-            
-            if (evaluators == null)
-            {     
-                // unexpected
-                throw new AlfrescoRuntimeException("Failed to reset caches (evaluatorsCache) " + tenantDomain);
-            }
-        }
-        return evaluators;
-    }  
+        return getConfigData().getEvaluators();
+    }
     
     @Override
     protected void putEvaluators(Map<String, Evaluator> evaluators)
     {
-        try
-        {
-            writeLock.lock();        
-            evaluatorsCache.put(getTenantDomain(), evaluators);
-        }
-        finally
-        {
-            writeLock.unlock();
-        }          
-    } 
+        getConfigData().setEvaluators(evaluators);
+    }
     
     @Override
     protected void removeEvaluators()
     {
-        try
-        {
-            writeLock.lock();       
-            String tenantDomain = getTenantDomain();
-            if (evaluatorsCache.get(tenantDomain) != null)
-            {
-                evaluatorsCache.get(tenantDomain).clear();
-                evaluatorsCache.remove(tenantDomain);
-            }
-        }
-        finally
-        {
-            writeLock.unlock();
-        }  
-    } 
+        removeConfigData();
+    }
     
     @Override
     protected Map<String, List<ConfigSection>> getSectionsByArea()
     {
-        String tenantDomain = getTenantDomain();
-        Map<String, List<ConfigSection>> sectionsByArea = null;
-        try
-        {
-            readLock.lock();       
-            sectionsByArea = sectionsByAreaCache.get(tenantDomain);
-        }
-        finally
-        {
-            readLock.unlock();
-        }         
-        
-        if (sectionsByArea == null)
-        {
-            reset(); // reset caches - may have been invalidated (e.g. in a cluster)
-            
-            try
-            {
-                readLock.lock();            
-                sectionsByArea = sectionsByAreaCache.get(tenantDomain);
-            }
-            finally
-            {
-                readLock.unlock();
-            } 
-        
-            if (sectionsByArea == null)
-            {     
-                // unexpected
-                throw new AlfrescoRuntimeException("Failed to reset caches (sectionsByAreaCache) " + tenantDomain);
-            }
-        }
-        return sectionsByArea;
-    }  
+        return getConfigData().getSectionsByArea();
+    }
     
     @Override
     protected void putSectionsByArea(Map<String, List<ConfigSection>> sectionsByArea)
     {
-        try
-        {
-            writeLock.lock();        
-            sectionsByAreaCache.put(getTenantDomain(), sectionsByArea);
-        }
-        finally
-        {
-            writeLock.unlock();
-        }          
-    }  
-
+        getConfigData().setSectionsByArea(sectionsByArea);
+    }
+    
     @Override
     protected void removeSectionsByArea()
     {
-        try
-        {
-            writeLock.lock();        
-            String tenantDomain = getTenantDomain();
-            if (sectionsByAreaCache.get(tenantDomain) != null)
-            {
-                sectionsByAreaCache.get(tenantDomain).clear();
-                sectionsByAreaCache.remove(tenantDomain);
-            }
-        }
-        finally
-        {
-            writeLock.unlock();
-        }         
-    } 
+        removeConfigData();
+    }
     
     @Override
     protected List<ConfigSection> getSections()
     {
-        String tenantDomain = getTenantDomain();
-        List<ConfigSection> sections = null;
-        try
-        {
-            readLock.lock();        
-            sections = sectionsCache.get(tenantDomain);
-        }
-        finally
-        {
-            readLock.unlock();
-        }         
-        
-        if (sections == null)
-        {
-            reset(); // reset caches - may have been invalidated (e.g. in a cluster) 
-      
-            try
-            {
-                readLock.lock();            
-                sections = sectionsCache.get(tenantDomain);
-            }
-            finally
-            {
-                readLock.unlock();
-            }            
-            
-            if (sections == null)
-            {     
-                // unexpected
-                throw new AlfrescoRuntimeException("Failed to reset caches (sectionsCache) " + tenantDomain);
-            }
-        }
-        return sections;
-    } 
+        return getConfigData().getSections();
+    }
     
     @Override
     protected void putSections(List<ConfigSection> sections)
     {
-        try
-        {
-            writeLock.lock();        
-            sectionsCache.put(getTenantDomain(), sections);
-        }
-        finally
-        {
-            writeLock.unlock();
-        }         
-    } 
+        getConfigData().setSections(sections);
+    }
     
     @Override
     protected void removeSections()
     {
-        try
-        {
-            writeLock.lock();       
-            String tenantDomain = getTenantDomain();
-            if (sectionsCache.get(tenantDomain) != null)
-            {
-                sectionsCache.get(tenantDomain).clear();
-                sectionsCache.remove(tenantDomain);
-            }
-        }
-        finally
-        {
-            writeLock.unlock();
-        }  
-    } 
+        removeConfigData();
+    }
 
     @Override
     protected Map<String, ConfigElementReader> getElementReaders()
     {
-        String tenantDomain = getTenantDomain();
-        Map<String, ConfigElementReader> elementReaders = null;
-        try
-        {
-            readLock.lock();
-            elementReaders = elementReadersCache.get(tenantDomain);
-        }
-        finally
-        {
-            readLock.unlock();
-        }         
-        
-        if (elementReaders == null)
-        {
-            reset(); // reset caches - may have been invalidated (e.g. in a cluster)
-             
-            try
-            {
-                readLock.lock();            
-                elementReaders = elementReadersCache.get(tenantDomain);
-            }
-            finally
-            {
-                readLock.unlock();
-            } 
-        
-            if (elementReaders == null)
-            {     
-                // unexpected
-                throw new AlfrescoRuntimeException("Failed to reset caches (elementReadersCache) " + tenantDomain);
-            }
-        }
-        return elementReaders;
-    } 
+        return getConfigData().getElementReaders();
+    }
     
     @Override
-    protected void putElementReaders(Map<String, ConfigElementReader> elementReader)
+    protected void putElementReaders(Map<String, ConfigElementReader> elementReaders)
     {
-        try
-        {
-            writeLock.lock();
-            elementReadersCache.put(getTenantDomain(), elementReader);
-        }
-        finally
-        {
-            writeLock.unlock();
-        }             
-    } 
+        getConfigData().setElementReaders(elementReaders);
+    }
     
     @Override
     protected void removeElementReaders()
     {
-        try
-        {
-            writeLock.lock();
-            String tenantDomain = getTenantDomain();
-            if (elementReadersCache.get(tenantDomain) != null)
-            {
-                elementReadersCache.get(tenantDomain).clear();
-                elementReadersCache.remove(tenantDomain);
-            }
-        }
-        finally
-        {
-            writeLock.unlock();
-        }  
-    } 
+        removeConfigData();
+    }
     
     // local helper - returns tenant domain (or empty string if default non-tenant)
     private String getTenantDomain()
     {
         return tenantAdminService.getCurrentUserDomain();
+    }
+    
+    private class ConfigData
+    {
+        private ConfigImpl globalConfig;   
+        private Map<String, Evaluator> evaluators;
+        private Map<String, List<ConfigSection>> sectionsByArea;
+        private List<ConfigSection> sections;
+        private Map<String, ConfigElementReader> elementReaders;
+        
+        private List<ConfigDeployment> configDeployments;
+        
+        public ConfigImpl getGlobalConfig()
+        {
+            return globalConfig;
+        }
+        public void setGlobalConfig(ConfigImpl globalConfig)
+        {
+            this.globalConfig = globalConfig;
+        }
+        public Map<String, Evaluator> getEvaluators()
+        {
+            return evaluators;
+        }
+        public void setEvaluators(Map<String, Evaluator> evaluators)
+        {
+            this.evaluators = evaluators;
+        }
+        public Map<String, List<ConfigSection>> getSectionsByArea()
+        {
+            return sectionsByArea;
+        }
+        public void setSectionsByArea(Map<String, List<ConfigSection>> sectionsByArea)
+        {
+            this.sectionsByArea = sectionsByArea;
+        }
+        public List<ConfigSection> getSections()
+        {
+            return sections;
+        }
+        public void setSections(List<ConfigSection> sections)
+        {
+            this.sections = sections;
+        }
+        public Map<String, ConfigElementReader> getElementReaders()
+        {
+            return elementReaders;
+        }
+        public void setElementReaders(Map<String, ConfigElementReader> elementReaders)
+        {
+            this.elementReaders = elementReaders;
+        }
+        public List<ConfigDeployment> getConfigDeployments()
+        {
+            return configDeployments;
+        }
+        public void setConfigDeployments(List<ConfigDeployment> configDeployments)
+        {
+            this.configDeployments = configDeployments;
+        }
     }
 }

@@ -75,7 +75,6 @@ public class RepoXMLConfigService extends XMLConfigService implements TenantDepl
     private SimpleCache<String, ConfigData> configDataCache;
 
     // used to reset the cache
-    private ThreadLocal<String> tenantDomainThreadLocal = new ThreadLocal<String>();
     private ThreadLocal<ConfigData> configDataThreadLocal = new ThreadLocal<ConfigData>();
     
     public void setTransactionService(TransactionService transactionService)
@@ -195,8 +194,7 @@ public class RepoXMLConfigService extends XMLConfigService implements TenantDepl
             ConfigData configData = getConfigDataLocal(tenantDomain);
             if (configData == null)
             {
-                configData = new ConfigData();
-                this.tenantDomainThreadLocal.set(tenantDomain);
+                configData = new ConfigData(tenantDomain);
                 this.configDataThreadLocal.set(configData);
             }
             
@@ -320,7 +318,7 @@ public class RepoXMLConfigService extends XMLConfigService implements TenantDepl
         ConfigData configData = this.configDataThreadLocal.get();
         
         // check to see if domain switched (eg. during login)
-        if ((configData != null) && (tenantDomain.equals(tenantDomainThreadLocal.get())))
+        if ((configData != null) && (tenantDomain.equals(configData.getTenantDomain())))
         {
             return configData; // return threadlocal, if set
         }   
@@ -450,6 +448,18 @@ public class RepoXMLConfigService extends XMLConfigService implements TenantDepl
         private Map<String, ConfigElementReader> elementReaders;
         
         private List<ConfigDeployment> configDeployments;
+        
+        private String tenantDomain;
+        
+        public ConfigData(String tenantDomain)
+        {
+            this.tenantDomain = tenantDomain;
+        }
+        
+        public String getTenantDomain()
+        {
+            return tenantDomain;
+        }
         
         public ConfigImpl getGlobalConfig()
         {

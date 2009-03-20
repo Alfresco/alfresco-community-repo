@@ -309,10 +309,30 @@ public class NodeHandler extends AbstractHandler
                     Map<String, Object> constraintParams = constraint.getParameters();
                     if (constraintParams != null)
                     {
+                        // TODO: Just return the param value object, don't convert to String
                         fieldConstraintParams = new HashMap<String, String>(constraintParams.size());
                         for (String name : constraintParams.keySet())
                         {
-                            fieldConstraintParams.put(name, constraintParams.get(name).toString());
+                            Object paramValue = constraintParams.get(name);
+                            
+                            if (paramValue instanceof List)
+                            {
+                                List paramList = (List)paramValue;
+                                StringBuilder builder = new StringBuilder();
+                                for (int x = 0; x < paramList.size(); x++)
+                                {
+                                    if (x > 0)
+                                    {
+                                        builder.append(",");
+                                    }
+                                    
+                                    builder.append(paramList.get(x));
+                                }
+                                
+                                paramValue = builder.toString();
+                            }
+                            
+                            fieldConstraintParams.put(name, paramValue.toString());
                         }
                     }
                     FieldConstraint fieldConstraint = fieldDef.new FieldConstraint(

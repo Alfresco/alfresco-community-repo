@@ -3,9 +3,9 @@ package org.alfresco.repo.domain.ibatis;
 import java.io.IOException;
 import java.util.Properties;
 
+import org.alfresco.ibatis.HierarchicalSqlMapClientFactoryBean;
 import org.hibernate.cfg.Environment;
 import org.springframework.core.io.Resource;
-import org.springframework.orm.ibatis.SqlMapClientFactoryBean;
 
 import com.ibatis.sqlmap.client.SqlMapClient;
 
@@ -21,7 +21,7 @@ import com.ibatis.sqlmap.client.SqlMapClient;
  * @author Derek Hulley
  * @since 3.1
  */
-public class AlfrescoSqlMapClientFactoryBean extends SqlMapClientFactoryBean
+public class AlfrescoSqlMapClientFactoryBean extends HierarchicalSqlMapClientFactoryBean
 {
 
     @Override

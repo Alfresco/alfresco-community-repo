@@ -80,17 +80,6 @@
       where status = 'POSTED'
    </select>
 
-   <insert id="insert.activity.post" parameterClass="ActivityPost">
-   
-      insert into alf_activity_post (status, activity_data, post_user_id, post_date, activity_type, site_network, app_tool, job_task_node, last_modified)
-      values (#status#, #activityData#, #userId#, #postDate#, #activityType#, #siteNetwork#, #appTool#, #jobTaskNode#, #lastModified#)
-      
-      <selectKey resultClass="long" keyProperty="id" type="post">
-         select @@identity
-      </selectKey>
-      
-   </insert>
-
    <delete id="delete.activity.posts.older.than.date" parameterClass="ActivityPost">
       <![CDATA[
       delete from alf_activity_post 

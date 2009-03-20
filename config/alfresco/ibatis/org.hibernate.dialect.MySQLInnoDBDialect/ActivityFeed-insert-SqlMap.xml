@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="ActivityFeed">
+
+   <insert id="insert.activity.feed" parameterClass="ActivityFeed">
+   
+      <selectKey resultClass="long" keyProperty="id" type="pre">
+         select alf_activity_feed_seq.nextval as value from dual
+      </selectKey>
+      
+      insert into alf_activity_feed (id, activity_type, activity_summary, activity_format, feed_user_id, post_user_id, post_date, post_id, site_network, app_tool, feed_date) 
+      values (#id#, #activityType#, #activitySummary#, #activitySummaryFormat#, #feedUserId#, #postUserId#, #postDate#, #postId#, #siteNetwork#, #appTool#, #feedDate#)
+
+   </insert>
+
+</sqlMap>

@@ -13,43 +13,17 @@
       <property name="feedGenerator" ref="feedGenerator"/>
       <property name="maxFeedItems" value="100"/>
    </bean>
-   
-   <bean id="iBatisDataSource" class="org.springframework.aop.framework.ProxyFactoryBean">
-        <property name="proxyInterfaces">
-            <value>javax.sql.DataSource</value>
-        </property>
-        <property name="target"><ref bean="dataSource"/></property>
-        <property name="interceptorNames">
-            <list>
-                <idref local="iBatisDataSource_autcommit" />
-            </list>
-        </property>
-    </bean>
 
-    <bean id="iBatisDataSource_autcommit" class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
-        <property name="advice">
-            <bean class="org.alfresco.util.AutoCommitInterceptor" />
-        </property>
-        <property name="mappedName">
-            <value>getConnection</value>
-        </property>
-    </bean>
-
-   <bean id="sqlMapClient" class="org.alfresco.repo.domain.ibatis.AlfrescoSqlMapClientFactoryBean" singleton="true">
-      <property name="configLocation"><value>classpath:alfresco/activities/activities-SqlMapConfig.xml</value></property> 
-      <property name="dataSource" ref="iBatisDataSource"/>
-   </bean> 
-   
    <bean id="postDaoService" class="org.alfresco.repo.activities.ibatis.IBatisActivityPostDaoServiceImpl">
-      <property name="sqlMapClient" ref="sqlMapClient"/>
+      <property name="sqlMapClient" ref="activitiesSqlMapClient"/>
    </bean>
    
    <bean id="feedDaoService" class="org.alfresco.repo.activities.ibatis.IBatisActivityFeedDaoServiceImpl">
-      <property name="sqlMapClient" ref="sqlMapClient"/>
+      <property name="sqlMapClient" ref="activitiesSqlMapClient"/>
    </bean>
    
    <bean id="feedControlDaoService" class="org.alfresco.repo.activities.ibatis.IBatisFeedControlDaoServiceImpl">
-      <property name="sqlMapClient" ref="sqlMapClient"/>
+      <property name="sqlMapClient" ref="activitiesSqlMapClient"/>
    </bean>
 
    <!-- cleans out-of-date feed entries -->
@@ -95,7 +69,7 @@
    
    <bean id="feedTaskProcessor" class="org.alfresco.repo.activities.feed.local.LocalFeedTaskProcessor">
       <!-- NOTE: assumes same sqlMapClient is also configured for postDaoService and feedDaoService -->
-      <property name="sqlMapClient" ref="sqlMapClient"/>
+      <property name="sqlMapClient" ref="activitiesSqlMapClient"/>
       <property name="postDaoService" ref="postDaoService"/>
       <property name="feedDaoService" ref="feedDaoService"/>
       <property name="feedControlDaoService" ref="feedControlDaoService"/>

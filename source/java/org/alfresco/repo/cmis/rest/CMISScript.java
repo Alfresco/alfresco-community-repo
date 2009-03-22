@@ -24,6 +24,7 @@
  */
 package org.alfresco.repo.cmis.rest;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -35,6 +36,7 @@ import org.alfresco.cmis.CMISTypesFilterEnum;
 import org.alfresco.cmis.dictionary.CMISDictionaryService;
 import org.alfresco.cmis.dictionary.CMISTypeDefinition;
 import org.alfresco.cmis.dictionary.CMISTypeId;
+import org.alfresco.cmis.property.CMISPropertyService;
 import org.alfresco.cmis.search.CMISQueryOptions;
 import org.alfresco.cmis.search.CMISQueryService;
 import org.alfresco.cmis.search.CMISResultSet;
@@ -48,6 +50,8 @@ import org.alfresco.repo.web.util.paging.PagedResults;
 import org.alfresco.repo.web.util.paging.Paging;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.QName;
+import org.mozilla.javascript.Scriptable;
 
 
 /**
@@ -61,6 +65,7 @@ public class CMISScript extends BaseScopableProcessorExtension
     private Repository repository;
     private CMISService cmisService;
     private CMISDictionaryService cmisDictionaryService;
+    private CMISPropertyService cmisPropertyService;
     private CMISQueryService cmisQueryService;
     private Paging paging;
     
@@ -113,6 +118,16 @@ public class CMISScript extends BaseScopableProcessorExtension
     public void setCMISDictionaryService(CMISDictionaryService cmisDictionaryService)
     {
         this.cmisDictionaryService = cmisDictionaryService;
+    }
+
+    /**
+     * Set the CMIS Property Service
+     * 
+     * @param cmisPropertyService
+     */
+    public void setCMISPropertyService(CMISPropertyService cmisPropertyService)
+    {
+        this.cmisPropertyService = cmisPropertyService;
     }
 
     /**
@@ -367,10 +382,10 @@ public class CMISScript extends BaseScopableProcessorExtension
     }
 
     /**
-     * Query for all Type Definitions
+     * Query for a Type Definition given a CMIS Type Id
      * 
      * @param page
-     * @return  paged result set of types
+     * @return  CMIS Type Definition
      */
     public CMISTypeDefinition queryType(String typeId)
     {
@@ -384,6 +399,43 @@ public class CMISScript extends BaseScopableProcessorExtension
             return null;
         }
     }
+    
+    /**
+     * Query the Type Definition for the given Node
+     * 
+     * @param node
+     * @return  CMIS Type Definition
+     */
+    public CMISTypeDefinition queryType(ScriptNode node)
+    {
+        try
+        {
+            QName typeQName = node.getQNameType();
+            CMISTypeId cmisTypeId = cmisDictionaryService.getCMISMapping().getCmisTypeId(typeQName);
+            return cmisDictionaryService.getType(cmisTypeId);
+        }
+        catch(AlfrescoRuntimeException e)
+        {
+            return null;
+        }
+    }
+    
+    
+    //
+    // Property Support
+    //
+    
+    /**
+     * Map CMIS Property name to Alfresco property name (only for direct 1 to 1 mappings) 
+     * 
+     * @param propertyName  CMIS property name
+     * @return  Alfresco property name (or null, if there's no mapping)
+     */
+    public QName mapPropertyName(String propertyName)
+    {
+        return cmisPropertyService.mapPropertyName(propertyName);
+    }
+
     
     //
     // SQL Query

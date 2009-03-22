@@ -1,5 +1,16 @@
+<import resource="classpath:alfresco/templates/webscripts/org/alfresco/cmis/atomentry.lib.js">
+
 script:
 {
+    // ensure atom entry is posted
+    if (entry === null)
+    {
+        status.code = 400;
+        status.message = "Expected atom entry";
+        status.redirect = true;
+        break script;
+    }
+    
     // locate node
     var pathSegments = url.match.split("/");
     var reference = [ url.templateArgs.store_type, url.templateArgs.store_id ].concat(url.templateArgs.id.split("/"));
@@ -12,50 +23,8 @@ script:
         break script;
     }
 
-    // ensure atom entry is posted
-    if (entry === null)
-    {
-        status.code = 400;
-        status.message = "Expected atom entry";
-        status.redirect = true;
-        break script;
-    }
-
-    // check permissions
-    if (!model.node.hasPermission("WriteProperties") || !model.node.hasPermission("WriteContent"))
-    {
-        status.code = 403;
-        status.message = "Permission to update is denied";
-        status.redirect = true;
-        break script;
-    }    
-    
     // update properties
-    // NOTE: Only CMIS property name is updatable
-    // TODO: support for custom properties
-    var updated = false;
-    
-    var name = entry.title;
-    if (name !== null)
-    {
-        model.node.name = name;
-        updated = true;
-    }
-    
-    // update content, if provided in-line
-    var content = entry.content;
-    if (content !== null)
-    {
-        if (model.node.isDocument)
-        {
-	        model.node.content = content;
-	        model.node.properties.content.encoding = "UTF-8";
-	        model.node.properties.content.mimetype = atom.toMimeType(entry);
-	        updated = true;
-        }
-    }
-    
-    // only save if an update actually occurred
+    var updated = updateNode(model.node, entry, null, false);
     if (updated)
     {
         model.node.save();

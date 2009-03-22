@@ -1,4 +1,4 @@
-// TODO: consolidate with children.post.atomentry.js
+<import resource="classpath:alfresco/templates/webscripts/org/alfresco/cmis/atomentry.lib.js">
 
 script:
 {
@@ -23,67 +23,16 @@ script:
         break script;
     }
 
-    // pull apart atom entry
-    // TODO: creation of file/folder sub-types
-    // TODO: cmis properties
-    
-    var id = entry.id;
-    var name = (slug !== null) ? slug : entry.title;
-    var title = entry.title;
-    var description = entry.summary;    
-    var updated = entry.updated;
-    var author = (entry.author !== null) ? entry.author.name : null;
-    var object = entry.getExtension(atom.names.cmis_object);
-    var typeId = (object !== null) ? object.objectTypeId.value : null;
-    
-    // create the item
-    // TODO: author/updated/id
-    
-    if (typeId === null || typeId.toLowerCase() == "document")
+    // create node
+    var node = createNode(model.parent, entry, slug);
+    if (node == null)
     {
-        // TODO: objectTypeId to Alfresco content type
-        var node = model.parent.createFile(name);
-        node.properties.title = title;
-        node.properties.description = description;
-
-        // write entry content
-        if (entry.content != null)
-        {
-            if (entry.contentType !== null && entry.contentType == "MEDIA")
-            {
-                node.properties.content.write(entry.contentStream);
-            }
-            else
-            {
-                node.content = entry.content;
-            }
-            node.properties.content.encoding = "UTF-8";
-            node.properties.content.mimetype = atom.toMimeType(entry);
-        }        
-                
-        node.save();
-        model.node = node;
-        
-        // TODO: versioningState argument (CheckedOut/CheckedInMinor/CheckedInMajor)
-    }
-    else if (typeId.toLowerCase() == "folder")
-    {
-        // TODO: objectTypeId to Alfresco content type
-        var node = model.parent.createFolder(name);
-        node.properties.title = title;
-        node.properties.description = description;
-        node.save();
-        model.node = node;
-    }
-    else
-    {
-        status.code = 400;
-        status.message = "CMIS object type " + typeId + " not understood";
-        status.redirect = true;
         break script;
     }
     
-    // setup for 201 Created response
+    // success
+    node.save();
+    model.node = node;
     // TODO: set Content-Location
     status.code = 201;
     status.location = url.server + url.serviceContext + "/api/node/" + node.nodeRef.storeRef.protocol + "/" + node.nodeRef.storeRef.identifier + "/" + node.nodeRef.id;

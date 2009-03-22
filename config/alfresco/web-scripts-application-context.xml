@@ -477,6 +477,7 @@
       <property name="repository" ref="repositoryHelper" />
       <property name="CMISService" ref="CMISService" />
       <property name="CMISDictionaryService" ref="CMISDictionaryService" />
+      <property name="CMISPropertyService" ref="CMISPropertyService" />
       <property name="CMISQueryService" ref="CMISQueryService" />
       <property name="paging" ref="webscripts.js.paging" />
    </bean>

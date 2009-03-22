@@ -27,8 +27,11 @@ package org.alfresco.cmis.property;
 import java.io.Serializable;
 import java.util.Collection;
 
+import org.alfresco.cmis.dictionary.CMISMapping;
+import org.alfresco.cmis.dictionary.CMISScope;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.search.impl.querymodel.PredicateMode;
+import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
@@ -40,22 +43,20 @@ import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.BooleanClause.Occur;
-import org.springframework.beans.factory.InitializingBean;
 
 /**
  * A simple 1-1 property mapping from a CMIS property name to an alfresco property
  * 
  * @author andyh
  */
-public class SimplePropertyAccessor extends AbstractNamedPropertyAccessor implements InitializingBean
+public class SimplePropertyAccessor extends AbstractNamedPropertyAccessor
 {
     private QName propertyQname;
 
-    private String mapping;
-
-    public void setMapping(String mapping)
+    protected SimplePropertyAccessor(CMISMapping cmisMapping, ServiceRegistry serviceRegistry, CMISScope scope, String propertyName, QName mapping)
     {
-        this.mapping = mapping;
+        super(cmisMapping, serviceRegistry, scope, propertyName);
+        propertyQname = mapping;
     }
 
     public Serializable getProperty(NodeRef nodeRef)
@@ -63,11 +64,11 @@ public class SimplePropertyAccessor extends AbstractNamedPropertyAccessor implem
         return getServiceRegistry().getNodeService().getProperty(nodeRef, propertyQname);
     }
 
-    public void afterPropertiesSet() throws Exception
+    public void setProperty(NodeRef nodeRef, Serializable value)
     {
-        propertyQname = QName.resolveToQName(getServiceRegistry().getNamespaceService(), mapping);
+        throw new UnsupportedOperationException();
     }
-
+    
     private String getLuceneFieldName()
     {
         StringBuilder field = new StringBuilder(64);

@@ -55,6 +55,14 @@ public interface NamedPropertyAccessor
      * @return
      */
     public Serializable getProperty(NodeRef nodeRef);
+    
+    /**
+     * Set the property value
+     * 
+     * @param nodeRef
+     * @Param value
+     */
+    public void setProperty(NodeRef nodeRef, Serializable value);
 
     /**
      * To what types of objects does this property apply?

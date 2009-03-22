@@ -48,6 +48,15 @@ public interface GenericPropertyAccessor
      * @return
      */
     public Serializable getProperty(NodeRef nodeRef, String propertyName);
+    
+    /**
+     * Set the property value
+     * 
+     * @param nodeRef
+     * @param propertyName
+     * @Param value
+     */
+    public void setProperty(NodeRef nodeRef, String propertyName, Serializable value);
 
     public Query buildLuceneEquality(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode) throws ParseException;
 

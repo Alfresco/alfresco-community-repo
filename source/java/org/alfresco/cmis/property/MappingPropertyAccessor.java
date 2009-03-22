@@ -27,8 +27,10 @@ package org.alfresco.cmis.property;
 import java.io.Serializable;
 import java.util.Collection;
 
+import org.alfresco.cmis.dictionary.CMISMapping;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.search.impl.querymodel.PredicateMode;
+import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
@@ -48,13 +50,23 @@ import org.apache.lucene.search.BooleanClause.Occur;
  */
 public class MappingPropertyAccessor extends AbstractGenericPropertyAccessor
 {
+    
+    protected MappingPropertyAccessor(CMISMapping cmisMapping, ServiceRegistry serviceRegistry)
+    {
+        super(cmisMapping, serviceRegistry);
+    }
+
     public Serializable getProperty(NodeRef nodeRef, String propertyName)
     {
         QName propertyQname = getCMISMapping().getPropertyQName(propertyName);
         return getServiceRegistry().getNodeService().getProperty(nodeRef, propertyQname);
     }
 
-    
+    public void setProperty(NodeRef nodeRef, String propertyName, Serializable value)
+    {
+        QName propertyQname = getCMISMapping().getPropertyQName(propertyName);
+        getServiceRegistry().getNodeService().setProperty(nodeRef, propertyQname, value);
+    }
     
     
     private String getLuceneFieldName(QName propertyQname)
@@ -277,6 +289,6 @@ public class MappingPropertyAccessor extends AbstractGenericPropertyAccessor
         QName propertyQname = getCMISMapping().getPropertyQName(propertyName);
         return getLuceneFieldName(propertyQname);
     }
-    
-    
+
+
 }

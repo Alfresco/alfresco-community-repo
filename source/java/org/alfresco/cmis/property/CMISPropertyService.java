@@ -28,6 +28,7 @@ import java.io.Serializable;
 import java.util.Map;
 
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.QName;
 
 /**
  * Public API to get and set CMIS properties
@@ -38,6 +39,14 @@ import org.alfresco.service.cmr.repository.NodeRef;
  */
 public interface CMISPropertyService
 {
+    /**
+     * Map CMIS Property name to Alfresco property name (only for direct 1 to 1 mappings) 
+     * 
+     * @param propertyName  CMIS property name
+     * @return  Alfresco property name (or null, if there's no mapping)
+     */
+    public QName mapPropertyName(String propertyName);
+    
     /**
      * Set a single property
      * @param nodeRef
@@ -66,7 +75,7 @@ public interface CMISPropertyService
      * @param nodeRef
      * @return
      */
-    public Map<String, Serializable>  getProperties(NodeRef nodeRef);
+    public Map<String, Serializable> getProperties(NodeRef nodeRef);
     
     
 }

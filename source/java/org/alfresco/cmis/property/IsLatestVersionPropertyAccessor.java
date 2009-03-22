@@ -32,6 +32,7 @@ import org.alfresco.cmis.dictionary.CMISScope;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.search.impl.querymodel.PredicateMode;
+import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.search.Query;
@@ -44,21 +45,19 @@ import org.apache.lucene.search.Query;
 public class IsLatestVersionPropertyAccessor extends AbstractNamedPropertyAccessor
 {
 
+    protected IsLatestVersionPropertyAccessor(CMISMapping cmisMapping, ServiceRegistry serviceRegistry)
+    {
+        super(cmisMapping, serviceRegistry, CMISScope.DOCUMENT, CMISMapping.PROP_IS_LATEST_VERSION);
+    }
+
     public Serializable getProperty(NodeRef nodeRef)
     {
         return !getServiceRegistry().getNodeService().hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY);
     }
 
-    @Override
-    public String getPropertyName()
+    public void setProperty(NodeRef nodeRef, Serializable value)
     {
-        return CMISMapping.PROP_IS_LATEST_VERSION;
-    }
-
-    @Override
-    public CMISScope getScope()
-    {
-        return CMISScope.DOCUMENT;
+        throw new UnsupportedOperationException();
     }
 
     /*

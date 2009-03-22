@@ -29,9 +29,11 @@ import java.util.Collection;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.alfresco.cmis.dictionary.CMISMapping;
+import org.alfresco.cmis.dictionary.CMISScope;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.search.impl.querymodel.PredicateMode;
-import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.util.EqualsHelper;
@@ -49,6 +51,12 @@ import org.apache.lucene.search.TermQuery;
  */
 public class FixedValuePropertyAccessor extends AbstractNamedPropertyAccessor
 {
+    
+    protected FixedValuePropertyAccessor(CMISMapping cmisMapping, ServiceRegistry serviceRegistry, CMISScope scope, String propertyName)
+    {
+        super(cmisMapping, serviceRegistry, scope, propertyName);
+    }
+
     Serializable fixedValue;
 
     public Serializable getFixedValue()
@@ -64,6 +72,11 @@ public class FixedValuePropertyAccessor extends AbstractNamedPropertyAccessor
     public Serializable getProperty(NodeRef nodeRef)
     {
         return fixedValue;
+    }
+
+    public void setProperty(NodeRef nodeRef, Serializable value)
+    {
+        throw new UnsupportedOperationException();
     }
 
     /*

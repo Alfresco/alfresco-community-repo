@@ -33,6 +33,7 @@ import org.alfresco.cmis.search.CMISQueryException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.search.impl.querymodel.PredicateMode;
+import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
@@ -51,6 +52,11 @@ import org.apache.lucene.search.BooleanClause.Occur;
  */
 public class ObjectIdPropertyAccessor extends AbstractNamedPropertyAccessor
 {
+
+    protected ObjectIdPropertyAccessor(CMISMapping cmisMapping, ServiceRegistry serviceRegistry)
+    {
+        super(cmisMapping, serviceRegistry, CMISScope.OBJECT, CMISMapping.PROP_OBJECT_ID);
+    }
 
     public Serializable getProperty(NodeRef nodeRef)
     {
@@ -73,18 +79,10 @@ public class ObjectIdPropertyAccessor extends AbstractNamedPropertyAccessor
 
     }
 
-    @Override
-    public String getPropertyName()
+    public void setProperty(NodeRef nodeRef, Serializable value)
     {
-        return CMISMapping.PROP_OBJECT_ID;
+        throw new UnsupportedOperationException();
     }
-
-    @Override
-    public CMISScope getScope()
-    {
-        return CMISScope.OBJECT;
-    }
-
     
     private String getLuceneFieldName()
     {

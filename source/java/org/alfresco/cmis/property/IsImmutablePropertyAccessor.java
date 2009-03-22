@@ -32,6 +32,7 @@ import org.alfresco.cmis.dictionary.CMISScope;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.search.impl.querymodel.PredicateMode;
+import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.lock.LockType;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
@@ -45,6 +46,11 @@ import org.apache.lucene.search.Query;
  */
 public class IsImmutablePropertyAccessor extends AbstractNamedPropertyAccessor
 {
+
+    protected IsImmutablePropertyAccessor(CMISMapping cmisMapping, ServiceRegistry serviceRegistry)
+    {
+        super(cmisMapping, serviceRegistry, CMISScope.DOCUMENT, CMISMapping.PROP_IS_IMMUTABLE);
+    }
 
     public Serializable getProperty(NodeRef nodeRef)
     {
@@ -63,19 +69,11 @@ public class IsImmutablePropertyAccessor extends AbstractNamedPropertyAccessor
             }
         }
         return Boolean.valueOf(false);
-
     }
 
-    @Override
-    public String getPropertyName()
+    public void setProperty(NodeRef nodeRef, Serializable value)
     {
-        return CMISMapping.PROP_IS_IMMUTABLE;
-    }
-
-    @Override
-    public CMISScope getScope()
-    {
-        return CMISScope.DOCUMENT;
+        throw new UnsupportedOperationException();
     }
 
     /*

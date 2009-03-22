@@ -24,7 +24,9 @@
  */
 package org.alfresco.cmis.property;
 
+import org.alfresco.cmis.dictionary.CMISMapping;
 import org.alfresco.cmis.dictionary.CMISScope;
+import org.alfresco.service.ServiceRegistry;
 
 /**
  * Base class for named property accessors
@@ -35,26 +37,24 @@ import org.alfresco.cmis.dictionary.CMISScope;
 public abstract class AbstractNamedPropertyAccessor extends AbstractPropertyAccessor implements NamedPropertyAccessor
 {
     private String propertyName;
-    
     private CMISScope scope;
     
-    public String getPropertyName()
+    protected AbstractNamedPropertyAccessor(CMISMapping cmisMapping, ServiceRegistry serviceRegistry, CMISScope scope, String propertyName)
     {
-        return propertyName;
-    }
-
-    public void setPropertyName(String propertyName)
-    {
+        super(cmisMapping, serviceRegistry);
+        this.scope = scope;
         this.propertyName = propertyName;
     }
 
+    
     public CMISScope getScope()
     {
         return scope;
     }
 
-    public void setScope(CMISScope scope)
+    public String getPropertyName()
     {
-        this.scope = scope;
+        return propertyName;
     }
+
 }

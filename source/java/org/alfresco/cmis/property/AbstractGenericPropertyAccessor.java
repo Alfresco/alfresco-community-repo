@@ -24,6 +24,9 @@
  */
 package org.alfresco.cmis.property;
 
+import org.alfresco.cmis.dictionary.CMISMapping;
+import org.alfresco.service.ServiceRegistry;
+
 
 /**
  * Base class for generic property accessors
@@ -34,5 +37,9 @@ package org.alfresco.cmis.property;
 public abstract class AbstractGenericPropertyAccessor extends AbstractPropertyAccessor implements GenericPropertyAccessor
 {
 
+    protected AbstractGenericPropertyAccessor(CMISMapping cmisMapping, ServiceRegistry serviceRegistry)
+    {
+        super(cmisMapping, serviceRegistry);
+    }
    
 }

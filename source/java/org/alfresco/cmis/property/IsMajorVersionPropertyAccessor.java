@@ -32,6 +32,7 @@ import org.alfresco.cmis.dictionary.CMISScope;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.search.impl.querymodel.PredicateMode;
+import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionType;
@@ -45,6 +46,11 @@ import org.apache.lucene.search.Query;
  */
 public class IsMajorVersionPropertyAccessor extends AbstractNamedPropertyAccessor
 {
+
+    protected IsMajorVersionPropertyAccessor(CMISMapping cmisMapping, ServiceRegistry serviceRegistry)
+    {
+        super(cmisMapping, serviceRegistry, CMISScope.DOCUMENT, CMISMapping.PROP_IS_MAJOR_VERSION);
+    }
 
     public Serializable getProperty(NodeRef nodeRef)
     {
@@ -66,18 +72,12 @@ public class IsMajorVersionPropertyAccessor extends AbstractNamedPropertyAccesso
         }
     }
 
-    @Override
-    public String getPropertyName()
+    public void setProperty(NodeRef nodeRef, Serializable value)
     {
-        return CMISMapping.PROP_IS_MAJOR_VERSION;
+        throw new UnsupportedOperationException();
     }
 
-    @Override
-    public CMISScope getScope()
-    {
-        return CMISScope.DOCUMENT;
-    }
-
+    
     /*
      * (non-Javadoc)
      * 

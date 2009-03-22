@@ -32,6 +32,7 @@ import org.alfresco.cmis.dictionary.CMISScope;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.search.impl.querymodel.PredicateMode;
+import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -52,6 +53,11 @@ import org.apache.lucene.search.BooleanClause.Occur;
 public class ContentStreamLengthPropertyAccessor extends AbstractNamedPropertyAccessor
 {
 
+    protected ContentStreamLengthPropertyAccessor(CMISMapping cmisMapping, ServiceRegistry serviceRegistry)
+    {
+        super(cmisMapping, serviceRegistry, CMISScope.DOCUMENT, CMISMapping.PROP_CONTENT_STREAM_LENGTH);
+    }
+
     public Serializable getProperty(NodeRef nodeRef)
     {
         Serializable value = getServiceRegistry().getNodeService().getProperty(nodeRef, ContentModel.PROP_CONTENT);
@@ -67,16 +73,9 @@ public class ContentStreamLengthPropertyAccessor extends AbstractNamedPropertyAc
 
     }
 
-    @Override
-    public String getPropertyName()
+    public void setProperty(NodeRef nodeRef, Serializable value)
     {
-        return CMISMapping.PROP_CONTENT_STREAM_LENGTH;
-    }
-
-    @Override
-    public CMISScope getScope()
-    {
-        return CMISScope.DOCUMENT;
+        throw new UnsupportedOperationException();
     }
 
     private String getLuceneFieldName()
@@ -271,4 +270,5 @@ public class ContentStreamLengthPropertyAccessor extends AbstractNamedPropertyAc
     {
         return getLuceneFieldName();
     }
+
 }

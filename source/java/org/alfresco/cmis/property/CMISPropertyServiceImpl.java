@@ -30,10 +30,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.cmis.CMISService;
 import org.alfresco.cmis.CMISContentStreamAllowedEnum;
+import org.alfresco.cmis.CMISService;
 import org.alfresco.cmis.dictionary.CMISMapping;
 import org.alfresco.cmis.dictionary.CMISScope;
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.search.impl.querymodel.PredicateMode;
@@ -105,6 +106,17 @@ public class CMISPropertyServiceImpl implements CMISPropertyService, Initializin
         this.strict = strict;
     }
 
+    public QName mapPropertyName(String propertyName)
+    {
+        NamedPropertyAccessor accessor = namedPropertyAccessors.get(propertyName);
+        if (accessor != null && !(accessor instanceof SimplePropertyAccessor))
+        {
+            return null;
+        }
+
+        return cmisMapping.getPropertyQName(propertyName);
+    }
+
     public Map<String, Serializable> getProperties(NodeRef nodeRef)
     {
         // Map
@@ -153,7 +165,6 @@ public class CMISPropertyServiceImpl implements CMISPropertyService, Initializin
 
     public Serializable getProperty(NodeRef nodeRef, String propertyName)
     {
-
         QName typeQName = cmisMapping.getCmisType(serviceRegistry.getNodeService().getType(nodeRef));
         CMISScope scope;
         if (cmisMapping.isValidCmisDocument(typeQName))
@@ -197,7 +208,6 @@ public class CMISPropertyServiceImpl implements CMISPropertyService, Initializin
                 return genericPropertyAccessor.getProperty(nodeRef, propertyName);
             }
         }
-
     }
 
     public void setProperties(NodeRef nodeRef, Map<String, Serializable> values)
@@ -207,15 +217,43 @@ public class CMISPropertyServiceImpl implements CMISPropertyService, Initializin
 
     public void setProperty(NodeRef nodeRef, String propertyName, Serializable value)
     {
-        throw new UnsupportedOperationException();
+        QName typeQName = cmisMapping.getCmisType(serviceRegistry.getNodeService().getType(nodeRef));
+        CMISScope scope;
+        if (cmisMapping.isValidCmisDocument(typeQName))
+        {
+            scope = CMISScope.DOCUMENT;
+        }
+        else if (cmisMapping.isValidCmisFolder(typeQName))
+        {
+            scope = CMISScope.FOLDER;
+        }
+        else
+        {
+            throw new AlfrescoRuntimeException("Node type " + typeQName + " is not a valid CMIS document or folder");
+        }
+
+        NamedPropertyAccessor accessor = namedPropertyAccessors.get(propertyName);
+        if (accessor != null)
+        {
+            if ((accessor.getScope() == CMISScope.OBJECT) || accessor.getScope().equals(scope))
+            {
+                accessor.setProperty(nodeRef, value);
+            }
+            else
+            {
+                throw new AlfrescoRuntimeException("Property  " + propertyName + " is not applicable for type " + typeQName);
+            }
+        }
+        else
+        {
+            genericPropertyAccessor.setProperty(nodeRef, propertyName, value);
+        }
     }
 
     public void afterPropertiesSet() throws Exception
     {
         // Generic Alfresco mappings
-        genericPropertyAccessor = new MappingPropertyAccessor();
-        genericPropertyAccessor.setServiceRegistry(serviceRegistry);
-        genericPropertyAccessor.setCMISMapping(cmisMapping);
+        genericPropertyAccessor = new MappingPropertyAccessor(cmisMapping, serviceRegistry);
 
         // CMIS Object
         addNamedPropertyAccessor(getObjectIdPropertyAccessor());
@@ -254,160 +292,94 @@ public class CMISPropertyServiceImpl implements CMISPropertyService, Initializin
 
     public void addNamedPropertyAccessor(NamedPropertyAccessor namedPropertyAccessor)
     {
-
         namedPropertyAccessors.put(namedPropertyAccessor.getPropertyName(), namedPropertyAccessor);
     }
 
     public NamedPropertyAccessor getSimplePropertyAccessor(String propertyName, QName to, CMISScope scope)
     {
-        SimplePropertyAccessor accessor = new SimplePropertyAccessor();
-        accessor.setServiceRegistry(serviceRegistry);
-        accessor.setCMISMapping(cmisMapping);
-        accessor.setPropertyName(propertyName);
-        accessor.setMapping(to.toString());
-        accessor.setScope(scope);
-        try
-        {
-            accessor.afterPropertiesSet();
-        }
-        catch (Exception e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        return accessor;
+        return new SimplePropertyAccessor(cmisMapping, serviceRegistry, scope, propertyName, to);
     }
 
     public NamedPropertyAccessor getObjectIdPropertyAccessor()
     {
-        ObjectIdPropertyAccessor accessor = new ObjectIdPropertyAccessor();
-        accessor.setServiceRegistry(serviceRegistry);
-        accessor.setCMISMapping(cmisMapping);
-        return accessor;
+        return new ObjectIdPropertyAccessor(cmisMapping, serviceRegistry);
     }
 
     public NamedPropertyAccessor getFixedValuePropertyAccessor(String propertyName, Serializable fixedValue, CMISScope scope)
     {
-        FixedValuePropertyAccessor accessor = new FixedValuePropertyAccessor();
-        accessor.setServiceRegistry(serviceRegistry);
-        accessor.setCMISMapping(cmisMapping);
-        accessor.setPropertyName(propertyName);
+        FixedValuePropertyAccessor accessor = new FixedValuePropertyAccessor(cmisMapping, serviceRegistry, scope, propertyName);
         accessor.setFixedValue(fixedValue);
-        accessor.setScope(scope);
         return accessor;
     }
 
     public NamedPropertyAccessor getObjectTypeIdPropertyAccessor()
     {
-        ObjectTypeIdPropertyAccessor accessor = new ObjectTypeIdPropertyAccessor();
-        accessor.setServiceRegistry(serviceRegistry);
-        accessor.setCMISMapping(cmisMapping);
-        return accessor;
+        return new ObjectTypeIdPropertyAccessor(cmisMapping, serviceRegistry);
     }
 
     public NamedPropertyAccessor getIsImmutablePropertyAccessor()
     {
-        IsImmutablePropertyAccessor accessor = new IsImmutablePropertyAccessor();
-        accessor.setServiceRegistry(serviceRegistry);
-        accessor.setCMISMapping(cmisMapping);
-        return accessor;
+        return new IsImmutablePropertyAccessor(cmisMapping, serviceRegistry);
     }
 
     public NamedPropertyAccessor getIsLatestVersionPropertyAccessor()
     {
-        IsLatestVersionPropertyAccessor accessor = new IsLatestVersionPropertyAccessor();
-        accessor.setServiceRegistry(serviceRegistry);
-        accessor.setCMISMapping(cmisMapping);
-        return accessor;
+        return new IsLatestVersionPropertyAccessor(cmisMapping, serviceRegistry);
     }
 
     public NamedPropertyAccessor getIsMajorVersionPropertyAccessor()
     {
-        IsMajorVersionPropertyAccessor accessor = new IsMajorVersionPropertyAccessor();
-        accessor.setServiceRegistry(serviceRegistry);
-        accessor.setCMISMapping(cmisMapping);
-        return accessor;
+        return new IsMajorVersionPropertyAccessor(cmisMapping, serviceRegistry);
     }
 
     public NamedPropertyAccessor getIsLatestMajorVersionPropertyAccessor()
     {
-        IsLatestMajorVersionPropertyAccessor accessor = new IsLatestMajorVersionPropertyAccessor();
-        accessor.setServiceRegistry(serviceRegistry);
-        accessor.setCMISMapping(cmisMapping);
-        return accessor;
+        return new IsLatestMajorVersionPropertyAccessor(cmisMapping, serviceRegistry);
     }
 
     public NamedPropertyAccessor getVersionSeriesIdPropertyAccessor()
     {
-        VersionSeriesIdPropertyAccessor accessor = new VersionSeriesIdPropertyAccessor();
-        accessor.setServiceRegistry(serviceRegistry);
-        accessor.setCMISMapping(cmisMapping);
-        return accessor;
+        return new VersionSeriesIdPropertyAccessor(cmisMapping, serviceRegistry);
     }
 
     public NamedPropertyAccessor getVersionSeriesIsCheckedOutPropertyAccessor()
     {
-        IsVersionSeriesCheckedOutPropertyAccessor accessor = new IsVersionSeriesCheckedOutPropertyAccessor();
-        accessor.setServiceRegistry(serviceRegistry);
-        accessor.setCMISMapping(cmisMapping);
-        return accessor;
+        return new IsVersionSeriesCheckedOutPropertyAccessor(cmisMapping, serviceRegistry);
     }
 
     public NamedPropertyAccessor getVersionSeriesCheckedOutByPropertyAccessor()
     {
-        VersionSeriesCheckedOutByPropertyAccessor accessor = new VersionSeriesCheckedOutByPropertyAccessor();
-        accessor.setServiceRegistry(serviceRegistry);
-        accessor.setCMISMapping(cmisMapping);
-        return accessor;
+        return new VersionSeriesCheckedOutByPropertyAccessor(cmisMapping, serviceRegistry);
     }
 
     public NamedPropertyAccessor getVersionSeriesCheckedOutIdPropertyAccessor()
     {
-        VersionSeriesCheckedOutIdPropertyAccessor accessor = new VersionSeriesCheckedOutIdPropertyAccessor();
-        accessor.setServiceRegistry(serviceRegistry);
-        accessor.setCMISMapping(cmisMapping);
-        return accessor;
+        return new VersionSeriesCheckedOutIdPropertyAccessor(cmisMapping, serviceRegistry);
     }
 
     public NamedPropertyAccessor getCheckinCommentPropertyAccessor()
     {
-        CheckinCommentPropertyAccessor accessor = new CheckinCommentPropertyAccessor();
-        accessor.setServiceRegistry(serviceRegistry);
-        accessor.setCMISMapping(cmisMapping);
-        return accessor;
+        return new CheckinCommentPropertyAccessor(cmisMapping, serviceRegistry);
     }
 
     public NamedPropertyAccessor getContentStreamLengthPropertyAccessor()
     {
-        ContentStreamLengthPropertyAccessor accessor = new ContentStreamLengthPropertyAccessor();
-        accessor.setServiceRegistry(serviceRegistry);
-        accessor.setCMISMapping(cmisMapping);
-        return accessor;
+        return new ContentStreamLengthPropertyAccessor(cmisMapping, serviceRegistry);
     }
 
     public NamedPropertyAccessor getContentStreamMimetypePropertyAccessor()
     {
-        ContentStreamMimetypePropertyAccessor accessor = new ContentStreamMimetypePropertyAccessor();
-        accessor.setServiceRegistry(serviceRegistry);
-        accessor.setCMISMapping(cmisMapping);
-        return accessor;
+        return new ContentStreamMimetypePropertyAccessor(cmisMapping, serviceRegistry);
     }
 
     public NamedPropertyAccessor getContentStreamUriPropertyAccessor()
     {
-        ContentStreamUriPropertyAccessor accessor = new ContentStreamUriPropertyAccessor();
-        accessor.setServiceRegistry(serviceRegistry);
-        accessor.setCMISMapping(cmisMapping);
-        return accessor;
+        return new ContentStreamUriPropertyAccessor(cmisMapping, serviceRegistry);
     }
 
     public NamedPropertyAccessor getParentPropertyAccessor()
     {
-        ParentPropertyAccessor accessor = new ParentPropertyAccessor();
-        accessor.setServiceRegistry(serviceRegistry);
-        accessor.setCMISMapping(cmisMapping);
-        accessor.setCMISService(cmisService);
-        return accessor;
+        return new ParentPropertyAccessor(cmisMapping, serviceRegistry, cmisService);
     }
 
     /**

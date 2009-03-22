@@ -32,6 +32,7 @@ import org.alfresco.cmis.dictionary.CMISMapping;
 import org.alfresco.cmis.dictionary.CMISScope;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.search.impl.querymodel.PredicateMode;
+import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -53,17 +54,13 @@ import org.apache.lucene.search.BooleanClause.Occur;
 public class ParentPropertyAccessor extends AbstractNamedPropertyAccessor
 {
     private CMISService cmisService;
-
-
-    /**
-     * @param cmisService
-     */
-    public void setCMISService(CMISService cmisService)
+    
+    protected ParentPropertyAccessor(CMISMapping cmisMapping, ServiceRegistry serviceRegistry, CMISService cmisService)
     {
+        super(cmisMapping, serviceRegistry, CMISScope.FOLDER, CMISMapping.PROP_PARENT_ID);
         this.cmisService = cmisService;
     }
 
-    
     public Serializable getProperty(NodeRef nodeRef)
     {
         if (nodeRef.equals(cmisService.getDefaultRootNodeRef()))
@@ -82,20 +79,11 @@ public class ParentPropertyAccessor extends AbstractNamedPropertyAccessor
         }
     }
     
-
-    @Override
-    public String getPropertyName()
+    public void setProperty(NodeRef nodeRef, Serializable value)
     {
-        return CMISMapping.PROP_PARENT_ID;
+        throw new UnsupportedOperationException();
     }
 
-    
-    @Override
-    public CMISScope getScope()
-    {
-       return CMISScope.FOLDER;
-    }
-    
     private String getLuceneFieldName()
     {
         return "PARENT";

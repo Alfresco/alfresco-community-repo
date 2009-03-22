@@ -38,25 +38,19 @@ public abstract class AbstractPropertyAccessor
     private CMISMapping cmisMapping;
     private ServiceRegistry serviceRegistry;
 
-    /**
-     * @param cmisMapping
-     */
-    public void setCMISMapping(CMISMapping cmisMapping)
+    
+    protected AbstractPropertyAccessor(CMISMapping cmisMapping, ServiceRegistry serviceRegistry)
     {
         this.cmisMapping = cmisMapping;
-    }
-    
-    public void setServiceRegistry(ServiceRegistry serviceRegistry)
-    {
         this.serviceRegistry = serviceRegistry;
     }
 
-    public ServiceRegistry getServiceRegistry()
+    protected ServiceRegistry getServiceRegistry()
     {
         return serviceRegistry;
     }
 
-    public CMISMapping getCMISMapping()
+    protected CMISMapping getCMISMapping()
     {
         return cmisMapping;
     }

@@ -28,6 +28,7 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.alfresco.repo.forms.FieldDefinition;
@@ -76,7 +77,7 @@ public class ScriptForm implements Serializable
 
     public FieldDefinition[] getFieldDefinitions()
     {
-        Collection<FieldDefinition> fieldDefs = form.getFieldDefinitions();
+        List<FieldDefinition> fieldDefs = form.getFieldDefinitions();
         if (fieldDefs == null)
         {
             fieldDefs = Collections.emptyList();
@@ -84,14 +85,19 @@ public class ScriptForm implements Serializable
         return fieldDefs.toArray(new FieldDefinition[fieldDefs.size()]);
     }
     
-    public ScriptableHashMap<String, ScriptFieldDefinition> getFieldDefinitionData()
+    public ScriptableHashMap<Integer, ScriptFieldDefinition> getFieldDefinitionData()
     {
-        ScriptableHashMap<String, ScriptFieldDefinition> result =
-            new ScriptableHashMap<String, ScriptFieldDefinition>();
-        Collection<FieldDefinition> fieldDefs = form.getFieldDefinitions();
+        ScriptableHashMap<Integer, ScriptFieldDefinition> result =
+            new ScriptableHashMap<Integer, ScriptFieldDefinition>();
+        List<FieldDefinition> fieldDefs = form.getFieldDefinitions();
+        
+        // An Integer-based Map is being used here as we need to allow field definitions
+        // for both properties and associations. It is possible for a property and an
+        // association to coexist with the same name.
+        int i = 0;
         for (FieldDefinition fd : fieldDefs)
         {
-            result.put(fd.getName(), new ScriptFieldDefinition(fd));
+            result.put(i++, new ScriptFieldDefinition(fd));
         }
         return result;
     }

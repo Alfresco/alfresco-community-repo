@@ -74,7 +74,6 @@ public class FormServiceImpl implements FormService
         }
         else
         {
-            // TODO Check with Gav that this is ok.
             Form result = null;
             try
             {

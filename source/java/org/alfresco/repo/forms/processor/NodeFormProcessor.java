@@ -52,6 +52,7 @@ public class NodeFormProcessor extends AbstractFormProcessorByHandlers
     /*
      * @see org.alfresco.repo.forms.processor.AbstractFormProcessor#getTypedItem(java.lang.String)
      */
+    @Override
     protected Object getTypedItem(String item)
     {
         // create NodeRef representation

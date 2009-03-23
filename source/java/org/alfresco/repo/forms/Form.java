@@ -37,7 +37,7 @@ public class Form
 {
     protected String item;
     protected String type;
-    protected Collection<FieldDefinition> fieldDefinitions;
+    protected List<FieldDefinition> fieldDefinitions;
     protected Collection<FieldGroup> fieldGroups;
     protected FormData data;
     
@@ -84,11 +84,11 @@ public class Form
     }
        
     /**
-     * Returns the collection of field definitions for the form
+     * Returns the list of field definitions for the form
      * 
-     * @return Collection of FieldDefintion objects or null if there are no fields
+     * @return List of FieldDefinition objects or null if there are no fields
      */
-    public Collection<FieldDefinition> getFieldDefinitions()
+    public List<FieldDefinition> getFieldDefinitions()
     {
         return this.fieldDefinitions;
     }
@@ -104,12 +104,12 @@ public class Form
     }
     
     /**
-     * Sets the collection of FieldDefintion objects representing the fields the
+     * Sets the list of FieldDefinition objects representing the fields the
      * form is able to display
      * 
-     * @param fieldDefinitions Collection of FieldDefinition objects
+     * @param fieldDefinitions List of FieldDefinition objects
      */
-    public void setFieldDefinitions(Collection<FieldDefinition> fieldDefinitions)
+    public void setFieldDefinitions(List<FieldDefinition> fieldDefinitions)
     {
         this.fieldDefinitions = fieldDefinitions;
     }
@@ -179,6 +179,7 @@ public class Form
     /*
      * @see java.lang.Object#toString()
      */
+    @Override
     public String toString()
     {
         StringBuilder buffer = new StringBuilder(super.toString());

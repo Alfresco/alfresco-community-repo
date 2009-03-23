@@ -64,6 +64,7 @@ public class ScriptFieldDefinition extends ScriptableObject
      * 
      * @see org.mozilla.javascript.Scriptable#get(String, Scriptable)
      */
+    @SuppressWarnings("unchecked")
     @Override
     public Object get(String name, Scriptable start)
     {
@@ -81,7 +82,6 @@ public class ScriptFieldDefinition extends ScriptableObject
             return NOT_FOUND;
         }
 
-        //TODO Value conversion.
         if (result instanceof List)
         {
             return ((List)result).toArray();
@@ -92,6 +92,7 @@ public class ScriptFieldDefinition extends ScriptableObject
     /**
      * @see org.mozilla.javascript.Scriptable#getClassName()
      */
+    @Override
     public String getClassName()
     {
         return this.getClass().getSimpleName();
@@ -100,6 +101,7 @@ public class ScriptFieldDefinition extends ScriptableObject
     /**
      * @see org.mozilla.javascript.Scriptable#has(String, Scriptable)
      */
+    @Override
     public boolean has(String name, Scriptable start)
     {
         if (super.has(name, start))

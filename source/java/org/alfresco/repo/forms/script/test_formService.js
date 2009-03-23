@@ -24,17 +24,20 @@ function testGetFormForContentNode()
 	
 	test.assertEquals(22, fieldDefs.length);
 	
+	// This dataHash is now an integer-keyed hash of the field definition data objects.
 	var fieldDefnDataHash = form.fieldDefinitionData;
+	test.assertNotNull(fieldDefnDataHash, "field definition data should not be null.");
+	test.assertEquals(22, fieldDefnDataHash.length);
 	
-	var nameField = fieldDefnDataHash['cm:name'];
-    var titleField = fieldDefnDataHash['cm:title'];
-    var descField = fieldDefnDataHash['cm:description'];
-    var originatorField = fieldDefnDataHash['cm:originator'];
-    var addresseeField = fieldDefnDataHash['cm:addressee'];
-    var addresseesField = fieldDefnDataHash['cm:addressees'];
-    var subjectField = fieldDefnDataHash['cm:subjectline'];
-    var sentDateField = fieldDefnDataHash['cm:sentdate'];
-    var referencesField = fieldDefnDataHash['cm:references'];
+	var nameField = getFieldDefnFromMap('cm:name', fieldDefnDataHash);
+	var titleField = getFieldDefnFromMap('cm:title', fieldDefnDataHash);
+    var descField = getFieldDefnFromMap('cm:description', fieldDefnDataHash);
+    var originatorField = getFieldDefnFromMap('cm:originator', fieldDefnDataHash);
+    var addresseeField = getFieldDefnFromMap('cm:addressee', fieldDefnDataHash);
+    var addresseesField = getFieldDefnFromMap('cm:addressees', fieldDefnDataHash);
+    var subjectField = getFieldDefnFromMap('cm:subjectline', fieldDefnDataHash);
+    var sentDateField = getFieldDefnFromMap('cm:sentdate', fieldDefnDataHash);
+    var referencesField = getFieldDefnFromMap('cm:references', fieldDefnDataHash);
 
     test.assertNotNull(nameField, "Expecting to find the cm:name field");
     test.assertNotNull(titleField, "Expecting to find the cm:title field");
@@ -118,6 +121,21 @@ function testGetFormForContentNode()
     var targets = fieldData["assoc:cm:references"].value;
     test.assertEquals(1, targets.length);
     test.assertEquals(testAssociatedDoc, targets[0]);
+}
+
+function getFieldDefnFromMap(name, fieldDefnDataHash)
+{
+	var result = '';
+	for (var i = 0; i < fieldDefnDataHash.length; i++)
+	{
+		var candidateFieldDefn = fieldDefnDataHash[i];
+		if (candidateFieldDefn.name == name)
+		{
+			result = candidateFieldDefn;
+			break;
+		}
+	}
+	return result;
 }
 
 // Execute tests

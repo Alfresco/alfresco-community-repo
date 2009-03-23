@@ -36,7 +36,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.filesys.ServerConfigurationBean;
-import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -339,8 +339,8 @@ public class WebDAVServlet extends HttpServlet
 
         // Use the system user as the authenticated context for the filesystem initialization
 
-        AuthenticationComponent authComponent = (AuthenticationComponent) context.getBean("authenticationComponent");
-        authComponent.setCurrentUser( authComponent.getSystemUserName());
+        AuthenticationContext authComponent = (AuthenticationContext) context.getBean("authenticationContext");
+        authComponent.setSystemUserAsCurrentUser();
         
         
         // Wrap the initialization in a transaction

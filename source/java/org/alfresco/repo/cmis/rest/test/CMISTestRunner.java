@@ -32,7 +32,7 @@ import java.util.List;
 import junit.framework.TestResult;
 import junit.framework.TestSuite;
 
-import org.alfresco.repo.cmis.rest.test.CMISTest.CMISTestListener;
+import org.alfresco.repo.cmis.rest.test.BaseCMISWebScriptTest.CMISTestListener;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest.RemoteServer;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest.WebScriptTestListener;
 import org.alfresco.util.CachingDateFormat;

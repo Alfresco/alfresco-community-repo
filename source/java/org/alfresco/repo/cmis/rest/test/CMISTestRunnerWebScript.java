@@ -27,7 +27,7 @@ package org.alfresco.repo.cmis.rest.test;
 import java.io.IOException;
 import java.io.PrintStream;
 
-import org.alfresco.repo.cmis.rest.test.CMISTest.CMISTestListener;
+import org.alfresco.repo.cmis.rest.test.BaseCMISWebScriptTest.CMISTestListener;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest.WebScriptTestListener;
 import org.alfresco.web.scripts.AbstractWebScript;
 import org.alfresco.web.scripts.WebScriptRequest;

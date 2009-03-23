@@ -208,7 +208,7 @@
         </property>
     </bean>
 
-    <bean id="dataSource" class="org.springframework.jndi.JndiObjectFactoryBean">
+    <bean id="dataSource" class="org.alfresco.config.JndiObjectFactoryBean">
         <property name="jndiName">
             <value>java:comp/env/jdbc/dataSource</value>
         </property>

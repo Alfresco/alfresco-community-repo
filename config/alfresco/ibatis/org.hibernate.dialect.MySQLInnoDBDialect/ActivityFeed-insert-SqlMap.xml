@@ -8,13 +8,13 @@
 
    <insert id="insert.activity.feed" parameterClass="ActivityFeed">
    
-      <selectKey resultClass="long" keyProperty="id" type="pre">
-         select alf_activity_feed_seq.nextval as value from dual
+      insert into alf_activity_feed (activity_type, activity_summary, activity_format, feed_user_id, post_user_id, post_date, post_id, site_network, app_tool, feed_date) 
+      values (#activityType#, #activitySummary#, #activitySummaryFormat#, #feedUserId#, #postUserId#, #postDate#, #postId#, #siteNetwork#, #appTool#, #feedDate#)
+
+      <selectKey resultClass="long" keyProperty="id" type="post">
+         KEY_COLUMN:id
       </selectKey>
       
-      insert into alf_activity_feed (id, activity_type, activity_summary, activity_format, feed_user_id, post_user_id, post_date, post_id, site_network, app_tool, feed_date) 
-      values (#id#, #activityType#, #activitySummary#, #activitySummaryFormat#, #feedUserId#, #postUserId#, #postDate#, #postId#, #siteNetwork#, #appTool#, #feedDate#)
-
    </insert>
 
 </sqlMap>

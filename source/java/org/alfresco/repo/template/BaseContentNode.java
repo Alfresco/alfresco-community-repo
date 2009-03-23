@@ -483,6 +483,18 @@ public abstract class BaseContentNode implements TemplateContent
         return (o instanceof TemplateContentData);
     }
     
+    /**
+     * Helper to return true if the supplied property value is a TemplateNodeRef object
+     * 
+     * @param o     Object to test
+     * 
+     * @return true if instanceof isTemplateNodeRef, false otherwise
+     */
+    public boolean isTemplateNodeRef(Object o)
+    {
+        return (o instanceof TemplateNodeRef);
+    }
+    
     
     // ------------------------------------------------------------------------------
     // Inner classes 

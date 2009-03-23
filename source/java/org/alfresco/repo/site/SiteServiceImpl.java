@@ -572,19 +572,35 @@ public class SiteServiceImpl implements SiteService, SiteModel
         NodeRef siteRoot = getSiteRoot();
         if (nameFilter != null && nameFilter.length() != 0)
         {
-            // Perform a Lucene search under the Site parent node using *name* search query
-            QueryParameterDefinition[] params = new QueryParameterDefinition[1];
+            // Perform a Lucene search under the Site parent node using *name*, *title* and *description* search query
+            QueryParameterDefinition[] params = new QueryParameterDefinition[3];
             params[0] = new QueryParameterDefImpl(
                     ContentModel.PROP_NAME,
                     dictionaryService.getDataType(
                             DataTypeDefinition.TEXT),
                             true,
                             LuceneQueryParser.escape(nameFilter.replace('"', ' ')));
-            
+
+            params[1] = new QueryParameterDefImpl(
+                    ContentModel.PROP_TITLE,
+                    dictionaryService.getDataType(
+                            DataTypeDefinition.TEXT),
+                            true,
+                            QueryParser.escape(nameFilter.replace('"', ' ')));
+
+            params[2] = new QueryParameterDefImpl(
+                    ContentModel.PROP_DESCRIPTION,
+                    dictionaryService.getDataType(
+                            DataTypeDefinition.TEXT),
+                            true,
+                            QueryParser.escape(nameFilter.replace('"', ' ')));
+
             // get the sites that match the specified names
             StringBuilder query = new StringBuilder(128);
             query.append("+PARENT:\"").append(siteRoot.toString())
-                 .append("\" +@cm\\:name:\"*${cm:name}*\"");
+                 .append("\" +(@cm\\:name:\"*${cm:name}*\"")
+                 .append(" @cm\\:title:\"*${cm:title}*\"")
+                 .append(" @cm\\:description:\"*${cm:description}*\")");
             ResultSet results = this.searchService.query(
                     siteRoot.getStoreRef(),
                     SearchService.LANGUAGE_LUCENE,

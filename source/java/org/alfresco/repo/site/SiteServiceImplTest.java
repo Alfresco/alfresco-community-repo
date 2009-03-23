@@ -237,6 +237,22 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         sites = this.siteService.listSites(null, null);
         assertNotNull(sites);
         assertEquals(4, sites.size());
+        
+        // Get sites by matching name
+        sites = this.siteService.listSites("One", null);
+        assertNotNull(sites);
+        assertEquals(1, sites.size());
+        
+        // Get sites by matching title
+        sites = this.siteService.listSites("title", null);
+        assertNotNull(sites);
+        assertEquals(4, sites.size());
+
+        // Get sites by matching description
+        sites = this.siteService.listSites("description", null);
+        assertNotNull(sites);
+        assertEquals(4, sites.size());
+
         // Do detailed check of the site info objects
         for (SiteInfo site : sites)
         {

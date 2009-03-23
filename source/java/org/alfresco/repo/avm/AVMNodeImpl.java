@@ -116,10 +116,10 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
         fIsRoot = false;
         long time = System.currentTimeMillis();
         String user = 
-            RawServices.Instance().getAuthenticationComponent().getCurrentUserName();
+            RawServices.Instance().getAuthenticationContext().getCurrentUserName();
         if (user == null)
         {
-            user = RawServices.Instance().getAuthenticationComponent().getSystemUserName();
+            user = RawServices.Instance().getAuthenticationContext().getSystemUserName();
         }
         fBasicAttributes = new BasicAttributesImpl(user,
                                                    user,
@@ -332,10 +332,10 @@ public abstract class AVMNodeImpl implements AVMNode, Serializable
             checkReadOnly();
         }
         String user = 
-            RawServices.Instance().getAuthenticationComponent().getCurrentUserName();
+            RawServices.Instance().getAuthenticationContext().getCurrentUserName();
         if (user == null)
         {
-            user = RawServices.Instance().getAuthenticationComponent().getSystemUserName();
+            user = RawServices.Instance().getAuthenticationContext().getSystemUserName();
         }
         fBasicAttributes.setModDate(System.currentTimeMillis());
         fBasicAttributes.setLastModifier(user);

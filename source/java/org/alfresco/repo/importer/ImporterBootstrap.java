@@ -41,7 +41,7 @@ import java.util.ResourceBundle;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.i18n.I18NUtil;
-import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -101,7 +101,7 @@ public class ImporterBootstrap extends AbstractLifecycleBean
     private Properties configuration = null;
     private String strLocale = null;
     private Locale locale = null;
-    private AuthenticationComponent authenticationComponent;
+    private AuthenticationContext authenticationContext;
     
     // Bootstrap performed?
     private boolean bootstrapPerformed = false;
@@ -185,11 +185,11 @@ public class ImporterBootstrap extends AbstractLifecycleBean
     /**
      * Set the authentication component
      * 
-     * @param authenticationComponent
+     * @param authenticationContext
      */
-    public void setAuthenticationComponent(AuthenticationComponent authenticationComponent)
+    public void setAuthenticationContext(AuthenticationContext authenticationContext)
     {
-        this.authenticationComponent = authenticationComponent;
+        this.authenticationContext = authenticationContext;
     }
 
     /**
@@ -345,7 +345,7 @@ public class ImporterBootstrap extends AbstractLifecycleBean
                     return transactionService.getRetryingTransactionHelper().doInTransaction(doImportCallback, transactionService.isReadOnly(), false);
                 }
             };
-            AuthenticationUtil.runAs(importRunAs, authenticationComponent.getSystemUserName());
+            AuthenticationUtil.runAs(importRunAs, authenticationContext.getSystemUserName());
         }
         catch(Throwable e)
         {

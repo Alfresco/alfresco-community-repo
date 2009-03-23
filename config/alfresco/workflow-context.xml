@@ -9,7 +9,7 @@
 
    <bean id="workflowDeployer" class="org.alfresco.repo.workflow.WorkflowDeployer" abstract="true">
       <property name="transactionService" ref="transactionService"/>
-      <property name="authenticationComponent" ref="authenticationComponent" />
+      <property name="authenticationContext" ref="authenticationContext" />
       <property name="workflowService" ref="WorkflowService" />
       <property name="dictionaryDAO" ref="dictionaryDAO"/>
       <property name="allowWrite">

@@ -41,7 +41,7 @@ import org.alfresco.config.xml.XMLConfigService;
 import org.alfresco.config.xml.elementreader.ConfigElementReader;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.cache.SimpleCache;
-import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.TenantAdminService;
@@ -68,7 +68,7 @@ public class RepoXMLConfigService extends XMLConfigService implements TenantDepl
     
     // Dependencies
     private TransactionService transactionService;
-    private AuthenticationComponent authenticationComponent;
+    private AuthenticationContext authenticationContext;
     private TenantAdminService tenantAdminService;
     
     // Internal cache (clusterable)
@@ -82,9 +82,9 @@ public class RepoXMLConfigService extends XMLConfigService implements TenantDepl
         this.transactionService = transactionService;
     }
 
-    public void setAuthenticationComponent(AuthenticationComponent authenticationComponent)
+    public void setAuthenticationContext(AuthenticationContext authenticationContext)
     {
-        this.authenticationComponent = authenticationComponent;
+        this.authenticationContext = authenticationContext;
     }
        
     public void setTenantAdminService(TenantAdminService tenantAdminService)
@@ -119,10 +119,10 @@ public class RepoXMLConfigService extends XMLConfigService implements TenantDepl
         ConfigData configData = null;
     	
     	// can be null e.g. initial login, after fresh bootstrap
-        String currentUser = authenticationComponent.getCurrentUserName();
+        String currentUser = authenticationContext.getCurrentUserName();
         if (currentUser == null)
         {
-            authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
+            authenticationContext.setSystemUserAsCurrentUser();
         }
         
         UserTransaction userTransaction = transactionService.getUserTransaction();
@@ -153,7 +153,7 @@ public class RepoXMLConfigService extends XMLConfigService implements TenantDepl
         {
             if (currentUser == null)
             {
-                authenticationComponent.clearCurrentSecurityContext();
+                authenticationContext.clearCurrentSecurityContext();
             }
         }
         

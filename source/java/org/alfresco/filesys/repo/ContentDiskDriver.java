@@ -67,8 +67,8 @@ import org.alfresco.jlan.smb.server.SMBServer;
 import org.alfresco.jlan.smb.server.SMBSrvSession;
 import org.alfresco.jlan.util.WildCard;
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.service.cmr.lock.NodeLockedException;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -118,7 +118,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
     private PermissionService permissionService;
     private FileFolderService fileFolderService;
     
-    private AuthenticationComponent authComponent;
+    private AuthenticationContext authenticationContext;
     private AuthenticationService authService;
 
     // Node monitor factory
@@ -162,10 +162,10 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
     /**
      * Return the authentication component
      * 
-     * @return AuthenticationComponent
+     * @return AuthenticationContext
      */
-    public final AuthenticationComponent getAuthComponent() {
-    	return authComponent;
+    public final AuthenticationContext getAuthenticationContext() {
+    	return authenticationContext;
     }
     
     /**
@@ -270,11 +270,11 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
     /**
      * Set the authentication component
      * 
-     * @param authComponent AuthenticationComponent
+     * @param authComponent AuthenticationContext
      */
-    public void setAuthenticationComponent(AuthenticationComponent authComponent)
+    public void setAuthenticationContext(AuthenticationContext authComponent)
     {
-        this.authComponent = authComponent;
+        this.authenticationContext = authComponent;
     }
 
     /**

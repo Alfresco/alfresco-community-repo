@@ -41,7 +41,6 @@ import org.alfresco.repo.avm.AVMRepository;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
-import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.ACLType;
@@ -189,14 +188,6 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
     public void setPermissionsDaoComponent(PermissionsDaoComponent permissionsDaoComponent)
     {
         this.permissionsDaoComponent = permissionsDaoComponent;
-    }
-
-    /**
-     * @deprecated
-     */
-    public void setAuthenticationComponent(AuthenticationComponent authenticationComponent)
-    {
-        log.warn("Bean property 'authenticationComponent' no longer required for 'PermissionServiceImpl'.");
     }
 
     /**

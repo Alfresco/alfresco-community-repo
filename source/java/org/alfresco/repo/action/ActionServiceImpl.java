@@ -36,7 +36,7 @@ import java.util.Set;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.evaluator.ActionConditionEvaluator;
 import org.alfresco.repo.action.executer.ActionExecuter;
-import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionCondition;
@@ -109,7 +109,7 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
     private DictionaryService dictionaryService;
     
     /** The authentication component */
-    private AuthenticationComponent authenticationComponent;
+    private AuthenticationContext authenticationContext;
        
     /**
      * The asynchronous action execution queues
@@ -165,11 +165,11 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
     /**
      * Set the authentication component
      * 
-     * @param authenticationComponent   the authentication component
+     * @param authenticationContext   the authentication component
      */
-    public void setAuthenticationComponent(AuthenticationComponent authenticationComponent)
+    public void setAuthenticationContext(AuthenticationContext authenticationContext)
     {
-        this.authenticationComponent = authenticationComponent;
+        this.authenticationContext = authenticationContext;
     }
     
     /**
@@ -587,7 +587,7 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
         }
         
         // get the current user early in case the process fails and we are unable to do it later
-        String currentUserName = this.authenticationComponent.getCurrentUserName();
+        String currentUserName = this.authenticationContext.getCurrentUserName();
         
         if (actionChain == null || actionChain.contains(action.getId()) == false)
         {
@@ -680,7 +680,7 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
         // Debug output
         if (logger.isDebugEnabled() == true)
         {
-            logger.debug("The action is being executed as the user: " + this.authenticationComponent.getCurrentUserName());
+            logger.debug("The action is being executed as the user: " + this.authenticationContext.getCurrentUserName());
         }
         
         // Get the action executer and execute
@@ -1457,9 +1457,9 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
             // Set the run as user to the current user
             if (logger.isDebugEnabled() == true)
             {
-                logger.debug("The current user is: " + this.authenticationComponent.getCurrentUserName());
+                logger.debug("The current user is: " + this.authenticationContext.getCurrentUserName());
             }
-            ((ActionImpl)action).setRunAsUser(this.authenticationComponent.getCurrentUserName());
+            ((ActionImpl)action).setRunAsUser(this.authenticationContext.getCurrentUserName());
             
             // Ensure that the transaction listener is bound to the transaction
             AlfrescoTransactionSupport.bindListener(this.transactionListener);

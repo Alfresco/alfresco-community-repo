@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.alfresco.repo.importer.ImporterBootstrap;
-import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
@@ -96,8 +96,8 @@ public class TestData
 
         try
         {
-            AuthenticationComponent authenticationComponent = (AuthenticationComponent)applicationContext.getBean("authenticationComponent");
-            authenticationComponent.setSystemUserAsCurrentUser();
+            AuthenticationContext authenticationContext = (AuthenticationContext)applicationContext.getBean("authenticationContext");
+            authenticationContext.setSystemUserAsCurrentUser();
 
             try
             {
@@ -105,7 +105,7 @@ public class TestData
                 StoreRef storeRef = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, workspaceName);
 
                 ImporterBootstrap bootstrap = new ImporterBootstrap();
-                bootstrap.setAuthenticationComponent((AuthenticationComponent) applicationContext.getBean("authenticationComponent"));
+                bootstrap.setAuthenticationContext((AuthenticationContext) applicationContext.getBean("authenticationContext"));
                 bootstrap.setImporterService((ImporterService) applicationContext.getBean(ServiceRegistry.IMPORTER_SERVICE.getLocalName()));
                 bootstrap.setNodeService((NodeService) applicationContext.getBean(ServiceRegistry.NODE_SERVICE.getLocalName()));
                 bootstrap.setNamespaceService((NamespaceService) applicationContext.getBean(ServiceRegistry.NAMESPACE_SERVICE.getLocalName()));
@@ -121,7 +121,7 @@ public class TestData
                 bootstrap.bootstrap();
 
                 // Bootstrap clears security context
-                authenticationComponent.setSystemUserAsCurrentUser();
+                authenticationContext.setSystemUserAsCurrentUser();
                 
                 PermissionService permissionService = (PermissionService)applicationContext.getBean(ServiceRegistry.PERMISSIONS_SERVICE.getLocalName());
                 NodeService nodeService = (NodeService)applicationContext.getBean(ServiceRegistry.NODE_SERVICE.getLocalName());
@@ -134,7 +134,7 @@ public class TestData
             }
             finally
             {
-                authenticationComponent.clearCurrentSecurityContext();
+                authenticationContext.clearCurrentSecurityContext();
             }
         }
         catch (RuntimeException e)

@@ -152,6 +152,12 @@
 
     <!-- Parent bean for beans derived from AbstractAuthenticationComponent -->
     <bean id="authenticationComponentBase" abstract="true">
+       <property name="authenticationContext">
+            <ref bean="authenticationContext"/>
+        </property>
+    </bean>
+
+    <bean id="authenticationContext" class="org.alfresco.repo.security.authentication.AuthenticationContextImpl">
        <property name="tenantService">
             <ref bean="tenantService"/>
         </property>

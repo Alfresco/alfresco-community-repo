@@ -34,7 +34,7 @@ import org.alfresco.repo.action.AsynchronousActionExecutionQueuePolicies.OnAsync
 import org.alfresco.repo.policy.ClassPolicyDelegate;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.rule.RuleServiceImpl;
-import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
@@ -62,7 +62,7 @@ public class AsynchronousActionExecutionQueueImpl implements AsynchronousActionE
     /** Services */
     private ThreadPoolExecutor threadPoolExecutor;
     private TransactionService transactionService;
-    private AuthenticationComponent authenticationComponent;
+    private AuthenticationContext authenticationContext;
     private PolicyComponent policyComponent;
     private NodeService nodeService;
     
@@ -109,11 +109,11 @@ public class AsynchronousActionExecutionQueueImpl implements AsynchronousActionE
     /**
      * Set the authentication component
      * 
-     * @param authenticationComponent       the authentication component
+     * @param authenticationContext       the authentication component
      */
-    public void setAuthenticationComponent(AuthenticationComponent authenticationComponent)
+    public void setAuthenticationContext(AuthenticationContext authenticationContext)
     {
-        this.authenticationComponent = authenticationComponent;
+        this.authenticationContext = authenticationContext;
     }
 
     /**

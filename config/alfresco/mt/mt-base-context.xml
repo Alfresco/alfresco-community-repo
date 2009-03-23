@@ -10,7 +10,7 @@
       -->
       <property name="nodeService" ref="dbNodeServiceImpl"/> <!-- TODO - go direct, until we expose deleteStore via public NodeService API -->
       <property name="dictionaryComponent" ref="dictionaryService"/>
-      <property name="authenticationComponent" ref="authenticationComponent"/>
+      <property name="authenticationContext" ref="authenticationContext"/>
       <property name="repoAdminService" ref="RepoAdminService"/>
       <property name="tenantService" ref="tenantService"/>
       <property name="transactionService" ref="transactionComponent"/>

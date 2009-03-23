@@ -39,7 +39,7 @@ import java.util.Set;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.repo.cache.SimpleCache;
-import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -130,11 +130,6 @@ public class ExportSourceImporter implements ImporterJobSPI
     public void setCaches(Set<SimpleCache> caches)
     {
         this.caches = caches;
-    }
-
-    public void setAuthenticationComponent(AuthenticationComponent authenticationComponent)
-    {
-        logger.warn("Bearn property 'authenticationComponent' no longer used on 'ExportSourceImporter'.");
     }
 
     public void setSearchService(SearchService searchService)

@@ -29,7 +29,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -58,7 +58,7 @@ public class SimpleAuthorityServiceImpl implements AuthorityService
 
     private Set<String> adminUsers;
 
-    private AuthenticationComponent authenticationComponent;
+    private AuthenticationContext authenticationContext;
     
     private TenantService tenantService;
     
@@ -90,7 +90,7 @@ public class SimpleAuthorityServiceImpl implements AuthorityService
      */
     public boolean hasAdminAuthority()
     {
-        String currentUserName = authenticationComponent.getCurrentUserName();
+        String currentUserName = authenticationContext.getCurrentUserName();
 
         // note: for MT, this currently relies on a naming convention which assumes that all tenant admins will 
         // have the same base name as the default non-tenant specific admin. Typically "admin" is the default required admin user, 
@@ -114,9 +114,9 @@ public class SimpleAuthorityServiceImpl implements AuthorityService
 
     // IOC
 
-    public void setAuthenticationComponent(AuthenticationComponent authenticationComponent)
+    public void setAuthenticationContext(AuthenticationContext authenticationContext)
     {
-        this.authenticationComponent = authenticationComponent;
+        this.authenticationContext = authenticationContext;
     }
 
     public void setAdminUsers(Set<String> adminUsers)
@@ -127,7 +127,7 @@ public class SimpleAuthorityServiceImpl implements AuthorityService
     public Set<String> getAuthorities()
     {
         Set<String> authorities = new HashSet<String>();
-        String currentUserName = authenticationComponent.getCurrentUserName();
+        String currentUserName = authenticationContext.getCurrentUserName();
         if (adminUsers.contains(currentUserName))
         {
             authorities.addAll(adminSet);

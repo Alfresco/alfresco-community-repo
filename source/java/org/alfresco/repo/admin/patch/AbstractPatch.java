@@ -33,7 +33,7 @@ import java.util.List;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.node.integrity.IntegrityChecker;
-import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.Tenant;
@@ -95,7 +95,7 @@ public abstract class AbstractPatch implements Patch
     protected NamespaceService namespaceService;
     protected NodeService nodeService;
     protected SearchService searchService;
-    protected AuthenticationComponent authenticationComponent;
+    protected AuthenticationContext authenticationContext;
     protected TenantAdminService tenantAdminService;
     
 
@@ -155,9 +155,9 @@ public abstract class AbstractPatch implements Patch
         this.searchService = searchService;
     }
 
-    public void setAuthenticationComponent(AuthenticationComponent authenticationComponent)
+    public void setAuthenticationContext(AuthenticationContext authenticationContext)
     {
-        this.authenticationComponent = authenticationComponent;
+        this.authenticationContext = authenticationContext;
     }
     
     public void setTenantAdminService(TenantAdminService tenantAdminService)
@@ -342,7 +342,7 @@ public abstract class AbstractPatch implements Patch
         checkPropertyNotNull(namespaceService, "namespaceService");
         checkPropertyNotNull(nodeService, "nodeService");
         checkPropertyNotNull(searchService, "searchService");
-        checkPropertyNotNull(authenticationComponent, "authenticationComponent");
+        checkPropertyNotNull(authenticationContext, "authenticationContext");
         if (fixesFromSchema == -1 || fixesToSchema == -1 || targetSchema == -1)
         {
             throw new AlfrescoRuntimeException(

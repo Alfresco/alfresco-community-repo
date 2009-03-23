@@ -131,10 +131,10 @@ public class AVMStoreImpl implements AVMStore, Serializable
         fNextVersionID = 0;
         fRoot = null;
         AVMDAOs.Instance().fAVMStoreDAO.save(this);
-        String creator = RawServices.Instance().getAuthenticationComponent().getCurrentUserName();
+        String creator = RawServices.Instance().getAuthenticationContext().getCurrentUserName();
         if (creator == null)
         {
-            creator = RawServices.Instance().getAuthenticationComponent().getSystemUserName();
+            creator = RawServices.Instance().getAuthenticationContext().getSystemUserName();
         }
         setProperty(ContentModel.PROP_CREATOR, new PropertyValue(null, creator));
         setProperty(ContentModel.PROP_CREATED, new PropertyValue(null, new Date(System.currentTimeMillis())));
@@ -294,10 +294,10 @@ public class AVMStoreImpl implements AVMStore, Serializable
         }
         AVMDAOs.Instance().fAVMNodeDAO.flush();
         // Make up a new version record.
-        String user = RawServices.Instance().getAuthenticationComponent().getCurrentUserName();
+        String user = RawServices.Instance().getAuthenticationContext().getCurrentUserName();
         if (user == null)
         {
-            user = RawServices.Instance().getAuthenticationComponent().getSystemUserName();
+            user = RawServices.Instance().getAuthenticationContext().getSystemUserName();
         }
         me = (AVMStoreImpl)AVMDAOs.Instance().fAVMStoreDAO.getByID(fID);
         VersionRoot versionRoot = new VersionRootImpl(me,

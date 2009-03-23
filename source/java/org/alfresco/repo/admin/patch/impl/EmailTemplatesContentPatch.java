@@ -181,7 +181,7 @@ public class EmailTemplatesContentPatch extends AbstractPatch
                 return null;
             }
         };
-        AuthenticationUtil.runAs(importRunAs, authenticationComponent.getSystemUserName());
+        AuthenticationUtil.runAs(importRunAs, authenticationContext.getSystemUserName());
         
         // output a message to describe the result
         return I18NUtil.getMessage(MSG_CREATED);

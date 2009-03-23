@@ -37,7 +37,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.activities.ActivityType;
 import org.alfresco.repo.search.QueryParameterDefImpl;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
-import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.TenantAdminService;
@@ -125,7 +125,7 @@ public class SiteServiceImpl implements SiteService, SiteModel
     private PermissionService permissionService;
     private ActivityService activityService;
     private PersonService personService;
-    private AuthenticationComponent authenticationComponent;
+    private AuthenticationContext authenticationContext;
     private TaggingService taggingService;
     private AuthorityService authorityService;
     private DictionaryService dictionaryService;
@@ -205,10 +205,10 @@ public class SiteServiceImpl implements SiteService, SiteModel
     /**
      * Set authentication component
      */
-    public void setAuthenticationComponent(
-            AuthenticationComponent authenticationComponent)
+    public void setAuthenticationContext(
+            AuthenticationContext authenticationContext)
     {
-        this.authenticationComponent = authenticationComponent;
+        this.authenticationContext = authenticationContext;
     }
 
     /**
@@ -273,7 +273,7 @@ public class SiteServiceImpl implements SiteService, SiteModel
         PropertyCheck.mandatory(this, "searchService", searchService);
         PropertyCheck.mandatory(this, "namespaceService", namespaceService);
         PropertyCheck.mandatory(this, "permissionService", permissionService);
-        PropertyCheck.mandatory(this, "authenticationComponent", authenticationComponent);
+        PropertyCheck.mandatory(this, "authenticationContext", authenticationContext);
         PropertyCheck.mandatory(this, "personService", personService);
         PropertyCheck.mandatory(this, "activityService", activityService);
         PropertyCheck.mandatory(this, "taggingService", taggingService);
@@ -346,7 +346,7 @@ public class SiteServiceImpl implements SiteService, SiteModel
         this.permissionService.setInheritParentPermissions(siteNodeRef, false);
 
         // Get the current user
-        final String currentUser = authenticationComponent.getCurrentUserName();
+        final String currentUser = authenticationContext.getCurrentUserName();
 
         // Create the relevant groups and assign permissions
         AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()

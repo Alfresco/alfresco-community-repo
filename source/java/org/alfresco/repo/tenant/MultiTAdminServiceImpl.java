@@ -47,7 +47,7 @@ import org.alfresco.repo.content.TenantRoutingFileContentStore;
 import org.alfresco.repo.dictionary.DictionaryComponent;
 import org.alfresco.repo.importer.ImporterBootstrap;
 import org.alfresco.repo.node.db.DbNodeServiceImpl;
-import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.site.SiteAVMBootstrap;
@@ -88,7 +88,7 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
     private NodeService nodeService;
     private DictionaryComponent dictionaryComponent;
     private RepoAdminService repoAdminService;
-    private AuthenticationComponent authenticationComponent;    
+    private AuthenticationContext authenticationContext;    
     private TransactionService transactionService;    
     private MultiTServiceImpl tenantService;    
     private AttributeService attributeService;      
@@ -148,9 +148,9 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         this.repoAdminService = repoAdminService;
     }
     
-    public void setAuthenticationComponent(AuthenticationComponent authenticationComponent)
+    public void setAuthenticationContext(AuthenticationContext authenticationContext)
     {
-        this.authenticationComponent = authenticationComponent;
+        this.authenticationContext = authenticationContext;
     }
     
     public void setTransactionService(TransactionService transactionService)
@@ -276,7 +276,7 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         
         try 
         {
-            authenticationComponent.setSystemUserAsCurrentUser();
+            authenticationContext.setSystemUserAsCurrentUser();
             userTransaction.begin();
             
             // bootstrap Tenant Service internal cache            
@@ -319,7 +319,7 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         }
         finally
         {
-            authenticationComponent.clearCurrentSecurityContext();
+            authenticationContext.clearCurrentSecurityContext();
         }
     }
     
@@ -948,7 +948,7 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         if (tenantService.isEnabled())
         {               
             UserTransaction userTransaction = transactionService.getUserTransaction();           
-            authenticationComponent.setSystemUserAsCurrentUser();
+            authenticationContext.setSystemUserAsCurrentUser();
                                     
             List<Tenant> tenants = null;            
             try 
@@ -965,7 +965,7 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
             }
             finally
             {
-                authenticationComponent.clearCurrentSecurityContext();
+                authenticationContext.clearCurrentSecurityContext();
             }
 
             for (Tenant tenant : tenants)
@@ -1015,7 +1015,7 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         if (tenantService.isEnabled())
         {               
             UserTransaction userTransaction = transactionService.getUserTransaction();           
-            authenticationComponent.setSystemUserAsCurrentUser();
+            authenticationContext.setSystemUserAsCurrentUser();
                                     
             List<Tenant> tenants = null;            
             try 
@@ -1028,7 +1028,7 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
             {
                 // rollback the transaction
                 try { if (userTransaction != null) {userTransaction.rollback();} } catch (Exception ex) {}
-                try {authenticationComponent.clearCurrentSecurityContext(); } catch (Exception ex) {}
+                try {authenticationContext.clearCurrentSecurityContext(); } catch (Exception ex) {}
                 throw new AlfrescoRuntimeException("Failed to get tenants", e);
             }
                            
@@ -1249,6 +1249,6 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
 
     private String getTenantGuestUser(String tenantDomain)
     {
-        return tenantService.getDomainUser(authenticationComponent.getGuestUserName(), tenantDomain);
+        return authenticationContext.getGuestUserName(tenantDomain);
     }
 }

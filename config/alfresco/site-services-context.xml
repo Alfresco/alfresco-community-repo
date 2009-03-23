@@ -65,7 +65,7 @@
        <property name="searchService" ref="SearchService"/>
        <property name="namespaceService" ref="NamespaceService"/>
        <property name="permissionService" ref="PermissionService"/>
-       <property name="authenticationComponent" ref="authenticationComponent"/>      
+       <property name="authenticationContext" ref="authenticationContext"/>      
        <property name="personService" ref="PersonService"/>
        <property name="activityService" ref="activityService"/>
        <property name="taggingService" ref="TaggingService"/>

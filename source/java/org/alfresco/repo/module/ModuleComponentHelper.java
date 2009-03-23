@@ -193,7 +193,6 @@ public class ModuleComponentHelper
     {
         // Check properties
         PropertyCheck.mandatory(this, "serviceRegistry", serviceRegistry);
-//        PropertyCheck.mandatory(this, "authenticationComponent", authenticationComponent);
         PropertyCheck.mandatory(this, "registryService", registryService);
         PropertyCheck.mandatory(this, "moduleService", moduleService);
         PropertyCheck.mandatory(this, "tenantAdminService", tenantAdminService);

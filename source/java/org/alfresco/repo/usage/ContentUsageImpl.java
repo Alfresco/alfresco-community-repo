@@ -34,7 +34,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
-import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -73,7 +73,7 @@ public class ContentUsageImpl implements ContentUsageService,
     private PersonService personService;
     private PolicyComponent policyComponent;
     private UsageService usageService;
-    private AuthenticationComponent authenticationComponent;
+    private AuthenticationContext authenticationContext;
     private TenantService tenantService;
     
     private boolean enabled = true;
@@ -100,9 +100,9 @@ public class ContentUsageImpl implements ContentUsageService,
         this.policyComponent = policyComponent;
     }
     
-    public void setAuthenticationComponent(AuthenticationComponent authenticationComponent)
+    public void setAuthenticationContext(AuthenticationContext authenticationContext)
     {
-        this.authenticationComponent = authenticationComponent;
+        this.authenticationContext = authenticationContext;
     }
     
     public void setTenantService(TenantService tenantService)
@@ -344,7 +344,7 @@ public class ContentUsageImpl implements ContentUsageService,
     
     private void incrementUserUsage(String userName, long contentSize, NodeRef contentNodeRef)
     {
-        if (! authenticationComponent.isSystemUserName(userName))
+        if (! authenticationContext.isSystemUserName(userName))
         {
             // increment usage - add positive delta
             if (logger.isDebugEnabled()) logger.debug("incrementUserUsage: username="+userName+", contentSize="+contentSize+", contentNodeRef="+contentNodeRef);
@@ -376,7 +376,7 @@ public class ContentUsageImpl implements ContentUsageService,
     
     private void decrementUserUsage(String userName, long contentSize, NodeRef contentNodeRef)
     {
-        if (! authenticationComponent.isSystemUserName(userName))
+        if (! authenticationContext.isSystemUserName(userName))
         {
             // decrement usage - add negative delta
             if (logger.isDebugEnabled()) logger.debug("decrementUserUsage: username="+userName+", contentSize="+contentSize+", contentNodeRef="+contentNodeRef);

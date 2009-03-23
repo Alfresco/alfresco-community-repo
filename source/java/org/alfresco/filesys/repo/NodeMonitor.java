@@ -37,7 +37,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
-import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -516,8 +516,8 @@ public class NodeMonitor extends TransactionListenerAdapter
 		
         // Use the system user as the authenticated context for the node monitor
         
-		AuthenticationComponent authComponent = m_filesysDriver.getAuthComponent();
-        authComponent.setCurrentUser( authComponent.getSystemUserName());
+		AuthenticationContext authenticationContext = m_filesysDriver.getAuthenticationContext();
+        authenticationContext.setSystemUserAsCurrentUser();
 
 		// Loop until shutdown
 		

@@ -29,7 +29,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.PermissionServiceSPI;
 import org.alfresco.repo.tenant.TenantService;
@@ -109,11 +108,6 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
         this.permissionServiceSPI = permissionServiceSPI;
     }
     
-    public void setAuthenticationComponent(AuthenticationComponent authenticationComponent)
-    {
-        logger.warn("Bean property 'authenticationService' no longer required on 'AuthorityServiceImpl'.");
-    }
-
     public void setAdminGroups(Set<String> adminGroups)
     {
         this.adminGroups = adminGroups;

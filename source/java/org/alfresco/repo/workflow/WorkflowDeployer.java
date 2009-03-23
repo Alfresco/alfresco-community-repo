@@ -37,7 +37,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.dictionary.DictionaryBootstrap;
 import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.RepositoryLocation;
-import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.TenantAdminService;
@@ -81,7 +81,7 @@ public class WorkflowDeployer extends AbstractLifecycleBean
     private boolean allowWrite = true;
     private TransactionService transactionService;
     private WorkflowService workflowService;
-    private AuthenticationComponent authenticationComponent;
+    private AuthenticationContext authenticationContext;
     private DictionaryDAO dictionaryDAO;
     private List<Properties> workflowDefinitions;
     private List<String> models = new ArrayList<String>();
@@ -130,11 +130,11 @@ public class WorkflowDeployer extends AbstractLifecycleBean
     /**
      * Set the authentication component
      * 
-     * @param authenticationComponent
+     * @param authenticationContext
      */
-    public void setAuthenticationComponent(AuthenticationComponent authenticationComponent)
+    public void setAuthenticationContext(AuthenticationContext authenticationContext)
     {
-        this.authenticationComponent = authenticationComponent;
+        this.authenticationContext = authenticationContext;
     }
 
     /**
@@ -234,7 +234,7 @@ public class WorkflowDeployer extends AbstractLifecycleBean
         {
             throw new ImporterException("Transaction Service must be provided");
         }
-        if (authenticationComponent == null)
+        if (authenticationContext == null)
         {
             throw new ImporterException("Authentication Component must be provided");
         }
@@ -243,10 +243,10 @@ public class WorkflowDeployer extends AbstractLifecycleBean
             throw new ImporterException("Workflow Service must be provided");
         }
 
-        String currentUser = authenticationComponent.getCurrentUserName();
+        String currentUser = authenticationContext.getCurrentUserName();
         if (currentUser == null)
         {
-            authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
+            authenticationContext.setSystemUserAsCurrentUser();
         }
         
         UserTransaction userTransaction = transactionService.getUserTransaction();
@@ -339,7 +339,7 @@ public class WorkflowDeployer extends AbstractLifecycleBean
         {
             if (currentUser == null)
             {
-                authenticationComponent.clearCurrentSecurityContext();
+                authenticationContext.clearCurrentSecurityContext();
             }
         }
     }

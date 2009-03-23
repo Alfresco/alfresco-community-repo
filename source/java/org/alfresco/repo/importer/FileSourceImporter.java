@@ -33,7 +33,7 @@ import java.util.Set;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.repo.cache.SimpleCache;
-import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.security.authentication.ldap.LDAPGroupExportSource;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -57,7 +57,7 @@ public class FileSourceImporter implements ImporterJobSPI
 
     private String fileLocation;
 
-    private AuthenticationComponent authenticationComponent;
+    private AuthenticationContext authenticationContext;
 
     private StoreRef storeRef;
 
@@ -125,9 +125,9 @@ public class FileSourceImporter implements ImporterJobSPI
         this.caches = caches;
     }
 
-    public void setAuthenticationComponent(AuthenticationComponent authenticationComponent)
+    public void setAuthenticationContext(AuthenticationContext authenticationContext)
     {
-        this.authenticationComponent = authenticationComponent;
+        this.authenticationContext = authenticationContext;
     }
 
     public void setSearchService(SearchService searchService)
@@ -144,7 +144,7 @@ public class FileSourceImporter implements ImporterJobSPI
             long start = System.nanoTime();
             userTransaction = transactionService.getUserTransaction();
             userTransaction.begin();
-            authenticationComponent.setSystemUserAsCurrentUser();
+            authenticationContext.setSystemUserAsCurrentUser();
             if (clearAllChildren)
             {
                 List<NodeRef> refs = searchService.selectNodes(nodeService.getRootNode(storeRef), path, null,
@@ -201,7 +201,7 @@ public class FileSourceImporter implements ImporterJobSPI
             }
             try
             {
-                authenticationComponent.clearCurrentSecurityContext();
+                authenticationContext.clearCurrentSecurityContext();
             }
             catch (Exception ex)
             {
@@ -210,7 +210,7 @@ public class FileSourceImporter implements ImporterJobSPI
         }
         finally
         {
-            authenticationComponent.clearCurrentSecurityContext();
+            authenticationContext.clearCurrentSecurityContext();
         }
     }
 

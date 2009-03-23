@@ -36,7 +36,6 @@ import java.util.Properties;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.admin.registry.RegistryService;
-import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.module.ModuleDetails;
@@ -95,15 +94,6 @@ public class ModuleServiceImpl implements ModuleService
     public void setDescriptorService(DescriptorService descriptorService)
     {
         this.moduleComponentHelper.setDescriptorService(descriptorService);
-    }
-
-    /**
-     * No longer used
-     * @deprecated
-     */
-    public void setAuthenticationComponent(AuthenticationComponent authenticationComponent)
-    {
-        logger.warn("Bean property 'authenticationComponent' is no longer required for 'ModuleServiceImpl'.");
     }
 
     /**

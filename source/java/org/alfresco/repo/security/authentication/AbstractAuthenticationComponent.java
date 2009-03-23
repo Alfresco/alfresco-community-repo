@@ -33,7 +33,6 @@ import net.sf.acegisecurity.Authentication;
 import net.sf.acegisecurity.GrantedAuthority;
 import net.sf.acegisecurity.GrantedAuthorityImpl;
 import net.sf.acegisecurity.UserDetails;
-import net.sf.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import net.sf.acegisecurity.providers.dao.User;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -46,7 +45,6 @@ import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthorityType;
-import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.transaction.TransactionService;
 
@@ -63,17 +61,17 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
      */
     private Boolean allowGuestLogin = null;
 
-    private TenantService tenantService;
+    private Set<String> defaultAdministratorUserNames = Collections.emptySet();
 
+    private boolean autoCreatePeopleOnLogin = true;
+    
+    private AuthenticationContext authenticationContext;
+    
     private PersonService personService;
 
     private NodeService nodeService;
 
     private TransactionService transactionService;
-    
-    private Set<String> defaultAdministratorUserNames = Collections.emptySet();
-
-    private boolean autoCreatePeopleOnLogin = true;
 
     public AbstractAuthenticationComponent()
     {
@@ -90,9 +88,9 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
         this.allowGuestLogin = allowGuestLogin;
     }
 
-    public void setTenantService(TenantService tenantService)
+    public void setAuthenticationContext(AuthenticationContext authenticationContext)
     {
-        this.tenantService = tenantService;
+        this.authenticationContext = authenticationContext;
     }
 
     public void setPersonService(PersonService personService)
@@ -139,13 +137,13 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
     {
         this.autoCreatePeopleOnLogin = autoCreatePeopleOnLogin;
     }
-
+        
     public void authenticate(String userName, char[] password) throws AuthenticationException
     {
         // Support guest login from the login screen
         if (isGuestUserName(userName))
         {
-            setGuestUserAsCurrentUser(tenantService.getUserDomain(userName));
+            setGuestUserAsCurrentUser(getUserDomain(userName));
         }
         else
         {
@@ -223,38 +221,28 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
             throw new AuthenticationException("Null user name");
         }
 
+        if (isSystemUserName(userName))
+        {
+            return setSystemUserAsCurrentUser(getUserDomain(userName));
+        }
+
         try
         {
             UserDetails ud = null;
-            if (isSystemUserName(userName))
-            {
-                GrantedAuthority[] gas = new GrantedAuthority[1];
-                gas[0] = new GrantedAuthorityImpl("ROLE_SYSTEM");
-                ud = new User(userName, "", true, true, true, true, gas);
-            }
-            else if (isGuestUserName(userName))
+            if (isGuestUserName(userName))
             {
                 GrantedAuthority[] gas = new GrantedAuthority[0];
-                ud = new User(getGuestUserName(tenantService.getUserDomain(userName)), "", true, true, true, true, gas);
+                ud = new User(getGuestUserName(getUserDomain(userName)), "", true, true, true, true, gas);
             }
             else
             {
                 ud = getUserDetails(userName);
             }
-
-            UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(ud, "", ud.getAuthorities());
-            auth.setDetails(ud);
-            auth.setAuthenticated(true);
-            return setCurrentAuthentication(auth);
+            return setUserDetails(ud);
         }
         catch (net.sf.acegisecurity.AuthenticationException ae)
         {
             throw new AuthenticationException(ae.getMessage(), ae);
-        }
-        finally
-        {
-            // Support for logging tenantdomain / username (via log4j NDC)
-            AuthenticationUtil.logNDC(userName);
         }
     }
 
@@ -277,7 +265,7 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
      */
     public Authentication setCurrentAuthentication(Authentication authentication)
     {
-        return AuthenticationUtil.setFullAuthentication(authentication);
+        return this.authenticationContext.setCurrentAuthentication(authentication);
     }
 
     /**
@@ -288,7 +276,7 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
      */
     public Authentication getCurrentAuthentication() throws AuthenticationException
     {
-        return AuthenticationUtil.getFullAuthentication();
+        return authenticationContext.getCurrentAuthentication();
     }
 
     /**
@@ -299,7 +287,7 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
      */
     public String getCurrentUserName() throws AuthenticationException
     {
-        return AuthenticationUtil.getFullyAuthenticatedUser();
+        return authenticationContext.getCurrentUserName();
     }
 
     /**
@@ -309,7 +297,7 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
      */
     public Authentication setSystemUserAsCurrentUser()
     {
-        return setCurrentUser(AuthenticationUtil.SYSTEM_USER_NAME);
+        return authenticationContext.setSystemUserAsCurrentUser();
     }
 
     /**
@@ -319,7 +307,7 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
      */
     public String getSystemUserName()
     {
-        return AuthenticationUtil.SYSTEM_USER_NAME;
+        return authenticationContext.getSystemUserName();
     }
 
     /**
@@ -329,7 +317,7 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
      */
     public boolean isSystemUserName(String userName)
     {
-        return (getSystemUserName().equals(tenantService.getBaseNameUser(userName)));
+        return authenticationContext.isSystemUserName(userName);
     }
 
     /**
@@ -339,12 +327,12 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
      */
     public String getGuestUserName()
     {
-        return PermissionService.GUEST_AUTHORITY.toLowerCase();
+        return authenticationContext.getGuestUserName();
     }
 
-    private String getGuestUserName(String tenantDomain)
+    public String getGuestUserName(String tenantDomain)
     {
-        return tenantService.getDomainUser(getGuestUserName(), tenantDomain);
+        return authenticationContext.getGuestUserName(tenantDomain);
     }
 
     /**
@@ -378,20 +366,22 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
                 return setCurrentUser(getGuestUserName(tenantDomain));
             }
             else
-            {
+{
                 throw new AuthenticationException("Guest authentication is not allowed");
             }
 
         }
     }
-
-    private boolean isGuestUserName(String userName)
+    
+    public boolean isGuestUserName(String userName)
     {
-        return (PermissionService.GUEST_AUTHORITY.equalsIgnoreCase(tenantService.getBaseNameUser(userName)));
+        return authenticationContext.isGuestUserName(userName);
     }
-
+    
+    
     protected abstract boolean implementationAllowsGuestLogin();
 
+    
     /**
      * @return true if Guest user authentication is allowed, false otherwise
      */
@@ -412,7 +402,7 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
      */
     public void clearCurrentSecurityContext()
     {
-        AuthenticationUtil.clearCurrentSecurityContext();
+        authenticationContext.clearCurrentSecurityContext();
     }
 
     /**
@@ -490,7 +480,7 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
                             return userName;
                         }
                     }
-                }, tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantService.getUserDomain(userName)));
+                }, getSystemUserName(getUserDomain(userName)));
 
                 return setCurrentUserImpl(name);
             }
@@ -535,5 +525,25 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
             nameSet.addAll(Arrays.asList(defaultAdministratorUserNames.split(",")));
         }
         setDefaultAdministratorUserNames(nameSet);
+    }
+
+    public String getSystemUserName(String tenantDomain)
+    {
+        return authenticationContext.getSystemUserName(tenantDomain);
+    }
+
+    public String getUserDomain(String userName)
+    {
+        return authenticationContext.getUserDomain(userName);
+    }
+
+    public Authentication setSystemUserAsCurrentUser(String tenantDomain)
+    {
+        return authenticationContext.setSystemUserAsCurrentUser(tenantDomain);
+    }
+
+    public Authentication setUserDetails(UserDetails ud)
+    {
+        return authenticationContext.setUserDetails(ud);
     }
 }

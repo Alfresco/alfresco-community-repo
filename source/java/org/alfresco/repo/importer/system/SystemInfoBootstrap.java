@@ -29,7 +29,7 @@ import java.util.List;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.view.ImporterException;
@@ -48,7 +48,7 @@ public class SystemInfoBootstrap extends AbstractLifecycleBean
     // dependencies
     private TransactionService transactionService;
     private NodeService nodeService;
-    private AuthenticationComponent authenticationComponent;
+    private AuthenticationContext authenticationContext;
     private SystemExporterImporter systemImporter;
     
     private List<String> mustNotExistStoreUrls = null;
@@ -78,11 +78,11 @@ public class SystemInfoBootstrap extends AbstractLifecycleBean
     /**
      * Set the authentication component
      * 
-     * @param authenticationComponent
+     * @param authenticationContext
      */
-    public void setAuthenticationComponent(AuthenticationComponent authenticationComponent)
+    public void setAuthenticationContext(AuthenticationContext authenticationContext)
     {
-        this.authenticationComponent = authenticationComponent;
+        this.authenticationContext = authenticationContext;
     }
 
     /**
@@ -121,7 +121,7 @@ public class SystemInfoBootstrap extends AbstractLifecycleBean
     public void bootstrap()
     {
         UserTransaction userTransaction = transactionService.getUserTransaction();
-        authenticationComponent.setSystemUserAsCurrentUser();
+        authenticationContext.setSystemUserAsCurrentUser();
 
         try
         {
@@ -150,12 +150,12 @@ public class SystemInfoBootstrap extends AbstractLifecycleBean
         {
             // rollback the transaction
             try { if (userTransaction != null) {userTransaction.rollback();} } catch (Exception ex) {}
-            try {authenticationComponent.clearCurrentSecurityContext(); } catch (Exception ex) {}
+            try {authenticationContext.clearCurrentSecurityContext(); } catch (Exception ex) {}
             throw new AlfrescoRuntimeException("System Info Bootstrap failed", e);
         }
         finally
         {
-            authenticationComponent.clearCurrentSecurityContext();
+            authenticationContext.clearCurrentSecurityContext();
         }
     }
     

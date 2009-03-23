@@ -194,8 +194,8 @@
         <property name="nodeService">
             <ref bean="nodeService"/>
         </property>
-        <property name="authenticationComponent">
-            <ref bean="authenticationComponent" />
+        <property name="authenticationContext">
+            <ref bean="authenticationContext" />
         </property>
         <property name="systemImporter">
             <ref bean="systemExporterImporter" />
@@ -222,8 +222,8 @@
         <property name="namespaceService">
             <ref bean="namespaceService"/>
         </property>
-        <property name="authenticationComponent">
-            <ref bean="authenticationComponent" />
+        <property name="authenticationContext">
+            <ref bean="authenticationContext" />
         </property>
         <property name="allowWrite">
             <value>${server.transaction.allow-writes}</value>

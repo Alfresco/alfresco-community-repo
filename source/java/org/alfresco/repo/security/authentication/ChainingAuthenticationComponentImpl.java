@@ -26,13 +26,10 @@ package org.alfresco.repo.security.authentication;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
 
 import net.sf.acegisecurity.Authentication;
 
 import org.alfresco.service.Managed;
-import org.alfresco.service.cmr.security.PermissionService;
 
 /**
  * A chaining authentication component is required for all the beans that qire up an authentication component and not an
@@ -41,7 +38,7 @@ import org.alfresco.service.cmr.security.PermissionService;
  * 
  * @author andyh
  */
-public class ChainingAuthenticationComponentImpl implements AuthenticationComponent
+public class ChainingAuthenticationComponentImpl extends AbstractAuthenticationComponent
 {
     /**
      * NLTM authentication mode - if unset - finds the first component that supports NTLM - if set - finds the first
@@ -67,7 +64,7 @@ public class ChainingAuthenticationComponentImpl implements AuthenticationCompon
      */
     public List<AuthenticationComponent> getAuthenticationComponents()
     {
-        return authenticationComponents;
+        return this.authenticationComponents;
     }
 
     /**
@@ -75,7 +72,7 @@ public class ChainingAuthenticationComponentImpl implements AuthenticationCompon
      * 
      * @param authenticationComponents
      */
-    @Managed(category="Security")
+    @Managed(category = "Security")
     public void setAuthenticationComponents(List<AuthenticationComponent> authenticationComponents)
     {
         this.authenticationComponents = authenticationComponents;
@@ -88,7 +85,7 @@ public class ChainingAuthenticationComponentImpl implements AuthenticationCompon
      */
     public AuthenticationComponent getMutableAuthenticationComponent()
     {
-        return mutableAuthenticationComponent;
+        return this.mutableAuthenticationComponent;
     }
 
     /**
@@ -96,15 +93,13 @@ public class ChainingAuthenticationComponentImpl implements AuthenticationCompon
      * 
      * @param mutableAuthenticationComponent
      */
-    @Managed(category="Security")
+    @Managed(category = "Security")
     public void setMutableAuthenticationComponent(AuthenticationComponent mutableAuthenticationComponent)
     {
         this.mutableAuthenticationComponent = mutableAuthenticationComponent;
     }
 
-    
-    
-    @Managed(category="Security")
+    @Managed(category = "Security")
     public void setNtlmMode(NTLMMode ntlmMode)
     {
         this.ntlmMode = ntlmMode;
@@ -113,7 +108,8 @@ public class ChainingAuthenticationComponentImpl implements AuthenticationCompon
     /**
      * Chain authentication with user name and password - tries all in order until one works, or fails.
      */
-    public void authenticate(String userName, char[] password) throws AuthenticationException
+    @Override
+    protected void authenticateImpl(String userName, char[] password)
     {
         for (AuthenticationComponent authComponent : getUsableAuthenticationComponents())
         {
@@ -134,11 +130,12 @@ public class ChainingAuthenticationComponentImpl implements AuthenticationCompon
      * NTLM passthrough authentication - if a mode is defined - the first PASS_THROUGH provider is used - if not, the
      * first component that supports NTLM is used if it supports PASS_THROUGH
      */
+    @Override
     public Authentication authenticate(Authentication token) throws AuthenticationException
     {
-        if (ntlmMode != null)
+        if (this.ntlmMode != null)
         {
-            switch (ntlmMode)
+            switch (this.ntlmMode)
             {
             case NONE:
                 throw new AuthenticationException("NTLM is not supported");
@@ -169,7 +166,8 @@ public class ChainingAuthenticationComponentImpl implements AuthenticationCompon
                     }
                     else
                     {
-                        throw new AuthenticationException("The first authentication component to support NTLM supports MD4 hashing");
+                        throw new AuthenticationException(
+                                "The first authentication component to support NTLM supports MD4 hashing");
                     }
                 }
             }
@@ -179,45 +177,14 @@ public class ChainingAuthenticationComponentImpl implements AuthenticationCompon
     }
 
     /**
-     * Clear the security context
-     */
-    public void clearCurrentSecurityContext()
-    {
-        AuthenticationUtil.clearCurrentSecurityContext();
-    }
-
-    /**
-     * Get the current authentication
-     */
-    public Authentication getCurrentAuthentication() throws AuthenticationException
-    {
-        return AuthenticationUtil.getFullAuthentication();
-    }
-
-    /**
-     * Get the current user name
-     */
-    public String getCurrentUserName() throws AuthenticationException
-    {
-        return AuthenticationUtil.getFullyAuthenticatedUser();
-    }
-
-    /**
-     * Get the guest user name
-     */
-    public String getGuestUserName()
-    {
-        return PermissionService.GUEST_AUTHORITY.toLowerCase();
-    }
-
-    /**
      * Get the MD4 password hash
      */
+    @Override
     public String getMD4HashedPassword(String userName)
     {
-        if (ntlmMode != null)
+        if (this.ntlmMode != null)
         {
-            switch (ntlmMode)
+            switch (this.ntlmMode)
             {
             case NONE:
                 throw new AuthenticationException("NTLM is not supported");
@@ -244,7 +211,8 @@ public class ChainingAuthenticationComponentImpl implements AuthenticationCompon
                 {
                     if (authComponent.getNTLMMode() == NTLMMode.PASS_THROUGH)
                     {
-                        throw new AuthenticationException("The first authentication component to support NTLM supports passthrough");
+                        throw new AuthenticationException(
+                                "The first authentication component to support NTLM supports passthrough");
                     }
                     else
                     {
@@ -260,11 +228,12 @@ public class ChainingAuthenticationComponentImpl implements AuthenticationCompon
     /**
      * Get the NTLM mode - this is only what is set if one of the implementations provides support for that mode.
      */
+    @Override
     public NTLMMode getNTLMMode()
     {
-        if (ntlmMode != null)
+        if (this.ntlmMode != null)
         {
-            switch (ntlmMode)
+            switch (this.ntlmMode)
             {
             case NONE:
                 return NTLMMode.NONE;
@@ -304,32 +273,10 @@ public class ChainingAuthenticationComponentImpl implements AuthenticationCompon
     }
 
     /**
-     * Get the system user name
-     */
-    public String getSystemUserName()
-    {
-        return AuthenticationUtil.SYSTEM_USER_NAME;
-    }
-    
-    /**
-     * If any implementation supports System then System is allowed
-     */
-    public boolean isSystemUserName(String userName)
-    {
-        for (AuthenticationComponent authComponent : getUsableAuthenticationComponents())
-        {
-            if (authComponent.isSystemUserName(userName))
-            {
-                return true;
-            }
-        }
-        return false; 	
-    }
-
-    /**
      * If any implementation supports guest then guest is allowed
      */
-    public boolean guestUserAuthenticationAllowed()
+    @Override
+    protected boolean implementationAllowsGuestLogin()
     {
         for (AuthenticationComponent authComponent : getUsableAuthenticationComponents())
         {
@@ -341,16 +288,7 @@ public class ChainingAuthenticationComponentImpl implements AuthenticationCompon
         return false;
     }
 
-    /**
-     * Ste the current authentication
-     */
-    public Authentication setCurrentAuthentication(Authentication authentication)
-    {
-        return AuthenticationUtil.setFullAuthentication(authentication);
-    }
-
-    
-    
+    @Override
     public Authentication setCurrentUser(String userName, UserNameValidationMode validationMode)
     {
         for (AuthenticationComponent authComponent : getUsableAuthenticationComponents())
@@ -370,6 +308,7 @@ public class ChainingAuthenticationComponentImpl implements AuthenticationCompon
     /**
      * Set the current user - try all implementations - as some may check the user exists
      */
+    @Override
     public Authentication setCurrentUser(String userName)
     {
         for (AuthenticationComponent authComponent : getUsableAuthenticationComponents())
@@ -387,66 +326,26 @@ public class ChainingAuthenticationComponentImpl implements AuthenticationCompon
     }
 
     /**
-     * Authenticate as guest - try all in the cahin
-     */
-    public Authentication setGuestUserAsCurrentUser()
-    {
-        for (AuthenticationComponent authComponent : getUsableAuthenticationComponents())
-        {
-            try
-            {
-                return authComponent.setGuestUserAsCurrentUser();
-            }
-            catch (AuthenticationException e)
-            {
-                // Ignore and chain
-            }
-        }
-        throw new AuthenticationException("Guest authentication is not allowed");
-    }
-
-    /**
-     * Set the system user
-     */
-    public Authentication setSystemUserAsCurrentUser()
-    {
-        return setCurrentUser(getSystemUserName());
-    }
-
-    /**
      * Helper to get authentication components
      * 
      * @return
      */
     private List<AuthenticationComponent> getUsableAuthenticationComponents()
     {
-        if (mutableAuthenticationComponent == null)
+        if (this.mutableAuthenticationComponent == null)
         {
-            return authenticationComponents;
+            return this.authenticationComponents;
         }
         else
         {
-            ArrayList<AuthenticationComponent> services = new ArrayList<AuthenticationComponent>(authenticationComponents == null ? 1 : (authenticationComponents.size() + 1));
-            services.add(mutableAuthenticationComponent);
-            if (authenticationComponents != null)
+            ArrayList<AuthenticationComponent> services = new ArrayList<AuthenticationComponent>(
+                    this.authenticationComponents == null ? 1 : this.authenticationComponents.size() + 1);
+            services.add(this.mutableAuthenticationComponent);
+            if (this.authenticationComponents != null)
             {
-                services.addAll(authenticationComponents);
+                services.addAll(this.authenticationComponents);
             }
             return services;
         }
-    }
-
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.security.authentication.AuthenticationComponent#getDefaultAdministratorUserNames()
-     */
-    public Set<String> getDefaultAdministratorUserNames()
-    {
-        Set<String> defaultAdministratorUserNames = new TreeSet<String>();
-        for (AuthenticationComponent authComponent : getUsableAuthenticationComponents())
-        {
-            defaultAdministratorUserNames.addAll(authComponent.getDefaultAdministratorUserNames());
-        }
-        return defaultAdministratorUserNames;
     }
 }

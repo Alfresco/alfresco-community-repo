@@ -232,7 +232,7 @@ public class ScriptsFolderPatch extends AbstractPatch
                     return null;
                 }
             };
-            AuthenticationUtil.runAs(importRunAs, authenticationComponent.getSystemUserName());
+            AuthenticationUtil.runAs(importRunAs, authenticationContext.getSystemUserName());
             
             msg = I18NUtil.getMessage(MSG_CREATED, scriptsFolderNodeRef);
         }

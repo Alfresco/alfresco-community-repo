@@ -5,7 +5,7 @@ package org.alfresco.repo.avm.util;
 
 import org.alfresco.repo.avm.LookupCache;
 import org.alfresco.repo.content.ContentStore;
-import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.MimetypeService;
@@ -30,9 +30,9 @@ public class RawServices implements ApplicationContextAware
     private ApplicationContext fContext;
 
     /**
-     * The AuthenticationComponent.
+     * The AuthenticationContext.
      */
-    private AuthenticationComponent fAuthenticationComponent;
+    private AuthenticationContext fAuthenticationContext;
 
     /**
      * The Content Service.
@@ -82,14 +82,14 @@ public class RawServices implements ApplicationContextAware
         fContext = applicationContext;
     }
 
-    public AuthenticationComponent getAuthenticationComponent()
+    public AuthenticationContext getAuthenticationContext()
     {
-        if (fAuthenticationComponent == null)
+        if (fAuthenticationContext == null)
         {
-            fAuthenticationComponent =
-                (AuthenticationComponent)fContext.getBean("authenticationComponent");
+            fAuthenticationContext =
+                (AuthenticationContext)fContext.getBean("authenticationContext");
         }
-        return fAuthenticationComponent;
+        return fAuthenticationContext;
     }
 
     public ContentService getContentService()

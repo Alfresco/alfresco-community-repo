@@ -28,9 +28,8 @@ import java.util.Set;
 
 import net.sf.acegisecurity.Authentication;
 
-public interface AuthenticationComponent
+public interface AuthenticationComponent extends AuthenticationContext
 {
-    
     public enum UserNameValidationMode
     {
         NONE, CHECK_AND_FIX;
@@ -65,33 +64,6 @@ public interface AuthenticationComponent
     
     public Authentication setCurrentUser(String userName, UserNameValidationMode validationMode);
     
-    /**
-     * Remove the current security information
-     *
-     */
-    public void clearCurrentSecurityContext();
-    
-    /**
-     * Explicitly set the current suthentication.  If the authentication is <tt>null</tt> the
-     * the current authentication is {@link #clearCurrentSecurityContext() cleared}.
-     * 
-     * @param authentication the current authentication (may be <tt>null</tt>).
-     * 
-     * @return Returns the modified authentication instance or <tt>null</tt> if it was cleared.
-     */
-    public Authentication setCurrentAuthentication(Authentication authentication);
-    
-    /**
-     * 
-     * @throws AuthenticationException
-     */
-    public Authentication getCurrentAuthentication() throws AuthenticationException;
-    
-    /**
-     * Set the system user as the current user.
-     */
-    public Authentication setSystemUserAsCurrentUser();
-    
     
     /**
      * Set the guest user as the current user.
@@ -103,29 +75,6 @@ public interface AuthenticationComponent
      * True if Guest user authentication is allowed, false otherwise
      */
     public boolean guestUserAuthenticationAllowed();
-    
-    
-    /**
-     * Get the name of the system user
-     */
-    public String getSystemUserName();
-    
-    /**
-     * True if this is the System user ?
-     */
-    public boolean isSystemUserName(String userName);
-    
-    /**
-     * Get the name of the guest user
-     */
-    public String getGuestUserName();
-    
-    /**
-     * Get the current user name.
-     * 
-     * @throws AuthenticationException
-     */
-    public String getCurrentUserName() throws AuthenticationException;
     
     /**
      * Get the enum that describes NTLM integration

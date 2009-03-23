@@ -34,7 +34,7 @@ import java.util.Map;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.preference.PreferenceService;
@@ -69,7 +69,7 @@ public class PreferenceServiceImpl implements PreferenceService
     private PermissionService permissionService;    
     
     /** Authentication Service */
-    private AuthenticationComponent authenticationComponent;
+    private AuthenticationContext authenticationContext;
     
     /**
      * Set the node service
@@ -114,11 +114,11 @@ public class PreferenceServiceImpl implements PreferenceService
     /**
      * Set the authentication component
      * 
-     * @param authenticationComponent   the authentication component
+     * @param authenticationContext   the authentication component
      */
-    public void setAuthenticationComponent(AuthenticationComponent authenticationComponent)
+    public void setAuthenticationContext(AuthenticationContext authenticationContext)
     {
-        this.authenticationComponent = authenticationComponent;
+        this.authenticationContext = authenticationContext;
     }
     
     /**
@@ -225,7 +225,7 @@ public class PreferenceServiceImpl implements PreferenceService
         // Can only set preferences if the currently logged in user matches the user name being updated or
         // the user already has write permissions on the person node
         String currentUserName = AuthenticationUtil.getFullyAuthenticatedUser();
-        if (authenticationComponent.isSystemUserName(currentUserName) == true ||
+        if (authenticationContext.isSystemUserName(currentUserName) == true ||
             permissionService.hasPermission(personNodeRef, PermissionService.WRITE) == AccessStatus.ALLOWED || 
             userName.equals(currentUserName) == true)
         {     
@@ -301,7 +301,7 @@ public class PreferenceServiceImpl implements PreferenceService
         // Can only set preferences if the currently logged in user matches the user name being updated or
         // the user already has write permissions on the person node
         String currentUserName = AuthenticationUtil.getFullyAuthenticatedUser();
-        if (authenticationComponent.isSystemUserName(currentUserName) == true ||
+        if (authenticationContext.isSystemUserName(currentUserName) == true ||
             permissionService.hasPermission(personNodeRef, PermissionService.WRITE) == AccessStatus.ALLOWED || 
             userName.equals(currentUserName) == true)
         {     

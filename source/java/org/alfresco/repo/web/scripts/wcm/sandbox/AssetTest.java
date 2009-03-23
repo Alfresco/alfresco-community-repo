@@ -85,10 +85,9 @@ public class AssetTest  extends BaseWebScriptTest {
     @Override
     protected void setUp() throws Exception
     {
+        setCustomContext(SUBMIT_CONFIG_LOCATION);
         super.setUp();
 
-        initServer(SUBMIT_CONFIG_LOCATION);
-        
         this.authenticationService = (AuthenticationService)getServer().getApplicationContext().getBean("AuthenticationService");
         this.authenticationComponent = (AuthenticationComponent)getServer().getApplicationContext().getBean("authenticationComponent");
         this.personService = (PersonService)getServer().getApplicationContext().getBean("PersonService");

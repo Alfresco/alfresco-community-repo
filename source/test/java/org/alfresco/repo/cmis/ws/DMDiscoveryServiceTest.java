@@ -35,7 +35,7 @@ public class DMDiscoveryServiceTest extends AbstractServiceTest
 
     public final static String SERVICE_WSDL_LOCATION = CmisServiceTestHelper.ALFRESCO_URL + "/cmis/DiscoveryService?wsdl";
     public final static QName SERVICE_NAME = new QName("http://www.cmis.org/ns/1.0", "DiscoveryService");
-    public final static String STATEMENT = "SELECT * FROM DOCUMENT";
+    public final static String STATEMENT = "SELECT * FROM aiim_content";
 
     public DMDiscoveryServiceTest()
     {

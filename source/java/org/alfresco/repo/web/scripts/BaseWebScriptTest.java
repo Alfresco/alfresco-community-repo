@@ -60,11 +60,16 @@ import org.apache.commons.httpclient.params.HttpClientParams;
  */
 public abstract class BaseWebScriptTest extends TestCase
 {
+    
     // Test Listener
     private WebScriptTestListener listener = null;
     private boolean traceReqRes = false;
 
-    /** Local / Remote Server access */
+    // Local Server access
+    private static String customContext = null;
+    private static TestWebScriptServer server = null;
+    
+    // Remote Server access
     private String defaultRunAs = null;
     private RemoteServer remoteServer = null;
     private HttpClient httpClient = null;
@@ -144,7 +149,17 @@ public abstract class BaseWebScriptTest extends TestCase
             this.getWriter().println(log);
         }
     }
-        
+    
+    
+    /**
+     * Sets custom context for Test Web Script Server (in-process only)
+     * @param customContext
+     */
+    public static void setCustomContext(String customContext)
+    {
+        BaseWebScriptTest.customContext = customContext;
+    }
+    
     /**
      * Sets Test Listener
      * 
@@ -186,7 +201,7 @@ public abstract class BaseWebScriptTest extends TestCase
     }
     
     /**
-     * Set Local Run As User
+     * Set Default Local Run As User
      * 
      * @param localRunAs
      */
@@ -194,7 +209,17 @@ public abstract class BaseWebScriptTest extends TestCase
     {
         this.defaultRunAs = localRunAs;
     }
-    
+
+    /**
+     * Get Default Local Run As User
+     * 
+     * @return  localRunAs
+     */
+    public String getDefaultRunAs()
+    {
+        return defaultRunAs;
+    }
+
     @Override
     protected void setUp() throws Exception
     {
@@ -208,31 +233,22 @@ public abstract class BaseWebScriptTest extends TestCase
         }
     }
     
-    /** Test web script server */
-    private static TestWebScriptServer server = null;
-    
     protected static TestWebScriptServer getServer()
     {
         if (BaseWebScriptTest.server == null)
         {
-            BaseWebScriptTest.server = TestWebScriptRepoServer.getTestServer();
+            if (BaseWebScriptTest.customContext == null)
+            {
+                BaseWebScriptTest.server = TestWebScriptRepoServer.getTestServer();
+            }
+            else
+            {
+                BaseWebScriptTest.server = TestWebScriptRepoServer.getTestServer(customContext);
+            }
         }
         return BaseWebScriptTest.server;
     }
     
-    protected static TestWebScriptServer initServer()
-    {
-        return getServer();
-    }
-    
-    protected static TestWebScriptServer initServer(String appendTestConfigLocation)
-    {
-        if (BaseWebScriptTest.server == null)
-        {
-            BaseWebScriptTest.server = TestWebScriptRepoServer.getTestServer(appendTestConfigLocation);
-        }
-        return BaseWebScriptTest.server;
-    }
 
     /**
      * Is Log Enabled?

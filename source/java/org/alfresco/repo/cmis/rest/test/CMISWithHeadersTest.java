@@ -25,7 +25,6 @@
 package org.alfresco.repo.cmis.rest.test;
 
 
-
 /**
  * CMIS API Test Harness
  * 

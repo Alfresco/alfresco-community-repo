@@ -24,8 +24,14 @@
  */
 package org.alfresco.repo.cmis.ws;
 
+import java.io.Serializable;
+import java.util.Map;
+
+import org.alfresco.cmis.CMISPropertyTypeEnum;
 import org.alfresco.cmis.search.CMISQueryOptions;
 import org.alfresco.cmis.search.CMISResultSet;
+import org.alfresco.cmis.search.CMISResultSetColumn;
+import org.alfresco.cmis.search.CMISResultSetMetaData;
 import org.alfresco.cmis.search.CMISResultSetRow;
 import org.alfresco.repo.cmis.PropertyFilter;
 
@@ -67,16 +73,71 @@ public class DMDiscoveryServicePort extends DMAbstractServicePort implements Dis
             options.setMaxItems(parameters.getPageSize().intValue());
         }
 
+        // execute query
         CMISResultSet resultSet = cmisQueryService.query(options);
+        CMISResultSetMetaData metaData = resultSet.getMetaData();
+        CMISResultSetColumn[] columns = metaData.getColumns();
+        PropertyFilter filter = new PropertyFilter();
+        
+        // build query response
         QueryResponse response = new QueryResponse();
-        response.setHasMoreItems(resultSet.hasMore());
+
+        // for each row...
         for (CMISResultSetRow row : resultSet)
         {
+            CmisPropertiesType properties = new CmisPropertiesType();
+            Map<String, Serializable> values = row.getValues();
+            
+            // for each column...
+            for (CMISResultSetColumn column : columns)
+            {
+                CMISPropertyTypeEnum type = column.getPropertyType();
+                if (type == CMISPropertyTypeEnum.BOOLEAN)
+                {
+                    addBooleanProperty(properties, filter, column.getName(), values);
+                }
+                else if (type == CMISPropertyTypeEnum.DATETIME)
+                {
+                    addDateTimeProperty(properties, filter, column.getName(), values);
+                }
+                else if (type == CMISPropertyTypeEnum.DECIMAL)
+                {
+                    addDecimalProperty(properties, filter, column.getName(), values);
+                }
+                else if (type == CMISPropertyTypeEnum.ID)
+                {
+                    addIDProperty(properties, filter, column.getName(), values);
+                }
+                else if (type == CMISPropertyTypeEnum.INTEGER)
+                {
+                    addIntegerProperty(properties, filter, column.getName(), values);
+                }
+                else if (type == CMISPropertyTypeEnum.STRING)
+                {
+                    addStringProperty(properties, filter, column.getName(), values);
+                }
+                else if (type == CMISPropertyTypeEnum.URI)
+                {
+                    addURIProperty(properties, filter, column.getName(), values);
+                }
+                else if (type == CMISPropertyTypeEnum.XML)
+                {
+                    // TODO:
+                    throw new UnsupportedOperationException();
+                }
+                else if (type == CMISPropertyTypeEnum.HTML)
+                {
+                    // TODO:
+                    throw new UnsupportedOperationException();
+                }
+            }
+            
             CmisObjectType object = new CmisObjectType();
-            object.setProperties(getPropertiesType(row.getValues(), new PropertyFilter()));
+            object.setProperties(properties);
             response.getObject().add(object);
         }
-
+        
+        response.setHasMoreItems(resultSet.hasMore());
         return response;
     }
 

@@ -35,6 +35,7 @@
 <cmis:terminator/>
 <app:edited>${xmldate(node.properties.modified)}</app:edited>
 <alf:icon>${absurl(url.context)}${node.icon16}</alf:icon>
+<alf:noderef>${node.nodeRef}</alf:noderef>
 [/@entry]
 [/#macro]
 
@@ -83,6 +84,7 @@
 <cmis:terminator/>
 <app:edited>${xmldate(node.properties.modified)}</app:edited>
 <alf:icon>${absurl(url.context)}${node.icon16}</alf:icon>
+<alf:noderef>${node.nodeRef}</alf:noderef>
 [/@entry]
 [/#macro]
 
@@ -112,6 +114,7 @@
 <app:edited>${xmldate(node.properties.modified)}</app:edited>
 [#-- TODO: the edit link refers to the updatable node resource, allowing updates on PWCs without checkin --]
 <alf:icon>${absurl(url.context)}${node.icon16}</alf:icon>
+<alf:noderef>${node.nodeRef}</alf:noderef>
 [/@entry]
 [/#macro]
 
@@ -149,6 +152,7 @@
 <cmis:terminator/>
 <app:edited>${xmldate(node.properties.modified)}</app:edited>
 <alf:icon>${absurl(url.context)}${node.icon16}</alf:icon>
+<alf:noderef>${node.nodeRef}</alf:noderef>
 [/@entry]
 [/#macro]
 
@@ -224,6 +228,7 @@
 </cmis:object>
 <cmis:terminator/>
 <alf:icon>${absurl(url.context)}${node.icon16}</alf:icon>
+<alf:noderef>${node.nodeRef}</alf:noderef>
 [/@entry]
 [/#macro]
 

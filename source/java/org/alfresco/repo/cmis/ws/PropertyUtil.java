@@ -63,7 +63,7 @@ public class PropertyUtil
         cmisToRepoPropertiesNamesMapping.put(CMISMapping.PROP_CONTENT_STREAM_FILENAME, new Pair<String, Boolean>("ContentStreamFilename", true));
         cmisToRepoPropertiesNamesMapping.put(CMISMapping.PROP_VERSION_LABEL, new Pair<String, Boolean>("VersionLabel", true));
         cmisToRepoPropertiesNamesMapping.put(CMISMapping.PROP_CHECKIN_COMMENT, new Pair<String, Boolean>("checkinComment", false));
-        cmisToRepoPropertiesNamesMapping.put(CMISMapping.PROP_CONTENT_STREAM_URI, new Pair<String, Boolean>("contentStreamURI", true));
+        cmisToRepoPropertiesNamesMapping.put(CMISMapping.PROP_CONTENT_STREAM_URI, new Pair<String, Boolean>("contentStreamUri", true));
         cmisToRepoPropertiesNamesMapping.put(CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_BY, new Pair<String, Boolean>("VersionSeriesCheckedOutBy", true));
         cmisToRepoPropertiesNamesMapping.put(CMISMapping.PROP_PARENT_ID, new Pair<String, Boolean>("ParentId", true));
         cmisToRepoPropertiesNamesMapping.put(CMISMapping.PROP_CONTENT_STREAM_ALLOWED, new Pair<String, Boolean>("ContentStreamAllowed", true));
@@ -82,7 +82,9 @@ public class PropertyUtil
      */
     public static String getCMISPropertyName(String internalName)
     {
-        return cmisToRepoPropertiesNamesMapping.get(internalName).getFirst();
+        return internalName;
+        // TODO: remove the above mapping
+        //return cmisToRepoPropertiesNamesMapping.get(internalName).getFirst();
     }
 
     /**

@@ -25,7 +25,9 @@
 package org.alfresco.repo.cmis.ws;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Collection;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -358,67 +360,169 @@ public class DMAbstractServicePort
         return result;
     }
     
-    private void addBooleanProperty(CmisPropertiesType properties, PropertyFilter filter, String name, Map<String, Serializable> alfrescoProperties)
+    protected void addBooleanProperty(CmisPropertiesType properties, PropertyFilter filter, String name, Map<String, Serializable> alfrescoProperties)
     {
         Serializable value = alfrescoProperties.get(name);
         if (filter.allow(name) && value != null)
         {
-            CmisPropertyBoolean propBoolean = new CmisPropertyBoolean ();
-            propBoolean.setName(PropertyUtil.getCMISPropertyName(name));
-            propBoolean.setValue((Boolean) value);
-            properties.getProperty().add(propBoolean);
+            if (value instanceof Collection)
+            {
+                long index = 0;
+                for (Object multiValue : (Collection)value)
+                {
+                    CmisPropertyBoolean propBoolean = new CmisPropertyBoolean ();
+                    propBoolean.setIndex(BigInteger.valueOf(index++));
+                    propBoolean.setName(PropertyUtil.getCMISPropertyName(name));
+                    propBoolean.setValue((Boolean) multiValue);
+                    properties.getProperty().add(propBoolean);
+                }
+            }
+            else
+            {
+                CmisPropertyBoolean propBoolean = new CmisPropertyBoolean ();
+                propBoolean.setName(PropertyUtil.getCMISPropertyName(name));
+                propBoolean.setValue((Boolean) value);
+                properties.getProperty().add(propBoolean);
+            }
         }
     }
 
-    private void addDateTimeProperty(CmisPropertiesType properties, PropertyFilter filter, String name, Map<String, Serializable> alfrescoProperties)
+    protected void addDateTimeProperty(CmisPropertiesType properties, PropertyFilter filter, String name, Map<String, Serializable> alfrescoProperties)
     {
         Serializable value = alfrescoProperties.get(name);
         if (filter.allow(name) && value != null)
         {
-            CmisPropertyDateTime propDateTime = new CmisPropertyDateTime();
-            propDateTime.setName(PropertyUtil.getCMISPropertyName(name));
-            propDateTime.setValue(convert((Date) value));
-            properties.getProperty().add(propDateTime);
+            if (value instanceof Collection)
+            {
+                long index = 0;
+                for (Object multiValue : (Collection)value)
+                {
+                    CmisPropertyDateTime propDateTime = new CmisPropertyDateTime();
+                    propDateTime.setIndex(BigInteger.valueOf(index++));
+                    propDateTime.setName(PropertyUtil.getCMISPropertyName(name));
+                    propDateTime.setValue(convert((Date) multiValue));
+                    properties.getProperty().add(propDateTime);
+                }
+            }
+            else
+            {
+                CmisPropertyDateTime propDateTime = new CmisPropertyDateTime();
+                propDateTime.setName(PropertyUtil.getCMISPropertyName(name));
+                propDateTime.setValue(convert((Date) value));
+                properties.getProperty().add(propDateTime);
+            }
         }
     }
 
-    private void addIDProperty(CmisPropertiesType properties, PropertyFilter filter, String name, Map<String, Serializable> alfrescoProperties)
+    protected void addIDProperty(CmisPropertiesType properties, PropertyFilter filter, String name, Map<String, Serializable> alfrescoProperties)
     {
         Serializable value = alfrescoProperties.get(name);
         if (filter.allow(name) && value != null)
         {
-            CmisPropertyId propID = new CmisPropertyId();
-            propID.setName(PropertyUtil.getCMISPropertyName(name));
-            propID.setValue(value.toString());
-            properties.getProperty().add(propID);
+            if (value instanceof Collection)
+            {
+                long index = 0;
+                for (Object multiValue : (Collection)value)
+                {
+                    CmisPropertyId propID = new CmisPropertyId();
+                    propID.setIndex(BigInteger.valueOf(index++));
+                    propID.setName(PropertyUtil.getCMISPropertyName(name));
+                    propID.setValue(multiValue.toString());
+                    properties.getProperty().add(propID);
+                }
+            }
+            else
+            {
+                CmisPropertyId propID = new CmisPropertyId();
+                propID.setName(PropertyUtil.getCMISPropertyName(name));
+                propID.setValue(value.toString());
+                properties.getProperty().add(propID);
+            }
         }
     }
 
-    private void addIntegerProperty(CmisPropertiesType properties, PropertyFilter filter, String name, Map<String, Serializable> alfrescoProperties)
+    protected void addIntegerProperty(CmisPropertiesType properties, PropertyFilter filter, String name, Map<String, Serializable> alfrescoProperties)
     {
         Serializable value = alfrescoProperties.get(name);
         if (filter.allow(name) && value != null)
         {
-            CmisPropertyInteger propInteger = new CmisPropertyInteger();
-            propInteger.setName(PropertyUtil.getCMISPropertyName(name));
-            propInteger.setValue(BigInteger.valueOf((Long) value));
-            properties.getProperty().add(propInteger);
+            if (value instanceof Collection)
+            {
+                long index = 0;
+                for (Object multiValue : (Collection)value)
+                {
+                    CmisPropertyInteger propInteger = new CmisPropertyInteger();
+                    propInteger.setIndex(BigInteger.valueOf(index++));
+                    propInteger.setName(PropertyUtil.getCMISPropertyName(name));
+                    propInteger.setValue(BigInteger.valueOf((Long) multiValue));
+                    properties.getProperty().add(propInteger);
+                }
+            }
+            else
+            {
+                CmisPropertyInteger propInteger = new CmisPropertyInteger();
+                propInteger.setName(PropertyUtil.getCMISPropertyName(name));
+                propInteger.setValue(BigInteger.valueOf((Long) value));
+                properties.getProperty().add(propInteger);
+            }
         }
     }
 
-    private void addStringProperty(CmisPropertiesType properties, PropertyFilter filter, String name, Map<String, Serializable> alfrescoProperties)
+    protected void addDecimalProperty(CmisPropertiesType properties, PropertyFilter filter, String name, Map<String, Serializable> alfrescoProperties)
     {
         Serializable value = alfrescoProperties.get(name);
         if (filter.allow(name) && value != null)
         {
-            CmisPropertyString propString = new CmisPropertyString();
-            propString.setName(PropertyUtil.getCMISPropertyName(name));
-            propString.setValue(value.toString());
-            properties.getProperty().add(propString);
+            if (value instanceof Collection)
+            {
+                long index = 0;
+                for (Object multiValue : (Collection)value)
+                {
+                    CmisPropertyDecimal propDecimal = new CmisPropertyDecimal();
+                    propDecimal.setIndex(BigInteger.valueOf(index++));
+                    propDecimal.setName(PropertyUtil.getCMISPropertyName(name));
+                    propDecimal.setValue(BigDecimal.valueOf((Long) multiValue));
+                    properties.getProperty().add(propDecimal);
+                }
+            }
+            else
+            {
+                CmisPropertyDecimal propDecimal = new CmisPropertyDecimal();
+                propDecimal.setName(PropertyUtil.getCMISPropertyName(name));
+                propDecimal.setValue(BigDecimal.valueOf((Long) value));
+                properties.getProperty().add(propDecimal);
+            }
         }
     }
 
-    private void addStringProperty(CmisPropertiesType properties, PropertyFilter filter, String name, String value)
+    protected void addStringProperty(CmisPropertiesType properties, PropertyFilter filter, String name, Map<String, Serializable> alfrescoProperties)
+    {
+        Serializable value = alfrescoProperties.get(name);
+        if (filter.allow(name) && value != null)
+        {
+            if (value instanceof Collection)
+            {
+                long index = 0;
+                for (Object multiValue : (Collection)value)
+                {
+                    CmisPropertyString propString = new CmisPropertyString();
+                    propString.setIndex(BigInteger.valueOf(index++));
+                    propString.setName(PropertyUtil.getCMISPropertyName(name));
+                    propString.setValue(multiValue.toString());
+                    properties.getProperty().add(propString);
+                }
+            }
+            else
+            {
+                CmisPropertyString propString = new CmisPropertyString();
+                propString.setName(PropertyUtil.getCMISPropertyName(name));
+                propString.setValue(value.toString());
+                properties.getProperty().add(propString);
+            }
+        }
+    }
+
+    protected void addStringProperty(CmisPropertiesType properties, PropertyFilter filter, String name, String value)
     {
         if (filter.allow(name) && value != null)
         {
@@ -429,15 +533,30 @@ public class DMAbstractServicePort
         }
     }
 
-    private void addURIProperty(CmisPropertiesType properties, PropertyFilter filter, String name, Map<String, Serializable> alfrescoProperties)
+    protected void addURIProperty(CmisPropertiesType properties, PropertyFilter filter, String name, Map<String, Serializable> alfrescoProperties)
     {
         Serializable value = alfrescoProperties.get(name);
         if (filter.allow(name) && value != null)
         {
-            CmisPropertyUri propString = new CmisPropertyUri();
-            propString.setName(PropertyUtil.getCMISPropertyName(name));
-            propString.setValue(value.toString());
-            properties.getProperty().add(propString);
+            if (value instanceof Collection)
+            {
+                long index = 0;
+                for (Object multiValue : (Collection)value)
+                {
+                    CmisPropertyUri propString = new CmisPropertyUri();
+                    propString.setIndex(BigInteger.valueOf(index++));
+                    propString.setName(PropertyUtil.getCMISPropertyName(name));
+                    propString.setValue(multiValue.toString());
+                    properties.getProperty().add(propString);
+                }
+            }
+            else
+            {
+                CmisPropertyUri propString = new CmisPropertyUri();
+                propString.setName(PropertyUtil.getCMISPropertyName(name));
+                propString.setValue(value.toString());
+                properties.getProperty().add(propString);
+            }
         }
     }
     

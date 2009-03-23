@@ -24,6 +24,21 @@
  */
 package org.alfresco.repo.cmis.rest.test;
 
+import java.io.Serializable;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.model.FileInfo;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.namespace.QName;
+import org.alfresco.web.scripts.TestWebScriptServer.GetRequest;
+import org.apache.abdera.i18n.iri.IRI;
+import org.apache.abdera.model.Entry;
 
 
 /**
@@ -31,25 +46,80 @@ package org.alfresco.repo.cmis.rest.test;
  * 
  * @author davidc
  */
-public class CMISCustomTypeTest extends CMISTest
+public class CMISCustomTypeTest extends BaseCMISWebScriptTest
 {
+    private static String TEST_NAMESPACE = "http://www.alfresco.org/model/aiim";
+    
     
     @Override
     protected void setUp()
         throws Exception
     {
-        // Uncomment to change default behaviour of tests  
+        // Uncomment to change default behaviour of tests
+        setCustomContext("classpath:cmis/cmis-test-context.xml");
         setDefaultRunAs("admin");
-//        RemoteServer server = new RemoteServer();
-//        server.username = "admin";
-//        server.password = "admin";
-//        setRemoteServer(server);
+//      RemoteServer server = new RemoteServer();
+//      server.username = "admin";
+//      server.password = "admin";
+//      setRemoteServer(server);
 //        setArgsAsHeaders(false);
 //        setValidateResponse(false);
 //        setListener(new CMISTestListener(System.out));
 //        setTraceReqRes(true);
+
         
+//        initServer("classpath:wcm/wcm-jbpm-context.xml");
+//        
+//        this.authenticationService = (AuthenticationService)getServer().getApplicationContext().getBean("AuthenticationService");
+//        this.authenticationComponent = (AuthenticationComponent)getServer().getApplicationContext().getBean("authenticationComponent");
+//        this.personService = (PersonService)getServer().getApplicationContext().getBean("PersonService");
+//              
+//        this.authenticationComponent.setSystemUserAsCurrentUser();
+//        
+//        // Create users
+//        createUser(USER_ONE);
+//        createUser(USER_TWO);
+//        createUser(USER_THREE);
+//        createUser(USER_FOUR);
+//        
+//        // Do tests as user one
+//        this.authenticationComponent.setCurrentUser(USER_ONE);
+//        
         super.setUp();
     }
 
+    public void testX()
+        throws Exception
+    {
+        IRI rootHREF = getRootChildrenCollection(getWorkspace(getRepository()));
+        sendRequest(new GetRequest(rootHREF.toString()), 200, getAtomValidator());
+    }
+
+    
+    public void testCreateSubType()
+        throws Exception
+    {
+        final Entry testFolder = createTestFolder("testCreateSubType");
+        final NodeRef testFolderRef = getNodeRef(testFolder);
+
+        // create node
+        // TODO: For now create item via Alfresco foundation APIs
+        //       When multi-valued props supported, move to pure CMIS Create
+        AuthenticationUtil.runAs(new RunAsWork<Object>()
+        {
+            @SuppressWarnings("synthetic-access")
+            public Object doWork() throws Exception
+            {
+                FileFolderService fileFolderService = (FileFolderService)getServer().getApplicationContext().getBean("FileFolderService");
+                NodeService nodeService = (NodeService)getServer().getApplicationContext().getBean("NodeService");
+                FileInfo file = fileFolderService.create(testFolderRef, "createSubType", QName.createQName(TEST_NAMESPACE, "content"));
+                Map<QName, Serializable> props = new HashMap<QName, Serializable>();
+                props.put(QName.createQName(TEST_NAMESPACE, "Title"), "createSubTypeTitle");
+                props.put(QName.createQName(TEST_NAMESPACE, "Authors"), (Serializable)Arrays.asList(new String[] { "Dave", "Fred" }));
+                nodeService.addProperties(file.getNodeRef(), props);
+                return null;
+            }
+        }, getDefaultRunAs());
+    }
+    
 }

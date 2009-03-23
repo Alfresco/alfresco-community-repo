@@ -34,6 +34,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.xml.namespace.QName;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.validation.Validator;
@@ -43,6 +44,7 @@ import junit.framework.Test;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.cmis.rest.xsd.CMISValidator;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.Base64;
 import org.alfresco.web.scripts.Format;
 import org.alfresco.web.scripts.TestWebScriptServer.GetRequest;
@@ -58,6 +60,7 @@ import org.apache.abdera.ext.cmis.CMISObject;
 import org.apache.abdera.ext.cmis.CMISRepositoryInfo;
 import org.apache.abdera.i18n.iri.IRI;
 import org.apache.abdera.model.Collection;
+import org.apache.abdera.model.Element;
 import org.apache.abdera.model.Entry;
 import org.apache.abdera.model.Feed;
 import org.apache.abdera.model.Link;
@@ -612,6 +615,21 @@ public class BaseCMISWebScriptTest extends BaseWebScriptTest
         assertNotNull(childrenLink);
         Entry testFolder = createFolder(childrenLink.getHref(), name + " " + System.currentTimeMillis());
         return testFolder;
+    }
+    
+    //
+    // Alfresco specific helpers
+    //
+    
+    protected NodeRef getNodeRef(Entry entry)
+    {
+        NodeRef nodeRef = null;
+        Element element = entry.getFirstChild(new QName("http://www.alfresco.org", "noderef"));
+        if (element != null)
+        {
+            nodeRef = new NodeRef(element.getText());
+        }
+        return nodeRef;
     }
 
 }

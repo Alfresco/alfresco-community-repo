@@ -37,6 +37,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.alfresco.config.ConfigService;
 import org.alfresco.repo.web.filter.beans.DependencyInjectedFilter;
 import org.alfresco.web.config.ClientConfigElement;
+import org.springframework.beans.factory.InitializingBean;
 
 /**
  * @author Kevin Roast
@@ -50,7 +51,7 @@ import org.alfresco.web.config.ClientConfigElement;
  * Note that this filter is only active when the system is running in a servlet container -
  * the AlfrescoFacesPortlet will be used for a JSR-168 Portal environment.
  */
-public class AuthenticationFilter implements DependencyInjectedFilter
+public class AuthenticationFilter implements DependencyInjectedFilter, InitializingBean
 {
 
     private String loginPage;
@@ -65,7 +66,7 @@ public class AuthenticationFilter implements DependencyInjectedFilter
         this.configService = configService;
     }
     
-    public synchronized String getLoginPage()
+    public void afterPropertiesSet() throws Exception
     {
         if (this.loginPage == null)
         {
@@ -77,7 +78,6 @@ public class AuthenticationFilter implements DependencyInjectedFilter
                 this.loginPage = clientConfig.getLoginPage();
             }
         }
-        return this.loginPage;
     }
 
     public void doFilter(ServletContext context, ServletRequest req, ServletResponse res, FilterChain chain)
@@ -87,7 +87,7 @@ public class AuthenticationFilter implements DependencyInjectedFilter
         HttpServletResponse httpRes = (HttpServletResponse) res;
 
         // allow the login page to proceed
-        if (!httpReq.getRequestURI().endsWith(getLoginPage()))
+        if (!httpReq.getRequestURI().endsWith(this.loginPage))
         {
             AuthenticationStatus status = AuthenticationHelper.authenticate(context, httpReq, httpRes, false);
 

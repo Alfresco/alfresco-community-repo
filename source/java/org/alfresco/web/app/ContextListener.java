@@ -35,7 +35,7 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.cache.InternalEhCacheManagerFactoryBean;
-import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -86,8 +86,8 @@ public class ContextListener implements ServletContextListener, HttpSessionListe
       NodeService nodeService = registry.getNodeService();
       SearchService searchService = registry.getSearchService();
       NamespaceService namespaceService = registry.getNamespaceService();
-      AuthenticationComponent authenticationComponent = (AuthenticationComponent) ctx
-            .getBean("authenticationComponent");
+      AuthenticationContext authenticationContext = (AuthenticationContext) ctx
+            .getBean("authenticationContext");
 
       // repo bootstrap code for our client
       UserTransaction tx = null;
@@ -96,7 +96,7 @@ public class ContextListener implements ServletContextListener, HttpSessionListe
       {
          tx = transactionService.getUserTransaction();
          tx.begin();
-         authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
+         authenticationContext.setSystemUserAsCurrentUser();
 
          // get and setup the initial store ref and root path from config
          StoreRef storeRef = Repository.getStoreRef(servletContext);
@@ -130,7 +130,7 @@ public class ContextListener implements ServletContextListener, HttpSessionListe
       {
           try
           {
-             authenticationComponent.clearCurrentSecurityContext();
+             authenticationContext.clearCurrentSecurityContext();
           }
           catch (Exception ex) {}
       }

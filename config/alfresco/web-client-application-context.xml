@@ -85,7 +85,7 @@
       
       <property name="tenantAdminService" ref="tenantAdminService"/>  
       <property name="transactionService" ref="transactionComponent"/>
-      <property name="authenticationComponent" ref="authenticationComponent"/>
+      <property name="authenticationContext" ref="authenticationContext"/>
       
       <property name="configDataCache"   ref="globalConfigCache"/>
       

@@ -5,7 +5,7 @@ model.isUser = false;
 var object = null;
 
 // allow for content to be loaded from id
-if(args["id"] != null)
+if (args["id"] != null)
 {
 	var id = args["id"];
 	object = search.findNode(id);
@@ -14,10 +14,9 @@ if(args["id"] != null)
 // if not by id, then allow for user id
 else if (args["user"] != null)
 {
-	var userId = args["user"];
-	// TODO: only return "unprotected" properties if the user is not current or admin
-	//       if (userId == person.properties.userName || people.isAdmin(person))
+	var userId = args["user"];r
    object = people.getPerson(userId);
+   object.properties["isAdmin"] = people.isAdmin(object);
    model.isUser = true;
    model.includeChildren = false;
 }
@@ -26,13 +25,9 @@ else if (args["user"] != null)
 else
 {
 	var path = args["path"];
-	if(path == null || path == "" || path == "/")
+	if (path == null || path == "" || path == "/")
 	{
 		path = "/Company Home";
-	}
-	else
-	{
-		//path = "/Company Home" + path;
 	}
 	
 	// look up the content by path

@@ -48,11 +48,15 @@
 			<#assign val = object.properties[key]>
 			<#if isUser && object.isTemplateContent(val)>
 				<#if first == false>,</#if>
-				"${key}" : "${val.content?js_string}"
+				"${key}" : "${jsonUtils.encodeJSONString(val.content)}"
+				<#assign first = false>
+			<#elseif object.isTemplateNodeRef(val)>
+				<#if first == false>,</#if>
+				"${key}" : "${val.nodeRef}"
 				<#assign first = false>
 			<#elseif val?is_string == true>
 				<#if first == false>,</#if>
-				"${key}" : "${val?js_string}"
+				"${key}" : "${jsonUtils.encodeJSONString(val)}"
 				<#assign first = false>
 			<#elseif val?is_date == true>
 				<#if first == false>,</#if>

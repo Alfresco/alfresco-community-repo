@@ -28,6 +28,8 @@ package org.alfresco.linkvalidation;
 
 import org.alfresco.repo.avm.util.RawServices;
 import org.alfresco.util.AbstractLifecycleBean;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
 
@@ -36,6 +38,7 @@ import org.springframework.context.ApplicationEvent;
  */
 public class LinkValidationServiceBootstrap extends AbstractLifecycleBean
 {
+    private static Log logger = LogFactory.getLog(LinkValidationServiceBootstrap.class);
     private LinkValidationService linkValidationService_;
     
     @Override
@@ -51,6 +54,13 @@ public class LinkValidationServiceBootstrap extends AbstractLifecycleBean
     @Override
     protected void onShutdown(ApplicationEvent event)
     {
-        linkValidationService_.onShutdown();
+        try
+        {
+            linkValidationService_.onShutdown();
+        }
+        catch (Throwable e)
+        {
+            logger.warn("Failed to shut down LinkValidationService", e);
+        }
     }
 }

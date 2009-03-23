@@ -16,7 +16,7 @@ else if (args["user"] != null)
 {
    var userId = args["user"];
    object = people.getPerson(userId);
-   object.properties["isAdmin"] = people.isAdmin(object);
+   model.isAdmin = people.isAdmin(object);
    model.isUser = true;
    model.includeChildren = false;
 }

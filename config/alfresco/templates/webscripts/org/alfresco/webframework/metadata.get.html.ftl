@@ -68,6 +68,9 @@
 			</#if>
 		</#if>
 	</#list>
+	<#if isUser>
+		, "isAdmin" : "${isAdmin?string}"
+	</#if>
 	}
 </#if>
 

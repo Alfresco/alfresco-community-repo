@@ -53,8 +53,11 @@ function main()
     
     formModel.data.definition = {};
     formModel.data.definition.fields = {};
-    for (var fieldName in formScriptObj.fieldDefinitionData)
+    
+    for (var integerKey in formScriptObj.fieldDefinitionData)
     {
+    	var fieldName = formScriptObj.fieldDefinitionData[integerKey].name;
+    	
     	// We're explicitly listing the object fields of FieldDefinition.java and its
     	// subclasses here.
     	// I don't see a way to get these dynamically at runtime.
@@ -72,7 +75,7 @@ function main()
     	formModel.data.definition.fields[fieldName] = {};
     	for (var i = 0; i < allSupportedFieldNames.length; i++) {
     		var nextSupportedName = allSupportedFieldNames[i];
-    		var nextValue = formScriptObj.fieldDefinitionData[fieldName][nextSupportedName];
+    		var nextValue = formScriptObj.fieldDefinitionData[integerKey][nextSupportedName];
     		
     		if (nextValue != null) {
     			formModel.data.definition.fields[fieldName][nextSupportedName] = nextValue;

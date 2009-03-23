@@ -109,9 +109,15 @@ function testGetFormForContentNode()
     test.assertEquals("This is the description for the test document", fieldData["prop:cm:description"].value);
     test.assertEquals("fred@customer.com", fieldData["prop:cm:originator"].value);
     test.assertEquals("bill@example.com", fieldData["prop:cm:addressee"].value);
-    test.assertEquals("harry@example.com", fieldData["prop:cm:addressees_0"].value);
-    test.assertEquals("jane@example.com", fieldData["prop:cm:addressees_1"].value);
     test.assertEquals("The subject is...", fieldData["prop:cm:subjectline"].value);
+    
+    var addressees = fieldData["prop:cm:addressees"].value;
+    test.assertNotNull(addressees);
+    test.assertTrue(addressees.indexOf(",") != -1);
+    var addresseesArr = addressees.split(",");
+    test.assertEquals(2, addresseesArr.length);
+    test.assertEquals("harry@example.com", addresseesArr[0]);
+    test.assertEquals("jane@example.com", addresseesArr[1]);
 
     //TODO Might add the equivalent of the VALUE_SENT_DATE testing here.
     // In the meantime I'll use JavaScript's own Date object to assert that it is a valid date.

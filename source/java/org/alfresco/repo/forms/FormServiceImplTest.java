@@ -53,6 +53,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
+import org.springframework.util.StringUtils;
 
 /**
  * Form service implementation unit test.
@@ -77,6 +78,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
     private static String VALUE_ADDRESSEE = "bill@example.com";
     private static String VALUE_ADDRESSEES1 = "harry@example.com";
     private static String VALUE_ADDRESSEES2 = "jane@example.com";
+    private static String VALUE_ADDRESSEES3 = "alice@example.com";
     private static String VALUE_SUBJECT = "The subject is...";
     private static String VALUE_MIMETYPE = MimetypeMap.MIMETYPE_TEXT_PLAIN;
     private static String VALUE_ENCODING = "UTF-8";
@@ -335,10 +337,16 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         assertEquals(VALUE_ENCODING, fieldData.get("prop:encoding").getValue());
         assertEquals(VALUE_ORIGINATOR, fieldData.get("prop:cm:originator").getValue());
         assertEquals(VALUE_ADDRESSEE, fieldData.get("prop:cm:addressee").getValue());
-        assertEquals(VALUE_ADDRESSEES1, fieldData.get("prop:cm:addressees_0").getValue());
-        assertEquals(VALUE_ADDRESSEES2, fieldData.get("prop:cm:addressees_1").getValue());
         assertEquals(VALUE_SUBJECT, fieldData.get("prop:cm:subjectline").getValue());
         assertTrue("Expecting size to be > 0", ((Long)fieldData.get("prop:size").getValue()).longValue() > 0);
+        
+        String addressees = (String)fieldData.get("prop:cm:addressees").getValue();
+        assertNotNull(addressees);
+        assertTrue("Expecting the addressees value to have at least 1 comma", addressees.indexOf(",") != -1);
+        String[] addresseesArr = StringUtils.delimitedListToStringArray(addressees, ",");
+        assertEquals("Expecting 2 addressees", 2, addresseesArr.length);
+        assertEquals(VALUE_ADDRESSEES1, addresseesArr[0]);
+        assertEquals(VALUE_ADDRESSEES2, addresseesArr[1]);
         
         Calendar calTestValue = Calendar.getInstance();
         calTestValue.setTime(VALUE_SENT_DATE);
@@ -372,6 +380,10 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         String newOriginator = "jane@example.com";
         data.addData("prop:cm:originator", newOriginator);
         
+        // update the adressees, add another
+        String newAddressees = VALUE_ADDRESSEES1 + "," + VALUE_ADDRESSEES2 + "," + VALUE_ADDRESSEES3;
+        data.addData("prop:cm:addressees", newAddressees);
+        
         // set the date to null (using an empty string)
         data.addData("prop:cm:sentdate", "");
         
@@ -387,13 +399,20 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         String updatedName = (String)updatedProps.get(ContentModel.PROP_NAME);
         String updatedTitle = (String)updatedProps.get(ContentModel.PROP_TITLE);
         String updatedOriginator = (String)updatedProps.get(ContentModel.PROP_ORIGINATOR);
+        List updatedAddressees = (List)updatedProps.get(ContentModel.PROP_ADDRESSEES);
         String wrong = (String)updatedProps.get(QName.createQName("cm", "wrong", this.namespaceService));
         Date sentDate = (Date)updatedProps.get(ContentModel.PROP_SENTDATE);
+        
         assertEquals(newName, updatedName);
         assertEquals(newTitle, updatedTitle);
         assertEquals(newOriginator, updatedOriginator);
         assertNull("Expecting sentdate to be null", sentDate);
         assertNull("Expecting my:wrong to be null", wrong);
+        assertNotNull("Expected there to be addressees", updatedAddressees);
+        assertTrue("Expected there to be 3 addressees", updatedAddressees.size() == 3);
+        assertEquals(VALUE_ADDRESSEES1, updatedAddressees.get(0));
+        assertEquals(VALUE_ADDRESSEES2, updatedAddressees.get(1));
+        assertEquals(VALUE_ADDRESSEES3, updatedAddressees.get(2));
         
         // check mimetype was updated
         ContentData contentData = (ContentData)updatedProps.get(ContentModel.PROP_CONTENT);

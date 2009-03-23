@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -61,6 +62,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.util.StringUtils;
 
 /**
  * Handler to handle the generation and persistence of a Form object for a repository node.
@@ -317,19 +319,7 @@ public class NodeHandler extends AbstractHandler
                             
                             if (paramValue instanceof List)
                             {
-                                List paramList = (List)paramValue;
-                                StringBuilder builder = new StringBuilder();
-                                for (int x = 0; x < paramList.size(); x++)
-                                {
-                                    if (x > 0)
-                                    {
-                                        builder.append(",");
-                                    }
-                                    
-                                    builder.append(paramList.get(x));
-                                }
-                                
-                                paramValue = builder.toString();
+                                paramValue = makeListString((List)paramValue);
                             }
                             
                             fieldConstraintParams.put(name, paramValue.toString());
@@ -351,18 +341,14 @@ public class NodeHandler extends AbstractHandler
             {
                 if (fieldData instanceof List)
                 {
-                    List list = (List)fieldData;
-                    String fieldName = PROP_PREFIX + fieldDef.getName();
-                    for (int x = 0; x < list.size(); x++)
-                    {
-                        Object repeatingVal = list.get(x);
-                        formData.addData(fieldName + "_" + x, repeatingVal);
-                    }
+                    // temporarily add repeating field data as a comma
+                    // separated list, this will be changed to using
+                    // a separate field for each value once we have full
+                    // UI support in place.
+                    fieldData = makeListString((List)fieldData);
                 }
-                else
-                {
-                    formData.addData(PROP_PREFIX + fieldDef.getName(), fieldData);
-                }
+                
+                formData.addData(PROP_PREFIX + fieldDef.getName(), fieldData);
             }
         }
     }
@@ -557,6 +543,20 @@ public class NodeHandler extends AbstractHandler
                            value = null;
                        }
                     }
+                    else if (propDef.isMultiValued())
+                    {
+                        // currently we expect comma separated lists to represent
+                        // the values of a multi valued property, change into List
+                        StringTokenizer tokenizer = new StringTokenizer((String)value, ",");
+                        List<String> list = new ArrayList<String>(8);
+                        while (tokenizer.hasMoreTokens())
+                        {
+                            list.add(tokenizer.nextToken());
+                        }
+                        
+                        // persist the List
+                        value = list;
+                    }
                     else if (propDef.getDataType().getName().equals(DataTypeDefinition.LOCALE))
                     {
                         value = I18NUtil.parseLocale((String)value);
@@ -734,5 +734,28 @@ public class NodeHandler extends AbstractHandler
             contentData = ContentData.setEncoding(contentData, (String)fieldData.getValue());
             propsToPersist.put(ContentModel.PROP_CONTENT, contentData);
         }
+    }
+    
+    /**
+     * Returns a comma separated list string of the given list object.
+     * 
+     * @param list The List of values to convert
+     * @return A comma separated list of values
+     */
+    @SuppressWarnings("unchecked")
+    protected String makeListString(List list)
+    {
+        StringBuilder builder = new StringBuilder();
+        for (int x = 0; x < list.size(); x++)
+        {
+            if (x > 0)
+            {
+                builder.append(",");
+            }
+            
+            builder.append(list.get(x));
+        }
+        
+        return builder.toString();
     }
 }

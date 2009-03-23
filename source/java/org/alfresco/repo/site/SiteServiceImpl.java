@@ -586,14 +586,14 @@ public class SiteServiceImpl implements SiteService, SiteModel
                     dictionaryService.getDataType(
                             DataTypeDefinition.TEXT),
                             true,
-                            QueryParser.escape(nameFilter.replace('"', ' ')));
+                            LuceneQueryParser.escape(nameFilter.replace('"', ' ')));
 
             params[2] = new QueryParameterDefImpl(
                     ContentModel.PROP_DESCRIPTION,
                     dictionaryService.getDataType(
                             DataTypeDefinition.TEXT),
                             true,
-                            QueryParser.escape(nameFilter.replace('"', ' ')));
+                            LuceneQueryParser.escape(nameFilter.replace('"', ' ')));
 
             // get the sites that match the specified names
             StringBuilder query = new StringBuilder(128);

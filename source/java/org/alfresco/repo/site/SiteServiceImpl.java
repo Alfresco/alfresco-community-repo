@@ -1004,7 +1004,6 @@ public class SiteServiceImpl implements SiteService, SiteModel
                 {                    
                     if (collapseGroups == false)
                     {
-                        boolean addGroup = true;
                         if (nameFilter != null && nameFilter.length() != 0)
                         {
                             // found a filter - does it match Group name part?

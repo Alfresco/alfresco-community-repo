@@ -10,7 +10,6 @@
 	"url" : "${object.url}"
 	,
 	"downloadUrl" : "${object.downloadUrl}"
-	
 <#if object.mimetype?exists>	
 	,
 	"mimetype" : "${object.mimetype}"
@@ -100,4 +99,4 @@
 	}
 </#if>
 
-</#macro> 
+</#macro>

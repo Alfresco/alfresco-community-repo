@@ -14,7 +14,7 @@ if (args["id"] != null)
 // if not by id, then allow for user id
 else if (args["user"] != null)
 {
-	var userId = args["user"];r
+   var userId = args["user"];
    object = people.getPerson(userId);
    object.properties["isAdmin"] = people.isAdmin(object);
    model.isUser = true;

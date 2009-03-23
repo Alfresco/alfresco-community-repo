@@ -24,6 +24,8 @@
  */
 package org.alfresco.repo.security.authentication;
 
+import org.alfresco.service.Auditable;
+
 import net.sf.acegisecurity.Authentication;
 import net.sf.acegisecurity.UserDetails;
 
@@ -87,6 +89,11 @@ public interface AuthenticationContext
      * True if this is the System user ?
      */
     public boolean isSystemUserName(String userName);
+    
+    /**
+     * Is the current user the system user?
+     */
+    public boolean isCurrentUserTheSystemUser();
 
     /**
      * Get the name of the Guest User. Note: for MT, will get guest for default domain only

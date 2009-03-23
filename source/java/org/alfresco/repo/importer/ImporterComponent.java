@@ -40,6 +40,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.importer.view.NodeContext;
 import org.alfresco.repo.policy.BehaviourFilter;
+import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ChildAssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
@@ -59,7 +60,6 @@ import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
-import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
@@ -107,7 +107,7 @@ public class ImporterComponent
     private RuleService ruleService;
     private PermissionService permissionService;
     private AuthorityService authorityService;
-    private AuthenticationService authenticationService;
+    private AuthenticationContext authenticationContext;
     private OwnableService ownableService;
 
     // binding markers    
@@ -198,11 +198,11 @@ public class ImporterComponent
     }
 
     /**
-     * @param authenticationService  authenticationService
+     * @param authenticationContext  authenticationContext
      */
-    public void setAuthenticationService(AuthenticationService authenticationService)
+    public void setAuthenticationContext(AuthenticationContext authenticationContext)
     {
-        this.authenticationService = authenticationService;
+        this.authenticationContext = authenticationContext;
     }
     
     /**
@@ -536,6 +536,7 @@ public class ImporterComponent
         /* (non-Javadoc)
          * @see org.alfresco.repo.importer.Importer#importNode(org.alfresco.repo.importer.ImportNode)
          */
+        @SuppressWarnings("unchecked")
         public NodeRef importNode(ImportNode context)
         {
             // import node
@@ -714,6 +715,7 @@ public class ImporterComponent
         /* (non-Javadoc)
          * @see org.alfresco.repo.importer.Importer#end()
          */
+        @SuppressWarnings("unchecked")
         public void end()
         {
             // Bind all node references to destination space
@@ -917,6 +919,7 @@ public class ImporterComponent
          * @param properties
          * @return
          */
+        @SuppressWarnings("unchecked")
         private Map<QName, Serializable> bindProperties(ImportNode context)
         {
             Map<QName, Serializable> properties = context.getProperties();
@@ -1261,7 +1264,7 @@ public class ImporterComponent
                 NodeRef nodeRef = assocRef.getChildRef();
 
                 // Note: non-admin authorities take ownership of new nodes
-                if (!(authorityService.hasAdminAuthority() || authenticationService.isCurrentUserTheSystemUser()))
+                if (!(authenticationContext.isCurrentUserTheSystemUser() || authorityService.hasAdminAuthority()))
                 {
                     ownableService.takeOwnership(nodeRef);
                 }
@@ -1269,7 +1272,7 @@ public class ImporterComponent
                 // apply permissions
                 List<AccessPermission> permissions = null;
                 AccessStatus writePermission = permissionService.hasPermission(nodeRef, PermissionService.CHANGE_PERMISSIONS);
-                if (authenticationService.isCurrentUserTheSystemUser() || writePermission.equals(AccessStatus.ALLOWED))
+                if (authenticationContext.isCurrentUserTheSystemUser() || writePermission.equals(AccessStatus.ALLOWED))
                 {
                     permissions = bindPermissions(node.getAccessControlEntries());
                     
@@ -1449,7 +1452,7 @@ public class ImporterComponent
                         // Apply permissions
                         List<AccessPermission> permissions = null;
                         AccessStatus writePermission = permissionService.hasPermission(existingNodeRef, PermissionService.CHANGE_PERMISSIONS);
-                        if (authenticationService.isCurrentUserTheSystemUser() || writePermission.equals(AccessStatus.ALLOWED))
+                        if (authenticationContext.isCurrentUserTheSystemUser() || writePermission.equals(AccessStatus.ALLOWED))
                         {
                             boolean inheritPermissions = node.getInheritPermissions();
                             if (!inheritPermissions)

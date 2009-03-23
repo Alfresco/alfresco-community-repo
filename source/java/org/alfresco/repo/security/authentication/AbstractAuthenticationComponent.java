@@ -321,6 +321,16 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
     }
 
     /**
+     * Is the current user the system user?
+     * 
+     * @return boolean
+     */
+    public boolean isCurrentUserTheSystemUser()
+    {
+        return authenticationContext.isCurrentUserTheSystemUser();
+    }
+
+    /**
      * Get the name of the Guest User note: for MT, will get guest for default domain only
      * 
      * @return String

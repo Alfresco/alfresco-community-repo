@@ -102,6 +102,11 @@ public class AuthenticationContextImpl implements AuthenticationContext
         return getSystemUserName().equals(this.tenantService.getBaseNameUser(userName));
     }
 
+    public boolean isCurrentUserTheSystemUser()
+    {
+        return isSystemUserName(getCurrentUserName());
+    }
+
     public String getGuestUserName(String tenantDomain)
     {
         return this.tenantService.getDomainUser(getGuestUserName(), tenantDomain);

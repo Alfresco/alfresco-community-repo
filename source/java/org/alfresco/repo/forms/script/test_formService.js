@@ -16,12 +16,10 @@ function testGetFormForContentNode()
 	test.assertEquals(testDoc, form.item);
 	test.assertEquals('cm:content', form.type);
 	
-	//TODO Do we want this to be null or an empty array?
 	test.assertNull(form.fieldGroups, "form.fieldGroups should be null.");
 	
 	var fieldDefs = form.fieldDefinitions;
 	test.assertNotNull(fieldDefs, "field definitions should not be null.");
-	
 	test.assertEquals(22, fieldDefs.length);
 	
 	// This dataHash is now an integer-keyed hash of the field definition data objects.
@@ -49,10 +47,6 @@ function testGetFormForContentNode()
     test.assertNotNull(sentDateField, "Expecting to find the cm:sentdate field");
     test.assertNotNull(referencesField, "Expecting to find the cm:references field");
 
-    //TODO All these checked values will only work for the hard-coded node we're using.
-    //     The hard-coded node should be replaced with a temporary one created within
-    //     this test case.
-    
     // check the labels of all the fields
     test.assertEquals("Name", nameField.label);
     test.assertEquals("Title", titleField.label);
@@ -87,9 +81,6 @@ function testGetFormForContentNode()
     // Expecting cm:addressees to be multi-valued.
     test.assertTrue(addresseesField.repeating);
   
-    // TODO The below test is failing for some reason.
-//    test.assertNull(addresseesField.constraints, "addresseesField.constraints should be null.");
-    
     // check the details of the association field
     test.assertEquals("cm:content", referencesField.endpointType);
     
@@ -125,8 +116,9 @@ function testGetFormForContentNode()
     test.assertFalse(isNaN(Date.parse(sentDate)));
     
     var targets = fieldData["assoc:cm:references"].value;
-    test.assertEquals(1, targets.length);
-    test.assertEquals(testAssociatedDoc, targets[0]);
+    
+    test.assertNotNull(targets, "targets should not be null.");
+    test.assertEquals(testAssociatedDoc, targets);
 }
 
 function getFieldDefnFromMap(name, fieldDefnDataHash)

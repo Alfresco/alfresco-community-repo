@@ -83,6 +83,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
     private static String VALUE_MIMETYPE = MimetypeMap.MIMETYPE_TEXT_PLAIN;
     private static String VALUE_ENCODING = "UTF-8";
     private static String VALUE_CONTENT = "This is the content for the test document";
+    private static String VALUE_ASSOC_CONTENT = "This is the content for the associated document";
     private static Date VALUE_SENT_DATE = new Date();
     
     private static String LABEL_NAME = "Name";
@@ -157,11 +158,16 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
                     ContentModel.TYPE_CONTENT,
                     docProps).getChildRef();
         
-        // add some content to the node
+        // add some content to the nodes
         ContentWriter writer = this.contentService.getWriter(this.document, ContentModel.PROP_CONTENT, true);
         writer.setMimetype(VALUE_MIMETYPE);
         writer.setEncoding(VALUE_ENCODING);
         writer.putContent(VALUE_CONTENT);
+        
+        ContentWriter writer2 = this.contentService.getWriter(this.associatedDoc, ContentModel.PROP_CONTENT, true);
+        writer2.setMimetype(VALUE_MIMETYPE);
+        writer2.setEncoding(VALUE_ENCODING);
+        writer2.putContent(VALUE_ASSOC_CONTENT);
         
         // add standard titled aspect
         Map<QName, Serializable> aspectProps = new HashMap<QName, Serializable>(2);
@@ -462,31 +468,8 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         }
     }
     
-	public void off_testSaveUpdatedForm() throws Exception
-    {
-		fail("Form persistence not yet impl'd.");
-		
-        Form originalForm = this.formService.getForm(this.document.toString());
-        FormData formData = originalForm.getFormData();
-        
-        FieldData fd = originalForm.getFormData().getData().get("foo");
-        assertNull(fd);
-
-        formData.addData("foo", "bar");
-        
-        formService.saveForm(document.toString(), formData);
-
-        Form updatedForm = this.formService.getForm(this.document.toString());
-        assertFalse("Expected form instance to have changed.", originalForm == updatedForm);
-        
-        fd = updatedForm.getFormData().getData().get("foo");
-        assertNotNull(fd);
-    }
-    
     public void testJavascriptAPI() throws Exception
     {
-    	//TODO Form saving is not yet implemented.
-    	
     	Map<String, Object> model = new HashMap<String, Object>();
     	model.put("testDoc", this.document.toString());
     	model.put("testAssociatedDoc", this.associatedDoc.toString());

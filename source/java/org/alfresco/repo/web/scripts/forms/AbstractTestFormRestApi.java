@@ -41,6 +41,7 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.alfresco.web.scripts.TestWebScriptServer.GetRequest;
@@ -58,11 +59,6 @@ public abstract class AbstractTestFormRestApi extends BaseWebScriptTest
     private FileFolderService fileFolderService;
     private ContentService contentService;
     private Repository repositoryHelper;
-
-    public AbstractTestFormRestApi()
-    {
-        super();
-    }
 
     @Override
     protected void setUp() throws Exception
@@ -82,6 +78,7 @@ public abstract class AbstractTestFormRestApi extends BaseWebScriptTest
 
         String guid = GUID.generate();
 
+        // Create a test file (not a folder)
         FileInfo fileInfoTestNode = this.fileFolderService.create(companyHomeNodeRef,
                 "test_forms_doc" + guid + ".txt", ContentModel.TYPE_CONTENT);
         testNodeRef = fileInfoTestNode.getNodeRef();
@@ -98,6 +95,21 @@ public abstract class AbstractTestFormRestApi extends BaseWebScriptTest
         contentWriter.setEncoding("UTF-8");
         contentWriter.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
         contentWriter.putContent("The quick brown fox jumped over the lazy dog.");
+        
+        // create a node to use as target of association
+        Map<QName, Serializable> docProps = new HashMap<QName, Serializable>(1);
+        docProps.put(ContentModel.PROP_NAME, "associatedDocument" + guid + ".txt");
+        NodeRef associatedDoc = this.nodeService.createNode(
+                    companyHomeNodeRef, 
+                    ContentModel.ASSOC_CONTAINS, 
+                    QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "associatedDocument" + guid + ".txt"), 
+                    ContentModel.TYPE_CONTENT,
+                    docProps).getChildRef();
+
+        // Now create an association between these two node refs.
+        aspectProps.clear();
+        this.nodeService.addAspect(this.testNodeRef, ContentModel.ASPECT_REFERENCING, aspectProps);
+        this.nodeService.createAssociation(this.testNodeRef, associatedDoc, ContentModel.ASSOC_REFERENCES);
 
         // Create and store the path
         StringBuilder builder = new StringBuilder();

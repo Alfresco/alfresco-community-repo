@@ -105,6 +105,8 @@ function main()
         {
             formModel.data.formData[k.replace(/:/g, "_")] = utils.toISO8601(value);
         }
+        // There is no need to handle java.util.List instances here as they are
+        // returned from ScriptFormData.java as Strings
         else
         {
             formModel.data.formData[k.replace(/:/g, "_")] = value;

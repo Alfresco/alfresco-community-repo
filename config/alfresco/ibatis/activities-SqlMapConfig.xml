@@ -6,11 +6,7 @@
 
 <sqlMapConfig>
 
-    <sqlMap resource="alfresco/ibatis/#resource.dialect#/ActivityPost-common-SqlMap.xml"/>
-    <sqlMap resource="alfresco/ibatis/#resource.dialect#/ActivityFeed-common-SqlMap.xml"/>
-    <sqlMap resource="alfresco/ibatis/#resource.dialect#/ActivityFeedControl-common-SqlMap.xml"/>
-    <sqlMap resource="alfresco/ibatis/#resource.dialect#/ActivityPost-insert-SqlMap.xml"/>
-    <sqlMap resource="alfresco/ibatis/#resource.dialect#/ActivityFeed-insert-SqlMap.xml"/>
-    <sqlMap resource="alfresco/ibatis/#resource.dialect#/ActivityFeedControl-insert-SqlMap.xml"/>
+    <sqlMap resource="alfresco/ibatis/#resource.dialect#/activities-common-SqlMap.xml"/>
+    <sqlMap resource="alfresco/ibatis/#resource.dialect#/activities-insert-SqlMap.xml"/>
 
 </sqlMapConfig>

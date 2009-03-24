@@ -9,7 +9,7 @@
    <typeAlias alias="ActivityFeed" type="org.alfresco.repo.activities.feed.ActivityFeedDAO"/>
 
    <resultMap id="ActivityFeedResult" class="ActivityFeed">
-      <result property="id" column="id"/>
+      <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
       <result property="feedUserId" column="feed_user_id"/>
       <result property="postUserId" column="post_user_id"/>
       <result property="postDate" column="post_date"/>

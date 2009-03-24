@@ -35,7 +35,7 @@ import org.json.JSONObject;
  */
 public class ActivityFeedDAO
 { 
-    private long id; // internal DB-generated id
+    private Long id; // internal DB-generated id
     private String activityType;
     private String activitySummary;
     private String activitySummaryFormat;
@@ -48,12 +48,12 @@ public class ActivityFeedDAO
     private long postId; // for debug - not an explicit FK constraint, could be used to implement re-generate
     
 
-    public long getId()
+    public Long getId()
     {
         return id;
     }
     
-    public void setId(long id)
+    public void setId(Long id)
     {
         this.id = id;
     }

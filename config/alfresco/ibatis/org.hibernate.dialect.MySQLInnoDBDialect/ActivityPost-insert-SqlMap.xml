@@ -12,7 +12,7 @@
       values (#status#, #activityData#, #userId#, #postDate#, #activityType#, #siteNetwork#, #appTool#, #jobTaskNode#, #lastModified#)
       
       <selectKey resultClass="long" keyProperty="id" type="post">
-         KEY_COLUMN:sequence_id
+         KEY_COLUMN:GENERATED_KEY
       </selectKey>
       
    </insert>

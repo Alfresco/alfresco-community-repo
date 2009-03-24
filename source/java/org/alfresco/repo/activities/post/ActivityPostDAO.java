@@ -33,7 +33,7 @@ public class ActivityPostDAO
 { 
     public enum STATUS { POSTED, PENDING, PROCESSED, ERROR };
     
-    private long id; // internal DB-generated sequence id
+    private Long id; // internal DB-generated sequence id
     private String activityData;
     private String activityType;
     private String userId;
@@ -48,11 +48,11 @@ public class ActivityPostDAO
     private long minId = -1;
     private long maxId = -1;
     
-    public long getId()
+    public Long getId()
     {
         return id;
     }
-    public void setId(long id)
+    public void setId(Long id)
     {
         this.id = id;
     }

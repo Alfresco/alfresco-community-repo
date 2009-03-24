@@ -33,7 +33,7 @@ import org.alfresco.service.cmr.activities.FeedControl;
  */
 public class FeedControlDAO
 { 
-    private long id; // internal DB-generated id
+    private Long id; // internal DB-generated id
     private String feedUserId;
     private String siteNetwork;
     private String appTool;
@@ -66,12 +66,12 @@ public class FeedControlDAO
         return new FeedControl(this.siteNetwork, this.appTool);
     }
     
-    public long getId()
+    public Long getId()
     {
         return id;
     }
     
-    public void setId(long id)
+    public void setId(Long id)
     {
         this.id = id;
     }

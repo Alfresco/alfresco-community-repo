@@ -37,7 +37,7 @@
         </property>
     </bean>
 
-   	<bean id="activitiesSqlMapClient" class="org.alfresco.repo.domain.ibatis.AlfrescoSqlMapClientFactoryBean" singleton="true">
+   	<bean id="activitiesSqlMapClient" class="org.alfresco.ibatis.HierarchicalSqlMapClientFactoryBean" singleton="true">
         <property name="dataSource" ref="iBatisDataSource"/>
         <property name="resourceLoader" ref="dialectResourceLoader" />
         <property name="configLocation">

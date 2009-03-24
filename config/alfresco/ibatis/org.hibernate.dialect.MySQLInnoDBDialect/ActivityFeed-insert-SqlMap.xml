@@ -12,7 +12,7 @@
       values (#activityType#, #activitySummary#, #activitySummaryFormat#, #feedUserId#, #postUserId#, #postDate#, #postId#, #siteNetwork#, #appTool#, #feedDate#)
 
       <selectKey resultClass="long" keyProperty="id" type="post">
-         KEY_COLUMN:id
+         KEY_COLUMN:GENERATED_KEY
       </selectKey>
       
    </insert>

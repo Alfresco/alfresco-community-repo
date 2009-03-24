@@ -9,7 +9,7 @@
    <typeAlias alias="ActivityPost" type="org.alfresco.repo.activities.post.ActivityPostDAO"/>
 
    <resultMap id="ActivityPostResult" class="ActivityPost">
-      <result property="id" column="sequence_id"/>
+      <result property="id" column="sequence_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
       <result property="activityData" column="activity_data"/>
       <result property="activityType" column="activity_type"/>
       <result property="userId" column="post_user_id"/>

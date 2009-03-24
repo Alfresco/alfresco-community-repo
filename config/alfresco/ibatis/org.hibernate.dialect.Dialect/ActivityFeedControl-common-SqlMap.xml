@@ -9,7 +9,7 @@
    <typeAlias alias="FeedControl" type="org.alfresco.repo.activities.feed.control.FeedControlDAO"/>
 
    <resultMap id="FeedControlResult" class="FeedControl">
-      <result property="id" column="id"/>
+      <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
       <result property="feedUserId" column="feed_user_id"/>
       <result property="siteNetwork" column="site_network"/>
       <result property="appTool" column="app_tool"/>

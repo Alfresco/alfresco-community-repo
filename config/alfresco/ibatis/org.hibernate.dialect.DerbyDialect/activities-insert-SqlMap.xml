@@ -4,7 +4,7 @@
     PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
     "http://ibatis.apache.org/dtd/sql-map-2.dtd">
 
-<sqlMap namespace="activities">
+<sqlMap namespace="alfresco.activities">
 
    <insert id="insert.activity.feedcontrol" parameterClass="FeedControl">
       insert into alf_activity_feed_control (id, feed_user_id, site_network, app_tool, last_modified)

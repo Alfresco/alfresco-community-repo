@@ -93,10 +93,9 @@ public class PageTag extends TagSupport
  * Please ensure you understand the terms of the license before changing the contents of this file.
  */
    
-   private final static String ALF_LOGO_HTTP  = "http://www.alfresco.com/images/alfresco_community_horiz21.gif";
-   private final static String ALF_LOGO_HTTPS = "https://www.alfresco.com/images/alfresco_community_horiz21.gif";
+   private final static String ALF_LOGO_HTTP  = "http://www.alfresco.com/assets/images/logos/alfresco-labs-3e.png";
+   private final static String ALF_LOGO_HTTPS = "https://www.alfresco.com/assets/images/logos/alfresco-labs-3e.png";
    private final static String ALF_URL   = "http://www.alfresco.com";
-   private final static String SF_LOGO   = "/images/logo/sflogo.php.png";
    private final static String ALF_TEXT  = "Alfresco Community";
    private final static String ALF_COPY  = "Supplied free of charge with " +
         "<a class='footer' href='http://www.alfresco.com/services/support/communityterms/#support'>no support</a>, " +
@@ -355,10 +354,7 @@ public class PageTag extends TagSupport
                              "' src='" + ("http".equals(req.getScheme()) ? ALF_LOGO_HTTP : ALF_LOGO_HTTPS) + 
                              "'>" +"</a></td><td align='center'>" +
                              "<span class='footer'>" + ALF_COPY +
-                             "</span></td><td><a href='http://sourceforge.net/projects/alfresco'>" +
-                             "<img style='vertical-align:middle' border='0' alt='' title='SourceForge' width='88' height='31' src='" +
-                             req.getContextPath() + SF_LOGO + "'></a>" +
-                             "</td></tr></table></center>");
+                             "</span></td><td></td></tr></table></center>");
       }
       return PageTag.alfresco;
    }

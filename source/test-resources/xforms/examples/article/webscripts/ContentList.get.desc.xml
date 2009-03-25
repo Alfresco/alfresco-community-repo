@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>WCM Schema for Content Selection</shortname>
+  <description>Generate part of schema for content selection</description>
+  <url format="xml" template="/demo/wcm/schema/content/list"/>
+  <format default="xml">extension</format>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>

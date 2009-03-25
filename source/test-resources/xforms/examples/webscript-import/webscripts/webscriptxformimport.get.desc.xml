@@ -1,0 +1,7 @@
+<webscript>
+  <shortname>Web Form Import Example</shortname>
+  <description>Example for testing import of a Web Script from a Web Form</description>
+  <url>/pmonks/webformimport?storeid={storeid}</url>
+  <format default="xsd">any</format>
+  <authentication>user</authentication>   <!-- This should be "user", but currently web script imports don't pass through user credentials -->
+</webscript>

@@ -1,0 +1,142 @@
+<?xml version="1.0"?>
+<!--
+* Copyright (C) 2005-2007 Alfresco Software Limited.
+
+* This program is free software; you can redistribute it and/or
+* modify it under the terms of the GNU General Public License
+* as published by the Free Software Foundation; either version 2
+* of the License, or (at your option) any later version.
+
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+
+* You should have received a copy of the GNU General Public License
+* along with this program; if not, write to the Free Software
+* Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+
+* As a special exception to the terms and conditions of version 2.0 of
+* the GPL, you may redistribute this Program in connection with Free/Libre
+* and Open Source Software ("FLOSS") applications as described in Alfresco's
+* FLOSS exception.  You should have recieved a copy of the text describing
+* the FLOSS exception, and it is also available here:
+* http://www.alfresco.com/legal/licensing
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	xmlns:profile="http://www.alfresco.org/alfresco/profile"
+	xmlns:alf="http://www.alfresco.org"
+	targetNamespace="http://www.alfresco.org/alfresco/profile"
+	elementFormDefault="qualified">
+
+  <xs:simpleType name="name-prefix">
+    <xs:restriction base="xs:normalizedString">
+      <xs:enumeration value="Mr"/>
+      <xs:enumeration value="Mrs"/>
+      <xs:enumeration value="Ms"/>
+      <xs:enumeration value="Miss"/>
+      <xs:enumeration value="Dr"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="us-state">
+    <xs:restriction base="xs:normalizedString">
+      <xs:enumeration value="AL"/>
+      <xs:enumeration value="AK"/>
+      <xs:enumeration value="AZ"/>
+      <xs:enumeration value="AR"/>
+      <xs:enumeration value="CA"/>
+      <xs:enumeration value="CO"/>
+      <xs:enumeration value="CT"/>
+      <xs:enumeration value="DC"/>
+      <xs:enumeration value="DE"/>
+      <xs:enumeration value="FL"/>
+      <xs:enumeration value="GA"/>
+      <xs:enumeration value="HI"/>
+      <xs:enumeration value="ID"/>
+      <xs:enumeration value="IL"/>
+      <xs:enumeration value="IN"/>
+      <xs:enumeration value="IA"/>
+      <xs:enumeration value="KS"/>
+      <xs:enumeration value="KY"/>
+      <xs:enumeration value="LA"/>
+      <xs:enumeration value="ME"/>
+      <xs:enumeration value="MD"/>
+      <xs:enumeration value="MA"/>
+      <xs:enumeration value="MI"/>
+      <xs:enumeration value="MN"/>
+      <xs:enumeration value="MS"/>
+      <xs:enumeration value="MO"/>
+      <xs:enumeration value="MT"/>
+      <xs:enumeration value="NE"/>
+      <xs:enumeration value="NV"/>
+      <xs:enumeration value="NH"/>
+      <xs:enumeration value="NJ"/>
+      <xs:enumeration value="NM"/>
+      <xs:enumeration value="NY"/>
+      <xs:enumeration value="NC"/>
+      <xs:enumeration value="ND"/>
+      <xs:enumeration value="OH"/>
+      <xs:enumeration value="OK"/>
+      <xs:enumeration value="OR"/>
+      <xs:enumeration value="PA"/>
+      <xs:enumeration value="RI"/>
+      <xs:enumeration value="SC"/>
+      <xs:enumeration value="SD"/>
+      <xs:enumeration value="TN"/>
+      <xs:enumeration value="TX"/>
+      <xs:enumeration value="UT"/>
+      <xs:enumeration value="VT"/>
+      <xs:enumeration value="VA"/>
+      <xs:enumeration value="WA"/>
+      <xs:enumeration value="WV"/>
+      <xs:enumeration value="WI"/>
+      <xs:enumeration value="WY"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+
+	<!-- defines the form for creating a profile -->
+	<xs:element name="profile">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="name">          
+					<xs:complexType>
+            					<xs:attribute name="prefix" type="profile:name-prefix" use="required">
+            						<xs:annotation><xs:appinfo><alf:appearance>minimal</alf:appearance></xs:appinfo></xs:annotation>
+            					</xs:attribute>
+            					<xs:attribute name="first" type="xs:normalizedString" use="required"/>
+            					<xs:attribute name="last" type="xs:normalizedString" use="required"/>
+          				</xs:complexType>
+				</xs:element>
+			        <xs:element name="address" minOccurs="1"
+					maxOccurs="unbounded">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="street" type="xs:normalizedString" minOccurs="1" maxOccurs="unbounded"/>
+							<xs:element name="city" type="xs:normalizedString"/>
+							<xs:element name="state" type="profile:us-state"/>
+							<xs:element name="zip">
+							     <xs:simpleType>
+							              <xs:restriction base="xs:normalizedString">
+							                <xs:maxLength value="5"/> 
+							                <xs:pattern value="[0-9][0-9][0-9][0-9][0-9]"/>
+							              </xs:restriction>
+							     </xs:simpleType>
+						        </xs:element>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="picture" type="xs:anyURI" minOccurs="0" maxOccurs="1"/>
+				<xs:element name="email" minOccurs="0" maxOccurs="1">
+					  <xs:simpleType>
+				            <xs:restriction base="xs:string">
+				              <xs:maxLength value="256"/>
+				              <xs:pattern value="[A-Z0-9._]+@[A-Z0-9.\-]+\.[A-Z]{2,4}"/>
+				            </xs:restriction>
+				          </xs:simpleType>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>

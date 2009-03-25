@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+<!--
+ * Copyright (C) 2005-2007 Alfresco Software Limited.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+
+ * As a special exception to the terms and conditions of version 2.0 of
+ * the GPL, you may redistribute this Program in connection with Free/Libre
+ * and Open Source Software ("FLOSS") applications as described in Alfresco's
+ * FLOSS exception.  You should have recieved a copy of the text describing
+ * the FLOSS exception, and it is also available here:
+ * http://www.alfresco.com/legal/licensing"
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:alf="http://www.alfresco.org"
+           xmlns:biex="http://www.alfresco.org/alfresco/brokenimportexample"
+           xmlns:dne="http://doesnotexist.org/uri"
+           targetNamespace="http://www.alfresco.org/alfresco/brokenimportexample"
+           elementFormDefault="qualified">
+
+  <!-- Imports (broken, in this example -->
+  <xs:import namespace="http://doesnotexist.org/uri" schemaLocation="/does-not-exist.xsd"/>
+
+
+  <!-- Type definitions -->
+  <xs:complexType name="BrokenImportExampleType">
+    <xs:sequence>
+      <xs:element name="Title"       type="xs:normalizedString"   nillable="false" minOccurs="1" maxOccurs="1" />
+      <xs:element name="Summary"     type="xs:normalizedString"   nillable="false" minOccurs="0" maxOccurs="1" />
+      <xs:element name="Keyword"     type="xs:normalizedString"   nillable="false" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="Body"        type="xs:string"             nillable="false" minOccurs="1" maxOccurs="1" />
+    </xs:sequence>
+  </xs:complexType>
+
+
+  <!-- Root Element -->
+  <xs:element name="BrokenImportExample" type="biex:BrokenImportExampleType">
+    <xs:unique name="UniqueKeyword">
+      <xs:selector xpath="biex:Keyword" />
+      <xs:field    xpath="." />
+    </xs:unique>
+  </xs:element>
+
+</xs:schema>

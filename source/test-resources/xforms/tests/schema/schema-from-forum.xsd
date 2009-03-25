@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:alf="http://www.alfresco.org" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="News">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="1" maxOccurs="2" name="Content">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="Title" type="xs:normalizedString" />
+              <xs:element name="Body" type="xs:string" />
+            </xs:sequence>
+            <xs:attribute name="lang">
+              <xs:simpleType>
+                <xs:restriction base="xs:normalizedString">
+                  <xs:enumeration value="en">
+                    <xs:annotation>
+                      <xs:appinfo>
+                        <alf:label xmlns:alf="http://www.alfresco.org">English</alf:label>
+                      </xs:appinfo>
+                    </xs:annotation>
+                  </xs:enumeration>
+                  <xs:enumeration value="fr">
+                    <xs:annotation>
+                      <xs:appinfo>
+                        <alf:label xmlns:alf="http://www.alfresco.org">Français</alf:label>
+                      </xs:appinfo>
+                    </xs:annotation>
+                  </xs:enumeration>
+                </xs:restriction>
+              </xs:simpleType>
+            </xs:attribute>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="Type">
+          <xs:simpleType>
+            <xs:restriction base="xs:normalizedString">
+              <xs:enumeration value="Financial Results" />
+              <xs:enumeration value="Internal Communications" />
+            </xs:restriction>
+          </xs:simpleType>
+        </xs:element>
+        <xs:element name="PublishingDate" type="xs:date" />
+        <xs:element name="NbForIndex" type="xs:integer">
+          <xs:annotation>
+            <xs:appinfo>
+              <alf:label xmlns:alf="http://www.alfresco.org">How much will appear on index?</alf:label>
+            </xs:appinfo>
+          </xs:annotation>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

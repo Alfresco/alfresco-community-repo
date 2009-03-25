@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+  <!-- See http://wiki.alfresco.com/wiki/Web_Scripts_Framework#Adding_new_Formats -->
+  <bean parent="webscripts.formatmap">
+    <property name="formats">
+      <props>
+        <prop key="xsd">text/xml</prop>
+      </props>
+    </property>
+  </bean>
+
+</beans>

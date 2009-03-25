@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:wftest="http://www.alfresco.org/alfresco/wftest"
+	targetNamespace="http://www.alfresco.org/alfresco/wftest"
+	xmlns:alf="http://www.alfresco.org" elementFormDefault="qualified">
+
+	<xsd:simpleType name="contenttypevalueslist">
+		<xsd:list itemType="wftest:contenttype-list" ></xsd:list>
+	</xsd:simpleType>
+
+	<xsd:simpleType name="contenttype-list">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="alfresco">
+				<xsd:annotation>
+					<xsd:appinfo><alf:label>Test Item</alf:label></xsd:appinfo>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+
+	<xsd:element name="wftest">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="contentType"
+					type="wftest:contenttypevalueslist">
+					<xsd:annotation>
+						<xsd:appinfo>
+							<alf:label>Content Type</alf:label>
+							<alf:appearance>full</alf:appearance>
+						</xsd:appinfo>
+					</xsd:annotation>
+				</xsd:element>
+			
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+</xsd:schema>

@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           elementFormDefault="qualified">
+  <xs:complexType name="multi-input">
+    <xs:sequence>
+      <xs:element name="string" type="xs:normalizedString"/>
+      <xs:element name="integer" type="xs:integer"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="repeat-multi-simple">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="zero-to-inf-single" type="xs:normalizedString" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:element name="zero-to-inf-multi" type="multi-input" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

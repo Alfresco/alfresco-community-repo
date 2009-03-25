@@ -62,7 +62,7 @@ public class Schema2XFormsTest
    public void testOneStringTestWithEmptyInstanceDocument()
       throws Exception
    {
-      final Document schemaDocument = this.loadTestResourceDocument("xforms/unit-tests/automated/one-string-test.xsd");
+      final Document schemaDocument = this.loadTestResourceDocument("xforms/unit-tests/one-string-test.xsd");
       final Document xformsDocument = Schema2XFormsTest.buildXForm(null, schemaDocument, "one-string-test");
       this.runXForm(xformsDocument);
       final JXPathContext xpathContext = JXPathContext.newContext(xformsDocument);
@@ -82,7 +82,7 @@ public class Schema2XFormsTest
       throws Exception
    {
       final Document instanceDocument = XMLUtil.parse("<one-string-test><string>test</string></one-string-test>");
-      final Document schemaDocument = this.loadTestResourceDocument("xforms/unit-tests/automated/one-string-test.xsd");
+      final Document schemaDocument = this.loadTestResourceDocument("xforms/unit-tests/one-string-test.xsd");
       final Document xformsDocument = Schema2XFormsTest.buildXForm(instanceDocument, schemaDocument, "one-string-test");
       this.runXForm(xformsDocument);
       final JXPathContext xpathContext = JXPathContext.newContext(xformsDocument);
@@ -100,7 +100,7 @@ public class Schema2XFormsTest
    public void testNumbers()
       throws Exception
    {
-      final Document schemaDocument = this.loadTestResourceDocument("xforms/unit-tests/automated/number-test.xsd");
+      final Document schemaDocument = this.loadTestResourceDocument("xforms/unit-tests/number-test.xsd");
       final Document xformsDocument = Schema2XFormsTest.buildXForm(null, schemaDocument, "number-test");
       System.err.println("generated xform " + XMLUtil.toString(xformsDocument));
       final Element[] repeatedNumbers = Schema2XFormsTest.resolveXFormsControl(xformsDocument, "/number-test/repeated_numbers");
@@ -119,7 +119,7 @@ public class Schema2XFormsTest
    public void testRepeatConstraintsTest()
       throws Exception
    {
-      final Document schemaDocument = this.loadTestResourceDocument("xforms/unit-tests/automated/repeat-constraints-test.xsd");
+      final Document schemaDocument = this.loadTestResourceDocument("xforms/unit-tests/repeat-constraints-test.xsd");
       final Document xformsDocument = Schema2XFormsTest.buildXForm(null, schemaDocument, "repeat-constraints-test");
       Schema2XFormsTest.assertRepeatProperties(xformsDocument, 
                                                "/repeat-constraints-test/one-to-inf", 
@@ -181,7 +181,7 @@ public class Schema2XFormsTest
    public void testRootElementWithExtension()
       throws Exception
    {
-      final Document schemaDocument = this.loadTestResourceDocument("xforms/unit-tests/automated/root-element-with-extension-test.xsd");
+      final Document schemaDocument = this.loadTestResourceDocument("xforms/unit-tests/root-element-with-extension-test.xsd");
       Document xformsDocument = Schema2XFormsTest.buildXForm(null, schemaDocument, "without-extension-test");
       this.runXForm(xformsDocument);
       assertEquals(3, xformsDocument.getElementsByTagNameNS(NamespaceConstants.XFORMS_NS, "input").getLength());
@@ -200,7 +200,7 @@ public class Schema2XFormsTest
    public void testSwitch()
       throws Exception
    {
-      final Document schemaDocument = this.loadTestResourceDocument("xforms/unit-tests/automated/switch-test.xsd");
+      final Document schemaDocument = this.loadTestResourceDocument("xforms/unit-tests/switch-test.xsd");
       final Document xformsDocument = Schema2XFormsTest.buildXForm(null, schemaDocument, "switch-test");
       this.runXForm(xformsDocument);
 //      assertEquals(3, xformsDocument.getElementsByTagNameNS(NamespaceConstants.XFORMS_NS, "input").getLength());
@@ -218,7 +218,7 @@ public class Schema2XFormsTest
    public void testDerivedType()
       throws Exception
    {
-      final Document schemaDocument = this.loadTestResourceDocument("xforms/unit-tests/automated/derived-type-test.xsd");
+      final Document schemaDocument = this.loadTestResourceDocument("xforms/unit-tests/derived-type-test.xsd");
       final Document xformsDocument = Schema2XFormsTest.buildXForm(null, schemaDocument, "derived-type-test");
       this.runXForm(xformsDocument);
       LOGGER.debug("generated xforms " + XMLUtil.toString(xformsDocument));
@@ -338,7 +338,7 @@ public class Schema2XFormsTest
    public void testRecursive()
       throws Exception
    {
-      final Document schemaDocument = this.loadTestResourceDocument("xforms/unit-tests/automated/recursive-test.xsd");
+      final Document schemaDocument = this.loadTestResourceDocument("xforms/unit-tests/recursive-test.xsd");
       Document xformsDocument = Schema2XFormsTest.buildXForm(null, schemaDocument, "non-recursive-test");
       this.runXForm(xformsDocument);
       try
@@ -364,7 +364,7 @@ public class Schema2XFormsTest
    public void testAnnotation()
       throws Exception
    {
-      final Document schemaDocument = this.loadTestResourceDocument("xforms/unit-tests/automated/annotation-test.xsd");
+      final Document schemaDocument = this.loadTestResourceDocument("xforms/unit-tests/annotation-test.xsd");
       Document xformsDocument = Schema2XFormsTest.buildXForm(null, schemaDocument, "annotation-test");
       this.runXForm(xformsDocument);
       System.err.println("generated xform " + XMLUtil.toString(xformsDocument));
@@ -399,7 +399,7 @@ public class Schema2XFormsTest
    public void testConstraint()
       throws Exception
    {
-      final Document schemaDocument = this.loadTestResourceDocument("xforms/unit-tests/automated/constraint-test.xsd");
+      final Document schemaDocument = this.loadTestResourceDocument("xforms/unit-tests/constraint-test.xsd");
       Document xformsDocument = Schema2XFormsTest.buildXForm(null, schemaDocument, "constraint-test");
       final ChibaBean chibaBean = this.runXForm(xformsDocument);
       final LinkedList<XMLEvent> events = new LinkedList<XMLEvent>();

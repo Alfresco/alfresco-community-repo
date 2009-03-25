@@ -1,0 +1,87 @@
+<?xml version="1.0"?>
+<!--
+ * Copyright (C) 2005-2007 Alfresco Software Limited.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+
+ * As a special exception to the terms and conditions of version 2.0 of 
+ * the GPL, you may redistribute this Program in connection with Free/Libre 
+ * and Open Source Software ("FLOSS") applications as described in Alfresco's 
+ * FLOSS exception.  You should have recieved a copy of the text describing 
+ * the FLOSS exception, and it is also available here: 
+ * http://www.alfresco.com/legal/licensing"
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	xmlns:nav="http://www.alfresco.org/alfresco/navigation"
+	targetNamespace="http://www.alfresco.org/alfresco/navigation"
+	elementFormDefault="qualified">
+
+  	<!-- defines type for content link type -->
+	<xs:simpleType name="category">
+	    <xs:restriction base="xs:string">
+	      <xs:enumeration value="Normal"/>
+	      <xs:enumeration value="Feature"/>
+	    </xs:restriction>
+	  </xs:simpleType>
+
+  	<!-- defines type for content link -->
+	<xs:complexType name="link">
+	    <xs:sequence>
+	      <xs:element name="path" type="xs:anyURI" />
+	      <xs:element name="type" type="nav:category" default="Normal"/>
+	    </xs:sequence>
+	</xs:complexType>
+
+  	<!-- defines type for third level channel -->
+	<xs:complexType name="channel">
+		<xs:sequence>
+			<xs:element name="name" type="xs:normalizedString" />
+			<xs:element name="description" type="xs:normalizedString"/>
+			<xs:element name="content_link" type="nav:link" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>	
+	</xs:complexType>
+	
+  	<!-- defines type for second level channel -->
+	<xs:complexType name="sub_channel">
+		<xs:sequence>
+			<xs:element name="name" type="xs:normalizedString" />
+			<xs:element name="description" type="xs:normalizedString"/>
+			<xs:element name="sub_sub_channel" type="nav:channel" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="content_link" type="nav:link" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>	
+	</xs:complexType>
+
+  	<!-- defines type for first level channel -->
+	<xs:complexType name="main_channel">
+		<xs:sequence>
+			<xs:element name="name" type="xs:normalizedString" />
+			<xs:element name="description" type="xs:normalizedString"/>
+			<xs:element name="sub_channel" type="nav:sub_channel" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="content_link" type="nav:link" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>	
+	</xs:complexType>
+
+	<!-- defines the form for creating a navigation hierarchy -->
+	<xs:element name="navigation">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="name" type="xs:normalizedString" />
+				<xs:element name="description" type="xs:normalizedString"/>
+				<xs:element name="main_channel" type="nav:main_channel" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:element name="content_link" type="nav:link" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>

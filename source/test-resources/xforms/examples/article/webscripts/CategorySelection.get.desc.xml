@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>WCM Schema for Category Selection</shortname>
+  <description>Generate part of schema for category selection</description>
+  <url format="html" template="/demo/wcm/schema/catgory"/>
+  <format default="html">extension</format>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>

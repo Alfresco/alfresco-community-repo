@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+	xmlns:pr="http://www.example.lk/Date_Bug"
+	targetNamespace="http://www.example.lk/Date_Bug" 
+	elementFormDefault="qualified"> 
+
+    <xs:element name="Date_Bug" type="pr:Bug"/>
+    
+<xs:complexType name="Bug">
+    	<xs:sequence>
+    		<xs:element name="Test_Field_1" type="xs:normalizedString"/>
+    		<xs:element name="Test_Field_2" type="xs:normalizedString"/>    		
+    		<xs:element name="Date" type="xs:date"/>    		
+		<!--Only the label of the Date element can be viewed when the created XML needs to be edited-->    		
+		<xs:element name="Test_Field_3" type="xs:normalizedString"/>
+    		
+    	</xs:sequence>
+    </xs:complexType>  
+</xs:schema>
+ 

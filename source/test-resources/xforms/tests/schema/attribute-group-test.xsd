@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           elementFormDefault="qualified">
+  <xs:attributeGroup name="attribute-group">
+    <xs:attribute name="ag-att-1" type="xs:normalizedString" use="required"/>
+    <xs:attribute name="ag-att-2" type="xs:normalizedString" use="optional"/>
+    <xs:attribute name="ag-att-3" type="xs:normalizedString" fixed="fixed attribute value"/>
+  </xs:attributeGroup>
+
+  <xs:element name="attributes">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="element_string_no_default" 
+	            type="xs:normalizedString" 
+	            minOccurs="1" 
+		    maxOccurs="1"/>
+        <xs:element name="element_string_with_default" 
+	            type="xs:normalizedString" 
+	            minOccurs="1" 
+		    maxOccurs="1"
+		    default="default string value"/>
+      </xs:sequence>
+      <xs:attribute name="att-1"
+                    type="xs:normalizedString"
+		    use="required"/>
+      <xs:attributeGroup ref="attribute-group"/>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>
+

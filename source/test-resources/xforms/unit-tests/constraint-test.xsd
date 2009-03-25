@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           elementFormDefault="qualified">
+  <xs:element name="constraint-test">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="zip-pattern">
+          <xs:simpleType>
+            <xs:restriction base="xs:normalizedString">
+              <xs:maxLength value="5"/> 
+              <xs:pattern value="[0-9][0-9][0-9][0-9][0-9]"/>
+            </xs:restriction>
+          </xs:simpleType>
+        </xs:element>
+        <xs:element name="repeated-zip-pattern" minOccurs="2" maxOccurs="5">
+          <xs:simpleType>
+            <xs:restriction base="xs:normalizedString">
+              <xs:maxLength value="5"/> 
+              <xs:pattern value="[0-9][0-9][0-9][0-9][0-9]"/>
+            </xs:restriction>
+          </xs:simpleType>
+        </xs:element>
+        <xs:element name="email-pattern">
+          <xs:simpleType>
+            <xs:restriction base="xs:normalizedString">
+              <xs:maxLength value="256"/>
+              <xs:pattern value="[A-Za-z0-9._]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,4}"/>
+            </xs:restriction>
+          </xs:simpleType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

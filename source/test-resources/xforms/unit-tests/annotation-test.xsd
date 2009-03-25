@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	   xmlns:alf="http://www.alfresco.org"
+           elementFormDefault="qualified">
+  <xs:complexType name="base_1" abstract="true">
+    <xs:sequence>
+      <xs:element name="upload_in_base" type="xs:anyURI">
+        <xs:annotation><xs:appinfo><alf:appearance>upload_in_base</alf:appearance></xs:appinfo></xs:annotation>
+      </xs:element>
+      <xs:element name="string_in_base" type="xs:string">
+        <xs:annotation><xs:appinfo><alf:appearance>string_in_base</alf:appearance></xs:appinfo></xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="struct_1_type">
+    <xs:complexContent>
+      <xs:extension base="base_1">
+        <xs:sequence>
+          <xs:element name="upload_in_struct" type="xs:anyURI">
+            <xs:annotation><xs:appinfo><alf:appearance>upload_in_struct</alf:appearance></xs:appinfo></xs:annotation>
+          </xs:element>
+          <xs:element name="string_in_struct" type="xs:string">
+            <xs:annotation><xs:appinfo><alf:appearance>string_in_struct</alf:appearance></xs:appinfo></xs:annotation>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="annotation-test">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="upload_in_root" type="xs:anyURI">
+          <xs:annotation><xs:appinfo><alf:appearance>upload_in_root</alf:appearance></xs:appinfo></xs:annotation>
+        </xs:element>
+        <xs:element name="string_in_root" type="xs:string">
+          <xs:annotation><xs:appinfo><alf:appearance>string_in_root</alf:appearance></xs:appinfo></xs:annotation>
+        </xs:element>
+        <xs:element name="struct_1" type="struct_1_type"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

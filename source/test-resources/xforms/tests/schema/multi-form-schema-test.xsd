@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           elementFormDefault="qualified">
+  <xs:complexType name="complex-type" >
+    <xs:sequence>
+      <xs:element name="string" type="xs:string"/>
+      <xs:element name="string2" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="form-1">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="form_1_string" type="xs:string" default="form1"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="form-2">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="form_2_string" type="xs:string" default="form2"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="form-3">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="form_3_complex_type" type="complex-type" default="form2"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

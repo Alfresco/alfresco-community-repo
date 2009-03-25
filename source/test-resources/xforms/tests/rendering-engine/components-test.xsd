@@ -1,0 +1,226 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	   xmlns:alf="http://www.alfresco.org"
+	   elementFormDefault="qualified">
+  <xs:simpleType name="five_string_values">
+    <xs:restriction base="xs:normalizedString">
+      <xs:enumeration value="one">
+	<xs:annotation>
+	  <xs:appinfo>
+	    <alf:label>${components-test.five_string_values.one}</alf:label>
+	  </xs:appinfo>
+	</xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="two">
+	<xs:annotation>
+	  <xs:appinfo>
+	    <alf:label>${components-test.five_string_values.two}</alf:label>
+	  </xs:appinfo>
+	</xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="three">
+	<xs:annotation>
+	  <xs:appinfo>
+	    <alf:label>${components-test.five_string_values.three}</alf:label>
+	  </xs:appinfo>
+	</xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="four">
+	<xs:annotation>
+	  <xs:appinfo>
+	    <alf:label>${components-test.five_string_values.four}</alf:label>
+	  </xs:appinfo>
+	</xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="five">
+	<xs:annotation>
+	  <xs:appinfo>
+	    <alf:label>${components-test.five_string_values.five}</alf:label>
+	  </xs:appinfo>
+	</xs:annotation>
+      </xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="ten_string_values">
+    <xs:restriction base="xs:normalizedString">
+      <xs:enumeration value="one"/>
+      <xs:enumeration value="two"/>
+      <xs:enumeration value="three"/>
+      <xs:enumeration value="four"/>
+      <xs:enumeration value="five"/>
+      <xs:enumeration value="six"/>
+      <xs:enumeration value="seven"/>
+      <xs:enumeration value="eight"/>
+      <xs:enumeration value="nine"/>
+      <xs:enumeration value="ten"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType id="five_number_list_id" name="five_number_list">
+    <xs:list id="five_string_values_list_id" itemType="five_string_values"/>
+  </xs:simpleType>
+  <xs:simpleType name="ten_number_list">
+    <xs:list itemType="ten_string_values"/>
+  </xs:simpleType>
+  <xs:simpleType name="ten_number_list_select_three">
+    <xs:restriction base="ten_number_list">
+      <xs:length value="3"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:element name="text_components">
+    <xs:complexType>
+      <xs:sequence>
+	<xs:element name="required_textfield" type="xs:normalizedString" minOccurs="1" maxOccurs="1">
+	  <xs:annotation>
+	    <xs:appinfo>
+	      <alf:label>${components-test.required_textfield.label}</alf:label>
+	      <alf:alert>${components-test.required_textfield.alert}</alf:alert>
+	    </xs:appinfo>
+	  </xs:annotation>
+	</xs:element>
+	<xs:element name="optional_textfield"  minOccurs="0" maxOccurs="1">
+	  <xs:annotation>
+	    <xs:appinfo>
+	      <alf:label>${components-test.optional_textfield.label}</alf:label>
+	      <alf:alert>${components-test.optional_textfield.alert}</alf:alert>
+	    </xs:appinfo>
+	  </xs:annotation>
+          <xs:simpleType>
+            <xs:restriction base="xs:normalizedString">
+              <xs:length value="5"/>
+            </xs:restriction>
+          </xs:simpleType>
+	</xs:element>
+	<xs:element name="prefilled_textfield" type="xs:normalizedString" minOccurs="0" maxOccurs="1" default="i am the default value"/>
+	<xs:element name="plain_textarea" type="xs:string">
+          <xs:annotation>
+            <xs:appinfo>
+              <alf:appearance>minimal</alf:appearance>
+            </xs:appinfo>
+          </xs:annotation>
+        </xs:element>
+	<xs:element name="plain_text_with_toggle" type="xs:string">
+          <xs:annotation>
+            <xs:appinfo>
+              <alf:appearance>compact</alf:appearance>
+            </xs:appinfo>
+          </xs:annotation>
+        </xs:element>            
+	<xs:element name="rich_text_editor" type="xs:string">
+          <xs:annotation>
+            <xs:appinfo>
+              <alf:appearance>full</alf:appearance>
+            </xs:appinfo>
+          </xs:annotation>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="numerical_components">
+    <xs:complexType>
+      <xs:sequence>
+	<xs:element name="integer" type="xs:integer"/>
+        <xs:element name="bounded_integer">
+          <xs:simpleType>
+            <xs:restriction base="xs:integer">
+              <xs:minInclusive value="-100"/>
+              <xs:maxInclusive value="100"/>
+            </xs:restriction>
+          </xs:simpleType>
+        </xs:element>
+	<xs:element name="positive_integer" type="xs:positiveInteger"/>
+	<xs:element name="double" type="xs:double"/>
+        <xs:element name="bounded_double">
+          <xs:simpleType>
+            <xs:restriction base="xs:double">
+              <xs:minInclusive value="0.0"/>
+              <xs:maxInclusive value="1.0"/>
+            </xs:restriction>
+          </xs:simpleType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="date_and_time_components">
+    <xs:complexType>
+      <xs:sequence>
+	<xs:element name="date_and_time" type="xs:dateTime"/>
+	<xs:element name="date" type="xs:date"/>
+	<xs:element name="time" type="xs:time"/>
+        <xs:element name="single_unit_pickers">
+          <xs:annotation><xs:appinfo><alf:appearance>minimal</alf:appearance></xs:appinfo></xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="day" type="xs:gDay"/>
+              <xs:element name="month" type="xs:gMonth"/>
+              <xs:element name="year" type="xs:gYear"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="combination_pickers">
+          <xs:annotation><xs:appinfo><alf:appearance>minimal</alf:appearance></xs:appinfo></xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="month_and_day" type="xs:gMonthDay"/>
+              <xs:element name="year_and_month" type="xs:gYearMonth"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="list_components">
+    <xs:complexType>
+      <xs:sequence>
+	<xs:element name="radio" type="five_string_values">
+          <xs:annotation>
+            <xs:appinfo>
+              <alf:appearance>full</alf:appearance>
+              <alf:hint>this control should appear as radio buttons.</alf:hint>
+            </xs:appinfo>
+          </xs:annotation>
+        </xs:element>
+	<xs:element name="combobox" type="ten_string_values"/>
+	<xs:element name="list_of_five" type="five_number_list">
+          <xs:annotation>
+            <xs:appinfo>
+              <alf:appearance>full</alf:appearance>
+              <alf:hint>Please select some of these numbers.  This control should appear as a list.</alf:hint>
+            </xs:appinfo>
+          </xs:annotation>
+        </xs:element>
+	<xs:element name="list_of_ten" type="ten_number_list"/>
+	<xs:element name="list_of_ten_select_three" type="ten_number_list_select_three">
+	  <xs:annotation>
+	    <xs:appinfo>
+	      <alf:label>${components-test.list_of_ten_select_three.label}</alf:label>
+	      <alf:alert>${components-test.list_of_ten_select_three.alert}</alf:alert>
+	      <alf:hint>Please select exactly three elements from this list.</alf:hint>
+	    </xs:appinfo>
+	  </xs:annotation>
+	</xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="other_components">
+    <xs:complexType>
+      <xs:sequence>
+	<xs:element name="file" type="xs:anyURI"/>
+	<xs:element name="repeat" type="xs:normalizedString" minOccurs="1" maxOccurs="unbounded"/>
+	<xs:element name="checkbox_default_true" type="xs:boolean" default="true"/>
+	<xs:element name="checkbox_default_false" type="xs:boolean" default="false"/>
+	<xs:element name="checkbox_no_default" type="xs:boolean"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="components_test">
+    <xs:complexType>
+      <xs:sequence>
+	<xs:element ref="text_components"/>
+	<xs:element ref="numerical_components"/>
+	<xs:element ref="date_and_time_components"/>
+	<xs:element ref="list_components"/>
+	<xs:element ref="other_components"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

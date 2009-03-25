@@ -1,0 +1,89 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	   xmlns:alf="http://www.alfresco.org"
+	   elementFormDefault="qualified">
+  <xs:simpleType name="ten_string_values">
+    <xs:restriction base="xs:normalizedString">
+      <xs:enumeration value="one"/>
+      <xs:enumeration value="two"/>
+      <xs:enumeration value="three"/>
+      <xs:enumeration value="four"/>
+      <xs:enumeration value="five"/>
+      <xs:enumeration value="six"/>
+      <xs:enumeration value="seven"/>
+      <xs:enumeration value="eight"/>
+      <xs:enumeration value="nine"/>
+      <xs:enumeration value="ten"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:element name="select1-test">
+    <xs:complexType>
+      <xs:sequence>
+	<xs:element name="elements">
+	  <xs:complexType>
+	    <xs:sequence>
+	      <xs:element name="required">
+		<xs:complexType>
+		  <xs:sequence>
+		    <xs:element name="has_default" 
+				type="ten_string_values"
+				minOccurs="1"
+				maxOccurs="1"
+				default="five"/>
+		    <xs:element name="no_default" 
+				minOccurs="1"
+				maxOccurs="1"
+				type="ten_string_values"/>
+		  </xs:sequence>
+		</xs:complexType>
+	      </xs:element>
+	      <xs:element name="optional">
+		<xs:complexType>
+		  <xs:sequence>
+		    <xs:element name="has_default" 
+				type="ten_string_values"
+				minOccurs="0"
+				maxOccurs="1"
+				default="five"/>
+		    <xs:element name="no_default" 
+				minOccurs="0"
+				maxOccurs="1"
+				type="ten_string_values"/>
+		  </xs:sequence>
+		</xs:complexType>
+	      </xs:element>
+	    </xs:sequence>
+	  </xs:complexType>
+	</xs:element>
+	<xs:element name="attributes">
+	  <xs:complexType>
+	    <xs:sequence>
+	      <xs:element name="required">
+		<xs:complexType>
+		    <xs:attribute name="has_default" 
+				  type="ten_string_values"
+				  use="required"
+				  default="five"/>
+		    <xs:attribute name="no_default" 
+				  use="required"
+				  type="ten_string_values"/>
+		</xs:complexType>
+	      </xs:element>
+	      <xs:element name="optional">
+		<xs:complexType>
+		  <xs:attribute name="has_default" 
+				type="ten_string_values"
+				use="optional"
+				default="five"/>
+		  <xs:attribute name="no_default" 
+				use="optional"
+				type="ten_string_values"/>
+		</xs:complexType>
+	      </xs:element>
+	    </xs:sequence>
+	  </xs:complexType>
+	</xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

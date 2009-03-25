@@ -1,0 +1,69 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           elementFormDefault="qualified">
+  <xs:simpleType name="non-empty-normalized-string-type">
+    <xs:restriction base="xs:normalizedString">
+      <xs:minLength value="1" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="non-empty-string-type">
+    <xs:restriction base="xs:string">
+      <xs:minLength value="1" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="always-true-boolean-type">
+    <xs:restriction base="xs:boolean">
+      <xs:pattern value="true"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="non-empty-any-uri-type">
+    <xs:restriction base="xs:anyURI">
+      <xs:minLength value="1" />
+    </xs:restriction>
+  </xs:simpleType>
+  
+  <xs:simpleType name="one-to-ten-positive-integer-type">
+    <xs:restriction base="xs:positiveInteger">
+      <xs:minInclusive value="1"/>
+      <xs:maxInclusive value="10"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="non-zero-decimal-type">
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base="xs:decimal">
+          <xs:minExclusive value="0.0"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base="xs:decimal">
+          <xs:maxExclusive value="0.0"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+
+  <xs:element name="derived-type-test">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="raw-normalized-string" type="xs:normalizedString"/>
+        <xs:element name="non-empty-normalized-string" type="non-empty-normalized-string-type"/>
+        <xs:element name="raw-string" type="xs:string"/>
+        <xs:element name="non-empty-string" type="non-empty-string-type"/>
+        <xs:element name="raw-any-uri" type="xs:anyURI"/>
+        <xs:element name="non-empty-any-uri" type="non-empty-any-uri-type"/>
+        <xs:element name="raw-decimal" type="xs:decimal"/>
+        <xs:element name="non-zero-decimal" type="non-zero-decimal-type"/>
+        <xs:element name="raw-positive-integer" type="xs:positiveInteger"/>
+        <xs:element name="one-to-ten-positive-integer" type="one-to-ten-positive-integer-type"/>
+        <xs:element name="raw-boolean" type="xs:boolean"/>
+        <xs:element name="always-true-boolean" type="always-true-boolean-type"/>
+        <xs:element name="raw-any-type" type="xs:anyType"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

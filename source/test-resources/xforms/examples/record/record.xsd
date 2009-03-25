@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           elementFormDefault="qualified">
+  <xs:simpleType name="genre">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="classical"/>
+      <xs:enumeration value="jazz"/>
+      <xs:enumeration value="soul"/>
+      <xs:enumeration value="blues"/>
+      <xs:enumeration value="country"/>
+      <xs:enumeration value="rock"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:element name="record">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="track" minOccurs="1" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:attribute name="title" type="xs:string"/>
+            <xs:attribute name="length" type="xs:integer"/>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+      <xs:attribute name="name" type="xs:string"/>
+      <xs:attribute name="artist" type="xs:string"/>
+      <xs:attribute name="genre" type="genre" default="classical"/>
+      <xs:attribute name="year" type="xs:gYear"/>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

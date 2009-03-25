@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	   xmlns:alf="http://www.alfresco.org"
+	   elementFormDefault="qualified" >
+  <xs:complexType name="thing">
+    <xs:sequence>
+      <xs:element name="string" type="xs:normalizedString" />
+      <xs:element name="url" type="xs:anyURI" />
+      <xs:element name="sub_thing" type="thing" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:complexType>
+  
+  <!-- defines the form for creating a press release -->
+  <xs:element name="recursive_test"> 
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="thing" type="thing" minOccurs="1" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

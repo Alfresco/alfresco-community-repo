@@ -20,12 +20,12 @@ function testGetFormForContentNode()
 	
 	var fieldDefs = form.fieldDefinitions;
 	test.assertNotNull(fieldDefs, "field definitions should not be null.");
-	test.assertEquals(22, fieldDefs.length);
+	test.assertEquals(23, fieldDefs.length);
 	
 	// This dataHash is now an integer-keyed hash of the field definition data objects.
 	var fieldDefnDataHash = form.fieldDefinitionData;
 	test.assertNotNull(fieldDefnDataHash, "field definition data should not be null.");
-	test.assertEquals(22, fieldDefnDataHash.length);
+	test.assertEquals(23, fieldDefnDataHash.length);
 	
 	var nameField = getFieldDefnFromMap('cm:name', fieldDefnDataHash);
 	var titleField = getFieldDefnFromMap('cm:title', fieldDefnDataHash);

@@ -26,6 +26,7 @@ package org.alfresco.repo.forms.processor;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -222,8 +223,8 @@ public class NodeHandler extends AbstractHandler
     {
         // get the property definitions for the type of node being persisted
         QName type = this.nodeService.getType(nodeRef);
-        TypeDefinition typeDef = this.dictionaryService.getAnonymousType(
-                    type, this.nodeService.getAspects(nodeRef));
+        Collection<QName> aspects = this.getAspectsToInclude(nodeRef);
+        TypeDefinition typeDef = this.dictionaryService.getAnonymousType(type, aspects);
         Map<QName, PropertyDefinition> propDefs = typeDef.getProperties();
         
         Map<QName, Serializable> propsToPersist = new HashMap<QName, Serializable>(data.getData().size());
@@ -271,8 +272,8 @@ public class NodeHandler extends AbstractHandler
     {
         // get data dictionary definition for node
         QName type = this.nodeService.getType(nodeRef);
-        TypeDefinition typeDef = this.dictionaryService.getAnonymousType(
-                    type, this.nodeService.getAspects(nodeRef));
+        Collection<QName> aspects = this.getAspectsToInclude(nodeRef);
+        TypeDefinition typeDef = this.dictionaryService.getAnonymousType(type, aspects);
         
         // iterate round the property definitions, create the equivalent
         // field definition and setup the data for the property
@@ -734,6 +735,33 @@ public class NodeHandler extends AbstractHandler
             contentData = ContentData.setEncoding(contentData, (String)fieldData.getValue());
             propsToPersist.put(ContentModel.PROP_CONTENT, contentData);
         }
+    }
+    
+    /**
+     * Returns a Collection of aspects for the given noderef to use
+     * for generating and persisting the form.
+     * 
+     * @param nodeRef The NodeRef of the node to get aspects for
+     * @return The Collection of aspects
+     */
+    protected Collection<QName> getAspectsToInclude(NodeRef nodeRef)
+    {
+        List<QName> currentAspects = new ArrayList<QName>();
+        currentAspects.addAll(this.nodeService.getAspects(nodeRef));
+        
+        // TODO: make the list of aspects to ensure are present configurable
+        
+        // make sure the titled and author aspects are present
+        if (currentAspects.contains(ContentModel.ASPECT_TITLED) == false)
+        {
+            currentAspects.add(ContentModel.ASPECT_TITLED);
+        }
+        if (currentAspects.contains(ContentModel.ASPECT_AUTHOR) == false)
+        {
+            currentAspects.add(ContentModel.ASPECT_AUTHOR);
+        }
+        
+        return currentAspects;
     }
     
     /**

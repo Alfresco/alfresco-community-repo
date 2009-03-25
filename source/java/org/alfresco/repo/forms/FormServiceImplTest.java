@@ -234,7 +234,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         // check the field definitions
         Collection<FieldDefinition> fieldDefs = form.getFieldDefinitions();
         assertNotNull("Expecting to find fields", fieldDefs);
-        assertEquals("Expecting to find 22 fields", 22, fieldDefs.size());
+        assertEquals("Expecting to find 23 fields", 23, fieldDefs.size());
         
         // create a Map of the field definitions
         // NOTE: we can safely do this as we know there are no duplicate field names and we're not

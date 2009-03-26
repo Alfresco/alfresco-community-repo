@@ -36,7 +36,6 @@ import java.util.Map;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.forms.AssociationFieldDefinition.Direction;
-import org.alfresco.repo.forms.FormData.FieldData;
 import org.alfresco.repo.forms.PropertyFieldDefinition.FieldConstraint;
 import org.alfresco.repo.jscript.ClasspathScriptLocation;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
@@ -192,8 +191,8 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         this.nodeService.addAspect(document, ContentModel.ASPECT_REFERENCING, aspectProps);
         this.nodeService.createAssociation(this.document, this.associatedDoc, ContentModel.ASSOC_REFERENCES);
         
-        //setComplete();
-        //endTransaction();
+//        setComplete();
+//        endTransaction();
     }
     
     private void createUser(String userName)
@@ -365,6 +364,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         assertEquals(this.associatedDoc.toString(), targets.get(0));
     }
     
+    @SuppressWarnings("unchecked")
     public void testSaveForm() throws Exception
     {
         // create FormData object containing the values to update
@@ -429,6 +429,22 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         }
     }
     
+//    public void testApplyAspectProgrammatically() throws Exception
+//    {
+//        NodeRef nrSrc = new NodeRef("workspace://SpacesStore/320c74ad-dc79-4812-adf1-8160c37fdecb");
+//        NodeRef nrDest = new NodeRef("workspace://SpacesStore/5ac5ccac-3409-4f4a-9338-a39ee1acd2cb");
+//        
+//        Map<QName, Serializable> aspectProps = new HashMap<QName, Serializable>(2);
+//        // add referencing aspect (has association)
+//        this.nodeService.addAspect(nrSrc, ContentModel.ASPECT_REFERENCING, aspectProps);
+//        this.nodeService.createAssociation(nrSrc, nrDest, ContentModel.ASSOC_REFERENCES);
+//        
+//        setComplete();
+//        endTransaction();
+//
+//        System.out.println("did it work?");
+//    }
+//    
     public void testNoForm() throws Exception
     {
         // test that a form can not be retrieved for a non-existent item

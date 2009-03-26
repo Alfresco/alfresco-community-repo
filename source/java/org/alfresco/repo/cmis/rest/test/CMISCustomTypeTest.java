@@ -117,6 +117,7 @@ public class CMISCustomTypeTest extends BaseCMISWebScriptTest
                 props.put(QName.createQName(TEST_NAMESPACE, "Title"), "createSubTypeTitle");
                 props.put(QName.createQName(TEST_NAMESPACE, "Authors"), (Serializable)Arrays.asList(new String[] { "Dave", "Fred" }));
                 nodeService.addProperties(file.getNodeRef(), props);
+                fileFolderService.getWriter(file.getNodeRef()).putContent("Some test content");
                 return null;
             }
         }, getDefaultRunAs());

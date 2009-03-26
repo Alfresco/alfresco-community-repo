@@ -29,6 +29,8 @@ import java.util.List;
 
 import org.alfresco.cmis.dictionary.CMISDictionaryService;
 import org.alfresco.cmis.dictionary.CMISMapping;
+import org.alfresco.cmis.dictionary.CMISScope;
+import org.alfresco.cmis.dictionary.CMISTypeId;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cmis.ws.EnumObjectType;
 import org.alfresco.repo.cmis.ws.InvalidArgumentException;
@@ -135,7 +137,7 @@ public class CmisObjectsUtils
             return result;
         }
 
-        throw new InvalidArgumentException("Unexpected object type of the specified Object Identifier");
+        throw new InvalidArgumentException("Unexpected object type of the specified Object Identifier " + identifier);
     }
 
     public void deleteFolder(NodeRef folderNodeReference, boolean continueOnFailure, boolean totalDeletion, List<String> resultList)
@@ -352,13 +354,16 @@ public class CmisObjectsUtils
 
     private AlfrescoObjectType determineActualObjectType(AlfrescoObjectType expectedType, QName objectType)
     {
-        if (expectedType != AlfrescoObjectType.DOCUMENT_OR_FOLDER_OBJECT)
+        CMISTypeId typeId = cmisMapping.getCmisTypeId(objectType);
+        if ((expectedType == AlfrescoObjectType.DOCUMENT_OBJECT || expectedType == AlfrescoObjectType.DOCUMENT_OR_FOLDER_OBJECT)
+                && typeId.getScope() == CMISScope.DOCUMENT)
         {
-            return AlfrescoObjectType.fromValue(objectType.toString());
+            return expectedType;
         }
-        else if (DOCUMENT_AND_FOLDER_TYPES.contains(objectType))
+        if ((expectedType == AlfrescoObjectType.FOLDER_OBJECT || expectedType == AlfrescoObjectType.DOCUMENT_OR_FOLDER_OBJECT)
+                && typeId.getScope() == CMISScope.FOLDER)
         {
-            return AlfrescoObjectType.DOCUMENT_OR_FOLDER_OBJECT;
+            return expectedType;
         }
         return AlfrescoObjectType.ANY_OBJECT;
     }

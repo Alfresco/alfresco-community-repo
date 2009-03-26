@@ -409,15 +409,23 @@ public class NodeHandler extends AbstractHandler
                     assocFieldDefs.put(assocName, fieldDef);
                 }
                     
+                String prefixedAssocName = ASSOC_PREFIX + assocName;
+                
                 if (fieldDef.isEndpointMany())
                 {
+                    List<String> targets = null;
+                    
                     // add the value as a List (or add to the list if the form data
                     // is already present)
-                    List<String> targets = (List<String>)formData.getData().get(assocName);
-                    if (targets == null)
+                    FieldData fieldData = formData.getData().get(prefixedAssocName);
+                    if (fieldData == null)
                     {
                         targets = new ArrayList<String>(4);
-                        formData.addData(ASSOC_PREFIX + assocName, targets);
+                        formData.addData(prefixedAssocName, targets);
+                    }
+                    else
+                    {
+                        targets = (List<String>)fieldData.getValue();
                     }
                     
                     // add the assoc value to the list
@@ -426,7 +434,7 @@ public class NodeHandler extends AbstractHandler
                 else
                 {
                     // there should only be one value
-                    formData.addData(ASSOC_PREFIX + assocName, assocValue);
+                    formData.addData(prefixedAssocName, assocValue);
                 }
             }
         }

@@ -279,7 +279,7 @@ public final class People extends BaseScopableProcessorExtension
     {
         Object[] people = null;
         
-        if (filter == null)
+        if (filter == null || filter.length() == 0)
         {
             people = personService.getAllPeople().toArray();
         }

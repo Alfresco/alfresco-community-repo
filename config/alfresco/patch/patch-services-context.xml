@@ -1770,4 +1770,38 @@
         </property>
     </bean>
     
+    <bean id="patch.mtShareExistingTenants" class="org.alfresco.repo.admin.patch.impl.MultiTShareExistingTenantsPatch" parent="basePatch">
+        <property name="id"><value>patch.mtShareExistingTenants</value></property>
+        <property name="description"><value>patch.mtShareExistingTenants.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>2008</value></property>
+        <property name="targetSchema"><value>2009</value></property>
+        <property name="applyToTenants"><value>true</value></property>
+        
+        <!-- helper beans/properties -->
+        <property name="tenantService">
+            <ref bean="tenantService" />
+        </property>
+        <property name="siteAVMBootstrap">
+            <ref bean="siteAVMBootstrap"/>
+        </property>
+        <property name="workflowDeployer">
+            <ref bean="workflowPatchDeployer"/>
+        </property>
+        <property name="workflowDefinitions">
+            <list>
+                <props>
+                    <prop key="engineId">jbpm</prop>
+                    <prop key="location">alfresco/workflow/invitation-nominated_processdefinition.xml</prop>
+                   <prop key="mimetype">text/xml</prop>
+               </props>
+                <props>
+                    <prop key="engineId">jbpm</prop>
+                    <prop key="location">alfresco/workflow/invitation-moderated_processdefinition.xml</prop>
+                   <prop key="mimetype">text/xml</prop>
+               </props>
+            </list>
+        </property>
+    </bean>
+    
 </beans>

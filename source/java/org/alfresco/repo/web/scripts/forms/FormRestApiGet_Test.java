@@ -38,20 +38,20 @@ public class FormRestApiGet_Test extends AbstractTestFormRestApi {
 
     public void testResponseContentType() throws Exception
     {
-        Response rsp = sendGetReq(testNodeUrl, 200);
+        Response rsp = sendGetReq(referencingNodeUrl, 200);
         assertEquals("application/json;charset=UTF-8", rsp.getContentType());
     }
 
     public void testGetFormForNonExistentNode() throws Exception
     {
     	// Replace all digits with an 'x' char - this should make for a non-existent node.
-        Response rsp = sendGetReq(testNodeUrl.replaceAll("\\d", "x"), 404);
+        Response rsp = sendGetReq(referencingNodeUrl.replaceAll("\\d", "x"), 404);
         assertEquals("application/json;charset=UTF-8", rsp.getContentType());
     }
 
     public void testJsonContentParsesCorrectly() throws Exception
     {
-        Response rsp = sendGetReq(testNodeUrl, 200);
+        Response rsp = sendGetReq(referencingNodeUrl, 200);
         String jsonResponseString = rsp.getContentAsString();
         
         Object jsonObject = new JSONUtils().toObject(jsonResponseString);
@@ -60,7 +60,7 @@ public class FormRestApiGet_Test extends AbstractTestFormRestApi {
 
     public void testJsonUpperStructure() throws Exception
     {
-        Response rsp = sendGetReq(testNodeUrl, 200);
+        Response rsp = sendGetReq(referencingNodeUrl, 200);
         String jsonResponseString = rsp.getContentAsString();
         
         JSONObject jsonParsedObject = new JSONObject(new JSONTokener(jsonResponseString));
@@ -87,7 +87,7 @@ public class FormRestApiGet_Test extends AbstractTestFormRestApi {
     @SuppressWarnings("unchecked")
     public void testJsonFormData() throws Exception
     {
-        Response rsp = sendGetReq(testNodeUrl, 200);
+        Response rsp = sendGetReq(referencingNodeUrl, 200);
         String jsonResponseString = rsp.getContentAsString();
         // At this point the formData names have underscores
         
@@ -118,7 +118,7 @@ public class FormRestApiGet_Test extends AbstractTestFormRestApi {
     @SuppressWarnings("unchecked")
 	public void testJsonDefinitionFields() throws Exception
     {
-        Response rsp = sendGetReq(testNodeUrl, 200);
+        Response rsp = sendGetReq(referencingNodeUrl, 200);
         String jsonResponseString = rsp.getContentAsString();
         
         JSONObject jsonParsedObject = new JSONObject(new JSONTokener(jsonResponseString));

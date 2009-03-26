@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
@@ -37,12 +38,14 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
+import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.GUID;
 import org.alfresco.web.scripts.TestWebScriptServer.GetRequest;
 import org.alfresco.web.scripts.TestWebScriptServer.Response;
@@ -51,14 +54,17 @@ public abstract class AbstractTestFormRestApi extends BaseWebScriptTest
 {
     protected static final String TEST_FORM_DESCRIPTION = "Test form description";
     protected static final String TEST_FORM_TITLE = "Test form title";
-    protected String testNodeUrl;
-    protected NodeRef testNodeRef;
+    protected String referencingNodeUrl;
+    protected NodeRef referencingDocNodeRef;
+    protected NodeRef firstAssociatedDoc;
     protected Map<QName, Serializable> testNodePropertiesAfterCreation;
 
     protected NodeService nodeService;
     private FileFolderService fileFolderService;
     private ContentService contentService;
     private Repository repositoryHelper;
+    protected NodeRef secondAssociatedDoc;
+    protected NodeRef associatedFolderNodeRef;
 
     @Override
     protected void setUp() throws Exception
@@ -79,52 +85,72 @@ public abstract class AbstractTestFormRestApi extends BaseWebScriptTest
         String guid = GUID.generate();
 
         // Create a test file (not a folder)
-        FileInfo fileInfoTestNode = this.fileFolderService.create(companyHomeNodeRef,
-                "test_forms_doc" + guid + ".txt", ContentModel.TYPE_CONTENT);
-        testNodeRef = fileInfoTestNode.getNodeRef();
+        FileInfo referencingDoc = this.fileFolderService.create(companyHomeNodeRef,
+                "referencingDoc" + guid + ".txt", ContentModel.TYPE_CONTENT);
+        referencingDocNodeRef = referencingDoc.getNodeRef();
 
         // Add an aspect.
         Map<QName, Serializable> aspectProps = new HashMap<QName, Serializable>(2);
         aspectProps.put(ContentModel.PROP_TITLE, TEST_FORM_TITLE);
         aspectProps.put(ContentModel.PROP_DESCRIPTION, TEST_FORM_DESCRIPTION);
-        nodeService.addAspect(testNodeRef, ContentModel.ASPECT_TITLED, aspectProps);
+        nodeService.addAspect(referencingDocNodeRef, ContentModel.ASPECT_TITLED, aspectProps);
 
         // Write some content into the node.
-        ContentWriter contentWriter = this.contentService.getWriter(fileInfoTestNode.getNodeRef(),
+        ContentWriter contentWriter = this.contentService.getWriter(referencingDoc.getNodeRef(),
                 ContentModel.PROP_CONTENT, true);
         contentWriter.setEncoding("UTF-8");
         contentWriter.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
         contentWriter.putContent("The quick brown fox jumped over the lazy dog.");
         
-        // create a node to use as target of association
+        // Create a folder - will use this for child-association testing
+        FileInfo associatedDocsFolder =
+            this.fileFolderService.create(companyHomeNodeRef, "associatedDocsFolder" + guid, ContentModel.TYPE_FOLDER);
+        associatedFolderNodeRef = associatedDocsFolder.getNodeRef();
+        
+        // create nodes to use as targets of association
         Map<QName, Serializable> docProps = new HashMap<QName, Serializable>(1);
-        docProps.put(ContentModel.PROP_NAME, "associatedDocument" + guid + ".txt");
-        NodeRef associatedDoc = this.nodeService.createNode(
-                    companyHomeNodeRef, 
+        docProps.put(ContentModel.PROP_NAME, "firstAssociatedDoc" + guid + ".txt");
+        firstAssociatedDoc = this.nodeService.createNode(
+                    associatedFolderNodeRef, 
                     ContentModel.ASSOC_CONTAINS, 
-                    QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "associatedDocument" + guid + ".txt"), 
+                    QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "firstAssociatedDoc" + guid + ".txt"), 
+                    ContentModel.TYPE_CONTENT,
+                    docProps).getChildRef();
+        
+        docProps.clear();
+        docProps.put(ContentModel.PROP_NAME, "secondAssociatedDoc" + guid + ".txt");
+        secondAssociatedDoc = this.nodeService.createNode(
+                    associatedFolderNodeRef, 
+                    ContentModel.ASSOC_CONTAINS, 
+                    QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "secondAssociatedDoc" + guid + ".txt"), 
                     ContentModel.TYPE_CONTENT,
                     docProps).getChildRef();
 
-        // Now create an association between these two node refs.
+        // Now create associations between the referencing and the two node refs.
         aspectProps.clear();
-        this.nodeService.addAspect(this.testNodeRef, ContentModel.ASPECT_REFERENCING, aspectProps);
-        this.nodeService.createAssociation(this.testNodeRef, associatedDoc, ContentModel.ASSOC_REFERENCES);
+        this.nodeService.addAspect(this.referencingDocNodeRef, ContentModel.ASPECT_REFERENCING, aspectProps);
+        this.nodeService.createAssociation(this.referencingDocNodeRef, firstAssociatedDoc, ContentModel.ASSOC_REFERENCES);
+        this.nodeService.createAssociation(this.referencingDocNodeRef, secondAssociatedDoc, ContentModel.ASSOC_REFERENCES);
 
         // Create and store the path
         StringBuilder builder = new StringBuilder();
-        builder.append("/api/forms/node/workspace/").append(testNodeRef.getStoreRef().getIdentifier())
-                .append("/").append(testNodeRef.getId());
-        this.testNodeUrl = builder.toString();
+        builder.append("/api/forms/node/workspace/").append(referencingDocNodeRef.getStoreRef().getIdentifier())
+                .append("/").append(referencingDocNodeRef.getId());
+        this.referencingNodeUrl = builder.toString();
         
         // Store the original properties of this node
-        this.testNodePropertiesAfterCreation = nodeService.getProperties(testNodeRef);
+        this.testNodePropertiesAfterCreation = nodeService.getProperties(referencingDocNodeRef);
+        
+        testNodePropertiesAfterCreation.toString();
     }
 
     @Override
     public void tearDown()
     {
-        nodeService.deleteNode(testNodeRef);
+        nodeService.deleteNode(this.referencingDocNodeRef);
+        nodeService.deleteNode(this.firstAssociatedDoc);
+        nodeService.deleteNode(this.secondAssociatedDoc);
+        nodeService.deleteNode(this.associatedFolderNodeRef);
     }
 
     protected Response sendGetReq(String url, int expectedStatusCode)

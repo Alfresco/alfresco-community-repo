@@ -46,12 +46,12 @@ public class FormRestApiJsonPost_Test extends AbstractTestFormRestApi
     {
         // Retrieve and store the original property value.
         Serializable originalDescription =
-            nodeService.getProperty(testNodeRef, ContentModel.PROP_DESCRIPTION);
+            nodeService.getProperty(referencingDocNodeRef, ContentModel.PROP_DESCRIPTION);
         assertEquals(TEST_FORM_DESCRIPTION, originalDescription);
         
         // get the original mimetype
         String originalMimetype = null;
-        ContentData content = (ContentData)this.nodeService.getProperty(testNodeRef, ContentModel.PROP_CONTENT);
+        ContentData content = (ContentData)this.nodeService.getProperty(referencingDocNodeRef, ContentModel.PROP_CONTENT);
         if (content != null)
         {
             originalMimetype = content.getMimetype();
@@ -64,17 +64,18 @@ public class FormRestApiJsonPost_Test extends AbstractTestFormRestApi
         jsonPostData.put(PROP_MIMETYPE, MimetypeMap.MIMETYPE_HTML);
         
         // Submit the JSON request.
-        Response ignoredRsp = sendRequest(new PostRequest(testNodeUrl, jsonPostData.toString(),
+        String jsonPostString = jsonPostData.toString();
+        Response ignoredRsp = sendRequest(new PostRequest(referencingNodeUrl, jsonPostString,
                 APPLICATION_JSON), 200);
 
         // The nodeService should give us the modified property.
         Serializable modifiedDescription =
-            nodeService.getProperty(testNodeRef, ContentModel.PROP_DESCRIPTION);
+            nodeService.getProperty(referencingDocNodeRef, ContentModel.PROP_DESCRIPTION);
         assertEquals(proposedNewDescription, modifiedDescription);
         
         // get the original mimetype
         String modifiedMimetype = null;
-        content = (ContentData)this.nodeService.getProperty(testNodeRef, ContentModel.PROP_CONTENT);
+        content = (ContentData)this.nodeService.getProperty(referencingDocNodeRef, ContentModel.PROP_CONTENT);
         if (content != null)
         {
             modifiedMimetype = content.getMimetype();
@@ -82,7 +83,7 @@ public class FormRestApiJsonPost_Test extends AbstractTestFormRestApi
         assertEquals(MimetypeMap.MIMETYPE_HTML, modifiedMimetype);
 
         // The Rest API should also give us the modified property.
-        Response response = sendRequest(new GetRequest(testNodeUrl), 200);
+        Response response = sendRequest(new GetRequest(referencingNodeUrl), 200);
         JSONObject jsonGetResponse = new JSONObject(response.getContentAsString());
         JSONObject jsonDataObj = (JSONObject)jsonGetResponse.get("data");
         assertNotNull(jsonDataObj);

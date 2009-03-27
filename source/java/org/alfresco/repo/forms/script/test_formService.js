@@ -22,20 +22,25 @@ function testGetFormForContentNode()
 	test.assertNotNull(fieldDefs, "field definitions should not be null.");
 	test.assertEquals(23, fieldDefs.length);
 	
-	// This dataHash is now an integer-keyed hash of the field definition data objects.
-	var fieldDefnDataHash = form.fieldDefinitionData;
-	test.assertNotNull(fieldDefnDataHash, "field definition data should not be null.");
-	test.assertEquals(23, fieldDefnDataHash.length);
+	// as we know there are no duplicates we can safely create a map of the 
+	// field definitions for the purposes of this test
+	var fieldDefnDataHash = {};
+	var fieldDef = null;
+	for (var x = 0; x < fieldDefs.length; x++)
+	{
+		fieldDef = fieldDefs[x];
+		fieldDefnDataHash[fieldDef.name] = fieldDef;
+	}
 	
-	var nameField = getFieldDefnFromMap('cm:name', fieldDefnDataHash);
-	var titleField = getFieldDefnFromMap('cm:title', fieldDefnDataHash);
-    var descField = getFieldDefnFromMap('cm:description', fieldDefnDataHash);
-    var originatorField = getFieldDefnFromMap('cm:originator', fieldDefnDataHash);
-    var addresseeField = getFieldDefnFromMap('cm:addressee', fieldDefnDataHash);
-    var addresseesField = getFieldDefnFromMap('cm:addressees', fieldDefnDataHash);
-    var subjectField = getFieldDefnFromMap('cm:subjectline', fieldDefnDataHash);
-    var sentDateField = getFieldDefnFromMap('cm:sentdate', fieldDefnDataHash);
-    var referencesField = getFieldDefnFromMap('cm:references', fieldDefnDataHash);
+	var nameField = fieldDefnDataHash['cm:name'];
+	var titleField = fieldDefnDataHash['cm:title'];
+    var descField = fieldDefnDataHash['cm:description'];
+    var originatorField = fieldDefnDataHash['cm:originator'];
+    var addresseeField = fieldDefnDataHash['cm:addressee'];
+    var addresseesField = fieldDefnDataHash['cm:addressees'];
+    var subjectField = fieldDefnDataHash['cm:subjectline'];
+    var sentDateField = fieldDefnDataHash['cm:sentdate'];
+    var referencesField = fieldDefnDataHash['cm:references'];
 
     test.assertNotNull(nameField, "Expecting to find the cm:name field");
     test.assertNotNull(titleField, "Expecting to find the cm:title field");
@@ -66,8 +71,8 @@ function testGetFormForContentNode()
     
     // get the constraint for the name field and check
     var constraints = nameField.constraints;
-    test.assertEquals(1, constraints.length);
-    var constraint = constraints[0];
+    test.assertEquals(1, constraints.size());
+    var constraint = constraints.get(0);
     test.assertEquals("REGEX", constraint.type);
     var params = constraint.params;
     test.assertNotNull(params, "params should not be null.");
@@ -119,21 +124,6 @@ function testGetFormForContentNode()
     
     test.assertNotNull(targets, "targets should not be null.");
     test.assertEquals(testAssociatedDoc, targets);
-}
-
-function getFieldDefnFromMap(name, fieldDefnDataHash)
-{
-	var result = '';
-	for (var i = 0; i < fieldDefnDataHash.length; i++)
-	{
-		var candidateFieldDefn = fieldDefnDataHash[i];
-		if (candidateFieldDefn.name == name)
-		{
-			result = candidateFieldDefn;
-			break;
-		}
-	}
-	return result;
 }
 
 // Execute tests

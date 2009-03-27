@@ -34,7 +34,6 @@ import java.util.Map;
 import org.alfresco.repo.forms.FieldDefinition;
 import org.alfresco.repo.forms.FieldGroup;
 import org.alfresco.repo.forms.Form;
-import org.alfresco.repo.jscript.ScriptableHashMap;
 
 /**
  * Form JavaScript Object.
@@ -83,23 +82,6 @@ public class ScriptForm implements Serializable
             fieldDefs = Collections.emptyList();
         }
         return fieldDefs.toArray(new FieldDefinition[fieldDefs.size()]);
-    }
-    
-    public ScriptableHashMap<Integer, ScriptFieldDefinition> getFieldDefinitionData()
-    {
-        ScriptableHashMap<Integer, ScriptFieldDefinition> result =
-            new ScriptableHashMap<Integer, ScriptFieldDefinition>();
-        List<FieldDefinition> fieldDefs = form.getFieldDefinitions();
-        
-        // An Integer-based Map is being used here as we need to allow field definitions
-        // for both properties and associations. It is possible for a property and an
-        // association to coexist with the same name.
-        int i = 0;
-        for (FieldDefinition fd : fieldDefs)
-        {
-            result.put(i++, new ScriptFieldDefinition(fd));
-        }
-        return result;
     }
 
     public ScriptFormData getFormData()

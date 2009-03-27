@@ -10,15 +10,15 @@
         {
             "fields" :
             [
-                <#list form.data.definition.fields?keys as k>
+                <#list form.data.definition.fields as field>
                 {
-                    <#list form.data.definition.fields[k]?keys as c>
-                    <#if form.data.definition.fields[k][c]?is_boolean>
-                    "${c}" : ${form.data.definition.fields[k][c]?string}<#if c_has_next>,</#if>
-                    <#elseif form.data.definition.fields[k][c]?is_sequence>
-                    "${c}" :
+                    <#list field?keys as key>
+                    <#if field[key]?is_boolean>
+                    "${key}" : ${field[key]?string}<#if key_has_next>,</#if>
+                    <#elseif field[key]?is_sequence>
+                    "${key}" :
                     [{
-                    <#list form.data.definition.fields[k][c] as q>
+                    <#list field[key] as q>
                         "type" : "${q.type}"<#if q.params?exists>,
                         "params" : {
                         <#list q.params?keys as p>
@@ -35,12 +35,12 @@
                         }
                         </#if>
                     </#list>
-                    }]<#if c_has_next>,</#if>
+                    }]<#if key_has_next>,</#if>
                     <#else>
-                    "${c}" : "${form.data.definition.fields[k][c]}"<#if c_has_next>,</#if>
+                    "${key}" : "${field[key]}"<#if key_has_next>,</#if>
                     </#if>
                     </#list>
-                }<#if k_has_next>,</#if>
+                }<#if field_has_next>,</#if>
                 </#list>
             ]
         },

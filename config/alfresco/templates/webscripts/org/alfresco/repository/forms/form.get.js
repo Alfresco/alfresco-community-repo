@@ -52,48 +52,40 @@ function main()
     formModel.data.type = formScriptObj.type;
     
     formModel.data.definition = {};
-    formModel.data.definition.fields = {};
+    formModel.data.definition.fields = [];
     
-    for (var integerKey in formScriptObj.fieldDefinitionData)
+    // We're explicitly listing the object fields of FieldDefinition.java and its subclasses here.
+	// I don't see a way to get these dynamically at runtime.
+	var supportedBaseFieldNames = ['name', 'label', 'description', 'binding',
+	                               'defaultValue', 'group', 'protectedField'];
+	var supportedPropertyFieldNames = ['dataType', 'mandatory',
+	                                   'repeats', 'constraints'];
+	var supportedAssociationFieldNames = ['endpointType', 'endpointDirection',
+	                                      'endpointMandatory', 'endpointMany'];
+	
+	var allSupportedFieldNames = supportedBaseFieldNames
+	    .concat(supportedPropertyFieldNames)
+	    .concat(supportedAssociationFieldNames);
+	
+	var fieldDefs = formScriptObj.fieldDefinitions;
+    for (var x = 0; x < fieldDefs.length; x++)
     {
-    	var fieldName = formScriptObj.fieldDefinitionData[integerKey].name;
+    	var fieldDef = fieldDefs[x];
+    	var field = {};
     	
-    	// We're explicitly listing the object fields of FieldDefinition.java and its
-    	// subclasses here.
-    	// I don't see a way to get these dynamically at runtime.
-    	var supportedBaseFieldNames = ['name', 'label', 'description', 'binding',
- 	                               'defaultValue', 'group', 'protectedField'];
-    	var supportedPropertyFieldNames = ['dataType', 'mandatory',
-    	                                   'repeats', 'constraints'];
-    	var supportedAssociationFieldNames = ['endpointType', 'endpointDirection',
-    	                                      'endpointMandatory', 'endpointMany'];
-    	
-    	var allSupportedFieldNames = supportedBaseFieldNames
-    	    .concat(supportedPropertyFieldNames)
-    	    .concat(supportedAssociationFieldNames);
-    	
-    	formModel.data.definition.fields[fieldName] = {};
-    	for (var i = 0; i < allSupportedFieldNames.length; i++) {
+    	for (var i = 0; i < allSupportedFieldNames.length; i++) 
+    	{
     		var nextSupportedName = allSupportedFieldNames[i];
-    		var nextValue = formScriptObj.fieldDefinitionData[integerKey][nextSupportedName];
+    		var nextValue = fieldDef[nextSupportedName];
     		
-    		if (nextValue != null) {
-    			formModel.data.definition.fields[fieldName][nextSupportedName] = nextValue;
+    		if (nextValue != null) 
+    		{
+    			field[nextSupportedName] = nextValue;
     		}
     	}
     	
-    	// Special handling for the 'type' property
-    	// For now, this can have a value of 'property' or 'association'
-    	
-    	//TODO Temporary impl here.
-    	if (formModel.data.definition.fields[fieldName]['dataType'] != null)
-    	{
-    		formModel.data.definition.fields[fieldName]['type'] = 'property';
-    	}
-    	else
-    	{
-    		formModel.data.definition.fields[fieldName]['type'] = 'association';
-    	}
+    	field.type = (fieldDef.dataType != null) ? "property" : "association";
+    	formModel.data.definition.fields.push(field);
     }
 
     formModel.data.formData = {};

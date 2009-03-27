@@ -5,4 +5,5 @@
   <url>/api/forms/node/{path}</url>
   <authentication>user</authentication>
   <transaction>required</transaction>
+  <lifecycle>internal</lifecycle>
 </webscript>

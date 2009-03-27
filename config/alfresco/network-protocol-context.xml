@@ -86,6 +86,7 @@
 	  <property name="serviceRegistry"><ref bean="ServiceRegistry"/></property>
       <property name="stateReaper"><ref bean="fileStateReaper"/></property>
       <property name="nodeMonitorFactory"><ref bean="nodeMonitorFactory"/></property>
+      <property name="nodeArchiveService"><ref bean="nodeArchiveService" /></property>
    </bean>
    
    <bean id="nodeMonitorFactory" class="org.alfresco.filesys.repo.NodeMonitorFactory">

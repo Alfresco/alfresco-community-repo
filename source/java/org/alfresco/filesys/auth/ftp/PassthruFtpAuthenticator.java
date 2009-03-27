@@ -36,10 +36,8 @@ import net.sf.acegisecurity.Authentication;
 
 import org.alfresco.config.ConfigElement;
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.filesys.AlfrescoConfigSection;
 import org.alfresco.filesys.ServerConfigurationBean;
 import org.alfresco.filesys.alfresco.AlfrescoClientInfo;
-import org.alfresco.jlan.ftp.FTPAuthenticator;
 import org.alfresco.jlan.ftp.FTPSrvSession;
 import org.alfresco.jlan.server.SrvSession;
 import org.alfresco.jlan.server.auth.ClientInfo;
@@ -53,11 +51,6 @@ import org.alfresco.jlan.server.config.SecurityConfigSection;
 import org.alfresco.jlan.server.config.ServerConfiguration;
 import org.alfresco.jlan.smb.Protocol;
 import org.alfresco.jlan.util.IPAddress;
-import org.alfresco.repo.security.authentication.AuthenticationComponent;
-import org.alfresco.service.cmr.security.AuthenticationService;
-import org.alfresco.service.transaction.TransactionService;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Passthru FTP Authenticator Class
@@ -72,6 +65,9 @@ public class PassthruFtpAuthenticator extends FTPAuthenticatorBase {
 	public final static int MinSessionTmo = 2000; 		// 2 seconds
 	public final static int MaxSessionTmo = 30000; 		// 30 seconds
 
+    public final static int MinCheckInterval = 10;		// 10 seconds
+    public final static int MaxCheckInterval = 15 * 60; // 15 minutes
+    
 	// Passthru keep alive interval
 
 	public final static long PassthruKeepAliveInterval = 60000L; // 60 seconds
@@ -108,10 +104,43 @@ public class PassthruFtpAuthenticator extends FTPAuthenticatorBase {
 		
 		m_passwordEncryptor = new PasswordEncryptor();
 		
-		// Create the passthru authentication server list
+        // Check if the offline check interval has been specified
+        
+        ConfigElement checkInterval = params.getChild("offlineCheckInterval");
+        if ( checkInterval != null)
+        {
+            try
+            {
+                // Validate the check interval value
 
-		m_passthruServers = new PassthruServers();
-
+                int offlineCheck = Integer.parseInt(checkInterval.getValue());
+                
+                // Range check the value
+                
+                if ( offlineCheck < MinCheckInterval || offlineCheck > MaxCheckInterval)
+                    throw new InvalidConfigurationException("Invalid offline check interval, valid range is " + MinCheckInterval + " to " + MaxCheckInterval);
+                
+                // Set the offline check interval for offline passthru servers
+                
+                m_passthruServers = new PassthruServers( offlineCheck);
+                
+                // DEBUG
+                
+                if ( logger.isDebugEnabled())
+                	logger.debug("Using offline check interval of " + offlineCheck + " seconds");
+            }
+            catch (NumberFormatException ex)
+            {
+                throw new InvalidConfigurationException("Invalid offline check interval specified");
+            }
+        }
+        else
+        {
+        	// Create the passthru server list with the default offline check interval
+        	
+        	m_passthruServers = new PassthruServers();
+        }
+        
 		// Check if the session timeout has been specified
 
 		ConfigElement sessTmoElem = params.getChild("Timeout");

@@ -398,7 +398,7 @@ public class AlfrescoCifsAuthenticator extends CifsAuthenticatorBase
                 // Logging
                 
                 if ( logger.isInfoEnabled())
-                	logger.info( "Logged on user " + client.getUserName() + " (" + sess.getRemoteAddress() + ") using auto-logon shared password");
+                	logger.info( "Logged on user " + client.getUserName() + " (" + sess.getRemoteAddress() + ")");
                 
                 // Set the current user to be authenticated, save the authentication token
 

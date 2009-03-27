@@ -57,7 +57,7 @@ public class FileState
     
     // File status
 
-    public enum FileStateStatus { NotExist, FileExists, FolderExists, Renamed };
+    public enum FileStateStatus { NotExist, FileExists, FolderExists, Renamed, DeleteOnClose };
     
     // File name/path
 

@@ -32,6 +32,7 @@ import org.alfresco.jlan.locking.NotLockedException;
 import org.alfresco.jlan.server.SrvSession;
 import org.alfresco.jlan.server.filesys.NetworkFile;
 import org.alfresco.jlan.server.filesys.TreeConnection;
+import org.alfresco.jlan.server.filesys.pseudo.MemoryNetworkFile;
 import org.alfresco.jlan.server.locking.LockManager;
 import org.alfresco.filesys.alfresco.AlfrescoNetworkFile;
 
@@ -65,6 +66,10 @@ public class FileStateLockManager implements LockManager {
 		  AlfrescoNetworkFile alfFile = (AlfrescoNetworkFile) file;
 		  fstate = alfFile.getFileState();
 		}
+		else if ( file instanceof MemoryNetworkFile) {
+		  file.addLock(lock);
+		  return;
+		}
 		
 		if ( fstate == null)
 			throw new IOException("Open file without state (lock)");
@@ -92,12 +97,16 @@ public class FileStateLockManager implements LockManager {
 			
 		//	Get the file state associated with the file
 	
-    FileState fstate = null;
+		FileState fstate = null;
     
-    if ( file instanceof AlfrescoNetworkFile) {
-      AlfrescoNetworkFile alfFile = (AlfrescoNetworkFile) file;
-      fstate = alfFile.getFileState();
-    }
+	    if ( file instanceof AlfrescoNetworkFile) {
+	      AlfrescoNetworkFile alfFile = (AlfrescoNetworkFile) file;
+	      fstate = alfFile.getFileState();
+	    }
+	    else if ( file instanceof MemoryNetworkFile) {
+	      file.removeLock(lock);
+	      return;
+	    }
 	
 		if ( fstate == null)
 			throw new IOException("Open file without state (unlock)");

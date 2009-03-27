@@ -92,6 +92,9 @@ public class PassthruCifsAuthenticator extends CifsAuthenticatorBase implements 
     public final static int MinSessionTmo = 2000;       // 2 seconds
     public final static int MaxSessionTmo = 30000;      // 30 seconds
 
+    public final static int MinCheckInterval = 10;		// 10 seconds
+    public final static int MaxCheckInterval = 15 * 60; // 15 minutes
+    
     // Passthru keep alive interval
     
     public final static long PassthruKeepAliveInterval	= 60000L;	// 60 seconds
@@ -1155,9 +1158,42 @@ public class PassthruCifsAuthenticator extends CifsAuthenticatorBase implements 
 
         super.initialize(config, params);
 
-        // Create the passthru authentication server list
+        // Check if the offline check interval has been specified
         
-        m_passthruServers = new PassthruServers();
+        ConfigElement checkInterval = params.getChild("offlineCheckInterval");
+        if ( checkInterval != null)
+        {
+            try
+            {
+                // Validate the check interval value
+
+                int offlineCheck = Integer.parseInt(checkInterval.getValue());
+                
+                // Range check the value
+                
+                if ( offlineCheck < MinCheckInterval || offlineCheck > MaxCheckInterval)
+                    throw new InvalidConfigurationException("Invalid offline check interval, valid range is " + MinCheckInterval + " to " + MaxCheckInterval);
+                
+                // Set the offline check interval for offline passthru servers
+                
+                m_passthruServers = new PassthruServers( offlineCheck);
+                
+                // DEBUG
+                
+                if ( logger.isDebugEnabled())
+                	logger.debug("Using offline check interval of " + offlineCheck + " seconds");
+            }
+            catch (NumberFormatException ex)
+            {
+                throw new InvalidConfigurationException("Invalid offline check interval specified");
+            }
+        }
+        else
+        {
+        	// Create the passthru server list with the default offline check interval
+        	
+        	m_passthruServers = new PassthruServers();
+        }
         
         // Propagate the debug setting
         

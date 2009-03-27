@@ -192,6 +192,10 @@ public class ServerConfigurationBean extends ServerConfiguration implements Appl
   private static final int MemoryPoolMinimumAllocation	= 5;
   private static final int MemoryPoolMaximumAllocation   = 500;
 	
+  // Maximum session timeout
+	
+  private static final int MaxSessionTimeout	= 60 * 60;	// 1 hour
+	
   // Authentication manager
   
   private AuthenticationManager m_authenticationManager;
@@ -935,31 +939,46 @@ public class ServerConfigurationBean extends ServerConfiguration implements Appl
         elem = config.getConfigElement("hostAnnounce");
         if (elem != null)
         {
-  
-            // Check for an announcement interval
-  
-            String interval = elem.getAttribute("interval");
-            if (interval != null && interval.length() > 0)
+        	// Check if the host announcer has been disabled
+        	
+        	String enabled = elem.getAttribute("enabled");
+            if ( enabled != null && enabled.equalsIgnoreCase( "false"))
             {
-                try
-                {
-                    cifsConfig.setHostAnnounceInterval(Integer.parseInt(interval));
-                }
-                catch (NumberFormatException ex)
-                {
-                    throw new AlfrescoRuntimeException("Invalid host announcement interval");
-                }
+            	// Switch off the host announcer
+            	
+            	cifsConfig.setHostAnnouncer( false);
+            	
+            	// Log that host announcements are not enabled
+            	
+            	logger.info("Host announcements not enabled");
             }
-  
-            // Check if the domain name has been set, this is required if the
-            // host announcer is enabled
-  
-            if (cifsConfig.getDomainName() == null)
-                throw new AlfrescoRuntimeException("Domain name must be specified if host announcement is enabled");
-  
-            // Enable host announcement
-  
-            cifsConfig.setHostAnnouncer(true);
+            else
+            {
+	            // Check for an announcement interval
+	  
+	            String interval = elem.getAttribute("interval");
+	            if (interval != null && interval.length() > 0)
+	            {
+	                try
+	                {
+	                    cifsConfig.setHostAnnounceInterval(Integer.parseInt(interval));
+	                }
+	                catch (NumberFormatException ex)
+	                {
+	                    throw new AlfrescoRuntimeException("Invalid host announcement interval");
+	                }
+	            }
+	  
+	            // Check if the domain name has been set, this is required if the
+	            // host announcer is enabled
+	  
+	            if (cifsConfig.getDomainName() == null)
+	                throw new AlfrescoRuntimeException("Domain name must be specified if host announcement is enabled");
+	  
+	            // Enable host announcement
+	  
+	            cifsConfig.setHostAnnouncer(true);
+            }
         }
   
         // Check if NetBIOS SMB is enabled
@@ -1260,19 +1279,41 @@ public class ServerConfigurationBean extends ServerConfiguration implements Appl
   
             cifsConfig.setTcpipSMB(platformOK);
             
-      //  Check if the port has been specified
+            //  Check if the port has been specified
       
-      String portNum = elem.getAttribute("port");
-      if ( portNum != null && portNum.length() > 0) {
-        try {
-          cifsConfig.setTcpipSMBPort(Integer.parseInt(portNum));
-          if ( cifsConfig.getTcpipSMBPort() <= 0 || cifsConfig.getTcpipSMBPort() >= 65535)
-            throw new AlfrescoRuntimeException("TCP/IP SMB port out of valid range");
-        }
-        catch (NumberFormatException ex) {
-          throw new AlfrescoRuntimeException("Invalid TCP/IP SMB port");
-        }
-      }
+            String portNum = elem.getAttribute("port");
+            if ( portNum != null && portNum.length() > 0) {
+            	try {
+            		cifsConfig.setTcpipSMBPort(Integer.parseInt(portNum));
+            		if ( cifsConfig.getTcpipSMBPort() <= 0 || cifsConfig.getTcpipSMBPort() >= 65535)
+            			throw new AlfrescoRuntimeException("TCP/IP SMB port out of valid range");
+            	}
+            	catch (NumberFormatException ex) {
+            		throw new AlfrescoRuntimeException("Invalid TCP/IP SMB port");
+            	}
+            }
+            
+            // Check if IPv6 support should be enabled
+            
+        	String ipv6 = elem.getAttribute("ipv6");
+            if ( ipv6 != null && ipv6.equalsIgnoreCase( "enabled"))
+            {
+            	try
+            	{
+	            	// Use the IPv6 bind all address
+	            	
+	            	cifsConfig.setSMBBindAddress( InetAddress.getByName( "::"));
+	            	
+	            	// DEBUG
+	            	
+	            	if ( logger.isInfoEnabled())
+	            		logger.info("Enabled CIFS IPv6 bind address for native SMB");
+            	}
+            	catch ( UnknownHostException ex)
+            	{
+            		throw new AlfrescoRuntimeException("Failed to enable IPv6 bind address, " + ex.getMessage());
+            	}
+            }
         }
         else
         {
@@ -1428,31 +1469,46 @@ public class ServerConfigurationBean extends ServerConfiguration implements Appl
         elem = config.getConfigElement("Win32Announce");
         if (elem != null)
         {
-  
-            // Check for an announcement interval
-  
-            String interval = elem.getAttribute("interval");
-            if (interval != null && interval.length() > 0)
+        	// Check if the Win32 host announcer has been disabled
+        	
+        	String enabled = elem.getAttribute("enabled");
+            if ( enabled != null && enabled.equalsIgnoreCase( "false"))
             {
-                try
-                {
-                  cifsConfig.setWin32HostAnnounceInterval(Integer.parseInt(interval));
-                }
-                catch (NumberFormatException ex)
-                {
-                    throw new AlfrescoRuntimeException("Invalid host announcement interval");
-                }
+            	// Switch off the Win32 host announcer
+            	
+            	cifsConfig.setWin32HostAnnouncer( false);
+            	
+            	// Log that host announcements are not enabled
+            	
+            	logger.info("Win32 host announcements not enabled");
             }
-  
-            // Check if the domain name has been set, this is required if the
-            // host announcer is enabled
-  
-            if (cifsConfig.getDomainName() == null)
-                throw new AlfrescoRuntimeException("Domain name must be specified if host announcement is enabled");
-  
-            // Enable Win32 NetBIOS host announcement
-  
-            cifsConfig.setWin32HostAnnouncer(true);
+            else
+            {
+	            // Check for an announcement interval
+	  
+	            String interval = elem.getAttribute("interval");
+	            if (interval != null && interval.length() > 0)
+	            {
+	                try
+	                {
+	                  cifsConfig.setWin32HostAnnounceInterval(Integer.parseInt(interval));
+	                }
+	                catch (NumberFormatException ex)
+	                {
+	                    throw new AlfrescoRuntimeException("Invalid host announcement interval");
+	                }
+	            }
+	  
+	            // Check if the domain name has been set, this is required if the
+	            // host announcer is enabled
+	  
+	            if (cifsConfig.getDomainName() == null)
+	                throw new AlfrescoRuntimeException("Domain name must be specified if host announcement is enabled");
+	  
+	            // Enable Win32 NetBIOS host announcement
+	  
+	            cifsConfig.setWin32HostAnnouncer(true);
+            }
         }
   
         // Check if NetBIOS and/or TCP/IP SMB have been enabled
@@ -1626,6 +1682,35 @@ public class ServerConfigurationBean extends ServerConfiguration implements Appl
         	if ( logger.isDebugEnabled())
         		logger.debug("NIO based code disabled for CIFS server");
         }
+        
+		// Check if a session timeout is configured
+		
+		elem = config.getConfigElement("sessionTimeout");
+		if ( elem != null) {
+			
+			// Validate the session timeout value
+
+			String sessTmo = elem.getValue();
+			if ( sessTmo != null && sessTmo.length() > 0) {
+				try {
+					
+					// Convert the timeout value to milliseconds
+					
+					int tmo = Integer.parseInt(sessTmo);
+					if ( tmo < 0 || tmo > MaxSessionTimeout)
+						throw new AlfrescoRuntimeException("Session timeout out of range (0 - " + MaxSessionTimeout + ")");
+					
+					// Convert the session timeout to milliseconds
+					
+					cifsConfig.setSocketTimeout( tmo * 1000);
+				}
+				catch (NumberFormatException ex) {
+					throw new AlfrescoRuntimeException("Invalid session timeout value, " + sessTmo);
+				}
+			}
+			else
+				throw new AlfrescoRuntimeException("Session timeout value not specified");
+		}
       }
       catch ( InvalidConfigurationException ex)
       {
@@ -3044,7 +3129,7 @@ public class ServerConfigurationBean extends ServerConfiguration implements Appl
 
         String domainName = null;
 
-        if (getPlatformType() == Platform.Type.WINDOWS && isNativeCodeDisabled())
+        if (getPlatformType() == Platform.Type.WINDOWS && isNativeCodeDisabled() == false)
         {
             // Get the local domain/workgroup name via JNI
 

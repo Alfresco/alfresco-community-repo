@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -39,9 +39,7 @@ public interface ActivityFeedDaoService extends ActivityDaoService
     
     public int deleteFeedEntries(Date keepDate) throws SQLException;
     
-    public List<ActivityFeedDAO> selectUserFeedEntries(String feedUserId, String format) throws SQLException;
-    
-    public List<ActivityFeedDAO> selectUserFeedEntries(String feedUserId, String format, String siteId) throws SQLException;
+    public List<ActivityFeedDAO> selectUserFeedEntries(String feedUserId, String format, String siteId, boolean excludeThisUser, boolean excludeOtherUsers) throws SQLException;
     
     public List<ActivityFeedDAO> selectSiteFeedEntries(String siteUserId, String format) throws SQLException;
 }

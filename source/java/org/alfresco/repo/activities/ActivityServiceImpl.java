@@ -291,6 +291,14 @@ public class ActivityServiceImpl implements ActivityService
      */
     public List<String> getUserFeedEntries(String feedUserId, String format, String siteId)
     {
+        return getUserFeedEntries(feedUserId, format, siteId, false, false);
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.activities.ActivityService#getUserFeedEntries(java.lang.String, java.lang.String, java.lang.String, boolean, boolean)
+     */
+    public List<String> getUserFeedEntries(String feedUserId, String format, String siteId, boolean excludeThisUser, boolean excludeOtherUsers)
+    {
         // NOTE: siteId is optional
         ParameterCheck.mandatoryString("feedUserId", feedUserId);
         ParameterCheck.mandatoryString("format", format);
@@ -308,13 +316,9 @@ public class ActivityServiceImpl implements ActivityService
             if (siteId != null)
             {
                 siteId = tenantService.getName(siteId);
-                
-                activityFeeds = feedDaoService.selectUserFeedEntries(feedUserId, format, siteId);
             }
-            else
-            {
-                activityFeeds = feedDaoService.selectUserFeedEntries(feedUserId, format);
-            }
+            
+            activityFeeds = feedDaoService.selectUserFeedEntries(feedUserId, format, siteId, excludeThisUser, excludeOtherUsers);
             
             int count = 0;
             for (ActivityFeedDAO activityFeed : activityFeeds)

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -92,7 +92,9 @@ public interface ActivityService
      */
     
     /**
-     * Retrieve user feed
+     * Retrieve user feed with optional site filter
+     * 
+     * Will return activities for all users across all sites, or optionally for all users for specified site.
      *
      * @param userId - required
      * @param format - required
@@ -100,6 +102,26 @@ public interface ActivityService
      * @return list of JSON feed entries
      */
     public List<String> getUserFeedEntries(String userId, String format, String siteId);
+    
+    /**
+     * Retrieve user feed with optional site filter and optional user filters
+     * 
+     * Will return activities for users across all sites, or optionally for users for specified site.
+     * 
+     * User filters are:
+     * - all user activities   (excludeThisUser = false, excludeOtherUsers = false)
+     * - other user activities (excludeThisUser = true,  excludeOtherUsers = false)
+     * - my user activities    (excludeThisUser = false, excludeOtherUsers = true)
+     * note: if both excludes are true then no activities will be returned.
+     * 
+     * @param userId     - required
+     * @param format     - required
+     * @param siteId     - optional, if set then will filter by given siteId else return all sites
+     * @param excludeThisUser    - if TRUE then will exclude activities for this user   (hence returning other users only)
+     * @param excludeOthersUsers - if TRUE then will exclude activities for other users (hence returning this user only)
+     * @return list of JSON feed entries
+     */
+    public List<String> getUserFeedEntries(String userId, String format, String siteId, boolean excludeThisUser, boolean excludeOtherUsers);
     
     /**
      * Retrieve site feed

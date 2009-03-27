@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -25,9 +25,11 @@
 package org.alfresco.repo.activities.ibatis;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.activities.feed.ActivityFeedDAO;
 import org.alfresco.repo.activities.feed.ActivityFeedDaoService;
 
@@ -45,27 +47,66 @@ public class IBatisActivityFeedDaoServiceImpl extends IBatisSqlMapper implements
     }
     
     @SuppressWarnings("unchecked")
-    public List<ActivityFeedDAO> selectUserFeedEntries(String feedUserId, String format) throws SQLException
+    public List<ActivityFeedDAO> selectUserFeedEntries(String feedUserId, String format, String siteId, boolean excludeThisUser, boolean excludeOtherUsers) throws SQLException
     {
         ActivityFeedDAO params = new ActivityFeedDAO();
         params.setFeedUserId(feedUserId);
         params.setActivitySummaryFormat(format);
         
-        // where feed user is me and post user is not me
-        return (List<ActivityFeedDAO>)getSqlMapClient().queryForList("select.activity.feed.for.feeduser", params);
-    }
-    
-    @SuppressWarnings("unchecked")
-    public List<ActivityFeedDAO> selectUserFeedEntries(String feedUserId, String format, String siteId) throws SQLException
-    {
-        ActivityFeedDAO params = new ActivityFeedDAO();
-        params.setFeedUserId(feedUserId);
-        params.setPostUserId(feedUserId);
-        params.setActivitySummaryFormat(format);
-        params.setSiteNetwork(siteId);
+        if (siteId != null)
+        {
+            // given site
+            params.setSiteNetwork(siteId);
+            
+            if (excludeThisUser && excludeOtherUsers)
+            {
+                // effectively NOOP - return empty feed
+                return new ArrayList<ActivityFeedDAO>(0);
+            }
+            if ((!excludeThisUser) && (!excludeOtherUsers))
+            {
+                // no excludes => everyone => where feed user is me
+                return (List<ActivityFeedDAO>)getSqlMapClient().queryForList("select.activity.feed.for.feeduser.and.site", params);
+            }
+            else if ((excludeThisUser) && (!excludeOtherUsers))
+            {
+                // exclude feed user => others => where feed user is me and post user is not me
+                return (List<ActivityFeedDAO>)getSqlMapClient().queryForList("select.activity.feed.for.feeduser.others.and.site", params);
+            }
+            else if ((excludeOtherUsers) && (!excludeThisUser))
+            {
+                // exclude others => me => where feed user is me and post user is me
+                return (List<ActivityFeedDAO>)getSqlMapClient().queryForList("select.activity.feed.for.feeduser.me.and.site", params);
+            }
+        }
+        else
+        {
+            // all sites
+            
+            if (excludeThisUser && excludeOtherUsers)
+            {
+                // effectively NOOP - return empty feed
+                return new ArrayList<ActivityFeedDAO>(0);
+            }
+            if (!excludeThisUser && !excludeOtherUsers)
+            {
+                // no excludes => everyone => where feed user is me
+                return (List<ActivityFeedDAO>)getSqlMapClient().queryForList("select.activity.feed.for.feeduser", params);
+            }
+            else if (excludeThisUser)
+            {
+                // exclude feed user => others => where feed user is me and post user is not me
+                return (List<ActivityFeedDAO>)getSqlMapClient().queryForList("select.activity.feed.for.feeduser.others", params);
+            }
+            else if (excludeOtherUsers)
+            {
+                // exclude others => me => where feed user is me and post user is me
+                return (List<ActivityFeedDAO>)getSqlMapClient().queryForList("select.activity.feed.for.feeduser.me", params);
+            }
+        }
         
-        // where feed user is me and post user is not me
-        return (List<ActivityFeedDAO>)getSqlMapClient().queryForList("select.activity.feed.for.feeduser.and.site", params);
+        // belts-and-braces
+        throw new AlfrescoRuntimeException("Unexpected: invalid arguments");
     }
        
     @SuppressWarnings("unchecked")
@@ -75,7 +116,7 @@ public class IBatisActivityFeedDaoServiceImpl extends IBatisSqlMapper implements
         params.setSiteNetwork(siteId);
         params.setActivitySummaryFormat(format);
         
-        // where feed user is me and post user is not me
+        // for given site
         return (List<ActivityFeedDAO>)getSqlMapClient().queryForList("select.activity.feed.for.site", params);
     }
 }

@@ -44,7 +44,19 @@
       <result property="lastModified" column="last_modified"/>
    </resultMap>
 
+   <!-- user feed - all sites - everyone -->
    <select id="select.activity.feed.for.feeduser" parameterClass="ActivityFeed" resultClass="ActivityFeed">
+      <![CDATA[
+      select id as id, activity_type as activityType, activity_format as activitySummaryFormat, activity_summary as activitySummary, feed_user_id as feedUserId, post_user_id as postUserId, site_network as siteNetwork, post_date as postDate
+      from alf_activity_feed
+      where feed_user_id = #feedUserId#
+      and activity_format = #activitySummaryFormat#
+      order by post_date desc
+      ]]>
+   </select>
+   
+   <!-- user feed - all sites - others (not me) -->
+   <select id="select.activity.feed.for.feeduser.others" parameterClass="ActivityFeed" resultClass="ActivityFeed">
       <![CDATA[
       select id as id, activity_type as activityType, activity_format as activitySummaryFormat, activity_summary as activitySummary, feed_user_id as feedUserId, post_user_id as postUserId, site_network as siteNetwork, post_date as postDate
       from alf_activity_feed
@@ -55,7 +67,32 @@
       ]]>
    </select>
    
+   <!-- user feed - all sites - me only (not others) -->
+   <select id="select.activity.feed.for.feeduser.me" parameterClass="ActivityFeed" resultClass="ActivityFeed">
+      <![CDATA[
+      select id as id, activity_type as activityType, activity_format as activitySummaryFormat, activity_summary as activitySummary, feed_user_id as feedUserId, post_user_id as postUserId, site_network as siteNetwork, post_date as postDate
+      from alf_activity_feed
+      where feed_user_id = #feedUserId#
+      and post_user_id = #feedUserId#
+      and activity_format = #activitySummaryFormat#
+      order by post_date desc
+      ]]>
+   </select>
+
+   <!-- user feed - given site - everyone -->
    <select id="select.activity.feed.for.feeduser.and.site" parameterClass="ActivityFeed" resultClass="ActivityFeed">
+      <![CDATA[
+      select id as id, activity_type as activityType, activity_format as activitySummaryFormat, activity_summary as activitySummary, feed_user_id as feedUserId, post_user_id as postUserId, site_network as siteNetwork, post_date as postDate
+      from alf_activity_feed
+      where feed_user_id = #feedUserId#
+      and site_network = #siteNetwork#
+      and activity_format = #activitySummaryFormat#
+      order by post_date desc
+      ]]>
+   </select>
+   
+   <!-- user feed - given site - others (not me) -->
+   <select id="select.activity.feed.for.feeduser.others.and.site" parameterClass="ActivityFeed" resultClass="ActivityFeed">
       <![CDATA[
       select id as id, activity_type as activityType, activity_format as activitySummaryFormat, activity_summary as activitySummary, feed_user_id as feedUserId, post_user_id as postUserId, site_network as siteNetwork, post_date as postDate
       from alf_activity_feed
@@ -67,6 +104,20 @@
       ]]>
    </select>
    
+   <!-- user feed - given site - me only (not others) -->
+   <select id="select.activity.feed.for.feeduser.me.and.site" parameterClass="ActivityFeed" resultClass="ActivityFeed">
+      <![CDATA[
+      select id as id, activity_type as activityType, activity_format as activitySummaryFormat, activity_summary as activitySummary, feed_user_id as feedUserId, post_user_id as postUserId, site_network as siteNetwork, post_date as postDate
+      from alf_activity_feed
+      where feed_user_id = #feedUserId#
+      and post_user_id = #feedUserId#
+      and site_network = #siteNetwork#
+      and activity_format = #activitySummaryFormat#
+      order by post_date desc
+      ]]>
+   </select>
+   
+   <!-- site feed - given site -->
    <select id="select.activity.feed.for.site" parameterClass="ActivityFeed" resultClass="ActivityFeed">
       <![CDATA[
       select id as id, activity_type as activityType, activity_format as activitySummaryFormat, activity_summary as activitySummary, post_user_id as postUserId, site_network as siteNetwork, post_date as postDate

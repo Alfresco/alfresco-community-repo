@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -121,6 +121,26 @@ public class ActivityServiceImplTest extends BaseSpringTest
     public void testGetEmptyUserFeed() throws Exception
     {
         List<String> userFeedEntries = this.activityService.getUserFeedEntries("unknown user", "some format", null);
+        
+        assertNotNull(userFeedEntries);
+        assertTrue(userFeedEntries.isEmpty());
+        
+        userFeedEntries = this.activityService.getUserFeedEntries("unknown user", "some format", "some site");
+        
+        assertNotNull(userFeedEntries);
+        assertTrue(userFeedEntries.isEmpty());
+        
+        userFeedEntries = this.activityService.getUserFeedEntries("unknown user", "some format", "some site", true, false);
+        
+        assertNotNull(userFeedEntries);
+        assertTrue(userFeedEntries.isEmpty());
+        
+        userFeedEntries = this.activityService.getUserFeedEntries("unknown user", "some format", "some site", false, true);
+        
+        assertNotNull(userFeedEntries);
+        assertTrue(userFeedEntries.isEmpty());
+        
+        userFeedEntries = this.activityService.getUserFeedEntries("unknown user", "some format", "some site", true, true);
         
         assertNotNull(userFeedEntries);
         assertTrue(userFeedEntries.isEmpty());

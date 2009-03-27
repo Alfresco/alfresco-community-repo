@@ -67,8 +67,8 @@ public class CMISTest extends BaseCMISWebScriptTest
 //        setRemoteServer(server);
 //        setArgsAsHeaders(false);
 //        setValidateResponse(false);
-//        setListener(new CMISTestListener(System.out));
-//        setTraceReqRes(true);
+        setListener(new CMISTestListener(System.out));
+        setTraceReqRes(true);
         
         super.setUp();
     }

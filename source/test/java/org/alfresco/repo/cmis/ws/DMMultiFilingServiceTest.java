@@ -26,7 +26,7 @@ package org.alfresco.repo.cmis.ws;
 
 import javax.xml.namespace.QName;
 
-import org.alfresco.cmis.dictionary.CMISMapping;
+import org.alfresco.cmis.dictionary.CMISDictionaryModel;
 
 public class DMMultiFilingServiceTest extends AbstractServiceTest
 {
@@ -71,9 +71,9 @@ public class DMMultiFilingServiceTest extends AbstractServiceTest
     {
         ((MultiFilingServicePort) servicePort).addObjectToFolder(repositoryId, documentId, anotherFolderId);
         boolean found = false;
-        for (CmisObjectType cmisObjectType : helper.getChildren(anotherFolderId, EnumTypesOfFileableObjects.DOCUMENTS, 0, CMISMapping.PROP_OBJECT_ID).getObject())
+        for (CmisObjectType cmisObjectType : helper.getChildren(anotherFolderId, EnumTypesOfFileableObjects.DOCUMENTS, 0, CMISDictionaryModel.PROP_OBJECT_ID).getObject())
         {
-            if ((found = PropertyUtil.getProperty(cmisObjectType.getProperties(), CMISMapping.PROP_OBJECT_ID).equals(documentId)))
+            if ((found = PropertyUtil.getProperty(cmisObjectType.getProperties(), CMISDictionaryModel.PROP_OBJECT_ID).equals(documentId)))
             {
                 break;
             }

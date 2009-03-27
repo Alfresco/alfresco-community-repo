@@ -25,7 +25,7 @@ function createNode(parent, entry, slug)
 
     // construct node of folder or file
     var name = (slug !== null) ? slug : entry.title;
-    var baseType = type.rootTypeId.typeId;
+    var baseType = type.typeId.rootTypeId.id;
     if (baseType == "document")
     {
         node = parent.createFile(name);
@@ -44,10 +44,10 @@ function createNode(parent, entry, slug)
     }
 
     // specialize to required custom type
-    var objectType = type.objectTypeId.typeId;
+    var objectType = type.typeId.id;
     if (objectType != "document" && objectType != "folder")
     {
-        if (!node.specializeType(type.objectTypeId.QName))
+        if (!node.specializeType(type.typeId.QName))
         {
             status.code = 400;
             status.message = "Cannot create object of type " + typeId;
@@ -107,7 +107,7 @@ function updateNode(node, entry, propNames, pwc)
             if (propDef === null)
             {
                 status.code = 400;
-                status.message = "Property " + propName + " is not a known property for type " + typeDef.objectTypeId;
+                status.message = "Property " + propName + " is not a known property for type " + typeDef.typeId;
                 status.redirect = true;
                 return null;
             }

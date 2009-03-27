@@ -28,6 +28,8 @@ import java.math.BigInteger;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.alfresco.cmis.dictionary.CMISScope;
+import org.alfresco.cmis.dictionary.CMISTypeId;
 import org.alfresco.repo.cmis.PropertyFilter;
 import org.alfresco.repo.cmis.ws.utils.AlfrescoObjectType;
 import org.alfresco.repo.web.util.paging.Cursor;
@@ -81,7 +83,8 @@ public class DMRelationshipServicePort extends DMAbstractServicePort implements 
         BigInteger skipCount = ((parameters.getSkipCount() != null) && (parameters.getSkipCount().getValue() != null)) ? parameters.getSkipCount().getValue() : BigInteger.ZERO;
         BigInteger maxItems = ((parameters.getMaxItems() != null) && (parameters.getMaxItems().getValue() != null)) ? parameters.getMaxItems().getValue() : BigInteger.ZERO;
 
-        QName associationType = cmisDictionaryService.getCMISMapping().getAlfrescoType(cmisDictionaryService.getCMISMapping().getCmisTypeId(typeId).getQName());
+        CMISTypeId cmisTypeId = getCmisTypeId(typeId);
+        QName associationType = cmisTypeId.getQName();
 
         PropertyFilter propertyFilter = createPropertyFilter(parameters.getFilter());
         NodeRef objectNodeRef = (NodeRef) cmisObjectsUtils.getIdentifierInstance(parameters.getObjectId(), AlfrescoObjectType.DOCUMENT_OR_FOLDER_OBJECT).getConvertedIdentifier();
@@ -143,7 +146,8 @@ public class DMRelationshipServicePort extends DMAbstractServicePort implements 
             }
             else
             {
-                return cmisDictionaryService.getCMISMapping().isValidCmisRelationship(qname) && relationshipType.equals(qname);
+                CMISTypeId typeId = cmisDictionaryService.getTypeId(qname, CMISScope.RELATIONSHIP);
+                return typeId != null && relationshipType.equals(qname);
             }
         }
     }

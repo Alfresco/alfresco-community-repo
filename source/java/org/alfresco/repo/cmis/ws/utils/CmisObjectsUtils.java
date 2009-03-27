@@ -28,7 +28,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.alfresco.cmis.dictionary.CMISDictionaryService;
-import org.alfresco.cmis.dictionary.CMISMapping;
 import org.alfresco.cmis.dictionary.CMISScope;
 import org.alfresco.cmis.dictionary.CMISTypeId;
 import org.alfresco.model.ContentModel;
@@ -73,7 +72,6 @@ public class CmisObjectsUtils
     private AuthorityService authorityService;
     private NodeService nodeService;
     private LockService lockService;
-    private CMISMapping cmisMapping;
 
     private Throwable lastOperationException;
 
@@ -81,7 +79,6 @@ public class CmisObjectsUtils
     public void setCmisDictionaryService(CMISDictionaryService cmisDictionaryService)
     {
         this.cmisDictionaryService = cmisDictionaryService;
-        this.cmisMapping = this.cmisDictionaryService.getCMISMapping();
     }
 
     public void setNodeService(NodeService nodeService)
@@ -217,12 +214,24 @@ public class CmisObjectsUtils
 
     public boolean isFolder(NodeRef folderNodeRef)
     {
-        return (folderNodeRef != null) && cmisMapping.isValidCmisFolder(cmisMapping.getCmisType(nodeService.getType(folderNodeRef)));
+        if (folderNodeRef == null)
+        {
+            return false;
+        }
+        QName typeQName = nodeService.getType(folderNodeRef);
+        CMISTypeId typeId = cmisDictionaryService.getTypeId(typeQName, CMISScope.FOLDER);
+        return typeId != null;
     }
 
     public boolean isDocument(NodeRef documentNodeRef)
     {
-        return (documentNodeRef != null) && cmisMapping.isValidCmisDocument(cmisMapping.getCmisType(nodeService.getType(documentNodeRef)));
+        if (documentNodeRef == null)
+        {
+            return false;
+        }
+        QName typeQName = nodeService.getType(documentNodeRef);
+        CMISTypeId typeId = cmisDictionaryService.getTypeId(typeQName, CMISScope.DOCUMENT);
+        return typeId != null;
     }
 
     public boolean isRelationship(String identifier)
@@ -354,7 +363,7 @@ public class CmisObjectsUtils
 
     private AlfrescoObjectType determineActualObjectType(AlfrescoObjectType expectedType, QName objectType)
     {
-        CMISTypeId typeId = cmisMapping.getCmisTypeId(objectType);
+        CMISTypeId typeId = cmisDictionaryService.getTypeId(objectType, null);
         if ((expectedType == AlfrescoObjectType.DOCUMENT_OBJECT || expectedType == AlfrescoObjectType.DOCUMENT_OR_FOLDER_OBJECT)
                 && typeId.getScope() == CMISScope.DOCUMENT)
         {

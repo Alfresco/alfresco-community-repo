@@ -27,7 +27,7 @@ package org.alfresco.repo.cmis.ws;
 import javax.activation.DataHandler;
 import javax.xml.ws.Holder;
 
-import org.alfresco.cmis.dictionary.CMISMapping;
+import org.alfresco.cmis.dictionary.CMISDictionaryModel;
 import org.alfresco.repo.content.MimetypeMap;
 
 public class DMVersioningServiceTest extends AbstractServiceTest
@@ -81,7 +81,7 @@ public class DMVersioningServiceTest extends AbstractServiceTest
         String checkinComment = "Test checkin" + System.currentTimeMillis();
         ((VersioningServicePort) servicePort).checkIn(repositoryId, documentIdHolder, Boolean.TRUE, properties, contentStream, checkinComment);
 
-        assertEquals(checkinComment, PropertyUtil.getProperty(helper.getObjectProperties(documentId).getObject().getProperties(), CMISMapping.PROP_CHECKIN_COMMENT));
+        assertEquals(checkinComment, PropertyUtil.getProperty(helper.getObjectProperties(documentId).getObject().getProperties(), CMISDictionaryModel.PROP_CHECKIN_COMMENT));
     }
 
     public void testCheckOutCheckInDefault() throws Exception
@@ -108,7 +108,7 @@ public class DMVersioningServiceTest extends AbstractServiceTest
 
         // Cancel check out
         ((VersioningServicePort) servicePort).cancelCheckOut(repositoryId, documentIdHolder.value);
-        assertFalse((Boolean) PropertyUtil.getProperty(helper.getObjectProperties(documentId).getObject().getProperties(), CMISMapping.PROP_IS_VERSION_SERIES_CHECKED_OUT));
+        assertFalse((Boolean) PropertyUtil.getProperty(helper.getObjectProperties(documentId).getObject().getProperties(), CMISDictionaryModel.PROP_IS_VERSION_SERIES_CHECKED_OUT));
     }
 
     public void testCheckinNoExistsCheckOut() throws Exception
@@ -159,7 +159,7 @@ public class DMVersioningServiceTest extends AbstractServiceTest
         assertNotNull(response.getObject());
         CmisObjectType objectType = response.getObject();
         assertNotNull(objectType.getProperties());
-        assertTrue((Boolean) PropertyUtil.getProperty(objectType.getProperties(), CMISMapping.PROP_IS_LATEST_VERSION));
+        assertTrue((Boolean) PropertyUtil.getProperty(objectType.getProperties(), CMISDictionaryModel.PROP_IS_LATEST_VERSION));
     }
 
     public void testGetPropertiesOfLatestVersionDefault() throws Exception
@@ -172,7 +172,7 @@ public class DMVersioningServiceTest extends AbstractServiceTest
         assertNotNull(response.getObject());
         CmisObjectType objectType = response.getObject();
         assertNotNull(objectType.getProperties());
-        assertTrue((Boolean) PropertyUtil.getProperty(objectType.getProperties(), CMISMapping.PROP_IS_LATEST_VERSION));
+        assertTrue((Boolean) PropertyUtil.getProperty(objectType.getProperties(), CMISDictionaryModel.PROP_IS_LATEST_VERSION));
     }
 
     public void testGetAllVersionsDefault() throws Exception
@@ -192,7 +192,7 @@ public class DMVersioningServiceTest extends AbstractServiceTest
         GetAllVersionsResponse response = ((VersioningServicePort) servicePort).getAllVersions(request);
         assertNotNull(response);
         assertNotNull(response.getObject());
-        assertEquals(checkinComment, PropertyUtil.getProperty(response.getObject().get(0).getProperties(), CMISMapping.PROP_CHECKIN_COMMENT));
+        assertEquals(checkinComment, PropertyUtil.getProperty(response.getObject().get(0).getProperties(), CMISDictionaryModel.PROP_CHECKIN_COMMENT));
     }
 
     public void testGetAllVersions() throws Exception
@@ -215,7 +215,7 @@ public class DMVersioningServiceTest extends AbstractServiceTest
         GetAllVersionsResponse response = ((VersioningServicePort) servicePort).getAllVersions(request);
         assertNotNull(response);
         assertNotNull(response.getObject());
-        assertEquals(checkinComment, PropertyUtil.getProperty(response.getObject().get(0).getProperties(), CMISMapping.PROP_CHECKIN_COMMENT));
+        assertEquals(checkinComment, PropertyUtil.getProperty(response.getObject().get(0).getProperties(), CMISDictionaryModel.PROP_CHECKIN_COMMENT));
     }
 
     public void testGetAllVersionsForNoVersionHistory() throws Exception
@@ -256,11 +256,11 @@ public class DMVersioningServiceTest extends AbstractServiceTest
             {
                 if (!checkedOutfound)
                 {
-                    checkedOutfound = (Boolean) PropertyUtil.getProperty(cmisObjectType.getProperties(), CMISMapping.PROP_IS_VERSION_SERIES_CHECKED_OUT);
+                    checkedOutfound = (Boolean) PropertyUtil.getProperty(cmisObjectType.getProperties(), CMISDictionaryModel.PROP_IS_VERSION_SERIES_CHECKED_OUT);
                 }
                 if (!pwcFound)
                 {
-                    pwcFound = ((String) PropertyUtil.getProperty(cmisObjectType.getProperties(), CMISMapping.PROP_OBJECT_ID)).startsWith(documentIdHolder.value);
+                    pwcFound = ((String) PropertyUtil.getProperty(cmisObjectType.getProperties(), CMISDictionaryModel.PROP_OBJECT_ID)).startsWith(documentIdHolder.value);
                 }
             }
             assertTrue("No checked out version found", checkedOutfound);

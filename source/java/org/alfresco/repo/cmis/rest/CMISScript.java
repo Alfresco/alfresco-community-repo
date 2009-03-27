@@ -24,7 +24,6 @@
  */
 package org.alfresco.repo.cmis.rest;
 
-import java.io.Serializable;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -51,7 +50,6 @@ import org.alfresco.repo.web.util.paging.Paging;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
-import org.mozilla.javascript.Scriptable;
 
 
 /**
@@ -331,21 +329,21 @@ public class CMISScript extends BaseScopableProcessorExtension
      */
     public PagedResults queryTypes(Page page)
     {
-        Collection<CMISTypeId> typeIds = cmisDictionaryService.getAllObjectTypeIds();
-        Cursor cursor = paging.createCursor(typeIds.size(), page);
+        Collection<CMISTypeDefinition> typeDefs = cmisDictionaryService.getAllTypes();
+        Cursor cursor = paging.createCursor(typeDefs.size(), page);
         
         // skip
-        Iterator<CMISTypeId> iterTypeIds = typeIds.iterator();
+        Iterator<CMISTypeDefinition> iterTypeDefs = typeDefs.iterator();
         for (int i = 0; i < cursor.getStartRow(); i++)
         {
-            iterTypeIds.next();
+            iterTypeDefs.next();
         }
 
         // get types for page
         CMISTypeDefinition[] types = new CMISTypeDefinition[cursor.getRowCount()];
         for (int i = cursor.getStartRow(); i <= cursor.getEndRow(); i++)
         {
-            types[i - cursor.getStartRow()] = cmisDictionaryService.getType(iterTypeIds.next());
+            types[i - cursor.getStartRow()] = iterTypeDefs.next();
         }
         
         PagedResults results = paging.createPagedResults(types, cursor);
@@ -358,23 +356,23 @@ public class CMISScript extends BaseScopableProcessorExtension
      * @param page
      * @return  paged result set of types
      */
-    public PagedResults queryTypeHierarchy(CMISTypeDefinition typedef, boolean descendants, Page page)
+    public PagedResults queryTypeHierarchy(CMISTypeDefinition typeDef, boolean descendants, Page page)
     {
-        Collection<CMISTypeId> typeIds = cmisDictionaryService.getChildTypeIds(typedef.getObjectTypeId(), descendants);
-        Cursor cursor = paging.createCursor(typeIds.size(), page);
+        Collection<CMISTypeDefinition> subTypes = typeDef.getSubTypes(descendants);
+        Cursor cursor = paging.createCursor(subTypes.size(), page);
         
         // skip
-        Iterator<CMISTypeId> iterTypeIds = typeIds.iterator();
+        Iterator<CMISTypeDefinition> iterSubTypes = subTypes.iterator();
         for (int i = 0; i < cursor.getStartRow(); i++)
         {
-            iterTypeIds.next();
+            iterSubTypes.next();
         }
 
         // get types for page
         CMISTypeDefinition[] types = new CMISTypeDefinition[cursor.getRowCount()];
         for (int i = cursor.getStartRow(); i <= cursor.getEndRow(); i++)
         {
-            types[i - cursor.getStartRow()] = cmisDictionaryService.getType(iterTypeIds.next());
+            types[i - cursor.getStartRow()] = iterSubTypes.next();
         }
         
         PagedResults results = paging.createPagedResults(types, cursor);
@@ -391,7 +389,7 @@ public class CMISScript extends BaseScopableProcessorExtension
     {
         try
         {
-            CMISTypeId cmisTypeId = cmisDictionaryService.getCMISMapping().getCmisTypeId(typeId);
+            CMISTypeId cmisTypeId = cmisDictionaryService.getTypeId(typeId);
             return cmisDictionaryService.getType(cmisTypeId);
         }
         catch(AlfrescoRuntimeException e)
@@ -411,7 +409,7 @@ public class CMISScript extends BaseScopableProcessorExtension
         try
         {
             QName typeQName = node.getQNameType();
-            CMISTypeId cmisTypeId = cmisDictionaryService.getCMISMapping().getCmisTypeId(typeQName);
+            CMISTypeId cmisTypeId = cmisDictionaryService.getTypeId(typeQName, null);
             return cmisDictionaryService.getType(cmisTypeId);
         }
         catch(AlfrescoRuntimeException e)

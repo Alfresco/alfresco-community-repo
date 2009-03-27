@@ -38,15 +38,14 @@ import javax.xml.bind.JAXBElement;
 
 import org.alfresco.cmis.CMISCardinalityEnum;
 import org.alfresco.cmis.CMISContentStreamAllowedEnum;
+import org.alfresco.cmis.CMISDataTypeEnum;
 import org.alfresco.cmis.CMISFullTextSearchEnum;
 import org.alfresco.cmis.CMISJoinEnum;
-import org.alfresco.cmis.CMISPropertyTypeEnum;
 import org.alfresco.cmis.CMISUpdatabilityEnum;
 import org.alfresco.cmis.dictionary.CMISChoice;
-import org.alfresco.cmis.dictionary.CMISMapping;
+import org.alfresco.cmis.dictionary.CMISDictionaryModel;
 import org.alfresco.cmis.dictionary.CMISPropertyDefinition;
 import org.alfresco.cmis.dictionary.CMISTypeDefinition;
-import org.alfresco.cmis.dictionary.CMISTypeId;
 import org.alfresco.repo.web.util.paging.Cursor;
 import org.alfresco.service.descriptor.Descriptor;
 
@@ -63,7 +62,7 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
     private static Map<CMISContentStreamAllowedEnum, EnumContentStreamAllowed> contentStreamAllowedEnumMapping;
     private static Map<CMISUpdatabilityEnum, EnumUpdateability> updatabilityEnumMapping;
     private static Map<CMISCardinalityEnum, EnumCardinality> cardinalityEnumMapping;
-    private static Map<CMISPropertyTypeEnum, EnumPropertyType> propertyTypeEnumMapping;
+    private static Map<CMISDataTypeEnum, EnumPropertyType> propertyTypeEnumMapping;
 
     static
     {
@@ -91,16 +90,16 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
         cardinalityEnumMapping.put(CMISCardinalityEnum.MULTI_VALUED, EnumCardinality.MULTI);
         cardinalityEnumMapping.put(CMISCardinalityEnum.SINGLE_VALUED, EnumCardinality.SINGLE);
 
-        propertyTypeEnumMapping = new HashMap<CMISPropertyTypeEnum, EnumPropertyType>();
-        propertyTypeEnumMapping.put(CMISPropertyTypeEnum.BOOLEAN, EnumPropertyType.BOOLEAN);
-        propertyTypeEnumMapping.put(CMISPropertyTypeEnum.DATETIME, EnumPropertyType.DATETIME);
-        propertyTypeEnumMapping.put(CMISPropertyTypeEnum.DECIMAL, EnumPropertyType.DECIMAL);
-        propertyTypeEnumMapping.put(CMISPropertyTypeEnum.HTML, EnumPropertyType.HTML);
-        propertyTypeEnumMapping.put(CMISPropertyTypeEnum.ID, EnumPropertyType.ID);
-        propertyTypeEnumMapping.put(CMISPropertyTypeEnum.INTEGER, EnumPropertyType.INTEGER);
-        propertyTypeEnumMapping.put(CMISPropertyTypeEnum.STRING, EnumPropertyType.STRING);
-        propertyTypeEnumMapping.put(CMISPropertyTypeEnum.URI, EnumPropertyType.URI);
-        propertyTypeEnumMapping.put(CMISPropertyTypeEnum.XML, EnumPropertyType.XML);
+        propertyTypeEnumMapping = new HashMap<CMISDataTypeEnum, EnumPropertyType>();
+        propertyTypeEnumMapping.put(CMISDataTypeEnum.BOOLEAN, EnumPropertyType.BOOLEAN);
+        propertyTypeEnumMapping.put(CMISDataTypeEnum.DATETIME, EnumPropertyType.DATETIME);
+        propertyTypeEnumMapping.put(CMISDataTypeEnum.DECIMAL, EnumPropertyType.DECIMAL);
+        propertyTypeEnumMapping.put(CMISDataTypeEnum.HTML, EnumPropertyType.HTML);
+        propertyTypeEnumMapping.put(CMISDataTypeEnum.ID, EnumPropertyType.ID);
+        propertyTypeEnumMapping.put(CMISDataTypeEnum.INTEGER, EnumPropertyType.INTEGER);
+        propertyTypeEnumMapping.put(CMISDataTypeEnum.STRING, EnumPropertyType.STRING);
+        propertyTypeEnumMapping.put(CMISDataTypeEnum.URI, EnumPropertyType.URI);
+        propertyTypeEnumMapping.put(CMISDataTypeEnum.XML, EnumPropertyType.XML);
     }
 
     /**
@@ -147,7 +146,7 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
         repositoryInfoType.setRepositoryName(serverDescriptor.getName());
         repositoryInfoType.setRepositoryRelationship("self");
         repositoryInfoType.setRepositoryDescription("");
-        repositoryInfoType.setRootFolderId((String) cmisPropertyService.getProperty(cmisService.getDefaultRootNodeRef(), CMISMapping.PROP_OBJECT_ID));
+        repositoryInfoType.setRootFolderId((String) cmisPropertyService.getProperty(cmisService.getDefaultRootNodeRef(), CMISDictionaryModel.PROP_OBJECT_ID));
         repositoryInfoType.setVendorName("Alfresco");
         repositoryInfoType.setProductName("Alfresco Repository (" + serverDescriptor.getEdition() + ")");
         repositoryInfoType.setProductVersion(serverDescriptor.getVersion());
@@ -173,7 +172,7 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
      * @param propertyType type of property
      * @return web service choice
      */
-    private JAXBElement<? extends CmisChoiceType> getCmisChoiceType(CMISChoice choice, CMISPropertyTypeEnum propertyType)
+    private JAXBElement<? extends CmisChoiceType> getCmisChoiceType(CMISChoice choice, CMISDataTypeEnum propertyType)
     {
         JAXBElement<? extends CmisChoiceType> result = null;
 
@@ -239,7 +238,7 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
      * @param choices repository choice object
      * @param cmisChoices web service choice object
      */
-    private void addChoiceChildrens(CMISPropertyTypeEnum propertyType, Collection<CMISChoice> choices, List<JAXBElement<? extends CmisChoiceType>> cmisChoices)
+    private void addChoiceChildrens(CMISDataTypeEnum propertyType, Collection<CMISChoice> choices, List<JAXBElement<? extends CmisChoiceType>> cmisChoices)
     {
         for (CMISChoice choice : choices)
         {
@@ -260,7 +259,7 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
      * @param choices repository choice object
      * @param cmisChoices web service choice object
      */
-    private void addChoices(CMISPropertyTypeEnum propertyType, Collection<CMISChoice> choices, List<CmisChoiceType> cmisChoices)
+    private void addChoices(CMISDataTypeEnum propertyType, Collection<CMISChoice> choices, List<CmisChoiceType> cmisChoices)
     {
         for (CMISChoice choice : choices)
         {
@@ -280,21 +279,21 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
      * @param propertyDefinition repository property definition
      * @param wsPropertyDefs web service property definition
      */
-    private void addPropertyDefs(CMISPropertyDefinition propertyDefinition, List<CmisPropertyDefinitionType> wsPropertyDefs)
+    private void addPropertyDefs(CMISTypeDefinition typeDefinition, CMISPropertyDefinition propertyDefinition, List<CmisPropertyDefinitionType> wsPropertyDefs)
     {
         CmisPropertyDefinitionType wsPropertyDef = new CmisPropertyDefinitionType();
-        wsPropertyDef.setName(propertyDefinition.getPropertyName());
-        wsPropertyDef.setId(propertyDefinition.getPropertyId());
+        wsPropertyDef.setName(propertyDefinition.getPropertyId().getName());
+        wsPropertyDef.setId(propertyDefinition.getPropertyId().getId());
         wsPropertyDef.setDisplayName(propertyDefinition.getDisplayName());
         wsPropertyDef.setDescription(propertyDefinition.getDescription());
-        wsPropertyDef.setPropertyType(propertyTypeEnumMapping.get(propertyDefinition.getPropertyType()));
+        wsPropertyDef.setPropertyType(propertyTypeEnumMapping.get(propertyDefinition.getDataType()));
         wsPropertyDef.setCardinality(cardinalityEnumMapping.get(propertyDefinition.getCardinality()));
         wsPropertyDef.setUpdateability(updatabilityEnumMapping.get(propertyDefinition.getUpdatability()));
-        wsPropertyDef.setInherited(propertyDefinition.isInherited());
+        wsPropertyDef.setInherited(propertyDefinition.getOwningType().equals(typeDefinition));
         wsPropertyDef.setRequired(propertyDefinition.isRequired());
         wsPropertyDef.setQueryable(propertyDefinition.isQueryable());
         wsPropertyDef.setOrderable(propertyDefinition.isOrderable());
-        addChoices(propertyDefinition.getPropertyType(), propertyDefinition.getChoices(), wsPropertyDef.getChoice());
+        addChoices(propertyDefinition.getDataType(), propertyDefinition.getChoices(), wsPropertyDef.getChoice());
         wsPropertyDef.setOpenChoice(propertyDefinition.isOpenChoice());
 
         wsPropertyDefs.add(wsPropertyDef);
@@ -309,25 +308,25 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
      */
     private void setCmisTypeDefinitionProperties(CmisTypeDefinitionType cmisTypeDefinition, CMISTypeDefinition typeDefinition, boolean includeProperties)
     {
-        cmisTypeDefinition.setTypeId(typeDefinition.getObjectTypeId().getTypeId());
-        cmisTypeDefinition.setQueryName(typeDefinition.getObjectTypeQueryName());
-        cmisTypeDefinition.setDisplayName(typeDefinition.getObjectTypeDisplayName());
-        cmisTypeDefinition.setBaseType(EnumObjectType.fromValue(typeDefinition.getRootTypeId().getTypeId()));
-        cmisTypeDefinition.setParentId(typeDefinition.getParentTypeId().getTypeId());
-        cmisTypeDefinition.setBaseTypeQueryName(typeDefinition.getRootTypeQueryName());
+        cmisTypeDefinition.setTypeId(typeDefinition.getTypeId().getId());
+        cmisTypeDefinition.setQueryName(typeDefinition.getQueryName());
+        cmisTypeDefinition.setDisplayName(typeDefinition.getDisplayName());
+        cmisTypeDefinition.setBaseType(EnumObjectType.fromValue(typeDefinition.getRootType().getTypeId().getId()));
+        cmisTypeDefinition.setParentId(typeDefinition.getParentType().getTypeId().getId());
+        cmisTypeDefinition.setBaseTypeQueryName(typeDefinition.getRootType().getQueryName());
         cmisTypeDefinition.setDescription(typeDefinition.getDescription());
         cmisTypeDefinition.setCreatable(typeDefinition.isCreatable());
         cmisTypeDefinition.setFileable(typeDefinition.isFileable());
         cmisTypeDefinition.setQueryable(typeDefinition.isQueryable());
         cmisTypeDefinition.setControllable(typeDefinition.isControllable());
-        cmisTypeDefinition.setIncludedInSupertypeQuery(typeDefinition.isIncludedInSupertypeQuery());
+        cmisTypeDefinition.setIncludedInSupertypeQuery(typeDefinition.isIncludeInSuperTypeQuery());
 
         if (includeProperties)
         {
             List<CmisPropertyDefinitionType> propertyDefs = cmisTypeDefinition.getPropertyDefinition();
-            for (CMISPropertyDefinition cmisPropDef : cmisDictionaryService.getPropertyDefinitions(typeDefinition.getObjectTypeId()).values())
+            for (CMISPropertyDefinition cmisPropDef : typeDefinition.getPropertyDefinitions().values())
             {
-                addPropertyDefs(cmisPropDef, propertyDefs);
+                addPropertyDefs(typeDefinition, cmisPropDef, propertyDefs);
             }
         }
     }
@@ -340,45 +339,42 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
      * @return web service type definition
      * @throws ObjectNotFoundException if type id not found
      */
-    private JAXBElement<? extends CmisTypeDefinitionType> getCmisTypeDefinition(String typeId, boolean includeProperties) throws ObjectNotFoundException
+    private JAXBElement<? extends CmisTypeDefinitionType> getCmisTypeDefinition(CMISTypeDefinition typeDef, boolean includeProperties) throws ObjectNotFoundException
     {
-        CMISTypeId cmisTypeId = cmisDictionaryService.getCMISMapping().getCmisTypeId(typeId);
-        CMISTypeDefinition typeDefinition = cmisDictionaryService.getType(cmisTypeId);
-
-        if (typeDefinition.getParentTypeId() == null)
+        if (typeDef.getParentType() == null)
         {
             return null;
         }
 
-        if (typeDefinition == null)
+        if (typeDef == null)
         {
             throw new ObjectNotFoundException("Type not found");
         }
 
         JAXBElement<? extends CmisTypeDefinitionType> result = null;
 
-        switch (cmisTypeId.getScope())
+        switch (typeDef.getTypeId().getScope())
         {
             case DOCUMENT:
                 CmisTypeDocumentDefinitionType documentDefinitionType = new CmisTypeDocumentDefinitionType();
-                setCmisTypeDefinitionProperties(documentDefinitionType, typeDefinition, includeProperties);
-                documentDefinitionType.setVersionable(typeDefinition.isVersionable());
-                documentDefinitionType.setContentStreamAllowed(contentStreamAllowedEnumMapping.get(typeDefinition.getContentStreamAllowed()));
+                setCmisTypeDefinitionProperties(documentDefinitionType, typeDef, includeProperties);
+                documentDefinitionType.setVersionable(typeDef.isVersionable());
+                documentDefinitionType.setContentStreamAllowed(contentStreamAllowedEnumMapping.get(typeDef.getContentStreamAllowed()));
                 result = cmisObjectFactory.createDocumentType(documentDefinitionType);
                 break;
             case FOLDER:
                 CmisTypeFolderDefinitionType folderDefinitionType = new CmisTypeFolderDefinitionType();
-                setCmisTypeDefinitionProperties(folderDefinitionType, typeDefinition, includeProperties);
+                setCmisTypeDefinitionProperties(folderDefinitionType, typeDef, includeProperties);
                 result = cmisObjectFactory.createFolderType(folderDefinitionType);
                 break;
             case POLICY:
                 CmisTypePolicyDefinitionType policyDefinitionType = new CmisTypePolicyDefinitionType();
-                setCmisTypeDefinitionProperties(policyDefinitionType, typeDefinition, includeProperties);
+                setCmisTypeDefinitionProperties(policyDefinitionType, typeDef, includeProperties);
                 result = cmisObjectFactory.createPolicyType(policyDefinitionType);
                 break;
             case RELATIONSHIP:
                 CmisTypeRelationshipDefinitionType relationshipDefinitionType = new CmisTypeRelationshipDefinitionType();
-                setCmisTypeDefinitionProperties(relationshipDefinitionType, typeDefinition, includeProperties);
+                setCmisTypeDefinitionProperties(relationshipDefinitionType, typeDef, includeProperties);
                 result = cmisObjectFactory.createRelationshipType(relationshipDefinitionType);
                 break;
             case UNKNOWN:
@@ -407,28 +403,29 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
     {
         checkRepositoryId(parameters.getRepositoryId());
 
-        Collection<CMISTypeId> typeIds;
+        Collection<CMISTypeDefinition> typeDefs;
         if (parameters.getTypeId() == null)
         {
-            typeIds = cmisDictionaryService.getAllObjectTypeIds();
+            typeDefs = cmisDictionaryService.getAllTypes();
         }
         else
         {
-            typeIds = cmisDictionaryService.getChildTypeIds(cmisDictionaryService.getCMISMapping().getCmisTypeId(parameters.getTypeId().getValue()), true);
+            CMISTypeDefinition typeDef = cmisDictionaryService.getType(cmisDictionaryService.getTypeId(parameters.getTypeId().getValue()));
+            typeDefs = typeDef.getSubTypes(true);
         }
 
         GetTypesResponse response = new GetTypesResponse();
         if (parameters.getMaxItems() != null)
         {
-            response.setHasMoreItems(parameters.getMaxItems().getValue().intValue() < typeIds.size());
+            response.setHasMoreItems(parameters.getMaxItems().getValue().intValue() < typeDefs.size());
         }
 
         // skip
-        Cursor cursor = createCursor(typeIds.size(), parameters.getSkipCount() != null ? parameters.getSkipCount().getValue() : null, parameters.getMaxItems() != null ? parameters.getMaxItems().getValue() : null);
-        Iterator<CMISTypeId> iterTypeIds = typeIds.iterator();
+        Cursor cursor = createCursor(typeDefs.size(), parameters.getSkipCount() != null ? parameters.getSkipCount().getValue() : null, parameters.getMaxItems() != null ? parameters.getMaxItems().getValue() : null);
+        Iterator<CMISTypeDefinition> iterTypeDefs = typeDefs.iterator();
         for (int i = 0; i < cursor.getStartRow(); i++)
         {
-            iterTypeIds.next();
+            iterTypeDefs.next();
         }
 
         boolean returnPropertyDefinitions = parameters.getReturnPropertyDefinitions() == null ? false : parameters.getReturnPropertyDefinitions().getValue();
@@ -436,7 +433,7 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
         List<JAXBElement<? extends CmisTypeDefinitionType>> types = response.getType();
         for (int i = cursor.getStartRow(); i <= cursor.getEndRow(); i++)
         {
-            JAXBElement<? extends CmisTypeDefinitionType> element = getCmisTypeDefinition(iterTypeIds.next().getTypeId(), returnPropertyDefinitions);
+            JAXBElement<? extends CmisTypeDefinitionType> element = getCmisTypeDefinition(iterTypeDefs.next(), returnPropertyDefinitions);
             if (element != null)
             {
                 types.add(element);
@@ -466,7 +463,8 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
         checkRepositoryId(parameters.getRepositoryId());
 
         GetTypeDefinitionResponse response = new GetTypeDefinitionResponse();
-        response.setType(getCmisTypeDefinition(parameters.getTypeId(), true));
+        CMISTypeDefinition typeDef = cmisDictionaryService.getType(cmisDictionaryService.getTypeId(parameters.getTypeId()));
+        response.setType(getCmisTypeDefinition(typeDef, true));
         return response;
     }
 

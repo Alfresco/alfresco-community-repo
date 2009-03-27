@@ -26,7 +26,8 @@ package org.alfresco.repo.cmis.rest;
 
 import java.util.List;
 
-import org.alfresco.cmis.dictionary.CMISMapping;
+import org.alfresco.cmis.dictionary.CMISDictionaryService;
+import org.alfresco.cmis.dictionary.CMISTypeDefinition;
 import org.alfresco.cmis.dictionary.CMISTypeId;
 import org.alfresco.repo.template.TemplateNode;
 import org.alfresco.service.namespace.QName;
@@ -38,23 +39,23 @@ import freemarker.template.TemplateModelException;
 /**
  * Custom FreeMarker Template language method.
  * <p>
- * Retrieve the CMIS Type Id for an Alfresco node
+ * Retrieve the CMIS Type Definition for an Alfresco node
  * <p>
- * Usage: cmistypeid(TemplateNode node)
- *        cmistypeid(QName nodeType)
+ * Usage: cmistype(TemplateNode node)
+ *        cmistype(QName nodeType)
  *        
  * @author davidc
  */
-public class CMISTypeIdMethod implements TemplateMethodModelEx
+public class CMISTypeDefinitionMethod implements TemplateMethodModelEx
 {
-    private CMISMapping mappingService;
+    private CMISDictionaryService dictionaryService;
     
     /**
      * Construct
      */
-    public CMISTypeIdMethod(CMISMapping mappingService)
+    public CMISTypeDefinitionMethod(CMISDictionaryService dictionaryService)
     {
-        this.mappingService = mappingService;
+        this.dictionaryService = dictionaryService;
     }
     
     /**
@@ -63,7 +64,7 @@ public class CMISTypeIdMethod implements TemplateMethodModelEx
     @SuppressWarnings("unchecked")
     public Object exec(List args) throws TemplateModelException
     {
-        CMISTypeId result = null;
+        CMISTypeDefinition result = null;
         
         if (args.size() == 1)
         {
@@ -85,10 +86,14 @@ public class CMISTypeIdMethod implements TemplateMethodModelEx
                     }
                 }
                 
-                // convert to CMIS type id
+                // convert to CMIS type
                 if (nodeType != null)
                 {
-                    result = mappingService.getCmisTypeId(nodeType);
+                    CMISTypeId typeId = dictionaryService.getTypeId(nodeType, null);
+                    if (typeId != null)
+                    {
+                        result = dictionaryService.getType(typeId);
+                    }
                 }
             }
         }

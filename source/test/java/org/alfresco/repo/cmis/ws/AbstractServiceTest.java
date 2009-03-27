@@ -28,7 +28,7 @@ import java.util.List;
 
 import junit.framework.TestCase;
 
-import org.alfresco.cmis.dictionary.CMISMapping;
+import org.alfresco.cmis.dictionary.CMISDictionaryModel;
 
 /**
  * @author Michael Shavnev
@@ -109,7 +109,7 @@ public abstract class AbstractServiceTest extends TestCase
         {
             CmisObjectType object = response.getObject();
             CmisPropertiesType properties = object.getProperties();
-            property = (String) PropertyUtil.getProperty(properties, CMISMapping.PROP_NAME);
+            property = (String) PropertyUtil.getProperty(properties, CMISDictionaryModel.PROP_NAME);
         }
         else
         {
@@ -166,7 +166,7 @@ public abstract class AbstractServiceTest extends TestCase
         {
             CmisObjectType object = response.getObject();
             CmisPropertiesType properties = object.getProperties();
-            property = (String) PropertyUtil.getProperty(properties, CMISMapping.PROP_OBJECT_ID);
+            property = (String) PropertyUtil.getProperty(properties, CMISDictionaryModel.PROP_OBJECT_ID);
         }
         else
         {
@@ -180,7 +180,7 @@ public abstract class AbstractServiceTest extends TestCase
         for (CmisObjectType object : objects)
         {
             CmisPropertiesType properties = object.getProperties();
-            String name = (String) PropertyUtil.getProperty(properties, CMISMapping.PROP_NAME);
+            String name = (String) PropertyUtil.getProperty(properties, CMISDictionaryModel.PROP_NAME);
             assertNotNull(name);
         }
 

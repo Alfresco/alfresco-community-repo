@@ -27,7 +27,7 @@ package org.alfresco.repo.cmis.ws;
 import java.io.Serializable;
 import java.util.Map;
 
-import org.alfresco.cmis.CMISPropertyTypeEnum;
+import org.alfresco.cmis.CMISDataTypeEnum;
 import org.alfresco.cmis.search.CMISQueryOptions;
 import org.alfresco.cmis.search.CMISResultSet;
 import org.alfresco.cmis.search.CMISResultSetColumn;
@@ -91,41 +91,41 @@ public class DMDiscoveryServicePort extends DMAbstractServicePort implements Dis
             // for each column...
             for (CMISResultSetColumn column : columns)
             {
-                CMISPropertyTypeEnum type = column.getPropertyType();
-                if (type == CMISPropertyTypeEnum.BOOLEAN)
+                CMISDataTypeEnum type = column.getPropertyType();
+                if (type == CMISDataTypeEnum.BOOLEAN)
                 {
                     addBooleanProperty(properties, filter, column.getName(), values);
                 }
-                else if (type == CMISPropertyTypeEnum.DATETIME)
+                else if (type == CMISDataTypeEnum.DATETIME)
                 {
                     addDateTimeProperty(properties, filter, column.getName(), values);
                 }
-                else if (type == CMISPropertyTypeEnum.DECIMAL)
+                else if (type == CMISDataTypeEnum.DECIMAL)
                 {
                     addDecimalProperty(properties, filter, column.getName(), values);
                 }
-                else if (type == CMISPropertyTypeEnum.ID)
+                else if (type == CMISDataTypeEnum.ID)
                 {
                     addIDProperty(properties, filter, column.getName(), values);
                 }
-                else if (type == CMISPropertyTypeEnum.INTEGER)
+                else if (type == CMISDataTypeEnum.INTEGER)
                 {
                     addIntegerProperty(properties, filter, column.getName(), values);
                 }
-                else if (type == CMISPropertyTypeEnum.STRING)
+                else if (type == CMISDataTypeEnum.STRING)
                 {
                     addStringProperty(properties, filter, column.getName(), values);
                 }
-                else if (type == CMISPropertyTypeEnum.URI)
+                else if (type == CMISDataTypeEnum.URI)
                 {
                     addURIProperty(properties, filter, column.getName(), values);
                 }
-                else if (type == CMISPropertyTypeEnum.XML)
+                else if (type == CMISDataTypeEnum.XML)
                 {
                     // TODO:
                     throw new UnsupportedOperationException();
                 }
-                else if (type == CMISPropertyTypeEnum.HTML)
+                else if (type == CMISDataTypeEnum.HTML)
                 {
                     // TODO:
                     throw new UnsupportedOperationException();

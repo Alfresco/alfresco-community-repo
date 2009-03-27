@@ -45,7 +45,7 @@
 <link rel="cmis-parents" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/parents"/>
 <link rel="cmis-allversions" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/versions"/>
 [@linkstream node "cmis-stream"/]
-<link rel="cmis-type" href="${absurl(url.serviceContext)}/api/type/${cmistypeid(node)}"/>
+<link rel="cmis-type" href="${absurl(url.serviceContext)}/api/type/${cmistype(node).typeId.id!"unknown"}"/>
 <link rel="cmis-repository" href="[@serviceuri/]"/>
 [/#macro]
 
@@ -56,7 +56,7 @@
 
   [#assign typedef = cmistype(node)]
   [#list typedef.propertyDefinitions?values as propdef]
-    [@filter propfilter propdef.propertyName][@prop propdef.propertyName node propdef.propertyType/][/@filter]
+    [@filter propfilter propdef.propertyId.name][@prop propdef.propertyId.name node propdef.dataType/][/@filter]
   [/#list]
 </cmis:properties>
 [/#macro]
@@ -165,7 +165,7 @@
 [/#if]
 <link rel="cmis-children" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/children"/>
 <link rel="cmis-descendants" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/descendants"/>
-<link rel="cmis-type" href="${absurl(url.serviceContext)}/api/type/${cmistypeid(node)}"/>
+<link rel="cmis-type" href="${absurl(url.serviceContext)}/api/type/${cmistype(node).typeId.id!"unknown"}"/>
 <link rel="cmis-repository" href="[@serviceuri/]"/>
 [/#macro]
 
@@ -176,7 +176,7 @@
 
   [#assign typedef = cmistype(node)]
   [#list typedef.propertyDefinitions?values as propdef]
-    [@filter propfilter propdef.propertyName][@prop propdef.propertyName node propdef.propertyType/][/@filter]
+    [@filter propfilter propdef.propertyId.name][@prop propdef.propertyId.name node propdef.dataType/][/@filter]
   [/#list]
 </cmis:properties>
 [/#macro]
@@ -311,12 +311,12 @@
 [#macro typedef typedef includeProperties=true includeInheritedProperties=true ns=""]
 [@entry ns=ns]
 <author><name>${person.properties.userName}</name></author>
-<content>${typedef.objectTypeId}</content>  [#-- TODO --]
-<id>urn:uuid:type-${typedef.objectTypeId}</id>
-<link rel="self" href="${absurl(url.serviceContext)}/api/type/${typedef.objectTypeId}"/>
+<content>${typedef.typeId.id}</content>  [#-- TODO --]
+<id>urn:uuid:type-${typedef.typeId.id}</id>
+<link rel="self" href="${absurl(url.serviceContext)}/api/type/${typedef.typeId.id}"/>
 [@typedefCMISLinks typedef/]
-<summary>[#if typedef.description??]${typedef.description?xml}[#else]${typedef.objectTypeDisplayName?xml}[/#if]</summary>
-<title>${typedef.objectTypeDisplayName}</title>
+<summary>[#if typedef.description??]${typedef.description?xml}[#else]${typedef.displayName?xml}[/#if]</summary>
+<title>${typedef.displayName}</title>
 <updated>${xmldate(date)}</updated>  [#-- TODO --]
 [@typedefCMISProps typedef includeProperties/]
 <cmis:terminator/>
@@ -324,23 +324,23 @@
 [/#macro]
 
 [#macro typedefCMISLinks typedef]
-<link rel="cmis-type" href="${absurl(url.serviceContext)}/api/type/${typedef.objectTypeId}"/>
-[#if typedef.parentTypeId??]
-<link rel="cmis-parent" href="${absurl(url.serviceContext)}/api/type/${typedef.parentTypeId}"/>
+<link rel="cmis-type" href="${absurl(url.serviceContext)}/api/type/${typedef.typeId.id}"/>
+[#if typedef.parentType??]
+<link rel="cmis-parent" href="${absurl(url.serviceContext)}/api/type/${typedef.parentType.typeId.id}"/>
 [/#if]
-<link rel="cmis-children" href="${absurl(url.serviceContext)}/api/type/${typedef.objectTypeId}/children"/>
-<link rel="cmis-descendants" href="${absurl(url.serviceContext)}/api/type/${typedef.objectTypeId}/descendants"/>
+<link rel="cmis-children" href="${absurl(url.serviceContext)}/api/type/${typedef.typeId.id}/children"/>
+<link rel="cmis-descendants" href="${absurl(url.serviceContext)}/api/type/${typedef.typeId.id}/descendants"/>
 <link rel="cmis-repository" href="[@serviceuri/]"/>
 [/#macro]
 
 [#macro typedefCMISProps typedef includeProperties=true includeInheritedProperties=true]
-[#if typedef.rootTypeId.toString() = "document"]
+[#if typedef.rootType.typeId.id = "document"]
 [@documenttypedefCMISProps typedef includeProperties includeInheritedProperties/]
-[#elseif typedef.rootTypeId.toString() = "folder"]
+[#elseif typedef.rootType.typeId.id = "folder"]
 [@foldertypedefCMISProps typedef includeProperties includeInheritedProperties/]
-[#elseif typedef.rootTypeId.toString() = "relationship"]
+[#elseif typedef.rootType.typeId.id = "relationship"]
 [@relationshiptypedefCMISProps typedef includeProperties includeInheritedProperties/]
-[#elseif typedef.rootTypeId.toString() = "policy"]
+[#elseif typedef.rootType.typeId.id = "policy"]
 [@policytypedefCMISProps typedef includeProperties includeInheritedProperties/]
 [/#if]
 [/#macro]
@@ -373,125 +373,126 @@
 [/#macro]
 
 [#macro objecttypedefCMISProps typedef includeProperties=true includeInheritedProperties=true]
-  <cmis:typeId>${typedef.objectTypeId}</cmis:typeId>
-  <cmis:queryName>${typedef.objectTypeQueryName}</cmis:queryName>
-  <cmis:displayName>[#if typedef.objectTypeDisplayName??]${typedef.objectTypeDisplayName?xml}[/#if]</cmis:displayName>
-  <cmis:baseType>${typedef.rootTypeId}</cmis:baseType>  [#-- TODO: remove spec issue 36 --]
-  <cmis:baseTypeQueryName>${typedef.rootTypeQueryName}</cmis:baseTypeQueryName>
-[#if typedef.parentTypeId??]  
-  <cmis:parentId>${typedef.parentTypeId}</cmis:parentId>
+  <cmis:typeId>${typedef.typeId.id}</cmis:typeId>
+  <cmis:queryName>${typedef.queryName}</cmis:queryName>
+  <cmis:displayName>[#if typedef.displayName??]${typedef.displayName?xml}[/#if]</cmis:displayName>
+  <cmis:baseType>${typedef.rootType.typeId.id}</cmis:baseType>  [#-- TODO: remove spec issue 36 --]
+  <cmis:baseTypeQueryName>${typedef.rootType.queryName}</cmis:baseTypeQueryName>
+[#if typedef.parentType??]  
+  <cmis:parentId>${typedef.parentType.typeId.id}</cmis:parentId>
 [/#if]
   <cmis:description>[#if typedef.description??]${typedef.description?xml}[/#if]</cmis:description>
   <cmis:creatable>${typedef.creatable?string}</cmis:creatable>
   <cmis:fileable>${typedef.fileable?string}</cmis:fileable>
   <cmis:queryable>${typedef.queryable?string}</cmis:queryable>
   <cmis:controllable>${typedef.controllable?string}</cmis:controllable>
-  <cmis:includedInSupertypeQuery>${typedef.includedInSupertypeQuery?string}</cmis:includedInSupertypeQuery>
+  <cmis:includedInSupertypeQuery>${typedef.includeInSuperTypeQuery?string}</cmis:includedInSupertypeQuery>
   [#if includeProperties]
     [#list typedef.propertyDefinitions?values as propdef]
-      [#if includeInheritedProperties || !propdef.inherited]
-        [@propdefCMISProps propdef/]
+      [#assign inherited = (propdef.owningType != typedef)]
+      [#if includeInheritedProperties || !inherited]
+        [@propdefCMISProps propdef inherited/]
       [/#if]
     [/#list]
   [/#if]
 [/#macro]
 
-[#macro propdefCMISProps propdef]
-[#if propdef.propertyType == "BOOLEAN"]
-[@booleanpropdefCMISProps propdef/]
-[#elseif propdef.propertyType == "ID"]
-[@idpropdefCMISProps propdef/]
-[#elseif propdef.propertyType == "INTEGER"]
-[@integerpropdefCMISProps propdef/]
-[#elseif propdef.propertyType == "DATETIME"]
-[@datetimepropdefCMISProps propdef/]
-[#elseif propdef.propertyType == "DECIMAL"]
-[@decimalpropdefCMISProps propdef/]
-[#elseif propdef.propertyType == "HTML"]
-[@htmlpropdefCMISProps propdef/]
-[#elseif propdef.propertyType == "STRING"]
-[@stringpropdefCMISProps propdef/]
-[#elseif propdef.propertyType == "URI"]
-[@uripropdefCMISProps propdef/]
-[#elseif propdef.propertyType == "XML"]
-[@xmlpropdefCMISProps propdef/]
+[#macro propdefCMISProps propdef inherited=false]
+[#if propdef.dataType == "BOOLEAN"]
+[@booleanpropdefCMISProps propdef inherited/]
+[#elseif propdef.dataType == "ID"]
+[@idpropdefCMISProps propdef inherited/]
+[#elseif propdef.dataType == "INTEGER"]
+[@integerpropdefCMISProps propdef inherited/]
+[#elseif propdef.dataType == "DATETIME"]
+[@datetimepropdefCMISProps propdef inherited/]
+[#elseif propdef.dataType == "DECIMAL"]
+[@decimalpropdefCMISProps propdef inherited/]
+[#elseif propdef.dataType == "HTML"]
+[@htmlpropdefCMISProps propdef inherited/]
+[#elseif propdef.dataType == "STRING"]
+[@stringpropdefCMISProps propdef inherited/]
+[#elseif propdef.dataType == "URI"]
+[@uripropdefCMISProps propdef inherited/]
+[#elseif propdef.dataType == "XML"]
+[@xmlpropdefCMISProps propdef inherited/]
 [/#if]
 [/#macro]
 
-[#macro booleanpropdefCMISProps propdef]
+[#macro booleanpropdefCMISProps propdef inherited=false]
 <cmis:propertyBooleanDefinition>
-[@abstractpropdefCMISProps propdef/]
+[@abstractpropdefCMISProps propdef inherited/]
 </cmis:propertyBooleanDefinition>
 [/#macro]
 
-[#macro idpropdefCMISProps propdef]
+[#macro idpropdefCMISProps propdef inherited=false]
 <cmis:propertyIdDefinition>
-[@abstractpropdefCMISProps propdef/]
+[@abstractpropdefCMISProps propdef inherited/]
 </cmis:propertyIdDefinition>
 [/#macro]
 
-[#macro integerpropdefCMISProps propdef]
+[#macro integerpropdefCMISProps propdef inherited=false]
 <cmis:propertyIntegerDefinition>
-[@abstractpropdefCMISProps propdef/]
+[@abstractpropdefCMISProps propdef inherited/]
 [#-- TODO: minValue, maxValue --]
 </cmis:propertyIntegerDefinition>
 [/#macro]
 
-[#macro datetimepropdefCMISProps propdef]
+[#macro datetimepropdefCMISProps propdef inherited=false]
 <cmis:propertyDateTimeDefinition>
-[@abstractpropdefCMISProps propdef/]
+[@abstractpropdefCMISProps propdef inherited/]
 </cmis:propertyDateTimeDefinition>
 [/#macro]
 
-[#macro decimalpropdefCMISProps propdef]
+[#macro decimalpropdefCMISProps propdef inherited=false]
 <cmis:propertyDecimalDefinition>
-[@abstractpropdefCMISProps propdef/]
+[@abstractpropdefCMISProps propdef inherited/]
 </cmis:propertyDecimalDefinition>
 [/#macro]
 
-[#macro htmlpropdefCMISProps propdef]
+[#macro htmlpropdefCMISProps propdef inherited=false]
 <cmis:propertyHtmlDefinition>
-[@abstractpropdefCMISProps propdef/]
+[@abstractpropdefCMISProps propdef inherited/]
 </cmis:propertyHtmlDefinition>
 [/#macro]
 
-[#macro stringpropdefCMISProps propdef]
+[#macro stringpropdefCMISProps propdef inherited=false]
 <cmis:propertyStringDefinition>
-[@abstractpropdefCMISProps propdef/]
+[@abstractpropdefCMISProps propdef inherited/]
 [#if propdef.maximumLength != -1]
 <cmis:maxLength>${propdef.maximumLength}</cmis:maxLength>
 [/#if]
 </cmis:propertyStringDefinition>
 [/#macro]
 
-[#macro uripropdefCMISProps propdef]
+[#macro uripropdefCMISProps propdef inherited=false]
 <cmis:propertyUriDefinition>
-[@abstractpropdefCMISProps propdef/]
+[@abstractpropdefCMISProps propdef inherited/]
 </cmis:propertyUriDefinition>
 [/#macro]
 
-[#macro xmlpropdefCMISProps propdef]
+[#macro xmlpropdefCMISProps propdef inherited=false]
 <cmis:propertyXmlDefinition>
-[@abstractpropdefCMISProps propdef/]
+[@abstractpropdefCMISProps propdef inherited/]
 [#-- TODO: scheme, uri --]
 </cmis:propertyXmlDefinition>
 [/#macro]
 
-[#macro abstractpropdefCMISProps propdef]
-  <cmis:name>${propdef.propertyName}</cmis:name>
+[#macro abstractpropdefCMISProps propdef inherited=false]
+  <cmis:name>${propdef.propertyId.name}</cmis:name>
   <cmis:id>${propdef.propertyId}</cmis:id>
   <cmis:displayName>[#if propdef.displayName??]${propdef.displayName?xml}[/#if]</cmis:displayName>
 [#if propdef.description??]
   <cmis:description>${propdef.description?xml}</cmis:description>
 [/#if]
-  <cmis:propertyType>${propdef.propertyType.label}</cmis:propertyType>
+  <cmis:propertyType>${propdef.dataType.label}</cmis:propertyType>
   <cmis:cardinality>${propdef.cardinality.label}</cmis:cardinality>
   <cmis:updateability>${propdef.updatability.label}</cmis:updateability>
-  <cmis:inherited>${propdef.inherited?string}</cmis:inherited>
+  <cmis:inherited>${inherited?string}</cmis:inherited>
   <cmis:required>${propdef.required?string}</cmis:required>
   <cmis:queryable>${propdef.queryable?string}</cmis:queryable>
   <cmis:orderable>${propdef.orderable?string}</cmis:orderable>
-  [@cmisChoices propdef.choices propdef.propertyType/]
+  [@cmisChoices propdef.choices propdef.dataType/]
   <cmis:openChoice>${propdef.openChoice?string}</cmis:openChoice>
 [#if propdef.defaultValue??]
   [#-- TODO: defaults for HTML and XML property types --]

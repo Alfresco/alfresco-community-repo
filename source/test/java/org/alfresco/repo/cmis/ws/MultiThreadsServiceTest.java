@@ -28,7 +28,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
-import org.alfresco.cmis.dictionary.CMISMapping;
+import org.alfresco.cmis.dictionary.CMISDictionaryModel;
 
 public class MultiThreadsServiceTest extends AbstractServiceTest
 {
@@ -97,7 +97,7 @@ public class MultiThreadsServiceTest extends AbstractServiceTest
 
             GetPropertiesResponse propertiesResponse;
             propertiesResponse = helper.getObjectProperties(documentId);
-            assertEquals(lastName, getPropertyValue(propertiesResponse, CMISMapping.PROP_NAME));
+            assertEquals(lastName, getPropertyValue(propertiesResponse, CMISDictionaryModel.PROP_NAME));
         }
     }
 
@@ -171,7 +171,7 @@ public class MultiThreadsServiceTest extends AbstractServiceTest
             try
             {
                 String newName = "New Name" + System.currentTimeMillis() + generator.nextDouble();
-                helper.updateProperty(documentId, CMISMapping.PROP_NAME, newName);
+                helper.updateProperty(documentId, CMISDictionaryModel.PROP_NAME, newName);
                 lastName = newName;
             }
             catch (Exception e)

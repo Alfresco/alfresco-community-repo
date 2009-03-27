@@ -40,8 +40,11 @@ import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.alfresco.cmis.CMISService;
+import org.alfresco.cmis.dictionary.CMISDictionaryModel;
 import org.alfresco.cmis.dictionary.CMISDictionaryService;
-import org.alfresco.cmis.dictionary.CMISMapping;
+import org.alfresco.cmis.dictionary.CMISScope;
+import org.alfresco.cmis.dictionary.CMISTypeDefinition;
+import org.alfresco.cmis.dictionary.CMISTypeId;
 import org.alfresco.cmis.property.CMISPropertyService;
 import org.alfresco.cmis.search.CMISQueryService;
 import org.alfresco.model.ContentModel;
@@ -63,7 +66,6 @@ import org.alfresco.service.cmr.version.VersionHistory;
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.cmr.version.VersionType;
 import org.alfresco.service.descriptor.DescriptorService;
-import org.alfresco.service.namespace.QName;
 
 /**
  * Base class for all CMIS web services
@@ -282,58 +284,57 @@ public class DMAbstractServicePort
 
     protected CmisPropertiesType getPropertiesType(Map<String, Serializable> alfrescoProperties, PropertyFilter filter)
     {
-        CMISMapping cmisMapping = cmisDictionaryService.getCMISMapping();
-        String objectTypeId = (String) alfrescoProperties.get(CMISMapping.PROP_OBJECT_TYPE_ID);
-        QName cmisType = cmisMapping.getCmisTypeId(objectTypeId).getQName();
+        String objectTypeId = (String) alfrescoProperties.get(CMISDictionaryModel.PROP_OBJECT_TYPE_ID);
+        CMISTypeId cmisTypeId = cmisDictionaryService.getTypeId(objectTypeId);
 
         CmisPropertiesType properties = new CmisPropertiesType();
 
-        if (cmisMapping.isValidCmisDocument(cmisType))
+        if (cmisTypeId.getScope() == CMISScope.DOCUMENT)
         {
-            addBooleanProperty(properties, filter, CMISMapping.PROP_IS_IMMUTABLE, alfrescoProperties);
-            addBooleanProperty(properties, filter, CMISMapping.PROP_IS_LATEST_VERSION, alfrescoProperties);
-            addBooleanProperty(properties, filter, CMISMapping.PROP_IS_MAJOR_VERSION, alfrescoProperties);
-            addBooleanProperty(properties, filter, CMISMapping.PROP_IS_LATEST_MAJOR_VERSION, alfrescoProperties);
-            addBooleanProperty(properties, filter, CMISMapping.PROP_IS_VERSION_SERIES_CHECKED_OUT, alfrescoProperties);
-            addDateTimeProperty(properties, filter, CMISMapping.PROP_CREATION_DATE, alfrescoProperties);
-            addDateTimeProperty(properties, filter, CMISMapping.PROP_LAST_MODIFICATION_DATE, alfrescoProperties);
-            addIDProperty(properties, filter, CMISMapping.PROP_OBJECT_ID, alfrescoProperties);
-            addIDProperty(properties, filter, CMISMapping.PROP_VERSION_SERIES_ID, alfrescoProperties);
-            addIDProperty(properties, filter, CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_ID, alfrescoProperties);
-            addIntegerProperty(properties, filter, CMISMapping.PROP_CONTENT_STREAM_LENGTH, alfrescoProperties);
-            addStringProperty(properties, filter, CMISMapping.PROP_NAME, alfrescoProperties);
+            addBooleanProperty(properties, filter, CMISDictionaryModel.PROP_IS_IMMUTABLE, alfrescoProperties);
+            addBooleanProperty(properties, filter, CMISDictionaryModel.PROP_IS_LATEST_VERSION, alfrescoProperties);
+            addBooleanProperty(properties, filter, CMISDictionaryModel.PROP_IS_MAJOR_VERSION, alfrescoProperties);
+            addBooleanProperty(properties, filter, CMISDictionaryModel.PROP_IS_LATEST_MAJOR_VERSION, alfrescoProperties);
+            addBooleanProperty(properties, filter, CMISDictionaryModel.PROP_IS_VERSION_SERIES_CHECKED_OUT, alfrescoProperties);
+            addDateTimeProperty(properties, filter, CMISDictionaryModel.PROP_CREATION_DATE, alfrescoProperties);
+            addDateTimeProperty(properties, filter, CMISDictionaryModel.PROP_LAST_MODIFICATION_DATE, alfrescoProperties);
+            addIDProperty(properties, filter, CMISDictionaryModel.PROP_OBJECT_ID, alfrescoProperties);
+            addIDProperty(properties, filter, CMISDictionaryModel.PROP_VERSION_SERIES_ID, alfrescoProperties);
+            addIDProperty(properties, filter, CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_ID, alfrescoProperties);
+            addIntegerProperty(properties, filter, CMISDictionaryModel.PROP_CONTENT_STREAM_LENGTH, alfrescoProperties);
+            addStringProperty(properties, filter, CMISDictionaryModel.PROP_NAME, alfrescoProperties);
             addStringProperty(properties, filter, BASE_TYPE_PROPERTY_NAME, "document");
-            addStringProperty(properties, filter, CMISMapping.PROP_OBJECT_TYPE_ID, alfrescoProperties);
-            addStringProperty(properties, filter, CMISMapping.PROP_CREATED_BY, alfrescoProperties);
-            addStringProperty(properties, filter, CMISMapping.PROP_LAST_MODIFIED_BY, alfrescoProperties);
-            addStringProperty(properties, filter, CMISMapping.PROP_CONTENT_STREAM_MIME_TYPE, alfrescoProperties);
-            addStringProperty(properties, filter, CMISMapping.PROP_CONTENT_STREAM_FILENAME, alfrescoProperties);
-            addStringProperty(properties, filter, CMISMapping.PROP_VERSION_LABEL, alfrescoProperties);
-            addStringProperty(properties, filter, CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_BY, alfrescoProperties);
-            addStringProperty(properties, filter, CMISMapping.PROP_CHECKIN_COMMENT, alfrescoProperties);
-            addURIProperty(properties, filter, CMISMapping.PROP_CONTENT_STREAM_URI, alfrescoProperties);
+            addStringProperty(properties, filter, CMISDictionaryModel.PROP_OBJECT_TYPE_ID, alfrescoProperties);
+            addStringProperty(properties, filter, CMISDictionaryModel.PROP_CREATED_BY, alfrescoProperties);
+            addStringProperty(properties, filter, CMISDictionaryModel.PROP_LAST_MODIFIED_BY, alfrescoProperties);
+            addStringProperty(properties, filter, CMISDictionaryModel.PROP_CONTENT_STREAM_MIME_TYPE, alfrescoProperties);
+            addStringProperty(properties, filter, CMISDictionaryModel.PROP_CONTENT_STREAM_FILENAME, alfrescoProperties);
+            addStringProperty(properties, filter, CMISDictionaryModel.PROP_VERSION_LABEL, alfrescoProperties);
+            addStringProperty(properties, filter, CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_BY, alfrescoProperties);
+            addStringProperty(properties, filter, CMISDictionaryModel.PROP_CHECKIN_COMMENT, alfrescoProperties);
+            addURIProperty(properties, filter, CMISDictionaryModel.PROP_CONTENT_STREAM_URI, alfrescoProperties);
         }
-        else if (cmisMapping.isValidCmisFolder(cmisType))
+        else if (cmisTypeId.getScope() == CMISScope.FOLDER)
         {
-            addDateTimeProperty(properties, filter, CMISMapping.PROP_CREATION_DATE, alfrescoProperties);
-            addDateTimeProperty(properties, filter, CMISMapping.PROP_LAST_MODIFICATION_DATE, alfrescoProperties);
-            addIDProperty(properties, filter, CMISMapping.PROP_OBJECT_ID, alfrescoProperties);
-            addIDProperty(properties, filter, CMISMapping.PROP_PARENT_ID, alfrescoProperties);
-            addStringProperty(properties, filter, CMISMapping.PROP_NAME, alfrescoProperties);
+            addDateTimeProperty(properties, filter, CMISDictionaryModel.PROP_CREATION_DATE, alfrescoProperties);
+            addDateTimeProperty(properties, filter, CMISDictionaryModel.PROP_LAST_MODIFICATION_DATE, alfrescoProperties);
+            addIDProperty(properties, filter, CMISDictionaryModel.PROP_OBJECT_ID, alfrescoProperties);
+            addIDProperty(properties, filter, CMISDictionaryModel.PROP_PARENT_ID, alfrescoProperties);
+            addStringProperty(properties, filter, CMISDictionaryModel.PROP_NAME, alfrescoProperties);
             addStringProperty(properties, filter, BASE_TYPE_PROPERTY_NAME, "folder");
-            addStringProperty(properties, filter, CMISMapping.PROP_OBJECT_TYPE_ID, alfrescoProperties);
-            addStringProperty(properties, filter, CMISMapping.PROP_CREATED_BY, alfrescoProperties);
-            addStringProperty(properties, filter, CMISMapping.PROP_LAST_MODIFIED_BY, alfrescoProperties);
+            addStringProperty(properties, filter, CMISDictionaryModel.PROP_OBJECT_TYPE_ID, alfrescoProperties);
+            addStringProperty(properties, filter, CMISDictionaryModel.PROP_CREATED_BY, alfrescoProperties);
+            addStringProperty(properties, filter, CMISDictionaryModel.PROP_LAST_MODIFIED_BY, alfrescoProperties);
         }
-        else if (cmisMapping.isValidCmisRelationship(cmisType))
+        else if (cmisTypeId.getScope() == CMISScope.RELATIONSHIP)
         {
-            addStringProperty(properties, filter, CMISMapping.PROP_OBJECT_TYPE_ID, alfrescoProperties);
-            addIDProperty(properties, filter, CMISMapping.PROP_OBJECT_ID, alfrescoProperties);
+            addStringProperty(properties, filter, CMISDictionaryModel.PROP_OBJECT_TYPE_ID, alfrescoProperties);
+            addIDProperty(properties, filter, CMISDictionaryModel.PROP_OBJECT_ID, alfrescoProperties);
             addStringProperty(properties, filter, BASE_TYPE_PROPERTY_NAME, alfrescoProperties);
-            addStringProperty(properties, filter, CMISMapping.PROP_CREATED_BY, alfrescoProperties);
-            addDateTimeProperty(properties, filter, CMISMapping.PROP_CREATION_DATE, alfrescoProperties);
-            addIDProperty(properties, filter, CMISMapping.PROP_SOURCE_ID, alfrescoProperties);
-            addIDProperty(properties, filter, CMISMapping.PROP_TARGET_ID, alfrescoProperties);
+            addStringProperty(properties, filter, CMISDictionaryModel.PROP_CREATED_BY, alfrescoProperties);
+            addDateTimeProperty(properties, filter, CMISDictionaryModel.PROP_CREATION_DATE, alfrescoProperties);
+            addIDProperty(properties, filter, CMISDictionaryModel.PROP_SOURCE_ID, alfrescoProperties);
+            addIDProperty(properties, filter, CMISDictionaryModel.PROP_TARGET_ID, alfrescoProperties);
         }
 
         return properties;
@@ -342,13 +343,13 @@ public class DMAbstractServicePort
     private Map<String, Serializable> createBaseRelationshipProperties(AssociationRef association)
     {
         Map<String, Serializable> result = new HashMap<String, Serializable>();
-        result.put(CMISMapping.PROP_OBJECT_TYPE_ID, cmisDictionaryService.getCMISMapping().getCmisType(association.getTypeQName()));
-        result.put(CMISMapping.PROP_OBJECT_ID, association.toString());
-        result.put(BASE_TYPE_PROPERTY_NAME, CMISMapping.RELATIONSHIP_TYPE_ID.getTypeId());
-        result.put(CMISMapping.PROP_CREATED_BY, AuthenticationUtil.getFullyAuthenticatedUser());
-        result.put(CMISMapping.PROP_CREATION_DATE, new Date());
-        result.put(CMISMapping.PROP_SOURCE_ID, association.getSourceRef());
-        result.put(CMISMapping.PROP_TARGET_ID, association.getTargetRef());
+        result.put(CMISDictionaryModel.PROP_OBJECT_TYPE_ID, cmisDictionaryService.getTypeId(association.getTypeQName(), CMISScope.RELATIONSHIP));
+        result.put(CMISDictionaryModel.PROP_OBJECT_ID, association.toString());
+        result.put(BASE_TYPE_PROPERTY_NAME, CMISDictionaryModel.RELATIONSHIP_TYPE_ID.getId());
+        result.put(CMISDictionaryModel.PROP_CREATED_BY, AuthenticationUtil.getFullyAuthenticatedUser());
+        result.put(CMISDictionaryModel.PROP_CREATION_DATE, new Date());
+        result.put(CMISDictionaryModel.PROP_SOURCE_ID, association.getSourceRef());
+        result.put(CMISDictionaryModel.PROP_TARGET_ID, association.getTargetRef());
         return result;
     }
 
@@ -570,7 +571,7 @@ public class DMAbstractServicePort
     {
         // TODO: properties setting
 
-        String name = (String) PropertyUtil.getProperty(properties, CMISMapping.PROP_NAME);
+        String name = (String) PropertyUtil.getProperty(properties, CMISDictionaryModel.PROP_NAME);
         if (name != null)
         {
             nodeService.setProperty(nodeRef, ContentModel.PROP_NAME, name);
@@ -622,5 +623,30 @@ public class DMAbstractServicePort
         }
         return checkOutCheckInService.checkout(documentNodeReference);
     }
-    
+
+    protected CMISTypeId getCmisTypeId(String typeId) throws InvalidArgumentException
+    {
+        try
+        {
+            return cmisDictionaryService.getTypeId(typeId);
+        }
+        catch (Exception e)
+        {
+            throw new InvalidArgumentException("Invalid typeId " + typeId);
+        }
+    }
+
+    protected CMISTypeDefinition getCmisTypeDefinition(String typeId) throws InvalidArgumentException
+    {
+        try
+        {
+            CMISTypeId cmisTypeId = cmisDictionaryService.getTypeId(typeId);
+            return cmisDictionaryService.getType(cmisTypeId);
+        }
+        catch (Exception e)
+        {
+            throw new InvalidArgumentException("Invalid typeId " + typeId);
+        }
+    }
+
 }

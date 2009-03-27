@@ -30,6 +30,7 @@ import java.util.List;
 import javax.activation.DataHandler;
 import javax.xml.ws.Holder;
 
+import org.alfresco.cmis.dictionary.CMISDictionaryModel;
 import org.alfresco.cmis.dictionary.CMISMapping;
 import org.alfresco.repo.content.MimetypeMap;
 
@@ -81,7 +82,7 @@ public class DMObjectServiceTest extends AbstractServiceTest
         CmisPropertiesType properties = new CmisPropertiesType();
         List<CmisProperty> propertiesList = properties.getProperty();
         CmisPropertyString cmisProperty = new CmisPropertyString();
-        cmisProperty.setName(CMISMapping.PROP_NAME);
+        cmisProperty.setName(CMISDictionaryModel.PROP_NAME);
         cmisProperty.setValue(documentName);
         propertiesList.add(cmisProperty);
 
@@ -98,17 +99,17 @@ public class DMObjectServiceTest extends AbstractServiceTest
         String documentId;
         // MAJOR
         documentName = "Test cmis document (" + System.currentTimeMillis() + ")";
-        documentId = helper.createDocument(documentName, folderId, CMISMapping.DOCUMENT_TYPE_ID, EnumVersioningState.MAJOR);
+        documentId = helper.createDocument(documentName, folderId, CMISDictionaryModel.DOCUMENT_TYPE_ID, EnumVersioningState.MAJOR);
         propertiesResponse = helper.getObjectProperties(documentId);
         // assertTrue(getPropertyBooleanValue(propertiesResponse, CMISMapping.PROP_IS_MAJOR_VERSION));
-        assertFalse(getPropertyBooleanValue(propertiesResponse, CMISMapping.PROP_IS_VERSION_SERIES_CHECKED_OUT));
+        assertFalse(getPropertyBooleanValue(propertiesResponse, CMISDictionaryModel.PROP_IS_VERSION_SERIES_CHECKED_OUT));
         helper.deleteDocument(documentId);
 
         // MINOR
         documentName = "Test cmis document (" + System.currentTimeMillis() + ")";
-        documentId = helper.createDocument(documentName, folderId, CMISMapping.DOCUMENT_TYPE_ID, EnumVersioningState.MINOR);
+        documentId = helper.createDocument(documentName, folderId, CMISDictionaryModel.DOCUMENT_TYPE_ID, EnumVersioningState.MINOR);
         propertiesResponse = helper.getObjectProperties(documentId);
-        assertFalse(getPropertyBooleanValue(propertiesResponse, CMISMapping.PROP_IS_VERSION_SERIES_CHECKED_OUT));
+        assertFalse(getPropertyBooleanValue(propertiesResponse, CMISDictionaryModel.PROP_IS_VERSION_SERIES_CHECKED_OUT));
         // assertTrue(getPropertyBooleanValue(propertiesResponse, CMISMapping.PROP_IS_MAJOR_VERSION));
         helper.deleteDocument(documentId);
 
@@ -118,17 +119,17 @@ public class DMObjectServiceTest extends AbstractServiceTest
     {
         // CHECKEDOUT
         documentName = "Test cmis document (" + System.currentTimeMillis() + ")";
-        String documentId = helper.createDocument(documentName, folderId, CMISMapping.DOCUMENT_TYPE_ID, EnumVersioningState.CHECKEDOUT);
+        String documentId = helper.createDocument(documentName, folderId, CMISDictionaryModel.DOCUMENT_TYPE_ID, EnumVersioningState.CHECKEDOUT);
         propertiesResponse = helper.getObjectProperties(documentId);
-        assertNotNull(getPropertyValue(propertiesResponse, CMISMapping.PROP_VERSION_SERIES_ID));
+        assertNotNull(getPropertyValue(propertiesResponse, CMISDictionaryModel.PROP_VERSION_SERIES_ID));
         // Bug
-        assertTrue(getPropertyBooleanValue(propertiesResponse, CMISMapping.PROP_IS_VERSION_SERIES_CHECKED_OUT));
-        assertNotNull(getPropertyValue(propertiesResponse, CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_BY));
-        assertTrue(getPropertyValue(propertiesResponse, CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_ID).equals(documentId));
+        assertTrue(getPropertyBooleanValue(propertiesResponse, CMISDictionaryModel.PROP_IS_VERSION_SERIES_CHECKED_OUT));
+        assertNotNull(getPropertyValue(propertiesResponse, CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_BY));
+        assertTrue(getPropertyValue(propertiesResponse, CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_ID).equals(documentId));
 
         Holder<String> documentIdHolder = new Holder<String>(documentId);
         helper.checkIn(documentIdHolder, "checkin Comment", true);
-        assertTrue(getPropertyValue(propertiesResponse, CMISMapping.PROP_VERSION_LABEL).equals("1.0"));
+        assertTrue(getPropertyValue(propertiesResponse, CMISDictionaryModel.PROP_VERSION_LABEL).equals("1.0"));
 
         // documentId = (String) PropertyUtil.getProperty(response.getObject().iterator().next().getProperties(), CMISMapping.PROP_OBJECT_ID);
         // deleteDocument(documentId);
@@ -140,7 +141,7 @@ public class DMObjectServiceTest extends AbstractServiceTest
         try
         {
             documentName = "Test cmis document (" + System.currentTimeMillis() + ")";
-            documentId = helper.createDocument(documentName, null, CMISMapping.DOCUMENT_TYPE_ID, EnumVersioningState.MAJOR);
+            documentId = helper.createDocument(documentName, null, CMISDictionaryModel.DOCUMENT_TYPE_ID, EnumVersioningState.MAJOR);
             fail();
         }
         catch (FolderNotValidException e)
@@ -158,11 +159,11 @@ public class DMObjectServiceTest extends AbstractServiceTest
     {
         String folderId1;
         folderName = "Test Cmis Folder (" + System.currentTimeMillis() + ")" + "testCreateFolder";
-        folderId1 = helper.createFolder(folderName, folderId, CMISMapping.FOLDER_TYPE_ID);
+        folderId1 = helper.createFolder(folderName, folderId, CMISDictionaryModel.FOLDER_TYPE_ID);
 
         propertiesResponse = helper.getObjectProperties(folderId1);
-        assertNotNull(getPropertyValue(propertiesResponse, CMISMapping.PROP_NAME));
-        assertNotNull(getPropertyValue(propertiesResponse, CMISMapping.PROP_PARENT_ID));
+        assertNotNull(getPropertyValue(propertiesResponse, CMISDictionaryModel.PROP_NAME));
+        assertNotNull(getPropertyValue(propertiesResponse, CMISDictionaryModel.PROP_PARENT_ID));
 
         helper.deleteFolder(folderId1);
     }
@@ -172,10 +173,10 @@ public class DMObjectServiceTest extends AbstractServiceTest
         String filter;
         filter = "*";
         propertiesResponse = helper.getObjectProperties(documentId, filter);
-        assertNotNull(getPropertyValue(propertiesResponse, CMISMapping.PROP_NAME));
-        assertNotNull(getPropertyValue(propertiesResponse, CMISMapping.PROP_CONTENT_STREAM_FILENAME));
-        assertNotNull(getPropertyValue(propertiesResponse, CMISMapping.PROP_CONTENT_STREAM_MIME_TYPE));
-        assertTrue(getPropertyBooleanValue(propertiesResponse, CMISMapping.PROP_IS_LATEST_VERSION));
+        assertNotNull(getPropertyValue(propertiesResponse, CMISDictionaryModel.PROP_NAME));
+        assertNotNull(getPropertyValue(propertiesResponse, CMISDictionaryModel.PROP_CONTENT_STREAM_FILENAME));
+        assertNotNull(getPropertyValue(propertiesResponse, CMISDictionaryModel.PROP_CONTENT_STREAM_MIME_TYPE));
+        assertTrue(getPropertyBooleanValue(propertiesResponse, CMISDictionaryModel.PROP_IS_LATEST_VERSION));
 
         // A property filter is a string that contains either ‘*’ (to return all properties) or a comma-separated list of property names (to return selected properties). An
         // arbitrary number of spaces are allowed before or after each comma.
@@ -198,21 +199,21 @@ public class DMObjectServiceTest extends AbstractServiceTest
         helper.checkOut(documentIdHolder, contentCopied);
         // new version of doc
         response = helper.getObjectProperties(documentIdHolder.value);
-        assertNotNull(getPropertyValue(response, CMISMapping.PROP_NAME));
-        assertNotNull(getPropertyValue(response, CMISMapping.PROP_CONTENT_STREAM_FILENAME));
-        assertNotNull(getPropertyValue(response, CMISMapping.PROP_CONTENT_STREAM_MIME_TYPE));
-        assertTrue(getPropertyBooleanValue(response, CMISMapping.PROP_IS_VERSION_SERIES_CHECKED_OUT));
-        assertNotNull(getPropertyValue(response, CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_BY));
+        assertNotNull(getPropertyValue(response, CMISDictionaryModel.PROP_NAME));
+        assertNotNull(getPropertyValue(response, CMISDictionaryModel.PROP_CONTENT_STREAM_FILENAME));
+        assertNotNull(getPropertyValue(response, CMISDictionaryModel.PROP_CONTENT_STREAM_MIME_TYPE));
+        assertTrue(getPropertyBooleanValue(response, CMISDictionaryModel.PROP_IS_VERSION_SERIES_CHECKED_OUT));
+        assertNotNull(getPropertyValue(response, CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_BY));
 
         helper.checkIn(documentIdHolder, checkinComment, true);
 
         response = helper.getObjectProperties(documentId);
-        assertNotNull(getPropertyValue(response, CMISMapping.PROP_NAME));
-        assertNotNull(getPropertyValue(response, CMISMapping.PROP_CONTENT_STREAM_FILENAME));
-        assertNotNull(getPropertyValue(response, CMISMapping.PROP_CONTENT_STREAM_MIME_TYPE));
-        assertTrue(getPropertyBooleanValue(response, CMISMapping.PROP_IS_LATEST_VERSION));
-        assertTrue(getPropertyBooleanValue(response, CMISMapping.PROP_IS_LATEST_MAJOR_VERSION));
-        assertTrue(getPropertyBooleanValue(response, CMISMapping.PROP_IS_MAJOR_VERSION));
+        assertNotNull(getPropertyValue(response, CMISDictionaryModel.PROP_NAME));
+        assertNotNull(getPropertyValue(response, CMISDictionaryModel.PROP_CONTENT_STREAM_FILENAME));
+        assertNotNull(getPropertyValue(response, CMISDictionaryModel.PROP_CONTENT_STREAM_MIME_TYPE));
+        assertTrue(getPropertyBooleanValue(response, CMISDictionaryModel.PROP_IS_LATEST_VERSION));
+        assertTrue(getPropertyBooleanValue(response, CMISDictionaryModel.PROP_IS_LATEST_MAJOR_VERSION));
+        assertTrue(getPropertyBooleanValue(response, CMISDictionaryModel.PROP_IS_MAJOR_VERSION));
 
         // Returns the list of all document versions for the specified version series, sorted by CREATION_DATE descending.
         GetAllVersionsResponse responseVersions = helper.getAllVersions(documentId);
@@ -220,9 +221,9 @@ public class DMObjectServiceTest extends AbstractServiceTest
         // Last version
 
         assertEquals(3, responseVersions.getObject().size());
-        assertTrue("Initial version was not returned", isExistItemWithProperty(responseVersions.getObject(), CMISMapping.PROP_VERSION_LABEL, "1.0"));
-        assertTrue("Invalid response ordering: First object is not latest version", (Boolean) PropertyUtil.getProperty(responseVersions.getObject().get(0).getProperties(), CMISMapping.PROP_IS_LATEST_VERSION));
-        assertTrue("Invalid response ordering: Second object is not head version", (Boolean) PropertyUtil.getProperty(responseVersions.getObject().get(1).getProperties(), CMISMapping.PROP_IS_LATEST_VERSION));
+        assertTrue("Initial version was not returned", isExistItemWithProperty(responseVersions.getObject(), CMISDictionaryModel.PROP_VERSION_LABEL, "1.0"));
+        assertTrue("Invalid response ordering: First object is not latest version", (Boolean) PropertyUtil.getProperty(responseVersions.getObject().get(0).getProperties(), CMISDictionaryModel.PROP_IS_LATEST_VERSION));
+        assertTrue("Invalid response ordering: Second object is not head version", (Boolean) PropertyUtil.getProperty(responseVersions.getObject().get(1).getProperties(), CMISDictionaryModel.PROP_IS_LATEST_VERSION));
     }
 
     // This test don't asserts until CMIS setProperty()/setProperties() logic is unimplemented
@@ -315,7 +316,7 @@ public class DMObjectServiceTest extends AbstractServiceTest
         List<CmisProperty> propertiesList = properties.getProperty();
 
         CmisPropertyString cmisProperty = new CmisPropertyString();
-        cmisProperty.setName(CMISMapping.PROP_NAME);
+        cmisProperty.setName(CMISDictionaryModel.PROP_NAME);
         cmisProperty.setPropertyType(EnumPropertyType.STRING);
         cmisProperty.setIndex(BigInteger.valueOf(1));
         cmisProperty.setValue("Cmis Test Policy");
@@ -544,11 +545,11 @@ public class DMObjectServiceTest extends AbstractServiceTest
         CmisObjectType objectType = response.getObject();
 
         assertNotNull(objectType);
-        assertNotNull(getPropertyValue(response, CMISMapping.PROP_NAME));
+        assertNotNull(getPropertyValue(response, CMISDictionaryModel.PROP_NAME));
 
         GetObjectParentsResponse parentsResponse = helper.getObjectParents(documentId, "*");
         assertTrue(parentsResponse.getObject().size() == 1);
-        assertTrue(PropertyUtil.getProperty(parentsResponse.getObject().get(0).getProperties(), CMISMapping.PROP_NAME).equals(folderName));
+        assertTrue(PropertyUtil.getProperty(parentsResponse.getObject().get(0).getProperties(), CMISDictionaryModel.PROP_NAME).equals(folderName));
 
     }
 
@@ -604,7 +605,7 @@ public class DMObjectServiceTest extends AbstractServiceTest
 
         // Alfresco create new version of document
         propertiesResponse = helper.getObjectProperties(documentIdHolder.value);
-        assertFalse("new version of document should be created", getPropertyValue(propertiesResponse, CMISMapping.PROP_OBJECT_ID).equals(documentId));
+        assertFalse("new version of document should be created", getPropertyValue(propertiesResponse, CMISDictionaryModel.PROP_OBJECT_ID).equals(documentId));
         GetAllVersionsResponse responseVersions = helper.getAllVersions(documentId);
         assertTrue("new version of document should be created", responseVersions.getObject().size() > 1);
 
@@ -644,7 +645,7 @@ public class DMObjectServiceTest extends AbstractServiceTest
 
         // now we can not set any property (beside name) when we create new document - so this case not working
         propertiesResponse = helper.getObjectProperties(documentId);
-        Boolean contentStreamAllowed = getPropertyBooleanValue(propertiesResponse, CMISMapping.PROP_CONTENT_STREAM_ALLOWED);
+        Boolean contentStreamAllowed = getPropertyBooleanValue(propertiesResponse, CMISDictionaryModel.PROP_CONTENT_STREAM_ALLOWED);
         if (contentStreamAllowed != null && contentStreamAllowed == false)
         {
             try
@@ -675,7 +676,7 @@ public class DMObjectServiceTest extends AbstractServiceTest
         CmisPropertiesType properties = new CmisPropertiesType();
         List<CmisProperty> propertiesList = properties.getProperty();
         CmisPropertyString cmisProperty = new CmisPropertyString();
-        cmisProperty.setName(CMISMapping.PROP_NAME);
+        cmisProperty.setName(CMISDictionaryModel.PROP_NAME);
         cmisProperty.setValue(newName);
         propertiesList.add(cmisProperty);
 
@@ -695,7 +696,7 @@ public class DMObjectServiceTest extends AbstractServiceTest
         properties = new CmisPropertiesType();
         List<CmisProperty> propertiesList = properties.getProperty();
         CmisPropertyString cmisProperty = new CmisPropertyString();
-        cmisProperty.setName(CMISMapping.PROP_OBJECT_ID);
+        cmisProperty.setName(CMISDictionaryModel.PROP_OBJECT_ID);
         cmisProperty.setValue("new id value");
         propertiesList.add(cmisProperty);
 

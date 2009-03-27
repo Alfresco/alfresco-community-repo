@@ -44,7 +44,7 @@ import javax.xml.ws.Service;
 
 import junit.framework.TestCase;
 
-import org.alfresco.cmis.dictionary.CMISMapping;
+import org.alfresco.cmis.dictionary.CMISDictionaryModel;
 import org.alfresco.cmis.dictionary.CMISTypeId;
 import org.alfresco.repo.content.MimetypeMap;
 import org.apache.cxf.binding.soap.saaj.SAAJOutInterceptor;
@@ -194,7 +194,7 @@ public class CmisServiceTestHelper extends TestCase
         CmisPropertiesType properties = new CmisPropertiesType();
         List<CmisProperty> propertiesList = properties.getProperty();
         CmisPropertyString cmisProperty = new CmisPropertyString();
-        cmisProperty.setName(CMISMapping.PROP_NAME);
+        cmisProperty.setName(CMISDictionaryModel.PROP_NAME);
         cmisProperty.setValue(name);
         propertiesList.add(cmisProperty);
 
@@ -207,7 +207,7 @@ public class CmisServiceTestHelper extends TestCase
 
         // public String createDocument(String repositoryId, String typeId, CmisPropertiesType properties, String folderId, CmisContentStreamType contentStream,
         // EnumVersioningState versioningState)
-        String objectId = objectServicePort.createDocument(repositoryId, CMISMapping.DOCUMENT_TYPE_ID.getTypeId(), properties, parentFolderId, cmisStream,
+        String objectId = objectServicePort.createDocument(repositoryId, CMISDictionaryModel.DOCUMENT_TYPE_ID.getId(), properties, parentFolderId, cmisStream,
                 EnumVersioningState.MAJOR);
         // assertNotNull(objectId);
         return objectId;
@@ -220,7 +220,7 @@ public class CmisServiceTestHelper extends TestCase
         CmisPropertiesType properties = new CmisPropertiesType();
         List<CmisProperty> propertiesList = properties.getProperty();
         CmisPropertyString cmisProperty = new CmisPropertyString();
-        cmisProperty.setName(CMISMapping.PROP_NAME);
+        cmisProperty.setName(CMISDictionaryModel.PROP_NAME);
         cmisProperty.setValue(name);
         propertiesList.add(cmisProperty);
 
@@ -233,7 +233,7 @@ public class CmisServiceTestHelper extends TestCase
 
         // public String createDocument(String repositoryId, String typeId, CmisPropertiesType properties, String folderId, CmisContentStreamType contentStream,
         // EnumVersioningState versioningState)
-        String objectId = objectServicePort.createDocument(repositoryId, typeId.getTypeId(), properties, parentFolderId, cmisStream, enumVersioningState);
+        String objectId = objectServicePort.createDocument(repositoryId, typeId.getId(), properties, parentFolderId, cmisStream, enumVersioningState);
         // assertNotNull(objectId);
         return objectId;
     }
@@ -251,13 +251,13 @@ public class CmisServiceTestHelper extends TestCase
         CmisPropertiesType properties = new CmisPropertiesType();
         List<CmisProperty> propertiesList = properties.getProperty();
         CmisPropertyString cmisProperty = new CmisPropertyString();
-        cmisProperty.setName(CMISMapping.PROP_NAME);
+        cmisProperty.setName(CMISDictionaryModel.PROP_NAME);
         cmisProperty.setValue(name + dataSource.getName());
         propertiesList.add(cmisProperty);
 
         // public String createDocument(String repositoryId, String typeId, CmisPropertiesType properties, String folderId, CmisContentStreamType contentStream,
         // EnumVersioningState versioningState)
-        String objectId = objectServicePort.createDocument(repositoryId, CMISMapping.DOCUMENT_TYPE_ID.getTypeId(), properties, parentFolderId, cmisStream,
+        String objectId = objectServicePort.createDocument(repositoryId, CMISDictionaryModel.DOCUMENT_TYPE_ID.getId(), properties, parentFolderId, cmisStream,
                 EnumVersioningState.MAJOR);
         // assertNotNull(objectId);
         return objectId;
@@ -276,14 +276,14 @@ public class CmisServiceTestHelper extends TestCase
         List<CmisProperty> propertiesList = properties.getProperty();
 
         CmisPropertyString cmisProperty = new CmisPropertyString();
-        cmisProperty.setName(CMISMapping.PROP_NAME);
+        cmisProperty.setName(CMISDictionaryModel.PROP_NAME);
         cmisProperty.setPropertyType(EnumPropertyType.STRING);
         cmisProperty.setIndex(BigInteger.valueOf(1));
         cmisProperty.setValue(name);
         propertiesList.add(cmisProperty);
 
         // public String createFolder(String repositoryId, String typeId, CmisPropertiesType properties, String folderId)
-        String objectId = objectServicePort.createFolder(repositoryId, CMISMapping.FOLDER_TYPE_ID.getTypeId(), properties, parentFolderId);
+        String objectId = objectServicePort.createFolder(repositoryId, CMISDictionaryModel.FOLDER_TYPE_ID.getId(), properties, parentFolderId);
         // assertNotNull(objectId);
         return objectId;
     }
@@ -295,14 +295,14 @@ public class CmisServiceTestHelper extends TestCase
         List<CmisProperty> propertiesList = properties.getProperty();
 
         CmisPropertyString cmisProperty = new CmisPropertyString();
-        cmisProperty.setName(CMISMapping.PROP_NAME);
+        cmisProperty.setName(CMISDictionaryModel.PROP_NAME);
         cmisProperty.setPropertyType(EnumPropertyType.STRING);
         cmisProperty.setIndex(BigInteger.valueOf(1));
         cmisProperty.setValue(name);
         propertiesList.add(cmisProperty);
 
         // public String createFolder(String repositoryId, String typeId, CmisPropertiesType properties, String folderId)
-        String objectId = objectServicePort.createFolder(repositoryId, cmisTypeId.getTypeId(), properties, parentFolderId);
+        String objectId = objectServicePort.createFolder(repositoryId, cmisTypeId.getId(), properties, parentFolderId);
         // assertNotNull(objectId);
         return objectId;
     }
@@ -418,9 +418,9 @@ public class CmisServiceTestHelper extends TestCase
             GetChildrenResponse response = getChildren(companyHomeId, EnumTypesOfFileableObjects.FOLDERS, 0, "*");
             for (CmisObjectType object : response.getObject())
             {
-                if (PropertyUtil.getProperty(object.getProperties(), CMISMapping.PROP_NAME).equals("User Homes"))
+                if (PropertyUtil.getProperty(object.getProperties(), CMISDictionaryModel.PROP_NAME).equals("User Homes"))
                 {
-                    return (String) PropertyUtil.getProperty(object.getProperties(), CMISMapping.PROP_OBJECT_ID);
+                    return (String) PropertyUtil.getProperty(object.getProperties(), CMISDictionaryModel.PROP_OBJECT_ID);
                 }
             }
 
@@ -608,14 +608,14 @@ public class CmisServiceTestHelper extends TestCase
         List<CmisProperty> propertiesList = properties.getProperty();
 
         CmisPropertyString cmisProperty = new CmisPropertyString();
-        cmisProperty.setName(CMISMapping.PROP_NAME);
+        cmisProperty.setName(CMISDictionaryModel.PROP_NAME);
         cmisProperty.setPropertyType(EnumPropertyType.STRING);
         cmisProperty.setIndex(BigInteger.valueOf(1));
         cmisProperty.setValue(name);
         propertiesList.add(cmisProperty);
 
         // createRelationship(String repositoryId, String typeId, CmisPropertiesType properties, String sourceObjectId, String targetObjectId)
-        objectId = objectServicePort.createRelationship(repositoryId, CMISMapping.RELATIONSHIP_TYPE_ID.getTypeId(), properties, documentId, folderId);
+        objectId = objectServicePort.createRelationship(repositoryId, CMISDictionaryModel.RELATIONSHIP_TYPE_ID.getId(), properties, documentId, folderId);
         assertNotNull(objectId);
 
         return objectId;

@@ -102,34 +102,29 @@
       </property>
       <property name="templateObjects">
          <map merge="true">
-           <entry key="cmistypeid">
-              <bean class="org.alfresco.repo.cmis.rest.CMISTypeIdMethod">
-                 <constructor-arg><ref bean="CMISMapping"/></constructor-arg>    
-              </bean>
-           </entry>
            <entry key="cmistype">
-              <bean class="org.alfresco.repo.cmis.rest.CMISTypeMethod">
-                 <constructor-arg><ref bean="CMISDictionaryService"/></constructor-arg>    
+              <bean class="org.alfresco.repo.cmis.rest.CMISTypeDefinitionMethod">
+                 <constructor-arg><ref bean="CMISDictionaryService"/></constructor-arg>
               </bean>
            </entry>
            <entry key="cmisproperty">
               <bean class="org.alfresco.repo.cmis.rest.CMISPropertyValueMethod">
-                 <constructor-arg><ref bean="CMISPropertyService"/></constructor-arg>    
+                 <constructor-arg><ref bean="CMISPropertyService"/></constructor-arg>
               </bean>
            </entry>
            <entry key="cmisresultset">
               <bean class="org.alfresco.repo.cmis.rest.CMISResultSetMethod">
-                 <constructor-arg><ref bean="ServiceRegistry"/></constructor-arg>    
-                 <constructor-arg><ref bean="webscripts.repo.imageresolver"/></constructor-arg>    
+                 <constructor-arg><ref bean="ServiceRegistry"/></constructor-arg>
+                 <constructor-arg><ref bean="webscripts.repo.imageresolver"/></constructor-arg>
               </bean>
            </entry>
            <entry key="cmischildren">
               <bean class="org.alfresco.repo.cmis.rest.CMISChildrenMethod">
-                 <constructor-arg><ref bean="CMISService"/></constructor-arg>    
-                 <constructor-arg><ref bean="ServiceRegistry"/></constructor-arg>    
-                 <constructor-arg><ref bean="webscripts.repo.imageresolver"/></constructor-arg>    
+                 <constructor-arg><ref bean="CMISService"/></constructor-arg>
+                 <constructor-arg><ref bean="ServiceRegistry"/></constructor-arg>
+                 <constructor-arg><ref bean="webscripts.repo.imageresolver"/></constructor-arg>
               </bean>
-           </entry>           
+           </entry>
          </map>
       </property>
       <property name="registryFactory">

@@ -28,7 +28,7 @@ import java.util.List;
 
 import javax.xml.ws.Holder;
 
-import org.alfresco.cmis.dictionary.CMISMapping;
+import org.alfresco.cmis.dictionary.CMISDictionaryModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cmis.PropertyFilter;
 import org.alfresco.repo.cmis.ws.utils.AlfrescoObjectType;
@@ -125,7 +125,7 @@ public class DMVersioningServicePort extends DMAbstractServicePort implements Ve
         }
 
         NodeRef nodeRef = checkOutCheckInService.checkin(workingCopyNodeRef, createVersionProperties(checkinComment, major != null && major ? VersionType.MAJOR : VersionType.MINOR));
-        documentId.value = (String) cmisPropertyService.getProperty(nodeRef, CMISMapping.PROP_OBJECT_ID);
+        documentId.value = (String) cmisPropertyService.getProperty(nodeRef, CMISDictionaryModel.PROP_OBJECT_ID);
     }
 
     /**
@@ -157,7 +157,7 @@ public class DMVersioningServicePort extends DMAbstractServicePort implements Ve
         }
 
         NodeRef pwcNodeRef = checkoutNode(documentNodeRef);
-        documentId.value = (String) cmisPropertyService.getProperty(pwcNodeRef, CMISMapping.PROP_OBJECT_ID);
+        documentId.value = (String) cmisPropertyService.getProperty(pwcNodeRef, CMISDictionaryModel.PROP_OBJECT_ID);
         contentCopied.value = true;
     }
 

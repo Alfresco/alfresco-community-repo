@@ -28,7 +28,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.cmis.dictionary.CMISMapping;
+import org.alfresco.cmis.dictionary.CMISDictionaryModel;
 import org.alfresco.util.Pair;
 
 /**
@@ -44,29 +44,29 @@ public class PropertyUtil
 
     static
     {
-        cmisToRepoPropertiesNamesMapping.put(CMISMapping.PROP_IS_IMMUTABLE, new Pair<String, Boolean>("IsImmutable", true));
-        cmisToRepoPropertiesNamesMapping.put(CMISMapping.PROP_IS_LATEST_VERSION, new Pair<String, Boolean>("IsLatestVersion", true));
-        cmisToRepoPropertiesNamesMapping.put(CMISMapping.PROP_IS_MAJOR_VERSION, new Pair<String, Boolean>("IsMajorVersion", true));
-        cmisToRepoPropertiesNamesMapping.put(CMISMapping.PROP_IS_LATEST_MAJOR_VERSION, new Pair<String, Boolean>("IsLatestMajorVersion", true));
-        cmisToRepoPropertiesNamesMapping.put(CMISMapping.PROP_IS_VERSION_SERIES_CHECKED_OUT, new Pair<String, Boolean>("IsVersionSeriesCheckedOut", true));
-        cmisToRepoPropertiesNamesMapping.put(CMISMapping.PROP_CREATION_DATE, new Pair<String, Boolean>("CreationDate", true));
-        cmisToRepoPropertiesNamesMapping.put(CMISMapping.PROP_LAST_MODIFICATION_DATE, new Pair<String, Boolean>("LastModificationDate", true));
-        cmisToRepoPropertiesNamesMapping.put(CMISMapping.PROP_OBJECT_ID, new Pair<String, Boolean>("ObjectId", true));
-        cmisToRepoPropertiesNamesMapping.put(CMISMapping.PROP_VERSION_SERIES_ID, new Pair<String, Boolean>("VersionSeriesId", true));
-        cmisToRepoPropertiesNamesMapping.put(CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_ID, new Pair<String, Boolean>("VersionSeriesCheckedOutId", true));
-        cmisToRepoPropertiesNamesMapping.put(CMISMapping.PROP_CONTENT_STREAM_LENGTH, new Pair<String, Boolean>("ContentStreamLength", true));
-        cmisToRepoPropertiesNamesMapping.put(CMISMapping.PROP_NAME, new Pair<String, Boolean>("Name", false));
-        cmisToRepoPropertiesNamesMapping.put(CMISMapping.PROP_OBJECT_TYPE_ID, new Pair<String, Boolean>("ObjectTypeId", true));
-        cmisToRepoPropertiesNamesMapping.put(CMISMapping.PROP_CREATED_BY, new Pair<String, Boolean>("CreatedBy", true));
-        cmisToRepoPropertiesNamesMapping.put(CMISMapping.PROP_LAST_MODIFIED_BY, new Pair<String, Boolean>("LastModifiedBy", true));
-        cmisToRepoPropertiesNamesMapping.put(CMISMapping.PROP_CONTENT_STREAM_MIME_TYPE, new Pair<String, Boolean>("ContentStreamMimeType", true));
-        cmisToRepoPropertiesNamesMapping.put(CMISMapping.PROP_CONTENT_STREAM_FILENAME, new Pair<String, Boolean>("ContentStreamFilename", true));
-        cmisToRepoPropertiesNamesMapping.put(CMISMapping.PROP_VERSION_LABEL, new Pair<String, Boolean>("VersionLabel", true));
-        cmisToRepoPropertiesNamesMapping.put(CMISMapping.PROP_CHECKIN_COMMENT, new Pair<String, Boolean>("checkinComment", false));
-        cmisToRepoPropertiesNamesMapping.put(CMISMapping.PROP_CONTENT_STREAM_URI, new Pair<String, Boolean>("contentStreamUri", true));
-        cmisToRepoPropertiesNamesMapping.put(CMISMapping.PROP_VERSION_SERIES_CHECKED_OUT_BY, new Pair<String, Boolean>("VersionSeriesCheckedOutBy", true));
-        cmisToRepoPropertiesNamesMapping.put(CMISMapping.PROP_PARENT_ID, new Pair<String, Boolean>("ParentId", true));
-        cmisToRepoPropertiesNamesMapping.put(CMISMapping.PROP_CONTENT_STREAM_ALLOWED, new Pair<String, Boolean>("ContentStreamAllowed", true));
+        cmisToRepoPropertiesNamesMapping.put(CMISDictionaryModel.PROP_IS_IMMUTABLE, new Pair<String, Boolean>("IsImmutable", true));
+        cmisToRepoPropertiesNamesMapping.put(CMISDictionaryModel.PROP_IS_LATEST_VERSION, new Pair<String, Boolean>("IsLatestVersion", true));
+        cmisToRepoPropertiesNamesMapping.put(CMISDictionaryModel.PROP_IS_MAJOR_VERSION, new Pair<String, Boolean>("IsMajorVersion", true));
+        cmisToRepoPropertiesNamesMapping.put(CMISDictionaryModel.PROP_IS_LATEST_MAJOR_VERSION, new Pair<String, Boolean>("IsLatestMajorVersion", true));
+        cmisToRepoPropertiesNamesMapping.put(CMISDictionaryModel.PROP_IS_VERSION_SERIES_CHECKED_OUT, new Pair<String, Boolean>("IsVersionSeriesCheckedOut", true));
+        cmisToRepoPropertiesNamesMapping.put(CMISDictionaryModel.PROP_CREATION_DATE, new Pair<String, Boolean>("CreationDate", true));
+        cmisToRepoPropertiesNamesMapping.put(CMISDictionaryModel.PROP_LAST_MODIFICATION_DATE, new Pair<String, Boolean>("LastModificationDate", true));
+        cmisToRepoPropertiesNamesMapping.put(CMISDictionaryModel.PROP_OBJECT_ID, new Pair<String, Boolean>("ObjectId", true));
+        cmisToRepoPropertiesNamesMapping.put(CMISDictionaryModel.PROP_VERSION_SERIES_ID, new Pair<String, Boolean>("VersionSeriesId", true));
+        cmisToRepoPropertiesNamesMapping.put(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_ID, new Pair<String, Boolean>("VersionSeriesCheckedOutId", true));
+        cmisToRepoPropertiesNamesMapping.put(CMISDictionaryModel.PROP_CONTENT_STREAM_LENGTH, new Pair<String, Boolean>("ContentStreamLength", true));
+        cmisToRepoPropertiesNamesMapping.put(CMISDictionaryModel.PROP_NAME, new Pair<String, Boolean>("Name", false));
+        cmisToRepoPropertiesNamesMapping.put(CMISDictionaryModel.PROP_OBJECT_TYPE_ID, new Pair<String, Boolean>("ObjectTypeId", true));
+        cmisToRepoPropertiesNamesMapping.put(CMISDictionaryModel.PROP_CREATED_BY, new Pair<String, Boolean>("CreatedBy", true));
+        cmisToRepoPropertiesNamesMapping.put(CMISDictionaryModel.PROP_LAST_MODIFIED_BY, new Pair<String, Boolean>("LastModifiedBy", true));
+        cmisToRepoPropertiesNamesMapping.put(CMISDictionaryModel.PROP_CONTENT_STREAM_MIME_TYPE, new Pair<String, Boolean>("ContentStreamMimeType", true));
+        cmisToRepoPropertiesNamesMapping.put(CMISDictionaryModel.PROP_CONTENT_STREAM_FILENAME, new Pair<String, Boolean>("ContentStreamFilename", true));
+        cmisToRepoPropertiesNamesMapping.put(CMISDictionaryModel.PROP_VERSION_LABEL, new Pair<String, Boolean>("VersionLabel", true));
+        cmisToRepoPropertiesNamesMapping.put(CMISDictionaryModel.PROP_CHECKIN_COMMENT, new Pair<String, Boolean>("checkinComment", false));
+        cmisToRepoPropertiesNamesMapping.put(CMISDictionaryModel.PROP_CONTENT_STREAM_URI, new Pair<String, Boolean>("contentStreamUri", true));
+        cmisToRepoPropertiesNamesMapping.put(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_BY, new Pair<String, Boolean>("VersionSeriesCheckedOutBy", true));
+        cmisToRepoPropertiesNamesMapping.put(CMISDictionaryModel.PROP_PARENT_ID, new Pair<String, Boolean>("ParentId", true));
+        cmisToRepoPropertiesNamesMapping.put(CMISDictionaryModel.PROP_CONTENT_STREAM_ALLOWED, new Pair<String, Boolean>("ContentStreamAllowed", true));
 
         for (Map.Entry<String, Pair<String, Boolean>> entry : cmisToRepoPropertiesNamesMapping.entrySet())
         {

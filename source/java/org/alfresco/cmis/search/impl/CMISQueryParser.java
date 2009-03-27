@@ -35,14 +35,13 @@ import java.util.StringTokenizer;
 import org.alfresco.cmis.CMISCardinalityEnum;
 import org.alfresco.cmis.CMISJoinEnum;
 import org.alfresco.cmis.dictionary.CMISDictionaryService;
-import org.alfresco.cmis.dictionary.CMISMapping;
 import org.alfresco.cmis.dictionary.CMISPropertyDefinition;
+import org.alfresco.cmis.dictionary.CMISPropertyId;
 import org.alfresco.cmis.dictionary.CMISScope;
 import org.alfresco.cmis.dictionary.CMISTypeDefinition;
 import org.alfresco.cmis.dictionary.CMISTypeId;
 import org.alfresco.cmis.search.CMISQueryException;
 import org.alfresco.cmis.search.CMISQueryOptions;
-import org.alfresco.cmis.search.CMISQueryOptions.CMISQueryMode;
 import org.alfresco.repo.search.impl.parsers.CMISLexer;
 import org.alfresco.repo.search.impl.parsers.CMISParser;
 import org.alfresco.repo.search.impl.parsers.FTSLexer;
@@ -101,15 +100,12 @@ public class CMISQueryParser
 
     private CMISDictionaryService cmisDictionaryService;
 
-    private CMISMapping cmisMapping;
-
     private CMISJoinEnum joinSupport;
 
-    public CMISQueryParser(CMISQueryOptions options, CMISDictionaryService cmisDictionaryService, CMISMapping cmisMapping, CMISJoinEnum joinSupport)
+    public CMISQueryParser(CMISQueryOptions options, CMISDictionaryService cmisDictionaryService, CMISJoinEnum joinSupport)
     {
         this.options = options;
         this.cmisDictionaryService = cmisDictionaryService;
-        this.cmisMapping = cmisMapping;
         this.joinSupport = joinSupport;
     }
 
@@ -600,35 +596,32 @@ public class CMISQueryParser
                             {
                                 throw new CMISQueryException("No selector for " + qualifier);
                             }
-                            QName cmisType = cmisMapping.getCmisType(selector.getType());
-                            CMISTypeId typeId = null;
-                            if (cmisMapping.isValidCmisDocument(cmisType))
-                            {
-                                typeId = cmisMapping.getCmisTypeId(CMISScope.DOCUMENT, cmisType);
-                            }
-                            else if (cmisMapping.isValidCmisFolder(cmisType))
-                            {
-                                typeId = cmisMapping.getCmisTypeId(CMISScope.FOLDER, cmisType);
-                            }
-                            else
+                            
+                            CMISTypeId typeId = cmisDictionaryService.getTypeId(selector.getType(), null);
+                            if (typeId == null || (typeId.getScope() != CMISScope.DOCUMENT && typeId.getScope() != CMISScope.FOLDER))
                             {
                                 throw new CMISQueryException("Type unsupported in CMIS queries: " + selector.getAlias());
                             }
-                            CMISPropertyDefinition definition = cmisDictionaryService.getPropertyDefinition(typeId, columnName);
 
-                            if (definition == null)
+                            CMISTypeDefinition typeDef = cmisDictionaryService.getType(typeId);
+                            CMISPropertyDefinition propDef = null;
+                            CMISPropertyId propId = cmisDictionaryService.getPropertyId(columnName);
+                            if (propId != null)
                             {
-                                throw new CMISQueryException("Invalid column for " + cmisMapping.getQueryName(typeId.getQName()) + "." + columnName);
+                                propDef = typeDef.getPropertyDefinitions().get(propId);
+                            }
+                            if (propDef == null)
+                            {
+                                throw new CMISQueryException("Invalid column for " + typeDef.getQueryName() + "." + columnName);
                             }
 
                             Function function = factory.getFunction(PropertyAccessor.NAME);
-                            QName propertyQName = cmisMapping.getPropertyQName(definition.getPropertyName());
-                            Argument arg = factory.createPropertyArgument(PropertyAccessor.ARG_PROPERTY, definition.isQueryable(), definition.isOrderable(), selector.getAlias(),
-                                    propertyQName);
+                            Argument arg = factory.createPropertyArgument(PropertyAccessor.ARG_PROPERTY, propDef.isQueryable(), propDef.isOrderable(), selector.getAlias(),
+                                    propDef.getPropertyId().getQName());
                             Map<String, Argument> functionArguments = new LinkedHashMap<String, Argument>();
                             functionArguments.put(arg.getName(), arg);
 
-                            String alias = (selector.getAlias().length() > 0) ? selector.getAlias() + "." + definition.getPropertyName() : definition.getPropertyName();
+                            String alias = (selector.getAlias().length() > 0) ? selector.getAlias() + "." + propDef.getPropertyId().getName() : propDef.getPropertyId().getName();
 
                             match = factory.createColumn(function, functionArguments, alias);
                         }
@@ -642,36 +635,32 @@ public class CMISQueryParser
                         {
                             throw new CMISQueryException("No selector for " + qualifier);
                         }
-                        QName cmisType = cmisMapping.getCmisType(selector.getType());
-                        CMISTypeId typeId = null;
-                        if (cmisMapping.isValidCmisDocument(cmisType))
-                        {
-                            typeId = cmisMapping.getCmisTypeId(CMISScope.DOCUMENT, cmisType);
-                        }
-                        else if (cmisMapping.isValidCmisFolder(cmisType))
-                        {
-                            typeId = cmisMapping.getCmisTypeId(CMISScope.FOLDER, cmisType);
-                        }
-                        else
+                        
+                        CMISTypeId typeId = cmisDictionaryService.getTypeId(selector.getType(), null);
+                        if (typeId == null || (typeId.getScope() != CMISScope.DOCUMENT && typeId.getScope() != CMISScope.FOLDER))
                         {
                             throw new CMISQueryException("Type unsupported in CMIS queries: " + selector.getAlias());
                         }
-                        CMISPropertyDefinition definition = cmisDictionaryService.getPropertyDefinition(typeId, columnName);
-
-                        if (definition == null)
+                        
+                        CMISTypeDefinition typeDef = cmisDictionaryService.getType(typeId);
+                        CMISPropertyDefinition propDef = null;
+                        CMISPropertyId propId = cmisDictionaryService.getPropertyId(columnName);
+                        if (propId != null)
                         {
-                            throw new CMISQueryException("Invalid column for "
-                                    + cmisMapping.getQueryName(typeId.getQName()) + "." + columnName + " selector alias " + selector.getAlias());
+                            propDef = typeDef.getPropertyDefinitions().get(propId);
                         }
-
+                        if (propDef == null)
+                        {
+                            throw new CMISQueryException("Invalid column for " + typeDef.getQueryName() + "." + columnName + " selector alias " + selector.getAlias());
+                        }
+                        
                         Function function = factory.getFunction(PropertyAccessor.NAME);
-                        QName propertyQName = cmisMapping.getPropertyQName(definition.getPropertyName());
-                        Argument arg = factory.createPropertyArgument(PropertyAccessor.ARG_PROPERTY, definition.isQueryable(), definition.isOrderable(), selector.getAlias(),
-                                propertyQName);
+                        Argument arg = factory.createPropertyArgument(PropertyAccessor.ARG_PROPERTY, propDef.isQueryable(), propDef.isOrderable(), selector.getAlias(),
+                                propDef.getPropertyId().getQName());
                         Map<String, Argument> functionArguments = new LinkedHashMap<String, Argument>();
                         functionArguments.put(arg.getName(), arg);
 
-                        String alias = (selector.getAlias().length() > 0) ? selector.getAlias() + "." + definition.getPropertyName() : definition.getPropertyName();
+                        String alias = (selector.getAlias().length() > 0) ? selector.getAlias() + "." + propDef.getPropertyId().getName() : propDef.getPropertyId().getName();
 
                         orderColumn = factory.createColumn(function, functionArguments, alias);
                     }
@@ -699,39 +688,23 @@ public class CMISQueryParser
         {
             for (Selector selector : selectors.values())
             {
-                QName cmisType = cmisMapping.getCmisType(selector.getType());
-                CMISTypeId typeId = null;
-                if (cmisMapping.isValidCmisDocument(cmisType))
+                CMISTypeId typeId = cmisDictionaryService.getTypeId(selector.getType(), null);
+                if (typeId == null || (typeId.getScope() == CMISScope.RELATIONSHIP))
                 {
-                    typeId = cmisMapping.getCmisTypeId(CMISScope.DOCUMENT, cmisType);
+                    throw new CMISQueryException("Type unsupported in CMIS queries: " + selector.getAlias());
                 }
-                else if (cmisMapping.isValidCmisFolder(cmisType))
-                {
-                    typeId = cmisMapping.getCmisTypeId(CMISScope.FOLDER, cmisType);
-                }
-                else
-                {
-                    if (options.getQueryMode() == CMISQueryMode.CMS_STRICT)
-                    {
-                        throw new CMISQueryException("Type unsupported in CMIS queries: " + selector.getAlias());
-                    }
-                    else
-                    {
-                        typeId = cmisMapping.getCmisTypeId(CMISScope.POLICY, cmisType);
-                    }
-                }
-                Map<String, CMISPropertyDefinition> propDefs = cmisDictionaryService.getPropertyDefinitions(typeId);
+                CMISTypeDefinition typeDef = cmisDictionaryService.getType(typeId);
+                Map<CMISPropertyId, CMISPropertyDefinition> propDefs = typeDef.getPropertyDefinitions();
                 for (CMISPropertyDefinition definition : propDefs.values())
                 {
                     if (definition.getCardinality() == CMISCardinalityEnum.SINGLE_VALUED)
                     {
                         Function function = factory.getFunction(PropertyAccessor.NAME);
-                        QName propertyQName = cmisMapping.getPropertyQName(definition.getPropertyName());
                         Argument arg = factory.createPropertyArgument(PropertyAccessor.ARG_PROPERTY, definition.isQueryable(), definition.isOrderable(), selector.getAlias(),
-                                propertyQName);
+                                definition.getPropertyId().getQName());
                         Map<String, Argument> functionArguments = new LinkedHashMap<String, Argument>();
                         functionArguments.put(arg.getName(), arg);
-                        String alias = (selector.getAlias().length() > 0) ? selector.getAlias() + "." + definition.getPropertyName() : definition.getPropertyName();
+                        String alias = (selector.getAlias().length() > 0) ? selector.getAlias() + "." + definition.getPropertyId().getName() : definition.getPropertyId().getName();
                         Column column = factory.createColumn(function, functionArguments, alias);
                         columns.add(column);
                     }
@@ -752,40 +725,24 @@ public class CMISQueryParser
                     {
                         throw new CMISQueryException("No selector for " + qualifier + " in " + qualifier + ".*");
                     }
-                    QName cmisType = cmisMapping.getCmisType(selector.getType());
-                    CMISTypeId typeId = null;
-                    if (cmisMapping.isValidCmisDocument(cmisType))
+                    
+                    CMISTypeId typeId = cmisDictionaryService.getTypeId(selector.getType(), null);
+                    if (typeId == null || (typeId.getScope() == CMISScope.RELATIONSHIP))
                     {
-                        typeId = cmisMapping.getCmisTypeId(CMISScope.DOCUMENT, cmisType);
+                        throw new CMISQueryException("Type unsupported in CMIS queries: " + selector.getAlias());
                     }
-                    else if (cmisMapping.isValidCmisFolder(cmisType))
-                    {
-                        typeId = cmisMapping.getCmisTypeId(CMISScope.FOLDER, cmisType);
-                    }
-                    else
-                    {
-                        if (options.getQueryMode() == CMISQueryMode.CMS_STRICT)
-                        {
-                            throw new CMISQueryException("Type unsupported in CMIS queries: " + selector.getAlias());
-                        }
-                        else
-                        {
-                            typeId = cmisMapping.getCmisTypeId(CMISScope.POLICY, cmisType);
-                        }
-
-                    }
-                    Map<String, CMISPropertyDefinition> propDefs = cmisDictionaryService.getPropertyDefinitions(typeId);
+                    CMISTypeDefinition typeDef = cmisDictionaryService.getType(typeId);
+                    Map<CMISPropertyId, CMISPropertyDefinition> propDefs = typeDef.getPropertyDefinitions();
                     for (CMISPropertyDefinition definition : propDefs.values())
                     {
                         if (definition.getCardinality() == CMISCardinalityEnum.SINGLE_VALUED)
                         {
                             Function function = factory.getFunction(PropertyAccessor.NAME);
-                            QName propertyQName = cmisMapping.getPropertyQName(definition.getPropertyName());
                             Argument arg = factory.createPropertyArgument(PropertyAccessor.ARG_PROPERTY, definition.isQueryable(), definition.isOrderable(), selector.getAlias(),
-                                    propertyQName);
+                                    definition.getPropertyId().getQName());
                             Map<String, Argument> functionArguments = new LinkedHashMap<String, Argument>();
                             functionArguments.put(arg.getName(), arg);
-                            String alias = (selector.getAlias().length() > 0) ? selector.getAlias() + "." + definition.getPropertyName() : definition.getPropertyName();
+                            String alias = (selector.getAlias().length() > 0) ? selector.getAlias() + "." + definition.getPropertyId().getName() : definition.getPropertyId().getName();
                             Column column = factory.createColumn(function, functionArguments, alias);
                             columns.add(column);
                         }
@@ -808,43 +765,31 @@ public class CMISQueryParser
                         {
                             throw new CMISQueryException("No selector for " + qualifier);
                         }
-                        QName cmisType = cmisMapping.getCmisType(selector.getType());
-                        CMISTypeId typeId = null;
-                        if (cmisMapping.isValidCmisDocument(cmisType))
+                        
+                        CMISTypeId typeId = cmisDictionaryService.getTypeId(selector.getType(), null);
+                        if (typeId == null || (typeId.getScope() == CMISScope.RELATIONSHIP))
                         {
-                            typeId = cmisMapping.getCmisTypeId(CMISScope.DOCUMENT, cmisType);
+                            throw new CMISQueryException("Type unsupported in CMIS queries: " + selector.getAlias());
                         }
-                        else if (cmisMapping.isValidCmisFolder(cmisType))
+                        CMISTypeDefinition typeDef = cmisDictionaryService.getType(typeId);
+                        CMISPropertyDefinition propDef = null;
+                        CMISPropertyId propId = cmisDictionaryService.getPropertyId(columnName);
+                        if (propId != null)
                         {
-                            typeId = cmisMapping.getCmisTypeId(CMISScope.FOLDER, cmisType);
+                            propDef = typeDef.getPropertyDefinitions().get(propId);
                         }
-                        else
+                        if (propDef == null)
                         {
-                            if (options.getQueryMode() == CMISQueryMode.CMS_STRICT)
-                            {
-                                throw new CMISQueryException("Type unsupported in CMIS queries: " + selector.getAlias());
-                            }
-                            else
-                            {
-                                typeId = cmisMapping.getCmisTypeId(CMISScope.POLICY, cmisType);
-                            }
-
-                        }
-                        CMISPropertyDefinition definition = cmisDictionaryService.getPropertyDefinition(typeId, columnName);
-
-                        if (definition == null)
-                        {
-                            throw new CMISQueryException("Invalid column for " + cmisMapping.getQueryName(typeId.getQName()) + "." + columnName);
+                            throw new CMISQueryException("Invalid column for " + typeDef.getQueryName() + "." + columnName);
                         }
 
                         Function function = factory.getFunction(PropertyAccessor.NAME);
-                        QName propertyQName = cmisMapping.getPropertyQName(definition.getPropertyName());
-                        Argument arg = factory.createPropertyArgument(PropertyAccessor.ARG_PROPERTY, definition.isQueryable(), definition.isOrderable(), selector.getAlias(),
-                                propertyQName);
+                        Argument arg = factory.createPropertyArgument(PropertyAccessor.ARG_PROPERTY, propDef.isQueryable(), propDef.isOrderable(), selector.getAlias(),
+                                propDef.getPropertyId().getQName());
                         Map<String, Argument> functionArguments = new LinkedHashMap<String, Argument>();
                         functionArguments.put(arg.getName(), arg);
 
-                        String alias = (selector.getAlias().length() > 0) ? selector.getAlias() + "." + definition.getPropertyName() : definition.getPropertyName();
+                        String alias = (selector.getAlias().length() > 0) ? selector.getAlias() + "." + propDef.getPropertyId().getName() : propDef.getPropertyId().getName();
                         if (columnNode.getChildCount() > 1)
                         {
                             alias = columnNode.getChild(1).getText();
@@ -963,13 +908,12 @@ public class CMISQueryParser
             }
             else
             {
-                QName propertyQName = cmisMapping.getPropertyQName(id);
-                CMISTypeId typeId = cmisMapping.getCmisTypeForProperty(propertyQName);
-                CMISPropertyDefinition propDef = cmisDictionaryService.getPropertyDefinition(typeId, id);
-                PropertyArgument arg  = factory.createPropertyArgument(definition.getName(), propDef.isQueryable(), propDef.isOrderable(), "", propertyQName);
+                CMISPropertyId propertyId = cmisDictionaryService.getPropertyId(id);
+                CMISPropertyDefinition propDef = cmisDictionaryService.getProperty(propertyId);
+                PropertyArgument arg  = factory.createPropertyArgument(definition.getName(), propDef.isQueryable(), propDef.isOrderable(), "", propDef.getPropertyId().getQName());
                 if(!arg.isQueryable())
                 {
-                    throw new CMISQueryException("Column refers to unqueryable property "+arg.getPropertyName());
+                    throw new CMISQueryException("Column refers to unqueryable property " + arg.getPropertyName());
                 }
                 return arg;
             }
@@ -1117,12 +1061,12 @@ public class CMISQueryParser
             {
                 alias = singleTableNode.getChild(1).getText();
             }
-            QName classQName = cmisMapping.getAlfrescoClassQNameFromCmisTableName(tableName);
-            if (classQName == null)
+            
+            CMISTypeId typeId = cmisDictionaryService.getTypeIdFromTable(tableName);
+            if (typeId == null)
             {
                 throw new CMISQueryException("Type is unsupported in query " + tableName);
             }
-            CMISTypeId typeId = cmisMapping.getCmisTypeId(classQName);
             if (typeId.getScope() != CMISScope.POLICY)
             {
                 CMISTypeDefinition cmisType = cmisDictionaryService.getType(typeId);
@@ -1131,7 +1075,7 @@ public class CMISQueryParser
                     throw new CMISQueryException("Type is not queryable " + tableName + " -> " + cmisType);
                 }
             }
-            return factory.createSelector(classQName, alias);
+            return factory.createSelector(typeId.getQName(), alias);
         }
         else
         {
@@ -1150,12 +1094,11 @@ public class CMISQueryParser
             {
                 alias = singleTableNode.getChild(1).getText();
             }
-            QName classQName = cmisMapping.getAlfrescoClassQNameFromCmisTableName(tableName);
-            if (classQName == null)
+            CMISTypeId typeId = cmisDictionaryService.getTypeIdFromTable(tableName);
+            if (typeId == null)
             {
                 throw new CMISQueryException("Type is unsupported in query " + tableName);
             }
-            CMISTypeId typeId = cmisMapping.getCmisTypeId(classQName);
             if (typeId.getScope() != CMISScope.POLICY)
             {
                 CMISTypeDefinition cmisType = cmisDictionaryService.getType(typeId);
@@ -1164,7 +1107,7 @@ public class CMISQueryParser
                     throw new CMISQueryException("Type is not queryable " + tableName + " -> " + cmisType);
                 }
             }
-            Source lhs = factory.createSelector(classQName, alias);
+            Source lhs = factory.createSelector(typeId.getQName(), alias);
 
             List<CommonTree> list = (List<CommonTree>) (source.getChildren());
             for (CommonTree joinNode : list)
@@ -1226,18 +1169,9 @@ public class CMISQueryParser
         {
             qualifer = columnReferenceNode.getChild(1).getText();
         }
-        QName propertyQName = cmisMapping.getPropertyQName(cmisPropertyName);
-        CMISTypeId typeId = cmisMapping.getCmisTypeForProperty(propertyQName);
-        CMISPropertyDefinition propDef = cmisDictionaryService.getPropertyDefinition(typeId, cmisPropertyName);
-        if (typeId.getScope() == CMISScope.POLICY)
-        {
-            // TODO: Policy - fix to be correct ....when we have properties
-            return factory.createPropertyArgument(argumentName, true, true, qualifer, propertyQName);
-        }
-        else
-        {
-            return factory.createPropertyArgument(argumentName, propDef.isQueryable(), propDef.isOrderable(), qualifer, propertyQName);
-        }
+        CMISPropertyId propId = cmisDictionaryService.getPropertyId(cmisPropertyName);
+        CMISPropertyDefinition propDef = cmisDictionaryService.getProperty(propId);
+        return factory.createPropertyArgument(argumentName, propDef.isQueryable(), propDef.isOrderable(), qualifer, propDef.getPropertyId().getQName());
     }
 
     public String getFunctionName(CommonTree functionNameNode)

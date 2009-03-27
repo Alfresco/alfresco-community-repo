@@ -27,6 +27,7 @@ package org.alfresco.cmis.property;
 import java.io.Serializable;
 import java.util.Collection;
 
+import org.alfresco.cmis.dictionary.CMISDictionaryModel;
 import org.alfresco.cmis.dictionary.CMISMapping;
 import org.alfresco.cmis.dictionary.CMISScope;
 import org.alfresco.model.ContentModel;
@@ -47,7 +48,7 @@ public class ContentStreamUriPropertyAccessor extends AbstractNamedPropertyAcces
 
     protected ContentStreamUriPropertyAccessor(CMISMapping cmisMapping, ServiceRegistry serviceRegistry)
     {
-        super(cmisMapping, serviceRegistry, CMISScope.DOCUMENT, CMISMapping.PROP_CONTENT_STREAM_URI);
+        super(cmisMapping, serviceRegistry, CMISScope.DOCUMENT, CMISDictionaryModel.PROP_CONTENT_STREAM_URI);
     }
 
     public Serializable getProperty(NodeRef nodeRef)

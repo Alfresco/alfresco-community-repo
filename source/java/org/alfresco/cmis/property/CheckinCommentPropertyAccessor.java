@@ -27,6 +27,7 @@ package org.alfresco.cmis.property;
 import java.io.Serializable;
 import java.util.Collection;
 
+import org.alfresco.cmis.dictionary.CMISDictionaryModel;
 import org.alfresco.cmis.dictionary.CMISMapping;
 import org.alfresco.cmis.dictionary.CMISScope;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
@@ -45,7 +46,7 @@ public class CheckinCommentPropertyAccessor extends AbstractNamedPropertyAccesso
 {
     protected CheckinCommentPropertyAccessor(CMISMapping cmisMapping, ServiceRegistry serviceRegistry)
     {
-        super(cmisMapping, serviceRegistry, CMISScope.DOCUMENT, CMISMapping.PROP_CHECKIN_COMMENT);
+        super(cmisMapping, serviceRegistry, CMISScope.DOCUMENT, CMISDictionaryModel.PROP_CHECKIN_COMMENT);
     }
 
 

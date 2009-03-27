@@ -65,7 +65,7 @@ public abstract class BaseCMISTest extends TestCase
     protected CMISMapping cmisMapping;
     
     protected CMISDictionaryService cmisDictionaryService;
-
+    
     protected DictionaryService dictionaryService;
 
     protected TransactionService transactionService;
@@ -103,7 +103,7 @@ public abstract class BaseCMISTest extends TestCase
         serviceRegistry = (ServiceRegistry) ctx.getBean("ServiceRegistry");
         
         cmisDictionaryService = (CMISDictionaryService) ctx.getBean("CMISDictionaryService");
-        cmisMapping = cmisDictionaryService.getCMISMapping();
+        cmisMapping = (CMISMapping) ctx.getBean("CMISMapping");
         cmisPropertyService = (CMISPropertyService) ctx.getBean("CMISPropertyService");
         cmisQueryService = (CMISQueryService) ctx.getBean("CMISQueryService");
         cmisService = (CMISService) ctx.getBean("CMISService");

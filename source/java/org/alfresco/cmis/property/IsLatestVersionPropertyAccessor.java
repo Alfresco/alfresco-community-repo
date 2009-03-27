@@ -27,6 +27,7 @@ package org.alfresco.cmis.property;
 import java.io.Serializable;
 import java.util.Collection;
 
+import org.alfresco.cmis.dictionary.CMISDictionaryModel;
 import org.alfresco.cmis.dictionary.CMISMapping;
 import org.alfresco.cmis.dictionary.CMISScope;
 import org.alfresco.model.ContentModel;
@@ -47,7 +48,7 @@ public class IsLatestVersionPropertyAccessor extends AbstractNamedPropertyAccess
 
     protected IsLatestVersionPropertyAccessor(CMISMapping cmisMapping, ServiceRegistry serviceRegistry)
     {
-        super(cmisMapping, serviceRegistry, CMISScope.DOCUMENT, CMISMapping.PROP_IS_LATEST_VERSION);
+        super(cmisMapping, serviceRegistry, CMISScope.DOCUMENT, CMISDictionaryModel.PROP_IS_LATEST_VERSION);
     }
 
     public Serializable getProperty(NodeRef nodeRef)

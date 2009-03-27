@@ -115,4 +115,10 @@ public interface ClassDefinition
      */
     public List<AspectDefinition> getDefaultAspects();
     
+    /**
+     * @param inherited include default aspects inherited from super types
+     * @return  the default aspects
+     */
+    public List<AspectDefinition> getDefaultAspects(boolean inherited);
+    
 }

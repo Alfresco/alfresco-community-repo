@@ -93,6 +93,13 @@ import org.alfresco.service.namespace.QName;
         return type.getDefaultAspects();
     }
 
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.dictionary.ClassDefinition#getDefaultAspects(boolean)
+     */
+    public List<AspectDefinition> getDefaultAspects(boolean inherited)
+    {
+        return type.getDefaultAspects(inherited);
+    }
     
     /* (non-Javadoc)
      * @see org.alfresco.repo.dictionary.ClassDefinition#getName()

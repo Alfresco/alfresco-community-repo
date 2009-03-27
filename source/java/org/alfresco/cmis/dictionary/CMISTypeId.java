@@ -29,47 +29,40 @@ import java.io.Serializable;
 import org.alfresco.service.namespace.QName;
 
 /**
- * A CMIS property type id
+ * CMIS Type Id
  * 
  * @author andyh
  *
  */
 public class CMISTypeId implements Serializable
 {
-    /**
-     * 
-     */
     private static final long serialVersionUID = -4709046883083948302L;
 
     private String typeId;
-
     private CMISScope scope;
-
     private QName qName;
 
-    public CMISTypeId(CMISScope scope, QName qName, String typeId)
+    /**
+     * Construct
+     * 
+     * @param scope
+     * @param typeId
+     * @param qName
+     */
+    public CMISTypeId(CMISScope scope, String typeId, QName qName)
     {
         this.scope = scope;
-        this.qName = qName;
         this.typeId = typeId;
+        this.qName = qName;
     }
 
     /**
      * Get the CMIS type id string 
      * @return
      */
-    public String getTypeId()
+    public String getId()
     {
         return typeId;
-    }
-
-    /**
-     * Get the Alfresco model QName associated with the type
-     * @return
-     */
-    public QName getQName()
-    {
-        return qName;
     }
 
     /**
@@ -82,6 +75,16 @@ public class CMISTypeId implements Serializable
     }
 
     /**
+     * Get the Alfresco model QName associated with the type
+     * 
+     * @return  alfresco QName
+     */
+    public QName getQName()
+    {
+        return qName;
+    }
+    
+    /**
      * Get the root type id
      * @return
      */
@@ -90,13 +93,13 @@ public class CMISTypeId implements Serializable
         switch (scope)
         {
         case DOCUMENT:
-            return CMISMapping.DOCUMENT_TYPE_ID;
+            return CMISDictionaryModel.DOCUMENT_TYPE_ID;
         case FOLDER:
-            return CMISMapping.FOLDER_TYPE_ID;
+            return CMISDictionaryModel.FOLDER_TYPE_ID;
         case RELATIONSHIP:
-            return CMISMapping.RELATIONSHIP_TYPE_ID;
+            return CMISDictionaryModel.RELATIONSHIP_TYPE_ID;
         case POLICY:
-            return CMISMapping.POLICY_TYPE_ID;
+            return CMISDictionaryModel.POLICY_TYPE_ID;
         case UNKNOWN:
         default:
             return null;
@@ -105,7 +108,7 @@ public class CMISTypeId implements Serializable
 
     public String toString()
     {
-        return getTypeId();
+        return getId();
     }
 
     @Override

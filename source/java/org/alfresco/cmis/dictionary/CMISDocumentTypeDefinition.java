@@ -1,0 +1,148 @@
+/*
+ * Copyright (C) 2005-20079 Alfresco Software Limited.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+
+ * As a special exception to the terms and conditions of version 2.0 of 
+ * the GPL, you may redistribute this Program in connection with Free/Libre 
+ * and Open Source Software ("FLOSS") applications as described in Alfresco's 
+ * FLOSS exception.  You should have recieved a copy of the text describing 
+ * the FLOSS exception, and it is also available here: 
+ * http://www.alfresco.com/legal/licensing"
+ */
+package org.alfresco.cmis.dictionary;
+
+import java.util.List;
+
+import org.alfresco.cmis.CMISContentStreamAllowedEnum;
+import org.alfresco.model.ContentModel;
+import org.alfresco.service.cmr.dictionary.AspectDefinition;
+import org.alfresco.service.cmr.dictionary.ClassDefinition;
+import org.alfresco.service.namespace.QName;
+
+
+/**
+ * CMIS Document Type Definition
+ * 
+ * @author davidc
+ */
+public class CMISDocumentTypeDefinition extends CMISObjectTypeDefinition 
+{
+    private static final long serialVersionUID = -7209732754962781522L;
+    
+    // document specific properties
+    protected boolean fileable;
+    protected boolean versionable;
+    protected CMISContentStreamAllowedEnum contentStreamAllowed;
+
+
+    /**
+     * Construct
+     * 
+     * @param cmisMapping
+     * @param typeId
+     * @param cmisClassDef
+     */
+    public CMISDocumentTypeDefinition(CMISMapping cmisMapping, CMISTypeId typeId, ClassDefinition cmisClassDef)
+    {
+        // Object type properties
+        this.cmisClassDef = cmisClassDef;
+        objectTypeId = typeId;
+        objectTypeQueryName = (typeId == CMISDictionaryModel.DOCUMENT_TYPE_ID) ? typeId.getId() : cmisMapping.buildPrefixEncodedString(typeId.getQName(), false);
+        displayName = (cmisClassDef.getTitle() != null) ? cmisClassDef.getTitle() : typeId.getId();
+        QName parentQName = cmisMapping.getCmisType(cmisClassDef.getParentName());
+        if (cmisMapping.isValidCmisDocument(parentQName))
+        {
+            parentTypeId = cmisMapping.getCmisTypeId(CMISScope.DOCUMENT, parentQName);
+        }
+        description = cmisClassDef.getDescription();
+        creatable = true;
+        queryable = true;
+        controllable = false;
+        includeInSuperTypeQuery = true;
+
+        // Document type properties
+        versionable = false;
+        List<AspectDefinition> defaultAspects = cmisClassDef.getDefaultAspects();
+        for (AspectDefinition aspectDefinition : defaultAspects)
+        {
+            if (aspectDefinition.getName().equals(ContentModel.ASPECT_VERSIONABLE))
+            {
+                versionable = true;
+                break;
+            }
+        }
+        fileable = true;
+        contentStreamAllowed = CMISContentStreamAllowedEnum.ALLOWED;
+    }
+
+    /**
+     * Are objects of this type fileable?
+     * 
+     * @return
+     */
+    public boolean isFileable()
+    {
+        return fileable;
+    }
+
+    /**
+     * Is this type versionable? If true this implies all instances of the type are versionable.
+     * 
+     * @return true if versionable
+     */
+    public boolean isVersionable()
+    {
+        return versionable;
+    }
+
+    /**
+     * Is a content stream allowed for this type? It may be disallowed, optional or mandatory.
+     * 
+     * @return
+     */
+    public CMISContentStreamAllowedEnum getContentStreamAllowed()
+    {
+        return contentStreamAllowed;
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString()
+    {
+        StringBuilder builder = new StringBuilder();
+        builder.append("CMISDocumentTypeDefinition[");
+        builder.append("ObjectTypeId=").append(getTypeId()).append(", ");
+        builder.append("ObjectTypeQueryName=").append(getQueryName()).append(", ");
+        builder.append("ObjectTypeDisplayName=").append(getDisplayName()).append(", ");
+        builder.append("ParentTypeId=").append(getParentType() == null ? "<none>" : getParentType().getTypeId()).append(", ");
+        builder.append("Description=").append(getDescription()).append(", ");
+        builder.append("Creatable=").append(isCreatable()).append(", ");
+        builder.append("Queryable=").append(isQueryable()).append(", ");
+        builder.append("Controllable=").append(isControllable()).append(", ");
+        builder.append("IncludeInSuperTypeQuery=").append(isIncludeInSuperTypeQuery()).append(", ");
+        builder.append("Fileable=").append(isFileable()).append(", ");
+        builder.append("Versionable=").append(isVersionable()).append(", ");
+        builder.append("ContentStreamAllowed=").append(getContentStreamAllowed()).append(", ");
+        builder.append("SubTypes=").append(getSubTypes(false).size()).append(", ");
+        builder.append("Properties=").append(getPropertyDefinitions().size());
+        builder.append("]");
+        return builder.toString();
+    }
+
+}

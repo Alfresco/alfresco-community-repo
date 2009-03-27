@@ -24,7 +24,7 @@
  */
 package org.alfresco.cmis.search;
 
-import org.alfresco.cmis.CMISPropertyTypeEnum;
+import org.alfresco.cmis.CMISDataTypeEnum;
 import org.alfresco.cmis.dictionary.CMISPropertyDefinition;
 
 /**
@@ -38,9 +38,9 @@ public class CMISResultSetColumnImpl implements CMISResultSetColumn
     
     private CMISPropertyDefinition propertyDefinition;
     
-    private CMISPropertyTypeEnum propertyType;
+    private CMISDataTypeEnum propertyType;
     
-    CMISResultSetColumnImpl(String name, CMISPropertyDefinition propertyDefinition, CMISPropertyTypeEnum propertyType)
+    CMISResultSetColumnImpl(String name, CMISPropertyDefinition propertyDefinition, CMISDataTypeEnum propertyType)
     {
         this.name = name;
         this.propertyDefinition = propertyDefinition;
@@ -67,7 +67,7 @@ public class CMISResultSetColumnImpl implements CMISResultSetColumn
     /* (non-Javadoc)
      * @see org.alfresco.cmis.search.CMISResultSetColumn#getPropertyType()
      */
-    public CMISPropertyTypeEnum getPropertyType()
+    public CMISDataTypeEnum getPropertyType()
     {
        return propertyType;
     }

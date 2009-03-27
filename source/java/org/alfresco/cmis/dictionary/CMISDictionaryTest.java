@@ -28,99 +28,48 @@ public class CMISDictionaryTest extends BaseCMISTest
 {
     public void testBasicTypes()
     {
-        cmisDictionaryService.setStrict(true);
-        for (CMISTypeId name : cmisDictionaryService.getAllObjectTypeIds())
+        for (CMISTypeDefinition type : cmisDictionaryService.getAllTypes())
         {
-            System.out.println(name);
+            System.out.println(type);
         }
-        assertEquals(3, cmisDictionaryService.getAllObjectTypeIds().size());
     }
     
-    public void testBasicTypeDefinitions()
-    {
-        cmisDictionaryService.setStrict(false);
-        for (CMISTypeId name : cmisDictionaryService.getAllObjectTypeIds())
-        {
-            System.out.println(cmisDictionaryService.getType(name));
-        }
-    }
-
     public void testSubTypes()
     {
-        cmisDictionaryService.setStrict(true);
-        for (CMISTypeId name : cmisDictionaryService.getAllObjectTypeIds())
+        for (CMISTypeDefinition type : cmisDictionaryService.getAllTypes())
         {
-            System.out.println(name + " children (strict)");
-            for (CMISTypeId subName :cmisDictionaryService.getChildTypeIds(name, false))
+            System.out.println(type.getTypeId() + " children:");
+            for (CMISTypeDefinition subType : type.getSubTypes(false))
             {
-                System.out.println(" " + subName);
+                System.out.println(" " + subType.getTypeId());
             }
-            System.out.println(name + " descendants (strict)");
-            for (CMISTypeId subName :cmisDictionaryService.getChildTypeIds(name, true))
+            System.out.println(type.getTypeId() + " descendants:");
+            for (CMISTypeDefinition subType : type.getSubTypes(true))
             {
-                System.out.println(" " + subName);
-            }
-        }
-        cmisDictionaryService.setStrict(false);
-        for (CMISTypeId name : cmisDictionaryService.getAllObjectTypeIds())
-        {
-            System.out.println(name + " children");
-            for (CMISTypeId subName :cmisDictionaryService.getChildTypeIds(name, false))
-            {
-                System.out.println(" " + subName);
-            }
-            System.out.println(name + " descendants");
-            for (CMISTypeId subName :cmisDictionaryService.getChildTypeIds(name, true))
-            {
-                System.out.println(" " + subName);
+                System.out.println(" " + subType.getTypeId());
             }
         }
     }
 
     public void testTypeIds()
     {
-        cmisDictionaryService.setStrict(false);
-        for (CMISTypeId name : cmisDictionaryService.getAllObjectTypeIds())
+        for (CMISTypeDefinition typeDef : cmisDictionaryService.getAllTypes())
         {
-            String typeId = name.getTypeId();
-            CMISTypeId lookup = cmisMapping.getCmisTypeId(typeId);
-            assertEquals(name, lookup);
-            System.out.println(name + " => " + lookup);
-            CMISTypeDefinition type = cmisDictionaryService.getType(lookup);
-            assertNotNull(type);
-            assertEquals(lookup, type.getObjectTypeId());
+            CMISTypeId typeId = typeDef.getTypeId();
+            CMISTypeDefinition typeDefLookup = cmisDictionaryService.getType(typeId);
+            assertNotNull(typeDefLookup);
+            assertEquals(typeDef, typeDefLookup);
         }
     }
 
-    public void testBasicProperties()
-    {
-        cmisDictionaryService.setStrict(false);
-        for (CMISTypeId name : cmisDictionaryService.getAllObjectTypeIds())
-        {
-            for (String propertyName : cmisDictionaryService.getPropertyDefinitions(name).keySet())
-            {
-                System.out.println(name +" -> "+ propertyName);
-            }
-        }
-    }
-    
     public void testBasicPropertyDefinitions()
     {
-        cmisDictionaryService.setStrict(true);
-        for (CMISTypeId name : cmisDictionaryService.getAllObjectTypeIds())
+        for (CMISTypeDefinition type : cmisDictionaryService.getAllTypes())
         {
-            for (CMISPropertyDefinition proDef : cmisDictionaryService.getPropertyDefinitions(name).values())
+            System.out.println(type.getTypeId() + " properties:");
+            for (CMISPropertyDefinition proDef : type.getPropertyDefinitions().values())
             {
-                System.out.println(proDef);
-            }
-        }
-        
-        cmisDictionaryService.setStrict(false);
-        for (CMISTypeId name : cmisDictionaryService.getAllObjectTypeIds())
-        {
-            for (CMISPropertyDefinition proDef : cmisDictionaryService.getPropertyDefinitions(name).values())
-            {
-                System.out.println(proDef);
+                System.out.println(" " + proDef);
             }
         }
     }

@@ -28,6 +28,7 @@ import java.io.Serializable;
 import java.util.Collection;
 
 import org.alfresco.cmis.CMISService;
+import org.alfresco.cmis.dictionary.CMISDictionaryModel;
 import org.alfresco.cmis.dictionary.CMISMapping;
 import org.alfresco.cmis.dictionary.CMISScope;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
@@ -57,7 +58,7 @@ public class ParentPropertyAccessor extends AbstractNamedPropertyAccessor
     
     protected ParentPropertyAccessor(CMISMapping cmisMapping, ServiceRegistry serviceRegistry, CMISService cmisService)
     {
-        super(cmisMapping, serviceRegistry, CMISScope.FOLDER, CMISMapping.PROP_PARENT_ID);
+        super(cmisMapping, serviceRegistry, CMISScope.FOLDER, CMISDictionaryModel.PROP_PARENT_ID);
         this.cmisService = cmisService;
     }
 

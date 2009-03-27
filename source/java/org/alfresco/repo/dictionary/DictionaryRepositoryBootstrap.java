@@ -56,7 +56,7 @@ import org.springframework.context.ApplicationEvent;
  * 
  * @author Roy Wetherall, JanV
  */
-public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean implements TenantDeployer, DictionaryDeployer, MessageDeployer
+public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean implements TenantDeployer, DictionaryListener, MessageDeployer
 {
     // Logging support
     private static Log logger = LogFactory
@@ -204,7 +204,7 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
         {
             public Object execute() throws Exception
             {
-                initDictionary();
+                onDictionaryInit();
                 initMessages();
                 
                 return (Object)null;
@@ -217,7 +217,11 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
         // NOOP - will be destroyed directly via DictionaryComponent
     }
     
-    public void initDictionary()
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.repo.dictionary.DictionaryListener#onInit()
+     */
+    public void onDictionaryInit()
     {
         if (this.repositoryModelsLocations != null)
         {            
@@ -279,6 +283,14 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
                 loadModel(modelMap, loadedModels, entry.getValue());
             }
         }
+    }
+    
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.repo.dictionary.DictionaryListener#afterInit()
+     */
+    public void afterDictionaryInit()
+    {
     }
     
     public void initMessages()

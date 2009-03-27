@@ -29,7 +29,7 @@ import java.util.Collection;
 import java.util.HashSet;
 
 import org.alfresco.cmis.CMISCardinalityEnum;
-import org.alfresco.cmis.CMISPropertyTypeEnum;
+import org.alfresco.cmis.CMISDataTypeEnum;
 import org.alfresco.cmis.CMISUpdatabilityEnum;
 import org.alfresco.repo.dictionary.IndexTokenisationMode;
 import org.alfresco.repo.dictionary.constraint.ListOfValuesConstraint;
@@ -44,169 +44,127 @@ import org.alfresco.repo.search.impl.lucene.analysis.VerbatimAnalyser;
 import org.alfresco.service.cmr.dictionary.Constraint;
 import org.alfresco.service.cmr.dictionary.ConstraintDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
-import org.alfresco.service.namespace.QName;
 
 /**
- * A CMIS property definition
+ * CMIS Property Definition
  * 
  * @author andyh
  */
 public class CMISPropertyDefinition implements Serializable
 {
-    /**
-     * 
-     */
     private static final long serialVersionUID = -8119257313852558466L;
 
-    private String propertyName;
-
-    private String propertyId;
-    
+    // Properties of Property
+    private CMISTypeDefinition typeDef;
+    private CMISPropertyId propertyId;
     private String displayName;
-
     private String description;
-    
-    private boolean isInherited;
-
-    private CMISPropertyTypeEnum propertyType;
-
+    private CMISDataTypeEnum propertyType;
     private CMISCardinalityEnum cardinality;
-
     private int maximumLength = -1;
-
     private String schemaURI = null;
-
     private String encoding = null;
-
     private Collection<CMISChoice> choices = new HashSet<CMISChoice>();
-
     private boolean isOpenChoice = false;
-
     private boolean required;
-
     private String defaultValue;
-
     private CMISUpdatabilityEnum updatability;
-
     private boolean queryable;
-
     private boolean orderable;
 
-    public CMISPropertyDefinition(CMISDictionaryService cmisDictionary, QName propertyQName, QName typeQName)
+    
+    /**
+     * Construct
+     * 
+     * @param cmisMapping
+     * @param propertyId
+     * @param propDef
+     * @param typeDef
+     */
+    public CMISPropertyDefinition(CMISMapping cmisMapping, CMISPropertyId propertyId, PropertyDefinition propDef, CMISTypeDefinition typeDef)
     {
-        CMISMapping cmisMapping = cmisDictionary.getCMISMapping();
-        PropertyDefinition propDef = cmisDictionary.getDictionaryService().getProperty(propertyQName);
-        if (propDef.getContainerClass().getName().equals(CMISMapping.RELATIONSHIP_QNAME))
+        this.propertyId = propertyId;
+        this.typeDef = typeDef;
+        displayName = (propDef.getTitle() != null) ? propDef.getTitle() : propertyId.getName();
+        description = propDef.getDescription();
+        propertyType = cmisMapping.getDataType(propDef.getDataType());
+        cardinality = propDef.isMultiValued() ? CMISCardinalityEnum.MULTI_VALUED : CMISCardinalityEnum.SINGLE_VALUED;
+        for (ConstraintDefinition constraintDef : propDef.getConstraints())
         {
-            // Properties of associations - all the same
-            propertyName = cmisMapping.getCmisPropertyName(propertyQName);
-            propertyId = cmisMapping.getCmisPropertyId(propertyQName);
-            displayName = (propDef.getTitle() != null) ? propDef.getTitle() : propertyName;
-            description = propDef.getDescription();
-            isInherited = false;
-            propertyType = cmisMapping.getPropertyType(propertyQName);
-            cardinality = propDef.isMultiValued() ? CMISCardinalityEnum.MULTI_VALUED : CMISCardinalityEnum.SINGLE_VALUED;
-            required = propDef.isMandatory();
-            defaultValue = propDef.getDefaultValue();
-            updatability = propDef.isProtected() ? CMISUpdatabilityEnum.READ_ONLY : CMISUpdatabilityEnum.READ_AND_WRITE;
-            queryable = false;
-            orderable = false;
+            Constraint constraint = constraintDef.getConstraint();
+            if (constraint instanceof ListOfValuesConstraint)
+            {
+                int position = 1;  // CMIS is 1 based (according to XSDs)
+                ListOfValuesConstraint lovc = (ListOfValuesConstraint) constraint;
+                for (String allowed : lovc.getAllowedValues())
+                {
+                    CMISChoice choice = new CMISChoice(allowed, allowed, position++);
+                    choices.add(choice);
+                }
+            }
+            if (constraint instanceof StringLengthConstraint)
+            {
+                StringLengthConstraint slc = (StringLengthConstraint) constraint;
+                maximumLength = slc.getMaxLength();
+            }
+        }
+        required = propDef.isMandatory();
+        defaultValue = propDef.getDefaultValue();
+        updatability = propDef.isProtected() ? CMISUpdatabilityEnum.READ_ONLY : CMISUpdatabilityEnum.READ_AND_WRITE;
+        queryable = propDef.isIndexed();
+        if (queryable)
+        {
+            IndexTokenisationMode indexTokenisationMode = IndexTokenisationMode.TRUE;
+            if (propDef.getIndexTokenisationMode() != null)
+            {
+                indexTokenisationMode = propDef.getIndexTokenisationMode();
+            }
+            switch (indexTokenisationMode)
+            {
+            case BOTH:
+            case FALSE:
+                orderable = true;
+                break;
+            case TRUE:
+            default:
+                String analyserClassName = propDef.getDataType().getAnalyserClassName();
+                if (analyserClassName.equals(DateTimeAnalyser.class.getCanonicalName())
+                        || analyserClassName.equals(DoubleAnalyser.class.getCanonicalName()) || analyserClassName.equals(FloatAnalyser.class.getCanonicalName())
+                        || analyserClassName.equals(IntegerAnalyser.class.getCanonicalName()) || analyserClassName.equals(LongAnalyser.class.getCanonicalName())
+                        || analyserClassName.equals(PathAnalyser.class.getCanonicalName()) || analyserClassName.equals(VerbatimAnalyser.class.getCanonicalName()))
+                {
+                    orderable = true;
+                }
+                else
+                {
+                    orderable = false;
+                }
+            }
         }
         else
         {
-
-            propertyName = cmisMapping.getCmisPropertyName(propertyQName);
-            propertyId = cmisMapping.getCmisPropertyId(propertyQName);
-            displayName = (propDef.getTitle() != null) ? propDef.getTitle() : propertyName;
-            description = propDef.getDescription();
-            if(propDef.getContainerClass().isAspect())
-            {
-                isInherited = false;
-            }
-            else
-            {
-                isInherited = !propDef.getContainerClass().equals(typeQName);
-            }
-            propertyType = cmisMapping.getPropertyType(propertyQName);
-            cardinality = propDef.isMultiValued() ? CMISCardinalityEnum.MULTI_VALUED : CMISCardinalityEnum.SINGLE_VALUED;
-            for (ConstraintDefinition constraintDef : propDef.getConstraints())
-            {
-                Constraint constraint = constraintDef.getConstraint();
-                if (constraint instanceof ListOfValuesConstraint)
-                {
-                    int position = 1;  // CMIS is 1 based (according to XSDs)
-                    ListOfValuesConstraint lovc = (ListOfValuesConstraint) constraint;
-                    for (String allowed : lovc.getAllowedValues())
-                    {
-                        CMISChoice choice = new CMISChoice(allowed, allowed, position++);
-                        choices.add(choice);
-                    }
-                }
-                if (constraint instanceof StringLengthConstraint)
-                {
-                    StringLengthConstraint slc = (StringLengthConstraint) constraint;
-                    maximumLength = slc.getMaxLength();
-                }
-            }
-            required = propDef.isMandatory();
-            defaultValue = propDef.getDefaultValue();
-            updatability = propDef.isProtected() ? CMISUpdatabilityEnum.READ_ONLY : CMISUpdatabilityEnum.READ_AND_WRITE;
-            queryable = propDef.isIndexed();
-            if (queryable)
-            {
-                IndexTokenisationMode indexTokenisationMode = IndexTokenisationMode.TRUE;
-                if (propDef.getIndexTokenisationMode() != null)
-                {
-                    indexTokenisationMode = propDef.getIndexTokenisationMode();
-                }
-                switch (indexTokenisationMode)
-                {
-                case BOTH:
-                case FALSE:
-                    orderable = true;
-                    break;
-                case TRUE:
-                default:
-                    String analyserClassName = propDef.getDataType().getAnalyserClassName();
-                    if (analyserClassName.equals(DateTimeAnalyser.class.getCanonicalName())
-                            || analyserClassName.equals(DoubleAnalyser.class.getCanonicalName()) || analyserClassName.equals(FloatAnalyser.class.getCanonicalName())
-                            || analyserClassName.equals(IntegerAnalyser.class.getCanonicalName()) || analyserClassName.equals(LongAnalyser.class.getCanonicalName())
-                            || analyserClassName.equals(PathAnalyser.class.getCanonicalName()) || analyserClassName.equals(VerbatimAnalyser.class.getCanonicalName()))
-                    {
-                        orderable = true;
-                    }
-                    else
-                    {
-                        orderable = false;
-                    }
-                }
-            }
-            else
-            {
-                orderable = false;
-            }
+            orderable = false;
         }
-
     }
 
     /**
-     * Get the property name
+     * Get Property Id
      * 
      * @return
      */
-    public String getPropertyName()
-    {
-        return propertyName;
-    }
-
-    /**
-     * Get the property id
-     * 
-     * @return
-     */
-    public String getPropertyId()
+    public CMISPropertyId getPropertyId()
     {
         return propertyId;
+    }
+
+    /**
+     * Get Owning Type
+     * 
+     * @return
+     */
+    public CMISTypeDefinition getOwningType()
+    {
+        return typeDef;
     }
 
     /**
@@ -228,23 +186,13 @@ public class CMISPropertyDefinition implements Serializable
     {
         return description;
     }
-    
-    /**
-     * Is the property definition inherited?
-     * 
-     * @return
-     */
-    public boolean isInherited()
-    {
-        return isInherited;
-    }
 
     /**
      * Get the property type
      * 
      * @return
      */
-    public CMISPropertyTypeEnum getPropertyType()
+    public CMISDataTypeEnum getDataType()
     {
         return propertyType;
     }
@@ -359,16 +307,21 @@ public class CMISPropertyDefinition implements Serializable
         return orderable;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
+    @Override
     public String toString()
     {
         StringBuilder builder = new StringBuilder();
         builder.append("CMISPropertyDefinition[");
-        builder.append("PropertyName=").append(getPropertyName()).append(", ");
-        builder.append("PropertyId=").append(getPropertyId()).append(", ");
+        builder.append("OwningTypeId=").append(getOwningType().getTypeId()).append(", ");
+        builder.append("PropertyName=").append(getPropertyId().getName()).append(", ");
+        builder.append("PropertyId=").append(getPropertyId().getId()).append(", ");
         builder.append("DisplayName=").append(getDisplayName()).append(", ");
         builder.append("Description=").append(getDescription()).append(", ");
-        builder.append("IsInherited=").append(isInherited()).append(", ");
-        builder.append("PropertyType=").append(getPropertyType()).append(", ");
+        builder.append("PropertyType=").append(getDataType()).append(", ");
         builder.append("Cardinality=").append(getCardinality()).append(", ");
         builder.append("MaximumLength=").append(getMaximumLength()).append(", ");
         builder.append("SchemaURI=").append(getSchemaURI()).append(", ");

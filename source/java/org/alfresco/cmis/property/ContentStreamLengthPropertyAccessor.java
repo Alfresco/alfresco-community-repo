@@ -27,6 +27,7 @@ package org.alfresco.cmis.property;
 import java.io.Serializable;
 import java.util.Collection;
 
+import org.alfresco.cmis.dictionary.CMISDictionaryModel;
 import org.alfresco.cmis.dictionary.CMISMapping;
 import org.alfresco.cmis.dictionary.CMISScope;
 import org.alfresco.model.ContentModel;
@@ -55,7 +56,7 @@ public class ContentStreamLengthPropertyAccessor extends AbstractNamedPropertyAc
 
     protected ContentStreamLengthPropertyAccessor(CMISMapping cmisMapping, ServiceRegistry serviceRegistry)
     {
-        super(cmisMapping, serviceRegistry, CMISScope.DOCUMENT, CMISMapping.PROP_CONTENT_STREAM_LENGTH);
+        super(cmisMapping, serviceRegistry, CMISScope.DOCUMENT, CMISDictionaryModel.PROP_CONTENT_STREAM_LENGTH);
     }
 
     public Serializable getProperty(NodeRef nodeRef)

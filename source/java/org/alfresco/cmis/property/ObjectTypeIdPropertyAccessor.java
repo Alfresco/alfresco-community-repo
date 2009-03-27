@@ -28,6 +28,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import org.alfresco.cmis.dictionary.CMISDictionaryModel;
 import org.alfresco.cmis.dictionary.CMISMapping;
 import org.alfresco.cmis.dictionary.CMISScope;
 import org.alfresco.cmis.dictionary.CMISTypeId;
@@ -55,7 +56,7 @@ public class ObjectTypeIdPropertyAccessor extends AbstractNamedPropertyAccessor
 {
     protected ObjectTypeIdPropertyAccessor(CMISMapping cmisMapping, ServiceRegistry serviceRegistry)
     {
-        super(cmisMapping, serviceRegistry, CMISScope.OBJECT, CMISMapping.PROP_OBJECT_TYPE_ID);
+        super(cmisMapping, serviceRegistry, CMISScope.OBJECT, CMISDictionaryModel.PROP_OBJECT_TYPE_ID);
     }
 
     public Serializable getProperty(NodeRef nodeRef)
@@ -74,7 +75,7 @@ public class ObjectTypeIdPropertyAccessor extends AbstractNamedPropertyAccessor
         {
             scope = CMISScope.UNKNOWN;
         }
-        return getCMISMapping().getCmisTypeId(scope, typeQName).getTypeId();
+        return getCMISMapping().getCmisTypeId(scope, typeQName).getId();
     }
 
     public void setProperty(NodeRef nodeRef, Serializable value)

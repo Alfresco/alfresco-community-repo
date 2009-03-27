@@ -32,6 +32,7 @@ import java.util.Map;
 
 import org.alfresco.cmis.CMISContentStreamAllowedEnum;
 import org.alfresco.cmis.CMISService;
+import org.alfresco.cmis.dictionary.CMISDictionaryModel;
 import org.alfresco.cmis.dictionary.CMISMapping;
 import org.alfresco.cmis.dictionary.CMISScope;
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -257,37 +258,37 @@ public class CMISPropertyServiceImpl implements CMISPropertyService, Initializin
 
         // CMIS Object
         addNamedPropertyAccessor(getObjectIdPropertyAccessor());
-        addNamedPropertyAccessor(getFixedValuePropertyAccessor(CMISMapping.PROP_URI, null, CMISScope.OBJECT));
+        addNamedPropertyAccessor(getFixedValuePropertyAccessor(CMISDictionaryModel.PROP_URI, null, CMISScope.OBJECT));
         addNamedPropertyAccessor(getObjectTypeIdPropertyAccessor());
-        addNamedPropertyAccessor(getSimplePropertyAccessor(CMISMapping.PROP_CREATED_BY, ContentModel.PROP_CREATOR, CMISScope.OBJECT));
-        addNamedPropertyAccessor(getSimplePropertyAccessor(CMISMapping.PROP_CREATION_DATE, ContentModel.PROP_CREATED, CMISScope.OBJECT));
-        addNamedPropertyAccessor(getSimplePropertyAccessor(CMISMapping.PROP_LAST_MODIFIED_BY, ContentModel.PROP_MODIFIER, CMISScope.OBJECT));
-        addNamedPropertyAccessor(getSimplePropertyAccessor(CMISMapping.PROP_LAST_MODIFICATION_DATE, ContentModel.PROP_MODIFIED, CMISScope.OBJECT));
-        addNamedPropertyAccessor(getFixedValuePropertyAccessor(CMISMapping.PROP_CHANGE_TOKEN, null, CMISScope.OBJECT));
+        addNamedPropertyAccessor(getSimplePropertyAccessor(CMISDictionaryModel.PROP_CREATED_BY, ContentModel.PROP_CREATOR, CMISScope.OBJECT));
+        addNamedPropertyAccessor(getSimplePropertyAccessor(CMISDictionaryModel.PROP_CREATION_DATE, ContentModel.PROP_CREATED, CMISScope.OBJECT));
+        addNamedPropertyAccessor(getSimplePropertyAccessor(CMISDictionaryModel.PROP_LAST_MODIFIED_BY, ContentModel.PROP_MODIFIER, CMISScope.OBJECT));
+        addNamedPropertyAccessor(getSimplePropertyAccessor(CMISDictionaryModel.PROP_LAST_MODIFICATION_DATE, ContentModel.PROP_MODIFIED, CMISScope.OBJECT));
+        addNamedPropertyAccessor(getFixedValuePropertyAccessor(CMISDictionaryModel.PROP_CHANGE_TOKEN, null, CMISScope.OBJECT));
 
         // CMIS Document and Folder
-        addNamedPropertyAccessor(getSimplePropertyAccessor(CMISMapping.PROP_NAME, ContentModel.PROP_NAME, CMISScope.OBJECT));
+        addNamedPropertyAccessor(getSimplePropertyAccessor(CMISDictionaryModel.PROP_NAME, ContentModel.PROP_NAME, CMISScope.OBJECT));
 
         // CMIS Document
         addNamedPropertyAccessor(getIsImmutablePropertyAccessor());
         addNamedPropertyAccessor(getIsLatestVersionPropertyAccessor());
         addNamedPropertyAccessor(getIsMajorVersionPropertyAccessor());
         addNamedPropertyAccessor(getIsLatestMajorVersionPropertyAccessor());
-        addNamedPropertyAccessor(getSimplePropertyAccessor(CMISMapping.PROP_VERSION_LABEL, ContentModel.PROP_VERSION_LABEL, CMISScope.DOCUMENT));
+        addNamedPropertyAccessor(getSimplePropertyAccessor(CMISDictionaryModel.PROP_VERSION_LABEL, ContentModel.PROP_VERSION_LABEL, CMISScope.DOCUMENT));
         addNamedPropertyAccessor(getVersionSeriesIdPropertyAccessor());
         addNamedPropertyAccessor(getVersionSeriesIsCheckedOutPropertyAccessor());
         addNamedPropertyAccessor(getVersionSeriesCheckedOutByPropertyAccessor());
         addNamedPropertyAccessor(getVersionSeriesCheckedOutIdPropertyAccessor());
         addNamedPropertyAccessor(getCheckinCommentPropertyAccessor());
-        addNamedPropertyAccessor(getFixedValuePropertyAccessor(CMISMapping.PROP_CONTENT_STREAM_ALLOWED, CMISContentStreamAllowedEnum.ALLOWED.toString(), CMISScope.DOCUMENT));
+        addNamedPropertyAccessor(getFixedValuePropertyAccessor(CMISDictionaryModel.PROP_CONTENT_STREAM_ALLOWED, CMISContentStreamAllowedEnum.ALLOWED.toString(), CMISScope.DOCUMENT));
         addNamedPropertyAccessor(getContentStreamLengthPropertyAccessor());
         addNamedPropertyAccessor(getContentStreamMimetypePropertyAccessor());
-        addNamedPropertyAccessor(getSimplePropertyAccessor(CMISMapping.PROP_CONTENT_STREAM_FILENAME, ContentModel.PROP_NAME, CMISScope.DOCUMENT));
+        addNamedPropertyAccessor(getSimplePropertyAccessor(CMISDictionaryModel.PROP_CONTENT_STREAM_FILENAME, ContentModel.PROP_NAME, CMISScope.DOCUMENT));
         addNamedPropertyAccessor(getContentStreamUriPropertyAccessor());
 
         // CMIS Folder
         addNamedPropertyAccessor(getParentPropertyAccessor());
-        addNamedPropertyAccessor(getFixedValuePropertyAccessor(CMISMapping.PROP_ALLOWED_CHILD_OBJECT_TYPE_IDS, null, CMISScope.FOLDER));
+        addNamedPropertyAccessor(getFixedValuePropertyAccessor(CMISDictionaryModel.PROP_ALLOWED_CHILD_OBJECT_TYPE_IDS, null, CMISScope.FOLDER));
     }
 
     public void addNamedPropertyAccessor(NamedPropertyAccessor namedPropertyAccessor)

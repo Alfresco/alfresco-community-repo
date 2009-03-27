@@ -29,7 +29,7 @@ package org.alfresco.cmis;
  * 
  * @author andyh
  */
-public enum CMISPropertyTypeEnum implements EnumLabel
+public enum CMISDataTypeEnum implements EnumLabel
 {
     STRING("string"), 
     DECIMAL("decimal"), 
@@ -49,7 +49,7 @@ public enum CMISPropertyTypeEnum implements EnumLabel
      * 
      * @param label
      */
-    CMISPropertyTypeEnum(String label)
+    CMISDataTypeEnum(String label)
     {
         this.label = label;
     }
@@ -62,5 +62,5 @@ public enum CMISPropertyTypeEnum implements EnumLabel
         return label;
     }
 
-    public static EnumFactory<CMISPropertyTypeEnum> FACTORY = new EnumFactory<CMISPropertyTypeEnum>(CMISPropertyTypeEnum.class, null, true);     
+    public static EnumFactory<CMISDataTypeEnum> FACTORY = new EnumFactory<CMISDataTypeEnum>(CMISDataTypeEnum.class, null, true);     
 }

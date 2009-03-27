@@ -38,10 +38,8 @@ import org.alfresco.repo.search.impl.querymodel.FunctionalConstraint;
 import org.alfresco.repo.search.impl.querymodel.Join;
 import org.alfresco.repo.search.impl.querymodel.JoinType;
 import org.alfresco.repo.search.impl.querymodel.PropertyArgument;
-import org.alfresco.repo.search.impl.querymodel.QueryModelException;
 import org.alfresco.repo.search.impl.querymodel.Selector;
 import org.alfresco.repo.search.impl.querymodel.Source;
-import org.alfresco.repo.search.impl.querymodel.StaticArgument;
 import org.alfresco.repo.search.impl.querymodel.impl.functions.Equals;
 import org.alfresco.service.namespace.QName;
 

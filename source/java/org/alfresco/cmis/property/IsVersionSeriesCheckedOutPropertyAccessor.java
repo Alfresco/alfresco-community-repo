@@ -27,6 +27,7 @@ package org.alfresco.cmis.property;
 import java.io.Serializable;
 import java.util.Collection;
 
+import org.alfresco.cmis.dictionary.CMISDictionaryModel;
 import org.alfresco.cmis.dictionary.CMISMapping;
 import org.alfresco.cmis.dictionary.CMISScope;
 import org.alfresco.model.ContentModel;
@@ -48,7 +49,7 @@ public class IsVersionSeriesCheckedOutPropertyAccessor extends AbstractNamedProp
 
     protected IsVersionSeriesCheckedOutPropertyAccessor(CMISMapping cmisMapping, ServiceRegistry serviceRegistry)
     {
-        super(cmisMapping, serviceRegistry, CMISScope.DOCUMENT, CMISMapping.PROP_IS_VERSION_SERIES_CHECKED_OUT);
+        super(cmisMapping, serviceRegistry, CMISScope.DOCUMENT, CMISDictionaryModel.PROP_IS_VERSION_SERIES_CHECKED_OUT);
     }
 
     public Serializable getProperty(NodeRef nodeRef)

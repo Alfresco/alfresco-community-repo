@@ -57,8 +57,6 @@ public class CMISQueryServiceImpl implements CMISQueryService
 
     private CMISPropertyService cmisPropertyService;
 
-    private CMISMapping cmisMapping;
-
     private QueryEngine queryEngine;
 
     private NodeService nodeService;
@@ -79,15 +77,6 @@ public class CMISQueryServiceImpl implements CMISQueryService
     public void setCmisDictionaryService(CMISDictionaryService cmisDictionaryService)
     {
         this.cmisDictionaryService = cmisDictionaryService;
-    }
-
-    /**
-     * @param cmisMapping
-     *            the cmisMapping to set
-     */
-    public void setCmisMapping(CMISMapping cmisMapping)
-    {
-        this.cmisMapping = cmisMapping;
     }
 
     /**
@@ -129,7 +118,7 @@ public class CMISQueryServiceImpl implements CMISQueryService
         {
             joinSupport = CMISJoinEnum.INNER_JOIN_SUPPORT;
         }
-        CMISQueryParser parser = new CMISQueryParser(options, cmisDictionaryService, cmisMapping, joinSupport);
+        CMISQueryParser parser = new CMISQueryParser(options, cmisDictionaryService, joinSupport);
         Query query = parser.parse(queryEngine.getQueryModelFactory());
 
         CmisFunctionEvaluationContext functionContext = new CmisFunctionEvaluationContext();

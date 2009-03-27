@@ -25,371 +25,97 @@
 package org.alfresco.cmis.dictionary;
 
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
 
-import org.alfresco.service.cmr.dictionary.AspectDefinition;
-import org.alfresco.service.cmr.dictionary.AssociationDefinition;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.dictionary.TypeDefinition;
+import org.alfresco.cmis.CMISDataTypeEnum;
 import org.alfresco.service.namespace.QName;
 
 /**
  * Service to query the CMIS meta model
  * 
- * @author andyh
+ * @author davidc
  */
-public class CMISDictionaryService
+public interface CMISDictionaryService
 {
-    private CMISMapping cmisMapping;
-
-    private DictionaryService dictionaryService;
-
-    private boolean strict = true;
-
     /**
-     * Set the mapping service
-     * 
-     * @param cmisMapping
-     */
-    public void setCMISMapping(CMISMapping cmisMapping)
-    {
-        this.cmisMapping = cmisMapping;
-    }
-
-    /**
-     * @return cmis mapping service
-     */
-    public CMISMapping getCMISMapping()
-    {
-        return cmisMapping;
-    }
-
-    /**
-     * Set the dictionary Service
-     * 
-     * @param dictionaryService
-     */
-    public void setDictionaryService(DictionaryService dictionaryService)
-    {
-        this.dictionaryService = dictionaryService;
-    }
-
-    /**
-     * Gets the dictionary service
-     * 
-     * @return dictionaryService
-     */
-    /* package */DictionaryService getDictionaryService()
-    {
-        return this.dictionaryService;
-    }
-
-    /**
-     * Is the service strict (CMIS types only)
-     * 
-     * @return
-     */
-    public boolean isStrict()
-    {
-        return strict;
-    }
-
-    /**
-     * Set strict mode. In strict mode only CMIS types and properties are returned
-     * 
-     * @param strict
-     */
-    public void setStrict(boolean strict)
-    {
-        this.strict = strict;
-    }
-
-    /**
-     * Get the all the object types ids TODO: Note there can be name collisions between types and associations. e.g.
-     * app:configurations
-     * 
-     * @return
-     */
-    public Collection<CMISTypeId> getAllObjectTypeIds()
-    {
-        Collection<QName> alfrescoTypeQNames;
-        Collection<QName> alfrescoAssociationQNames;
-
-        if (strict)
-        {
-            alfrescoTypeQNames = dictionaryService.getTypes(CMISMapping.CMIS_MODEL_QNAME);
-            alfrescoAssociationQNames = dictionaryService.getAssociations(CMISMapping.CMIS_MODEL_QNAME);
-        }
-        else
-        {
-            alfrescoTypeQNames = dictionaryService.getAllTypes();
-            alfrescoAssociationQNames = dictionaryService.getAllAssociations();
-        }
-
-        Collection<CMISTypeId> answer = new HashSet<CMISTypeId>(alfrescoTypeQNames.size() + alfrescoAssociationQNames.size());
-
-        for (QName typeQName : alfrescoTypeQNames)
-        {
-            if (cmisMapping.isValidCmisDocument(typeQName))
-            {
-                answer.add(cmisMapping.getCmisTypeId(CMISScope.DOCUMENT, typeQName));
-            }
-            else if (cmisMapping.isValidCmisFolder(typeQName))
-            {
-                answer.add(cmisMapping.getCmisTypeId(CMISScope.FOLDER, typeQName));
-            }
-            else if (typeQName.equals(CMISMapping.RELATIONSHIP_QNAME))
-            {
-                answer.add(cmisMapping.getCmisTypeId(CMISScope.RELATIONSHIP, typeQName));
-            }
-            // TODO: Policy
-            // For now, policies are not reported
-        }
-
-        for (QName associationName : alfrescoAssociationQNames)
-        {
-            if (cmisMapping.isValidCmisRelationship(associationName))
-            {
-                answer.add(cmisMapping.getCmisTypeId(CMISScope.RELATIONSHIP, associationName));
-            }
-        }
-
-        return answer;
-    }
-
-    /**
-     * Gets all the object type ids within a type hierarchy
-     * 
-     * @param typeId
-     * @param descendants
-     *            true => include all descendants, false => children only
-     * @return
-     */
-    public Collection<CMISTypeId> getChildTypeIds(CMISTypeId typeId, boolean descendants)
-    {
-        switch (typeId.getScope())
-        {
-        case RELATIONSHIP:
-            if (typeId.equals(CMISMapping.RELATIONSHIP_TYPE_ID))
-            {
-                // all associations are sub-type of RELATIONSHIP_OBJECT_TYPE
-                // NOTE: ignore descendants
-                Collection<QName> alfrescoAssociationQNames = dictionaryService.getAllAssociations();
-                Collection<CMISTypeId> types = new HashSet<CMISTypeId>(alfrescoAssociationQNames.size());
-                for (QName associationName : alfrescoAssociationQNames)
-                {
-                    if (cmisMapping.isValidCmisRelationship(associationName))
-                    {
-                        types.add(cmisMapping.getCmisTypeId(CMISScope.RELATIONSHIP, associationName));
-                    }
-                }
-                return types;
-            }
-            else
-            {
-                return Collections.emptySet();
-            }
-        case DOCUMENT:
-        case FOLDER:
-            TypeDefinition typeDefinition = dictionaryService.getType(typeId.getQName());
-            if (typeDefinition != null)
-            {
-                if (cmisMapping.isValidCmisType(typeId.getQName()))
-                {
-                    QName alfrescoQName = cmisMapping.getAlfrescoType(typeId.getQName());
-                    Collection<QName> alfrescoTypeQNames = dictionaryService.getSubTypes(alfrescoQName, descendants);
-                    Collection<CMISTypeId> types = new HashSet<CMISTypeId>(alfrescoTypeQNames.size());
-                    for (QName typeQName : alfrescoTypeQNames)
-                    {
-                        CMISTypeId subTypeId = cmisMapping.getCmisTypeId(typeQName);
-                        if (typeId != null)
-                        {
-                            types.add(subTypeId);
-                        }
-                    }
-                    return types;
-                }
-                else
-                {
-                    return Collections.emptySet();
-                }
-            }
-            else
-            {
-                return Collections.emptySet();
-            }
-        case POLICY:
-            // TODO: Policy
-        default:
-            return Collections.emptySet();
-        }
-    }
-
-    /**
-     * Get the object type definition TODO: Note there can be name collisions between types and associations. e.g.
-     * app:configurations Currently clashing types will give inconsistent behaviour
+     * Get Type Id
      * 
      * @param typeId
      * @return
      */
-    public CMISTypeDefinition getType(CMISTypeId typeId)
-    {
-        switch (typeId.getScope())
-        {
-        case RELATIONSHIP:
-            // Associations
-            if (cmisMapping.isValidCmisRelationship(typeId.getQName()))
-            {
-                return new CMISTypeDefinition(this, typeId);
-            }
-            else
-            {
-                return null;
-            }
-        case DOCUMENT:
-        case FOLDER:
-            TypeDefinition typeDefinition = dictionaryService.getType(typeId.getQName());
-            if (typeDefinition != null)
-            {
-                if (cmisMapping.isValidCmisType(typeId.getQName()))
-                {
-                    return new CMISTypeDefinition(this, typeId);
-                }
-                else
-                {
-                    return null;
-                }
-            }
-            else
-            {
-                return null;
-            }
-        case POLICY:
-            // TODO: Policy
-        default:
-            return null;
-        }
-    }
+    public CMISTypeId getTypeId(String typeId);
+    
+    /**
+     * Get Type Id from Table Name
+     * 
+     * @param table
+     * @return
+     */
+    public CMISTypeId getTypeIdFromTable(String table);
+    
+    /**
+     * Get Type Id from Alfresco Class Name
+     * 
+     * @param clazz
+     * @param matchingScope  if provided, only return type id matching scope
+     * @return
+     */
+    public CMISTypeId getTypeId(QName clazz, CMISScope matchingScope);
 
     /**
-     * Get all the property definitions for a type
+     * Get Type Definition
      * 
      * @param typeId
      * @return
      */
-    public Map<String, CMISPropertyDefinition> getPropertyDefinitions(CMISTypeId typeId)
-    {
-        HashMap<String, CMISPropertyDefinition> properties = new HashMap<String, CMISPropertyDefinition>();
-
-        switch (typeId.getScope())
-        {
-        case RELATIONSHIP:
-            // Associations - only have CMIS properties
-            AssociationDefinition associationDefinition = dictionaryService.getAssociation(typeId.getQName());
-            if (associationDefinition != null)
-            {
-                if (cmisMapping.isValidCmisRelationship(typeId.getQName()))
-                {
-                    return getPropertyDefinitions(CMISMapping.RELATIONSHIP_TYPE_ID);
-                }
-                break;
-            }
-
-            if (!typeId.getQName().equals(CMISMapping.RELATIONSHIP_QNAME))
-            {
-                break;
-            }
-            // Fall through for CMISMapping.RELATIONSHIP_QNAME
-        case DOCUMENT:
-        case FOLDER:
-            TypeDefinition typeDefinition = dictionaryService.getType(typeId.getQName());
-            if (typeDefinition != null)
-            {
-                if (cmisMapping.isValidCmisDocumentOrFolder(typeId.getQName()) || typeId.getQName().equals(CMISMapping.RELATIONSHIP_QNAME))
-                {
-                    for (QName qname : typeDefinition.getProperties().keySet())
-                    {
-                        if (cmisMapping.getPropertyType(qname) != null)
-                        {
-                            CMISPropertyDefinition cmisPropDefinition = new CMISPropertyDefinition(this, qname, typeDefinition.getName());
-                            properties.put(cmisPropDefinition.getPropertyName(), cmisPropDefinition);
-                        }
-                    }
-                    for (AspectDefinition aspect : typeDefinition.getDefaultAspects())
-                    {
-                        for (QName qname : aspect.getProperties().keySet())
-                        {
-                            if (cmisMapping.getPropertyType(qname) != null)
-                            {
-                                CMISPropertyDefinition cmisPropDefinition = new CMISPropertyDefinition(this, qname, typeDefinition.getName());
-                                properties.put(cmisPropDefinition.getPropertyName(), cmisPropDefinition);
-                            }
-                        }
-                    }
-                }
-                if (cmisMapping.isValidCmisDocumentOrFolder(typeId.getQName()))
-                {
-                    // Add CMIS properties if required
-                    if (!cmisMapping.isCmisCoreType(typeId.getQName()))
-                    {
-                        properties.putAll(getPropertyDefinitions(typeId.getRootTypeId()));
-                    }
-                }
-            }
-            break;
-        case POLICY:
-            AspectDefinition aspectDefinition = dictionaryService.getAspect(typeId.getQName());
-            if (aspectDefinition != null)
-            {
-
-                for (QName qname : aspectDefinition.getProperties().keySet())
-                {
-                    if (cmisMapping.getPropertyType(qname) != null)
-                    {
-                        CMISPropertyDefinition cmisPropDefinition = new CMISPropertyDefinition(this, qname, aspectDefinition.getName());
-                        properties.put(cmisPropDefinition.getPropertyName(), cmisPropDefinition);
-                    }
-                }
-                for (AspectDefinition aspect : aspectDefinition.getDefaultAspects())
-                {
-                    for (QName qname : aspect.getProperties().keySet())
-                    {
-                        if (cmisMapping.getPropertyType(qname) != null)
-                        {
-                            CMISPropertyDefinition cmisPropDefinition = new CMISPropertyDefinition(this, qname, aspectDefinition.getName());
-                            properties.put(cmisPropDefinition.getPropertyName(), cmisPropDefinition);
-                        }
-                    }
-                }
-
-                // Add CMIS properties if required
-                if (!cmisMapping.isCmisCoreType(typeId.getQName()))
-                {
-                    properties.putAll(getPropertyDefinitions(typeId.getRootTypeId()));
-                }
-
-            }
-            break;
-        case UNKNOWN:
-        default:
-            break;
-        }
-
-        return properties;
-    }
-
+    public CMISTypeDefinition getType(CMISTypeId typeId);
+    
     /**
-     * Get a single property definition
+     * Get All Type Definitions
      * 
-     * @param typeId
-     * @param propertyName
      * @return
      */
-    public CMISPropertyDefinition getPropertyDefinition(CMISTypeId typeId, String propertyName)
-    {
-        return getPropertyDefinitions(typeId).get(propertyName);
-    }
+    public Collection<CMISTypeDefinition> getAllTypes();
+    
+    /**
+     * Get Property Id for Alfresco property name
+     * 
+     * @param property
+     * @return
+     */
+    public CMISPropertyId getPropertyId(QName property);
+    
+    /**
+     * Get Property Id
+     * 
+     * @param propertyId
+     * @return
+     */
+    public CMISPropertyId getPropertyId(String propertyId);
+    
+    /**
+     * Get Property
+     * 
+     * @param propertyId
+     * @return
+     */
+    public CMISPropertyDefinition getProperty(CMISPropertyId propertyId);
+    
+    /**
+     * Get Data Type
+     * 
+     * @param dataType
+     * @return
+     */
+    public CMISDataTypeEnum getDataType(QName dataType);
+
+    
+    // public CMISTypeDef findType(CMISTypeId typeId)
+    // public CMISTypeDef findType(String typeId)
+    // public CMISTypeDef findTypeForClass(QName clazz, CMISScope matchingScope, ...)
+    // public CMISTypeDef findTypeForTable(String tableName)
+    // public CMISTypeDef getAllTypes();
+    // public CMISPropertyDefinition getProperty(QName property)
+    // public CMISPropertyDefinition getProperty(CMISTypeDef typeDef, String property)
+    // public CMISDataTypeEnum getDataType(QName dataType)
+    
 }

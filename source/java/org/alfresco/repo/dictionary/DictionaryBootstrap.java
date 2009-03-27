@@ -41,7 +41,7 @@ import org.apache.commons.logging.LogFactory;
  * @author David Caruana
  *
  */
-public class DictionaryBootstrap implements DictionaryDeployer
+public class DictionaryBootstrap implements DictionaryListener
 {
     // The list of models to bootstrap with
     private List<String> models = new ArrayList<String>();
@@ -105,7 +105,7 @@ public class DictionaryBootstrap implements DictionaryDeployer
      */
     public void bootstrap()
     {
-        initDictionary();
+        onDictionaryInit();
         initStaticMessages();
         
         register();
@@ -119,10 +119,11 @@ public class DictionaryBootstrap implements DictionaryDeployer
     	dictionaryDAO.register(this);
     }
 
-    /**
-     * Populate the Dictionary
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.repo.dictionary.DictionaryListener#onInit()
      */
-    public void initDictionary()
+    public void onDictionaryInit()
     {
         if ((tenantService == null) || (! tenantService.isTenantUser()))
         {
@@ -148,6 +149,14 @@ public class DictionaryBootstrap implements DictionaryDeployer
                 }
             }
         }
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.repo.dictionary.DictionaryListener#afterInit()
+     */
+    public void afterDictionaryInit()
+    {
     }
     
     /**

@@ -35,7 +35,8 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.alfresco.cmis.dictionary.BaseCMISTest;
-import org.alfresco.cmis.dictionary.CMISMapping;
+import org.alfresco.cmis.dictionary.CMISDictionaryModel;
+import org.alfresco.cmis.dictionary.CMISTypeDefinition;
 import org.alfresco.cmis.search.CMISQueryOptions.CMISQueryMode;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.impl.parsers.CMISLexer;
@@ -916,31 +917,31 @@ public class QueryTest extends BaseCMISTest
 
     public void test_CHANGE_TOKEN()
     {
-        testQuery("SELECT ChangeToken FROM Folder WHERE ChangeToken =  'test'", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT ChangeToken FROM Folder WHERE ChangeToken <> 'test'", 10, false, "ObjectId", new String(), false);
-        testQuery("SELECT ChangeToken FROM Folder WHERE ChangeToken <  'test'", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT ChangeToken FROM Folder WHERE ChangeToken <= 'test'", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT ChangeToken FROM Folder WHERE ChangeToken >  'test'", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT ChangeToken FROM Folder WHERE ChangeToken >= 'test'", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT ChangeToken FROM Folder WHERE ChangeToken =  'test'", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT ChangeToken FROM Folder WHERE ChangeToken <> 'test'", 10, false, "ObjectId", new String(), true);
+        testQuery("SELECT ChangeToken FROM Folder WHERE ChangeToken <  'test'", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT ChangeToken FROM Folder WHERE ChangeToken <= 'test'", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT ChangeToken FROM Folder WHERE ChangeToken >  'test'", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT ChangeToken FROM Folder WHERE ChangeToken >= 'test'", 0, false, "ObjectId", new String(), true);
 
-        testQuery("SELECT ChangeToken FROM Folder WHERE ChangeToken IN     ('test')", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT ChangeToken FROM Folder WHERE ChangeToken NOT IN ('test')", 10, false, "ObjectId", new String(), false);
+        testQuery("SELECT ChangeToken FROM Folder WHERE ChangeToken IN     ('test')", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT ChangeToken FROM Folder WHERE ChangeToken NOT IN ('test')", 10, false, "ObjectId", new String(), true);
 
-        testQuery("SELECT ChangeToken FROM Folder WHERE ChangeToken     LIKE 'test'", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT ChangeToken FROM Folder WHERE ChangeToken NOT LIKE 'test'", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT ChangeToken FROM Folder WHERE ChangeToken     LIKE 'test'", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT ChangeToken FROM Folder WHERE ChangeToken NOT LIKE 'test'", 0, false, "ObjectId", new String(), true);
 
-        testQuery("SELECT ChangeToken FROM Folder WHERE ChangeToken IS NOT NULL", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT ChangeToken FROM Folder WHERE ChangeToken IS     NULL", 10, false, "ObjectId", new String(), false);
+        testQuery("SELECT ChangeToken FROM Folder WHERE ChangeToken IS NOT NULL", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT ChangeToken FROM Folder WHERE ChangeToken IS     NULL", 10, false, "ObjectId", new String(), true);
 
-        testQuery("SELECT ChangeToken FROM Folder WHERE 'test' =  ANY ChangeToken", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT ChangeToken FROM Folder WHERE 'test' <> ANY ChangeToken", 10, false, "ObjectId", new String(), false);
-        testQuery("SELECT ChangeToken FROM Folder WHERE 'test' <  ANY ChangeToken", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT ChangeToken FROM Folder WHERE 'test' <= ANY ChangeToken", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT ChangeToken FROM Folder WHERE 'test' >  ANY ChangeToken", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT ChangeToken FROM Folder WHERE 'test' >= ANY ChangeToken", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT ChangeToken FROM Folder WHERE 'test' =  ANY ChangeToken", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT ChangeToken FROM Folder WHERE 'test' <> ANY ChangeToken", 10, false, "ObjectId", new String(), true);
+        testQuery("SELECT ChangeToken FROM Folder WHERE 'test' <  ANY ChangeToken", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT ChangeToken FROM Folder WHERE 'test' <= ANY ChangeToken", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT ChangeToken FROM Folder WHERE 'test' >  ANY ChangeToken", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT ChangeToken FROM Folder WHERE 'test' >= ANY ChangeToken", 0, false, "ObjectId", new String(), true);
 
-        testQuery("SELECT ChangeToken FROM Folder WHERE ANY ChangeToken IN     ('test')", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT ChangeToken FROM Folder WHERE ANY ChangeToken NOT IN ('test')", 10, false, "ObjectId", new String(), false);
+        testQuery("SELECT ChangeToken FROM Folder WHERE ANY ChangeToken IN     ('test')", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT ChangeToken FROM Folder WHERE ANY ChangeToken NOT IN ('test')", 10, false, "ObjectId", new String(), true);
     }
 
     public void test_LAST_MODIFICATION_DATE()
@@ -1314,38 +1315,38 @@ public class QueryTest extends BaseCMISTest
 
     public void test_URI()
     {
-        testQuery("SELECT Uri FROM Folder WHERE Uri =  'test'", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT Uri FROM Folder WHERE Uri <> 'test'", 10, false, "ObjectId", new String(), false);
-        testQuery("SELECT Uri FROM Folder WHERE Uri <  'test'", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT Uri FROM Folder WHERE Uri <= 'test'", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT Uri FROM Folder WHERE Uri >  'test'", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT Uri FROM Folder WHERE Uri >= 'test'", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT Uri FROM Folder WHERE Uri =  'test'", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT Uri FROM Folder WHERE Uri <> 'test'", 10, false, "ObjectId", new String(), true);
+        testQuery("SELECT Uri FROM Folder WHERE Uri <  'test'", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT Uri FROM Folder WHERE Uri <= 'test'", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT Uri FROM Folder WHERE Uri >  'test'", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT Uri FROM Folder WHERE Uri >= 'test'", 0, false, "ObjectId", new String(), true);
 
-        testQuery("SELECT Uri FROM Folder WHERE Uri IN     ('test')", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT Uri FROM Folder WHERE Uri NOT IN ('test')", 10, false, "ObjectId", new String(), false);
+        testQuery("SELECT Uri FROM Folder WHERE Uri IN     ('test')", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT Uri FROM Folder WHERE Uri NOT IN ('test')", 10, false, "ObjectId", new String(), true);
 
-        testQuery("SELECT Uri FROM Folder WHERE Uri     LIKE 'test'", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT Uri FROM Folder WHERE Uri NOT LIKE 'test'", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT Uri FROM Folder WHERE Uri     LIKE 'test'", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT Uri FROM Folder WHERE Uri NOT LIKE 'test'", 0, false, "ObjectId", new String(), true);
 
-        testQuery("SELECT Uri FROM Folder WHERE Uri IS NOT NULL", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT Uri FROM Folder WHERE Uri IS     NULL", 10, false, "ObjectId", new String(), false);
+        testQuery("SELECT Uri FROM Folder WHERE Uri IS NOT NULL", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT Uri FROM Folder WHERE Uri IS     NULL", 10, false, "ObjectId", new String(), true);
 
-        testQuery("SELECT Uri FROM Folder WHERE 'test' =  ANY Uri", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT Uri FROM Folder WHERE 'test' <> ANY Uri", 10, false, "ObjectId", new String(), false);
-        testQuery("SELECT Uri FROM Folder WHERE 'test' <  ANY Uri", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT Uri FROM Folder WHERE 'test' <= ANY Uri", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT Uri FROM Folder WHERE 'test' >  ANY Uri", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT Uri FROM Folder WHERE 'test' >= ANY Uri", 0, false, "ObjectId", new String(), false);
+        testQuery("SELECT Uri FROM Folder WHERE 'test' =  ANY Uri", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT Uri FROM Folder WHERE 'test' <> ANY Uri", 10, false, "ObjectId", new String(), true);
+        testQuery("SELECT Uri FROM Folder WHERE 'test' <  ANY Uri", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT Uri FROM Folder WHERE 'test' <= ANY Uri", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT Uri FROM Folder WHERE 'test' >  ANY Uri", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT Uri FROM Folder WHERE 'test' >= ANY Uri", 0, false, "ObjectId", new String(), true);
 
-        testQuery("SELECT Uri FROM Folder WHERE ANY Uri IN     ('test')", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT Uri FROM Folder WHERE ANY Uri NOT IN ('test')", 10, false, "ObjectId", new String(), false);
+        testQuery("SELECT Uri FROM Folder WHERE ANY Uri IN     ('test')", 0, false, "ObjectId", new String(), true);
+        testQuery("SELECT Uri FROM Folder WHERE ANY Uri NOT IN ('test')", 10, false, "ObjectId", new String(), true);
     }
 
     public void test_ObjectId()
     {
         String companyHomeId = testQuery("SELECT ObjectId FROM Folder WHERE Name = '\"Folder 0\"'", 1, false, "ObjectId", new String(), false);
 
-        Serializable ser = cmisPropertyService.getProperty(f0, CMISMapping.PROP_OBJECT_ID);
+        Serializable ser = cmisPropertyService.getProperty(f0, CMISDictionaryModel.PROP_OBJECT_ID);
         String id = DefaultTypeConverter.INSTANCE.convert(String.class, ser);
 
         assertEquals(companyHomeId, id);
@@ -1473,8 +1474,8 @@ public class QueryTest extends BaseCMISTest
     {
         testQuery("SELECT * FROM Folder WHERE Name IS NOT NULL", 10, false, "ObjectId", new String(), false);
         testQuery("SELECT * FROM Folder WHERE Name IS NULL", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT * FROM Document WHERE Uri IS NOT NULL", 0, false, "ObjectId", new String(), false);
-        testQuery("SELECT * FROM Document WHERE Uri IS NULL", 10, false, "ObjectId", new String(), false);
+        testQuery("SELECT * FROM Document WHERE Name IS NOT NULL", 10, false, "ObjectId", new String(), false);
+        testQuery("SELECT * FROM Document WHERE Name IS NULL", 0, false, "ObjectId", new String(), false);
     }
 
     public void testObjectEquals()
@@ -1489,7 +1490,7 @@ public class QueryTest extends BaseCMISTest
 
     public void testFolderEquals()
     {
-        Serializable ser = cmisPropertyService.getProperty(f0, CMISMapping.PROP_NAME);
+        Serializable ser = cmisPropertyService.getProperty(f0, CMISDictionaryModel.PROP_NAME);
         String Name = DefaultTypeConverter.INSTANCE.convert(String.class, ser);
 
         testQuery("SELECT * FROM Folder WHERE Name = '" + Name + "'", 1, false, "ObjectId", new String(), false);
@@ -1500,7 +1501,7 @@ public class QueryTest extends BaseCMISTest
 
     public void test_IN_TREE()
     {
-        Serializable ser = cmisPropertyService.getProperty(f0, CMISMapping.PROP_OBJECT_ID);
+        Serializable ser = cmisPropertyService.getProperty(f0, CMISDictionaryModel.PROP_OBJECT_ID);
         String id = DefaultTypeConverter.INSTANCE.convert(String.class, ser);
 
         testQuery("SELECT * FROM Folder WHERE IN_TREE('" + id + "')", 6, false, "ObjectId", new String(), false);
@@ -1508,7 +1509,7 @@ public class QueryTest extends BaseCMISTest
 
     public void test_IN_FOLDER()
     {
-        Serializable ser = cmisPropertyService.getProperty(f0, CMISMapping.PROP_OBJECT_ID);
+        Serializable ser = cmisPropertyService.getProperty(f0, CMISDictionaryModel.PROP_OBJECT_ID);
         String id = DefaultTypeConverter.INSTANCE.convert(String.class, ser);
 
         testQuery("SELECT * FROM Folder WHERE IN_FOLDER('" + id + "')", 2, false, "ObjectId", new String(), false);
@@ -1538,8 +1539,9 @@ public class QueryTest extends BaseCMISTest
         CMISResultSet rs = cmisQueryService.query(options);
         CMISResultSetMetaData md = rs.getMetaData();
         assertNotNull(md.getQueryOptions());
-        assertEquals(cmisDictionaryService.getPropertyDefinitions(CMISMapping.DOCUMENT_TYPE_ID).size(), md.getColumnNames().length);
-        assertNotNull(md.getColumn(CMISMapping.PROP_OBJECT_ID));
+        CMISTypeDefinition typeDef = cmisDictionaryService.getType(CMISDictionaryModel.DOCUMENT_TYPE_ID);
+        assertEquals(typeDef.getPropertyDefinitions().size(), md.getColumnNames().length);
+        assertNotNull(md.getColumn(CMISDictionaryModel.PROP_OBJECT_ID));
         assertEquals(1, md.getSelectors().length);
         assertNotNull(md.getSelector(""));
         rs.close();

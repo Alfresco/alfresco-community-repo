@@ -90,8 +90,8 @@ public class DictionaryDAOImpl implements DictionaryDAO
     // Map of model name to compiled model
     private SimpleCache<String, Map<QName,CompiledModel>> compiledModelsCache;
 
-    // Static list of registered dictionary deployers
-    private List<DictionaryDeployer> dictionaryDeployers = new ArrayList<DictionaryDeployer>();
+    // Static list of registered dictionary listeners
+    private List<DictionaryListener> dictionaryListeners = new ArrayList<DictionaryListener>();
 
     // Logger
     private static Log logger = LogFactory.getLog(DictionaryDAO.class);
@@ -129,11 +129,11 @@ public class DictionaryDAOImpl implements DictionaryDAO
     /**
      * Register with the Dictionary
      */
-    public void register(DictionaryDeployer dictionaryDeployer)
+    public void register(DictionaryListener dictionaryDeployer)
     {
-        if (! dictionaryDeployers.contains(dictionaryDeployer))
+        if (! dictionaryListeners.contains(dictionaryDeployer))
         {
-            dictionaryDeployers.add(dictionaryDeployer);
+            dictionaryListeners.add(dictionaryDeployer);
         }
     }
     
@@ -151,9 +151,15 @@ public class DictionaryDAOImpl implements DictionaryDAO
         namespaceDAO.init();
         
         // populate the dictionary
-        for (DictionaryDeployer dictionaryDeployer : dictionaryDeployers)
+        for (DictionaryListener dictionaryListener : dictionaryListeners)
         {
-        	dictionaryDeployer.initDictionary();
+            dictionaryListener.onDictionaryInit();
+        }
+
+        // populate the dictionary
+        for (DictionaryListener dictionaryListener : dictionaryListeners)
+        {
+            dictionaryListener.afterDictionaryInit();
         }
         
         logger.info("Dictionary initialised");

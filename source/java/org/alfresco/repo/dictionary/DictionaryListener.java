@@ -32,14 +32,11 @@ package org.alfresco.repo.dictionary;
  * Dictionary Deployer components must register with the DictionaryService.
  *
  */
-
-public interface DictionaryDeployer
+public interface DictionaryListener
 {        
     // callback for (re-)initialising the Dictionary caches
-    public void initDictionary();
+    public void onDictionaryInit();
     
-    // register prior to bootstrap
-    public void register();
+    // callback once initialisation is complete
+    public void afterDictionaryInit();
 }
-
-    

@@ -27,6 +27,7 @@ package org.alfresco.cmis.property;
 import java.io.Serializable;
 import java.util.Collection;
 
+import org.alfresco.cmis.dictionary.CMISDictionaryModel;
 import org.alfresco.cmis.dictionary.CMISMapping;
 import org.alfresco.cmis.dictionary.CMISScope;
 import org.alfresco.cmis.search.CMISQueryException;
@@ -55,7 +56,7 @@ public class ObjectIdPropertyAccessor extends AbstractNamedPropertyAccessor
 
     protected ObjectIdPropertyAccessor(CMISMapping cmisMapping, ServiceRegistry serviceRegistry)
     {
-        super(cmisMapping, serviceRegistry, CMISScope.OBJECT, CMISMapping.PROP_OBJECT_ID);
+        super(cmisMapping, serviceRegistry, CMISScope.OBJECT, CMISDictionaryModel.PROP_OBJECT_ID);
     }
 
     public Serializable getProperty(NodeRef nodeRef)

@@ -12,15 +12,15 @@
         </property>
     </bean>
 
-    <bean id="CMISDictionaryService" class="org.alfresco.cmis.dictionary.CMISDictionaryService" >
+    <bean id="CMISDictionaryService" class="org.alfresco.cmis.dictionary.CMISStrictDictionaryService" >
         <property name="dictionaryService">
             <ref bean="dictionaryService" />
         </property>
+        <property name="dictionaryDAO">
+            <ref bean="dictionaryDAO" />
+        </property>
         <property name="CMISMapping">
             <ref bean="CMISMapping" />
-        </property>
-        <property name="strict">
-           <value>false</value>
         </property>
     </bean>
     
@@ -56,9 +56,6 @@
     </bean>
     
     <bean id="CMISQueryService" class="org.alfresco.cmis.search.impl.CMISQueryServiceImpl" >
-        <property name="cmisMapping">
-            <ref bean="CMISMapping" />
-        </property>
         <property name="cmisDictionaryService">
             <ref bean="CMISDictionaryService" />
         </property>

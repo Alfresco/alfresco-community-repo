@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -38,8 +38,8 @@ import java.util.Date;
 
 import junit.framework.TestCase;
 
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.site.SiteModel;
+import org.alfresco.repo.web.scripts.activities.feed.UserFeedRetrieverWebScript;
 import org.alfresco.util.Base64;
 import org.alfresco.util.ISO8601DateFormat;
 import org.apache.commons.logging.Log;
@@ -272,6 +272,8 @@ public class SiteActivitySystemTest extends TestCase
     {
         testCreateSites();
         
+        // as admin
+        
         String ticket = callLoginWebScript(WEBSCRIPT_ENDPOINT, ADMIN_USER, ADMIN_PW);
         
         getUserFeed(user1, ticket, true, 0);
@@ -279,9 +281,13 @@ public class SiteActivitySystemTest extends TestCase
         getUserFeed(user3, ticket, true, 0);
         getUserFeed(user4, ticket, true, 0);
         
+        // as user1
+        
         ticket = callLoginWebScript(WEBSCRIPT_ENDPOINT, user1, USER_PW);
         
         getUserFeed(user1, ticket, false, 0);
+        
+        // as user2
         
         ticket = callLoginWebScript(WEBSCRIPT_ENDPOINT, user2, USER_PW);
         
@@ -295,11 +301,41 @@ public class SiteActivitySystemTest extends TestCase
         {
             assertTrue(ioe.getMessage().contains("HTTP response code: 401"));
         }
+        
+        
+        // as user1 - with filter args ...
+        
+        ticket = callLoginWebScript(WEBSCRIPT_ENDPOINT, user1, USER_PW);
+        
+        getUserFeed(null, site1, ticket, false, false, false, 0);
+        getUserFeed(null, site2, ticket, false, false, false, 0);
+        getUserFeed(null, site3, ticket, false, false, false, 0);
+        
+        getUserFeed(null, null, ticket, false, true, false, 0);
+        getUserFeed(null, null, ticket, false, false, true, 0);
+        getUserFeed(null, null, ticket, false, true, true, 0);
     }
     
     protected void getUserFeed(String userId, String ticket, boolean isAdmin, int expectedCount) throws Exception
     {
-        String url = WEBSCRIPT_ENDPOINT + URL_ACTIVITIES + URL_USER_FEED + (isAdmin ? "/" + userId : "") + "?format=json";
+        getUserFeed(userId, null, ticket, isAdmin, false, false, expectedCount);
+    }
+    
+    protected void getUserFeed(String userId, String siteId, String ticket, boolean isAdmin, boolean excludeThisUser, boolean excludeOtherUsers, int expectedCount) throws Exception
+    {
+        StringBuilder sb = new StringBuilder();
+        
+        sb.append(WEBSCRIPT_ENDPOINT).
+           append(URL_ACTIVITIES).
+           append(URL_USER_FEED).
+           append(isAdmin ? "/" + userId : ""). // optional
+           append("?").
+           append((siteId != null) ? UserFeedRetrieverWebScript.PARAM_SITE_ID + "=" + siteId + "&": "").     // optional
+           append(excludeThisUser ? UserFeedRetrieverWebScript.PARAM_EXCLUDE_THIS_USER + "=true&" : "").     // optional
+           append(excludeOtherUsers ? UserFeedRetrieverWebScript.PARAM_EXCLUDE_OTHER_USERS + "=true&" : ""). // optional
+           append("format=json");
+
+        String url = sb.toString();
         String jsonArrayResult = callGetWebScript(url, ticket);
         
         if (jsonArrayResult != null)
@@ -482,6 +518,8 @@ public class SiteActivitySystemTest extends TestCase
         testRemoveMembershipsWithPause();
         testUserFeedControls();
         
+        // as admin
+        
         String ticket = callLoginWebScript(WEBSCRIPT_ENDPOINT, ADMIN_USER, ADMIN_PW);
         
         // 2 sites, with 4 users, each with 1 join and 1 role change = 8x2
@@ -492,9 +530,13 @@ public class SiteActivitySystemTest extends TestCase
         getUserFeed(user3, ticket, true, 14);  // 8 = due to feed control - exclude site membership activities for site 1
         getUserFeed(user4, ticket, true, 16);  // 16 = no feed control
         
+        // as user1
+        
         ticket = callLoginWebScript(WEBSCRIPT_ENDPOINT, user1, USER_PW);
         
         getUserFeed(user1, ticket, false, 14);
+        
+        // as user2
         
         ticket = callLoginWebScript(WEBSCRIPT_ENDPOINT, user2, USER_PW);
         
@@ -508,6 +550,21 @@ public class SiteActivitySystemTest extends TestCase
         {
             assertTrue(ioe.getMessage().contains("HTTP response code: 401"));
         }
+        
+        // as user1 - with filter args ...
+        
+        ticket = callLoginWebScript(WEBSCRIPT_ENDPOINT, user1, USER_PW);
+        
+        getUserFeed(null, site1, ticket, false, false, false, 0);
+        getUserFeed(null, site2, ticket, false, false, false, 8);
+        getUserFeed(null, site3, ticket, false, false, false, 6);
+        
+        getUserFeed(null, null, ticket, false, false, false, 14); // no filter
+        getUserFeed(null, null, ticket, false, true, false, 14);  // exclude any from user1
+        getUserFeed(null, null, ticket, false, false, true, 0);   // exclude all except user1
+        getUserFeed(null, null, ticket, false, true, true, 0);    // exclude all (NOOP)
+
+        // TODO - add more (eg. other non-admin user activities)
     }
     
     private void addMembership(String siteId, String userName, String ticket, String role) throws Exception

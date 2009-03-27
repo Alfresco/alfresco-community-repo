@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -31,6 +31,7 @@ import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.activities.ActivityService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
@@ -100,7 +101,17 @@ public class SiteFeedRetrieverWebScript extends DeclarativeWebScript
         Map<String, Object> model = new HashMap<String, Object>();
         
         // if site is null then either does not exist or is private (and current user is not admin or a member) - hence return 401 (unauthorised)
-        SiteInfo siteInfo = siteService.getSite(siteId);
+        
+        SiteInfo siteInfo = null;
+        try
+        {
+            siteInfo = siteService.getSite(siteId);
+        }
+        catch (AccessDeniedException ade)
+        {
+            // ignore - fall through
+        }
+        
         if (siteInfo == null)
         {   
             String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -48,6 +48,11 @@ public class UserFeedRetrieverWebScript extends DeclarativeWebScript
 {
     private static final Log logger = LogFactory.getLog(UserFeedRetrieverWebScript.class);
     
+    // URL request parameter names
+    public static final String PARAM_SITE_ID = "s";
+    public static final String PARAM_EXCLUDE_THIS_USER = "exclUser";
+    public static final String PARAM_EXCLUDE_OTHER_USERS = "exclOthers";
+    
     private ActivityService activityService;
     private AuthorityService authorityService;
     
@@ -90,8 +95,22 @@ public class UserFeedRetrieverWebScript extends DeclarativeWebScript
         }
         
         // process arguments 
-        String siteId = req.getParameter("s"); // optional
+        String siteId = req.getParameter(PARAM_SITE_ID); // optional
+        String exclThisUserStr = req.getParameter(PARAM_EXCLUDE_THIS_USER); // optional
+        String exclOtherUsersStr = req.getParameter(PARAM_EXCLUDE_OTHER_USERS); // optional
         
+        boolean exclThisUser = false;
+        if ((exclThisUserStr != null) && (exclThisUserStr.equalsIgnoreCase("true") || exclThisUserStr.equalsIgnoreCase("t")))
+        {
+            exclThisUser = true;
+        }
+        
+        boolean exclOtherUsers = false;
+        if ((exclOtherUsersStr != null) && (exclOtherUsersStr.equalsIgnoreCase("true") || exclOtherUsersStr.equalsIgnoreCase("t")))
+        {
+            exclOtherUsers = true;
+        }
+
         if ((feedUserId == null) || (feedUserId.length() == 0))
         {
            feedUserId = AuthenticationUtil.getFullyAuthenticatedUser();
@@ -118,7 +137,7 @@ public class UserFeedRetrieverWebScript extends DeclarativeWebScript
         
         Map<String, Object> model = new HashMap<String, Object>();
 
-        List<String> feedEntries = activityService.getUserFeedEntries(feedUserId, format, siteId);
+        List<String> feedEntries = activityService.getUserFeedEntries(feedUserId, format, siteId, exclThisUser, exclOtherUsers);
         
         if (format.equals("json"))
         { 

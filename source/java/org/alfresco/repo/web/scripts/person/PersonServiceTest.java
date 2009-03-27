@@ -237,7 +237,6 @@ public class PersonServiceTest extends BaseWebScriptTest
                 "images/updatedAvatar.jpg", Status.STATUS_OK);
 
         assertEquals(userName, result.get("userName"));
-        assertEquals("updatedTitle", result.get("title"));
         assertEquals("updatedFirstName", result.get("firstName"));
         assertEquals("updatedLastName", result.get("lastName"));
         assertEquals("updatedOrganisation", result.get("organisation"));
@@ -257,7 +256,6 @@ public class PersonServiceTest extends BaseWebScriptTest
         JSONObject result = deletePerson(userName, Status.STATUS_OK);
 
         assertEquals(userName, result.get("userName"));
-        assertEquals("myTitle", result.get("title"));
         assertEquals("myFirstName", result.get("firstName"));
         assertEquals("myLastName", result.get("lastName"));
         assertEquals("myOrganisation", result.get("organisation"));
@@ -277,7 +275,6 @@ public class PersonServiceTest extends BaseWebScriptTest
                                 "myJobTitle", "firstName.lastName@email.com", "myBio", "images/avatar.jpg",
                                 Status.STATUS_OK);        
         assertEquals(userName, result.get("userName"));
-        assertEquals("myTitle", result.get("title"));
         assertEquals("myFirstName", result.get("firstName"));
         assertEquals("myLastName", result.get("lastName"));
         assertEquals("myOrganisation", result.get("organisation"));

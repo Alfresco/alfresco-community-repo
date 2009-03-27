@@ -282,6 +282,12 @@ public final class People extends BaseScopableProcessorExtension
         if (filter == null || filter.length() == 0)
         {
             people = personService.getAllPeople().toArray();
+            if (maxResults > 0 && people.length > maxResults)
+            {
+                Object[] dest = new Object[maxResults];
+                System.arraycopy(people, 0, dest, 0, maxResults);
+                people = dest;
+            }
         }
         else
         {

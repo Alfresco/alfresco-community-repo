@@ -27,9 +27,19 @@
 	"jobtitle" : null,
 	</#if>
 	<#if person.properties.email??>
-	"email" : "${person.properties.email}"
+	"email" : "${person.properties.email}",
 	<#else>
-	"email" : null
+	"email" : null,
+	</#if>
+	<#if person.properties.sizeQuota??>
+	"quota" : ${person.properties.sizeQuota?c},
+	<#else>
+	"quota" : 0,
+	</#if>
+	<#if person.properties.sizeCurrent??>
+	"sizeCurrent" : ${person.properties.sizeCurrent?c}
+	<#else>
+	"sizeCurrent" : 0
 	</#if>
 }
 </#escape>

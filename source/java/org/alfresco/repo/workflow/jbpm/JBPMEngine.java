@@ -111,6 +111,7 @@ import org.jbpm.taskmgmt.def.Task;
 import org.jbpm.taskmgmt.def.TaskMgmtDefinition;
 import org.jbpm.taskmgmt.exe.PooledActor;
 import org.jbpm.taskmgmt.exe.TaskInstance;
+import org.springframework.dao.DataAccessException;
 import org.springframework.util.StringUtils;
 import org.springmodules.workflow.jbpm31.JbpmCallback;
 import org.springmodules.workflow.jbpm31.JbpmTemplate;
@@ -716,6 +717,12 @@ public class JBPMEngine extends BPMEngine
         {
             throw new WorkflowException("Failed to start workflow " + workflowDefinitionId, e);
         }
+		catch (DataAccessException e) 
+		{
+			throw new WorkflowException(new StringBuffer(
+					"Failed to start workflow ").append(workflowDefinitionId)
+					.toString(), e);
+		}
     }
 
     /* (non-Javadoc)

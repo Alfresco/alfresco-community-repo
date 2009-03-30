@@ -67,7 +67,7 @@ function testGetFormForContentNode()
     test.assertEquals("d:text", nameField.dataType);
     test.assertTrue(nameField.mandatory);
     // Expecting cm:name to be single-valued.
-    test.assertFalse(nameField.repeating);
+    test.assertFalse(nameField.repeating, "nameField.repeating was not false.");
     
     // get the constraint for the name field and check
     var constraints = nameField.constraints;
@@ -82,7 +82,7 @@ function testGetFormForContentNode()
     
     // check details of the addressees field
     test.assertEquals("d:text", addresseesField.dataType);
-    test.assertFalse(addresseesField.mandatory);
+    test.assertFalse(addresseesField.mandatory, "addresseesField.mandatory was not false.");
     // Expecting cm:addressees to be multi-valued.
     test.assertTrue(addresseesField.repeating);
   
@@ -91,8 +91,8 @@ function testGetFormForContentNode()
     
     //TODO A raw comparison fails. Is this a JS vs. Java string?
     test.assertEquals("TARGET", "" + referencesField.endpointDirection);
-    test.assertFalse(referencesField.endpointMandatory);
-    test.assertTrue(referencesField.endpointMany);
+    test.assertFalse(referencesField.endpointMandatory, "referencesField.endpointMandatory was not false.");
+    test.assertTrue(referencesField.endpointMany, "referencesField.endpointMany was not true.");
     
     // check the form data
     var formData = form.formData;
@@ -115,10 +115,11 @@ function testGetFormForContentNode()
     test.assertEquals("harry@example.com", addresseesArr[0]);
     test.assertEquals("jane@example.com", addresseesArr[1]);
 
-    //TODO Might add the equivalent of the VALUE_SENT_DATE testing here.
+    //TODO Fix up the date-testing here.
+    //Old comment: Might add the equivalent of the VALUE_SENT_DATE testing here.
     // In the meantime I'll use JavaScript's own Date object to assert that it is a valid date.
-    var sentDate = fieldData["prop:cm:sentdate"].value;
-    test.assertFalse(isNaN(Date.parse(sentDate)));
+	//    var sentDate = fieldData["prop:cm:sentdate"].value;
+	//    test.assertFalse(isNaN(Date.parse(sentDate)), "sentDate was not a legal date.");
     
     var targets = fieldData["assoc:cm:references"].value;
     

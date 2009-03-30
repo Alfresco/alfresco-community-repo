@@ -63,7 +63,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.util.StringUtils;
 
 /**
  * Handler to handle the generation and persistence of a Form object for a repository node.
@@ -79,6 +78,8 @@ public class NodeHandler extends AbstractHandler
 
     protected static final String PROP_PREFIX = "prop:";
     protected static final String ASSOC_PREFIX = "assoc:";
+    protected static final String ASSOC_ADD_SUFFIX = "_added";
+    protected static final String ASSOC_REMOVE_SUFFIX = "_removed";
     
     protected static final String TRANSIENT_MIMETYPE = "mimetype";
     protected static final String TRANSIENT_SIZE = "size";
@@ -228,6 +229,7 @@ public class NodeHandler extends AbstractHandler
         Map<QName, PropertyDefinition> propDefs = typeDef.getProperties();
         
         Map<QName, Serializable> propsToPersist = new HashMap<QName, Serializable>(data.getData().size());
+        List<AbstractAssocCommand> assocsToPersist = new ArrayList<AbstractAssocCommand>();
         
         for (String dataKey : data.getData().keySet())
         {
@@ -243,7 +245,7 @@ public class NodeHandler extends AbstractHandler
                 }
                 else if (fieldName.startsWith(ASSOC_PREFIX))
                 {
-                    // TODO: process any associations present
+                    processAssociationPersist(nodeRef, fieldData, assocsToPersist);
                 }
                 else if (logger.isWarnEnabled())
                 {
@@ -257,7 +259,12 @@ public class NodeHandler extends AbstractHandler
         // whereas setProperties causes the deletion of properties that are not included in the Map.
         this.nodeService.addProperties(nodeRef, propsToPersist);
         
-        // TODO: persist the associations
+        for (AbstractAssocCommand cmd : assocsToPersist)
+        {
+            //TODO If there is an attempt to add and remove the same assoc in one request,
+            //     we could drop each request and do nothing.
+            cmd.updateAssociations(nodeService);
+        }
     }
     
     /**
@@ -387,7 +394,7 @@ public class NodeHandler extends AbstractHandler
                     AssociationDefinition assocDef = this.dictionaryService.getAssociation(assocType);
                     if (assocDef == null)
                     {
-                        throw new FormException("Failed to find associaton definition for association: " + assocType);
+                        throw new FormException("Failed to find association definition for association: " + assocType);
                     }
                     
                     fieldDef = new AssociationFieldDefinition(assocName, 
@@ -438,8 +445,6 @@ public class NodeHandler extends AbstractHandler
                 }
             }
         }
-        
-        // TODO: Add source association definitions and data
     }
     
     /**
@@ -614,6 +619,71 @@ public class NodeHandler extends AbstractHandler
         }
     }
     
+    /**
+     * Processes the given field data for persistence as an association.
+     * 
+     * @param nodeRef The NodeRef to persist the associations on
+     * @param fieldData Data to persist for the associations
+     * @param assocCommands List of associations to be persisted
+     */
+    protected void processAssociationPersist(NodeRef nodeRef,
+                FieldData fieldData, List<AbstractAssocCommand> assocCommands)
+    {
+        if (logger.isDebugEnabled())
+            logger.debug("Processing field " + fieldData + " for association persistence");
+        
+        String fieldName = fieldData.getName();
+        Matcher m = this.associationNamePattern.matcher(fieldName);
+        if (m.matches())
+        {
+            String value = (String)fieldData.getValue();
+            String[] nodeRefs = value.split(",");
+            
+            // Each element in this array will be a new target node in association
+            // with the current node.
+            for (String nextTargetNode : nodeRefs)
+            {
+                if (NodeRef.isNodeRef(nextTargetNode))
+                {
+                    if (fieldName.endsWith(ASSOC_ADD_SUFFIX))
+                    {
+                        assocCommands.add(new AddAssocCommand(nodeRef, new NodeRef(nextTargetNode)));
+                    }
+                    else if (fieldName.endsWith(ASSOC_REMOVE_SUFFIX))
+                    {
+                        assocCommands.add(new RemoveAssocCommand(nodeRef, new NodeRef(nextTargetNode)));
+                    }
+                    else
+                    {
+                        if (logger.isWarnEnabled())
+                        {
+                            StringBuilder msg = new StringBuilder();
+                            msg.append("fieldName ")
+                                .append(fieldName)
+                                .append(" does not have one of the expected suffixes [")
+                                .append(ASSOC_ADD_SUFFIX)
+                                .append(", ")
+                                .append(ASSOC_REMOVE_SUFFIX)
+                                .append("] and has been ignored.");
+                            logger.warn(msg.toString());
+                        }
+                    }
+                }
+                else
+                {
+                    if (logger.isWarnEnabled())
+                    {
+                        StringBuilder msg = new StringBuilder();
+                        msg.append("targetNode ")
+                            .append(nextTargetNode)
+                            .append(" is not a valid NodeRef and has been ignored.");
+                        logger.warn(msg.toString());
+                    }
+                }
+            }
+        }
+    }
+
     /**
      * Persists the given field data as the name property
      *  
@@ -793,5 +863,67 @@ public class NodeHandler extends AbstractHandler
         }
         
         return builder.toString();
+    }
+}
+
+/**
+ * This class represents a request to update the value of a node association.
+ * 
+ * @author Neil McErlean
+ */
+abstract class AbstractAssocCommand
+{
+    protected final NodeRef sourceNodeRef;
+    protected final NodeRef targetNodeRef;
+    
+    public AbstractAssocCommand(NodeRef sourceNodeRef, NodeRef targetNodeRef)
+    {
+        this.sourceNodeRef = sourceNodeRef;
+        this.targetNodeRef = targetNodeRef;
+    }
+    
+    /**
+     * This method should use the specified nodeService reference to effect the
+     * update to the supplied associations.
+     * @param nodeService
+     */
+    protected abstract void updateAssociations(NodeService nodeService);
+}
+
+/**
+ * A class representing a request to add a new association between two nodes.
+ * 
+ * @author Neil McErlean
+ */
+class AddAssocCommand extends AbstractAssocCommand
+{
+    public AddAssocCommand(NodeRef sourceNodeRef, NodeRef targetNodeRef)
+    {
+        super(sourceNodeRef, targetNodeRef);
+    }
+
+    @Override
+    protected void updateAssociations(NodeService nodeService)
+    {
+        nodeService.createAssociation(sourceNodeRef, targetNodeRef, ContentModel.ASSOC_REFERENCES);
+    }
+}
+
+/**
+ * A class representing a request to remove an association between two nodes.
+ * 
+ * @author Neil McErlean
+ */
+class RemoveAssocCommand extends AbstractAssocCommand
+{
+    public RemoveAssocCommand(NodeRef sourceNodeRef, NodeRef targetNodeRef)
+    {
+        super(sourceNodeRef, targetNodeRef);
+    }
+    
+    @Override
+    protected void updateAssociations(NodeService nodeService)
+    {
+        nodeService.removeAssociation(sourceNodeRef, targetNodeRef, ContentModel.ASSOC_REFERENCES);
     }
 }

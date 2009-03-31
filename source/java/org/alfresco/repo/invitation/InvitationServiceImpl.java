@@ -653,6 +653,18 @@ public class InvitationServiceImpl implements InvitationService
 				boolean crap = false;
 				for(QName key : keys)
 				{
+					if(key.equals(WorkflowModelNominatedInvitation.WF_PROP_INVITEE_USER_NAME))
+					{
+						Object val1 = wfNominatedQueryProps.get(key);
+						Object val2 = ((NominatedInvitation)result).getInviteeUserName();
+						if (!val1.equals(val2))
+						{
+							// Uh oh ... crap detected
+							crap = true;
+							System.out.println("ALFCOM-2598 key:" + key + "query:" + val1 +  "task:" + val2);
+							break;
+						}
+					}
 					if(key.equals(WorkflowModelNominatedInvitation.WF_PROP_RESOURCE_NAME))
 					{
 						Object val1 = wfNominatedQueryProps.get(key);

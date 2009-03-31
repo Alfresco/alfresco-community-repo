@@ -704,7 +704,7 @@ public class Site implements Serializable
       	}
     	if (props.has("invitationType", props))
     	{
-    		String invitationType = (String)props.get("inviteeUserName", props);
+    		String invitationType = (String)props.get("invitationType", props);
     		crit.setInvitationType(InvitationType.valueOf(invitationType));
         }
 

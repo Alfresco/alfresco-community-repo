@@ -176,6 +176,8 @@ public abstract class BaseSSOAuthenticationFilter implements DependencyInjectedF
         if (serverConfigurationBean != null)
         {
             m_srvName = serverConfigurationBean.getServerName();
+            if ( m_srvName.length() == 0)
+            	m_srvName = null;
             
             if (m_srvName != null)
             {
@@ -201,6 +203,11 @@ public abstract class BaseSSOAuthenticationFilter implements DependencyInjectedF
             if ( m_srvName == null)
             {
                 m_srvName = serverConfigurationBean.getLocalServerName(true);
+                
+                // DEBUG
+                
+                if ( getLogger().isInfoEnabled())
+                	getLogger().info("NTLM filter using server name " + m_srvName);
                 
                 // DEBUG
                 

@@ -3,32 +3,32 @@
 <!--  Nominated invitation -->
 
 <process-definition xmlns="urn:jbpm.org:jpdl-3.1" 
-	name="wf:invitation-nominated">
+	name="inwf:invitation-nominated">
 
    <swimlane name="initiator"/>
    
    <start-state name="start">
    
-      <task name="wf:inviteToSiteTask" swimlane="initiator" />
+      <task name="inwf:inviteToSiteTask" swimlane="initiator" />
 
       <transition name="sendInvite" to="invitePending">
          <action class="org.alfresco.repo.workflow.jbpm.AlfrescoJavaScript">
             <script>
                var workflowId = workflowinstanceid;
-               var inviterPerson = people.getPerson(wf_inviterUserName);
-               var inviteePerson = people.getPerson(wf_inviteeUserName);
-               var site = siteService.getSite(wf_resourceName);
+               var inviterPerson = people.getPerson(inwf_inviterUserName);
+               var inviteePerson = people.getPerson(inwf_inviteeUserName);
+               var site = siteService.getSite(inwf_resourceName);
                var siteName = site.shortName;
                if (site.title.length() > 0)
                {
                   siteName = site.title;
                }
                var params = "?inviteId=" + workflowId +
-                            "&amp;inviteeUserName=" + wf_inviteeUserName +
-                            "&amp;siteShortName=" + wf_resourceName +
-                            "&amp;inviteTicket=" + wf_inviteTicket;
-               var acceptLink = wf_serverPath + wf_acceptUrl + params;
-               var rejectLink = wf_serverPath + wf_rejectUrl + params;
+                            "&amp;inviteeUserName=" + inwf_inviteeUserName +
+                            "&amp;siteShortName=" + inwf_resourceName +
+                            "&amp;inviteTicket=" + inwf_inviteTicket;
+               var acceptLink = inwf_serverPath + inwf_acceptUrl + params;
+               var rejectLink = inwf_serverPath + inwf_rejectUrl + params;
                var mail = actions.create("mail");
                mail.parameters.from = inviterPerson.properties["cm:email"];
                mail.parameters.to = inviteePerson.properties["cm:email"];
@@ -41,9 +41,9 @@
                args["inviteePersonRef"] = inviteePerson.nodeRef.toString();
                args["inviterPersonRef"] = inviterPerson.nodeRef.toString();
                args["siteName"] = siteName;
-               args["inviteeSiteRole"] = wf_inviteeRole;
-               args["inviteeUserName"] = wf_inviteeUserName;
-               args["inviteeGenPassword"] = wf_inviteeGenPassword;
+               args["inviteeSiteRole"] = inwf_inviteeRole;
+               args["inviteeUserName"] = inwf_inviteeUserName;
+               args["inviteeGenPassword"] = inwf_inviteeGenPassword;
                args["acceptLink"] = acceptLink;
                args["rejectLink"] = rejectLink;
                var mail_text = inviteePerson.processTemplate(template, args);
@@ -62,7 +62,7 @@
    </swimlane>
 
    <task-node name="invitePending">
-      <task name="wf:invitePendingTask" swimlane="assignee" />
+      <task name="inwf:invitePendingTask" swimlane="assignee" />
       <transition name="accept" to="inviteAccepted">
          <action class="org.alfresco.repo.invitation.site.AcceptInviteAction"/>
       </transition>
@@ -75,12 +75,12 @@
    </task-node>
 
    <task-node name="inviteAccepted">
-      <task name="wf:acceptInviteTask" swimlane="initiator" />
+      <task name="inwf:acceptInviteTask" swimlane="initiator" />
       <transition name="end" to="end"/>
    </task-node>
 
    <task-node name="inviteRejected">
-      <task name="wf:rejectInviteTask" swimlane="initiator" />
+      <task name="inwf:rejectInviteTask" swimlane="initiator" />
       <transition name="end" to="end"/>
    </task-node>
 

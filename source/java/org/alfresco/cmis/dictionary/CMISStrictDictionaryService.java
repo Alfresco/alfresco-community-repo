@@ -38,7 +38,7 @@ import org.alfresco.service.namespace.QName;
  *  
  * @author davidc
  */
-public class CMISStrictDictionaryService extends AbstractCMISDictionaryService
+public class CMISStrictDictionaryService extends CMISAbstractDictionaryService
 {
     /*
      * (non-Javadoc)
@@ -73,7 +73,7 @@ public class CMISStrictDictionaryService extends AbstractCMISDictionaryService
             
             // create appropriate kind of type definition
             ClassDefinition classDef = dictionaryService.getClass(cmisMapping.getCmisType(typeId.getQName()));
-            CMISObjectTypeDefinition objectTypeDef = null;
+            CMISAbstractTypeDefinition objectTypeDef = null;
             if (typeId.getScope() == CMISScope.DOCUMENT)
             {
                 objectTypeDef = new CMISDocumentTypeDefinition(cmisMapping, typeId, classDef);
@@ -90,6 +90,10 @@ public class CMISStrictDictionaryService extends AbstractCMISDictionaryService
             else if (typeId.getScope() == CMISScope.POLICY)
             {
                 objectTypeDef = new CMISPolicyTypeDefinition(cmisMapping, typeId, classDef);
+            }
+            else if (typeId.getScope() == CMISScope.OBJECT)
+            {
+                objectTypeDef = new CMISObjectTypeDefinition(cmisMapping, typeId, classDef, false);
             }
 
             registry.registerTypeDefinition(objectTypeDef);
@@ -112,7 +116,7 @@ public class CMISStrictDictionaryService extends AbstractCMISDictionaryService
             // create appropriate kind of type definition
             CMISTypeId typeId = cmisMapping.getCmisTypeId(CMISScope.RELATIONSHIP, classQName);
             AssociationDefinition assocDef = dictionaryService.getAssociation(classQName);
-            CMISObjectTypeDefinition objectTypeDef = new CMISRelationshipTypeDefinition(cmisMapping, typeId, null, assocDef);
+            CMISAbstractTypeDefinition objectTypeDef = new CMISRelationshipTypeDefinition(cmisMapping, typeId, null, assocDef);
 
             registry.registerTypeDefinition(objectTypeDef);
         }

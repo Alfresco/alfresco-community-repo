@@ -25,25 +25,27 @@
 
 package org.alfresco.repo.invitation;
 
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 
 /**
  * Workflow Model for a Nominated Invitation
  */
-public interface WorkflowModelNominatedInvitation {
+public interface WorkflowModelNominatedInvitation
+{
+    // namespace
+    public static final String NAMESPACE_URI = "http://www.alfresco.org/model/workflow/invite/nominated/1.0";
 
     // process name
-    public static final QName WF_PROCESS_INVITE = QName.createQName(NamespaceService.WORKFLOW_MODEL_1_0_URI, "invitation-nominated");
+    public static final QName WF_PROCESS_INVITE = QName.createQName(NAMESPACE_URI, "invitation-nominated");
 
     // workflow definition name
-    public static final String WORKFLOW_DEFINITION_NAME = "jbpm$wf:invitation-nominated";
+    public static final String WORKFLOW_DEFINITION_NAME = "jbpm$inwf:invitation-nominated";
     
     // tasks
-    public static final QName WF_INVITE_TASK_INVITE_TO_SITE = QName.createQName(NamespaceService.WORKFLOW_MODEL_1_0_URI, "inviteToSiteTask");
-    public static final QName WF_INVITE_TASK_INVITE_PENDING = QName.createQName(NamespaceService.WORKFLOW_MODEL_1_0_URI, "invitePendingTask");
-    public static final QName WF_TASK_ACCEPT_INVITE = QName.createQName(NamespaceService.WORKFLOW_MODEL_1_0_URI, "acceptInviteTask");
-    public static final QName WF_TASK_REJECT_INVITE = QName.createQName(NamespaceService.WORKFLOW_MODEL_1_0_URI, "rejectInviteTask");
+    public static final QName WF_INVITE_TASK_INVITE_TO_SITE = QName.createQName(NAMESPACE_URI, "inviteToSiteTask");
+    public static final QName WF_INVITE_TASK_INVITE_PENDING = QName.createQName(NAMESPACE_URI, "invitePendingTask");
+    public static final QName WF_TASK_ACCEPT_INVITE = QName.createQName(NAMESPACE_URI, "acceptInviteTask");
+    public static final QName WF_TASK_REJECT_INVITE = QName.createQName(NAMESPACE_URI, "rejectInviteTask");
     
     // transition names
     public static final String WF_TRANSITION_SEND_INVITE = "sendInvite";
@@ -54,26 +56,26 @@ public interface WorkflowModelNominatedInvitation {
     public static final String WF_TRANSITION_REJECT_INVITE_END = "end";
     
     // workflow properties
-    public static final QName WF_PROP_SERVER_PATH = QName.createQName(NamespaceService.WORKFLOW_MODEL_1_0_URI, "serverPath");
-    public static final QName WF_PROP_ACCEPT_URL = QName.createQName(NamespaceService.WORKFLOW_MODEL_1_0_URI, "acceptUrl");
-    public static final QName WF_PROP_REJECT_URL = QName.createQName(NamespaceService.WORKFLOW_MODEL_1_0_URI, "rejectUrl");
-    public static final QName WF_PROP_INVITE_TICKET = QName.createQName(NamespaceService.WORKFLOW_MODEL_1_0_URI, "inviteTicket");
-    public static final QName WF_PROP_INVITER_USER_NAME = QName.createQName(NamespaceService.WORKFLOW_MODEL_1_0_URI, "inviterUserName");
-    public static final QName WF_PROP_INVITEE_USER_NAME = QName.createQName(NamespaceService.WORKFLOW_MODEL_1_0_URI, "inviteeUserName");
-    public static final QName WF_PROP_INVITEE_EMAIL = QName.createQName(NamespaceService.WORKFLOW_MODEL_1_0_URI, "inviteeEmail");
-    public static final QName WF_PROP_INVITEE_FIRSTNAME = QName.createQName(NamespaceService.WORKFLOW_MODEL_1_0_URI, "inviteeFirstName");
-    public static final QName WF_PROP_INVITEE_LASTNAME = QName.createQName(NamespaceService.WORKFLOW_MODEL_1_0_URI, "inviteeLastName");
-    public static final QName WF_PROP_RESOURCE_TYPE = QName.createQName(NamespaceService.WORKFLOW_MODEL_1_0_URI, "resourceType");
-    public static final QName WF_PROP_RESOURCE_NAME = QName.createQName(NamespaceService.WORKFLOW_MODEL_1_0_URI, "resourceName");
-    public static final QName WF_PROP_INVITEE_ROLE = QName.createQName(NamespaceService.WORKFLOW_MODEL_1_0_URI, "inviteeRole");
-    public static final QName WF_PROP_INVITEE_GEN_PASSWORD = QName.createQName(NamespaceService.WORKFLOW_MODEL_1_0_URI, "inviteeGenPassword");
+    public static final QName WF_PROP_SERVER_PATH = QName.createQName(NAMESPACE_URI, "serverPath");
+    public static final QName WF_PROP_ACCEPT_URL = QName.createQName(NAMESPACE_URI, "acceptUrl");
+    public static final QName WF_PROP_REJECT_URL = QName.createQName(NAMESPACE_URI, "rejectUrl");
+    public static final QName WF_PROP_INVITE_TICKET = QName.createQName(NAMESPACE_URI, "inviteTicket");
+    public static final QName WF_PROP_INVITER_USER_NAME = QName.createQName(NAMESPACE_URI, "inviterUserName");
+    public static final QName WF_PROP_INVITEE_USER_NAME = QName.createQName(NAMESPACE_URI, "inviteeUserName");
+    public static final QName WF_PROP_INVITEE_EMAIL = QName.createQName(NAMESPACE_URI, "inviteeEmail");
+    public static final QName WF_PROP_INVITEE_FIRSTNAME = QName.createQName(NAMESPACE_URI, "inviteeFirstName");
+    public static final QName WF_PROP_INVITEE_LASTNAME = QName.createQName(NAMESPACE_URI, "inviteeLastName");
+    public static final QName WF_PROP_RESOURCE_TYPE = QName.createQName(NAMESPACE_URI, "resourceType");
+    public static final QName WF_PROP_RESOURCE_NAME = QName.createQName(NAMESPACE_URI, "resourceName");
+    public static final QName WF_PROP_INVITEE_ROLE = QName.createQName(NAMESPACE_URI, "inviteeRole");
+    public static final QName WF_PROP_INVITEE_GEN_PASSWORD = QName.createQName(NAMESPACE_URI, "inviteeGenPassword");
     
     // workflow execution context variable names
-    public static final String wfVarInviteeUserName = "wf_inviteeUserName";
-    public static final String wfVarInviterUserName = "wf_inviterUserName";
-    public static final String wfVarResourceName = "wf_resourceName";
-    public static final String wfVarResourceType = "wf_resourceType";
+    public static final String wfVarInviteeUserName = "inwf_inviteeUserName";
+    public static final String wfVarInviterUserName = "inwf_inviterUserName";
+    public static final String wfVarResourceName = "inwf_resourceName";
+    public static final String wfVarResourceType = "inwf_resourceType";
     public static final String wfVarWorkflowInstanceId = "workflowinstanceid";
-    public static final String wfVarRole =  "wf_inviteeRole";
+    public static final String wfVarRole =  "inwf_inviteeRole";
     
 }

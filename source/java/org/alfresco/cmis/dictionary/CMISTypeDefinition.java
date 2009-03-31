@@ -37,6 +37,11 @@ import org.alfresco.cmis.CMISContentStreamAllowedEnum;
 public interface CMISTypeDefinition
 {
     /**
+     * @return  true => type definition is for public consumption
+     */
+    public boolean isPublic();
+    
+    /**
      * Get the unique identifier for the type
      * 
      * @return - the type id
@@ -60,17 +65,24 @@ public interface CMISTypeDefinition
     public String getDisplayName();
 
     /**
-     * Get the type id for the parent
+     * Get the type for the parent
      * 
      * @return - the parent type id
      */
     public CMISTypeDefinition getParentType();
 
+    /**
+     * Get the sub-types
+     * 
+     * @param descendants
+     * @return
+     */
     public Collection<CMISTypeDefinition> getSubTypes(boolean descendants);
     
     /**
-     * Get the root type id
-     * @return - the root type id
+     * Get the root type
+     * 
+     * @return
      */
     public CMISTypeDefinition getRootType();
     
@@ -146,10 +158,17 @@ public interface CMISTypeDefinition
     public Collection<CMISTypeDefinition> getAllowedTargetTypes();
 
     /**
-     * Gets the property definitions for this type
+     * Gets the property definitions for this type (owned and inherited)
      * 
      * @return  property definitions
      */
     public Map<CMISPropertyId, CMISPropertyDefinition> getPropertyDefinitions();
 
+    /**
+     * Gets the property definitions owned by this type
+     * 
+     * @return
+     */
+    public Map<CMISPropertyId, CMISPropertyDefinition> getOwnedPropertyDefinitions(); 
+    
 }

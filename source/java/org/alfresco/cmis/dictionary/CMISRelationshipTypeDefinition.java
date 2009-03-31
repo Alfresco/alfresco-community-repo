@@ -29,7 +29,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.cmis.dictionary.AbstractCMISDictionaryService.DictionaryRegistry;
+import org.alfresco.cmis.dictionary.CMISAbstractDictionaryService.DictionaryRegistry;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
@@ -42,7 +42,7 @@ import org.alfresco.service.namespace.QName;
  * 
  * @author davidc
  */
-public class CMISRelationshipTypeDefinition extends CMISObjectTypeDefinition 
+public class CMISRelationshipTypeDefinition extends CMISAbstractTypeDefinition 
 {
     private static final long serialVersionUID = 5291428171784061346L;
     
@@ -65,6 +65,7 @@ public class CMISRelationshipTypeDefinition extends CMISObjectTypeDefinition
      */
     public CMISRelationshipTypeDefinition(CMISMapping cmisMapping, CMISTypeId typeId, ClassDefinition cmisClassDef, AssociationDefinition assocDef)
     {
+        isPublic = true;
         this.cmisClassDef = cmisClassDef;
         objectTypeId = typeId;
         creatable = false;
@@ -76,7 +77,11 @@ public class CMISRelationshipTypeDefinition extends CMISObjectTypeDefinition
             // TODO: Add CMIS Association mapping??
             displayName = (cmisClassDef.getTitle() != null) ? cmisClassDef.getTitle() : typeId.getId();
             objectTypeQueryName = typeId.getId();
-            parentTypeId = null;
+            QName parentQName = cmisMapping.getCmisType(cmisClassDef.getParentName());
+            if (parentQName != null)
+            {
+                parentTypeId = cmisMapping.getCmisTypeId(CMISScope.OBJECT, parentQName);
+            }
             description = cmisClassDef.getDescription();
         }
         else
@@ -87,13 +92,13 @@ public class CMISRelationshipTypeDefinition extends CMISObjectTypeDefinition
             description = assocDef.getDescription();
 
             CMISTypeId sourceTypeId = cmisMapping.getCmisTypeId(cmisMapping.getCmisType(assocDef.getSourceClass().getName()));
-            if (sourceTypeId != null && (sourceTypeId.getScope() == CMISScope.DOCUMENT || sourceTypeId.getScope() == CMISScope.FOLDER))
+            if (sourceTypeId != null)
             {
                 allowedSourceTypeIds.add(sourceTypeId);
             }
 
             CMISTypeId targetTypeId = cmisMapping.getCmisTypeId(cmisMapping.getCmisType(assocDef.getTargetClass().getName()));
-            if (targetTypeId != null && (targetTypeId.getScope() == CMISScope.DOCUMENT || targetTypeId.getScope() == CMISScope.FOLDER))
+            if (targetTypeId != null)
             {
                 allowedTargetTypeIds.add(targetTypeId);
             }
@@ -145,21 +150,27 @@ public class CMISRelationshipTypeDefinition extends CMISObjectTypeDefinition
         super.resolveDependencies(registry);
         for (CMISTypeId sourceTypeId : allowedSourceTypeIds)
         {
-            CMISTypeDefinition type = registry.typeDefsByTypeId.get(sourceTypeId);
+            CMISTypeDefinition type = registry.objectDefsByTypeId.get(sourceTypeId);
             if (type == null)
             {
                 throw new AlfrescoRuntimeException("Failed to retrieve allowed source type for type id " + sourceTypeId);
             }
-            allowedSourceTypes.add(type);
+            if (type.isPublic() == isPublic)
+            {
+                allowedSourceTypes.add(type);
+            }
         }
         for (CMISTypeId targetTypeId : allowedTargetTypeIds)
         {
-            CMISTypeDefinition type = registry.typeDefsByTypeId.get(targetTypeId);
+            CMISTypeDefinition type = registry.objectDefsByTypeId.get(targetTypeId);
             if (type == null)
             {
                 throw new AlfrescoRuntimeException("Failed to retrieve allowed target type for type id " + targetTypeId);
             }
-            allowedTargetTypes.add(registry.typeDefsByTypeId.get(targetTypeId));
+            if (type.isPublic() == isPublic)
+            {
+                allowedTargetTypes.add(type);
+            }
         }
     }
     
@@ -173,10 +184,10 @@ public class CMISRelationshipTypeDefinition extends CMISObjectTypeDefinition
         super.resolveInheritance(registry);
         inheritedAllowedSourceTypes.addAll(allowedSourceTypes);
         inheritedAllowedTargetTypes.addAll(allowedTargetTypes);
-        if (parentType != null)
+        if (internalParentType != null)
         {
-            inheritedAllowedSourceTypes.addAll(parentType.getAllowedSourceTypes());
-            inheritedAllowedTargetTypes.addAll(parentType.getAllowedTargetTypes());
+            inheritedAllowedSourceTypes.addAll(internalParentType.getAllowedSourceTypes());
+            inheritedAllowedTargetTypes.addAll(internalParentType.getAllowedTargetTypes());
         }
     }
     

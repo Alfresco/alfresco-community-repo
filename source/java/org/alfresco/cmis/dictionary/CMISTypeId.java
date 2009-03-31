@@ -100,6 +100,8 @@ public class CMISTypeId implements Serializable
             return CMISDictionaryModel.RELATIONSHIP_TYPE_ID;
         case POLICY:
             return CMISDictionaryModel.POLICY_TYPE_ID;
+        case OBJECT:
+            return CMISMapping.OBJECT_TYPE_ID;
         case UNKNOWN:
         default:
             return null;

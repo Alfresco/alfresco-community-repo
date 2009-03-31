@@ -33,7 +33,7 @@ import org.alfresco.service.namespace.QName;
  * 
  * @author davidc
  */
-public class CMISFolderTypeDefinition extends CMISObjectTypeDefinition 
+public class CMISFolderTypeDefinition extends CMISAbstractTypeDefinition 
 {
     private static final long serialVersionUID = 7526155195125799106L;
 
@@ -45,17 +45,32 @@ public class CMISFolderTypeDefinition extends CMISObjectTypeDefinition
      */
     public CMISFolderTypeDefinition(CMISMapping cmisMapping, CMISTypeId typeId, ClassDefinition cmisClassDef)
     {
+        isPublic = true;
+        
         // Object type properties
         this.cmisClassDef = cmisClassDef;
         objectTypeId = typeId;
-        objectTypeQueryName = (typeId == CMISDictionaryModel.FOLDER_TYPE_ID) ? typeId.getId() : cmisMapping.buildPrefixEncodedString(typeId.getQName(), false);
         displayName = (cmisClassDef.getTitle() != null) ? cmisClassDef.getTitle() : typeId.getId();
-        QName parentQName = cmisMapping.getCmisType(cmisClassDef.getParentName());
-        if (cmisMapping.isValidCmisFolder(parentQName))
-        {
-            parentTypeId = cmisMapping.getCmisTypeId(CMISScope.FOLDER, parentQName);
-        }
         description = cmisClassDef.getDescription();
+        
+        QName parentQName = cmisMapping.getCmisType(cmisClassDef.getParentName());
+        if (typeId == CMISDictionaryModel.FOLDER_TYPE_ID)
+        {
+            objectTypeQueryName = typeId.getId();
+            if (parentQName != null)
+            {
+                parentTypeId = cmisMapping.getCmisTypeId(CMISScope.OBJECT, parentQName);
+            }
+        }
+        else
+        {
+            objectTypeQueryName = cmisMapping.buildPrefixEncodedString(typeId.getQName(), false);
+            if (cmisMapping.isValidCmisFolder(parentQName))
+            {
+                parentTypeId = cmisMapping.getCmisTypeId(CMISScope.FOLDER, parentQName);
+            }
+        }
+        
         creatable = true;
         queryable = true;
         controllable = false;

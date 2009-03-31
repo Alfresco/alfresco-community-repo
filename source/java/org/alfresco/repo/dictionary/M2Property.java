@@ -27,8 +27,6 @@ package org.alfresco.repo.dictionary;
 import java.util.Collections;
 import java.util.List;
 
-import org.alfresco.service.cmr.dictionary.ConstraintDefinition;
-
 
 /**
  * Property Definition
@@ -38,6 +36,7 @@ import org.alfresco.service.cmr.dictionary.ConstraintDefinition;
  */
 public class M2Property
 {
+    private boolean isOverride = false;
     private String name = null;
     private String title = null;
     private String description = null;
@@ -63,6 +62,15 @@ public class M2Property
         this.name = name;
     }
     
+    public boolean isOverride()
+    {
+        return isOverride;
+    }
+    
+    public void setOverride(boolean isOverride)
+    {
+        this.isOverride = isOverride;
+    }
     
     public String getName()
     {

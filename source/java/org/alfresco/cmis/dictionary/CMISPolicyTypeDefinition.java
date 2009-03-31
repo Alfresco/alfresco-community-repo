@@ -26,7 +26,7 @@ package org.alfresco.cmis.dictionary;
 
 import java.util.Collection;
 
-import org.alfresco.cmis.dictionary.AbstractCMISDictionaryService.DictionaryRegistry;
+import org.alfresco.cmis.dictionary.CMISAbstractDictionaryService.DictionaryRegistry;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.namespace.QName;
@@ -37,7 +37,7 @@ import org.alfresco.service.namespace.QName;
  * 
  * @author davidc
  */
-public class CMISPolicyTypeDefinition extends CMISObjectTypeDefinition 
+public class CMISPolicyTypeDefinition extends CMISAbstractTypeDefinition 
 {
     private static final long serialVersionUID = 1621538303752395828L;
 
@@ -50,12 +50,20 @@ public class CMISPolicyTypeDefinition extends CMISObjectTypeDefinition
      */
     public CMISPolicyTypeDefinition(CMISMapping cmisMapping, CMISTypeId typeId, ClassDefinition cmisClassDef)
     {
+        isPublic = true;
+        
+        // Object Type definitions
         this.cmisClassDef = cmisClassDef;
         objectTypeId = typeId;
         displayName = (cmisClassDef.getTitle() != null) ? cmisClassDef.getTitle() : typeId.getId();
         if (typeId == CMISDictionaryModel.POLICY_TYPE_ID)
         {
             objectTypeQueryName = typeId.getId();
+            QName parentQName = cmisMapping.getCmisType(cmisClassDef.getParentName());
+            if (parentQName != null)
+            {
+                parentTypeId = cmisMapping.getCmisTypeId(CMISScope.OBJECT, parentQName);
+            }
         }
         else
         {
@@ -98,6 +106,10 @@ public class CMISPolicyTypeDefinition extends CMISObjectTypeDefinition
     {
         // NOTE: Force no inheritance of base Policy type
         inheritedProperties.putAll(properties);
+        ownedProperties.putAll(properties);
+        
+        if (logger.isDebugEnabled())
+            logger.debug("Type " + objectTypeId + " properties: " + inheritedProperties.size() + ", owned: " + ownedProperties.size());
     }
 
     /*

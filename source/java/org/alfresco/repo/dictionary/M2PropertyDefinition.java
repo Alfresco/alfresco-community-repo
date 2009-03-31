@@ -163,6 +163,7 @@ import org.alfresco.service.namespace.QName;
             Map<QName, ConstraintDefinition> modelConstraints)
     {
         M2Property property = new M2Property();
+        property.setOverride(true);
         
         // Process Default Value
         String defaultValue = override.getDefaultValue();
@@ -315,8 +316,16 @@ import org.alfresco.service.namespace.QName;
     {
         return classDef;
     }
-    
 
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.service.cmr.dictionary.PropertyDefinition#isOverride()
+     */
+    public boolean isOverride()
+    {
+        return m2Property.isOverride();
+    }
+    
     /* (non-Javadoc)
      * @see org.alfresco.repo.dictionary.PropertyDefinition#isMultiValued()
      */

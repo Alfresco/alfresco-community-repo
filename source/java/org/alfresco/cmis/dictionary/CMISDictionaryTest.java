@@ -55,8 +55,7 @@ public class CMISDictionaryTest extends BaseCMISTest
     {
         for (CMISTypeDefinition typeDef : cmisDictionaryService.getAllTypes())
         {
-            CMISTypeId typeId = typeDef.getTypeId();
-            CMISTypeDefinition typeDefLookup = cmisDictionaryService.getType(typeId);
+            CMISTypeDefinition typeDefLookup = cmisDictionaryService.findType(typeDef.getTypeId());
             assertNotNull(typeDefLookup);
             assertEquals(typeDef, typeDefLookup);
         }

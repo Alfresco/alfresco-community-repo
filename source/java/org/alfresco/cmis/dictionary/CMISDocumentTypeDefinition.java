@@ -38,7 +38,7 @@ import org.alfresco.service.namespace.QName;
  * 
  * @author davidc
  */
-public class CMISDocumentTypeDefinition extends CMISObjectTypeDefinition 
+public class CMISDocumentTypeDefinition extends CMISAbstractTypeDefinition 
 {
     private static final long serialVersionUID = -7209732754962781522L;
     
@@ -57,17 +57,32 @@ public class CMISDocumentTypeDefinition extends CMISObjectTypeDefinition
      */
     public CMISDocumentTypeDefinition(CMISMapping cmisMapping, CMISTypeId typeId, ClassDefinition cmisClassDef)
     {
+        isPublic = true;
+        
         // Object type properties
         this.cmisClassDef = cmisClassDef;
         objectTypeId = typeId;
-        objectTypeQueryName = (typeId == CMISDictionaryModel.DOCUMENT_TYPE_ID) ? typeId.getId() : cmisMapping.buildPrefixEncodedString(typeId.getQName(), false);
         displayName = (cmisClassDef.getTitle() != null) ? cmisClassDef.getTitle() : typeId.getId();
-        QName parentQName = cmisMapping.getCmisType(cmisClassDef.getParentName());
-        if (cmisMapping.isValidCmisDocument(parentQName))
-        {
-            parentTypeId = cmisMapping.getCmisTypeId(CMISScope.DOCUMENT, parentQName);
-        }
         description = cmisClassDef.getDescription();
+
+        QName parentQName = cmisMapping.getCmisType(cmisClassDef.getParentName());
+        if (typeId == CMISDictionaryModel.DOCUMENT_TYPE_ID)
+        {
+            objectTypeQueryName = typeId.getId();
+            if (parentQName != null)
+            {
+                parentTypeId = cmisMapping.getCmisTypeId(CMISScope.OBJECT, parentQName);
+            }
+        }
+        else
+        {
+            objectTypeQueryName = cmisMapping.buildPrefixEncodedString(typeId.getQName(), false);
+            if (cmisMapping.isValidCmisDocument(parentQName))
+            {
+                parentTypeId = cmisMapping.getCmisTypeId(CMISScope.DOCUMENT, parentQName);
+            }
+        }
+        
         creatable = true;
         queryable = true;
         controllable = false;

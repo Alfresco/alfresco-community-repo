@@ -2,7 +2,7 @@
 
 <!--  Nominated Invitation Workflow Model -->
 
-<model name="wf:invite-workflow-model" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+<model name="inwf:invite-workflow-model" xmlns="http://www.alfresco.org/model/dictionary/1.0">
 
    <imports>
       <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d" />
@@ -10,49 +10,53 @@
       <import uri="http://www.alfresco.org/model/workflow/1.0" prefix="wf" />
    </imports>
 
+  <namespaces>
+    <namespace uri="http://www.alfresco.org/model/workflow/invite/nominated/1.0" prefix="inwf" />
+  </namespaces>
+
    <types>
       
       <!--  Custom Tasks -->
-      <type name="wf:inviteToSiteTask">
+      <type name="inwf:inviteToSiteTask">
          <parent>bpm:startTask</parent>
          <properties>
-            <property name="wf:serverPath">
+            <property name="inwf:serverPath">
                <type>d:text</type>
             </property>
-            <property name="wf:acceptUrl">
+            <property name="inwf:acceptUrl">
                <type>d:text</type>
             </property>
-            <property name="wf:rejectUrl">
+            <property name="inwf:rejectUrl">
                <type>d:text</type>
             </property>
-            <property name="wf:inviteTicket">
+            <property name="inwf:inviteTicket">
                <type>d:text</type>
             </property>
-            <property name="wf:inviterUserName">
+            <property name="inwf:inviterUserName">
                <type>d:text</type>
             </property>
-            <property name="wf:inviteeUserName">
+            <property name="inwf:inviteeUserName">
                <type>d:text</type>
             </property>
-            <property name="wf:inviteeEmail">
+            <property name="inwf:inviteeEmail">
                <type>d:text</type>
             </property>
-            <property name="wf:inviteeFirstName">
+            <property name="inwf:inviteeFirstName">
                <type>d:text</type>
             </property>
-            <property name="wf:inviteeLastName">
+            <property name="inwf:inviteeLastName">
                <type>d:text</type>
             </property>
-            <property name="wf:inviteeGenPassword">
+            <property name="inwf:inviteeGenPassword">
                <type>d:text</type>
             </property>
-            <property name="wf:resourceType">
+            <property name="inwf:resourceType">
                <type>d:text</type>
             </property>
-            <property name="wf:resourceName">
+            <property name="inwf:resourceName">
                <type>d:text</type>
             </property>
-            <property name="wf:inviteeRole">
+            <property name="inwf:inviteeRole">
                <type>d:text</type>
             </property>
          </properties>
@@ -61,15 +65,15 @@
          </mandatory-aspects>
       </type>
 
-      <type name="wf:invitePendingTask">
+      <type name="inwf:invitePendingTask">
          <parent>bpm:workflowTask</parent>
       </type>
 
-      <type name="wf:acceptInviteTask">
+      <type name="inwf:acceptInviteTask">
          <parent>bpm:workflowTask</parent>
       </type>
 
-      <type name="wf:rejectInviteTask">
+      <type name="inwf:rejectInviteTask">
          <parent>bpm:workflowTask</parent>
       </type>
 

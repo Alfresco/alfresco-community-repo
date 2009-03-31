@@ -1803,5 +1803,27 @@
             </list>
         </property>
     </bean>
+
+    <bean id="patch.redeployInvitationProcess" class="org.alfresco.repo.admin.patch.impl.GenericWorkflowPatch" parent="basePatch" >
+        <property name="id"><value>patch.redeployInvitationProcess</value></property>
+        <property name="description"><value>patch.redeployInvitationProcess.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>2009</value></property>
+        <property name="targetSchema"><value>2010</value></property>
+        <property name="workflowDefinitions">
+            <list>
+               <props>
+                    <prop key="engineId">jbpm</prop>
+                    <prop key="location">alfresco/workflow/invitation-moderated_processdefinition.xml</prop>
+                    <prop key="mimetype">text/xml</prop>
+               </props>
+               <props>
+                    <prop key="engineId">jbpm</prop>
+                    <prop key="location">alfresco/workflow/invitation-nominated_processdefinition.xml</prop>
+                    <prop key="mimetype">text/xml</prop>
+               </props>
+            </list>
+        </property>
+    </bean>
     
 </beans>

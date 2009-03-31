@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.alfresco.cmis.CMISDataTypeEnum;
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.DictionaryListener;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -48,10 +49,10 @@ import org.springframework.context.ApplicationEvent;
  * 
  * @author davidc
  */
-public abstract class AbstractCMISDictionaryService extends AbstractLifecycleBean implements CMISDictionaryService, DictionaryListener
+public abstract class CMISAbstractDictionaryService extends AbstractLifecycleBean implements CMISDictionaryService, DictionaryListener
 {
     // Logger
-    protected static final Log logger = LogFactory.getLog(AbstractCMISDictionaryService.class);
+    protected static final Log logger = LogFactory.getLog(CMISAbstractDictionaryService.class);
 
     // service dependencies
     private DictionaryDAO dictionaryDAO;
@@ -102,9 +103,9 @@ public abstract class AbstractCMISDictionaryService extends AbstractLifecycleBea
     /*package*/ class DictionaryRegistry
     {
         // Type Definitions Index
-        Map<QName, CMISObjectTypeDefinition> typeDefsByQName = new HashMap<QName, CMISObjectTypeDefinition>();
-        Map<QName, CMISObjectTypeDefinition> assocDefsByQName = new HashMap<QName, CMISObjectTypeDefinition>();
-        Map<CMISTypeId, CMISObjectTypeDefinition> objectDefsByTypeId = new HashMap<CMISTypeId, CMISObjectTypeDefinition>();
+        Map<QName, CMISAbstractTypeDefinition> typeDefsByQName = new HashMap<QName, CMISAbstractTypeDefinition>();
+        Map<QName, CMISAbstractTypeDefinition> assocDefsByQName = new HashMap<QName, CMISAbstractTypeDefinition>();
+        Map<CMISTypeId, CMISAbstractTypeDefinition> objectDefsByTypeId = new HashMap<CMISTypeId, CMISAbstractTypeDefinition>();
         Map<CMISTypeId, CMISTypeDefinition> typeDefsByTypeId = new HashMap<CMISTypeId, CMISTypeDefinition>();
         Map<String, CMISTypeDefinition> typeDefsByTable = new HashMap<String, CMISTypeDefinition>();
 
@@ -116,25 +117,41 @@ public abstract class AbstractCMISDictionaryService extends AbstractLifecycleBea
         /**
          * Register Type Definition
          * 
-         * @param typeDefinition
+         * @param typeDef
          */
-        public void registerTypeDefinition(CMISObjectTypeDefinition typeDefinition)
+        public void registerTypeDefinition(CMISAbstractTypeDefinition typeDef)
         {
-            QName typeQName = typeDefinition.getTypeId().getQName();
-            if (typeQName != null)
+            CMISTypeDefinition existingTypeDef = objectDefsByTypeId.get(typeDef.getTypeId());
+            if (existingTypeDef != null)
             {
-                if (typeDefinition instanceof CMISRelationshipTypeDefinition)
-                {
-                    assocDefsByQName.put(typeQName, typeDefinition);
-                }
-                else
-                {
-                    typeDefsByQName.put(typeQName, typeDefinition);
-                }
+                throw new AlfrescoRuntimeException("Type " + typeDef.getTypeId() + " already registered");
             }
-            objectDefsByTypeId.put(typeDefinition.getTypeId(), typeDefinition);
-            typeDefsByTypeId.put(typeDefinition.getTypeId(), typeDefinition);
-            typeDefsByTable.put(typeDefinition.getQueryName().toLowerCase(), typeDefinition);
+            
+            objectDefsByTypeId.put(typeDef.getTypeId(), typeDef);
+            if (typeDef.isPublic())
+            {
+                QName typeQName = typeDef.getTypeId().getQName();
+                if (typeQName != null)
+                {
+                    if (typeDef instanceof CMISRelationshipTypeDefinition)
+                    {
+                        assocDefsByQName.put(typeQName, typeDef);
+                    }
+                    else
+                    {
+                        typeDefsByQName.put(typeQName, typeDef);
+                    }
+                }
+                typeDefsByTypeId.put(typeDef.getTypeId(), typeDef);
+                typeDefsByTable.put(typeDef.getQueryName().toLowerCase(), typeDef);
+            }
+            
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Registered type " + typeDef.getTypeId() + " (scope=" + typeDef.getTypeId().getScope() + ", public=" + typeDef.isPublic() + ")");
+                logger.debug(" QName: " + typeDef.getTypeId().getQName());
+                logger.debug(" Table: " + typeDef.getQueryName());
+            }
         }
 
         /**
@@ -144,11 +161,25 @@ public abstract class AbstractCMISDictionaryService extends AbstractLifecycleBea
          */
         public void registerPropertyDefinition(CMISPropertyDefinition propDef)
         {
+            CMISPropertyDefinition existingPropDef = propDefsByPropId.get(propDef.getPropertyId());
+            if (existingPropDef != null)
+            {
+                throw new AlfrescoRuntimeException("Property " + propDef.getPropertyId() + " of " + propDef.getOwningType().getTypeId() + " already registered by type " + existingPropDef.getOwningType().getTypeId());
+            }
+            
             propDefsByPropId.put(propDef.getPropertyId(), propDef);
             propDefsByQName.put(propDef.getPropertyId().getQName(), propDef);
             propDefsByName.put(propDef.getPropertyId().getName().toLowerCase(), propDef);
+            
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Registered property " + propDef.getPropertyId().getId());
+                logger.debug(" QName: " + propDef.getPropertyId().getQName());
+                logger.debug(" Name: " + propDef.getPropertyId().getName());
+                logger.debug(" Owning Type: " + propDef.getOwningType().getTypeId());
+            }
         }
-        
+
         /*
          * (non-Javadoc)
          * @see java.lang.Object#toString()
@@ -165,24 +196,45 @@ public abstract class AbstractCMISDictionaryService extends AbstractLifecycleBea
         }
     }
 
-
     /*
      * (non-Javadoc)
-     * @see org.alfresco.cmis.dictionary.CMISDictionaryService#getTypeId(java.lang.String)
+     * @see org.alfresco.cmis.dictionary.CMISDictionaryService#findType(org.alfresco.cmis.dictionary.CMISTypeId)
      */
-    public CMISTypeId getTypeId(String typeId)
+    public CMISTypeDefinition findType(CMISTypeId typeId)
     {
-        return cmisMapping.getCmisTypeId(typeId);
+        return registry.objectDefsByTypeId.get(typeId);
     }
 
     /*
      * (non-Javadoc)
-     * @see org.alfresco.cmis.dictionary.CMISDictionaryService#getTypeId(org.alfresco.service.namespace.QName, org.alfresco.cmis.dictionary.CMISScope)
+     * @see org.alfresco.cmis.dictionary.CMISDictionaryService#findType(java.lang.String)
      */
-    public CMISTypeId getTypeId(QName clazz, CMISScope matchingScope)
+    public CMISTypeDefinition findType(String typeId)
     {
+        CMISTypeId cmisTypeId = cmisMapping.getCmisTypeId(typeId);
+        return findType(cmisTypeId);
+    }
+    
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.dictionary.CMISDictionaryService#findTypeForClass(org.alfresco.service.namespace.QName, org.alfresco.cmis.dictionary.CMISScope[])
+     */
+    public CMISTypeDefinition findTypeForClass(QName clazz, CMISScope... matchingScopes)
+    {
+        // searching for relationship
+        boolean scopeByRelationship = false;
+        for (CMISScope scope : matchingScopes)
+        {
+            if (scope == CMISScope.RELATIONSHIP)
+            {
+                scopeByRelationship = true;
+                break;
+            }
+        }
+        
+        // locate type in registry
         CMISTypeDefinition typeDef = null;
-        if (matchingScope != null && matchingScope == CMISScope.RELATIONSHIP)
+        if (scopeByRelationship)
         {
             typeDef = registry.assocDefsByQName.get(clazz);
         }
@@ -191,40 +243,33 @@ public abstract class AbstractCMISDictionaryService extends AbstractLifecycleBea
             typeDef = registry.typeDefsByQName.get(clazz);
         }
 
-        CMISTypeDefinition matchingTypeDef = null;
-        if (matchingScope == null)
+        // ensure matches one of provided matching scopes
+        CMISTypeDefinition matchingTypeDef = (matchingScopes.length == 0) ? typeDef : null;
+        if (typeDef != null)
         {
-            matchingTypeDef = typeDef;
-        }
-        else
-        {
-            if (typeDef != null && typeDef.getTypeId().getScope() == matchingScope)
+            for (CMISScope scope : matchingScopes)
             {
-                matchingTypeDef = typeDef;
+                if (typeDef.getTypeId().getScope() == scope)
+                {
+                    matchingTypeDef = typeDef;
+                    break;
+                }
             }
         }
-        return matchingTypeDef == null ? null : matchingTypeDef.getTypeId();
+        
+        return matchingTypeDef;
     }
-
+    
     /*
      * (non-Javadoc)
-     * @see org.alfresco.cmis.dictionary.CMISDictionaryService#getTypeIdFromTable(java.lang.String)
+     * @see org.alfresco.cmis.dictionary.CMISDictionaryService#findTypeForTable(java.lang.String)
      */
-    public CMISTypeId getTypeIdFromTable(String table)
+    public CMISTypeDefinition findTypeForTable(String tableName)
     {
-        CMISTypeDefinition typeDef = registry.typeDefsByTable.get(table.toLowerCase());
-        return (typeDef == null) ? null : typeDef.getTypeId();
+        CMISTypeDefinition typeDef = registry.typeDefsByTable.get(tableName.toLowerCase());
+        return typeDef;
     }
-
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.cmis.dictionary.CMISDictionaryService#getType(org.alfresco.cmis.dictionary.CMISTypeId)
-     */
-    public CMISTypeDefinition getType(CMISTypeId typeId)
-    {
-        return registry.objectDefsByTypeId.get(typeId);
-    }
-
+    
     /*
      * (non-Javadoc)
      * @see org.alfresco.cmis.dictionary.CMISDictionaryService#getAllTypes()
@@ -233,46 +278,58 @@ public abstract class AbstractCMISDictionaryService extends AbstractLifecycleBea
     {
         return Collections.unmodifiableCollection(registry.typeDefsByTypeId.values());
     }
-
+    
     /*
      * (non-Javadoc)
-     * @see org.alfresco.cmis.dictionary.CMISDictionaryService#getProperty(org.alfresco.cmis.dictionary.CMISPropertyId)
+     * @see org.alfresco.cmis.dictionary.CMISDictionaryService#getProperty(org.alfresco.service.namespace.QName, org.alfresco.cmis.dictionary.CMISTypeDefinition)
      */
-    public CMISPropertyDefinition getProperty(CMISPropertyId propertyId)
-    {
-        return registry.propDefsByPropId.get(propertyId);
-    }
-
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.cmis.dictionary.CMISDictionaryService#getPropertyId(java.lang.String)
-     */
-    public CMISPropertyId getPropertyId(String property)
-    {
-        CMISPropertyDefinition propDef = registry.propDefsByName.get(property.toLowerCase());
-        return (propDef == null) ? null : propDef.getPropertyId();
-    }
-
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.cmis.dictionary.CMISDictionaryService#getPropertyId(org.alfresco.service.namespace.QName)
-     */
-    public CMISPropertyId getPropertyId(QName property)
+    public CMISPropertyDefinition findProperty(QName property, CMISTypeDefinition matchingType)
     {
         CMISPropertyDefinition propDef = registry.propDefsByQName.get(property);
-        return (propDef == null) ? null : propDef.getPropertyId();
+        return getProperty(propDef, matchingType);
     }
-
+    
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.dictionary.CMISDictionaryService#getProperty(java.lang.String, org.alfresco.cmis.dictionary.CMISTypeDefinition)
+     */
+    public CMISPropertyDefinition findProperty(String property, CMISTypeDefinition matchingType)
+    {
+        CMISPropertyDefinition propDef = registry.propDefsByName.get(property.toLowerCase());
+        return getProperty(propDef, matchingType);
+    }
+    
+    /**
+     * Return property definition if part of specified type definition
+     * 
+     * @param property
+     * @param matchingType
+     * @return  property definition (if matches), or null (if not matches)
+     */
+    private CMISPropertyDefinition getProperty(CMISPropertyDefinition property, CMISTypeDefinition matchingType)
+    {
+        boolean isMatchingType = (matchingType == null);
+        if (property != null && matchingType != null)
+        {
+            Map<CMISPropertyId, CMISPropertyDefinition> props = matchingType.getPropertyDefinitions();
+            if (props.containsKey(property.getPropertyId()))
+            {
+                isMatchingType = true;
+            }
+        }
+        return isMatchingType ? property : null;
+    }
+    
     /*
      * (non-Javadoc)
      * @see org.alfresco.cmis.dictionary.CMISDictionaryService#getDataType(org.alfresco.service.namespace.QName)
      */
-    public CMISDataTypeEnum getDataType(QName dataType)
+    public CMISDataTypeEnum findDataType(QName dataType)
     {
         return cmisMapping.getDataType(dataType);
     }
 
-    
+
     /**
      * Factory for creating CMIS Definitions
      * 
@@ -288,9 +345,12 @@ public abstract class AbstractCMISDictionaryService extends AbstractLifecycleBea
     {
         DictionaryRegistry registry = new DictionaryRegistry();
 
+        if (logger.isDebugEnabled())
+            logger.debug("Creating type definitions...");
+        
         // phase 1: construct type definitions
         createDefinitions(registry);
-        for (CMISObjectTypeDefinition objectTypeDef : registry.objectDefsByTypeId.values())
+        for (CMISAbstractTypeDefinition objectTypeDef : registry.objectDefsByTypeId.values())
         {
             Map<CMISPropertyId, CMISPropertyDefinition> propDefs = objectTypeDef.createProperties(cmisMapping, dictionaryService);
             for (CMISPropertyDefinition propDef : propDefs.values())
@@ -300,37 +360,43 @@ public abstract class AbstractCMISDictionaryService extends AbstractLifecycleBea
             objectTypeDef.createSubTypes(cmisMapping, dictionaryService);
         }
 
+        if (logger.isDebugEnabled())
+            logger.debug("Linking type definitions...");
+
         // phase 2: link together
-        for (CMISObjectTypeDefinition objectTypeDef : registry.objectDefsByTypeId.values())
+        for (CMISAbstractTypeDefinition objectTypeDef : registry.objectDefsByTypeId.values())
         {
             objectTypeDef.resolveDependencies(registry);
         }
-        
+
+        if (logger.isDebugEnabled())
+            logger.debug("Resolving type inheritance...");
+
         // phase 3: resolve inheritance
-        Map<Integer,List<CMISObjectTypeDefinition>> order = new TreeMap<Integer, List<CMISObjectTypeDefinition>>();
-        for (CMISObjectTypeDefinition typeDef : registry.objectDefsByTypeId.values())
+        Map<Integer,List<CMISAbstractTypeDefinition>> order = new TreeMap<Integer, List<CMISAbstractTypeDefinition>>();
+        for (CMISAbstractTypeDefinition typeDef : registry.objectDefsByTypeId.values())
         {
             // calculate class depth in hierarchy
             int depth = 0;
-            CMISTypeDefinition parent = typeDef.getParentType();
+            CMISAbstractTypeDefinition parent = typeDef.getInternalParentType();
             while (parent != null)
             {
                 depth = depth +1;
-                parent = parent.getParentType();
+                parent = parent.getInternalParentType();
             }
 
             // map class to depth
-            List<CMISObjectTypeDefinition> classes = order.get(depth);
+            List<CMISAbstractTypeDefinition> classes = order.get(depth);
             if (classes == null)
             {
-                classes = new ArrayList<CMISObjectTypeDefinition>();
+                classes = new ArrayList<CMISAbstractTypeDefinition>();
                 order.put(depth, classes);
             }
             classes.add(typeDef);
         }
         for (int depth = 0; depth < order.size(); depth++)
         {
-            for (CMISObjectTypeDefinition typeDef : order.get(depth))
+            for (CMISAbstractTypeDefinition typeDef : order.get(depth))
             {
                 typeDef.resolveInheritance(registry);
             }
@@ -339,8 +405,8 @@ public abstract class AbstractCMISDictionaryService extends AbstractLifecycleBea
         // publish new registry
         this.registry = registry;
         
-        if (logger.isDebugEnabled())
-            logger.debug("Initialized CMIS Dictionary. Types:" + registry.typeDefsByTypeId.size() + ", Properties:" + registry.propDefsByPropId.size());
+        if (logger.isInfoEnabled())
+            logger.info("Initialized CMIS Dictionary. Types:" + registry.typeDefsByTypeId.size() + ", Properties:" + registry.propDefsByPropId.size());
     }
 
     /*

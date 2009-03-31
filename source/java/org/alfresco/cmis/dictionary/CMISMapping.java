@@ -59,7 +59,10 @@ public class CMISMapping
      * The QName for the Alfresco CMIS Model.
      */
     public static QName CMIS_MODEL_QNAME = QName.createQName(CMIS_MODEL_URI, CMIS_MODEL_NAME);
-        
+
+    // CMIS Internal Types
+    public static String OBJECT_OBJECT_TYPE = "Object";
+    public static String FILESYSTEM_OBJECT_TYPE ="FileSystemObject";
     
     // CMIS Data Types
     public static QName CMIS_DATATYPE_ID = QName.createQName(CMIS_MODEL_URI, "id");
@@ -68,10 +71,16 @@ public class CMISMapping
     public static QName CMIS_DATATYPE_HTML = QName.createQName(CMIS_MODEL_URI, "html");
 
     // CMIS Types
+    public static QName OBJECT_QNAME = QName.createQName(CMIS_MODEL_URI, OBJECT_OBJECT_TYPE);
+    public static QName FILESYSTEM_OBJECT_QNAME = QName.createQName(CMIS_MODEL_URI, FILESYSTEM_OBJECT_TYPE);
     public static QName DOCUMENT_QNAME = QName.createQName(CMIS_MODEL_URI, CMISDictionaryModel.DOCUMENT_OBJECT_TYPE);
     public static QName FOLDER_QNAME = QName.createQName(CMIS_MODEL_URI, CMISDictionaryModel.FOLDER_OBJECT_TYPE);
     public static QName RELATIONSHIP_QNAME = QName.createQName(CMIS_MODEL_URI, CMISDictionaryModel.RELATIONSHIP_OBJECT_TYPE);
     public static QName POLICY_QNAME = QName.createQName(CMIS_MODEL_URI, CMISDictionaryModel.POLICY_OBJECT_TYPE);
+
+    // CMIS Internal Type Ids
+    public static CMISTypeId OBJECT_TYPE_ID = new CMISTypeId(CMISScope.OBJECT, OBJECT_OBJECT_TYPE.toLowerCase(), OBJECT_QNAME);
+    public static CMISTypeId FILESYSTEM_OBJECT_TYPE_ID = new CMISTypeId(CMISScope.OBJECT, FILESYSTEM_OBJECT_TYPE.toLowerCase(), FILESYSTEM_OBJECT_QNAME);
 
     // Properties
     public static QName PROP_OBJECT_ID_QNAME = QName.createQName(CMIS_MODEL_URI, CMISDictionaryModel.PROP_OBJECT_ID);
@@ -90,6 +99,8 @@ public class CMISMapping
      */
     static
     {
+        qNameToCmisTypeId.put(OBJECT_QNAME, OBJECT_TYPE_ID);
+        qNameToCmisTypeId.put(FILESYSTEM_OBJECT_QNAME, FILESYSTEM_OBJECT_TYPE_ID);
         qNameToCmisTypeId.put(DOCUMENT_QNAME, CMISDictionaryModel.DOCUMENT_TYPE_ID);
         qNameToCmisTypeId.put(FOLDER_QNAME, CMISDictionaryModel.FOLDER_TYPE_ID);
         qNameToCmisTypeId.put(RELATIONSHIP_QNAME, CMISDictionaryModel.RELATIONSHIP_TYPE_ID);
@@ -195,6 +206,14 @@ public class CMISMapping
         {
             return CMISDictionaryModel.POLICY_TYPE_ID;
         }
+        else if (typeId.equalsIgnoreCase(OBJECT_TYPE_ID.getId()))
+        {
+            return OBJECT_TYPE_ID;
+        }
+        else if (typeId.equalsIgnoreCase(FILESYSTEM_OBJECT_TYPE_ID.getId()))
+        {
+            return FILESYSTEM_OBJECT_TYPE_ID;
+        }
 
         // Is it an Alfresco type id?
         if (typeId.length() < 4 || typeId.charAt(1) != '/')
@@ -254,6 +273,14 @@ public class CMISMapping
         if (classQName.equals(CMISMapping.POLICY_QNAME))
         {
             return getCmisTypeId(CMISScope.POLICY, classQName);
+        }
+        if (classQName.equals(CMISMapping.OBJECT_QNAME))
+        {
+            return getCmisTypeId(CMISScope.OBJECT, classQName);
+        }
+        if (classQName.equals(CMISMapping.FILESYSTEM_OBJECT_QNAME))
+        {
+            return getCmisTypeId(CMISScope.OBJECT, classQName);
         }
         if (isValidCmisDocument(classQName))
         {
@@ -398,7 +425,8 @@ public class CMISMapping
         }
         
         if (aspectDef.getName().equals(ContentModel.ASPECT_VERSIONABLE) ||
-            aspectDef.getName().equals(ContentModel.ASPECT_AUDITABLE))
+            aspectDef.getName().equals(ContentModel.ASPECT_AUDITABLE) ||
+            aspectDef.getName().equals(ContentModel.ASPECT_REFERENCEABLE))
         {
             return false;
         }

@@ -25,15 +25,12 @@
 package org.alfresco.cmis.search;
 
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.alfresco.cmis.CMISDataTypeEnum;
 import org.alfresco.cmis.dictionary.CMISDictionaryService;
 import org.alfresco.cmis.dictionary.CMISPropertyDefinition;
-import org.alfresco.cmis.dictionary.CMISPropertyId;
 import org.alfresco.cmis.dictionary.CMISTypeDefinition;
-import org.alfresco.cmis.dictionary.CMISTypeId;
 import org.alfresco.repo.search.impl.querymodel.Column;
 import org.alfresco.repo.search.impl.querymodel.PropertyArgument;
 import org.alfresco.repo.search.impl.querymodel.Query;
@@ -48,33 +45,24 @@ public class CMISResultSetMetaDataImpl implements CMISResultSetMetaData
 {
     private CMISQueryOptions options;
 
-    private Query query;
-
     private Map<String, CMISResultSetColumn> columnMetaData;
 
     private Map<String, CMISResultSetSelector> selectorMetaData;
 
-    private CMISDictionaryService cmisDictionaryService;
-
     public CMISResultSetMetaDataImpl(CMISQueryOptions options, Query query, CMISDictionaryService cmisDictionaryService)
     {
         this.options = options;
-        this.query = query;
 
         Map<String, Selector> selectors = query.getSource().getSelectors();
         selectorMetaData = new LinkedHashMap<String, CMISResultSetSelector>();
         for(Selector selector : selectors.values())
         {
-            CMISTypeId typeId = cmisDictionaryService.getTypeId(selector.getType(), null);
-            CMISTypeDefinition type = cmisDictionaryService.getType(typeId);
+            CMISTypeDefinition type = cmisDictionaryService.findTypeForClass(selector.getType());
             CMISResultSetSelector smd = new CMISResultSetSelectorImpl(selector.getAlias(), type);
             selectorMetaData.put(smd.getName(), smd);
         }
 
-        List<Column> columns = query.getColumns();
         columnMetaData = new LinkedHashMap<String, CMISResultSetColumn>();
-
-        int i = 0;
         for (Column column : query.getColumns())
         {
             CMISPropertyDefinition propertyDefinition = null;
@@ -83,13 +71,12 @@ public class CMISResultSetMetaDataImpl implements CMISResultSetMetaData
             {
                 PropertyArgument arg = (PropertyArgument) column.getFunctionArguments().get(PropertyAccessor.ARG_PROPERTY);
                 QName propertyQName = arg.getPropertyName();
-                CMISPropertyId propertyId = cmisDictionaryService.getPropertyId(propertyQName);
-                propertyDefinition = cmisDictionaryService.getProperty(propertyId);
+                propertyDefinition = cmisDictionaryService.findProperty(propertyQName, null);
                 type = propertyDefinition.getDataType();
             }
             if (type == null)
             {
-                type = cmisDictionaryService.getDataType(column.getFunction().getReturnType());
+                type = cmisDictionaryService.findDataType(column.getFunction().getReturnType());
             }
             CMISResultSetColumn cmd = new CMISResultSetColumnImpl(column.getAlias(), propertyDefinition, type);
             columnMetaData.put(cmd.getName(), cmd);

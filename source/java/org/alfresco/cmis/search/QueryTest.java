@@ -1539,7 +1539,7 @@ public class QueryTest extends BaseCMISTest
         CMISResultSet rs = cmisQueryService.query(options);
         CMISResultSetMetaData md = rs.getMetaData();
         assertNotNull(md.getQueryOptions());
-        CMISTypeDefinition typeDef = cmisDictionaryService.getType(CMISDictionaryModel.DOCUMENT_TYPE_ID);
+        CMISTypeDefinition typeDef = cmisDictionaryService.findType(CMISDictionaryModel.DOCUMENT_TYPE_ID);
         assertEquals(typeDef.getPropertyDefinitions().size(), md.getColumnNames().length);
         assertNotNull(md.getColumn(CMISDictionaryModel.PROP_OBJECT_ID));
         assertEquals(1, md.getSelectors().length);

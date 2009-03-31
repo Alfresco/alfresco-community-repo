@@ -37,85 +37,68 @@ import org.alfresco.service.namespace.QName;
 public interface CMISDictionaryService
 {
     /**
-     * Get Type Id
+     * Find type for type id
+     * @param typeId
+     * @return
+     */
+    public CMISTypeDefinition findType(CMISTypeId typeId);
+    
+    /**
+     * Find type for type id
      * 
      * @param typeId
      * @return
      */
-    public CMISTypeId getTypeId(String typeId);
+    public CMISTypeDefinition findType(String typeId);
     
     /**
-     * Get Type Id from Table Name
-     * 
-     * @param table
-     * @return
-     */
-    public CMISTypeId getTypeIdFromTable(String table);
-    
-    /**
-     * Get Type Id from Alfresco Class Name
+     * Find type for Alfresco class name. Optionally, constrain match to one of specified CMIS scopes
      * 
      * @param clazz
-     * @param matchingScope  if provided, only return type id matching scope
+     * @param matchingScopes
      * @return
      */
-    public CMISTypeId getTypeId(QName clazz, CMISScope matchingScope);
-
-    /**
-     * Get Type Definition
-     * 
-     * @param typeId
-     * @return
-     */
-    public CMISTypeDefinition getType(CMISTypeId typeId);
+    public CMISTypeDefinition findTypeForClass(QName clazz, CMISScope... matchingScopes);
     
     /**
-     * Get All Type Definitions
+     * Find type for table
+     * 
+     * @param tableName
+     * @return
+     */
+    public CMISTypeDefinition findTypeForTable(String tableName);
+    
+    /**
+     * Get all Types
      * 
      * @return
      */
     public Collection<CMISTypeDefinition> getAllTypes();
-    
+
     /**
-     * Get Property Id for Alfresco property name
+     * Find property.  Optionally constrain match to specified type.
      * 
      * @param property
+     * @param matchingType
      * @return
      */
-    public CMISPropertyId getPropertyId(QName property);
+    public CMISPropertyDefinition findProperty(QName property, CMISTypeDefinition matchingType);
     
     /**
-     * Get Property Id
+     * Find property.  Optionally constrain match to specified type.
      * 
-     * @param propertyId
+     * @param property
+     * @param matchingType
      * @return
      */
-    public CMISPropertyId getPropertyId(String propertyId);
-    
+    public CMISPropertyDefinition findProperty(String property, CMISTypeDefinition matchingType);
+
     /**
-     * Get Property
-     * 
-     * @param propertyId
-     * @return
-     */
-    public CMISPropertyDefinition getProperty(CMISPropertyId propertyId);
-    
-    /**
-     * Get Data Type
+     * Find data type
      * 
      * @param dataType
      * @return
      */
-    public CMISDataTypeEnum getDataType(QName dataType);
-
-    
-    // public CMISTypeDef findType(CMISTypeId typeId)
-    // public CMISTypeDef findType(String typeId)
-    // public CMISTypeDef findTypeForClass(QName clazz, CMISScope matchingScope, ...)
-    // public CMISTypeDef findTypeForTable(String tableName)
-    // public CMISTypeDef getAllTypes();
-    // public CMISPropertyDefinition getProperty(QName property)
-    // public CMISPropertyDefinition getProperty(CMISTypeDef typeDef, String property)
-    // public CMISDataTypeEnum getDataType(QName dataType)
+    public CMISDataTypeEnum findDataType(QName dataType);
     
 }

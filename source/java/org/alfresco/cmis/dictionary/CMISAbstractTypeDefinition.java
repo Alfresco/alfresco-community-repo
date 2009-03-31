@@ -33,13 +33,15 @@ import java.util.LinkedList;
 import java.util.Map;
 
 import org.alfresco.cmis.CMISContentStreamAllowedEnum;
-import org.alfresco.cmis.dictionary.AbstractCMISDictionaryService.DictionaryRegistry;
+import org.alfresco.cmis.dictionary.CMISAbstractDictionaryService.DictionaryRegistry;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.namespace.QName;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 
 /**
@@ -47,17 +49,22 @@ import org.alfresco.service.namespace.QName;
  * 
  * @author davidc
  */
-public class CMISObjectTypeDefinition implements CMISTypeDefinition, Serializable
+public class CMISAbstractTypeDefinition implements CMISTypeDefinition, Serializable
 {
+    // Logger
+    protected static final Log logger = LogFactory.getLog(CMISAbstractTypeDefinition.class);
+
     private static final long serialVersionUID = -3131505923356013430L;
 
     // Object type properties
+    protected boolean isPublic;
     protected ClassDefinition cmisClassDef;
     protected CMISTypeId objectTypeId;
     protected String objectTypeQueryName;
     protected String displayName;
     protected CMISTypeId parentTypeId;
     protected CMISTypeDefinition parentType;
+    protected CMISAbstractTypeDefinition internalParentType;
     protected CMISTypeDefinition rootType;
     protected String description;
     protected boolean creatable;
@@ -68,6 +75,8 @@ public class CMISObjectTypeDefinition implements CMISTypeDefinition, Serializabl
     protected Collection<CMISTypeDefinition> subTypes = new ArrayList<CMISTypeDefinition>();
     protected Map<CMISPropertyId, CMISPropertyDefinition> properties = new HashMap<CMISPropertyId, CMISPropertyDefinition>();
     protected Map<CMISPropertyId, CMISPropertyDefinition> inheritedProperties = new HashMap<CMISPropertyId, CMISPropertyDefinition>();
+    protected Map<CMISPropertyId, CMISPropertyDefinition> ownedProperties = new HashMap<CMISPropertyId, CMISPropertyDefinition>();
+    
     
 
     /**
@@ -82,20 +91,7 @@ public class CMISObjectTypeDefinition implements CMISTypeDefinition, Serializabl
         // map properties directly defined on this type
         for (PropertyDefinition propDef : cmisClassDef.getProperties().values())
         {
-            if (propDef.getContainerClass().equals(cmisClassDef))
-            {
-                if (cmisMapping.getDataType(propDef.getDataType()) != null)
-                {
-                    CMISPropertyDefinition cmisPropDef = createProperty(cmisMapping, propDef);
-                    properties.put(cmisPropDef.getPropertyId(), cmisPropDef);
-                }
-            }
-        }
-        
-        // map properties directly defined on default aspects
-        for (AspectDefinition aspectDef : cmisClassDef.getDefaultAspects(false))
-        {
-            for (PropertyDefinition propDef : aspectDef.getProperties().values())
+            if (propDef.getContainerClass().equals(cmisClassDef) && !propDef.isOverride())
             {
                 if (cmisMapping.getDataType(propDef.getDataType()) != null)
                 {
@@ -155,29 +151,48 @@ public class CMISObjectTypeDefinition implements CMISTypeDefinition, Serializabl
     {
         if (parentTypeId != null)
         {
-            parentType = registry.typeDefsByTypeId.get(parentTypeId);
-            if (parentType == null)
+            internalParentType = registry.objectDefsByTypeId.get(parentTypeId);
+            if (internalParentType == null)
             {
                 throw new AlfrescoRuntimeException("Failed to retrieve parent type for type id " + parentTypeId);
             }
+            if (internalParentType.isPublic() == isPublic)
+            {
+                parentType = internalParentType;
+            }
         }
+        
+        if (logger.isDebugEnabled())
+            logger.debug("Type " + objectTypeId + ": parent=" + (parentType == null ? "<none>" : parentType.getTypeId()) +
+                    ", internal parent=" + (internalParentType == null ? "<none>" : internalParentType.getTypeId()));
+        
         CMISTypeId rootTypeId = objectTypeId.getRootTypeId();
         if (rootTypeId != null)
         {
-            rootType = registry.typeDefsByTypeId.get(rootTypeId);
+            rootType = registry.objectDefsByTypeId.get(rootTypeId);
             if (rootType == null)
             {
                 throw new AlfrescoRuntimeException("Failed to retrieve root type for type id " + rootTypeId);
             }
         }
+
+        if (logger.isDebugEnabled())
+            logger.debug("Type " + objectTypeId + ": root=" + rootType.getTypeId());
+        
         for (CMISTypeId subTypeId : subTypeIds)
         {
-            CMISTypeDefinition subType = registry.typeDefsByTypeId.get(subTypeId);
+            CMISTypeDefinition subType = registry.objectDefsByTypeId.get(subTypeId);
             if (subType == null)
             {
                 throw new AlfrescoRuntimeException("Failed to retrieve sub type for type id " + subTypeId + " for parent type " + objectTypeId);
             }
-            subTypes.add(subType);
+            if (subType.isPublic() == isPublic)
+            {
+                subTypes.add(subType);
+
+                if (logger.isDebugEnabled())
+                    logger.debug("Type " + objectTypeId + ": subtype=" + subType.getTypeId());
+            }
         }
     }
 
@@ -189,70 +204,92 @@ public class CMISObjectTypeDefinition implements CMISTypeDefinition, Serializabl
     /*package*/ void resolveInheritance(DictionaryRegistry registry)
     {
         inheritedProperties.putAll(properties);
-        if (parentType != null)
+        ownedProperties.putAll(properties);
+        if (internalParentType != null)
         {
-            inheritedProperties.putAll(parentType.getPropertyDefinitions());
-        }
-    }
-    
+            inheritedProperties.putAll(internalParentType.getPropertyDefinitions());
+            
+            // collapse all internal inherited properties into owned properties
+            if (internalParentType.isPublic != isPublic)
+            {
+                ownedProperties.putAll(internalParentType.getPropertyDefinitions());
+            }
 
-    
+            if (logger.isDebugEnabled())
+                logger.debug("Type " + objectTypeId + " inheriting properties: " + internalParentType.getPropertyDefinitions().size() + " from " + internalParentType.getTypeId());
+        }
+        
+        if (logger.isDebugEnabled())
+            logger.debug("Type " + objectTypeId + " properties: " + inheritedProperties.size() + ", owned: " + ownedProperties.size());
+    }
+
     /**
-     * Get the unique identifier for the type
+     * Get internal parent type
      * 
-     * @return - the type id
+     * @return
+     */
+    public CMISAbstractTypeDefinition getInternalParentType()
+    {
+        return internalParentType;
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.dictionary.CMISTypeDefinition#isPublic()
+     */
+    public boolean isPublic()
+    {
+        return isPublic;
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.dictionary.CMISTypeDefinition#getTypeId()
      */
     public CMISTypeId getTypeId()
     {
         return objectTypeId;
     }
 
-    /**
-     * Get the table name used for queries against the type. This is also a unique identifier for the type. The string
-     * conforms to SQL table naming conventions. TODO: Should we impose a maximum length and if so how do we avoid
-     * collisions from truncations?
-     * 
-     * @return the sql table name
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.dictionary.CMISTypeDefinition#getQueryName()
      */
     public String getQueryName()
     {
         return objectTypeQueryName;
     }
 
-    /**
-     * Get the display name for the type.
-     * 
-     * @return - the display name
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.dictionary.CMISTypeDefinition#getDisplayName()
      */
     public String getDisplayName()
     {
         return displayName;
     }
 
-    /**
-     * Get parent type
-     * 
-     * @return
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.dictionary.CMISTypeDefinition#getParentType()
      */
     public CMISTypeDefinition getParentType()
     {
         return parentType;
     }
 
-    /**
-     * Get the root type
-     * 
-     * @return
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.dictionary.CMISTypeDefinition#getRootType()
      */
     public CMISTypeDefinition getRootType()
     {
         return rootType;
     }
 
-    /**
-     * Get sub types
-     * 
-     * @return
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.dictionary.CMISTypeDefinition#getSubTypes(boolean)
      */
     public Collection<CMISTypeDefinition> getSubTypes(boolean includeDescendants)
     {
@@ -281,121 +318,117 @@ public class CMISObjectTypeDefinition implements CMISTypeDefinition, Serializabl
         }
         return descendants;
     }
-    
-    /**
-     * Get the description for the type
-     * 
-     * @return - the description
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.dictionary.CMISTypeDefinition#getDescription()
      */
     public String getDescription()
     {
         return description;
     }
 
-    /**
-     * Can objects of this type be created?
-     * 
-     * @return
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.dictionary.CMISTypeDefinition#isCreatable()
      */
     public boolean isCreatable()
     {
         return creatable;
     }
 
-    /**
-     * Is this type queryable? If not, the type may not appear in the FROM clause of a query. This property of the type
-     * is not inherited in the type hierarchy. It is set on each type.
-     * 
-     * @return true if queryable
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.dictionary.CMISTypeDefinition#isQueryable()
      */
     public boolean isQueryable()
     {
         return queryable;
     }
 
-    /**
-     * Are objects of this type controllable.
-     * 
-     * @return
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.dictionary.CMISTypeDefinition#isControllable()
      */
     public boolean isControllable()
     {
         return controllable;
     }
-    
-    /**
-     * Are objects of this type included in super type queries
-     * 
-     * @return
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.dictionary.CMISTypeDefinition#isIncludeInSuperTypeQuery()
      */
     public boolean isIncludeInSuperTypeQuery()
     {
         return includeInSuperTypeQuery;
     }
 
-    /**
-     * Gets the property definitions for this type
-     * 
-     * @return  property definitions
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.dictionary.CMISTypeDefinition#getPropertyDefinitions()
      */
     public Map<CMISPropertyId, CMISPropertyDefinition> getPropertyDefinitions()
     {
         return inheritedProperties;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.dictionary.CMISTypeDefinition#getOwnedPropertyDefinitions()
+     */
+    public Map<CMISPropertyId, CMISPropertyDefinition> getOwnedPropertyDefinitions()
+    {
+        return ownedProperties;
+    }
 
     //
     // Document Type specific
     //
-
-    /**
-     * Is Fileable?
-     * 
-     * @return
+    
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.dictionary.CMISTypeDefinition#isFileable()
      */
     public boolean isFileable()
     {
         return false;
     }
 
-    /**
-     * Is Versionable?
-     * 
-     * @return
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.dictionary.CMISTypeDefinition#isVersionable()
      */
     public boolean isVersionable()
     {
         return false;
     }
-    
-    /**
-     * Is Content Stream Allowed?
-     * 
-     * @return
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.dictionary.CMISTypeDefinition#getContentStreamAllowed()
      */
     public CMISContentStreamAllowedEnum getContentStreamAllowed()
     {
         return CMISContentStreamAllowedEnum.NOT_ALLOWED;
     }
-    
+
     //
     // Relationship Type specific
     //
     
-    /**
-     * Get allowed source types
-     * 
-     * @return
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.dictionary.CMISTypeDefinition#getAllowedSourceTypes()
      */
     public Collection<CMISTypeDefinition> getAllowedSourceTypes()
     {
         return Collections.emptyList();
     }
 
-    /**
-     * Get allowed target types
-     * 
-     * @return
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.dictionary.CMISTypeDefinition#getAllowedTargetTypes()
      */
     public Collection<CMISTypeDefinition> getAllowedTargetTypes()
     {

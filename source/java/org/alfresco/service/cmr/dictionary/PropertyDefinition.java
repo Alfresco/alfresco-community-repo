@@ -71,6 +71,8 @@ public interface PropertyDefinition
      */    
     public ClassDefinition getContainerClass();
     
+    public boolean isOverride();
+    
     /**
      * @return  true => multi-valued, false => single-valued  
      */

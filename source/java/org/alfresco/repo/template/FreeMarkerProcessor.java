@@ -334,14 +334,15 @@ public class FreeMarkerProcessor extends BaseProcessor implements TemplateProces
         
         else if (value instanceof Map)
         {
-            Map<String, Object> map = (Map<String, Object>)value;
+            Map<Object, Object> map = (Map<Object, Object>)value;
             Map<String, Object> convertedMap = new HashMap<String, Object>(map.size());
-            for (String key : map.keySet())
+            for (Object key : map.keySet())
             {
-                if (key.equals(TemplateService.KEY_IMAGE_RESOLVER) == false)
+                String strKey = key.toString();
+                if (strKey.equals(TemplateService.KEY_IMAGE_RESOLVER) == false)
                 {
                     Object mapValue = map.get(key);
-                    convertedMap.put(key, convertValue(mapValue, imageResolver));
+                    convertedMap.put(strKey, convertValue(mapValue, imageResolver));
                 }
             }
             return convertedMap;

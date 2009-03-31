@@ -78,6 +78,27 @@
         </property>
     </bean>
     
+    <bean id="peopleTemplateExtension" parent="baseTemplateImplementation" class="org.alfresco.repo.template.People">
+        <property name="extensionName">
+            <value>people</value>
+        </property>
+        <property name="storeUrl">
+            <value>${spaces.store}</value>
+        </property>
+        <property name="serviceRegistry">
+            <ref bean="ServiceRegistry"/>
+        </property>
+        <property name="authorityDAO">
+            <ref bean="authorityDAO"/>
+        </property>
+        <property name="authorityService">
+            <ref bean="AuthorityService"/>
+        </property>
+        <property name="personService">
+            <ref bean="PersonService"/>
+        </property>
+    </bean>
+    
     <bean id="hasAspectTemplateExtension" parent="baseTemplateImplementation" class="org.alfresco.repo.template.HasAspectMethod">
         <property name="extensionName">
             <value>hasAspect</value>

@@ -29,6 +29,7 @@ import java.util.List;
 
 import org.alfresco.cmis.dictionary.CMISDictionaryService;
 import org.alfresco.cmis.dictionary.CMISScope;
+import org.alfresco.cmis.dictionary.CMISTypeDefinition;
 import org.alfresco.cmis.dictionary.CMISTypeId;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cmis.ws.EnumObjectType;
@@ -219,8 +220,8 @@ public class CmisObjectsUtils
             return false;
         }
         QName typeQName = nodeService.getType(folderNodeRef);
-        CMISTypeId typeId = cmisDictionaryService.getTypeId(typeQName, CMISScope.FOLDER);
-        return typeId != null;
+        CMISTypeDefinition typeDef = cmisDictionaryService.findTypeForClass(typeQName, CMISScope.FOLDER);
+        return typeDef != null;
     }
 
     public boolean isDocument(NodeRef documentNodeRef)
@@ -230,8 +231,8 @@ public class CmisObjectsUtils
             return false;
         }
         QName typeQName = nodeService.getType(documentNodeRef);
-        CMISTypeId typeId = cmisDictionaryService.getTypeId(typeQName, CMISScope.DOCUMENT);
-        return typeId != null;
+        CMISTypeDefinition typeDef = cmisDictionaryService.findTypeForClass(typeQName, CMISScope.DOCUMENT);
+        return typeDef != null;
     }
 
     public boolean isRelationship(String identifier)
@@ -363,14 +364,14 @@ public class CmisObjectsUtils
 
     private AlfrescoObjectType determineActualObjectType(AlfrescoObjectType expectedType, QName objectType)
     {
-        CMISTypeId typeId = cmisDictionaryService.getTypeId(objectType, null);
+        CMISTypeDefinition typeDef = cmisDictionaryService.findTypeForClass(objectType);
         if ((expectedType == AlfrescoObjectType.DOCUMENT_OBJECT || expectedType == AlfrescoObjectType.DOCUMENT_OR_FOLDER_OBJECT)
-                && typeId.getScope() == CMISScope.DOCUMENT)
+                && typeDef.getTypeId().getScope() == CMISScope.DOCUMENT)
         {
             return expectedType;
         }
         if ((expectedType == AlfrescoObjectType.FOLDER_OBJECT || expectedType == AlfrescoObjectType.DOCUMENT_OR_FOLDER_OBJECT)
-                && typeId.getScope() == CMISScope.FOLDER)
+                && typeDef.getTypeId().getScope() == CMISScope.FOLDER)
         {
             return expectedType;
         }

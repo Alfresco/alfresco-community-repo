@@ -389,8 +389,7 @@ public class CMISScript extends BaseScopableProcessorExtension
     {
         try
         {
-            CMISTypeId cmisTypeId = cmisDictionaryService.getTypeId(typeId);
-            return cmisDictionaryService.getType(cmisTypeId);
+            return cmisDictionaryService.findType(typeId);
         }
         catch(AlfrescoRuntimeException e)
         {
@@ -409,8 +408,7 @@ public class CMISScript extends BaseScopableProcessorExtension
         try
         {
             QName typeQName = node.getQNameType();
-            CMISTypeId cmisTypeId = cmisDictionaryService.getTypeId(typeQName, null);
-            return cmisDictionaryService.getType(cmisTypeId);
+            return cmisDictionaryService.findTypeForClass(typeQName);
         }
         catch(AlfrescoRuntimeException e)
         {

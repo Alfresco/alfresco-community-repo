@@ -388,8 +388,9 @@
   <cmis:controllable>${typedef.controllable?string}</cmis:controllable>
   <cmis:includedInSupertypeQuery>${typedef.includeInSuperTypeQuery?string}</cmis:includedInSupertypeQuery>
   [#if includeProperties]
+    [#assign ownedprops = typedef.ownedPropertyDefinitions?keys]
     [#list typedef.propertyDefinitions?values as propdef]
-      [#assign inherited = (propdef.owningType != typedef)]
+      [#assign inherited = !ownedprops?seq_contains(propdef.propertyId)]
       [#if includeInheritedProperties || !inherited]
         [@propdefCMISProps propdef inherited/]
       [/#if]

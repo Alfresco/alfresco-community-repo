@@ -289,7 +289,7 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
         wsPropertyDef.setPropertyType(propertyTypeEnumMapping.get(propertyDefinition.getDataType()));
         wsPropertyDef.setCardinality(cardinalityEnumMapping.get(propertyDefinition.getCardinality()));
         wsPropertyDef.setUpdateability(updatabilityEnumMapping.get(propertyDefinition.getUpdatability()));
-        wsPropertyDef.setInherited(propertyDefinition.getOwningType().equals(typeDefinition));
+        wsPropertyDef.setInherited(!typeDefinition.getOwnedPropertyDefinitions().containsKey(propertyDefinition.getPropertyId()));
         wsPropertyDef.setRequired(propertyDefinition.isRequired());
         wsPropertyDef.setQueryable(propertyDefinition.isQueryable());
         wsPropertyDef.setOrderable(propertyDefinition.isOrderable());
@@ -410,7 +410,7 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
         }
         else
         {
-            CMISTypeDefinition typeDef = cmisDictionaryService.getType(cmisDictionaryService.getTypeId(parameters.getTypeId().getValue()));
+            CMISTypeDefinition typeDef = cmisDictionaryService.findType(parameters.getTypeId().getValue());
             typeDefs = typeDef.getSubTypes(true);
         }
 
@@ -463,7 +463,7 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
         checkRepositoryId(parameters.getRepositoryId());
 
         GetTypeDefinitionResponse response = new GetTypeDefinitionResponse();
-        CMISTypeDefinition typeDef = cmisDictionaryService.getType(cmisDictionaryService.getTypeId(parameters.getTypeId()));
+        CMISTypeDefinition typeDef = cmisDictionaryService.findType(parameters.getTypeId());
         response.setType(getCmisTypeDefinition(typeDef, true));
         return response;
     }

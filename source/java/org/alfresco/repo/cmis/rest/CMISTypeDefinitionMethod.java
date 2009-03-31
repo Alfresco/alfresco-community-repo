@@ -28,7 +28,6 @@ import java.util.List;
 
 import org.alfresco.cmis.dictionary.CMISDictionaryService;
 import org.alfresco.cmis.dictionary.CMISTypeDefinition;
-import org.alfresco.cmis.dictionary.CMISTypeId;
 import org.alfresco.repo.template.TemplateNode;
 import org.alfresco.service.namespace.QName;
 
@@ -89,11 +88,7 @@ public class CMISTypeDefinitionMethod implements TemplateMethodModelEx
                 // convert to CMIS type
                 if (nodeType != null)
                 {
-                    CMISTypeId typeId = dictionaryService.getTypeId(nodeType, null);
-                    if (typeId != null)
-                    {
-                        result = dictionaryService.getType(typeId);
-                    }
+                    result = dictionaryService.findTypeForClass(nodeType);
                 }
             }
         }

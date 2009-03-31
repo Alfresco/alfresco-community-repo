@@ -112,8 +112,8 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
         checkRepositoryId(repositoryId);
 
         Map<String, Serializable> propertiesMap = getPropertiesMap(properties);
-        CMISTypeId cmisTypeId = getCmisTypeId(typeId);
-        if (cmisTypeId.getScope() != CMISScope.DOCUMENT)
+        CMISTypeDefinition typeDef = cmisDictionaryService.findType(typeId);
+        if (typeDef.getTypeId().getScope() != CMISScope.DOCUMENT)
         {
             throw new ConstraintViolationException("Invalid document type " + typeId);
         }
@@ -126,7 +126,7 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
             throw new InvalidArgumentException("Name property not found");
         }
 
-        NodeRef newDocumentNodeRef = fileFolderService.create(parentNodeRef, documentName, cmisTypeId.getQName()).getNodeRef();
+        NodeRef newDocumentNodeRef = fileFolderService.create(parentNodeRef, documentName, typeDef.getTypeId().getQName()).getNodeRef();
         ContentWriter writer = fileFolderService.getWriter(newDocumentNodeRef);
         String mimeType = (String) propertiesMap.get(CMISDictionaryModel.PROP_CONTENT_STREAM_MIME_TYPE);
         if (mimeType != null)
@@ -286,13 +286,13 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
             throw e;
         }
 
-        CMISTypeId relationshipTypeId = getCmisTypeId(typeId);
-        if (relationshipTypeId.getScope() != CMISScope.RELATIONSHIP)
+        CMISTypeDefinition relationshipType = cmisDictionaryService.findType(typeId);
+        if (relationshipType == null || relationshipType.getTypeId().getScope() != CMISScope.RELATIONSHIP)
         {
             throw new TypeNotFoundException(typeId);
         }
 
-        QName relationshipTypeQName = relationshipTypeId.getQName();
+        QName relationshipTypeQName = relationshipType.getTypeId().getQName();
         AssociationDefinition associationDef = dictionaryService.getAssociation(relationshipTypeQName);
         if (associationDef != null)
         {
@@ -310,7 +310,7 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
         }
         else
         {
-            throw new TypeNotFoundException(relationshipTypeId.getQName() + " Relationship type not found");
+            throw new TypeNotFoundException(relationshipType.getTypeId().getQName() + " Relationship type not found");
         }
     }
 

@@ -169,9 +169,10 @@ public abstract class CifsAuthenticatorBase extends CifsAuthenticator
      */
     protected final void getHomeFolderForUser(ClientInfo client)
     {
-        // Check if the client is an Alfresco client
+        // Check if the client is an Alfresco client, and not a null logon
       
-        if ( client instanceof AlfrescoClientInfo == false)
+        if ( client instanceof AlfrescoClientInfo == false ||
+        		client.isNullSession() == true)
           return;
         
         AlfrescoClientInfo alfClient = (AlfrescoClientInfo) client;

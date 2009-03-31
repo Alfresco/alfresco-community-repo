@@ -88,6 +88,7 @@ import org.alfresco.filesys.alfresco.AlfrescoClientInfoFactory;
 import org.alfresco.filesys.alfresco.DesktopAction;
 import org.alfresco.filesys.alfresco.DesktopActionException;
 import org.alfresco.filesys.alfresco.DesktopActionTable;
+import org.alfresco.filesys.alfresco.HomeShareMapper;
 import org.alfresco.filesys.avm.AVMContext;
 import org.alfresco.filesys.avm.AVMDiskDriver;
 import org.alfresco.filesys.repo.ContentContext;
@@ -2422,6 +2423,29 @@ public class ServerConfigurationBean extends ServerConfiguration implements Appl
           }
         }
       }
+      
+      // Check for the home folder filesystem
+      
+      ConfigElement homeElem = config.getConfigElement("homeFolder");
+      
+      if ( homeElem != null)
+      {
+          try
+          {
+              //  Initialize the home folder share mapper
+              
+              secConfig.setShareMapper( "org.alfresco.filesys.alfresco.HomeShareMapper", homeElem);   
+              
+              // Debug
+              
+              if ( logger.isDebugEnabled())
+                  logger.debug("Using home folder share mapper");
+          }
+          catch (InvalidConfigurationException ex)
+          {
+              throw new AlfrescoRuntimeException("Failed to initialize home folder share mapper", ex);
+          }
+      }
   }
 
   /**
@@ -2473,13 +2497,15 @@ public class ServerConfigurationBean extends ServerConfiguration implements Appl
         
         if ( mapperElem != null) {
 
-          //  Check if the shre mapper type has been specified
+          //  Check if the share mapper type has been specified
         	
           String mapperType = mapperElem.getAttribute( "type");
           String mapperClass = null;
           
           if ( mapperType.equalsIgnoreCase( "multi-tenant"))
         	  mapperClass = "org.alfresco.filesys.alfresco.MultiTenantShareMapper";
+          else if ( mapperType.equalsIgnoreCase( "home-folder"))
+        	  mapperClass = "org.alfresco.filesys.alfresco.HomeShareMapper";
           else
           {
 	          //  Get the share mapper class

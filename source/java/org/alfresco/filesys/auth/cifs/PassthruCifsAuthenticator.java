@@ -751,6 +751,10 @@ public class PassthruCifsAuthenticator extends CifsAuthenticatorBase implements 
           
           checkForAdminUserName( client);
           
+          // Get the users home folder node, if available
+          
+          getHomeFolderForUser( client);
+          
           // Create a virtual circuit for the new logon
           
           VirtualCircuit vc = new VirtualCircuit( vcNum, client);

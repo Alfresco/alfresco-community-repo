@@ -208,14 +208,12 @@ public class FormRestApiJsonPost_Test extends AbstractTestFormRestApi
     }
 
     /**
-     * This test method attempts to add the same association twice. This attempt should
-     * not succeed.
+     * This test method attempts to add the same association twice. This attempt will
+     * not succeed, but the test case is to confirm that there is no exception thrown
+     * back across the REST API.
      */
-    public void off_testAddAssocThatAlreadyExists() throws Exception
+    public void testAddAssocThatAlreadyExists() throws Exception
     {
-        //TODO This test has been switched off as the current implementation of assoc
-        //     persistence does not handle this -ve test case. Currently a 500 error
-        //     is thrown from within the repo.
         checkOriginalAssocsBeforeChanges();
 
         // Add an association
@@ -228,19 +226,15 @@ public class FormRestApiJsonPost_Test extends AbstractTestFormRestApi
 
         // Try to add the same association again
         sendRequest(new PostRequest(referencingNodeUrl, jsonPostString, APPLICATION_JSON), 200);
-        
-        fail("This TC not finished.");
     }
     
     /**
      * This test method attempts to remove an association that does not exist. This
-     * attempt should not succeed.
+     * attempt will not succeed, but the test case is to confirm that there is no
+     * exception thrown back across the REST API.
      */
-    public void off_testRemoveAssocThatDoesNotExist() throws Exception
+    public void testRemoveAssocThatDoesNotExist() throws Exception
     {
-        //TODO This test has been switched off as the current implementation of assoc
-        //     persistence does not handle this -ve test case. Currently a 500 error
-        //     is thrown from within the repo.
         checkOriginalAssocsBeforeChanges();
 
         // Remove a non-existent association
@@ -250,8 +244,6 @@ public class FormRestApiJsonPost_Test extends AbstractTestFormRestApi
         String jsonPostString = jsonPostData.toString();
 
         sendRequest(new PostRequest(referencingNodeUrl, jsonPostString, APPLICATION_JSON), 200);
-        
-        fail("This TC not finished.");
     }
 
     private void checkOriginalAssocsBeforeChanges()

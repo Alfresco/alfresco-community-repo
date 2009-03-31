@@ -38,7 +38,8 @@ import org.alfresco.repo.workflow.WorkflowDeployer;
  */
 public class MultiTShareExistingTenantsPatch extends AbstractPatch
 {
-    private static final String MSG_RESULT = "patch.mtShareExitingTenants.result";
+    private static final String MSG_RESULT = "patch.mtShareExistingTenants.result";
+    private static final String MSG_RESULT_NA = "patch.mtShareExistingTenants.result.not_applicable";
     
     private SiteAVMBootstrap siteBootstrap;
     private WorkflowDeployer workflowPatchDeployer;
@@ -81,6 +82,11 @@ public class MultiTShareExistingTenantsPatch extends AbstractPatch
     @Override
     protected String applyInternal() throws Exception
     {
+        if (!tenantService.isEnabled())
+        {
+            return I18NUtil.getMessage(MSG_RESULT_NA);
+        }
+        
         if (! tenantService.getCurrentUserDomain().equals(TenantService.DEFAULT_DOMAIN))
         {
             this.siteBootstrap.bootstrap();

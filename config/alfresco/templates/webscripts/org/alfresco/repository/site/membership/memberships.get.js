@@ -14,18 +14,18 @@ var memberships = site.listMembers(nameFilter, roleFilter, sizeString != null ? 
 var peopleList = Array(memberships.length);
 for (userName in memberships)
 {
-	var person = people.getPerson(userName);
-	peopleList["_" + userName] = person; // make sure the keys are strings
+   var person = people.getPerson(userName);
+   // make sure the keys are strings - as usernames may be all numbers!
+   peopleList['_' + userName] = person;
 }
 
 // also copy over the memberships.
 var mems = {};
-var pos = 0; // memberships[userName] won't return the correct value if userName is a digit-only value
 for (userName in memberships)
 {
-   var membershipType = memberships[pos];
-   mems["_" + userName] = membershipType; // make sure the keys are strings
-   pos++;
+   var membershipType = memberships[userName];
+   // make sure the keys are strings - as usernames may be all numbers!
+   mems['_' + userName] = membershipType;
 }
 
 // Pass the information to the template

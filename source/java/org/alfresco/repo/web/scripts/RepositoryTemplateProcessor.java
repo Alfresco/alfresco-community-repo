@@ -64,11 +64,14 @@ public class RepositoryTemplateProcessor extends FreeMarkerProcessor
     protected String defaultEncoding;
     protected Configuration templateConfig;
     protected FreeMarkerProcessor freeMarkerProcessor;
+    private int updateDelay = 0;
+    private int cacheSize = 512;
 
 
     /* (non-Javadoc)
      * @see org.alfresco.repo.template.FreeMarkerProcessor#setDefaultEncoding(java.lang.String)
      */
+    @Override
     public void setDefaultEncoding(String defaultEncoding)
     {
         this.defaultEncoding = defaultEncoding;
@@ -80,6 +83,25 @@ public class RepositoryTemplateProcessor extends FreeMarkerProcessor
     public String getDefaultEncoding()
     {
         return this.defaultEncoding;
+    }
+    
+    /**
+     * @param updateDelay the time in seconds between checks on the modified date for cached templates
+     */
+    public void setUpdateDelay(int updateDelay)
+    {
+        this.updateDelay = updateDelay;
+    }
+    
+    /**
+     * @param cacheSize the size of the MRU template cache, default is 256
+     */
+    public void setCacheSize(int cacheSize)
+    {
+        if (cacheSize >= 0)
+        {
+            this.cacheSize = cacheSize;
+        }
     }
 
     /**
@@ -151,9 +173,9 @@ public class RepositoryTemplateProcessor extends FreeMarkerProcessor
         Configuration config = new Configuration();
         
         // setup template cache
-        config.setCacheStorage(new MruCacheStorage(20, 100));
-        config.setTemplateUpdateDelay(0);
-
+        config.setCacheStorage(new MruCacheStorage(this.cacheSize, this.cacheSize << 1));
+        config.setTemplateUpdateDelay(updateDelay);
+        
         // setup template loaders
         List<TemplateLoader> loaders = new ArrayList<TemplateLoader>();
         for (Store apiStore : searchPath.getStores())

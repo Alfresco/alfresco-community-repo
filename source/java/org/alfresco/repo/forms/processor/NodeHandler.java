@@ -897,6 +897,7 @@ abstract class AbstractAssocCommand
  */
 class AddAssocCommand extends AbstractAssocCommand
 {
+    private static final Log logger = LogFactory.getLog(AddAssocCommand.class);
     public AddAssocCommand(NodeRef sourceNodeRef, NodeRef targetNodeRef)
     {
         super(sourceNodeRef, targetNodeRef);
@@ -905,6 +906,18 @@ class AddAssocCommand extends AbstractAssocCommand
     @Override
     protected void updateAssociations(NodeService nodeService)
     {
+        List<AssociationRef> existingAssocs = nodeService.getTargetAssocs(sourceNodeRef, ContentModel.ASSOC_REFERENCES);
+        for (AssociationRef assoc : existingAssocs)
+        {
+            if (assoc.getTargetRef().equals(targetNodeRef))
+            {
+                if (logger.isWarnEnabled())
+                {
+                    logger.warn("Attempt to add existing association prevented. " + assoc);
+                }
+                return;
+            }
+        }
         nodeService.createAssociation(sourceNodeRef, targetNodeRef, ContentModel.ASSOC_REFERENCES);
     }
 }
@@ -916,6 +929,7 @@ class AddAssocCommand extends AbstractAssocCommand
  */
 class RemoveAssocCommand extends AbstractAssocCommand
 {
+    private static final Log logger = LogFactory.getLog(RemoveAssocCommand.class);
     public RemoveAssocCommand(NodeRef sourceNodeRef, NodeRef targetNodeRef)
     {
         super(sourceNodeRef, targetNodeRef);
@@ -924,6 +938,31 @@ class RemoveAssocCommand extends AbstractAssocCommand
     @Override
     protected void updateAssociations(NodeService nodeService)
     {
+        List<AssociationRef> existingAssocs = nodeService.getTargetAssocs(sourceNodeRef, ContentModel.ASSOC_REFERENCES);
+        boolean assocDoesNotExist = true;
+        for (AssociationRef assoc : existingAssocs)
+        {
+            if (assoc.getTargetRef().equals(targetNodeRef))
+            {
+                assocDoesNotExist = false;
+                break;
+            }
+        }
+        if (assocDoesNotExist)
+        {
+            if (logger.isWarnEnabled())
+            {
+                StringBuilder msg = new StringBuilder();
+                msg.append("Attempt to remove non-existent association prevented. ")
+                    .append(sourceNodeRef)
+                    .append("|")
+                    .append(targetNodeRef)
+                    .append(ContentModel.ASSOC_REFERENCES);
+                logger.warn(msg.toString());
+            }
+            return;
+        }
+
         nodeService.removeAssociation(sourceNodeRef, targetNodeRef, ContentModel.ASSOC_REFERENCES);
     }
 }

@@ -683,6 +683,85 @@ public class SiteServiceTest extends BaseWebScriptTest
         String shortName  = GUID.generate();
         createSite("myPreset", shortName, "myTitle", "myDescription", SiteVisibility.PUBLIC, 200);
         
+        String inviteeComments = "Please sir, let $* me in";
+        String userName = USER_TWO;
+        String roleName = SiteModel.SITE_CONSUMER;
+        String moderatedIdA = createModeratedInvitation(shortName, inviteeComments, userName, roleName);
+        
+        String inviteeCommentsB = "Please sir, let $* me in";
+        String userNameB = USER_THREE;
+        String roleNameB = SiteModel.SITE_CONSUMER;
+        String moderatedIdB = createModeratedInvitation(shortName, inviteeCommentsB, userNameB, roleNameB);
+        
+        String inviteeFirstName = "Buffy";
+        String inviteeLastName = "Summers";
+        String inviteeEmail = "buffy@sunnydale";
+        String inviteeUserName = userName;
+        String serverPath = "http://localhost:8081/share/";
+        String acceptURL = "page/accept-invite";
+        String rejectURL = "page/reject-invite";
+        
+    	// Create a nominated invitation
+        String nominatedId = createNominatedInvitation(shortName, inviteeFirstName, inviteeLastName, inviteeEmail, inviteeUserName, roleName, serverPath, acceptURL, rejectURL);        
+        /**
+         * search by user - wombat does not have an invitation 
+         */
+        {
+        	Response response = sendRequest(new GetRequest(URL_SITES + "/" + shortName + "/invitations?inviteeUserName=wombat"), 200);
+            JSONObject top = new JSONObject(response.getContentAsString());
+            JSONArray data = top.getJSONArray("data");
+            assertEquals("user wombat", data.length(), 0);
+            
+        }
+        /**
+         * search by user - find USER_TWO's two invitations 
+         */
+        {
+        	Response response = sendRequest(new GetRequest(URL_SITES + "/" + shortName + "/invitations?inviteeUserName=" + USER_TWO), 200);
+            JSONObject top = new JSONObject(response.getContentAsString());
+            //System.out.println(response.getContentAsString());
+            JSONArray data = top.getJSONArray("data");
+            assertEquals("user two invitation not found", data.length(), 2);
+            
+        }
+        
+        /**
+         * search by type
+         */
+
+        {
+        	Response response = sendRequest(new GetRequest(URL_SITES + "/" + shortName + "/invitations?invitationType=MODERATED"), 200);
+            JSONObject top = new JSONObject(response.getContentAsString());
+            //System.out.println(response.getContentAsString());
+            JSONArray data = top.getJSONArray("data");
+        }
+        
+        {
+        	Response response = sendRequest(new GetRequest(URL_SITES + "/" + shortName + "/invitations?invitationType=NOMINATED"), 200);
+            JSONObject top = new JSONObject(response.getContentAsString());
+            //System.out.println(response.getContentAsString());
+            JSONArray data = top.getJSONArray("data");
+        }
+        // negative test - unknown invitationType
+        {
+        	
+        	Response response = sendRequest(new GetRequest(URL_SITES + "/" + shortName + "/invitations?invitationType=Crap"), 500);
+            JSONObject top = new JSONObject(response.getContentAsString());
+        }
+        
+        /**
+         * search by user and type
+         */
+        {
+        	Response response = sendRequest(new GetRequest(URL_SITES + "/" + shortName + "/invitations?inviteeUserName=" + USER_TWO + "&invitationType=MODERATED"), 200);
+            JSONObject top = new JSONObject(response.getContentAsString());
+            //System.out.println(response.getContentAsString());
+            JSONArray data = top.getJSONArray("data");
+            assertEquals("user two invitation not found", data.length(), 1);
+            
+        }
+        
+        
         
         
     }

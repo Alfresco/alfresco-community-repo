@@ -34,6 +34,7 @@ import org.alfresco.jlan.ftp.FTPSrvSession;
 import org.alfresco.jlan.server.auth.ClientInfo;
 import org.alfresco.jlan.server.config.InvalidConfigurationException;
 import org.alfresco.jlan.server.config.ServerConfiguration;
+import org.alfresco.jlan.server.config.ServerConfigurationAccessor;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.AuthorityService;
@@ -51,38 +52,90 @@ public abstract class FTPAuthenticatorBase implements FTPAuthenticator {
 	  
     protected static final Log logger = LogFactory.getLog("org.alfresco.ftp.protocol.auth");
 
-	// Alfresco configuration section
 
-	private AlfrescoConfigSection m_alfrescoConfig;
+    protected ServerConfigurationAccessor serverConfiguration;
 
+
+    private AuthenticationComponent authenticationComponent;
+
+
+    private AuthenticationService authenticationService;
+
+
+    private TransactionService transactionService;
+
+
+    private AuthorityService authorityService;
+    
 	/**
 	 * Default constructor
 	 */
 	public FTPAuthenticatorBase() {
 	}
 
-	/**
-	 * Initialize the authenticator
-	 * 
+	
+	public void setConfig(ServerConfigurationAccessor config)
+    {
+	    this.serverConfiguration = config;
+    }
+
+    public void setAuthenticationComponent(AuthenticationComponent authenticationComponent)
+    {
+        this.authenticationComponent = authenticationComponent;
+    }
+
+    public void setAuthenticationService(AuthenticationService authenticationService)
+    {
+        this.authenticationService = authenticationService;
+    }
+
+    public void setTransactionService(TransactionService transactionService)
+    {
+        this.transactionService = transactionService;
+    }
+
+    public void setAuthorityService(AuthorityService authorityService)
+    {
+        this.authorityService = authorityService;
+    }
+
+    /**
+     * Initialize the authenticator
+     * 
 	 * @param config ServerConfiguration
 	 * @param params ConfigElement
-	 * @exception InvalidConfigurationException
-	 */
-	public void initialize(ServerConfiguration config, ConfigElement params)
-		throws InvalidConfigurationException {
+     * @exception InvalidConfigurationException
+     */
+    public void initialize(ServerConfiguration config, ConfigElement params) throws InvalidConfigurationException
+    {
+        setConfig(config);
 
-		// Get the alfresco configuration section, required to get hold of various
-		// services/components
+        // Get the alfresco configuration section, required to get hold of various services/components
+        
+        AlfrescoConfigSection alfrescoConfig = (AlfrescoConfigSection) config.getConfigSection( AlfrescoConfigSection.SectionName);
+        
+        // Copy over relevant bean properties for backward compatibility
+        setAuthenticationComponent(alfrescoConfig.getAuthenticationComponent());
+        setAuthenticationService(alfrescoConfig.getAuthenticationService());
+        setTransactionService(alfrescoConfig.getTransactionService());
+        setAuthorityService(alfrescoConfig.getAuthorityService());
 
-		m_alfrescoConfig = (AlfrescoConfigSection) config.getConfigSection(AlfrescoConfigSection.SectionName);
+        // Complete initialization
+        initialize();
+    }
 
-		// Check that the required authentication classes are available
-
-		if ( m_alfrescoConfig == null || getAuthenticationComponent() == null)
-			throw new InvalidConfigurationException("Authentication component not available");
+    /**
+     * Initialize the authenticator (after properties have been set)
+     * 
+     * @exception InvalidConfigurationException
+     */
+    public void initialize() throws InvalidConfigurationException
+    {
+        if ( this.serverConfiguration == null)
+            throw new InvalidConfigurationException("server configuration accessor property not set");
 	}
 
-	/**
+    /**
 	 * Authenticate the user
 	 * 
 	 * @param client ClientInfo
@@ -97,6 +150,7 @@ public abstract class FTPAuthenticatorBase implements FTPAuthenticator {
 	public void closeAuthenticator()
 	{
 	}
+	
 
 	/**
 	 * Return the authentication componenet
@@ -104,7 +158,7 @@ public abstract class FTPAuthenticatorBase implements FTPAuthenticator {
 	 * @return AuthenticationComponent
 	 */
 	protected final AuthenticationComponent getAuthenticationComponent() {
-		return m_alfrescoConfig.getAuthenticationComponent();
+		return this.authenticationComponent;
 	}
 
 	/**
@@ -113,7 +167,7 @@ public abstract class FTPAuthenticatorBase implements FTPAuthenticator {
 	 * @return AuthenticationService
 	 */
 	protected final AuthenticationService getAuthenticationService() {
-		return m_alfrescoConfig.getAuthenticationService();
+		return this.authenticationService;
 	}
 
 	/**
@@ -122,7 +176,7 @@ public abstract class FTPAuthenticatorBase implements FTPAuthenticator {
 	 * @return TransactionService
 	 */
 	protected final TransactionService getTransactionService() {
-		return m_alfrescoConfig.getTransactionService();
+		return this.transactionService;
 	}
 
 	/**
@@ -131,7 +185,7 @@ public abstract class FTPAuthenticatorBase implements FTPAuthenticator {
 	 * @return AuthorityService
 	 */
 	protected final AuthorityService getAuthorityService() {
-		return m_alfrescoConfig.getAuthorityService();
+		return this.authorityService;
 	}
 
 	/**

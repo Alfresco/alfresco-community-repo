@@ -38,13 +38,14 @@ import org.alfresco.jlan.server.filesys.FilesystemsConfigSection;
 import org.alfresco.jlan.server.filesys.SrvDiskInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.springframework.beans.factory.InitializingBean;
 
 /**
  * Multi Tenant Share Mapper Class
  * 
  * @author gkspencer
  */
-public class MultiTenantShareMapper implements ShareMapper, ConfigurationListener {
+public class MultiTenantShareMapper implements ShareMapper, ConfigurationListener, InitializingBean {
 
 	//	Server configuration and configuration sections
 	
@@ -75,7 +76,24 @@ public class MultiTenantShareMapper implements ShareMapper, ConfigurationListene
 	public MultiTenantShareMapper() {
 	}
 	
-	/**
+	
+	public void setServerConfiguration(ServerConfiguration config)
+    {
+        this.m_config = config;
+    }
+
+    public void setTenantShareName(String shareName)
+    {
+        m_tenantShareName = shareName;
+    }
+
+    public void setDebug(boolean debug)
+    {
+        this.m_debug = debug;
+    }
+
+
+    /**
 	 * Initialize the share mapper
 	 * 
 	 * @param config ServerConfiguration
@@ -87,25 +105,8 @@ public class MultiTenantShareMapper implements ShareMapper, ConfigurationListene
 		
 		//	Save the server configuration
 		
-		m_config = config;
+	    setServerConfiguration(config);
 
-		//  Filesystem configuration will usually be initialized after the security configuration so we need to plug in
-		//  a listener to initialize it later
-    
-		m_filesysConfig  = (FilesystemsConfigSection) m_config.getConfigSection( FilesystemsConfigSection.SectionName);
-
-		// 	Get the Alfresco configuration section
-		
-		m_alfrescoConfig = (AlfrescoConfigSection) m_config.getConfigSection( AlfrescoConfigSection.SectionName);
-
-		if ( m_filesysConfig == null || m_alfrescoConfig == null)
-			m_config.addListener( this);
-		
-		// Find the content filesystem details to be used for hte tenant shares
-
-		if ( m_filesysConfig != null)
-			findContentShareDetails();
-		
 		//  Check if a tenant share name has been specified
 		
 		ConfigElement tenantShareName = params.getChild( "TenantShareName");
@@ -115,7 +116,7 @@ public class MultiTenantShareMapper implements ShareMapper, ConfigurationListene
 			// Validate the share name
 			
 			if ( tenantShareName.getValue() != null && tenantShareName.getValue().length() > 0)
-				m_tenantShareName = tenantShareName.getValue();
+				setTenantShareName(tenantShareName.getValue());
 			else
 				throw new InvalidConfigurationException("Invalid tenant share name");
 		}
@@ -123,14 +124,38 @@ public class MultiTenantShareMapper implements ShareMapper, ConfigurationListene
 		//	Check if debug is enabled
 		
 		if ( params.getChild("debug") != null)
-			m_debug = true;
-		
-		// Create the tenant share lists table
-		
-		m_tenantShareLists = new Hashtable<String, SharedDeviceList>();
+			setDebug(true);
+
+		// Complete initialization
+		afterPropertiesSet();
 	}
 
-	/**
+	public void afterPropertiesSet()
+    {
+        //  Filesystem configuration will usually be initialized after the security configuration so we need to plug in
+        //  a listener to initialize it later
+    
+        m_filesysConfig  = (FilesystemsConfigSection) m_config.getConfigSection( FilesystemsConfigSection.SectionName);
+
+        //  Get the Alfresco configuration section
+        
+        m_alfrescoConfig = (AlfrescoConfigSection) m_config.getConfigSection( AlfrescoConfigSection.SectionName);
+
+        if ( m_filesysConfig == null || m_alfrescoConfig == null)
+            m_config.addListener( this);
+        
+        // Find the content filesystem details to be used for the tenant shares
+
+        if ( m_filesysConfig != null)
+            findContentShareDetails();
+        
+        // Create the tenant share lists table
+        
+        m_tenantShareLists = new Hashtable<String, SharedDeviceList>();
+    }
+
+
+    /**
 	 * Check if debug output is enabled
 	 * 
 	 * @return boolean

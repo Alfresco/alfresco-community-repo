@@ -26,6 +26,8 @@ package org.alfresco.filesys.alfresco;
 import javax.transaction.Status;
 import javax.transaction.UserTransaction;
 
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.filesys.state.FileStateReaper;
 import org.alfresco.jlan.server.SrvSession;
 import org.alfresco.jlan.server.filesys.IOControlNotImplementedException;
 import org.alfresco.jlan.server.filesys.IOCtlInterface;
@@ -35,8 +37,6 @@ import org.alfresco.jlan.server.filesys.TreeConnection;
 import org.alfresco.jlan.smb.SMBException;
 import org.alfresco.jlan.smb.SMBStatus;
 import org.alfresco.jlan.util.DataBuffer;
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.filesys.state.FileStateReaper;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
@@ -49,15 +49,11 @@ import org.apache.commons.logging.LogFactory;
  *
  * @author gkspencer
  */
-public class AlfrescoDiskDriver implements IOCtlInterface, TransactionalFilesystemInterface {
+public abstract class AlfrescoDiskDriver implements IOCtlInterface, TransactionalFilesystemInterface, ExtendedDiskInterface {
 
     // Logging
     
     private static final Log logger = LogFactory.getLog(AlfrescoDiskDriver.class);
-
-    // Transaction logging
-    
-    private static final Log txLogger = LogFactory.getLog( "org.alfresco.fileserver.transaction");
     
     // Service registry for desktop actions
     

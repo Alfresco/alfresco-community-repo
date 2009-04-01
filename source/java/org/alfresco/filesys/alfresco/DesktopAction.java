@@ -37,13 +37,14 @@ import org.alfresco.config.ConfigElement;
 import org.alfresco.service.ServiceRegistry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.InitializingBean;
 
 /**
  * Desktop Action Class
  *
  * @author gkspencer
  */
-public abstract class DesktopAction {
+public abstract class DesktopAction implements InitializingBean{
 
     // Logging
     
@@ -103,6 +104,10 @@ public abstract class DesktopAction {
 	
 	private PseudoFile m_pseudoFile;
 	
+	private String m_filename;
+	
+	private String m_path;
+	
 	// Desktop action attributes
 	
 	private int m_attributes;
@@ -113,6 +118,7 @@ public abstract class DesktopAction {
 	
 	// Filesystem driver and context
 	
+	private DiskSharedDevice m_diskSharedDevice;
 	private AlfrescoDiskDriver m_filesysDriver;
 	private AlfrescoContext m_filesysContext;
 
@@ -309,6 +315,10 @@ public abstract class DesktopAction {
 		// Perform standard initialization
 		
 		standardInitialize(global, config, fileSys);
+		
+        // Complete initialization
+
+		afterPropertiesSet();       		
 	}
 	
 	/**
@@ -322,18 +332,9 @@ public abstract class DesktopAction {
 	public void standardInitialize(ConfigElement global, ConfigElement config, DiskSharedDevice fileSys)
 		throws DesktopActionException
 	{
-		// Save the filesystem device and I/O handler
-		
-		if ( fileSys.getContext() instanceof AlfrescoContext)
-		{
-			m_filesysDriver  = (AlfrescoDiskDriver) fileSys.getDiskInterface();
-			m_filesysContext = (AlfrescoContext) fileSys.getDiskContext();
-		}
-		else
-			throw new DesktopActionException("Desktop action requires an Alfresco filesystem driver");
-		
+	    setDiskSharedDevice(fileSys);
+	    
 		// Check for standard config values
-		
 		ConfigElement elem = config.getChild("name");
 		if ( elem != null && elem.getValue().length() > 0)
 		{
@@ -349,41 +350,14 @@ public abstract class DesktopAction {
 		ConfigElement name = config.getChild("filename");
 		if ( name == null || name.getValue() == null || name.getValue().length() == 0)
 			throw new DesktopActionException("Desktop action pseudo name not specified");
+		setFilename(name.getValue());
 		
 		// Get the local path to the executable
 		
 		ConfigElement path = findConfigElement("path", global, config);
 		if ( path == null || path.getValue() == null || path.getValue().length() == 0)
 			throw new DesktopActionException("Desktop action executable path not specified");
-		
-        // Check that the application exists on the local filesystem
-        
-        URL appURL = this.getClass().getClassLoader().getResource(path.getValue());
-        if ( appURL == null)
-            throw new DesktopActionException("Failed to find drag and drop application, " + path.getValue());
-        
-        // Decode the URL path, it might contain escaped characters
-        
-        String appURLPath = null;
-        try
-        {
-        	appURLPath = URLDecoder.decode( appURL.getFile(), "UTF-8");
-        }
-        catch ( UnsupportedEncodingException ex)
-        {
-        	throw new DesktopActionException("Failed to decode drag/drop path, " + ex.getMessage());
-        }
-
-        // Check that the drag/drop file exists
-        
-        File appFile = new File(appURLPath);
-        if ( appFile.exists() == false)
-            throw new DesktopActionException("Drag and drop application not found, " + path.getValue());
-        
-		// Create the pseudo file for the action
-		
-		PseudoFile pseudoFile = new LocalPseudoFile(name.getValue(), appFile.getAbsolutePath());
-		setPseudoFile(pseudoFile);
+		setPath(path.getValue());
 		
 		// Check if confirmations should be switched off for the action
 		
@@ -393,47 +367,9 @@ public abstract class DesktopAction {
 		// Check if the webapp URL has been specified
 		
 		ConfigElement webURL = findConfigElement("webpath", global, config);
-		if ( webURL != null)
+		if ( webURL != null && webURL.getValue() != null && webURL.getValue().length() > 0)
 		{
-	        // Check if the path name contains the local name token
-
-			String webPath = webURL.getValue();
-            if ( webPath.endsWith("/") == false)
-                webPath = webPath + "/";
-			
-	        int pos = webPath.indexOf(TokenLocalName);
-	        if (pos != -1)
-	        {
-
-	            // Get the local server name
-
-	            String srvName = "localhost";
-	            
-	            try
-	            {
-	            	srvName = InetAddress.getLocalHost().getHostName();
-	            }
-	            catch ( Exception ex)
-	            {
-	            }
-
-	            // Rebuild the host name substituting the token with the local server name
-
-	            StringBuilder hostStr = new StringBuilder();
-
-	            hostStr.append(webPath.substring(0, pos));
-	            hostStr.append(srvName);
-
-	            pos += TokenLocalName.length();
-	            if (pos < webPath.length())
-	                hostStr.append(webPath.substring(pos));
-
-	            webPath = hostStr.toString();
-	        }
-	        
-	        // Set the URL path
-	        
-	        setWebappURL( webPath);
+		    setWebappURL(webURL.getValue());
 		}
 		
 		// Check if debug output is enabled for the action
@@ -441,14 +377,133 @@ public abstract class DesktopAction {
 		ConfigElement debug = findConfigElement("debug", global, config);
 		if ( debug != null)
 			setDebug(true);
-		
-		// DEBUG
-		
-		if ( logger.isDebugEnabled() && hasDebug())
-			logger.debug("Initialized desktop action " + getName() + ", pseudo name " + name.getValue());
 	}
 
-	/**
+	
+    public void afterPropertiesSet() throws DesktopActionException
+    {
+        if (m_diskSharedDevice == null)
+            throw new DesktopActionException("Desktop action requires an Alfresco filesystem driver");
+
+        // Save the filesystem device and I/O handler
+        
+        if ( m_diskSharedDevice.getContext() instanceof AlfrescoContext)
+        {
+            m_filesysDriver  = (AlfrescoDiskDriver) m_diskSharedDevice.getDiskInterface();
+            m_filesysContext = (AlfrescoContext) m_diskSharedDevice.getDiskContext();
+        }
+        else
+            throw new DesktopActionException("Desktop action requires an Alfresco filesystem driver");
+        
+        // Check for standard config values
+        
+        if ( m_name == null || m_name.length() == 0)
+            throw new DesktopActionException("Desktop action name not specified");
+        
+        // Get the pseudo file name
+        if (m_pseudoFile == null)
+        {            
+            if ( m_filename == null || m_filename.length() == 0)
+                throw new DesktopActionException("Desktop action pseudo name not specified");
+            
+    		// Get the local path to the executable
+            if (m_path== null || m_path.length() == 0)
+            {
+                m_path = m_filesysContext.getGlobalDesktopActionConfig().getPath();
+            }
+            if ( m_path == null || m_path.length() == 0)
+                throw new DesktopActionException("Desktop action executable path not specified");
+            
+            // Check that the application exists on the local filesystem
+            
+            URL appURL = this.getClass().getClassLoader().getResource(m_path);
+            if ( appURL == null)
+                throw new DesktopActionException("Failed to find drag and drop application, " + m_path);
+            
+            // Decode the URL path, it might contain escaped characters
+            
+            String appURLPath = null;
+            try
+            {
+                appURLPath = URLDecoder.decode( appURL.getFile(), "UTF-8");
+            }
+            catch ( UnsupportedEncodingException ex)
+            {
+                throw new DesktopActionException("Failed to decode drag/drop path, " + ex.getMessage());
+            }
+
+            // Check that the drag/drop file exists
+            
+            File appFile = new File(appURLPath);
+            if ( appFile.exists() == false)
+                throw new DesktopActionException("Drag and drop application not found, " + appFile);
+            
+            // Create the pseudo file for the action
+            
+            PseudoFile pseudoFile = new LocalPseudoFile(m_filename, appFile.getAbsolutePath());
+            setPseudoFile(pseudoFile);
+        }
+        
+        // Check if confirmations should be switched off for the action
+        
+        if ( m_filesysContext.getGlobalDesktopActionConfig().getNoConfirm() && hasPreProcessAction(PreConfirmAction))
+            setPreProcessActions(getPreProcessActions() - PreConfirmAction);
+        
+        // Check if the webapp URL has been specified
+        
+        if (m_webappURL == null || m_webappURL.length() == 0)
+        {
+            m_webappURL = m_filesysContext.getGlobalDesktopActionConfig().getWebpath();
+        }
+        if ( m_webappURL != null && m_webappURL.length() > 0)
+        {
+            // Check if the path name contains the local name token
+            if ( !m_webappURL.endsWith("/"))
+                m_webappURL = m_webappURL + "/";
+            
+            int pos = m_webappURL.indexOf(TokenLocalName);
+            if (pos != -1)
+            {
+
+                // Get the local server name
+
+                String srvName = "localhost";
+                
+                try
+                {
+                    srvName = InetAddress.getLocalHost().getHostName();
+                }
+                catch ( Exception ex)
+                {
+                }
+
+                // Rebuild the host name substituting the token with the local server name
+
+                StringBuilder hostStr = new StringBuilder();
+
+                hostStr.append(m_webappURL.substring(0, pos));
+                hostStr.append(srvName);
+
+                pos += TokenLocalName.length();
+                if (pos < m_webappURL.length())
+                    hostStr.append(m_webappURL.substring(pos));
+
+                m_webappURL = hostStr.toString();
+            }
+        }
+        
+        // Check if debug output is enabled for the action
+        
+        if ( m_filesysContext.getGlobalDesktopActionConfig().getDebug())
+            setDebug(true);
+        
+        // DEBUG
+        
+        if ( logger.isDebugEnabled() && hasDebug())
+            logger.debug("Initialized desktop action " + getName() + ", pseudo name " + m_pseudoFile.getFileName());
+    }
+
+    /**
 	 * Find the required configuration element in the local or global config
 	 * 
 	 * @param name String
@@ -492,7 +547,7 @@ public abstract class DesktopAction {
 	 * 
 	 * @param pre int
 	 */
-	protected final void setPreProcessActions(int pre)
+	public final void setPreProcessActions(int pre)
 	{
 		m_clientPreActions = pre;
 	}
@@ -502,7 +557,7 @@ public abstract class DesktopAction {
 	 * 
 	 * @param name String
 	 */
-	protected final void setName(String name)
+	public final void setName(String name)
 	{
 		m_name = name;
 	}
@@ -512,22 +567,51 @@ public abstract class DesktopAction {
 	 * 
 	 * @param pseudoFile PseudoFile
 	 */
-	protected final void setPseudoFile(PseudoFile pseudoFile)
+	public final void setPseudoFile(PseudoFile pseudoFile)
 	{
 		m_pseudoFile = pseudoFile;
 	}
 	
-	/**
+    /**
+     * Set the associated pseudo file name
+     * 
+     * @param filename the file name
+     */
+    public void setFilename(String filename)
+    {
+        this.m_filename = filename;
+    }
+
+    /**
+     * Set the physical path of the associated pseudo file
+     * 
+     * @param path the path
+     */
+    public void setPath(String path)
+    {
+        this.m_path = path;
+    }
+
+    /**
 	 * Enable debug output
 	 *
 	 * @param ena boolean
 	 */
-	protected final void setDebug(boolean ena)
+	public final void setDebug(boolean ena)
 	{
 		m_debug = ena;
 	}
 
 	/**
+	 * Sets the disk shared device.
+	 * @param diskSharedDevice
+	 */
+	public void setDiskSharedDevice(DiskSharedDevice diskSharedDevice)
+    {
+        m_diskSharedDevice = diskSharedDevice;
+    }
+	
+    /**
 	 * Set the webapp URL
 	 * 
 	 * @param urlStr String

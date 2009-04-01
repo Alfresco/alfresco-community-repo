@@ -27,6 +27,7 @@ package org.alfresco.repo.management;
 import java.util.Properties;
 
 import org.alfresco.service.Managed;
+import org.alfresco.util.AbstractLifecycleBean;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.InitializingBean;
@@ -35,6 +36,7 @@ import org.springframework.beans.factory.config.PropertiesFactoryBean;
 import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ApplicationEvent;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
@@ -42,14 +44,15 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  * {@link ManagedBean}s, can be stopped, reconfigured, started and tested. Doesn't actually implement FactoryBean
  * because we need first class access to the factory itself to be able to configure its properties.
  */
-public class DefaultManagedApplicationContextFactory implements ManagedApplicationContextFactory,
-        InitializingBean, ApplicationContextAware, BeanNameAware
+public class DefaultManagedApplicationContextFactory extends AbstractLifecycleBean implements
+        ManagedApplicationContextFactory, InitializingBean, ApplicationContextAware, BeanNameAware
 {
     private static final long serialVersionUID = 6368629257690177326L;
     private ApplicationContext parent;
     private String beanName;
     private ClassPathXmlApplicationContext applicationContext;
     private Properties properties;
+    private boolean autoStart;
 
     /*
      * (non-Javadoc)
@@ -59,6 +62,7 @@ public class DefaultManagedApplicationContextFactory implements ManagedApplicati
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
     {
         this.parent = applicationContext;
+        super.setApplicationContext(applicationContext);
     }
 
     /*
@@ -74,7 +78,7 @@ public class DefaultManagedApplicationContextFactory implements ManagedApplicati
      * @param properties
      *            the properties to set
      */
-    @Managed(category="management")
+    @Managed(category = "management")
     public void setProperties(Properties properties)
     {
         this.properties = properties;
@@ -86,6 +90,15 @@ public class DefaultManagedApplicationContextFactory implements ManagedApplicati
     public Properties getProperties()
     {
         return this.properties;
+    }
+
+    /**
+     * @param autoStart
+     *            should the application context be started on startup of the parent application context?
+     */
+    public void setAutoStart(boolean autoStart)
+    {
+        this.autoStart = autoStart;
     }
 
     /*
@@ -152,11 +165,34 @@ public class DefaultManagedApplicationContextFactory implements ManagedApplicati
         }
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
      * @see org.alfresco.repo.management.ManagedApplicationContextFactory#getApplicationContext()
      */
     public ApplicationContext getApplicationContext()
     {
         return this.applicationContext;
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.util.AbstractLifecycleBean#onBootstrap(org.springframework.context.ApplicationEvent)
+     */
+    @Override
+    protected void onBootstrap(ApplicationEvent event)
+    {
+        if (this.autoStart)
+        {
+            onStart();
+        }
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.util.AbstractLifecycleBean#onShutdown(org.springframework.context.ApplicationEvent)
+     */
+    @Override
+    protected void onShutdown(ApplicationEvent event)
+    {
     }
 }

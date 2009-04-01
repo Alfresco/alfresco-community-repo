@@ -78,7 +78,7 @@ public class AlfrescoConfigSection extends ConfigSection {
    * 
    * @param config ServerConfigurationBean
    */
-  public AlfrescoConfigSection(ServerConfigurationBean config) {
+  public AlfrescoConfigSection(AbstractServerConfigurationBean config) {
     super( SectionName, config);
     
     // Copy values from the server configuration bean

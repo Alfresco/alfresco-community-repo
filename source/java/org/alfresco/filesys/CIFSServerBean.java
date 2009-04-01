@@ -27,14 +27,16 @@ package org.alfresco.filesys;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.SocketException;
-import java.util.Vector;
+import java.util.LinkedList;
+import java.util.List;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.jlan.netbios.server.NetBIOSNameServer;
 import org.alfresco.jlan.server.NetworkServer;
+import org.alfresco.jlan.server.SessionListener;
 import org.alfresco.jlan.server.config.ServerConfiguration;
 import org.alfresco.jlan.smb.server.CIFSConfigSection;
 import org.alfresco.jlan.smb.server.SMBServer;
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.util.AbstractLifecycleBean;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -60,7 +62,8 @@ public class CIFSServerBean extends AbstractLifecycleBean
     
     // List of CIFS server components
     
-    private Vector<NetworkServer> serverList = new Vector<NetworkServer>();
+    private List<NetworkServer> serverList = new LinkedList<NetworkServer>();
+    private List<SessionListener> sessionListeners = new LinkedList<SessionListener>();
     
     /**
      * Class constructor
@@ -70,6 +73,11 @@ public class CIFSServerBean extends AbstractLifecycleBean
     public CIFSServerBean(ServerConfiguration serverConfig)
     {
         m_filesysConfig = serverConfig;
+    }
+
+    public void setSessionListeners(List<SessionListener> sessionListeners)
+    {
+        this.sessionListeners = sessionListeners;
     }
 
     /**
@@ -112,8 +120,16 @@ public class CIFSServerBean extends AbstractLifecycleBean
                     serverList.add(new NetBIOSNameServer(m_filesysConfig));
 
                 // Create the SMB server
-                
-                serverList.add(new SMBServer(m_filesysConfig));
+                SMBServer smbServer = new SMBServer(m_filesysConfig);
+                serverList.add(smbServer);
+
+                // Install any SMB server listeners so they receive callbacks when sessions are
+                // opened/closed on the SMB server (e.g. for Authenticators)
+
+                for (SessionListener sessionListener : this.sessionListeners)
+                {
+                    smbServer.addSessionListener(sessionListener);
+                }
                 
                 // Add the servers to the configuration
                 

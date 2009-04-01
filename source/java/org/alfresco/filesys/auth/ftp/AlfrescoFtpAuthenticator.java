@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -29,25 +29,14 @@ import javax.transaction.UserTransaction;
 
 import net.sf.acegisecurity.Authentication;
 
-import org.alfresco.config.ConfigElement;
-import org.alfresco.filesys.AlfrescoConfigSection;
 import org.alfresco.filesys.alfresco.AlfrescoClientInfo;
-import org.alfresco.jlan.ftp.FTPAuthenticator;
 import org.alfresco.jlan.ftp.FTPSrvSession;
 import org.alfresco.jlan.server.SrvSession;
 import org.alfresco.jlan.server.auth.ClientInfo;
 import org.alfresco.jlan.server.auth.PasswordEncryptor;
-import org.alfresco.jlan.server.config.InvalidConfigurationException;
-import org.alfresco.jlan.server.config.ServerConfiguration;
-import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.MD4PasswordEncoder;
 import org.alfresco.repo.security.authentication.MD4PasswordEncoderImpl;
 import org.alfresco.repo.security.authentication.NTLMMode;
-import org.alfresco.service.cmr.security.AuthenticationService;
-import org.alfresco.service.cmr.security.AuthorityService;
-import org.alfresco.service.transaction.TransactionService;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Alfresco FTP Authenticator Class

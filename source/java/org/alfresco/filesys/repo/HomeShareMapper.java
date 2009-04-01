@@ -43,6 +43,7 @@ import org.alfresco.config.ConfigElement;
 import org.alfresco.filesys.alfresco.AlfrescoClientInfo;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.InitializingBean;
 
 /**
  * Home Share Mapper Class
@@ -52,7 +53,7 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author GKSpencer
  */
-public class HomeShareMapper implements ShareMapper
+public class HomeShareMapper implements ShareMapper, InitializingBean
 {
     // Logging
     
@@ -86,6 +87,22 @@ public class HomeShareMapper implements ShareMapper
     {
     }
     
+    
+    public void setServerConfiguration(ServerConfiguration config)
+    {
+        this.m_config = config;
+    }
+
+    public void setName(String shareName)
+    {
+        m_homeShareName = shareName;
+    }
+
+    public void setDebug(boolean debug)
+    {
+        this.m_debug = debug;
+    }
+
     /**
      * Initialize the share mapper
      * 
@@ -97,19 +114,28 @@ public class HomeShareMapper implements ShareMapper
     {
         // Save the server configuration
 
-        m_config = config;
-        m_filesysConfig = (FilesystemsConfigSection) m_config.getConfigSection(FilesystemsConfigSection.SectionName);
+        setServerConfiguration(config);
         
         // Check if the home share name has been specified
         
         String homeName = params.getAttribute("name");
         if ( homeName != null && homeName.length() > 0)
-            m_homeShareName = homeName;
+            setName(homeName);
 
         // Check if debug is enabled
 
         if (params != null && params.getChild("debug") != null)
-            m_debug = true;
+            setDebug(true);
+        
+        // Complete initialization
+        afterPropertiesSet();        
+    }
+
+    
+    public void afterPropertiesSet()
+    {
+        // Save the server configuration
+        m_filesysConfig = (FilesystemsConfigSection) m_config.getConfigSection(FilesystemsConfigSection.SectionName);
         
         // Search for a filesystem that uses the content driver to use the driver when creating the home shares
         

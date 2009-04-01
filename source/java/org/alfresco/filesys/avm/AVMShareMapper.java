@@ -42,6 +42,7 @@ import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.AVMWrongTypeException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.InitializingBean;
 
 /**
  * AVM Filesystem Share Mapper Class
@@ -50,7 +51,7 @@ import org.apache.commons.logging.LogFactory;
  *
  * @author gkspencer
  */
-public class AVMShareMapper implements ShareMapper {
+public class AVMShareMapper implements ShareMapper, InitializingBean {
 
 	// Logging
     
@@ -84,6 +85,16 @@ public class AVMShareMapper implements ShareMapper {
     {
     }
     
+    public void setServerConfiguration(ServerConfiguration config)
+    {
+        this.m_config = config;
+    }
+
+    public void setDebug(boolean debug)
+    {
+        this.m_debug = debug;
+    }
+    
     /**
      * Initialize the share mapper
      * 
@@ -95,14 +106,24 @@ public class AVMShareMapper implements ShareMapper {
     {
         // Save the server configuration
 
-        m_config = config;
-        m_filesysConfig = (FilesystemsConfigSection) m_config.getConfigSection(FilesystemsConfigSection.SectionName);
-        
+        setServerConfiguration(config);
+
         // Check if debug is enabled
 
         if (params != null && params.getChild("debug") != null)
-            m_debug = true;
+            setDebug(true);
         
+        // Complete the initialization
+        afterPropertiesSet();
+    }        
+
+    public void afterPropertiesSet()
+    {
+        // Save the server configuration
+
+        m_filesysConfig = (FilesystemsConfigSection) m_config.getConfigSection(FilesystemsConfigSection.SectionName);
+        
+ 
         // Build the list of available AVM share names
         
         m_avmShareNames = new StringList();
@@ -112,27 +133,27 @@ public class AVMShareMapper implements ShareMapper {
         
         while ( shrEnum.hasMoreElements())
         {
-        	// Get the current shared device and check if it is an AVM filesystem device
-        	
-        	SharedDevice curShare = shrEnum.nextElement();
-        	
-        	try
-        	{
-  	        	if ( curShare.getInterface() instanceof AVMDiskDriver)
-  	        	{
-  	        	    // Add the shared filesystem name to the list of AVM shares
-  	        	  
-  	        		  m_avmShareNames.addString( curShare.getName());
-  	        		  
-  	        		  // Set the AVM filesystem driver to be used when creating dynamic shares
-  	        		  
-  	        		  if ( m_driver == null)
-  	        		      m_driver = (AVMDiskDriver) curShare.getInterface();
-  	        	}
-        	}
-        	catch ( InvalidDeviceInterfaceException ex)
-        	{
-        	}
+            // Get the current shared device and check if it is an AVM filesystem device
+            
+            SharedDevice curShare = shrEnum.nextElement();
+            
+            try
+            {
+                if ( curShare.getInterface() instanceof AVMDiskDriver)
+                {
+                    // Add the shared filesystem name to the list of AVM shares
+                  
+                      m_avmShareNames.addString( curShare.getName());
+                      
+                      // Set the AVM filesystem driver to be used when creating dynamic shares
+                      
+                      if ( m_driver == null)
+                          m_driver = (AVMDiskDriver) curShare.getInterface();
+                }
+            }
+            catch ( InvalidDeviceInterfaceException ex)
+            {
+            }
         }
     }
 

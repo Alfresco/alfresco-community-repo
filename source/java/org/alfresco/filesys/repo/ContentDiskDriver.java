@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -105,10 +105,6 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
     private static final String KEY_ROOT_PATH = "rootPath";
     private static final String KEY_RELATIVE_PATH = "relativePath";
     
-    // Token name to substitute current servers DNS name or TCP/IP address into the webapp URL
-
-    private static final String TokenLocalName = "${localname}";
-
     // Services and helpers
     
     private CifsHelper cifsHelper;
@@ -347,12 +343,115 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
      */
     public DeviceContext createContext(String shareName, ConfigElement cfg) throws DeviceContextException
     {
+        ContentContext context = null;
+        
+        try
+        {
+            
+            // Get the store
+            
+            ConfigElement storeElement = cfg.getChild(KEY_STORE);
+            if (storeElement == null || storeElement.getValue() == null || storeElement.getValue().length() == 0)
+            {
+                throw new DeviceContextException("Device missing init value: " + KEY_STORE);
+            }
+            String storeValue = storeElement.getValue();
+
+            // Get the root path
+            
+            ConfigElement rootPathElement = cfg.getChild(KEY_ROOT_PATH);
+            if (rootPathElement == null || rootPathElement.getValue() == null || rootPathElement.getValue().length() == 0)
+            {
+                throw new DeviceContextException("Device missing init value: " + KEY_ROOT_PATH);
+            }
+            String rootPath = rootPathElement.getValue();
+            
+
+            // Create the context
+            
+            context = new ContentContext();
+            context.setDeviceName(shareName);
+            context.setStoreName(storeValue);
+            context.setRootPath(rootPath);
+
+            // Check if a relative path has been specified
+            
+            ConfigElement relativePathElement = cfg.getChild(KEY_RELATIVE_PATH);
+            
+            if ( relativePathElement != null)
+            {
+                // Make sure the path is in CIFS format
+                
+                String relPath = relativePathElement.getValue().replace( '/', FileName.DOS_SEPERATOR);
+                context.setRelativePath(relPath);
+            }
+
+
+        }
+        catch (Exception ex)
+        {
+            logger.error("Error during create context", ex);
+        }
+
+        // Check if URL link files are enabled
+        
+        ConfigElement urlFileElem = cfg.getChild( "urlFile");
+        if ( urlFileElem != null)
+        {
+            // Get the pseudo file name and web prefix path
+            
+            ConfigElement pseudoName = urlFileElem.getChild( "filename");
+            ConfigElement webPath    = urlFileElem.getChild( "webpath");
+            
+            if ( pseudoName != null && webPath != null)
+            {
+                context.setURLFileName(pseudoName.getValue());
+                context.setURLPrefix(webPath.getValue());
+            }
+        }
+        
+        // Check if locked files should be marked as offline
+        
+        ConfigElement offlineFiles = cfg.getChild( "offlineFiles");
+        if ( offlineFiles != null)
+        {
+            context.setOfflineFiles(true);
+        }
+        
+        // Install the node service monitor
+        
+        if ( cfg.getChild("disableNodeMonitor") == null) {
+        	
+        	// Create the node monitor
+            context.setDisableNodeMonitor(true);
+        }
+        
+        context.afterPropertiesSet();
+        
+        registerContext(context);
+        
+        // Return the context for this shared filesystem
+        
+        return context;
+    }
+
+    
+    /**
+     * Registers a device context object for this instance
+     * of the shared device. The same DeviceInterface implementation may be used for multiple
+     * shares.
+     * 
+     * @param ctx the context
+     * @exception DeviceContextException
+     */
+    public void registerContext(DeviceContext ctx) throws DeviceContextException
+    {
+        ContentContext context = (ContentContext)ctx;
+
         // Wrap the initialization in a transaction
         
         UserTransaction tx = getTransactionService().getUserTransaction(true);
 
-        ContentContext context = null;
-        
         try
         {
             // Use the system user as the authenticated context for the filesystem initialization
@@ -366,13 +465,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                 tx.begin();
             
             // Get the store
-            
-            ConfigElement storeElement = cfg.getChild(KEY_STORE);
-            if (storeElement == null || storeElement.getValue() == null || storeElement.getValue().length() == 0)
-            {
-                throw new DeviceContextException("Device missing init value: " + KEY_STORE);
-            }
-            String storeValue = storeElement.getValue();
+            String storeValue = context.getStoreName();
             StoreRef storeRef = new StoreRef(storeValue);
             
             // Connect to the repo and ensure that the store exists
@@ -384,13 +477,7 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             NodeRef storeRootNodeRef = nodeService.getRootNode(storeRef);
             
             // Get the root path
-            
-            ConfigElement rootPathElement = cfg.getChild(KEY_ROOT_PATH);
-            if (rootPathElement == null || rootPathElement.getValue() == null || rootPathElement.getValue().length() == 0)
-            {
-                throw new DeviceContextException("Device missing init value: " + KEY_ROOT_PATH);
-            }
-            String rootPath = rootPathElement.getValue();
+            String rootPath = context.getRootPath();
             
             // Find the root node for this device
             
@@ -407,41 +494,37 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             else if (nodeRefs.size() == 0)
             {
                 // Nothing found
-            	
+                
                 throw new DeviceContextException("No root found for device: \n" +
                         "   root path: " + rootPath);
             }
             else
             {
                 // We found a node
-            	
+                
                 rootNodeRef = nodeRefs.get(0);
             }
 
             // Check if a relative path has been specified
             
-            ConfigElement relativePathElement = cfg.getChild(KEY_RELATIVE_PATH);
+            String relPath = context.getRelativePath();
             
-            if ( relativePathElement != null)
+            if ( relPath != null && relPath.length() > 0)
             {
-                // Make sure the path is in CIFS format
-                
-                String relPath = relativePathElement.getValue().replace( '/', FileName.DOS_SEPERATOR);
-                
                 // Find the node and validate that the relative path is to a folder
                 
                 NodeRef relPathNode = cifsHelper.getNodeRef( rootNodeRef, relPath);
                 if ( cifsHelper.isDirectory( relPathNode) == false)
-                    throw new DeviceContextException("Relative path is not a folder, " + relativePathElement.getValue());
+                    throw new DeviceContextException("Relative path is not a folder, " + relPath);
                 
                 // Use the relative path node as the root of the filesystem
                 
                 rootNodeRef = relPathNode;
             }
             else {
-            	
-            	// Make sure the default root node is a folder
-            	
+                
+                // Make sure the default root node is a folder
+                
                 if ( cifsHelper.isDirectory( rootNodeRef) == false)
                     throw new DeviceContextException("Root node is not a folder type node");
             }
@@ -450,10 +533,9 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             
             tx.commit();
             tx = null;
-            
-            // Create the context
-            
-            context = new ContentContext(shareName, storeValue, rootPath, rootNodeRef);
+
+            // Record the root node ref
+            context.setRootNodeRef(rootNodeRef);
         }
         catch (Exception ex)
         {
@@ -480,72 +562,8 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             }
         }
 
-        // Check if URL link files are enabled
-        
-        ConfigElement urlFileElem = cfg.getChild( "urlFile");
-        if ( urlFileElem != null)
-        {
-            // Get the pseudo file name and web prefix path
-            
-            ConfigElement pseudoName = urlFileElem.getChild( "filename");
-            ConfigElement webPath    = urlFileElem.getChild( "webpath");
-            
-            if ( pseudoName != null && webPath != null)
-            {
-                // Make sure the web prefix has a trailing slash
-                
-                String path = webPath.getValue();
-                if ( path.endsWith("/") == false)
-                    path = path + "/";
-                
-                // URL file name must end with .url
-                
-                if ( pseudoName.getValue().endsWith(".url") == false)
-                    throw new DeviceContextException("URL link file must end with .url, " + pseudoName.getValue());
-                
-    	        // Check if the URL path name contains the local name token
-
-    	        int pos = path.indexOf(TokenLocalName);
-    	        if (pos != -1)
-    	        {
-
-    	            // Get the local server name
-
-    	            String srvName = "localhost";
-    	            
-    	            try
-    	            {
-    	            	srvName = InetAddress.getLocalHost().getHostName();
-    	            }
-    	            catch ( Exception ex)
-    	            {
-    	            }
-
-    	            // Rebuild the host name substituting the token with the local server name
-
-    	            StringBuilder hostStr = new StringBuilder();
-
-    	            hostStr.append( path.substring(0, pos));
-    	            hostStr.append(srvName);
-
-    	            pos += TokenLocalName.length();
-    	            if (pos < path.length())
-    	                hostStr.append( path.substring(pos));
-
-    	            path = hostStr.toString();
-    	        }
-
-    	        // Set the URL link file name and web path
-                
-                context.setURLFileName( pseudoName.getValue());
-                context.setURLPrefix( path);
-            }
-        }
-        
         // Check if locked files should be marked as offline
-        
-        ConfigElement offlineFiles = cfg.getChild( "offlineFiles");
-        if ( offlineFiles != null)
+        if ( context.getOfflineFiles() )
         {
             // Enable marking locked files as offline
             
@@ -563,21 +581,17 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         // Initialize the I/O control handler
         
         if ( context.hasIOHandler())
-        	context.getIOHandler().initialize( this, context);
+            context.getIOHandler().initialize( this, context);
         
         // Install the node service monitor
         
-        if ( cfg.getChild("disableNodeMonitor") == null && m_nodeMonitorFactory != null) {
-        	
-        	// Create the node monitor
+        if ( !context.getDisableNodeMonitor() && m_nodeMonitorFactory != null) {
+            
+            // Create the node monitor
 
-        	NodeMonitor nodeMonitor = m_nodeMonitorFactory.createNodeMonitor( this, context);
-        	context.setNodeMonitor( nodeMonitor);
+            NodeMonitor nodeMonitor = m_nodeMonitorFactory.createNodeMonitor( this, context);
+            context.setNodeMonitor( nodeMonitor);
         }
-        
-        // Return the context for this shared filesystem
-        
-        return context;
     }
 
     /**

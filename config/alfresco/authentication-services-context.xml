@@ -93,6 +93,10 @@
          <list>
             <value>org.alfresco.repo.security.authentication.AuthenticationComponent</value>
             <value>org.alfresco.repo.security.authentication.MutableAuthenticationDao</value>
+            <value>org.alfresco.jlan.server.auth.ICifsAuthenticator</value>
+            <value>org.alfresco.jlan.ftp.FTPAuthenticator</value>
+            <!-- Allow listening for SMB Server session events -->
+            <value>org.alfresco.jlan.server.SessionListener</value>
          </list>
       </property>
    </bean>

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -14,15 +14,20 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- * As a special exception to the terms and conditions of version 2.0 of
- * the GPL, you may redistribute this Program in connection with Free/Libre
- * and Open Source Software ("FLOSS") applications as described in Alfresco's
- * FLOSS exception.  You should have recieved a copy of the text describing
- * the FLOSS exception, and it is also available here:
- * http://www.alfresco.com/legal/licensing" */
+
+ * As a special exception to the terms and conditions of version 2.0 of 
+ * the GPL, you may redistribute this Program in connection with Free/Libre 
+ * and Open Source Software ("FLOSS") applications as described in Alfresco's 
+ * FLOSS exception.  You should have received a copy of the text describing 
+ * the FLOSS exception, and it is also available here: 
+ * http://www.alfresco.com/legal/licensing"
+ */
 
 package org.alfresco.filesys.avm;
 
+import java.util.StringTokenizer;
+
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.filesys.alfresco.AlfrescoContext;
 import org.alfresco.filesys.alfresco.IOControlHandler;
 import org.alfresco.filesys.state.FileState;
@@ -47,26 +52,26 @@ import org.apache.commons.logging.LogFactory;
  * @author GKSpencer
  */
 public class AVMContext extends AlfrescoContext
-	implements CreateStoreCallback, PurgeStoreCallback, CreateVersionCallback, PurgeVersionCallback {
+    implements CreateStoreCallback, PurgeStoreCallback, CreateVersionCallback, PurgeVersionCallback {
 
     // Logging
     
     private static final Log logger = LogFactory.getLog(AVMContext.class);
     
-	// Constants
-	// 
-	// Version id that indicates the head version
-	
-	public static final int VERSION_HEAD	= -1;
-	
-	// Store types to show in the virtualization view
-	
-	public static final int ShowNormalStores		= 0x0001;
+    // Constants
+    // 
+    // Version id that indicates the head version
+    
+    public static final int VERSION_HEAD    = -1;
+    
+    // Store types to show in the virtualization view
+    
+    public static final int ShowNormalStores        = 0x0001;
     public static final int ShowSiteStores          = 0x0002;
-	public static final int ShowStagingStores		= 0x0004;
-	public static final int ShowAuthorStores		= 0x0008;	
-	public static final int ShowPreviewStores		= 0x0010;
-	
+    public static final int ShowStagingStores       = 0x0004;
+    public static final int ShowAuthorStores        = 0x0008;   
+    public static final int ShowPreviewStores       = 0x0010;
+    
     // Store, root path and version
     
     private String m_storePath;
@@ -74,18 +79,14 @@ public class AVMContext extends AlfrescoContext
 
     // Flag to indicate if the virtualization view is enabled
     //
-    //	The first set of folders then map to the stores and the second layer map to the versions with
+    //  The first set of folders then map to the stores and the second layer map to the versions with
     //  paths below.
 
     private boolean m_virtualView;
     
-    // Associated AVM filesystem driver
-    
-    private AVMDiskDriver m_avmDriver;
-
     // Virtualization view filtering options
     
-    private int m_showOptions;
+    private int m_showOptions = ShowStagingStores + ShowAuthorStores;
     
     // List of newly created store names that need adding into the virtualization view
     
@@ -96,6 +97,17 @@ public class AVMContext extends AlfrescoContext
     
     private boolean m_allowAdminStagingWrites;
     
+    // Auto create the store if it doesn't exist?
+    
+    private boolean m_createStore;
+    
+    /**
+     * Default constructor allowing initialization by container.
+     */
+    public AVMContext()
+    {
+    }
+
     /**
      * Class constructor
      * 
@@ -107,17 +119,15 @@ public class AVMContext extends AlfrescoContext
      */
     public AVMContext( String filesysName, String storePath, int version)
     {
-    	super( filesysName, storePath + "(" + version + ")");
-    	
-    	// Set the store root path, remove any trailing slash as relative paths will be appended to this value
-    	
-    	m_storePath = storePath;
-    	if ( m_storePath.endsWith( "/"))
-    		m_storePath = m_storePath.substring(0, m_storePath.length() - 1);
-    	
-    	// Set the store version to use
-    	
-    	m_version = version;
+        setDeviceName(filesysName);
+        
+        // Set the store root path
+        setStorePath(storePath);
+        
+        // Set the store version to use     
+        setVersion(version);
+
+        afterPropertiesSet();
     }
 
     /**
@@ -131,21 +141,109 @@ public class AVMContext extends AlfrescoContext
      */
     public AVMContext( String filesysName, int showOptions, AVMDiskDriver avmDriver)
     {
-    	super( filesysName, "VirtualView");
-    	
-    	// Enable the virtualization view
-    	
-    	m_virtualView = true;
-    	m_showOptions = showOptions;
+        setDeviceName(filesysName);
+        
+        // Enable the virtualization view
+        setVirtualView(true);
+        setShowOptions(showOptions);
 
-    	m_newStoresLock = new Object();
-    	m_newStores = new StringList();
-    	
-    	// Save the associated filesystem driver
-    	
-    	m_avmDriver = avmDriver;
+        afterPropertiesSet();
+    }
+
+    public void setStorePath(String path)
+    {
+        this.m_storePath = path;
+    }
+
+    public void setVersion(int version)
+    {
+        this.m_version = version;
+    }
+
+    public void setShowOptions(int showOptions)
+    {
+        this.m_showOptions = showOptions;
     }
     
+    public void setStores(String showAttr)
+    {
+        if ( showAttr != null)
+        {
+            // Split the show options string
+            
+            StringTokenizer tokens = new StringTokenizer( showAttr, ",");
+            StringList optList = new StringList();
+            
+            while ( tokens.hasMoreTokens())
+                optList.addString( tokens.nextToken().trim().toLowerCase());
+            
+            // Build the show options mask
+            
+            this.m_showOptions = 0;
+            
+            if ( optList.containsString("normal"))
+                this.m_showOptions += ShowNormalStores;
+            
+            if ( optList.containsString("site"))
+                this.m_showOptions += ShowSiteStores;
+            
+            if ( optList.containsString("author"))
+                this.m_showOptions += ShowAuthorStores;
+            
+            if ( optList.containsString("preview"))
+                this.m_showOptions += ShowPreviewStores;
+            
+            if ( optList.containsString("staging"))
+                this.m_showOptions += ShowStagingStores;
+        }   
+    }
+
+    public void setVirtualView(boolean isVirtualView)
+    {
+        this.m_virtualView = isVirtualView;
+    }
+    
+    public boolean getCreateStore()
+    {
+        return m_createStore;
+    }
+
+    public void setCreateStore(boolean createStore)
+    {
+        m_createStore = createStore;
+    }
+
+    @Override
+    public void afterPropertiesSet()
+    {
+
+        if (m_virtualView)
+        {
+            // A context for a view onto all stores/versions within AVM.
+            m_newStoresLock = new Object();
+            m_newStores = new StringList();
+
+            setShareName("VirtualView");            
+        }
+        else
+        {
+            if (m_storePath == null
+                    || m_storePath.length() == 0)
+                throw new AlfrescoRuntimeException("Device missing init value: storePath");
+            
+            // A context for a normal view onto a single store/version within AVM.
+            if (m_storePath.endsWith("/"))
+                m_storePath = m_storePath.substring(0, m_storePath.length() - 1);
+
+            // Range check the version id
+            if (m_version < 0 && m_version != AVMContext.VERSION_HEAD)
+                throw new AlfrescoRuntimeException("Invalid store version id specified, " + m_version);
+            
+            setShareName(m_storePath + "(" + m_version + ")");                        
+        }
+        super.afterPropertiesSet();
+    }
+
     /**
      * Return the filesystem type, either FileSystem.TypeFAT or FileSystem.TypeNTFS.
      * 
@@ -173,7 +271,7 @@ public class AVMContext extends AlfrescoContext
      */
     public final int isVersion()
     {
-    	return m_version;
+        return m_version;
     }
     
     /**
@@ -183,7 +281,7 @@ public class AVMContext extends AlfrescoContext
      */
     public final boolean isVirtualizationView()
     {
-    	return m_virtualView;
+        return m_virtualView;
     }
 
     /**
@@ -192,7 +290,7 @@ public class AVMContext extends AlfrescoContext
      * @return boolean
      */
     public final boolean allowAdminStagingWrites() {
-    	return m_allowAdminStagingWrites;
+        return m_allowAdminStagingWrites;
     }
 
     /**
@@ -201,7 +299,7 @@ public class AVMContext extends AlfrescoContext
      * @param writeable boolean
      */
     public final void setAllowAdminStaginWrites(boolean writeable) {
-    	m_allowAdminStagingWrites = writeable;
+        m_allowAdminStagingWrites = writeable;
     }
     
     /**
@@ -210,9 +308,9 @@ public class AVMContext extends AlfrescoContext
      * @return boolean
      */
     protected final boolean hasNewStoresQueued() {
-    	if ( m_newStores == null || m_newStores.numberOfStrings() == 0)
-    		return false;
-    	return true;
+        if ( m_newStores == null || m_newStores.numberOfStrings() == 0)
+            return false;
+        return true;
     }
     
     /**
@@ -221,15 +319,15 @@ public class AVMContext extends AlfrescoContext
      * @return StringList
      */
     protected StringList getNewStoresQueue() {
-    	
-    	StringList storesQueue = null;
-    	
-    	synchronized ( m_newStoresLock) {
-    		storesQueue = m_newStores;
-    		m_newStores = new StringList();
-    	}
-    	
-    	return storesQueue;
+        
+        StringList storesQueue = null;
+        
+        synchronized ( m_newStoresLock) {
+            storesQueue = m_newStores;
+            m_newStores = new StringList();
+        }
+        
+        return storesQueue;
     }
     
     /**
@@ -239,7 +337,7 @@ public class AVMContext extends AlfrescoContext
      */
     public final boolean showNormalStores()
     {
-    	return (m_showOptions & ShowNormalStores) != 0 ? true : false;
+        return (m_showOptions & ShowNormalStores) != 0 ? true : false;
     }
     
     /**
@@ -259,7 +357,7 @@ public class AVMContext extends AlfrescoContext
      */
     public final boolean showAuthorStores()
     {
-    	return (m_showOptions & ShowAuthorStores) != 0 ? true : false;
+        return (m_showOptions & ShowAuthorStores) != 0 ? true : false;
     }
     
     /**
@@ -269,7 +367,7 @@ public class AVMContext extends AlfrescoContext
      */
     public final boolean showPreviewStores()
     {
-    	return (m_showOptions & ShowPreviewStores) != 0 ? true : false;
+        return (m_showOptions & ShowPreviewStores) != 0 ? true : false;
     }
 
     /**
@@ -279,7 +377,7 @@ public class AVMContext extends AlfrescoContext
      */
     public final boolean showStagingStores()
     {
-    	return (m_showOptions & ShowStagingStores) != 0 ? true : false;
+        return (m_showOptions & ShowStagingStores) != 0 ? true : false;
     }
 
     /**
@@ -290,41 +388,41 @@ public class AVMContext extends AlfrescoContext
      */
     public final boolean showStoreType(int storeType)
     {
-    	boolean showStore = false;
-    	
-    	switch (storeType)
-    	{
-        	case StoreType.Normal:
-        		showStore = showNormalStores();
-        		break;
+        boolean showStore = false;
+        
+        switch (storeType)
+        {
+            case StoreType.Normal:
+                showStore = showNormalStores();
+                break;
             case StoreType.SiteStore:
                 showStore = showSiteStores();
                 break;
-        	case StoreType.WebAuthorMain:
-        		showStore = showAuthorStores();
-        		break;
-        	case StoreType.WebStagingMain:
-        		showStore = showStagingStores();
-        		break;
-        	case StoreType.WebAuthorPreview:
-        	case StoreType.WebStagingPreview:
-        		showStore = showPreviewStores();
-        		break;
-    	}
-    	
-    	return showStore;
+            case StoreType.WebAuthorMain:
+                showStore = showAuthorStores();
+                break;
+            case StoreType.WebStagingMain:
+                showStore = showStagingStores();
+                break;
+            case StoreType.WebAuthorPreview:
+            case StoreType.WebStagingPreview:
+                showStore = showPreviewStores();
+                break;
+        }
+        
+        return showStore;
     }
     
     /**
      * Close the filesystem context
      */
-	public void CloseContext() {
-		
-		//	Call the base class
-		
-		super.CloseContext();
-	}
-	
+    public void CloseContext() {
+        
+        //  Call the base class
+        
+        super.CloseContext();
+    }
+    
     /**
      * Create the I/O control handler for this filesystem type
      * 
@@ -333,246 +431,246 @@ public class AVMContext extends AlfrescoContext
      */
     protected IOControlHandler createIOHandler( DiskInterface filesysDriver)
     {
-    	return null;
+        return null;
     }
 
-	/**
-	 * Create store call back handler
-	 * 
-	 * @param storeName String
-	 * @param versionID int
-	 */
-	public void storeCreated(String storeName)
-	{
-		// Not interested if the virtualization view is not enabled
-		
-		if ( isVirtualizationView() == false)
-			return;
-		
-		// Make sure the file state cache is enabled
-		
-		FileStateTable fsTable = getStateTable();
-		if ( fsTable == null)
-			return;
-		
-		// Find the file state for the root folder
-		
-		FileState rootState = fsTable.findFileState( FileName.DOS_SEPERATOR_STR, true, true);
+    /**
+     * Create store call back handler
+     * 
+     * @param storeName String
+     * @param versionID int
+     */
+    public void storeCreated(String storeName)
+    {
+        // Not interested if the virtualization view is not enabled
+        
+        if ( isVirtualizationView() == false)
+            return;
+        
+        // Make sure the file state cache is enabled
+        
+        FileStateTable fsTable = getStateTable();
+        if ( fsTable == null)
+            return;
+        
+        // Find the file state for the root folder
+        
+        FileState rootState = fsTable.findFileState( FileName.DOS_SEPERATOR_STR, true, true);
 
-		if ( rootState != null)
-		{
-			// DEBUG
-			
-			if ( logger.isDebugEnabled())
-				logger.debug("Queueing new store " + storeName + " for addition to virtualization view");
-			
-			// Add the new store name to the list to be picked up by the next file server access
-			// to the filesystem
-			
-			synchronized ( m_newStoresLock) {
-				
-				// Add the new store name
-				
-				m_newStores.addString( storeName);
-			}
-		}
-	}
-	
-	/**
-	 * Purge store call back handler
-	 * 
-	 * @param storeName String
-	 */
-	public void storePurged(String storeName)
-	{
-		// Not interested if the virtualization view is not enabled
-		
-		if ( isVirtualizationView() == false)
-			return;
-		
-		// Make sure the file state cache is enabled
-		
-		FileStateTable fsTable = getStateTable();
-		if ( fsTable == null)
-			return;
-		
-		// Find the file state for the root folder
-		
-		FileState rootState = fsTable.findFileState( FileName.DOS_SEPERATOR_STR);
-		
-		if ( rootState != null && rootState.hasPseudoFiles())
-		{
-			// Remove the pseudo folder for the store
+        if ( rootState != null)
+        {
+            // DEBUG
+            
+            if ( logger.isDebugEnabled())
+                logger.debug("Queueing new store " + storeName + " for addition to virtualization view");
+            
+            // Add the new store name to the list to be picked up by the next file server access
+            // to the filesystem
+            
+            synchronized ( m_newStoresLock) {
+                
+                // Add the new store name
+                
+                m_newStores.addString( storeName);
+            }
+        }
+    }
+    
+    /**
+     * Purge store call back handler
+     * 
+     * @param storeName String
+     */
+    public void storePurged(String storeName)
+    {
+        // Not interested if the virtualization view is not enabled
+        
+        if ( isVirtualizationView() == false)
+            return;
+        
+        // Make sure the file state cache is enabled
+        
+        FileStateTable fsTable = getStateTable();
+        if ( fsTable == null)
+            return;
+        
+        // Find the file state for the root folder
+        
+        FileState rootState = fsTable.findFileState( FileName.DOS_SEPERATOR_STR);
+        
+        if ( rootState != null && rootState.hasPseudoFiles())
+        {
+            // Remove the pseudo folder for the store
 
-			rootState.getPseudoFileList().removeFile( storeName, false);
-			
-			// Build the filesystem relative path to the deleted store folder
-			
-			StringBuilder pathStr = new StringBuilder();
-			
-			pathStr.append( FileName.DOS_SEPERATOR);
-			pathStr.append( storeName);
+            rootState.getPseudoFileList().removeFile( storeName, false);
+            
+            // Build the filesystem relative path to the deleted store folder
+            
+            StringBuilder pathStr = new StringBuilder();
+            
+            pathStr.append( FileName.DOS_SEPERATOR);
+            pathStr.append( storeName);
 
-			// Remove the file state for the deleted store
-			
-			String storePath = pathStr.toString();
-			fsTable.removeFileState( storePath);
-			
-			// DEBUG
-			
-			if ( logger.isDebugEnabled())
-				logger.debug( "Removed pseudo folder for purged store " + storeName);
-			
-			// Update the file state modify time
-			
-			rootState.updateModifyDateTime();
-			
-			// Send a change notification for the deleted folder
-			
-			if ( hasChangeHandler())
-			{
-				// Send the change notification
-				
-	            getChangeHandler().notifyDirectoryChanged(NotifyChange.ActionRemoved, storePath);
-			}
-		}
-	}
+            // Remove the file state for the deleted store
+            
+            String storePath = pathStr.toString();
+            fsTable.removeFileState( storePath);
+            
+            // DEBUG
+            
+            if ( logger.isDebugEnabled())
+                logger.debug( "Removed pseudo folder for purged store " + storeName);
+            
+            // Update the file state modify time
+            
+            rootState.updateModifyDateTime();
+            
+            // Send a change notification for the deleted folder
+            
+            if ( hasChangeHandler())
+            {
+                // Send the change notification
+                
+                getChangeHandler().notifyDirectoryChanged(NotifyChange.ActionRemoved, storePath);
+            }
+        }
+    }
 
-	/**
-	 * Create version call back handler
-	 * 
-	 * @param storeName String
-	 * @param versionID int
-	 */
-	public void versionCreated(String storeName, int versionID)
-	{
-		// Not interested if the virtualization view is not enabled
-		
-		if ( isVirtualizationView() == false)
-			return;
-		
-		// Make sure the file state cache is enabled
-		
-		FileStateTable fsTable = getStateTable();
-		if ( fsTable == null)
-			return;
+    /**
+     * Create version call back handler
+     * 
+     * @param storeName String
+     * @param versionID int
+     */
+    public void versionCreated(String storeName, int versionID)
+    {
+        // Not interested if the virtualization view is not enabled
+        
+        if ( isVirtualizationView() == false)
+            return;
+        
+        // Make sure the file state cache is enabled
+        
+        FileStateTable fsTable = getStateTable();
+        if ( fsTable == null)
+            return;
 
-		// Build the path to the store version folder
-		
-		StringBuilder pathStr = new StringBuilder();
+        // Build the path to the store version folder
+        
+        StringBuilder pathStr = new StringBuilder();
 
-		pathStr.append( FileName.DOS_SEPERATOR);
-		pathStr.append( storeName);
-		pathStr.append( FileName.DOS_SEPERATOR);
-		pathStr.append( AVMPath.VersionsFolder);
-		
-		// Find the file state for the store versions folder
-		
-		FileState verState = fsTable.findFileState( pathStr.toString());
+        pathStr.append( FileName.DOS_SEPERATOR);
+        pathStr.append( storeName);
+        pathStr.append( FileName.DOS_SEPERATOR);
+        pathStr.append( AVMPath.VersionsFolder);
+        
+        // Find the file state for the store versions folder
+        
+        FileState verState = fsTable.findFileState( pathStr.toString());
 
-		if ( verState != null)
-		{
-			// Create the version folder name
-			
-			StringBuilder verStr = new StringBuilder();
-			
-			verStr.append( AVMPath.VersionFolderPrefix);
-			verStr.append( versionID);
-			
-			String verName = verStr.toString();
-			
-			// Add a pseudo folder for the new version
+        if ( verState != null)
+        {
+            // Create the version folder name
+            
+            StringBuilder verStr = new StringBuilder();
+            
+            verStr.append( AVMPath.VersionFolderPrefix);
+            verStr.append( versionID);
+            
+            String verName = verStr.toString();
+            
+            // Add a pseudo folder for the new version
 
-			pathStr.append( FileName.DOS_SEPERATOR);
-			pathStr.append( verName);
-			
-			verState.addPseudoFile( new VersionPseudoFile( verName, pathStr.toString()));
-			
-			// DEBUG
-			
-			if ( logger.isDebugEnabled())
-				logger.debug( "Added pseudo folder for new version " + storeName + ":/" + verName);
-			
-			// Send a change notification for the new folder
-			
-			if ( hasChangeHandler())
-			{
-				// Build the filesystem relative path to the new version folder
-				
-				pathStr.append( FileName.DOS_SEPERATOR);
-				pathStr.append( verName);
-				
-				// Send the change notification
-				
+            pathStr.append( FileName.DOS_SEPERATOR);
+            pathStr.append( verName);
+            
+            verState.addPseudoFile( new VersionPseudoFile( verName, pathStr.toString()));
+            
+            // DEBUG
+            
+            if ( logger.isDebugEnabled())
+                logger.debug( "Added pseudo folder for new version " + storeName + ":/" + verName);
+            
+            // Send a change notification for the new folder
+            
+            if ( hasChangeHandler())
+            {
+                // Build the filesystem relative path to the new version folder
+                
+                pathStr.append( FileName.DOS_SEPERATOR);
+                pathStr.append( verName);
+                
+                // Send the change notification
+                
                 getChangeHandler().notifyDirectoryChanged(NotifyChange.ActionAdded, pathStr.toString());
-			}
-		}
-	}
+            }
+        }
+    }
 
-	/**
-	 * Purge version call back handler
-	 * 
-	 * @param storeName String
-	 */
-	public void versionPurged(String storeName, int versionID)
-	{
-		// Not interested if the virtualization view is not enabled
-		
-		if ( isVirtualizationView() == false)
-			return;
-		
-		// Make sure the file state cache is enabled
-		
-		FileStateTable fsTable = getStateTable();
-		if ( fsTable == null)
-			return;
+    /**
+     * Purge version call back handler
+     * 
+     * @param storeName String
+     */
+    public void versionPurged(String storeName, int versionID)
+    {
+        // Not interested if the virtualization view is not enabled
+        
+        if ( isVirtualizationView() == false)
+            return;
+        
+        // Make sure the file state cache is enabled
+        
+        FileStateTable fsTable = getStateTable();
+        if ( fsTable == null)
+            return;
 
-		// Build the path to the store version folder
-		
-		StringBuilder pathStr = new StringBuilder();
+        // Build the path to the store version folder
+        
+        StringBuilder pathStr = new StringBuilder();
 
-		pathStr.append( FileName.DOS_SEPERATOR);
-		pathStr.append( storeName);
-		pathStr.append( FileName.DOS_SEPERATOR);
-		pathStr.append( AVMPath.VersionsFolder);
-		
-		// Find the file state for the store versions folder
-		
-		FileState verState = fsTable.findFileState( pathStr.toString());
+        pathStr.append( FileName.DOS_SEPERATOR);
+        pathStr.append( storeName);
+        pathStr.append( FileName.DOS_SEPERATOR);
+        pathStr.append( AVMPath.VersionsFolder);
+        
+        // Find the file state for the store versions folder
+        
+        FileState verState = fsTable.findFileState( pathStr.toString());
 
-		if ( verState != null && verState.hasPseudoFiles())
-		{
-			// Create the version folder name
-			
-			StringBuilder verStr = new StringBuilder();
-			
-			verStr.append( AVMPath.VersionFolderPrefix);
-			verStr.append( versionID);
-			
-			String verName = verStr.toString();
-			
-			// Remove the pseudo folder for the purged version
-			
-			verState.getPseudoFileList().removeFile( verName, true);
-			
-			// DEBUG
-			
-			if ( logger.isDebugEnabled())
-				logger.debug( "Removed pseudo folder for purged version " + storeName + ":/" + verName);
-			
-			// Send a change notification for the deleted folder
-			
-			if ( hasChangeHandler())
-			{
-				// Build the filesystem relative path to the deleted version folder
-				
-				pathStr.append( FileName.DOS_SEPERATOR);
-				pathStr.append( verName);
-				
-				// Send the change notification
-				
+        if ( verState != null && verState.hasPseudoFiles())
+        {
+            // Create the version folder name
+            
+            StringBuilder verStr = new StringBuilder();
+            
+            verStr.append( AVMPath.VersionFolderPrefix);
+            verStr.append( versionID);
+            
+            String verName = verStr.toString();
+            
+            // Remove the pseudo folder for the purged version
+            
+            verState.getPseudoFileList().removeFile( verName, true);
+            
+            // DEBUG
+            
+            if ( logger.isDebugEnabled())
+                logger.debug( "Removed pseudo folder for purged version " + storeName + ":/" + verName);
+            
+            // Send a change notification for the deleted folder
+            
+            if ( hasChangeHandler())
+            {
+                // Build the filesystem relative path to the deleted version folder
+                
+                pathStr.append( FileName.DOS_SEPERATOR);
+                pathStr.append( verName);
+                
+                // Send the change notification
+                
                 getChangeHandler().notifyDirectoryChanged(NotifyChange.ActionRemoved, pathStr.toString());
-			}
-		}
-	}
+            }
+        }
+    }
 }

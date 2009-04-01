@@ -143,14 +143,6 @@
                   value="${alfresco.jmx.dir}/alfresco-jmxrmi.access"/>
     </bean>
 
-    <bean id="FileServerConfig"
-          class="org.alfresco.filesys.FileServerConfig">
-        <property name="fileServerConfiguration"><ref bean="fileServerConfiguration"/></property>
-        <property name="ftpServer"><ref bean="ftpServer"/></property>
-        <property name="cifsServer"><ref bean="cifsServer"/></property>
-        <property name="nfsServer"><ref bean="nfsServer"/></property> 
-    </bean>
-
     <!--
          http://wiki.alfresco.com/wiki/Developing_an_Alfresco_Module#log4j.properties
     -->

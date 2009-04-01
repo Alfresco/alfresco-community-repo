@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,7 +18,7 @@
  * As a special exception to the terms and conditions of version 2.0 of 
  * the GPL, you may redistribute this Program in connection with Free/Libre 
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
+ * FLOSS exception.  You should have received a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
@@ -93,64 +93,122 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
     // Constants
     //
     // Default login configuration entry name
-    
-    private static final String LoginConfigEntry    = "AlfrescoCIFS";
-    
+
+    private static final String LoginConfigEntry = "AlfrescoCIFS";
+
     // NTLM flags mask, used to mask out features that are not supported
-    
+
     private static final int NTLM_FLAGS = NTLM.Flag56Bit +
                                           NTLM.Flag128Bit +
                                           NTLM.FlagLanManKey +
                                           NTLM.FlagNegotiateNTLM +
                                           NTLM.FlagNTLM2Key +
                                           NTLM.FlagNegotiateUnicode;
-    
+
     // Use NTLMSSP or SPNEGO
-    
-    private boolean m_useRawNTLMSSP;
-    
+
+    private boolean m_useRawNTLMSSP = true;
+
     // Flag to control whether NTLMv1 is accepted
-    
-    private boolean m_acceptNTLMv1;
-    
+
+    private boolean m_acceptNTLMv1 = true;
+
     // Kerberos settings
     //
     // Account name and password for server ticket
     //
     // The account name must be built from the CIFS server name, in the format :-
     //
-    //      cifs/<server_name>@<realm>
-    
+    // cifs/<server_name>@<realm>
+
     private String m_accountName;
     private String m_password;
-    
-    // Kerberos realm and KDC address
-    
+
+    // Kerberos realm
+
     private String m_krbRealm;
-    private String m_krbKDC;
-    
+
     // Login configuration entry name
-    
-    private String m_loginEntryName = LoginConfigEntry; 
+
+    private String m_loginEntryName = LoginConfigEntry;
 
     // Server login context
-    
+
     private LoginContext m_loginContext;
-    
+
     // SPNEGO NegTokenInit blob, sent to the client in the SMB negotiate response
-    
+
+    private Vector<Oid> m_mechTypes;
     private byte[] m_negTokenInit;
-    
+    private String m_mecListMIC;
+
+    private boolean kerberosDebug;
+
+    private boolean disableNTLM;
+
     /**
      * Class constructor
      */
     public EnterpriseCifsAuthenticator()
     {
-        setExtendedSecurity( true);
+        setExtendedSecurity(true);
     }
-    
+
     /**
-     * Initialize the authenticator
+     * Sets the HTTP service account password. (the Principal should be configured in java.login.config)
+     * 
+     * @param password
+     *            the password to set
+     */
+    public void setPassword(String password)
+    {
+        this.m_password = password;
+    }
+
+    /**
+     * Sets the HTTP service account realm.
+     * 
+     * @param realm
+     *            the realm to set
+     */
+    public void setRealm(String realm)
+    {
+        m_krbRealm = realm;
+    }
+
+    /**
+     * Sets the HTTP service login configuration entry name.
+     * 
+     * @param loginEntryName
+     *            the loginEntryName to set
+     */
+    public void setJaasConfigEntryName(String jaasConfigEntryName)
+    {
+        m_loginEntryName = jaasConfigEntryName;
+    }
+
+    public void setKerberosDebug(boolean kerberosDebug)
+    {
+        this.kerberosDebug = kerberosDebug;
+    }
+
+    public void setDisableNTLM(boolean disableNTLM)
+    {
+        this.disableNTLM = disableNTLM;
+    }
+
+    public void setUseSPNEGO(boolean useSPNEGO)
+    {
+        m_useRawNTLMSSP = !useSPNEGO;
+    }
+
+    public void setDisallowNTLMv1(boolean disallowNTLMv1)
+    {
+        this.m_acceptNTLMv1 = !disallowNTLMv1;
+    }
+
+    /**
+     * Initialize the authenticator (via the config service)
      * 
      * @param config ServerConfiguration
      * @param params ConfigElement
@@ -158,236 +216,267 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
      */
     public void initialize(ServerConfiguration config, ConfigElement params) throws InvalidConfigurationException
     {
-        super.initialize(config, params);
-        
         // Check if Java API Kerberos debug output should be enabled
-        
-        if ( params.getChild("kerberosDebug") != null)
-        {
-        	// Enable Kerberos API debug output
-        	
-        	System.setProperty( "sun.security.jgss.debug", "true");
-        	System.setProperty( "sun.security.krb5.debug", "true");
-        }
-        
-        // Check if Kerberos is enabled, get the Kerberos KDC address
 
-        ConfigElement kdcAddress = params.getChild("KDC");
-        
-        if (kdcAddress != null && kdcAddress.getValue() != null && kdcAddress.getValue().length() > 0)
+        setKerberosDebug(params.getChild("kerberosDebug") != null);
+
+        // Check if Kerberos is enabled, get the Kerberos realm
+        ConfigElement krbRealm = params.getChild("Realm");
+        if (krbRealm != null && krbRealm.getValue() != null && krbRealm.getValue().length() > 0)
         {
-            // Set the Kerberos KDC address
-            
-            m_krbKDC = kdcAddress.getValue();
-        
-            // Get the Kerberos realm
-            
-            ConfigElement krbRealm = params.getChild("Realm");
-            if ( krbRealm != null && krbRealm.getValue() != null && krbRealm.getValue().length() > 0)
-            {
-                // Set the Kerberos realm
-                
-                m_krbRealm = krbRealm.getValue();
-            }
-            else
-                throw new InvalidConfigurationException("Kerberos realm not specified");
-            
+            setRealm(krbRealm.getValue());
+
             // Get the CIFS service account password
-            
+
             ConfigElement srvPassword = params.getChild("Password");
-            if ( srvPassword != null && srvPassword.getValue() != null && srvPassword.getValue().length() > 0)
+            if (srvPassword != null && srvPassword.getValue() != null && srvPassword.getValue().length() > 0)
             {
-                // Set the CIFS service account password
-                
-                m_password = srvPassword.getValue();
+                setPassword(srvPassword.getValue());
             }
             else
                 throw new InvalidConfigurationException("CIFS service account password not specified");
-            
+
             // Get the login configuration entry name
-            
+
             ConfigElement loginEntry = params.getChild("LoginEntry");
-            
-            if ( loginEntry != null)
+
+            if (loginEntry != null)
             {
-                if ( loginEntry.getValue() != null && loginEntry.getValue().length() > 0)
+                if (loginEntry.getValue() != null && loginEntry.getValue().length() > 0)
                 {
                     // Set the login configuration entry name to use
-                    
-                    m_loginEntryName = loginEntry.getValue();
+                    setJaasConfigEntryName(loginEntry.getValue());
                 }
                 else
                     throw new InvalidConfigurationException("Invalid login entry specified");
             }
-            
-            // Create a login context for the CIFS server service
-            
-            try
-            {
-                // Login the CIFS server service
-                
-                m_loginContext = new LoginContext( m_loginEntryName, this);
-                m_loginContext.login();
-            }
-            catch ( LoginException ex)
-            {
-                // Debug
-                
-                if ( logger.isErrorEnabled())
-                    logger.error("CIFS Kerberos authenticator error", ex);
-                
-                throw new InvalidConfigurationException("Failed to login CIFS server service");
-            }
 
-            // Get the CIFS service account name from the subject
-            
-            Subject subj = m_loginContext.getSubject();
-            Principal princ = subj.getPrincipals().iterator().next();
-            
-            m_accountName = princ.getName();
-            
-            // DEBUG
-            
-            if ( logger.isDebugEnabled())
-            	logger.debug("Logged on using principal " + m_accountName);
-            
-            // Create the Oid list for the SPNEGO NegTokenInit, include NTLMSSP for fallback
-            
-            Vector<Oid> mechTypes = new Vector<Oid>();
+            setDisableNTLM(params.getChild("disableNTLM") != null);
 
-            // DEBUG
-            
-            if ( logger.isDebugEnabled())
-            {
-            	logger.debug("Enabling mechTypes :-");
-            	logger.debug("  Kerberos5");
-            	logger.debug("  MS-Kerberos5");
-            }
-            
-            // Always enable Kerberos
-            
-            mechTypes.add(OID.KERBEROS5);
-            mechTypes.add(OID.MSKERBEROS5);
-
-            if ( params.getChild("disableNTLM") == null)
-            {
-            	mechTypes.add(OID.NTLMSSP);
-            	
-            	// DEBUG
-            	
-            	if ( logger.isDebugEnabled())
-            		logger.debug("  NTLMSSP");
-            }
-        
-            // Build the SPNEGO NegTokenInit blob
-    
-            try
-            {
-                // Build the mechListMIC principle
-                //
-                // Note: This field is not as specified
-                
-                String mecListMIC = null;
-                
-                StringBuilder mic = new StringBuilder();
-                
-                mic.append("cifs/");
-                mic.append( config.getServerName().toLowerCase());
-                mic.append("@");
-                mic.append( m_krbRealm);
-                
-                mecListMIC = mic.toString();
-                
-                // Build the SPNEGO NegTokenInit that contains the authentication types that the CIFS server accepts
-                
-                NegTokenInit negTokenInit = new NegTokenInit(mechTypes, mecListMIC);
-                
-                // Encode the NegTokenInit blob
-                
-                m_negTokenInit = negTokenInit.encode();
-            }
-            catch (IOException ex)
-            {
-                // Debug
-                
-                if ( logger.isErrorEnabled())
-                    logger.error("Error creating SPNEGO NegTokenInit blob", ex);
-                
-                throw new InvalidConfigurationException("Failed to create SPNEGO NegTokenInit blob");
-            }
-            
             // Indicate that SPNEGO security blobs are being used
-            
-            m_useRawNTLMSSP = false;
+            setUseSPNEGO(true);
         }
         else
         {
             // Check if raw NTLMSSP or SPNEGO/NTLMSSP should be used
-            
-            ConfigElement useSpnego = params.getChild("useSPNEGO");
-            
-            if ( useSpnego != null)
-            {
-                // Create the Oid list for the SPNEGO NegTokenInit
-                
-                Vector<Oid> mechTypes = new Vector<Oid>();
-
-                mechTypes.add( OID.NTLMSSP);
-                
-                // Build the SPNEGO NegTokenInit blob
-                
-                try
-                {
-                    // Build the SPNEGO NegTokenInit that contains the authentication types that the CIFS server accepts
-                    
-                    NegTokenInit negTokenInit = new NegTokenInit(mechTypes, null);
-                    
-                    // Encode the NegTokenInit blob
-                    
-                    m_negTokenInit = negTokenInit.encode();
-                }
-                catch (IOException ex)
-                {
-                    // Debug
-                    
-                    if ( logger.isErrorEnabled())
-                        logger.error("Error creating SPNEGO NegTokenInit blob", ex);
-                    
-                    throw new InvalidConfigurationException("Failed to create SPNEGO NegTokenInit blob");
-                }
-                
-                // Indicate that SPNEGO security blobs are being used
-                
-                m_useRawNTLMSSP = false;
-            }
-            else
-            {
-                // Use raw NTLMSSP security blobs
-                
-                m_useRawNTLMSSP = true;
-            }
+            setUseSPNEGO(params.getChild("useSPNEGO") != null);
         }
-        
+
         // Check if NTLMv1 logons are accepted
-        
-        ConfigElement disallowNTLMv1 = params.getChild("disallowNTLMv1");
-        
-        m_acceptNTLMv1 = disallowNTLMv1 != null ? false : true;
-        
-        //  Make sure that either Kerberos support is enabled and/or the authentication component
-        //  supports MD4 hashed passwords
-        
-        if ( isKerberosEnabled() == false && getAuthenticationComponent().getNTLMMode() != NTLMMode.MD4_PROVIDER)
+
+        setDisallowNTLMv1(params.getChild("disallowNTLMv1") != null);
+
+        // Trigger super class initialisation
+        super.initialize(config, params);
+    }
+
+    
+    /**
+     * Initialize the authenticator (after properties have been set)
+     * 
+     * @exception InvalidConfigurationException
+     */
+    @Override
+    public void initialize() throws InvalidConfigurationException
+    {
+        super.initialize();
+
+        // Check if Java API Kerberos debug output should be enabled
+
+        if (this.kerberosDebug)
         {
-            //  Log an error
-            
+            // Enable Kerberos API debug output
+
+            System.setProperty("sun.security.jgss.debug", "true");
+            System.setProperty("sun.security.krb5.debug", "true");
+        }
+
+        // Check if Kerberos is enabled
+        if (m_krbRealm != null && m_krbRealm.length() > 0)
+        {
+
+            // Get the CIFS service account password
+            if (m_password == null || m_password.length() == 0)
+            {
+                throw new InvalidConfigurationException("CIFS service account password not specified");
+            }
+
+            // Get the login configuration entry name
+            if (m_loginEntryName == null || m_loginEntryName.length() == 0)
+            {
+                throw new InvalidConfigurationException("Invalid login entry specified");
+            }
+
+            // Create a login context for the CIFS server service
+
+            try
+            {
+                // Login the CIFS server service
+
+                m_loginContext = new LoginContext(m_loginEntryName, this);
+                m_loginContext.login();
+            }
+            catch (LoginException ex)
+            {
+                // Debug
+
+                if (logger.isErrorEnabled())
+                    logger.error("CIFS Kerberos authenticator error", ex);
+
+                throw new InvalidConfigurationException("Failed to login CIFS server service");
+            }
+
+            // Get the CIFS service account name from the subject
+
+            Subject subj = m_loginContext.getSubject();
+            Principal princ = subj.getPrincipals().iterator().next();
+
+            m_accountName = princ.getName();
+
+            // DEBUG
+
+            if (logger.isDebugEnabled())
+                logger.debug("Logged on using principal " + m_accountName);
+
+            // Create the Oid list for the SPNEGO NegTokenInit, include NTLMSSP for fallback
+
+            m_mechTypes = new Vector<Oid>();
+
+            // DEBUG
+
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Enabling mechTypes :-");
+                logger.debug("  Kerberos5");
+                logger.debug("  MS-Kerberos5");
+            }
+
+            // Always enable Kerberos
+
+            m_mechTypes.add(OID.KERBEROS5);
+            m_mechTypes.add(OID.MSKERBEROS5);
+
+            if (!disableNTLM)
+            {
+                m_mechTypes.add(OID.NTLMSSP);
+
+                // DEBUG
+
+                if (logger.isDebugEnabled())
+                    logger.debug("  NTLMSSP");
+            }
+
+            // Indicate that SPNEGO security blobs are being used
+
+            m_useRawNTLMSSP = false;
+        }
+        // Check if raw NTLMSSP or SPNEGO/NTLMSSP should be used
+        else if (!m_useRawNTLMSSP)
+        {
+            // SPNEGO security blobs are being used
+
+            // Create the Oid list for the SPNEGO NegTokenInit
+
+            m_mechTypes = new Vector<Oid>();
+
+            m_mechTypes.add(OID.NTLMSSP);
+
+        }
+        else
+        {
+            // Use raw NTLMSSP security blobs
+        }
+
+        // Make sure that either Kerberos support is enabled and/or the authentication component
+        // supports MD4 hashed passwords
+
+        if (isKerberosEnabled() == false && getAuthenticationComponent().getNTLMMode() != NTLMMode.MD4_PROVIDER)
+        {
+            // Log an error
+
             logger.error("No valid CIFS authentication combination available");
             logger.error("Either enable Kerberos support or use an authentication component that supports MD4 hashed passwords");
-            
-            //  Throw an exception to stop the CIFS server startup
-            
+
+            // Throw an exception to stop the CIFS server startup
+
             throw new AlfrescoRuntimeException("Invalid CIFS authenticator configuration");
         }
+    }
+    
+    /**
+     * As the mechListMIC principle may vary according to the CIFS server configuration, initialisation and retrieval of
+     * the cached SPNEGO NegTokenInit has been moved to this method.
+     * 
+     * @return encoded SPNEGO NegTokenInit
+     * @throws AuthenticatorException
+     */
+    private synchronized byte[] getNegTokenInit() throws AuthenticatorException
+    {
+        String mecListMIC = null;
+
+        // Check if Kerberos is enabled
+        byte[] encoded = null;        
+        if (m_krbRealm != null && m_krbRealm.length() > 0)
+        {
+            // Build the mechListMIC principle
+            //
+            // Note: This field is not as specified
+
+            StringBuilder mic = new StringBuilder();
+
+            mic.append("cifs/");
+            mic.append(this.m_config.getServerName().toLowerCase());
+            mic.append("@");
+            mic.append(m_krbRealm);
+
+            mecListMIC = mic.toString();
+         
+            // If the principal is the same, use the cached pre-encoded version
+            if (mecListMIC.equals(m_mecListMIC))
+            {
+                encoded = m_negTokenInit;
+            }
+        }
+        // Check if raw NTLMSSP or SPNEGO/NTLMSSP should be used
+        else if (!m_useRawNTLMSSP)
+        {
+            encoded = m_negTokenInit;
+        }
+        else
+        {
+            return null;
+        }
+
+        if (encoded != null)
+        {
+            return encoded;
+        }
+        
+        // Build the SPNEGO NegTokenInit blob
+
+        try
+        {
+            // Build the SPNEGO NegTokenInit that contains the authentication types that the CIFS server accepts
+
+            NegTokenInit negTokenInit = new NegTokenInit(m_mechTypes, mecListMIC);
+
+            // Encode the NegTokenInit blob
+
+            encoded = negTokenInit.encode();
+            m_negTokenInit = encoded;
+            m_mecListMIC = mecListMIC;
+        }
+        catch (IOException ex)
+        {
+            // Debug
+
+            if (logger.isErrorEnabled())
+                logger.error("Error creating SPNEGO NegTokenInit blob", ex);
+
+            throw new AuthenticatorException("Failed to create SPNEGO NegTokenInit blob");
+        }
+        
+        return encoded;
     }
 
     /**
@@ -397,7 +486,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
      */
     private final boolean isKerberosEnabled()
     {
-        return m_krbKDC != null && m_loginContext != null;
+        return m_krbRealm != null && m_loginContext != null;
     }
 
     /**
@@ -409,7 +498,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
     {
         return m_useRawNTLMSSP;
     }
-    
+
     /**
      * Determine if NTLMv1 logons are accepted
      * 
@@ -419,7 +508,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
     {
         return m_acceptNTLMv1;
     }
-    
+
     /**
      * JAAS callback handler
      * 
@@ -430,27 +519,27 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
     public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException
     {
         // Process the callback list
-        
+
         for (int i = 0; i < callbacks.length; i++)
         {
             // Request for user name
-            
+
             if (callbacks[i] instanceof NameCallback)
             {
                 NameCallback cb = (NameCallback) callbacks[i];
-//                cb.setName(m_accountName);
+                // cb.setName(m_accountName);
                 cb.setName("");
             }
-            
+
             // Request for password
             else if (callbacks[i] instanceof PasswordCallback)
             {
                 PasswordCallback cb = (PasswordCallback) callbacks[i];
                 cb.setPassword(m_password.toCharArray());
             }
-            
+
             // Request for realm
-            
+
             else if (callbacks[i] instanceof RealmCallback)
             {
                 RealmCallback cb = (RealmCallback) callbacks[i];
@@ -472,7 +561,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
     {
         return 8;
     }
-    
+
     /**
      * Return the server capability flags
      * 
@@ -484,7 +573,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
                Capability.NTStatus + Capability.LargeFiles + Capability.LargeRead + Capability.LargeWrite +
                Capability.ExtendedSecurity;
     }
-    
+
     /**
      * Generate the CIFS negotiate response packet, the authenticator should add authentication specific fields
      * to the response.
@@ -495,44 +584,45 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
      * @exception AuthenticatorException
      */
     public void generateNegotiateResponse(SMBSrvSession sess, SMBSrvPacket respPkt, boolean extendedSecurity)
-        throws AuthenticatorException
+            throws AuthenticatorException
     {
         // If the client does not support extended security then return a standard negotiate response
         // with an 8 byte challenge
-        
-        if ( extendedSecurity == false)
+
+        if (extendedSecurity == false)
         {
-            super.generateNegotiateResponse( sess, respPkt, extendedSecurity);
+            super.generateNegotiateResponse(sess, respPkt, extendedSecurity);
             return;
         }
-        
+
         // Make sure the extended security negotiation flag is set
-        
-        if (( respPkt.getFlags2() & SMBSrvPacket.FLG2_EXTENDEDSECURITY) == 0)
-            respPkt.setFlags2( respPkt.getFlags2() + SMBSrvPacket.FLG2_EXTENDEDSECURITY);
-        
+
+        if ((respPkt.getFlags2() & SMBSrvPacket.FLG2_EXTENDEDSECURITY) == 0)
+            respPkt.setFlags2(respPkt.getFlags2() + SMBSrvPacket.FLG2_EXTENDEDSECURITY);
+
         // Get the negotiate response byte area position
-        
+
         int pos = respPkt.getByteOffset();
         byte[] buf = respPkt.getBuffer();
-        
+
         // Pack the CIFS server GUID into the negotiate response
 
         UUID serverGUID = sess.getSMBServer().getServerGUID();
-        
-        System.arraycopy( serverGUID.getBytes(), 0, buf, pos, 16);
+
+        System.arraycopy(serverGUID.getBytes(), 0, buf, pos, 16);
         pos += 16;
-        
+
         // If SPNEGO is enabled then pack the NegTokenInit blob
 
-        if ( useRawNTLMSSP() == false)
+        if (useRawNTLMSSP() == false)
         {
-            System.arraycopy( m_negTokenInit, 0, buf, pos, m_negTokenInit.length);
-            pos += m_negTokenInit.length;
+            byte[] negTokenInit = getNegTokenInit();
+            System.arraycopy(negTokenInit, 0, buf, pos, m_negTokenInit.length);
+            pos += negTokenInit.length;
         }
 
         // Set the negotiate response length
-        
+
         respPkt.setByteCount(pos - respPkt.getByteOffset());
     }
 

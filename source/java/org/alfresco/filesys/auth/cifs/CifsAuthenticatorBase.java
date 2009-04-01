@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,7 +18,7 @@
  * As a special exception to the terms and conditions of version 2.0 of 
  * the GPL, you may redistribute this Program in connection with Free/Libre 
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
+ * FLOSS exception.  You should have received a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
@@ -72,10 +72,86 @@ public abstract class CifsAuthenticatorBase extends CifsAuthenticator
     // MD4 hash decoder
     
     protected MD4PasswordEncoder m_md4Encoder = new MD4PasswordEncoderImpl();
+
+    private AuthenticationComponent authenticationComponent;
+
+    private AuthenticationService authenticationService;
+
+    private NodeService nodeService;
+
+    private PersonService personService;
+
+    private TransactionService transactionService;
+
+    private AuthorityService authorityService;
+
+    private DiskInterface diskInterface;
     
     // Alfresco configuration
     
-    protected AlfrescoConfigSection m_alfrescoConfig;
+    public CifsAuthenticatorBase()
+    {
+        // The default access mode
+        setAccessMode(USER_MODE);
+    }
+        
+    /**
+     * @param authenticationComponent the authenticationComponent to set
+     */
+    public void setAuthenticationComponent(AuthenticationComponent authenticationComponent)
+    {
+        this.authenticationComponent = authenticationComponent;
+    }
+
+    /**
+     * @param authenticationService the authenticationService to set
+     */
+    public void setAuthenticationService(AuthenticationService authenticationService)
+    {
+        this.authenticationService = authenticationService;
+    }
+
+    /**
+     * @param nodeService the nodeService to set
+     */
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
+    }
+
+    /**
+     * @param personService the personService to set
+     */
+    public void setPersonService(PersonService personService)
+    {
+        this.personService = personService;
+    }
+
+    /**
+     * @param transactionService the transactionService to set
+     */
+    public void setTransactionService(TransactionService transactionService)
+    {
+        this.transactionService = transactionService;
+    }
+
+    /**
+     * @param authorityService the authorityService to set
+     */
+    public void setAuthorityService(AuthorityService authorityService)
+    {
+        this.authorityService = authorityService;
+    }
+
+    /**
+     * Set the filesystem driver for the node service based filesystem
+     * 
+     * @param diskInterface DiskInterface
+     */
+    public void setDiskInterface(DiskInterface diskInterface)
+    {
+        this.diskInterface = diskInterface;
+    }
     
     /**
      * Initialize the authenticator
@@ -86,24 +162,48 @@ public abstract class CifsAuthenticatorBase extends CifsAuthenticator
      */
     public void initialize(ServerConfiguration config, ConfigElement params) throws InvalidConfigurationException
     {
-        super.initialize(config, params);
-
         // Get the alfresco configuration section, required to get hold of various services/components
         
-        m_alfrescoConfig = (AlfrescoConfigSection) config.getConfigSection( AlfrescoConfigSection.SectionName);
+        AlfrescoConfigSection alfrescoConfig = (AlfrescoConfigSection) config.getConfigSection( AlfrescoConfigSection.SectionName);
         
+        // Copy over relevant bean properties for backward compatibility
+        setAuthenticationComponent(alfrescoConfig.getAuthenticationComponent());
+        setAuthenticationService(alfrescoConfig.getAuthenticationService());
+        setNodeService(alfrescoConfig.getNodeService());
+        setPersonService(alfrescoConfig.getPersonService());
+        setTransactionService(alfrescoConfig.getTransactionService());
+        setAuthorityService(alfrescoConfig.getAuthorityService());
+        setDiskInterface(alfrescoConfig.getRepoDiskInterface());
+
+        super.initialize(config, params);
+    }
+
+    
+    /**
+     * Initialize the authenticator
+     * 
+     * @exception InvalidConfigurationException
+     */
+    @Override
+    public void initialize() throws InvalidConfigurationException
+    {
+        super.initialize();
+
         // Check that the required authentication classes are available
 
-        if ( m_alfrescoConfig == null || getAuthenticationComponent() == null)
+        if ( getAuthenticationComponent() == null)
             throw new InvalidConfigurationException("Authentication component not available");
 
+        // Propagate the allow guest flag
+        setAllowGuest(allowGuest() || getAuthenticationComponent().guestUserAuthenticationAllowed());
+        
         // Set the guest user name
         
         setGuestUserName( getAuthenticationComponent().getGuestUserName());
         
         // Check that the authentication component is the required type for this authenticator
         
-        if ( validateAuthenticationMode() == false)
+        if ( ! validateAuthenticationMode() )
             throw new InvalidConfigurationException("Required authentication mode not available");
     }
 
@@ -150,7 +250,6 @@ public abstract class CifsAuthenticatorBase extends CifsAuthenticator
 
         // Create a dynamic share for the guest user, create the disk driver and context
         
-        DiskInterface diskDrv = m_alfrescoConfig.getRepoDiskInterface();
         DiskDeviceContext diskCtx = new ContentContext(client.getUserName(), "", "", alfClient.getHomeFolder());
 
         //  Default the filesystem to look like an 80Gb sized disk with 90% free space
@@ -159,7 +258,7 @@ public abstract class CifsAuthenticatorBase extends CifsAuthenticator
         
         //  Create a temporary shared device for the users home directory
         
-        sess.addDynamicShare( new DiskSharedDevice( client.getUserName(), diskDrv, diskCtx, SharedDevice.Temporary));
+        sess.addDynamicShare( new DiskSharedDevice( client.getUserName(), this.diskInterface, diskCtx, SharedDevice.Temporary));
     }
     
     /**
@@ -222,24 +321,24 @@ public abstract class CifsAuthenticatorBase extends CifsAuthenticator
     {
         // Get the home folder for the user
         
-        UserTransaction tx = m_alfrescoConfig.getTransactionService().getUserTransaction();
+        UserTransaction tx = getTransactionService().getUserTransaction();
         String personName = null;
         
         try
         {
             tx.begin();
-            personName = m_alfrescoConfig.getPersonService().getUserIdentifier( userName);
+            personName = getPersonService().getUserIdentifier( userName);
             tx.commit();
 
             // Check if the person exists
             
             if (personName == null) {
-            	
-            	tx = m_alfrescoConfig.getTransactionService().getNonPropagatingUserTransaction( false);
-            	tx.begin();
-            	
-            	m_alfrescoConfig.getPersonService().getPerson( userName);
-                personName = m_alfrescoConfig.getPersonService().getUserIdentifier( userName);
+                
+                tx = getTransactionService().getNonPropagatingUserTransaction( false);
+                tx.begin();
+                
+                getPersonService().getPerson( userName);
+                personName = getPersonService().getUserIdentifier( userName);
                 
                 tx.commit();
             }
@@ -309,7 +408,7 @@ public abstract class CifsAuthenticatorBase extends CifsAuthenticator
      */
     protected final AuthenticationComponent getAuthenticationComponent()
     {
-        return m_alfrescoConfig.getAuthenticationComponent();
+        return this.authenticationComponent;
     }
     
     /**
@@ -319,7 +418,7 @@ public abstract class CifsAuthenticatorBase extends CifsAuthenticator
      */
     protected final AuthenticationService getAuthenticationService()
     {
-        return m_alfrescoConfig.getAuthenticationService();
+        return this.authenticationService;
     }
     
     /**
@@ -329,7 +428,7 @@ public abstract class CifsAuthenticatorBase extends CifsAuthenticator
      */
     protected final NodeService getNodeService()
     {
-        return m_alfrescoConfig.getNodeService();
+        return this.nodeService;
     }
     
     /**
@@ -339,7 +438,7 @@ public abstract class CifsAuthenticatorBase extends CifsAuthenticator
      */
     protected final PersonService getPersonService()
     {
-        return m_alfrescoConfig.getPersonService();
+        return this.personService;
     }
 
     /**
@@ -349,77 +448,77 @@ public abstract class CifsAuthenticatorBase extends CifsAuthenticator
      */
     protected final TransactionService getTransactionService()
     {
-        return m_alfrescoConfig.getTransactionService();
+        return this.transactionService;
     }
     
-	/**
-	 * Return the authority service
-	 * 
-	 * @return AuthorityService
-	 */
-	protected final AuthorityService getAuthorityService() {
-		return m_alfrescoConfig.getAuthorityService();
-	}
+    /**
+     * Return the authority service
+     * 
+     * @return AuthorityService
+     */
+    protected final AuthorityService getAuthorityService() {
+        return this.authorityService;
+    }
 
-	/**
-	 * Check if the user is an administrator user name
-	 * 
-	 * @param cInfo ClientInfo
-	 */
-	protected final void checkForAdminUserName(ClientInfo cInfo) {
-		
-		// Check if the user name is an administrator
+    /**
+     * Check if the user is an administrator user name
+     * 
+     * @param cInfo ClientInfo
+     */
+    protected final void checkForAdminUserName(ClientInfo cInfo) {
+        
+        // Check if the user name is an administrator
 
-		UserTransaction tx = createTransaction();
+        UserTransaction tx = createTransaction();
 
-		try {
-			tx.begin();
+        try {
+            tx.begin();
 
-			if ( cInfo.getLogonType() == ClientInfo.LogonNormal && getAuthorityService().isAdminAuthority(cInfo.getUserName())) {
-				
-				// Indicate that this is an administrator logon
+            if ( cInfo.getLogonType() == ClientInfo.LogonNormal && getAuthorityService().isAdminAuthority(cInfo.getUserName())) {
+                
+                // Indicate that this is an administrator logon
 
-				cInfo.setLogonType(ClientInfo.LogonAdmin);
-			}
-			tx.commit();
-		}
-		catch (Throwable ex) {
-			try {
-				tx.rollback();
-			}
-			catch (Throwable ex2) {
-				logger.error("Failed to rollback transaction", ex2);
-			}
+                cInfo.setLogonType(ClientInfo.LogonAdmin);
+            }
+            tx.commit();
+        }
+        catch (Throwable ex) {
+            try {
+                tx.rollback();
+            }
+            catch (Throwable ex2) {
+                logger.error("Failed to rollback transaction", ex2);
+            }
 
-			// Re-throw the exception
+            // Re-throw the exception
 
-			if ( ex instanceof RuntimeException) {
-				throw (RuntimeException) ex;
-			}
-			else {
-				throw new RuntimeException("Error during execution of transaction.", ex);
-			}
-		}
-	}
-	
-	/**
-	 * Create a transaction, this will be a wrteable transaction unless the system is in read-only mode.
-	 * 
-	 * return UserTransaction
-	 */
-	protected final UserTransaction createTransaction()
-	{
-		// Get the transaction service
-		
-		TransactionService txService = getTransactionService();
-		
-		// DEBUG
-		
-		if ( logger.isDebugEnabled())
-			logger.debug("Using " + (txService.isReadOnly() ? "ReadOnly" : "Write") + " transaction");
-		
-		// Create the transaction
-		
-		return txService.getUserTransaction( txService.isReadOnly() ? true : false);
-	}
+            if ( ex instanceof RuntimeException) {
+                throw (RuntimeException) ex;
+            }
+            else {
+                throw new RuntimeException("Error during execution of transaction.", ex);
+            }
+        }
+    }
+    
+    /**
+     * Create a transaction, this will be a wrteable transaction unless the system is in read-only mode.
+     * 
+     * return UserTransaction
+     */
+    protected final UserTransaction createTransaction()
+    {
+        // Get the transaction service
+        
+        TransactionService txService = getTransactionService();
+        
+        // DEBUG
+        
+        if ( logger.isDebugEnabled())
+            logger.debug("Using " + (txService.isReadOnly() ? "ReadOnly" : "Write") + " transaction");
+        
+        // Create the transaction
+        
+        return txService.getUserTransaction( txService.isReadOnly() ? true : false);
+    }
 }

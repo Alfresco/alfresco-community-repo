@@ -368,36 +368,25 @@
         </property>
     </bean>
 
-    <!-- CIFS Server -->
-
-    <bean id="fileServerConfiguration" class="org.alfresco.filesys.ServerConfigurationBean" parent="fileServerConfigurationBase">
-       <property name="configService">
-           <ref bean="fileServersConfigService"/>
-       </property>
+    <!--  File Servers Subsystem -->
+    <bean id="fileServers" class="org.alfresco.repo.management.DefaultManagedApplicationContextFactory">
+        <property name="autoStart">
+            <value>true</value>
+        </property>
     </bean>
 
-    <bean id="cifsServer" class="org.alfresco.filesys.CIFSServerBean" destroy-method="stopServer">
-        <constructor-arg>
-           <ref local="fileServerConfiguration"/>
-        </constructor-arg>
-    </bean>
+   <bean id="fileServerConfiguration" class="org.alfresco.repo.management.ManagedSubsystemProxyFactory">
+      <property name="sourceApplicationContextFactory">
+         <ref bean="fileServers" />
+      </property>
+      <property name="interfaces">
+         <list>
+            <!--  Allow authentication subsystem to see file server config at runtime -->
+            <value>org.alfresco.jlan.server.config.ServerConfigurationAccessor</value>
+         </list>
+      </property>
+   </bean>
 
-    <!-- FTP Server -->
-
-    <bean id="ftpServer" class="org.alfresco.filesys.FTPServerBean" destroy-method="stopServer">
-        <constructor-arg>
-           <ref local="fileServerConfiguration"/>
-        </constructor-arg>
-    </bean>
-
-    <!-- NFS Server -->
-
-    <bean id="nfsServer" class="org.alfresco.filesys.NFSServerBean" destroy-method="stopServer">
-        <constructor-arg>
-           <ref local="fileServerConfiguration"/>
-        </constructor-arg>
-    </bean>
-   
     <!-- Start the quartz scheduler -->
 
     <bean id="schedulerStarter" class="org.alfresco.util.SchedulerStarterBean" >

@@ -24,15 +24,20 @@
  */
 package org.alfresco.filesys.alfresco;
 
+import java.net.InetAddress;
 import java.util.Enumeration;
+import java.util.List;
 
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.filesys.config.GlobalDesktopActionConfigBean;
+import org.alfresco.filesys.state.FileStateReaper;
+import org.alfresco.filesys.state.FileStateTable;
 import org.alfresco.jlan.server.filesys.DiskDeviceContext;
 import org.alfresco.jlan.server.filesys.DiskInterface;
 import org.alfresco.jlan.server.filesys.FileSystem;
 import org.alfresco.jlan.server.filesys.SrvDiskInfo;
 import org.alfresco.jlan.server.filesys.pseudo.PseudoFileInterface;
-import org.alfresco.filesys.state.FileStateReaper;
-import org.alfresco.filesys.state.FileStateTable;
+import org.springframework.beans.factory.InitializingBean;
 
 
 /**
@@ -42,8 +47,12 @@ import org.alfresco.filesys.state.FileStateTable;
  * 
  * @author GKSpencer
  */
-public abstract class AlfrescoContext extends DiskDeviceContext
+public abstract class AlfrescoContext extends DiskDeviceContext implements InitializingBean
 {
+    // Token name to substitute current servers DNS name or TCP/IP address into the webapp URL
+
+    private static final String TokenLocalName = "${localname}";
+
     // File state table and associated file state reaper
     
     private FileStateTable m_stateTable;
@@ -60,22 +69,15 @@ public abstract class AlfrescoContext extends DiskDeviceContext
 
     // Desktop actions
     
+    private GlobalDesktopActionConfigBean m_globalDesktopActionConfig = new GlobalDesktopActionConfigBean();
     private DesktopActionTable m_desktopActions;
     
     // I/O control handler
     
     private IOControlHandler m_ioHandler;
-    
-    /**
-     * Class constructor
-     *
-     * @param filesysName String
-     * @param devName String
-     */
-    public AlfrescoContext(String filesysName, String devName)
+
+    public AlfrescoContext()
     {
-        super(filesysName, devName);
-        
         // Default the filesystem to look like an 80Gb sized disk with 90% free space
         
         setDiskInformation(new SrvDiskInfo(2560000, 64, 512, 2304000));
@@ -83,7 +85,17 @@ public abstract class AlfrescoContext extends DiskDeviceContext
         // Set parameters
         
         setFilesystemAttributes(FileSystem.CasePreservedNames + FileSystem.UnicodeOnDisk +
-        		FileSystem.CaseSensitiveSearch);
+                FileSystem.CaseSensitiveSearch);        
+    }
+    
+
+    public void setDisableChangeNotification(boolean disableChangeNotification)
+    {
+        enableChangeHandler(!disableChangeNotification);
+    }
+    
+    public void afterPropertiesSet()
+    {        
     }
     
     /**
@@ -237,7 +249,7 @@ public abstract class AlfrescoContext extends DiskDeviceContext
      */
     public final boolean hasIOHandler()
     {
-    	return m_ioHandler != null ? true : false;
+    	return m_ioHandler != null;
     }
     
     /**
@@ -290,9 +302,48 @@ public abstract class AlfrescoContext extends DiskDeviceContext
     public final void setURLPrefix(String urlPrefix)
     {
         m_urlPathPrefix = urlPrefix;
-        
+
         if ( urlPrefix != null)
+        {
+            // Make sure the web prefix has a trailing slash
+            
+            if ( !urlPrefix.endsWith("/"))
+                urlPrefix = urlPrefix + "/";
+            
+            // Check if the URL path name contains the local name token
+    
+            int pos = urlPrefix.indexOf(TokenLocalName);
+            if (pos != -1)
+            {
+    
+                // Get the local server name
+    
+                String srvName = "localhost";
+                
+                try
+                {
+                    srvName = InetAddress.getLocalHost().getHostName();
+                }
+                catch ( Exception ex)
+                {
+                }
+    
+                // Rebuild the host name substituting the token with the local server name
+    
+                StringBuilder hostStr = new StringBuilder();
+    
+                hostStr.append( urlPrefix.substring(0, pos));
+                hostStr.append(srvName);
+    
+                pos += TokenLocalName.length();
+                if (pos < urlPrefix.length())
+                    hostStr.append( urlPrefix.substring(pos));
+    
+                m_urlPathPrefix = hostStr.toString();
+            }
+        
         	enabledPseudoFileInterface();
+        }
     }
     
     /**
@@ -303,9 +354,15 @@ public abstract class AlfrescoContext extends DiskDeviceContext
     public final void setURLFileName(String urlFileName)
     {
         m_urlFileName = urlFileName;
-        
-        if ( urlFileName != null)
-        	enabledPseudoFileInterface();
+
+        // URL file name must end with .url
+        if (urlFileName != null)
+        {
+            if (!urlFileName.endsWith(".url"))
+                throw new AlfrescoRuntimeException("URL link file must end with .url, " + urlFileName);
+
+            enabledPseudoFileInterface();
+        }
     }
 
     /**
@@ -337,6 +394,36 @@ public abstract class AlfrescoContext extends DiskDeviceContext
     	}
     }
     
+
+    /**
+     * Set the desktop actions
+     * 
+     * @param desktopActions DesktopAction List
+     */
+    public final void setDesktopActions(List<DesktopAction> desktopActions)
+    {
+        // Enumerate the desktop actions and add to this filesystem
+
+        for (DesktopAction desktopAction : desktopActions)
+        {
+            addDesktopAction(desktopAction);
+        }
+        
+        // Note it is assumed that a AlfrescoDiskDriver.register() call will initialise the I/O control handler
+    }
+
+    protected void setGlobalDesktopActionConfig(GlobalDesktopActionConfigBean desktopActionConfig)
+    {
+        m_globalDesktopActionConfig = desktopActionConfig;
+    }
+
+
+    protected GlobalDesktopActionConfigBean getGlobalDesktopActionConfig()
+    {
+        return m_globalDesktopActionConfig;
+    }
+
+
     /**
      * Create the I/O control handler for this filesystem type
      * 

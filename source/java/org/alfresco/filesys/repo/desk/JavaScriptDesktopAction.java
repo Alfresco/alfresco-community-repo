@@ -89,22 +89,20 @@ public class JavaScriptDesktopAction extends DesktopAction {
 		return "Run Javascript action";
 	}
 
-	/**
-	 * Initialize the action
-	 * 
-	 * @param global ConfigElement
-	 * @param config ConfigElement
-	 * @param fileSys DiskSharedDevice
-	 * @exception DesktopActionException
-	 */
-	@Override
-	public void initializeAction(ConfigElement global, ConfigElement config, DiskSharedDevice fileSys)
-		throws DesktopActionException
-	{
-
+    /**
+     * Perform standard desktop action initialization
+     * 
+     * @param global ConfigElement
+     * @param config ConfigElement
+     * @param fileSys DiskSharedDevice
+     * @exception DesktopActionException
+     */
+    @Override
+    public void standardInitialize(ConfigElement global, ConfigElement config, DiskSharedDevice fileSys)
+        throws DesktopActionException
+    {
 		// Perform standard initialization
-		
-		super.initializeAction(global, config, fileSys);
+		super.standardInitialize(global, config, fileSys);
 		
 		// Get the script file name and check that it exists
 		
@@ -112,46 +110,7 @@ public class JavaScriptDesktopAction extends DesktopAction {
 		if ( elem != null && elem.getValue().length() > 0)
 		{
 			// Set the script name
-			
 			setScriptName(elem.getValue());
-			
-			// Check if the script exists on the classpath
-			
-	        URL scriptURL = this.getClass().getClassLoader().getResource(getScriptName());
-	        if ( scriptURL == null)
-	            throw new DesktopActionException("Failed to find script on classpath, " + getScriptName());
-
-	        // Decode the URL path, it might contain escaped characters
-	        
-	        String scriptURLPath = null;
-	        try
-	        {
-	        	scriptURLPath = URLDecoder.decode( scriptURL.getFile(), "UTF-8");
-	        }
-	        catch ( UnsupportedEncodingException ex)
-	        {
-	        	throw new DesktopActionException("Failed to decode script path, " + ex.getMessage());
-	        }
-
-	        // Check that the script file exists
-	        
-	        File scriptFile = new File(scriptURLPath);
-	        if ( scriptFile.exists() == false)
-	            throw new DesktopActionException("Script file not found, " + elem.getValue());
-	        
-	        m_scriptPath = scriptFile.getAbsolutePath();
-	        m_lastModified =scriptFile.lastModified();
-	        
-	        // Load the script
-
-	        try
-	        {
-	        	loadScript( scriptFile);
-	        }
-	        catch ( IOException ex)
-	        {
-	        	throw new DesktopActionException( "Failed to load script, " + ex.getMessage());
-	        }
 		}
 		else
 			throw new DesktopActionException("Script name not specified");
@@ -167,45 +126,7 @@ public class JavaScriptDesktopAction extends DesktopAction {
 				throw new DesktopActionException("Empty desktop action attributes");
 			
 			// Parse the attribute string
-			
-			int attr = 0;
-			StringTokenizer tokens = new StringTokenizer( elem.getValue(), ",");
-			
-			while ( tokens.hasMoreTokens())
-			{
-				// Get the current attribute token and validate
-				
-				String token = tokens.nextToken().trim();
-				
-				if ( token.equalsIgnoreCase( "targetFiles"))
-					attr |= AttrTargetFiles;
-				else if ( token.equalsIgnoreCase( "targetFolders"))
-					attr |= AttrTargetFolders;
-				else if ( token.equalsIgnoreCase( "clientFiles"))
-					attr |= AttrClientFiles;
-				else if ( token.equalsIgnoreCase( "clientFolders"))
-					attr |= AttrClientFolders;
-				else if ( token.equalsIgnoreCase( "alfrescoFiles"))
-					attr |= AttrAlfrescoFiles;
-				else if ( token.equalsIgnoreCase( "alfrescoFolders"))
-					attr |= AttrAlfrescoFolders;
-				else if ( token.equalsIgnoreCase( "multiplePaths"))
-					attr |= AttrMultiplePaths;
-				else if ( token.equalsIgnoreCase( "allowNoParams"))
-					attr |= AttrAllowNoParams;
-				else if ( token.equalsIgnoreCase( "anyFiles"))
-					attr |= AttrAnyFiles;
-				else if ( token.equalsIgnoreCase( "anyFolders"))
-					attr |= AttrAnyFolders;
-				else if ( token.equalsIgnoreCase( "anyFilesFolders"))
-					attr |= AttrAnyFilesFolders;
-				else
-					throw new DesktopActionException("Unknown attribute, " + token);
-			}
-
-			// Set the action attributes
-			
-			setAttributes( attr);
+			setAttributes(elem.getValue());
 		}
 		
 		// Check if the desktop action pre-processing options have been specified
@@ -213,40 +134,64 @@ public class JavaScriptDesktopAction extends DesktopAction {
 		elem = config.getChild("preprocess");
 		if ( elem != null)
 		{
-			// Check if the pre-process string is empty
-			
-			int pre = 0;
-			
-			if ( elem.getValue() != null && elem.getValue().length() > 0)
-			{
-				// Parse the pre-process string
-				
-				StringTokenizer tokens = new StringTokenizer( elem.getValue(), ",");
-				
-				while ( tokens.hasMoreTokens())
-				{
-					// Get the current pre-process token and validate
-					
-					String token = tokens.nextToken().trim();
-					
-					if ( token.equalsIgnoreCase( "copyToTarget"))
-						pre |= PreCopyToTarget;
-					else if ( token.equalsIgnoreCase( "confirm"))
-						pre |= PreConfirmAction;
-					else if ( token.equalsIgnoreCase( "localToWorkingCopy"))
-						pre |= PreLocalToWorkingCopy;
-					else
-						throw new DesktopActionException("Unknown pre-processing flag, " + token);
-				}
-			}
-			
-			// Set the action pre-processing flags
-			
-			setPreProcessActions( pre);
+		    setPreProcessActions(elem.getValue());
 		}
 	}
 
-	/**
+	@Override
+    public void afterPropertiesSet() throws DesktopActionException
+    {
+        // Perform standard initialization
+        
+        super.afterPropertiesSet();
+        
+        // Get the script file name and check that it exists
+        
+        if ( m_scriptName == null || m_scriptName.length() == 0)
+        {
+            throw new DesktopActionException("Script name not specified");
+        }
+
+        // Check if the script exists on the classpath
+            
+        URL scriptURL = this.getClass().getClassLoader().getResource(m_scriptName);
+        if ( scriptURL == null)
+            throw new DesktopActionException("Failed to find script on classpath, " + getScriptName());
+
+        // Decode the URL path, it might contain escaped characters
+        
+        String scriptURLPath = null;
+        try
+        {
+            scriptURLPath = URLDecoder.decode( scriptURL.getFile(), "UTF-8");
+        }
+        catch ( UnsupportedEncodingException ex)
+        {
+            throw new DesktopActionException("Failed to decode script path, " + ex.getMessage());
+        }
+
+        // Check that the script file exists
+        
+        File scriptFile = new File(scriptURLPath);
+        if ( scriptFile.exists() == false)
+            throw new DesktopActionException("Script file not found, " + m_scriptName);
+        
+        m_scriptPath = scriptFile.getAbsolutePath();
+        m_lastModified =scriptFile.lastModified();
+        
+        // Load the script
+
+        try
+        {
+            loadScript( scriptFile);
+        }
+        catch ( IOException ex)
+        {
+            throw new DesktopActionException( "Failed to load script, " + ex.getMessage());
+        }
+    }
+
+    /**
 	 * Run the desktop action
 	 * 
 	 * @param params DesktopParams
@@ -428,7 +373,101 @@ public class JavaScriptDesktopAction extends DesktopAction {
 		m_scriptName = name;
 	}
 	
-	/**
+    /**
+     * Set the action attributes
+     * 
+     * @param attributes String
+     * @throws DesktopActionException 
+     */
+    protected void setAttributes(String attributes) throws DesktopActionException
+    {
+        // Check if the attribute string is empty        
+        if ( attributes == null || attributes.length() == 0)
+        {
+            return;
+        }
+        // Parse the attribute string
+        
+        int attr = 0;
+        StringTokenizer tokens = new StringTokenizer( attributes, ",");
+        
+        while ( tokens.hasMoreTokens())
+        {
+            // Get the current attribute token and validate
+            
+            String token = tokens.nextToken().trim();
+            
+            if ( token.equalsIgnoreCase( "targetFiles"))
+                attr |= AttrTargetFiles;
+            else if ( token.equalsIgnoreCase( "targetFolders"))
+                attr |= AttrTargetFolders;
+            else if ( token.equalsIgnoreCase( "clientFiles"))
+                attr |= AttrClientFiles;
+            else if ( token.equalsIgnoreCase( "clientFolders"))
+                attr |= AttrClientFolders;
+            else if ( token.equalsIgnoreCase( "alfrescoFiles"))
+                attr |= AttrAlfrescoFiles;
+            else if ( token.equalsIgnoreCase( "alfrescoFolders"))
+                attr |= AttrAlfrescoFolders;
+            else if ( token.equalsIgnoreCase( "multiplePaths"))
+                attr |= AttrMultiplePaths;
+            else if ( token.equalsIgnoreCase( "allowNoParams"))
+                attr |= AttrAllowNoParams;
+            else if ( token.equalsIgnoreCase( "anyFiles"))
+                attr |= AttrAnyFiles;
+            else if ( token.equalsIgnoreCase( "anyFolders"))
+                attr |= AttrAnyFolders;
+            else if ( token.equalsIgnoreCase( "anyFilesFolders"))
+                attr |= AttrAnyFilesFolders;
+            else
+                throw new DesktopActionException("Unknown attribute, " + token);
+        }
+        setAttributes(attr);
+    }
+	
+    /**
+     * Set the client side pre-processing actions
+     *
+     * @param preProcessActions String
+     * @throws DesktopActionException 
+     */
+    protected void setPreProcessActions(String preProcessActions) throws DesktopActionException
+    {
+        // Check if the pre-process string is empty
+
+        if ( preProcessActions == null || preProcessActions.length() == 0)
+        {
+            return;
+        }
+        
+        int pre = 0;
+        
+        // Parse the pre-process string
+        
+        StringTokenizer tokens = new StringTokenizer( preProcessActions, ",");
+        
+        while ( tokens.hasMoreTokens())
+        {
+            // Get the current pre-process token and validate
+            
+            String token = tokens.nextToken().trim();
+            
+            if ( token.equalsIgnoreCase( "copyToTarget"))
+                pre |= PreCopyToTarget;
+            else if ( token.equalsIgnoreCase( "confirm"))
+                pre |= PreConfirmAction;
+            else if ( token.equalsIgnoreCase( "localToWorkingCopy"))
+                pre |= PreLocalToWorkingCopy;
+            else
+                throw new DesktopActionException("Unknown pre-processing flag, " + token);
+        }
+        
+        // Set the action pre-processing flags
+        
+        setPreProcessActions( pre);
+    }
+
+    /**
 	 * Load, or reload, the script
 	 * 
 	 * @param scriptFile File

@@ -94,7 +94,6 @@ import org.apache.commons.logging.LogFactory;
  */
 public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
 {
-
     // Logging
 
     private static final Log logger = LogFactory.getLog(AVMDiskDriver.class);
@@ -286,6 +285,151 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
     public DeviceContext createContext(String shareName, ConfigElement cfg)
             throws DeviceContextException
     {
+        AVMContext context = null;
+
+        try
+        {
+            // Check if the share is a virtualization view
+
+            ConfigElement virtElem = cfg.getChild("virtualView");
+            if (virtElem != null)
+            {
+                // Check if virtualization view show options have been specified
+            	
+            	int showOptions = AVMContext.ShowStagingStores + AVMContext.ShowAuthorStores;
+            	
+            	String showAttr = virtElem.getAttribute( "stores");
+            	if ( showAttr != null)
+            	{
+            		// Split the show options string
+            		
+            		StringTokenizer tokens = new StringTokenizer( showAttr, ",");
+            		StringList optList = new StringList();
+            		
+            		while ( tokens.hasMoreTokens())
+            			optList.addString( tokens.nextToken().trim().toLowerCase());
+            		
+            		// Build the show options mask
+            		
+            		showOptions = 0;
+            		
+            		if ( optList.containsString("normal"))
+            			showOptions += AVMContext.ShowNormalStores;
+            		
+                    if ( optList.containsString("site"))
+                        showOptions += AVMContext.ShowSiteStores;
+                    
+            		if ( optList.containsString("author"))
+            			showOptions += AVMContext.ShowAuthorStores;
+            		
+            		if ( optList.containsString("preview"))
+            			showOptions += AVMContext.ShowPreviewStores;
+            		
+            		if ( optList.containsString("staging"))
+            			showOptions += AVMContext.ShowStagingStores;
+            	}
+            	else if ( cfg.getChild("showAllSandboxes") != null)
+            	{
+            		// Old style show options
+            		
+            		showOptions = AVMContext.ShowNormalStores + AVMContext.ShowSiteStores +
+                                  AVMContext.ShowAuthorStores + AVMContext.ShowPreviewStores +
+                                  AVMContext.ShowStagingStores;
+            	}
+
+                // Create the context
+
+                context = new AVMContext(shareName, showOptions, this);
+
+                // Check if the admin user should be allowed to write to the web project staging stores
+                
+                if ( cfg.getChild("adminWriteable") != null)
+                	context.setAllowAdminStaginWrites( true);
+                
+            }
+            else
+            {
+                // Get the store path
+
+                ConfigElement storeElement = cfg.getChild(KEY_STORE);
+                if (storeElement == null
+                        || storeElement.getValue() == null || storeElement.getValue().length() == 0)
+                    throw new DeviceContextException("Device missing init value: " + KEY_STORE);
+
+                String storePath = storeElement.getValue();
+
+                // Get the version if specified, or default to the head version
+
+                int version = AVMContext.VERSION_HEAD;
+
+                ConfigElement versionElem = cfg.getChild(KEY_VERSION);
+                if (versionElem != null)
+                {
+                    // Check if the version is valid
+
+                    if (versionElem.getValue() == null || versionElem.getValue().length() == 0)
+                        throw new DeviceContextException("Store version not specified");
+
+                    // Validate the version id
+
+                    try
+                    {
+                        version = Integer.parseInt(versionElem.getValue());
+                    }
+                    catch (NumberFormatException ex)
+                    {
+                        throw new DeviceContextException("Invalid store version specified, "
+                                + versionElem.getValue());
+                    }
+
+                    // Range check the version id
+
+                    if (version < 0 && version != AVMContext.VERSION_HEAD)
+                        throw new DeviceContextException("Invalid store version id specified, " + version);
+                }
+
+                // Create the context
+
+                context = new AVMContext(shareName, storePath, version);
+                
+                // Check if the create flag is enabled
+
+                ConfigElement createStore = cfg.getChild(KEY_CREATE);
+                context.setCreateStore(createStore != null);
+
+                // Enable file state caching
+
+                context.enableStateTable(true, getStateReaper());
+            }
+
+        }
+        catch (Exception ex)
+        {
+            logger.error("Error during create context", ex);
+
+            // Rethrow the exception
+
+            throw new DeviceContextException("Driver setup error, " + ex.getMessage());
+        }
+        
+        // Register the context bean
+        registerContext(context);
+        
+        // Return the context for this shared filesystem            
+        return context;
+    }
+
+    /**
+     * Register a device context object for this instance of the shared
+     * device.
+     * 
+     * @param context the device context
+     * @exception DeviceContextException
+     */
+    public void registerContext(DeviceContext ctx)
+            throws DeviceContextException
+    {
+        AVMContext context = (AVMContext)ctx;
         // Use the system user as the authenticated context for the filesystem initialization
 
         try
@@ -297,8 +441,6 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
 
             UserTransaction tx = getTransactionService().getUserTransaction(false);
 
-            AVMContext context = null;
-
             try
             {
                 // Start the transaction
@@ -308,65 +450,12 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
 
                 // Check if the share is a virtualization view
 
-                ConfigElement virtElem = cfg.getChild("virtualView");
-                if (virtElem != null)
+                if (context.isVirtualizationView())
                 {
-                    // Check if virtualization view show options have been specified
-                	
-                	int showOptions = AVMContext.ShowStagingStores + AVMContext.ShowAuthorStores;
-                	
-                	String showAttr = virtElem.getAttribute( "stores");
-                	if ( showAttr != null)
-                	{
-                		// Split the show options string
-                		
-                		StringTokenizer tokens = new StringTokenizer( showAttr, ",");
-                		StringList optList = new StringList();
-                		
-                		while ( tokens.hasMoreTokens())
-                			optList.addString( tokens.nextToken().trim().toLowerCase());
-                		
-                		// Build the show options mask
-                		
-                		showOptions = 0;
-                		
-                		if ( optList.containsString("normal"))
-                			showOptions += AVMContext.ShowNormalStores;
-                		
-                        if ( optList.containsString("site"))
-                            showOptions += AVMContext.ShowSiteStores;
-                        
-                		if ( optList.containsString("author"))
-                			showOptions += AVMContext.ShowAuthorStores;
-                		
-                		if ( optList.containsString("preview"))
-                			showOptions += AVMContext.ShowPreviewStores;
-                		
-                		if ( optList.containsString("staging"))
-                			showOptions += AVMContext.ShowStagingStores;
-                	}
-                	else if ( cfg.getChild("showAllSandboxes") != null)
-                	{
-                		// Old style show options
-                		
-                		showOptions = AVMContext.ShowNormalStores + AVMContext.ShowSiteStores +
-                                      AVMContext.ShowAuthorStores + AVMContext.ShowPreviewStores +
-                                      AVMContext.ShowStagingStores;
-                	}
-
-                    // Create the context
-
-                    context = new AVMContext(shareName, showOptions, this);
-
                     // Enable file state caching
 
                     context.enableStateTable(true, getStateReaper());
 
-                    // Check if the admin user should be allowed to write to the web project staging stores
-                    
-                    if ( cfg.getChild("adminWriteable") != null)
-                    	context.setAllowAdminStaginWrites( true);
-                    
                     // Plug the virtualization view context into the various store/version call back listeners
                     // so that store/version pseudo folders can be kept in sync with AVM
 
@@ -383,47 +472,10 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
                 else
                 {
                     // Get the store path
+                    String storePath = context.getStorePath();
 
-                    ConfigElement storeElement = cfg.getChild(KEY_STORE);
-                    if (storeElement == null
-                            || storeElement.getValue() == null || storeElement.getValue().length() == 0)
-                        throw new DeviceContextException("Device missing init value: " + KEY_STORE);
-
-                    String storePath = storeElement.getValue();
-
-                    // Get the version if specified, or default to the head version
-
-                    int version = AVMContext.VERSION_HEAD;
-
-                    ConfigElement versionElem = cfg.getChild(KEY_VERSION);
-                    if (versionElem != null)
-                    {
-                        // Check if the version is valid
-
-                        if (versionElem.getValue() == null || versionElem.getValue().length() == 0)
-                            throw new DeviceContextException("Store version not specified");
-
-                        // Validate the version id
-
-                        try
-                        {
-                            version = Integer.parseInt(versionElem.getValue());
-                        }
-                        catch (NumberFormatException ex)
-                        {
-                            throw new DeviceContextException("Invalid store version specified, "
-                                    + versionElem.getValue());
-                        }
-
-                        // Range check the version id
-
-                        if (version < 0 && version != AVMContext.VERSION_HEAD)
-                            throw new DeviceContextException("Invalid store version id specified, " + version);
-                    }
-
-                    // Check if the create flag is enabled
-
-                    ConfigElement createStore = cfg.getChild(KEY_CREATE);
+                    // Get the version
+                    int version = context.isVersion();
 
                     // Validate the store path
 
@@ -432,7 +484,7 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
                     {
                         // Check if the store should be created
 
-                        if (createStore == null || version != AVMContext.VERSION_HEAD)
+                        if (!context.getCreateStore()|| version != AVMContext.VERSION_HEAD)
                             throw new DeviceContextException("Invalid store path/version, "
                                     + storePath + " (" + version + ")");
 
@@ -532,10 +584,6 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
                             throw new DeviceContextException("Failed to create new store " + storePath);
                     }
 
-                    // Create the context
-
-                    context = new AVMContext(shareName, storePath, version);
-
                     // Enable file state caching
 
                     context.enableStateTable(true, getStateReaper());
@@ -572,8 +620,6 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
             }
             
             // Return the context for this shared filesystem
-            
-            return context;
         }
         finally
         {

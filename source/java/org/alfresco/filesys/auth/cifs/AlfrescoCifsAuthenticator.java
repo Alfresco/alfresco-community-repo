@@ -34,8 +34,8 @@ import net.sf.acegisecurity.Authentication;
 import org.alfresco.filesys.alfresco.AlfrescoClientInfo;
 import org.alfresco.jlan.server.SrvSession;
 import org.alfresco.jlan.server.auth.AuthContext;
-import org.alfresco.jlan.server.auth.CifsAuthenticator;
 import org.alfresco.jlan.server.auth.ClientInfo;
+import org.alfresco.jlan.server.auth.ICifsAuthenticator;
 import org.alfresco.jlan.server.auth.NTLanManAuthContext;
 import org.alfresco.jlan.server.core.SharedDevice;
 import org.alfresco.jlan.smb.server.SMBSrvSession;
@@ -92,7 +92,7 @@ public class AlfrescoCifsAuthenticator extends CifsAuthenticatorBase
         // Check that the client is an Alfresco client
       
         if ( client instanceof AlfrescoClientInfo == false)
-            return CifsAuthenticator.AUTH_DISALLOW;
+            return ICifsAuthenticator.AUTH_DISALLOW;
         
         AlfrescoClientInfo alfClient = (AlfrescoClientInfo) client;
         
@@ -107,7 +107,7 @@ public class AlfrescoCifsAuthenticator extends CifsAuthenticatorBase
             if ( logger.isDebugEnabled())
                 logger.debug("Null CIFS logon allowed");
 
-            return CifsAuthenticator.AUTH_ALLOW;
+            return ICifsAuthenticator.AUTH_ALLOW;
         }
 
         // Check if the client is already authenticated, and it is not a null logon
@@ -271,7 +271,7 @@ public class AlfrescoCifsAuthenticator extends CifsAuthenticatorBase
         //
         // Main authentication is handled by authenticateUser()
         
-        return CifsAuthenticator.Writeable;
+        return ICifsAuthenticator.Writeable;
     }
 
     /**
@@ -343,7 +343,7 @@ public class AlfrescoCifsAuthenticator extends CifsAuthenticatorBase
             // Check if the client has supplied an NTLM hashed password, if not then do not allow access
             
             if ( client.getPassword() == null)
-                return CifsAuthenticator.AUTH_BADPASSWORD;
+                return ICifsAuthenticator.AUTH_BADPASSWORD;
             
             try
             {
@@ -362,7 +362,7 @@ public class AlfrescoCifsAuthenticator extends CifsAuthenticatorBase
                 if ( sess.hasAuthenticationContext() && sess.getAuthenticationContext() instanceof NTLanManAuthContext)
                     authCtx = (NTLanManAuthContext) sess.getAuthenticationContext();
                 else
-                    return CifsAuthenticator.AUTH_DISALLOW;
+                    return ICifsAuthenticator.AUTH_DISALLOW;
                 
                 // Generate the local hash of the password using the same challenge
                 
@@ -387,12 +387,12 @@ public class AlfrescoCifsAuthenticator extends CifsAuthenticatorBase
                 }
 
                 if ( clientHash == null || clientHash.length != localHash.length)
-                    return CifsAuthenticator.AUTH_BADPASSWORD;
+                    return ICifsAuthenticator.AUTH_BADPASSWORD;
                 
                 for ( int i = 0; i < clientHash.length; i++)
                 {
                     if ( clientHash[i] != localHash[i])
-                        return CifsAuthenticator.AUTH_BADPASSWORD;
+                        return ICifsAuthenticator.AUTH_BADPASSWORD;
                 }
                 
                 // Logging
@@ -415,7 +415,7 @@ public class AlfrescoCifsAuthenticator extends CifsAuthenticatorBase
                 
                 // Passwords match, grant access
                 
-                return CifsAuthenticator.AUTH_ALLOW;
+                return ICifsAuthenticator.AUTH_ALLOW;
             }
             catch (NoSuchAlgorithmException ex)
             {
@@ -423,7 +423,7 @@ public class AlfrescoCifsAuthenticator extends CifsAuthenticatorBase
             
             // Error during password check, do not allow access
             
-            return CifsAuthenticator.AUTH_DISALLOW;
+            return ICifsAuthenticator.AUTH_DISALLOW;
         }
 
         // Check if this is an SMB/CIFS null session logon.
@@ -431,11 +431,11 @@ public class AlfrescoCifsAuthenticator extends CifsAuthenticatorBase
         // The null session will only be allowed to connect to the IPC$ named pipe share.
 
         if (client.isNullSession() && sess instanceof SMBSrvSession)
-            return CifsAuthenticator.AUTH_ALLOW;
+            return ICifsAuthenticator.AUTH_ALLOW;
         
         // User does not exist, check if guest access is allowed
             
-        return allowGuest() ? CifsAuthenticator.AUTH_GUEST : CifsAuthenticator.AUTH_DISALLOW;
+        return allowGuest() ? ICifsAuthenticator.AUTH_GUEST : ICifsAuthenticator.AUTH_DISALLOW;
     }
     
     /**
@@ -450,19 +450,19 @@ public class AlfrescoCifsAuthenticator extends CifsAuthenticatorBase
     {
     	  // Default logon status to disallow
     	
-        int authSts = CifsAuthenticator.AUTH_DISALLOW;
+        int authSts = ICifsAuthenticator.AUTH_DISALLOW;
 
         // Get the authentication token for the session
 
         AuthContext authCtx = sess.getAuthenticationContext();
         if ( authCtx == null || authCtx instanceof AuthTokenAuthContext == false)
-            return CifsAuthenticator.AUTH_DISALLOW;
+            return ICifsAuthenticator.AUTH_DISALLOW;
 
         AuthTokenAuthContext tokenCtx = (AuthTokenAuthContext) authCtx;
         NTLMPassthruToken authToken = tokenCtx.getToken();
         
         if ( authToken == null)
-            return CifsAuthenticator.AUTH_DISALLOW;
+            return ICifsAuthenticator.AUTH_DISALLOW;
 
         // Get the appropriate hashed password for the algorithm
         
@@ -476,7 +476,7 @@ public class AlfrescoCifsAuthenticator extends CifsAuthenticatorBase
         {
             // Invalid/unsupported algorithm specified
             
-            return CifsAuthenticator.AUTH_DISALLOW;
+            return ICifsAuthenticator.AUTH_DISALLOW;
         }
         
         // Set the username and hashed password in the authentication token
@@ -505,7 +505,7 @@ public class AlfrescoCifsAuthenticator extends CifsAuthenticatorBase
 
                     // Allow the user access as a guest
 
-                    authSts = CifsAuthenticator.AUTH_GUEST;
+                    authSts = ICifsAuthenticator.AUTH_GUEST;
                     
                     // Indicate that this is a guest logon
                     
@@ -517,7 +517,7 @@ public class AlfrescoCifsAuthenticator extends CifsAuthenticatorBase
 
                 // Allow the user full access to the server
 
-                authSts = CifsAuthenticator.AUTH_ALLOW;
+                authSts = ICifsAuthenticator.AUTH_ALLOW;
                 
                 // Indicate that this is a normal user logon
                 

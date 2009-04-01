@@ -35,10 +35,12 @@ import org.alfresco.jlan.server.SrvSession;
 import org.alfresco.jlan.server.auth.InvalidUserException;
 import org.alfresco.jlan.server.config.InvalidConfigurationException;
 import org.alfresco.jlan.server.config.ServerConfiguration;
+import org.alfresco.jlan.server.config.ServerConfigurationAccessor;
 import org.alfresco.jlan.server.core.ShareMapper;
 import org.alfresco.jlan.server.core.ShareType;
 import org.alfresco.jlan.server.core.SharedDevice;
 import org.alfresco.jlan.server.core.SharedDeviceList;
+import org.alfresco.jlan.server.filesys.DiskInterface;
 import org.alfresco.jlan.server.filesys.DiskSharedDevice;
 import org.alfresco.jlan.server.filesys.FilesystemsConfigSection;
 import org.apache.commons.logging.Log;
@@ -64,10 +66,9 @@ public class HomeShareMapper implements ShareMapper
     
     // Server configuration
 
-    private ServerConfiguration m_config;
+    private ServerConfigurationAccessor m_config;
     
-    private AlfrescoConfigSection m_alfConfig;
-    private FilesystemsConfigSection m_fsysConfig;
+    private DiskInterface m_repoDiskInterface;
     
     // Home folder share name
     
@@ -76,6 +77,27 @@ public class HomeShareMapper implements ShareMapper
     // Debug enable flag
 
     private boolean m_debug;
+
+    
+    public void setConfig(ServerConfiguration config)
+    {
+        m_config = config;
+    }
+
+    public void setRepoDiskInterface(DiskInterface diskInterface)
+    {
+        m_repoDiskInterface = diskInterface;
+    }
+
+    public void setHomeShareName(String shareName)
+    {
+        m_homeShareName = shareName;
+    }
+
+    public void setDebug(boolean m_debug)
+    {
+        this.m_debug = m_debug;
+    }
 
     /**
      * Default constructor
@@ -95,21 +117,20 @@ public class HomeShareMapper implements ShareMapper
     {
         // Save the server configuration
 
-        m_config = config;
+        setConfig(config);
         
-        m_alfConfig  = (AlfrescoConfigSection) m_config.getConfigSection( AlfrescoConfigSection.SectionName);
-        m_fsysConfig = (FilesystemsConfigSection) m_config.getConfigSection( FilesystemsConfigSection.SectionName);
+        setRepoDiskInterface(((AlfrescoConfigSection) m_config.getConfigSection( AlfrescoConfigSection.SectionName)).getRepoDiskInterface());
         
         // Check if the home share name has been specified
         
         String homeName = params.getAttribute("name");
         if ( homeName != null && homeName.length() > 0)
-            m_homeShareName = homeName;
+            setHomeShareName(homeName);
 
         // Check if debug is enabled
 
         if (params != null && params.getChild("debug") != null)
-            m_debug = true;
+            setDebug(true);
     }
 
     /**
@@ -165,7 +186,7 @@ public class HomeShareMapper implements ShareMapper
         
         // Make a copy of the global share list and add the per session dynamic shares
         
-        SharedDeviceList shrList = new SharedDeviceList(m_fsysConfig.getShares());
+        SharedDeviceList shrList = new SharedDeviceList(getFilesystemsConfigSection().getShares());
         
         if ( sess != null && sess.hasDynamicShares()) {
             
@@ -256,14 +277,14 @@ public class HomeShareMapper implements ShareMapper
         
             //  Find the required share by name/type. Use a case sensitive search first, if that fails use a case
             //  insensitive search.
-            
-            share = m_fsysConfig.getShares().findShare(name, typ, false);
+            FilesystemsConfigSection filesystemsConfigSection = getFilesystemsConfigSection();
+            share = filesystemsConfigSection.getShares().findShare(name, typ, false);
             
             if ( share == null) {
                 
                 //  Try a case insensitive search for the required share
                 
-                share = m_fsysConfig.getShares().findShare(name, typ, true);
+                share = filesystemsConfigSection.getShares().findShare(name, typ, true);
             }
         }
         
@@ -334,7 +355,7 @@ public class HomeShareMapper implements ShareMapper
     {
         //  Create the disk driver and context
         
-        ContentDiskDriver diskDrv = ( ContentDiskDriver) m_alfConfig.getRepoDiskInterface();
+        ContentDiskDriver diskDrv = ( ContentDiskDriver) getRepoDiskInterface();
         ContentContext diskCtx = new ContentContext( getHomeFolderName(), "", "", client.getHomeFolder());
         
         diskCtx.enableStateTable( true, diskDrv.getStateReaper());
@@ -342,5 +363,15 @@ public class HomeShareMapper implements ShareMapper
         //  Create a temporary shared device for the users home directory
         
         return new DiskSharedDevice(getHomeFolderName(), diskDrv, diskCtx, SharedDevice.Temporary);
+    }
+    
+    protected DiskInterface getRepoDiskInterface()
+    {
+        return m_repoDiskInterface;
+    }
+    
+    protected FilesystemsConfigSection getFilesystemsConfigSection()
+    {
+        return (FilesystemsConfigSection)m_config.getConfigSection(FilesystemsConfigSection.SectionName);
     }
 }

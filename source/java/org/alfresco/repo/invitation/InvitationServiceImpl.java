@@ -563,19 +563,6 @@ public class InvitationServiceImpl implements InvitationService
 		
 		List<Invitation> ret = new ArrayList<Invitation>();
 
-		// at least one of 'inviterUserName',
-		// 'inviteeUserName', 'siteShortName',
-		// URL request parameters has not been provided
-		if (!(criteria.getInvitee() != null
-				|| criteria.getResourceName() != null 
-				|| criteria.getInviter() != null)) 
-		{
-			Object[] objs = {};
-			throw new InvitationExceptionUserError(
-					"search invitation: At least one of the following URL request parameters must be provided in URL "
-					+ "'invite', 'inviter', 'resourceName'", objs);
-		}
-
 		InvitationSearchCriteria.InvitationType toSearch = criteria.getInvitationType();
 		
 		/**
@@ -584,41 +571,34 @@ public class InvitationServiceImpl implements InvitationService
 		if(toSearch == InvitationSearchCriteria.InvitationType.ALL || toSearch == InvitationSearchCriteria.InvitationType.NOMINATED)
 		{
 			// query for nominated workflow tasks by given parameters
-			// create workflow task query
 			WorkflowTaskQuery wfTaskQuery = new WorkflowTaskQuery();
 
-			// the invite URL request
-			// parameters
-			// - because this web script class will terminate with a web script
-			// exception if none of the required
-			// request parameters are provided, at least one of these query
-			// properties will be set
-			// at this point
-
-			// workflow query properties
 			HashMap<QName, Object> wfNominatedQueryProps = new HashMap<QName, Object>(10,
 					1.0f);
 
-			if (criteria.getInviter() != null) {
-				wfNominatedQueryProps
-						.put(
-								WorkflowModelNominatedInvitation.WF_PROP_INVITER_USER_NAME,
-								criteria.getInviter());
-			}
-			if (criteria.getInvitee() != null) {
-				wfNominatedQueryProps
-						.put(
-								WorkflowModelNominatedInvitation.WF_PROP_INVITEE_USER_NAME,
-								criteria.getInvitee());
-			}
-			if (criteria.getResourceName() != null) {
+			if (criteria.getInviter() != null) 
+			{
 				wfNominatedQueryProps.put(
-						WorkflowModelNominatedInvitation.WF_PROP_RESOURCE_NAME,
-						criteria.getResourceName());
-
+						WorkflowModelNominatedInvitation.WF_PROP_INVITER_USER_NAME,
+						criteria.getInviter());
+			}
+			if (criteria.getInvitee() != null) 
+			{
+				wfNominatedQueryProps.put(
+						WorkflowModelNominatedInvitation.WF_PROP_INVITEE_USER_NAME,
+						criteria.getInvitee());
+			}
+			if (criteria.getResourceType() != null) 
+			{
 				wfNominatedQueryProps.put(
 						WorkflowModelNominatedInvitation.WF_PROP_RESOURCE_TYPE,
 						criteria.getResourceType().toString());
+			}
+			if (criteria.getResourceName() != null) 
+			{
+				wfNominatedQueryProps.put(
+						WorkflowModelNominatedInvitation.WF_PROP_RESOURCE_NAME,
+						criteria.getResourceName());
 			}
 
 			// set workflow task query parameters
@@ -715,14 +695,17 @@ public class InvitationServiceImpl implements InvitationService
 				WorkflowModelModeratedInvitation.WF_PROP_INVITEE_USER_NAME,
 						criteria.getInvitee());
 			}
+			if (criteria.getResourceType() != null) 
+			{
+				wfQueryModeratedProps.put(
+						WorkflowModelModeratedInvitation.WF_PROP_RESOURCE_TYPE,
+						criteria.getResourceType().toString());
+			}
 			if (criteria.getResourceName() != null) 
 			{
 				wfQueryModeratedProps.put(
 						WorkflowModelModeratedInvitation.WF_PROP_RESOURCE_NAME,
 						criteria.getResourceName());
-				wfQueryModeratedProps.put(
-						WorkflowModelModeratedInvitation.WF_PROP_RESOURCE_TYPE,
-						criteria.getResourceType().toString());
 			}
 
 			// set workflow task query parameters

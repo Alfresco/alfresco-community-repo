@@ -57,5 +57,12 @@
     		</list>
     	</property>
    </bean>
+   
+   <bean id="invitationServiceScript" parent="baseJavaScriptExtension" class="org.alfresco.repo.invitation.script.ScriptInvitationService">
+        <property name="extensionName">
+            <value>invitations</value>
+        </property>
+        <property name="invitationService" ref="InvitationService"/>
+    </bean>
     
 </beans>

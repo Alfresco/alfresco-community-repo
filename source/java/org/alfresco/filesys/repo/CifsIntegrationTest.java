@@ -24,7 +24,7 @@
  */
 package org.alfresco.filesys.repo;
 
-import org.alfresco.filesys.CIFSServerBean;
+import org.alfresco.jlan.server.config.ServerConfigurationAccessor;
 import org.alfresco.jlan.server.filesys.DiskSharedDevice;
 import org.alfresco.jlan.server.filesys.FilesystemsConfigSection;
 import org.alfresco.service.ServiceRegistry;
@@ -42,22 +42,22 @@ public class CifsIntegrationTest extends BaseAlfrescoTestCase
     
     public void testGetServerName()
     {
-        CIFSServerBean cifsServer = (CIFSServerBean) ctx.getBean("cifsServer");
-        assertNotNull("No CIFS server available", cifsServer);
+        ServerConfigurationAccessor config = (ServerConfigurationAccessor) ctx.getBean("fileServerConfiguration");
+        assertNotNull("No file server config available", config);
         // the server might, quite legitimately, not start
-        if (!cifsServer.isStarted())
+        if (!config.isServerRunning( "CIFS"))
         {
             return;
         }
         
         // get the server name
-        String serverName = cifsServer.getConfiguration().getServerName();
+        String serverName = config.getServerName();
         assertNotNull("No server name available", serverName);
         assertTrue("No server name available (zero length)", serverName.length() > 0);
 
         // Get the primary filesystem, might be null if the home folder mapper is configured
         
-        FilesystemsConfigSection filesysConfig = (FilesystemsConfigSection) cifsServer.getConfiguration().getConfigSection(FilesystemsConfigSection.SectionName);
+        FilesystemsConfigSection filesysConfig = (FilesystemsConfigSection) config.getConfigSection(FilesystemsConfigSection.SectionName);
         DiskSharedDevice mainFilesys = (DiskSharedDevice) filesysConfig.getShares().enumerateShares().nextElement();
         
         if ( mainFilesys != null)

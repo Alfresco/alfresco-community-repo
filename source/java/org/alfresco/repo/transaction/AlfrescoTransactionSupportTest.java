@@ -26,6 +26,7 @@ package org.alfresco.repo.transaction;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.transaction.UserTransaction;
 
@@ -257,5 +258,24 @@ public class AlfrescoTransactionSupportTest extends TestCase
         // check TXN_READ_WRITE
         checkTxnReadState = transactionService.getRetryingTransactionHelper().doInTransaction(getReadStateWork, false);
         assertEquals("Expected 'read-write transaction'", TxnReadState.TXN_READ_WRITE, checkTxnReadState);
+    }
+    
+    public void testResourceHelper() throws Exception
+    {
+        // start a transaction
+        RetryingTransactionCallback<Object> testWork = new RetryingTransactionCallback<Object>()
+        {
+            public Object execute() throws Exception
+            {
+                Map<String, String> map = TransactionalResourceHelper.getMap("abc");
+                assertNotNull("Map not created", map);
+                map.put("1", "ONE");
+                Map<String, String> mapCheck = TransactionalResourceHelper.getMap("abc");
+                assertTrue("Same map not retrieved", map == mapCheck);
+                return null;
+            }
+        };
+        // kick it all off
+        transactionService.getRetryingTransactionHelper().doInTransaction(testWork);
     }
 }

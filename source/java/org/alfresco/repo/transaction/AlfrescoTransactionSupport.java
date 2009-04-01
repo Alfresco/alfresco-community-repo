@@ -202,8 +202,11 @@ public abstract class AlfrescoTransactionSupport
      *  
      * @param key the thread resource map key
      * @return Returns a thread resource of null if not present
+     * 
+     * @see TransactionalResourceHelper         for helper methods to create and bind common collection types
      */
-    public static Object getResource(Object key)
+    @SuppressWarnings("unchecked")
+    public static <R extends Object> R getResource(Object key)
     {
         // get the synchronization
         TransactionSynchronizationImpl txnSynch = getSynchronization();
@@ -216,7 +219,7 @@ public abstract class AlfrescoTransactionSupport
                     "   key: " + key + "\n" +
                     "   resource: " + resource);
         }
-        return resource;
+        return (R) resource;
     }
     
     /**

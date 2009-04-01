@@ -1,0 +1,14 @@
+<webscript>
+   <shortname>Add group or user to a group</shortname>
+   <description><![CDATA[
+      Add a group or user to a group.
+      
+      If the provided group does not exist then it is created.
+   ]]>
+   </description>
+   <url>/api/groups/{shortName}/children</url>
+   <format default="json">argument</format>
+   <authentication>user</authentication>
+   <transaction>required</transaction>
+   <lifecycle>draft_public_api</lifecycle>
+</webscript>

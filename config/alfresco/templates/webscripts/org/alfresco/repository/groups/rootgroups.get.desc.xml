@@ -1,0 +1,15 @@
+<webscript>
+   <shortname>List all root groups</shortname>
+   <description><![CDATA[
+      List all root groups.
+      
+      If the optional includeInternal parameter is set then will include internal groups.
+      If the optional shortNameFilter parameter is set then returns those root groups with a partial match on shortName.
+   ]]>
+   </description>
+   <url>/api/rootgroups?shortNameFilter={shortNameFilter?}&amp;includeInternal={includeInternal?}</url>
+   <format default="json">argument</format>
+   <authentication>user</authentication>
+   <transaction>required</transaction>
+   <lifecycle>draft_public_api</lifecycle>
+</webscript>

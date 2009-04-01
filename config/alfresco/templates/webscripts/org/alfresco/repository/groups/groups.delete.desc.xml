@@ -1,0 +1,12 @@
+<webscript>
+   <shortname>Delete a group.</shortname>
+   <description><![CDATA[
+      Delete a group and all its dependents.
+   ]]>
+   </description>
+   <url>/api/groups/{shortName}</url>
+   <format default="json">argument</format>
+   <authentication>user</authentication>
+   <transaction>required</transaction>
+   <lifecycle>draft_public_api</lifecycle>
+</webscript>

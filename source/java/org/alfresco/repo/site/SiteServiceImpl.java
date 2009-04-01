@@ -31,6 +31,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.alfresco.model.ContentModel;
@@ -572,35 +573,27 @@ public class SiteServiceImpl implements SiteService, SiteModel
         NodeRef siteRoot = getSiteRoot();
         if (nameFilter != null && nameFilter.length() != 0)
         {
-            // Perform a Lucene search under the Site parent node using *name*, *title* and *description* search query
-            QueryParameterDefinition[] params = new QueryParameterDefinition[3];
+            String escNameFilter = LuceneQueryParser.escape(nameFilter.replace('"', ' '));
+            // Perform a Lucene search under the Site parent node using *name* and *description* search query
+            QueryParameterDefinition[] params = new QueryParameterDefinition[2];
             params[0] = new QueryParameterDefImpl(
                     ContentModel.PROP_NAME,
                     dictionaryService.getDataType(
                             DataTypeDefinition.TEXT),
                             true,
-                            LuceneQueryParser.escape(nameFilter.replace('"', ' ')));
-
+                            escNameFilter);
+            
             params[1] = new QueryParameterDefImpl(
-                    ContentModel.PROP_TITLE,
-                    dictionaryService.getDataType(
-                            DataTypeDefinition.TEXT),
-                            true,
-                            LuceneQueryParser.escape(nameFilter.replace('"', ' ')));
-
-            params[2] = new QueryParameterDefImpl(
                     ContentModel.PROP_DESCRIPTION,
                     dictionaryService.getDataType(
                             DataTypeDefinition.TEXT),
                             true,
-                            LuceneQueryParser.escape(nameFilter.replace('"', ' ')));
-
+                            escNameFilter);
+            
             // get the sites that match the specified names
             StringBuilder query = new StringBuilder(128);
             query.append("+PARENT:\"").append(siteRoot.toString())
-                 .append("\" +(@cm\\:name:\"*${cm:name}*\"")
-                 .append(" @cm\\:title:\"*${cm:title}*\"")
-                 .append(" @cm\\:description:\"*${cm:description}*\")");
+                 .append("\" +(@cm\\:name:\"*${cm:name}*\" @cm\\:description:\"*${cm:description}*\")");
             ResultSet results = this.searchService.query(
                     siteRoot.getStoreRef(),
                     SearchService.LANGUAGE_LUCENE,
@@ -971,9 +964,21 @@ public class SiteServiceImpl implements SiteService, SiteModel
         {
             throw new SiteServiceException(MSG_SITE_NO_EXIST, new Object[]{shortName});
         }
-
+        
+        // build an array of name filter tokens pre lowercased to test against person properties
+        String[] nameFilters = new String[0];
+        if (nameFilter != null && nameFilter.length() != 0)
+        {
+            StringTokenizer t = new StringTokenizer(nameFilter, " ");
+            nameFilters = new String[t.countTokens()];
+            for (int i=0; t.hasMoreTokens(); i++)
+            {
+                nameFilters[i] = t.nextToken().toLowerCase();
+            }
+        }
+        
         Map<String, String> members = new HashMap<String, String>(32);
-
+        
         Set<String> permissions = this.permissionService.getSettablePermissions(SiteModel.TYPE_SITE);
         for (String permission : permissions)
         {
@@ -987,7 +992,7 @@ public class SiteServiceImpl implements SiteService, SiteModel
                     if (nameFilter != null && nameFilter.length() != 0 && !nameFilter.equals(user))
                     {
                         // found a filter - does it match person first/last name?
-                        addUser = matchPerson(nameFilter, user);
+                        addUser = matchPerson(nameFilters, user);
                     }
                     if (addUser)
                     {
@@ -1022,7 +1027,7 @@ public class SiteServiceImpl implements SiteService, SiteModel
                             if (nameFilter != null && nameFilter.length() != 0 && !nameFilter.equals(subUser))
                             {
                                 // found a filter - does it match person first/last name?
-                                addUser = matchPerson(nameFilter, subUser);
+                                addUser = matchPerson(nameFilters, subUser);
                             }
                             if (addUser)
                             {
@@ -1045,26 +1050,36 @@ public class SiteServiceImpl implements SiteService, SiteModel
     }
 
     /**
-     * Helper to 
+     * Helper to match name filters to Person properties
+     * 
      * @param filter
      * @param username
      * @return
      */
-    private boolean matchPerson(String filter, String username)
+    private boolean matchPerson(final String[] nameFilters, final String username)
     {
         boolean addUser = false;
+        
         NodeRef personRef = this.personService.getPerson(username);
         Map<QName, Serializable> props = this.nodeService.getProperties(personRef);
         String firstName = (String)props.get(ContentModel.PROP_FIRSTNAME);
         String lastName = (String)props.get(ContentModel.PROP_LASTNAME);
-        if (firstName != null && firstName.toLowerCase().indexOf(filter.toLowerCase()) != -1)
+        final String lowFirstName = (firstName != null ? firstName.toLowerCase() : "");
+        final String lowLastName = (lastName != null ? lastName.toLowerCase() : "");
+        for (int i=0; i<nameFilters.length; i++)
         {
-            addUser = true;
+            if (lowFirstName.indexOf(nameFilters[i]) != -1)
+            {
+                addUser = true;
+                break;
+            }
+            else if (lowLastName.indexOf(nameFilters[i]) != -1)
+            {
+                addUser = true;
+                break;
+            }
         }
-        else if (lastName != null && lastName.toLowerCase().indexOf(filter.toLowerCase()) != -1)
-        {
-            addUser = true;
-        }
+        
         return addUser;
     }
 

@@ -307,6 +307,7 @@ public class InvitationServiceImpl implements InvitationService
 			wfModeratedTaskQuery.setTaskState(WorkflowTaskState.IN_PROGRESS);		
 			wfModeratedTaskQuery.setTaskName(WorkflowModelModeratedInvitation.WF_REVIEW_TASK);
 			wfModeratedTaskQuery.setProcessName(WorkflowModelModeratedInvitation.WF_PROCESS_INVITATION_MODERATED);
+	        wfModeratedTaskQuery.setProcessId(invitationId);
 
 			// query for invite review tasks
 			List<WorkflowTask> wf_moderated_tasks = this.workflowService
@@ -323,7 +324,7 @@ public class InvitationServiceImpl implements InvitationService
 		}
 		else
 		{
-		    throw new InvitationException("State error, cannot call approve");
+		    throw new InvitationException("State error, cannot call approve on this type of invitation" + invitation.getClass().getName());
 		}
 		return invitation;
 
@@ -368,6 +369,7 @@ public class InvitationServiceImpl implements InvitationService
 			wfModeratedTaskQuery.setTaskState(WorkflowTaskState.IN_PROGRESS);		
 			wfModeratedTaskQuery.setTaskName(WorkflowModelModeratedInvitation.WF_REVIEW_TASK);
 			wfModeratedTaskQuery.setProcessName(WorkflowModelModeratedInvitation.WF_PROCESS_INVITATION_MODERATED);
+	        wfModeratedTaskQuery.setProcessId(invitationId);
 
 			// query for invite review tasks
 			List<WorkflowTask> wf_moderated_tasks = this.workflowService
@@ -428,7 +430,13 @@ public class InvitationServiceImpl implements InvitationService
 
 		if (invitation instanceof ModeratedInvitation) 
 		{
-			// TODO Who is allowed to cancel ?
+			// Moderated invitation may be cancelled by either a site manager or the invitee.
+			String currentUserName = this.authenticationService.getCurrentUserName();
+			
+			if(!currentUserName.equals(((ModeratedInvitation) invitation).getInviteeUserName()))
+			{
+				checkManagerRole(currentUserName, invitation.getResourceType(), invitation.getResourceName());
+			}
 			workflowService.cancelWorkflow(invitationId);
 		}
 

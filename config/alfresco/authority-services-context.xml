@@ -63,5 +63,14 @@
             <ref bean="userToAuthorityCache" />
         </property>
     </bean>
+    
+    
+    <!--  Expose the Authority service to Java script API ROOT Scopeable object called "groups" -->
+    <bean id="authorityServiceScript" parent="baseJavaScriptExtension" class="org.alfresco.repo.security.authority.script.ScriptAuthorityService">
+        <property name="extensionName">
+            <value>groups</value>
+        </property>
+        <property name="authorityService" ref="AuthorityService"/>
+    </bean>
 
 </beans>

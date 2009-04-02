@@ -761,19 +761,13 @@ public class InvitationServiceImplTest extends BaseAlfrescoSpringTest
 
     	
     	/**
-    	 * Negative test - search with an empty criteria
+    	 * Search with an empty criteria - should find all open invitations
     	 */
     	InvitationSearchCriteria crit2 = new InvitationSearchCriteriaImpl();
-    	try 
-    	{
-    		List<Invitation> resSix = invitationService.searchInvitation(crit2);
-    		assertTrue("exception not thrown", false);
-    	} 
-    	catch (InvitationExceptionUserError e)
-    	{
-    		// Should go here - no criteria
-    	}
     	
+    	List<Invitation> resSix = invitationService.searchInvitation(crit2);
+    	assertTrue("search everything returned 0 elements", resFive.size() > 0);
+      	
     }
     
     

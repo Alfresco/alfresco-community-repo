@@ -29,7 +29,7 @@
             <value>false</value>
         </property>
         <!-- pool settings -->
-        <property name="minIdle" >
+        <property name="initialSize" >
             <value>${db.pool.initial}</value>
         </property>
         <property name="maxActive" >

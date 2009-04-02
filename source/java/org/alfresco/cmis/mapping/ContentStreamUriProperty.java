@@ -33,7 +33,6 @@ import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.search.impl.querymodel.PredicateMode;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.search.Query;
 
 /**
@@ -41,14 +40,14 @@ import org.apache.lucene.search.Query;
  * 
  * @author andyh
  */
-public class ContentStreamUriPropertyAccessor extends AbstractPropertyAccessor
+public class ContentStreamUriProperty extends AbstractProperty
 {
     /**
      * Construct 
      *  
      * @param serviceRegistry
      */
-    public ContentStreamUriPropertyAccessor(ServiceRegistry serviceRegistry)
+    public ContentStreamUriProperty(ServiceRegistry serviceRegistry)
     {
         super(serviceRegistry, CMISDictionaryModel.PROP_CONTENT_STREAM_URI);
     }

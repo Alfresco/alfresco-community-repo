@@ -32,26 +32,25 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.search.impl.querymodel.PredicateMode;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.lock.LockType;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.version.Version;
-import org.alfresco.service.cmr.version.VersionType;
 import org.apache.lucene.search.Query;
 
 /**
- * Accessor for CMIS is latest major version property
+ * Get the CMIS version series checked out by property
  * 
  * @author andyh
  */
-public class IsLatestMajorVersionPropertyAccessor extends AbstractPropertyAccessor
+public class VersionSeriesCheckedOutByProperty extends AbstractProperty
 {
     /**
      * Construct
      * 
      * @param serviceRegistry
      */
-    public IsLatestMajorVersionPropertyAccessor(ServiceRegistry serviceRegistry)
+    public VersionSeriesCheckedOutByProperty(ServiceRegistry serviceRegistry)
     {
-        super(serviceRegistry, CMISDictionaryModel.PROP_IS_LATEST_MAJOR_VERSION);
+        super(serviceRegistry, CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_BY);
     }
 
     /*
@@ -62,22 +61,30 @@ public class IsLatestMajorVersionPropertyAccessor extends AbstractPropertyAccess
     {
         if (getServiceRegistry().getNodeService().hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY))
         {
-            return false;
+            return getServiceRegistry().getNodeService().getProperty(nodeRef, ContentModel.PROP_WORKING_COPY_OWNER);
         }
         else
         {
-            Version version = getServiceRegistry().getVersionService().getCurrentVersion(nodeRef);
-            if (version != null)
+            LockType type = getServiceRegistry().getLockService().getLockType(nodeRef);
+            if (type == LockType.READ_ONLY_LOCK)
             {
-                return (version.getVersionType() == VersionType.MAJOR);
+                NodeRef wc = getServiceRegistry().getCheckOutCheckInService().getWorkingCopy(nodeRef);
+                if (wc != null)
+                {
+                    return getServiceRegistry().getNodeService().getProperty(nodeRef, ContentModel.PROP_LOCK_OWNER);
+                }
+                else
+                {
+                    return null;
+                }
             }
             else
             {
-                return false;
+                return null;
             }
         }
     }
-
+    
     /*
      * (non-Javadoc)
      * @see org.alfresco.cmis.property.PropertyAccessor#setValue(org.alfresco.service.cmr.repository.NodeRef, java.io.Serializable)
@@ -87,7 +94,6 @@ public class IsLatestMajorVersionPropertyAccessor extends AbstractPropertyAccess
         throw new UnsupportedOperationException();
     }
 
-    
     /*
      * (non-Javadoc)
      * @see org.alfresco.cmis.property.PropertyLuceneBuilder#buildLuceneEquality(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.io.Serializable, org.alfresco.repo.search.impl.querymodel.PredicateMode)

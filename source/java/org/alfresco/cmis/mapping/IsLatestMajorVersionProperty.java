@@ -38,20 +38,20 @@ import org.alfresco.service.cmr.version.VersionType;
 import org.apache.lucene.search.Query;
 
 /**
- * Accessor for CMIS is major version property
+ * Accessor for CMIS is latest major version property
  * 
  * @author andyh
  */
-public class IsMajorVersionPropertyAccessor extends AbstractPropertyAccessor
+public class IsLatestMajorVersionProperty extends AbstractProperty
 {
     /**
      * Construct
-     *
+     * 
      * @param serviceRegistry
      */
-    public IsMajorVersionPropertyAccessor(ServiceRegistry serviceRegistry)
+    public IsLatestMajorVersionProperty(ServiceRegistry serviceRegistry)
     {
-        super(serviceRegistry, CMISDictionaryModel.PROP_IS_MAJOR_VERSION);
+        super(serviceRegistry, CMISDictionaryModel.PROP_IS_LATEST_MAJOR_VERSION);
     }
 
     /*

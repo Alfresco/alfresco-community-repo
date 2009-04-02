@@ -25,18 +25,17 @@
 package org.alfresco.cmis.mapping;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Collection;
 
 import org.alfresco.cmis.CMISDictionaryModel;
 import org.alfresco.cmis.CMISQueryException;
-import org.alfresco.cmis.CMISTypeDefinition;
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.search.impl.querymodel.PredicateMode;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
-import org.alfresco.service.namespace.QName;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.search.BooleanQuery;
@@ -46,20 +45,20 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.BooleanClause.Occur;
 
 /**
- * Get the CMIS object type id property
+ * Get the CMIS object id property.
  * 
  * @author andyh
  */
-public class ObjectTypeIdPropertyAccessor extends AbstractPropertyAccessor
+public class ObjectIdProperty extends AbstractProperty
 {
     /**
      * Construct
      * 
      * @param serviceRegistry
      */
-    public ObjectTypeIdPropertyAccessor(ServiceRegistry serviceRegistry)
+    public ObjectIdProperty(ServiceRegistry serviceRegistry)
     {
-        super(serviceRegistry, CMISDictionaryModel.PROP_OBJECT_TYPE_ID);
+        super(serviceRegistry, CMISDictionaryModel.PROP_OBJECT_ID);
     }
 
     /*
@@ -68,8 +67,21 @@ public class ObjectTypeIdPropertyAccessor extends AbstractPropertyAccessor
      */
     public Serializable getValue(NodeRef nodeRef)
     {
-        QName type = getServiceRegistry().getNodeService().getType(nodeRef);
-        return getServiceRegistry().getCMISDictionaryService().findTypeForClass(type).getTypeId().getId();
+        if (getServiceRegistry().getNodeService().hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE))
+        {
+            Serializable value = getServiceRegistry().getNodeService().getProperty(nodeRef, ContentModel.PROP_VERSION_LABEL);
+            if (value != null)
+            {
+                String versionLabel = DefaultTypeConverter.INSTANCE.convert(String.class, value);
+                StringBuilder builder = new StringBuilder(128);
+                builder.append(nodeRef.toString());
+                builder.append("/");
+                builder.append(versionLabel);
+                return builder.toString();
+            }
+        }
+
+        return nodeRef.toString();
     }
 
     /*
@@ -80,18 +92,16 @@ public class ObjectTypeIdPropertyAccessor extends AbstractPropertyAccessor
     {
         throw new UnsupportedOperationException();
     }
-
+    
     private String getLuceneFieldName()
     {
-        return "TYPE";
+        return "ID";
     }
 
     private String getValueAsString(Serializable value)
     {
-        // Object converted =
-        // DefaultTypeConverter.INSTANCE.convert(getServiceRegistry().getDictionaryService().getDataType(DataTypeDefinition.QNAME),
-        // value);
-        String asString = DefaultTypeConverter.INSTANCE.convert(String.class, value);
+        Object converted = DefaultTypeConverter.INSTANCE.convert(getServiceRegistry().getDictionaryService().getDataType(DataTypeDefinition.NODE_REF), value);
+        String asString = DefaultTypeConverter.INSTANCE.convert(String.class, converted);
         return asString;
     }
 
@@ -103,8 +113,7 @@ public class ObjectTypeIdPropertyAccessor extends AbstractPropertyAccessor
     {
         String field = getLuceneFieldName();
         String stringValue = getValueAsString(value);
-        CMISTypeDefinition type = getServiceRegistry().getCMISDictionaryService().findType(stringValue);
-        return lqp.getFieldQuery(field, type.getTypeId().getQName().toString());
+        return lqp.getFieldQuery(field, stringValue);
     }
 
     /*
@@ -120,7 +129,7 @@ public class ObjectTypeIdPropertyAccessor extends AbstractPropertyAccessor
         else
         {
             return new MatchAllDocsQuery();
-        }
+        } 
     }
 
     /*
@@ -129,7 +138,7 @@ public class ObjectTypeIdPropertyAccessor extends AbstractPropertyAccessor
      */
     public Query buildLuceneGreaterThan(LuceneQueryParser lqp, Serializable value, PredicateMode mode) throws ParseException
     {
-        throw new CMISQueryException("Property " + getName() + " can not be used in a 'greater than' comparison");
+       throw new CMISQueryException("Property " + getName() +" can not be used in a 'greater than' comparison");
     }
 
     /*
@@ -149,13 +158,11 @@ public class ObjectTypeIdPropertyAccessor extends AbstractPropertyAccessor
     {
         String field = getLuceneFieldName();
 
-        Collection<String> asStrings = new ArrayList<String>(values.size());
-        for (Serializable value : values)
-        {
-            String stringValue = getValueAsString(value);
-            CMISTypeDefinition type = getServiceRegistry().getCMISDictionaryService().findType(stringValue);
-            asStrings.add(type.getTypeId().getQName().toString());
-        }
+        // Check type conversion
+
+        @SuppressWarnings("unused")
+        Object converted = DefaultTypeConverter.INSTANCE.convert(getServiceRegistry().getDictionaryService().getDataType(DataTypeDefinition.NODE_REF), values);
+        Collection<String> asStrings = DefaultTypeConverter.INSTANCE.convert(String.class, values);
 
         if (asStrings.size() == 0)
         {
@@ -211,8 +218,7 @@ public class ObjectTypeIdPropertyAccessor extends AbstractPropertyAccessor
     {
         String field = getLuceneFieldName();
         String stringValue = getValueAsString(value);
-        CMISTypeDefinition type = getServiceRegistry().getCMISDictionaryService().findType(stringValue);
-        return lqp.getDoesNotMatchFieldQuery(field, type.getTypeId().getQName().toString());
+        return lqp.getDoesNotMatchFieldQuery(field, stringValue);
     }
 
     /*
@@ -235,34 +241,34 @@ public class ObjectTypeIdPropertyAccessor extends AbstractPropertyAccessor
 
     /*
      * (non-Javadoc)
-     * @see org.alfresco.cmis.property.PropertyLuceneBuilder#buildLuceneLike(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.io.Serializable, java.lang.Boolean)
+     * 
+     * @see org.alfresco.cmis.property.NamedPropertyAccessor#buildLuceneLike(org.alfresco.repo.search.impl.lucene.LuceneQueryParser,
+     *      java.lang.String, java.io.Serializable, java.lang.Boolean)
      */
     public Query buildLuceneLike(LuceneQueryParser lqp, Serializable value, Boolean not) throws ParseException
     {
         String field = getLuceneFieldName();
         String stringValue = getValueAsString(value);
-        CMISTypeDefinition type = getServiceRegistry().getCMISDictionaryService().findType(stringValue);
-        String typeQName = type.getTypeId().getQName().toString();
-
+        
         if (not)
         {
             BooleanQuery booleanQuery = new BooleanQuery();
             booleanQuery.add(new MatchAllDocsQuery(), Occur.MUST);
-            booleanQuery.add(lqp.getLikeQuery(field, typeQName), Occur.MUST_NOT);
+            booleanQuery.add(lqp.getLikeQuery(field, stringValue), Occur.MUST_NOT);
             return booleanQuery;
         }
         else
         {
-            return lqp.getLikeQuery(field, typeQName);
+            return lqp.getLikeQuery(field, stringValue);
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.cmis.property.PropertyLuceneBuilder#getLuceneSortField()
+    /* (non-Javadoc)
+     * @see org.alfresco.cmis.property.NamedPropertyAccessor#getLuceneSortField(java.lang.String)
      */
     public String getLuceneSortField()
     {
         return getLuceneFieldName();
     }
+    
 }

@@ -37,7 +37,7 @@ import org.alfresco.cmis.CMISTypeDefinition;
 import org.alfresco.cmis.CMISUpdatabilityEnum;
 import org.alfresco.cmis.CMISPropertyAccessor;
 import org.alfresco.cmis.CMISPropertyLuceneBuilder;
-import org.alfresco.cmis.mapping.AbstractPropertyAccessor;
+import org.alfresco.cmis.mapping.AbstractProperty;
 import org.alfresco.cmis.mapping.CMISMapping;
 import org.alfresco.repo.dictionary.IndexTokenisationMode;
 import org.alfresco.repo.dictionary.constraint.ListOfValuesConstraint;
@@ -79,7 +79,7 @@ public class CMISBasePropertyDefinition implements CMISPropertyDefinition, Seria
     private CMISUpdatabilityEnum updatability;
     private boolean queryable;
     private boolean orderable;
-    private AbstractPropertyAccessor propertyAccessor;
+    private AbstractProperty propertyAccessor;
 
     
     /**

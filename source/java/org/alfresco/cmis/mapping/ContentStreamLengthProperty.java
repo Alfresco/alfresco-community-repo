@@ -28,12 +28,12 @@ import java.io.Serializable;
 import java.util.Collection;
 
 import org.alfresco.cmis.CMISDictionaryModel;
-import org.alfresco.cmis.CMISQueryException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.search.impl.querymodel.PredicateMode;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.apache.lucene.index.Term;
@@ -45,20 +45,20 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.BooleanClause.Occur;
 
 /**
- * Get the CMIS object id property.
+ * Accessor for CMIS content stream length property
  * 
  * @author andyh
  */
-public class ObjectIdPropertyAccessor extends AbstractPropertyAccessor
+public class ContentStreamLengthProperty extends AbstractProperty
 {
     /**
      * Construct
      * 
      * @param serviceRegistry
      */
-    public ObjectIdPropertyAccessor(ServiceRegistry serviceRegistry)
+    public ContentStreamLengthProperty(ServiceRegistry serviceRegistry)
     {
-        super(serviceRegistry, CMISDictionaryModel.PROP_OBJECT_ID);
+        super(serviceRegistry, CMISDictionaryModel.PROP_CONTENT_STREAM_LENGTH);
     }
 
     /*
@@ -67,21 +67,16 @@ public class ObjectIdPropertyAccessor extends AbstractPropertyAccessor
      */
     public Serializable getValue(NodeRef nodeRef)
     {
-        if (getServiceRegistry().getNodeService().hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE))
+        Serializable value = getServiceRegistry().getNodeService().getProperty(nodeRef, ContentModel.PROP_CONTENT);
+        if (value != null)
         {
-            Serializable value = getServiceRegistry().getNodeService().getProperty(nodeRef, ContentModel.PROP_VERSION_LABEL);
-            if (value != null)
-            {
-                String versionLabel = DefaultTypeConverter.INSTANCE.convert(String.class, value);
-                StringBuilder builder = new StringBuilder(128);
-                builder.append(nodeRef.toString());
-                builder.append("/");
-                builder.append(versionLabel);
-                return builder.toString();
-            }
+            ContentData contentData = DefaultTypeConverter.INSTANCE.convert(ContentData.class, value);
+            return contentData.getSize();
         }
-
-        return nodeRef.toString();
+        else
+        {
+            return 0L;
+        }
     }
 
     /*
@@ -92,15 +87,20 @@ public class ObjectIdPropertyAccessor extends AbstractPropertyAccessor
     {
         throw new UnsupportedOperationException();
     }
+
     
     private String getLuceneFieldName()
     {
-        return "ID";
+        StringBuilder field = new StringBuilder(128);
+        field.append("@");
+        field.append(ContentModel.PROP_CONTENT);
+        field.append(".size");
+        return field.toString();
     }
 
     private String getValueAsString(Serializable value)
     {
-        Object converted = DefaultTypeConverter.INSTANCE.convert(getServiceRegistry().getDictionaryService().getDataType(DataTypeDefinition.NODE_REF), value);
+        Object converted = DefaultTypeConverter.INSTANCE.convert(getServiceRegistry().getDictionaryService().getDataType(DataTypeDefinition.LONG), value);
         String asString = DefaultTypeConverter.INSTANCE.convert(String.class, converted);
         return asString;
     }
@@ -111,9 +111,7 @@ public class ObjectIdPropertyAccessor extends AbstractPropertyAccessor
      */
     public Query buildLuceneEquality(LuceneQueryParser lqp, Serializable value, PredicateMode mode) throws ParseException
     {
-        String field = getLuceneFieldName();
-        String stringValue = getValueAsString(value);
-        return lqp.getFieldQuery(field, stringValue);
+        return lqp.getFieldQuery(getLuceneFieldName(), getValueAsString(value));
     }
 
     /*
@@ -124,12 +122,12 @@ public class ObjectIdPropertyAccessor extends AbstractPropertyAccessor
     {
         if (not)
         {
-            return new TermQuery(new Term("NO_TOKENS", "__"));
+            return lqp.getFieldQuery("ISNULL", ContentModel.PROP_CONTENT.toString());
         }
         else
         {
-            return new MatchAllDocsQuery();
-        } 
+            return lqp.getFieldQuery("ISNOTNULL", ContentModel.PROP_CONTENT.toString());
+        }
     }
 
     /*
@@ -138,7 +136,7 @@ public class ObjectIdPropertyAccessor extends AbstractPropertyAccessor
      */
     public Query buildLuceneGreaterThan(LuceneQueryParser lqp, Serializable value, PredicateMode mode) throws ParseException
     {
-       throw new CMISQueryException("Property " + getName() +" can not be used in a 'greater than' comparison");
+        return lqp.getRangeQuery(getLuceneFieldName(), getValueAsString(value), "MAX", false, true);
     }
 
     /*
@@ -147,7 +145,7 @@ public class ObjectIdPropertyAccessor extends AbstractPropertyAccessor
      */
     public Query buildLuceneGreaterThanOrEquals(LuceneQueryParser lqp, Serializable value, PredicateMode mode) throws ParseException
     {
-        throw new CMISQueryException("Property " + getName() + " can not be used in a 'greater than or equals' comparison");
+        return lqp.getRangeQuery(getLuceneFieldName(), getValueAsString(value), "MAX", true, true);
     }
 
     /*
@@ -161,7 +159,7 @@ public class ObjectIdPropertyAccessor extends AbstractPropertyAccessor
         // Check type conversion
 
         @SuppressWarnings("unused")
-        Object converted = DefaultTypeConverter.INSTANCE.convert(getServiceRegistry().getDictionaryService().getDataType(DataTypeDefinition.NODE_REF), values);
+        Object converted = DefaultTypeConverter.INSTANCE.convert(getServiceRegistry().getDictionaryService().getDataType(DataTypeDefinition.LONG), values);
         Collection<String> asStrings = DefaultTypeConverter.INSTANCE.convert(String.class, values);
 
         if (asStrings.size() == 0)
@@ -216,9 +214,7 @@ public class ObjectIdPropertyAccessor extends AbstractPropertyAccessor
      */
     public Query buildLuceneInequality(LuceneQueryParser lqp, Serializable value, PredicateMode mode) throws ParseException
     {
-        String field = getLuceneFieldName();
-        String stringValue = getValueAsString(value);
-        return lqp.getDoesNotMatchFieldQuery(field, stringValue);
+        return lqp.getDoesNotMatchFieldQuery(getLuceneFieldName(), getValueAsString(value));
     }
 
     /*
@@ -227,7 +223,7 @@ public class ObjectIdPropertyAccessor extends AbstractPropertyAccessor
      */
     public Query buildLuceneLessThan(LuceneQueryParser lqp, Serializable value, PredicateMode mode) throws ParseException
     {
-        throw new CMISQueryException("Property " + getName() + " can not be used in a 'less than' comparison");
+        return lqp.getRangeQuery(getLuceneFieldName(), "MIN", getValueAsString(value), true, false);
     }
 
     /*
@@ -236,39 +232,35 @@ public class ObjectIdPropertyAccessor extends AbstractPropertyAccessor
      */
     public Query buildLuceneLessThanOrEquals(LuceneQueryParser lqp, Serializable value, PredicateMode mode) throws ParseException
     {
-        throw new CMISQueryException("Property " + getName() + " can not be used in a 'less than or equals' comparison");
+        return lqp.getRangeQuery(getLuceneFieldName(), "MIN", getValueAsString(value), true, true);
     }
 
     /*
      * (non-Javadoc)
-     * 
-     * @see org.alfresco.cmis.property.NamedPropertyAccessor#buildLuceneLike(org.alfresco.repo.search.impl.lucene.LuceneQueryParser,
-     *      java.lang.String, java.io.Serializable, java.lang.Boolean)
+     * @see org.alfresco.cmis.property.PropertyLuceneBuilder#buildLuceneLike(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.io.Serializable, java.lang.Boolean)
      */
     public Query buildLuceneLike(LuceneQueryParser lqp, Serializable value, Boolean not) throws ParseException
     {
-        String field = getLuceneFieldName();
-        String stringValue = getValueAsString(value);
-        
         if (not)
         {
             BooleanQuery booleanQuery = new BooleanQuery();
             booleanQuery.add(new MatchAllDocsQuery(), Occur.MUST);
-            booleanQuery.add(lqp.getLikeQuery(field, stringValue), Occur.MUST_NOT);
+            booleanQuery.add(lqp.getLikeQuery(getLuceneFieldName(), getValueAsString(value)), Occur.MUST_NOT);
             return booleanQuery;
         }
         else
         {
-            return lqp.getLikeQuery(field, stringValue);
+            return lqp.getLikeQuery(getLuceneFieldName(), getValueAsString(value));
         }
     }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.cmis.property.NamedPropertyAccessor#getLuceneSortField(java.lang.String)
+    
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.property.PropertyLuceneBuilder#getLuceneSortField()
      */
     public String getLuceneSortField()
     {
         return getLuceneFieldName();
     }
-    
+
 }

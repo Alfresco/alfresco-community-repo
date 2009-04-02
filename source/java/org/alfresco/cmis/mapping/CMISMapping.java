@@ -101,7 +101,7 @@ public class CMISMapping implements InitializingBean
     private Map<QName, QName> mapCmisQNameToAlfrescoQName = new HashMap<QName, QName>();
     private Map<QName, QName> mapAlfrescoQNameToCmisQName = new HashMap<QName, QName>();
     private Map<QName, CMISDataTypeEnum> mapAlfrescoToCmisDataType = new HashMap<QName, CMISDataTypeEnum>();
-    private Map<String, AbstractPropertyAccessor> propertyAccessors = new HashMap<String, AbstractPropertyAccessor>();
+    private Map<String, AbstractProperty> propertyAccessors = new HashMap<String, AbstractProperty>();
     
     
     /*
@@ -148,32 +148,32 @@ public class CMISMapping implements InitializingBean
         mapAlfrescoToCmisDataType.put(CMIS_DATATYPE_XML, CMISDataTypeEnum.XML);
         mapAlfrescoToCmisDataType.put(CMIS_DATATYPE_HTML, CMISDataTypeEnum.HTML);
 
-        registerPropertyAccessor(new ObjectIdPropertyAccessor(serviceRegistry));
-        registerPropertyAccessor(new FixedValuePropertyAccessor(serviceRegistry, CMISDictionaryModel.PROP_URI, null));
-        registerPropertyAccessor(new ObjectTypeIdPropertyAccessor(serviceRegistry));
-        registerPropertyAccessor(new DirectPropertyAccessor(serviceRegistry, CMISDictionaryModel.PROP_CREATED_BY, ContentModel.PROP_CREATOR));
-        registerPropertyAccessor(new DirectPropertyAccessor(serviceRegistry, CMISDictionaryModel.PROP_CREATION_DATE, ContentModel.PROP_CREATED));
-        registerPropertyAccessor(new DirectPropertyAccessor(serviceRegistry, CMISDictionaryModel.PROP_LAST_MODIFIED_BY, ContentModel.PROP_MODIFIER));
-        registerPropertyAccessor(new DirectPropertyAccessor(serviceRegistry, CMISDictionaryModel.PROP_LAST_MODIFICATION_DATE, ContentModel.PROP_MODIFIED));
-        registerPropertyAccessor(new FixedValuePropertyAccessor(serviceRegistry, CMISDictionaryModel.PROP_CHANGE_TOKEN, null));
-        registerPropertyAccessor(new DirectPropertyAccessor(serviceRegistry, CMISDictionaryModel.PROP_NAME, ContentModel.PROP_NAME));
-        registerPropertyAccessor(new IsImmutablePropertyAccessor(serviceRegistry));
-        registerPropertyAccessor(new IsLatestVersionPropertyAccessor(serviceRegistry));
-        registerPropertyAccessor(new IsMajorVersionPropertyAccessor(serviceRegistry));
-        registerPropertyAccessor(new IsLatestMajorVersionPropertyAccessor(serviceRegistry));
-        registerPropertyAccessor(new DirectPropertyAccessor(serviceRegistry, CMISDictionaryModel.PROP_VERSION_LABEL, ContentModel.PROP_VERSION_LABEL));
-        registerPropertyAccessor(new VersionSeriesIdPropertyAccessor(serviceRegistry));
-        registerPropertyAccessor(new IsVersionSeriesCheckedOutPropertyAccessor(serviceRegistry));
-        registerPropertyAccessor(new VersionSeriesCheckedOutByPropertyAccessor(serviceRegistry));
-        registerPropertyAccessor(new VersionSeriesCheckedOutIdPropertyAccessor(serviceRegistry));
-        registerPropertyAccessor(new CheckinCommentPropertyAccessor(serviceRegistry));
-        registerPropertyAccessor(new FixedValuePropertyAccessor(serviceRegistry, CMISDictionaryModel.PROP_CONTENT_STREAM_ALLOWED, CMISContentStreamAllowedEnum.ALLOWED.toString()));
-        registerPropertyAccessor(new ContentStreamLengthPropertyAccessor(serviceRegistry));
-        registerPropertyAccessor(new ContentStreamMimetypePropertyAccessor(serviceRegistry));
-        registerPropertyAccessor(new DirectPropertyAccessor(serviceRegistry, CMISDictionaryModel.PROP_CONTENT_STREAM_FILENAME, ContentModel.PROP_NAME));
-        registerPropertyAccessor(new ContentStreamUriPropertyAccessor(serviceRegistry));
-        registerPropertyAccessor(new ParentPropertyAccessor(serviceRegistry));
-        registerPropertyAccessor(new FixedValuePropertyAccessor(serviceRegistry, CMISDictionaryModel.PROP_ALLOWED_CHILD_OBJECT_TYPE_IDS, null));
+        registerPropertyAccessor(new ObjectIdProperty(serviceRegistry));
+        registerPropertyAccessor(new FixedValueProperty(serviceRegistry, CMISDictionaryModel.PROP_URI, null));
+        registerPropertyAccessor(new ObjectTypeIdProperty(serviceRegistry));
+        registerPropertyAccessor(new DirectProperty(serviceRegistry, CMISDictionaryModel.PROP_CREATED_BY, ContentModel.PROP_CREATOR));
+        registerPropertyAccessor(new DirectProperty(serviceRegistry, CMISDictionaryModel.PROP_CREATION_DATE, ContentModel.PROP_CREATED));
+        registerPropertyAccessor(new DirectProperty(serviceRegistry, CMISDictionaryModel.PROP_LAST_MODIFIED_BY, ContentModel.PROP_MODIFIER));
+        registerPropertyAccessor(new DirectProperty(serviceRegistry, CMISDictionaryModel.PROP_LAST_MODIFICATION_DATE, ContentModel.PROP_MODIFIED));
+        registerPropertyAccessor(new FixedValueProperty(serviceRegistry, CMISDictionaryModel.PROP_CHANGE_TOKEN, null));
+        registerPropertyAccessor(new DirectProperty(serviceRegistry, CMISDictionaryModel.PROP_NAME, ContentModel.PROP_NAME));
+        registerPropertyAccessor(new IsImmutableProperty(serviceRegistry));
+        registerPropertyAccessor(new IsLatestVersionProperty(serviceRegistry));
+        registerPropertyAccessor(new IsMajorVersionProperty(serviceRegistry));
+        registerPropertyAccessor(new IsLatestMajorVersionProperty(serviceRegistry));
+        registerPropertyAccessor(new DirectProperty(serviceRegistry, CMISDictionaryModel.PROP_VERSION_LABEL, ContentModel.PROP_VERSION_LABEL));
+        registerPropertyAccessor(new VersionSeriesIdProperty(serviceRegistry));
+        registerPropertyAccessor(new IsVersionSeriesCheckedOutProperty(serviceRegistry));
+        registerPropertyAccessor(new VersionSeriesCheckedOutByProperty(serviceRegistry));
+        registerPropertyAccessor(new VersionSeriesCheckedOutIdProperty(serviceRegistry));
+        registerPropertyAccessor(new CheckinCommentProperty(serviceRegistry));
+        registerPropertyAccessor(new FixedValueProperty(serviceRegistry, CMISDictionaryModel.PROP_CONTENT_STREAM_ALLOWED, CMISContentStreamAllowedEnum.ALLOWED.toString()));
+        registerPropertyAccessor(new ContentStreamLengthProperty(serviceRegistry));
+        registerPropertyAccessor(new ContentStreamMimetypeProperty(serviceRegistry));
+        registerPropertyAccessor(new DirectProperty(serviceRegistry, CMISDictionaryModel.PROP_CONTENT_STREAM_FILENAME, ContentModel.PROP_NAME));
+        registerPropertyAccessor(new ContentStreamUriProperty(serviceRegistry));
+        registerPropertyAccessor(new ParentProperty(serviceRegistry));
+        registerPropertyAccessor(new FixedValueProperty(serviceRegistry, CMISDictionaryModel.PROP_ALLOWED_CHILD_OBJECT_TYPE_IDS, null));
     }
 
 
@@ -653,9 +653,9 @@ public class CMISMapping implements InitializingBean
      * @param propertyId
      * @return
      */
-    public AbstractPropertyAccessor getPropertyAccessor(CMISPropertyId propertyId)
+    public AbstractProperty getPropertyAccessor(CMISPropertyId propertyId)
     {
-        AbstractPropertyAccessor propertyAccessor = propertyAccessors.get(propertyId.getName());
+        AbstractProperty propertyAccessor = propertyAccessors.get(propertyId.getName());
         if (propertyAccessor == null)
         {
             QName propertyQName = propertyId.getQName();
@@ -663,7 +663,7 @@ public class CMISMapping implements InitializingBean
             {
                 throw new AlfrescoRuntimeException("Can't get property accessor for property id " + propertyId.getName() + " due to unknown property QName");
             }
-            propertyAccessor = new DirectPropertyAccessor(serviceRegistry, propertyId.getName(), propertyQName);
+            propertyAccessor = new DirectProperty(serviceRegistry, propertyId.getName(), propertyQName);
         }
         return propertyAccessor;
     }
@@ -673,7 +673,7 @@ public class CMISMapping implements InitializingBean
      * 
      * @param propertyAccessor
      */
-    private void registerPropertyAccessor(AbstractPropertyAccessor propertyAccessor)
+    private void registerPropertyAccessor(AbstractProperty propertyAccessor)
     {
         propertyAccessors.put(propertyAccessor.getName(), propertyAccessor);
     }

@@ -42,14 +42,14 @@ import org.apache.lucene.search.Query;
  * 
  * @author andyh
  */
-public class IsImmutablePropertyAccessor extends AbstractPropertyAccessor
+public class IsImmutableProperty extends AbstractProperty
 {
     /**
      * Construct
      * 
      * @param serviceRegistry
      */
-    public IsImmutablePropertyAccessor(ServiceRegistry serviceRegistry)
+    public IsImmutableProperty(ServiceRegistry serviceRegistry)
     {
         super(serviceRegistry, CMISDictionaryModel.PROP_IS_IMMUTABLE);
     }

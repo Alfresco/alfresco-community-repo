@@ -49,14 +49,14 @@ import org.apache.lucene.search.BooleanClause.Occur;
  * 
  * @author andyh
  */
-public class ContentStreamMimetypePropertyAccessor extends AbstractPropertyAccessor
+public class ContentStreamMimetypeProperty extends AbstractProperty
 {
     /**
      * Construct
      * 
      * @param serviceRegistry
      */
-    public ContentStreamMimetypePropertyAccessor(ServiceRegistry serviceRegistry)
+    public ContentStreamMimetypeProperty(ServiceRegistry serviceRegistry)
     {
         super(serviceRegistry, CMISDictionaryModel.PROP_CONTENT_STREAM_MIME_TYPE);
     }

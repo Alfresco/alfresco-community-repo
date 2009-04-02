@@ -28,28 +28,28 @@ import java.io.Serializable;
 import java.util.Collection;
 
 import org.alfresco.cmis.CMISDictionaryModel;
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.search.impl.querymodel.PredicateMode;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.version.Version;
 import org.apache.lucene.search.Query;
 
 /**
- * Accessor for the CMIS Checkin Comment
+ * Accesser for CMIS is latest version property
  * 
  * @author andyh
  */
-public class CheckinCommentPropertyAccessor extends AbstractPropertyAccessor
+public class IsLatestVersionProperty extends AbstractProperty
 {
     /**
      * Construct
      * 
      * @param serviceRegistry
      */
-    public CheckinCommentPropertyAccessor(ServiceRegistry serviceRegistry)
+    public IsLatestVersionProperty(ServiceRegistry serviceRegistry)
     {
-        super(serviceRegistry, CMISDictionaryModel.PROP_CHECKIN_COMMENT);
+        super(serviceRegistry, CMISDictionaryModel.PROP_IS_LATEST_VERSION);
     }
 
     /*
@@ -58,15 +58,7 @@ public class CheckinCommentPropertyAccessor extends AbstractPropertyAccessor
      */
     public Serializable getValue(NodeRef nodeRef)
     {
-        Version version = getServiceRegistry().getVersionService().getCurrentVersion(nodeRef);
-        if (version != null)
-        {
-            return version.getDescription();
-        }
-        else
-        {
-            return null;
-        }
+        return !getServiceRegistry().getNodeService().hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY);
     }
 
     /*
@@ -167,5 +159,4 @@ public class CheckinCommentPropertyAccessor extends AbstractPropertyAccessor
     {
         throw new UnsupportedOperationException();
     }
-
 }

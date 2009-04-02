@@ -35,7 +35,7 @@ import org.alfresco.service.namespace.QName;
  * @author andyh
  *
  */
-public abstract class AbstractPropertyAccessor implements CMISPropertyAccessor, CMISPropertyLuceneBuilder
+public abstract class AbstractProperty implements CMISPropertyAccessor, CMISPropertyLuceneBuilder
 {
     private ServiceRegistry serviceRegistry;
     private String propertyName;
@@ -46,7 +46,7 @@ public abstract class AbstractPropertyAccessor implements CMISPropertyAccessor, 
      * @param serviceRegistry
      * @param propertyName
      */
-    protected AbstractPropertyAccessor(ServiceRegistry serviceRegistry, String propertyName)
+    protected AbstractProperty(ServiceRegistry serviceRegistry, String propertyName)
     {
         this.serviceRegistry = serviceRegistry;
         this.propertyName = propertyName;

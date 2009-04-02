@@ -33,23 +33,25 @@ import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.search.impl.querymodel.PredicateMode;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.version.Version;
+import org.alfresco.service.cmr.version.VersionType;
 import org.apache.lucene.search.Query;
 
 /**
- * Accesser for CMIS is latest version property
+ * Accessor for CMIS is major version property
  * 
  * @author andyh
  */
-public class IsLatestVersionPropertyAccessor extends AbstractPropertyAccessor
+public class IsMajorVersionProperty extends AbstractProperty
 {
     /**
      * Construct
-     * 
+     *
      * @param serviceRegistry
      */
-    public IsLatestVersionPropertyAccessor(ServiceRegistry serviceRegistry)
+    public IsMajorVersionProperty(ServiceRegistry serviceRegistry)
     {
-        super(serviceRegistry, CMISDictionaryModel.PROP_IS_LATEST_VERSION);
+        super(serviceRegistry, CMISDictionaryModel.PROP_IS_MAJOR_VERSION);
     }
 
     /*
@@ -58,7 +60,22 @@ public class IsLatestVersionPropertyAccessor extends AbstractPropertyAccessor
      */
     public Serializable getValue(NodeRef nodeRef)
     {
-        return !getServiceRegistry().getNodeService().hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY);
+        if (getServiceRegistry().getNodeService().hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY))
+        {
+            return false;
+        }
+        else
+        {
+            Version version = getServiceRegistry().getVersionService().getCurrentVersion(nodeRef);
+            if (version != null)
+            {
+                return (version.getVersionType() == VersionType.MAJOR);
+            }
+            else
+            {
+                return false;
+            }
+        }
     }
 
     /*
@@ -70,6 +87,7 @@ public class IsLatestVersionPropertyAccessor extends AbstractPropertyAccessor
         throw new UnsupportedOperationException();
     }
 
+    
     /*
      * (non-Javadoc)
      * @see org.alfresco.cmis.property.PropertyLuceneBuilder#buildLuceneEquality(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.io.Serializable, org.alfresco.repo.search.impl.querymodel.PredicateMode)

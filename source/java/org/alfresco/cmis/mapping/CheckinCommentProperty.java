@@ -28,29 +28,28 @@ import java.io.Serializable;
 import java.util.Collection;
 
 import org.alfresco.cmis.CMISDictionaryModel;
-import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.search.impl.querymodel.PredicateMode;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.lock.LockType;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.version.Version;
 import org.apache.lucene.search.Query;
 
 /**
- * Get the CMIS version series checked out by property
+ * Accessor for the CMIS Checkin Comment
  * 
  * @author andyh
  */
-public class VersionSeriesCheckedOutByPropertyAccessor extends AbstractPropertyAccessor
+public class CheckinCommentProperty extends AbstractProperty
 {
     /**
      * Construct
      * 
      * @param serviceRegistry
      */
-    public VersionSeriesCheckedOutByPropertyAccessor(ServiceRegistry serviceRegistry)
+    public CheckinCommentProperty(ServiceRegistry serviceRegistry)
     {
-        super(serviceRegistry, CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_BY);
+        super(serviceRegistry, CMISDictionaryModel.PROP_CHECKIN_COMMENT);
     }
 
     /*
@@ -59,32 +58,17 @@ public class VersionSeriesCheckedOutByPropertyAccessor extends AbstractPropertyA
      */
     public Serializable getValue(NodeRef nodeRef)
     {
-        if (getServiceRegistry().getNodeService().hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY))
+        Version version = getServiceRegistry().getVersionService().getCurrentVersion(nodeRef);
+        if (version != null)
         {
-            return getServiceRegistry().getNodeService().getProperty(nodeRef, ContentModel.PROP_WORKING_COPY_OWNER);
+            return version.getDescription();
         }
         else
         {
-            LockType type = getServiceRegistry().getLockService().getLockType(nodeRef);
-            if (type == LockType.READ_ONLY_LOCK)
-            {
-                NodeRef wc = getServiceRegistry().getCheckOutCheckInService().getWorkingCopy(nodeRef);
-                if (wc != null)
-                {
-                    return getServiceRegistry().getNodeService().getProperty(nodeRef, ContentModel.PROP_LOCK_OWNER);
-                }
-                else
-                {
-                    return null;
-                }
-            }
-            else
-            {
-                return null;
-            }
+            return null;
         }
     }
-    
+
     /*
      * (non-Javadoc)
      * @see org.alfresco.cmis.property.PropertyAccessor#setValue(org.alfresco.service.cmr.repository.NodeRef, java.io.Serializable)
@@ -183,4 +167,5 @@ public class VersionSeriesCheckedOutByPropertyAccessor extends AbstractPropertyA
     {
         throw new UnsupportedOperationException();
     }
+
 }

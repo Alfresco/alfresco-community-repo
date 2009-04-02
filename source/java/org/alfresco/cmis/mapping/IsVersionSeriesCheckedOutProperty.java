@@ -32,22 +32,25 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.search.impl.querymodel.PredicateMode;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.lock.LockType;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.lucene.search.Query;
 
 /**
+ * Get the CMIS version series checked out property
+ * 
  * @author andyh
  */
-public class VersionSeriesIdPropertyAccessor extends AbstractPropertyAccessor
+public class IsVersionSeriesCheckedOutProperty extends AbstractProperty
 {
     /**
      * Construct
      * 
      * @param serviceRegistry
      */
-    public VersionSeriesIdPropertyAccessor(ServiceRegistry serviceRegistry)
+    public IsVersionSeriesCheckedOutProperty(ServiceRegistry serviceRegistry)
     {
-        super(serviceRegistry, CMISDictionaryModel.PROP_VERSION_SERIES_ID);
+        super(serviceRegistry, CMISDictionaryModel.PROP_IS_VERSION_SERIES_CHECKED_OUT);
     }
 
     /*
@@ -58,10 +61,21 @@ public class VersionSeriesIdPropertyAccessor extends AbstractPropertyAccessor
     {
         if (getServiceRegistry().getNodeService().hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY))
         {
-            Serializable seriesId = getServiceRegistry().getNodeService().getProperty(nodeRef, ContentModel.PROP_COPY_REFERENCE);
-            return (seriesId != null) ? seriesId.toString() : null;
+            return true;
         }
-        return nodeRef.toString();
+        else
+        {
+            LockType type = getServiceRegistry().getLockService().getLockType(nodeRef);
+            if (type == LockType.READ_ONLY_LOCK)
+            {
+                NodeRef wc = getServiceRegistry().getCheckOutCheckInService().getWorkingCopy(nodeRef);
+                return (wc != null);
+            }
+            else
+            {
+                return false;
+            }
+        }
     }
 
     /*

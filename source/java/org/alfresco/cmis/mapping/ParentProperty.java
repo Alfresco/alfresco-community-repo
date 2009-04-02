@@ -27,13 +27,14 @@ package org.alfresco.cmis.mapping;
 import java.io.Serializable;
 import java.util.Collection;
 
+import org.alfresco.cmis.CMISDictionaryModel;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.search.impl.querymodel.PredicateMode;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
-import org.alfresco.service.namespace.QName;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.search.BooleanQuery;
@@ -43,43 +44,43 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.BooleanClause.Occur;
 
 /**
- * A simple 1-1 property mapping from a CMIS property name to an alfresco property
+ * Get the CMIS parent property
  * 
  * @author andyh
+ *
  */
-public class DirectPropertyAccessor extends AbstractPropertyAccessor
+public class ParentProperty extends AbstractProperty
 {
-    private QName alfrescoName;
-
     /**
      * Construct
      * 
      * @param serviceRegistry
-     * @param propertyName
-     * @param alfrescoName
      */
-    public DirectPropertyAccessor(ServiceRegistry serviceRegistry, String propertyName, QName alfrescoName)
+    public ParentProperty(ServiceRegistry serviceRegistry)
     {
-        super(serviceRegistry, propertyName);
-        this.alfrescoName = alfrescoName;
+        super(serviceRegistry, CMISDictionaryModel.PROP_PARENT_ID);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.cmis.property.AbstractPropertyAccessor#getMappedProperty()
-     */
-    public QName getMappedProperty()
-    {
-        return alfrescoName;
-    }
-    
     /*
      * (non-Javadoc)
      * @see org.alfresco.cmis.property.PropertyAccessor#getValue(org.alfresco.service.cmr.repository.NodeRef)
      */
     public Serializable getValue(NodeRef nodeRef)
     {
-        return getServiceRegistry().getNodeService().getProperty(nodeRef, alfrescoName);
+        if (nodeRef.equals(getServiceRegistry().getCMISService().getDefaultRootNodeRef()))
+        {
+            return null;
+        }
+        
+        ChildAssociationRef car = getServiceRegistry().getNodeService().getPrimaryParent(nodeRef);
+        if ((car != null) && (car.getParentRef() != null))
+        {
+            return car.getParentRef().toString();
+        }
+        else
+        {
+            return null;
+        }
     }
 
     /*
@@ -90,32 +91,30 @@ public class DirectPropertyAccessor extends AbstractPropertyAccessor
     {
         throw new UnsupportedOperationException();
     }
-    
+
     private String getLuceneFieldName()
     {
-        StringBuilder field = new StringBuilder(64);
-        field.append("@");
-        field.append(alfrescoName);
-        return field.toString();
+        return "PARENT";
     }
 
     private String getValueAsString(Serializable value)
     {
-        PropertyDefinition pd = getServiceRegistry().getDictionaryService().getProperty(alfrescoName);
-        Object converted = DefaultTypeConverter.INSTANCE.convert(pd.getDataType(), value);
+        Object converted = DefaultTypeConverter.INSTANCE.convert(getServiceRegistry().getDictionaryService().getDataType(DataTypeDefinition.NODE_REF), value);
         String asString = DefaultTypeConverter.INSTANCE.convert(String.class, converted);
         return asString;
     }
-
+    
     /*
      * (non-Javadoc)
      * @see org.alfresco.cmis.property.PropertyLuceneBuilder#buildLuceneEquality(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.io.Serializable, org.alfresco.repo.search.impl.querymodel.PredicateMode)
      */
     public Query buildLuceneEquality(LuceneQueryParser lqp, Serializable value, PredicateMode mode) throws ParseException
     {
-        return lqp.getFieldQuery(getLuceneFieldName(), getValueAsString(value));
+        String field = getLuceneFieldName();
+        String stringValue = getValueAsString(value);
+        return lqp.getFieldQuery(field, stringValue);
     }
-    
+
     /*
      * (non-Javadoc)
      * @see org.alfresco.cmis.property.PropertyLuceneBuilder#buildLuceneExists(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.lang.Boolean)
@@ -124,11 +123,11 @@ public class DirectPropertyAccessor extends AbstractPropertyAccessor
     {
         if (not)
         {
-            return lqp.getFieldQuery("ISNULL", alfrescoName.toString());
+            return new TermQuery(new Term("ISROOT", "T"));
         }
         else
         {
-            return lqp.getFieldQuery("ISNOTNULL", alfrescoName.toString());
+            return new MatchAllDocsQuery();
         }
     }
 
@@ -138,9 +137,7 @@ public class DirectPropertyAccessor extends AbstractPropertyAccessor
      */
     public Query buildLuceneGreaterThan(LuceneQueryParser lqp, Serializable value, PredicateMode mode) throws ParseException
     {
-        String field = getLuceneFieldName();
-        String stringValue = getValueAsString(value);
-        return lqp.getRangeQuery(field, stringValue, "\uFFFF", false, true);
+       return null;
     }
 
     /*
@@ -149,9 +146,7 @@ public class DirectPropertyAccessor extends AbstractPropertyAccessor
      */
     public Query buildLuceneGreaterThanOrEquals(LuceneQueryParser lqp, Serializable value, PredicateMode mode) throws ParseException
     {
-        String field = getLuceneFieldName();
-        String stringValue = getValueAsString(value);
-        return lqp.getRangeQuery(field, stringValue, "\uFFFF", true, true);
+        return null;
     }
 
     /*
@@ -161,12 +156,11 @@ public class DirectPropertyAccessor extends AbstractPropertyAccessor
     public Query buildLuceneIn(LuceneQueryParser lqp, Collection<Serializable> values, Boolean not, PredicateMode mode) throws ParseException
     {
         String field = getLuceneFieldName();
-        PropertyDefinition pd = getServiceRegistry().getDictionaryService().getProperty(alfrescoName);
 
         // Check type conversion
 
         @SuppressWarnings("unused")
-        Object converted = DefaultTypeConverter.INSTANCE.convert(pd.getDataType(), values);
+        Object converted = DefaultTypeConverter.INSTANCE.convert(getServiceRegistry().getDictionaryService().getDataType(DataTypeDefinition.NODE_REF), values);
         Collection<String> asStrings = DefaultTypeConverter.INSTANCE.convert(String.class, values);
 
         if (asStrings.size() == 0)
@@ -232,9 +226,7 @@ public class DirectPropertyAccessor extends AbstractPropertyAccessor
      */
     public Query buildLuceneLessThan(LuceneQueryParser lqp, Serializable value, PredicateMode mode) throws ParseException
     {
-        String field = getLuceneFieldName();
-        String stringValue = getValueAsString(value);
-        return lqp.getRangeQuery(field, "\u0000", stringValue, true, false);
+       return null;
     }
 
     /*
@@ -243,9 +235,7 @@ public class DirectPropertyAccessor extends AbstractPropertyAccessor
      */
     public Query buildLuceneLessThanOrEquals(LuceneQueryParser lqp, Serializable value, PredicateMode mode) throws ParseException
     {
-        String field = getLuceneFieldName();
-        String stringValue = getValueAsString(value);
-        return lqp.getRangeQuery(field, "\u0000", stringValue, true, true);
+        return null;
     }
 
     /*
@@ -256,7 +246,7 @@ public class DirectPropertyAccessor extends AbstractPropertyAccessor
     {
         String field = getLuceneFieldName();
         String stringValue = getValueAsString(value);
-
+        
         if (not)
         {
             BooleanQuery booleanQuery = new BooleanQuery();

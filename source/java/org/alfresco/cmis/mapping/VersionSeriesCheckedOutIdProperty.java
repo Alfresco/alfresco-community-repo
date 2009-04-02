@@ -41,14 +41,14 @@ import org.apache.lucene.search.Query;
  * 
  * @author andyh
  */
-public class VersionSeriesCheckedOutIdPropertyAccessor extends AbstractPropertyAccessor
+public class VersionSeriesCheckedOutIdProperty extends AbstractProperty
 {
     /**
      * Construct
      * 
      * @param serviceRegistry
      */
-    public VersionSeriesCheckedOutIdPropertyAccessor(ServiceRegistry serviceRegistry)
+    public VersionSeriesCheckedOutIdProperty(ServiceRegistry serviceRegistry)
     {
         super(serviceRegistry, CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_ID);
     }

@@ -30,8 +30,6 @@ import java.util.Map;
 
 import org.alfresco.cmis.dictionary.CMISDictionaryService;
 import org.alfresco.cmis.dictionary.CMISPropertyDefinition;
-import org.alfresco.cmis.property.CMISPropertyService;
-import org.alfresco.cmis.property.CMISPropertyServiceImpl;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
 import org.alfresco.repo.search.impl.querymodel.PredicateMode;
@@ -51,8 +49,6 @@ public class CmisFunctionEvaluationContext implements FunctionEvaluationContext
     private Map<String, Float> scores;
 
     private NodeService nodeService;
-
-    private CMISPropertyService cmisPropertyService;
 
     private CMISDictionaryService cmisDictionaryService;
 
@@ -83,15 +79,6 @@ public class CmisFunctionEvaluationContext implements FunctionEvaluationContext
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
-    }
-
-    /**
-     * @param cmisPropertyService
-     *            the cmisPropertyService to set
-     */
-    public void setCmisPropertyService(CMISPropertyService cmisPropertyService)
-    {
-        this.cmisPropertyService = cmisPropertyService;
     }
 
     /**
@@ -132,7 +119,7 @@ public class CmisFunctionEvaluationContext implements FunctionEvaluationContext
     public Serializable getProperty(NodeRef nodeRef, QName propertyQName)
     {
         CMISPropertyDefinition propertyDef = cmisDictionaryService.findProperty(propertyQName, null);
-        return cmisPropertyService.getProperty(nodeRef, propertyDef.getPropertyId().getName());
+        return propertyDef.getPropertyAccessor().getValue(nodeRef);
     }
 
     /*
@@ -164,16 +151,8 @@ public class CmisFunctionEvaluationContext implements FunctionEvaluationContext
 
     public Query buildLuceneEquality(LuceneQueryParser lqp, QName propertyQName, Serializable value, PredicateMode mode) throws ParseException
     {
-        if (cmisPropertyService instanceof CMISPropertyServiceImpl)
-        {
-            CMISPropertyDefinition propertyDef = cmisDictionaryService.findProperty(propertyQName, null);
-            CMISPropertyServiceImpl impl = (CMISPropertyServiceImpl) cmisPropertyService;
-            return impl.buildLuceneEquality(lqp, propertyDef.getPropertyId().getName(), value, mode);
-        }
-        else
-        {
-            return null;
-        }
+        CMISPropertyDefinition propertyDef = cmisDictionaryService.findProperty(propertyQName, null);
+        return propertyDef.getPropertyLuceneBuilder().buildLuceneEquality(lqp, value, mode);
     }
 
     /*
@@ -184,16 +163,8 @@ public class CmisFunctionEvaluationContext implements FunctionEvaluationContext
      */
     public Query buildLuceneExists(LuceneQueryParser lqp, QName propertyQName, Boolean not) throws ParseException
     {
-        if (cmisPropertyService instanceof CMISPropertyServiceImpl)
-        {
-            CMISPropertyDefinition propertyDef = cmisDictionaryService.findProperty(propertyQName, null);
-            CMISPropertyServiceImpl impl = (CMISPropertyServiceImpl) cmisPropertyService;
-            return impl.buildLuceneExists(lqp, propertyDef.getPropertyId().getName(), not);
-        }
-        else
-        {
-            return null;
-        }
+        CMISPropertyDefinition propertyDef = cmisDictionaryService.findProperty(propertyQName, null);
+        return propertyDef.getPropertyLuceneBuilder().buildLuceneExists(lqp, not);
     }
 
     /*
@@ -205,16 +176,8 @@ public class CmisFunctionEvaluationContext implements FunctionEvaluationContext
      */
     public Query buildLuceneGreaterThan(LuceneQueryParser lqp, QName propertyQName, Serializable value, PredicateMode mode) throws ParseException
     {
-        if (cmisPropertyService instanceof CMISPropertyServiceImpl)
-        {
-            CMISPropertyDefinition propertyDef = cmisDictionaryService.findProperty(propertyQName, null);
-            CMISPropertyServiceImpl impl = (CMISPropertyServiceImpl) cmisPropertyService;
-            return impl.buildLuceneGreaterThan(lqp, propertyDef.getPropertyId().getName(), value, mode);
-        }
-        else
-        {
-            return null;
-        }
+        CMISPropertyDefinition propertyDef = cmisDictionaryService.findProperty(propertyQName, null);
+        return propertyDef.getPropertyLuceneBuilder().buildLuceneGreaterThan(lqp, value, mode);
     }
 
     /*
@@ -226,16 +189,8 @@ public class CmisFunctionEvaluationContext implements FunctionEvaluationContext
      */
     public Query buildLuceneGreaterThanOrEquals(LuceneQueryParser lqp, QName propertyQName, Serializable value, PredicateMode mode) throws ParseException
     {
-        if (cmisPropertyService instanceof CMISPropertyServiceImpl)
-        {
-            CMISPropertyDefinition propertyDef = cmisDictionaryService.findProperty(propertyQName, null);
-            CMISPropertyServiceImpl impl = (CMISPropertyServiceImpl) cmisPropertyService;
-            return impl.buildLuceneGreaterThanOrEquals(lqp, propertyDef.getPropertyId().getName(), value, mode);
-        }
-        else
-        {
-            return null;
-        }
+        CMISPropertyDefinition propertyDef = cmisDictionaryService.findProperty(propertyQName, null);
+        return propertyDef.getPropertyLuceneBuilder().buildLuceneGreaterThanOrEquals(lqp, value, mode);
     }
 
     /*
@@ -247,16 +202,8 @@ public class CmisFunctionEvaluationContext implements FunctionEvaluationContext
      */
     public Query buildLuceneIn(LuceneQueryParser lqp, QName propertyQName, Collection<Serializable> values, Boolean not, PredicateMode mode) throws ParseException
     {
-        if (cmisPropertyService instanceof CMISPropertyServiceImpl)
-        {
-            CMISPropertyDefinition propertyDef = cmisDictionaryService.findProperty(propertyQName, null);
-            CMISPropertyServiceImpl impl = (CMISPropertyServiceImpl) cmisPropertyService;
-            return impl.buildLuceneIn(lqp, propertyDef.getPropertyId().getName(), values, not, mode);
-        }
-        else
-        {
-            return null;
-        }
+        CMISPropertyDefinition propertyDef = cmisDictionaryService.findProperty(propertyQName, null);
+        return propertyDef.getPropertyLuceneBuilder().buildLuceneIn(lqp, values, not, mode);
     }
 
     /*
@@ -268,16 +215,8 @@ public class CmisFunctionEvaluationContext implements FunctionEvaluationContext
      */
     public Query buildLuceneInequality(LuceneQueryParser lqp, QName propertyQName, Serializable value, PredicateMode mode) throws ParseException
     {
-        if (cmisPropertyService instanceof CMISPropertyServiceImpl)
-        {
-            CMISPropertyDefinition propertyDef = cmisDictionaryService.findProperty(propertyQName, null);
-            CMISPropertyServiceImpl impl = (CMISPropertyServiceImpl) cmisPropertyService;
-            return impl.buildLuceneInequality(lqp, propertyDef.getPropertyId().getName(), value, mode);
-        }
-        else
-        {
-            return null;
-        }
+        CMISPropertyDefinition propertyDef = cmisDictionaryService.findProperty(propertyQName, null);
+        return propertyDef.getPropertyLuceneBuilder().buildLuceneInequality(lqp, value, mode);
     }
 
     /*
@@ -289,16 +228,8 @@ public class CmisFunctionEvaluationContext implements FunctionEvaluationContext
      */
     public Query buildLuceneLessThan(LuceneQueryParser lqp, QName propertyQName, Serializable value, PredicateMode mode) throws ParseException
     {
-        if (cmisPropertyService instanceof CMISPropertyServiceImpl)
-        {
-            CMISPropertyDefinition propertyDef = cmisDictionaryService.findProperty(propertyQName, null);
-            CMISPropertyServiceImpl impl = (CMISPropertyServiceImpl) cmisPropertyService;
-            return impl.buildLuceneLessThan(lqp, propertyDef.getPropertyId().getName(), value, mode);
-        }
-        else
-        {
-            return null;
-        }
+        CMISPropertyDefinition propertyDef = cmisDictionaryService.findProperty(propertyQName, null);
+        return propertyDef.getPropertyLuceneBuilder().buildLuceneLessThan(lqp, value, mode);
     }
 
     /*
@@ -310,16 +241,8 @@ public class CmisFunctionEvaluationContext implements FunctionEvaluationContext
      */
     public Query buildLuceneLessThanOrEquals(LuceneQueryParser lqp, QName propertyQName, Serializable value, PredicateMode mode) throws ParseException
     {
-        if (cmisPropertyService instanceof CMISPropertyServiceImpl)
-        {
-            CMISPropertyDefinition propertyDef = cmisDictionaryService.findProperty(propertyQName, null);
-            CMISPropertyServiceImpl impl = (CMISPropertyServiceImpl) cmisPropertyService;
-            return impl.buildLuceneLessThanOrEquals(lqp, propertyDef.getPropertyId().getName(), value, mode);
-        }
-        else
-        {
-            return null;
-        }
+        CMISPropertyDefinition propertyDef = cmisDictionaryService.findProperty(propertyQName, null);
+        return propertyDef.getPropertyLuceneBuilder().buildLuceneLessThanOrEquals(lqp, value, mode);
     }
 
     /*
@@ -330,16 +253,8 @@ public class CmisFunctionEvaluationContext implements FunctionEvaluationContext
      */
     public Query buildLuceneLike(LuceneQueryParser lqp, QName propertyQName, Serializable value, Boolean not) throws ParseException
     {
-        if (cmisPropertyService instanceof CMISPropertyServiceImpl)
-        {
-            CMISPropertyDefinition propertyDef = cmisDictionaryService.findProperty(propertyQName, null);
-            CMISPropertyServiceImpl impl = (CMISPropertyServiceImpl) cmisPropertyService;
-            return impl.buildLuceneLike(lqp, propertyDef.getPropertyId().getName(), value, not);
-        }
-        else
-        {
-            return null;
-        }
+        CMISPropertyDefinition propertyDef = cmisDictionaryService.findProperty(propertyQName, null);
+        return propertyDef.getPropertyLuceneBuilder().buildLuceneLike(lqp, value, not);
     }
 
     /* (non-Javadoc)
@@ -347,16 +262,8 @@ public class CmisFunctionEvaluationContext implements FunctionEvaluationContext
      */
     public String getLuceneSortField(QName propertyQName)
     {
-        if (cmisPropertyService instanceof CMISPropertyServiceImpl)
-        {
-            CMISPropertyDefinition propertyDef = cmisDictionaryService.findProperty(propertyQName, null);
-            CMISPropertyServiceImpl impl = (CMISPropertyServiceImpl) cmisPropertyService;
-            return impl.getLuceneSortField(propertyDef.getPropertyId().getName());
-        }
-        else
-        {
-            return null;
-        }
+        CMISPropertyDefinition propertyDef = cmisDictionaryService.findProperty(propertyQName, null);
+        return propertyDef.getPropertyLuceneBuilder().getLuceneSortField();
     }
 
 }

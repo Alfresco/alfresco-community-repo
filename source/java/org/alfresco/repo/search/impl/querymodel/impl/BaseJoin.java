@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.cmis.dictionary.CMISMapping;
+import org.alfresco.cmis.mapping.CMISMapping;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.impl.querymodel.Argument;
 import org.alfresco.repo.search.impl.querymodel.Constraint;

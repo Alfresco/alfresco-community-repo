@@ -24,6 +24,7 @@
  */
 package org.alfresco.cmis.dictionary;
 
+import org.alfresco.cmis.mapping.CMISMapping;
 import org.alfresco.model.ContentModel;
 
 /**

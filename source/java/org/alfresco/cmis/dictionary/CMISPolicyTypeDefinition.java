@@ -27,6 +27,7 @@ package org.alfresco.cmis.dictionary;
 import java.util.Collection;
 
 import org.alfresco.cmis.dictionary.CMISAbstractDictionaryService.DictionaryRegistry;
+import org.alfresco.cmis.mapping.CMISMapping;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.namespace.QName;

@@ -3,12 +3,9 @@
 
 <beans>
 
-    <bean id="CMISMapping" class="org.alfresco.cmis.dictionary.CMISMapping" >
-        <property name="dictionaryService">
-            <ref bean="dictionaryService" />
-        </property>
-        <property name="namespaceService">
-            <ref bean="namespaceService" />
+    <bean id="CMISMapping" class="org.alfresco.cmis.mapping.CMISMapping" >
+        <property name="serviceRegistry">
+            <ref bean="ServiceRegistry" />
         </property>
     </bean>
 
@@ -32,22 +29,11 @@
         </property>
     </bean>
    
-    <bean id="CMISPropertyService" class="org.alfresco.cmis.property.CMISPropertyServiceImpl" >
-        <property name="serviceRegistry">
-            <ref bean="ServiceRegistry" />
-        </property>
-        <property name="CMISService">
-            <ref bean="CMISService" />
-        </property>
-        <property name="CMISMapping">
-            <ref bean="CMISMapping" />
-        </property>
-    </bean>
-   
     <bean id="CMISService" class="org.alfresco.cmis.CMISService">
         <property name="CMISSpecVersion"><value>0.5</value></property>
         <property name="defaultRootPath"><value>workspace/SpacesStore/Company Home</value></property>
         <property name="dictionaryService" ref="dictionaryService" />
+        <property name="CMISDictionaryService" ref="CMISDictionaryService" />
         <property name="searchService" ref="SearchService" />
         <property name="transactionHelper" ref="retryingTransactionHelper" />
         <property name="tenantAdminService" ref="tenantAdminService" />
@@ -56,13 +42,10 @@
     </bean>
     
     <bean id="CMISQueryService" class="org.alfresco.cmis.search.impl.CMISQueryServiceImpl" >
-        <property name="cmisDictionaryService">
+        <property name="CMISDictionaryService">
             <ref bean="CMISDictionaryService" />
         </property>
-        <property name="cmisPropertyService">
-            <ref bean="CMISPropertyService" />
-        </property>
-        <property name="cmisService">
+        <property name="CMISService">
             <ref bean="CMISService" />
         </property>
         <property name="queryEngine">

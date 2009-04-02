@@ -26,6 +26,7 @@ package org.alfresco.cmis.dictionary;
 
 import java.io.Serializable;
 
+import org.alfresco.cmis.mapping.CMISMapping;
 import org.alfresco.service.namespace.QName;
 
 /**

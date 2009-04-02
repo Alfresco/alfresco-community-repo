@@ -24,10 +24,15 @@
  */
 package org.alfresco.cmis;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.cmis.dictionary.CMISDictionaryService;
+import org.alfresco.cmis.dictionary.CMISPropertyDefinition;
+import org.alfresco.cmis.dictionary.CMISPropertyId;
+import org.alfresco.cmis.dictionary.CMISTypeDefinition;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.model.Repository;
@@ -93,6 +98,7 @@ public class CMISService implements ApplicationContextAware, ApplicationListener
     private Repository repository;
     private RetryingTransactionHelper retryingTransactionHelper;
     private DictionaryService dictionaryService;
+    private CMISDictionaryService cmisDictionaryService;
     private SearchService searchService;
     private NodeService nodeService;
     private TenantAdminService tenantAdminService;
@@ -154,6 +160,14 @@ public class CMISService implements ApplicationContextAware, ApplicationListener
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;
+    }
+    
+    /**
+     * @param cmisDictionaryService
+     */
+    public void setCMISDictionaryService(CMISDictionaryService cmisDictionaryService)
+    {
+        this.cmisDictionaryService = cmisDictionaryService;
     }
     
     /**
@@ -446,4 +460,72 @@ public class CMISService implements ApplicationContextAware, ApplicationListener
         }
     }
     
+    /**
+     * Get a single property
+     * 
+     * @param nodeRef
+     * @param propertyName
+     * @return value
+     */
+    public Serializable getProperty(NodeRef nodeRef, String propertyName)
+    {
+        QName typeQName = nodeService.getType(nodeRef);
+        CMISTypeDefinition typeDef = cmisDictionaryService.findTypeForClass(typeQName);
+        if (typeDef == null)
+        {
+            throw new AlfrescoRuntimeException("Type " + typeQName + " not found in CMIS Dictionary");
+        }
+        CMISPropertyDefinition propDef = cmisDictionaryService.findProperty(propertyName, typeDef);
+        if (propDef == null)
+        {
+            throw new AlfrescoRuntimeException("Property " + propertyName + " not found for type " + typeDef.getTypeId() + " in CMIS Dictionary");
+        }
+        return propDef.getPropertyAccessor().getValue(nodeRef);
+    }
+
+    /**
+     * Get all properties
+     * 
+     * @param nodeRef
+     * @return
+     */
+    public Map<String, Serializable> getProperties(NodeRef nodeRef)
+    {
+        QName typeQName = nodeService.getType(nodeRef);
+        CMISTypeDefinition typeDef = cmisDictionaryService.findTypeForClass(typeQName);
+        if (typeDef == null)
+        {
+            throw new AlfrescoRuntimeException("Type " + typeQName + " not found in CMIS Dictionary");
+        }
+        Map<CMISPropertyId, CMISPropertyDefinition> propDefs = typeDef.getPropertyDefinitions();
+        Map<String, Serializable> values = new HashMap<String, Serializable>(propDefs.size());
+        for (CMISPropertyDefinition propDef : propDefs.values())
+        {
+            values.put(propDef.getPropertyId().getName(), propDef.getPropertyAccessor().getValue(nodeRef));
+        }
+        return values;
+    }
+    
+    /**
+     * Set a single property
+     * 
+     * @param nodeRef
+     * @param propertyName
+     * @param value
+     */
+    public void setProperty(NodeRef nodeRef, String propertyName, Serializable value)
+    {
+        QName typeQName = nodeService.getType(nodeRef);
+        CMISTypeDefinition typeDef = cmisDictionaryService.findTypeForClass(typeQName);
+        if (typeDef == null)
+        {
+            throw new AlfrescoRuntimeException("Type " + typeQName + " not found in CMIS Dictionary");
+        }
+        CMISPropertyDefinition propDef = cmisDictionaryService.findProperty(propertyName, typeDef);
+        if (propDef == null)
+        {
+            throw new AlfrescoRuntimeException("Property " + propertyName + " not found for type " + typeDef.getTypeId() + " in CMIS Dictionary");
+        }
+        propDef.getPropertyAccessor().setValue(nodeRef, value);
+    }
 }

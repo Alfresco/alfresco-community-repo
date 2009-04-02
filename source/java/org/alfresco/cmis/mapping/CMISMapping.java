@@ -22,28 +22,54 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.cmis.dictionary;
+package org.alfresco.cmis.mapping;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Map;
 
+import org.alfresco.cmis.CMISContentStreamAllowedEnum;
 import org.alfresco.cmis.CMISDataTypeEnum;
+import org.alfresco.cmis.dictionary.CMISDictionaryModel;
+import org.alfresco.cmis.dictionary.CMISPropertyId;
+import org.alfresco.cmis.dictionary.CMISScope;
+import org.alfresco.cmis.dictionary.CMISTypeId;
+import org.alfresco.cmis.property.AbstractPropertyAccessor;
+import org.alfresco.cmis.property.CheckinCommentPropertyAccessor;
+import org.alfresco.cmis.property.ContentStreamLengthPropertyAccessor;
+import org.alfresco.cmis.property.ContentStreamMimetypePropertyAccessor;
+import org.alfresco.cmis.property.ContentStreamUriPropertyAccessor;
+import org.alfresco.cmis.property.DirectPropertyAccessor;
+import org.alfresco.cmis.property.FixedValuePropertyAccessor;
+import org.alfresco.cmis.property.IsImmutablePropertyAccessor;
+import org.alfresco.cmis.property.IsLatestMajorVersionPropertyAccessor;
+import org.alfresco.cmis.property.IsLatestVersionPropertyAccessor;
+import org.alfresco.cmis.property.IsMajorVersionPropertyAccessor;
+import org.alfresco.cmis.property.IsVersionSeriesCheckedOutPropertyAccessor;
+import org.alfresco.cmis.property.ObjectIdPropertyAccessor;
+import org.alfresco.cmis.property.ObjectTypeIdPropertyAccessor;
+import org.alfresco.cmis.property.ParentPropertyAccessor;
+import org.alfresco.cmis.property.VersionSeriesCheckedOutByPropertyAccessor;
+import org.alfresco.cmis.property.VersionSeriesCheckedOutIdPropertyAccessor;
+import org.alfresco.cmis.property.VersionSeriesIdPropertyAccessor;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.springframework.beans.factory.InitializingBean;
+
 
 /**
  * CMIS <-> Alfresco mappings
  * 
  * @author andyh
  */
-public class CMISMapping
+public class CMISMapping implements InitializingBean
 {
     /**
      * The Alfresco CMIS model URI.
@@ -85,100 +111,104 @@ public class CMISMapping
     // Properties
     public static QName PROP_OBJECT_ID_QNAME = QName.createQName(CMIS_MODEL_URI, CMISDictionaryModel.PROP_OBJECT_ID);
 
+    // Service Dependencies
+    private ServiceRegistry serviceRegistry;
+
     // Mappings
-    // - no entry means no mapping and pass through as is
-
-    private static HashMap<QName, CMISTypeId> qNameToCmisTypeId = new HashMap<QName, CMISTypeId>();
-    private static HashMap<QName, QName> cmisToAlfrecsoTypes = new HashMap<QName, QName>();
-    private static HashMap<QName, QName> alfrescoToCmisTypes = new HashMap<QName, QName>();
-    private static HashMap<QName, CMISDataTypeEnum> alfrescoPropertyTypesToCmisPropertyTypes = new HashMap<QName, CMISDataTypeEnum>();
-
+    private Map<QName, CMISTypeId> mapAlfrescoQNameToTypeId = new HashMap<QName, CMISTypeId>();
+    private Map<QName, QName> mapCmisQNameToAlfrescoQName = new HashMap<QName, QName>();
+    private Map<QName, QName> mapAlfrescoQNameToCmisQName = new HashMap<QName, QName>();
+    private Map<QName, CMISDataTypeEnum> mapAlfrescoToCmisDataType = new HashMap<QName, CMISDataTypeEnum>();
+    private Map<String, AbstractPropertyAccessor> propertyAccessors = new HashMap<String, AbstractPropertyAccessor>();
     
-    /**
-     * Set up mappings
+    
+    /*
+     * (non-Javadoc)
+     * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
      */
-    static
+    public void afterPropertiesSet() throws Exception
     {
-        qNameToCmisTypeId.put(OBJECT_QNAME, OBJECT_TYPE_ID);
-        qNameToCmisTypeId.put(FILESYSTEM_OBJECT_QNAME, FILESYSTEM_OBJECT_TYPE_ID);
-        qNameToCmisTypeId.put(DOCUMENT_QNAME, CMISDictionaryModel.DOCUMENT_TYPE_ID);
-        qNameToCmisTypeId.put(FOLDER_QNAME, CMISDictionaryModel.FOLDER_TYPE_ID);
-        qNameToCmisTypeId.put(RELATIONSHIP_QNAME, CMISDictionaryModel.RELATIONSHIP_TYPE_ID);
-        qNameToCmisTypeId.put(POLICY_QNAME, CMISDictionaryModel.POLICY_TYPE_ID);
+        mapAlfrescoQNameToTypeId.put(OBJECT_QNAME, OBJECT_TYPE_ID);
+        mapAlfrescoQNameToTypeId.put(FILESYSTEM_OBJECT_QNAME, FILESYSTEM_OBJECT_TYPE_ID);
+        mapAlfrescoQNameToTypeId.put(DOCUMENT_QNAME, CMISDictionaryModel.DOCUMENT_TYPE_ID);
+        mapAlfrescoQNameToTypeId.put(FOLDER_QNAME, CMISDictionaryModel.FOLDER_TYPE_ID);
+        mapAlfrescoQNameToTypeId.put(RELATIONSHIP_QNAME, CMISDictionaryModel.RELATIONSHIP_TYPE_ID);
+        mapAlfrescoQNameToTypeId.put(POLICY_QNAME, CMISDictionaryModel.POLICY_TYPE_ID);
 
-        cmisToAlfrecsoTypes.put(DOCUMENT_QNAME, ContentModel.TYPE_CONTENT);
-        cmisToAlfrecsoTypes.put(FOLDER_QNAME, ContentModel.TYPE_FOLDER);
-        cmisToAlfrecsoTypes.put(RELATIONSHIP_QNAME, null);
-        cmisToAlfrecsoTypes.put(POLICY_QNAME, null);
+        mapAlfrescoQNameToCmisQName.put(ContentModel.TYPE_CONTENT, DOCUMENT_QNAME);
+        mapAlfrescoQNameToCmisQName.put(ContentModel.TYPE_FOLDER, FOLDER_QNAME);
 
-        alfrescoToCmisTypes.put(ContentModel.TYPE_CONTENT, DOCUMENT_QNAME);
-        alfrescoToCmisTypes.put(ContentModel.TYPE_FOLDER, FOLDER_QNAME);
+        mapCmisQNameToAlfrescoQName.put(DOCUMENT_QNAME, ContentModel.TYPE_CONTENT);
+        mapCmisQNameToAlfrescoQName.put(FOLDER_QNAME, ContentModel.TYPE_FOLDER);
+        mapCmisQNameToAlfrescoQName.put(RELATIONSHIP_QNAME, null);
+        mapCmisQNameToAlfrescoQName.put(POLICY_QNAME, null);
 
-        alfrescoPropertyTypesToCmisPropertyTypes.put(DataTypeDefinition.ANY, null);
-        alfrescoPropertyTypesToCmisPropertyTypes.put(DataTypeDefinition.ASSOC_REF, null);
-        alfrescoPropertyTypesToCmisPropertyTypes.put(DataTypeDefinition.BOOLEAN, CMISDataTypeEnum.BOOLEAN);
-        alfrescoPropertyTypesToCmisPropertyTypes.put(DataTypeDefinition.CATEGORY, CMISDataTypeEnum.ID);
-        alfrescoPropertyTypesToCmisPropertyTypes.put(DataTypeDefinition.CHILD_ASSOC_REF, null);
-        alfrescoPropertyTypesToCmisPropertyTypes.put(DataTypeDefinition.CONTENT, null);
-        alfrescoPropertyTypesToCmisPropertyTypes.put(DataTypeDefinition.DATE, CMISDataTypeEnum.DATETIME);
-        alfrescoPropertyTypesToCmisPropertyTypes.put(DataTypeDefinition.DATETIME, CMISDataTypeEnum.DATETIME);
-        alfrescoPropertyTypesToCmisPropertyTypes.put(DataTypeDefinition.DOUBLE, CMISDataTypeEnum.DECIMAL);
-        alfrescoPropertyTypesToCmisPropertyTypes.put(DataTypeDefinition.FLOAT, CMISDataTypeEnum.DECIMAL);
-        alfrescoPropertyTypesToCmisPropertyTypes.put(DataTypeDefinition.INT, CMISDataTypeEnum.INTEGER);
-        alfrescoPropertyTypesToCmisPropertyTypes.put(DataTypeDefinition.LOCALE, null);
-        alfrescoPropertyTypesToCmisPropertyTypes.put(DataTypeDefinition.LONG, CMISDataTypeEnum.INTEGER);
-        alfrescoPropertyTypesToCmisPropertyTypes.put(DataTypeDefinition.MLTEXT, CMISDataTypeEnum.STRING);
-        alfrescoPropertyTypesToCmisPropertyTypes.put(DataTypeDefinition.NODE_REF, CMISDataTypeEnum.ID);
-        alfrescoPropertyTypesToCmisPropertyTypes.put(DataTypeDefinition.PATH, null);
-        alfrescoPropertyTypesToCmisPropertyTypes.put(DataTypeDefinition.QNAME, null);
-        alfrescoPropertyTypesToCmisPropertyTypes.put(DataTypeDefinition.TEXT, CMISDataTypeEnum.STRING);
-        alfrescoPropertyTypesToCmisPropertyTypes.put(CMIS_DATATYPE_ID, CMISDataTypeEnum.ID);
-        alfrescoPropertyTypesToCmisPropertyTypes.put(CMIS_DATATYPE_URI, CMISDataTypeEnum.URI);
-        alfrescoPropertyTypesToCmisPropertyTypes.put(CMIS_DATATYPE_XML, CMISDataTypeEnum.XML);
-        alfrescoPropertyTypesToCmisPropertyTypes.put(CMIS_DATATYPE_HTML, CMISDataTypeEnum.HTML);
+        mapAlfrescoToCmisDataType.put(DataTypeDefinition.ANY, null);
+        mapAlfrescoToCmisDataType.put(DataTypeDefinition.ASSOC_REF, null);
+        mapAlfrescoToCmisDataType.put(DataTypeDefinition.BOOLEAN, CMISDataTypeEnum.BOOLEAN);
+        mapAlfrescoToCmisDataType.put(DataTypeDefinition.CATEGORY, CMISDataTypeEnum.ID);
+        mapAlfrescoToCmisDataType.put(DataTypeDefinition.CHILD_ASSOC_REF, null);
+        mapAlfrescoToCmisDataType.put(DataTypeDefinition.CONTENT, null);
+        mapAlfrescoToCmisDataType.put(DataTypeDefinition.DATE, CMISDataTypeEnum.DATETIME);
+        mapAlfrescoToCmisDataType.put(DataTypeDefinition.DATETIME, CMISDataTypeEnum.DATETIME);
+        mapAlfrescoToCmisDataType.put(DataTypeDefinition.DOUBLE, CMISDataTypeEnum.DECIMAL);
+        mapAlfrescoToCmisDataType.put(DataTypeDefinition.FLOAT, CMISDataTypeEnum.DECIMAL);
+        mapAlfrescoToCmisDataType.put(DataTypeDefinition.INT, CMISDataTypeEnum.INTEGER);
+        mapAlfrescoToCmisDataType.put(DataTypeDefinition.LOCALE, null);
+        mapAlfrescoToCmisDataType.put(DataTypeDefinition.LONG, CMISDataTypeEnum.INTEGER);
+        mapAlfrescoToCmisDataType.put(DataTypeDefinition.MLTEXT, CMISDataTypeEnum.STRING);
+        mapAlfrescoToCmisDataType.put(DataTypeDefinition.NODE_REF, CMISDataTypeEnum.ID);
+        mapAlfrescoToCmisDataType.put(DataTypeDefinition.PATH, null);
+        mapAlfrescoToCmisDataType.put(DataTypeDefinition.QNAME, null);
+        mapAlfrescoToCmisDataType.put(DataTypeDefinition.TEXT, CMISDataTypeEnum.STRING);
+        mapAlfrescoToCmisDataType.put(CMIS_DATATYPE_ID, CMISDataTypeEnum.ID);
+        mapAlfrescoToCmisDataType.put(CMIS_DATATYPE_URI, CMISDataTypeEnum.URI);
+        mapAlfrescoToCmisDataType.put(CMIS_DATATYPE_XML, CMISDataTypeEnum.XML);
+        mapAlfrescoToCmisDataType.put(CMIS_DATATYPE_HTML, CMISDataTypeEnum.HTML);
+
+        registerPropertyAccessor(new ObjectIdPropertyAccessor(serviceRegistry));
+        registerPropertyAccessor(new FixedValuePropertyAccessor(serviceRegistry, CMISDictionaryModel.PROP_URI, null));
+        registerPropertyAccessor(new ObjectTypeIdPropertyAccessor(serviceRegistry));
+        registerPropertyAccessor(new DirectPropertyAccessor(serviceRegistry, CMISDictionaryModel.PROP_CREATED_BY, ContentModel.PROP_CREATOR));
+        registerPropertyAccessor(new DirectPropertyAccessor(serviceRegistry, CMISDictionaryModel.PROP_CREATION_DATE, ContentModel.PROP_CREATED));
+        registerPropertyAccessor(new DirectPropertyAccessor(serviceRegistry, CMISDictionaryModel.PROP_LAST_MODIFIED_BY, ContentModel.PROP_MODIFIER));
+        registerPropertyAccessor(new DirectPropertyAccessor(serviceRegistry, CMISDictionaryModel.PROP_LAST_MODIFICATION_DATE, ContentModel.PROP_MODIFIED));
+        registerPropertyAccessor(new FixedValuePropertyAccessor(serviceRegistry, CMISDictionaryModel.PROP_CHANGE_TOKEN, null));
+        registerPropertyAccessor(new DirectPropertyAccessor(serviceRegistry, CMISDictionaryModel.PROP_NAME, ContentModel.PROP_NAME));
+        registerPropertyAccessor(new IsImmutablePropertyAccessor(serviceRegistry));
+        registerPropertyAccessor(new IsLatestVersionPropertyAccessor(serviceRegistry));
+        registerPropertyAccessor(new IsMajorVersionPropertyAccessor(serviceRegistry));
+        registerPropertyAccessor(new IsLatestMajorVersionPropertyAccessor(serviceRegistry));
+        registerPropertyAccessor(new DirectPropertyAccessor(serviceRegistry, CMISDictionaryModel.PROP_VERSION_LABEL, ContentModel.PROP_VERSION_LABEL));
+        registerPropertyAccessor(new VersionSeriesIdPropertyAccessor(serviceRegistry));
+        registerPropertyAccessor(new IsVersionSeriesCheckedOutPropertyAccessor(serviceRegistry));
+        registerPropertyAccessor(new VersionSeriesCheckedOutByPropertyAccessor(serviceRegistry));
+        registerPropertyAccessor(new VersionSeriesCheckedOutIdPropertyAccessor(serviceRegistry));
+        registerPropertyAccessor(new CheckinCommentPropertyAccessor(serviceRegistry));
+        registerPropertyAccessor(new FixedValuePropertyAccessor(serviceRegistry, CMISDictionaryModel.PROP_CONTENT_STREAM_ALLOWED, CMISContentStreamAllowedEnum.ALLOWED.toString()));
+        registerPropertyAccessor(new ContentStreamLengthPropertyAccessor(serviceRegistry));
+        registerPropertyAccessor(new ContentStreamMimetypePropertyAccessor(serviceRegistry));
+        registerPropertyAccessor(new DirectPropertyAccessor(serviceRegistry, CMISDictionaryModel.PROP_CONTENT_STREAM_FILENAME, ContentModel.PROP_NAME));
+        registerPropertyAccessor(new ContentStreamUriPropertyAccessor(serviceRegistry));
+        registerPropertyAccessor(new ParentPropertyAccessor(serviceRegistry));
+        registerPropertyAccessor(new FixedValuePropertyAccessor(serviceRegistry, CMISDictionaryModel.PROP_ALLOWED_CHILD_OBJECT_TYPE_IDS, null));
     }
 
-    private DictionaryService dictionaryService;
-    private NamespaceService namespaceService;
 
     /**
-     * Set the dictionary Service
-     * 
-     * @param dictionaryService
+     * @param serviceRegistry
      */
-    public void setDictionaryService(DictionaryService dictionaryService)
+    public void setServiceRegistry(ServiceRegistry serviceRegistry)
     {
-        this.dictionaryService = dictionaryService;
+        this.serviceRegistry = serviceRegistry;
     }
 
     /**
-     * Gets the dictionary service
-     * 
-     * @return dictionaryService
-     */
-    /* package */DictionaryService getDictionaryService()
-    {
-        return this.dictionaryService;
-    }
-
-    /**
-     * Set the namespace service
-     * 
-     * @param namespaceService
-     */
-    public void setNamespaceService(NamespaceService namespaceService)
-    {
-        this.namespaceService = namespaceService;
-    }
-
-    /**
-     * Gets the namespace service
-     * 
      * @return namespaceService
      */
     /*package*/ NamespaceService getNamespaceService()
     {
-        return this.namespaceService;
+        return serviceRegistry.getNamespaceService();
     }
 
     /**
@@ -227,7 +257,7 @@ public class CMISMapping
         {
             throw new AlfrescoRuntimeException("Malformed type id '" + typeId + "'; discriminator " + typeId.charAt(0) + " unknown");
         }
-        QName typeQName = QName.resolveToQName(namespaceService, typeId.substring(2).replace('_', ':'));
+        QName typeQName = QName.resolveToQName(serviceRegistry.getNamespaceService(), typeId.substring(2).replace('_', ':'));
 
         // Construct CMIS Type Id
         return new CMISTypeId(scope, typeId, typeQName);
@@ -241,7 +271,7 @@ public class CMISMapping
      */
     public CMISTypeId getCmisTypeId(CMISScope scope, QName typeQName)
     {
-        CMISTypeId typeId = qNameToCmisTypeId.get(typeQName);
+        CMISTypeId typeId = mapAlfrescoQNameToTypeId.get(typeQName);
         if (typeId == null)
         {
             StringBuilder builder = new StringBuilder(128);
@@ -302,13 +332,13 @@ public class CMISMapping
         return null;
     }
 
-    /*package*/ String buildPrefixEncodedString(QName qname, boolean upperCase)
+    public String buildPrefixEncodedString(QName qname, boolean upperCase)
     {
         StringBuilder builder = new StringBuilder(128);
 
         if (!qname.getNamespaceURI().equals(CMIS_MODEL_URI))
         {
-            Collection<String> prefixes = namespaceService.getPrefixes(qname.getNamespaceURI());
+            Collection<String> prefixes = serviceRegistry.getNamespaceService().getPrefixes(qname.getNamespaceURI());
             if (prefixes.size() == 0)
             {
                 throw new NamespaceException("A namespace prefix is not registered for uri " + qname.getNamespaceURI());
@@ -353,7 +383,7 @@ public class CMISMapping
             return true;
         }
 
-        if (dictionaryService.isSubClass(typeQName, ContentModel.TYPE_FOLDER))
+        if (serviceRegistry.getDictionaryService().isSubClass(typeQName, ContentModel.TYPE_FOLDER))
         {
             if (typeQName.equals(ContentModel.TYPE_FOLDER))
             {
@@ -386,7 +416,7 @@ public class CMISMapping
             return true;
         }
 
-        if (dictionaryService.isSubClass(typeQName, ContentModel.TYPE_CONTENT))
+        if (serviceRegistry.getDictionaryService().isSubClass(typeQName, ContentModel.TYPE_CONTENT))
         {
             if (typeQName.equals(ContentModel.TYPE_CONTENT))
             {
@@ -418,7 +448,7 @@ public class CMISMapping
             return true;
         }
 
-        AspectDefinition aspectDef = dictionaryService.getAspect(typeQName);
+        AspectDefinition aspectDef = serviceRegistry.getDictionaryService().getAspect(typeQName);
         if (aspectDef == null)
         {
             return false;
@@ -451,7 +481,7 @@ public class CMISMapping
         {
             return true;
         }
-        AssociationDefinition associationDefinition = dictionaryService.getAssociation(associationQName);
+        AssociationDefinition associationDefinition = serviceRegistry.getDictionaryService().getAssociation(associationQName);
         if (associationDefinition == null)
         {
             return false;
@@ -480,7 +510,7 @@ public class CMISMapping
      */
     public QName getCmisType(QName typeQName)
     {
-        QName mapped = alfrescoToCmisTypes.get(typeQName);
+        QName mapped = mapAlfrescoQNameToCmisQName.get(typeQName);
         if (mapped != null)
         {
             return mapped;
@@ -496,7 +526,7 @@ public class CMISMapping
      */
     public boolean isRemappedType(QName typeQName)
     {
-        return alfrescoToCmisTypes.containsKey(typeQName);
+        return mapAlfrescoQNameToCmisQName.containsKey(typeQName);
     }
     
     /**
@@ -507,7 +537,7 @@ public class CMISMapping
      */
     public QName getAlfrescoType(QName cmisTypeQName)
     {
-        QName mapped = cmisToAlfrecsoTypes.get(cmisTypeQName);
+        QName mapped = mapCmisQNameToAlfrescoQName.get(cmisTypeQName);
         if (mapped != null)
         {
             return mapped;
@@ -541,7 +571,7 @@ public class CMISMapping
     
     public CMISDataTypeEnum getDataType(QName dataType)
     {
-        return alfrescoPropertyTypesToCmisPropertyTypes.get(dataType);
+        return mapAlfrescoToCmisDataType.get(dataType);
     }
 
     /**
@@ -556,7 +586,7 @@ public class CMISMapping
     {
         // Try the cmis model first - it it matches we are done
         QName cmisPropertyQName = QName.createQName(CMIS_MODEL_URI, cmisPropertyName);
-        if (dictionaryService.getProperty(cmisPropertyQName) != null)
+        if (serviceRegistry.getDictionaryService().getProperty(cmisPropertyQName) != null)
         {
             return cmisPropertyQName;
         }
@@ -568,7 +598,7 @@ public class CMISMapping
         // CMIS case insensitive hunt - no prefix
         if (split == -1)
         {
-            for (QName qname : dictionaryService.getAllProperties(null))
+            for (QName qname : serviceRegistry.getDictionaryService().getAllProperties(null))
             {
                 if (qname.getNamespaceURI().equals(CMIS_MODEL_URI))
                 {
@@ -586,15 +616,15 @@ public class CMISMapping
 
         // Try lower case version first.
 
-        QName propertyQName = QName.createQName(prefix.toLowerCase(), localName.toLowerCase(), namespaceService);
-        if (dictionaryService.getProperty(propertyQName) != null)
+        QName propertyQName = QName.createQName(prefix.toLowerCase(), localName.toLowerCase(), serviceRegistry.getNamespaceService());
+        if (serviceRegistry.getDictionaryService().getProperty(propertyQName) != null)
         {
             return propertyQName;
         }
 
         // Full case insensitive hunt
 
-        for (String test : namespaceService.getPrefixes())
+        for (String test : serviceRegistry.getNamespaceService().getPrefixes())
         {
             if (test.equalsIgnoreCase(prefix))
             {
@@ -602,9 +632,9 @@ public class CMISMapping
                 break;
             }
         }
-        String uri = namespaceService.getNamespaceURI(prefix);
+        String uri = serviceRegistry.getNamespaceService().getNamespaceURI(prefix);
 
-        for (QName qname : dictionaryService.getAllProperties(null))
+        for (QName qname : serviceRegistry.getDictionaryService().getAllProperties(null))
         {
             if (qname.getNamespaceURI().equals(uri))
             {
@@ -634,4 +664,36 @@ public class CMISMapping
             return propertyQName.toString();
         }
     }
+
+    /**
+     * Get a Property Accessor
+     * 
+     * @param propertyId
+     * @return
+     */
+    public AbstractPropertyAccessor getPropertyAccessor(CMISPropertyId propertyId)
+    {
+        AbstractPropertyAccessor propertyAccessor = propertyAccessors.get(propertyId.getName());
+        if (propertyAccessor == null)
+        {
+            QName propertyQName = propertyId.getQName();
+            if (propertyQName == null)
+            {
+                throw new AlfrescoRuntimeException("Can't get property accessor for property id " + propertyId.getName() + " due to unknown property QName");
+            }
+            propertyAccessor = new DirectPropertyAccessor(serviceRegistry, propertyId.getName(), propertyQName);
+        }
+        return propertyAccessor;
+    }
+ 
+    /**
+     * Register pre-defined Property Accessor
+     * 
+     * @param propertyAccessor
+     */
+    private void registerPropertyAccessor(AbstractPropertyAccessor propertyAccessor)
+    {
+        propertyAccessors.put(propertyAccessor.getName(), propertyAccessor);
+    }
+    
 }

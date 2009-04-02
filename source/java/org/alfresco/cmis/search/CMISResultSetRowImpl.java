@@ -29,7 +29,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.alfresco.cmis.dictionary.CMISDictionaryService;
-import org.alfresco.cmis.property.CMISPropertyService;
 import org.alfresco.repo.search.impl.querymodel.Column;
 import org.alfresco.repo.search.impl.querymodel.Query;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -58,11 +57,9 @@ public class CMISResultSetRowImpl implements CMISResultSetRow
 
     private Query query;
 
-    private CMISPropertyService cmisPropertyService;
-
     private CMISDictionaryService cmisDictionaryService;
 
-    public CMISResultSetRowImpl(CMISResultSet resultSet, int index, Map<String, Float> scores, NodeService nodeService, Map<String, NodeRef> nodeRefs, Query query, CMISPropertyService cmisPropertyService, CMISDictionaryService cmisDictionaryService )
+    public CMISResultSetRowImpl(CMISResultSet resultSet, int index, Map<String, Float> scores, NodeService nodeService, Map<String, NodeRef> nodeRefs, Query query, CMISDictionaryService cmisDictionaryService)
     {
         this.resultSet = resultSet;
         this.index = index;
@@ -70,7 +67,6 @@ public class CMISResultSetRowImpl implements CMISResultSetRow
         this.nodeService = nodeService;
         this.nodeRefs = nodeRefs;
         this.query = query;
-        this.cmisPropertyService = cmisPropertyService;
         this.cmisDictionaryService = cmisDictionaryService;
     }
 
@@ -163,7 +159,6 @@ public class CMISResultSetRowImpl implements CMISResultSetRow
             {
                 CmisFunctionEvaluationContext context = new CmisFunctionEvaluationContext();
                 context.setCmisDictionaryService(cmisDictionaryService);
-                context.setCmisPropertyService(cmisPropertyService);
                 context.setNodeRefs(nodeRefs);
                 context.setNodeService(nodeService);
                 context.setScores(scores);

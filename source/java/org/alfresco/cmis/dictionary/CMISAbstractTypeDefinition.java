@@ -34,8 +34,8 @@ import java.util.Map;
 
 import org.alfresco.cmis.CMISContentStreamAllowedEnum;
 import org.alfresco.cmis.dictionary.CMISAbstractDictionaryService.DictionaryRegistry;
+import org.alfresco.cmis.mapping.CMISMapping;
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;

@@ -33,8 +33,6 @@ import org.alfresco.cmis.CMISJoinEnum;
 import org.alfresco.cmis.CMISQueryEnum;
 import org.alfresco.cmis.CMISService;
 import org.alfresco.cmis.dictionary.CMISDictionaryService;
-import org.alfresco.cmis.dictionary.CMISMapping;
-import org.alfresco.cmis.property.CMISPropertyService;
 import org.alfresco.cmis.search.CMISQueryOptions;
 import org.alfresco.cmis.search.CMISQueryService;
 import org.alfresco.cmis.search.CMISResultSet;
@@ -55,8 +53,6 @@ public class CMISQueryServiceImpl implements CMISQueryService
 
     private CMISDictionaryService cmisDictionaryService;
 
-    private CMISPropertyService cmisPropertyService;
-
     private QueryEngine queryEngine;
 
     private NodeService nodeService;
@@ -65,7 +61,7 @@ public class CMISQueryServiceImpl implements CMISQueryService
      * @param service
      *            the service to set
      */
-    public void setCmisService(CMISService cmisService)
+    public void setCMISService(CMISService cmisService)
     {
         this.cmisService = cmisService;
     }
@@ -74,7 +70,7 @@ public class CMISQueryServiceImpl implements CMISQueryService
      * @param cmisDictionaryService
      *            the cmisDictionaryService to set
      */
-    public void setCmisDictionaryService(CMISDictionaryService cmisDictionaryService)
+    public void setCMISDictionaryService(CMISDictionaryService cmisDictionaryService)
     {
         this.cmisDictionaryService = cmisDictionaryService;
     }
@@ -97,15 +93,6 @@ public class CMISQueryServiceImpl implements CMISQueryService
         this.nodeService = nodeService;
     }
 
-    /**
-     * @param cmisPropertyService
-     *            the cmisPropertyService to set
-     */
-    public void setCmisPropertyService(CMISPropertyService cmisPropertyService)
-    {
-        this.cmisPropertyService = cmisPropertyService;
-    }
-
     /*
      * (non-Javadoc)
      * 
@@ -123,7 +110,6 @@ public class CMISQueryServiceImpl implements CMISQueryService
 
         CmisFunctionEvaluationContext functionContext = new CmisFunctionEvaluationContext();
         functionContext.setCmisDictionaryService(cmisDictionaryService);
-        functionContext.setCmisPropertyService(cmisPropertyService);
         functionContext.setNodeService(nodeService);
 
         QueryEngineResults results = queryEngine.executeQuery(query, options, functionContext);
@@ -137,7 +123,7 @@ public class CMISQueryServiceImpl implements CMISQueryService
                 wrapped.put(selector, current);
             }
         }
-        CMISResultSet cmis = new CMISResultSetImpl(wrapped, options, nodeService, query, cmisDictionaryService, cmisPropertyService);
+        CMISResultSet cmis = new CMISResultSetImpl(wrapped, options, nodeService, query, cmisDictionaryService);
         return cmis;
     }
 

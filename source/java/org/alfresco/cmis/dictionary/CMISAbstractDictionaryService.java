@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.alfresco.cmis.CMISDataTypeEnum;
+import org.alfresco.cmis.mapping.CMISMapping;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.DictionaryListener;
@@ -177,6 +178,8 @@ public abstract class CMISAbstractDictionaryService extends AbstractLifecycleBea
                 logger.debug(" QName: " + propDef.getPropertyId().getQName());
                 logger.debug(" Name: " + propDef.getPropertyId().getName());
                 logger.debug(" Owning Type: " + propDef.getOwningType().getTypeId());
+                logger.debug(" Property Accessor: " + propDef.getPropertyAccessor() + " , mappedProperty=" + propDef.getPropertyAccessor().getMappedProperty());
+                logger.debug(" Property Lucene Builder: " + propDef.getPropertyLuceneBuilder());
             }
         }
 

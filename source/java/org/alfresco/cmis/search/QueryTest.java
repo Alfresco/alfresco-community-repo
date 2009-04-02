@@ -305,7 +305,7 @@ public class QueryTest extends BaseCMISTest
                     returnValue = (T) DefaultTypeConverter.INSTANCE.convert(returnType.getClass(), sValue);
                     if (dump)
                     {
-                        System.out.println(cmisPropertyService.getProperties(row.getNodeRef(rs.getMetaData().getSelectorNames()[0])));
+                        System.out.println(cmisService.getProperties(row.getNodeRef(rs.getMetaData().getSelectorNames()[0])));
                     }
                 }
                 if (dump)
@@ -1346,7 +1346,7 @@ public class QueryTest extends BaseCMISTest
     {
         String companyHomeId = testQuery("SELECT ObjectId FROM Folder WHERE Name = '\"Folder 0\"'", 1, false, "ObjectId", new String(), false);
 
-        Serializable ser = cmisPropertyService.getProperty(f0, CMISDictionaryModel.PROP_OBJECT_ID);
+        Serializable ser = cmisService.getProperty(f0, CMISDictionaryModel.PROP_OBJECT_ID);
         String id = DefaultTypeConverter.INSTANCE.convert(String.class, ser);
 
         assertEquals(companyHomeId, id);
@@ -1490,7 +1490,7 @@ public class QueryTest extends BaseCMISTest
 
     public void testFolderEquals()
     {
-        Serializable ser = cmisPropertyService.getProperty(f0, CMISDictionaryModel.PROP_NAME);
+        Serializable ser = cmisService.getProperty(f0, CMISDictionaryModel.PROP_NAME);
         String Name = DefaultTypeConverter.INSTANCE.convert(String.class, ser);
 
         testQuery("SELECT * FROM Folder WHERE Name = '" + Name + "'", 1, false, "ObjectId", new String(), false);
@@ -1501,7 +1501,7 @@ public class QueryTest extends BaseCMISTest
 
     public void test_IN_TREE()
     {
-        Serializable ser = cmisPropertyService.getProperty(f0, CMISDictionaryModel.PROP_OBJECT_ID);
+        Serializable ser = cmisService.getProperty(f0, CMISDictionaryModel.PROP_OBJECT_ID);
         String id = DefaultTypeConverter.INSTANCE.convert(String.class, ser);
 
         testQuery("SELECT * FROM Folder WHERE IN_TREE('" + id + "')", 6, false, "ObjectId", new String(), false);
@@ -1509,7 +1509,7 @@ public class QueryTest extends BaseCMISTest
 
     public void test_IN_FOLDER()
     {
-        Serializable ser = cmisPropertyService.getProperty(f0, CMISDictionaryModel.PROP_OBJECT_ID);
+        Serializable ser = cmisService.getProperty(f0, CMISDictionaryModel.PROP_OBJECT_ID);
         String id = DefaultTypeConverter.INSTANCE.convert(String.class, ser);
 
         testQuery("SELECT * FROM Folder WHERE IN_FOLDER('" + id + "')", 2, false, "ObjectId", new String(), false);

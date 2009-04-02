@@ -24,35 +24,55 @@
  */
 package org.alfresco.cmis.property;
 
-import org.alfresco.cmis.dictionary.CMISMapping;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.namespace.QName;
 
 /**
- * Base class for all property accessors - provides the service registry
+ * Base class for all property accessors
  * 
  * @author andyh
  *
  */
-public abstract class AbstractPropertyAccessor 
+public abstract class AbstractPropertyAccessor implements PropertyAccessor, PropertyLuceneBuilder
 {
-    private CMISMapping cmisMapping;
     private ServiceRegistry serviceRegistry;
+    private String propertyName;
 
-    
-    protected AbstractPropertyAccessor(CMISMapping cmisMapping, ServiceRegistry serviceRegistry)
+    /**
+     * Construct
+     * 
+     * @param serviceRegistry
+     * @param propertyName
+     */
+    protected AbstractPropertyAccessor(ServiceRegistry serviceRegistry, String propertyName)
     {
-        this.cmisMapping = cmisMapping;
         this.serviceRegistry = serviceRegistry;
+        this.propertyName = propertyName;
     }
 
+    /**
+     * @return  service registry
+     */
     protected ServiceRegistry getServiceRegistry()
     {
         return serviceRegistry;
     }
 
-    protected CMISMapping getCMISMapping()
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.property.PropertyAccessor#getName()
+     */
+    public String getName()
     {
-        return cmisMapping;
+        return propertyName;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.property.PropertyAccessor#getMappedProperty()
+     */
+    public QName getMappedProperty()
+    {
+        return null;
+    }
 }

@@ -32,6 +32,7 @@ import java.util.Map;
 import org.alfresco.cmis.CMISContentStreamAllowedEnum;
 import org.alfresco.cmis.dictionary.BaseCMISTest;
 import org.alfresco.cmis.dictionary.CMISDictionaryModel;
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.version.VersionModel;
 import org.alfresco.service.cmr.lock.LockType;
@@ -46,7 +47,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
     public void testBasicFolder()
     {
         NodeRef folder = fileFolderService.create(rootNodeRef, "BaseFolder", ContentModel.TYPE_FOLDER).getNodeRef();
-        Map<String, Serializable> properties = cmisPropertyService.getProperties(folder);
+        Map<String, Serializable> properties = cmisService.getProperties(folder);
         assertEquals(folder.toString(), properties.get(CMISDictionaryModel.PROP_OBJECT_ID));
         assertNull(properties.get(CMISDictionaryModel.PROP_URI));
         assertEquals(CMISDictionaryModel.FOLDER_TYPE_ID.getId(), properties.get(CMISDictionaryModel.PROP_OBJECT_TYPE_ID));
@@ -89,7 +90,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
     {
         NodeRef content = fileFolderService.create(rootNodeRef, "BaseContent", ContentModel.TYPE_CONTENT).getNodeRef();
 
-        Map<String, Serializable> properties = cmisPropertyService.getProperties(content);
+        Map<String, Serializable> properties = cmisService.getProperties(content);
         assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_ID), content.toString());
         assertNull(properties.get(CMISDictionaryModel.PROP_URI));
         assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_TYPE_ID), CMISDictionaryModel.DOCUMENT_TYPE_ID.getId());
@@ -124,7 +125,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
     {
         NodeRef content = fileFolderService.create(rootNodeRef, "BaseContent", ContentModel.TYPE_CONTENT).getNodeRef();
 
-        Map<String, Serializable> properties = cmisPropertyService.getProperties(content);
+        Map<String, Serializable> properties = cmisService.getProperties(content);
         assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_ID), content.toString());
         assertNull(properties.get(CMISDictionaryModel.PROP_URI));
         assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_TYPE_ID), CMISDictionaryModel.DOCUMENT_TYPE_ID.getId());
@@ -166,7 +167,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
                 + " and random charcters \u00E0\u00EA\u00EE\u00F0\u00F1\u00F6\u00FB\u00FF");
         long size = writer.getSize();
 
-        properties = cmisPropertyService.getProperties(content);
+        properties = cmisService.getProperties(content);
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_ALLOWED), CMISContentStreamAllowedEnum.ALLOWED.toString());
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_LENGTH), size);
         assertEquals(properties.get(CMISDictionaryModel.PROP_CONTENT_STREAM_MIME_TYPE), "text/plain");
@@ -178,7 +179,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
     {
         NodeRef content = fileFolderService.create(rootNodeRef, "BaseContent", ContentModel.TYPE_CONTENT).getNodeRef();
 
-        Map<String, Serializable> properties = cmisPropertyService.getProperties(content);
+        Map<String, Serializable> properties = cmisService.getProperties(content);
         assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_ID), content.toString());
         assertNull(properties.get(CMISDictionaryModel.PROP_URI));
         assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_TYPE_ID), CMISDictionaryModel.DOCUMENT_TYPE_ID.getId());
@@ -211,7 +212,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
 
         serviceRegistry.getLockService().lock(content, LockType.READ_ONLY_LOCK);
 
-        properties = cmisPropertyService.getProperties(content);
+        properties = cmisService.getProperties(content);
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_IMMUTABLE), true);
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_LATEST_VERSION), true);
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_MAJOR_VERSION), false);
@@ -224,7 +225,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISDictionaryModel.PROP_CHECKIN_COMMENT), null);
 
         serviceRegistry.getLockService().unlock(content);
-        properties = cmisPropertyService.getProperties(content);
+        properties = cmisService.getProperties(content);
 
         assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_ID), content.toString());
         assertNull(properties.get(CMISDictionaryModel.PROP_URI));
@@ -262,7 +263,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
     {
         NodeRef content = fileFolderService.create(rootNodeRef, "BaseContent", ContentModel.TYPE_CONTENT).getNodeRef();
 
-        Map<String, Serializable> properties = cmisPropertyService.getProperties(content);
+        Map<String, Serializable> properties = cmisService.getProperties(content);
         assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_ID), content.toString());
         assertNull(properties.get(CMISDictionaryModel.PROP_URI));
         assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_TYPE_ID), CMISDictionaryModel.DOCUMENT_TYPE_ID.getId());
@@ -295,7 +296,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
 
         NodeRef pwc = serviceRegistry.getCheckOutCheckInService().checkout(content);
 
-        properties = cmisPropertyService.getProperties(content);
+        properties = cmisService.getProperties(content);
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_IMMUTABLE), true);
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_LATEST_VERSION), true);
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_MAJOR_VERSION), false);
@@ -307,7 +308,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_ID), pwc.toString());
         assertEquals(properties.get(CMISDictionaryModel.PROP_CHECKIN_COMMENT), null);
 
-        properties = cmisPropertyService.getProperties(pwc);
+        properties = cmisService.getProperties(pwc);
 
         assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_ID), pwc.toString());
         assertNull(properties.get(CMISDictionaryModel.PROP_URI));
@@ -341,7 +342,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
 
         serviceRegistry.getCheckOutCheckInService().cancelCheckout(pwc);
 
-        properties = cmisPropertyService.getProperties(content);
+        properties = cmisService.getProperties(content);
         assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_ID), content.toString());
         assertNull(properties.get(CMISDictionaryModel.PROP_URI));
         assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_TYPE_ID), CMISDictionaryModel.DOCUMENT_TYPE_ID.getId());
@@ -374,7 +375,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
 
         pwc = serviceRegistry.getCheckOutCheckInService().checkout(content);
 
-        properties = cmisPropertyService.getProperties(content);
+        properties = cmisService.getProperties(content);
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_IMMUTABLE), true);
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_LATEST_VERSION), true);
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_MAJOR_VERSION), false);
@@ -386,7 +387,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_ID), pwc.toString());
         assertEquals(properties.get(CMISDictionaryModel.PROP_CHECKIN_COMMENT), null);
 
-        properties = cmisPropertyService.getProperties(pwc);
+        properties = cmisService.getProperties(pwc);
 
         assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_ID), pwc.toString());
         assertNull(properties.get(CMISDictionaryModel.PROP_URI));
@@ -420,7 +421,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
 
         serviceRegistry.getCheckOutCheckInService().checkin(pwc, null);
 
-        properties = cmisPropertyService.getProperties(content);
+        properties = cmisService.getProperties(content);
         assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_ID), content.toString());
         assertNull(properties.get(CMISDictionaryModel.PROP_URI));
         assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_TYPE_ID), CMISDictionaryModel.DOCUMENT_TYPE_ID.getId());
@@ -457,7 +458,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
     {
         NodeRef content = fileFolderService.create(rootNodeRef, "BaseContent", ContentModel.TYPE_CONTENT).getNodeRef();
 
-        Map<String, Serializable> properties = cmisPropertyService.getProperties(content);
+        Map<String, Serializable> properties = cmisService.getProperties(content);
         assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_ID), content.toString());
         assertNull(properties.get(CMISDictionaryModel.PROP_URI));
         assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_TYPE_ID), CMISDictionaryModel.DOCUMENT_TYPE_ID.getId());
@@ -490,7 +491,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
 
         nodeService.addAspect(content, ContentModel.ASPECT_VERSIONABLE, null);
 
-        properties = cmisPropertyService.getProperties(content);
+        properties = cmisService.getProperties(content);
         assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_ID), content.toString());
         assertNull(properties.get(CMISDictionaryModel.PROP_URI));
         assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_TYPE_ID), CMISDictionaryModel.DOCUMENT_TYPE_ID.getId());
@@ -523,7 +524,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
 
         NodeRef pwc = serviceRegistry.getCheckOutCheckInService().checkout(content);
 
-        properties = cmisPropertyService.getProperties(content);
+        properties = cmisService.getProperties(content);
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_IMMUTABLE), true);
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_LATEST_VERSION), true);
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_MAJOR_VERSION), false);
@@ -535,7 +536,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_ID), pwc.toString());
         assertEquals(properties.get(CMISDictionaryModel.PROP_CHECKIN_COMMENT), null);
 
-        properties = cmisPropertyService.getProperties(pwc);
+        properties = cmisService.getProperties(pwc);
 
         assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_ID), pwc.toString());
         assertNull(properties.get(CMISDictionaryModel.PROP_URI));
@@ -569,7 +570,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
 
         serviceRegistry.getCheckOutCheckInService().cancelCheckout(pwc);
 
-        properties = cmisPropertyService.getProperties(content);
+        properties = cmisService.getProperties(content);
         assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_ID), content.toString());
         assertNull(properties.get(CMISDictionaryModel.PROP_URI));
         assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_TYPE_ID), CMISDictionaryModel.DOCUMENT_TYPE_ID.getId());
@@ -602,7 +603,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
 
         pwc = serviceRegistry.getCheckOutCheckInService().checkout(content);
 
-        properties = cmisPropertyService.getProperties(content);
+        properties = cmisService.getProperties(content);
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_IMMUTABLE), true);
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_LATEST_VERSION), true);
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_MAJOR_VERSION), false);
@@ -614,7 +615,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_ID), pwc.toString());
         assertEquals(properties.get(CMISDictionaryModel.PROP_CHECKIN_COMMENT), null);
 
-        properties = cmisPropertyService.getProperties(pwc);
+        properties = cmisService.getProperties(pwc);
 
         assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_ID), pwc.toString());
         assertNull(properties.get(CMISDictionaryModel.PROP_URI));
@@ -651,7 +652,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MAJOR);
         serviceRegistry.getCheckOutCheckInService().checkin(pwc, versionProperties);
 
-        properties = cmisPropertyService.getProperties(content);
+        properties = cmisService.getProperties(content);
         assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_ID), content.toString()+"/1.0");
         assertNull(properties.get(CMISDictionaryModel.PROP_URI));
         assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_TYPE_ID), CMISDictionaryModel.DOCUMENT_TYPE_ID.getId());
@@ -684,7 +685,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
 
         pwc = serviceRegistry.getCheckOutCheckInService().checkout(content);
 
-        properties = cmisPropertyService.getProperties(content);
+        properties = cmisService.getProperties(content);
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_IMMUTABLE), true);
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_LATEST_VERSION), true);
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_MAJOR_VERSION), true);
@@ -696,7 +697,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_ID), pwc.toString());
         assertEquals(properties.get(CMISDictionaryModel.PROP_CHECKIN_COMMENT), "Meep");
 
-        properties = cmisPropertyService.getProperties(pwc);
+        properties = cmisService.getProperties(pwc);
 
         assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_ID), pwc.toString());
         assertNull(properties.get(CMISDictionaryModel.PROP_URI));
@@ -733,7 +734,7 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MINOR);
         serviceRegistry.getCheckOutCheckInService().checkin(pwc, versionProperties);
 
-        properties = cmisPropertyService.getProperties(content);
+        properties = cmisService.getProperties(content);
         assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_ID), content.toString()+"/1.1");
         assertNull(properties.get(CMISDictionaryModel.PROP_URI));
         assertEquals(properties.get(CMISDictionaryModel.PROP_OBJECT_TYPE_ID), CMISDictionaryModel.DOCUMENT_TYPE_ID.getId());
@@ -768,37 +769,45 @@ public class CMISPropertyServiceTest extends BaseCMISTest
     public void testSinglePropertyFolderAccess()
     {   
         NodeRef folder = fileFolderService.create(rootNodeRef, "BaseFolder", ContentModel.TYPE_FOLDER).getNodeRef();
-        assertEquals(cmisPropertyService.getProperty(folder, CMISDictionaryModel.PROP_OBJECT_ID), folder.toString());
-        assertNull(cmisPropertyService.getProperty(folder, CMISDictionaryModel.PROP_URI));
-        assertEquals(cmisPropertyService.getProperty(folder, CMISDictionaryModel.PROP_OBJECT_TYPE_ID), CMISDictionaryModel.FOLDER_TYPE_ID.getId());
-        assertEquals(cmisPropertyService.getProperty(folder, CMISDictionaryModel.PROP_CREATED_BY), authenticationComponent.getCurrentUserName());
-        assertNotNull(cmisPropertyService.getProperty(folder, CMISDictionaryModel.PROP_CREATION_DATE));
-        assertEquals(cmisPropertyService.getProperty(folder, CMISDictionaryModel.PROP_LAST_MODIFIED_BY), authenticationComponent.getCurrentUserName());
-        assertNotNull(cmisPropertyService.getProperty(folder, CMISDictionaryModel.PROP_LAST_MODIFICATION_DATE));
-        assertNull(cmisPropertyService.getProperty(folder, CMISDictionaryModel.PROP_CHANGE_TOKEN));
+        assertEquals(cmisService.getProperty(folder, CMISDictionaryModel.PROP_OBJECT_ID), folder.toString());
+        assertNull(cmisService.getProperty(folder, CMISDictionaryModel.PROP_URI));
+        assertEquals(cmisService.getProperty(folder, CMISDictionaryModel.PROP_OBJECT_TYPE_ID), CMISDictionaryModel.FOLDER_TYPE_ID.getId());
+        assertEquals(cmisService.getProperty(folder, CMISDictionaryModel.PROP_CREATED_BY), authenticationComponent.getCurrentUserName());
+        assertNotNull(cmisService.getProperty(folder, CMISDictionaryModel.PROP_CREATION_DATE));
+        assertEquals(cmisService.getProperty(folder, CMISDictionaryModel.PROP_LAST_MODIFIED_BY), authenticationComponent.getCurrentUserName());
+        assertNotNull(cmisService.getProperty(folder, CMISDictionaryModel.PROP_LAST_MODIFICATION_DATE));
+        assertNull(cmisService.getProperty(folder, CMISDictionaryModel.PROP_CHANGE_TOKEN));
        
-        assertEquals(cmisPropertyService.getProperty(folder, CMISDictionaryModel.PROP_NAME), "BaseFolder");
+        assertEquals(cmisService.getProperty(folder, CMISDictionaryModel.PROP_NAME), "BaseFolder");
 
-        assertNull(cmisPropertyService.getProperty(folder, CMISDictionaryModel.PROP_IS_IMMUTABLE));
-        assertNull(cmisPropertyService.getProperty(folder, CMISDictionaryModel.PROP_IS_LATEST_VERSION));
-        assertNull(cmisPropertyService.getProperty(folder, CMISDictionaryModel.PROP_IS_MAJOR_VERSION));
-        assertNull(cmisPropertyService.getProperty(folder, CMISDictionaryModel.PROP_IS_LATEST_MAJOR_VERSION));
-        assertNull(cmisPropertyService.getProperty(folder, CMISDictionaryModel.PROP_VERSION_LABEL));
-        assertNull(cmisPropertyService.getProperty(folder, CMISDictionaryModel.PROP_VERSION_SERIES_ID));
-        assertNull(cmisPropertyService.getProperty(folder, CMISDictionaryModel.PROP_IS_VERSION_SERIES_CHECKED_OUT));
-        assertNull(cmisPropertyService.getProperty(folder, CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_BY));
-        assertNull(cmisPropertyService.getProperty(folder, CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_ID));
-        assertNull(cmisPropertyService.getProperty(folder, CMISDictionaryModel.PROP_CHECKIN_COMMENT));
-        assertNull(cmisPropertyService.getProperty(folder, CMISDictionaryModel.PROP_CONTENT_STREAM_ALLOWED));
-        assertNull(cmisPropertyService.getProperty(folder, CMISDictionaryModel.PROP_CONTENT_STREAM_LENGTH));
-        assertNull(cmisPropertyService.getProperty(folder, CMISDictionaryModel.PROP_CONTENT_STREAM_MIME_TYPE));
-        assertNull(cmisPropertyService.getProperty(folder, CMISDictionaryModel.PROP_CONTENT_STREAM_FILENAME));
-        assertNull(cmisPropertyService.getProperty(folder, CMISDictionaryModel.PROP_CONTENT_STREAM_URI));
+        try
+        {
+            cmisService.getProperty(folder, CMISDictionaryModel.PROP_IS_IMMUTABLE);
+            cmisService.getProperty(folder, CMISDictionaryModel.PROP_IS_LATEST_VERSION);
+            cmisService.getProperty(folder, CMISDictionaryModel.PROP_IS_MAJOR_VERSION);
+            cmisService.getProperty(folder, CMISDictionaryModel.PROP_IS_LATEST_MAJOR_VERSION);
+            cmisService.getProperty(folder, CMISDictionaryModel.PROP_VERSION_LABEL);
+            cmisService.getProperty(folder, CMISDictionaryModel.PROP_VERSION_SERIES_ID);
+            cmisService.getProperty(folder, CMISDictionaryModel.PROP_IS_VERSION_SERIES_CHECKED_OUT);
+            cmisService.getProperty(folder, CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_BY);
+            cmisService.getProperty(folder, CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_ID);
+            cmisService.getProperty(folder, CMISDictionaryModel.PROP_CHECKIN_COMMENT);
+            cmisService.getProperty(folder, CMISDictionaryModel.PROP_CONTENT_STREAM_ALLOWED);
+            cmisService.getProperty(folder, CMISDictionaryModel.PROP_CONTENT_STREAM_LENGTH);
+            cmisService.getProperty(folder, CMISDictionaryModel.PROP_CONTENT_STREAM_MIME_TYPE);
+            cmisService.getProperty(folder, CMISDictionaryModel.PROP_CONTENT_STREAM_FILENAME);
+            cmisService.getProperty(folder, CMISDictionaryModel.PROP_CONTENT_STREAM_URI);
+            fail("Failed to catch invalid property on type folder");
+        }
+        catch(AlfrescoRuntimeException e)
+        {
+            // NOTE: Invalid property
+        }
        
-        assertEquals(cmisPropertyService.getProperty(folder, CMISDictionaryModel.PROP_PARENT_ID), rootNodeRef.toString());
-        assertNull(cmisPropertyService.getProperty(folder, CMISDictionaryModel.PROP_ALLOWED_CHILD_OBJECT_TYPE_IDS));
+        assertEquals(cmisService.getProperty(folder, CMISDictionaryModel.PROP_PARENT_ID), rootNodeRef.toString());
+        assertNull(cmisService.getProperty(folder, CMISDictionaryModel.PROP_ALLOWED_CHILD_OBJECT_TYPE_IDS));
 
-        assertEquals(cmisPropertyService.getProperty(folder, "CM_NAME"), "BaseFolder");
-        assertEquals(cmisPropertyService.getProperty(folder, "cm_name"), "BaseFolder");
+        assertEquals(cmisService.getProperty(folder, "NAME"), "BaseFolder");
+        assertEquals(cmisService.getProperty(folder, "name"), "BaseFolder");
     }
 }

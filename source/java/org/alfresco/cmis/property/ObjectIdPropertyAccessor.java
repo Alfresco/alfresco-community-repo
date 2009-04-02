@@ -28,8 +28,6 @@ import java.io.Serializable;
 import java.util.Collection;
 
 import org.alfresco.cmis.dictionary.CMISDictionaryModel;
-import org.alfresco.cmis.dictionary.CMISMapping;
-import org.alfresco.cmis.dictionary.CMISScope;
 import org.alfresco.cmis.search.CMISQueryException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
@@ -51,15 +49,23 @@ import org.apache.lucene.search.BooleanClause.Occur;
  * 
  * @author andyh
  */
-public class ObjectIdPropertyAccessor extends AbstractNamedPropertyAccessor
+public class ObjectIdPropertyAccessor extends AbstractPropertyAccessor
 {
-
-    protected ObjectIdPropertyAccessor(CMISMapping cmisMapping, ServiceRegistry serviceRegistry)
+    /**
+     * Construct
+     * 
+     * @param serviceRegistry
+     */
+    public ObjectIdPropertyAccessor(ServiceRegistry serviceRegistry)
     {
-        super(cmisMapping, serviceRegistry, CMISScope.OBJECT, CMISDictionaryModel.PROP_OBJECT_ID);
+        super(serviceRegistry, CMISDictionaryModel.PROP_OBJECT_ID);
     }
 
-    public Serializable getProperty(NodeRef nodeRef)
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.property.PropertyAccessor#getValue(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    public Serializable getValue(NodeRef nodeRef)
     {
         if (getServiceRegistry().getNodeService().hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE))
         {
@@ -73,14 +79,16 @@ public class ObjectIdPropertyAccessor extends AbstractNamedPropertyAccessor
                 builder.append(versionLabel);
                 return builder.toString();
             }
-
         }
 
         return nodeRef.toString();
-
     }
 
-    public void setProperty(NodeRef nodeRef, Serializable value)
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.property.PropertyAccessor#setValue(org.alfresco.service.cmr.repository.NodeRef, java.io.Serializable)
+     */
+    public void setValue(NodeRef nodeRef, Serializable value)
     {
         throw new UnsupportedOperationException();
     }
@@ -99,11 +107,9 @@ public class ObjectIdPropertyAccessor extends AbstractNamedPropertyAccessor
 
     /*
      * (non-Javadoc)
-     * 
-     * @see org.alfresco.cmis.property.NamedPropertyAccessor#buildLuceneEquality(org.alfresco.repo.search.impl.lucene.LuceneQueryParser,
-     *      java.lang.String, java.io.Serializable, org.alfresco.repo.search.impl.querymodel.PredicateMode)
+     * @see org.alfresco.cmis.property.PropertyLuceneBuilder#buildLuceneEquality(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.io.Serializable, org.alfresco.repo.search.impl.querymodel.PredicateMode)
      */
-    public Query buildLuceneEquality(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode) throws ParseException
+    public Query buildLuceneEquality(LuceneQueryParser lqp, Serializable value, PredicateMode mode) throws ParseException
     {
         String field = getLuceneFieldName();
         String stringValue = getValueAsString(value);
@@ -112,11 +118,9 @@ public class ObjectIdPropertyAccessor extends AbstractNamedPropertyAccessor
 
     /*
      * (non-Javadoc)
-     * 
-     * @see org.alfresco.cmis.property.NamedPropertyAccessor#buildLuceneExists(org.alfresco.repo.search.impl.lucene.LuceneQueryParser,
-     *      java.lang.String, java.lang.Boolean)
+     * @see org.alfresco.cmis.property.PropertyLuceneBuilder#buildLuceneExists(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.lang.Boolean)
      */
-    public Query buildLuceneExists(LuceneQueryParser lqp, String propertyName, Boolean not) throws ParseException
+    public Query buildLuceneExists(LuceneQueryParser lqp, Boolean not) throws ParseException
     {
         if (not)
         {
@@ -130,34 +134,27 @@ public class ObjectIdPropertyAccessor extends AbstractNamedPropertyAccessor
 
     /*
      * (non-Javadoc)
-     * 
-     * @see org.alfresco.cmis.property.NamedPropertyAccessor#buildLuceneGreaterThan(org.alfresco.repo.search.impl.lucene.LuceneQueryParser,
-     *      java.lang.String, java.io.Serializable, org.alfresco.repo.search.impl.querymodel.PredicateMode)
+     * @see org.alfresco.cmis.property.PropertyLuceneBuilder#buildLuceneGreaterThan(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.io.Serializable, org.alfresco.repo.search.impl.querymodel.PredicateMode)
      */
-    public Query buildLuceneGreaterThan(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode) throws ParseException
+    public Query buildLuceneGreaterThan(LuceneQueryParser lqp, Serializable value, PredicateMode mode) throws ParseException
     {
-       throw new CMISQueryException("Property "+getPropertyName() +" can not be used in a 'greater than' comparison");
+       throw new CMISQueryException("Property " + getName() +" can not be used in a 'greater than' comparison");
     }
 
     /*
      * (non-Javadoc)
-     * 
-     * @see org.alfresco.cmis.property.NamedPropertyAccessor#buildLuceneGreaterThanOrEquals(org.alfresco.repo.search.impl.lucene.LuceneQueryParser,
-     *      java.lang.String, java.io.Serializable, org.alfresco.repo.search.impl.querymodel.PredicateMode)
+     * @see org.alfresco.cmis.property.PropertyLuceneBuilder#buildLuceneGreaterThanOrEquals(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.io.Serializable, org.alfresco.repo.search.impl.querymodel.PredicateMode)
      */
-    public Query buildLuceneGreaterThanOrEquals(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode) throws ParseException
+    public Query buildLuceneGreaterThanOrEquals(LuceneQueryParser lqp, Serializable value, PredicateMode mode) throws ParseException
     {
-        throw new CMISQueryException("Property "+getPropertyName() +" can not be used in a 'greater than or equals' comparison");
+        throw new CMISQueryException("Property " + getName() + " can not be used in a 'greater than or equals' comparison");
     }
 
     /*
      * (non-Javadoc)
-     * 
-     * @see org.alfresco.cmis.property.NamedPropertyAccessor#buildLuceneIn(org.alfresco.repo.search.impl.lucene.LuceneQueryParser,
-     *      java.lang.String, java.util.Collection, java.lang.Boolean,
-     *      org.alfresco.repo.search.impl.querymodel.PredicateMode)
+     * @see org.alfresco.cmis.property.PropertyLuceneBuilder#buildLuceneIn(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.util.Collection, java.lang.Boolean, org.alfresco.repo.search.impl.querymodel.PredicateMode)
      */
-    public Query buildLuceneIn(LuceneQueryParser lqp, String propertyName, Collection<Serializable> values, Boolean not, PredicateMode mode) throws ParseException
+    public Query buildLuceneIn(LuceneQueryParser lqp, Collection<Serializable> values, Boolean not, PredicateMode mode) throws ParseException
     {
         String field = getLuceneFieldName();
 
@@ -215,11 +212,9 @@ public class ObjectIdPropertyAccessor extends AbstractNamedPropertyAccessor
 
     /*
      * (non-Javadoc)
-     * 
-     * @see org.alfresco.cmis.property.NamedPropertyAccessor#buildLuceneInequality(org.alfresco.repo.search.impl.lucene.LuceneQueryParser,
-     *      java.lang.String, java.io.Serializable, org.alfresco.repo.search.impl.querymodel.PredicateMode)
+     * @see org.alfresco.cmis.property.PropertyLuceneBuilder#buildLuceneInequality(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.io.Serializable, org.alfresco.repo.search.impl.querymodel.PredicateMode)
      */
-    public Query buildLuceneInequality(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode) throws ParseException
+    public Query buildLuceneInequality(LuceneQueryParser lqp, Serializable value, PredicateMode mode) throws ParseException
     {
         String field = getLuceneFieldName();
         String stringValue = getValueAsString(value);
@@ -228,24 +223,20 @@ public class ObjectIdPropertyAccessor extends AbstractNamedPropertyAccessor
 
     /*
      * (non-Javadoc)
-     * 
-     * @see org.alfresco.cmis.property.NamedPropertyAccessor#buildLuceneLessThan(org.alfresco.repo.search.impl.lucene.LuceneQueryParser,
-     *      java.lang.String, java.io.Serializable, org.alfresco.repo.search.impl.querymodel.PredicateMode)
+     * @see org.alfresco.cmis.property.PropertyLuceneBuilder#buildLuceneLessThan(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.io.Serializable, org.alfresco.repo.search.impl.querymodel.PredicateMode)
      */
-    public Query buildLuceneLessThan(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode) throws ParseException
+    public Query buildLuceneLessThan(LuceneQueryParser lqp, Serializable value, PredicateMode mode) throws ParseException
     {
-        throw new CMISQueryException("Property "+getPropertyName() +" can not be used in a 'less than' comparison");
+        throw new CMISQueryException("Property " + getName() + " can not be used in a 'less than' comparison");
     }
 
     /*
      * (non-Javadoc)
-     * 
-     * @see org.alfresco.cmis.property.NamedPropertyAccessor#buildLuceneLessThanOrEquals(org.alfresco.repo.search.impl.lucene.LuceneQueryParser,
-     *      java.lang.String, java.io.Serializable, org.alfresco.repo.search.impl.querymodel.PredicateMode)
+     * @see org.alfresco.cmis.property.PropertyLuceneBuilder#buildLuceneLessThanOrEquals(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.io.Serializable, org.alfresco.repo.search.impl.querymodel.PredicateMode)
      */
-    public Query buildLuceneLessThanOrEquals(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode) throws ParseException
+    public Query buildLuceneLessThanOrEquals(LuceneQueryParser lqp, Serializable value, PredicateMode mode) throws ParseException
     {
-        throw new CMISQueryException("Property "+getPropertyName() +" can not be used in a 'less than or equals' comparison");
+        throw new CMISQueryException("Property " + getName() + " can not be used in a 'less than or equals' comparison");
     }
 
     /*
@@ -254,7 +245,7 @@ public class ObjectIdPropertyAccessor extends AbstractNamedPropertyAccessor
      * @see org.alfresco.cmis.property.NamedPropertyAccessor#buildLuceneLike(org.alfresco.repo.search.impl.lucene.LuceneQueryParser,
      *      java.lang.String, java.io.Serializable, java.lang.Boolean)
      */
-    public Query buildLuceneLike(LuceneQueryParser lqp, String propertyName, Serializable value, Boolean not) throws ParseException
+    public Query buildLuceneLike(LuceneQueryParser lqp, Serializable value, Boolean not) throws ParseException
     {
         String field = getLuceneFieldName();
         String stringValue = getValueAsString(value);
@@ -275,7 +266,7 @@ public class ObjectIdPropertyAccessor extends AbstractNamedPropertyAccessor
     /* (non-Javadoc)
      * @see org.alfresco.cmis.property.NamedPropertyAccessor#getLuceneSortField(java.lang.String)
      */
-    public String getLuceneSortField(String propertyName)
+    public String getLuceneSortField()
     {
         return getLuceneFieldName();
     }

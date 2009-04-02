@@ -27,6 +27,7 @@ package org.alfresco.cmis.dictionary;
 import java.util.List;
 
 import org.alfresco.cmis.CMISContentStreamAllowedEnum;
+import org.alfresco.cmis.mapping.CMISMapping;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;

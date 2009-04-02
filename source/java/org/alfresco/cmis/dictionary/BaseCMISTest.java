@@ -32,7 +32,7 @@ import javax.transaction.UserTransaction;
 import junit.framework.TestCase;
 
 import org.alfresco.cmis.CMISService;
-import org.alfresco.cmis.property.CMISPropertyService;
+import org.alfresco.cmis.mapping.CMISMapping;
 import org.alfresco.cmis.search.CMISQueryService;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -64,6 +64,8 @@ public abstract class BaseCMISTest extends TestCase
 
     protected CMISMapping cmisMapping;
     
+    protected CMISService cmisService;
+    
     protected CMISDictionaryService cmisDictionaryService;
     
     protected DictionaryService dictionaryService;
@@ -73,8 +75,6 @@ public abstract class BaseCMISTest extends TestCase
     protected AuthenticationComponent authenticationComponent;
 
     protected UserTransaction testTX;
-
-    protected CMISPropertyService cmisPropertyService;
 
     protected NodeService nodeService;
 
@@ -92,8 +92,6 @@ public abstract class BaseCMISTest extends TestCase
 
     private MutableAuthenticationDao authenticationDAO;
 
-    protected CMISService cmisService;
-
     protected SearchService searchService;
 
     protected ContentService contentService;
@@ -104,7 +102,6 @@ public abstract class BaseCMISTest extends TestCase
         
         cmisDictionaryService = (CMISDictionaryService) ctx.getBean("CMISDictionaryService");
         cmisMapping = (CMISMapping) ctx.getBean("CMISMapping");
-        cmisPropertyService = (CMISPropertyService) ctx.getBean("CMISPropertyService");
         cmisQueryService = (CMISQueryService) ctx.getBean("CMISQueryService");
         cmisService = (CMISService) ctx.getBean("CMISService");
         dictionaryService = (DictionaryService) ctx.getBean("dictionaryService");

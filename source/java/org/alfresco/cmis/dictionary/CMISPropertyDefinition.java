@@ -31,6 +31,10 @@ import java.util.HashSet;
 import org.alfresco.cmis.CMISCardinalityEnum;
 import org.alfresco.cmis.CMISDataTypeEnum;
 import org.alfresco.cmis.CMISUpdatabilityEnum;
+import org.alfresco.cmis.mapping.CMISMapping;
+import org.alfresco.cmis.property.AbstractPropertyAccessor;
+import org.alfresco.cmis.property.PropertyAccessor;
+import org.alfresco.cmis.property.PropertyLuceneBuilder;
 import org.alfresco.repo.dictionary.IndexTokenisationMode;
 import org.alfresco.repo.dictionary.constraint.ListOfValuesConstraint;
 import org.alfresco.repo.dictionary.constraint.StringLengthConstraint;
@@ -71,6 +75,7 @@ public class CMISPropertyDefinition implements Serializable
     private CMISUpdatabilityEnum updatability;
     private boolean queryable;
     private boolean orderable;
+    private AbstractPropertyAccessor propertyAccessor;
 
     
     /**
@@ -145,6 +150,7 @@ public class CMISPropertyDefinition implements Serializable
         {
             orderable = false;
         }
+        propertyAccessor = cmisMapping.getPropertyAccessor(propertyId);
     }
 
     /**
@@ -307,6 +313,27 @@ public class CMISPropertyDefinition implements Serializable
         return orderable;
     }
 
+    /**
+     * Gets the property accessor (for reading / writing values)
+     * 
+     * @return
+     */
+    public PropertyAccessor getPropertyAccessor()
+    {
+        return propertyAccessor;
+    }
+    
+    /**
+     * Gets the property Lucene builder
+     * 
+     * @return
+     */
+    public PropertyLuceneBuilder getPropertyLuceneBuilder()
+    {
+        return propertyAccessor;
+    }
+    
+    
     /*
      * (non-Javadoc)
      * @see java.lang.Object#toString()
@@ -319,6 +346,7 @@ public class CMISPropertyDefinition implements Serializable
         builder.append("OwningTypeId=").append(getOwningType().getTypeId()).append(", ");
         builder.append("PropertyName=").append(getPropertyId().getName()).append(", ");
         builder.append("PropertyId=").append(getPropertyId().getId()).append(", ");
+        builder.append("PropertyQName=").append(getPropertyId().getQName()).append(", ");
         builder.append("DisplayName=").append(getDisplayName()).append(", ");
         builder.append("Description=").append(getDescription()).append(", ");
         builder.append("PropertyType=").append(getDataType()).append(", ");

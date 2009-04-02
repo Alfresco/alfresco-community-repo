@@ -29,8 +29,6 @@ import java.util.Collection;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.alfresco.cmis.dictionary.CMISMapping;
-import org.alfresco.cmis.dictionary.CMISScope;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.search.impl.querymodel.PredicateMode;
 import org.alfresco.service.ServiceRegistry;
@@ -49,45 +47,48 @@ import org.apache.lucene.search.TermQuery;
  * 
  * @author andyh
  */
-public class FixedValuePropertyAccessor extends AbstractNamedPropertyAccessor
+public class FixedValuePropertyAccessor extends AbstractPropertyAccessor
 {
+    private Serializable value;
     
-    protected FixedValuePropertyAccessor(CMISMapping cmisMapping, ServiceRegistry serviceRegistry, CMISScope scope, String propertyName)
+    /**
+     * Construct
+     * 
+     * @param serviceRegistry
+     * @param propertyName
+     * @param value
+     */
+    public FixedValuePropertyAccessor(ServiceRegistry serviceRegistry, String propertyName, Serializable value)
     {
-        super(cmisMapping, serviceRegistry, scope, propertyName);
+        super(serviceRegistry, propertyName);
+        this.value = value;
     }
 
-    Serializable fixedValue;
-
-    public Serializable getFixedValue()
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.property.PropertyAccessor#getValue(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    public Serializable getValue(NodeRef nodeRef)
     {
-        return fixedValue;
+        return value;
     }
 
-    public void setFixedValue(Serializable fixedValue)
-    {
-        this.fixedValue = fixedValue;
-    }
-
-    public Serializable getProperty(NodeRef nodeRef)
-    {
-        return fixedValue;
-    }
-
-    public void setProperty(NodeRef nodeRef, Serializable value)
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.property.PropertyAccessor#setValue(org.alfresco.service.cmr.repository.NodeRef, java.io.Serializable)
+     */
+    public void setValue(NodeRef nodeRef, Serializable value)
     {
         throw new UnsupportedOperationException();
     }
 
     /*
      * (non-Javadoc)
-     * 
-     * @see org.alfresco.cmis.property.NamedPropertyAccessor#buildLuceneEquality(org.alfresco.repo.search.impl.lucene.LuceneQueryParser,
-     *      java.lang.String, java.io.Serializable, org.alfresco.repo.search.impl.querymodel.PredicateMode)
+     * @see org.alfresco.cmis.property.PropertyLuceneBuilder#buildLuceneEquality(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.io.Serializable, org.alfresco.repo.search.impl.querymodel.PredicateMode)
      */
-    public Query buildLuceneEquality(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode) throws ParseException
+    public Query buildLuceneEquality(LuceneQueryParser lqp, Serializable value, PredicateMode mode) throws ParseException
     {
-        if (EqualsHelper.nullSafeEquals(fixedValue, value))
+        if (EqualsHelper.nullSafeEquals(value, value))
         {
             return new MatchAllDocsQuery();
         }
@@ -99,15 +100,13 @@ public class FixedValuePropertyAccessor extends AbstractNamedPropertyAccessor
 
     /*
      * (non-Javadoc)
-     * 
-     * @see org.alfresco.cmis.property.NamedPropertyAccessor#buildLuceneExists(org.alfresco.repo.search.impl.lucene.LuceneQueryParser,
-     *      java.lang.String, java.lang.Boolean)
+     * @see org.alfresco.cmis.property.PropertyLuceneBuilder#buildLuceneExists(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.lang.Boolean)
      */
-    public Query buildLuceneExists(LuceneQueryParser lqp, String propertyName, Boolean not) throws ParseException
+    public Query buildLuceneExists(LuceneQueryParser lqp, Boolean not) throws ParseException
     {
         if (not)
         {
-            if (fixedValue == null)
+            if (value == null)
             {
                 return new MatchAllDocsQuery();
             }
@@ -118,7 +117,7 @@ public class FixedValuePropertyAccessor extends AbstractNamedPropertyAccessor
         }
         else
         {
-            if (fixedValue == null)
+            if (value == null)
             {
                 return new TermQuery(new Term("NO_TOKENS", "__"));
             }
@@ -132,16 +131,14 @@ public class FixedValuePropertyAccessor extends AbstractNamedPropertyAccessor
 
     /*
      * (non-Javadoc)
-     * 
-     * @see org.alfresco.cmis.property.NamedPropertyAccessor#buildLuceneGreaterThan(org.alfresco.repo.search.impl.lucene.LuceneQueryParser,
-     *      java.lang.String, java.io.Serializable, org.alfresco.repo.search.impl.querymodel.PredicateMode)
+     * @see org.alfresco.cmis.property.PropertyLuceneBuilder#buildLuceneGreaterThan(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.io.Serializable, org.alfresco.repo.search.impl.querymodel.PredicateMode)
      */
     @SuppressWarnings("unchecked")
-    public Query buildLuceneGreaterThan(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode) throws ParseException
+    public Query buildLuceneGreaterThan(LuceneQueryParser lqp, Serializable value, PredicateMode mode) throws ParseException
     {
-        if (fixedValue instanceof Comparable)
+        if (value instanceof Comparable)
         {
-            Comparable comparable = (Comparable) fixedValue;
+            Comparable comparable = (Comparable) value;
             if (comparable.compareTo(value) > 0)
             {
                 return new MatchAllDocsQuery();
@@ -159,16 +156,14 @@ public class FixedValuePropertyAccessor extends AbstractNamedPropertyAccessor
 
     /*
      * (non-Javadoc)
-     * 
-     * @see org.alfresco.cmis.property.NamedPropertyAccessor#buildLuceneGreaterThanOrEquals(org.alfresco.repo.search.impl.lucene.LuceneQueryParser,
-     *      java.lang.String, java.io.Serializable, org.alfresco.repo.search.impl.querymodel.PredicateMode)
+     * @see org.alfresco.cmis.property.PropertyLuceneBuilder#buildLuceneGreaterThanOrEquals(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.io.Serializable, org.alfresco.repo.search.impl.querymodel.PredicateMode)
      */
     @SuppressWarnings("unchecked")
-    public Query buildLuceneGreaterThanOrEquals(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode) throws ParseException
+    public Query buildLuceneGreaterThanOrEquals(LuceneQueryParser lqp, Serializable value, PredicateMode mode) throws ParseException
     {
-        if (fixedValue instanceof Comparable)
+        if (value instanceof Comparable)
         {
-            Comparable comparable = (Comparable) fixedValue;
+            Comparable comparable = (Comparable) value;
             if (comparable.compareTo(value) >= 0)
             {
                 return new MatchAllDocsQuery();
@@ -186,17 +181,14 @@ public class FixedValuePropertyAccessor extends AbstractNamedPropertyAccessor
 
     /*
      * (non-Javadoc)
-     * 
-     * @see org.alfresco.cmis.property.NamedPropertyAccessor#buildLuceneIn(org.alfresco.repo.search.impl.lucene.LuceneQueryParser,
-     *      java.lang.String, java.util.Collection, java.lang.Boolean,
-     *      org.alfresco.repo.search.impl.querymodel.PredicateMode)
+     * @see org.alfresco.cmis.property.PropertyLuceneBuilder#buildLuceneIn(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.util.Collection, java.lang.Boolean, org.alfresco.repo.search.impl.querymodel.PredicateMode)
      */
-    public Query buildLuceneIn(LuceneQueryParser lqp, String propertyName, Collection<Serializable> values, Boolean not, PredicateMode mode) throws ParseException
+    public Query buildLuceneIn(LuceneQueryParser lqp, Collection<Serializable> values, Boolean not, PredicateMode mode) throws ParseException
     {
         boolean in = false;
         for (Serializable value : values)
         {
-            if (EqualsHelper.nullSafeEquals(fixedValue, value))
+            if (EqualsHelper.nullSafeEquals(value, value))
             {
                 in = true;
                 break;
@@ -211,18 +203,15 @@ public class FixedValuePropertyAccessor extends AbstractNamedPropertyAccessor
         {
             return new TermQuery(new Term("NO_TOKENS", "__"));
         }
-
     }
 
     /*
      * (non-Javadoc)
-     * 
-     * @see org.alfresco.cmis.property.NamedPropertyAccessor#buildLuceneInequality(org.alfresco.repo.search.impl.lucene.LuceneQueryParser,
-     *      java.lang.String, java.io.Serializable, org.alfresco.repo.search.impl.querymodel.PredicateMode)
+     * @see org.alfresco.cmis.property.PropertyLuceneBuilder#buildLuceneInequality(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.io.Serializable, org.alfresco.repo.search.impl.querymodel.PredicateMode)
      */
-    public Query buildLuceneInequality(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode) throws ParseException
+    public Query buildLuceneInequality(LuceneQueryParser lqp, Serializable value, PredicateMode mode) throws ParseException
     {
-        if (!EqualsHelper.nullSafeEquals(fixedValue, value))
+        if (!EqualsHelper.nullSafeEquals(value, value))
         {
             return new MatchAllDocsQuery();
         }
@@ -234,16 +223,14 @@ public class FixedValuePropertyAccessor extends AbstractNamedPropertyAccessor
 
     /*
      * (non-Javadoc)
-     * 
-     * @see org.alfresco.cmis.property.NamedPropertyAccessor#buildLuceneLessThan(org.alfresco.repo.search.impl.lucene.LuceneQueryParser,
-     *      java.lang.String, java.io.Serializable, org.alfresco.repo.search.impl.querymodel.PredicateMode)
+     * @see org.alfresco.cmis.property.PropertyLuceneBuilder#buildLuceneLessThan(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.io.Serializable, org.alfresco.repo.search.impl.querymodel.PredicateMode)
      */
     @SuppressWarnings("unchecked")
-    public Query buildLuceneLessThan(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode) throws ParseException
+    public Query buildLuceneLessThan(LuceneQueryParser lqp, Serializable value, PredicateMode mode) throws ParseException
     {
-        if (fixedValue instanceof Comparable)
+        if (value instanceof Comparable)
         {
-            Comparable comparable = (Comparable) fixedValue;
+            Comparable comparable = (Comparable) value;
             if (comparable.compareTo(value) < 0)
             {
                 return new MatchAllDocsQuery();
@@ -261,16 +248,14 @@ public class FixedValuePropertyAccessor extends AbstractNamedPropertyAccessor
 
     /*
      * (non-Javadoc)
-     * 
-     * @see org.alfresco.cmis.property.NamedPropertyAccessor#buildLuceneLessThanOrEquals(org.alfresco.repo.search.impl.lucene.LuceneQueryParser,
-     *      java.lang.String, java.io.Serializable, org.alfresco.repo.search.impl.querymodel.PredicateMode)
+     * @see org.alfresco.cmis.property.PropertyLuceneBuilder#buildLuceneLessThanOrEquals(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.io.Serializable, org.alfresco.repo.search.impl.querymodel.PredicateMode)
      */
     @SuppressWarnings("unchecked")
-    public Query buildLuceneLessThanOrEquals(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode) throws ParseException
+    public Query buildLuceneLessThanOrEquals(LuceneQueryParser lqp, Serializable value, PredicateMode mode) throws ParseException
     {
-        if (fixedValue instanceof Comparable)
+        if (value instanceof Comparable)
         {
-            Comparable comparable = (Comparable) fixedValue;
+            Comparable comparable = (Comparable) value;
             if (comparable.compareTo(value) <= 0)
             {
                 return new MatchAllDocsQuery();
@@ -288,22 +273,19 @@ public class FixedValuePropertyAccessor extends AbstractNamedPropertyAccessor
 
     /*
      * (non-Javadoc)
-     * 
-     * @see org.alfresco.cmis.property.NamedPropertyAccessor#buildLuceneLike(org.alfresco.repo.search.impl.lucene.LuceneQueryParser,
-     *      java.lang.String, java.io.Serializable, java.lang.Boolean)
+     * @see org.alfresco.cmis.property.PropertyLuceneBuilder#buildLuceneLike(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.io.Serializable, java.lang.Boolean)
      */
-    public Query buildLuceneLike(LuceneQueryParser lqp, String propertyName, Serializable value, Boolean not) throws ParseException
+    public Query buildLuceneLike(LuceneQueryParser lqp, Serializable value, Boolean not) throws ParseException
     {
-
-        if (fixedValue != null)
+        if (value != null)
         {
             boolean matches = false;
 
-            Object converted = DefaultTypeConverter.INSTANCE.convert(fixedValue.getClass(), value);
+            Object converted = DefaultTypeConverter.INSTANCE.convert(value.getClass(), value);
             String asString = DefaultTypeConverter.INSTANCE.convert(String.class, converted);
             String regExpression = SearchLanguageConversion.convertSQLLikeToRegex(asString);
             Pattern pattern = Pattern.compile(regExpression);
-            String target = DefaultTypeConverter.INSTANCE.convert(String.class, fixedValue);
+            String target = DefaultTypeConverter.INSTANCE.convert(String.class, value);
             Matcher matcher = pattern.matcher(target);
             if (matcher.matches())
             {
@@ -323,13 +305,13 @@ public class FixedValuePropertyAccessor extends AbstractNamedPropertyAccessor
         {
             return new TermQuery(new Term("NO_TOKENS", "__"));
         }
-
     }
-    
-    /* (non-Javadoc)
-     * @see org.alfresco.cmis.property.NamedPropertyAccessor#getLuceneSortField(java.lang.String)
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.property.PropertyLuceneBuilder#getLuceneSortField()
      */
-    public String getLuceneSortField(String propertyName)
+    public String getLuceneSortField()
     {
         throw new UnsupportedOperationException();
     }

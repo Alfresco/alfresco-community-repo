@@ -26,6 +26,9 @@ package org.alfresco.repo.service;
 
 import java.util.Collection;
 
+import org.alfresco.cmis.CMISService;
+import org.alfresco.cmis.dictionary.CMISDictionaryService;
+import org.alfresco.cmis.search.CMISQueryService;
 import org.alfresco.mbeans.VirtServerRegistry;
 import org.alfresco.repo.forms.FormService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -504,6 +507,32 @@ public class ServiceDescriptorRegistry
 	public InvitationService getInvitationService() 
 	{
 	     return (InvitationService)getService(INVITATION_SERVICE);
-
 	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.alfresco.service.ServiceRegistry#getCMISService()
+	 */
+    public CMISService getCMISService() 
+    {
+         return (CMISService)getService(CMIS_SERVICE);
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.service.ServiceRegistry#getCMISDictionaryService()
+     */
+    public CMISDictionaryService getCMISDictionaryService() 
+    {
+         return (CMISDictionaryService)getService(CMIS_DICTIONARY_SERVICE);
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.service.ServiceRegistry#getCMISQueryService()
+     */
+    public CMISQueryService getCMISQueryService() 
+    {
+         return (CMISQueryService)getService(CMIS_QUERY_SERVICE);
+    }
 }

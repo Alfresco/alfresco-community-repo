@@ -26,6 +26,9 @@ package org.alfresco.service;
 
 import java.util.Collection;
 
+import org.alfresco.cmis.CMISService;
+import org.alfresco.cmis.dictionary.CMISDictionaryService;
+import org.alfresco.cmis.search.CMISQueryService;
 import org.alfresco.mbeans.VirtServerRegistry;
 import org.alfresco.repo.forms.FormService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -137,6 +140,10 @@ public interface ServiceRegistry
     static final QName ASSET_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "AssetService");
     static final QName FORM_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "FormService");
     static final QName INVITATION_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "InvitationService");
+    static final QName CMIS_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "CMISService");
+    static final QName CMIS_DICTIONARY_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "CMISDictionaryService");
+    static final QName CMIS_QUERY_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "CMISQueryService");
+    
 
     /**
      * Get the list of services provided by the Repository
@@ -465,4 +472,25 @@ public interface ServiceRegistry
      */
     @NotAuditable
     InvitationService getInvitationService();
+
+    /**
+     * Get the CMIS service (or null if one is not provided)
+     * @return the CMIS service
+     */
+    @NotAuditable
+    CMISService getCMISService();
+    
+    /**
+     * Get the CMIS Dictionary service (or null if one is not provided)
+     * @return the CMIS Dictionary service
+     */
+    @NotAuditable
+    CMISDictionaryService getCMISDictionaryService();
+
+    /**
+     * Get the CMIS Query service (or null if one is not provided)
+     * @return the CMIS Query service
+     */
+    @NotAuditable
+    CMISQueryService getCMISQueryService();
 }

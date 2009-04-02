@@ -92,6 +92,8 @@ public class CMISDocumentTypeDefinition extends CMISAbstractTypeDefinition
         controllable = false;
         includeInSuperTypeQuery = true;
 
+        actionEvaluators = cmisMapping.getActionEvaluators(objectTypeId.getScope());
+
         // Document type properties
         versionable = false;
         List<AspectDefinition> defaultAspects = cmisClassDef.getDefaultAspects();

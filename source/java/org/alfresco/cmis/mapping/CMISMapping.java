@@ -25,9 +25,13 @@
 package org.alfresco.cmis.mapping;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.alfresco.cmis.CMISActionEvaluator;
+import org.alfresco.cmis.CMISAllowedActionEnum;
 import org.alfresco.cmis.CMISContentStreamAllowedEnum;
 import org.alfresco.cmis.CMISDataTypeEnum;
 import org.alfresco.cmis.CMISDictionaryModel;
@@ -40,6 +44,7 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -102,6 +107,7 @@ public class CMISMapping implements InitializingBean
     private Map<QName, QName> mapAlfrescoQNameToCmisQName = new HashMap<QName, QName>();
     private Map<QName, CMISDataTypeEnum> mapAlfrescoToCmisDataType = new HashMap<QName, CMISDataTypeEnum>();
     private Map<String, AbstractProperty> propertyAccessors = new HashMap<String, AbstractProperty>();
+    private Map<CMISScope, Map<CMISAllowedActionEnum, CMISActionEvaluator>> actionEvaluators = new HashMap<CMISScope, Map<CMISAllowedActionEnum, CMISActionEvaluator>>();
     
     
     /*
@@ -110,6 +116,10 @@ public class CMISMapping implements InitializingBean
      */
     public void afterPropertiesSet() throws Exception
     {
+        //
+        // Type Mappings
+        //
+        
         mapAlfrescoQNameToTypeId.put(OBJECT_QNAME, OBJECT_TYPE_ID);
         mapAlfrescoQNameToTypeId.put(FILESYSTEM_OBJECT_QNAME, FILESYSTEM_OBJECT_TYPE_ID);
         mapAlfrescoQNameToTypeId.put(DOCUMENT_QNAME, CMISDictionaryModel.DOCUMENT_TYPE_ID);
@@ -125,6 +135,10 @@ public class CMISMapping implements InitializingBean
         mapCmisQNameToAlfrescoQName.put(RELATIONSHIP_QNAME, null);
         mapCmisQNameToAlfrescoQName.put(POLICY_QNAME, null);
 
+        //
+        // Data Type Mappings
+        //
+        
         mapAlfrescoToCmisDataType.put(DataTypeDefinition.ANY, null);
         mapAlfrescoToCmisDataType.put(DataTypeDefinition.ASSOC_REF, null);
         mapAlfrescoToCmisDataType.put(DataTypeDefinition.BOOLEAN, CMISDataTypeEnum.BOOLEAN);
@@ -148,6 +162,10 @@ public class CMISMapping implements InitializingBean
         mapAlfrescoToCmisDataType.put(CMIS_DATATYPE_XML, CMISDataTypeEnum.XML);
         mapAlfrescoToCmisDataType.put(CMIS_DATATYPE_HTML, CMISDataTypeEnum.HTML);
 
+        //
+        // Property Mappings
+        //
+        
         registerPropertyAccessor(new ObjectIdProperty(serviceRegistry));
         registerPropertyAccessor(new FixedValueProperty(serviceRegistry, CMISDictionaryModel.PROP_URI, null));
         registerPropertyAccessor(new ObjectTypeIdProperty(serviceRegistry));
@@ -174,9 +192,32 @@ public class CMISMapping implements InitializingBean
         registerPropertyAccessor(new ContentStreamUriProperty(serviceRegistry));
         registerPropertyAccessor(new ParentProperty(serviceRegistry));
         registerPropertyAccessor(new FixedValueProperty(serviceRegistry, CMISDictionaryModel.PROP_ALLOWED_CHILD_OBJECT_TYPE_IDS, null));
+        
+        //
+        // Action Evaluator Mappings
+        //
+        
+        registerActionEvaluator(CMISScope.DOCUMENT, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_DELETE, PermissionService.DELETE_NODE));
+        registerActionEvaluator(CMISScope.DOCUMENT, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_UPDATE_PROPERTIES, PermissionService.WRITE_PROPERTIES));
+        registerActionEvaluator(CMISScope.DOCUMENT, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_PROPERTIES, PermissionService.READ_PROPERTIES));
+        registerActionEvaluator(CMISScope.DOCUMENT, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_RELATIONSHIPS, true));
+
+        registerActionEvaluator(CMISScope.FOLDER, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_DELETE, PermissionService.DELETE_NODE));
+        registerActionEvaluator(CMISScope.FOLDER, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_UPDATE_PROPERTIES, PermissionService.WRITE_PROPERTIES));
+        registerActionEvaluator(CMISScope.FOLDER, new PermissionActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_PROPERTIES, PermissionService.READ_PROPERTIES));
+        registerActionEvaluator(CMISScope.FOLDER, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_RELATIONSHIPS, true));
+
+        registerActionEvaluator(CMISScope.RELATIONSHIP, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_DELETE, true));
+        registerActionEvaluator(CMISScope.RELATIONSHIP, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_UPDATE_PROPERTIES, false));
+        registerActionEvaluator(CMISScope.RELATIONSHIP, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_PROPERTIES, false));
+
+        registerActionEvaluator(CMISScope.POLICY, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_DELETE, false));
+        registerActionEvaluator(CMISScope.POLICY, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_UPDATE_PROPERTIES, false));
+        registerActionEvaluator(CMISScope.POLICY, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_PROPERTIES, false));
+        registerActionEvaluator(CMISScope.POLICY, new FixedValueActionEvaluator(serviceRegistry, CMISAllowedActionEnum.CAN_GET_RELATIONSHIPS, false));
     }
 
-
+    
     /**
      * @param serviceRegistry
      */
@@ -678,4 +719,41 @@ public class CMISMapping implements InitializingBean
         propertyAccessors.put(propertyAccessor.getName(), propertyAccessor);
     }
     
+    /**
+     * Gets the Action Evaluators applicable for the given CMIS Scope
+     * 
+     * @param cmisScope
+     * @return
+     */
+    public Map<CMISAllowedActionEnum, CMISActionEvaluator> getActionEvaluators(CMISScope scope)
+    {
+        Map<CMISAllowedActionEnum, CMISActionEvaluator> evaluators = actionEvaluators.get(scope);
+        if (evaluators == null)
+        {
+            evaluators = Collections.emptyMap();
+        }
+        return evaluators;
+    }
+
+    /**
+     * Register an Action Evaluator
+     * 
+     * @param scope
+     * @param evaluator
+     */
+    private void registerActionEvaluator(CMISScope scope, CMISActionEvaluator evaluator)
+    {
+        Map<CMISAllowedActionEnum, CMISActionEvaluator> evaluators = actionEvaluators.get(scope);
+        if (evaluators == null)
+        {
+            evaluators = new LinkedHashMap<CMISAllowedActionEnum, CMISActionEvaluator>();
+            actionEvaluators.put(scope, evaluators);
+        }
+        if (evaluators.get(evaluator.getAction()) != null)
+        {
+            throw new AlfrescoRuntimeException("Already registered Action Evaluator " + evaluator.getAction() + " for scope " + scope);
+        }
+        evaluators.put(evaluator.getAction(), evaluator);
+    }
+
 }

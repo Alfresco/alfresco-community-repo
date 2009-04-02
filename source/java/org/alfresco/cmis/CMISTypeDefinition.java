@@ -168,6 +168,12 @@ public interface CMISTypeDefinition
      * 
      * @return
      */
-    public Map<CMISPropertyId, CMISPropertyDefinition> getOwnedPropertyDefinitions(); 
+    public Map<CMISPropertyId, CMISPropertyDefinition> getOwnedPropertyDefinitions();
     
+    /**
+     * Gets the Action evaluators for this type
+     * 
+     * @return
+     */
+    public Map<CMISAllowedActionEnum, CMISActionEvaluator> getActionEvaluators();
 }

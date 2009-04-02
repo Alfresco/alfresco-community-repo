@@ -75,6 +75,8 @@ public class CMISFolderTypeDefinition extends CMISAbstractTypeDefinition
             }
         }
         
+        actionEvaluators = cmisMapping.getActionEvaluators(objectTypeId.getScope());
+        
         creatable = true;
         queryable = true;
         controllable = false;

@@ -71,6 +71,8 @@ public class CMISObjectTypeDefinition extends CMISAbstractTypeDefinition
             }
         }
         
+        actionEvaluators = cmisMapping.getActionEvaluators(objectTypeId.getScope());
+                
         creatable = false;
         queryable = false;
         controllable = false;

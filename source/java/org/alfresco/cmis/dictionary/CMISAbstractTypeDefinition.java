@@ -32,6 +32,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
+import org.alfresco.cmis.CMISActionEvaluator;
+import org.alfresco.cmis.CMISAllowedActionEnum;
 import org.alfresco.cmis.CMISContentStreamAllowedEnum;
 import org.alfresco.cmis.CMISPropertyDefinition;
 import org.alfresco.cmis.CMISPropertyId;
@@ -80,7 +82,7 @@ public class CMISAbstractTypeDefinition implements CMISTypeDefinition, Serializa
     protected Map<CMISPropertyId, CMISPropertyDefinition> properties = new HashMap<CMISPropertyId, CMISPropertyDefinition>();
     protected Map<CMISPropertyId, CMISPropertyDefinition> inheritedProperties = new HashMap<CMISPropertyId, CMISPropertyDefinition>();
     protected Map<CMISPropertyId, CMISPropertyDefinition> ownedProperties = new HashMap<CMISPropertyId, CMISPropertyDefinition>();
-    
+    protected Map<CMISAllowedActionEnum, CMISActionEvaluator> actionEvaluators;
     
 
     /**
@@ -386,6 +388,15 @@ public class CMISAbstractTypeDefinition implements CMISTypeDefinition, Serializa
         return ownedProperties;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.CMISTypeDefinition#getActionEvaluators()
+     */
+    public Map<CMISAllowedActionEnum, CMISActionEvaluator> getActionEvaluators()
+    {
+        return actionEvaluators;
+    }
+    
     //
     // Document Type specific
     //

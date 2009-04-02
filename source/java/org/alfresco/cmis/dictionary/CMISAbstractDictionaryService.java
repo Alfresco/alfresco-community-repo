@@ -158,6 +158,7 @@ public abstract class CMISAbstractDictionaryService extends AbstractLifecycleBea
                 logger.debug("Registered type " + typeDef.getTypeId() + " (scope=" + typeDef.getTypeId().getScope() + ", public=" + typeDef.isPublic() + ")");
                 logger.debug(" QName: " + typeDef.getTypeId().getQName());
                 logger.debug(" Table: " + typeDef.getQueryName());
+                logger.debug(" Action Evaluators: " + typeDef.getActionEvaluators().size());
             }
         }
 

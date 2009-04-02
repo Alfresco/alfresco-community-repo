@@ -75,6 +75,9 @@ public class CMISRelationshipTypeDefinition extends CMISAbstractTypeDefinition
         isPublic = true;
         this.cmisClassDef = cmisClassDef;
         objectTypeId = typeId;
+        
+        actionEvaluators = cmisMapping.getActionEvaluators(objectTypeId.getScope());
+        
         creatable = false;
         queryable = false;
         controllable = false;

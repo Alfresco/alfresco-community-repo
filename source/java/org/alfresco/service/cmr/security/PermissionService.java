@@ -27,13 +27,11 @@ package org.alfresco.service.cmr.security;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.repo.security.permissions.PermissionReference;
 import org.alfresco.service.Auditable;
 import org.alfresco.service.PublicService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
-import org.apache.axis.wsdl.symbolTable.Parameters;
 
 /**
  * The public API for a permission service The implementation may be changed in the application configuration

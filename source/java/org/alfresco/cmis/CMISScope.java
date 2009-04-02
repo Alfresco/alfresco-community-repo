@@ -24,9 +24,6 @@
  */
 package org.alfresco.cmis;
 
-import java.util.HashMap;
-import java.util.Map;
-
 
 /**
  * The scope for a CMIS name
@@ -38,39 +35,34 @@ import java.util.Map;
  * @author andyh
  *
  */
-public enum CMISScope
+public enum CMISScope implements EnumLabel
 {
-    OBJECT ('O'), 
-    RELATIONSHIP ('R'), 
-    DOCUMENT ('D'), 
-    FOLDER ('F'),
-    POLICY ('P'),
-    UNKNOWN ('U');
+    OBJECT ("O"), 
+    RELATIONSHIP ("R"), 
+    DOCUMENT ("D"), 
+    FOLDER ("F"),
+    POLICY ("P"),
+    UNKNOWN ("U");
 
-    private static Map<Character, CMISScope> discriminatorMap = new HashMap<Character, CMISScope>(10);
-    static
+    private String label;
+
+    /**
+     * Construct
+     * 
+     * @param label
+     */
+    CMISScope(String label)
     {
-        for (CMISScope scope : CMISScope.values())
-        {
-            discriminatorMap.put(scope.discriminator, scope);
-        }
-    }
-
-    private char discriminator;
-
-    CMISScope(char discriminator)
-    {
-        this.discriminator = discriminator;
+        this.label = label;
     }
     
-    public char discriminator()
+    /* (non-Javadoc)
+     * @see org.alfresco.cmis.EnumLabel#label()
+     */
+    public String getLabel()
     {
-        return discriminator;
+        return label;
     }
 
-    public static CMISScope toScope(char discrimator)
-    {
-        return discriminatorMap.get(discrimator);
-    }
-    
+    public static EnumFactory<CMISScope> FACTORY = new EnumFactory<CMISScope>(CMISScope.class);
 }

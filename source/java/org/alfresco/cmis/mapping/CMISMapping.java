@@ -234,7 +234,7 @@ public class CMISMapping implements InitializingBean
         }
 
         // Alfresco type id
-        CMISScope scope = CMISScope.toScope(typeId.charAt(0));
+        CMISScope scope = (CMISScope)CMISScope.FACTORY.fromLabel(typeId.substring(0, 1));
         if (scope == null)
         {
             throw new AlfrescoRuntimeException("Malformed type id '" + typeId + "'; discriminator " + typeId.charAt(0) + " unknown");
@@ -257,7 +257,7 @@ public class CMISMapping implements InitializingBean
         if (typeId == null)
         {
             StringBuilder builder = new StringBuilder(128);
-            builder.append(scope.discriminator());
+            builder.append(scope.getLabel());
             builder.append("/");
             builder.append(buildPrefixEncodedString(typeQName, false));
             return new CMISTypeId(scope, builder.toString(), typeQName);

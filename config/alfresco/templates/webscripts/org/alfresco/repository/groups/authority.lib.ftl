@@ -1,5 +1,5 @@
 <#-- renders an authority object which can be either a GROUP or USER (and possibly ROLE in future)-->
-<#macro formJSON authority>
+<#macro authorityJSON authority>
     <#escape x as jsonUtils.encodeJSONString(x)>
 {
         "authorityType" : "${authority.authorityType}",

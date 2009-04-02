@@ -7,7 +7,9 @@
   invitation which will result in the invitation workflow continuing to a normal but rejected conclusion.   
   In particular the approver or invitee are not notified if an invitation is canceled. 
   <BR>
-  Only a site manager may cancel an invitation.
+  Only a site manager may cancel an nominated invitation.
+  <BR>
+  A site manager or the invitee may cancel a moderated invitation. 			
   <BR>
   Returns 200, STATUS_OK on success.
   ]]>

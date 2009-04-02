@@ -45,6 +45,7 @@ import org.alfresco.repo.forms.AssociationFieldDefinition.Direction;
 import org.alfresco.repo.forms.FormData.FieldData;
 import org.alfresco.repo.forms.PropertyFieldDefinition.FieldConstraint;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
+import org.alfresco.service.cmr.dictionary.ChildAssociationDefinition;
 import org.alfresco.service.cmr.dictionary.Constraint;
 import org.alfresco.service.cmr.dictionary.ConstraintDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -114,10 +115,10 @@ public class NodeHandler extends AbstractHandler
     
     /**
      * A regular expression which can be used to match association names.
-     * These names will look like <code>"assoc:cm:references"</code>.
-     * The pattern can also be used to extract the "cm" and the "name" parts.
+     * These names will look like <code>"assoc:cm:references_added"</code>.
+     * The pattern can also be used to extract the "cm", the "name" and the suffix parts.
      */
-    protected Pattern associationNamePattern = Pattern.compile(ASSOC_PREFIX + "(.*){1}?:(.*){1}?");
+    protected Pattern associationNamePattern = Pattern.compile(ASSOC_PREFIX + "(.*){1}?:(.*){1}?(_[a-zA-Z]+)");
     
     /**
      * Sets the node service 
@@ -226,6 +227,8 @@ public class NodeHandler extends AbstractHandler
         QName type = this.nodeService.getType(nodeRef);
         Collection<QName> aspects = this.getAspectsToInclude(nodeRef);
         TypeDefinition typeDef = this.dictionaryService.getAnonymousType(type, aspects);
+        Map<QName, AssociationDefinition> assocDefs = typeDef.getAssociations();
+        Map<QName, ChildAssociationDefinition> childAssocDefs = typeDef.getChildAssociations();
         Map<QName, PropertyDefinition> propDefs = typeDef.getProperties();
         
         Map<QName, Serializable> propsToPersist = new HashMap<QName, Serializable>(data.getData().size());
@@ -245,7 +248,7 @@ public class NodeHandler extends AbstractHandler
                 }
                 else if (fieldName.startsWith(ASSOC_PREFIX))
                 {
-                    processAssociationPersist(nodeRef, fieldData, assocsToPersist);
+                    processAssociationPersist(nodeRef, assocDefs, fieldData, assocsToPersist);
                 }
                 else if (logger.isWarnEnabled())
                 {
@@ -626,7 +629,7 @@ public class NodeHandler extends AbstractHandler
      * @param fieldData Data to persist for the associations
      * @param assocCommands List of associations to be persisted
      */
-    protected void processAssociationPersist(NodeRef nodeRef,
+    protected void processAssociationPersist(NodeRef nodeRef, Map<QName, AssociationDefinition> assocDefs,
                 FieldData fieldData, List<AbstractAssocCommand> assocCommands)
     {
         if (logger.isDebugEnabled())
@@ -636,6 +639,21 @@ public class NodeHandler extends AbstractHandler
         Matcher m = this.associationNamePattern.matcher(fieldName);
         if (m.matches())
         {
+            String qNamePrefix = m.group(1);
+            String localName = m.group(2);
+            String assocSuffix = m.group(3);
+            
+            QName fullQName = QName.createQName(qNamePrefix, localName, namespaceService);
+        
+            // ensure that the association being persisted is defined in the model
+            AssociationDefinition assocDef = assocDefs.get(fullQName);
+            
+            if (assocDef == null)
+            {
+                // TODO do what? return?
+                return;
+            }
+            
             String value = (String)fieldData.getValue();
             String[] nodeRefs = value.split(",");
             
@@ -645,13 +663,13 @@ public class NodeHandler extends AbstractHandler
             {
                 if (NodeRef.isNodeRef(nextTargetNode))
                 {
-                    if (fieldName.endsWith(ASSOC_ADD_SUFFIX))
+                    if (assocSuffix.equals(ASSOC_ADD_SUFFIX))
                     {
-                        assocCommands.add(new AddAssocCommand(nodeRef, new NodeRef(nextTargetNode)));
+                        assocCommands.add(new AddAssocCommand(nodeRef, new NodeRef(nextTargetNode), fullQName));
                     }
-                    else if (fieldName.endsWith(ASSOC_REMOVE_SUFFIX))
+                    else if (assocSuffix.equals(ASSOC_REMOVE_SUFFIX))
                     {
-                        assocCommands.add(new RemoveAssocCommand(nodeRef, new NodeRef(nextTargetNode)));
+                        assocCommands.add(new RemoveAssocCommand(nodeRef, new NodeRef(nextTargetNode), fullQName));
                     }
                     else
                     {
@@ -875,11 +893,13 @@ abstract class AbstractAssocCommand
 {
     protected final NodeRef sourceNodeRef;
     protected final NodeRef targetNodeRef;
+    protected final QName assocQName;
     
-    public AbstractAssocCommand(NodeRef sourceNodeRef, NodeRef targetNodeRef)
+    public AbstractAssocCommand(NodeRef sourceNodeRef, NodeRef targetNodeRef, QName assocQName)
     {
         this.sourceNodeRef = sourceNodeRef;
         this.targetNodeRef = targetNodeRef;
+        this.assocQName = assocQName;
     }
     
     /**
@@ -898,15 +918,15 @@ abstract class AbstractAssocCommand
 class AddAssocCommand extends AbstractAssocCommand
 {
     private static final Log logger = LogFactory.getLog(AddAssocCommand.class);
-    public AddAssocCommand(NodeRef sourceNodeRef, NodeRef targetNodeRef)
+    public AddAssocCommand(NodeRef sourceNodeRef, NodeRef targetNodeRef, QName assocQName)
     {
-        super(sourceNodeRef, targetNodeRef);
+        super(sourceNodeRef, targetNodeRef, assocQName);
     }
 
     @Override
     protected void updateAssociations(NodeService nodeService)
     {
-        List<AssociationRef> existingAssocs = nodeService.getTargetAssocs(sourceNodeRef, ContentModel.ASSOC_REFERENCES);
+        List<AssociationRef> existingAssocs = nodeService.getTargetAssocs(sourceNodeRef, assocQName);
         for (AssociationRef assoc : existingAssocs)
         {
             if (assoc.getTargetRef().equals(targetNodeRef))
@@ -918,7 +938,7 @@ class AddAssocCommand extends AbstractAssocCommand
                 return;
             }
         }
-        nodeService.createAssociation(sourceNodeRef, targetNodeRef, ContentModel.ASSOC_REFERENCES);
+        nodeService.createAssociation(sourceNodeRef, targetNodeRef, assocQName);
     }
 }
 
@@ -930,15 +950,15 @@ class AddAssocCommand extends AbstractAssocCommand
 class RemoveAssocCommand extends AbstractAssocCommand
 {
     private static final Log logger = LogFactory.getLog(RemoveAssocCommand.class);
-    public RemoveAssocCommand(NodeRef sourceNodeRef, NodeRef targetNodeRef)
+    public RemoveAssocCommand(NodeRef sourceNodeRef, NodeRef targetNodeRef, QName assocQName)
     {
-        super(sourceNodeRef, targetNodeRef);
+        super(sourceNodeRef, targetNodeRef, assocQName);
     }
     
     @Override
     protected void updateAssociations(NodeService nodeService)
     {
-        List<AssociationRef> existingAssocs = nodeService.getTargetAssocs(sourceNodeRef, ContentModel.ASSOC_REFERENCES);
+        List<AssociationRef> existingAssocs = nodeService.getTargetAssocs(sourceNodeRef, assocQName);
         boolean assocDoesNotExist = true;
         for (AssociationRef assoc : existingAssocs)
         {
@@ -957,12 +977,12 @@ class RemoveAssocCommand extends AbstractAssocCommand
                     .append(sourceNodeRef)
                     .append("|")
                     .append(targetNodeRef)
-                    .append(ContentModel.ASSOC_REFERENCES);
+                .append(assocQName);
                 logger.warn(msg.toString());
             }
             return;
         }
 
-        nodeService.removeAssociation(sourceNodeRef, targetNodeRef, ContentModel.ASSOC_REFERENCES);
+        nodeService.removeAssociation(sourceNodeRef, targetNodeRef, assocQName);
     }
 }

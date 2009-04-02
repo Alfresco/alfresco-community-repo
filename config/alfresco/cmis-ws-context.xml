@@ -299,7 +299,6 @@
     <bean id="dmAbstractService" abstract="true" class="org.alfresco.repo.cmis.ws.DMAbstractServicePort">
         <property name="cmisService" ref="CMISService" />
         <property name="cmisQueryService" ref="CMISQueryService" />
-        <property name="cmisPropertyService" ref="CMISPropertyService" />
         <property name="cmisDictionaryService" ref="CMISDictionaryService" />
         <property name="descriptorService" ref="DescriptorService" />
         <property name="nodeService" ref="NodeService" />

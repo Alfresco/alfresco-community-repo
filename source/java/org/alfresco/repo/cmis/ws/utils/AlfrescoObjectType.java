@@ -27,7 +27,7 @@ package org.alfresco.repo.cmis.ws.utils;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.cmis.dictionary.CMISMapping;
+import org.alfresco.cmis.mapping.CMISMapping;
 import org.alfresco.model.ContentModel;
 
 /**

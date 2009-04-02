@@ -127,7 +127,15 @@ function updateNode(node, entry, propNames, pwc)
                 status.redirect = true;
                 return null;
             }
-            
+            var mappedProperty = propDef.propertyAccessor.mappedProperty;
+            if (mappedProperty === null)
+            {
+                status.code = 500;
+                status.message = "Internal error: Property " + propName + " does not map to a write-able Alfresco property";
+                status.redirect = true;
+                return null;
+            }
+
             // extract value
             var prop = props.find(propName);
             var val = null;
@@ -136,27 +144,19 @@ function updateNode(node, entry, propNames, pwc)
                 // TODO: handle multi-valued properties
                 val = prop.value;
             }
-            vals[propName] = val;
+            vals[mappedProperty.toString()] = val;
         }
     }
     
     // handle aspect specific properties
     // NOTE: atom entry values override cmis:values
-    if (entry.title != null) vals["cm_name"] = entry.title;
-    if (entry.summary != null) vals["cm_description"] = entry.summary;
+    if (entry.title != null) vals["cm:name"] = entry.title;
+    if (entry.summary != null) vals["cm:description"] = entry.summary;
 
     // update node values
     for (val in vals)
     {
-        var propName = cmis.mapPropertyName(val);
-        if (propName === null)
-        {
-            status.code = 500;
-            status.message = "Internal error: Property " + val + " does not map to a write-able Alfresco property";
-            status.redirect = true;
-            return null;
-        }
-        node.properties[propName] = vals[val];
+        node.properties[val] = vals[val];
         updated = true;
     }
 

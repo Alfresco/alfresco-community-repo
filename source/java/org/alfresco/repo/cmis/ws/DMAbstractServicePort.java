@@ -44,8 +44,6 @@ import org.alfresco.cmis.dictionary.CMISDictionaryModel;
 import org.alfresco.cmis.dictionary.CMISDictionaryService;
 import org.alfresco.cmis.dictionary.CMISScope;
 import org.alfresco.cmis.dictionary.CMISTypeDefinition;
-import org.alfresco.cmis.dictionary.CMISTypeId;
-import org.alfresco.cmis.property.CMISPropertyService;
 import org.alfresco.cmis.search.CMISQueryService;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cmis.PropertyFilter;
@@ -86,7 +84,6 @@ public class DMAbstractServicePort
     protected CMISDictionaryService cmisDictionaryService;
     protected CMISQueryService cmisQueryService;
     protected CMISService cmisService;
-    protected CMISPropertyService cmisPropertyService;
     protected DescriptorService descriptorService;
     protected NodeService nodeService;
     protected VersionService versionService;
@@ -99,11 +96,6 @@ public class DMAbstractServicePort
     public void setCmisService(CMISService cmisService)
     {
         this.cmisService = cmisService;
-    }
-
-    public void setCmisPropertyService(CMISPropertyService cmisPropertyService)
-    {
-        this.cmisPropertyService = cmisPropertyService;
     }
 
     public void setCmisDictionaryService(CMISDictionaryService cmisDictionaryService)
@@ -273,7 +265,7 @@ public class DMAbstractServicePort
         Map<String, Serializable> properties;
         if (NodeRef.isNodeRef(identifier))
         {
-            properties = cmisPropertyService.getProperties(new NodeRef(identifier));
+            properties = cmisService.getProperties(new NodeRef(identifier));
         }
         else
         {

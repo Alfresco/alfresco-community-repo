@@ -33,9 +33,8 @@ import org.alfresco.cmis.CMISQueryEnum;
 import org.alfresco.cmis.CMISService;
 import org.alfresco.cmis.CMISTypesFilterEnum;
 import org.alfresco.cmis.dictionary.CMISDictionaryService;
+import org.alfresco.cmis.dictionary.CMISPropertyDefinition;
 import org.alfresco.cmis.dictionary.CMISTypeDefinition;
-import org.alfresco.cmis.dictionary.CMISTypeId;
-import org.alfresco.cmis.property.CMISPropertyService;
 import org.alfresco.cmis.search.CMISQueryOptions;
 import org.alfresco.cmis.search.CMISQueryService;
 import org.alfresco.cmis.search.CMISResultSet;
@@ -63,7 +62,6 @@ public class CMISScript extends BaseScopableProcessorExtension
     private Repository repository;
     private CMISService cmisService;
     private CMISDictionaryService cmisDictionaryService;
-    private CMISPropertyService cmisPropertyService;
     private CMISQueryService cmisQueryService;
     private Paging paging;
     
@@ -116,16 +114,6 @@ public class CMISScript extends BaseScopableProcessorExtension
     public void setCMISDictionaryService(CMISDictionaryService cmisDictionaryService)
     {
         this.cmisDictionaryService = cmisDictionaryService;
-    }
-
-    /**
-     * Set the CMIS Property Service
-     * 
-     * @param cmisPropertyService
-     */
-    public void setCMISPropertyService(CMISPropertyService cmisPropertyService)
-    {
-        this.cmisPropertyService = cmisPropertyService;
     }
 
     /**
@@ -416,22 +404,16 @@ public class CMISScript extends BaseScopableProcessorExtension
         }
     }
     
-    
-    //
-    // Property Support
-    //
-    
     /**
-     * Map CMIS Property name to Alfresco property name (only for direct 1 to 1 mappings) 
+     * Query the Property Definition for the given Property
      * 
-     * @param propertyName  CMIS property name
-     * @return  Alfresco property name (or null, if there's no mapping)
+     * @param propertyName
+     * @return
      */
-    public QName mapPropertyName(String propertyName)
+    public CMISPropertyDefinition queryProperty(String propertyName)
     {
-        return cmisPropertyService.mapPropertyName(propertyName);
+        return cmisDictionaryService.findProperty(propertyName, null);
     }
-
     
     //
     // SQL Query

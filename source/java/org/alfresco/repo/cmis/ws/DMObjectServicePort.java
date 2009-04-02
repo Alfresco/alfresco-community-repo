@@ -37,7 +37,6 @@ import javax.xml.ws.Holder;
 import org.alfresco.cmis.dictionary.CMISDictionaryModel;
 import org.alfresco.cmis.dictionary.CMISScope;
 import org.alfresco.cmis.dictionary.CMISTypeDefinition;
-import org.alfresco.cmis.dictionary.CMISTypeId;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cmis.PropertyFilter;
 import org.alfresco.repo.cmis.ws.DeleteTreeResponse.FailedToDelete;
@@ -165,7 +164,7 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
                 break;
         }
 
-        String versionLabel = (String) cmisPropertyService.getProperty(newDocumentNodeRef, CMISDictionaryModel.PROP_VERSION_LABEL);
+        String versionLabel = (String) cmisService.getProperty(newDocumentNodeRef, CMISDictionaryModel.PROP_VERSION_LABEL);
         return versionLabel != null && versionLabel.contains(VERSION_DELIMETER) ? 
                 newDocumentNodeRef.toString() + CmisObjectsUtils.NODE_REFERENCE_ID_DELIMETER + versionLabel :
                 newDocumentNodeRef.toString();
@@ -214,7 +213,7 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
             NodeRef newFolderNodeRef = fileFolderService.create(folderNodeRef, name, type.getTypeId().getQName()).getNodeRef();
             // TODO:
             // cmisPropertyService.setProperties(newFolderNodeRef, propertiesMap);
-            return (String) cmisPropertyService.getProperty(newFolderNodeRef, CMISDictionaryModel.PROP_OBJECT_ID);
+            return (String) cmisService.getProperty(newFolderNodeRef, CMISDictionaryModel.PROP_OBJECT_ID);
         }
         catch (FileExistsException e)
         {
@@ -444,7 +443,7 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
 
         response.setLength(BigInteger.valueOf(reader.getSize()));
         response.setMimeType(reader.getMimetype());
-        String filename = (String) cmisPropertyService.getProperty(nodeRef, CMISDictionaryModel.PROP_NAME);
+        String filename = (String) cmisService.getProperty(nodeRef, CMISDictionaryModel.PROP_NAME);
         response.setFilename(filename);
         response.setStream(new DataHandler(new ContentReaderDataSource(reader, filename)));
 
@@ -561,7 +560,7 @@ public class DMObjectServicePort extends DMAbstractServicePort implements Object
         // TODO: change token
 
         // no new version
-        objectId.value = (String) cmisPropertyService.getProperty(objectNodeRef, CMISDictionaryModel.PROP_OBJECT_ID);
+        objectId.value = (String) cmisService.getProperty(objectNodeRef, CMISDictionaryModel.PROP_OBJECT_ID);
     }
 
     /**

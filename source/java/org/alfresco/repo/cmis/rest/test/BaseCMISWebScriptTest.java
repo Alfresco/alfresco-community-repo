@@ -624,10 +624,14 @@ public class BaseCMISWebScriptTest extends BaseWebScriptTest
     protected NodeRef getNodeRef(Entry entry)
     {
         NodeRef nodeRef = null;
-        Element element = entry.getFirstChild(new QName("http://www.alfresco.org", "noderef"));
-        if (element != null)
+        CMISObject object = entry.getExtension(CMISConstants.OBJECT);
+        if (object != null)
         {
-            nodeRef = new NodeRef(element.getText());
+            String strNodeRef = object.getObjectId().getValue();
+            if (strNodeRef != null)
+            {
+                nodeRef = new NodeRef(object.getObjectId().getValue());
+            }
         }
         return nodeRef;
     }

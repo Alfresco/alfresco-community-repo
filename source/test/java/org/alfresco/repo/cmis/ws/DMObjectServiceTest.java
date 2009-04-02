@@ -31,7 +31,7 @@ import javax.activation.DataHandler;
 import javax.xml.ws.Holder;
 
 import org.alfresco.cmis.dictionary.CMISDictionaryModel;
-import org.alfresco.cmis.dictionary.CMISMapping;
+import org.alfresco.cmis.mapping.CMISMapping;
 import org.alfresco.repo.content.MimetypeMap;
 
 /**

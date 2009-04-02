@@ -31,7 +31,7 @@ import java.net.URL;
 import javax.xml.namespace.QName;
 import javax.xml.ws.Service;
 
-import org.alfresco.cmis.dictionary.CMISMapping;
+import org.alfresco.cmis.mapping.CMISMapping;
 
 public class DMRelationshipServiceTest extends AbstractServiceTest
 {

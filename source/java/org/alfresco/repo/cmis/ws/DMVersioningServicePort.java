@@ -125,7 +125,7 @@ public class DMVersioningServicePort extends DMAbstractServicePort implements Ve
         }
 
         NodeRef nodeRef = checkOutCheckInService.checkin(workingCopyNodeRef, createVersionProperties(checkinComment, major != null && major ? VersionType.MAJOR : VersionType.MINOR));
-        documentId.value = (String) cmisPropertyService.getProperty(nodeRef, CMISDictionaryModel.PROP_OBJECT_ID);
+        documentId.value = (String) cmisService.getProperty(nodeRef, CMISDictionaryModel.PROP_OBJECT_ID);
     }
 
     /**
@@ -157,7 +157,7 @@ public class DMVersioningServicePort extends DMAbstractServicePort implements Ve
         }
 
         NodeRef pwcNodeRef = checkoutNode(documentNodeRef);
-        documentId.value = (String) cmisPropertyService.getProperty(pwcNodeRef, CMISDictionaryModel.PROP_OBJECT_ID);
+        documentId.value = (String) cmisService.getProperty(pwcNodeRef, CMISDictionaryModel.PROP_OBJECT_ID);
         contentCopied.value = true;
     }
 

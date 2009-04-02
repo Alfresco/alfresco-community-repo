@@ -146,7 +146,7 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
         repositoryInfoType.setRepositoryName(serverDescriptor.getName());
         repositoryInfoType.setRepositoryRelationship("self");
         repositoryInfoType.setRepositoryDescription("");
-        repositoryInfoType.setRootFolderId((String) cmisPropertyService.getProperty(cmisService.getDefaultRootNodeRef(), CMISDictionaryModel.PROP_OBJECT_ID));
+        repositoryInfoType.setRootFolderId((String) cmisService.getProperty(cmisService.getDefaultRootNodeRef(), CMISDictionaryModel.PROP_OBJECT_ID));
         repositoryInfoType.setVendorName("Alfresco");
         repositoryInfoType.setProductName("Alfresco Repository (" + serverDescriptor.getEdition() + ")");
         repositoryInfoType.setProductVersion(serverDescriptor.getVersion());

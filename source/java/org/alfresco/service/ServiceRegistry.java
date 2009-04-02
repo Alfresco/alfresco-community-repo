@@ -26,9 +26,9 @@ package org.alfresco.service;
 
 import java.util.Collection;
 
-import org.alfresco.cmis.CMISService;
-import org.alfresco.cmis.dictionary.CMISDictionaryService;
-import org.alfresco.cmis.search.CMISQueryService;
+import org.alfresco.cmis.CMISDictionaryService;
+import org.alfresco.cmis.CMISQueryService;
+import org.alfresco.cmis.CMISServices;
 import org.alfresco.mbeans.VirtServerRegistry;
 import org.alfresco.repo.forms.FormService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -478,7 +478,7 @@ public interface ServiceRegistry
      * @return the CMIS service
      */
     @NotAuditable
-    CMISService getCMISService();
+    CMISServices getCMISService();
     
     /**
      * Get the CMIS Dictionary service (or null if one is not provided)

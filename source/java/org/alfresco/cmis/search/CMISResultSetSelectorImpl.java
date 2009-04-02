@@ -24,7 +24,8 @@
  */
 package org.alfresco.cmis.search;
 
-import org.alfresco.cmis.dictionary.CMISTypeDefinition;
+import org.alfresco.cmis.CMISResultSetSelector;
+import org.alfresco.cmis.CMISTypeDefinition;
 
 /**
  * @author andyh

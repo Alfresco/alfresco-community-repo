@@ -22,55 +22,27 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.cmis.search;
+package org.alfresco.cmis;
 
-import org.alfresco.cmis.CMISDataTypeEnum;
-import org.alfresco.cmis.CMISPropertyDefinition;
-import org.alfresco.cmis.CMISResultSetColumn;
 
 /**
+ * The meta-data for a result set selector.
+ * 
  * @author andyh
  *
  */
-public class CMISResultSetColumnImpl implements CMISResultSetColumn
+public interface CMISResultSetSelector
 {
-
-    private String name;
-    
-    private CMISPropertyDefinition propertyDefinition;
-    
-    private CMISDataTypeEnum propertyType;
-    
-    CMISResultSetColumnImpl(String name, CMISPropertyDefinition propertyDefinition, CMISDataTypeEnum propertyType)
-    {
-        this.name = name;
-        this.propertyDefinition = propertyDefinition;
-        this.propertyType = propertyType;
-    }
-    
-    
-    /* (non-Javadoc)
-     * @see org.alfresco.cmis.search.CMISResultSetColumn#getName()
+    /**
+     * The name of the selector 
+     * @return - the selector name
      */
-    public String getName()
-    {
-        return name;
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.cmis.search.CMISResultSetColumn#getPropertyDefinition()
+    public String getName();
+    
+    /**
+     * Get the type definition for the selector.
+     * @return - the CMIS type definition.
      */
-    public CMISPropertyDefinition getPropertyDefinition()
-    {
-        return propertyDefinition;
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.cmis.search.CMISResultSetColumn#getPropertyType()
-     */
-    public CMISDataTypeEnum getPropertyType()
-    {
-       return propertyType;
-    }
-
+    public CMISTypeDefinition getTypeDefinition();
+    
 }

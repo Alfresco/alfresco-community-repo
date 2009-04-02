@@ -24,6 +24,10 @@
  */
 package org.alfresco.cmis.dictionary;
 
+import org.alfresco.cmis.CMISPropertyDefinition;
+import org.alfresco.cmis.CMISTypeDefinition;
+import org.alfresco.cmis.mapping.BaseCMISTest;
+
 public class CMISDictionaryTest extends BaseCMISTest
 {
     public void testBasicTypes()

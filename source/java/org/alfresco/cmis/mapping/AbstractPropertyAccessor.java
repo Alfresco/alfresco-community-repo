@@ -22,55 +22,59 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.cmis.search;
+package org.alfresco.cmis.mapping;
 
-import org.alfresco.cmis.CMISDataTypeEnum;
-import org.alfresco.cmis.CMISPropertyDefinition;
-import org.alfresco.cmis.CMISResultSetColumn;
+import org.alfresco.cmis.CMISPropertyAccessor;
+import org.alfresco.cmis.CMISPropertyLuceneBuilder;
+import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.namespace.QName;
 
 /**
+ * Base class for all property accessors
+ * 
  * @author andyh
  *
  */
-public class CMISResultSetColumnImpl implements CMISResultSetColumn
+public abstract class AbstractPropertyAccessor implements CMISPropertyAccessor, CMISPropertyLuceneBuilder
 {
+    private ServiceRegistry serviceRegistry;
+    private String propertyName;
 
-    private String name;
-    
-    private CMISPropertyDefinition propertyDefinition;
-    
-    private CMISDataTypeEnum propertyType;
-    
-    CMISResultSetColumnImpl(String name, CMISPropertyDefinition propertyDefinition, CMISDataTypeEnum propertyType)
+    /**
+     * Construct
+     * 
+     * @param serviceRegistry
+     * @param propertyName
+     */
+    protected AbstractPropertyAccessor(ServiceRegistry serviceRegistry, String propertyName)
     {
-        this.name = name;
-        this.propertyDefinition = propertyDefinition;
-        this.propertyType = propertyType;
+        this.serviceRegistry = serviceRegistry;
+        this.propertyName = propertyName;
     }
-    
-    
-    /* (non-Javadoc)
-     * @see org.alfresco.cmis.search.CMISResultSetColumn#getName()
+
+    /**
+     * @return  service registry
+     */
+    protected ServiceRegistry getServiceRegistry()
+    {
+        return serviceRegistry;
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.property.PropertyAccessor#getName()
      */
     public String getName()
     {
-        return name;
+        return propertyName;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.cmis.search.CMISResultSetColumn#getPropertyDefinition()
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.cmis.property.PropertyAccessor#getMappedProperty()
      */
-    public CMISPropertyDefinition getPropertyDefinition()
+    public QName getMappedProperty()
     {
-        return propertyDefinition;
+        return null;
     }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.cmis.search.CMISResultSetColumn#getPropertyType()
-     */
-    public CMISDataTypeEnum getPropertyType()
-    {
-       return propertyType;
-    }
-
 }

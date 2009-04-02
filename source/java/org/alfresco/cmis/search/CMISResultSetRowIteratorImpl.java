@@ -26,6 +26,9 @@ package org.alfresco.cmis.search;
 
 import java.util.ListIterator;
 
+import org.alfresco.cmis.CMISResultSet;
+import org.alfresco.cmis.CMISResultSetRow;
+
 /**
  * @author andyh
  */

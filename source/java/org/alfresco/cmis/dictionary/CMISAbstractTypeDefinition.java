@@ -33,6 +33,10 @@ import java.util.LinkedList;
 import java.util.Map;
 
 import org.alfresco.cmis.CMISContentStreamAllowedEnum;
+import org.alfresco.cmis.CMISPropertyDefinition;
+import org.alfresco.cmis.CMISPropertyId;
+import org.alfresco.cmis.CMISTypeDefinition;
+import org.alfresco.cmis.CMISTypeId;
 import org.alfresco.cmis.dictionary.CMISAbstractDictionaryService.DictionaryRegistry;
 import org.alfresco.cmis.mapping.CMISMapping;
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -117,7 +121,7 @@ public class CMISAbstractTypeDefinition implements CMISTypeDefinition, Serializa
         String propertyName = cmisMapping.getCmisPropertyName(propertyQName);
         String propertyId = cmisMapping.getCmisPropertyId(propertyQName);
         CMISPropertyId cmisPropertyId = new CMISPropertyId(propertyName, propertyId, propertyQName);
-        return new CMISPropertyDefinition(cmisMapping, cmisPropertyId, propDef, this);
+        return new CMISBasePropertyDefinition(cmisMapping, cmisPropertyId, propDef, this);
     }
 
     /**

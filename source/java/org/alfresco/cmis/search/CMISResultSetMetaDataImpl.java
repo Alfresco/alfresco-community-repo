@@ -28,9 +28,13 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.alfresco.cmis.CMISDataTypeEnum;
-import org.alfresco.cmis.dictionary.CMISDictionaryService;
-import org.alfresco.cmis.dictionary.CMISPropertyDefinition;
-import org.alfresco.cmis.dictionary.CMISTypeDefinition;
+import org.alfresco.cmis.CMISDictionaryService;
+import org.alfresco.cmis.CMISPropertyDefinition;
+import org.alfresco.cmis.CMISQueryOptions;
+import org.alfresco.cmis.CMISResultSetColumn;
+import org.alfresco.cmis.CMISResultSetMetaData;
+import org.alfresco.cmis.CMISResultSetSelector;
+import org.alfresco.cmis.CMISTypeDefinition;
 import org.alfresco.repo.search.impl.querymodel.Column;
 import org.alfresco.repo.search.impl.querymodel.PropertyArgument;
 import org.alfresco.repo.search.impl.querymodel.Query;

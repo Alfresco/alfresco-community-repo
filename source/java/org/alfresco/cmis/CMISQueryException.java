@@ -22,55 +22,60 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.cmis.search;
+package org.alfresco.cmis;
 
-import org.alfresco.cmis.CMISDataTypeEnum;
-import org.alfresco.cmis.CMISPropertyDefinition;
-import org.alfresco.cmis.CMISResultSetColumn;
+import org.alfresco.error.AlfrescoRuntimeException;
 
 /**
  * @author andyh
  *
  */
-public class CMISResultSetColumnImpl implements CMISResultSetColumn
+public class CMISQueryException extends AlfrescoRuntimeException
 {
 
-    private String name;
-    
-    private CMISPropertyDefinition propertyDefinition;
-    
-    private CMISDataTypeEnum propertyType;
-    
-    CMISResultSetColumnImpl(String name, CMISPropertyDefinition propertyDefinition, CMISDataTypeEnum propertyType)
-    {
-        this.name = name;
-        this.propertyDefinition = propertyDefinition;
-        this.propertyType = propertyType;
-    }
-    
-    
-    /* (non-Javadoc)
-     * @see org.alfresco.cmis.search.CMISResultSetColumn#getName()
+    /**
+     * 
      */
-    public String getName()
+    private static final long serialVersionUID = 8281715613061152219L;
+
+    /**
+     * @param msgId
+     */
+    public CMISQueryException(String msgId)
     {
-        return name;
+        super(msgId);
+        // TODO Auto-generated constructor stub
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.cmis.search.CMISResultSetColumn#getPropertyDefinition()
+    /**
+     * @param msgId
+     * @param msgParams
      */
-    public CMISPropertyDefinition getPropertyDefinition()
+    public CMISQueryException(String msgId, Object[] msgParams)
     {
-        return propertyDefinition;
+        super(msgId, msgParams);
+        // TODO Auto-generated constructor stub
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.cmis.search.CMISResultSetColumn#getPropertyType()
+    /**
+     * @param msgId
+     * @param cause
      */
-    public CMISDataTypeEnum getPropertyType()
+    public CMISQueryException(String msgId, Throwable cause)
     {
-       return propertyType;
+        super(msgId, cause);
+        // TODO Auto-generated constructor stub
+    }
+
+    /**
+     * @param msgId
+     * @param msgParams
+     * @param cause
+     */
+    public CMISQueryException(String msgId, Object[] msgParams, Throwable cause)
+    {
+        super(msgId, msgParams, cause);
+        // TODO Auto-generated constructor stub
     }
 
 }

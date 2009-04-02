@@ -22,55 +22,58 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.cmis.search;
+package org.alfresco.cmis;
 
-import org.alfresco.cmis.CMISDataTypeEnum;
-import org.alfresco.cmis.CMISPropertyDefinition;
-import org.alfresco.cmis.CMISResultSetColumn;
 
 /**
+ * The meta data associated with a result set
+ * 
  * @author andyh
  *
  */
-public class CMISResultSetColumnImpl implements CMISResultSetColumn
+public interface CMISResultSetMetaData
 {
-
-    private String name;
-    
-    private CMISPropertyDefinition propertyDefinition;
-    
-    private CMISDataTypeEnum propertyType;
-    
-    CMISResultSetColumnImpl(String name, CMISPropertyDefinition propertyDefinition, CMISDataTypeEnum propertyType)
-    {
-        this.name = name;
-        this.propertyDefinition = propertyDefinition;
-        this.propertyType = propertyType;
-    }
-    
-    
-    /* (non-Javadoc)
-     * @see org.alfresco.cmis.search.CMISResultSetColumn#getName()
+    /**
+     * The selector meta-data.
+     * @return - the selector meta-data.
      */
-    public String getName()
-    {
-        return name;
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.cmis.search.CMISResultSetColumn#getPropertyDefinition()
+    public CMISResultSetSelector[] getSelectors();
+    
+    /**
+     * The column meta-data.
+     * @return - the column meta-data.
      */
-    public CMISPropertyDefinition getPropertyDefinition()
-    {
-        return propertyDefinition;
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.cmis.search.CMISResultSetColumn#getPropertyType()
+    public CMISResultSetColumn[] getColumns();
+    
+    /**
+     * Get the query options used to create this result set
+     * @return the query options
      */
-    public CMISDataTypeEnum getPropertyType()
-    {
-       return propertyType;
-    }
-
+    public CMISQueryOptions getQueryOptions();
+    
+    /**
+     * Get the names of the selectors.
+     * @return - the selector names.
+     */
+    public String[] getSelectorNames();
+    
+    /**
+     * Get the column names.
+     * @return - the names of the columns.
+     */
+    public String[] getColumnNames();
+    
+    /**
+     * Get the selector meta-data by name.
+     * @param name
+     * @return - the selector meta-data.
+     */
+    public CMISResultSetSelector getSelector(String name);
+    
+    /**
+     * Get the column meta-data by column name.
+     * @param name
+     * @return - the column meta-data.
+     */
+    public CMISResultSetColumn getColumn(String name);
 }

@@ -33,6 +33,12 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.alfresco.cmis.CMISDataTypeEnum;
+import org.alfresco.cmis.CMISDictionaryService;
+import org.alfresco.cmis.CMISPropertyDefinition;
+import org.alfresco.cmis.CMISPropertyId;
+import org.alfresco.cmis.CMISScope;
+import org.alfresco.cmis.CMISTypeDefinition;
+import org.alfresco.cmis.CMISTypeId;
 import org.alfresco.cmis.mapping.CMISMapping;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.dictionary.DictionaryDAO;

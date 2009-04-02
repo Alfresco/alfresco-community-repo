@@ -26,6 +26,8 @@ package org.alfresco.cmis.dictionary;
 
 import java.util.Collection;
 
+import org.alfresco.cmis.CMISScope;
+import org.alfresco.cmis.CMISTypeId;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.namespace.QName;

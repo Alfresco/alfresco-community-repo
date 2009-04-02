@@ -28,7 +28,9 @@ import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.alfresco.cmis.dictionary.CMISDictionaryService;
+import org.alfresco.cmis.CMISDictionaryService;
+import org.alfresco.cmis.CMISResultSet;
+import org.alfresco.cmis.CMISResultSetRow;
 import org.alfresco.repo.search.impl.querymodel.Column;
 import org.alfresco.repo.search.impl.querymodel.Query;
 import org.alfresco.service.cmr.repository.NodeRef;

@@ -9,6 +9,18 @@
         </property>
     </bean>
 
+    <bean id="CMISService" class="org.alfresco.cmis.mapping.CMISServicesImpl">
+        <property name="CMISSpecVersion"><value>0.5</value></property>
+        <property name="defaultRootPath"><value>workspace/SpacesStore/Company Home</value></property>
+        <property name="dictionaryService" ref="dictionaryService" />
+        <property name="CMISDictionaryService" ref="CMISDictionaryService" />
+        <property name="searchService" ref="SearchService" />
+        <property name="transactionHelper" ref="retryingTransactionHelper" />
+        <property name="tenantAdminService" ref="tenantAdminService" />
+        <property name="nodeService" ref="NodeService" />
+        <property name="repository" ref="repositoryHelper" />
+    </bean>
+    
     <bean id="CMISDictionaryService" class="org.alfresco.cmis.dictionary.CMISStrictDictionaryService" >
         <property name="dictionaryService">
             <ref bean="dictionaryService" />
@@ -29,19 +41,7 @@
         </property>
     </bean>
    
-    <bean id="CMISService" class="org.alfresco.cmis.CMISService">
-        <property name="CMISSpecVersion"><value>0.5</value></property>
-        <property name="defaultRootPath"><value>workspace/SpacesStore/Company Home</value></property>
-        <property name="dictionaryService" ref="dictionaryService" />
-        <property name="CMISDictionaryService" ref="CMISDictionaryService" />
-        <property name="searchService" ref="SearchService" />
-        <property name="transactionHelper" ref="retryingTransactionHelper" />
-        <property name="tenantAdminService" ref="tenantAdminService" />
-        <property name="nodeService" ref="NodeService" />
-        <property name="repository" ref="repositoryHelper" />
-    </bean>
-    
-    <bean id="CMISQueryService" class="org.alfresco.cmis.search.impl.CMISQueryServiceImpl" >
+    <bean id="CMISQueryService" class="org.alfresco.cmis.search.CMISQueryServiceImpl" >
         <property name="CMISDictionaryService">
             <ref bean="CMISDictionaryService" />
         </property>
@@ -49,14 +49,14 @@
             <ref bean="CMISService" />
         </property>
         <property name="queryEngine">
-            <ref bean="luceneQueryEngine" />
+            <ref bean="cmis.luceneQueryEngine" />
         </property>
         <property name="nodeService">
             <ref bean="nodeService" />
         </property>
     </bean>
    
-    <bean id="luceneQueryEngineImpl" class="org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryEngine" >
+    <bean id="cmis.luceneQueryEngineImpl" class="org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryEngine" >
         <property name="dictionaryService">
             <ref bean="dictionaryService" />
         </property>
@@ -74,21 +74,21 @@
         </property>
     </bean>
    
-    <bean id="luceneQueryEngine" class="org.springframework.aop.framework.ProxyFactoryBean">
+    <bean id="cmis.luceneQueryEngine" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <value>org.alfresco.repo.search.impl.querymodel.QueryEngine</value>
         </property>
         <property name="target">
-            <ref bean="luceneQueryEngineImpl"/>
+            <ref bean="cmis.luceneQueryEngineImpl"/>
         </property>
         <property name="interceptorNames">
             <list>
-                <idref bean="luceneQueryEngineSecurity"/>
+                <idref bean="cmis.luceneQueryEngineSecurity"/>
             </list>
         </property>
     </bean>
    
-   <bean id="luceneQueryEngineSecurity" class="net.sf.acegisecurity.intercept.method.aopalliance.MethodSecurityInterceptor">
+   <bean id="cmis.luceneQueryEngineSecurity" class="net.sf.acegisecurity.intercept.method.aopalliance.MethodSecurityInterceptor">
         <property name="authenticationManager"><ref bean="authenticationManager"/></property>
         <property name="accessDecisionManager"><ref bean="accessDecisionManager"/></property>
         <property name="afterInvocationManager"><ref bean="afterInvocationManager"/></property>

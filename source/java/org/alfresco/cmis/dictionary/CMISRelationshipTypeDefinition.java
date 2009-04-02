@@ -29,6 +29,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.cmis.CMISDictionaryModel;
+import org.alfresco.cmis.CMISPropertyDefinition;
+import org.alfresco.cmis.CMISPropertyId;
+import org.alfresco.cmis.CMISScope;
+import org.alfresco.cmis.CMISTypeDefinition;
+import org.alfresco.cmis.CMISTypeId;
 import org.alfresco.cmis.dictionary.CMISAbstractDictionaryService.DictionaryRegistry;
 import org.alfresco.cmis.mapping.CMISMapping;
 import org.alfresco.error.AlfrescoRuntimeException;

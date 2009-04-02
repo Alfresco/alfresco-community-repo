@@ -22,55 +22,61 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.cmis.search;
+package org.alfresco.cmis;
 
-import org.alfresco.cmis.CMISDataTypeEnum;
-import org.alfresco.cmis.CMISPropertyDefinition;
-import org.alfresco.cmis.CMISResultSetColumn;
 
 /**
+ * Support to execute CMIS queries
+ * 
  * @author andyh
  *
  */
-public class CMISResultSetColumnImpl implements CMISResultSetColumn
+public interface CMISQueryService
 {
-
-    private String name;
-    
-    private CMISPropertyDefinition propertyDefinition;
-    
-    private CMISDataTypeEnum propertyType;
-    
-    CMISResultSetColumnImpl(String name, CMISPropertyDefinition propertyDefinition, CMISDataTypeEnum propertyType)
-    {
-        this.name = name;
-        this.propertyDefinition = propertyDefinition;
-        this.propertyType = propertyType;
-    }
-    
-    
-    /* (non-Javadoc)
-     * @see org.alfresco.cmis.search.CMISResultSetColumn#getName()
+    /**
+     * Execute a CMIS query as defined by options 
+     * 
+     * @param options
+     * @return a result set
      */
-    public String getName()
-    {
-        return name;
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.cmis.search.CMISResultSetColumn#getPropertyDefinition()
+    public CMISResultSet query(CMISQueryOptions options);
+    
+    /**
+     * Execute a CMIS query with all the default options;
+     * 
+     * @param query
+     * @return
      */
-    public CMISPropertyDefinition getPropertyDefinition()
-    {
-        return propertyDefinition;
-    }
+    public CMISResultSet query(String query);
+    
 
-    /* (non-Javadoc)
-     * @see org.alfresco.cmis.search.CMISResultSetColumn#getPropertyType()
+    /**
+     * Get the query support level
      */
-    public CMISDataTypeEnum getPropertyType()
-    {
-       return propertyType;
-    }
+    public CMISQueryEnum getQuerySupport();
+    
+    /**
+     * Get the join support level in queries.
+     */
+    public CMISJoinEnum getJoinSupport();
+    
+    /**
+     * Get the full text search support level in queries.
+     */
+    public CMISFullTextSearchEnum getFullTextSearchSupport();
 
+    /**
+     * Can you query Private Working Copies of a document.
+     * 
+     * @return
+     */
+    public boolean getPwcSearchable();
+    
+    /**
+     * Can you query non-latest versions of a document. 
+     * The current latest version is always searchable according to the type definition.
+     * 
+     * @return
+     */
+    public boolean getAllVersionsSearchable();
 }

@@ -31,7 +31,11 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.cmis.dictionary.CMISDictionaryService;
+import org.alfresco.cmis.CMISDictionaryService;
+import org.alfresco.cmis.CMISQueryOptions;
+import org.alfresco.cmis.CMISResultSet;
+import org.alfresco.cmis.CMISResultSetMetaData;
+import org.alfresco.cmis.CMISResultSetRow;
 import org.alfresco.repo.search.impl.querymodel.Query;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;

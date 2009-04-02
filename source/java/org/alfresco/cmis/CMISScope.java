@@ -22,55 +22,55 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.cmis.search;
+package org.alfresco.cmis;
 
-import org.alfresco.cmis.CMISDataTypeEnum;
-import org.alfresco.cmis.CMISPropertyDefinition;
-import org.alfresco.cmis.CMISResultSetColumn;
+import java.util.HashMap;
+import java.util.Map;
+
 
 /**
+ * The scope for a CMIS name
+ * 
+ * Alfresco has different name spaces for relationships and objects.
+ * This scope resolves any ambiguity.
+ * This ambiguity is resolved in the CMIS type id mapping.
+ * 
  * @author andyh
  *
  */
-public class CMISResultSetColumnImpl implements CMISResultSetColumn
+public enum CMISScope
 {
+    OBJECT ('O'), 
+    RELATIONSHIP ('R'), 
+    DOCUMENT ('D'), 
+    FOLDER ('F'),
+    POLICY ('P'),
+    UNKNOWN ('U');
 
-    private String name;
-    
-    private CMISPropertyDefinition propertyDefinition;
-    
-    private CMISDataTypeEnum propertyType;
-    
-    CMISResultSetColumnImpl(String name, CMISPropertyDefinition propertyDefinition, CMISDataTypeEnum propertyType)
+    private static Map<Character, CMISScope> discriminatorMap = new HashMap<Character, CMISScope>(10);
+    static
     {
-        this.name = name;
-        this.propertyDefinition = propertyDefinition;
-        this.propertyType = propertyType;
-    }
-    
-    
-    /* (non-Javadoc)
-     * @see org.alfresco.cmis.search.CMISResultSetColumn#getName()
-     */
-    public String getName()
-    {
-        return name;
+        for (CMISScope scope : CMISScope.values())
+        {
+            discriminatorMap.put(scope.discriminator, scope);
+        }
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.cmis.search.CMISResultSetColumn#getPropertyDefinition()
-     */
-    public CMISPropertyDefinition getPropertyDefinition()
+    private char discriminator;
+
+    CMISScope(char discriminator)
     {
-        return propertyDefinition;
+        this.discriminator = discriminator;
+    }
+    
+    public char discriminator()
+    {
+        return discriminator;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.cmis.search.CMISResultSetColumn#getPropertyType()
-     */
-    public CMISDataTypeEnum getPropertyType()
+    public static CMISScope toScope(char discrimator)
     {
-       return propertyType;
+        return discriminatorMap.get(discrimator);
     }
-
+    
 }

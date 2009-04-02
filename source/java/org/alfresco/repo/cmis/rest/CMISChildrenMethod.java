@@ -26,7 +26,7 @@ package org.alfresco.repo.cmis.rest;
 
 import java.util.List;
 
-import org.alfresco.cmis.CMISService;
+import org.alfresco.cmis.CMISServices;
 import org.alfresco.cmis.CMISTypesFilterEnum;
 import org.alfresco.repo.template.TemplateNode;
 import org.alfresco.repo.web.scripts.RepositoryImageResolver;
@@ -51,14 +51,14 @@ import freemarker.template.TemplateScalarModel;
  */
 public class CMISChildrenMethod implements TemplateMethodModelEx
 {
-    private CMISService cmisService;
+    private CMISServices cmisService;
     private ServiceRegistry serviceRegistry;
     private TemplateImageResolver imageResolver;
     
     /**
      * Construct
      */
-    public CMISChildrenMethod(CMISService cmisService, ServiceRegistry serviceRegistry, RepositoryImageResolver imageResolver)
+    public CMISChildrenMethod(CMISServices cmisService, ServiceRegistry serviceRegistry, RepositoryImageResolver imageResolver)
     {
         this.cmisService = cmisService;
         this.serviceRegistry = serviceRegistry;

@@ -28,7 +28,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.cmis.dictionary.CMISDictionaryModel;
+import org.alfresco.cmis.CMISDictionaryModel;
 import org.alfresco.util.Pair;
 
 /**

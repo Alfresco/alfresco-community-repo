@@ -34,9 +34,9 @@ import java.util.Map;
 import javax.activation.DataHandler;
 import javax.xml.ws.Holder;
 
-import org.alfresco.cmis.dictionary.CMISDictionaryModel;
-import org.alfresco.cmis.dictionary.CMISScope;
-import org.alfresco.cmis.dictionary.CMISTypeDefinition;
+import org.alfresco.cmis.CMISDictionaryModel;
+import org.alfresco.cmis.CMISScope;
+import org.alfresco.cmis.CMISTypeDefinition;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cmis.PropertyFilter;
 import org.alfresco.repo.cmis.ws.DeleteTreeResponse.FailedToDelete;

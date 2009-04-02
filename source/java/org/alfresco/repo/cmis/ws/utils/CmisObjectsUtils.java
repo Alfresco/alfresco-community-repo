@@ -27,10 +27,10 @@ package org.alfresco.repo.cmis.ws.utils;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.alfresco.cmis.dictionary.CMISDictionaryService;
-import org.alfresco.cmis.dictionary.CMISScope;
-import org.alfresco.cmis.dictionary.CMISTypeDefinition;
-import org.alfresco.cmis.dictionary.CMISTypeId;
+import org.alfresco.cmis.CMISDictionaryService;
+import org.alfresco.cmis.CMISScope;
+import org.alfresco.cmis.CMISTypeDefinition;
+import org.alfresco.cmis.CMISTypeId;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cmis.ws.EnumObjectType;
 import org.alfresco.repo.cmis.ws.InvalidArgumentException;

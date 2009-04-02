@@ -28,9 +28,9 @@ import java.math.BigInteger;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.alfresco.cmis.dictionary.CMISScope;
-import org.alfresco.cmis.dictionary.CMISTypeDefinition;
-import org.alfresco.cmis.dictionary.CMISTypeId;
+import org.alfresco.cmis.CMISScope;
+import org.alfresco.cmis.CMISTypeDefinition;
+import org.alfresco.cmis.CMISTypeId;
 import org.alfresco.repo.cmis.PropertyFilter;
 import org.alfresco.repo.cmis.ws.utils.AlfrescoObjectType;
 import org.alfresco.repo.web.util.paging.Cursor;

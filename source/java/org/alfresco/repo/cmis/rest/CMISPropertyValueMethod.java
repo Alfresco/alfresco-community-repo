@@ -26,7 +26,7 @@ package org.alfresco.repo.cmis.rest;
 
 import java.util.List;
 
-import org.alfresco.cmis.CMISService;
+import org.alfresco.cmis.CMISServices;
 import org.alfresco.repo.template.TemplateNode;
 
 import freemarker.ext.beans.BeanModel;
@@ -45,12 +45,12 @@ import freemarker.template.TemplateScalarModel;
  */
 public final class CMISPropertyValueMethod implements TemplateMethodModelEx
 {
-    private CMISService cmisService;
+    private CMISServices cmisService;
     
     /**
      * Construct
      */
-    public CMISPropertyValueMethod(CMISService cmisService)
+    public CMISPropertyValueMethod(CMISServices cmisService)
     {
         this.cmisService = cmisService;
     }

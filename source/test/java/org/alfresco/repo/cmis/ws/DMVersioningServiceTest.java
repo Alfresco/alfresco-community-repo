@@ -27,7 +27,7 @@ package org.alfresco.repo.cmis.ws;
 import javax.activation.DataHandler;
 import javax.xml.ws.Holder;
 
-import org.alfresco.cmis.dictionary.CMISDictionaryModel;
+import org.alfresco.cmis.CMISDictionaryModel;
 import org.alfresco.repo.content.MimetypeMap;
 
 public class DMVersioningServiceTest extends AbstractServiceTest

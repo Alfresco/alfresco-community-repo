@@ -44,8 +44,8 @@ import javax.xml.ws.Service;
 
 import junit.framework.TestCase;
 
-import org.alfresco.cmis.dictionary.CMISDictionaryModel;
-import org.alfresco.cmis.dictionary.CMISTypeId;
+import org.alfresco.cmis.CMISDictionaryModel;
+import org.alfresco.cmis.CMISTypeId;
 import org.alfresco.repo.content.MimetypeMap;
 import org.apache.cxf.binding.soap.saaj.SAAJOutInterceptor;
 import org.apache.cxf.endpoint.Client;

@@ -26,7 +26,7 @@ package org.alfresco.repo.cmis.ws;
 
 import javax.xml.namespace.QName;
 
-import org.alfresco.cmis.dictionary.CMISDictionaryModel;
+import org.alfresco.cmis.CMISDictionaryModel;
 
 public class DMMultiFilingServiceTest extends AbstractServiceTest
 {

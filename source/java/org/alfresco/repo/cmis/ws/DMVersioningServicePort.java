@@ -28,7 +28,7 @@ import java.util.List;
 
 import javax.xml.ws.Holder;
 
-import org.alfresco.cmis.dictionary.CMISDictionaryModel;
+import org.alfresco.cmis.CMISDictionaryModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cmis.PropertyFilter;
 import org.alfresco.repo.cmis.ws.utils.AlfrescoObjectType;

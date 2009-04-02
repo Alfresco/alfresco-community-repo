@@ -28,7 +28,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
-import org.alfresco.cmis.dictionary.CMISDictionaryModel;
+import org.alfresco.cmis.CMISDictionaryModel;
 
 public class MultiThreadsServiceTest extends AbstractServiceTest
 {

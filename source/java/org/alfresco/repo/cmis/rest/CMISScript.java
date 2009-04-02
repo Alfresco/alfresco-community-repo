@@ -27,17 +27,17 @@ package org.alfresco.repo.cmis.rest;
 import java.util.Collection;
 import java.util.Iterator;
 
+import org.alfresco.cmis.CMISDictionaryService;
 import org.alfresco.cmis.CMISFullTextSearchEnum;
 import org.alfresco.cmis.CMISJoinEnum;
+import org.alfresco.cmis.CMISPropertyDefinition;
 import org.alfresco.cmis.CMISQueryEnum;
-import org.alfresco.cmis.CMISService;
+import org.alfresco.cmis.CMISQueryOptions;
+import org.alfresco.cmis.CMISQueryService;
+import org.alfresco.cmis.CMISResultSet;
+import org.alfresco.cmis.CMISServices;
+import org.alfresco.cmis.CMISTypeDefinition;
 import org.alfresco.cmis.CMISTypesFilterEnum;
-import org.alfresco.cmis.dictionary.CMISDictionaryService;
-import org.alfresco.cmis.dictionary.CMISPropertyDefinition;
-import org.alfresco.cmis.dictionary.CMISTypeDefinition;
-import org.alfresco.cmis.search.CMISQueryOptions;
-import org.alfresco.cmis.search.CMISQueryService;
-import org.alfresco.cmis.search.CMISResultSet;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.jscript.BaseScopableProcessorExtension;
 import org.alfresco.repo.jscript.ScriptNode;
@@ -60,7 +60,7 @@ public class CMISScript extends BaseScopableProcessorExtension
 {
     private ServiceRegistry services;
     private Repository repository;
-    private CMISService cmisService;
+    private CMISServices cmisService;
     private CMISDictionaryService cmisDictionaryService;
     private CMISQueryService cmisQueryService;
     private Paging paging;
@@ -101,7 +101,7 @@ public class CMISScript extends BaseScopableProcessorExtension
      * 
      * @param cmisService
      */
-    public void setCMISService(CMISService cmisService)
+    public void setCMISService(CMISServices cmisService)
     {
         this.cmisService = cmisService;
     }

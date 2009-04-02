@@ -28,7 +28,7 @@ import java.math.BigInteger;
 
 import javax.xml.ws.Holder;
 
-import org.alfresco.cmis.dictionary.CMISDictionaryModel;
+import org.alfresco.cmis.CMISDictionaryModel;
 
 /**
  * @author Alexander Tsvetkov

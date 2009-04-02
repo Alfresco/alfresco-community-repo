@@ -26,8 +26,8 @@ package org.alfresco.repo.cmis.rest;
 
 import java.util.List;
 
-import org.alfresco.cmis.dictionary.CMISDictionaryService;
-import org.alfresco.cmis.dictionary.CMISTypeDefinition;
+import org.alfresco.cmis.CMISDictionaryService;
+import org.alfresco.cmis.CMISTypeDefinition;
 import org.alfresco.repo.template.TemplateNode;
 import org.alfresco.service.namespace.QName;
 

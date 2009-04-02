@@ -28,11 +28,11 @@ import java.io.Serializable;
 import java.util.Map;
 
 import org.alfresco.cmis.CMISDataTypeEnum;
-import org.alfresco.cmis.search.CMISQueryOptions;
-import org.alfresco.cmis.search.CMISResultSet;
-import org.alfresco.cmis.search.CMISResultSetColumn;
-import org.alfresco.cmis.search.CMISResultSetMetaData;
-import org.alfresco.cmis.search.CMISResultSetRow;
+import org.alfresco.cmis.CMISQueryOptions;
+import org.alfresco.cmis.CMISResultSet;
+import org.alfresco.cmis.CMISResultSetColumn;
+import org.alfresco.cmis.CMISResultSetMetaData;
+import org.alfresco.cmis.CMISResultSetRow;
 import org.alfresco.repo.cmis.PropertyFilter;
 
 /**

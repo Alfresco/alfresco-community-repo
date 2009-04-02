@@ -28,7 +28,7 @@ import java.util.List;
 
 import junit.framework.TestCase;
 
-import org.alfresco.cmis.dictionary.CMISDictionaryModel;
+import org.alfresco.cmis.CMISDictionaryModel;
 
 /**
  * @author Michael Shavnev

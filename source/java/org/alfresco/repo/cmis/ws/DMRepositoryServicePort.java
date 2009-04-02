@@ -37,15 +37,15 @@ import java.util.Map;
 import javax.xml.bind.JAXBElement;
 
 import org.alfresco.cmis.CMISCardinalityEnum;
+import org.alfresco.cmis.CMISChoice;
 import org.alfresco.cmis.CMISContentStreamAllowedEnum;
 import org.alfresco.cmis.CMISDataTypeEnum;
+import org.alfresco.cmis.CMISDictionaryModel;
 import org.alfresco.cmis.CMISFullTextSearchEnum;
 import org.alfresco.cmis.CMISJoinEnum;
+import org.alfresco.cmis.CMISPropertyDefinition;
+import org.alfresco.cmis.CMISTypeDefinition;
 import org.alfresco.cmis.CMISUpdatabilityEnum;
-import org.alfresco.cmis.dictionary.CMISChoice;
-import org.alfresco.cmis.dictionary.CMISDictionaryModel;
-import org.alfresco.cmis.dictionary.CMISPropertyDefinition;
-import org.alfresco.cmis.dictionary.CMISTypeDefinition;
 import org.alfresco.repo.web.util.paging.Cursor;
 import org.alfresco.service.descriptor.Descriptor;
 

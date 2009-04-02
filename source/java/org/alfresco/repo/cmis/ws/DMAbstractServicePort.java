@@ -39,12 +39,12 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
-import org.alfresco.cmis.CMISService;
-import org.alfresco.cmis.dictionary.CMISDictionaryModel;
-import org.alfresco.cmis.dictionary.CMISDictionaryService;
-import org.alfresco.cmis.dictionary.CMISScope;
-import org.alfresco.cmis.dictionary.CMISTypeDefinition;
-import org.alfresco.cmis.search.CMISQueryService;
+import org.alfresco.cmis.CMISDictionaryModel;
+import org.alfresco.cmis.CMISDictionaryService;
+import org.alfresco.cmis.CMISQueryService;
+import org.alfresco.cmis.CMISScope;
+import org.alfresco.cmis.CMISServices;
+import org.alfresco.cmis.CMISTypeDefinition;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cmis.PropertyFilter;
 import org.alfresco.repo.cmis.ws.utils.CmisObjectsUtils;
@@ -83,7 +83,7 @@ public class DMAbstractServicePort
     protected ObjectFactory cmisObjectFactory = new ObjectFactory();
     protected CMISDictionaryService cmisDictionaryService;
     protected CMISQueryService cmisQueryService;
-    protected CMISService cmisService;
+    protected CMISServices cmisService;
     protected DescriptorService descriptorService;
     protected NodeService nodeService;
     protected VersionService versionService;
@@ -93,7 +93,7 @@ public class DMAbstractServicePort
     protected CmisObjectsUtils cmisObjectsUtils;
 
     
-    public void setCmisService(CMISService cmisService)
+    public void setCmisService(CMISServices cmisService)
     {
         this.cmisService = cmisService;
     }

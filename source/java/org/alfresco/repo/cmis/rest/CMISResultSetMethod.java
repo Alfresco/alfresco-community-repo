@@ -26,7 +26,7 @@ package org.alfresco.repo.cmis.rest;
 
 import java.util.List;
 
-import org.alfresco.cmis.search.CMISResultSet;
+import org.alfresco.cmis.CMISResultSet;
 import org.alfresco.repo.web.scripts.RepositoryImageResolver;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;

@@ -253,14 +253,7 @@ public class PersonServiceTest extends BaseWebScriptTest
                                 Status.STATUS_OK);
         
         // Delete the person
-        JSONObject result = deletePerson(userName, Status.STATUS_OK);
-
-        assertEquals(userName, result.get("userName"));
-        assertEquals("myFirstName", result.get("firstName"));
-        assertEquals("myLastName", result.get("lastName"));
-        assertEquals("myOrganisation", result.get("organisation"));
-        assertEquals("myJobTitle", result.get("jobtitle"));
-        assertEquals("firstName.lastName@email.com", result.get("email"));
+        deletePerson(userName, Status.STATUS_OK);
         
         // Make sure that the person has been deleted and no longer exists
         deletePerson(userName, Status.STATUS_NOT_FOUND);

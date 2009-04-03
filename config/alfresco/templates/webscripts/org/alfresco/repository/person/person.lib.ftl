@@ -1,6 +1,5 @@
-<#macro personJSON person>
+<#macro personJSONinner person>
 <#escape x as jsonUtils.encodeJSONString(x)>
-{	
 	"url" : "${url.serviceContext + "/api/person/" + person.properties.userName}",
 	"userName" : "${person.properties.userName}",
 	<#if person.assocs["cm:avatar"]??>
@@ -26,8 +25,21 @@
 	"quota" : <#if person.properties.sizeQuota??>${person.properties.sizeQuota?c}<#else>0</#if>,
 	"sizeCurrent" : <#if person.properties.sizeCurrent??>${person.properties.sizeCurrent?c}<#else>0</#if>,
 	"persondescription" : <#if person.properties.persondescription??>"${person.properties.persondescription.content}"<#else>null</#if>
-}
 </#escape>
+</#macro>
+
+<#macro personJSON person>
+{
+<@personJSONinner person=person/>
+}
+</#macro>
+
+<#macro personGroupsJSON person groups>
+{
+<@personJSONinner person=person/>
+	,
+	"groups" : [<#list groups as g>"${jsonUtils.encodeJSONString(g.properties["usr:authorityName"])}"<#if g_has_next>, </#if></#list>]
+}
 </#macro>
 
 <#macro personSummaryJSON person>

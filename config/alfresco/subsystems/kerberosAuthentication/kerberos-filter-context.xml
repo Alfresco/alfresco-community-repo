@@ -2,7 +2,7 @@
 <!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
 <beans>
    <bean id="authenticationFilter" class="org.alfresco.web.app.servlet.KerberosAuthenticationFilter">
-      <property name="serverConfigurationBean">
+      <property name="serverConfiguration">
          <ref bean="fileServerConfiguration" />
       </property>
       <property name="authenticationService">
@@ -39,7 +39,7 @@
    <bean id="webscriptAuthenticationFilter" class="org.alfresco.repo.web.filter.beans.NullFilter"/>
 
    <bean id="webDavAuthenticationFilter" class="org.alfresco.repo.webdav.auth.KerberosAuthenticationFilter">
-      <property name="serverConfigurationBean">
+      <property name="serverConfiguration">
          <ref bean="fileServerConfiguration" />
       </property>
       <property name="authenticationService">

@@ -5,7 +5,7 @@
    <bean id="authenticationFilter" class="org.alfresco.repo.web.filter.beans.NullFilter"/>
 
    <bean id="globalAuthenticationFilter" class="org.alfresco.web.app.servlet.NTLMAuthenticationFilter">
-      <property name="serverConfigurationBean">
+      <property name="serverConfiguration">
          <ref bean="fileServerConfiguration" />
       </property>
       <property name="authenticationService">
@@ -32,7 +32,7 @@
    </bean>
 
    <bean id="webscriptAuthenticationFilter" class="org.alfresco.web.app.servlet.WebScriptNTLMAuthenticationFilter">
-      <property name="serverConfigurationBean">
+      <property name="serverConfiguration">
          <ref bean="fileServerConfiguration" />
       </property>
       <property name="authenticationService">
@@ -62,7 +62,7 @@
    </bean>
 
    <bean id="webDavAuthenticationFilter" class="org.alfresco.repo.webdav.auth.NTLMAuthenticationFilter">
-      <property name="serverConfigurationBean">
+      <property name="serverConfiguration">
          <ref bean="fileServerConfiguration" />
       </property>
       <property name="authenticationService">

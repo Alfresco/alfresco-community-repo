@@ -520,7 +520,7 @@ public final class People extends BaseScopableProcessorExtension
      * 
      * @param person       the user (cm:person) to get the containing groups for
      * 
-     * @return the containing groups as a JavaScript array, can be null
+     * @return the containing groups as a JavaScript array
      */
     public Scriptable getContainerGroups(ScriptNode person)
     {

@@ -37,7 +37,6 @@ import org.alfresco.jlan.server.filesys.DiskInterface;
 import org.alfresco.jlan.server.filesys.FileSystem;
 import org.alfresco.jlan.server.filesys.SrvDiskInfo;
 import org.alfresco.jlan.server.filesys.pseudo.PseudoFileInterface;
-import org.springframework.beans.factory.InitializingBean;
 
 
 /**
@@ -47,7 +46,7 @@ import org.springframework.beans.factory.InitializingBean;
  * 
  * @author GKSpencer
  */
-public abstract class AlfrescoContext extends DiskDeviceContext implements InitializingBean
+public abstract class AlfrescoContext extends DiskDeviceContext
 {
     // Token name to substitute current servers DNS name or TCP/IP address into the webapp URL
 
@@ -71,6 +70,7 @@ public abstract class AlfrescoContext extends DiskDeviceContext implements Initi
     
     private GlobalDesktopActionConfigBean m_globalDesktopActionConfig = new GlobalDesktopActionConfigBean();
     private DesktopActionTable m_desktopActions;
+    private List<DesktopAction> m_desktopActionsToInitialize;
     
     // I/O control handler
     
@@ -94,10 +94,29 @@ public abstract class AlfrescoContext extends DiskDeviceContext implements Initi
         enableChangeHandler(!disableChangeNotification);
     }
     
-    public void afterPropertiesSet()
-    {        
+    /**
+     * Complete initialization by registering with a disk driver
+     */
+    public void initialize(AlfrescoDiskDriver filesysDriver)
+    {
+        if (m_desktopActionsToInitialize != null)
+        {
+            for (DesktopAction desktopAction : m_desktopActionsToInitialize)
+            {
+                // Initialize the desktop action
+                try
+                {
+                    desktopAction.initializeAction(filesysDriver, this);
+                }
+                catch (DesktopActionException ex)
+                {
+                    throw new AlfrescoRuntimeException("Failed to initialize desktop action", ex);
+                }
+                addDesktopAction(desktopAction);
+            }
+        }
     }
-    
+
     /**
      * Return the filesystem type, either FileSystem.TypeFAT or FileSystem.TypeNTFS.
      * 
@@ -400,19 +419,12 @@ public abstract class AlfrescoContext extends DiskDeviceContext implements Initi
      * 
      * @param desktopActions DesktopAction List
      */
-    public final void setDesktopActions(List<DesktopAction> desktopActions)
+    public final void setDesktopActionList(List<DesktopAction> desktopActions)
     {
-        // Enumerate the desktop actions and add to this filesystem
-
-        for (DesktopAction desktopAction : desktopActions)
-        {
-            addDesktopAction(desktopAction);
-        }
-        
-        // Note it is assumed that a AlfrescoDiskDriver.register() call will initialise the I/O control handler
+        m_desktopActionsToInitialize = desktopActions;
     }
 
-    protected void setGlobalDesktopActionConfig(GlobalDesktopActionConfigBean desktopActionConfig)
+    public void setGlobalDesktopActionConfig(GlobalDesktopActionConfigBean desktopActionConfig)
     {
         m_globalDesktopActionConfig = desktopActionConfig;
     }
@@ -422,6 +434,8 @@ public abstract class AlfrescoContext extends DiskDeviceContext implements Initi
     {
         return m_globalDesktopActionConfig;
     }
+    
+    
 
 
     /**

@@ -39,6 +39,9 @@
       <property name="protocolOrder">
          <value>${passthru.authentication.protocolOrder}</value>
       </property>
+      <property name="nullDomainUseAnyServer">
+         <value>true</value>
+      </property>
    </bean>
 
    <!-- The authentication component.                                      -->

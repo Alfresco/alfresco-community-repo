@@ -479,40 +479,33 @@ public class AlfrescoRpcAuthenticator implements RpcAuthenticator, InitializingB
             
             for ( UserMapping userElem : this.userMappings)
             {
-                // Validate the element type
+                // Get the user name, user id and group id
                 
-                if ( userElem.getName().equalsIgnoreCase( "user"))
+                String userName = userElem.getName();
+                
+                if ( userName == null || userName.length() == 0)
+                    throw new InvalidConfigurationException("Empty user name, or name not specified");
+                
+                // Check if the mapping already exists
+                
+                Integer idKey = new Integer(( userElem.getGid() << 16) + userElem.getUid());
+                if ( m_idMap.containsKey( idKey) == false)
                 {
-                    // Get the user name, user id and group id
+                    // Add the username uid/gid mapping
                     
-                    String userName = userElem.getName();
+                    m_idMap.put( idKey, userName);
                     
-                    if ( userName == null || userName.length() == 0)
-                        throw new InvalidConfigurationException("Empty user name, or name not specified");
+                    // DEBUG
                     
-                    // Check if the mapping already exists
-                    
-                    Integer idKey = new Integer(( userElem.getGid() << 16) + userElem.getUid());
-                    if ( m_idMap.containsKey( idKey) == false)
-                    {
-                        // Add the username uid/gid mapping
-                        
-                        m_idMap.put( idKey, userName);
-                        
-                        // DEBUG
-                        
-                        if ( logger.isDebugEnabled())
-                            logger.debug("Added RPC user mapping for user " + userName + " uid=" + userElem.getUid() + ", gid=" + userElem.getGid());
-                    }
-                    else if ( logger.isDebugEnabled())
-                    {
-                        // DEBUG
-                        
-                        logger.debug("Ignored duplicate mapping for uid=" + userElem.getUid() + ", gid=" + userElem.getGid());
-                    }
+                    if ( logger.isDebugEnabled())
+                        logger.debug("Added RPC user mapping for user " + userName + " uid=" + userElem.getUid() + ", gid=" + userElem.getGid());
                 }
-                else
-                    throw new InvalidConfigurationException( "Invalid user mapping, " + userElem.getName());
+                else if ( logger.isDebugEnabled())
+                {
+                    // DEBUG
+                    
+                    logger.debug("Ignored duplicate mapping for uid=" + userElem.getUid() + ", gid=" + userElem.getGid());
+                }
             }
         }
         

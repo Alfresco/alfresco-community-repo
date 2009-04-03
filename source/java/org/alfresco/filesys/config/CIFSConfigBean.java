@@ -499,7 +499,7 @@ public class CIFSConfigBean
      * 
      * @return the session timeout
      */
-    protected Integer getSessionTimeout()
+    public Integer getSessionTimeout()
     {
         return sessionTimeout;
     }
@@ -510,7 +510,7 @@ public class CIFSConfigBean
      * @param sessionTimeout
      *            the new session timeout
      */
-    protected void setSessionTimeout(Integer sessionTimeout)
+    public void setSessionTimeout(Integer sessionTimeout)
     {
         this.sessionTimeout = sessionTimeout;
     }

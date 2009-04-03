@@ -426,9 +426,12 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
      * @param context the device context
      * @exception DeviceContextException
      */
+    @Override
     public void registerContext(DeviceContext ctx)
             throws DeviceContextException
     {
+        super.registerContext(ctx);        
+
         AVMContext context = (AVMContext)ctx;
         // Use the system user as the authenticated context for the filesystem initialization
 
@@ -625,7 +628,6 @@ public class AVMDiskDriver extends AlfrescoDiskDriver implements DiskInterface
         {
             AuthenticationUtil.popAuthentication();
         }
-
     }
 
     /**

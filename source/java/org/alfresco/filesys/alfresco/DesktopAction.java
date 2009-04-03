@@ -30,21 +30,20 @@ import java.net.InetAddress;
 import java.net.URL;
 import java.net.URLDecoder;
 
+import org.alfresco.config.ConfigElement;
 import org.alfresco.jlan.server.filesys.DiskSharedDevice;
 import org.alfresco.jlan.server.filesys.pseudo.LocalPseudoFile;
 import org.alfresco.jlan.server.filesys.pseudo.PseudoFile;
-import org.alfresco.config.ConfigElement;
 import org.alfresco.service.ServiceRegistry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.InitializingBean;
 
 /**
  * Desktop Action Class
  *
  * @author gkspencer
  */
-public abstract class DesktopAction implements InitializingBean{
+public abstract class DesktopAction {
 
     // Logging
     
@@ -118,7 +117,6 @@ public abstract class DesktopAction implements InitializingBean{
 	
 	// Filesystem driver and context
 	
-	private DiskSharedDevice m_diskSharedDevice;
 	private AlfrescoDiskDriver m_filesysDriver;
 	private AlfrescoContext m_filesysContext;
 
@@ -312,13 +310,14 @@ public abstract class DesktopAction implements InitializingBean{
 	public void initializeAction(ConfigElement global, ConfigElement config, DiskSharedDevice fileSys)
 		throws DesktopActionException
 	{
+        if ( !(fileSys.getContext() instanceof AlfrescoContext))
+            throw new DesktopActionException("Desktop action requires an Alfresco filesystem driver");
 		// Perform standard initialization
 		
 		standardInitialize(global, config, fileSys);
 		
         // Complete initialization
-
-		afterPropertiesSet();       		
+        initializeAction((AlfrescoDiskDriver) fileSys.getDiskInterface(), (AlfrescoContext) fileSys.getDiskContext());       		
 	}
 	
 	/**
@@ -332,8 +331,6 @@ public abstract class DesktopAction implements InitializingBean{
 	public void standardInitialize(ConfigElement global, ConfigElement config, DiskSharedDevice fileSys)
 		throws DesktopActionException
 	{
-	    setDiskSharedDevice(fileSys);
-	    
 		// Check for standard config values
 		ConfigElement elem = config.getChild("name");
 		if ( elem != null && elem.getValue().length() > 0)
@@ -380,20 +377,17 @@ public abstract class DesktopAction implements InitializingBean{
 	}
 
 	
-    public void afterPropertiesSet() throws DesktopActionException
+    /**
+     * Initialize the desktop action
+     * 
+     * @exception DesktopActionException
+     */
+    public void initializeAction(AlfrescoDiskDriver filesysDriver, AlfrescoContext filesysContext) throws DesktopActionException
     {
-        if (m_diskSharedDevice == null)
-            throw new DesktopActionException("Desktop action requires an Alfresco filesystem driver");
-
         // Save the filesystem device and I/O handler
         
-        if ( m_diskSharedDevice.getContext() instanceof AlfrescoContext)
-        {
-            m_filesysDriver  = (AlfrescoDiskDriver) m_diskSharedDevice.getDiskInterface();
-            m_filesysContext = (AlfrescoContext) m_diskSharedDevice.getDiskContext();
-        }
-        else
-            throw new DesktopActionException("Desktop action requires an Alfresco filesystem driver");
+        m_filesysDriver  = filesysDriver;
+        m_filesysContext = filesysContext;
         
         // Check for standard config values
         
@@ -602,15 +596,6 @@ public abstract class DesktopAction implements InitializingBean{
 		m_debug = ena;
 	}
 
-	/**
-	 * Sets the disk shared device.
-	 * @param diskSharedDevice
-	 */
-	public void setDiskSharedDevice(DiskSharedDevice diskSharedDevice)
-    {
-        m_diskSharedDevice = diskSharedDevice;
-    }
-	
     /**
 	 * Set the webapp URL
 	 * 
@@ -663,4 +648,5 @@ public abstract class DesktopAction implements InitializingBean{
 		
 		return str.toString();
 	}
+
 }

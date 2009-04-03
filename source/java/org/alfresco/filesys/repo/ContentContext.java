@@ -28,6 +28,7 @@ import java.util.List;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.filesys.alfresco.AlfrescoContext;
+import org.alfresco.filesys.alfresco.AlfrescoDiskDriver;
 import org.alfresco.filesys.alfresco.IOControlHandler;
 import org.alfresco.jlan.server.auth.acl.AccessControl;
 import org.alfresco.jlan.server.core.DeviceContextException;
@@ -100,8 +101,6 @@ public class ContentContext extends AlfrescoContext
         setStoreName(storeName);
         setRootPath(rootPath);
         setRootNodeRef(rootNodeRef);
-
-        afterPropertiesSet();
     }
 
     public void setStoreName(String name)
@@ -148,9 +147,9 @@ public class ContentContext extends AlfrescoContext
 
     
     @Override
-    public void afterPropertiesSet()
+    public void initialize(AlfrescoDiskDriver filesysDriver)
     {
-        super.afterPropertiesSet();
+        super.initialize(filesysDriver);
 
         if (m_storeName == null || m_storeName.length() == 0)
         {

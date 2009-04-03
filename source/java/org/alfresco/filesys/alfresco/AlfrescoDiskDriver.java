@@ -29,6 +29,8 @@ import javax.transaction.UserTransaction;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.filesys.state.FileStateReaper;
 import org.alfresco.jlan.server.SrvSession;
+import org.alfresco.jlan.server.core.DeviceContext;
+import org.alfresco.jlan.server.core.DeviceContextException;
 import org.alfresco.jlan.server.filesys.IOControlNotImplementedException;
 import org.alfresco.jlan.server.filesys.IOCtlInterface;
 import org.alfresco.jlan.server.filesys.NetworkFile;
@@ -345,5 +347,21 @@ public abstract class AlfrescoDiskDriver implements IOCtlInterface, Transactiona
         //  Store the transaction callback
         
         sess.setTransaction( this);
+    }
+
+    /**
+     * Registers a device context object for this instance
+     * of the shared device. The same DeviceInterface implementation may be used for multiple
+     * shares. In this base class, we initialize all desktop actions.
+     * 
+     * @param ctx the context
+     * @exception DeviceContextException
+     */
+    public void registerContext(DeviceContext ctx) throws DeviceContextException
+    {
+        if (ctx instanceof AlfrescoContext)
+        {
+            ((AlfrescoContext) ctx).initialize(this);
+        }
     }
 }

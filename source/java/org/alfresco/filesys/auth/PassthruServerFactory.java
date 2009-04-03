@@ -68,6 +68,8 @@ public class PassthruServerFactory implements FactoryBean, InitializingBean, Dis
     private Integer offlineCheckInterval;
 
     private PassthruServers passthruServers;
+    
+    private boolean nullDomainUseAnyServer;
 
     /**
      * Sets the timeout for opening a session to an authentication server
@@ -123,6 +125,17 @@ public class PassthruServerFactory implements FactoryBean, InitializingBean, Dis
     {
         this.offlineCheckInterval = offlineCheckInterval;
     }
+    
+    /**
+     * Set the null domain to use any available server option
+     * 
+     * @param nullDomain boolean
+     */
+    public final void setNullDomainUseAnyServer( boolean nullDomain)
+    {
+        this.nullDomainUseAnyServer = nullDomain;
+    }
+    
 
     /**
      * Set the protocol order for passthru connections
@@ -233,6 +246,8 @@ public class PassthruServerFactory implements FactoryBean, InitializingBean, Dis
 
             passthruServers.setConnectionTimeout(this.timeout);
         }
+        
+        passthruServers.setNullDomainUseAnyServer(this.nullDomainUseAnyServer);
 
         // Check if a server name has been specified
 

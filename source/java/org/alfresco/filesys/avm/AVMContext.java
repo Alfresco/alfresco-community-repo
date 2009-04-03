@@ -29,6 +29,7 @@ import java.util.StringTokenizer;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.filesys.alfresco.AlfrescoContext;
+import org.alfresco.filesys.alfresco.AlfrescoDiskDriver;
 import org.alfresco.filesys.alfresco.IOControlHandler;
 import org.alfresco.filesys.state.FileState;
 import org.alfresco.filesys.state.FileStateTable;
@@ -126,8 +127,6 @@ public class AVMContext extends AlfrescoContext
         
         // Set the store version to use     
         setVersion(version);
-
-        afterPropertiesSet();
     }
 
     /**
@@ -146,8 +145,6 @@ public class AVMContext extends AlfrescoContext
         // Enable the virtualization view
         setVirtualView(true);
         setShowOptions(showOptions);
-
-        afterPropertiesSet();
     }
 
     public void setStorePath(String path)
@@ -213,10 +210,10 @@ public class AVMContext extends AlfrescoContext
         m_createStore = createStore;
     }
 
+    
     @Override
-    public void afterPropertiesSet()
+    public void initialize(AlfrescoDiskDriver filesysDriver)
     {
-
         if (m_virtualView)
         {
             // A context for a view onto all stores/versions within AVM.
@@ -241,7 +238,7 @@ public class AVMContext extends AlfrescoContext
             
             setShareName(m_storePath + "(" + m_version + ")");                        
         }
-        super.afterPropertiesSet();
+        super.initialize(filesysDriver);
     }
 
     /**

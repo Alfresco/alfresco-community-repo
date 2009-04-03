@@ -35,6 +35,8 @@ import java.util.Map;
 import java.util.StringTokenizer;
 
 import org.alfresco.config.ConfigElement;
+import org.alfresco.filesys.alfresco.AlfrescoContext;
+import org.alfresco.filesys.alfresco.AlfrescoDiskDriver;
 import org.alfresco.filesys.alfresco.DesktopAction;
 import org.alfresco.filesys.alfresco.DesktopActionException;
 import org.alfresco.filesys.alfresco.DesktopParams;
@@ -42,7 +44,6 @@ import org.alfresco.filesys.alfresco.DesktopResponse;
 import org.alfresco.jlan.server.filesys.DiskSharedDevice;
 import org.alfresco.scripts.ScriptException;
 import org.alfresco.service.cmr.repository.ScriptService;
-import org.alfresco.service.transaction.TransactionService;
 
 /**
  * Javascript Desktop Action Class
@@ -126,7 +127,7 @@ public class JavaScriptDesktopAction extends DesktopAction {
 				throw new DesktopActionException("Empty desktop action attributes");
 			
 			// Parse the attribute string
-			setAttributes(elem.getValue());
+			setAttributeList(elem.getValue());
 		}
 		
 		// Check if the desktop action pre-processing options have been specified
@@ -134,16 +135,17 @@ public class JavaScriptDesktopAction extends DesktopAction {
 		elem = config.getChild("preprocess");
 		if ( elem != null)
 		{
-		    setPreProcessActions(elem.getValue());
+		    setPreprocess(elem.getValue());
 		}
 	}
 
 	@Override
-    public void afterPropertiesSet() throws DesktopActionException
+    public void initializeAction(AlfrescoDiskDriver filesysDriver, AlfrescoContext filesysContext)
+            throws DesktopActionException
     {
         // Perform standard initialization
-        
-        super.afterPropertiesSet();
+
+	    super.initializeAction(filesysDriver, filesysContext);
         
         // Get the script file name and check that it exists
         
@@ -368,7 +370,7 @@ public class JavaScriptDesktopAction extends DesktopAction {
 	 * 
 	 * @param name String
 	 */
-	protected final void setScriptName(String name)
+	public final void setScriptName(String name)
 	{
 		m_scriptName = name;
 	}
@@ -379,7 +381,7 @@ public class JavaScriptDesktopAction extends DesktopAction {
      * @param attributes String
      * @throws DesktopActionException 
      */
-    protected void setAttributes(String attributes) throws DesktopActionException
+    public void setAttributeList(String attributes) throws DesktopActionException
     {
         // Check if the attribute string is empty        
         if ( attributes == null || attributes.length() == 0)
@@ -431,7 +433,7 @@ public class JavaScriptDesktopAction extends DesktopAction {
      * @param preProcessActions String
      * @throws DesktopActionException 
      */
-    protected void setPreProcessActions(String preProcessActions) throws DesktopActionException
+    public void setPreprocess(String preProcessActions) throws DesktopActionException
     {
         // Check if the pre-process string is empty
 

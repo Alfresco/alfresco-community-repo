@@ -426,8 +426,6 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
             context.setDisableNodeMonitor(true);
         }
         
-        context.afterPropertiesSet();
-        
         registerContext(context);
         
         // Return the context for this shared filesystem
@@ -444,8 +442,11 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
      * @param ctx the context
      * @exception DeviceContextException
      */
+    @Override
     public void registerContext(DeviceContext ctx) throws DeviceContextException
     {
+        super.registerContext(ctx);
+
         ContentContext context = (ContentContext)ctx;
 
         // Wrap the initialization in a transaction

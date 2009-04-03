@@ -136,6 +136,9 @@
       <property name="protocolOrder">
          <value>${ldap.passthru.authentication.protocolOrder}</value>
       </property>
+      <property name="nullDomainUseAnyServer">
+         <value>true</value>
+      </property>
    </bean>
 	
    <!-- CIFS authentication and SMB session listener -->

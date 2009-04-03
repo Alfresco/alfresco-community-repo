@@ -24,19 +24,17 @@
  */
 package org.alfresco.cmis.mapping;
 
-import org.alfresco.cmis.CMISAllowedActionEnum;
-import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
- * Action Evaluator whose evaluation is fixed
+ * Action Evaluator whose evaluation takes place on parent
  * 
  * @author davidc
- *
  */
-public class FixedValueActionEvaluator extends AbstractActionEvaluator
+public class ParentActionEvaluator extends AbstractActionEvaluator
 {
-    private boolean allowed;
+    private AbstractActionEvaluator evaluator;
 
     /**
      * Construct
@@ -44,10 +42,10 @@ public class FixedValueActionEvaluator extends AbstractActionEvaluator
      * @param serviceRegistry
      * @param action
      */
-    protected FixedValueActionEvaluator(ServiceRegistry serviceRegistry, CMISAllowedActionEnum action, boolean allowed)
+    protected ParentActionEvaluator(AbstractActionEvaluator evaluator)
     {
-        super(serviceRegistry, action);
-        this.allowed = allowed;
+        super(evaluator.getServiceRegistry(), evaluator.getAction());
+        this.evaluator = evaluator;
     }
 
     /*
@@ -56,15 +54,30 @@ public class FixedValueActionEvaluator extends AbstractActionEvaluator
      */
     public boolean isAllowed(NodeRef nodeRef)
     {
-        return allowed;
+        if (nodeRef.equals(getServiceRegistry().getCMISService().getDefaultRootNodeRef()))
+        {
+            return false;
+        }
+
+        ChildAssociationRef car = getServiceRegistry().getNodeService().getPrimaryParent(nodeRef);
+        if ((car != null) && (car.getParentRef() != null))
+        {
+            return evaluator.isAllowed(car.getParentRef());
+        }
+        
+        return false;
     }
-    
+
+    /*
+     * (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
     @Override
     public String toString()
     {
         StringBuilder builder = new StringBuilder();
-        builder.append("FixedValueActionEvaluator[action=").append(getAction());
-        builder.append(", allowed=").append(allowed).append("]");
+        builder.append("ParentActionEvaluator[evaluator=").append(evaluator).append("]");
         return builder.toString();
     }
 }
+

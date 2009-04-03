@@ -34,7 +34,6 @@ import org.alfresco.service.cmr.security.PermissionService;
  * Alfresco Permission based Action Evaluator
  * 
  * @author davidc
- *
  */
 public class PermissionActionEvaluator extends AbstractActionEvaluator
 {
@@ -69,4 +68,19 @@ public class PermissionActionEvaluator extends AbstractActionEvaluator
         }
         return true;
     }
+    
+    @Override
+    public String toString()
+    {
+        StringBuilder builder = new StringBuilder();
+        builder.append("PermissionActionEvaluator[action=").append(getAction());
+        builder.append(", permissions=");
+        for (String permission : permissions)
+        {
+            builder.append(permission).append(",");
+        }
+        builder.append("]");
+        return builder.toString();
+    }
+    
 }

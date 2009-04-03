@@ -127,7 +127,7 @@
 
         <!-- CIFS authentication -->
         <property name="authenticator">
-            <ref bean="authenticationDao" />
+            <ref bean="cifsAuthenticator" />
         </property>
 
         <property name="WINSConfig">
@@ -160,7 +160,7 @@
 
         <!-- FTP authentication -->
         <property name="authenticator">
-            <ref bean="authenticationDao" />
+            <ref bean="ftpAuthenticator" />
         </property>
 
         <!--property name="debugFlags">

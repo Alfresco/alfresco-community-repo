@@ -108,4 +108,43 @@
         </property>
     </bean>
     
+   <!-- The passthru servers  -->
+   <!-- Properties that specify the server(s) to use for passthru          -->
+   <!-- authentication :-                                                  -->
+   <!--   useLocalServer   use the local server for authentication         -->
+   <!--   domain           use domain controllers from the specified domain-->
+   <!--   servers          comma delimted list of server addresses or      -->
+   <!--                    names                                           -->
+   <bean id="passthruServers" class="org.alfresco.filesys.auth.PassthruServerFactory">
+      <property name="useLocalServer">
+         <value>${ldap.passthru.authentication.useLocalServer}</value>
+      </property>
+      <property name="servers">
+         <value>${ldap.passthru.authentication.servers}</value>
+      </property>
+      <property name="domain">
+         <value>${ldap.passthru.authentication.domain}</value>
+      </property>
+      <!-- Timeout value when opening a session to an authentication server, in milliseconds -->
+      <property name="timeout">
+         <value>${ldap.passthru.authentication.connectTimeout}</value>
+      </property>
+      <!-- Offline server check interval -->
+      <property name="offlineCheckInterval">
+         <value>${ldap.passthru.authentication.offlineCheckInterval}</value>
+      </property>
+      <property name="protocolOrder">
+         <value>${ldap.passthru.authentication.protocolOrder}</value>
+      </property>
+   </bean>
+	
+   <!-- CIFS authentication and SMB session listener -->
+   <bean id="cifsAuthenticator" class="org.alfresco.filesys.auth.cifs.PassthruCifsAuthenticator" parent="cifsAuthenticatorBase">
+      <property name="passthruServers">
+         <ref bean="passthruServers" />
+      </property>
+   </bean>
+
+    <!-- FTP authentication -->
+    <bean id="ftpAuthenticator" class="org.alfresco.filesys.auth.ftp.AlfrescoFtpAuthenticator" parent="ftpAuthenticatorBase" />
 </beans>

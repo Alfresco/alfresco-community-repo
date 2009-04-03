@@ -39,5 +39,24 @@
         <property name="allowDeleteUser" value="true" />
         <property name="allowCreateUser" value="true" />
     </bean>
+    
+    <!-- CIFS authentication -->
+    <bean id="cifsAuthenticator" class="org.alfresco.filesys.auth.cifs.EnterpriseCifsAuthenticator" parent="cifsAuthenticatorBase" >
+      <property name="realm">
+         <value>${kerberos.authentication.realm}</value>
+      </property>
+      <property name="password">
+         <value>${kerberos.authentication.cifs.password}</value>
+      </property>
+      <property name="jaasConfigEntryName">
+         <value>${kerberos.authentication.cifs.configEntryName}</value>
+      </property>
+	</bean>
 
+    <!-- FTP authentication -->
+    <bean id="ftpAuthenticator" class="org.alfresco.filesys.auth.ftp.AlfrescoFtpAuthenticator" parent="ftpAuthenticatorBase" />
+
+    <!-- SMB session listener. Only required for passthru authentication -->
+    <bean id="smbSessionListener" class="org.alfresco.filesys.NullSessionListener" />
+    
 </beans>

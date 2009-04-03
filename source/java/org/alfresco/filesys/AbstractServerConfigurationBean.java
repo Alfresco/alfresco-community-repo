@@ -76,7 +76,9 @@ import org.springframework.context.event.ContextRefreshedEvent;
  * 
  * @author gkspencer
  */
-public abstract class AbstractServerConfigurationBean extends ServerConfiguration implements ApplicationListener, ApplicationContextAware {
+public abstract class AbstractServerConfigurationBean extends ServerConfiguration implements
+        ExtendedServerConfigurationAccessor, ApplicationListener, ApplicationContextAware
+{
 
   // Debug logging
 
@@ -178,6 +180,7 @@ public abstract class AbstractServerConfigurationBean extends ServerConfiguratio
   // Local server name and domain/workgroup name
 
   private String m_localName;
+  private String m_localNameFull;
   private String m_localDomain;
   
   // Disable use of native code on Windows, do not use any JNI calls
@@ -630,10 +633,48 @@ public abstract class AbstractServerConfigurationBean extends ServerConfiguratio
      */
     public final String getLocalServerName(boolean trimDomain)
     {
+        // Use cached untrimmed version if necessary
+        if (!trimDomain)
+        {
+            return getLocalServerName();
+        }
+        
         // Check if the name has already been set
-
         if (m_localName != null)
             return m_localName;
+
+        // Find the local server name
+        String srvName = getLocalServerName();
+
+        // Strip the domain name
+
+        if (trimDomain && srvName != null)
+        {
+            int pos = srvName.indexOf(".");
+            if (pos != -1)
+                srvName = srvName.substring(0, pos);
+        }
+
+        // Save the local server name
+
+        m_localName = srvName;
+
+        // Return the local server name
+
+        return srvName;
+    }
+
+    /**
+     * Get the local server name (untrimmed)
+     * 
+     * @return String
+     */
+    private String getLocalServerName()
+    {
+        // Check if the name has already been set
+
+        if (m_localNameFull != null)
+            return m_localNameFull;
 
         // Find the local server name
 
@@ -658,18 +699,9 @@ public abstract class AbstractServerConfigurationBean extends ServerConfiguratio
             }
         }
 
-        // Strip the domain name
-
-        if (trimDomain && srvName != null)
-        {
-            int pos = srvName.indexOf(".");
-            if (pos != -1)
-                srvName = srvName.substring(0, pos);
-        }
-
         // Save the local server name
 
-        m_localName = srvName;
+        m_localNameFull = srvName;
 
         // Return the local server name
 

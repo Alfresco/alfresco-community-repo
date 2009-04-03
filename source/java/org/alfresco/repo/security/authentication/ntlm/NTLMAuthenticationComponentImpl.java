@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -25,8 +25,6 @@
 package org.alfresco.repo.security.authentication.ntlm;
 
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.Provider;
@@ -45,6 +43,7 @@ import net.sf.acegisecurity.GrantedAuthority;
 import net.sf.acegisecurity.GrantedAuthorityImpl;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.filesys.auth.PassthruServerFactory;
 import org.alfresco.jlan.server.auth.PasswordEncryptor;
 import org.alfresco.jlan.server.auth.passthru.AuthSessionFactory;
 import org.alfresco.jlan.server.auth.passthru.AuthenticateSession;
@@ -55,10 +54,10 @@ import org.alfresco.jlan.smb.SMBStatus;
 import org.alfresco.repo.security.authentication.AbstractAuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.NTLMMode;
-import org.alfresco.service.Managed;
 import org.alfresco.service.cmr.security.NoSuchPersonException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.InitializingBean;
 
 /**
  * NTLM Authentication Component Class
@@ -68,7 +67,7 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author GKSpencer
  */
-public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationComponent
+public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationComponent implements InitializingBean
 {
     // Logging
     
@@ -88,6 +87,7 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
     
     // Passthru authentication servers
     
+    private PassthruServerFactory m_passthruServerFactory = new PassthruServerFactory();
     private PassthruServers m_passthruServers;
     
     // Password encryptor for generating password hash for local authentication
@@ -245,13 +245,7 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
      * Class constructor
      */
     public NTLMAuthenticationComponentImpl() {
-        
-        // Create the passthru authentication server list
-        
-        m_passthruServers = new PassthruServers();
-        
-        m_passthruServers.setDebug( logger.isDebugEnabled());
-        
+                
         // Create the password encryptor for local password hashing
         
         m_encryptor = new PasswordEncryptor();
@@ -261,6 +255,21 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
         m_passthruSessions = new Hashtable<NTLMPassthruToken,AuthenticateSession>();
         m_reaperThread = new PassthruReaperThread();
     }
+    
+    
+
+    public void afterPropertiesSet() throws Exception
+    {
+        if (m_passthruServers == null)
+        {
+            // Create the passthru authentication server list
+            m_passthruServerFactory.afterPropertiesSet();
+            
+            m_passthruServers = (PassthruServers) m_passthruServerFactory.getObject();
+        }            
+    }
+
+
 
     /**
      * Determine if guest logons are allowed
@@ -272,30 +281,27 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
         return m_allowGuest;
     }
     
+    
+    /**
+     * Directly sets the passthru server list.
+     * 
+     * @param servers
+     *            a passthru server list, usually created by {@link org.alfresco.filesys.auth.PassthruServerFactory}
+     */
+    public void setPassthruServers(PassthruServers servers)
+    {
+        m_passthruServers = servers;
+    }
+
     /**
      * Set the domain to authenticate against
      * 
      * @param domain String
      */
-    @Managed(category="Security")
     public void setDomain(String domain) {
         if (domain.length() > 0)
-        {        
-            // Check if the passthru server list is already configured
-            
-            if ( m_passthruServers.getTotalServerCount() > 0)
-                throw new AlfrescoRuntimeException("Passthru server list already configured");
-            
-            // Configure the passthru authentication server list using the domain controllers
-            
-            try
-            {
-                m_passthruServers.setDomain(domain);
-            }
-            catch ( IOException ex)
-            {
-                throw new AlfrescoRuntimeException("Failed to set passthru domain, " + ex);
-            }
+        {
+            m_passthruServerFactory.setDomain(domain);
         }
     }
     
@@ -304,18 +310,10 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
      * 
      * @param servers String
      */
-    @Managed(category="Security")
     public void setServers(String servers) {        
         if (servers.length() > 0)
         {
-            // Check if the passthru server list is already configured
-
-            if (m_passthruServers.getTotalServerCount() > 0)
-                throw new AlfrescoRuntimeException("Passthru server list already configured");
-
-            // Configure the passthru authenticaiton list using a list of server names/addresses
-
-            m_passthruServers.setServerList(servers);
+            m_passthruServerFactory.setServer(servers);
         }
     }
     
@@ -324,54 +322,9 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
      * 
      * @param useLocal String
      */
-    @Managed(category="Security")
     public void setUseLocalServer(String useLocal)
     {
-        // Check if the local server should be used for authentication
-        
-        if ( Boolean.parseBoolean(useLocal) == true)
-        {
-            // Check if the passthru server list is already configured
-            
-            if ( m_passthruServers.getTotalServerCount() > 0)
-                throw new AlfrescoRuntimeException("Passthru server list already configured");
-
-            try
-            {
-                // Get the list of local network addresses
-                
-                InetAddress[] localAddrs = InetAddress.getAllByName(InetAddress.getLocalHost().getHostName());
-                
-                // Build the list of local addresses
-                
-                if ( localAddrs != null && localAddrs.length > 0)
-                {
-                    StringBuilder addrStr = new StringBuilder();
-                
-                    for ( InetAddress curAddr  : localAddrs)
-                    {
-                        if ( curAddr.isLoopbackAddress() == false)
-                        {
-                            addrStr.append(curAddr.getHostAddress());
-                            addrStr.append(",");
-                        }
-                    }
-                    
-                    if ( addrStr.length() > 0)
-                        addrStr.setLength(addrStr.length() - 1);
-                    
-                    // Set the server list using the local address list
-                    
-                    m_passthruServers.setServerList(addrStr.toString());
-                }
-                else
-                    throw new AlfrescoRuntimeException("No local server address(es)");
-            }
-            catch ( UnknownHostException ex)
-            {
-                throw new AlfrescoRuntimeException("Failed to get local address list");
-            }
-        }
+        m_passthruServerFactory.setLocalServer(Boolean.parseBoolean(useLocal));
     }
     
     /**
@@ -379,7 +332,6 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
      * 
      * @param guest String
      */
-    @Managed(category="Security")
     public void setGuestAccess(String guest)
     {
         m_allowGuest = Boolean.parseBoolean(guest);
@@ -390,7 +342,6 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
      * 
      * @param auth String
      */
-    @Managed(category="Security")
     public void setAllowAuthUserAsGuest(String auth)
     {
         m_allowAuthUserAsGuest = Boolean.parseBoolean(auth);
@@ -401,7 +352,6 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
      * 
      * @param nullDomain String
      */
-    @Managed(category="Security")
     public void setNullDomainUseAnyServer(String nullDomain)
     {
         m_nullDomainUseAnyServer = Boolean.parseBoolean(nullDomain);
@@ -416,7 +366,6 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
      * 
      * @param providerClass String
      */
-    @Managed(category="Security")
     public void setJCEProvider(String providerClass)
     {
         // Set the JCE provider, required to provide various encryption/hashing algorithms not available
@@ -464,7 +413,6 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
      * 
      * @param sessTmo String
      */
-    @Managed(category="Security")
     public void setSessionTimeout(String sessTmo)
     {
         // Convert to an integer value and range check the timeout value
@@ -497,7 +445,6 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
      * 
      * @param protoOrder String
      */
-    @Managed(category="Security")
     public void setProtocolOrder(String protoOrder)
     {
     	// Parse the protocol order list

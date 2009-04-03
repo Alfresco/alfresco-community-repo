@@ -24,11 +24,9 @@
  */
 package org.alfresco.filesys.auth.cifs;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
-import java.util.StringTokenizer;
 
 import javax.transaction.Status;
 import javax.transaction.UserTransaction;
@@ -36,6 +34,7 @@ import javax.transaction.UserTransaction;
 import org.alfresco.config.ConfigElement;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.filesys.alfresco.AlfrescoClientInfo;
+import org.alfresco.filesys.auth.PassthruServerFactory;
 import org.alfresco.jlan.server.SessionListener;
 import org.alfresco.jlan.server.SrvSession;
 import org.alfresco.jlan.server.auth.AuthContext;
@@ -49,7 +48,6 @@ import org.alfresco.jlan.server.auth.ntlm.TargetInfo;
 import org.alfresco.jlan.server.auth.ntlm.Type1NTLMMessage;
 import org.alfresco.jlan.server.auth.ntlm.Type2NTLMMessage;
 import org.alfresco.jlan.server.auth.ntlm.Type3NTLMMessage;
-import org.alfresco.jlan.server.auth.passthru.AuthSessionFactory;
 import org.alfresco.jlan.server.auth.passthru.AuthenticateSession;
 import org.alfresco.jlan.server.auth.passthru.PassthruDetails;
 import org.alfresco.jlan.server.auth.passthru.PassthruServers;
@@ -57,7 +55,6 @@ import org.alfresco.jlan.server.config.InvalidConfigurationException;
 import org.alfresco.jlan.server.config.ServerConfiguration;
 import org.alfresco.jlan.server.core.SharedDevice;
 import org.alfresco.jlan.smb.Capability;
-import org.alfresco.jlan.smb.Protocol;
 import org.alfresco.jlan.smb.SMBStatus;
 import org.alfresco.jlan.smb.dcerpc.UUID;
 import org.alfresco.jlan.smb.server.SMBServer;
@@ -111,24 +108,12 @@ public class PassthruCifsAuthenticator extends CifsAuthenticatorBase implements 
     // Passthru servers used to authenticate users
 
     private PassthruServers m_passthruServers;
-
-    // SMB server
-
-    private SMBServer m_server;
+    private boolean m_localPassThruServers;
 
     // Sessions that are currently in the negotiate/session setup state
 
     private Hashtable<String, PassthruDetails> m_sessions;
     
-    private Integer timeout;
-    
-    private String server;
-    
-    private String domain;
-    
-    private String protocolOrder;
-    
-    private Integer offlineCheckInterval;
 
     /**
      * Passthru Authenticator Constructor
@@ -142,29 +127,10 @@ public class PassthruCifsAuthenticator extends CifsAuthenticatorBase implements 
         m_sessions = new Hashtable<String, PassthruDetails>();
     }        
 
-    public void setTimeout(int timeout)
-    {
-        this.timeout = timeout;
-    }
-        
-    public void setServer(String server)
-    {
-        this.server = server;
-    }
     
-    public void setDomain(String domain)
+    public void setPassthruServers(PassthruServers servers)
     {
-        this.domain = domain;
-    }
-
-    public void setProtocolOrder(String protocolOrder)
-    {
-        this.protocolOrder = protocolOrder;
-    }
-    
-    public void setOfflineCheckInterval(Integer offlineCheckInterval)
-    {
-        this.offlineCheckInterval = offlineCheckInterval;
+        m_passthruServers = servers;
     }
 
     /**
@@ -440,16 +406,6 @@ public class PassthruCifsAuthenticator extends CifsAuthenticatorBase implements 
      */
     public AuthContext getAuthContext( SMBSrvSession sess)
     {
-        // Make sure the SMB server listener is installed
-
-        if ( m_server == null)
-        {
-            // Install the server listener
-            
-            m_server = sess.getSMBServer();
-            m_server.addSessionListener(this);
-        }
-        
         // Open a connection to the authentication server, use normal session setup
 
         AuthContext authCtx = null;
@@ -1202,8 +1158,10 @@ public class PassthruCifsAuthenticator extends CifsAuthenticatorBase implements 
      */
     public void initialize(ServerConfiguration config, ConfigElement params) throws InvalidConfigurationException
     {
-        // Check if the offline check interval has been specified
+        // Manually construct our own passthru server list
+        PassthruServerFactory factory = new PassthruServerFactory();
         
+        // Check if the offline check interval has been specified
         ConfigElement checkInterval = params.getChild("offlineCheckInterval");
         if ( checkInterval != null)
         {
@@ -1211,7 +1169,7 @@ public class PassthruCifsAuthenticator extends CifsAuthenticatorBase implements 
             {
                 // Validate the check interval value
 
-                setOfflineCheckInterval(Integer.parseInt(checkInterval.getValue()));
+                factory.setOfflineCheckInterval(Integer.parseInt(checkInterval.getValue()));
                 
             }
             catch (NumberFormatException ex)
@@ -1231,7 +1189,7 @@ public class PassthruCifsAuthenticator extends CifsAuthenticatorBase implements 
 
                 // Validate the session timeout value
 
-                setTimeout(Integer.parseInt(sessTmoElem.getValue()));
+                factory.setTimeout(Integer.parseInt(sessTmoElem.getValue()));
             }
             catch (NumberFormatException ex)
             {
@@ -1251,7 +1209,7 @@ public class PassthruCifsAuthenticator extends CifsAuthenticatorBase implements 
             String server = getCIFSConfig().getServerName();
             if(server == null)
                 throw new AlfrescoRuntimeException("Passthru authenticator failed to get local server name");
-            setServer(server);
+            factory.setServer(server);
         }
 
         // Check if a server name has been specified
@@ -1260,7 +1218,7 @@ public class PassthruCifsAuthenticator extends CifsAuthenticatorBase implements 
 
         if (srvNamesElem != null && srvNamesElem.getValue().length() > 0)
         {
-            setServer(srvNamesElem.getValue());
+            factory.setServer(srvNamesElem.getValue());
         }
 
         // Check if the local domain/workgroup should be used
@@ -1269,7 +1227,7 @@ public class PassthruCifsAuthenticator extends CifsAuthenticatorBase implements 
         {
             // Get the local domain/workgroup name
             
-            setDomain(getCIFSConfig().getDomainName());            
+            factory.setDomain(getCIFSConfig().getDomainName());            
         }
 
         // Check if a domain name has been specified
@@ -1278,7 +1236,7 @@ public class PassthruCifsAuthenticator extends CifsAuthenticatorBase implements 
 
         if (domNameElem != null && domNameElem.getValue().length() > 0)
         {
-            setDomain(domNameElem.getValue());
+            factory.setDomain(domNameElem.getValue());
         }
 
         // Check if a protocol order has been set
@@ -1287,9 +1245,15 @@ public class PassthruCifsAuthenticator extends CifsAuthenticatorBase implements 
 
         if (protoOrderElem != null && protoOrderElem.getValue().length() > 0)
         {
-            setProtocolOrder(protoOrderElem.getValue());
+            factory.setProtocolOrder(protoOrderElem.getValue());
         }
-
+        
+        // Complete initialization
+        factory.afterPropertiesSet();
+        setPassthruServers((PassthruServers) factory.getObject());
+        // Remember that we have to shut down the servers
+        m_localPassThruServers = true;
+        
         // Call the base class
         super.initialize(config, params);
         
@@ -1300,185 +1264,6 @@ public class PassthruCifsAuthenticator extends CifsAuthenticatorBase implements 
         if ( smbServer != null)
             smbServer.addSessionListener(this);
         
-        // Note that for container-based initialization, session listeners can be registered directly on CIFSSeverBean
-    }
-
-    
-    /**
-     * Initialize the authenticator (after properties have been set)
-     * 
-     * @exception InvalidConfigurationException
-     */
-    @Override
-    public void initialize() throws InvalidConfigurationException
-    {
-        // Call the base class
-        super.initialize();
-      
-        // Check if the offline check interval has been specified
-        
-        if ( this.offlineCheckInterval != null)
-        {
-            // Range check the value
-            
-            if ( this.offlineCheckInterval < MinCheckInterval || this.offlineCheckInterval > MaxCheckInterval)
-                throw new InvalidConfigurationException("Invalid offline check interval, valid range is " + MinCheckInterval + " to " + MaxCheckInterval);
-            
-            // Set the offline check interval for offline passthru servers
-            
-            m_passthruServers = new PassthruServers( this.offlineCheckInterval);
-            
-            // DEBUG
-            
-            if ( logger.isDebugEnabled())
-            	logger.debug("Using offline check interval of " + this.offlineCheckInterval + " seconds");
-        }
-        else
-        {
-        	// Create the passthru server list with the default offline check interval
-        	
-        	m_passthruServers = new PassthruServers();
-        }
-        
-        // Propagate the debug setting
-        
-        if ( logger.isDebugEnabled())
-        	m_passthruServers.setDebug( true);
-        
-        // Check if the session timeout has been specified
-
-        if (this.timeout != null)
-        {
-
-                // Range check the timeout
-                
-                if ( this.timeout < MinSessionTmo || this.timeout > MaxSessionTmo)
-                    throw new InvalidConfigurationException("Invalid session timeout, valid range is " +
-                                                            MinSessionTmo + " to " + MaxSessionTmo);
-                
-                // Set the session timeout for connecting to an authentication server
-                
-                m_passthruServers.setConnectionTimeout( this.timeout);
-        }
-
-        // Check if a server name has been specified
-
-        String srvList = null;
-        if (this.server != null && this.server.length() > 0)
-        {
-
-            // Get the passthru authenticator server name
-
-            srvList = this.server;
-        }
-
-        // If the passthru server name has been set initialize the passthru connection
-
-        if (srvList != null)
-        {
-            // Initialize using a list of server names/addresses
-
-            m_passthruServers.setServerList(srvList);
-        }
-        else
-        {
-
-            // Get the domain/workgroup name
-            
-            String domainName = null;
-            
-            // Check if a domain name has been specified
-
-            if (this.domain != null && this.domain.length() > 0)
-            {
-
-                // Check if the authentication server has already been set, ie. server name was also specified
-                
-                if (srvList != null)
-                    throw new AlfrescoRuntimeException("Specify server or domain name for passthru authentication");
-
-                domainName = this.domain;
-            }
-            
-            // If the domain name has been set initialize the passthru connection
-            
-            if (domainName != null)
-            {
-                try
-                {
-                    // Initialize using the domain
-                    
-                    m_passthruServers.setDomain(domainName);
-                }
-                catch ( IOException ex)
-                {
-                    throw new AlfrescoRuntimeException("Error setting passthru domain, " + ex.getMessage());
-                }
-            }
-        }
-
-        // Check if a protocol order has been set
-        
-        if ( this.protocolOrder != null && this.protocolOrder.length() > 0)
-        {
-            // Parse the protocol order list
-            
-            StringTokenizer tokens = new StringTokenizer( this.protocolOrder, ",");
-            int primaryProto = Protocol.None;
-            int secondaryProto = Protocol.None;
-    
-            // There should only be one or two tokens
-            
-            if ( tokens.countTokens() > 2)
-                throw new AlfrescoRuntimeException("Invalid protocol order list, " + this.protocolOrder);
-            
-            // Get the primary protocol
-            
-            if ( tokens.hasMoreTokens())
-            {
-                // Parse the primary protocol
-                
-                String primaryStr = tokens.nextToken();
-                
-                if ( primaryStr.equalsIgnoreCase( "TCPIP"))
-                    primaryProto = Protocol.NativeSMB;
-                else if ( primaryStr.equalsIgnoreCase( "NetBIOS"))
-                    primaryProto = Protocol.TCPNetBIOS;
-                else
-                    throw new AlfrescoRuntimeException("Invalid protocol type, " + primaryStr);
-                
-                // Check if there is a secondary protocol, and validate
-                
-                if ( tokens.hasMoreTokens())
-                {
-                    // Parse the secondary protocol
-                    
-                    String secondaryStr = tokens.nextToken();
-                    
-                    if ( secondaryStr.equalsIgnoreCase( "TCPIP") && primaryProto != Protocol.NativeSMB)
-                        secondaryProto = Protocol.NativeSMB;
-                    else if ( secondaryStr.equalsIgnoreCase( "NetBIOS") && primaryProto != Protocol.TCPNetBIOS)
-                        secondaryProto = Protocol.TCPNetBIOS;
-                    else
-                        throw new AlfrescoRuntimeException("Invalid secondary protocol, " + secondaryStr);
-                }
-            }
-            
-            // Set the protocol order used for passthru authentication sessions
-            
-            AuthSessionFactory.setProtocolOrder( primaryProto, secondaryProto);
-            
-            // DEBUG
-            
-            if (logger.isDebugEnabled())
-                logger.debug("Protocol order primary=" + Protocol.asString(primaryProto) + ", secondary=" + Protocol.asString(secondaryProto));
-        }
-        
-        // Check if we have an authentication server
-
-        if (m_passthruServers.getTotalServerCount() == 0)
-            throw new AlfrescoRuntimeException("No valid authentication servers found for passthru");        
-
         // Note that for container-based initialization, session listeners can be registered directly on CIFSSeverBean
     }
 
@@ -1501,7 +1286,7 @@ public class PassthruCifsAuthenticator extends CifsAuthenticatorBase implements 
     {
         // Close the passthru authentication server list
         
-        if ( m_passthruServers != null)
+        if ( m_localPassThruServers && m_passthruServers != null)
             m_passthruServers.shutdown();
     }
 

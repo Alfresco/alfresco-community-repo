@@ -75,9 +75,10 @@
     <!-- DAO that supports CRUD.                                            -->
 
    <bean id="alfrescoAuthentication" class="org.alfresco.repo.management.DefaultManagedApplicationContextFactory"/>
+   <bean id="alfrescoNtlmAuthentication" class="org.alfresco.repo.management.DefaultManagedApplicationContextFactory"/>
    <bean id="kerberosAuthentication" class="org.alfresco.repo.management.DefaultManagedApplicationContextFactory"/>
    <bean id="ldapAuthentication" class="org.alfresco.repo.management.DefaultManagedApplicationContextFactory"/>
-   <bean id="ntlmAuthentication" class="org.alfresco.repo.management.DefaultManagedApplicationContextFactory"/>
+   <bean id="passthruAuthentication" class="org.alfresco.repo.management.DefaultManagedApplicationContextFactory"/>
 
    <bean id="authenticationSelector" class="org.alfresco.repo.management.SwitchableManagedApplicationContextFactory">
       <property name="sourceBeanName">
@@ -93,10 +94,36 @@
          <list>
             <value>org.alfresco.repo.security.authentication.AuthenticationComponent</value>
             <value>org.alfresco.repo.security.authentication.MutableAuthenticationDao</value>
-            <value>org.alfresco.jlan.server.auth.ICifsAuthenticator</value>
-            <value>org.alfresco.jlan.ftp.FTPAuthenticator</value>
             <!-- Allow listening for SMB Server session events -->
             <value>org.alfresco.jlan.server.SessionListener</value>
+         </list>
+      </property>
+   </bean>
+
+   <bean id="cifsAuthenticator" class="org.alfresco.repo.management.ManagedSubsystemProxyFactory">
+      <property name="sourceApplicationContextFactory">
+         <ref bean="authenticationSelector" />
+      </property>
+      <property name="sourceBeanName">
+         <value>cifsAuthenticator</value>
+      </property>
+      <property name="interfaces">
+         <list>
+            <value>org.alfresco.jlan.server.auth.ICifsAuthenticator</value>
+         </list>
+      </property>
+   </bean>
+
+   <bean id="ftpAuthenticator" class="org.alfresco.repo.management.ManagedSubsystemProxyFactory">
+      <property name="sourceApplicationContextFactory">
+         <ref bean="authenticationSelector" />
+      </property>
+      <property name="sourceBeanName">
+         <value>ftpAuthenticator</value>
+      </property>
+      <property name="interfaces">
+         <list>
+            <value>org.alfresco.jlan.ftp.FTPAuthenticator</value>
          </list>
       </property>
    </bean>

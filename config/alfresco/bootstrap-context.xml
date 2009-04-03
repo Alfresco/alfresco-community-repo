@@ -382,7 +382,7 @@
       <property name="interfaces">
          <list>
             <!--  Allow authentication subsystem to see file server config at runtime -->
-            <value>org.alfresco.jlan.server.config.ServerConfigurationAccessor</value>
+            <value>org.alfresco.filesys.ExtendedServerConfigurationAccessor</value>
          </list>
       </property>
    </bean>

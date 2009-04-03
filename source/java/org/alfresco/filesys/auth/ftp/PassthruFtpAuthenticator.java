@@ -25,9 +25,7 @@
 
 package org.alfresco.filesys.auth.ftp;
 
-import java.io.IOException;
 import java.net.InetAddress;
-import java.util.StringTokenizer;
 
 import javax.transaction.Status;
 import javax.transaction.UserTransaction;
@@ -36,20 +34,19 @@ import net.sf.acegisecurity.Authentication;
 
 import org.alfresco.config.ConfigElement;
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.filesys.ServerConfigurationBean;
+import org.alfresco.filesys.ExtendedServerConfigurationAccessor;
 import org.alfresco.filesys.alfresco.AlfrescoClientInfo;
+import org.alfresco.filesys.auth.PassthruServerFactory;
 import org.alfresco.jlan.ftp.FTPSrvSession;
 import org.alfresco.jlan.server.SrvSession;
 import org.alfresco.jlan.server.auth.ClientInfo;
 import org.alfresco.jlan.server.auth.PasswordEncryptor;
-import org.alfresco.jlan.server.auth.passthru.AuthSessionFactory;
 import org.alfresco.jlan.server.auth.passthru.AuthenticateSession;
 import org.alfresco.jlan.server.auth.passthru.DomainMapping;
 import org.alfresco.jlan.server.auth.passthru.PassthruServers;
 import org.alfresco.jlan.server.config.InvalidConfigurationException;
 import org.alfresco.jlan.server.config.SecurityConfigSection;
 import org.alfresco.jlan.server.config.ServerConfiguration;
-import org.alfresco.jlan.smb.Protocol;
 import org.alfresco.jlan.util.IPAddress;
 import org.alfresco.repo.security.authentication.NTLMMode;
 
@@ -77,48 +74,20 @@ public class PassthruFtpAuthenticator extends FTPAuthenticatorBase {
 
     private PassthruServers m_passthruServers;
 
+    private boolean m_localPassThruServers;
+    
     // Password encryption, for CIFS NTLM style encryption/hashing
     
     private PasswordEncryptor m_passwordEncryptor;
-    
-    private Integer timeout;
-    
-    private String server;
 
-    private String domain;
-
-    private String protocolOrder;
-    
-    private Integer offlineCheckInterval;
-    
-    public void setTimeout(Integer timeout)
-    {
-        this.timeout = timeout;
-    }
-
-    public void setServer(String server)
-    {
-        this.server = server;
-    }
-
-    public void setDomain(String domain)
-    {
-        this.domain = domain;
-    }
-    
-    public void setProtocolOrder(String protocolOrder)
-    {
-        this.protocolOrder = protocolOrder;
-    }
-    
-    public void setOfflineCheckInterval(Integer offlineCheckInterval)
-    {
-        this.offlineCheckInterval = offlineCheckInterval;
-    }
-    
     protected SecurityConfigSection getSecurityConfig()
     {
         return (SecurityConfigSection) this.serverConfiguration.getConfigSection(SecurityConfigSection.SectionName);
+    }
+
+    public void setPassthruServers(PassthruServers passthruServers)
+    {
+        m_passthruServers = passthruServers;
     }
 
     /**
@@ -131,6 +100,9 @@ public class PassthruFtpAuthenticator extends FTPAuthenticatorBase {
     @Override
 	public void initialize(ServerConfiguration config, ConfigElement params)
 		throws InvalidConfigurationException {
+        // Manually construct our own passthru server list
+
+        PassthruServerFactory factory = new PassthruServerFactory();
 
         // Check if the offline check interval has been specified
         
@@ -141,7 +113,7 @@ public class PassthruFtpAuthenticator extends FTPAuthenticatorBase {
             {
                 // Validate the check interval value
 
-                setOfflineCheckInterval(Integer.parseInt(checkInterval.getValue()));
+                factory.setOfflineCheckInterval(Integer.parseInt(checkInterval.getValue()));
             }
             catch (NumberFormatException ex)
             {
@@ -160,7 +132,7 @@ public class PassthruFtpAuthenticator extends FTPAuthenticatorBase {
 
                 // Validate the session timeout value
 
-                setTimeout(Integer.parseInt(sessTmoElem.getValue()));
+                factory.setTimeout(Integer.parseInt(sessTmoElem.getValue()));
 
             }
             catch (NumberFormatException ex)
@@ -169,24 +141,24 @@ public class PassthruFtpAuthenticator extends FTPAuthenticatorBase {
             }
         }
 
-        // Get the server configuration bean
+        // Get the extended server configuration
         
-        ServerConfigurationBean configBean = null;
+        ExtendedServerConfigurationAccessor configExtended = null;
         
-        if ( config instanceof ServerConfigurationBean)
-            configBean = (ServerConfigurationBean) config;
+        if ( config instanceof ExtendedServerConfigurationAccessor)
+            configExtended = (ExtendedServerConfigurationAccessor) config;
         
         // Check if the local server should be used
 
-		if ( params.getChild("LocalServer") != null && configBean != null) {
+		if ( params.getChild("LocalServer") != null && configExtended != null) {
 
             // Get the local server name, trim the domain name
 
-            String server = configBean.getLocalServerName( true);
+            String server = configExtended.getLocalServerName( true);
             if ( server == null)
                 throw new AlfrescoRuntimeException("Passthru authenticator failed to get local server name");
 
-            setServer(server);            
+            factory.setServer(server);            
         }
 
         // Check if a server name has been specified
@@ -195,16 +167,16 @@ public class PassthruFtpAuthenticator extends FTPAuthenticatorBase {
 
         if (srvNamesElem != null && srvNamesElem.getValue().length() > 0)
         {
-            setServer(srvNamesElem.getValue());
+            factory.setServer(srvNamesElem.getValue());
         }
 
         // Check if the local domain/workgroup should be used
 
-        if ( params.getChild("LocalDomain") != null && configBean != null) {
+        if ( params.getChild("LocalDomain") != null && configExtended != null) {
             
             // Get the local domain/workgroup name
 
-            setDomain(configBean.getLocalDomainName());
+            factory.setDomain(configExtended.getLocalDomainName());
         }
 
         // Check if a domain name has been specified
@@ -214,7 +186,7 @@ public class PassthruFtpAuthenticator extends FTPAuthenticatorBase {
         if (domNameElem != null && domNameElem.getValue().length() > 0)
         {
 
-            setDomain(domNameElem.getValue());
+            factory.setDomain(domNameElem.getValue());
         }
 
         // Check if a protocol order has been set
@@ -223,8 +195,14 @@ public class PassthruFtpAuthenticator extends FTPAuthenticatorBase {
 
         if (protoOrderElem != null && protoOrderElem.getValue().length() > 0)
         {
-            setProtocolOrder(protoOrderElem.getValue());
+            factory.setProtocolOrder(protoOrderElem.getValue());
         }
+        
+        // Complete initialization
+        factory.afterPropertiesSet();
+        setPassthruServers((PassthruServers) factory.getObject());
+        // Remember that we have to shut down the servers
+        m_localPassThruServers = true;
         
         super.initialize(config, params);
     }
@@ -248,161 +226,7 @@ public class PassthruFtpAuthenticator extends FTPAuthenticatorBase {
 
         // Create the password encryptor
         
-        m_passwordEncryptor = new PasswordEncryptor();
-        
-        // Check if the offline check interval has been specified
-        
-        if ( this.offlineCheckInterval != null)
-        {
-            // Range check the value
-            
-            if ( this.offlineCheckInterval < MinCheckInterval || this.offlineCheckInterval > MaxCheckInterval)
-                throw new InvalidConfigurationException("Invalid offline check interval, valid range is " + MinCheckInterval + " to " + MaxCheckInterval);
-            
-            // Set the offline check interval for offline passthru servers
-            
-            m_passthruServers = new PassthruServers( this.offlineCheckInterval);
-            
-            // DEBUG
-            
-            if ( logger.isDebugEnabled())
-            	logger.debug("Using offline check interval of " + this.offlineCheckInterval + " seconds");
-        }
-        else
-        {
-        	// Create the passthru server list with the default offline check interval
-        	
-        	m_passthruServers = new PassthruServers();
-        }
-        
-        // Check if the session timeout has been specified
-
-        if (this.timeout != null)
-        {
-
-            // Range check the timeout
-
-            if (this.timeout < MinSessionTmo || this.timeout > MaxSessionTmo)
-                throw new InvalidConfigurationException("Invalid session timeout, valid range is " + MinSessionTmo
-                        + " to " + MaxSessionTmo);
-
-            // Set the session timeout for connecting to an authentication server
-
-            m_passthruServers.setConnectionTimeout(this.timeout);
-        }
-        
-        // Check if a server name has been specified
-
-        String srvList = null;
-
-        if ( this.server != null && this.server.length() > 0) {
-
-            // Get the passthru authenticator server name
-
-            srvList = this.server;
-        }
-
-        // If the passthru server name has been set initialize the passthru connection
-
-        if ( srvList != null) {
-            // Initialize using a list of server names/addresses
-
-            m_passthruServers.setServerList(srvList);
-        }
-        else {
-
-            // Get the domain/workgroup name
-
-            String domainName = null;
-
-            // Check if a domain name has been specified
-
-            if ( this.domain != null && this.domain.length() > 0) {
-
-                // Check if the authentication server has already been set, ie. server name was also
-                // specified
-
-                if ( srvList != null)
-                    throw new AlfrescoRuntimeException("Specify server or domain name for passthru authentication");
-
-                domainName = this.domain;
-            }
-
-            // If the domain name has been set initialize the passthru connection
-
-            if ( domainName != null) {
-                try {
-                    // Initialize using the domain
-
-                    m_passthruServers.setDomain(domainName);
-                }
-                catch (IOException ex) {
-                    throw new AlfrescoRuntimeException("Error setting passthru domain, " + ex.getMessage());
-                }
-            }
-        }
-
-        // Check if a protocol order has been set
-        
-        if ( this.protocolOrder != null && this.protocolOrder.length() > 0)
-        {
-            // Parse the protocol order list
-            
-            StringTokenizer tokens = new StringTokenizer( this.protocolOrder, ",");
-            int primaryProto = Protocol.None;
-            int secondaryProto = Protocol.None;
-    
-            // There should only be one or two tokens
-            
-            if ( tokens.countTokens() > 2)
-                throw new AlfrescoRuntimeException("Invalid protocol order list, " + this.protocolOrder);
-            
-            // Get the primary protocol
-            
-            if ( tokens.hasMoreTokens())
-            {
-                // Parse the primary protocol
-                
-                String primaryStr = tokens.nextToken();
-                
-                if ( primaryStr.equalsIgnoreCase( "TCPIP"))
-                    primaryProto = Protocol.NativeSMB;
-                else if ( primaryStr.equalsIgnoreCase( "NetBIOS"))
-                    primaryProto = Protocol.TCPNetBIOS;
-                else
-                    throw new AlfrescoRuntimeException("Invalid protocol type, " + primaryStr);
-                
-                // Check if there is a secondary protocol, and validate
-                
-                if ( tokens.hasMoreTokens())
-                {
-                    // Parse the secondary protocol
-                    
-                    String secondaryStr = tokens.nextToken();
-                    
-                    if ( secondaryStr.equalsIgnoreCase( "TCPIP") && primaryProto != Protocol.NativeSMB)
-                        secondaryProto = Protocol.NativeSMB;
-                    else if ( secondaryStr.equalsIgnoreCase( "NetBIOS") && primaryProto != Protocol.TCPNetBIOS)
-                        secondaryProto = Protocol.TCPNetBIOS;
-                    else
-                        throw new AlfrescoRuntimeException("Invalid secondary protocol, " + secondaryStr);
-                }
-            }
-            
-            // Set the protocol order used for passthru authentication sessions
-            
-            AuthSessionFactory.setProtocolOrder( primaryProto, secondaryProto);
-            
-            // DEBUG
-            
-            if (logger.isDebugEnabled())
-                logger.debug("Protocol order primary=" + Protocol.asString(primaryProto) + ", secondary=" + Protocol.asString(secondaryProto));
-        }
-        
-        // Check if we have an authentication server
-
-        if ( m_passthruServers.getTotalServerCount() == 0)
-            throw new AlfrescoRuntimeException("No valid authentication servers found for passthru");
+        m_passwordEncryptor = new PasswordEncryptor();        
     }
 
     /**
@@ -664,7 +488,7 @@ public class PassthruFtpAuthenticator extends FTPAuthenticatorBase {
         
         // Close the passthru authentication server list
         
-        if ( m_passthruServers != null)
+        if ( m_localPassThruServers && m_passthruServers != null)
             m_passthruServers.shutdown();
     }
 }

@@ -14,9 +14,9 @@
 
 [#list results as child]
   [#if child.isDocument]
-    [@entryLib.document child filter/]
+    [@entryLib.document node=child propfilter=filter includeallowableactions=includeAllowableActions/]
   [#else]
-    [@entryLib.folder child filter/]
+    [@entryLib.folder node=child propfilter=filter includeallowableactions=includeAllowableActions/]
   [/#if]
 [/#list]
 

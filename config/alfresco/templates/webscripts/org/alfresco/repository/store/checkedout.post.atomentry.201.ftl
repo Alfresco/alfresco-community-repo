@@ -5,6 +5,6 @@
 
 <?xml version="1.0" encoding="UTF-8"?>
 [#assign namespace][@nsLib.entryNS/][/#assign]
-[@entryLib.pwc node=pwc ns=namespace/]
+[@entryLib.pwc node=pwc includeallowableactions=true includerelationships="none" ns=namespace/]
 
 [/#compress]

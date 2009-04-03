@@ -7,9 +7,9 @@
 [#assign namespace][@nsLib.entryNS/][/#assign]
 
 [#if node.isDocument]
-  [@entryLib.document node=node ns=namespace/]
+  [@entryLib.document node=node includeallowableactions=true includerelationships="none" ns=namespace/]
 [#else]
-  [@entryLib.folder node=node ns=namespace/]
+  [@entryLib.folder node=node includeallowableactions=true includerelationships="none" ns=namespace/]
 [/#if]
 
 [/#compress]

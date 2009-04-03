@@ -14,7 +14,7 @@
 
 [#list results as child]
   [#if child.isDocument]  
-    [@entryLib.pwc child filter/]
+    [@entryLib.pwc node=child propfilter=filter includeallowableactions=false includerelationships="none"/]
   [/#if]
 [/#list]
 

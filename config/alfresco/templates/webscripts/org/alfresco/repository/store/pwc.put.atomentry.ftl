@@ -7,9 +7,9 @@
 [#assign namespace][@nsLib.entryNS/][/#assign]
 
 [#if checkin]
-  [@entryLib.document node=node ns=namespace/]
+  [@entryLib.document node=node includeallowableactions=true includerelationships="none" ns=namespace/]
 [#else]
-  [@entryLib.pwc node=node ns=namespace/]
+  [@entryLib.pwc node=node includeallowableactions=true includerelationships="none" ns=namespace/]
 [/#if]
 
 [/#compress]

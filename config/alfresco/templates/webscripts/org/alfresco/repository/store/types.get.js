@@ -34,5 +34,5 @@ script:
     // handle property definitions
     // TODO: spec issue 34
     var returnPropertyDefinitions = cmis.findArg(args.includePropertyDefinitions, headers["CMIS-includePropertyDefinitions"]);
-    model.returnPropertyDefinitions = returnPropertyDefinitions == "true" ? true : false;
+    model.returnPropertyDefinitions = (returnPropertyDefinitions == "true" ? true : false);
 }

@@ -7,3 +7,4 @@
 [#macro serviceNS]xmlns="[@appNS/]" xmlns:atom="[@atomNS/]" xmlns:cmis="[@cmisNS/]" xmlns:alf="[@alfNS/]"[/#macro]
 [#macro feedNS]xmlns="[@atomNS/]" xmlns:app="[@appNS/]" xmlns:cmis="[@cmisNS/]" xmlns:alf="[@alfNS/]" xmlns:opensearch="[@opensearchNS/]"[/#macro]
 [#macro entryNS]xmlns="[@atomNS/]" xmlns:app="[@appNS/]" xmlns:cmis="[@cmisNS/]" xmlns:alf="[@alfNS/]"[/#macro]
+[#macro allowableactionsNS]xmlns:cmis="[@cmisNS/]"[/#macro]

@@ -1,0 +1,9 @@
+<webscript>
+  <shortname>Retrieve Allowable Actions</shortname>
+  <description>Retrieve Allowable Actions</description>
+  <url>/api/node/{store_type}/{store_id}/{id}/permissions</url>
+  <url>/api/path/{store_type}/{store_id}/{id}/permissions</url>
+  <authentication>guest</authentication>
+  <format default="atomentry">argument</format>
+  <family>CMIS</family>
+</webscript>

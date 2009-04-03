@@ -15,7 +15,7 @@
 [#-- ATOM Entry for Document --]
 [#--                         --]
 
-[#macro document node propfilter="*" ns=""]
+[#macro document node propfilter="*" includeallowableactions=false includerelationships="none" ns=""]
 [@entry ns]
 <author><name>${node.properties.creator!""}</name></author>
 [@contentstream node/]
@@ -31,6 +31,7 @@
 <updated>${xmldate(node.properties.modified)}</updated>
 <cmis:object>
 [@documentCMISProps node propfilter/]
+[#if includeallowableactions][@allowableactions node/][/#if]
 </cmis:object>
 <cmis:terminator/>
 <app:edited>${xmldate(node.properties.modified)}</app:edited>
@@ -93,7 +94,7 @@
 [#-- ATOM Entry for Private Working Copy --]
 [#--                                     --]
 
-[#macro pwc node propfilter="*" ns=""]
+[#macro pwc node propfilter="*" includeallowableactions=false includerelationships="none" ns=""]
 [@entry ns]
 <author><name>${node.properties.creator}</name></author>
 [@contentstream node/]
@@ -123,7 +124,7 @@
 [#-- ATOM Entry for Folder --]
 [#--                       --]
 
-[#macro folder node propfilter="*" typesfilter="any" ns="" depth=1 maxdepth=1]
+[#macro folder node propfilter="*" typesfilter="any" includeallowableactions=false includerelationships="none" ns="" depth=1 maxdepth=1]
 [@entry ns]
 <author><name>${node.properties.creator}</name></author>
 <content>${node.id}</content>  [#-- TODO --]
@@ -138,14 +139,15 @@
 <cmis:object>
 [#-- recurse for depth greater than 1 --]
 [@folderCMISProps node propfilter/]
+[#if includeallowableactions][@allowableactions node/][/#if]
 </cmis:object>
 [#if depth < maxdepth || depth == -1]
 [#list cmischildren(node, typesfilter) as child]
   [#if child.isDocument]
-    [@entryLib.document child propfilter/]
+    [@entryLib.document child propfilter includeallowableactions includerelationships/]
   [#else]
-    [@entryLib.folder child propfilter/]
-    [@folder child propfilter typesfilter ns depth+1 maxdepth/]
+    [@entryLib.folder child propfilter includeallowableactions includerelationships/]
+    [@folder child propfilter typesfilter includeallowableactions includerelationships ns depth+1 maxdepth/]
   [/#if]
 [/#list]
 [/#if]
@@ -302,6 +304,25 @@
 [#macro datetimevalue value]<cmis:value>${xmldate(value)}</cmis:value>[/#macro]
 [#macro urivalue value]<cmis:value>${value}</cmis:value>[/#macro]
 [#macro idvalue value]<cmis:value>${value}</cmis:value>[/#macro]
+
+
+[#--                        --]
+[#-- CMIS Allowable Actions --]
+[#--                        --]
+
+[#macro allowableactions node ns=""]
+<cmis:allowableActions[#if ns != ""] ${ns}[/#if]>
+[#nested]
+[#assign typedef = cmistype(node)]
+[#list typedef.actionEvaluators?values as actionevaluator]
+  [@allowableaction node actionevaluator/]
+[/#list]
+</cmis:allowableActions>
+[/#macro]
+
+[#macro allowableaction node actionevaluator]
+<cmis:${actionevaluator.action.label}>${actionevaluator.isAllowed(node.nodeRef)?string}</cmis:${actionevaluator.action.label}>
+[/#macro]
 
 
 [#--                                --]

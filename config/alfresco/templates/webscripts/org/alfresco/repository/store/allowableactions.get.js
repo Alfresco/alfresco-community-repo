@@ -14,14 +14,4 @@ script:
  
     // TODO: handle version??
     
-    // property filter 
-    model.filter = cmis.findArg(args.filter, headers["CMIS-filter"]);
-    if (model.filter === null)
-    {
-        model.filter = "*";
-    }
-   
-    // include allowable actions
-    var includeAllowableActions = cmis.findArg(args.includeAllowableActions, headers["CMIS-includeAllowableActions"]);
-    model.includeAllowableActions = (includeAllowableActions == "true" ? true : false);
 }

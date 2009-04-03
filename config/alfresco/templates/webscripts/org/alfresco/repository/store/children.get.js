@@ -29,6 +29,10 @@ script:
         model.filter = "*";
     }
    
+    // include allowable actions
+    var includeAllowableActions = cmis.findArg(args.includeAllowableActions, headers["CMIS-includeAllowableActions"]);
+    model.includeAllowableActions = (includeAllowableActions == "true" ? true : false);
+    
     // retrieve children
     var page = paging.createPageOrWindow(args, headers);
     var paged = cmis.queryChildren(model.node, model.types, page);

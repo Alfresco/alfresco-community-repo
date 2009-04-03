@@ -1,6 +1,6 @@
 /*
- *
  * This program is free software; you can redistribute it and/or
+ *
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
@@ -554,6 +554,62 @@ public class CMISTest extends BaseCMISWebScriptTest
         assertEquals("updated content " + guid, contentRes.getContentAsString());
     }
 
+    public void testAllowableActions()
+        throws Exception
+    {
+        // retrieve test folder for allowable actions
+        Entry testFolder = createTestFolder("testAllowableActions");
+        Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
+        assertNotNull(childrenLink);
+        
+        // test allowable actions for folder
+        {
+            Entry child = createFolder(childrenLink.getHref(), "testFolderAllowableActions");
+            assertNotNull(child);
+            Link allowableActions = child.getLink(CMISConstants.REL_ALLOWABLEACTIONS);
+            Response allowableActionsRes = sendRequest(new GetRequest(allowableActions.getHref().toString()), 200, getAtomValidator());
+            assertNotNull(allowableActionsRes);
+            // TODO: parse response with Abdera extension
+
+            // retrieve getProperties() with includeAllowableActions flag
+            Map<String, String> args = new HashMap<String, String>();
+            args.put("includeAllowableActions", "true");
+            Response getPropertiesRes = sendRequest(new GetRequest(child.getSelfLink().getHref().toString()).setArgs(args), 200, getAtomValidator());
+            assertNotNull(getPropertiesRes);
+            // TODO: parse response with Abdera extension
+            
+            // TODO: test equality between getAllowableActions and getProperties
+        }
+
+        // test allowable actions for document
+        {
+            Entry child = createDocument(childrenLink.getHref(), "testDocumentAllowableActions");
+            assertNotNull(child);
+            Link allowableActions = child.getLink(CMISConstants.REL_ALLOWABLEACTIONS);
+            Response allowableActionsRes = sendRequest(new GetRequest(allowableActions.getHref().toString()), 200, getAtomValidator());
+            assertNotNull(allowableActionsRes);
+            // TODO: parse response with Abdera extension
+            
+            // retrieve getProperties() with includeAllowableActions flag
+            Map<String, String> args = new HashMap<String, String>();
+            args.put("includeAllowableActions", "true");
+            Response getPropertiesRes = sendRequest(new GetRequest(child.getSelfLink().getHref().toString()).setArgs(args), 200, getAtomValidator());
+            assertNotNull(getPropertiesRes);
+            // TODO: parse response with Abdera extension
+            
+            // TODO: test equality between getAllowableActions and getProperties
+        }
+        
+        // test allowable actions for children
+        {
+            Map<String, String> args = new HashMap<String, String>();
+            args.put("includeAllowableActions", "true");
+            Response allowableActionsRes = sendRequest(new GetRequest(childrenLink.getHref().toString()).setArgs(args), 200, getAtomValidator());
+            assertNotNull(allowableActionsRes);
+            // TODO: parse response with Abdera extension
+        }
+    }
+    
     public void testGetCheckedOut()
         throws Exception
     {

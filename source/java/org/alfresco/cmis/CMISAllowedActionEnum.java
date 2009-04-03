@@ -36,7 +36,7 @@ public enum CMISAllowedActionEnum implements EnumLabel
     CAN_GET_PROPERTIES("canGetProperties"), 
     CAN_GET_RELATIONSHIPS("canGetRelationships"), 
     CAN_GET_PARENTS("canGetParents"), 
-    CAN_GET_FOLDER_PARENT("canGetFolderParents"), 
+    CAN_GET_FOLDER_PARENT("canGetFolderParent"), 
     CAN_GET_DESCENDANTS("canGetDescendants"), 
     CAN_MOVE("canMove"), 
     CAN_DELETE_VERSION("canDeleteVersion"), 

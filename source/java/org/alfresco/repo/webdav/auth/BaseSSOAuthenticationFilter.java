@@ -34,7 +34,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.transaction.UserTransaction;
 
-import org.alfresco.filesys.ServerConfigurationBean;
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.filesys.ExtendedServerConfigurationAccessor;
 import org.alfresco.jlan.server.auth.ntlm.NTLM;
 import org.alfresco.jlan.server.auth.passthru.DomainMapping;
 import org.alfresco.jlan.server.config.SecurityConfigSection;
@@ -87,11 +88,7 @@ public abstract class BaseSSOAuthenticationFilter implements DependencyInjectedF
         
     // File server configuration
 
-	private ServerConfigurationBean serverConfigurationBean;
-    
-    // Security configuration section, for domain mappings
-
-	private SecurityConfigSection securityConfigSection;
+	private ExtendedServerConfigurationAccessor serverConfiguration;
     
     // Various services required by NTLM authenticator
 
@@ -100,10 +97,6 @@ public abstract class BaseSSOAuthenticationFilter implements DependencyInjectedF
     protected PersonService personService;
     protected NodeService nodeService;
     protected TransactionService transactionService;
-    
-    // Local server name, from either the file servers config or DNS host name
-
-    protected String m_srvName;
     
     // Login page relative address, if null then login will loop until a valid login is received
     
@@ -116,13 +109,16 @@ public abstract class BaseSSOAuthenticationFilter implements DependencyInjectedF
     // User object attribute name
     
     private String m_userAttributeName = AUTHENTICATION_USER;
+    
+    private String m_lastConfiguredServerName;
+    private String m_lastResolvedServerName;
             
     /**
-     * @param serverConfigurationBean the serverConfigurationBean to set
+     * @param serverConfiguration the serverConfiguration to set
      */
-    public void setServerConfigurationBean(ServerConfigurationBean serverConfigurationBean)
+    public void setServerConfiguration(ExtendedServerConfigurationAccessor serverConfiguration)
     {
-        this.serverConfigurationBean = serverConfigurationBean;
+        this.serverConfiguration = serverConfiguration;
     }
     
     /**
@@ -163,93 +159,13 @@ public abstract class BaseSSOAuthenticationFilter implements DependencyInjectedF
     public void setTransactionService(TransactionService transactionService)
     {
         this.transactionService = transactionService;
-    }
-    
-    
+    }    
 
     /* (non-Javadoc)
      * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
      */
     public void afterPropertiesSet() throws Exception
     {
-        // Get the local server name, try the file server config first
-        if (serverConfigurationBean != null)
-        {
-            m_srvName = serverConfigurationBean.getServerName();
-            if ( m_srvName.length() == 0)
-            	m_srvName = null;
-            
-            if (m_srvName != null)
-            {
-                try
-                {
-                    InetAddress resolved = InetAddress.getByName(m_srvName);
-                    if (resolved == null)
-                    {
-                        // Failed to resolve the configured name
-
-                    	m_srvName = serverConfigurationBean.getLocalServerName(true);
-                    }
-                }
-                catch (UnknownHostException ex)
-                {
-                    if (getLogger().isWarnEnabled())
-                        getLogger().warn("NTLM filter, error resolving CIFS host name" + m_srvName);
-                }
-            }
-            
-            // If we still do not have a name use the DNS name of the server, with the domain part removed
-            
-            if ( m_srvName == null)
-            {
-                m_srvName = serverConfigurationBean.getLocalServerName(true);
-                
-                // DEBUG
-                
-                if ( getLogger().isInfoEnabled())
-                	getLogger().info("NTLM filter using server name " + m_srvName);
-                
-                // DEBUG
-                
-                if ( getLogger().isInfoEnabled())
-                	getLogger().info("NTLM filter using server name " + m_srvName);
-            }
-            
-            // Find the security configuration section
-
-            securityConfigSection = (SecurityConfigSection)serverConfigurationBean.getConfigSection(SecurityConfigSection.SectionName);
-        }
-        else
-        {
-            // Get the host name
-
-        	try
-            {
-                // Get the local host name
-
-        		m_srvName = InetAddress.getLocalHost().getHostName();
-                
-                // Strip any domain name
-
-        		int pos = m_srvName.indexOf(".");
-                if (pos != -1)
-                {
-                    m_srvName = m_srvName.substring(0, pos - 1);
-                }
-            }
-            catch (UnknownHostException ex)
-            {
-                if (getLogger().isErrorEnabled())
-                    getLogger().error("NTLM filter, error getting local host name", ex);
-            }
-        }
-        
-        // Check if the server name is valid
-
-        if (m_srvName == null || m_srvName.length() == 0)
-        {
-            throw new ServletException("Failed to get local server name");
-        }
     }
     
     /**
@@ -426,7 +342,7 @@ public abstract class BaseSSOAuthenticationFilter implements DependencyInjectedF
     protected final String mapClientAddressToDomain(String clientIP)
     {
         // Check if there are any domain mappings
-    	
+    	SecurityConfigSection securityConfigSection = getSecurityConfigSection();
         if (securityConfigSection != null && securityConfigSection.hasDomainMappings() == false)
         {
             return null;
@@ -639,5 +555,109 @@ public abstract class BaseSSOAuthenticationFilter implements DependencyInjectedF
 	    }
 	    
 	    return isNTLMSSP;
-    }    
+    }
+
+    /**
+     * Because the file server configuration may change during the lifetime of this filter, this method checks against
+     * the last configured server name before returning a cached result
+     * 
+     * @return resolved local server name
+     */
+    protected synchronized String getServerName()
+    {
+        // Get the local server name, try the file server config first
+        String srvName = null;
+        if (serverConfiguration != null)
+        {
+            srvName = serverConfiguration.getServerName();
+            if (srvName != null && srvName.length() == 0)
+            {
+                srvName = null;
+            }
+
+        }
+
+        if (m_lastResolvedServerName != null
+                && (m_lastConfiguredServerName == null && srvName == null || m_lastConfiguredServerName.equals(srvName)))
+        {
+            return m_lastResolvedServerName;
+        }
+
+        m_lastResolvedServerName = null;
+        m_lastConfiguredServerName = srvName;
+        if (serverConfiguration != null)
+        {
+            if (m_lastConfiguredServerName != null)
+            {
+                try
+                {
+                    InetAddress resolved = InetAddress.getByName(m_lastConfiguredServerName);
+                    if (resolved == null)
+                    {
+                        // Failed to resolve the configured name
+
+                        m_lastResolvedServerName = serverConfiguration.getLocalServerName(true);
+                    }
+                    else
+                    {
+                        m_lastResolvedServerName = m_lastConfiguredServerName;
+                    }
+                }
+                catch (UnknownHostException ex)
+                {
+                    if (getLogger().isWarnEnabled())
+                        getLogger().warn("NTLM filter, error resolving CIFS host name" + m_lastConfiguredServerName);
+                }
+            }
+
+            // If we still do not have a name use the DNS name of the server, with the domain part removed
+
+            if (m_lastResolvedServerName == null)
+            {
+                m_lastResolvedServerName = serverConfiguration.getLocalServerName(true);
+
+                // DEBUG
+
+                if (getLogger().isInfoEnabled())
+                    getLogger().info("NTLM filter using server name " + m_lastResolvedServerName);
+            }
+        }
+        else
+        {
+            // Get the host name
+            try
+            {
+                // Get the local host name
+
+                m_lastResolvedServerName = InetAddress.getLocalHost().getHostName();
+
+                // Strip any domain name
+
+                int pos = m_lastResolvedServerName.indexOf(".");
+                if (pos != -1)
+                {
+                    m_lastResolvedServerName = m_lastResolvedServerName.substring(0, pos - 1);
+                }
+            }
+            catch (UnknownHostException ex)
+            {
+                if (getLogger().isErrorEnabled())
+                    getLogger().error("NTLM filter, error getting local host name", ex);
+            }
+        }
+
+        // Check if the server name is valid
+
+        if (m_lastResolvedServerName == null || m_lastResolvedServerName.length() == 0)
+        {
+            throw new AlfrescoRuntimeException("Failed to get local server name");
+        }
+
+        return m_lastResolvedServerName;
+    }
+    
+    protected SecurityConfigSection getSecurityConfigSection()
+    {
+        return serverConfiguration == null ? null : (SecurityConfigSection) serverConfiguration.getConfigSection(SecurityConfigSection.SectionName);
+    }
 }

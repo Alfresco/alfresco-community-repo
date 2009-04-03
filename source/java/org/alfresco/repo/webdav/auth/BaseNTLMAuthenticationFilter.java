@@ -425,10 +425,11 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
             
             // Build a type2 message to send back to the client, containing the challenge
             List<TargetInfo> tList = new ArrayList<TargetInfo>();
-            tList.add(new TargetInfo(NTLM.TargetServer, m_srvName));
+            String srvName = getServerName();
+            tList.add(new TargetInfo(NTLM.TargetServer, srvName));
             
             Type2NTLMMessage type2Msg = new Type2NTLMMessage();
-            type2Msg.buildType2(ntlmFlags, m_srvName, challenge, null, tList);
+            type2Msg.buildType2(ntlmFlags, srvName, challenge, null, tList);
             
             // Store the NTLM logon details, cache the type2 message, and token if using passthru
             ntlmDetails = new NTLMLogonDetails();
@@ -652,10 +653,11 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
                 onValidate(req, session);
                 
                 // Update the NTLM logon details in the session
+                String srvName = getServerName();
                 if (ntlmDetails == null)
                 {
                     // No cached NTLM details
-                    ntlmDetails = new NTLMLogonDetails(userName, workstation, domain, false, m_srvName);
+                    ntlmDetails = new NTLMLogonDetails(userName, workstation, domain, false, srvName);
                     ntlmDetails.setNTLMHashedPassword(type3Msg.getNTLMHash());
                     session.setAttribute(NTLM_AUTH_DETAILS, ntlmDetails);
                     
@@ -665,7 +667,7 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
                 else
                 {
                     // Update the cached NTLM details
-                    ntlmDetails.setDetails(userName, workstation, domain, false, m_srvName);
+                    ntlmDetails.setDetails(userName, workstation, domain, false, srvName);
                     ntlmDetails.setNTLMHashedPassword(type3Msg.getNTLMHash());
 
                     if (logger.isDebugEnabled())

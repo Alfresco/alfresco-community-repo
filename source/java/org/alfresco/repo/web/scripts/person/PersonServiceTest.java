@@ -239,7 +239,7 @@ public class PersonServiceTest extends BaseWebScriptTest
         assertEquals(userName, result.get("userName"));
         assertEquals("updatedFirstName", result.get("firstName"));
         assertEquals("updatedLastName", result.get("lastName"));
-        assertEquals("updatedOrganisation", result.get("organisation"));
+        assertEquals("updatedOrganisation", result.get("organization"));
         assertEquals("updatedJobTitle", result.get("jobtitle"));
         assertEquals("updatedFN.updatedLN@email.com", result.get("email"));
     }
@@ -270,7 +270,7 @@ public class PersonServiceTest extends BaseWebScriptTest
         assertEquals(userName, result.get("userName"));
         assertEquals("myFirstName", result.get("firstName"));
         assertEquals("myLastName", result.get("lastName"));
-        assertEquals("myOrganisation", result.get("organisation"));
+        assertEquals("myOrganisation", result.get("organization"));
         assertEquals("myJobTitle", result.get("jobtitle"));
         assertEquals("firstName.lastName@email.com", result.get("email"));
         

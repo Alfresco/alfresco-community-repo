@@ -28,6 +28,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -56,6 +57,7 @@ import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.AssociationRef;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -211,6 +213,7 @@ public class NodeHandler extends AbstractHandler
         FormData formData = new FormData();
         generatePropertyFields(nodeRef, form, formData);
         generateAssociationFields(nodeRef, form, formData);
+        generateChildAssociationFields(nodeRef, form, formData);
         generateTransientFields(nodeRef, form, formData);
         form.setFormData(formData);
     }
@@ -248,7 +251,7 @@ public class NodeHandler extends AbstractHandler
                 }
                 else if (fieldName.startsWith(ASSOC_PREFIX))
                 {
-                    processAssociationPersist(nodeRef, assocDefs, fieldData, assocsToPersist);
+                    processAssociationPersist(nodeRef, assocDefs, childAssocDefs, fieldData, assocsToPersist);
                 }
                 else if (logger.isWarnEnabled())
                 {
@@ -377,6 +380,7 @@ public class NodeHandler extends AbstractHandler
         // add target association data
         List<AssociationRef> associations = this.nodeService.getTargetAssocs(nodeRef, 
                     RegexQNamePattern.MATCH_ALL);
+
         if (associations.size() > 0)
         {
             // create internal cache of association definitions created
@@ -447,6 +451,93 @@ public class NodeHandler extends AbstractHandler
                     formData.addData(prefixedAssocName, assocValue);
                 }
             }
+        }
+    }
+    
+    /**
+     * Sets up the field definitions for the node's child associations.
+     * 
+     * @param nodeRef The NodeRef of the node being setup
+     * @param form The Form instance to populate
+     * @param formData The FormData instance to populate
+     */
+    protected void generateChildAssociationFields(NodeRef nodeRef, Form form, FormData formData)
+    {
+        List<ChildAssociationRef> childAssocs = this.nodeService.getChildAssocs(nodeRef);
+        if (childAssocs.isEmpty())
+        {
+            return;
+        }
+        // create internal cache of association definitions created
+        Map<String, AssociationFieldDefinition> childAssocFieldDefs = 
+            new HashMap<String, AssociationFieldDefinition>(childAssocs.size());
+        
+        // All child associations are from the same parent node.
+        // However, the type of the child associations may not all be the same.
+        // This Map will have assocNames (e.g. sys:children) as a key and will
+        // have a List of child noderefs as values.
+        // So there will be one list for each of the child association *types*.
+        Map<String, List<ChildAssociationRef>> childrenNodes = new HashMap<String, List<ChildAssociationRef>>();
+        
+        for (ChildAssociationRef childAssoc : childAssocs)
+        {
+            // get the name of the association
+            QName assocTypeName = childAssoc.getTypeQName();
+            String assocName = assocTypeName.toPrefixString(this.namespaceService);
+            
+            // setup the field definition for the association if it hasn't before
+            AssociationFieldDefinition fieldDef = childAssocFieldDefs.get(assocName);
+            if (fieldDef == null)
+            {
+                AssociationDefinition assocDef = this.dictionaryService.getAssociation(assocTypeName);
+                if (assocDef == null || assocDef instanceof ChildAssociationDefinition == false)
+                {
+                    throw new FormException("Failed to find association definition for child association: "
+                            + assocTypeName);
+                }
+                
+                fieldDef = new AssociationFieldDefinition(assocName, 
+                            assocDef.getTargetClass().getName().toPrefixString(
+                            this.namespaceService), Direction.TARGET);
+                String title = assocDef.getTitle();
+                if (title == null)
+                {
+                    title = assocName.toString();
+                }
+                fieldDef.setLabel(title);
+                fieldDef.setDescription(assocDef.getDescription());
+                fieldDef.setProtectedField(assocDef.isProtected());
+                fieldDef.setEndpointMandatory(assocDef.isTargetMandatory());
+                fieldDef.setEndpointMany(assocDef.isTargetMany());
+                
+                // add definition to Form and to internal cache
+                form.addFieldDefinition(fieldDef);
+                childAssocFieldDefs.put(assocName, fieldDef);
+            }
+
+            if (childrenNodes.containsKey(assocName) == false)
+            {
+                childrenNodes.put(assocName, new ArrayList<ChildAssociationRef>());
+            }
+            childrenNodes.get(assocName).add(childAssoc);
+        }
+        for (String associationName : childrenNodes.keySet())
+        {
+            List<ChildAssociationRef> values = childrenNodes.get(associationName);
+            
+            // We don't want the whitespace or enclosing square brackets that come
+            // with java.util.List.toString(), hence the custom String construction.
+            StringBuilder assocValue = new StringBuilder();
+            for (Iterator<ChildAssociationRef> iter = values.iterator(); iter.hasNext(); )
+            {
+                ChildAssociationRef nextChild = iter.next();
+                assocValue.append(nextChild.getChildRef().toString());
+                if (iter.hasNext())
+                {
+                    assocValue.append(",");
+                }
+            }
+            formData.addData(ASSOC_PREFIX + associationName, assocValue.toString());
         }
     }
     
@@ -630,7 +721,8 @@ public class NodeHandler extends AbstractHandler
      * @param assocCommands List of associations to be persisted
      */
     protected void processAssociationPersist(NodeRef nodeRef, Map<QName, AssociationDefinition> assocDefs,
-                FieldData fieldData, List<AbstractAssocCommand> assocCommands)
+            Map<QName, ChildAssociationDefinition> childAssocDefs,
+            FieldData fieldData, List<AbstractAssocCommand> assocCommands)
     {
         if (logger.isDebugEnabled())
             logger.debug("Processing field " + fieldData + " for association persistence");
@@ -643,17 +735,20 @@ public class NodeHandler extends AbstractHandler
             String localName = m.group(2);
             String assocSuffix = m.group(3);
             
-            QName fullQName = QName.createQName(qNamePrefix, localName, namespaceService);
+            QName fullQNameFromJSON = QName.createQName(qNamePrefix, localName, namespaceService);
         
             // ensure that the association being persisted is defined in the model
-            AssociationDefinition assocDef = assocDefs.get(fullQName);
+            AssociationDefinition assocDef = assocDefs.get(fullQNameFromJSON);
             
             if (assocDef == null)
             {
-                // TODO do what? return?
+                if (logger.isWarnEnabled())
+                {
+                    logger.warn("Definition for association " + fullQNameFromJSON + " not recognised and not persisted.");
+                }
                 return;
             }
-            
+
             String value = (String)fieldData.getValue();
             String[] nodeRefs = value.split(",");
             
@@ -665,11 +760,29 @@ public class NodeHandler extends AbstractHandler
                 {
                     if (assocSuffix.equals(ASSOC_ADD_SUFFIX))
                     {
-                        assocCommands.add(new AddAssocCommand(nodeRef, new NodeRef(nextTargetNode), fullQName));
+                        if (assocDef.isChild())
+                        {
+                            assocCommands.add(new AddChildAssocCommand(nodeRef, new NodeRef(nextTargetNode),
+                                    fullQNameFromJSON));
+                        }
+                        else
+                        {
+                            assocCommands.add(new AddAssocCommand(nodeRef, new NodeRef(nextTargetNode),
+                                    fullQNameFromJSON));
+                        }
                     }
                     else if (assocSuffix.equals(ASSOC_REMOVE_SUFFIX))
                     {
-                        assocCommands.add(new RemoveAssocCommand(nodeRef, new NodeRef(nextTargetNode), fullQName));
+                        if (assocDef.isChild())
+                        {
+                            assocCommands.add(new RemoveChildAssocCommand(nodeRef, new NodeRef(nextTargetNode),
+                                    fullQNameFromJSON));
+                        }
+                        else
+                        {
+                            assocCommands.add(new RemoveAssocCommand(nodeRef, new NodeRef(nextTargetNode),
+                                    fullQNameFromJSON));
+                        }
                     }
                     else
                     {
@@ -895,7 +1008,8 @@ abstract class AbstractAssocCommand
     protected final NodeRef targetNodeRef;
     protected final QName assocQName;
     
-    public AbstractAssocCommand(NodeRef sourceNodeRef, NodeRef targetNodeRef, QName assocQName)
+    public AbstractAssocCommand(NodeRef sourceNodeRef, NodeRef targetNodeRef,
+            QName assocQName)
     {
         this.sourceNodeRef = sourceNodeRef;
         this.targetNodeRef = targetNodeRef;
@@ -918,7 +1032,8 @@ abstract class AbstractAssocCommand
 class AddAssocCommand extends AbstractAssocCommand
 {
     private static final Log logger = LogFactory.getLog(AddAssocCommand.class);
-    public AddAssocCommand(NodeRef sourceNodeRef, NodeRef targetNodeRef, QName assocQName)
+    public AddAssocCommand(NodeRef sourceNodeRef, NodeRef targetNodeRef,
+            QName assocQName)
     {
         super(sourceNodeRef, targetNodeRef, assocQName);
     }
@@ -950,7 +1065,8 @@ class AddAssocCommand extends AbstractAssocCommand
 class RemoveAssocCommand extends AbstractAssocCommand
 {
     private static final Log logger = LogFactory.getLog(RemoveAssocCommand.class);
-    public RemoveAssocCommand(NodeRef sourceNodeRef, NodeRef targetNodeRef, QName assocQName)
+    public RemoveAssocCommand(NodeRef sourceNodeRef, NodeRef targetNodeRef,
+            QName assocQName)
     {
         super(sourceNodeRef, targetNodeRef, assocQName);
     }
@@ -984,5 +1100,86 @@ class RemoveAssocCommand extends AbstractAssocCommand
         }
 
         nodeService.removeAssociation(sourceNodeRef, targetNodeRef, assocQName);
+    }
+}
+
+/**
+ * A class representing a request to add a new child association between two nodes.
+ * 
+ * @author Neil McErlean
+ */
+class AddChildAssocCommand extends AbstractAssocCommand
+{
+    private static final Log logger = LogFactory.getLog(AddChildAssocCommand.class);
+    public AddChildAssocCommand(NodeRef sourceNodeRef, NodeRef targetNodeRef,
+            QName assocQName)
+    {
+        super(sourceNodeRef, targetNodeRef, assocQName);
+    }
+
+    @Override
+    protected void updateAssociations(NodeService nodeService)
+    {
+        List<ChildAssociationRef> existingChildren = nodeService.getChildAssocs(sourceNodeRef);
+
+        for (ChildAssociationRef assoc : existingChildren)
+        {
+            if (assoc.getChildRef().equals(targetNodeRef))
+            {
+                if (logger.isWarnEnabled())
+                {
+                    logger.warn("Attempt to add existing child association prevented. " + assoc);
+                }
+                return;
+            }
+        }
+        //TODO What value should we put in this final qname parameter?
+        nodeService.addChild(sourceNodeRef, targetNodeRef, assocQName, QName.createQName("child"));
+    }
+}
+
+/**
+ * A class representing a request to remove a child association between two nodes.
+ * 
+ * @author Neil McErlean
+ */
+class RemoveChildAssocCommand extends AbstractAssocCommand
+{
+    private static final Log logger = LogFactory.getLog(RemoveChildAssocCommand.class);
+    public RemoveChildAssocCommand(NodeRef sourceNodeRef, NodeRef targetNodeRef,
+            QName assocQName)
+    {
+        super(sourceNodeRef, targetNodeRef, assocQName);
+    }
+    
+    @Override
+    protected void updateAssociations(NodeService nodeService)
+    {
+        List<ChildAssociationRef> existingChildren = nodeService.getChildAssocs(sourceNodeRef);
+        boolean childAssocDoesNotExist = true;
+        for (ChildAssociationRef assoc : existingChildren)
+        {
+            if (assoc.getChildRef().equals(targetNodeRef))
+            {
+                childAssocDoesNotExist = false;
+                break;
+            }
+        }
+        if (childAssocDoesNotExist)
+        {
+            if (logger.isWarnEnabled())
+            {
+                StringBuilder msg = new StringBuilder();
+                msg.append("Attempt to remove non-existent child association prevented. ")
+                    .append(sourceNodeRef)
+                    .append("|")
+                    .append(targetNodeRef)
+                .append(assocQName);
+                logger.warn(msg.toString());
+            }
+            return;
+        }
+
+        nodeService.removeChild(sourceNodeRef, targetNodeRef);
     }
 }

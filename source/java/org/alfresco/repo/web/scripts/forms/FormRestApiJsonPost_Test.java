@@ -50,6 +50,9 @@ public class FormRestApiJsonPost_Test extends AbstractTestFormRestApi
     private static final String ASSOC_CM_REFERENCES = "assoc_cm_references";
     private static final String ASSOC_CM_REFERENCES_ADDED = "assoc_cm_references_added";
     private static final String ASSOC_CM_REFERENCES_REMOVED = "assoc_cm_references_removed";
+    private static final String ASSOC_SYS_CHILDREN = "assoc_sys_children";
+    private static final String ASSOC_SYS_CHILDREN_ADDED = "assoc_sys_children_added";
+    private static final String ASSOC_SYS_CHILDREN_REMOVED = "assoc_sys_children_removed";
 
     public void testSimpleJsonPostRequest() throws IOException, JSONException
     {
@@ -258,7 +261,7 @@ public class FormRestApiJsonPost_Test extends AbstractTestFormRestApi
         // Add three additional associations
         JSONObject jsonPostData = new JSONObject();
         String assocsToAdd = childDoc_C + "," + childDoc_D + "," + childDoc_E;
-        jsonPostData.put("assoc_sys_children_added", assocsToAdd);
+        jsonPostData.put(ASSOC_SYS_CHILDREN_ADDED, assocsToAdd);
         String jsonPostString = jsonPostData.toString();
 
         sendRequest(new PostRequest(containingNodeUrl.toString(), jsonPostString, APPLICATION_JSON), 200);
@@ -291,7 +294,7 @@ public class FormRestApiJsonPost_Test extends AbstractTestFormRestApi
         JSONObject jsonFormData = (JSONObject)jsonData.get("formData");
         assertNotNull(jsonFormData);
         
-        String jsonAssocs = (String)jsonFormData.get("assoc_sys_children");
+        String jsonAssocs = (String)jsonFormData.get(ASSOC_SYS_CHILDREN);
         
         // We expect exactly 5 assocs on the test node
         assertEquals(5, jsonAssocs.split(",").length);
@@ -302,6 +305,96 @@ public class FormRestApiJsonPost_Test extends AbstractTestFormRestApi
             assertTrue(NodeRef.isNodeRef(childNodeRef));
         }
     }
+    
+    /**
+     * This test method attempts to remove an existing child association between two
+     * existing nodes.
+     */
+    public void testRemoveChildAssociationsFromNode() throws Exception
+    {
+        List<NodeRef> associatedNodes;
+        checkOriginalChildAssocsBeforeChanges();
+
+        // Remove an association
+        JSONObject jsonPostData = new JSONObject();
+        String assocsToRemove = childDoc_B.toString();
+        jsonPostData.put(ASSOC_SYS_CHILDREN_REMOVED, assocsToRemove);
+        String jsonPostString = jsonPostData.toString();
+
+        sendRequest(new PostRequest(containingNodeUrl, jsonPostString, APPLICATION_JSON), 200);
+
+        // Check the now updated child associations via the node service
+        List<ChildAssociationRef> modifiedAssocs = nodeService.getChildAssocs(containerNodeRef);
+        assertEquals(1, modifiedAssocs.size());
+
+        // Extract the target nodeRefs to make them easier to examine
+        associatedNodes = new ArrayList<NodeRef>(5);
+        for (ChildAssociationRef assocRef : modifiedAssocs)
+        {
+            associatedNodes.add(assocRef.getChildRef());
+        }
+
+        assertTrue(associatedNodes.contains(childDoc_A));
+        
+        // The Rest API should also give us the modified assocs.
+        Response response = sendRequest(new GetRequest(containingNodeUrl), 200);
+        String jsonRspString = response.getContentAsString();
+        JSONObject jsonGetResponse = new JSONObject(jsonRspString);
+        JSONObject jsonData = (JSONObject)jsonGetResponse.get("data");
+        assertNotNull(jsonData);
+
+        JSONObject jsonFormData = (JSONObject)jsonData.get("formData");
+        assertNotNull(jsonFormData);
+        
+        String jsonAssocs = (String)jsonFormData.get(ASSOC_SYS_CHILDREN);
+        
+        // We expect exactly 1 assoc on the test node
+        assertEquals(1, jsonAssocs.split(",").length);
+        for (ChildAssociationRef assocRef : modifiedAssocs)
+        {
+            assertTrue(jsonAssocs.contains(assocRef.getChildRef().toString()));
+        }
+    }
+
+    /**
+     * This test method attempts to add the same child association twice. This attempt
+     * will not succeed, but the test case is to confirm that there is no exception thrown
+     * back across the REST API.
+     */
+    public void testAddChildAssocThatAlreadyExists() throws Exception
+    {
+        checkOriginalChildAssocsBeforeChanges();
+
+        // Add an association
+        JSONObject jsonPostData = new JSONObject();
+        String assocsToAdd = this.childDoc_C.toString();
+        jsonPostData.put(ASSOC_SYS_CHILDREN_ADDED, assocsToAdd);
+        String jsonPostString = jsonPostData.toString();
+
+        sendRequest(new PostRequest(referencingNodeUrl, jsonPostString, APPLICATION_JSON), 200);
+
+        // Try to add the same child association again
+        sendRequest(new PostRequest(referencingNodeUrl, jsonPostString, APPLICATION_JSON), 200);
+    }
+    
+    /**
+     * This test method attempts to remove a child association that does not exist. This
+     * attempt will not succeed, but the test case is to confirm that there is no
+     * exception thrown back across the REST API.
+     */
+    public void testRemoveChildAssocThatDoesNotExist() throws Exception
+    {
+        checkOriginalChildAssocsBeforeChanges();
+
+        // Remove a non-existent child association
+        JSONObject jsonPostData = new JSONObject();
+        String assocsToRemove = childDoc_E.toString();
+        jsonPostData.put(ASSOC_SYS_CHILDREN_REMOVED, assocsToRemove);
+        String jsonPostString = jsonPostData.toString();
+
+        sendRequest(new PostRequest(referencingNodeUrl, jsonPostString, APPLICATION_JSON), 200);
+    }
+
 
     private void checkOriginalAssocsBeforeChanges()
     {

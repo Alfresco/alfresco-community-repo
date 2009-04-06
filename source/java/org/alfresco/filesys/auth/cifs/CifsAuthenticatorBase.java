@@ -54,6 +54,7 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.DisposableBean;
 
 /**
  * CIFS Authenticator Base Class
@@ -63,7 +64,7 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author gkspencer
  */
-public abstract class CifsAuthenticatorBase extends CifsAuthenticator
+public abstract class CifsAuthenticatorBase extends CifsAuthenticator implements DisposableBean
 {
     // Logging
     
@@ -520,5 +521,13 @@ public abstract class CifsAuthenticatorBase extends CifsAuthenticator
         // Create the transaction
         
         return txService.getUserTransaction( txService.isReadOnly() ? true : false);
+    }
+
+    /**
+     * Handle tidy up on container shutdown
+     */
+    public void destroy() throws Exception
+    {
+        closeAuthenticator();
     }
 }

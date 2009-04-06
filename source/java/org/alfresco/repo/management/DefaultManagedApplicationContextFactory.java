@@ -169,8 +169,12 @@ public class DefaultManagedApplicationContextFactory extends AbstractLifecycleBe
      * (non-Javadoc)
      * @see org.alfresco.repo.management.ManagedApplicationContextFactory#getApplicationContext()
      */
-    public ApplicationContext getApplicationContext()
+    public synchronized ApplicationContext getApplicationContext()
     {
+        if (this.applicationContext == null)
+        {
+            onStart();
+        }
         return this.applicationContext;
     }
 
@@ -181,7 +185,7 @@ public class DefaultManagedApplicationContextFactory extends AbstractLifecycleBe
     @Override
     protected void onBootstrap(ApplicationEvent event)
     {
-        if (this.autoStart)
+        if (this.autoStart && this.applicationContext == null)
         {
             onStart();
         }

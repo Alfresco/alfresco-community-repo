@@ -41,12 +41,13 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.DisposableBean;
 
 /**
  * 
  * @author gkspencer
  */
-public abstract class FTPAuthenticatorBase implements FTPAuthenticator {
+public abstract class FTPAuthenticatorBase implements FTPAuthenticator, DisposableBean {
 
     // Logging
 	  
@@ -249,4 +250,14 @@ public abstract class FTPAuthenticatorBase implements FTPAuthenticator {
 		
 		return txService.getUserTransaction( txService.isReadOnly() ? true : false);
 	}
+
+	/**
+	 * Handle tidy up on container shutdown
+	 */
+    public void destroy()
+    {
+        closeAuthenticator();
+    }
+	
+	
 }

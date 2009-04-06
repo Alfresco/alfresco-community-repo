@@ -52,11 +52,56 @@
       ]
    }
 </#macro>
+
+<#macro inviteTaskDetail task>
+   <#assign theSite = site.getSiteInfo(task.properties["imwf:resourceName"])>
+   <#assign theUser = people.getPerson(task.properties["imwf:inviteeUserName"])>
+   {
+      "id": "${task.id}",
+      "description": "${(task.description!"")?j_string}",
+      "dueDate": "<#if task.properties["bpm:dueDate"]?exists><@dateFormat task.properties["bpm:dueDate"] /><#else><@dateFormat future /></#if>",
+      "status": "${task.properties["bpm:status"]}",
+      "priority": "${task.properties["bpm:priority"]}",
+      "startDate": "<@dateFormat task.startDate />",
+      "type": "${task.type}",
+      "completeness": "${task.properties["bpm:percentComplete"]}",
+      "invitation":
+      {
+         "site":
+         {
+            "id": "${theSite.shortName}",
+            "title": "${theSite.title!""}",
+            "description": "${theSite.description!""}"
+         },
+         "invitee":
+         {
+            "fullName": "${(theUser.properties.firstName + " " + theUser.properties.lastName)?trim}",
+         <#if theUser.assocs["cm:avatar"]??>
+            "avatarRef": "${theUser.assocs["cm:avatar"][0].nodeRef?string}",
+         </#if>
+            "userName": "${theUser.properties.userName}"
+         },
+         "inviteeRole": "${task.properties["imwf:inviteeRole"]}"
+      },
+      "transitions":
+      [
+<#list task.transitions as transition>
+         {
+            "id": "${transition.id!""}",
+            "label": "${transition.label!""}"
+         }<#if transition_has_next>,</#if>
+</#list>
+      ]
+   }
+</#macro>
+
+
 <#--
    Filter task list
 -->
 <#assign filteredTasks = []>
-<#list workflow.assignedTasks as task>
+<#assign unfilteredTasks = workflow.assignedTasks + workflow.pooledTasks>
+<#list unfilteredTasks as task>
    <#assign hasDate = task.properties["bpm:dueDate"]?exists>
    <#assign dueDate><#if task.properties["bpm:dueDate"]?exists>${task.properties["bpm:dueDate"]?date!""}<#else>${future?date}</#if></#assign>
    <#switch filter>
@@ -99,6 +144,14 @@
             <#assign filteredTasks = filteredTasks + [task]>
          </#if>
          <#break>
+
+      <#case "invites">
+         <#if task.properties["bpm:package"]??>
+            <#if task.properties["bpm:package"].properties["bpm:workflowDefinitionName"] == "jbpm$imwf:invitation-moderated">
+               <#assign filteredTasks = filteredTasks + [task]>
+            </#if>
+         </#if>
+         <#break>
    </#switch>
 </#list>
 
@@ -107,7 +160,14 @@
    "tasks":
    [
 <#list filteredTasks as task>
-   <@taskDetail task />
+   <#if task.properties["bpm:package"]??>
+      <#assign packageNode = task.properties["bpm:package"]>
+      <#if packageNode.properties["bpm:workflowDefinitionName"] == "jbpm$imwf:invitation-moderated">
+         <@inviteTaskDetail task />
+      <#else>
+         <@taskDetail task />
+      </#if>
+   </#if>
    <#if task_has_next>,</#if>
 </#list>
    ]

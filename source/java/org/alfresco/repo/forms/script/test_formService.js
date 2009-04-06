@@ -115,11 +115,10 @@ function testGetFormForContentNode()
     test.assertEquals("harry@example.com", addresseesArr[0]);
     test.assertEquals("jane@example.com", addresseesArr[1]);
 
-    //TODO Fix up the date-testing here.
-    //Old comment: Might add the equivalent of the VALUE_SENT_DATE testing here.
-    // In the meantime I'll use JavaScript's own Date object to assert that it is a valid date.
-	//    var sentDate = fieldData["prop:cm:sentdate"].value;
-	//    test.assertFalse(isNaN(Date.parse(sentDate)), "sentDate was not a legal date.");
+    var sentDate = fieldData["prop:cm:sentdate"].getValue();
+    test.assertTrue((typeof sentDate === "object"), "Expecting sentData to be an object");
+    var month = sentDate.getMonth();
+    test.assertTrue((month >= 0 && month < 12), "Expecting valid month");
     
     var targets = fieldData["assoc:cm:references"].value;
     

@@ -11,14 +11,18 @@ script:
         status.redirect = true;
         break script;
     }
- 
+
     // property filter 
     model.filter = cmis.findArg(args.filter, headers["CMIS-filter"]);
     if (model.filter === null)
     {
         model.filter = "*";
     }
-   
+
+    // include allowable actions
+    var includeAllowableActions = cmis.findArg(args.includeAllowableActions, headers["CMIS-includeAllowableActions"]);
+    model.includeAllowableActions = (includeAllowableActions == "true" ? true : false);
+
     // TODO: check returnToRoot is required for getDocumentParents
     // retrieve parent
     var returnToRoot = cmis.findArg(args.returnToRoot, headers["CMIS-returnToRoot"]);

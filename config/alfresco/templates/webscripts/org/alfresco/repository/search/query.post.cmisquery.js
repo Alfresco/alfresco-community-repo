@@ -43,7 +43,10 @@ script:
         break script;
     }
     
-    // TODO: process allowableActions
+    // TODO: CMIS-124
+    // include allowable actions
+    var includeAllowableActions = cmisQuery.returnAllowableActions.toString();
+    model.includeAllowableActions = (includeAllowableActions == null || includeAllowableActions == "true" ? true : false);
     
     // process paging
     var skipCount = parseInt(cmisQuery.skipCount);

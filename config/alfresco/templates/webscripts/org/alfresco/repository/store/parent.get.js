@@ -19,6 +19,10 @@ script:
         model.filter = "*";
     }
    
+    // include allowable actions
+    var includeAllowableActions = cmis.findArg(args.includeAllowableActions, headers["CMIS-includeAllowableActions"]);
+    model.includeAllowableActions = (includeAllowableActions == "true" ? true : false);
+    
     // retrieve parent
     var returnToRoot = cmis.findArg(args.returnToRoot, headers["CMIS-returnToRoot"]);
     model.returnToRoot = returnToRoot == "true" ? true : false;

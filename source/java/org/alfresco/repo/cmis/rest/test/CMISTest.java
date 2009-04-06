@@ -67,8 +67,8 @@ public class CMISTest extends BaseCMISWebScriptTest
 //        setRemoteServer(server);
 //        setArgsAsHeaders(false);
 //        setValidateResponse(false);
-        setListener(new CMISTestListener(System.out));
-        setTraceReqRes(true);
+//        setListener(new CMISTestListener(System.out));
+//        setTraceReqRes(true);
         
         super.setUp();
     }
@@ -1176,7 +1176,59 @@ public class CMISTest extends BaseCMISWebScriptTest
         assertEquals(0, docIds.size());
     }
 
+    public void testQueryAllowableActions()
+        throws Exception
+    {
+        // retrieve query collection
+        IRI queryHREF = getQueryCollection(getWorkspace(getRepository()));
+        
+        // retrieve test folder for query
+        Entry testFolder = createTestFolder("testQueryAllowableAcrtions");
+        CMISObject testFolderObject = testFolder.getExtension(CMISConstants.OBJECT);
+        Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
+        
+        // create documents to query
+        Entry document1 = createDocument(childrenLink.getHref(), "apple1");
+        assertNotNull(document1);
+        CMISObject document1Object = document1.getExtension(CMISConstants.OBJECT);
+        assertNotNull(document1Object);
+        String doc2name = "name" + System.currentTimeMillis();
+        Entry document2 = createDocument(childrenLink.getHref(), doc2name);
+        assertNotNull(document2);
+        CMISObject document2Object = document2.getExtension(CMISConstants.OBJECT);
+        assertNotNull(document2Object);
+        Entry document3 = createDocument(childrenLink.getHref(), "banana1");
+        assertNotNull(document3);
+    
+        // retrieve query request document
+        String queryDoc = loadString("/org/alfresco/repo/cmis/rest/test/queryallowableactions.cmisquery.xml");
+    
+        {
+            // construct structured query
+            String query = "SELECT * FROM Document " +
+                           "WHERE IN_FOLDER('" + testFolderObject.getObjectId().getValue() + "') ";
+            String queryReq = queryDoc.replace("${STATEMENT}", query);
+            queryReq = queryReq.replace("${INCLUDEALLOWABLEACTIONS}", "true");
+            queryReq = queryReq.replace("${SKIPCOUNT}", "0");
+            queryReq = queryReq.replace("${PAGESIZE}", "5");
+    
+            // issue structured query
+            Response queryRes = sendRequest(new PostRequest(queryHREF.toString(), queryReq.getBytes(), CMISConstants.MIMETYPE_QUERY), 200);
+            assertNotNull(queryRes);
+            Feed queryFeed = getAbdera().parseFeed(new StringReader(queryRes.getContentAsString()), null);
+            assertNotNull(queryFeed);
+            assertEquals(3, queryFeed.getEntries().size());
+            
+            //for (Entry entry : queryFeed.getEntries())
+            //{
+                // TODO: parse response with Abdera extension
+                // TODO: test against cmis-allowableactions link
+            //}
+            
+        }
+    }
 
+    
 //    public void testUnfiled()
 //    {
 //    }

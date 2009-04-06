@@ -18,7 +18,7 @@
 
 [#macro parent node recurse=false]
 [#if node?exists && node.isContainer]
-  [@entryLib.folder node=node propfilter=filter includeallowableactions=false includerelationships="none"/]
+  [@entryLib.folder node=node propfilter=filter includeallowableactions=includeAllowableActions includerelationships="none"/]
   [#if recurse && node.id != rootNode.id]
     [@parent node.parent true/]
   [/#if]

@@ -110,6 +110,7 @@
 <updated>${xmldate(node.properties.modified)}</updated>
 <cmis:object>
 [@documentCMISProps node propfilter/]
+[#if includeallowableactions][@allowableactions node/][/#if]
 </cmis:object>
 <cmis:terminator/>
 <app:edited>${xmldate(node.properties.modified)}</app:edited>
@@ -144,9 +145,9 @@
 [#if depth < maxdepth || depth == -1]
 [#list cmischildren(node, typesfilter) as child]
   [#if child.isDocument]
-    [@entryLib.document child propfilter includeallowableactions includerelationships/]
+    [@document child propfilter includeallowableactions includerelationships/]
   [#else]
-    [@entryLib.folder child propfilter includeallowableactions includerelationships/]
+    [@folder child propfilter typesfilter includeallowableactions includerelationships/]
     [@folder child propfilter typesfilter includeallowableactions includerelationships ns depth+1 maxdepth/]
   [/#if]
 [/#list]
@@ -189,7 +190,7 @@
 [#--                          --]
 
 [#-- TODO: spec issue 47 --]
-[#macro row row]
+[#macro row row includeallowableactions=false]
 [@entry]
 [#if row.nodes??]
 [#assign node = row.nodes?first]
@@ -211,7 +212,7 @@
 <cmis:properties>
 
 [#-- TODO: spec issue: baseType to become formal property --]
-[#if node.isDocument]
+[#if row.nodes?? && node.isDocument]
   [@propvalue "BaseType" "document" "STRING"/]
 [#else]
   [@propvalue "BaseType" "folder" "STRING"/]
@@ -227,9 +228,10 @@
   [/#if]
 [/#list]
 </cmis:properties>
+[#if row.nodes?? && includeallowableactions][@allowableactions node/][/#if]
 </cmis:object>
 <cmis:terminator/>
-<alf:icon>${absurl(url.context)}${node.icon16}</alf:icon>
+[#if row.nodes??]<alf:icon>${absurl(url.context)}${node.icon16}</alf:icon>[/#if]
 <alf:noderef>${node.nodeRef}</alf:noderef>
 [/@entry]
 [/#macro]

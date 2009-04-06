@@ -32,4 +32,8 @@ script:
     // depth
     var depth = cmis.findArg(args.depth, headers["CMIS-depth"]);
     model.depth = (depth === null) ? 1 : parseInt(depth);
+    
+    // include allowable actions
+    var includeAllowableActions = cmis.findArg(args.includeAllowableActions, headers["CMIS-includeAllowableActions"]);
+    model.includeAllowableActions = (includeAllowableActions == "true" ? true : false);
 }

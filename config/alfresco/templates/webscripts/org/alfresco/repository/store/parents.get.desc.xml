@@ -24,8 +24,8 @@ If “includeAllowableActions” is TRUE, the repository will return the allowab
 ]]>  
   </description>
   <!-- TODO: returnToRoot argument required? -->
-  <url>/api/node/{store_type}/{store_id}/{id}/parents?filter={filter?}</url>
-  <url>/api/path/{store_type}/{store_id}/{id}/parents?filter={filter?}</url>
+  <url>/api/node/{store_type}/{store_id}/{id}/parents?filter={filter?}&amp;includeAllowableActions={includeAllowableActions?}</url>
+  <url>/api/path/{store_type}/{store_id}/{id}/parents?filter={filter?}&amp;includeAllowableActions={includeAllowableActions?}</url>
   <authentication>guest</authentication>
   <format default="atomfeed">argument</format>
   <family>CMIS</family>

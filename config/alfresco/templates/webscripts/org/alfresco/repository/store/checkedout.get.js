@@ -31,8 +31,10 @@ script:
         model.filter = "*";
     }
    
-    // TODO: includeAllowableActions 
-   
+    // include allowable actions
+    var includeAllowableActions = cmis.findArg(args.includeAllowableActions, headers["CMIS-includeAllowableActions"]);
+    model.includeAllowableActions = (includeAllowableActions == "true" ? true : false);   
+
     // retrieve checked-out
     var page = paging.createPageOrWindow(args, headers);
     var paged = cmis.queryCheckedOut(person.properties.userName, model.folder, model.includeDescendants, page);

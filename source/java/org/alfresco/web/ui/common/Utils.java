@@ -47,8 +47,8 @@ import javax.faces.event.ActionEvent;
 
 import org.alfresco.config.ConfigElement;
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.filesys.CIFSServerBean;
 import org.alfresco.filesys.repo.ContentContext;
+import org.alfresco.jlan.server.config.ServerConfigurationAccessor;
 import org.alfresco.jlan.server.core.SharedDevice;
 import org.alfresco.jlan.server.core.SharedDeviceList;
 import org.alfresco.jlan.server.filesys.DiskSharedDevice;
@@ -386,13 +386,13 @@ public final class Utils extends StringUtils
             NodeService nodeService = Repository.getServiceRegistry(context).getNodeService();
             NavigationBean navBean = (NavigationBean)context.getExternalContext().
                   getSessionMap().get(NavigationBean.BEAN_NAME);
-            CIFSServerBean cifsServer = (CIFSServerBean)FacesContextUtils.getRequiredWebApplicationContext(
-                  context).getBean("cifsServer");
+            ServerConfigurationAccessor serverConfiguration = (ServerConfigurationAccessor)FacesContextUtils.getRequiredWebApplicationContext(
+                  context).getBean("fileServerConfiguration");
             
-            if (nodeService != null && navBean != null && cifsServer != null)
+            if (nodeService != null && navBean != null && serverConfiguration != null)
             {
                // Resolve CIFS network folder location for this node
-               FilesystemsConfigSection filesysConfig = (FilesystemsConfigSection)cifsServer.getConfiguration().getConfigSection(FilesystemsConfigSection.SectionName); 
+               FilesystemsConfigSection filesysConfig = (FilesystemsConfigSection)serverConfiguration.getConfigSection(FilesystemsConfigSection.SectionName); 
                DiskSharedDevice diskShare = null;
                
                SharedDeviceList shares = filesysConfig.getShares();

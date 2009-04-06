@@ -52,6 +52,7 @@ public abstract class AbstractTestFormRestApi extends BaseWebScriptTest
     protected static final String TEST_FORM_DESCRIPTION = "Test form description";
     protected static final String TEST_FORM_TITLE = "Test form title";
     protected String referencingNodeUrl;
+    protected String containingNodeUrl;
     protected NodeRef referencingDocNodeRef;
     protected Map<QName, Serializable> refNodePropertiesAfterCreation;
     protected NodeRef associatedDoc_A;
@@ -59,12 +60,18 @@ public abstract class AbstractTestFormRestApi extends BaseWebScriptTest
     protected NodeRef associatedDoc_C;
     protected NodeRef associatedDoc_D;
     protected NodeRef associatedDoc_E;
-    protected NodeRef associatedFolderNodeRef;
+    protected NodeRef childDoc_A;
+    protected NodeRef childDoc_B;
+    protected NodeRef childDoc_C;
+    protected NodeRef childDoc_D;
+    protected NodeRef childDoc_E;
+    protected NodeRef testFolderNodeRef;
 
     protected NodeService nodeService;
     private FileFolderService fileFolderService;
     private ContentService contentService;
     private Repository repositoryHelper;
+    protected NodeRef containerNodeRef;
 
     @Override
     protected void setUp() throws Exception
@@ -104,8 +111,9 @@ public abstract class AbstractTestFormRestApi extends BaseWebScriptTest
         
         // Create a folder - will use this for child-association testing
         FileInfo associatedDocsFolder =
-            this.fileFolderService.create(companyHomeNodeRef, "associatedDocsFolder" + guid, ContentModel.TYPE_FOLDER);
-        associatedFolderNodeRef = associatedDocsFolder.getNodeRef();
+            this.fileFolderService.create(companyHomeNodeRef, "testFolder" + guid, ContentModel.TYPE_FOLDER);
+        
+        testFolderNodeRef = associatedDocsFolder.getNodeRef();
         
         this.associatedDoc_A = createTestNode("associatedDoc_A" + guid);
         this.associatedDoc_B = createTestNode("associatedDoc_B" + guid);
@@ -118,14 +126,39 @@ public abstract class AbstractTestFormRestApi extends BaseWebScriptTest
         this.nodeService.addAspect(this.referencingDocNodeRef, ContentModel.ASPECT_REFERENCING, aspectProps);
         this.nodeService.createAssociation(this.referencingDocNodeRef, associatedDoc_A, ContentModel.ASSOC_REFERENCES);
         this.nodeService.createAssociation(this.referencingDocNodeRef, associatedDoc_B, ContentModel.ASSOC_REFERENCES);
-        // Leave the third and 4th nodes without associations as they may be created in
+        // Leave the 3rd, 4th and 5th nodes without associations as they may be created in
         // other test code.
 
-        // Create and store the path
+        // Create a container for the children.
+        HashMap<QName, Serializable> containerProps = new HashMap<QName, Serializable>();
+        this.containerNodeRef = nodeService.createNode(companyHomeNodeRef, ContentModel.ASSOC_CONTAINS,
+                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "testContainer" + guid),
+                ContentModel.TYPE_CONTAINER,
+                containerProps).getChildRef();
+        
+        this.childDoc_A = createTestNode("childDoc_A" + guid);
+        this.childDoc_B = createTestNode("childDoc_B" + guid);
+        this.childDoc_C = createTestNode("childDoc_C" + guid);
+        this.childDoc_D = createTestNode("childDoc_D" + guid);
+        this.childDoc_E = createTestNode("childDoc_E" + guid);
+        
+        // Now create the pre-test child-associations.
+        this.nodeService.addChild(containerNodeRef, childDoc_A, ContentModel.ASSOC_CHILDREN, QName.createQName("childA"));
+        this.nodeService.addChild(containerNodeRef, childDoc_B, ContentModel.ASSOC_CHILDREN, QName.createQName("childB"));
+        // The other childDoc nodes will be added as children over the REST API as part
+        // of later test code.
+
+        // Create and store the url to the referencingNode
         StringBuilder builder = new StringBuilder();
         builder.append("/api/forms/node/workspace/").append(referencingDocNodeRef.getStoreRef().getIdentifier())
                 .append("/").append(referencingDocNodeRef.getId());
         this.referencingNodeUrl = builder.toString();
+        
+        // Create and store the url to the containing node
+        builder = new StringBuilder();
+        builder.append("/api/forms/node/workspace/").append(containerNodeRef.getStoreRef().getIdentifier())
+                .append("/").append(containerNodeRef.getId());
+        this.containingNodeUrl = builder.toString();
         
         // Store the original properties of this node
         this.refNodePropertiesAfterCreation = nodeService.getProperties(referencingDocNodeRef);
@@ -142,7 +175,13 @@ public abstract class AbstractTestFormRestApi extends BaseWebScriptTest
         nodeService.deleteNode(this.associatedDoc_C);
         nodeService.deleteNode(this.associatedDoc_D);
         nodeService.deleteNode(this.associatedDoc_E);
-        nodeService.deleteNode(this.associatedFolderNodeRef);
+        nodeService.deleteNode(this.childDoc_A);
+        nodeService.deleteNode(this.childDoc_B);
+        nodeService.deleteNode(this.childDoc_C);
+        nodeService.deleteNode(this.childDoc_D);
+        nodeService.deleteNode(this.childDoc_E);
+        nodeService.deleteNode(this.testFolderNodeRef);
+        nodeService.deleteNode(this.containerNodeRef);
     }
 
     protected Response sendGetReq(String url, int expectedStatusCode)
@@ -157,7 +196,7 @@ public abstract class AbstractTestFormRestApi extends BaseWebScriptTest
         Map<QName, Serializable> docProps = new HashMap<QName, Serializable>(1);
         docProps.put(ContentModel.PROP_NAME, associatedDocName + ".txt");
         return this.nodeService.createNode(
-                    associatedFolderNodeRef, 
+                    testFolderNodeRef, 
                     ContentModel.ASSOC_CONTAINS, 
                     QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, associatedDocName + ".txt"), 
                     ContentModel.TYPE_CONTENT,

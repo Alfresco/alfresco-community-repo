@@ -32,6 +32,7 @@ import java.util.List;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.AssociationRef;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.RegexQNamePattern;
@@ -246,6 +247,62 @@ public class FormRestApiJsonPost_Test extends AbstractTestFormRestApi
         sendRequest(new PostRequest(referencingNodeUrl, jsonPostString, APPLICATION_JSON), 200);
     }
 
+    /**
+     * This test method attempts to add new associations between existing nodes.
+     */
+    public void testAddNewChildAssociationsToNode() throws Exception
+    {
+        List<NodeRef> associatedNodes;
+        checkOriginalChildAssocsBeforeChanges();
+        
+        // Add three additional associations
+        JSONObject jsonPostData = new JSONObject();
+        String assocsToAdd = childDoc_C + "," + childDoc_D + "," + childDoc_E;
+        jsonPostData.put("assoc_sys_children_added", assocsToAdd);
+        String jsonPostString = jsonPostData.toString();
+
+        sendRequest(new PostRequest(containingNodeUrl.toString(), jsonPostString, APPLICATION_JSON), 200);
+
+        // Check the now updated child associations via the node service
+        List<ChildAssociationRef> modifiedAssocs = nodeService.getChildAssocs(containerNodeRef);
+        assertEquals(5, modifiedAssocs.size());
+
+        // Extract the target nodeRefs to make them easier to examine
+        associatedNodes = new ArrayList<NodeRef>(5);
+        for (ChildAssociationRef assocRef : modifiedAssocs)
+        {
+            associatedNodes.add(assocRef.getChildRef());
+        }
+
+        assertTrue(associatedNodes.contains(childDoc_A));
+        assertTrue(associatedNodes.contains(childDoc_B));
+        assertTrue(associatedNodes.contains(childDoc_C));
+        assertTrue(associatedNodes.contains(childDoc_D));
+        assertTrue(associatedNodes.contains(childDoc_E));
+        
+        // The Rest API should also give us the modified assocs.
+        Response response = sendRequest(new GetRequest(containingNodeUrl), 200);
+        String jsonRspString = response.getContentAsString();
+        
+        JSONObject jsonGetResponse = new JSONObject(jsonRspString);
+        JSONObject jsonData = (JSONObject)jsonGetResponse.get("data");
+        assertNotNull(jsonData);
+
+        JSONObject jsonFormData = (JSONObject)jsonData.get("formData");
+        assertNotNull(jsonFormData);
+        
+        String jsonAssocs = (String)jsonFormData.get("assoc_sys_children");
+        
+        // We expect exactly 5 assocs on the test node
+        assertEquals(5, jsonAssocs.split(",").length);
+        for (ChildAssociationRef assocRef : modifiedAssocs)
+        {
+            String childNodeRef = assocRef.getChildRef().toString();
+            assertTrue(jsonAssocs.contains(childNodeRef));
+            assertTrue(NodeRef.isNodeRef(childNodeRef));
+        }
+    }
+
     private void checkOriginalAssocsBeforeChanges()
     {
         List<AssociationRef> originalAssocs = nodeService.getTargetAssocs(referencingDocNodeRef, RegexQNamePattern.MATCH_ALL);
@@ -257,5 +314,18 @@ public class FormRestApiJsonPost_Test extends AbstractTestFormRestApi
         
         assertTrue(associatedNodes.contains(associatedDoc_A));
         assertTrue(associatedNodes.contains(associatedDoc_B));
+    }
+
+    private void checkOriginalChildAssocsBeforeChanges()
+    {
+        List<ChildAssociationRef> originalChildAssocs = nodeService.getChildAssocs(containerNodeRef);
+        assertEquals(2, originalChildAssocs.size());
+
+        List<NodeRef> associatedNodes = new ArrayList<NodeRef>(2);
+        associatedNodes.add(originalChildAssocs.get(0).getChildRef());
+        associatedNodes.add(originalChildAssocs.get(1).getChildRef());
+        
+        assertTrue(associatedNodes.contains(childDoc_A));
+        assertTrue(associatedNodes.contains(childDoc_B));
     }
 }

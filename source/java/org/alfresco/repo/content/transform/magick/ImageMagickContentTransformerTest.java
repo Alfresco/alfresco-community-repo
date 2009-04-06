@@ -29,6 +29,7 @@ import java.util.Collections;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
 import org.alfresco.repo.content.transform.ContentTransformer;
+import org.alfresco.repo.content.transform.ProxyContentTransformer;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.util.exec.RuntimeExec;
 
@@ -39,7 +40,8 @@ import org.alfresco.util.exec.RuntimeExec;
  */
 public class ImageMagickContentTransformerTest extends AbstractContentTransformerTest
 {
-    private ImageMagickContentTransformer transformer;
+    private ImageMagickContentTransformerWorker worker;
+    private ContentTransformer transformer;
     
     @Override
     public void setUp() throws Exception
@@ -50,10 +52,15 @@ public class ImageMagickContentTransformerTest extends AbstractContentTransforme
         executer.setCommand(new String[] {"imconvert.exe", "${source}", "${options}", "${target}"});
         executer.setDefaultProperties(Collections.singletonMap("options", ""));
         
-        transformer = new ImageMagickContentTransformer();
+        this.worker = new ImageMagickContentTransformerWorker();
+        worker.setMimetypeService(mimetypeService);
+        worker.setExecuter(executer);
+        worker.afterPropertiesSet();
+        
+        ProxyContentTransformer transformer = new ProxyContentTransformer();
         transformer.setMimetypeService(mimetypeService);
-        transformer.setExecuter(executer);
-        transformer.init();
+        this.transformer = transformer;
+        
     }
     
     /**
@@ -66,7 +73,7 @@ public class ImageMagickContentTransformerTest extends AbstractContentTransforme
     
     public void testReliability() throws Exception
     {
-        if (!transformer.isAvailable())
+        if (!this.worker.isAvailable())
         {
             return;
         }

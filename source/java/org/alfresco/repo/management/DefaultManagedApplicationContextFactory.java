@@ -129,16 +129,19 @@ public class DefaultManagedApplicationContextFactory extends AbstractLifecycleBe
         {
             "classpath*:alfresco/subsystems/" + this.beanName + "/*-context.xml"
         }, false, this.parent);
-        // Add all the post processors of the parent, e.g. to make sure system placeholders get expanded properly
-        for (Object postProcessor : this.parent.getBeansOfType(BeanFactoryPostProcessor.class).values())
-        {
-            this.applicationContext.addBeanFactoryPostProcessor((BeanFactoryPostProcessor) postProcessor);
-        }
+
         // Add a property placeholder configurer, with the subsystem-scoped default properties
         PropertyPlaceholderConfigurer configurer = new PropertyPlaceholderConfigurer();
         configurer.setProperties(this.properties);
         configurer.setIgnoreUnresolvablePlaceholders(true);
         this.applicationContext.addBeanFactoryPostProcessor(configurer);
+
+        // Add all the post processors of the parent, e.g. to make sure system placeholders get expanded properly
+        for (Object postProcessor : this.parent.getBeansOfType(BeanFactoryPostProcessor.class).values())
+        {
+            this.applicationContext.addBeanFactoryPostProcessor((BeanFactoryPostProcessor) postProcessor);
+        }
+        
         this.applicationContext.setClassLoader(parent.getClassLoader());
         this.applicationContext.refresh();
     }

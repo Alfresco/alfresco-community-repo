@@ -39,7 +39,6 @@ import org.alfresco.repo.content.ContentServicePolicies.OnContentUpdatePolicy;
 import org.alfresco.repo.content.filestore.FileContentStore;
 import org.alfresco.repo.content.transform.ContentTransformer;
 import org.alfresco.repo.content.transform.ContentTransformerRegistry;
-import org.alfresco.repo.content.transform.magick.ImageMagickContentTransformer;
 import org.alfresco.repo.policy.ClassPolicyDelegate;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
@@ -97,7 +96,7 @@ public class RoutingContentService implements ContentService, ApplicationContext
     private ContentStore store;
     /** the store for all temporarily created content */
     private ContentStore tempStore;
-    private ImageMagickContentTransformer imageMagickContentTransformer;
+    private ContentTransformer imageMagickContentTransformer;
     
     /**
      * The policy component
@@ -153,7 +152,7 @@ public class RoutingContentService implements ContentService, ApplicationContext
         this.avmService = service;
     }
     
-    public void setImageMagickContentTransformer(ImageMagickContentTransformer imageMagickContentTransformer) 
+    public void setImageMagickContentTransformer(ContentTransformer imageMagickContentTransformer) 
     {
         this.imageMagickContentTransformer = imageMagickContentTransformer;
     }
@@ -317,7 +316,6 @@ public class RoutingContentService implements ContentService, ApplicationContext
         Serializable propValue = nodeService.getProperty(nodeRef, propertyQName);
         if (propValue instanceof Collection)
         {
-            @SuppressWarnings("unchecked")
             Collection<Serializable> colPropValue = (Collection<Serializable>)propValue;
             if (colPropValue.size() > 0)
             {
@@ -461,7 +459,6 @@ public class RoutingContentService implements ContentService, ApplicationContext
      * @see org.alfresco.repo.content.transform.ContentTransformer
      * @deprecated
      */    
-    @SuppressWarnings("deprecation")
     public void transform(ContentReader reader, ContentWriter writer, Map<String, Object> options)
             throws NoTransformerException, ContentIOException
     {

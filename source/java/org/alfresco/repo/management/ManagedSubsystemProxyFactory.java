@@ -87,6 +87,16 @@ public class ManagedSubsystemProxyFactory extends ProxyFactoryBean
         }));
     }
 
+    @SuppressWarnings("unchecked")
+    @Override
+    public void setInterfaces(Class[] interfaces)
+    {
+        super.setInterfaces(interfaces);
+        // Make it possible to export the object via JMX
+        setTargetClass(getObjectType());
+    }
+
+
     /**
      * Sets the source application context factory.
      * 

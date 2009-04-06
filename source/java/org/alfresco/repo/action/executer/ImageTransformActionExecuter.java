@@ -27,7 +27,7 @@ package org.alfresco.repo.action.executer;
 import java.util.List;
 
 import org.alfresco.repo.action.ParameterDefinitionImpl;
-import org.alfresco.repo.content.transform.magick.ImageMagickContentTransformer;
+import org.alfresco.repo.content.transform.ContentTransformer;
 import org.alfresco.repo.content.transform.magick.ImageTransformationOptions;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
@@ -50,14 +50,14 @@ public class ImageTransformActionExecuter extends TransformActionExecuter
 	public static final String NAME = "transform-image";
 	public static final String PARAM_CONVERT_COMMAND = "convert-command";
 	
-	private ImageMagickContentTransformer imageMagickContentTransformer;
+	private ContentTransformer imageMagickContentTransformer;
 	
 	/**
 	 * Set the image magick content transformer
 	 * 
 	 * @param imageMagickContentTransformer		the conten transformer
 	 */
-	public void setImageMagickContentTransformer(ImageMagickContentTransformer imageMagickContentTransformer) 
+	public void setImageMagickContentTransformer(ContentTransformer imageMagickContentTransformer) 
 	{
 		this.imageMagickContentTransformer = imageMagickContentTransformer;
 	}
@@ -79,17 +79,19 @@ public class ImageTransformActionExecuter extends TransformActionExecuter
             NodeRef sourceNodeRef, ContentReader contentReader, 
             NodeRef destinationNodeRef, ContentWriter contentWriter)
 	{
-        // check if the transformer is going to work, i.e. is available
-        if (!this.imageMagickContentTransformer.isAvailable())
-        {
-            throw new NoTransformerException(contentReader.getMimetype(), contentWriter.getMimetype());
-        }
 		// Try and transform the content
-        String convertCommand = (String)ruleAction.getParameterValue(PARAM_CONVERT_COMMAND);
+        String convertCommand = (String) ruleAction.getParameterValue(PARAM_CONVERT_COMMAND);
         // create some options for the transform
         ImageTransformationOptions imageOptions = new ImageTransformationOptions();
         imageOptions.setCommandOptions(convertCommand);
-        
+
+        // check if the transformer is going to work, i.e. is available
+        if (!this.imageMagickContentTransformer.isTransformable(contentReader.getMimetype(), contentWriter
+                .getMimetype(), imageOptions))
+        {
+            throw new NoTransformerException(contentReader.getMimetype(), contentWriter.getMimetype());
+        }
+
         this.imageMagickContentTransformer.transform(contentReader, contentWriter, imageOptions);    
 	}
 }

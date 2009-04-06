@@ -41,7 +41,10 @@ public class OpenOfficeMetadataExtracterTest extends AbstractMetadataExtracterTe
         extracter = new OpenOfficeMetadataExtracter();
         extracter.setMimetypeService(mimetypeMap);
         extracter.setDictionaryService(dictionaryService);
-        extracter.setConnection(connection);
+        DefaultOpenOfficeMetadataWorker worker = new DefaultOpenOfficeMetadataWorker();
+        worker.setConnection(connection);
+        worker.setMimetypeService(mimetypeMap);
+        extracter.setWorker(worker);
         extracter.init();
     }
 

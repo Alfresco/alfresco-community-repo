@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -41,7 +41,7 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author Derek Hulley
  */
-public class ImageMagickContentTransformer extends AbstractImageMagickContentTransformer
+public class ImageMagickContentTransformerWorker extends AbstractImageMagickContentTransformerWorker
 {
     /** options variable name */
     private static final String KEY_OPTIONS = "options";
@@ -50,7 +50,7 @@ public class ImageMagickContentTransformer extends AbstractImageMagickContentTra
     /** target variable name */
     private static final String VAR_TARGET = "target";
     
-    private static final Log logger = LogFactory.getLog(ImageMagickContentTransformer.class);
+    private static final Log logger = LogFactory.getLog(ImageMagickContentTransformerWorker.class);
 
     /** the system command executer */
     private RuntimeExec executer;
@@ -64,7 +64,7 @@ public class ImageMagickContentTransformer extends AbstractImageMagickContentTra
     /**
      * Default constructor
      */
-    public ImageMagickContentTransformer()
+    public ImageMagickContentTransformerWorker()
     {
     }
     
@@ -110,31 +110,28 @@ public class ImageMagickContentTransformer extends AbstractImageMagickContentTra
         return this.versionString;
     }
 
+    
     /**
      * Checks for the JMagick and ImageMagick dependencies, using the common
      * {@link #transformInternal(File, File) transformation method} to check
      * that the sample image can be converted. 
      */
-    public void init()
+    @Override
+    public void afterPropertiesSet()
     {
         if (executer == null)
         {
             throw new AlfrescoRuntimeException("System runtime executer not set");
         }
-        super.init();
+        super.afterPropertiesSet();
         if (isAvailable())
         {
             try
             {
+                // On some platforms / versions, the -version command seems to return an error code whilst still
+                // returning output, so let's not worry about the exit code!
                 ExecutionResult result = this.checkCommand.execute();
-                if (result.getSuccess())
-                {
-                    this.versionString = result.getStdOut().trim();
-                }
-                else
-                {
-                    setAvailable(false);
-                }
+                this.versionString = result.getStdOut().trim();
             }
             catch (Throwable e)
             {

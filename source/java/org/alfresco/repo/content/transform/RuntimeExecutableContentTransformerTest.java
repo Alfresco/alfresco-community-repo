@@ -39,20 +39,20 @@ import org.alfresco.util.TempFileProvider;
 import org.alfresco.util.exec.RuntimeExec;
 
 /**
- * @see org.alfresco.repo.content.transform.RuntimeExecutableContentTransformer
+ * @see org.alfresco.repo.content.transform.RuntimeExecutableContentTransformerWorker
  * 
  * @author Derek Hulley
  */
 public class RuntimeExecutableContentTransformerTest extends BaseAlfrescoTestCase
 {
-    private RuntimeExecutableContentTransformer transformer;
+    private ContentTransformer transformer;
     
     @Override
     protected void setUp() throws Exception
     {
         super.setUp();
         
-        transformer = new RuntimeExecutableContentTransformer();
+        RuntimeExecutableContentTransformerWorker worker = new RuntimeExecutableContentTransformerWorker();
         // the command to execute
         RuntimeExec transformCommand = new RuntimeExec();
         Map<String, String> commandMap = new HashMap<String, String>(5);
@@ -61,16 +61,21 @@ public class RuntimeExecutableContentTransformerTest extends BaseAlfrescoTestCas
         commandMap.put(".*", "cmd /c copy /Y \"${source}\" \"${target}\"");
         transformCommand.setCommandMap(commandMap);
         transformCommand.setErrorCodes("1, 2");
-        transformer.setTransformCommand(transformCommand);
-        transformer.setMimetypeService(serviceRegistry.getMimetypeService());
+        worker.setTransformCommand(transformCommand);
+        worker.setMimetypeService(serviceRegistry.getMimetypeService());
         // set the explicit transformations
         List<ExplictTransformationDetails> explicitTranformations = new ArrayList<ExplictTransformationDetails>(1);
         explicitTranformations.add(
                 new ExplictTransformationDetails(MimetypeMap.MIMETYPE_TEXT_PLAIN, MimetypeMap.MIMETYPE_XML));
-        transformer.setExplicitTransformations(explicitTranformations);
+        worker.setExplicitTransformations(explicitTranformations);
         
         // initialise so that it doesn't score 0
-        transformer.register();
+        worker.afterPropertiesSet();
+        
+        ProxyContentTransformer transformer = new ProxyContentTransformer();
+        transformer.setMimetypeService(serviceRegistry.getMimetypeService());
+        transformer.setWorker(worker);
+        this.transformer = transformer;
     }
 
     public void testCopyCommand() throws Exception

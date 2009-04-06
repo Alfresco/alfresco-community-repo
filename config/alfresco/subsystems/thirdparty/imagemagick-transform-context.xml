@@ -1,0 +1,59 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+<beans>
+
+   <bean id="transformer.worker.ImageMagick" class="org.alfresco.repo.content.transform.magick.ImageMagickContentTransformerWorker">
+      <property name="mimetypeService">
+         <ref bean="mimetypeService" />
+      </property>
+      <property name="executer">
+         <bean name="transformer.ImageMagick.Command" class="org.alfresco.util.exec.RuntimeExec">
+            <property name="commandsAndArguments">
+               <map>
+                  <entry key=".*">
+                     <list>
+                        <value>${img.exe}</value>
+                        <value>${source}</value>
+                        <value>SPLIT:${options}</value>
+                        <value>${target}</value>
+                     </list>
+                  </entry>
+               </map>
+            </property>
+            <property name="processProperties">
+               <map>
+                  <entry key="MAGICK_HOME">
+                     <value>${img.root}</value>
+                  </entry>
+                  <entry key="DYLD_LIBRARY_PATH">
+                     <value>${img.dyn}</value>
+                  </entry>
+                  <entry key="LD_LIBRARY_PATH">
+                     <value>${img.dyn}</value>
+                  </entry>
+               </map>
+            </property>
+            <property name="defaultProperties">
+               <props>
+                  <prop key="options"></prop>
+               </props>
+            </property>
+         </bean>
+      </property>
+      <property name="checkCommand">
+         <bean name="transformer.ImageMagick.CheckCommand" class="org.alfresco.util.exec.RuntimeExec">
+            <property name="commandsAndArguments">
+               <map>
+                  <entry key=".*">
+                     <list>
+                        <value>${img.exe}</value>
+                        <value>-version</value>
+                     </list>
+                  </entry>
+               </map>
+            </property>
+         </bean>
+      </property>
+   </bean>
+
+</beans>

@@ -22,28 +22,14 @@
  * http://www.alfresco.com/legal/licensing" */
 package org.alfresco.repo.content.metadata;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.Serializable;
-import java.net.ConnectException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
 
-import net.sf.jooreports.openoffice.connection.OpenOfficeConnection;
-
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.util.PropertyCheck;
-import org.alfresco.util.TempFileProvider;
-
-import com.sun.star.beans.PropertyValue;
-import com.sun.star.beans.XPropertySet;
-import com.sun.star.document.XDocumentInfoSupplier;
-import com.sun.star.frame.XComponentLoader;
-import com.sun.star.lang.XComponent;
-import com.sun.star.ucb.XFileIdentifierConverter;
-import com.sun.star.uno.UnoRuntime;
 
 /**
  * Extracts values from Star Office documents into the following:
@@ -55,12 +41,8 @@ import com.sun.star.uno.UnoRuntime;
  * 
  * @author Jesper Steen Møller
  */
-public class OpenOfficeMetadataExtracter extends AbstractMappingMetadataExtracter
+public class OpenOfficeMetadataExtracter extends AbstractMappingMetadataExtracter implements OpenOfficeMetadataWorker
 {
-    private static final String KEY_AUTHOR = "author";
-    private static final String KEY_TITLE = "title";
-    private static final String KEY_DESCRIPTION = "description";
-
     public static String[] SUPPORTED_MIMETYPES = new String[] {
         MimetypeMap.MIMETYPE_STAROFFICE5_WRITER,
         MimetypeMap.MIMETYPE_STAROFFICE5_IMPRESS,
@@ -68,16 +50,16 @@ public class OpenOfficeMetadataExtracter extends AbstractMappingMetadataExtracte
         MimetypeMap.MIMETYPE_OPENOFFICE1_IMPRESS
     };
 
-    private OpenOfficeConnection connection;
+    private OpenOfficeMetadataWorker worker;
 
     public OpenOfficeMetadataExtracter()
     {
         super(new HashSet<String>(Arrays.asList(SUPPORTED_MIMETYPES)));
     }
 
-    public void setConnection(OpenOfficeConnection connection)
+    public void setWorker(OpenOfficeMetadataWorker worker)
     {
-        this.connection = connection;
+        this.worker = worker;
     }
     
     /**
@@ -86,19 +68,18 @@ public class OpenOfficeMetadataExtracter extends AbstractMappingMetadataExtracte
     @Override
     public synchronized void init()
     {
-        PropertyCheck.mandatory("OpenOfficeMetadataExtracter", "connection", connection);
+        PropertyCheck.mandatory("OpenOfficeMetadataExtracter", "worker", worker);
         
         // Base initialization
         super.init();
     }
 
-    /**
-     * @return Returns true if a connection to the Uno server could be
-     *         established
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.content.metadata.OpenOfficeMetadataWorker#isConnected()
      */
     public boolean isConnected()
     {
-        return connection.isConnected();
+        return worker.isConnected();
     }
 
     /**
@@ -114,67 +95,18 @@ public class OpenOfficeMetadataExtracter extends AbstractMappingMetadataExtracte
         return super.isSupported(sourceMimetype);
     }
 
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.content.metadata.OpenOfficeMetadataWorker#extractRaw(org.alfresco.service.cmr.repository.ContentReader)
+     */
     @Override
     public Map<String, Serializable> extractRaw(ContentReader reader) throws Throwable
     {
         Map<String, Serializable> rawProperties = newRawMap();
-
-        String sourceMimetype = reader.getMimetype();
-
-        // create temporary files to convert from and to
-        File tempFromFile = TempFileProvider.createTempFile(
-                "OpenOfficeMetadataExtracter-", "."
-                + getMimetypeService().getExtension(sourceMimetype));
-        // download the content from the source reader
-        reader.getContent(tempFromFile);
-
-        String sourceUrl = toUrl(tempFromFile, connection);
-
-        // UNO Interprocess Bridge *should* be thread-safe, but...
-        XComponentLoader desktop = connection.getDesktop();
-        XComponent document = desktop.loadComponentFromURL(
-                sourceUrl,
-                "_blank",
-                0,
-                new PropertyValue[] { property("Hidden", Boolean.TRUE) });
-        if (document == null)
+        Map<String, Serializable> result = this.worker.extractRaw(reader);
+        for (Map.Entry<String, Serializable> entry : result.entrySet())
         {
-            throw new FileNotFoundException("could not open source document: " + sourceUrl);
+            putRawValue(entry.getKey(), entry.getValue(), rawProperties);
         }
-        try
-        {
-            XDocumentInfoSupplier infoSupplier = (XDocumentInfoSupplier) UnoRuntime.queryInterface(
-                    XDocumentInfoSupplier.class, document);
-            XPropertySet propSet = (XPropertySet) UnoRuntime.queryInterface(
-                    XPropertySet.class,
-                    infoSupplier
-                    .getDocumentInfo());
-
-            putRawValue(KEY_TITLE, propSet.getPropertyValue("Title").toString(), rawProperties);
-            putRawValue(KEY_DESCRIPTION, propSet.getPropertyValue("Subject").toString(), rawProperties);
-            putRawValue(KEY_AUTHOR, propSet.getPropertyValue("Author").toString(), rawProperties);
-        }
-        finally
-        {
-            document.dispose();
-        }
-        // Done
         return rawProperties;
-    }
-
-    public String toUrl(File file, OpenOfficeConnection connection) throws ConnectException
-    {
-        Object fcp = connection.getFileContentProvider();
-        XFileIdentifierConverter fic = (XFileIdentifierConverter) UnoRuntime.queryInterface(
-                XFileIdentifierConverter.class, fcp);
-        return fic.getFileURLFromSystemPath("", file.getAbsolutePath());
-    }
-
-    private static PropertyValue property(String name, Object value)
-    {
-        PropertyValue property = new PropertyValue();
-        property.Name = name;
-        property.Value = value;
-        return property;
     }
 }

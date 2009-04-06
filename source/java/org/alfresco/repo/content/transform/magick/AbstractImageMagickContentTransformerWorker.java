@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,7 +18,7 @@
  * As a special exception to the terms and conditions of version 2.0 of 
  * the GPL, you may redistribute this Program in connection with Free/Libre 
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
+ * FLOSS exception.  You should have received a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
@@ -30,30 +30,33 @@ import java.io.InputStream;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.filestore.FileContentWriter;
-import org.alfresco.repo.content.transform.AbstractContentTransformer2;
+import org.alfresco.repo.content.transform.ContentTransformerHelper;
+import org.alfresco.repo.content.transform.ContentTransformerWorker;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.InitializingBean;
 
 /**
  * Abstract helper for transformations based on <b>ImageMagick</b>
  * 
  * @author Derek Hulley
  */
-public abstract class AbstractImageMagickContentTransformer extends AbstractContentTransformer2
+public abstract class AbstractImageMagickContentTransformerWorker extends ContentTransformerHelper implements ContentTransformerWorker, InitializingBean
 {
     /** the prefix for mimetypes supported by the transformer */
     public static final String MIMETYPE_IMAGE_PREFIX = "image/";
     
-    private static final Log logger = LogFactory.getLog(AbstractImageMagickContentTransformer.class);
+    private static final Log logger = LogFactory.getLog(AbstractImageMagickContentTransformerWorker.class);
     
     private boolean available;
     
-    public AbstractImageMagickContentTransformer()
+    public AbstractImageMagickContentTransformerWorker()
     {
         this.available = false;
     }
@@ -82,7 +85,7 @@ public abstract class AbstractImageMagickContentTransformer extends AbstractCont
      * <p>
      * If initialization is successful, then autoregistration takes place.
      */
-    public void init()
+    public void afterPropertiesSet()
     {
         if (getMimetypeService() == null)
         {
@@ -120,10 +123,7 @@ public abstract class AbstractImageMagickContentTransformer extends AbstractCont
                         "   to: " + outputFile);
             }
             // we can be sure that it works
-            setAvailable(true);
-            
-            // register
-            super.register();
+            setAvailable(true);            
         }
         catch (Throwable e)
         {
@@ -171,8 +171,8 @@ public abstract class AbstractImageMagickContentTransformer extends AbstractCont
         {
             return false;
         }
-        if (!AbstractImageMagickContentTransformer.isSupported(sourceMimetype) ||
-                !AbstractImageMagickContentTransformer.isSupported(targetMimetype))
+        if (!AbstractImageMagickContentTransformerWorker.isSupported(sourceMimetype) ||
+                !AbstractImageMagickContentTransformerWorker.isSupported(targetMimetype))
         {
             // only support IMAGE -> IMAGE (excl. RGB)
             return false;
@@ -186,7 +186,7 @@ public abstract class AbstractImageMagickContentTransformer extends AbstractCont
     /**
      * @see #transformInternal(File, File)
      */
-    protected final void transformInternal(
+    public final void transform(
             ContentReader reader,
             ContentWriter writer,
             TransformationOptions options) throws Exception
@@ -196,8 +196,9 @@ public abstract class AbstractImageMagickContentTransformer extends AbstractCont
         String targetMimetype = getMimetype(writer);
         
         // get the extensions to use
-        String sourceExtension = getMimetypeService().getExtension(sourceMimetype);
-        String targetExtension = getMimetypeService().getExtension(targetMimetype);
+        MimetypeService mimetypeService = getMimetypeService();
+        String sourceExtension = mimetypeService.getExtension(sourceMimetype);
+        String targetExtension = mimetypeService.getExtension(targetMimetype);
         if (sourceExtension == null || targetExtension == null)
         {
             throw new AlfrescoRuntimeException("Unknown extensions for mimetypes: \n" +

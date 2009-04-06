@@ -383,6 +383,8 @@
          <list>
             <!--  Allow authentication subsystem to see file server config at runtime -->
             <value>org.alfresco.filesys.ExtendedServerConfigurationAccessor</value>
+            <!-- Allow export as MBean -->
+            <value>org.alfresco.filesys.FileServerConfigMBean</value>
          </list>
       </property>
    </bean>
@@ -395,12 +397,10 @@
        </property>
     </bean>
 
-    <bean id="openOfficeConnectionTester" class="org.alfresco.util.OpenOfficeConnectionTester" >
-        <property name="connection">
-            <ref bean="openOfficeConnection" />
-        </property>
-        <property name="strict">
-            <value>false</value>
+    <!--  Third party transformer Subsystem -->
+    <bean id="thirdparty" class="org.alfresco.repo.management.DefaultManagedApplicationContextFactory">
+        <property name="autoStart">
+            <value>true</value>
         </property>
     </bean>
 

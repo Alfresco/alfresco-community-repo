@@ -37,7 +37,7 @@ import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.util.TempFileProvider;
 
 /**
- * @see org.alfresco.repo.content.transform.OpenOfficeContentTransformer
+ * @see org.alfresco.repo.content.transform.OpenOfficeContentTransformerWorker
  * 
  * @author Derek Hulley
  */
@@ -45,7 +45,8 @@ public class OpenOfficeContentTransformerTest extends AbstractContentTransformer
 {
     private static String MIMETYPE_RUBBISH = "text/rubbish";
     
-    private OpenOfficeContentTransformer transformer;
+    private OpenOfficeContentTransformerWorker worker;
+    private ContentTransformer transformer;
     
     @Override
     public void setUp() throws Exception
@@ -54,11 +55,15 @@ public class OpenOfficeContentTransformerTest extends AbstractContentTransformer
         
         OpenOfficeConnection connection = (OpenOfficeConnection) ctx.getBean("openOfficeConnection");
         
-        transformer = new OpenOfficeContentTransformer();
+        this.worker = new OpenOfficeContentTransformerWorker();
+        worker.setMimetypeService(mimetypeService);
+        worker.setConnection(connection);
+        worker.setDocumentFormatsConfiguration("classpath:alfresco/mimetype/openoffice-document-formats.xml");
+        worker.afterPropertiesSet();
+        ProxyContentTransformer transformer = new ProxyContentTransformer();
         transformer.setMimetypeService(mimetypeService);
-        transformer.setConnection(connection);
-        transformer.setDocumentFormatsConfiguration("classpath:alfresco/mimetype/openoffice-document-formats.xml");
-        transformer.register();
+        transformer.setWorker(worker);
+        this.transformer = transformer;
     }
     
     /**
@@ -77,7 +82,7 @@ public class OpenOfficeContentTransformerTest extends AbstractContentTransformer
     
     public void testReliability() throws Exception
     {
-        if (!transformer.isConnected())
+        if (!worker.isAvailable())
         {
             // no connection
             return;
@@ -99,7 +104,7 @@ public class OpenOfficeContentTransformerTest extends AbstractContentTransformer
      */
     public void testHtmlToPdf() throws Exception
     {
-        if (!transformer.isConnected())
+        if (!worker.isAvailable())
         {
             // no connection
             return;

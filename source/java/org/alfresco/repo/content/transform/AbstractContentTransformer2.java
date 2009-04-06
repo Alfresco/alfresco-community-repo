@@ -24,16 +24,12 @@
  */
 package org.alfresco.repo.content.transform;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.service.cmr.repository.ContentAccessor;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
-import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -48,13 +44,11 @@ import org.apache.commons.logging.LogFactory;
  * @author Derek Hulley
  * @author Roy Wetherall
  */
-public abstract class AbstractContentTransformer2 implements ContentTransformer
+public abstract class AbstractContentTransformer2 extends ContentTransformerHelper implements ContentTransformer
 {
     private static final Log logger = LogFactory.getLog(AbstractContentTransformer2.class);
     
-    private MimetypeService mimetypeService;
     private ContentTransformerRegistry registry;
-    private List<ExplictTransformationDetails> explicitTransformations;
     private double averageTime = 0.0;
     private long count = 0L;
     
@@ -64,7 +58,6 @@ public abstract class AbstractContentTransformer2 implements ContentTransformer
     protected AbstractContentTransformer2()
     {
         averageTime = 0.0;
-        explicitTransformations = new ArrayList<ExplictTransformationDetails>(0);
     }
 
     /**
@@ -75,31 +68,7 @@ public abstract class AbstractContentTransformer2 implements ContentTransformer
     public void setRegistry(ContentTransformerRegistry registry)
     {
         this.registry = registry;
-    }
-
-    /**
-     * Helper setter of the mimetype service.  This is not always required.
-     * 
-     * @param mimetypeService
-     */
-    public void setMimetypeService(MimetypeService mimetypeService)
-    {
-        this.mimetypeService = mimetypeService;
-    }
-
-    /**
-     * @return Returns the mimetype helper
-     */
-    protected MimetypeService getMimetypeService()
-    {
-        return mimetypeService;
-    }
-
-    public void setExplicitTransformations(List<ExplictTransformationDetails> explicitTransformations)
-    {
-        this.explicitTransformations = explicitTransformations;
-    }
-    
+    }    
 
     @Override
     public String toString()
@@ -126,24 +95,6 @@ public abstract class AbstractContentTransformer2 implements ContentTransformer
 
         // register this instance for the fallback case
         registry.addTransformer(this);
-    }
-    
-    /**
-     * Convenience to fetch and check the mimetype for the given content
-     * 
-     * @param content the reader/writer for the content
-     * @return Returns the mimetype for the content
-     * @throws AlfrescoRuntimeException if the content doesn't have a mimetype
-     */
-    protected String getMimetype(ContentAccessor content)
-    {
-        String mimetype = content.getMimetype();
-        if (mimetype == null)
-        {
-            throw new AlfrescoRuntimeException("Mimetype is mandatory for transformation: " + content);
-        }
-        // done
-        return mimetype;
     }
     
     /**
@@ -270,26 +221,6 @@ public abstract class AbstractContentTransformer2 implements ContentTransformer
         this.transform(reader, writer, new TransformationOptions(options));
     }
     
-    /**
-     * Default implementation, override if need to extend logic
-     * 
-     * @see org.alfresco.repo.content.transform.ContentTransformer#isExplicitTransformation(java.lang.String, java.lang.String, org.alfresco.service.cmr.repository.TransformationOptions)
-     */
-    public boolean isExplicitTransformation(String sourceMimetype, String targetMimetype, TransformationOptions options)
-    {
-        boolean result = false;
-        for (ExplictTransformationDetails explicitTransformation : this.explicitTransformations)
-        {
-            if (sourceMimetype.equals(explicitTransformation.getSourceMimetype()) == true &&
-                targetMimetype.equals(explicitTransformation.getTargetMimetype()) == true)
-            {
-                result = true;
-                break;
-            }
-        }
-        return result;
-    }
-
     /**
      * @return Returns the calculated running average of the current transformations
      */

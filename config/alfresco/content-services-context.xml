@@ -129,8 +129,6 @@
       </property>
    </bean>
    
-   <bean id="openOfficeConnection" class="net.sf.jooreports.openoffice.connection.SocketOpenOfficeConnection" />
-   
    <!-- Metadata Extraction Regisitry -->
    <bean id="metadataExtracterRegistry" class="org.alfresco.repo.content.metadata.MetadataExtracterRegistry" />
    
@@ -150,7 +148,7 @@
       </property>
    </bean>
    
-   <!-- Content Metadata Extracters -->
+   <!-- Content Metadata Extractors -->
    <bean id="extracter.PDFBox"        class="org.alfresco.repo.content.metadata.PdfBoxMetadataExtracter"        parent="baseMetadataExtracter" />
    <bean id="extracter.Office"        class="org.alfresco.repo.content.metadata.OfficeMetadataExtracter"        parent="baseMetadataExtracter" />
    <bean id="extracter.Mail"          class="org.alfresco.repo.content.metadata.MailMetadataExtracter"          parent="baseMetadataExtracter" />
@@ -158,8 +156,21 @@
    <bean id="extracter.MP3"           class="org.alfresco.repo.content.metadata.MP3MetadataExtracter"           parent="baseMetadataExtracter" />
    <bean id="extracter.OpenDocument"  class="org.alfresco.repo.content.metadata.OpenDocumentMetadataExtracter"  parent="baseMetadataExtracter" />
    <bean id="extracter.OpenOffice"    class="org.alfresco.repo.content.metadata.OpenOfficeMetadataExtracter"    parent="baseMetadataExtracter" >
-      <property name="connection">
-         <ref bean="openOfficeConnection" />
+      <property name="worker">
+         <!-- Import the OpenOffice extractor worker from the third party subsystem -->
+         <bean class="org.alfresco.repo.management.ManagedSubsystemProxyFactory">
+            <property name="sourceApplicationContextFactory">
+               <ref bean="thirdparty" />
+            </property>
+            <property name="sourceBeanName">
+               <value>extracter.worker.OpenOffice</value>
+            </property>
+            <property name="interfaces">
+               <list>
+                  <value>org.alfresco.repo.content.metadata.OpenOfficeMetadataWorker</value>
+               </list>
+            </property>
+         </bean>
       </property>
       <property name="supportedMimetypes">
          <list>
@@ -172,7 +183,6 @@
          </list>
       </property>
    </bean>
-   
 
    <!-- Content Transformation Regisitry -->
    <bean id="contentTransformerRegistry" class="org.alfresco.repo.content.transform.ContentTransformerRegistry" />
@@ -324,16 +334,25 @@
       <property name="fileFolderService">
          <ref bean="FileFolderService" />
       </property>
-   </bean>      
+   </bean>
 
-   <bean id="transformer.OpenOffice"
-         class="org.alfresco.repo.content.transform.OpenOfficeContentTransformer"
-         parent="baseContentTransformer" >
-      <property name="connection">
-         <ref bean="openOfficeConnection" />
-      </property>
-      <property name="documentFormatsConfiguration">
-         <value>classpath:alfresco/mimetype/openoffice-document-formats.xml</value>
+   <bean id="transformer.OpenOffice" class="org.alfresco.repo.content.transform.ProxyContentTransformer"
+      parent="baseContentTransformer">
+      <property name="worker">
+         <!-- Import the OpenOffice transformer worker from the third party subsystem -->
+         <bean class="org.alfresco.repo.management.ManagedSubsystemProxyFactory">
+            <property name="sourceApplicationContextFactory">
+               <ref bean="thirdparty" />
+            </property>
+            <property name="sourceBeanName">
+               <value>transformer.worker.OpenOffice</value>
+            </property>
+            <property name="interfaces">
+               <list>
+                  <value>org.alfresco.repo.content.transform.ContentTransformerWorker</value>
+               </list>
+            </property>
+         </bean>
       </property>
    </bean>
 
@@ -349,7 +368,7 @@
       <property name="intermediateMimetypes">
          <list>
             <value>application/pdf</value>
-         </list>
+         </list>    
       </property>
    </bean>
    
@@ -357,57 +376,24 @@
          class="org.alfresco.repo.content.transform.MailContentTransformer"
          parent="baseContentTransformer" />
 
-   <bean id="transformer.ImageMagick"
-        class="org.alfresco.repo.content.transform.magick.ImageMagickContentTransformer"
-        parent="baseContentTransformer"
-        init-method="init">
-      <property name="executer">
-         <bean name="transformer.ImageMagick.Command" class="org.alfresco.util.exec.RuntimeExec">
-            <property name="commandsAndArguments">
-                <map>
-                    <entry key=".*">
-                        <list>
-                            <value>${img.exe}</value>
-                            <value>${source}</value>
-                            <value>SPLIT:${options}</value>
-                            <value>${target}</value>
-                        </list>
-                    </entry>
-                </map>
-            </property>
-  		    <property name="processProperties">
-    	        <map>
-      	            <entry key="MAGICK_HOME">
-                        <value>${img.root}</value>
-         	        </entry>
-      	            <entry key="DYLD_LIBRARY_PATH">
-                        <value>${img.dyn}</value>
-         	        </entry>
-      	            <entry key="LD_LIBRARY_PATH">
-                        <value>${img.dyn}</value>
-         	        </entry>
-		        </map>
-      		</property>
-            <property name="defaultProperties">
-                <props>
-                    <prop key="options"></prop>
-                </props>
-            </property>
-         </bean>
+   <!-- Import the ImageMagick transformer from the third party subsystem -->
+   <bean id="transformer.worker.ImageMagick" class="org.alfresco.repo.management.ManagedSubsystemProxyFactory">
+      <property name="sourceApplicationContextFactory">
+         <ref bean="thirdparty" />
       </property>
-      <property name="checkCommand">
-         <bean name="transformer.ImageMagick.CheckCommand" class="org.alfresco.util.exec.RuntimeExec">
-            <property name="commandsAndArguments">
-                <map>
-                    <entry key=".*">
-                        <list>
-                            <value>${img.exe}</value>
-                            <value>-version</value>
-                        </list>
-                    </entry>
-                </map>
-            </property>
-         </bean>
+      <property name="sourceBeanName">
+         <value>transformer.worker.ImageMagick</value>
+      </property>
+      <property name="interfaces">
+         <list>
+            <value>org.alfresco.repo.content.transform.ContentTransformerWorker</value>
+         </list>
+      </property>
+   </bean>
+
+   <bean id="transformer.ImageMagick" class="org.alfresco.repo.content.transform.ProxyContentTransformer" parent="baseContentTransformer">
+      <property name="worker">
+         <ref bean="transformer.worker.ImageMagick" />
       </property>
    </bean>
 

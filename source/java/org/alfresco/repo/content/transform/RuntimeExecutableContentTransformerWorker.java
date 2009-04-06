@@ -39,6 +39,7 @@ import org.alfresco.util.exec.RuntimeExec;
 import org.alfresco.util.exec.RuntimeExec.ExecutionResult;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.InitializingBean;
 
 /**
  * This configurable wrapper is able to execute any command line transformation that
@@ -67,12 +68,12 @@ import org.apache.commons.logging.LogFactory;
  * @since 1.1
  * @author Derek Hulley
  */
-public class RuntimeExecutableContentTransformer extends AbstractContentTransformer2
+public class RuntimeExecutableContentTransformerWorker extends ContentTransformerHelper implements ContentTransformerWorker, InitializingBean
 {
     public static final String VAR_SOURCE = "source";
     public static final String VAR_TARGET = "target";
 
-    private static Log logger = LogFactory.getLog(RuntimeExecutableContentTransformer.class);
+    private static Log logger = LogFactory.getLog(RuntimeExecutableContentTransformerWorker.class);
     
     private boolean available;
     private RuntimeExec checkCommand;
@@ -81,7 +82,7 @@ public class RuntimeExecutableContentTransformer extends AbstractContentTransfor
     /** Stores the output from the check command */
     private String versionString;
     
-    public RuntimeExecutableContentTransformer()
+    public RuntimeExecutableContentTransformerWorker()
     {
     }
     
@@ -130,13 +131,13 @@ public class RuntimeExecutableContentTransformer extends AbstractContentTransfor
         throw new AlfrescoRuntimeException("content.runtime_exec.property_moved");
     }
     
+    
     /**
      * Executes the check command, if present.  Any errors will result in this component
      * being rendered unusable within the transformer registry, but may still be called
      * directly.
      */
-    @Override
-    public void register()
+    public void afterPropertiesSet()
     {
         if (transformCommand == null)
         {
@@ -162,8 +163,6 @@ public class RuntimeExecutableContentTransformer extends AbstractContentTransfor
             // no check - just assume it is available
             available = true;
         }
-        // call the base class to make sure that it gets registered
-        super.register();
     }
 
     /**
@@ -181,7 +180,7 @@ public class RuntimeExecutableContentTransformer extends AbstractContentTransfor
             return false;
         }
         
-        if (isExplicitTransformation(sourceMimetype, targetMimetype, options) == true)
+        if (isExplicitTransformation(sourceMimetype, targetMimetype, options))
         {
             return true;
         }
@@ -217,7 +216,7 @@ public class RuntimeExecutableContentTransformer extends AbstractContentTransfor
      * 
      * @see #transformInternal(File, File)
      */
-    protected final void transformInternal(
+    public final void transform(
             ContentReader reader,
             ContentWriter writer,
             TransformationOptions options) throws Exception

@@ -1133,8 +1133,9 @@ class AddChildAssocCommand extends AbstractAssocCommand
                 return;
             }
         }
-        //TODO What value should we put in this final qname parameter?
-        nodeService.addChild(sourceNodeRef, targetNodeRef, assocQName, QName.createQName("child"));
+        // We are following the behaviour of the JSF client here in using the same
+        // QName value for the 3rd and 4th parameters in the below call.
+        nodeService.addChild(sourceNodeRef, targetNodeRef, assocQName, assocQName);
     }
 }
 

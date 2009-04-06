@@ -36,9 +36,9 @@ import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.filesys.CIFSServerBean;
 import org.alfresco.filesys.repo.ContentContext;
 import org.alfresco.filesys.repo.ContentDiskInterface;
+import org.alfresco.jlan.server.config.ServerConfigurationAccessor;
 import org.alfresco.jlan.server.core.SharedDevice;
 import org.alfresco.jlan.server.core.SharedDeviceList;
 import org.alfresco.jlan.server.filesys.DiskSharedDevice;
@@ -168,18 +168,18 @@ public class NavigationBean implements Serializable
    }
 
    /**
-    * @param cifsServer The cifsServer to set.
+    * @param serverConfiguration The serverConfiguration to set.
     */
-   public void setCifsServer(CIFSServerBean cifsServer)
+   public void setServerConfiguration(ServerConfigurationAccessor serverConfiguration)
    {
-      this.cifsServer = cifsServer;
+      this.serverConfiguration = serverConfiguration;
    }
    
-   protected CIFSServerBean getCifsServer()
+   protected ServerConfigurationAccessor getServerConfiguration()
    {
-      if (cifsServer == null)
-         this.cifsServer = (CIFSServerBean) FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "cifsServer");
-      return cifsServer;
+      if (serverConfiguration == null)
+         this.serverConfiguration = (ServerConfigurationAccessor) FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "fileServerConfiguration");
+      return serverConfiguration;
    }
 
    /**
@@ -699,7 +699,7 @@ public class NavigationBean implements Serializable
          Path path = node.getNodePath();
          
          // resolve CIFS network folder location for this node
-         FilesystemsConfigSection filesysConfig = (FilesystemsConfigSection)getCifsServer().getConfiguration().getConfigSection(FilesystemsConfigSection.SectionName); 
+         FilesystemsConfigSection filesysConfig = (FilesystemsConfigSection)getServerConfiguration().getConfigSection(FilesystemsConfigSection.SectionName); 
          DiskSharedDevice diskShare = null;
          
          SharedDeviceList shares = filesysConfig.getShares();
@@ -963,7 +963,7 @@ public class NavigationBean implements Serializable
       {
          StringBuilder buf = new StringBuilder(32);
          
-         String serverName = this.getCifsServer().getConfiguration().getServerName();
+         String serverName = this.getServerConfiguration().getServerName();
          if (serverName != null && serverName.length() != 0)
          {
             buf.append("\\\\");
@@ -1134,8 +1134,8 @@ public class NavigationBean implements Serializable
    /** RuleService bean reference*/
    transient private RuleService ruleService;
    
-   /** CIFSServer bean reference */
-   transient private CIFSServerBean cifsServer;
+   /** File server configuration reference */
+   transient private ServerConfigurationAccessor serverConfiguration;
    
    /** CIFS content disk driver bean reference */
    protected ContentDiskInterface contentDiskDriver;

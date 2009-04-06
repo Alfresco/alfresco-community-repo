@@ -280,8 +280,8 @@
          <value>#{NamespaceService}</value>
       </managed-property>
       <managed-property>
-         <property-name>cifsServer</property-name>
-         <value>#{cifsServer}</value>
+         <property-name>serverConfiguration</property-name>
+         <value>#{fileServerConfiguration}</value>
       </managed-property>
       <managed-property>
          <property-name>ruleService</property-name>

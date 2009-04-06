@@ -24,18 +24,17 @@
 
 	<task-node name="review">
 		<task name="imwf:moderatedInvitationReviewTask" swimlane="approver" />
-		<transition name="reject" to="rejected">
-		 	<action class="org.alfresco.repo.workflow.jbpm.AlfrescoJavaScript">
-				<script>
+		<transition name="approve" to="approved">
+			<action class="org.alfresco.repo.workflow.jbpm.AlfrescoJavaScript">
+		    	<script>
 		        	<variable name="imwf_reviewer" access="write" />     
                 	<expression>person.properties.userName</expression>
 		    	</script>
 		    </action>
 		</transition>
-		   	
-		<transition name="approve" to="approved">
-			<action class="org.alfresco.repo.workflow.jbpm.AlfrescoJavaScript">
-		    	<script>
+		<transition name="reject" to="rejected">
+		 	<action class="org.alfresco.repo.workflow.jbpm.AlfrescoJavaScript">
+				<script>
 		        	<variable name="imwf_reviewer" access="write" />     
                 	<expression>person.properties.userName</expression>
 		    	</script>

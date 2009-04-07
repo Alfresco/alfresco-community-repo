@@ -2,6 +2,7 @@
 <#escape x as jsonUtils.encodeJSONString(x)>
 	"url" : "${url.serviceContext + "/api/person/" + person.properties.userName}",
 	"userName" : "${person.properties.userName}",
+	"enabled" : ${people.isAccountEnabled(person)?string("true","false")},
 	<#if person.assocs["cm:avatar"]??>
 	"avatar" : "${"api/node/" + person.assocs["cm:avatar"][0].nodeRef?string?replace('://','/') + "/content/thumbnails/avatar"}",
 	</#if>

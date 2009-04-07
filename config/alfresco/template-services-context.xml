@@ -97,8 +97,11 @@
         <property name="personService">
             <ref bean="PersonService"/>
         </property>
+        <property name="mutableAuthenticationDao">
+            <ref bean="authenticationDao"/>
+        </property>
     </bean>
-
+    
     <bean id="siteTemplateExtension" parent="baseTemplateImplementation" class="org.alfresco.repo.template.Site">
         <property name="extensionName">
             <value>site</value>

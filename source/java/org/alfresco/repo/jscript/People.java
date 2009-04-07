@@ -29,6 +29,7 @@ import java.util.StringTokenizer;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
 import org.alfresco.repo.security.authentication.PasswordGenerator;
 import org.alfresco.repo.security.authentication.UserNameGenerator;
@@ -53,6 +54,7 @@ import org.mozilla.javascript.Scriptable;
  * Scripted People service for describing and executing actions against People & Groups.
  * 
  * @author davidc
+ * @author kevinr
  */
 public final class People extends BaseScopableProcessorExtension
 {
@@ -174,8 +176,7 @@ public final class People extends BaseScopableProcessorExtension
      * @return the person node (type cm:person) created or null if the person
      *         could not be created
      */
-    public ScriptNode createPerson(boolean createUserAccount,
-            boolean setAccountEnabled)
+    public ScriptNode createPerson(boolean createUserAccount, boolean setAccountEnabled)
     {
         ParameterCheck.mandatory("createUserAccount", createUserAccount);
         ParameterCheck.mandatory("setAccountEnabled", setAccountEnabled);
@@ -213,13 +214,41 @@ public final class People extends BaseScopableProcessorExtension
     }
 
     /**
-     * Enable person's user account
+     * Enable user account. Can only be called by an Admin authority.
      * 
-     * @param userName user name of person for which to enable user account
+     * @param userName      user name for which to enable user account
      */
-    public void enablePerson(String userName)
+    public void enableAccount(String userName)
     {
-        mutableAuthenticationDao.setEnabled(userName, true);
+        if (this.authorityService.isAdminAuthority(AuthenticationUtil.getFullyAuthenticatedUser()))
+        {
+            this.mutableAuthenticationDao.setEnabled(userName, true);
+        }
+    }
+    
+    /**
+     * Disable user account. Can only be called by an Admin authority.
+     * 
+     * @param userName      user name for which to disable user account
+     */
+    public void disableAccount(String userName)
+    {
+        if (this.authorityService.isAdminAuthority(AuthenticationUtil.getFullyAuthenticatedUser()))
+        {
+            this.mutableAuthenticationDao.setEnabled(userName, false);
+        }
+    }
+    
+    /**
+     * Return true if the specified user account is enabled.
+     *  
+     * @param userName      user name to test account
+     * 
+     * @return true if account enabled, false if disabled
+     */
+    public boolean isAccountEnabled(String userName)
+    {
+        return this.mutableAuthenticationDao.getEnabled(userName);
     }
 
     /**
@@ -246,7 +275,6 @@ public final class People extends BaseScopableProcessorExtension
         return person;
     }
     
-        
     /**
      * Get the collection of people stored in the repository.
      * An optional filter query may be provided by which to filter the people collection.

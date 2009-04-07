@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
 import org.alfresco.repo.security.authority.AuthorityDAO;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -50,6 +51,7 @@ public class People extends BaseTemplateProcessorExtension
     private ServiceRegistry services;
     private AuthorityDAO authorityDAO;
     private AuthorityService authorityService;
+    private MutableAuthenticationDao mutableAuthenticationDao;
     private PersonService personService;
     private StoreRef storeRef;
     
@@ -107,6 +109,16 @@ public class People extends BaseTemplateProcessorExtension
     public void setPersonService(PersonService personService)
     {
         this.personService = personService;
+    }
+    
+    /**
+     * Set the mutable authentication dao
+     * 
+     * @param mutableAuthenticationDao Mutable Authentication DAO 
+     */
+    public void setMutableAuthenticationDao(MutableAuthenticationDao mutableAuthenticationDao)
+    {
+        this.mutableAuthenticationDao = mutableAuthenticationDao;
     }
     
     /**
@@ -211,6 +223,18 @@ public class People extends BaseTemplateProcessorExtension
     {
         ParameterCheck.mandatory("Person", person);
         return this.authorityService.isAdminAuthority((String)person.getProperties().get(ContentModel.PROP_USERNAME));
+    }
+    
+    /**
+     * Return true if the specified user account is enabled.
+     *  
+     * @param person to test
+     * 
+     * @return true if account enabled, false if disabled
+     */
+    public boolean isAccountEnabled(TemplateNode person)
+    {
+        return this.mutableAuthenticationDao.getEnabled((String)person.getProperties().get(ContentModel.PROP_USERNAME));
     }
 
     /**

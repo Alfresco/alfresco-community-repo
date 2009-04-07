@@ -26,8 +26,6 @@ package org.alfresco.repo.content.transform;
 
 import java.io.File;
 
-import net.sf.jooreports.openoffice.connection.OpenOfficeConnection;
-
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.filestore.FileContentReader;
 import org.alfresco.repo.content.filestore.FileContentWriter;
@@ -45,7 +43,7 @@ public class OpenOfficeContentTransformerTest extends AbstractContentTransformer
 {
     private static String MIMETYPE_RUBBISH = "text/rubbish";
     
-    private OpenOfficeContentTransformerWorker worker;
+    private ContentTransformerWorker worker;
     private ContentTransformer transformer;
     
     @Override
@@ -53,16 +51,10 @@ public class OpenOfficeContentTransformerTest extends AbstractContentTransformer
     {
         super.setUp();
         
-        OpenOfficeConnection connection = (OpenOfficeConnection) ctx.getBean("openOfficeConnection");
-        
-        this.worker = new OpenOfficeContentTransformerWorker();
-        worker.setMimetypeService(mimetypeService);
-        worker.setConnection(connection);
-        worker.setDocumentFormatsConfiguration("classpath:alfresco/mimetype/openoffice-document-formats.xml");
-        worker.afterPropertiesSet();
+        this.worker = (ContentTransformerWorker) ctx.getBean("transformer.worker.OpenOffice");
         ProxyContentTransformer transformer = new ProxyContentTransformer();
         transformer.setMimetypeService(mimetypeService);
-        transformer.setWorker(worker);
+        transformer.setWorker(this.worker);
         this.transformer = transformer;
     }
     

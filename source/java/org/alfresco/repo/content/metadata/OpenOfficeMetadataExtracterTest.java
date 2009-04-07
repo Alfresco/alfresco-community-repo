@@ -22,7 +22,6 @@
  * http://www.alfresco.com/legal/licensing" */
 package org.alfresco.repo.content.metadata;
 
-import net.sf.jooreports.openoffice.connection.OpenOfficeConnection;
 
 /**
  * @author Jesper Steen Møller
@@ -36,14 +35,11 @@ public class OpenOfficeMetadataExtracterTest extends AbstractMetadataExtracterTe
     {
         super.setUp();
         
-        OpenOfficeConnection connection = (OpenOfficeConnection) ctx.getBean("openOfficeConnection");
+        OpenOfficeMetadataWorker worker = (OpenOfficeMetadataWorker) ctx.getBean("extracter.worker.OpenOffice");
         
         extracter = new OpenOfficeMetadataExtracter();
         extracter.setMimetypeService(mimetypeMap);
         extracter.setDictionaryService(dictionaryService);
-        DefaultOpenOfficeMetadataWorker worker = new DefaultOpenOfficeMetadataWorker();
-        worker.setConnection(connection);
-        worker.setMimetypeService(mimetypeMap);
         extracter.setWorker(worker);
         extracter.init();
     }

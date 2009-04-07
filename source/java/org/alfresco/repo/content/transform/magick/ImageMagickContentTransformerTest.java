@@ -59,6 +59,7 @@ public class ImageMagickContentTransformerTest extends AbstractContentTransforme
         
         ProxyContentTransformer transformer = new ProxyContentTransformer();
         transformer.setMimetypeService(mimetypeService);
+        transformer.setWorker(worker);
         this.transformer = transformer;
         
     }

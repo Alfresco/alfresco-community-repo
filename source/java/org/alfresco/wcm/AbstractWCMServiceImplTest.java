@@ -51,7 +51,7 @@ public class AbstractWCMServiceImplTest extends TestCase
 {
     // override jbpm.job.executor idleInterval to 5s (was 1.5m) for WCM unit tests
     private static final String SUBMIT_CONFIG_LOCATION = "classpath:wcm/wcm-jbpm-context.xml";
-    protected static final long SUBMIT_DELAY = 10000L; // (in millis) 10s - to allow async submit direct workflow to complete (as per 5s idleInterval above)
+    protected static final long SUBMIT_DELAY = 15000L; // (in millis) 15s - to allow async submit direct workflow to complete (as per 5s idleInterval above)
     
     
     protected static ApplicationContext ctx =new ClassPathXmlApplicationContext(

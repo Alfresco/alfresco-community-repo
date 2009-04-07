@@ -78,6 +78,7 @@ import org.apache.lucene.index.MultiReader;
 import org.apache.lucene.index.SerialMergeScheduler;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermEnum;
+import org.apache.lucene.index.IndexWriter.MaxFieldLength;
 import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Searcher;
@@ -444,7 +445,7 @@ public class IndexInfo implements IndexMonitor
         IndexWriter writer;
         try
         {
-            writer = new IndexWriter(emptyIndex, new AlfrescoStandardAnalyser(), true);
+            writer = new IndexWriter(emptyIndex, new AlfrescoStandardAnalyser(), true, MaxFieldLength.LIMITED);
             writer.setUseCompoundFile(writerUseCompoundFile);
             writer.setMaxBufferedDocs(writerMinMergeDocs);
             writer.setMergeFactor(writerMergeFactor);
@@ -511,7 +512,7 @@ public class IndexInfo implements IndexMonitor
                             IndexWriter writer;
                             try
                             {
-                                writer = new IndexWriter(oldIndex, new AlfrescoStandardAnalyser(), false);
+                                writer = new IndexWriter(oldIndex, new AlfrescoStandardAnalyser(), false, MaxFieldLength.LIMITED);
                                 writer.setUseCompoundFile(writerUseCompoundFile);
                                 writer.setMaxBufferedDocs(writerMinMergeDocs);
                                 writer.setMergeFactor(writerMergeFactor);
@@ -522,7 +523,7 @@ public class IndexInfo implements IndexMonitor
                                 writer.setMergeScheduler(new SerialMergeScheduler());
                                 writer.setMergePolicy(new LogDocMergePolicy());
                                 writer.optimize();
-                                long docs = writer.docCount();
+                                long docs = writer.numDocs();
                                 writer.close();
 
                                 IndexEntry entry = new IndexEntry(IndexType.INDEX, OLD_INDEX, "", TransactionStatus.COMMITTED, "", docs, 0, false);
@@ -832,11 +833,11 @@ public class IndexInfo implements IndexMonitor
         IndexWriter writer;
         if (!IndexReader.indexExists(location))
         {
-            writer = new IndexWriter(location, analyzer, true);
+            writer = new IndexWriter(location, analyzer, true, MaxFieldLength.LIMITED);
         }
         else
         {
-            writer = new IndexWriter(location, analyzer, false);
+            writer = new IndexWriter(location, analyzer, false, MaxFieldLength.LIMITED);
         }
         writer.setUseCompoundFile(writerUseCompoundFile);
         writer.setMaxBufferedDocs(writerMinMergeDocs);
@@ -3451,11 +3452,11 @@ public class IndexInfo implements IndexMonitor
                         if (docCount < maxDocsForInMemoryMerge)
                         {
                             ramDirectory = new RAMDirectory();
-                            writer = new IndexWriter(ramDirectory, new AlfrescoStandardAnalyser(), true);
+                            writer = new IndexWriter(ramDirectory, new AlfrescoStandardAnalyser(), true, MaxFieldLength.UNLIMITED);
                         }
                         else
                         {
-                            writer = new IndexWriter(location, new AlfrescoStandardAnalyser(), true);
+                            writer = new IndexWriter(location, new AlfrescoStandardAnalyser(), true, MaxFieldLength.UNLIMITED);
 
                         }
                         writer.setUseCompoundFile(mergerUseCompoundFile);

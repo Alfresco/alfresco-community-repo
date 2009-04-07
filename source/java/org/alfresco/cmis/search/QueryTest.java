@@ -46,6 +46,7 @@ import org.alfresco.cmis.mapping.BaseCMISTest;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.impl.parsers.CMISLexer;
 import org.alfresco.repo.search.impl.parsers.CMISParser;
+import org.alfresco.repo.search.impl.parsers.FTSQueryException;
 import org.alfresco.repo.search.impl.querymodel.QueryModelException;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -342,6 +343,17 @@ public class QueryTest extends BaseCMISTest
             }
         }
         catch (QueryModelException e)
+        {
+            if (shouldThrow)
+            {
+                return null;
+            }
+            else
+            {
+                throw e;
+            }
+        }
+        catch(FTSQueryException e)
         {
             if (shouldThrow)
             {
@@ -1743,6 +1755,10 @@ public class QueryTest extends BaseCMISTest
 
     public void testAspectJoin()
     {
+        testQuery(
+                "select o.*, t.* from ( cm_ownable o join cm_titled t on (o.objectid = t.objectid)  JOIN DOCUMENT AS D ON (D.objectid = o.objectid ) ) where o.cm_owner = 'andy' and t.cm_title = 'Alfresco tutorial' and CONTAINS('\"jumped\"') and 2 <> D.ContentStreamLength  ",
+                1, false, "objectid", new String(), false, CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS);
+        
         testQuery("SELECT * FROM CM_OWNABLE", 1, false, "ObjectId", new String(), false, CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS);
         testQuery("SELECT * FROM CM_OWNABLE where CM_oWNER = 'andy'", 1, false, "ObjectId", new String(), false, CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS);
         testQuery("SELECT * FROM CM_OWNABLE where CM_OWNER = 'bob'", 0, false, "ObjectId", new String(), false, CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS);
@@ -1766,6 +1782,9 @@ public class QueryTest extends BaseCMISTest
                 CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS);
         testQuery("select o.*, t.* from ( cm_ownable o join cm_titled t on (o.objectid = t.objectid)  JOIN DOCUMENT AS D ON (D.objectid = o.objectid ) )", 1, false, "objectid",
                 new String(), false, CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS);
+        testQuery(
+                "select o.*, t.* from ( cm_ownable o join cm_titled t on (o.objectid = t.objectid)  JOIN DOCUMENT AS D ON (D.objectid = o.objectid ) ) where o.cm_owner = 'andy' and t.cm_title = 'Alfresco tutorial' and CONTAINS('\"jumped\"') and 2 <> D.ContentStreamLength  ",
+                1, false, "objectid", new String(), false, CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS);
         testQuery(
                 "select o.*, t.* from ( cm_ownable o join cm_titled t on (o.objectid = t.objectid)  JOIN DOCUMENT AS D ON (D.objectid = o.objectid ) ) where o.cm_owner = 'andy' and t.cm_title = 'Alfresco tutorial' and CONTAINS('jumped') and 2 <> D.ContentStreamLength  ",
                 1, false, "objectid", new String(), false, CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS);

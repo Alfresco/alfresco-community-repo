@@ -24,7 +24,8 @@
  */
 
 /*
- * Parser for the Alfresco query language
+ * Parser for the Alfresco full text query language.
+ * It may be used stand-alone or embedded, for example, in CMIS SQL contains() 
  *
  */
  
@@ -46,10 +47,19 @@ tokens
 	PHRASE;
 	SYNONYM;
 	
+	DEFAULT;
+	MANDATORY;
+	OPTIONAL;
+	EXCLUDE;
+	
 	FIELD_DISJUNCTION;
 	FIELD_CONJUNCTION;
 	FIELD_NEGATION;
 	FIELD_GROUP;
+	FIELD_DEFAULT;
+	FIELD_MANDATORY;
+	FIELD_OPTIONAL;
+	FIELD_EXCLUDE;
 	FG_TERM;
 	FG_EXACT_TERM;
 	FG_PHRASE;
@@ -58,6 +68,9 @@ tokens
 	FG_RANGE;
 	
 	COLUMN_REF;
+	
+	INCLUSIVE;
+	EXCLUSIVE;
 }
 
 @lexer::header{package org.alfresco.repo.search.impl.parsers;} 
@@ -127,7 +140,7 @@ catch(RecognitionException e)
 }
 }
 
-fts	
+ftsQuery	
     : 	ftsImplicitConjunctionOrDisjunction EOF
 		->  ftsImplicitConjunctionOrDisjunction
 	;	
@@ -140,21 +153,28 @@ ftsImplicitConjunctionOrDisjunction
 	;
 	
 ftsExplicitDisjunction
-	:	ftsExplictConjunction (OR ftsExplictConjunction)*
+	:	ftsExplictConjunction ((or) => or ftsExplictConjunction)*
 		-> ^(DISJUNCTION ftsExplictConjunction+)
 	;
 	
 ftsExplictConjunction
-	:	ftsNot (AND ftsNot)*
-		-> ^(CONJUNCTION ftsNot)
+	:	ftsPrefixed ((and) => and ftsPrefixed)*
+		-> ^(CONJUNCTION ftsPrefixed)
 	;	
 	
-ftsNot  
-    :	MINUS ftsTest
+	
+ftsPrefixed  
+    :	(not) => not ftsTest
 		-> ^(NEGATION ftsTest)
-	|	ftsTest
-		-> ftsTest
-	;
+    |	ftsTest
+		-> ^(DEFAULT ftsTest)
+    |   PLUS ftsTest
+                -> ^(MANDATORY ftsTest)
+    |   BAR ftsTest
+                -> ^(OPTIONAL ftsTest)
+    |   MINUS ftsTest
+                -> ^(EXCLUDE ftsTest)
+    ;
 
 ftsTest	
     :	ftsTerm
@@ -180,7 +200,7 @@ ftsTerm
 	;
 	
 ftsExactTerm
-	:	PLUS ftsTerm
+	:	EQUALS ftsTerm
 		-> ftsTerm
 	;
 	
@@ -208,21 +228,28 @@ ftsFieldGroupImplicitConjunctionOrDisjunction
 	;
 	
 ftsFieldGroupExplicitDisjunction
-	:	ftsFieldGroupExplictConjunction (OR ftsFieldGroupExplictConjunction)*
+	:	ftsFieldGroupExplictConjunction ((or) => or ftsFieldGroupExplictConjunction)*
 		-> ^(FIELD_DISJUNCTION ftsFieldGroupExplictConjunction+)
 	;
 	
 ftsFieldGroupExplictConjunction
-	:	ftsFieldGroupNot (AND ftsFieldGroupNot)*
-		-> ^(FIELD_CONJUNCTION ftsFieldGroupNot+)
+	:	ftsFieldGroupPrefixed ((and) => and ftsFieldGroupPrefixed)*
+		-> ^(FIELD_CONJUNCTION ftsFieldGroupPrefixed+)
 	;
 	
 	
-ftsFieldGroupNot  :	MINUS ftsFieldGroupTest
-			-> FIELD_NEGATION ftsFieldGroupTest
-	|		ftsFieldGroupTest
-			-> ftsFieldGroupTest
-	;
+ftsFieldGroupPrefixed  
+:	(not) => not ftsFieldGroupTest
+		-> ^(FIELD_NEGATION ftsFieldGroupTest)
+    |	ftsFieldGroupTest
+		-> ^(FIELD_DEFAULT ftsFieldGroupTest)
+    |   PLUS ftsFieldGroupTest
+                -> ^(FIELD_MANDATORY ftsFieldGroupTest)
+    |   BAR ftsFieldGroupTest
+                -> ^(FIELD_OPTIONAL ftsFieldGroupTest)
+    |   MINUS ftsFieldGroupTest
+                -> ^(FIELD_EXCLUDE ftsFieldGroupTest)
+    ;
 
 
 ftsFieldGroupTest
@@ -247,7 +274,7 @@ ftsFieldGroupTerm
 	;
 	
 ftsFieldGroupExactTerm
-	:	PLUS ftsFieldGroupTerm
+	:	EQUALS ftsFieldGroupTerm
 		-> ftsFieldGroupTerm
 	;
 	
@@ -265,9 +292,27 @@ ftsFieldGroupProximity
 		-> ftsFieldGroupTerm ftsFieldGroupTerm
 	;
 	
-ftsFieldGroupRange:	ftsFieldGroupTerm DOTDOT ftsFieldGroupTerm
-		-> ftsFieldGroupTerm ftsFieldGroupTerm
+ftsFieldGroupRange
+        :	ftsRangeWord DOTDOT ftsRangeWord
+		-> INCLUSIVE ftsRangeWord ftsRangeWord INCLUSIVE
+	|	range_left ftsRangeWord TO ftsRangeWord range_right
+		-> range_left ftsRangeWord ftsRangeWord range_right
 	;
+	
+range_left
+	:       LPAREN
+		-> INCLUSIVE
+	|	LCURL
+		-> EXCLUSIVE
+	;
+	
+range_right
+	:       RPAREN
+		-> INCLUSIVE
+	|	RCURL
+		-> EXCLUSIVE
+	;
+		
 	
 columnReference
 	:	( qualifier=identifier DOT )? name=identifier 
@@ -281,8 +326,39 @@ identifier
 ftsWord
     :   ID
     |   FTSWORD
+    |   OR
+    |   AND
+    |   NOT
+    |   TO
+    ;
+    
+ftsRangeWord
+    :   ID
+    |   FTSWORD
+    |   FTSPHRASE
     ;
 	
+or
+    :   OR
+    |	BAR BAR
+    ;
+    
+and	
+    :	AND
+    |	AMP AMP
+    ;
+    
+not
+    :   NOT
+    |   EXCLAMATION
+    ;		
+	
+
+
+FTSPHRASE
+  : '"' (F_ESC | ~('\\'|'"') )* '"' ;
+
+
 OR	:	('O'|'o')('R'|'r');
 AND	:	('A'|'a')('N'|'n')('D'|'d');
 NOT	:	('N'|'n')('O'|'o')('T'|'t');
@@ -295,10 +371,41 @@ COLON	:	':' ;
 STAR	:	'*' ;
 DOTDOT	:	'..' ;
 DOT	:	'.' ;
+AMP	:	'&' ;
+EXCLAMATION : '!' ;
+BAR : '|' ;
+EQUALS : '=' ;
+QUESTION_MARK : '?' ;
+LCURL : '{' ;
+RCURL : '}' ;
+LSQUARE : '[' ;
+RSQUARE : ']' ;
+TO : ('T'|'t')('O'|'o') ;
+COMMA : ',';
+CARAT : '^';
+DOLLAR :  '$';
 
-ID  :   ('a'..'z'|'A'..'Z'|'_')('a'..'z'|'A'..'Z'|'0'..'0'|'_'|'$'|'#')* ;
+/**
+ * We should support _x????_ encoding for invalid sql characters 
+ */ 
+ID  :   ('a'..'z'|'A'..'Z'|'_')('a'..'z'|'A'..'Z'|'0'..'9'|'_'|'$'|'#')* ;
 
-FTSWORD :	 INWORD+;
+
+FTSWORD :	 (F_ESC | INWORD)+;
+	
+fragment
+F_ESC   : '\\'
+    ( 'u' F_HEX F_HEX F_HEX F_HEX
+    | . // any single char escaped 
+    )
+  ;
+
+fragment
+F_HEX :
+    '0' .. '9'
+  | 'a' .. 'f'
+  | 'A' .. 'F'
+  ;	
 	
 fragment 
 INWORD	: '\u0041' .. '\u005A'
@@ -317,7 +424,7 @@ INWORD	: '\u0041' .. '\u005A'
 	| '\u0660' .. '\u0669'
 	| '\u06F0' .. '\u06F9'
 	| '\u0966' .. '\u096F'
-	| '\u09E6' .. '\u09EF'
+	| '\u09E6' .. '\u09EF' 
 	| '\u0A66' .. '\u0A6F'
 	| '\u0AE6' .. '\u0AEF'
 	| '\u0B66' .. '\u0B6F'
@@ -330,7 +437,6 @@ INWORD	: '\u0041' .. '\u005A'
 	| '\u1040' .. '\u1049'
 	;
 	
-FTSPHRASE
-	:	'"' (~'"' | '""')* '"'	;
+
 
 WS	:	( ' ' | '\t' | '\r' | '\n' )+ { $channel = HIDDEN; } ;

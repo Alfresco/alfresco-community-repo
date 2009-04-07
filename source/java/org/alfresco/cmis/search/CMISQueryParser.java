@@ -46,6 +46,7 @@ import org.alfresco.repo.search.impl.parsers.CMISLexer;
 import org.alfresco.repo.search.impl.parsers.CMISParser;
 import org.alfresco.repo.search.impl.parsers.FTSLexer;
 import org.alfresco.repo.search.impl.parsers.FTSParser;
+import org.alfresco.repo.search.impl.parsers.FTSQueryParser;
 import org.alfresco.repo.search.impl.querymodel.Argument;
 import org.alfresco.repo.search.impl.querymodel.ArgumentDefinition;
 import org.alfresco.repo.search.impl.querymodel.Column;
@@ -356,7 +357,8 @@ public class CMISQueryParser
             return factory.createFunctionalConstraint(function, functionArguments);
         case CMISParser.PRED_FTS:
             String ftsExpression = predicateNode.getChild(0).getText();
-            return buildFTS(ftsExpression, factory, selectors, columns);
+            FTSQueryParser ftsQueryParser = new FTSQueryParser(cmisDictionaryService);
+            return ftsQueryParser.buildFTS(ftsExpression.substring(1, ftsExpression.length()-1), factory, selectors, columns);
         case CMISParser.PRED_IN:
             functionName = In.NAME;
             function = factory.getFunction(functionName);
@@ -391,163 +393,8 @@ public class CMISQueryParser
         }
     }
 
-    private Constraint buildFTS(String ftsExpression, QueryModelFactory factory, Map<String, Selector> selectors, ArrayList<Column> columns)
-    {
-        // TODO: transform '' to ' to reverse encoding
-        FTSParser parser = null;
-        try
-        {
-            CharStream cs = new ANTLRStringStream(ftsExpression.substring(1, ftsExpression.length() - 1));
-            FTSLexer lexer = new FTSLexer(cs);
-            CommonTokenStream tokens = new CommonTokenStream(lexer);
-            parser = new FTSParser(tokens);
-            CommonTree ftsNode = (CommonTree) parser.fts().getTree();
-            if (ftsNode.getType() == FTSParser.CONJUNCTION)
-            {
-                return buildFTSConjunction(ftsNode, factory, selectors, columns);
-            }
-            else
-            {
-                return buildFTSDisjunction(ftsNode, factory, selectors, columns);
-            }
-        }
-        catch (RecognitionException e)
-        {
-            if (parser != null)
-            {
-                String[] tokenNames = parser.getTokenNames();
-                String hdr = parser.getErrorHeader(e);
-                String msg = parser.getErrorMessage(e, tokenNames);
-                throw new CMISQueryException(hdr + "\n" + msg, e);
-            }
-            return null;
-        }
-
-    }
-
-    private Constraint buildFTSDisjunction(CommonTree orNode, QueryModelFactory factory, Map<String, Selector> selectors, ArrayList<Column> columns)
-    {
-        List<Constraint> constraints = new ArrayList<Constraint>(orNode.getChildCount());
-        for (int i = 0; i < orNode.getChildCount(); i++)
-        {
-            CommonTree andNode = (CommonTree) orNode.getChild(i);
-            Constraint constraint = buildFTSConjunction(andNode, factory, selectors, columns);
-            constraints.add(constraint);
-        }
-        if (constraints.size() == 1)
-        {
-            return constraints.get(0);
-        }
-        else
-        {
-            return factory.createDisjunction(constraints);
-        }
-    }
-
-    private Constraint buildFTSConjunction(CommonTree andNode, QueryModelFactory factory, Map<String, Selector> selectors, ArrayList<Column> columns)
-    {
-        List<Constraint> constraints = new ArrayList<Constraint>(andNode.getChildCount());
-        for (int i = 0; i < andNode.getChildCount(); i++)
-        {
-            CommonTree notNode = (CommonTree) andNode.getChild(i);
-            Constraint constraint = buildFTSNegation(notNode, factory, selectors, columns);
-            constraints.add(constraint);
-        }
-        if (constraints.size() == 1)
-        {
-            return constraints.get(0);
-        }
-        else
-        {
-            return factory.createConjunction(constraints);
-        }
-    }
-
-    private Constraint buildFTSNegation(CommonTree notNode, QueryModelFactory factory, Map<String, Selector> selectors, ArrayList<Column> columns)
-    {
-        if (notNode.getType() == FTSParser.NEGATION)
-        {
-            Constraint constraint = buildFTSTest(notNode, factory, selectors, columns);
-            return factory.createNegation(constraint);
-        }
-        else
-        {
-            return buildFTSTest(notNode, factory, selectors, columns);
-        }
-    }
-
-    private Constraint buildFTSTest(CommonTree testNode, QueryModelFactory factory, Map<String, Selector> selectors, ArrayList<Column> columns)
-    {
-        String functionName;
-        Function function;
-        Map<String, Argument> functionArguments;
-        LiteralArgument larg;
-        PropertyArgument parg;
-        switch (testNode.getType())
-        {
-        case FTSParser.DISJUNCTION:
-            return buildFTSDisjunction(testNode, factory, selectors, columns);
-        case FTSParser.CONJUNCTION:
-            return buildFTSConjunction(testNode, factory, selectors, columns);
-        case FTSParser.TERM:
-            functionName = FTSTerm.NAME;
-            function = factory.getFunction(functionName);
-            functionArguments = new LinkedHashMap<String, Argument>();
-            larg = factory.createLiteralArgument(FTSTerm.ARG_TERM, DataTypeDefinition.TEXT, testNode.getChild(0).getText());
-            functionArguments.put(larg.getName(), larg);
-            if (testNode.getChildCount() > 1)
-            {
-                parg = buildColumnReference(FTSTerm.ARG_PROPERTY, (CommonTree) testNode.getChild(1), factory);
-                if(!selectors.containsKey(parg.getSelector()))
-                {
-                    throw new CMISQueryException("No table with alias "+parg.getSelector());
-                }
-                functionArguments.put(parg.getName(), parg);
-            }
-            return factory.createFunctionalConstraint(function, functionArguments);
-        case FTSParser.EXACT_TERM:
-            functionName = FTSExactTerm.NAME;
-            function = factory.getFunction(functionName);
-            functionArguments = new LinkedHashMap<String, Argument>();
-            larg = factory.createLiteralArgument(FTSExactTerm.ARG_TERM, DataTypeDefinition.TEXT, testNode.getChild(0).getText());
-            functionArguments.put(larg.getName(), larg);
-            if (testNode.getChildCount() > 1)
-            {
-                parg = buildColumnReference(FTSExactTerm.ARG_PROPERTY, (CommonTree) testNode.getChild(1), factory);
-                if(!selectors.containsKey(parg.getSelector()))
-                {
-                    throw new CMISQueryException("No table with alias "+parg.getSelector());
-                }
-                functionArguments.put(parg.getName(), parg);
-            }
-            return factory.createFunctionalConstraint(function, functionArguments);
-        case FTSParser.PHRASE:
-            // TODO: transform "" to " to reverse escaping
-            functionName = FTSPhrase.NAME;
-            function = factory.getFunction(functionName);
-            functionArguments = new LinkedHashMap<String, Argument>();
-            larg = factory.createLiteralArgument(FTSPhrase.ARG_PHRASE, DataTypeDefinition.TEXT, testNode.getChild(0).getText());
-            functionArguments.put(larg.getName(), larg);
-            if (testNode.getChildCount() > 1)
-            {
-                parg = buildColumnReference(FTSPhrase.ARG_PROPERTY, (CommonTree) testNode.getChild(1), factory);
-                if(!selectors.containsKey(parg.getSelector()))
-                {
-                    throw new CMISQueryException("No table with alias "+parg.getSelector());
-                }
-                functionArguments.put(parg.getName(), parg);
-            }
-            return factory.createFunctionalConstraint(function, functionArguments);
-        case FTSParser.SYNONYM:
-        case FTSParser.FG_PROXIMITY:
-        case FTSParser.FG_RANGE:
-        case FTSParser.FIELD_GROUP:
-        case FTSParser.FIELD_CONJUNCTION:
-        case FTSParser.FIELD_DISJUNCTION:
-        default:
-            throw new CMISQueryException("Unsupported FTS option " + testNode.getText());
-        }
-    }
+   
+   
 
     /**
      * @param queryNode

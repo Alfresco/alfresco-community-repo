@@ -6,11 +6,229 @@ gunit FTS;
 
 /** Parser */
 
+ftsQuery:
+"\"zebra\""   OK
+
+ftsTest:
+"zebra"     -> (TERM zebra)
+"\"zebra\"" -> (PHRASE "zebra")
+"or"        -> (TERM or)
+"\\+"        -> (TERM \+)
+"+"         FAIL
+
+ftsPhrase:
+"\"zebra\"" -> "\"zebra\""
+
+columnReference:
+
+
 identifier:
 "banana"   OK
 
+ftsWord:
+"OR"       -> "OR"
+"and"      -> "and"
+"nOT"      -> "nOT"
+"TO"       -> "TO"
+"banana"   -> "banana"
+"1234"     -> "1234"
+
+ftsRangeWord:
+"banana"     -> "banana"
+"1234"       -> "1234"
+"\"phrase\"" -> "\"phrase\""
+
+or:
+"OR"       OK
+"or"       OK
+"||"       OK
+"|"        FAIL
+
+and:
+"AND"      OK
+"and"      OK
+"&&"       OK
+"&"        FAIL
+
+
+not:
+"NOT"      OK
+"not"      OK
+"!"        OK
+
 /** Lexer */
+
+FTSPHRASE:
+"nope"     FAIL
+"\"\""     OK
+"\"\\\""   FAIL
+"\"\"\""   FAIL
+"\"\\u\""     OK
+"\"\phrase\""     OK
+
+OR:
+"OR"       OK
+"Or"       OK
+"oR"       OK
+"or"       OK
+
+AND:
+"AND"      OK
+"ANd"      OK
+"AnD"      OK
+"And"      OK
+"aND"      OK
+"aNd"      OK
+"anD"      OK
+"and"      OK
+
+NOT:
+"NOT"      OK
+"NOt"      OK
+"NoT"      OK
+"Not"      OK
+"nOT"      OK
+"nOt"      OK
+"noT"      OK
+"not"      OK
+
+
+TILDA:
+"~"        OK
+
+LPAREN:
+"("        OK
+
+RPAREN:
+")"        OK
+
+PLUS:
+"+"        OK
+
+MINUS:   
+"-"        OK
+
+COLON:
+":"        OK
+
+STAR:
+"*"        OK
+
+DOTDOT:
+".."       OK
+
+DOT:
+"."        OK
+
+AMP:
+"&"        OK
+
+EXCLAMATION:
+"!"        OK
+
+BAR:
+"|"        OK
+
+EQUALS:
+"="        OK
+
+QUESTION_MARK:
+"?"        OK
+
+LCURL:
+"{"        OK
+
+RCURL:
+"}"        OK
+
+LSQUARE:
+"["        OK
+
+RSQUARE:
+"]"        OK
+
+TO:
+"TO"       OK
+"To"       OK
+"tO"       OK
+"to"       OK
+
+
+COMMA:
+","        OK
+
+CARAT:
+"^"        OK
+
+DOLLAR:
+"$"        OK
 
 ID :
 "banana"   OK
+""         FAIL
+"a"        OK
+"_"        OK
+"$"        FAIL 
+"_$"       OK
+"#"        FAIL
+"_#"       OK
+"1"        FAIL
+"A1"       OK
+"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"  OK
+
+
+FTSWORD:
+"word"    OK
+"\\u0"     FAIL
+"\\u00"    FAIL
+"\\u000"   FAIL
+"\\u0000"  OK
+"\\u1234"  OK
+"\\u5678"  OK
+"\\u90AB"  OK
+"\\uCDEF"  OK
+"\\u90ab"  OK
+"\\ucdef"  OK
+"\\u000h"  FAIL
+"\\u000H"  FAIL
+"\\u"      OK
+"\\~"      OK
+"\\("      OK
+"\\)"      OK
+"\\+"      OK
+"\\-"      OK
+"\\:"      OK
+"\\*"      OK
+"\\."      OK
+"\\&"      OK
+"\\!"      OK
+"\\|"      OK
+"\\="      OK
+"\\?"      OK
+"\\{"      OK
+"\\}"      OK
+"\\["      OK
+"\\]"      OK
+"\\,"      OK
+"\\^"      OK
+"\\$"      OK
+"\\\\"     OK
+"@"   FAIL  // 40 invalid
+"A"   OK
+"Z"   OK
+"["   FAIL
+"`"   FAIL
+"a"   OK
+"z"   OK
+"{"   FAIL
+"×"   FAIL
+"Ø"   OK
+"÷"   FAIL
+"ə"   FAIL
+
+
+
+ 
+
+
 

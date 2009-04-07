@@ -1,4 +1,4 @@
-// $ANTLR 3.1.2 W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g 2009-03-18 14:58:50
+// $ANTLR 3.1.2 W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g 2009-04-06 14:38:12
 package org.alfresco.repo.search.impl.parsers;
 
 import org.antlr.runtime.*;
@@ -2256,8 +2256,8 @@ public class CMISLexer extends Lexer {
         try {
             int _type = ID;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:581:4: ( ( 'a' .. 'z' | 'A' .. 'Z' | '_' ) ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '0' | '_' | '$' | '#' )* )
-            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:581:6: ( 'a' .. 'z' | 'A' .. 'Z' | '_' ) ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '0' | '_' | '$' | '#' )*
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:584:4: ( ( 'a' .. 'z' | 'A' .. 'Z' | '_' ) ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_' | '$' | '#' )* )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:584:6: ( 'a' .. 'z' | 'A' .. 'Z' | '_' ) ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_' | '$' | '#' )*
             {
             if ( (input.LA(1)>='A' && input.LA(1)<='Z')||input.LA(1)=='_'||(input.LA(1)>='a' && input.LA(1)<='z') ) {
                 input.consume();
@@ -2268,13 +2268,13 @@ public class CMISLexer extends Lexer {
                 recover(mse);
                 throw mse;}
 
-            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:581:29: ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '0' | '_' | '$' | '#' )*
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:584:29: ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_' | '$' | '#' )*
             loop10:
             do {
                 int alt10=2;
                 int LA10_0 = input.LA(1);
 
-                if ( ((LA10_0>='#' && LA10_0<='$')||LA10_0=='0'||(LA10_0>='A' && LA10_0<='Z')||LA10_0=='_'||(LA10_0>='a' && LA10_0<='z')) ) {
+                if ( ((LA10_0>='#' && LA10_0<='$')||(LA10_0>='0' && LA10_0<='9')||(LA10_0>='A' && LA10_0<='Z')||LA10_0=='_'||(LA10_0>='a' && LA10_0<='z')) ) {
                     alt10=1;
                 }
 
@@ -2283,7 +2283,7 @@ public class CMISLexer extends Lexer {
             	case 1 :
             	    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:
             	    {
-            	    if ( (input.LA(1)>='#' && input.LA(1)<='$')||input.LA(1)=='0'||(input.LA(1)>='A' && input.LA(1)<='Z')||input.LA(1)=='_'||(input.LA(1)>='a' && input.LA(1)<='z') ) {
+            	    if ( (input.LA(1)>='#' && input.LA(1)<='$')||(input.LA(1)>='0' && input.LA(1)<='9')||(input.LA(1)>='A' && input.LA(1)<='Z')||input.LA(1)=='_'||(input.LA(1)>='a' && input.LA(1)<='z') ) {
             	        input.consume();
 
             	    }
@@ -2317,10 +2317,10 @@ public class CMISLexer extends Lexer {
         try {
             int _type = WS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:582:4: ( ( ' ' | '\\t' | '\\r' | '\\n' )+ )
-            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:582:6: ( ' ' | '\\t' | '\\r' | '\\n' )+
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:585:4: ( ( ' ' | '\\t' | '\\r' | '\\n' )+ )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:585:6: ( ' ' | '\\t' | '\\r' | '\\n' )+
             {
-            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:582:6: ( ' ' | '\\t' | '\\r' | '\\n' )+
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:585:6: ( ' ' | '\\t' | '\\r' | '\\n' )+
             int cnt11=0;
             loop11:
             do {
@@ -2373,7 +2373,7 @@ public class CMISLexer extends Lexer {
     // $ANTLR start "DECIMAL_NUMERAL"
     public final void mDECIMAL_NUMERAL() throws RecognitionException {
         try {
-            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:591:2: ( ZERO_DIGIT | NON_ZERO_DIGIT ( DIGIT )* )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:594:2: ( ZERO_DIGIT | NON_ZERO_DIGIT ( DIGIT )* )
             int alt13=2;
             int LA13_0 = input.LA(1);
 
@@ -2391,17 +2391,17 @@ public class CMISLexer extends Lexer {
             }
             switch (alt13) {
                 case 1 :
-                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:591:4: ZERO_DIGIT
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:594:4: ZERO_DIGIT
                     {
                     mZERO_DIGIT(); 
 
                     }
                     break;
                 case 2 :
-                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:592:4: NON_ZERO_DIGIT ( DIGIT )*
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:595:4: NON_ZERO_DIGIT ( DIGIT )*
                     {
                     mNON_ZERO_DIGIT(); 
-                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:592:19: ( DIGIT )*
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:595:19: ( DIGIT )*
                     loop12:
                     do {
                         int alt12=2;
@@ -2414,7 +2414,7 @@ public class CMISLexer extends Lexer {
 
                         switch (alt12) {
                     	case 1 :
-                    	    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:592:19: DIGIT
+                    	    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:595:19: DIGIT
                     	    {
                     	    mDIGIT(); 
 
@@ -2440,7 +2440,7 @@ public class CMISLexer extends Lexer {
     // $ANTLR start "DIGIT"
     public final void mDIGIT() throws RecognitionException {
         try {
-            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:595:7: ( ZERO_DIGIT | NON_ZERO_DIGIT )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:598:7: ( ZERO_DIGIT | NON_ZERO_DIGIT )
             // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:
             {
             if ( (input.LA(1)>='0' && input.LA(1)<='9') ) {
@@ -2464,8 +2464,8 @@ public class CMISLexer extends Lexer {
     // $ANTLR start "ZERO_DIGIT"
     public final void mZERO_DIGIT() throws RecognitionException {
         try {
-            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:598:2: ( '0' )
-            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:598:4: '0'
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:601:2: ( '0' )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:601:4: '0'
             {
             match('0'); 
 
@@ -2480,8 +2480,8 @@ public class CMISLexer extends Lexer {
     // $ANTLR start "NON_ZERO_DIGIT"
     public final void mNON_ZERO_DIGIT() throws RecognitionException {
         try {
-            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:601:2: ( '1' .. '9' )
-            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:601:4: '1' .. '9'
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:604:2: ( '1' .. '9' )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:604:4: '1' .. '9'
             {
             matchRange('1','9'); 
 
@@ -2496,8 +2496,8 @@ public class CMISLexer extends Lexer {
     // $ANTLR start "PLUS"
     public final void mPLUS() throws RecognitionException {
         try {
-            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:603:6: ( '+' )
-            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:603:8: '+'
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:606:6: ( '+' )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:606:8: '+'
             {
             match('+'); 
 
@@ -2512,8 +2512,8 @@ public class CMISLexer extends Lexer {
     // $ANTLR start "MINUS"
     public final void mMINUS() throws RecognitionException {
         try {
-            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:605:7: ( '-' )
-            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:605:9: '-'
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:608:7: ( '-' )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:608:9: '-'
             {
             match('-'); 
 
@@ -2528,8 +2528,8 @@ public class CMISLexer extends Lexer {
     // $ANTLR start "E"
     public final void mE() throws RecognitionException {
         try {
-            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:608:3: ( ( 'e' | 'E' ) )
-            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:608:5: ( 'e' | 'E' )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:611:3: ( ( 'e' | 'E' ) )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:611:5: ( 'e' | 'E' )
             {
             if ( input.LA(1)=='E'||input.LA(1)=='e' ) {
                 input.consume();
@@ -2552,8 +2552,8 @@ public class CMISLexer extends Lexer {
     // $ANTLR start "EXPONENT"
     public final void mEXPONENT() throws RecognitionException {
         try {
-            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:619:2: ( E SIGNED_INTEGER )
-            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:619:4: E SIGNED_INTEGER
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:622:2: ( E SIGNED_INTEGER )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:622:4: E SIGNED_INTEGER
             {
             mE(); 
             mSIGNED_INTEGER(); 
@@ -2569,10 +2569,10 @@ public class CMISLexer extends Lexer {
     // $ANTLR start "SIGNED_INTEGER"
     public final void mSIGNED_INTEGER() throws RecognitionException {
         try {
-            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:623:2: ( ( PLUS | MINUS )? ( DIGIT )+ )
-            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:623:4: ( PLUS | MINUS )? ( DIGIT )+
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:626:2: ( ( PLUS | MINUS )? ( DIGIT )+ )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:626:4: ( PLUS | MINUS )? ( DIGIT )+
             {
-            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:623:4: ( PLUS | MINUS )?
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:626:4: ( PLUS | MINUS )?
             int alt14=2;
             int LA14_0 = input.LA(1);
 
@@ -2598,7 +2598,7 @@ public class CMISLexer extends Lexer {
 
             }
 
-            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:623:20: ( DIGIT )+
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:626:20: ( DIGIT )+
             int cnt15=0;
             loop15:
             do {
@@ -2612,7 +2612,7 @@ public class CMISLexer extends Lexer {
 
                 switch (alt15) {
             	case 1 :
-            	    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:623:20: DIGIT
+            	    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:626:20: DIGIT
             	    {
             	    mDIGIT(); 
 
@@ -3125,7 +3125,7 @@ public class CMISLexer extends Lexer {
             "",
             "\1\76\37\uffff\1\76",
             "\1\77\37\uffff\1\77",
-            "\2\35\13\uffff\1\35\20\uffff\2\35\1\100\27\35\4\uffff\1\35"+
+            "\2\35\13\uffff\12\35\7\uffff\2\35\1\100\27\35\4\uffff\1\35"+
             "\1\uffff\2\35\1\100\27\35",
             "\1\102\24\uffff\1\103\12\uffff\1\102\24\uffff\1\103",
             "\1\104\37\uffff\1\104",
@@ -3134,20 +3134,20 @@ public class CMISLexer extends Lexer {
             "\1\107\37\uffff\1\107",
             "\1\110\37\uffff\1\110",
             "\1\111\37\uffff\1\111",
-            "\2\35\13\uffff\1\35\20\uffff\15\35\1\112\14\35\4\uffff\1\113"+
+            "\2\35\13\uffff\12\35\7\uffff\15\35\1\112\14\35\4\uffff\1\113"+
             "\1\uffff\15\35\1\112\14\35",
-            "\2\35\13\uffff\1\35\20\uffff\32\35\4\uffff\1\35\1\uffff\32"+
+            "\2\35\13\uffff\12\35\7\uffff\32\35\4\uffff\1\35\1\uffff\32"+
             "\35",
             "\1\116\37\uffff\1\116",
-            "\2\35\13\uffff\1\35\20\uffff\32\35\4\uffff\1\35\1\uffff\32"+
+            "\2\35\13\uffff\12\35\7\uffff\32\35\4\uffff\1\35\1\uffff\32"+
             "\35",
-            "\2\35\13\uffff\1\35\20\uffff\3\35\1\120\26\35\4\uffff\1\35"+
+            "\2\35\13\uffff\12\35\7\uffff\3\35\1\120\26\35\4\uffff\1\35"+
             "\1\uffff\3\35\1\120\26\35",
             "\1\122\37\uffff\1\122",
             "\1\123\37\uffff\1\123",
             "\1\124\37\uffff\1\124",
             "\1\125\37\uffff\1\125",
-            "\2\35\13\uffff\1\35\20\uffff\32\35\4\uffff\1\35\1\uffff\32"+
+            "\2\35\13\uffff\12\35\7\uffff\32\35\4\uffff\1\35\1\uffff\32"+
             "\35",
             "\1\127\37\uffff\1\127",
             "",
@@ -3162,12 +3162,12 @@ public class CMISLexer extends Lexer {
             "\1\67\1\uffff\12\75\13\uffff\1\67\37\uffff\1\67",
             "\1\130\37\uffff\1\130",
             "\1\131\37\uffff\1\131",
-            "\2\35\13\uffff\1\35\20\uffff\32\35\4\uffff\1\35\1\uffff\32"+
+            "\2\35\13\uffff\12\35\7\uffff\32\35\4\uffff\1\35\1\uffff\32"+
             "\35",
             "",
-            "\2\35\13\uffff\1\35\20\uffff\32\35\4\uffff\1\35\1\uffff\32"+
+            "\2\35\13\uffff\12\35\7\uffff\32\35\4\uffff\1\35\1\uffff\32"+
             "\35",
-            "\2\35\13\uffff\1\35\20\uffff\32\35\4\uffff\1\35\1\uffff\32"+
+            "\2\35\13\uffff\12\35\7\uffff\32\35\4\uffff\1\35\1\uffff\32"+
             "\35",
             "\1\135\37\uffff\1\135",
             "\1\136\37\uffff\1\136",
@@ -3184,7 +3184,7 @@ public class CMISLexer extends Lexer {
             "\1\147\37\uffff\1\147",
             "",
             "\1\150\37\uffff\1\150",
-            "\2\35\13\uffff\1\35\20\uffff\32\35\4\uffff\1\35\1\uffff\32"+
+            "\2\35\13\uffff\12\35\7\uffff\32\35\4\uffff\1\35\1\uffff\32"+
             "\35",
             "\1\152\37\uffff\1\152",
             "\1\153\37\uffff\1\153",
@@ -3197,13 +3197,13 @@ public class CMISLexer extends Lexer {
             "",
             "\1\157\37\uffff\1\157",
             "\1\160\37\uffff\1\160",
-            "\2\35\13\uffff\1\35\20\uffff\32\35\4\uffff\1\35\1\uffff\32"+
+            "\2\35\13\uffff\12\35\7\uffff\32\35\4\uffff\1\35\1\uffff\32"+
             "\35",
-            "\2\35\13\uffff\1\35\20\uffff\32\35\4\uffff\1\35\1\uffff\32"+
+            "\2\35\13\uffff\12\35\7\uffff\32\35\4\uffff\1\35\1\uffff\32"+
             "\35",
-            "\2\35\13\uffff\1\35\20\uffff\32\35\4\uffff\1\35\1\uffff\32"+
+            "\2\35\13\uffff\12\35\7\uffff\32\35\4\uffff\1\35\1\uffff\32"+
             "\35",
-            "\2\35\13\uffff\1\35\20\uffff\32\35\4\uffff\1\35\1\uffff\32"+
+            "\2\35\13\uffff\12\35\7\uffff\32\35\4\uffff\1\35\1\uffff\32"+
             "\35",
             "\1\165\37\uffff\1\165",
             "\1\166\37\uffff\1\166",
@@ -3212,36 +3212,36 @@ public class CMISLexer extends Lexer {
             "\1\171\37\uffff\1\171",
             "\1\172\37\uffff\1\172",
             "",
-            "\2\35\13\uffff\1\35\20\uffff\32\35\4\uffff\1\35\1\uffff\32"+
+            "\2\35\13\uffff\12\35\7\uffff\32\35\4\uffff\1\35\1\uffff\32"+
             "\35",
             "\1\174\37\uffff\1\174",
-            "\2\35\13\uffff\1\35\20\uffff\32\35\4\uffff\1\35\1\uffff\32"+
+            "\2\35\13\uffff\12\35\7\uffff\32\35\4\uffff\1\35\1\uffff\32"+
             "\35",
             "\1\176\37\uffff\1\176",
-            "\2\35\13\uffff\1\35\20\uffff\32\35\4\uffff\1\35\1\uffff\32"+
+            "\2\35\13\uffff\12\35\7\uffff\32\35\4\uffff\1\35\1\uffff\32"+
             "\35",
-            "\2\35\13\uffff\1\35\20\uffff\32\35\4\uffff\1\35\1\uffff\32"+
+            "\2\35\13\uffff\12\35\7\uffff\32\35\4\uffff\1\35\1\uffff\32"+
             "\35",
-            "\2\35\13\uffff\1\35\20\uffff\32\35\4\uffff\1\35\1\uffff\32"+
+            "\2\35\13\uffff\12\35\7\uffff\32\35\4\uffff\1\35\1\uffff\32"+
             "\35",
             "",
             "",
             "",
             "",
-            "\2\35\13\uffff\1\35\20\uffff\32\35\4\uffff\1\35\1\uffff\32"+
+            "\2\35\13\uffff\12\35\7\uffff\32\35\4\uffff\1\35\1\uffff\32"+
             "\35",
             "\1\u0083\37\uffff\1\u0083",
             "\1\u0084\37\uffff\1\u0084",
-            "\2\35\13\uffff\1\35\20\uffff\32\35\4\uffff\1\35\1\uffff\32"+
+            "\2\35\13\uffff\12\35\7\uffff\32\35\4\uffff\1\35\1\uffff\32"+
             "\35",
-            "\2\35\13\uffff\1\35\20\uffff\32\35\4\uffff\1\35\1\uffff\32"+
+            "\2\35\13\uffff\12\35\7\uffff\32\35\4\uffff\1\35\1\uffff\32"+
             "\35",
-            "\2\35\13\uffff\1\35\20\uffff\32\35\4\uffff\1\35\1\uffff\32"+
+            "\2\35\13\uffff\12\35\7\uffff\32\35\4\uffff\1\35\1\uffff\32"+
             "\35",
             "",
             "\1\u0088\37\uffff\1\u0088",
             "",
-            "\2\35\13\uffff\1\35\20\uffff\32\35\4\uffff\1\35\1\uffff\32"+
+            "\2\35\13\uffff\12\35\7\uffff\32\35\4\uffff\1\35\1\uffff\32"+
             "\35",
             "",
             "",
@@ -3255,14 +3255,14 @@ public class CMISLexer extends Lexer {
             "\1\u008c\37\uffff\1\u008c",
             "",
             "\1\u008d\37\uffff\1\u008d",
-            "\2\35\13\uffff\1\35\20\uffff\32\35\4\uffff\1\35\1\uffff\32"+
+            "\2\35\13\uffff\12\35\7\uffff\32\35\4\uffff\1\35\1\uffff\32"+
             "\35",
             "\1\u008f\37\uffff\1\u008f",
             "\1\u0090\37\uffff\1\u0090",
             "",
-            "\2\35\13\uffff\1\35\20\uffff\32\35\4\uffff\1\35\1\uffff\32"+
+            "\2\35\13\uffff\12\35\7\uffff\32\35\4\uffff\1\35\1\uffff\32"+
             "\35",
-            "\2\35\13\uffff\1\35\20\uffff\32\35\4\uffff\1\35\1\uffff\32"+
+            "\2\35\13\uffff\12\35\7\uffff\32\35\4\uffff\1\35\1\uffff\32"+
             "\35",
             "",
             ""

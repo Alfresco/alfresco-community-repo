@@ -12,7 +12,7 @@
                <map>
                   <entry key=".*">
                      <list>
-                        <value>${img.exe}</value>
+                        <value>${thirdparty.img.exe}</value>
                         <value>${source}</value>
                         <value>SPLIT:${options}</value>
                         <value>${target}</value>
@@ -23,13 +23,13 @@
             <property name="processProperties">
                <map>
                   <entry key="MAGICK_HOME">
-                     <value>${img.root}</value>
+                     <value>${thirdparty.img.root}</value>
                   </entry>
                   <entry key="DYLD_LIBRARY_PATH">
-                     <value>${img.dyn}</value>
+                     <value>${thirdparty.img.dyn}</value>
                   </entry>
                   <entry key="LD_LIBRARY_PATH">
-                     <value>${img.dyn}</value>
+                     <value>${thirdparty.img.dyn}</value>
                   </entry>
                </map>
             </property>
@@ -46,7 +46,7 @@
                <map>
                   <entry key=".*">
                      <list>
-                        <value>${img.exe}</value>
+                        <value>${thirdparty.img.exe}</value>
                         <value>-version</value>
                      </list>
                   </entry>

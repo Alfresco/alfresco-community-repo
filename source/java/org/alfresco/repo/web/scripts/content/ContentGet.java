@@ -25,7 +25,6 @@
 package org.alfresco.repo.web.scripts.content;
 
 import java.io.IOException;
-import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -36,7 +35,6 @@ import org.alfresco.repo.model.Repository;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.URLEncoder;
 import org.alfresco.web.scripts.WebScriptException;
 import org.alfresco.web.scripts.WebScriptRequest;
 import org.alfresco.web.scripts.WebScriptResponse;
@@ -56,8 +54,6 @@ public class ContentGet extends StreamContent
     // Logger
     @SuppressWarnings("unused")
     private static final Log logger = LogFactory.getLog(ContentGet.class);
-    
-    private static final String NODE_URL   = "/api/node/content/{0}/{1}/{2}/{3}";
     
     // Component dependencies
     private Repository repository;
@@ -121,24 +117,5 @@ public class ContentGet extends StreamContent
         
         // Stream the content
         streamContent(req, res, nodeRef, propertyQName, attach);
-    }
-    
-    /**
-     * Helper to generate a URL to a content node for downloading content from the server.
-     * The content is supplied directly in the reponse. This generally means a browser will
-     * attempt to open the content directly if possible, else it will prompt to save the file.
-     *
-     * @param ref     NodeRef of the content node to generate URL for (cannot be null)
-     * @param name    File name end element to return on the url (used by the browser on Save)
-     *
-     * @return URL to download the content from the specified node
-     */
-    public final static String generateNodeURL(NodeRef ref, String name)
-    {
-        return MessageFormat.format(NODE_URL, new Object[] {
-                ref.getStoreRef().getProtocol(),
-                ref.getStoreRef().getIdentifier(),
-                ref.getId(),
-                URLEncoder.encode(name) } );
     }
 }

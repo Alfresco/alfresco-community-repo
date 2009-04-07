@@ -554,6 +554,34 @@ public class CMISTest extends BaseCMISWebScriptTest
         assertEquals("updated content " + guid, contentRes.getContentAsString());
     }
 
+    public void testContentStream()
+        throws Exception
+    {
+        // retrieve test folder for content stream tests
+        Entry testFolder = createTestFolder("testContentStream");
+        Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
+        
+        // create document for setting / getting content
+        Entry document = createDocument(childrenLink.getHref(), "testContent");
+
+        // retrieve content
+        Response documentContentRes = sendRequest(new GetRequest(document.getContentSrc().toString()), 200);
+        String resContent = documentContentRes.getContentAsString();
+        assertEquals(document.getTitle(), resContent);
+
+        // set content
+        String UPDATED_CONTENT = "Updated via SetContentStream()";
+        Link editMediaLink = document.getEditMediaLink();
+        assertNotNull(editMediaLink);
+        Response res = sendRequest(new PutRequest(editMediaLink.getHref().toString(), UPDATED_CONTENT, Format.TEXT.mimetype()), 200);
+        assertNotNull(res);
+        
+        // retrieve updated content
+        Response documentUpdatedContentRes = sendRequest(new GetRequest(document.getContentSrc().toString()), 200);
+        String resUpdatedContent = documentUpdatedContentRes.getContentAsString();
+        assertEquals(UPDATED_CONTENT, resUpdatedContent);
+    }
+    
     public void testAllowableActions()
         throws Exception
     {

@@ -1,0 +1,13 @@
+<webscript>
+  <shortname>Content Write (setContent)</shortname>
+  <description>TODO</description>
+  <url>/api/node/content{property}/{store_type}/{store_id}/{id}?overwriteFlag={overwriteFlag?}</url>
+  <url>/api/path/content{property}/{store_type}/{store_id}/{id}?overwriteFlag={overwriteFlag?}</url>
+  <url>/api/avmpath/content{property}/{store_id}/{id}?overwriteFlag={overwriteFlag?}</url>
+  <url>/api/node/{store_type}/{store_id}/{id}/content{property}?overwriteFlag={overwriteFlag?}</url>
+  <url>/api/path/{store_type}/{store_id}/{id}/content{property}?overwriteFlag={overwriteFlag?}</url>
+  <authentication>guest</authentication>
+  <format default="text">argument</format>
+  <family>CMIS</family>
+  <lifecycle>draft_public_api</lifecycle>
+</webscript>

@@ -42,5 +42,8 @@ public interface OpenOfficeMetadataWorker
      */
     public boolean isConnected();
 
+    /**
+     * @see AbstractMappingMetadataExtracter#extractRaw(ContentReader)
+     */
     public Map<String, Serializable> extractRaw(ContentReader reader) throws Throwable;
 }

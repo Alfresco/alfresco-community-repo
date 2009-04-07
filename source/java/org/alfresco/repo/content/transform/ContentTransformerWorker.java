@@ -50,7 +50,13 @@ public interface ContentTransformerWorker
      */
     public String getVersionString();
 
+    /**
+     * @see ContentTransformer#isTransformable(String, String, TransformationOptions)
+     */
     public boolean isTransformable(String sourceMimetype, String targetMimetype, TransformationOptions options);    
 
+    /**
+     * @see ContentTransformer#transform(ContentReader, ContentWriter, TransformationOptions)
+     */
     public void transform(ContentReader reader, ContentWriter writer, TransformationOptions options) throws Exception;
 }

@@ -74,8 +74,8 @@ public class OpenOfficeMetadataExtracter extends AbstractMappingMetadataExtracte
         super.init();
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.content.metadata.OpenOfficeMetadataWorker#isConnected()
+    /**
+     * {@inheritDoc}
      */
     public boolean isConnected()
     {
@@ -95,8 +95,8 @@ public class OpenOfficeMetadataExtracter extends AbstractMappingMetadataExtracte
         return super.isSupported(sourceMimetype);
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.content.metadata.OpenOfficeMetadataWorker#extractRaw(org.alfresco.service.cmr.repository.ContentReader)
+    /**
+     * {@inheritDoc}
      */
     @Override
     public Map<String, Serializable> extractRaw(ContentReader reader) throws Throwable

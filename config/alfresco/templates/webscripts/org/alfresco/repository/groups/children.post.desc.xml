@@ -2,6 +2,9 @@
    <shortname>Add group or user to a group</shortname>
    <description><![CDATA[
       Add a group or user to a group.
+      <br />
+      you must have "administrator" privileges to add a group.
+      </br /> 
       
       If the provided group does not exist then it is created.
    ]]>

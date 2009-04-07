@@ -2,6 +2,9 @@
    <shortname>Delete a group.</shortname>
    <description><![CDATA[
       Delete a group and all its dependents.
+      <br />
+      You must have "administrator" privileges to delete a group.
+      </br /> 
    ]]>
    </description>
    <url>/api/groups/{shortName}</url>

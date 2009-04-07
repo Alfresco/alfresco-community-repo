@@ -2,8 +2,8 @@
    <shortname>Get the list of child authorities for a group.</shortname>
    <description><![CDATA[
    Get a list of the parent authorities of a group.    
-   
-   The optional level attribute can be "all" in which case all parents are returned or "immediate" in which case only the immediate parents are returned.
+   <BR />
+   The optional level attribute can be "ALL" in which case all parents are returned.
    ]]>
    </description>
    <url>/api/groups/{shortName}/parents?level={level?}</url>

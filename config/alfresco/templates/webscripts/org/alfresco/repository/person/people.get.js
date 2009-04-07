@@ -6,4 +6,4 @@ var maxResults = args["maxResults"];
 var peopleCollection = people.getPeople(filter, maxResults != null ? parseInt(maxResults) : 0);
 
 // Pass the queried sites to the template
-model.people = peopleCollection;
+model.peoplelist = peopleCollection;

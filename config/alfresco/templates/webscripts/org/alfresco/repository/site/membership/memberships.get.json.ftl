@@ -2,7 +2,7 @@
 <#assign userNames = memberships?keys />
 [
 <#list userNames as userName>		 	   
-	<@membershipLib.membershipJSON site=site role=memberships[userName] person=people[userName] />
+	<@membershipLib.membershipJSON site=site role=memberships[userName] person=peoplelist[userName] />
 	<#if userName_has_next>,</#if>
 </#list>
 ]

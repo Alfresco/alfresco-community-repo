@@ -31,4 +31,4 @@ for (userName in memberships)
 // Pass the information to the template
 model.site = site;
 model.memberships = mems;
-model.people = peopleList;
+model.peoplelist = peopleList;

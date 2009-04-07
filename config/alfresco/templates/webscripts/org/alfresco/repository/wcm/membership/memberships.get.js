@@ -1,5 +1,5 @@
-/*
- *  Get the memberships for a web project
+/**
+ * Get the memberships for a web project
  */  
 function main()
 {
@@ -37,8 +37,7 @@ function main()
 	// Pass the information to the template
 	model.webproject = webproject;
 	model.memberships = mems;
-	model.people = peopleList;
+	model.peoplelist = peopleList;
 }
 
 main()
-	

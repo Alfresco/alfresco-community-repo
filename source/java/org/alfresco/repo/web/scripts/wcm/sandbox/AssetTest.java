@@ -77,7 +77,7 @@ public class AssetTest  extends BaseWebScriptTest {
 	
     // override jbpm.job.executor idleInterval to 5s (was 1.5m) for WCM unit tests
 	private static final String SUBMIT_CONFIG_LOCATION = "classpath:wcm/wcm-jbpm-context.xml";
-	private static final long SUBMIT_DELAY = 10000L; // (in millis) 10s - to allow time for async submit workflow to complete (as per 5s idleInterval above)
+	private static final long SUBMIT_DELAY = 15000L; // (in millis) 15s - to allow time for async submit workflow to complete (as per 5s idleInterval above)
 	
 	    
     private List<String> createdWebProjects = new ArrayList<String>(5);

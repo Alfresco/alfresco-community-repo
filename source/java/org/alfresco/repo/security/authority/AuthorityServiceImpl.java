@@ -256,6 +256,13 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
         }
         return authorities;
     }
+    
+    
+    public Set<String> findAuthoritiesByShortName(AuthorityType type, String shortNamePattern)
+    {
+    	String fullNamePattern = getName(type, shortNamePattern);
+    	return findAuthorities(type, fullNamePattern);
+    }
 
     public void addAuthority(String parentName, String childName)
     {

@@ -26,6 +26,7 @@ package org.alfresco.repo.security.authority.script;
 
 import java.io.Serializable;
 
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 import org.alfresco.repo.security.authority.script.Authority.ScriptAuthorityType;
@@ -38,11 +39,29 @@ import org.alfresco.service.cmr.security.AuthorityType;
  */
 public class ScriptGroup implements Authority, Serializable
 {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 6073732221341647273L;
+	/**
+	 * 
+	 */
 	private transient AuthorityService authorityService;
     private ScriptAuthorityType authorityType = ScriptAuthorityType.GROUP;
     private String shortName;
     private String fullName;
     private String displayName;
+    private boolean isAdmin; 
+    // how to calculate this private boolean isInternal;
+    
+    public ScriptGroup(String fullName, AuthorityService authorityService)
+    {
+    	this.authorityService = authorityService;
+        this.fullName = fullName;	
+        shortName = authorityService.getShortName(fullName);
+        displayName = authorityService.getAuthorityDisplayName(fullName);
+        isAdmin = authorityService.isAdminAuthority(fullName);
+    }
     
 	/**
 	 * Delete this group
@@ -52,14 +71,6 @@ public class ScriptGroup implements Authority, Serializable
 		authorityService.deleteAuthority(fullName);
 	}
 	
-	/**
-	 * Get the parents of this group.
-	 */
-	ScriptGroup[] getParents()
-	{
-		return null;
-	}
-
 	public void setAuthorityType(ScriptAuthorityType authorityType) {
 		this.authorityType = authorityType;
 	}
@@ -95,32 +106,138 @@ public class ScriptGroup implements Authority, Serializable
 	/**
 	 * Get child groups of this group
 	 */
-	ScriptUser[] getUsers()
+	private ScriptUser[] childUsers; 
+	public ScriptUser[] getChildUsers()
 	{
-		Set<String> users = authorityService.getContainedAuthorities(AuthorityType.USER, fullName, true);
-		//TODO
-		return null;
+		if(childUsers == null)
+		{
+			Set<String> children = authorityService.getContainedAuthorities(AuthorityType.USER, fullName, true);
+			Set<ScriptUser> users = new LinkedHashSet<ScriptUser>();
+			for(String authority : children)
+			{
+				ScriptUser user = new ScriptUser(authority, authorityService);
+				users.add(user);
+			}
+			childUsers = users.toArray(new ScriptUser[users.size()]);
+		}
+		return childUsers;
 	}
 	
 	/**
 	 * Get child groups of this group
 	 */
-	ScriptGroup[] getChildGroups()
+	public ScriptGroup[] getChildGroups()
 	{
 		Set<String> children = authorityService.getContainedAuthorities(AuthorityType.GROUP, fullName, true);
-		//TODO
-		
-		return null;
+		Set<ScriptGroup> groups = new LinkedHashSet<ScriptGroup>();
+		for(String authority : children)
+		{
+			ScriptGroup group = new ScriptGroup(authority, authorityService);
+			groups.add(group);
+			
+		}
+		return groups.toArray(new ScriptGroup[groups.size()]);
 	}
 	
 	/**
 	 * Get the parents of this this group
 	 */
-	ScriptGroup[] getParentGroups()
+	private ScriptGroup[] parentCache;
+	
+	public ScriptGroup[] getParentGroups()
 	{
-		Set<String> parents = authorityService.getContainingAuthorities(AuthorityType.GROUP, fullName, true);
-		//TODO
-		return null;
+		if(parentCache == null)
+		{
+			Set<String> parents = authorityService.getContainingAuthorities(AuthorityType.GROUP, fullName, true);
+			Set<ScriptGroup> groups = new LinkedHashSet<ScriptGroup>();
+			for(String authority : parents)
+			{
+				ScriptGroup group = new ScriptGroup(authority, authorityService);
+				groups.add(group);
+			
+			}
+			parentCache = groups.toArray(new ScriptGroup[groups.size()]);
+		}
+		return parentCache;
 	}
+	
+	/**
+	 * Get all the parents of this this group
+	 */
+	public ScriptGroup[] getAllParentGroups()
+	{
+		Set<String> parents = authorityService.getContainingAuthorities(AuthorityType.GROUP, fullName, false);
+		Set<ScriptGroup> groups = new LinkedHashSet<ScriptGroup>();
+		for(String authority : parents)
+		{
+			ScriptGroup group = new ScriptGroup(authority, authorityService);
+			groups.add(group);
+			
+		}
+		return groups.toArray(new ScriptGroup[groups.size()]);
+	}
+	
+	/**
+	 * Get all the children of this group, regardless of type
+	 */
+	public Authority[] getAllChildren()
+	{
+		Authority[] groups = getChildGroups();
+		Authority[] users = getChildUsers();
+		
+	    Authority[] ret = new Authority[groups.length + users.length];
+		System.arraycopy(groups, 0, ret, 0, groups.length);
+		System.arraycopy(users, 0, ret, groups.length, users.length);
+		return ret;
 
+	}
+	
+	/**
+	 * Is this a root group?
+	 * @return
+	 */
+	public boolean isRootGroup()
+	{
+		ScriptGroup[] groups = getParentGroups();
+		return (groups.length == 0);
+	}
+	
+	/**
+	 * Is this an admin group?
+	 * @return
+	 */
+	public boolean isAdminGroup()
+	{
+		return this.isAdmin;
+	}
+	
+	/**
+	 * Is this an internal group?
+	 * @return
+	 */
+	public boolean isInternalGroup()
+	{
+		//TODO Not yet implemeted
+		return true;
+	}
+	
+	/**
+	 * Get the number of users contained within this group.
+	 * @return the number of users contained within this group.
+	 */
+	public int getUserCount()
+	{
+		ScriptUser[] users = getChildUsers();
+		return users.length;
+	}
+	
+	/**
+	 * Get the number of child groups contained within this group.
+	 * @return the number of child groups contained within this group.
+	 */
+	public int getGroupCount()
+	{
+		ScriptGroup[] groups = getChildGroups();
+		return groups.length;
+	}
 }

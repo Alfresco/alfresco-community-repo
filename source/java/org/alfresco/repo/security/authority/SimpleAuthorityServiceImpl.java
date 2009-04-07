@@ -284,4 +284,11 @@ public class SimpleAuthorityServiceImpl implements AuthorityService
         
     }
 
+	public Set<String> findAuthoritiesByShortName(AuthorityType type,
+			String shortNamePattern) 
+	{
+    	String fullNamePattern = getName(type, shortNamePattern);
+    	return findAuthorities(type, fullNamePattern);
+	}
+
 }

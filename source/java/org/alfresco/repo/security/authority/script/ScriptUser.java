@@ -42,6 +42,15 @@ public class ScriptUser implements Authority, Serializable
     private String fullName;
     private String displayName;
     
+    public ScriptUser(String fullName, AuthorityService authorityService)
+    {
+    	this.authorityService = authorityService;
+        this.fullName = fullName;	
+        shortName = authorityService.getShortName(fullName);
+        displayName = authorityService.getAuthorityDisplayName(fullName);
+        //isInternal = authorityService.
+    }
+    
 	public void setAuthorityType(ScriptAuthorityType authorityType) {
 		this.authorityType = authorityType;
 	}

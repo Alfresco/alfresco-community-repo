@@ -70,7 +70,7 @@ public interface AuthorityService
     /**
      * Get the authorities for the current user
      * 
-     * @return
+     * @return authorities for the current user
      */
     @Auditable
     public Set<String> getAuthorities();
@@ -86,16 +86,26 @@ public interface AuthorityService
      * 
      * @param type -
      *            the type of authorities.
-     * @return
+     * @return all authorities by type.
      */
     @Auditable(parameters = {"type"})
     public Set<String> getAllAuthorities(AuthorityType type);
     
+    
     /**
-     * Find authorities by pattern matching (* and ?)
+     * Find authorities by pattern matching (* and ?) against the authority name.   
      * @param type - the authority type
-     * @param namePattern - the pattern 
-     * @return
+     * @param namePattern - the pattern which will be matched against the shortName.   
+     * @return the names of the authorities matching the pattern and type.
+     */
+    @Auditable(parameters = {"type"})
+    public Set<String> findAuthoritiesByShortName(AuthorityType type,  String shortNamePattern);
+    
+    /**
+     * Find authorities by pattern matching (* and ?) against the full authority name.   
+     * @param type - the authority type
+     * @param namePattern - the pattern which will be matched against the full authority name.   
+     * @return the names of the authorites matching the pattern and type.
      */
     @Auditable(parameters = {"type"})
     public Set<String> findAuthorities(AuthorityType type,  String namePattern);
@@ -107,7 +117,7 @@ public interface AuthorityService
      * 
      * @param type -
      *            the type of the authority
-     * @return
+     * @return all root authorities by type.
      */
     @Auditable(parameters = {"type"})
     public Set<String> getAllRootAuthorities(AuthorityType type);
@@ -119,7 +129,7 @@ public interface AuthorityService
      * @param type -
      *            the type of the authority
      * @param parentName -
-     *            the name of the parent authority. If this is null then a root
+     *            the full name of the parent authority. If this is null then a root
      *            authority is created.
      * @param shortName -
      *            the short name of the authority to create
@@ -132,20 +142,20 @@ public interface AuthorityService
     public String createAuthority(AuthorityType type, String parentName, String shortName);
 
     /**
-     * Create an authority. If the parent is null thisw method creates a root
+     * Create an authority. If the parent is null this method creates a root
      * authority.
      * 
      * @param type -
      *            the type of the authority
      * @param parentName -
-     *            the name of the parent authority. If this is null then a root
+     *            the full name of the parent authority. If this is null then a root
      *            authority is created.
      * @param shortName -
      *            the short name of the authority to create
      * @param authorityDisplayName           
      *            the display name for the authority 
      * 
-     * @return the name of the authority (this will be the prefix, if any
+     * @return the full name of the authority (this will be the prefix, if any
      *         associated with the type appended with the short name)
      */
     @Auditable(parameters = {"type", "parentName", "shortName", "authorityDisplayName"})
@@ -156,7 +166,7 @@ public interface AuthorityService
      * group to a group or adding a user to a group.
      * 
      * @param parentName -
-     *            the string identifier for the parent.
+     *            the full name string identifier for the parent.
      * @param childName -
      *            the string identifier for the child.
      */
@@ -245,7 +255,7 @@ public interface AuthorityService
      * Check if an authority exists.
      * 
      * @param name (the long name). 
-     * @return
+     * @return true, the authority exists.
      */
     @Auditable(parameters = {"name"})
     public boolean authorityExists(String name);

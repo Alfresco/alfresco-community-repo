@@ -24,15 +24,12 @@
  */
 package org.alfresco.repo.security.authority.script;
 
-import java.util.List;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 import org.alfresco.repo.jscript.BaseScopableProcessorExtension;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
-
-
-
 
 /**
  * Script object representing the authority service.
@@ -59,11 +56,17 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
 	 * Search the root groups, those without a parent group.
 	 * @return The root groups (empty if there are no root groups)
 	 */
-	public ScriptGroup[] searchRootGroups(String pattern, boolean includeInternal)
+	public ScriptGroup[] searchRootGroups(String shortNamePattern, boolean includeInternal)
 	{
-		ScriptGroup[] groups = new ScriptGroup[0];
+		Set<ScriptGroup> groups = new LinkedHashSet<ScriptGroup>(0);
 		Set<String> authorities = authorityService.getAllRootAuthorities(AuthorityType.GROUP);
-		return groups;
+		for(String authority : authorities)
+		{
+			ScriptGroup group = new ScriptGroup(authority, authorityService);
+			groups.add(group);
+			
+		}
+		return groups.toArray(new ScriptGroup[groups.size()]);
 	}
 	
 	/**
@@ -72,20 +75,34 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
 	 */
 	public ScriptGroup[] getAllRootGroups(boolean includeInternal)
 	{
-		ScriptGroup[] groups = new ScriptGroup[0];
+		Set<ScriptGroup> groups = new LinkedHashSet<ScriptGroup>(0);
 		Set<String> authorities = authorityService.getAllRootAuthorities(AuthorityType.GROUP);
-		return groups;
+		for(String authority : authorities)
+		{
+			ScriptGroup group = new ScriptGroup(authority, authorityService);
+			groups.add(group);
+			
+		}
+		return groups.toArray(new ScriptGroup[groups.size()]);
 	}
     
 	/**
 	 * Get a group given its short name
 	 * @param shortName
-	 * @return
+	 * @return the authority or null if it can't be found
 	 */
 	public ScriptGroup getGroup(String shortName)
 	{
-		Set<String> authorities = authorityService.findAuthorities(AuthorityType.GROUP, shortName);
-		return new ScriptGroup();
+		
+		String fullName = authorityService.getName(AuthorityType.GROUP, shortName);
+		
+		if (authorityService.authorityExists(fullName))
+		{
+		    ScriptGroup group = new ScriptGroup(fullName, authorityService);
+		    return group;		
+		}
+		// group not found.
+		return null;
 	}
 	
 	/**
@@ -94,23 +111,28 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
 	 */
 	public ScriptGroup createRootGroup(String shortName, String displayName)
 	{
-		String newName = authorityService.createAuthority(AuthorityType.GROUP, null, shortName, displayName);
-		
-		return new ScriptGroup();
+		authorityService.createAuthority(AuthorityType.GROUP, null, shortName, displayName);
+		return getGroup(shortName);
 	}
 	
 	/**
 	 * Search for groups
 	 * 
-	 * @param shortNameFilter partial match on shortName (* and ?) work. if empty then matches everything.
+	 * @param shortNameFilter partial match on shortName (* and ?) work.  If empty then matches everything.
 	 * @param includeInternal
 	 * @return the groups matching the query
 	 */
-	public ScriptGroup[] listGroups(String shortNameFilter, boolean includeInternal)
+	public ScriptGroup[] searchGroups(String shortNameFilter, boolean includeInternal)
 	{
-		ScriptGroup[] groups = new ScriptGroup[0];
-		Set<String> authorities = authorityService.findAuthorities(AuthorityType.GROUP, shortNameFilter);
-		return groups;
+		Set<ScriptGroup> groups = new LinkedHashSet<ScriptGroup>(0);
+		Set<String> authorities = authorityService.findAuthoritiesByShortName(AuthorityType.GROUP, shortNameFilter);
+		for(String authority : authorities)
+		{
+			ScriptGroup group = new ScriptGroup(authority, authorityService);
+			groups.add(group);
+			
+		}
+		return groups.toArray(new ScriptGroup[groups.size()]);
 	}
 	
 }

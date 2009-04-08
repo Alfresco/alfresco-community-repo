@@ -29,11 +29,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.repo.template.TemplateNode;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -198,7 +198,7 @@ public class PersonPut extends DeclarativeWebScript
                     updatePersonPropertiesWorker, this.authenticationComponent.getSystemUserName());
 
             // Put the updated person on the model to pass to the template
-            model.put(MODEL_PROP_KEY_PERSON, new ScriptNode(updatedPerson, this.serviceRegistry));
+            model.put(MODEL_PROP_KEY_PERSON, new TemplateNode(updatedPerson, this.serviceRegistry, null));
         }
         // else if no person was found matching the given user name,
         // then return HTTP error status "not found"

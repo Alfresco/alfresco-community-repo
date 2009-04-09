@@ -544,6 +544,8 @@ public class FileFolderServiceImpl implements FileFolderService
             newName = beforeFileInfo.getName();
         }
         
+        boolean nameChanged = (newName.equals(beforeFileInfo.getName()) == false);
+        
         // we need the current association type
         ChildAssociationRef assocRef = nodeService.getPrimaryParent(sourceNodeRef);
         if (targetParentRef == null)
@@ -570,9 +572,21 @@ public class FileFolderServiceImpl implements FileFolderService
             }
         }
         
-        QName qname = QName.createQName(
-                NamespaceService.CONTENT_MODEL_1_0_URI,
-                QName.createValidLocalName(newName));
+        QName qname;
+        if (nameChanged)
+        {
+            // Change the localname to match the new name
+            qname = QName.createQName(
+                    assocRef.getQName().getNamespaceURI(),
+                    QName.createValidLocalName(newName));
+        }
+        else
+        {
+            // Keep the localname
+            qname = QName.createQName(
+                    assocRef.getQName().getNamespaceURI(),
+                    assocRef.getQName().getLocalName());
+        }
         
         QName targetParentType = nodeService.getType(targetParentRef);
         

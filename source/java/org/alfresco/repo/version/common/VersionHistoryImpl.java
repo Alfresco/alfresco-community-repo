@@ -24,7 +24,10 @@
  */
 package org.alfresco.repo.version.common;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.Serializable;
+import java.io.ObjectInputStream.GetField;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -45,9 +48,6 @@ import org.alfresco.util.VersionNumber;
  */
 public class VersionHistoryImpl implements VersionHistory
 {
-    /*
-     * Serial version UID
-     */
     private static final long serialVersionUID = 3257001051558326840L;
 
     /*
@@ -56,9 +56,10 @@ public class VersionHistoryImpl implements VersionHistory
     private static final String ERR_MSG = "The root version must be specified when creating a version history object.";    
     
     /*
-     * The root version label
+     * Field is left here to aid in detection of old serialized versions
      */
-    private String rootVersionLabel = null;
+    @SuppressWarnings("unused")
+    private transient List<Version> versions;
     
     /*
      * Version history tree structure map
@@ -74,7 +75,6 @@ public class VersionHistoryImpl implements VersionHistory
      * Versions ordered by creation date (descending)
      */
     private static Comparator<Version> versionComparatorDesc = new VersionComparatorDesc();
-    private List<Version> versions = new ArrayList<Version>();
 
     /**
      * Root version
@@ -101,7 +101,6 @@ public class VersionHistoryImpl implements VersionHistory
         this.versionsByLabel = new HashMap<String, Version>();
         
         this.rootVersion = rootVersion;
-        this.rootVersionLabel = rootVersion.getVersionLabel();
         addVersion(rootVersion, null);        
     }    
     
@@ -125,8 +124,10 @@ public class VersionHistoryImpl implements VersionHistory
      */
     public Collection<Version> getAllVersions()
     {
-    	Collections.sort(versions, versionComparatorDesc);
-        return versions;
+        Collection<Version> versions = versionsByLabel.values();
+        List<Version> sortedVersions = new ArrayList<Version>(versions);
+    	Collections.sort(sortedVersions, versionComparatorDesc);
+        return sortedVersions;
     }
     
     /**
@@ -211,7 +212,6 @@ public class VersionHistoryImpl implements VersionHistory
         // TODO cope with exception case where duplicate version labels have been specified
         
         this.versionsByLabel.put(version.getVersionLabel(), version);
-        this.versions.add(version);
         
         if (predecessor != null)
         {
@@ -222,7 +222,7 @@ public class VersionHistoryImpl implements VersionHistory
     /**
      * Version Comparator
      * 
-     * Note: Descending create date order 
+     * Note: Descending (last modified) date order
      */
     public static class VersionComparatorDesc implements Comparator<Version>, Serializable
     {
@@ -230,7 +230,7 @@ public class VersionHistoryImpl implements VersionHistory
 
         public int compare(Version v1, Version v2)
         {
-            int result = v2.getCreatedDate().compareTo(v1.getCreatedDate());
+            int result = v2.getFrozenModifiedDate().compareTo(v1.getFrozenModifiedDate());
             if (result == 0)
             {
                 result = new VersionNumber(v2.getVersionLabel()).compareTo(new VersionNumber(v1.getVersionLabel()));
@@ -242,7 +242,7 @@ public class VersionHistoryImpl implements VersionHistory
     /**
      * Version Comparator
      * 
-     * Note: Ascending create date order 
+     * Note: Ascending (last modified) date order
      */
     public static class VersionComparatorAsc implements Comparator<Version>, Serializable
     {
@@ -250,7 +250,7 @@ public class VersionHistoryImpl implements VersionHistory
 
         public int compare(Version v1, Version v2)
         {
-            int result = v1.getCreatedDate().compareTo(v2.getCreatedDate());
+            int result = v1.getFrozenModifiedDate().compareTo(v2.getFrozenModifiedDate());
             if (result == 0)
             {
                 result = new VersionNumber(v1.getVersionLabel()).compareTo(new VersionNumber(v2.getVersionLabel()));
@@ -259,4 +259,29 @@ public class VersionHistoryImpl implements VersionHistory
         }
     }
 
+    @SuppressWarnings("unchecked")
+    private void readObject(ObjectInputStream is) throws ClassNotFoundException, IOException
+    {
+        GetField fields = is.readFields();
+        if (fields.defaulted("versionsByLabel"))
+        {
+            // This is a V2.2 class
+            // The old 'rootVersion' maps to the current 'rootVersion'
+            this.rootVersion = (Version) fields.get("rootVersion", null);;
+            // The old 'versions' maps to the current 'versionsByLabel'
+            this.versionsByLabel = (HashMap<String, Version>) fields.get("versions", new HashMap<String, Version>());
+            // The old 'versionHistory' maps to the current 'versionHistory'
+            this.versionHistory = (HashMap<String, String>) fields.get("versionHistory", new HashMap<String, String>());
+        }
+        else
+        {
+            // This is a V3.1.0 to ... class
+            // The old 'rootVersion' maps to the current 'rootVersion'
+            this.rootVersion = (Version) fields.get("rootVersion", null);
+            // The old 'versionsByLabel' maps to the current 'versionsByLabel'
+            this.versionsByLabel = (HashMap<String, Version>) fields.get("versionsByLabel", new HashMap<String, Version>());
+            // The old 'versionHistory' maps to the current 'versionHistory'
+            this.versionHistory = (HashMap<String, String>) fields.get("versionHistory", new HashMap<String, String>());
+        }
+    }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -27,6 +27,7 @@ package org.alfresco.repo.version;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -144,7 +145,9 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
         // Snap shot data
         int expectedVersionNumber = peekNextVersionNumber();
 		String expectedVersionLabel = peekNextVersionLabel(versionableNode, expectedVersionNumber, versionProperties);
-        long beforeVersionTime = System.currentTimeMillis();
+		
+		// Snap-shot the node created date-time
+        long beforeVersionTime = ((Date)nodeService.getProperty(versionableNode, ContentModel.PROP_CREATED)).getTime();
         
         // Version the node and its children
         Collection<Version> versions = this.versionService.createVersion(
@@ -167,8 +170,10 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
         
         // Snap shot data
         int expectedVersionNumber = peekNextVersionNumber(); 
-		String expectedVersionLabel = peekNextVersionLabel(versionableNode, expectedVersionNumber, versionProperties);        
-        long beforeVersionTime = System.currentTimeMillis();
+		String expectedVersionLabel = peekNextVersionLabel(versionableNode, expectedVersionNumber, versionProperties);  
+		
+		// Snap-shot the node created date-time
+        long beforeVersionTime = ((Date)nodeService.getProperty(versionableNode, ContentModel.PROP_CREATED)).getTime();
         
         // Version the list of nodes created
         Collection<Version> versions = this.versionService.createVersion(

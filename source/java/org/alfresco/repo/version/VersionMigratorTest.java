@@ -111,8 +111,8 @@ public class VersionMigratorTest extends BaseVersionStoreTest
         int nextVersion = peekNextVersionNumber(); 
         String nextVersionLabel = peekNextVersionLabel(versionableNode, nextVersion, versionProperties);
         
-        // Snap-shot the date-time
-        Date beforeVersionDate = new Date();
+        // Snap-shot the node created date-time
+        Date beforeVersionDate = (Date)nodeService.getProperty(versionableNode, ContentModel.PROP_CREATED);
         long beforeVersionTime = beforeVersionDate.getTime();
         logger.info("beforeVersion Date/Time: " + beforeVersionDate + " [" + beforeVersionTime + "]");
         
@@ -205,7 +205,9 @@ public class VersionMigratorTest extends BaseVersionStoreTest
         // Get the next version number, next version label and snapshot the date-time
         int nextVersion1 = peekNextVersionNumber(); 
         String nextVersionLabel1 = peekNextVersionLabel(versionableNode, nextVersion1, versionProperties);
-        long beforeVersionTime1 = System.currentTimeMillis();
+        
+        // Snap-shot the node created date-time
+        long beforeVersionTime1 = ((Date)nodeService.getProperty(versionableNode, ContentModel.PROP_CREATED)).getTime();
         
         Version version1 = createVersion(versionableNode);
         logger.info(version1);
@@ -213,7 +215,9 @@ public class VersionMigratorTest extends BaseVersionStoreTest
         // Get the next version number, next version label and snapshot the date-time
         int nextVersion2 = peekNextVersionNumber(); 
         String nextVersionLabel2 = peekNextVersionLabel(versionableNode, nextVersion2, versionProperties);
-        long beforeVersionTime2 = System.currentTimeMillis();
+        
+        // Snap-shot the node created date-time
+        long beforeVersionTime2 = ((Date)nodeService.getProperty(versionableNode, ContentModel.PROP_CREATED)).getTime();
         
         Version version2 = createVersion(versionableNode);
         logger.info(version2);
@@ -221,7 +225,9 @@ public class VersionMigratorTest extends BaseVersionStoreTest
         // Get the next version number, next version label and snapshot the date-time
         int nextVersion3 = peekNextVersionNumber(); 
         String nextVersionLabel3 = peekNextVersionLabel(versionableNode, nextVersion3, versionProperties);
-        long beforeVersionTime3 = System.currentTimeMillis();
+        
+        // Snap-shot the node created date-time
+        long beforeVersionTime3 = ((Date)nodeService.getProperty(versionableNode, ContentModel.PROP_CREATED)).getTime();
         
         Version version3 = createVersion(versionableNode);
         logger.info(version3);

@@ -79,6 +79,9 @@
       <property name="fileFolderService">
          <ref bean="fileFolderService" />
       </property>
+      <property name="versionService">
+         <ref bean="versionService" />
+      </property>
       <property name="policyBehaviourFilter">
          <ref bean="policyBehaviourFilter" />
       </property>

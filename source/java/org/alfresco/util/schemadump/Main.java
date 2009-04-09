@@ -24,13 +24,12 @@
  */
 package org.alfresco.util.schemadump;
 
-import java.io.IOException;
+import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -72,32 +71,35 @@ public class Main
     private final Map<String, Integer> reverseTypeMap = new TreeMap<String, Integer>();
 
     /** Should we scale down string field widths (assuming 4 bytes to one character?). */
-    private final boolean scaleCharacters;
+    private boolean scaleCharacters;
 
     /** The JDBC connection. */
-    private final Connection con;
+    private  Connection con;
 
     /**
-     * Creates a new instance of this tool..
+     * The main method.
      * 
-     * @param contextPath
-     *            path to the context xml file
-     * @throws SQLException
-     *             the SQL exception
-     * @throws IOException
-     *             Signals that an I/O exception has occurred.
-     * @throws InstantiationException
-     *             the instantiation exception
-     * @throws IllegalAccessException
-     *             the illegal access exception
-     * @throws ClassNotFoundException
-     *             the class not found exception
-     * @throws NoSuchFieldException
-     *             the no such field exception
+     * @param args
+     *            the args: &ltcontext.xml&gt &ltoutput.xml&gt
+     */
+    public static void main(final String[] args) throws Exception
+    {
+        if (args.length != 2)
+        {
+            System.out.println("Usage:");
+            System.out.println("java " + Main.class.getName() + " <context.xml> <output.xml>");
+            System.exit(1);
+        }
+        
+        final File outputFile = new File(args[1]);
+        new Main(args[0]).execute(outputFile);
+    }
+    
+    /**
+     * Creates a new instance of this tool by starting up a full context.
      */
     @SuppressWarnings("unchecked")
-    public Main(final String contextPath) throws SQLException, IOException, InstantiationException, IllegalAccessException,
-            ClassNotFoundException, NoSuchFieldException
+    public Main(final String contextPath) throws Exception
     {
         final ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(new String[]
         {
@@ -109,6 +111,32 @@ public class Main
         // Use Java reflection to bypass accessibility rules and get hold of hibernate's type mapping!
         final Properties hibProps = (Properties) context.getBean("hibernateConfigProperties");
         final Dialect dialect = (Dialect) Class.forName(hibProps.getProperty("hibernate.dialect")).newInstance();
+        
+        // Initialize
+        init(dialect);
+    }
+    
+    /**
+     * Create a new instance of the tool within the context of an existing database connection
+     * 
+     * @param connection            the database connection to use for metadata queries
+     * @param dialect               the Hibernate dialect
+     */
+    public Main(final Connection connection, final Dialect dialect) throws Exception
+    {
+        this.con = connection;
+        
+        // Initialize
+        init(dialect);
+    }
+    
+    /**
+     * Initializes the fields ready to perform the database metadata reading 
+     * @param dialect               the Hibernate dialect
+     */
+    @SuppressWarnings("unchecked")
+    private void init(final Dialect dialect) throws Exception
+    {
         this.scaleCharacters = dialect instanceof Oracle8iDialect;
         final Field typeNamesField = Dialect.class.getDeclaredField("typeNames");
         typeNamesField.setAccessible(true);
@@ -135,22 +163,13 @@ public class Main
     }
 
     /**
-     * The main method.
+     * Execute, writing the result to the given file.
      * 
-     * @param args
-     *            the args
-     * @throws Exception
-     *             the exception
+     * @param outputFile                the file to write to
      */
-    public static void main(final String[] args) throws Exception
+    public void execute(File outputFile) throws Exception
     {
-        if (args.length != 2)
-        {
-            System.out.println("Usage:");
-            System.out.println("java " + Main.class.getName() + " <context.xml> <output.xml>");
-            System.exit(1);
-        }
-        final NamedElementCollection result = new Main(args[0]).execute();
+        final NamedElementCollection result = execute();
 
         // Set up a SAX TransformerHandler for outputting XML
         final SAXTransformerFactory stf = (SAXTransformerFactory) TransformerFactory.newInstance();
@@ -165,7 +184,7 @@ public class Main
             // It was worth a try
         }
         t.setOutputProperty(OutputKeys.INDENT, "yes");
-        xmlOut.setResult(new StreamResult(args[1]));
+        xmlOut.setResult(new StreamResult(outputFile));
 
         xmlOut.startDocument();
         result.output(xmlOut);
@@ -175,28 +194,10 @@ public class Main
     /**
      * Execute.
      * 
-     * @return the named element collection
-     * @throws SQLException
-     *             the SQL exception
-     * @throws IllegalArgumentException
-     *             the illegal argument exception
-     * @throws IllegalAccessException
-     *             the illegal access exception
-     * @throws IOException
-     *             Signals that an I/O exception has occurred.
-     * @throws InstantiationException
-     *             the instantiation exception
-     * @throws ClassNotFoundException
-     *             the class not found exception
-     * @throws SecurityException
-     *             the security exception
-     * @throws NoSuchFieldException
-     *             the no such field exception
+     * @return                          Returns the named XML elements
      */
-    public NamedElementCollection execute() throws SQLException, IllegalArgumentException, IllegalAccessException,
-            IOException, InstantiationException, ClassNotFoundException, SecurityException, NoSuchFieldException
+    public NamedElementCollection execute() throws Exception
     {
-
         final NamedElementCollection schemaCol = new NamedElementCollection("schema", "table");
 
         final DatabaseMetaData dbmd = this.con.getMetaData();

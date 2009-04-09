@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -28,6 +28,7 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -122,7 +123,6 @@ public abstract class BaseVersionStoreTest extends BaseSpringTest
      * Test user details
      */
     private static final String PWD = "admin";
-//    private static final String USER_NAME = "admin";	
     
 	/**
 	 * Sets the meta model dao
@@ -254,6 +254,11 @@ public abstract class BaseVersionStoreTest extends BaseSpringTest
         ContentWriter contentWriter = this.contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
         contentWriter.putContent(TEST_CONTENT);
         
+        // Set author
+        Map<QName, Serializable> authorProps = new HashMap<QName, Serializable>(1, 1.0f);
+        authorProps.put(ContentModel.PROP_AUTHOR, "Charles Dickens");
+        this.dbNodeService.addAspect(nodeRef, ContentModel.ASPECT_AUTHOR, authorProps);
+        
         // Add some children to the node
         NodeRef child1 = this.dbNodeService.createNode(
                 nodeRef,
@@ -323,8 +328,8 @@ public abstract class BaseVersionStoreTest extends BaseSpringTest
         int nextVersion = peekNextVersionNumber(); 
         String nextVersionLabel = peekNextVersionLabel(versionableNode, nextVersion, versionProperties);
 		
-        // Snap-shot the date-time
-        long beforeVersionTime = System.currentTimeMillis();
+        // Snap-shot the node created date-time
+        long beforeVersionTime = ((Date)nodeService.getProperty(versionableNode, ContentModel.PROP_CREATED)).getTime();
         
         // Now lets create a new version for this node
         Version newVersion = versionService.createVersion(versionableNode, this.versionProperties);
@@ -340,8 +345,8 @@ public abstract class BaseVersionStoreTest extends BaseSpringTest
         int nextVersion = peekNextVersionNumber(); 
         String nextVersionLabel = peekNextVersionLabel(versionableNode, nextVersion, versionProperties);
         
-        // Snap-shot the date-time
-        long beforeVersionTime = System.currentTimeMillis();
+        // Snap-shot the node created date-time
+        long beforeVersionTime = ((Date)nodeService.getProperty(versionableNode, ContentModel.PROP_CREATED)).getTime();
         
         // Now lets create new version for this node (optionally with children)
         Collection<Version> versions = versionService.createVersion(versionableNode, this.versionProperties, versionChildren);

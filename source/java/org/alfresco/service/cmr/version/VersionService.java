@@ -70,7 +70,7 @@ public interface VersionService
      * 
      * @param  nodeRef              a node reference
      * @param  versionProperties    the version properties that are stored with the newly created
-     *                              version
+     *                              version, or <tt>null</tt> if there are no relevant properties
      * @return                      the created version object
      * @throws ReservedVersionNameException
      *                              thrown if a reserved property name is used int he version properties 

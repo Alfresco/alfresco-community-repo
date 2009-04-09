@@ -110,9 +110,6 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
         return new StoreRef(StoreRef.PROTOCOL_WORKSPACE, Version2Model.STORE_ID);
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.service.cmr.version.VersionService#createVersion(org.alfresco.service.cmr.repository.NodeRef, java.util.Map)
-     */
     public Version createVersion(
             NodeRef nodeRef,
             Map<String, Serializable> versionProperties)
@@ -343,14 +340,11 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
         
         VersionHistory versionHistory = null;
 
-        // get version history, if the 'live' (versioned) node exists
-        if (this.nodeService.exists(nodeRef) == true)
+        // Get the version history regardless of whether the node is still 'live' or not
+        NodeRef versionHistoryRef = getVersionHistoryNodeRef(nodeRef);
+        if (versionHistoryRef != null)
         {
-            NodeRef versionHistoryRef = getVersionHistoryNodeRef(nodeRef);
-            if (versionHistoryRef != null)
-            {
-                versionHistory = buildVersionHistory(versionHistoryRef, nodeRef);
-            }
+            versionHistory = buildVersionHistory(versionHistoryRef, nodeRef);
         }
 
         return versionHistory;

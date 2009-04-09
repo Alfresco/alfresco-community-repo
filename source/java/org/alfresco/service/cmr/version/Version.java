@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -38,7 +38,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * Allows access to version property values and frozen state node references.
  * The version history tree can also be navigated.
  * 
- * @author Roy Wetherall
+ * @author Roy Wetherall, janv
  */
 public interface Version extends Serializable
 {
@@ -51,6 +51,7 @@ public interface Version extends Serializable
      * Helper method to get the created date from the version property data.
      * 
      * @return  the date the version was created
+     * @deprecated use getFrozenModifiedDate
      */
     public Date getCreatedDate();
     
@@ -58,8 +59,24 @@ public interface Version extends Serializable
      * Helper method to get the creator of the version.
      * 
      * @return  the creator of the version
+     * @deprecated use getFrozenModifier
      */
     public String getCreator();
+    
+    /**
+     * Helper method to get the frozen (original) modified date for this version of the node
+     * 
+     * @return  the modified date
+     */
+    public Date getFrozenModifiedDate();
+    
+    
+    /**
+     * Helper method to get the frozen (original) modifier for this version of the node
+     * 
+     * @return  the modifier
+     */
+    public String getFrozenModifier();
 
     /**
      * Helper method to get the version label from the version property data.

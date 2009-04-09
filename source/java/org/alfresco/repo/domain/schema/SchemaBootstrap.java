@@ -43,6 +43,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.admin.patch.Patch;
 import org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch;
 import org.alfresco.repo.content.filestore.FileContentWriter;
@@ -58,6 +59,7 @@ import org.alfresco.util.AbstractLifecycleBean;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.LogUtil;
 import org.alfresco.util.TempFileProvider;
+import org.alfresco.util.schemadump.Main;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.HibernateException;
@@ -101,6 +103,9 @@ public class SchemaBootstrap extends AbstractLifecycleBean
 
     private static final String MSG_DIALECT_USED = "schema.update.msg.dialect_used";
     private static final String MSG_BYPASSING_SCHEMA_UPDATE = "schema.update.msg.bypassing";
+    private static final String MSG_NORMALIZED_SCHEMA = "schema.update.msg.normalized_schema";
+    private static final String MSG_NORMALIZED_SCHEMA_PRE = "schema.update.msg.normalized_schema_pre";
+    private static final String MSG_NORMALIZED_SCHEMA_POST = "schema.update.msg.normalized_schema_post";
     private static final String MSG_NO_CHANGES = "schema.update.msg.no_changes";
     private static final String MSG_ALL_STATEMENTS = "schema.update.msg.all_statements";
     private static final String MSG_EXECUTING_GENERATED_SCRIPT = "schema.update.msg.executing_generated_script";
@@ -111,6 +116,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     private static final String WARN_DIALECT_SUBSTITUTING = "schema.update.warn.dialect_substituting";
     private static final String WARN_DIALECT_HSQL = "schema.update.warn.dialect_hsql";
     private static final String WARN_DIALECT_DERBY = "schema.update.warn.dialect_derby";
+    private static final String ERR_FORCED_STOP = "schema.update.err.forced_stop";
     private static final String ERR_DIALECT_SHOULD_USE = "schema.update.err.dialect_should_use";
     private static final String ERR_MULTIPLE_SCHEMAS = "schema.update.err.found_multiple";
     private static final String ERR_PREVIOUS_FAILED_BOOTSTRAP = "schema.update.err.previous_failed";
@@ -156,6 +162,8 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     private LocalSessionFactoryBean localSessionFactory;
     private String schemaOuputFilename;
     private boolean updateSchema;
+    private boolean stopAfterSchemaBootstrap;
+    private List<String> preCreateScriptUrls;
     private List<String> postCreateScriptUrls;
     private List<SchemaUpgradeScriptPatch> validateUpdateScriptPatches;
     private List<SchemaUpgradeScriptPatch> preUpdateScriptPatches;
@@ -168,6 +176,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
 
     public SchemaBootstrap()
     {
+        preCreateScriptUrls = new ArrayList<String>(1);
         postCreateScriptUrls = new ArrayList<String>(1);
         validateUpdateScriptPatches = new ArrayList<SchemaUpgradeScriptPatch>(4);
         preUpdateScriptPatches = new ArrayList<SchemaUpgradeScriptPatch>(4);
@@ -207,7 +216,34 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     }
 
     /**
-     * Set the scripts that must be executed after the schema has been created.
+     * Set whether this component should terminate the bootstrap process after running all the
+     * usual checks and scripts.  This has the additional effect of dumping a final schema
+     * structure file just before exiting.
+     * <p>
+     * <b>WARNING: </b>USE FOR DEBUG AND UPGRADE TESTING ONLY
+     * 
+     * @param stopAfterSchemaBootstrap      <tt>true</tt> to terminate (with exception) after
+     *                                      running all the usual schema updates and checks.
+     */
+    public void setStopAfterSchemaBootstrap(boolean stopAfterSchemaBootstrap)
+    {
+        this.stopAfterSchemaBootstrap = stopAfterSchemaBootstrap;
+    }
+
+    /**
+     * Set the scripts that must be executed <b>before</b> the schema has been created.
+     * 
+     * @param postCreateScriptUrls file URLs
+     * 
+     * @see #PLACEHOLDER_SCRIPT_DIALECT
+     */
+    public void setPreCreateScriptUrls(List<String> preUpdateScriptUrls)
+    {
+        this.preCreateScriptUrls = preUpdateScriptUrls;
+    }
+
+    /**
+     * Set the scripts that must be executed <b>after</b> the schema has been created.
      * 
      * @param postCreateScriptUrls file URLs
      * 
@@ -344,6 +380,23 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     private static class NoSchemaException extends Exception
     {
         private static final long serialVersionUID = 5574280159910824660L;
+    }
+
+    /**
+     * Used to indicate a forced stop of the bootstrap.
+     * 
+     * @see SchemaBootstrap#setStopAfterSchemaBootstrap(boolean)
+     * 
+     * @author Derek Hulley
+     * @since 3.1.1
+     */
+    private static class BootstrapStopException extends RuntimeException
+    {
+        private static final long serialVersionUID = 4250016675538442181L;
+        private BootstrapStopException()
+        {
+            super(I18NUtil.getMessage(ERR_FORCED_STOP));
+        }
     }
     
     /**
@@ -618,13 +671,18 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         }
         // Get the dialect
         final Dialect dialect = Dialect.getDialect(cfg.getProperties());
-        String dialectStr = dialect.getClass().getName();
+        String dialectStr = dialect.getClass().getSimpleName();
 
         if (create)
         {
+            // execute pre-create scripts (not patches)
+            for (String scriptUrl : this.preCreateScriptUrls)
+            {
+                executeScriptUrl(cfg, connection, scriptUrl);
+            }
             // the applied patch table is missing - we assume that all other tables are missing
             // perform a full update using Hibernate-generated statements
-            File tempFile = TempFileProvider.createTempFile("AlfrescoSchemaCreate-" + dialectStr + "-", ".sql");
+            File tempFile = TempFileProvider.createTempFile("AlfrescoSchema-" + dialectStr + "-Update-", ".sql");
             SchemaBootstrap.dumpSchemaCreate(cfg, tempFile);
             executeScriptFile(cfg, connection, tempFile, null);
             // execute post-create scripts (not patches)
@@ -649,7 +707,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                 String[] sqls = cfg.generateSchemaUpdateScript(dialect, metadata);
                 if (sqls.length > 0)
                 {
-                    tempFile = TempFileProvider.createTempFile("AlfrescoSchemaUpdate-" + dialectStr + "-", ".sql");
+                    tempFile = TempFileProvider.createTempFile("AlfrescoSchema-" + dialectStr + "-Update-", ".sql");
                     writer = new BufferedWriter(new FileWriter(tempFile));
                     for (String sql : sqls)
                     {
@@ -743,7 +801,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     private void executeScriptUrl(Configuration cfg, Connection connection, String scriptUrl) throws Exception
     {
         Dialect dialect = Dialect.getDialect(cfg.getProperties());
-        String dialectStr = dialect.getClass().getName();
+        String dialectStr = dialect.getClass().getSimpleName();
         InputStream scriptInputStream = getScriptInputStream(dialect.getClass(), scriptUrl);
         // check that it exists
         if (scriptInputStream == null)
@@ -754,7 +812,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         File tempFile = null;
         try
         {
-            tempFile = TempFileProvider.createTempFile("AlfrescoSchemaUpdate-" + dialectStr + "-", ".sql");
+            tempFile = TempFileProvider.createTempFile("AlfrescoSchema-" + dialectStr + "-Update-", ".sql");
             ContentWriter writer = new FileContentWriter(tempFile);
             writer.putContent(scriptInputStream);
         }
@@ -1115,6 +1173,15 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             // Update the schema, if required.
             if (updateSchema)
             {
+                // Dump the normalized, pre-upgrade Alfresco schema.  We keep the file for later reporting.
+                File xmlPreSchemaOutputFile = dumpSchema(
+                        connection,
+                        dialect,
+                        TempFileProvider.createTempFile(
+                                "AlfrescoSchema-" + dialect.getClass().getSimpleName() + "-",
+                                "-Startup.xml").getPath(),
+                        "Failed to dump normalized, pre-upgrade schema to file.");
+                
                 // Retries are required here as the DB lock will be applied lazily upon first statement execution.
                 // So if the schema is up to date (no statements executed) then the LockFailException cannot be
                 // thrown.  If it is thrown, the the update needs to be rerun as it will probably generate no SQL
@@ -1150,8 +1217,11 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                 }
                 else
                 {
-                    schemaOutputFile = TempFileProvider.createTempFile("AlfrescoSchemaUpdate-All_Statements-", ".sql");
+                    schemaOutputFile = TempFileProvider.createTempFile(
+                            "AlfrescoSchema-" + dialect.getClass().getSimpleName() + "-All_Statements-",
+                            ".sql");
                 }
+                
                 StringBuilder executedStatements = executedStatementsThreadLocal.get();
                 if (executedStatements == null)
                 {
@@ -1179,10 +1249,60 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                     // Remove the flag indicating a running bootstrap
                     setBootstrapCompleted(connection);
                 }
+                
+                // Dump the normalized, post-upgrade Alfresco schema.
+                File xmlPostSchemaOutputFile = dumpSchema(
+                        connection,
+                        dialect,
+                        TempFileProvider.createTempFile(
+                                "AlfrescoSchema-" + dialect.getClass().getSimpleName() + "-",
+                                ".xml").getPath(),
+                        "Failed to dump normalized, post-upgrade schema to file.");
+                
+                // Report normalized dumps
+                if (createdSchema)
+                {
+                    // This is a new schema
+                    if (xmlPostSchemaOutputFile != null)
+                    {
+                        LogUtil.info(logger, MSG_NORMALIZED_SCHEMA, xmlPostSchemaOutputFile.getPath());
+                    }
+                }
+                else if (executedStatements != null)
+                {
+                    // We upgraded, so have to report pre- and post- schema dumps
+                    if (xmlPreSchemaOutputFile != null)
+                    {
+                        LogUtil.info(logger, MSG_NORMALIZED_SCHEMA_PRE, xmlPreSchemaOutputFile.getPath());
+                    }
+                    if (xmlPostSchemaOutputFile != null)
+                    {
+                        LogUtil.info(logger, MSG_NORMALIZED_SCHEMA_POST, xmlPostSchemaOutputFile.getPath());
+                    }
+                }
             }
             else
             {
                 LogUtil.info(logger, MSG_BYPASSING_SCHEMA_UPDATE);
+            }
+            
+            if (stopAfterSchemaBootstrap)
+            {
+                // We have been forced to stop, so we do one last dump of the schema and throw an exception to
+                // escape further startup procedures
+                File xmlStopSchemaOutputFile = dumpSchema(
+                        connection,
+                        dialect,
+                        TempFileProvider.createTempFile(
+                                "AlfrescoSchema-" + dialect.getClass().getSimpleName() + "-",
+                                "-ForcedExit.xml").getPath(),
+                        "Failed to dump normalized, post-upgrade, forced-exit schema to file.");
+                if (xmlStopSchemaOutputFile != null)
+                {
+                    LogUtil.info(logger, MSG_NORMALIZED_SCHEMA, xmlStopSchemaOutputFile);
+                }
+                LogUtil.error(logger, ERR_FORCED_STOP);
+                throw new BootstrapStopException();
             }
 
             // Reset the configuration
@@ -1190,6 +1310,11 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             
             // all done successfully
             ((ApplicationContext) event.getSource()).publishEvent(new SchemaAvailableEvent(this));
+        }
+        catch (BootstrapStopException e)
+        {
+            // We just let this out
+            throw e;
         }
         catch (Throwable e)
         {
@@ -1220,6 +1345,33 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             SchemaBootstrapConnectionProvider.setBootstrapConnection(null);
             
         }
+    }
+    
+    /**
+     * @return                  Returns the file that was written to or <tt>null</tt> if it failed
+     */
+    private File dumpSchema(Connection connection, Dialect dialect, String fileName, String err)
+    {
+        File xmlSchemaOutputFile = new File(fileName);
+        try
+        {
+            Main xmlSchemaOutputMain = new Main(connection, dialect);
+            xmlSchemaOutputMain.execute(xmlSchemaOutputFile);
+        }
+        catch (Throwable e)
+        {
+            xmlSchemaOutputFile = null;
+            // Don't fail the upgrade on this
+            if (logger.isDebugEnabled())
+            {
+                logger.debug(err, e);
+            }
+            else
+            {
+                logger.error(err + "  Error: " + e.getMessage());
+            }
+        }
+        return xmlSchemaOutputFile;
     }
 
     @Override

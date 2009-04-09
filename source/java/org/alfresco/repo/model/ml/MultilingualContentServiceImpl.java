@@ -51,6 +51,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
@@ -89,6 +90,7 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
     private PermissionService permissionService;
     private ContentFilterLanguagesService contentFilterLanguagesService;
     private FileFolderService fileFolderService;
+    private VersionService versionService;
 
     private BehaviourFilter policyBehaviourFilter;
 
@@ -259,6 +261,11 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
 
     private NodeRef makeTranslationImpl(NodeRef mlContainerNodeRef, NodeRef contentNodeRef, Locale locale)
     {
+        // Previous versions of the document are not compatible with the versioning requirements
+        // dictated by the aspects about to be added.  A version has to be forced if the aspect
+        // already exists.
+        // https://issues.alfresco.com/jira/browse/ETHREEOH-1657
+        boolean forceNewVersion = nodeService.hasAspect(contentNodeRef, ContentModel.ASPECT_VERSIONABLE);
         // Add the aspect using the given locale, of necessary
         if (!nodeService.hasAspect(contentNodeRef, ContentModel.ASPECT_MULTILINGUAL_DOCUMENT))
         {
@@ -271,6 +278,11 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
         {
             // The aspect is present, so just ensure that the locale is correct
             nodeService.setProperty(contentNodeRef, ContentModel.PROP_LOCALE, locale);
+        }
+        
+        if (forceNewVersion)
+        {
+            versionService.createVersion(contentNodeRef, null);
         }
 
         // Do we make use of an existing container?
@@ -961,6 +973,11 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
     public void setFileFolderService(FileFolderService fileFolderService)
     {
         this.fileFolderService = fileFolderService;
+    }
+
+    public void setVersionService(VersionService versionService)
+    {
+        this.versionService = versionService;
     }
 
     public void setPolicyBehaviourFilter(BehaviourFilter policyBehaviourFilter)

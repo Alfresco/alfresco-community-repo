@@ -24,6 +24,11 @@
  */
 package org.alfresco.repo.version.common;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Date;
@@ -37,6 +42,9 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionDoesNotExistException;
 import org.alfresco.service.cmr.version.VersionServiceException;
+import org.alfresco.util.TempFileProvider;
+import org.springframework.core.io.DefaultResourceLoader;
+import org.springframework.core.io.Resource;
 
 /**
  * VersionHistoryImpl Unit Test Class
@@ -208,6 +216,7 @@ public class VersionHistoryImplTest extends TestCase
     /**
      * Test getSuccessors
      */
+    @SuppressWarnings("unchecked")
     public void testGetSuccessors()
     {
         VersionHistoryImpl vh = testAddVersionImpl();
@@ -260,4 +269,75 @@ public class VersionHistoryImplTest extends TestCase
             System.out.println("Error message: " + exception.getMessage());
         }
     }    
+    
+    /**
+     * Checks that the current version can be serialized and deserialized.
+     */
+    public void testSerialize() throws Exception
+    {
+        File file = TempFileProvider.createTempFile(getName(), ".bin");
+        System.out.println("Test " + getName() + " writing to " + file.getPath());
+        ObjectOutputStream os = new ObjectOutputStream(new FileOutputStream(file));
+
+        VersionHistoryImpl vh = testAddVersionImpl();
+        try
+        {
+            os.writeObject(vh);
+        }
+        finally
+        {
+            try { os.close(); } catch (Throwable e) {}
+        }
+        ObjectInputStream is = new ObjectInputStream(new FileInputStream(file));
+        VersionHistoryImpl vhObj;
+        try
+        {
+            vhObj = (VersionHistoryImpl) is.readObject();
+        }
+        finally
+        {
+            try { is.close(); } catch (Throwable e) {}
+        }
+        assertNotNull(vhObj);
+        assertNotNull("No root version", vhObj.getRootVersion());
+        assertEquals(
+                "Deserialized object does not match original",
+                vh.getRootVersion().getFrozenStateNodeRef(),
+                vhObj.getRootVersion().getFrozenStateNodeRef());
+    }
+    
+    public static final String DESERIALIZE_V22SP4 = "classpath:version-history/VersionHistoryImplTest-testSerialize-V2.2.4.bin";
+    public static final String DESERIALIZE_V310_DEV = "classpath:version-history/VersionHistoryImplTest-testSerialize-V3.1.0-dev.bin";
+    public static final String DESERIALIZE_V310 = "classpath:version-history/VersionHistoryImplTest-testSerialize-V3.1.0.bin";
+    /**
+     * @see {@link #DESERIALIZE_V22SP4}
+     * @see {@link #DESERIALIZE_V310_DEV}
+     * @see {@link #DESERIALIZE_V310}
+     */
+    public void testDeserializeV22SP4() throws Exception
+    {
+        String[] resourceLocations = new String[] {
+                DESERIALIZE_V22SP4,
+                DESERIALIZE_V310_DEV,
+                DESERIALIZE_V310
+        };
+        for (String resourceLocation : resourceLocations)
+        {
+            Resource resource = new DefaultResourceLoader().getResource(resourceLocation);
+            assertNotNull("Unable to find " + resourceLocation, resource);
+            assertTrue("Unable to find " + resourceLocation, resource.exists());
+
+            @SuppressWarnings("unused")
+            VersionHistoryImpl vhObj;
+            ObjectInputStream is = new ObjectInputStream(resource.getInputStream());
+            try
+            {
+                vhObj = (VersionHistoryImpl) is.readObject();
+            }
+            finally
+            {
+                try { is.close(); } catch (Throwable e) {}
+            }
+        }
+    }
 }

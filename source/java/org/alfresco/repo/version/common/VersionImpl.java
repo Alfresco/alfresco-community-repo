@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -96,69 +96,61 @@ public class VersionImpl implements Version
     {
         return versionProperties.toString();
     }
-
-
-    /**
-     * Helper method to get the created date from the version property data.
-     * 
-     * @return the date the version was created (note: not the date of the original node)
-     */
-    public Date getCreatedDate()
+    
+    public Date getFrozenModifiedDate()
     {
-        return (Date)this.versionProperties.get(VersionBaseModel.PROP_CREATED_DATE);
+        Date modifiedDate = (Date)this.versionProperties.get(Version2Model.PROP_FROZEN_MODIFIED);
+        if (modifiedDate == null)
+        {
+            // Assume deprecated V1 version store
+            modifiedDate = (Date)this.versionProperties.get(VersionBaseModel.PROP_CREATED_DATE);
+        }
+        return modifiedDate;
     }
     
-    /**
-     * Helper method to get the creator from the version property data.
-     * 
-     * @return the creator of the version (note: not the creator of the original node)
-     */
+    public String getFrozenModifier()
+    {
+        String modifier = (String)this.versionProperties.get(Version2Model.PROP_FROZEN_MODIFIER);
+        if (modifier == null)
+        {
+            // Assume deprecated V1 version store
+            modifier = (String)this.versionProperties.get(VersionBaseModel.PROP_CREATOR);
+        }
+        return modifier;
+    }
+    
+    public Date getCreatedDate()
+    {
+        // note: internal version node created date can be retrieved via standard node service
+        return getFrozenModifiedDate();
+    }
+    
     public String getCreator()
     {
-        return (String)this.versionProperties.get(VersionBaseModel.PROP_CREATOR);
+        // note: internal version node creator can be retrieved via standard node service
+        return getFrozenModifier();
     }
-
-    /**
-     * Helper method to get the version label from the version property data.
-     * 
-     * @return the version label
-     */
+    
     public String getVersionLabel()
     {
         return (String)this.versionProperties.get(VersionBaseModel.PROP_VERSION_LABEL);
     }    
     
-    /**
-     * Helper method to get the version type.
-     * 
-     * @return  the value of the version type as an enum value
-     */
     public VersionType getVersionType()
     {
         return (VersionType)this.versionProperties.get(VersionBaseModel.PROP_VERSION_TYPE);
     }
     
-    /**
-     * Helper method to get the version description.
-     * 
-     * @return the version description
-     */
     public String getDescription()
     {
         return (String)this.versionProperties.get(Version.PROP_DESCRIPTION);
     }
     
-    /**
-     * @see org.alfresco.service.cmr.version.Version#getVersionProperties()
-     */
     public Map<String, Serializable> getVersionProperties()
     {
         return this.versionProperties;
     }
-
-    /**
-     * @see org.alfresco.service.cmr.version.Version#getVersionProperty(java.lang.String)
-     */
+    
     public Serializable getVersionProperty(String name)
     {
         Serializable result = null;
@@ -169,9 +161,6 @@ public class VersionImpl implements Version
         return result;
     }
     
-    /**
-     * @see org.alfresco.service.cmr.version.Version#getVersionedNodeRef()
-     */
     public NodeRef getVersionedNodeRef()
     {
         NodeRef versionedNodeRef = null;
@@ -193,10 +182,7 @@ public class VersionImpl implements Version
         
         return versionedNodeRef;
     }
-
-    /**
-     * @see org.alfresco.service.cmr.version.Version#getFrozenStateNodeRef()
-     */
+    
     public NodeRef getFrozenStateNodeRef()
     {
         return this.nodeRef;

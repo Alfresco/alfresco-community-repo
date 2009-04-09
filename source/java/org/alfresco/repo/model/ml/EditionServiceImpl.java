@@ -46,6 +46,7 @@ import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionHistory;
 import org.alfresco.service.cmr.version.VersionService;
@@ -222,6 +223,11 @@ public class EditionServiceImpl implements EditionService
     public Map<QName, Serializable> getVersionedMetadatas(Version version)
     {
         NodeRef frozenNodeRef = version.getFrozenStateNodeRef();
+        if (frozenNodeRef.getStoreRef().getIdentifier().equals("lightWeightVersionStore"))
+        {
+            // The data stored belonged to the old version store
+            Map<String, Serializable> versionProps = version.getVersionProperties();
+        }
 
         if(ContentModel.TYPE_MULTILINGUAL_CONTAINER.equals(nodeService.getType(frozenNodeRef)))
         {

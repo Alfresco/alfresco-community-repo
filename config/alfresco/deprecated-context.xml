@@ -1,0 +1,20 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+   <!-- Deprecated context -->
+
+
+   <!-- NOOP to override custom-activities-feed-context.xml (introduced in 3.0, 3.1)
+   
+        With 3.2, the activities feed context has been re-factored to use new Alfresco/iBatis hierarchical loading
+   
+        note: the following custom extension files are deprecated (and unused) with 3.2 and should be removed
+   
+        alfresco/extension/custom-activities-feed-context.xml
+        alfresco/extension/custom-activities-SqlMapConfig.xml
+   -->
+   <bean id="sqlMapClient" class="java.util.ArrayList"/>
+   
+</beans>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<entry xmlns="http://www.w3.org/2005/Atom" xmlns:cmis="http://www.cmis.org/2008/05">
+    <title>Updated Title ${NAME}</title>
+    <cmis:object>
+        <cmis:properties>
+            <cmis:propertyString cmis:name="cmiscustom_docprop_string"><cmis:value>custom ${NAME}</cmis:value></cmis:propertyString>
+        </cmis:properties>
+    </cmis:object>
+</entry>

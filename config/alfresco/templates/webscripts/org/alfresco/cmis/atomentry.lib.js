@@ -56,13 +56,12 @@ function createNode(parent, entry, slug)
         }
     }
     
-    // update node properties (excluding object type)
-    // TODO: consider array form of properties.names
-    var propNames = object.properties.names.toArray().filter( function(element, index, array) { return element != "ObjectTypeId"; } );
-    var updated = updateNode(node, entry, propNames, true);
+    // update node properties (excluding object type & name)
+    var exclude = [ "ObjectTypeId", "Name" ];
+    var updated = updateNode(node, entry, exclude, true);
 
     // only return node if updated successfully
-    return (updated === null) ? null : node;
+    return (updated == null) ? null : node;
 }
 
 
@@ -71,11 +70,11 @@ function createNode(parent, entry, slug)
 //
 // @param node  Alfresco node to update
 // @param entry  Atom entry to update from
-// @param propNames  properties to update
+// @param exclude  property names to exclude
 // @param pwc  true => node represents private working copy
 // @return  true => node has been updated (or null, in case of error)
 //
-function updateNode(node, entry, propNames, pwc)
+function updateNode(node, entry, exclude, pwc)
 {
     // check update is allowed
     if (!node.hasPermission("WriteProperties") || !node.hasPermission("WriteContent"))
@@ -88,23 +87,30 @@ function updateNode(node, entry, propNames, pwc)
     
     var updated = false;
     var object = entry.getExtension(atom.names.cmis_object);
-    var props = (object === null) ? null : object.properties;
+    var props = (object == null) ? null : object.properties;
     var vals = new Object();
 
     // apply defaults
     if (pwc == null) pwc = false;
-    if (propNames == null) propNames = (props !== null) ? props.names : null;
+    
+    // calculate list of properties to update
+    // TODO: consider array form of properties.names
+    var updateProps = (props == null) ? new Array() : props.names.toArray().filter(function(element, index, array) {return true;});
+    updateProps.push("Name");   // mapped to entry.title
+    var exclude = (exclude == null) ? new Array() : exclude;
+    exclude.push("BaseType");   // TODO: CMIS Issue where BaseType is not a property
+    updateProps = updateProps.filter(includeProperty, exclude);
     
     // build values to update
-    if (props !== null && propNames.length > 0)
+    if (updateProps.length > 0)
     {
         var typeDef = cmis.queryType(node);
         var propDefs = typeDef.propertyDefinitions;
-        for each (propName in propNames)
+        for each (propName in updateProps)
         {
             // is this a valid property?
             var propDef = propDefs[propName];
-            if (propDef === null)
+            if (propDef == null)
             {
                 status.code = 400;
                 status.message = "Property " + propName + " is not a known property for type " + typeDef.typeId;
@@ -112,47 +118,57 @@ function updateNode(node, entry, propNames, pwc)
                 return null;
             }
 
+// TODO: disabled for now to allow for PUT semantics - CMIS will move to POST for update
             // is the property write-able?
             if (propDef.updatability === Packages.org.alfresco.cmis.CMISUpdatabilityEnum.READ_ONLY)
             {
-                status.code = 500;
-                status.message = "Property " + propName + " cannot be updated. It is read only."
-                status.redirect = true;
-                return null;
+//                status.code = 500;
+//                status.message = "Property " + propName + " cannot be updated. It is read only."
+//                status.redirect = true;
+//                return null;
+                continue;
             }
             if (!pwc && propDef.updatability === Packages.org.alfresco.cmis.CMISUpdatabilityEnum.READ_AND_WRITE_WHEN_CHECKED_OUT)
             {
-                status.code = 500;
-                status.message = "Property " + propName + " can only be updated on a private working copy.";
-                status.redirect = true;
-                return null;
+//                status.code = 500;
+//                status.message = "Property " + propName + " can only be updated on a private working copy.";
+//                status.redirect = true;
+//               return null;
+                continue;
             }
             var mappedProperty = propDef.propertyAccessor.mappedProperty;
-            if (mappedProperty === null)
+            if (mappedProperty == null)
             {
-                status.code = 500;
-                status.message = "Internal error: Property " + propName + " does not map to a write-able Alfresco property";
-                status.redirect = true;
-                return null;
+//                status.code = 500;
+//                status.message = "Internal error: Property " + propName + " does not map to a write-able Alfresco property";
+//                status.redirect = true;
+//                return null;
+                continue;
             }
 
             // extract value
-            var prop = props.find(propName);
             var val = null;
-            if (!prop.isNull())
+            var prop = (props == null) ? null : props.find(propName);
+            if (prop != null && !prop.isNull())
             {
                 // TODO: handle multi-valued properties
                 val = prop.value;
             }
+            
+            // NOTE: special case name: entry.title overrides cmis:name
+            if (propName === "Name")
+            {
+                val = entry.title;
+            }
+            
             vals[mappedProperty.toString()] = val;
         }
     }
-    
-    // handle aspect specific properties
-    // NOTE: atom entry values override cmis:values
-    if (entry.title != null) vals["cm:name"] = entry.title;
-    if (entry.summary != null) vals["cm:description"] = entry.summary;
 
+    // NOTE: special case cm_description property (this is defined on an aspect, so not part of
+    //       formal CMIS type model
+    if (entry.summary != null) vals["cm:description"] = entry.summary;
+    
     // update node values
     for (val in vals)
     {
@@ -161,7 +177,7 @@ function updateNode(node, entry, propNames, pwc)
     }
 
     // handle content
-    if (entry.content != null)
+    if (entry.content != null && entry.contentSrc == null)
     {
         if (!node.isDocument)
         {
@@ -185,4 +201,19 @@ function updateNode(node, entry, propNames, pwc)
     }
     
     return updated;
+}
+
+
+// callback function for determining if property name should be excluded
+// note: this refers to array of property names to exclude
+function includeProperty(element, index, array)
+{
+    for each (exclude in this)
+    {
+        if (element == exclude)
+        {
+            return false;
+        }
+    }
+    return true;
 }

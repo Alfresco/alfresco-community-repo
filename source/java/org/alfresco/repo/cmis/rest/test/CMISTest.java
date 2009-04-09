@@ -25,6 +25,7 @@
 package org.alfresco.repo.cmis.rest.test;
 
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -38,9 +39,12 @@ import org.alfresco.web.scripts.TestWebScriptServer.GetRequest;
 import org.alfresco.web.scripts.TestWebScriptServer.PostRequest;
 import org.alfresco.web.scripts.TestWebScriptServer.PutRequest;
 import org.alfresco.web.scripts.TestWebScriptServer.Response;
+import org.apache.abdera.ext.cmis.CMISAllowableAction;
+import org.apache.abdera.ext.cmis.CMISAllowableActions;
 import org.apache.abdera.ext.cmis.CMISConstants;
 import org.apache.abdera.ext.cmis.CMISObject;
 import org.apache.abdera.i18n.iri.IRI;
+import org.apache.abdera.model.Element;
 import org.apache.abdera.model.Entry;
 import org.apache.abdera.model.Feed;
 import org.apache.abdera.model.Link;
@@ -67,8 +71,8 @@ public class CMISTest extends BaseCMISWebScriptTest
 //        setRemoteServer(server);
 //        setArgsAsHeaders(false);
 //        setValidateResponse(false);
-//        setListener(new CMISTestListener(System.out));
-//        setTraceReqRes(true);
+        setListener(new CMISTestListener(System.out));
+        setTraceReqRes(true);
         
         super.setUp();
     }
@@ -101,43 +105,25 @@ public class CMISTest extends BaseCMISWebScriptTest
         assertNotNull(entry);
     }
 
-    // TODO: check why this test is here
-//    public void testCreateDocument2()
-//        throws Exception
-//    {
-//        Entry testFolder = createTestFolder("testCreateDocument2");
-//        Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
-//        assertNotNull(childrenLink);
-//        String createFile = loadString("/org/alfresco/repo/cmis/rest/test/createdocument2.atomentry.xml");
-//        Response res = sendRequest(new PostRequest(childrenLink.getHref().toString(), createFile, Format.ATOM.mimetype()), 201, getAtomValidator());
-//        String xml = res.getContentAsString();
-//        Entry entry = abdera.parseEntry(new StringReader(xml), null);
-//        Response documentContentRes = sendRequest(new GetRequest(entry.getContentSrc().toString()), 200);
-//        String resContent = documentContentRes.getContentAsString();
-//        assertEquals("1", resContent);
-//    }
-
-    // TODO: Test creation of document via Atom Entry containing plain text (non Base64 encoded)
-//    public void testCreateDocumentBase64()
-//        throws Exception
-//    {
-//        Entry testFolder = createTestFolder("testCreateDocumentBase64");
-//        Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
-//        assertNotNull(childrenLink);
-//        Feed children = getFeed(childrenLink.getHref());
-//        assertNotNull(children);
-//        int entriesBefore = children.getEntries().size();
-//        Entry document = createDocument(children.getSelfLink().getHref(), "testCreateDocument", "/org/alfresco/repo/cmis/rest/test/createdocumentBase64.atomentry.xml");
-//        Response documentContentRes = sendRequest(new GetRequest(document.getContentSrc().toString()), 200);
-//        String testContent = loadString("/org/alfresco/repo/cmis/rest/test/createdocumentBase64.txt");
-//        String resContent = documentContentRes.getContentAsString();
-//        assertEquals(testContent, resContent);
-//        Feed feedFolderAfter = getFeed(childrenLink.getHref());
-//        int entriesAfter = feedFolderAfter.getEntries().size();
-//        assertEquals(entriesBefore +1, entriesAfter);
-//        Entry entry = feedFolderAfter.getEntry(document.getId().toString());
-//        assertNotNull(entry);
-//    }
+    public void testCreateAtomEntry()
+        throws Exception
+    {
+        Entry testFolder = createTestFolder("testCreateAtomEntry");
+        Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
+        assertNotNull(childrenLink);
+        Feed children = getFeed(childrenLink.getHref());
+        assertNotNull(children);
+        int entriesBefore = children.getEntries().size();
+        Entry document = createDocument(children.getSelfLink().getHref(), "Iñtërnâtiônàlizætiøn - 1.html", "/org/alfresco/repo/cmis/rest/test/createatomentry.atomentry.xml");
+        Response documentContentRes = sendRequest(new GetRequest(document.getContentSrc().toString()), 200);
+        String resContent = documentContentRes.getContentAsString();
+        assertEquals(document.getTitle(), resContent);
+        Feed feedFolderAfter = getFeed(childrenLink.getHref());
+        int entriesAfter = feedFolderAfter.getEntries().size();
+        assertEquals(entriesBefore +1, entriesAfter);
+        Entry entry = feedFolderAfter.getEntry(document.getId().toString());
+        assertNotNull(entry);
+    }
     
     public void testCreateFolder()
         throws Exception
@@ -554,6 +540,23 @@ public class CMISTest extends BaseCMISWebScriptTest
         assertEquals("updated content " + guid, contentRes.getContentAsString());
     }
 
+    public void testUpdateAtomEntry()
+        throws Exception
+    {
+        // retrieve test folder for update
+        Entry testFolder = createTestFolder("testUpdateAtomEntry");
+        Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
+        
+        // create document for update
+        Entry document = createDocument(childrenLink.getHref(), "testUpdateAtomEntry");
+        assertNotNull(document);
+    
+        // update
+        String updateFile = loadString("/org/alfresco/repo/cmis/rest/test/updateatomentry.atomentry.xml");
+        Response res = sendRequest(new PutRequest(document.getSelfLink().getHref().toString(), updateFile, Format.ATOMENTRY.mimetype()), 200, getAtomValidator());
+        assertNotNull(res);
+    }
+
     public void testContentStream()
         throws Exception
     {
@@ -594,47 +597,89 @@ public class CMISTest extends BaseCMISWebScriptTest
         {
             Entry child = createFolder(childrenLink.getHref(), "testFolderAllowableActions");
             assertNotNull(child);
-            Link allowableActions = child.getLink(CMISConstants.REL_ALLOWABLEACTIONS);
-            Response allowableActionsRes = sendRequest(new GetRequest(allowableActions.getHref().toString()), 200, getAtomValidator());
+            Link allowableActionsLink = child.getLink(CMISConstants.REL_ALLOWABLEACTIONS);
+            Response allowableActionsRes = sendRequest(new GetRequest(allowableActionsLink.getHref().toString()), 200, getAtomValidator());
             assertNotNull(allowableActionsRes);
-            // TODO: parse response with Abdera extension
+            Element allowableActions = getAbdera().parse(new StringReader(allowableActionsRes.getContentAsString()), null);
+            assertNotNull(allowableActions);
+            assertTrue(allowableActions instanceof CMISAllowableActions);
+            CMISObject childObject = child.getExtension(CMISConstants.OBJECT);
+            assertNotNull(childObject);
+            assertEquals(((CMISAllowableActions)allowableActions).getParentUrl(), child.getSelfLink().getHref().toString());
+            assertEquals(((CMISAllowableActions)allowableActions).getParentId(), childObject.getObjectId().getValue());
+            CMISAllowableActions objectAllowableActions = childObject.getExtension(CMISConstants.ALLOWABLEACTIONS);
+            assertNotNull(objectAllowableActions);
+            compareAllowableActions((CMISAllowableActions)allowableActions, objectAllowableActions);
 
             // retrieve getProperties() with includeAllowableActions flag
             Map<String, String> args = new HashMap<String, String>();
             args.put("includeAllowableActions", "true");
-            Response getPropertiesRes = sendRequest(new GetRequest(child.getSelfLink().getHref().toString()).setArgs(args), 200, getAtomValidator());
-            assertNotNull(getPropertiesRes);
-            // TODO: parse response with Abdera extension
-            
-            // TODO: test equality between getAllowableActions and getProperties
+            Entry properties = getEntry(child.getSelfLink().getHref(), args);
+            assertNotNull(properties);
+            CMISObject propObject = properties.getExtension(CMISConstants.OBJECT);
+            assertNotNull(propObject);
+            CMISAllowableActions propAllowableActions = propObject.getExtension(CMISConstants.ALLOWABLEACTIONS);
+            assertNotNull(propAllowableActions);
+            compareAllowableActions((CMISAllowableActions)allowableActions, propAllowableActions);
         }
 
         // test allowable actions for document
         {
             Entry child = createDocument(childrenLink.getHref(), "testDocumentAllowableActions");
             assertNotNull(child);
-            Link allowableActions = child.getLink(CMISConstants.REL_ALLOWABLEACTIONS);
-            Response allowableActionsRes = sendRequest(new GetRequest(allowableActions.getHref().toString()), 200, getAtomValidator());
+            Link allowableActionsLink = child.getLink(CMISConstants.REL_ALLOWABLEACTIONS);
+            Response allowableActionsRes = sendRequest(new GetRequest(allowableActionsLink.getHref().toString()), 200, getAtomValidator());
             assertNotNull(allowableActionsRes);
-            // TODO: parse response with Abdera extension
-            
+            Element allowableActions = getAbdera().parse(new StringReader(allowableActionsRes.getContentAsString()), null);
+            assertNotNull(allowableActions);
+            assertTrue(allowableActions instanceof CMISAllowableActions);
+            CMISObject childObject = child.getExtension(CMISConstants.OBJECT);
+            assertNotNull(childObject);
+            assertEquals(((CMISAllowableActions)allowableActions).getParentUrl(), child.getSelfLink().getHref().toString());
+            assertEquals(((CMISAllowableActions)allowableActions).getParentId(), childObject.getObjectId().getValue());
+            CMISAllowableActions objectAllowableActions = childObject.getExtension(CMISConstants.ALLOWABLEACTIONS);
+            assertNotNull(objectAllowableActions);
+            compareAllowableActions((CMISAllowableActions)allowableActions, objectAllowableActions);
+
             // retrieve getProperties() with includeAllowableActions flag
             Map<String, String> args = new HashMap<String, String>();
             args.put("includeAllowableActions", "true");
-            Response getPropertiesRes = sendRequest(new GetRequest(child.getSelfLink().getHref().toString()).setArgs(args), 200, getAtomValidator());
-            assertNotNull(getPropertiesRes);
-            // TODO: parse response with Abdera extension
-            
-            // TODO: test equality between getAllowableActions and getProperties
+            Entry properties = getEntry(child.getSelfLink().getHref(), args);
+            assertNotNull(properties);
+            CMISObject propObject = properties.getExtension(CMISConstants.OBJECT);
+            assertNotNull(propObject);
+            CMISAllowableActions propAllowableActions = propObject.getExtension(CMISConstants.ALLOWABLEACTIONS);
+            assertNotNull(propAllowableActions);
+            compareAllowableActions((CMISAllowableActions)allowableActions, propAllowableActions);
         }
         
         // test allowable actions for children
         {
             Map<String, String> args = new HashMap<String, String>();
             args.put("includeAllowableActions", "true");
-            Response allowableActionsRes = sendRequest(new GetRequest(childrenLink.getHref().toString()).setArgs(args), 200, getAtomValidator());
-            assertNotNull(allowableActionsRes);
-            // TODO: parse response with Abdera extension
+            Feed children = getFeed(childrenLink.getHref(), args);
+            assertNotNull(children);
+            for (Entry child : children.getEntries())
+            {
+                // extract allowable actions from child
+                CMISObject childObject = child.getExtension(CMISConstants.OBJECT);
+                assertNotNull(childObject);
+                CMISAllowableActions objectAllowableActions = childObject.getExtension(CMISConstants.ALLOWABLEACTIONS);
+                assertNotNull(objectAllowableActions);
+                
+                // retrieve allowable actions from link
+                Link allowableActionsLink = child.getLink(CMISConstants.REL_ALLOWABLEACTIONS);
+                Response allowableActionsRes = sendRequest(new GetRequest(allowableActionsLink.getHref().toString()), 200, getAtomValidator());
+                assertNotNull(allowableActionsRes);
+                Element allowableActions = getAbdera().parse(new StringReader(allowableActionsRes.getContentAsString()), null);
+                assertNotNull(allowableActions);
+                assertTrue(allowableActions instanceof CMISAllowableActions);
+                
+                // compare the two
+                assertEquals(((CMISAllowableActions)allowableActions).getParentUrl(), child.getSelfLink().getHref().toString());
+                assertEquals(((CMISAllowableActions)allowableActions).getParentId(), childObject.getObjectId().getValue());
+                compareAllowableActions((CMISAllowableActions)allowableActions, objectAllowableActions);
+            }
         }
     }
     
@@ -1247,12 +1292,25 @@ public class CMISTest extends BaseCMISWebScriptTest
             assertNotNull(queryFeed);
             assertEquals(3, queryFeed.getEntries().size());
             
-            //for (Entry entry : queryFeed.getEntries())
-            //{
-                // TODO: parse response with Abdera extension
-                // TODO: test against cmis-allowableactions link
-            //}
-            
+            for (Entry child : queryFeed.getEntries())
+            {
+                // extract allowable actions from child
+                CMISObject childObject = child.getExtension(CMISConstants.OBJECT);
+                assertNotNull(childObject);
+                CMISAllowableActions childAllowableActions = childObject.getExtension(CMISConstants.ALLOWABLEACTIONS);
+                assertNotNull(childAllowableActions);
+                
+                // retrieve allowable actions from link
+                Map<String, String> args = new HashMap<String, String>();
+                args.put("includeAllowableActions", "true");
+                Entry entry = getEntry(child.getSelfLink().getHref(), args);
+                CMISObject entryObject = entry.getExtension(CMISConstants.OBJECT);
+                assertNotNull(entryObject);
+                CMISAllowableActions entryAllowableActions = entryObject.getExtension(CMISConstants.ALLOWABLEACTIONS);
+                
+                // compare the two
+                compareAllowableActions(childAllowableActions, entryAllowableActions);
+            }
         }
     }
 
@@ -1260,5 +1318,25 @@ public class CMISTest extends BaseCMISWebScriptTest
 //    public void testUnfiled()
 //    {
 //    }
+
+    
+    /**
+     * Compare two sets of allowable actions
+     */
+    private void compareAllowableActions(CMISAllowableActions left, CMISAllowableActions right)
+    {
+        List<String> rightactions = new ArrayList<String>(right.getNames());
+        for (String action : left.getNames())
+        {
+            assertTrue(rightactions.contains(action));
+            CMISAllowableAction leftAction = left.find(action);
+            assertNotNull(leftAction);
+            CMISAllowableAction rightAction = right.find(action);
+            assertNotNull(rightAction);
+            assertEquals(leftAction.isAllowed(), rightAction.isAllowed());
+            rightactions.remove(action);
+        }
+        assertTrue(rightactions.size() == 0);
+    }
     
 }

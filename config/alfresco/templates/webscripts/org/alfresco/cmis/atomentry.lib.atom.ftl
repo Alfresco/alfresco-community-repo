@@ -26,7 +26,7 @@
 [@linkstream node "edit-media"/]
 [@documentCMISLinks node=node/]
 <published>${xmldate(node.properties.created)}</published>
-<summary>${node.properties.description!node.properties.title!cropContent(node, 50)}</summary>
+<summary>[@contentsummary node/]</summary>
 <title>${node.name}</title>
 <updated>${xmldate(node.properties.modified)}</updated>
 <cmis:object>
@@ -36,7 +36,6 @@
 <cmis:terminator/>
 <app:edited>${xmldate(node.properties.modified)}</app:edited>
 <alf:icon>${absurl(url.context)}${node.icon16}</alf:icon>
-<alf:noderef>${node.nodeRef}</alf:noderef>
 [/@entry]
 [/#macro]
 
@@ -76,7 +75,7 @@
 [@linkstream node "enclosure"/]
 [@documentCMISLinks node=node/]
 <published>${xmldate(node.properties.created)}</published>
-<summary>${node.properties.description!node.properties.title!cropContent(node.properties.content, 50)}</summary>
+<summary>[@contentsummary node/]</summary>
 <title>${node.name}</title>
 <updated>${xmldate(node.properties.modified)}</updated>
 <cmis:object>
@@ -85,7 +84,6 @@
 <cmis:terminator/>
 <app:edited>${xmldate(node.properties.modified)}</app:edited>
 <alf:icon>${absurl(url.context)}${node.icon16}</alf:icon>
-<alf:noderef>${node.nodeRef}</alf:noderef>
 [/@entry]
 [/#macro]
 
@@ -105,7 +103,7 @@
 [@linkstream node "edit-media"/]
 [@documentCMISLinks node=node/]
 <published>${xmldate(node.properties.created)}</published>
-<summary>${node.properties.description!node.properties.title!cropContent(node.properties.content, 50)}</summary>
+<summary>[@contentsummary node/]</summary>
 <title>${node.name}</title>
 <updated>${xmldate(node.properties.modified)}</updated>
 <cmis:object>
@@ -116,7 +114,6 @@
 <app:edited>${xmldate(node.properties.modified)}</app:edited>
 [#-- TODO: the edit link refers to the updatable node resource, allowing updates on PWCs without checkin --]
 <alf:icon>${absurl(url.context)}${node.icon16}</alf:icon>
-<alf:noderef>${node.nodeRef}</alf:noderef>
 [/@entry]
 [/#macro]
 
@@ -155,7 +152,6 @@
 <cmis:terminator/>
 <app:edited>${xmldate(node.properties.modified)}</app:edited>
 <alf:icon>${absurl(url.context)}${node.icon16}</alf:icon>
-<alf:noderef>${node.nodeRef}</alf:noderef>
 [/@entry]
 [/#macro]
 
@@ -232,7 +228,6 @@
 </cmis:object>
 <cmis:terminator/>
 [#if row.nodes??]<alf:icon>${absurl(url.context)}${node.icon16}</alf:icon>[/#if]
-<alf:noderef>${node.nodeRef}</alf:noderef>
 [/@entry]
 [/#macro]
 
@@ -568,6 +563,8 @@
 [/#if]
 [/#macro]
 
+[#-- Helper to render Atom Summary --]
+[#macro contentsummary node][#if node.properties.description??]${node.properties.description}[#elseif node.properties.title??]${node.properties.title}[#elseif node.mimetype?? && node.mimetype == "text/plain"]${cropContent(node.properties.content, 50)}[#else]${node.properties.name}[/#if][/#macro]
 
 [#-- Helper to render Alfresco content type to Atom content type --]
 [#macro contenttype type][#if type == "text/html"]text[#elseif type == "text/xhtml"]xhtml[#elseif type == "text/plain"]text<#else>${type}[/#if][/#macro]
@@ -579,7 +576,7 @@
 [#macro linkstream node rel=""]<link[#if rel !=""] rel="${rel}"[/#if][#if node.mimetype??] type="${node.mimetype}"[/#if] href="[@contenturi node/]"/>[/#macro]
 
 [#-- Helper to render Alfresco content stream uri --]
-[#macro contenturi node]${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/content[#if node.properties.name??].${encodeuri(node.properties.name)}[/#if][/#macro]
+[#macro contenturi node]${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/content[#if node.properties.name?? && node.properties.name?last_index_of(".") != -1]${encodeuri(node.properties.name?substring(node.properties.name?last_index_of(".")))}[/#if][/#macro]
 
 [#-- Helper to render Alfresco service document uri --]
 [#macro serviceuri]${absurl(url.serviceContext)}/api/repository[/#macro]

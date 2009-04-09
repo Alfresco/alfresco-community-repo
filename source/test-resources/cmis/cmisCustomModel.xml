@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<model name="aiim:aiimmodel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+<model name="cmiscustom:model" xmlns="http://www.alfresco.org/model/dictionary/1.0">
 
-    <description>AIIM Content Model</description>
-    <author>Dr. Q</author>
+    <description>CMIS Custom Model</description>
+    <author>Alfresco</author>
     <version>1.0</version>
 
     <imports>
@@ -13,280 +13,31 @@
     </imports>
 
     <namespaces>
-        <namespace uri="http://www.alfresco.org/model/aiim" prefix="aiim"/>
+        <namespace uri="http://www.alfresco.org/model/cmis/custom" prefix="cmiscustom"/>
     </namespaces>
 
-    <constraints>
-        <!-- Title constraint Limited size -->
-        <constraint name="aiim:TitleLength" type="LENGTH">
-            <parameter name="minLength"><value>0</value></parameter>
-            <parameter name="maxLength"><value>100</value></parameter>
-        </constraint>
-        <!-- Sub title constraint Limited size -->
-        <constraint name="aiim:SubTitleLength" type="LENGTH">
-            <parameter name="minLength"><value>0</value></parameter>
-            <parameter name="maxLength"><value>100</value></parameter>
-        </constraint>
-        <!-- Author constraint Limited size -->
-        <constraint name="aiim:AuthorLength" type="LENGTH">
-            <parameter name="minLength"><value>0</value></parameter>
-            <parameter name="maxLength"><value>25</value></parameter>
-        </constraint>
-        <!-- Keyword constraint Limited size -->
-        <constraint name="aiim:KeywordLength" type="LENGTH">
-            <parameter name="minLength"><value>0</value></parameter>
-            <parameter name="maxLength"><value>50</value></parameter>
-        </constraint>
-        <!-- SourceRef constraint Limited size -->
-        <constraint name="aiim:SourceRepLength" type="LENGTH">
-            <parameter name="minLength"><value>0</value></parameter>
-            <parameter name="maxLength"><value>25</value></parameter>
-        </constraint>
-        <!-- InfoManTopic constraint Limited size -->
-        <constraint name="aiim:InfoManTopicLength" type="LENGTH">
-            <parameter name="minLength"><value>0</value></parameter>
-            <parameter name="maxLength"><value>60</value></parameter>
-        </constraint>
-        <!-- ITTopic constraint Limited size -->
-        <constraint name="aiim:ITTopicLength" type="LENGTH">
-            <parameter name="minLength"><value>0</value></parameter>
-            <parameter name="maxLength"><value>40</value></parameter>
-        </constraint>
-        <!-- Industry constraint Limited size -->
-        <constraint name="aiim:IndustryLength" type="LENGTH">
-            <parameter name="minLength"><value>0</value></parameter>
-            <parameter name="maxLength"><value>30</value></parameter>
-        </constraint>
-        <!-- LifeCycleStage constraint Limited size -->
-        <constraint name="aiim:LifeCycleStageLength" type="LENGTH">
-            <parameter name="minLength"><value>0</value></parameter>
-            <parameter name="maxLength"><value>25</value></parameter>
-        </constraint>
-        <!-- InfoManTopic constraint List -->
-        <constraint name="aiim:InfoManTopicList" type="LIST">
-            <parameter name="allowedValues">
-                <list>
-                    <value>Business Process Management (BPM)</value>
-                    <value>Content/Knowledge Organization</value>
-                    <value>Digital Asset Management (DAM)</value>
-                    <value>Document Management</value>
-                    <value>Email Archiving</value>
-                    <value>Findability/Information Organization and Access (IOA)</value>
-                    <value>Records Management</value>
-                    <value>Web Content Management (WCM)</value>
-                    <value>Other</value>
-                </list>
-            </parameter>
-            <parameter name="caseSensitive"><value>true</value></parameter>
-        </constraint>
-        <!-- ITTopic constraint List -->
-        <constraint name="aiim:ITTopicList" type="LIST">
-            <parameter name="allowedValues">
-                <list>
-                    <value>Disaster Recovery</value>
-                    <value>Green Computing</value>
-                    <value>Imaging</value>
-                    <value>Security</value>
-                    <value>Service Oriented Architecture(SOA)</value>
-                    <value>Software as a Service(SaaS)</value>
-                    <value>Standards</value>
-                    <value>Usability</value>
-                    <value>Other</value>
-                </list>
-            </parameter>
-            <parameter name="caseSensitive"><value>true</value></parameter>
-        </constraint>
-        <!-- Industry constraint List -->
-        <constraint name="aiim:IndustryList" type="LIST">
-            <parameter name="allowedValues">
-                <list>
-                    <value>Energy</value>
-                    <value>Financial Services</value>
-                    <value>Federal Government</value>
-                    <value>Health Services</value>
-                    <value>Email Archiving</value>
-                    <value>Manufacturing</value>
-                    <value>State and Local Government</value>
-                    <value>Other</value>
-                </list>
-            </parameter>
-            <parameter name="caseSensitive"><value>true</value></parameter>
-        </constraint>
-        <!-- LifeCycleStage constraint List -->
-        <constraint name="aiim:LifeCycleStageList" type="LIST">
-            <parameter name="allowedValues">
-                <list>
-                    <value>Planning</value>
-                    <value>Requirements</value>
-                    <value>Design</value>
-                    <value>Development</value>
-                    <value>Deployment</value>
-                    <value>Ongoing Maintenance</value>
-                    <value>N/A</value>
-                </list>
-            </parameter>
-            <parameter name="caseSensitive"><value>true</value></parameter>
-        </constraint>
-    </constraints>  
-
     <types>
-      <type name="aiim:content">
-         <title>AIIM Content</title>
-         <parent>cm:content</parent>
-         <mandatory-aspects>
-            <aspect>aiim:properties</aspect>
-         </mandatory-aspects>
+      <type name="cmiscustom:folder">
+         <title>Custom Folder</title>
+         <parent>cm:folder</parent>
+         <properties>
+            <property name="cmiscustom:folderprop_string">
+                <title>Custom Folder Property (string)</title>
+                <type>d:text</type>
+            </property>
+         </properties>
       </type>
-    </types>  
-    <aspects>
-        <!-- Definition of aiim properties Aspect -->
-        <aspect name="aiim:properties">
-            <title>AIIM Properties</title>
-            <properties>
-                <property name="aiim:Title">
-                    <title>AIIM Title</title>
-                    <type>d:text</type>
-                    <mandatory enforced="false">true</mandatory>
-                    <index enabled="true">
-                        <atomic>false</atomic>
-                        <stored>false</stored>
-                        <tokenised>true</tokenised>
-                    </index>
-                    <constraints>
-                        <constraint ref="aiim:TitleLength"/>
-                    </constraints>
-                </property>
-                <property name="aiim:SubTitle">
-                    <title>AIIM Sub Title</title>
-                    <type>d:text</type>
-                    <mandatory>false</mandatory>
-                    <index enabled="true">
-                        <atomic>false</atomic>
-                        <stored>false</stored>
-                        <tokenised>true</tokenised>
-                    </index>
-                    <constraints>
-                        <constraint ref="aiim:SubTitleLength"/>
-                    </constraints>
-                </property>
-                <property name="aiim:Authors">
-                    <title>AIIM Authors</title>
-                    <type>d:text</type>
-                    <mandatory>false</mandatory>
-                    <multiple>true</multiple>
-                    <index enabled="true">
-                        <atomic>false</atomic>
-                        <stored>false</stored>
-                        <tokenised>true</tokenised>
-                    </index>
-                    <constraints>
-                        <constraint ref="aiim:AuthorLength"/>
-                    </constraints>
-                </property>
-                <property name="aiim:PublicationDate">
-                    <title>AIIM Publication Date</title>
-                    <type>d:date</type>
-                    <mandatory enforced="false">true</mandatory>
-                    <index enabled="true">
-                        <atomic>false</atomic>
-                        <stored>false</stored>
-                        <tokenised>true</tokenised>
-                    </index>
-                </property>
-                <property name="aiim:Keywords">
-                    <title>AIIM Keywords</title>
-                    <type>d:text</type>
-                    <mandatory>false</mandatory>
-                    <multiple>true</multiple>
-                    <index enabled="true">
-                        <atomic>false</atomic>
-                        <stored>false</stored>
-                        <tokenised>true</tokenised>
-                    </index>
-                    <constraints>
-                        <constraint ref="aiim:KeywordLength"/>
-                    </constraints>
-                </property>
-                <property name="aiim:SourceRep">
-                    <title>AIIM Source Rep</title>
-                    <type>d:text</type>
-                    <mandatory enforced="false">true</mandatory>
-                    <default>Alfresco</default>
-                    <index enabled="true">
-                        <atomic>false</atomic>
-                        <stored>false</stored>
-                        <tokenised>true</tokenised>
-                    </index>
-                    <constraints>
-                        <constraint ref="aiim:SourceRepLength"/>
-                    </constraints>
-                </property>
-                <property name="aiim:InfoManTopics">
-                    <title>AIIM Info Man Topic</title>
-                    <type>d:text</type>
-                    <mandatory>false</mandatory>
-                    <multiple>true</multiple>
-                    <default>Other</default>
-                    <index enabled="true">
-                        <atomic>false</atomic>
-                        <stored>false</stored>
-                        <tokenised>true</tokenised>
-                    </index>
-                    <constraints>
-                        <constraint ref="aiim:InfoManTopicLength"/>
-                        <constraint ref="aiim:InfoManTopicList"/>
-                    </constraints>
-                </property>
-                <property name="aiim:ITTopics">
-                    <title>AIIM IT Topic</title>
-                    <type>d:text</type>
-                    <mandatory>false</mandatory>
-                    <multiple>true</multiple>
-                    <default>Other</default>
-                    <index enabled="true">
-                        <atomic>false</atomic>
-                        <stored>false</stored>
-                        <tokenised>true</tokenised>
-                    </index>
-                    <constraints>
-                        <constraint ref="aiim:ITTopicLength"/>
-                        <constraint ref="aiim:ITTopicList"/>
-                    </constraints>
-                </property>
-                <property name="aiim:Industries">
-                    <title>AIIM Industry</title>
-                    <type>d:text</type>
-                    <mandatory>false</mandatory>
-                    <multiple>true</multiple>
-                    <default>Other</default>
-                    <index enabled="true">
-                        <atomic>false</atomic>
-                        <stored>false</stored>
-                        <tokenised>true</tokenised>
-                    </index>
-                    <constraints>
-                        <constraint ref="aiim:IndustryLength"/>
-                        <constraint ref="aiim:IndustryList"/>
-                    </constraints>
-                </property>
-                <property name="aiim:LifeCycleStages">
-                    <title>AIIM Life Cycle Stage</title>
-                    <type>d:text</type>
-                    <mandatory>false</mandatory>
-                    <multiple>true</multiple>
-                    <default>N/A</default>
-                    <index enabled="true">
-                        <atomic>false</atomic>
-                        <stored>false</stored>
-                        <tokenised>true</tokenised>
-                    </index>
-                    <constraints>
-                        <constraint ref="aiim:LifeCycleStageLength"/>
-                        <constraint ref="aiim:LifeCycleStageList"/>
-                    </constraints>
-                </property>
-            </properties>
-        </aspect>
-    </aspects>
+    
+      <type name="cmiscustom:document">
+         <title>Custom Document</title>
+         <parent>cm:content</parent>
+         <properties>
+            <property name="cmiscustom:docprop_string">
+                <title>Custom Document Property (string)</title>
+                <type>d:text</type>
+            </property>
+         </properties>
+      </type>
+    </types>
 
 </model>

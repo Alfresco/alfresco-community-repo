@@ -24,21 +24,23 @@
  */
 package org.alfresco.repo.cmis.rest.test;
 
-import java.io.Serializable;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.StringReader;
 
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
-import org.alfresco.service.cmr.model.FileFolderService;
-import org.alfresco.service.cmr.model.FileInfo;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.namespace.QName;
+import org.alfresco.util.GUID;
+import org.alfresco.web.scripts.Format;
+import org.alfresco.web.scripts.TestWebScriptServer.DeleteRequest;
 import org.alfresco.web.scripts.TestWebScriptServer.GetRequest;
+import org.alfresco.web.scripts.TestWebScriptServer.PostRequest;
+import org.alfresco.web.scripts.TestWebScriptServer.PutRequest;
+import org.alfresco.web.scripts.TestWebScriptServer.Response;
+import org.apache.abdera.ext.cmis.CMISConstants;
+import org.apache.abdera.ext.cmis.CMISObject;
+import org.apache.abdera.ext.cmis.CMISProperties;
+import org.apache.abdera.ext.cmis.CMISProperty;
 import org.apache.abdera.i18n.iri.IRI;
 import org.apache.abdera.model.Entry;
+import org.apache.abdera.model.Feed;
+import org.apache.abdera.model.Link;
 
 
 /**
@@ -48,7 +50,7 @@ import org.apache.abdera.model.Entry;
  */
 public class CMISCustomTypeTest extends BaseCMISWebScriptTest
 {
-    private static String TEST_NAMESPACE = "http://www.alfresco.org/model/aiim";
+    private static String TEST_NAMESPACE = "http://www.alfresco.org/model/cmis/custom";
     
     
     @Override
@@ -62,65 +64,189 @@ public class CMISCustomTypeTest extends BaseCMISWebScriptTest
 //      server.username = "admin";
 //      server.password = "admin";
 //      setRemoteServer(server);
-//        setArgsAsHeaders(false);
-//        setValidateResponse(false);
-//        setListener(new CMISTestListener(System.out));
-//        setTraceReqRes(true);
+//      setArgsAsHeaders(false);
+//      setValidateResponse(false);
+      setListener(new CMISTestListener(System.out));
+      setTraceReqRes(true);
 
-        
-//        initServer("classpath:wcm/wcm-jbpm-context.xml");
-//        
-//        this.authenticationService = (AuthenticationService)getServer().getApplicationContext().getBean("AuthenticationService");
-//        this.authenticationComponent = (AuthenticationComponent)getServer().getApplicationContext().getBean("authenticationComponent");
-//        this.personService = (PersonService)getServer().getApplicationContext().getBean("PersonService");
-//              
-//        this.authenticationComponent.setSystemUserAsCurrentUser();
-//        
-//        // Create users
-//        createUser(USER_ONE);
-//        createUser(USER_TWO);
-//        createUser(USER_THREE);
-//        createUser(USER_FOUR);
-//        
-//        // Do tests as user one
-//        this.authenticationComponent.setCurrentUser(USER_ONE);
-//        
         super.setUp();
     }
 
-    public void testX()
+    
+    public void testCreateFolder()
         throws Exception
     {
-        IRI rootHREF = getRootChildrenCollection(getWorkspace(getRepository()));
-        sendRequest(new GetRequest(rootHREF.toString()), 200, getAtomValidator());
+        Entry testFolder = createTestFolder("testCreateCustomFolder");
+        Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
+        assertNotNull(childrenLink);
+        Feed children = getFeed(childrenLink.getHref());
+        assertNotNull(children);
+        int entriesBefore = children.getEntries().size();
+        Entry folder = createFolder(children.getSelfLink().getHref(), "testCreateCustomFolder", "/org/alfresco/repo/cmis/rest/test/createcustomfolder.atomentry.xml");
+        Feed feedFolderAfter = getFeed(childrenLink.getHref());
+        int entriesAfter = feedFolderAfter.getEntries().size();
+        assertEquals(entriesBefore +1, entriesAfter);
+        Entry entry = feedFolderAfter.getEntry(folder.getId().toString());
+        CMISObject object = entry.getExtension(CMISConstants.OBJECT);
+        assertEquals("F/cmiscustom_folder", object.getObjectTypeId().getValue());
+        CMISProperty customProp = object.getProperties().find("cmiscustom_folderprop_string");
+        assertNotNull(customProp);
+        assertEquals("custom string", customProp.getValue());
     }
 
-    
-    public void testCreateSubType()
+    public void testCreateDocument()
         throws Exception
     {
-        final Entry testFolder = createTestFolder("testCreateSubType");
-        final NodeRef testFolderRef = getNodeRef(testFolder);
+        Entry testFolder = createTestFolder("testCreateCustomDocument");
+        Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
+        assertNotNull(childrenLink);
+        Feed children = getFeed(childrenLink.getHref());
+        assertNotNull(children);
+        int entriesBefore = children.getEntries().size();
+        Entry folder = createDocument(children.getSelfLink().getHref(), "testCreateCustomDocument", "/org/alfresco/repo/cmis/rest/test/createcustomdocument.atomentry.xml");
+        Feed feedFolderAfter = getFeed(childrenLink.getHref());
+        int entriesAfter = feedFolderAfter.getEntries().size();
+        assertEquals(entriesBefore +1, entriesAfter);
+        Entry entry = feedFolderAfter.getEntry(folder.getId().toString());
+        CMISObject object = entry.getExtension(CMISConstants.OBJECT);
+        assertEquals("D/cmiscustom_document", object.getObjectTypeId().getValue());
+        CMISProperty customProp = object.getProperties().find("cmiscustom_docprop_string");
+        assertNotNull(customProp);
+        assertEquals("custom string", customProp.getValue());
+    }
 
-        // create node
-        // TODO: For now create item via Alfresco foundation APIs
-        //       When multi-valued props supported, move to pure CMIS Create
-        AuthenticationUtil.runAs(new RunAsWork<Object>()
+    public void testUpdate()
+        throws Exception
+    {
+        // retrieve test folder for update
+        Entry testFolder = createTestFolder("testUpdateCustomDocument");
+        Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
+        
+        // create document for update
+        Entry document = createDocument(childrenLink.getHref(), "testUpdateCustomDocument", "/org/alfresco/repo/cmis/rest/test/createcustomdocument.atomentry.xml");
+        assertNotNull(document);
+        
+        // update
+        String updateFile = loadString("/org/alfresco/repo/cmis/rest/test/updatecustomdocument.atomentry.xml");
+        String guid = GUID.generate();
+        updateFile = updateFile.replace("${NAME}", guid);
+        Response res = sendRequest(new PutRequest(document.getSelfLink().getHref().toString(), updateFile, Format.ATOMENTRY.mimetype()), 200, getAtomValidator());
+        assertNotNull(res);
+        Entry updated = getAbdera().parseEntry(new StringReader(res.getContentAsString()), null);
+        
+        // ensure update occurred
+        assertEquals(document.getId(), updated.getId());
+        assertEquals(document.getPublished(), updated.getPublished());
+        assertEquals("Updated Title " + guid, updated.getTitle());
+        CMISObject object = updated.getExtension(CMISConstants.OBJECT);
+        assertEquals("D/cmiscustom_document", object.getObjectTypeId().getValue());
+        CMISProperty customProp = object.getProperties().find("cmiscustom_docprop_string");
+        assertNotNull(customProp);
+        assertEquals("custom " + guid, customProp.getValue());
+    }
+ 
+    public void testDelete()
+        throws Exception
+    {
+        // retrieve test folder for deletes
+        Entry testFolder = createTestFolder("testDeleteCustom");
+        Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
+        Feed children = getFeed(childrenLink.getHref());
+        int entriesBefore = children.getEntries().size();
+        
+        // create document for delete
+        Entry document = createDocument(childrenLink.getHref(), "testDeleteCustomDocument", "/org/alfresco/repo/cmis/rest/test/createcustomdocument.atomentry.xml");
+        Response documentRes = sendRequest(new GetRequest(document.getSelfLink().getHref().toString()), 200, getAtomValidator());
+        assertNotNull(documentRes);
+
+        // ensure document has been created
+        Feed children2 = getFeed(childrenLink.getHref());
+        assertNotNull(children2);
+        int entriesAfterCreate = children2.getEntries().size();
+        assertEquals(entriesAfterCreate, entriesBefore +1);
+    
+        // delete
+        Response deleteRes = sendRequest(new DeleteRequest(document.getSelfLink().getHref().toString()), 204);
+        assertNotNull(deleteRes);
+    
+        // ensure document has been deleted
+        Feed children3 = getFeed(childrenLink.getHref());
+        assertNotNull(children3);
+        int entriesAfterDelete = children3.getEntries().size();
+        assertEquals(entriesBefore, entriesAfterDelete);
+    }
+    
+    public void testQuery()
+        throws Exception
+    {
+        // retrieve query collection
+        IRI queryHREF = getQueryCollection(getWorkspace(getRepository()));
+        
+        // retrieve test folder for query
+        Entry testFolder = createTestFolder("testQueryCustom");
+        CMISObject testFolderObject = testFolder.getExtension(CMISConstants.OBJECT);
+        Link childrenLink = testFolder.getLink(CMISConstants.REL_CHILDREN);
+        
+        // create documents to query
+        // Standard root document
+        Entry document1 = createDocument(childrenLink.getHref(), "apple1");
+        assertNotNull(document1);
+        CMISObject document1Object = document1.getExtension(CMISConstants.OBJECT);
+        assertNotNull(document1Object);
+        String doc2name = "name" + System.currentTimeMillis();
+        // Custom documents
+        Entry document2 = createDocument(childrenLink.getHref(), doc2name, "/org/alfresco/repo/cmis/rest/test/createcustomdocument.atomentry.xml");
+        assertNotNull(document2);
+        CMISObject document2Object = document2.getExtension(CMISConstants.OBJECT);
+        assertNotNull(document2Object);
+        Entry document3 = createDocument(childrenLink.getHref(), "banana1", "/org/alfresco/repo/cmis/rest/test/createcustomdocument.atomentry.xml");
+        assertNotNull(document3);
+        CMISObject document3Object = document3.getExtension(CMISConstants.OBJECT);
+        assertNotNull(document3Object);
+    
+        // retrieve query request document
+        String queryDoc = loadString("/org/alfresco/repo/cmis/rest/test/query.cmisquery.xml");
+    
         {
-            @SuppressWarnings("synthetic-access")
-            public Object doWork() throws Exception
-            {
-                FileFolderService fileFolderService = (FileFolderService)getServer().getApplicationContext().getBean("FileFolderService");
-                NodeService nodeService = (NodeService)getServer().getApplicationContext().getBean("NodeService");
-                FileInfo file = fileFolderService.create(testFolderRef, "createSubType", QName.createQName(TEST_NAMESPACE, "content"));
-                Map<QName, Serializable> props = new HashMap<QName, Serializable>();
-                props.put(QName.createQName(TEST_NAMESPACE, "Title"), "createSubTypeTitle");
-                props.put(QName.createQName(TEST_NAMESPACE, "Authors"), (Serializable)Arrays.asList(new String[] { "Dave", "Fred" }));
-                nodeService.addProperties(file.getNodeRef(), props);
-                fileFolderService.getWriter(file.getNodeRef()).putContent("Some test content");
-                return null;
-            }
-        }, getDefaultRunAs());
+            // construct structured query
+            String query = "SELECT ObjectId, Name, ObjectTypeId, cmiscustom_docprop_string FROM cmiscustom_document " +
+                           "WHERE IN_FOLDER('" + testFolderObject.getObjectId().getValue() + "') " +
+                           "AND cmiscustom_docprop_string = 'custom string' ";
+            String queryReq = queryDoc.replace("${STATEMENT}", query);
+            queryReq = queryReq.replace("${SKIPCOUNT}", "0");
+            queryReq = queryReq.replace("${PAGESIZE}", "5");
+    
+            // issue structured query
+            Response queryRes = sendRequest(new PostRequest(queryHREF.toString(), queryReq.getBytes(), CMISConstants.MIMETYPE_QUERY), 200);
+            assertNotNull(queryRes);
+            Feed queryFeed = getAbdera().parseFeed(new StringReader(queryRes.getContentAsString()), null);
+            assertNotNull(queryFeed);
+            assertEquals(2, queryFeed.getEntries().size());
+            
+            assertNotNull(queryFeed.getEntry(document2.getId().toString()));
+            CMISObject result1 = queryFeed.getEntry(document2.getId().toString()).getExtension(CMISConstants.OBJECT);
+            assertNotNull(result1);
+            assertEquals(document2Object.getName().getValue(), result1.getName().getValue());
+            assertEquals(document2Object.getObjectId().getValue(), result1.getObjectId().getValue());
+            assertEquals(document2Object.getObjectTypeId().getValue(), result1.getObjectTypeId().getValue());
+            CMISProperties result1properties = result1.getProperties();
+            assertNotNull(result1properties);
+            CMISProperty result1property = result1properties.find("cmiscustom_docprop_string");
+            assertNotNull(result1property);
+            assertEquals("custom string", result1property.getValue());
+            
+            assertNotNull(queryFeed.getEntry(document3.getId().toString()));
+            CMISObject result2 = queryFeed.getEntry(document3.getId().toString()).getExtension(CMISConstants.OBJECT);
+            assertNotNull(result2);
+            assertEquals(document3Object.getName().getValue(), result2.getName().getValue());
+            assertEquals(document3Object.getObjectId().getValue(), result2.getObjectId().getValue());
+            assertEquals(document3Object.getObjectTypeId().getValue(), result2.getObjectTypeId().getValue());
+            CMISProperties result2properties = result2.getProperties();
+            assertNotNull(result2properties);
+            CMISProperty result2property = result2properties.find("cmiscustom_docprop_string");
+            assertNotNull(result2property);
+            assertEquals("custom string", result2property.getValue());
+        }
     }
     
 }

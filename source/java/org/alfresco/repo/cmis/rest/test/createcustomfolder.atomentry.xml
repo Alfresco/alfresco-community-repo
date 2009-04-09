@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<entry xmlns="http://www.w3.org/2005/Atom" xmlns:cmis="http://www.cmis.org/2008/05">
+    <title>${NAME}</title>
+    <summary>${NAME} (summary)</summary>
+    <cmis:object>
+	    <cmis:properties>
+	        <cmis:propertyString cmis:name="ObjectTypeId"><cmis:value>F/cmiscustom_folder</cmis:value></cmis:propertyString>
+            <cmis:propertyString cmis:name="cmiscustom_folderprop_string"><cmis:value>custom string</cmis:value></cmis:propertyString>
+	    </cmis:properties>
+    </cmis:object>
+</entry>

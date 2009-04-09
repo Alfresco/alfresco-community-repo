@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -25,12 +25,12 @@
 package org.alfresco.repo.node;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.copy.CopyBehaviourCallback;
+import org.alfresco.repo.copy.CopyDetails;
 import org.alfresco.repo.copy.CopyServicePolicies;
+import org.alfresco.repo.copy.DoNothingCopyBehaviourCallback;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
-import org.alfresco.repo.policy.PolicyScope;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 
@@ -63,21 +63,16 @@ public class ReferenceableAspect implements CopyServicePolicies.OnCopyNodePolicy
     {
         // disable copy for referencable aspect
         this.policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "onCopyNode"),
+                QName.createQName(NamespaceService.ALFRESCO_URI, "getCopyCallback"),
                 ContentModel.ASPECT_REFERENCEABLE,
-                new JavaBehaviour(this, "onCopyNode"));
+                new JavaBehaviour(this, "getCopyCallback"));
     }
 
     /**
-     * Does nothing 
+     * @return          Returns {@link DoNothingCopyBehaviourCallback}
      */
-    public void onCopyNode(
-            QName classRef,
-            NodeRef sourceNodeRef,
-            StoreRef destinationStoreRef,
-            boolean copyToNewNode,
-            PolicyScope copyDetails)
+    public CopyBehaviourCallback getCopyCallback(QName classRef, CopyDetails copyDetails)
     {
-        // don't copy
+        return DoNothingCopyBehaviourCallback.getInstance();
     }
 }

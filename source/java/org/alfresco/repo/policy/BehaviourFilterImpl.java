@@ -25,25 +25,26 @@
 package org.alfresco.repo.policy;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.repo.transaction.TransactionalResourceHelper;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
 /**
- * Implementation of Behaviour Filter.
+ * Implementation of Behaviour Filter.  All methods operate on transactionally-bound
+ * resources.  Behaviour will therefore never span transactions; the filter state has
+ * the same lifespan as the transaction in which it was created.
  * 
  * @author David Caruana
  */
 public class BehaviourFilterImpl implements BehaviourFilter
 {
-    // Thread local storage of filters
-    ThreadLocal<List<QName>> classFilter = new ThreadLocal<List<QName>>();
-    ThreadLocal<Map<NodeRef,List<QName>>> nodeRefFilter = new ThreadLocal<Map<NodeRef,List<QName>>>();
+    private static final String KEY_CLASS_FILTER = "BehaviourFilterImpl.classFilter";
+    private static final String KEY_NODEREF_FILTER = "BehaviourFilterImpl.nodeRefFilter";
     
     // Dictionary Service
     private DictionaryService dictionaryService;
@@ -67,43 +68,27 @@ public class BehaviourFilterImpl implements BehaviourFilter
         this.tenantService = tenantService;
     }
         
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.policy.BehaviourFilter#disableBehaviour(org.alfresco.service.namespace.QName)
-     */
     public boolean disableBehaviour(QName className)
     {
-        List<QName> classNames = classFilter.get();
-        if (classNames == null)
-        {
-            classNames = new ArrayList<QName>();
-            classFilter.set(classNames);
-        }
-        boolean alreadyDisabled = classNames.contains(className);
+        List<QName> classFilters = TransactionalResourceHelper.getList(KEY_CLASS_FILTER);
+        boolean alreadyDisabled = classFilters.contains(className);
         if (!alreadyDisabled)
         {
-            classNames.add(className);
+            classFilters.add(className);
         }
         return alreadyDisabled;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.policy.BehaviourFilter#disableBehaviour(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
-     */
     public boolean disableBehaviour(NodeRef nodeRef, QName className)
     {
         nodeRef = tenantService.getName(nodeRef);
         
-        Map<NodeRef,List<QName>> filters = nodeRefFilter.get();
-        if (filters == null)
-        {
-            filters = new HashMap<NodeRef,List<QName>>();
-            nodeRefFilter.set(filters);
-        }
-        List<QName> classNames = filters.get(nodeRef);
+        Map<NodeRef,List<QName>> nodeRefFilters = TransactionalResourceHelper.getMap(KEY_NODEREF_FILTER);
+        List<QName> classNames = nodeRefFilters.get(nodeRef);
         if (classNames == null)
         {
             classNames = new ArrayList<QName>();
-            filters.put(nodeRef, classNames);
+            nodeRefFilters.put(nodeRef, classNames);
         }
         boolean alreadyDisabled = classNames.contains(className);
         if (!alreadyDisabled)
@@ -113,69 +98,42 @@ public class BehaviourFilterImpl implements BehaviourFilter
         return alreadyDisabled;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.policy.BehaviourFilter#enableBehaviour(org.alfresco.service.namespace.QName)
-     */
     public void enableBehaviour(QName className)
     {
-        List<QName> classNames = classFilter.get();
-        if (classNames != null)
-        {
-            classNames.remove(className);
-        }
+        List<QName> classFilters = TransactionalResourceHelper.getList(KEY_CLASS_FILTER);
+        classFilters.remove(className);
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.policy.BehaviourFilter#enableBehaviour(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
-     */
     public void enableBehaviour(NodeRef nodeRef, QName className)
     {
         nodeRef = tenantService.getName(nodeRef);
         
-        Map<NodeRef,List<QName>> filters = nodeRefFilter.get();
-        if (filters != null)
+        Map<NodeRef,List<QName>> nodeRefFilters = TransactionalResourceHelper.getMap(KEY_NODEREF_FILTER);
+        List<QName> classNames = nodeRefFilters.get(nodeRef);
+        if (classNames != null)
         {
-            List<QName> classNames = filters.get(nodeRef);
-            if (classNames != null)
-            {
-                classNames.remove(className);
-            }
+            classNames.remove(className);
             if (classNames.size() == 0)
             {
-                filters.remove(nodeRef);
+                nodeRefFilters.remove(nodeRef);
             }
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.policy.BehaviourFilter#enableBehaviours(org.alfresco.service.cmr.repository.NodeRef)
-     */
     public void enableBehaviours(NodeRef nodeRef)
     {
         nodeRef = tenantService.getName(nodeRef);
         
-        Map<NodeRef,List<QName>> filters = nodeRefFilter.get();
-        if (filters != null)
-        {
-            filters.remove(nodeRef);
-        }
+        Map<NodeRef,List<QName>> nodeRefFilters = TransactionalResourceHelper.getMap(KEY_NODEREF_FILTER);
+        nodeRefFilters.remove(nodeRef);
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.policy.BehaviourFilter#enableAllBehaviours()
-     */
     public void enableAllBehaviours()
     {
-        Map<NodeRef,List<QName>> filters = nodeRefFilter.get();
-        if (filters != null)
-        {
-            filters.clear();
-        }
+        Map<NodeRef,List<QName>> filters = TransactionalResourceHelper.getMap(KEY_NODEREF_FILTER);
+        filters.clear();
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.policy.BehaviourFilter#isEnabled(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
-     */
     public boolean isEnabled(NodeRef nodeRef, QName className)
     {
         // check global filters
@@ -187,46 +145,16 @@ public class BehaviourFilterImpl implements BehaviourFilter
         nodeRef = tenantService.getName(nodeRef);
         
         // check node level filters
-        Map<NodeRef,List<QName>> nodeFilters = nodeRefFilter.get();
-        if (nodeFilters != null)
+        Map<NodeRef,List<QName>> filters = TransactionalResourceHelper.getMap(KEY_NODEREF_FILTER);
+        List<QName> nodeClassFilters = filters.get(nodeRef);
+        if (nodeClassFilters != null)
         {
-            List<QName> nodeClassFilters = nodeFilters.get(nodeRef);
-            if (nodeClassFilters != null)
-            {
-                boolean filtered = nodeClassFilters.contains(className);
-                if (filtered)
-                {
-                    return false;
-                }
-                for (QName filterName : nodeClassFilters)
-                {
-                    filtered = dictionaryService.isSubClass(className, filterName);
-                    if (filtered)
-                    {
-                        return false;
-                    }
-                }
-            }
-        }
-        
-        return true;
-    }
-
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.policy.BehaviourFilter#isEnabled(org.alfresco.service.namespace.QName)
-     */
-    public boolean isEnabled(QName className)
-    {
-        // check global class filters
-        List<QName> classFilters = classFilter.get();
-        if (classFilters != null)
-        {
-            boolean filtered = classFilters.contains(className);
+            boolean filtered = nodeClassFilters.contains(className);
             if (filtered)
             {
                 return false;
             }
-            for (QName filterName : classFilters)
+            for (QName filterName : nodeClassFilters)
             {
                 filtered = dictionaryService.isSubClass(className, filterName);
                 if (filtered)
@@ -235,18 +163,35 @@ public class BehaviourFilterImpl implements BehaviourFilter
                 }
             }
         }
+        
+        return true;
+    }
+
+    public boolean isEnabled(QName className)
+    {
+        // check global class filters
+        List<QName> classFilters = TransactionalResourceHelper.getList(KEY_CLASS_FILTER);
+        boolean filtered = classFilters.contains(className);
+        if (filtered)
+        {
+            return false;
+        }
+        for (QName classFilter : classFilters)
+        {
+            filtered = dictionaryService.isSubClass(className, classFilter);
+            if (filtered)
+            {
+                return false;
+            }
+        }
 
         return true;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.policy.BehaviourFilter#isActivated()
-     */
     public boolean isActivated()
     {
-        List<QName> classFilters = classFilter.get();
-        Map<NodeRef,List<QName>> nodeFilters = nodeRefFilter.get();
-        return (classFilters != null && !classFilters.isEmpty()) || (nodeFilters != null && !nodeFilters.isEmpty());
+        List<QName> classFilters = TransactionalResourceHelper.getList(KEY_CLASS_FILTER);
+        Map<NodeRef,List<QName>> nodeRefFilters = TransactionalResourceHelper.getMap(KEY_NODEREF_FILTER);
+        return (!classFilters.isEmpty()) || (!nodeRefFilters.isEmpty());
     }
-
 }

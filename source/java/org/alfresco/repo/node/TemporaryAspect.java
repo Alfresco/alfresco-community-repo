@@ -25,7 +25,11 @@
 package org.alfresco.repo.node;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.copy.CopyBehaviourCallback;
+import org.alfresco.repo.copy.CopyDetails;
 import org.alfresco.repo.copy.CopyServicePolicies;
+import org.alfresco.repo.copy.DefaultCopyBehaviourCallback;
+import org.alfresco.repo.copy.DoNothingCopyBehaviourCallback;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.policy.PolicyScope;
@@ -63,9 +67,25 @@ public class TemporaryAspect implements CopyServicePolicies.OnCopyNodePolicy
     {
         // disable copy for referencable aspect
         this.policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "onCopyNode"),
+                QName.createQName(NamespaceService.ALFRESCO_URI, "getCopyCallback"),
                 ContentModel.ASPECT_TEMPORARY,
-                new JavaBehaviour(this, "onCopyNode"));
+                new JavaBehaviour(this, "getCopyCallback"));
+    }
+
+    /**
+     * The {@link ContentModel#ASPECT_TEMPORARY <b>sys:temporary</b>} aspect is only copied
+     * if the copy is clean i.e. not to an existing node.
+     */
+    public CopyBehaviourCallback getCopyCallback(QName classRef, CopyDetails copyDetails)
+    {
+        if (copyDetails.getTargetNodeRef() != null)
+        {
+            return DoNothingCopyBehaviourCallback.getInstance();
+        }
+        else
+        {
+            return DefaultCopyBehaviourCallback.getInstance();
+        }
     }
 
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -36,6 +36,12 @@ import java.util.Set;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.evaluator.ActionConditionEvaluator;
 import org.alfresco.repo.action.executer.ActionExecuter;
+import org.alfresco.repo.copy.CopyBehaviourCallback;
+import org.alfresco.repo.copy.CopyDetails;
+import org.alfresco.repo.copy.CopyServicePolicies;
+import org.alfresco.repo.copy.DefaultCopyBehaviourCallback;
+import org.alfresco.repo.policy.JavaBehaviour;
+import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.cmr.action.Action;
@@ -57,6 +63,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.GUID;
+import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
@@ -68,7 +75,10 @@ import org.springframework.context.ApplicationContextAware;
  * 
  * @author Roy Wetherall
  */
-public class ActionServiceImpl implements ActionService, RuntimeActionService, ApplicationContextAware
+public class ActionServiceImpl implements
+                        ActionService, RuntimeActionService, ApplicationContextAware,
+                        CopyServicePolicies.OnCopyNodePolicy,
+                        CopyServicePolicies.OnCopyCompletePolicy
 { 
     /**
      * Transaction resource name
@@ -91,25 +101,14 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
     ThreadLocal<Set<String>> currentActionChain = new ThreadLocal<Set<String>>();
     
     /**
-     * The application context
+     * The application context used to retrieve defined actions
      */
     private ApplicationContext applicationContext;
-
-    /**
-     * The node service
-     */
     private NodeService nodeService;
-    
-    /**
-     * The search service
-     */
     private SearchService searchService;
-    
-    /** The dictionary service */
     private DictionaryService dictionaryService;
-    
-    /** The authentication component */
     private AuthenticationContext authenticationContext;
+    private PolicyComponent policyComponent;
        
     /**
      * The asynchronous action execution queues
@@ -181,7 +180,16 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
     {
         this.dictionaryService = dictionaryService;
     }
-        
+
+    /**
+     * 
+     * @param policyComponent           used to set up the action-based policy behaviour
+     */
+    public void setPolicyComponent(PolicyComponent policyComponent)
+    {
+        this.policyComponent = policyComponent;
+    }
+
     /**
      * Set the asynchronous action execution queues
      * 
@@ -203,6 +211,21 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
 //        return asynchronousActionExecutionQueue;
 //    }
 //    
+    
+    public void init()
+    {
+        PropertyCheck.mandatory(this, "policyComponent", policyComponent);
+
+        this.policyComponent.bindClassBehaviour(
+                QName.createQName(NamespaceService.ALFRESCO_URI, "getCopyCallback"),
+                ActionModel.TYPE_ACTION_PARAMETER,
+                new JavaBehaviour(this, "getCopyCallback"));
+        this.policyComponent.bindClassBehaviour(
+                QName.createQName(NamespaceService.ALFRESCO_URI, "onCopyComplete"),
+                ActionModel.TYPE_ACTION_PARAMETER,
+                new JavaBehaviour(this, "onCopyComplete"));
+    }
+    
     /**
      * Gets the saved action folder reference
      * 
@@ -1004,6 +1027,7 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
                 if (logger.isDebugEnabled())
                     logger.debug("Saving Condition " + actionCondition.getActionConditionDefinitionName());
                 
+                @SuppressWarnings("unused")
                 NodeRef conditionNodeRef = saveActionCondition(actionNodeRef, actionCondition, 
                         !isComposite? ActionModel.ASSOC_CONDITIONS : ActionModel.ASSOC_COMPOSITE_ACTION_CONDITION, 
                             ActionModel.TYPE_ACTION_CONDITION);
@@ -1106,7 +1130,7 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
         parameterMap.putAll(item.getParameterValues());
         
         List<ChildAssociationRef> parameters = this.nodeService.getChildAssocs(parameterizedNodeRef, 
-                RegexQNamePattern.MATCH_ALL, ActionModel.ASSOC_PARAMETERS);
+                ActionModel.ASSOC_PARAMETERS, ActionModel.ASSOC_PARAMETERS);
         for (ChildAssociationRef ref : parameters)
         {
             NodeRef paramNodeRef = ref.getChildRef();
@@ -1141,6 +1165,8 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
                     nodeRefProperties);
         }
     }
+    
+    // TODO: Add copy behaviour
 
     /**
      * @see org.alfresco.service.cmr.action.ActionService#getActions(org.alfresco.service.cmr.repository.NodeRef)
@@ -1593,5 +1619,54 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
                 return false;
             }
         }
+    }
+    /**
+     * @return              Returns {@link AdctionParameterTypeCopyBehaviourCallback}
+     */
+    public CopyBehaviourCallback getCopyCallback(QName classRef, CopyDetails copyDetails)
+    {
+        return AdctionParameterTypeCopyBehaviourCallback.INSTANCE;
+    }
+    
+    /**
+     * Records any potential <b>d:noderef</d> properties for once the copy is done.
+     * 
+     * @author Derek Hulley
+     * @since 3.2
+     */
+    private static class AdctionParameterTypeCopyBehaviourCallback extends DefaultCopyBehaviourCallback
+    {
+        private static final AdctionParameterTypeCopyBehaviourCallback INSTANCE =
+            new AdctionParameterTypeCopyBehaviourCallback();
+
+        @Override
+        public Map<QName, Serializable> getCopyProperties(
+                QName classQName, CopyDetails copyDetails, Map<QName, Serializable> properties)
+        {
+            NodeRef sourceNodeRef = copyDetails.getSourceNodeRef();
+            recordNodeRefsForRepointing(sourceNodeRef, properties, ActionModel.PROP_PARAMETER_VALUE);
+            // Don't modify the properties
+            return properties;
+        }
+    }
+    
+    /**
+     * Ensures that <b>d:noderef</b> properties are repointed if the target was also copied as part of the
+     * hierarchy.
+     */
+    @SuppressWarnings("unchecked")
+    public void onCopyComplete(
+            QName classRef,
+            NodeRef sourceNodeRef,
+            NodeRef targetNodeRef,
+            boolean copyToNewNode,
+            Map<NodeRef, NodeRef> copyMap)
+    {
+        AdctionParameterTypeCopyBehaviourCallback.INSTANCE.repointNodeRefs(
+                sourceNodeRef,
+                targetNodeRef,
+                ActionModel.PROP_PARAMETER_VALUE,
+                copyMap,
+                nodeService);
     }
 }

@@ -27,7 +27,10 @@ package org.alfresco.repo.model.ml;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.ContentServicePolicies;
+import org.alfresco.repo.copy.CopyBehaviourCallback;
+import org.alfresco.repo.copy.CopyDetails;
 import org.alfresco.repo.copy.CopyServicePolicies;
+import org.alfresco.repo.copy.DoNothingCopyBehaviourCallback;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.policy.PolicyScope;
@@ -65,9 +68,9 @@ public class EmptyTranslationAspect implements
     public void init()
     {
         this.policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "onCopyNode"),
-                ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION, 
-                new JavaBehaviour(this, "onCopyNode"));
+                QName.createQName(NamespaceService.ALFRESCO_URI, "getCopyCallback"),
+                ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION,
+                new JavaBehaviour(this, "getCopyCallback"));
         
         this.policyComponent.bindClassBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "onContentUpdate"), 
@@ -94,8 +97,6 @@ public class EmptyTranslationAspect implements
 
     /**
      * Copy a <b>cm:mlEmptyTranslation<b> is not permit.
-     * 
-     * @see org.alfresco.repo.copy.CopyServicePolicies.OnCopyNodePolicy#onCopyNode(org.alfresco.service.namespace.QName, org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.StoreRef, boolean, org.alfresco.repo.policy.PolicyScope)
      */
     public void onCopyNode(QName classRef, NodeRef sourceNodeRef, StoreRef destinationStoreRef, boolean copyToNewNode, PolicyScope copyDetails) 
     {
@@ -104,8 +105,6 @@ public class EmptyTranslationAspect implements
 
     /** 
       * If a content is added to a <b>cm:mlEmptyTranslation<b>, remove this aspect. 
-      * 
-      * @see org.alfresco.repo.content.ContentServicePolicies.OnContentUpdatePolicy#onContentUpdate(org.alfresco.service.cmr.repository.NodeRef, boolean)
       */
     public void onContentUpdate(NodeRef nodeRef, boolean newContent) 
     {
@@ -114,5 +113,36 @@ public class EmptyTranslationAspect implements
             nodeService.removeAspect(nodeRef, ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION);
             nodeService.removeAspect(nodeRef, ContentModel.ASPECT_TEMPORARY);
         }
+    }
+    
+    /**
+     * Extends the NO-OP copy behaviour to generate an exception if copied.  In other words,
+     * the presence of {@link ContentModel#ASPECT_MULTILINGUAL_EMPTY_TRANSLATION} should prevent
+     * a node from being copied; if this is not done by the copy client, it is enforced here. 
+     * 
+     * @author Derek Hulley
+     * @since 3.2
+     */
+    private static class EmptyTranslationAspectCopyBehaviourCallback extends DoNothingCopyBehaviourCallback
+    {
+        private static final CopyBehaviourCallback INSTANCE = new EmptyTranslationAspectCopyBehaviourCallback();
+        
+        /**
+         * @throws          IllegalStateException       always
+         */
+        @Override
+        public boolean getMustCopy(QName classQName, CopyDetails copyDetails)
+        {
+            throw new IllegalStateException(
+                    "Nodes with " + ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION + " may not be copied");
+        }
+    }
+    
+    /**
+     * @return              Returns {@link EmptyTranslationAspectCopyBehaviourCallback}
+     */
+    public CopyBehaviourCallback getCopyCallback(QName classRef, CopyDetails copyDetails)
+    {
+        return EmptyTranslationAspectCopyBehaviourCallback.INSTANCE;
     }
 }

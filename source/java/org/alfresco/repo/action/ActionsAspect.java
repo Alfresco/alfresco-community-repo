@@ -24,147 +24,172 @@
  */
 package org.alfresco.repo.action;
 
-import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.policy.Behaviour;
+import org.alfresco.repo.copy.CopyBehaviourCallback;
+import org.alfresco.repo.copy.CopyDetails;
+import org.alfresco.repo.copy.CopyServicePolicies;
+import org.alfresco.repo.copy.DefaultCopyBehaviourCallback;
+import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
-import org.alfresco.repo.policy.PolicyScope;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.util.PropertyCheck;
 
 /**
  * Class containing behaviour for the actions aspect
  * 
  * @author Roy Wetherall
  */
-public class ActionsAspect
+public class ActionsAspect implements CopyServicePolicies.OnCopyNodePolicy, CopyServicePolicies.OnCopyCompletePolicy
 {
-	private Behaviour onAddAspectBehaviour;
-	
-	private PolicyComponent policyComponent;
-	
+    private PolicyComponent policyComponent;
+    private BehaviourFilter behaviourFilter;
     private RuleService ruleService;
+    private NodeService nodeService;
     
-	private NodeService nodeService;
-	
-	public void setPolicyComponent(PolicyComponent policyComponent)
-	{
-		this.policyComponent = policyComponent;
-	}
-	
-	public void setNodeService(NodeService nodeService)
-	{
-		this.nodeService = nodeService;
-	}
+    public void setPolicyComponent(PolicyComponent policyComponent)
+    {
+        this.policyComponent = policyComponent;
+    }
+    
+    public void setBehaviourFilter(BehaviourFilter behaviourFilter)
+    {
+        this.behaviourFilter = behaviourFilter;
+    }
+
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
+    }
    
-	public void setRuleService(RuleService ruleService)
+    public void setRuleService(RuleService ruleService)
     {
         this.ruleService = ruleService;
     }
     
-	public void init()
-	{
-		this.policyComponent.bindClassBehaviour(
-				QName.createQName(NamespaceService.ALFRESCO_URI, "onCopyNode"),
-				ActionModel.ASPECT_ACTIONS,
-				new JavaBehaviour(this, "onCopyNode"));
-		this.policyComponent.bindClassBehaviour(
-				QName.createQName(NamespaceService.ALFRESCO_URI, "onCopyComplete"),
+    public void init()
+    {
+        PropertyCheck.mandatory(this, "policyComponent", policyComponent);
+        PropertyCheck.mandatory(this, "behaviourFilter", behaviourFilter);
+        PropertyCheck.mandatory(this, "ruleService", ruleService);
+        PropertyCheck.mandatory(this, "nodeService", nodeService);
+        
+        this.policyComponent.bindClassBehaviour(
+                QName.createQName(NamespaceService.ALFRESCO_URI, "getCopyCallback"),
                 ActionModel.ASPECT_ACTIONS,
-				new JavaBehaviour(this, "onCopyComplete"));
-		
-		this.onAddAspectBehaviour = new JavaBehaviour(this, "onAddAspect");
-		this.policyComponent.bindClassBehaviour(
-				QName.createQName(NamespaceService.ALFRESCO_URI, "onAddAspect"), 
+                new JavaBehaviour(this, "getCopyCallback"));
+        this.policyComponent.bindClassBehaviour(
+                QName.createQName(NamespaceService.ALFRESCO_URI, "onCopyComplete"),
+                ActionModel.ASPECT_ACTIONS,
+                new JavaBehaviour(this, "onCopyComplete"));
+        
+        this.policyComponent.bindClassBehaviour(
+                QName.createQName(NamespaceService.ALFRESCO_URI, "onAddAspect"), 
                 ActionModel.ASPECT_ACTIONS, 
-				onAddAspectBehaviour);
-	}
-    
-
-    
-    /**
-     * Helper to diable the on add aspect policy behaviour.  Helpful when importing, 
-     * copying and other bulk respstorative operations.
-     * 
-     * TODO will eventually be redundant when policies can be enabled/diabled in the 
-     *      policy componenet
-     */
-    public void disbleOnAddAspect()
-    {
-        this.onAddAspectBehaviour.disable();
+                new JavaBehaviour(this, "onAddAspect"));
     }
     
     /**
-     * Helper to enable the on add aspect policy behaviour.  Helpful when importing, 
-     * copying and other bulk respstorative operations.
+     * On add aspect policy behaviour
      * 
-     * TODO will eventually be redundant when policies can be enabled/diabled in the 
-     *      policy componenet
+     * @param nodeRef
+     * @param aspectTypeQName
      */
-    public void enableOnAddAspect()
+    public void onAddAspect(NodeRef nodeRef, QName aspectTypeQName)
     {
-        this.onAddAspectBehaviour.enable();
-    }
-	
-	/**
-	 * On add aspect policy behaviour
-	 * @param nodeRef
-	 * @param aspectTypeQName
-	 */
-	public void onAddAspect(NodeRef nodeRef, QName aspectTypeQName)
-	{
         this.ruleService.disableRules(nodeRef);
         try
         {
-			this.nodeService.createNode(
+            this.nodeService.createNode(
                     nodeRef,
-			        ActionModel.ASSOC_ACTION_FOLDER,
                     ActionModel.ASSOC_ACTION_FOLDER,
-					ContentModel.TYPE_SYSTEM_FOLDER);
+                    ActionModel.ASSOC_ACTION_FOLDER,
+                    ContentModel.TYPE_SYSTEM_FOLDER);
         }
         finally
         {
             this.ruleService.enableRules(nodeRef);
         }
-	}
-	
-	public void onCopyNode(
-			QName classRef,
-			NodeRef sourceNodeRef,
-            StoreRef destinationStoreRef,
+    }
+    
+    /**
+     * @return              Returns {@link ActionsAspectCopyBehaviourCallback}
+     */
+    public CopyBehaviourCallback getCopyCallback(QName classRef, CopyDetails copyDetails)
+    {
+        return new ActionsAspectCopyBehaviourCallback(behaviourFilter);
+    }
+    
+    /**
+     * Extends the default copy behaviour to include cascading to action folders.
+     * 
+     * @author Derek Hulley
+     * @since 3.2
+     */
+    private static class ActionsAspectCopyBehaviourCallback extends DefaultCopyBehaviourCallback
+    {
+        private final BehaviourFilter behaviourFilter;
+        private ActionsAspectCopyBehaviourCallback(BehaviourFilter behaviourFilter)
+        {
+            this.behaviourFilter = behaviourFilter;
+        }
+
+        /**
+         * Disables the aspect behaviour for this node
+         * 
+         * @return          Returns <tt>true</tt>
+         */
+        @Override
+        public boolean getMustCopy(QName classQName, CopyDetails copyDetails)
+        {
+            NodeRef targetNodeRef = copyDetails.getTargetNodeRef();
+            behaviourFilter.disableBehaviour(targetNodeRef, ActionModel.ASPECT_ACTIONS);
+            // Always copy
+            return true;
+        }
+
+        /**
+         * Always cascades to the action folders
+         */
+        @Override
+        public ChildAssocCopyAction getChildAssociationCopyAction(
+                QName classQName,
+                CopyDetails copyDetails,
+                CopyChildAssociationDetails childAssocCopyDetails)
+        {
+            ChildAssociationRef childAssocRef = childAssocCopyDetails.getChildAssocRef();
+            if (childAssocRef.getTypeQName().equals(ActionModel.ASSOC_ACTION_FOLDER))
+            {
+                return ChildAssocCopyAction.COPY_CHILD;
+            }
+            else
+            {
+                throw new IllegalStateException(
+                        "Behaviour should have been invoked: \n" +
+                        "   Aspect: " + this.getClass().getName() + "\n" +
+                        "   " + childAssocCopyDetails + "\n" +
+                        "   " + copyDetails);
+            }
+        }
+    }
+
+    /**
+     * Re-enable aspect behaviour for the source node
+     */
+    public void onCopyComplete(
+            QName classRef,
+            NodeRef sourceNodeRef,
+            NodeRef destinationRef,
             boolean copyToNewNode,
-			PolicyScope copyDetails)
-	{
-		copyDetails.addAspect(ActionModel.ASPECT_ACTIONS);
-		
-		List<ChildAssociationRef> assocs = this.nodeService.getChildAssocs(
-                sourceNodeRef,
-                RegexQNamePattern.MATCH_ALL,
-                ActionModel.ASSOC_ACTION_FOLDER);
-		for (ChildAssociationRef assoc : assocs)
-		{
-			copyDetails.addChildAssociation(classRef, assoc, true);
-		}
-		
-		this.onAddAspectBehaviour.disable();
-	}
-	
-	public void onCopyComplete(
-			QName classRef,
-			NodeRef sourceNodeRef,
-			NodeRef destinationRef,
-            boolean copyToNew,
-			Map<NodeRef, NodeRef> copyMap)
-	{
-		this.onAddAspectBehaviour.enable();
-	}
+            Map<NodeRef, NodeRef> copyMap)
+    {
+        behaviourFilter.enableBehaviour(sourceNodeRef, ActionModel.ASPECT_ACTIONS);
+    }
 }

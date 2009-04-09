@@ -308,6 +308,7 @@
                 <value>alfresco.messages.permissions-service</value>
                 <value>alfresco.messages.content-service</value>
                 <value>alfresco.messages.coci-service</value>
+                <value>alfresco.messages.discussion-messages</value>
                 <value>alfresco.messages.template-service</value>
                 <value>alfresco.messages.lock-service</value>
                 <value>alfresco.messages.patch-service</value>
@@ -385,13 +386,13 @@
         </property>
     </bean>
 
-	<bean id="admSearchService" class="org.alfresco.repo.search.SearcherComponent">
+    <bean id="admSearchService" class="org.alfresco.repo.search.SearcherComponent">
         <property name="indexerAndSearcherFactory">
             <ref bean="admLuceneIndexerAndSearcherFactory" />
         </property>
     </bean>
-	
-	<bean id="versionSearchService" class="org.alfresco.repo.search.SearcherComponent">
+    
+    <bean id="versionSearchService" class="org.alfresco.repo.search.SearcherComponent">
         <property name="indexerAndSearcherFactory">
             <ref bean="admLuceneUnIndexedIndexerAndSearcherFactory" />
         </property>
@@ -418,7 +419,7 @@
                 </entry>
             </map>
         </property>
-		<property name="redirectedStoreBindings">
+        <property name="redirectedStoreBindings">
             <map>
                 <entry key="workspace://lightWeightVersionStore">
                     <ref bean="admLuceneUnIndexedIndexerAndSearcherFactory"></ref>
@@ -450,9 +451,9 @@
     </bean>
 
     <bean id="indexThreadPoolExecutor" class="org.alfresco.util.ThreadPoolExecutorFactoryBean">
-    	<property name="poolName">
-    		<value>indexThread</value>
-    	</property>
+        <property name="poolName">
+            <value>indexThread</value>
+        </property>
         <property name="corePoolSize">
             <value>10</value>
         </property>
@@ -513,32 +514,32 @@
         <property name="lockPollInterval">
             <value>${lucene.lock.poll.interval}</value>
         </property>
-		 <property name="defaultMLIndexAnalysisMode">
+         <property name="defaultMLIndexAnalysisMode">
             <value>EXACT_LANGUAGE_AND_ALL</value>
         </property>
-		<property name="defaultMLSearchAnalysisMode">
+        <property name="defaultMLSearchAnalysisMode">
             <value>EXACT_LANGUAGE_AND_ALL</value>
         </property>
-		<property name="threadPoolExecutor">
-			<ref bean="indexThreadPoolExecutor"></ref>
-		</property>
+        <property name="threadPoolExecutor">
+            <ref bean="indexThreadPoolExecutor"></ref>
+        </property>
         <property name="bulkLoader">
-			<ref bean="hibernateL1CacheBulkLoader"></ref>
-		</property>
-		<!-- over-ride to false for pre 3.0 behaviour -->
-		<property name="postSortDateTime">
-			<value>true</value>
-		</property>
+            <ref bean="hibernateL1CacheBulkLoader"></ref>
+        </property>
+        <!-- over-ride to false for pre 3.0 behaviour -->
+        <property name="postSortDateTime">
+            <value>true</value>
+        </property>
     </bean>
-	
-	
-	 <!-- Indexer and searchers for lucene -->
+    
+    
+     <!-- Indexer and searchers for lucene -->
     <bean id="admLuceneUnIndexedIndexerAndSearcherFactory"
         class="org.alfresco.repo.search.impl.lucene.ADMLuceneUnIndexedIndexAndSearcherFactory">
         <property name="nodeService">
             <ref bean="mlAwareNodeService" />
         </property>
-		<property name="tenantService">
+        <property name="tenantService">
             <ref bean="tenantService"/>
         </property>
         <property name="dictionaryService">
@@ -580,18 +581,18 @@
         <property name="lockPollInterval">
             <value>${lucene.lock.poll.interval}</value>
         </property>
-		 <property name="defaultMLIndexAnalysisMode">
+         <property name="defaultMLIndexAnalysisMode">
             <value>EXACT_LANGUAGE_AND_ALL</value>
         </property>
-		<property name="defaultMLSearchAnalysisMode">
+        <property name="defaultMLSearchAnalysisMode">
             <value>EXACT_LANGUAGE_AND_ALL</value>
         </property>
-		<property name="threadPoolExecutor">
-			<ref bean="indexThreadPoolExecutor"></ref>
-		</property>
+        <property name="threadPoolExecutor">
+            <ref bean="indexThreadPoolExecutor"></ref>
+        </property>
     </bean>
 
-	<!-- Indexer and searchers for lucene -->
+    <!-- Indexer and searchers for lucene -->
     <bean id="avmLuceneIndexerAndSearcherFactory"
         class="org.alfresco.repo.search.impl.lucene.AVMLuceneIndexerAndSearcherFactory">
         <property name="nodeService">
@@ -612,13 +613,13 @@
         <property name="contentService">
             <ref bean="contentService" />
         </property>
-		<property name="contentStore">
-		    <ref bean="fileContentStore"/>
-		</property>
-		<property name="avmService">
+        <property name="contentStore">
+            <ref bean="fileContentStore"/>
+        </property>
+        <property name="avmService">
             <ref bean="avmService" />
         </property>
-		<property name="avmSyncService">
+        <property name="avmSyncService">
             <ref bean="avmSyncService" />
         </property>
         <property name="queryRegister">
@@ -655,12 +656,12 @@
             <value>EXACT_LANGUAGE_AND_ALL</value>
         </property>
         <property name="threadPoolExecutor">
-			<ref bean="indexThreadPoolExecutor"></ref>
-		</property>
-		<!-- over-ride to false for pre 3.0 behaviour -->
-		<property name="postSortDateTime">
-			<value>true</value>
-		</property>
+            <ref bean="indexThreadPoolExecutor"></ref>
+        </property>
+        <!-- over-ride to false for pre 3.0 behaviour -->
+        <property name="postSortDateTime">
+            <value>true</value>
+        </property>
     </bean>
 
 
@@ -669,7 +670,7 @@
         <property name="nodeService">
             <ref bean="nodeService" />
         </property>
-		<property name="publicNodeService">
+        <property name="publicNodeService">
             <ref bean="NodeService" />
         </property>
         <property name="tenantService">
@@ -716,7 +717,7 @@
     <!--                               -->
 
 
-	<bean id="versionService" class="org.alfresco.repo.version.Version2ServiceImpl" init-method="initialise">
+    <bean id="versionService" class="org.alfresco.repo.version.Version2ServiceImpl" init-method="initialise">
         <property name="nodeService">
             <ref bean="NodeService" />
         </property>
@@ -895,7 +896,7 @@
                 
                 <!--  Version models -->
                 <value>org/alfresco/repo/version/version_model.xml</value> <!-- deprecated -->
-                <value>org/alfresco/repo/version/version2_model.xml</value>				
+                <value>org/alfresco/repo/version/version2_model.xml</value>                
 
                 <!-- Email model -->
                 <value>alfresco/model/emailServerModel.xml</value>
@@ -1016,7 +1017,7 @@
             <ref bean="NodeService" />
         </property>
         <property name="fileFolderService">
-            <ref bean="FileFolderService" />
+            <ref bean="fileFolderService" />
         </property>
     </bean>
 
@@ -1040,7 +1041,7 @@
         </property>
     </bean>
 
-	 <bean id="luceneFullTextSearchIndexer" class="org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexerImpl">
+     <bean id="luceneFullTextSearchIndexer" class="org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexerImpl">
         <property name="indexerAndSearcherFactory">
            <ref bean="indexerAndSearcherFactory" />
         </property>
@@ -1053,9 +1054,9 @@
             <ref bean="transactionService" />
         </property>
         <property name="factories">
-			<set>
-				<ref bean="admLuceneIndexerAndSearcherFactory" />
-			</set>
+            <set>
+                <ref bean="admLuceneIndexerAndSearcherFactory" />
+            </set>
         </property>
         <property name="nodeService">
             <ref bean="nodeService" />

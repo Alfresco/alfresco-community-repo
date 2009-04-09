@@ -71,7 +71,10 @@
     </bean>
     
     <!-- Action Service -->
-    <bean id="actionService" class="org.alfresco.repo.action.ActionServiceImpl">
+    <bean id="actionService" class="org.alfresco.repo.action.ActionServiceImpl" init-method="init">
+        <property name="policyComponent">
+            <ref bean="policyComponent" />
+        </property>         
         <property name="nodeService">
             <ref bean="NodeService" />
         </property>         
@@ -102,12 +105,15 @@
    <!-- Actions Aspect -->
    
    <bean id="actionsAspect" class="org.alfresco.repo.action.ActionsAspect" init-method="init">
-      <property name="nodeService">
-         <ref bean="nodeService"/>
-      </property>       
       <property name="policyComponent">
          <ref bean="policyComponent"/>
       </property>             
+      <property name="behaviourFilter">
+         <ref bean="policyBehaviourFilter"/>
+      </property>             
+      <property name="nodeService">
+         <ref bean="nodeService"/>
+      </property>       
       <property name="ruleService">
          <ref bean="ruleService"/>
       </property>

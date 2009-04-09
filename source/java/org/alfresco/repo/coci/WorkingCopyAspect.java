@@ -25,19 +25,25 @@
 
 package org.alfresco.repo.coci;
 
+import java.io.Serializable;
+import java.util.Collections;
+import java.util.Map;
+
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.copy.CopyBehaviourCallback;
+import org.alfresco.repo.copy.CopyDetails;
+import org.alfresco.repo.copy.CopyServicePolicies;
+import org.alfresco.repo.copy.DefaultCopyBehaviourCallback;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
-import org.alfresco.repo.policy.PolicyScope;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockStatus;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 
-public class WorkingCopyAspect
+public class WorkingCopyAspect implements CopyServicePolicies.OnCopyNodePolicy
 {    
     /**
      * Policy component
@@ -91,36 +97,19 @@ public class WorkingCopyAspect
     {
         // Register copy behaviour for the working copy aspect
         this.policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "onCopyNode"),
+                QName.createQName(NamespaceService.ALFRESCO_URI, "getCopyCallback"),
+                ContentModel.TYPE_CMOBJECT,
+                new JavaBehaviour(this, "getCopyCallback"));
+        this.policyComponent.bindClassBehaviour(
+                QName.createQName(NamespaceService.ALFRESCO_URI, "getCopyCallback"),
                 ContentModel.ASPECT_WORKING_COPY,
-                new JavaBehaviour(this, "onCopy"));
+                new JavaBehaviour(this, "getCopyCallback"));
         
         // register onBeforeDelete class behaviour for the working copy aspect
         this.policyComponent.bindClassBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteNode"),
                 ContentModel.ASPECT_WORKING_COPY,
                 new JavaBehaviour(this, "beforeDeleteNode"));
-    }
-    
-    /**
-     * onCopy policy behaviour
-     * 
-     * @see org.alfresco.repo.copy.CopyServicePolicies.OnCopyNodePolicy#onCopyNode(QName, NodeRef, StoreRef, boolean, PolicyScope)
-     */
-    public void onCopy(
-            QName sourceClassRef, 
-            NodeRef sourceNodeRef, 
-            StoreRef destinationStoreRef,
-            boolean copyToNewNode,
-            PolicyScope copyDetails)
-    {
-        if (copyToNewNode == false)
-        {
-            // Make sure that the name of the node is not updated with the working copy name
-            copyDetails.removeProperty(ContentModel.PROP_NAME);
-        }
-        
-        // NOTE: the working copy aspect is not added since it should not be copyied
     }
     
     /**
@@ -147,5 +136,63 @@ public class WorkingCopyAspect
             }
         }
     }
+    
+    /**
+     * @return              Returns {@link WorkingCopyAspectCopyBehaviourCallback}
+     */
+    public CopyBehaviourCallback getCopyCallback(QName classRef, CopyDetails copyDetails)
+    {
+        return WorkingCopyAspectCopyBehaviourCallback.instance;
+    }
 
+    /**
+     * Dual behaviour to ensure that <b>cm:name</b> is not copied if the source node has the
+     * <b>cm:workingCopy</b> aspect, and to prevent the <b>cm:workingCopy</b> aspect from
+     * being carried to the new node.
+     * 
+     * @author Derek Hulley
+     * @since 3.2
+     */
+    private static class WorkingCopyAspectCopyBehaviourCallback extends DefaultCopyBehaviourCallback
+    {
+        private static WorkingCopyAspectCopyBehaviourCallback instance = new WorkingCopyAspectCopyBehaviourCallback();
+        
+        /**
+         * Disallows copying of the {@link ContentModel#ASPECT_WORKING_COPY <b>cm:workingCopy</b>} aspect.
+         */
+        @Override
+        public boolean getMustCopy(QName classQName, CopyDetails copyDetails)
+        {
+            if (classQName.equals(ContentModel.ASPECT_WORKING_COPY))
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
+
+        /**
+         * Prevents copying off the {@link ContentModel#PROP_NAME <b>cm:name</b>} property.
+         */
+        @Override
+        public Map<QName, Serializable> getCopyProperties(
+                QName classQName, CopyDetails copyDetails, Map<QName, Serializable> properties)
+        {
+            if (classQName.equals(ContentModel.ASPECT_WORKING_COPY))
+            {
+                return Collections.emptyMap();
+            }
+            else if (copyDetails.getSourceNodeAspectQNames().contains(ContentModel.ASPECT_WORKING_COPY))
+            {
+                properties.remove(ContentModel.PROP_NAME);
+                return properties;
+            }
+            else
+            {
+                return properties;
+            }
+        }
+    }
 }

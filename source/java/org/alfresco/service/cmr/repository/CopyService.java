@@ -78,20 +78,20 @@ public interface CopyService
      *              <b>cm:name</b> property and catch the {@link DuplicateChildNodeNameException}.
      * 
      * @param sourceNodeRef             the node reference used as the source of the copy
-     * @param destinationParent  		the intended parent of the new node
-     * @param destinationAssocTypeQName the type of the new child assoc         
-     * @param destinationQName 			the qualified name of the child association from the 
+     * @param targetParentNodeRef          the intended parent of the new node
+     * @param assocTypeQName            the type of the new child assoc         
+     * @param assocQName                the qualified name of the child association from the 
      *                                  parent to the new node
-     * @param copyChildren				indicates that the children of the node should also be copied                                 
+     * @param copyChildren              indicates that the children of the node should also be copied                                 
      * 
      * @return                          the new node reference
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"sourceNodeRef", "destinationParent", "destinationAssocTypeQName", "destinationQName", "copyChildren"})
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"sourceNodeRef", "targetParentNodeRef", "assocTypeQName", "assocQName", "copyChildren"})
     public NodeRef copy(
             NodeRef sourceNodeRef,            
-            NodeRef destinationParent,
-            QName destinationAssocTypeQName, 
-            QName destinationQName, 
+            NodeRef targetParentNodeRef,
+            QName assocTypeQName,
+            QName assocQName, 
             boolean copyChildren);
     
     /**
@@ -100,20 +100,20 @@ public interface CopyService
      * Ensures the copy name is the same as the origional or is renamed to prevent duplicate names.
      * 
      * @param sourceNodeRef             the node reference used as the source of the copy
-     * @param destinationParent  		the intended parent of the new node
-     * @param destinationAssocTypeQName the type of the new child assoc         
-     * @param destinationQName 			the qualified name of the child association from the 
+     * @param targetParentNodeRef       the intended parent of the new node
+     * @param assocTypeQName            the type of the new child assoc         
+     * @param assocQName                the qualified name of the child association from the 
      *                                  parent to the new node
-     * @param copyChildren				indicates that the children of the node should also be copied                                 
+     * @param copyChildren                indicates that the children of the node should also be copied                                 
      * 
      * @return                          the new node reference
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"sourceNodeRef", "destinationParent", "destinationAssocTypeQName", "destinationQName", "copyChildren"})
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"sourceNodeRef", "targetParentNodeRef", "assocTypeQName", "assocQName", "copyChildren"})
     public NodeRef copyAndRename(
             NodeRef sourceNodeRef,            
-            NodeRef destinationParent,
-            QName destinationAssocTypeQName, 
-            QName destinationQName, 
+            NodeRef targetParentNodeRef,
+            QName assocTypeQName,
+            QName assocQName, 
             boolean copyChildren);
     
     /**
@@ -122,18 +122,18 @@ public interface CopyService
      * @see CopyService#copy(NodeRef, NodeRef, QName, QName, boolean)
      * 
      * @param sourceNodeRef             the node reference used as the source of the copy
-     * @param destinationParent  		the intended parent of the new node
-     * @param destinationAssocTypeQName the type of the new child assoc         
-     * @param destinationQName 			the qualified name of the child association from the 
+     * @param targetParentNodeRef       the intended parent of the new node
+     * @param assocTypeQName            the type of the new child assoc         
+     * @param assocQName                the qualified name of the child association from the 
      *                                  parent to the new node
      * @return                          the new node reference
      */
-    @Auditable(key = Auditable.Key.ARG_0, parameters = {"sourceNodeRef", "destinationParent", "destinationAssocTypeQName", "destinationQName"})
+    @Auditable(key = Auditable.Key.ARG_0, parameters = {"sourceNodeRef", "targetParentNodeRef", "assocTypeQName", "assocQName"})
     public NodeRef copy(
             NodeRef sourceNodeRef,            
-            NodeRef destinationParent,
-            QName destinationAssocTypeQName, 
-            QName destinationQName);
+            NodeRef targetParentNodeRef,
+            QName assocTypeQName,
+            QName assocQName); 
     
     /**
      * Copies the state of one node on top of another.

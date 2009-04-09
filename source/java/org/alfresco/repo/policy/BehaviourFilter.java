@@ -35,7 +35,9 @@ import org.alfresco.service.namespace.QName;
 public interface BehaviourFilter
 {
     /**
-     * Disable behaviour for all nodes
+     * Disable behaviour for all nodes.
+     * <p>
+     * The change applies <b>ONLY</b> to the current trasaction.
      * 
      * @param className  the type/aspect behaviour to disable
      * @return  true => already disabled
@@ -44,6 +46,8 @@ public interface BehaviourFilter
 
     /**
      * Disable behaviour for specific node
+     * <p>
+     * The change applies <b>ONLY</b> to the current trasaction.
      * 
      * @param nodeRef  the node to disable for
      * @param className  the type/aspect behaviour to disable
@@ -53,6 +57,8 @@ public interface BehaviourFilter
 
     /**
      * Enable behaviour for all nodes
+     * <p>
+     * The change applies <b>ONLY</b> to the current trasaction.
      * 
      * @param className  the type/aspect behaviour to enable
      */
@@ -60,6 +66,8 @@ public interface BehaviourFilter
     
     /**
      * Enable behaviour for specific node
+     * <p>
+     * The change applies <b>ONLY</b> to the current trasaction.
      * 
      * @param nodeRef  the node to enable for
      * @param className  the type/aspect behaviour to enable
@@ -68,18 +76,25 @@ public interface BehaviourFilter
 
     /**
      * Enable all behaviours for specific node
+     * <p>
+     * The change applies <b>ONLY</b> to the current trasaction.
      * 
      * @param nodeRef  the node to enable for
      */
     public void enableBehaviours(NodeRef nodeRef);
     
     /**
-     * Enable all behaviours
+     * Enable all behaviours i.e. undo all disable calls - both at the
+     * node and class level.
+     * <p>
+     * The change applies <b>ONLY</b> to the current trasaction.
      */
     public void enableAllBehaviours();
     
     /**
      * Determine if behaviour is enabled across all nodes.
+     * <p>
+     * The change applies <b>ONLY</b> to the current trasaction.
      * 
      * @param className  the behaviour to test for
      * @return  true => behaviour is enabled
@@ -88,10 +103,12 @@ public interface BehaviourFilter
     
     /**
      * Determine if behaviour is enabled for specific node.
-     * 
+     * <p> 
      * Note: A node behaviour is enabled only when:
      *       a) the behaviour is not disabled across all nodes
      *       b) the behaviour is not disabled specifically for the provided node
+     * <p>
+     * The change applies <b>ONLY</b> to the current trasaction.
      * 
      * @param nodeRef  the node to test for
      * @param className  the behaviour to test for
@@ -101,6 +118,8 @@ public interface BehaviourFilter
     
     /**
      * Determine if any behaviours have been disabled?
+     * <p>
+     * The change applies <b>ONLY</b> to the current trasaction.
      * 
      * @return  true => behaviours have been filtered
      */

@@ -28,6 +28,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -35,7 +36,10 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.copy.CopyBehaviourCallback;
+import org.alfresco.repo.copy.CopyDetails;
 import org.alfresco.repo.copy.CopyServicePolicies;
+import org.alfresco.repo.copy.DefaultCopyBehaviourCallback;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
@@ -194,11 +198,11 @@ public class LockServiceImpl implements LockService,
                 ContentModel.ASPECT_LOCKABLE,
                 new JavaBehaviour(this, "beforeDeleteNode"));
 
-        // Register onCopy class behaviour
+        // Register copy class behaviour
         this.policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "onCopyNode"),
+                QName.createQName(NamespaceService.ALFRESCO_URI, "getCopyCallback"),
                 ContentModel.ASPECT_LOCKABLE,
-                new JavaBehaviour(this, "onCopyNode"));
+                new JavaBehaviour(this, "getCopyCallback"));
 
         // Register the onCreateVersion behavior for the version aspect
         this.policyComponent.bindClassBehaviour(
@@ -542,22 +546,34 @@ public class LockServiceImpl implements LockService,
     }
 
     /**
-     * OnCopy behaviour implementation for the lock aspect.
-     * <p>
-     * Ensures that the propety values of the lock aspect are not copied onto
-     * the destination node.
+     * @return              Returns {@link LockableAspectCopyBehaviourCallback}
      */
-    public void onCopyNode(
-            QName classRef,
-            NodeRef sourceNodeRef,
-            StoreRef destinationStoreRef,
-            boolean copyToNewNode,
-            PolicyScope copyDetails)
+    public CopyBehaviourCallback getCopyCallback(QName classRef, CopyDetails copyDetails)
     {
-        // Add the lock aspect, but do not copy any of the properties
-        copyDetails.addAspect(ContentModel.ASPECT_LOCKABLE);
+        return LockableAspectCopyBehaviourCallback.INSTANCE;
     }
 
+    /**
+     * Extends the default copy behaviour to prevent copying of lockable properties.
+     * 
+     * @author Derek Hulley
+     * @since 3.2
+     */
+    private static class LockableAspectCopyBehaviourCallback extends DefaultCopyBehaviourCallback
+    {
+        private static final CopyBehaviourCallback INSTANCE = new LockableAspectCopyBehaviourCallback();
+        
+        /**
+         * @return          Returns an empty map
+         */
+        @Override
+        public Map<QName, Serializable> getCopyProperties(
+                QName classQName, CopyDetails copyDetails, Map<QName, Serializable> properties)
+        {
+            return Collections.emptyMap();
+        }
+    }
+    
     /**
      * Ensures that node is not locked.
      * 

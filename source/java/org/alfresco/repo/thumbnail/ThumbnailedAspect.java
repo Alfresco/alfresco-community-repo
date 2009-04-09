@@ -25,16 +25,19 @@
 package org.alfresco.repo.thumbnail;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.copy.CopyBehaviourCallback;
+import org.alfresco.repo.copy.CopyDetails;
 import org.alfresco.repo.copy.CopyServicePolicies;
+import org.alfresco.repo.copy.DefaultCopyBehaviourCallback;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.Behaviour;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
-import org.alfresco.repo.policy.PolicyScope;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.action.CompositeAction;
@@ -45,11 +48,9 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.thumbnail.ThumbnailService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.EqualsHelper;
 
 /**
@@ -127,9 +128,9 @@ public class ThumbnailedAspect implements NodeServicePolicies.OnUpdateProperties
                 ContentModel.ASPECT_THUMBNAILED, 
                 new JavaBehaviour(this, "onUpdateProperties", Behaviour.NotificationFrequency.TRANSACTION_COMMIT));
         this.policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "onCopyNode"), 
+                QName.createQName(NamespaceService.ALFRESCO_URI, "getCopyCallback"), 
                 ContentModel.ASPECT_THUMBNAILED, 
-                new JavaBehaviour(this, "onCopyNode"));
+                new JavaBehaviour(this, "getCopyCallback"));
     }
 
     /**
@@ -229,31 +230,70 @@ public class ThumbnailedAspect implements NodeServicePolicies.OnUpdateProperties
     }
 
     /**
-     * @see org.alfresco.repo.copy.CopyServicePolicies.OnCopyNodePolicy#onCopyNode(org.alfresco.service.namespace.QName, org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.StoreRef, boolean, org.alfresco.repo.policy.PolicyScope)
+     * @return              Returns {@link ThumbnailedAspectCopyBehaviourCallback}
      */
-    public void onCopyNode( QName classRef, 
-                            NodeRef sourceNodeRef,
-                            StoreRef destinationStoreRef, 
-                            boolean copyToNewNode,
-                            PolicyScope copyDetails)
+    public CopyBehaviourCallback getCopyCallback(QName classRef, CopyDetails copyDetails)
     {
-        // Add the automatic update property
-        copyDetails.addProperty(
-                ContentModel.ASPECT_THUMBNAILED, 
-                ContentModel.PROP_AUTOMATIC_UPDATE, 
-                this.nodeService.getProperty(sourceNodeRef, ContentModel.PROP_AUTOMATIC_UPDATE));
+        return ThumbnailedAspectCopyBehaviourCallback.INSTANCE;
+    }
+
+    /**
+     * Behaviour for the {@link ContentModel#ASPECT_THUMBNAILED <b>cm:thumbnailed</b>} aspect.
+     * 
+     * @author Derek Hulley
+     * @since 3.2
+     */
+    private static class ThumbnailedAspectCopyBehaviourCallback extends DefaultCopyBehaviourCallback
+    {
+        private static final CopyBehaviourCallback INSTANCE = new ThumbnailedAspectCopyBehaviourCallback();
         
-        if (copyToNewNode == true)
+        /**
+         * @return              Returns <tt>true</tt> always
+         */
+        @Override
+        public boolean getMustCopy(QName classQName, CopyDetails copyDetails)
         {
-            List<ChildAssociationRef> assocs = this.nodeService.getChildAssocs(
-                                sourceNodeRef, 
-                                ContentModel.ASSOC_THUMBNAILS, 
-                                RegexQNamePattern.MATCH_ALL);
-            for (ChildAssociationRef assoc : assocs)
-            {
-                copyDetails.addChildAssociation(classRef, assoc);
-            }           
+            return true;
         }
-        // otherwise we don't care about copying the associations over or we will get duplicates
+
+        /**
+         * Copy thumbnail-related associations, {@link ContentModel#ASSOC_THUMBNAILS} regardless of
+         * cascade options.
+         */
+        @Override
+        public ChildAssocCopyAction getChildAssociationCopyAction(
+                QName classQName,
+                CopyDetails copyDetails,
+                CopyChildAssociationDetails childAssocCopyDetails)
+        {
+            ChildAssociationRef childAssocRef = childAssocCopyDetails.getChildAssocRef();
+            if (childAssocRef.getTypeQName().equals(ContentModel.ASSOC_THUMBNAILS))
+            {
+                return ChildAssocCopyAction.COPY_CHILD;
+            }
+            else
+            {
+                throw new IllegalStateException(
+                        "Behaviour should have been invoked: \n" +
+                        "   Aspect: " + this.getClass().getName() + "\n" +
+                        "   " + childAssocCopyDetails + "\n" +
+                        "   " + copyDetails);
+            }
+        }
+        
+        /**
+         * Copy only the {@link ContentModel#PROP_AUTOMATIC_UPDATE}
+         */
+        @Override
+        public Map<QName, Serializable> getCopyProperties(
+                QName classQName,
+                CopyDetails copyDetails,
+                Map<QName, Serializable> properties)
+        {
+            Map<QName, Serializable> newProperties = new HashMap<QName, Serializable>(5);
+            Serializable value = properties.get(ContentModel.PROP_AUTOMATIC_UPDATE);
+            newProperties.put(ContentModel.PROP_AUTOMATIC_UPDATE, value);
+            return newProperties;
+        }
     }
 }

@@ -29,15 +29,16 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.copy.CopyBehaviourCallback;
+import org.alfresco.repo.copy.CopyDetails;
 import org.alfresco.repo.copy.CopyServicePolicies;
+import org.alfresco.repo.copy.DoNothingCopyBehaviourCallback;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
-import org.alfresco.repo.policy.PolicyScope;
 import org.alfresco.service.cmr.ml.MultilingualContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -71,9 +72,9 @@ public class MultilingualDocumentAspect implements
     public void init()
     {
         this.policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "onCopyNode"),
+                QName.createQName(NamespaceService.ALFRESCO_URI, "getCopyCallback"),
                 ContentModel.ASPECT_MULTILINGUAL_DOCUMENT,
-                new JavaBehaviour(this, "onCopyNode"));
+                new JavaBehaviour(this, "getCopyCallback"));
 
         this.policyComponent.bindClassBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteNode"),
@@ -114,12 +115,12 @@ public class MultilingualDocumentAspect implements
 
     /**
      * The copy of a <b>cm:mlDocument</b> can't keep the Multilingual aspect.
-     *
-     * @see org.alfresco.repo.copy.CopyServicePolicies.OnCopyNodePolicy#onCopyNode(org.alfresco.service.namespace.QName, org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.StoreRef, boolean, org.alfresco.repo.policy.PolicyScope)
+     * 
+     * @return              Returns the {@link DoNothingCopyBehaviourCallback}
      */
-    public void onCopyNode(QName classRef, NodeRef sourceNodeRef, StoreRef destinationStoreRef, boolean copyToNewNode, PolicyScope copyDetails)
+    public CopyBehaviourCallback getCopyCallback(QName classRef, CopyDetails copyDetails)
     {
-        copyDetails.removeAspect(ContentModel.ASPECT_MULTILINGUAL_DOCUMENT);
+        return DoNothingCopyBehaviourCallback.getInstance();
     }
 
     /**
@@ -144,8 +145,6 @@ public class MultilingualDocumentAspect implements
      *
      * If the locale of a pivot translation is modified, the pivot locale reference of the mlContainer
      * must be modified too.
-     *
-     * @see org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy#onUpdateProperties(org.alfresco.service.cmr.repository.NodeRef, java.util.Map, java.util.Map)
      */
     public void onUpdateProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
     {

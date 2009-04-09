@@ -40,6 +40,7 @@ import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.context.UIContextService;
@@ -64,6 +65,7 @@ public abstract class BaseDialogBean implements IDialogBean, Serializable
    protected BrowseBean browseBean;
    protected NavigationBean navigator;
    
+   transient private TransactionService transactionService;
    transient private NodeService nodeService;
    transient private FileFolderService fileFolderService;
    transient private SearchService searchService;
@@ -246,6 +248,15 @@ public abstract class BaseDialogBean implements IDialogBean, Serializable
    public void setNavigator(NavigationBean navigator)
    {
       this.navigator = navigator;
+   }
+   
+   protected TransactionService getTransactionService()
+   {
+      if (this.transactionService == null)
+      {
+         this.transactionService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getTransactionService();
+      }
+      return this.transactionService;
    }
    
    /**

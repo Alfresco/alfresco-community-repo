@@ -29,8 +29,8 @@ import java.util.Date;
 import java.util.List;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.activities.post.ActivityPostDAO;
-import org.alfresco.repo.activities.post.ActivityPostDaoService;
+import org.alfresco.repo.domain.activities.ActivityPostDAO;
+import org.alfresco.repo.domain.activities.ActivityPostEntity;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.TenantService;
@@ -61,16 +61,16 @@ public class PostLookup
     
     private static VmShutdownListener vmShutdownListener = new VmShutdownListener(PostLookup.class.getName());
     
-    private ActivityPostDaoService postDaoService;
+    private ActivityPostDAO postDAO;
     private NodeService nodeService;
     private PermissionService permissionService;
     private TransactionService transactionService;
     private PersonService personService;
     private TenantService tenantService;
     
-    public void setPostDaoService(ActivityPostDaoService postDaoService)
+    public void setPostDAO(ActivityPostDAO postDAO)
     {
-        this.postDaoService = postDaoService;
+        this.postDAO = postDAO;
     }
     
     public void setNodeService(NodeService nodeService)
@@ -103,7 +103,7 @@ public class PostLookup
      */
     private void checkProperties()
     {
-        PropertyCheck.mandatory(this, "postDaoService", postDaoService);
+        PropertyCheck.mandatory(this, "postDAO", postDAO);
         PropertyCheck.mandatory(this, "nodeService", nodeService);
         PropertyCheck.mandatory(this, "permissionService", permissionService);
         PropertyCheck.mandatory(this, "transactionService", transactionService);
@@ -116,21 +116,21 @@ public class PostLookup
         checkProperties();
         try
         {
-            ActivityPostDAO params = new ActivityPostDAO();
-            params.setStatus(ActivityPostDAO.STATUS.PENDING.toString());
+            ActivityPostEntity params = new ActivityPostEntity();
+            params.setStatus(ActivityPostEntity.STATUS.PENDING.toString());
             
-            List<ActivityPostDAO> activityPosts = postDaoService.selectPosts(params);
+            List<ActivityPostEntity> activityPosts = postDAO.selectPosts(params);
             
             if (activityPosts.size() > 0)
             {
                 logger.info("Update: " + activityPosts.size() + " activity posts");
             }
             
-            for (final ActivityPostDAO activityPost : activityPosts)
+            for (final ActivityPostEntity activityPost : activityPosts)
             {
                 try
                 {
-                    postDaoService.startTransaction();
+                    postDAO.startTransaction();
                     
                     final JSONObject jo = new JSONObject(new JSONTokener(activityPost.getActivityData()));
                     final String postUserId = activityPost.getUserId();
@@ -167,10 +167,10 @@ public class PostLookup
 
                             activityPost.setLastModified(new Date());
                             
-                            postDaoService.updatePost(activityPost.getId(), activityPost.getSiteNetwork(), activityPost.getActivityData(), ActivityPostDAO.STATUS.POSTED);
+                            postDAO.updatePost(activityPost.getId(), activityPost.getSiteNetwork(), activityPost.getActivityData(), ActivityPostEntity.STATUS.POSTED);
                             if (logger.isDebugEnabled())
                             {
-                                activityPost.setStatus(ActivityPostDAO.STATUS.POSTED.toString()); // for debug output
+                                activityPost.setStatus(ActivityPostEntity.STATUS.POSTED.toString()); // for debug output
                                 logger.debug("Updated: " + activityPost);
                             }
                             
@@ -178,15 +178,15 @@ public class PostLookup
                         }
                     }, tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain));
                     
-                    postDaoService.commitTransaction();
+                    postDAO.commitTransaction();
                 } 
                 catch (JSONException e)
                 {
                     // log error, but consume exception (skip this post)
                     logger.error("Skipping activity post " + activityPost.getId() + ": " + e);
-                    postDaoService.updatePostStatus(activityPost.getId(), ActivityPostDAO.STATUS.ERROR);
+                    postDAO.updatePostStatus(activityPost.getId(), ActivityPostEntity.STATUS.ERROR);
                     
-                    postDaoService.commitTransaction();
+                    postDAO.commitTransaction();
                 }
                 catch (SQLException e)
                 {
@@ -195,7 +195,7 @@ public class PostLookup
                 }
                 finally 
                 { 
-                    postDaoService.endTransaction();
+                    postDAO.endTransaction();
                 } 
             }
         }

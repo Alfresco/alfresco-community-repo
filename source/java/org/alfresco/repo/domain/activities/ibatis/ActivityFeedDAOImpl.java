@@ -22,7 +22,7 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.repo.activities.ibatis;
+package org.alfresco.repo.domain.activities.ibatis;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -30,12 +30,12 @@ import java.util.Date;
 import java.util.List;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.activities.feed.ActivityFeedDAO;
-import org.alfresco.repo.activities.feed.ActivityFeedDaoService;
+import org.alfresco.repo.domain.activities.ActivityFeedDAO;
+import org.alfresco.repo.domain.activities.ActivityFeedEntity;
 
-public class IBatisActivityFeedDaoServiceImpl extends IBatisSqlMapper implements ActivityFeedDaoService
+public class ActivityFeedDAOImpl extends IBatisSqlMapper implements ActivityFeedDAO
 {
-    public long insertFeedEntry(ActivityFeedDAO activityFeed) throws SQLException
+    public long insertFeedEntry(ActivityFeedEntity activityFeed) throws SQLException
     {
         Long id = (Long)getSqlMapClient().insert("insert.activity.feed", activityFeed);
         return (id != null ? id : -1);
@@ -47,9 +47,9 @@ public class IBatisActivityFeedDaoServiceImpl extends IBatisSqlMapper implements
     }
     
     @SuppressWarnings("unchecked")
-    public List<ActivityFeedDAO> selectUserFeedEntries(String feedUserId, String format, String siteId, boolean excludeThisUser, boolean excludeOtherUsers) throws SQLException
+    public List<ActivityFeedEntity> selectUserFeedEntries(String feedUserId, String format, String siteId, boolean excludeThisUser, boolean excludeOtherUsers) throws SQLException
     {
-        ActivityFeedDAO params = new ActivityFeedDAO();
+        ActivityFeedEntity params = new ActivityFeedEntity();
         params.setFeedUserId(feedUserId);
         params.setActivitySummaryFormat(format);
         
@@ -61,22 +61,22 @@ public class IBatisActivityFeedDaoServiceImpl extends IBatisSqlMapper implements
             if (excludeThisUser && excludeOtherUsers)
             {
                 // effectively NOOP - return empty feed
-                return new ArrayList<ActivityFeedDAO>(0);
+                return new ArrayList<ActivityFeedEntity>(0);
             }
             if ((!excludeThisUser) && (!excludeOtherUsers))
             {
                 // no excludes => everyone => where feed user is me
-                return (List<ActivityFeedDAO>)getSqlMapClient().queryForList("select.activity.feed.for.feeduser.and.site", params);
+                return (List<ActivityFeedEntity>)getSqlMapClient().queryForList("select.activity.feed.for.feeduser.and.site", params);
             }
             else if ((excludeThisUser) && (!excludeOtherUsers))
             {
                 // exclude feed user => others => where feed user is me and post user is not me
-                return (List<ActivityFeedDAO>)getSqlMapClient().queryForList("select.activity.feed.for.feeduser.others.and.site", params);
+                return (List<ActivityFeedEntity>)getSqlMapClient().queryForList("select.activity.feed.for.feeduser.others.and.site", params);
             }
             else if ((excludeOtherUsers) && (!excludeThisUser))
             {
                 // exclude others => me => where feed user is me and post user is me
-                return (List<ActivityFeedDAO>)getSqlMapClient().queryForList("select.activity.feed.for.feeduser.me.and.site", params);
+                return (List<ActivityFeedEntity>)getSqlMapClient().queryForList("select.activity.feed.for.feeduser.me.and.site", params);
             }
         }
         else
@@ -86,22 +86,22 @@ public class IBatisActivityFeedDaoServiceImpl extends IBatisSqlMapper implements
             if (excludeThisUser && excludeOtherUsers)
             {
                 // effectively NOOP - return empty feed
-                return new ArrayList<ActivityFeedDAO>(0);
+                return new ArrayList<ActivityFeedEntity>(0);
             }
             if (!excludeThisUser && !excludeOtherUsers)
             {
                 // no excludes => everyone => where feed user is me
-                return (List<ActivityFeedDAO>)getSqlMapClient().queryForList("select.activity.feed.for.feeduser", params);
+                return (List<ActivityFeedEntity>)getSqlMapClient().queryForList("select.activity.feed.for.feeduser", params);
             }
             else if (excludeThisUser)
             {
                 // exclude feed user => others => where feed user is me and post user is not me
-                return (List<ActivityFeedDAO>)getSqlMapClient().queryForList("select.activity.feed.for.feeduser.others", params);
+                return (List<ActivityFeedEntity>)getSqlMapClient().queryForList("select.activity.feed.for.feeduser.others", params);
             }
             else if (excludeOtherUsers)
             {
                 // exclude others => me => where feed user is me and post user is me
-                return (List<ActivityFeedDAO>)getSqlMapClient().queryForList("select.activity.feed.for.feeduser.me", params);
+                return (List<ActivityFeedEntity>)getSqlMapClient().queryForList("select.activity.feed.for.feeduser.me", params);
             }
         }
         
@@ -110,13 +110,13 @@ public class IBatisActivityFeedDaoServiceImpl extends IBatisSqlMapper implements
     }
        
     @SuppressWarnings("unchecked")
-    public List<ActivityFeedDAO> selectSiteFeedEntries(String siteId, String format) throws SQLException
+    public List<ActivityFeedEntity> selectSiteFeedEntries(String siteId, String format) throws SQLException
     {
-        ActivityFeedDAO params = new ActivityFeedDAO();
+        ActivityFeedEntity params = new ActivityFeedEntity();
         params.setSiteNetwork(siteId);
         params.setActivitySummaryFormat(format);
         
         // for given site
-        return (List<ActivityFeedDAO>)getSqlMapClient().queryForList("select.activity.feed.for.site", params);
+        return (List<ActivityFeedEntity>)getSqlMapClient().queryForList("select.activity.feed.for.site", params);
     }
 }

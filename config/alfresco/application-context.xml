@@ -18,6 +18,7 @@
     <import resource="classpath:alfresco/emailserver/email-service-context.xml" />
     <import resource="classpath:alfresco/content-services-context.xml" />
     <import resource="classpath:alfresco/mt/st-admin-context.xml"/>
+    <import resource="classpath:alfresco/dao/dao-context.xml" />
     <import resource="classpath:alfresco/hibernate-context.xml" />
     <import resource="classpath:alfresco/ibatis/ibatis-context.xml" />
     <import resource="classpath:alfresco/activities/activities-feed-context.xml" />

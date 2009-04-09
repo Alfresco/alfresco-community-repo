@@ -6,9 +6,9 @@
 
 <sqlMap namespace="alfresco.activities">
 
-   <typeAlias alias="ActivityFeed" type="org.alfresco.repo.activities.feed.ActivityFeedDAO"/>
-   <typeAlias alias="FeedControl" type="org.alfresco.repo.activities.feed.control.FeedControlDAO"/>
-   <typeAlias alias="ActivityPost" type="org.alfresco.repo.activities.post.ActivityPostDAO"/>
+   <typeAlias alias="ActivityFeed" type="org.alfresco.repo.domain.activities.ActivityFeedEntity"/>
+   <typeAlias alias="FeedControl" type="org.alfresco.repo.domain.activities.FeedControlEntity"/>
+   <typeAlias alias="ActivityPost" type="org.alfresco.repo.domain.activities.ActivityPostEntity"/>
 
    <resultMap id="ActivityFeedResult" class="ActivityFeed">
       <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>

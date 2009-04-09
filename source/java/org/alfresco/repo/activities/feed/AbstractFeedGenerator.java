@@ -24,7 +24,7 @@
  */
 package org.alfresco.repo.activities.feed;
 
-import org.alfresco.repo.activities.post.ActivityPostDaoService;
+import org.alfresco.repo.domain.activities.ActivityPostDAO;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.VmShutdownListener;
@@ -43,7 +43,7 @@ public abstract class AbstractFeedGenerator implements FeedGenerator
     
     private int maxItemsPerCycle = 100;
     
-    private ActivityPostDaoService postDaoService;
+    private ActivityPostDAO postDAO;
     private AuthenticationService authenticationService;
     
     private String repoEndPoint; // http://hostname:port/webapp (eg. http://localhost:8080/alfresco)
@@ -54,9 +54,9 @@ public abstract class AbstractFeedGenerator implements FeedGenerator
     
     private volatile boolean busy;
     
-    public void setPostDaoService(ActivityPostDaoService postDaoService)
+    public void setPostDAO(ActivityPostDAO postDAO)
     {
-        this.postDaoService = postDaoService;
+        this.postDAO = postDAO;
     }
     
     public void setAuthenticationService(AuthenticationService authenticationService)
@@ -84,9 +84,9 @@ public abstract class AbstractFeedGenerator implements FeedGenerator
         return this.maxItemsPerCycle;
     }
 
-    public ActivityPostDaoService getPostDaoService()
+    public ActivityPostDAO getPostDaoService()
     {
-        return this.postDaoService;
+        return this.postDAO;
     }
     
     public AuthenticationService getAuthenticationService()
@@ -112,7 +112,7 @@ public abstract class AbstractFeedGenerator implements FeedGenerator
      */
     private void checkProperties()
     {
-        PropertyCheck.mandatory(this, "postDaoService", postDaoService); 
+        PropertyCheck.mandatory(this, "postDAO", postDAO); 
     }
      
     

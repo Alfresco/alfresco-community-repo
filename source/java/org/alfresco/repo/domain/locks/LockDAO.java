@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -22,32 +22,27 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.repo.activities.post;
+package org.alfresco.repo.domain.locks;
 
-import java.sql.SQLException;
-import java.util.Date;
-import java.util.List;
-
-import org.alfresco.repo.activities.ibatis.ActivityDaoService;
+import org.alfresco.service.namespace.QName;
 
 /**
- * Interface for activity post DAO service
+ * DAO services for <b>alf_lock</b> and related tables
+ * 
+ * @author Derek Hulley
+ * @since 3.2
  */
-public interface ActivityPostDaoService extends ActivityDaoService
+public interface LockDAO
 {
-    public List<ActivityPostDAO> selectPosts(ActivityPostDAO activityPost) throws SQLException;
-    
-    public Long getMaxActivitySeq() throws SQLException;
-    
-    public Long getMinActivitySeq() throws SQLException;
-    
-    public Integer getMaxNodeHash() throws SQLException;
-    
-    public int deletePosts(Date keepDate, ActivityPostDAO.STATUS status) throws SQLException;
-    
-    public long insertPost(ActivityPostDAO activityPost) throws SQLException;
-    
-    public int updatePost(long id, String network, String activityData, ActivityPostDAO.STATUS status) throws SQLException;
-    
-    public int updatePostStatus(long id, ActivityPostDAO.STATUS status) throws SQLException;
+    /**
+     * Aquire a given exclusive lock, assigning it (and any implicitly shared locks) a
+     * timeout.  All shared locks are implicitly taken as well.
+     * 
+     * @param lockQName             the unique name of the lock to acquire
+     * @param lockApplicant         the potential lock holder's identifier (max 36 chars)
+     * @param timeToLive            the time (in milliseconds) that the lock must remain 
+     * @return                      Returns <tt>true</tt> if the lock was taken, 
+     *                              otherwise <tt>false</tt>
+     */
+    boolean getLock(QName lockQName, String lockApplicant, long timeToLive);
 }

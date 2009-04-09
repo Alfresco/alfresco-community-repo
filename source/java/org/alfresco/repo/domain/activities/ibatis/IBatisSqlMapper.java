@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2009 Alfresco Software Limited.
+ * Copyright (C) 2005-2008 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -22,24 +22,40 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.repo.activities.feed;
+package org.alfresco.repo.domain.activities.ibatis;
 
 import java.sql.SQLException;
-import java.util.Date;
-import java.util.List;
 
-import org.alfresco.repo.activities.ibatis.ActivityDaoService;
+import org.alfresco.repo.domain.activities.ActivitiesDAO;
 
-/**
- * Interface for activity feed DAO service
- */
-public interface ActivityFeedDaoService extends ActivityDaoService
+import com.ibatis.sqlmap.client.SqlMapClient;
+
+public class IBatisSqlMapper implements ActivitiesDAO
 {
-    public long insertFeedEntry(ActivityFeedDAO activityFeed) throws SQLException;
+    private SqlMapClient sqlMapper;
     
-    public int deleteFeedEntries(Date keepDate) throws SQLException;
+    public void setSqlMapClient(SqlMapClient sqlMapper)
+    {
+        this.sqlMapper = sqlMapper;
+    }
     
-    public List<ActivityFeedDAO> selectUserFeedEntries(String feedUserId, String format, String siteId, boolean excludeThisUser, boolean excludeOtherUsers) throws SQLException;
+    public SqlMapClient getSqlMapClient()
+    {
+        return this.sqlMapper;
+    }
     
-    public List<ActivityFeedDAO> selectSiteFeedEntries(String siteUserId, String format) throws SQLException;
+    public void startTransaction() throws SQLException
+    {
+        sqlMapper.startTransaction();
+    }
+    
+    public void commitTransaction() throws SQLException
+    {
+        sqlMapper.commitTransaction();
+    }
+    
+    public void endTransaction() throws SQLException
+    {
+        sqlMapper.endTransaction();
+    }
 }

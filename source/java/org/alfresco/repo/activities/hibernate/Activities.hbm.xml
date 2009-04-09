@@ -9,7 +9,7 @@
 <hibernate-mapping>
 
    <class
-         name="org.alfresco.repo.activities.post.ActivityPostDAO"
+         name="org.alfresco.repo.domain.activities.ActivityPostEntity"
          table="alf_activity_post" >
       
       <!-- auto-generated ID -->
@@ -30,7 +30,7 @@
    </class>
    
    <class
-         name="org.alfresco.repo.activities.feed.ActivityFeedDAO"
+         name="org.alfresco.repo.domain.activities.ActivityFeedEntity"
          table="alf_activity_feed" >
       
       <!-- auto-generated ID -->
@@ -52,7 +52,7 @@
    </class>
    
    <class
-         name="org.alfresco.repo.activities.feed.control.FeedControlDAO"
+         name="org.alfresco.repo.domain.activities.FeedControlEntity"
          table="alf_activity_feed_control" >
       
       <!-- auto-generated ID -->

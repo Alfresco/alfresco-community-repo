@@ -1,0 +1,23 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+   <bean id="postDAO" class="org.alfresco.repo.domain.activities.ibatis.ActivityPostDAOImpl">
+      <property name="sqlMapClient" ref="activitiesSqlMapClient"/>
+   </bean>
+   
+   <bean id="feedDAO" class="org.alfresco.repo.domain.activities.ibatis.ActivityFeedDAOImpl">
+      <property name="sqlMapClient" ref="activitiesSqlMapClient"/>
+   </bean>
+   
+   <bean id="feedControlDAO" class="org.alfresco.repo.domain.activities.ibatis.FeedControlDAOImpl">
+      <property name="sqlMapClient" ref="activitiesSqlMapClient"/>
+   </bean>
+
+   <bean id="lockDAO" class="org.alfresco.repo.domain.locks.ibatis.LockDAOImpl">
+      <property name="sqlMapClientTemplate" ref="locksSqlMapClientTemplate"/>
+      <property name="qnameDAO" ref="qnameDAO"/>
+   </bean>
+   
+</beans>

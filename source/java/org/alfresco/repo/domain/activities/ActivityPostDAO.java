@@ -22,21 +22,30 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.repo.activities.feed.control;
+package org.alfresco.repo.domain.activities;
 
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.List;
 
 /**
- * Interface for user activity feed controls DAO service
+ * Interface for activity post DAO service
  */
-public interface FeedControlDaoService
+public interface ActivityPostDAO extends ActivitiesDAO
 {
-    public long insertFeedControl(FeedControlDAO activityFeedControl) throws SQLException;
+    public List<ActivityPostEntity> selectPosts(ActivityPostEntity activityPost) throws SQLException;
     
-    public int deleteFeedControl(FeedControlDAO activityFeedControl) throws SQLException;
+    public Long getMaxActivitySeq() throws SQLException;
     
-    public List<FeedControlDAO> selectFeedControls(String userId) throws SQLException;
+    public Long getMinActivitySeq() throws SQLException;
     
-    public long selectFeedControl(FeedControlDAO activityFeedControl) throws SQLException;
+    public Integer getMaxNodeHash() throws SQLException;
+    
+    public int deletePosts(Date keepDate, ActivityPostEntity.STATUS status) throws SQLException;
+    
+    public long insertPost(ActivityPostEntity activityPost) throws SQLException;
+    
+    public int updatePost(long id, String network, String activityData, ActivityPostEntity.STATUS status) throws SQLException;
+    
+    public int updatePostStatus(long id, ActivityPostEntity.STATUS status) throws SQLException;
 }

@@ -22,7 +22,7 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.repo.activities.feed.control;
+package org.alfresco.repo.domain.activities;
 
 import java.util.Date;
 
@@ -31,7 +31,7 @@ import org.alfresco.service.cmr.activities.FeedControl;
 /**
  * Activity Feed Control DAO
  */
-public class FeedControlDAO
+public class FeedControlEntity
 { 
     private Long id; // internal DB-generated id
     private String feedUserId;
@@ -44,16 +44,16 @@ public class FeedControlDAO
     // it is possible for a feed control to be applied even if lastModified is greater than postDate - could check the date !
     // it is also possible for a feed control to not be applied if it is deleted just after the post - would need to keep, at least until next generation
     
-    public FeedControlDAO()
+    public FeedControlEntity()
     {
     }
     
-    public FeedControlDAO(String feedUserId)
+    public FeedControlEntity(String feedUserId)
     {
         this.feedUserId = feedUserId;
     }
     
-    public FeedControlDAO(String feedUserId, FeedControl feedControl)
+    public FeedControlEntity(String feedUserId, FeedControl feedControl)
     {
         this.feedUserId = feedUserId;
         this.siteNetwork = feedControl.getSiteId();

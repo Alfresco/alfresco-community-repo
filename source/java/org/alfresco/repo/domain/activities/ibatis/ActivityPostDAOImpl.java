@@ -22,35 +22,35 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.repo.activities.ibatis;
+package org.alfresco.repo.domain.activities.ibatis;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.alfresco.repo.activities.post.ActivityPostDAO;
-import org.alfresco.repo.activities.post.ActivityPostDaoService;
+import org.alfresco.repo.domain.activities.ActivityPostDAO;
+import org.alfresco.repo.domain.activities.ActivityPostEntity;
 
-public class IBatisActivityPostDaoServiceImpl extends IBatisSqlMapper implements ActivityPostDaoService
+public class ActivityPostDAOImpl extends IBatisSqlMapper implements ActivityPostDAO
 {
     @SuppressWarnings("unchecked")
-    public List<ActivityPostDAO> selectPosts(ActivityPostDAO activityPost) throws SQLException 
+    public List<ActivityPostEntity> selectPosts(ActivityPostEntity activityPost) throws SQLException 
     {
         if ((activityPost.getJobTaskNode() != -1) &&
             (activityPost.getMinId() != -1) &&
             (activityPost.getMaxId() != -1) &&
             (activityPost.getStatus() != null))
         {
-            return (List<ActivityPostDAO>)getSqlMapClient().queryForList("select.activity.posts", activityPost);
+            return (List<ActivityPostEntity>)getSqlMapClient().queryForList("select.activity.posts", activityPost);
         }
         else if (activityPost.getStatus() != null)
         {
-            return (List<ActivityPostDAO>)getSqlMapClient().queryForList("select.activity.posts.by.status.only", activityPost);
+            return (List<ActivityPostEntity>)getSqlMapClient().queryForList("select.activity.posts.by.status.only", activityPost);
         }
         else
         {
-            return new ArrayList<ActivityPostDAO>(0);
+            return new ArrayList<ActivityPostEntity>(0);
         }
     }
 
@@ -69,9 +69,9 @@ public class IBatisActivityPostDaoServiceImpl extends IBatisSqlMapper implements
         return (Integer)getSqlMapClient().queryForObject("select.activity.post.max.jobtasknode");
     }
 
-    public int updatePost(long id, String siteNetwork, String activityData, ActivityPostDAO.STATUS status) throws SQLException
+    public int updatePost(long id, String siteNetwork, String activityData, ActivityPostEntity.STATUS status) throws SQLException
     {
-        ActivityPostDAO post = new ActivityPostDAO();
+        ActivityPostEntity post = new ActivityPostEntity();
         post.setId(id);
         post.setSiteNetwork(siteNetwork);
         post.setActivityData(activityData);
@@ -81,9 +81,9 @@ public class IBatisActivityPostDaoServiceImpl extends IBatisSqlMapper implements
         return getSqlMapClient().update("update.activity.post.data", post);
     }
     
-    public int updatePostStatus(long id, ActivityPostDAO.STATUS status) throws SQLException
+    public int updatePostStatus(long id, ActivityPostEntity.STATUS status) throws SQLException
     {
-        ActivityPostDAO post = new ActivityPostDAO();
+        ActivityPostEntity post = new ActivityPostEntity();
         post.setId(id);
         post.setStatus(status.toString());
         post.setLastModified(new Date());
@@ -91,16 +91,16 @@ public class IBatisActivityPostDaoServiceImpl extends IBatisSqlMapper implements
         return getSqlMapClient().update("update.activity.post.status", post);
     }
     
-    public int deletePosts(Date keepDate, ActivityPostDAO.STATUS status) throws SQLException
+    public int deletePosts(Date keepDate, ActivityPostEntity.STATUS status) throws SQLException
     {
-        ActivityPostDAO params = new ActivityPostDAO();
+        ActivityPostEntity params = new ActivityPostEntity();
         params.setPostDate(keepDate);
         params.setStatus(status.toString());
         
         return getSqlMapClient().delete("delete.activity.posts.older.than.date", params);
     }
     
-    public long insertPost(ActivityPostDAO activityPost) throws SQLException
+    public long insertPost(ActivityPostEntity activityPost) throws SQLException
     {
         Long id = (Long)getSqlMapClient().insert("insert.activity.post", activityPost);
         return (id != null ? id : -1);

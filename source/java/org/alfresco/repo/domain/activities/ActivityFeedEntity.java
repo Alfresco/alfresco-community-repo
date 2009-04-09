@@ -22,7 +22,7 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.repo.activities.feed;
+package org.alfresco.repo.domain.activities;
 
 import java.util.Date;
 
@@ -33,7 +33,7 @@ import org.json.JSONObject;
 /**
  * Activity Feed DAO
  */
-public class ActivityFeedDAO
+public class ActivityFeedEntity
 { 
     private Long id; // internal DB-generated id
     private String activityType;

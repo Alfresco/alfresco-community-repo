@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -22,18 +22,22 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.repo.activities.ibatis;
+package org.alfresco.repo.domain.activities;
 
 import java.sql.SQLException;
+import java.util.Date;
+import java.util.List;
 
 /**
- * Common interface for activity DAO service
+ * Interface for activity feed DAO service
  */
-public interface ActivityDaoService
+public interface ActivityFeedDAO extends ActivitiesDAO
 {
-    public void startTransaction() throws SQLException;
+    public long insertFeedEntry(ActivityFeedEntity activityFeed) throws SQLException;
     
-    public void commitTransaction() throws SQLException;
+    public int deleteFeedEntries(Date keepDate) throws SQLException;
     
-    public void endTransaction() throws SQLException;
+    public List<ActivityFeedEntity> selectUserFeedEntries(String feedUserId, String format, String siteId, boolean excludeThisUser, boolean excludeOtherUsers) throws SQLException;
+    
+    public List<ActivityFeedEntity> selectSiteFeedEntries(String siteUserId, String format) throws SQLException;
 }

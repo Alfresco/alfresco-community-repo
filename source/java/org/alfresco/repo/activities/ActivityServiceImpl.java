@@ -30,13 +30,13 @@ import java.util.Date;
 import java.util.List;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.activities.feed.ActivityFeedDAO;
-import org.alfresco.repo.activities.feed.ActivityFeedDaoService;
 import org.alfresco.repo.activities.feed.FeedGenerator;
-import org.alfresco.repo.activities.feed.control.FeedControlDAO;
-import org.alfresco.repo.activities.feed.control.FeedControlDaoService;
-import org.alfresco.repo.activities.post.ActivityPostDAO;
-import org.alfresco.repo.activities.post.ActivityPostDaoService;
+import org.alfresco.repo.domain.activities.ActivityFeedDAO;
+import org.alfresco.repo.domain.activities.ActivityFeedEntity;
+import org.alfresco.repo.domain.activities.ActivityPostDAO;
+import org.alfresco.repo.domain.activities.ActivityPostEntity;
+import org.alfresco.repo.domain.activities.FeedControlDAO;
+import org.alfresco.repo.domain.activities.FeedControlEntity;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.activities.ActivityService;
@@ -64,9 +64,9 @@ public class ActivityServiceImpl implements ActivityService
     private static final int MAX_LEN_ACTIVITY_DATA = 4000;  // needs to match schema: activity_data
     private static final int MAX_LEN_APP_TOOL_ID = 36;      // needs to match schema: app_tool
     
-    private ActivityPostDaoService postDaoService;
-    private ActivityFeedDaoService feedDaoService;
-    private FeedControlDaoService feedControlDaoService;
+    private ActivityPostDAO postDAO;
+    private ActivityFeedDAO feedDAO;
+    private FeedControlDAO feedControlDAO;
     private AuthorityService authorityService;
     private FeedGenerator feedGenerator;
     
@@ -86,19 +86,19 @@ public class ActivityServiceImpl implements ActivityService
         this.userNamesAreCaseSensitive = userNamesAreCaseSensitive;
     }
     
-    public void setPostDaoService(ActivityPostDaoService postDaoService)
+    public void setPostDAO(ActivityPostDAO postDAO)
     {
-        this.postDaoService = postDaoService;
+        this.postDAO = postDAO;
     }
     
-    public void setFeedDaoService(ActivityFeedDaoService feedDaoService)
+    public void setFeedDAO(ActivityFeedDAO feedDAO)
     {
-        this.feedDaoService = feedDaoService;
+        this.feedDAO = feedDAO;
     }
     
-    public void setFeedControlDaoService(FeedControlDaoService feedControlDaoService)
+    public void setFeedControlDAO(FeedControlDAO feedControlDAO)
     {
-        this.feedControlDaoService = feedControlDaoService;
+        this.feedControlDAO = feedControlDAO;
     }
     
     public void setAuthorityService(AuthorityService authorityService)
@@ -122,7 +122,7 @@ public class ActivityServiceImpl implements ActivityService
      */
     public void postActivity(String activityType, String siteId, String appTool, String activityData)
     {
-        postActivity(activityType, siteId, appTool, activityData, ActivityPostDAO.STATUS.PENDING);
+        postActivity(activityType, siteId, appTool, activityData, ActivityPostEntity.STATUS.PENDING);
     }
     
     /* (non-Javadoc)
@@ -135,7 +135,7 @@ public class ActivityServiceImpl implements ActivityService
         StringBuffer sb = new StringBuffer();
         sb.append("{").append("\"nodeRef\":\"").append(nodeRef.toString()).append("\"").append("}");
         
-        postActivity(activityType, siteId, appTool, sb.toString(), ActivityPostDAO.STATUS.PENDING);
+        postActivity(activityType, siteId, appTool, sb.toString(), ActivityPostEntity.STATUS.PENDING);
     }
     
     /* (non-Javadoc)
@@ -150,7 +150,7 @@ public class ActivityServiceImpl implements ActivityService
                       .append("\"name\":\"").append(name).append("\"")
                       .append("}");
         
-        postActivity(activityType, siteId, appTool, sb.toString(), ActivityPostDAO.STATUS.PENDING);
+        postActivity(activityType, siteId, appTool, sb.toString(), ActivityPostEntity.STATUS.PENDING);
     }
 
     /* (non-Javadoc)
@@ -171,10 +171,10 @@ public class ActivityServiceImpl implements ActivityService
                       .append("\"parentNodeRef\":\"").append(parentNodeRef.toString()).append("\"")
                       .append("}");
         
-        postActivity(activityType, siteId, appTool, sb.toString(), ActivityPostDAO.STATUS.PENDING);
+        postActivity(activityType, siteId, appTool, sb.toString(), ActivityPostEntity.STATUS.PENDING);
     }
     
-    private void postActivity(String activityType, String siteId, String appTool, String activityData, ActivityPostDAO.STATUS status)
+    private void postActivity(String activityType, String siteId, String appTool, String activityData, ActivityPostEntity.STATUS status)
     {
         String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
         
@@ -241,7 +241,7 @@ public class ActivityServiceImpl implements ActivityService
         try
         {
             Date postDate = new Date();
-            ActivityPostDAO activityPost = new ActivityPostDAO();
+            ActivityPostEntity activityPost = new ActivityPostEntity();
             activityPost.setUserId(currentUser);
             
             activityPost.setSiteNetwork(tenantService.getName(siteId));
@@ -262,7 +262,7 @@ public class ActivityServiceImpl implements ActivityService
             
             try
             {
-                long postId = postDaoService.insertPost(activityPost);
+                long postId = postDAO.insertPost(activityPost);
                 
                 if (logger.isDebugEnabled()) 
                 { 
@@ -312,16 +312,16 @@ public class ActivityServiceImpl implements ActivityService
 
         try
         {
-            List<ActivityFeedDAO> activityFeeds = null;
+            List<ActivityFeedEntity> activityFeeds = null;
             if (siteId != null)
             {
                 siteId = tenantService.getName(siteId);
             }
             
-            activityFeeds = feedDaoService.selectUserFeedEntries(feedUserId, format, siteId, excludeThisUser, excludeOtherUsers);
+            activityFeeds = feedDAO.selectUserFeedEntries(feedUserId, format, siteId, excludeThisUser, excludeOtherUsers);
             
             int count = 0;
-            for (ActivityFeedDAO activityFeed : activityFeeds)
+            for (ActivityFeedEntity activityFeed : activityFeeds)
             {
                 count++;
                 if (count > maxFeedItems)
@@ -363,10 +363,10 @@ public class ActivityServiceImpl implements ActivityService
         { 
             siteId = tenantService.getName(siteId);
             
-            List<ActivityFeedDAO> activityFeeds = feedDaoService.selectSiteFeedEntries(siteId, format);
+            List<ActivityFeedEntity> activityFeeds = feedDAO.selectSiteFeedEntries(siteId, format);
             
             int count = 0;
-            for (ActivityFeedDAO activityFeed : activityFeeds)
+            for (ActivityFeedEntity activityFeed : activityFeeds)
             {
                 count++;
                 if (count > maxFeedItems)
@@ -411,7 +411,7 @@ public class ActivityServiceImpl implements ActivityService
         {
             if (! existsFeedControl(feedControl))
             {
-                feedControlDaoService.insertFeedControl(new FeedControlDAO(userId, feedControl));
+                feedControlDAO.insertFeedControl(new FeedControlEntity(userId, feedControl));
             }
         }
         catch (SQLException e) 
@@ -458,9 +458,9 @@ public class ActivityServiceImpl implements ActivityService
         
         try
         {
-            List<FeedControlDAO> feedControlDaos = feedControlDaoService.selectFeedControls(userId);
+            List<FeedControlEntity> feedControlDaos = feedControlDAO.selectFeedControls(userId);
             List<FeedControl> feedControls = new ArrayList<FeedControl>(feedControlDaos.size());
-            for (FeedControlDAO feedControlDao : feedControlDaos)
+            for (FeedControlEntity feedControlDao : feedControlDaos)
             {
                 feedControls.add(feedControlDao.getFeedControl());
             }
@@ -490,7 +490,7 @@ public class ActivityServiceImpl implements ActivityService
         
         try
         {
-            feedControlDaoService.deleteFeedControl(new FeedControlDAO(userId, feedControl));
+            feedControlDAO.deleteFeedControl(new FeedControlEntity(userId, feedControl));
         }
         catch (SQLException e) 
         {
@@ -516,7 +516,7 @@ public class ActivityServiceImpl implements ActivityService
         
         try
         {
-            long id = feedControlDaoService.selectFeedControl(new FeedControlDAO(userId, feedControl));
+            long id = feedControlDAO.selectFeedControl(new FeedControlEntity(userId, feedControl));
             return (id != -1);
         }
         catch (SQLException e) 

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="alfresco.lock">
+
+    <insert id="insert.LockResource" parameterClass="LockResource" >
+        <include refid="insert.LockResource.AutoIncrement"/>
+        <selectKey resultClass="long" keyProperty="id" type="post">
+            KEY_COLUMN:GENERATED_KEY
+        </selectKey>
+    </insert>
+
+    <insert id="insert.Lock" parameterClass="Lock" >
+        <include refid="insert.Lock.AutoIncrement"/>
+        <selectKey resultClass="long" keyProperty="id" type="post">
+            KEY_COLUMN:GENERATED_KEY
+        </selectKey>
+    </insert>
+
+</sqlMap>

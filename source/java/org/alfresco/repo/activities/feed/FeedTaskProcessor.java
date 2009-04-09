@@ -45,8 +45,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import org.alfresco.repo.activities.feed.control.FeedControlDAO;
-import org.alfresco.repo.activities.post.ActivityPostDAO;
+import org.alfresco.repo.domain.activities.ActivityFeedEntity;
+import org.alfresco.repo.domain.activities.ActivityPostEntity;
+import org.alfresco.repo.domain.activities.FeedControlEntity;
 import org.alfresco.repo.template.ISO8601DateFormatMethod;
 import org.alfresco.util.Base64;
 import org.alfresco.util.JSONtoFmModel;
@@ -86,15 +87,15 @@ public abstract class FeedTaskProcessor
             logger.debug(">>> Process: jobTaskNode '" + jobTaskNode + "' from seq '" + minSeq + "' to seq '" + maxSeq + "' on this node from grid job.");
         }
         
-        ActivityPostDAO selector = new ActivityPostDAO();
+        ActivityPostEntity selector = new ActivityPostEntity();
         selector.setJobTaskNode(jobTaskNode);
         selector.setMinId(minSeq);
         selector.setMaxId(maxSeq);
-        selector.setStatus(ActivityPostDAO.STATUS.POSTED.toString());
+        selector.setStatus(ActivityPostEntity.STATUS.POSTED.toString());
         
         String ticket = ctx.getTicket();
         
-        List<ActivityPostDAO> activityPosts = null;
+        List<ActivityPostEntity> activityPosts = null;
         int totalGenerated = 0;
         
         try
@@ -112,7 +113,7 @@ public abstract class FeedTaskProcessor
             Map<String, Template> templateCache = new TreeMap<String, Template>();
                 
             // for each activity post ...
-            for (ActivityPostDAO activityPost : activityPosts)
+            for (ActivityPostEntity activityPost : activityPosts)
             {
                 String postingUserId = activityPost.getUserId();
                 String activityType = activityPost.getActivityType();
@@ -172,7 +173,7 @@ public abstract class FeedTaskProcessor
                 if (fmTemplates.size() == 0)
                 {
                     logger.error(">>> Skipping activity post " + activityPost.getId() + " since no specific/generic templates for activityType: " + activityType );
-                    updatePostStatus(activityPost.getId(), ActivityPostDAO.STATUS.ERROR);
+                    updatePostStatus(activityPost.getId(), ActivityPostEntity.STATUS.ERROR);
                     continue;
                 }
                 
@@ -184,7 +185,7 @@ public abstract class FeedTaskProcessor
                 catch(JSONException je)
                 {
                     logger.error(">>> Skipping activity post " + activityPost.getId() + " due to invalid activity data: " + je);
-                    updatePostStatus(activityPost.getId(), ActivityPostDAO.STATUS.ERROR);
+                    updatePostStatus(activityPost.getId(), ActivityPostEntity.STATUS.ERROR);
                     continue;
                 }
                 
@@ -221,7 +222,7 @@ public abstract class FeedTaskProcessor
                         catch(Exception e)
                         {
                             logger.error(">>> Skipping activity post " + activityPost.getId() + " since failed to get site members: " + e);
-                            updatePostStatus(activityPost.getId(), ActivityPostDAO.STATUS.ERROR);
+                            updatePostStatus(activityPost.getId(), ActivityPostEntity.STATUS.ERROR);
                             continue;
                         }
                     }
@@ -240,7 +241,7 @@ public abstract class FeedTaskProcessor
                     
                     for (String connectedUser : connectedUsers)
                     {
-                        List<FeedControlDAO> feedControls = null;
+                        List<FeedControlEntity> feedControls = null;
                         if (! connectedUser.equals(""))
                         {
                             feedControls = getFeedControls(connectedUser);
@@ -272,7 +273,7 @@ public abstract class FeedTaskProcessor
                                     logger.warn("Unknown format for: " + fmTemplate + " default to '"+formatFound+"'");
                                 }
                                 
-        	                    ActivityFeedDAO feed = new ActivityFeedDAO();
+        	                    ActivityFeedEntity feed = new ActivityFeedEntity();
         	                    
         	                    // Generate activity feed summary 
         	                    feed.setFeedUserId(connectedUser);
@@ -312,7 +313,7 @@ public abstract class FeedTaskProcessor
                     	}
                     }
                     
-                    updatePostStatus(activityPost.getId(), ActivityPostDAO.STATUS.PROCESSED);
+                    updatePostStatus(activityPost.getId(), ActivityPostEntity.STATUS.PROCESSED);
 
                     commitTransaction();
                     
@@ -344,13 +345,13 @@ public abstract class FeedTaskProcessor
     
     public abstract void endTransaction() throws SQLException;
     
-    public abstract List<ActivityPostDAO> selectPosts(ActivityPostDAO selector) throws SQLException;
+    public abstract List<ActivityPostEntity> selectPosts(ActivityPostEntity selector) throws SQLException;
     
-    public abstract List<FeedControlDAO> selectUserFeedControls(String userId) throws SQLException;
+    public abstract List<FeedControlEntity> selectUserFeedControls(String userId) throws SQLException;
     
-    public abstract long insertFeedEntry(ActivityFeedDAO feed) throws SQLException;
+    public abstract long insertFeedEntry(ActivityFeedEntity feed) throws SQLException;
     
-    public abstract int updatePostStatus(long id, ActivityPostDAO.STATUS status) throws SQLException;
+    public abstract int updatePostStatus(long id, ActivityPostEntity.STATUS status) throws SQLException;
     
     
     protected String callWebScript(String urlString, String ticket) throws MalformedURLException, URISyntaxException, IOException
@@ -531,20 +532,20 @@ public abstract class FeedTaskProcessor
         return textWriter.toString();
     }
     
-    protected List<FeedControlDAO> getFeedControls(String connectedUser) throws SQLException
+    protected List<FeedControlEntity> getFeedControls(String connectedUser) throws SQLException
     {
         // TODO cache for this run
         return selectUserFeedControls(connectedUser);
     }
     
-    protected boolean acceptActivity(ActivityPostDAO activityPost, List<FeedControlDAO> feedControls)
+    protected boolean acceptActivity(ActivityPostEntity activityPost, List<FeedControlEntity> feedControls)
     {
         if (feedControls == null)
         {
             return true;
         }
         
-        for (FeedControlDAO feedControl : feedControls)
+        for (FeedControlEntity feedControl : feedControls)
         {
             if (((feedControl.getSiteNetwork() == null) || (feedControl.getSiteNetwork().length() == 0)) && (feedControl.getAppTool() != null))
             {

@@ -22,14 +22,14 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.repo.activities.post;
+package org.alfresco.repo.domain.activities;
 
 import java.util.Date;
   
 /**
  * Activity Post DAO
  */
-public class ActivityPostDAO
+public class ActivityPostEntity
 { 
     public enum STATUS { POSTED, PENDING, PROCESSED, ERROR };
     

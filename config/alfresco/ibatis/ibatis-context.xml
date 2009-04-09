@@ -37,7 +37,8 @@
         </property>
     </bean>
 
-   	<bean id="activitiesSqlMapClient" class="org.alfresco.ibatis.HierarchicalSqlMapClientFactoryBean" singleton="true">
+    <!-- iBatis config for Activities domain -->
+   	<bean id="activitiesSqlMapClient" class="org.alfresco.ibatis.HierarchicalSqlMapClientFactoryBean">
         <property name="dataSource" ref="activitiesDataSource"/>
         <property name="resourceLoader" ref="dialectResourceLoader" />
         <property name="configLocation">
@@ -45,17 +46,16 @@
         </property> 
     </bean> 
 
-    <!--
-        Root iBatis configuration for the DM nodes
-    -->
-<!--
-   	<bean id="dmNodeSqlMapClient" class="org.alfresco.ibatis.HierarchicalSqlMapClientFactoryBean" singleton="true">
+    <!-- iBatis config for Locks domain -->
+   	<bean id="locksSqlMapClient" class="org.alfresco.ibatis.HierarchicalSqlMapClientFactoryBean">
         <property name="dataSource" ref="dataSource"/>
         <property name="resourceLoader" ref="dialectResourceLoader" />
         <property name="configLocation">
-            <value>classpath:alfresco/ibatis/dmNode-SqlMapConfig.xml</value>
+            <value>classpath:alfresco/ibatis/locks-SqlMapConfig.xml</value>
         </property> 
     </bean>
--->
+   	<bean id="locksSqlMapClientTemplate" class="org.springframework.orm.ibatis.SqlMapClientTemplate">
+        <property name="sqlMapClient" ref="locksSqlMapClient"/>
+    </bean>
 
 </beans>

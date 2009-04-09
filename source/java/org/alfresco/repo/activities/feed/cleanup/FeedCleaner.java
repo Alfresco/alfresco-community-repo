@@ -28,7 +28,7 @@ import java.sql.SQLException;
 import java.util.Date;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.activities.feed.ActivityFeedDaoService;
+import org.alfresco.repo.domain.activities.ActivityFeedDAO;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.VmShutdownListener;
 import org.apache.commons.logging.Log;
@@ -46,11 +46,11 @@ public class FeedCleaner
     
     private int maxAgeMins = 0;
     
-    private ActivityFeedDaoService feedDaoService;
+    private ActivityFeedDAO feedDAO;
     
-    public void setFeedDaoService(ActivityFeedDaoService feedDaoService)
+    public void setFeedDAO(ActivityFeedDAO feedDAO)
     {
-        this.feedDaoService = feedDaoService;
+        this.feedDAO = feedDAO;
     }
     
     public void setMaxAgeMins(int mins)
@@ -63,7 +63,7 @@ public class FeedCleaner
      */
     private void checkProperties()
     {
-        PropertyCheck.mandatory(this, "feedDaoService", feedDaoService);
+        PropertyCheck.mandatory(this, "feedDAO", feedDAO);
         
         // check the max age
         if (maxAgeMins <= 0)
@@ -82,7 +82,7 @@ public class FeedCleaner
             Date keepDate = new Date(keepTimeOffset);
              
             // clean old entries   
-            int deletedCount = feedDaoService.deleteFeedEntries(keepDate);
+            int deletedCount = feedDAO.deleteFeedEntries(keepDate);
             
             if (logger.isDebugEnabled())
             {

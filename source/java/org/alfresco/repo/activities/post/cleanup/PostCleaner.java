@@ -28,8 +28,8 @@ import java.sql.SQLException;
 import java.util.Date;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.activities.post.ActivityPostDAO;
-import org.alfresco.repo.activities.post.ActivityPostDaoService;
+import org.alfresco.repo.domain.activities.ActivityPostDAO;
+import org.alfresco.repo.domain.activities.ActivityPostEntity;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.VmShutdownListener;
 import org.apache.commons.logging.Log;
@@ -47,11 +47,11 @@ public class PostCleaner
     
     private int maxAgeMins = 0;
     
-    private ActivityPostDaoService postDaoService;
+    private ActivityPostDAO postDAO;
     
-    public void setPostDaoService(ActivityPostDaoService postDaoService)
+    public void setPostDAO(ActivityPostDAO postDAO)
     {
-        this.postDaoService = postDaoService;
+        this.postDAO = postDAO;
     }
     
     public void setMaxAgeMins(int mins)
@@ -64,7 +64,7 @@ public class PostCleaner
      */
     private void checkProperties()
     {
-        PropertyCheck.mandatory(this, "postDaoService", postDaoService);
+        PropertyCheck.mandatory(this, "postDAO", postDAO);
         
         // check the max age
         if (maxAgeMins <= 0)
@@ -83,7 +83,7 @@ public class PostCleaner
             Date keepDate = new Date(keepTimeOffset);
              
             // clean old entries - PROCESSED - does not clean POSTED or PENDING, which will need to be done manually, if stuck
-            int deletedCount = postDaoService.deletePosts(keepDate, ActivityPostDAO.STATUS.PROCESSED);
+            int deletedCount = postDAO.deletePosts(keepDate, ActivityPostEntity.STATUS.PROCESSED);
             
             if (logger.isDebugEnabled())
             {

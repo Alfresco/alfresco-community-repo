@@ -22,38 +22,21 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.repo.activities.ibatis;
+package org.alfresco.repo.domain.activities;
 
 import java.sql.SQLException;
+import java.util.List;
 
-import com.ibatis.sqlmap.client.SqlMapClient;
-
-public class IBatisSqlMapper implements ActivityDaoService
+/**
+ * Interface for user activity feed controls DAO service
+ */
+public interface FeedControlDAO
 {
-    private SqlMapClient sqlMapper;
+    public long insertFeedControl(FeedControlEntity activityFeedControl) throws SQLException;
     
-    public void setSqlMapClient(SqlMapClient sqlMapper)
-    {
-        this.sqlMapper = sqlMapper;
-    }
+    public int deleteFeedControl(FeedControlEntity activityFeedControl) throws SQLException;
     
-    public SqlMapClient getSqlMapClient()
-    {
-        return this.sqlMapper;
-    }
+    public List<FeedControlEntity> selectFeedControls(String userId) throws SQLException;
     
-    public void startTransaction() throws SQLException
-    {
-        sqlMapper.startTransaction();
-    }
-    
-    public void commitTransaction() throws SQLException
-    {
-        sqlMapper.commitTransaction();
-    }
-    
-    public void endTransaction() throws SQLException
-    {
-        sqlMapper.endTransaction();
-    }
+    public long selectFeedControl(FeedControlEntity activityFeedControl) throws SQLException;
 }

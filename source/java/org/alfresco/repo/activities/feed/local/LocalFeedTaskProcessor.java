@@ -27,13 +27,13 @@ package org.alfresco.repo.activities.feed.local;
 import java.sql.SQLException;
 import java.util.List;
 
-import org.alfresco.repo.activities.feed.ActivityFeedDAO;
-import org.alfresco.repo.activities.feed.ActivityFeedDaoService;
 import org.alfresco.repo.activities.feed.FeedTaskProcessor;
-import org.alfresco.repo.activities.feed.control.FeedControlDAO;
-import org.alfresco.repo.activities.feed.control.FeedControlDaoService;
-import org.alfresco.repo.activities.post.ActivityPostDAO;
-import org.alfresco.repo.activities.post.ActivityPostDaoService;
+import org.alfresco.repo.domain.activities.ActivityFeedDAO;
+import org.alfresco.repo.domain.activities.ActivityFeedEntity;
+import org.alfresco.repo.domain.activities.ActivityPostDAO;
+import org.alfresco.repo.domain.activities.ActivityPostEntity;
+import org.alfresco.repo.domain.activities.FeedControlDAO;
+import org.alfresco.repo.domain.activities.FeedControlEntity;
 
 import com.ibatis.sqlmap.client.SqlMapClient;
 
@@ -42,27 +42,27 @@ import com.ibatis.sqlmap.client.SqlMapClient;
  */
 public class LocalFeedTaskProcessor extends FeedTaskProcessor
 {
-    private ActivityPostDaoService postDaoService;
-    private ActivityFeedDaoService feedDaoService;
-    private FeedControlDaoService feedControlDaoService;
+    private ActivityPostDAO postDAO;
+    private ActivityFeedDAO feedDAO;
+    private FeedControlDAO feedControlDAO;
     
     // used to start/end/commit transaction
     // note: currently assumes that all dao services are configured with this mapper / data source
     private SqlMapClient sqlMapper;
 
-    public void setPostDaoService(ActivityPostDaoService postDaoService)
+    public void setPostDAO(ActivityPostDAO postDAO)
     {
-        this.postDaoService = postDaoService;
+        this.postDAO = postDAO;
     }
     
-    public void setFeedDaoService(ActivityFeedDaoService feedDaoService)
+    public void setFeedDAO(ActivityFeedDAO feedDAO)
     {
-        this.feedDaoService = feedDaoService;
+        this.feedDAO = feedDAO;
     }
     
-    public void setFeedControlDaoService(FeedControlDaoService feedControlDaoService)
+    public void setFeedControlDAO(FeedControlDAO feedControlDAO)
     {
-        this.feedControlDaoService = feedControlDaoService;
+        this.feedControlDAO = feedControlDAO;
     }
     
     public void setSqlMapClient(SqlMapClient sqlMapper)
@@ -85,23 +85,23 @@ public class LocalFeedTaskProcessor extends FeedTaskProcessor
         sqlMapper.endTransaction();
     }
     
-    public List<ActivityPostDAO> selectPosts(ActivityPostDAO selector) throws SQLException
+    public List<ActivityPostEntity> selectPosts(ActivityPostEntity selector) throws SQLException
     {
-        return postDaoService.selectPosts(selector);
+        return postDAO.selectPosts(selector);
     }
     
-    public long insertFeedEntry(ActivityFeedDAO feed) throws SQLException
+    public long insertFeedEntry(ActivityFeedEntity feed) throws SQLException
     {
-        return feedDaoService.insertFeedEntry(feed);
+        return feedDAO.insertFeedEntry(feed);
     }
     
-    public int updatePostStatus(long id, ActivityPostDAO.STATUS status) throws SQLException
+    public int updatePostStatus(long id, ActivityPostEntity.STATUS status) throws SQLException
     {
-        return postDaoService.updatePostStatus(id, status);
+        return postDAO.updatePostStatus(id, status);
     }
     
-    public List<FeedControlDAO> selectUserFeedControls(String userId) throws SQLException
+    public List<FeedControlEntity> selectUserFeedControls(String userId) throws SQLException
     {
-       return feedControlDaoService.selectFeedControls(userId);
+       return feedControlDAO.selectFeedControls(userId);
     }
 }

@@ -22,36 +22,36 @@
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
-package org.alfresco.repo.activities.ibatis;
+package org.alfresco.repo.domain.activities.ibatis;
 
 import java.sql.SQLException;
 import java.util.List;
 
-import org.alfresco.repo.activities.feed.control.FeedControlDAO;
-import org.alfresco.repo.activities.feed.control.FeedControlDaoService;
+import org.alfresco.repo.domain.activities.FeedControlDAO;
+import org.alfresco.repo.domain.activities.FeedControlEntity;
 
-public class IBatisFeedControlDaoServiceImpl extends IBatisSqlMapper implements FeedControlDaoService
+public class FeedControlDAOImpl extends IBatisSqlMapper implements FeedControlDAO
 {
-    public long insertFeedControl(FeedControlDAO activityFeedControl) throws SQLException
+    public long insertFeedControl(FeedControlEntity activityFeedControl) throws SQLException
     {
         Long id = (Long)getSqlMapClient().insert("insert.activity.feedcontrol", activityFeedControl);
         return (id != null ? id : -1);
     }
     
-    public int deleteFeedControl(FeedControlDAO activityFeedControl) throws SQLException
+    public int deleteFeedControl(FeedControlEntity activityFeedControl) throws SQLException
     {
         return getSqlMapClient().delete("delete.activity.feedcontrol", activityFeedControl);
     }
     
     @SuppressWarnings("unchecked")
-    public List<FeedControlDAO> selectFeedControls(String feedUserId) throws SQLException
+    public List<FeedControlEntity> selectFeedControls(String feedUserId) throws SQLException
     {
-        FeedControlDAO params = new FeedControlDAO(feedUserId);
+        FeedControlEntity params = new FeedControlEntity(feedUserId);
 
-        return (List<FeedControlDAO>)getSqlMapClient().queryForList("select.activity.feedcontrols.for.user", params);
+        return (List<FeedControlEntity>)getSqlMapClient().queryForList("select.activity.feedcontrols.for.user", params);
     }
     
-    public long selectFeedControl(FeedControlDAO activityFeedControl) throws SQLException
+    public long selectFeedControl(FeedControlEntity activityFeedControl) throws SQLException
     {
         Long id = (Long)getSqlMapClient().queryForObject("select.activity.feedcontrol", activityFeedControl);
         return (id != null ? id : -1);

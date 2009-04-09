@@ -56,6 +56,8 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DeadlockLoserDataAccessException;
 import org.springframework.jdbc.UncategorizedSQLException;
 
+import com.ibatis.common.jdbc.exception.NestedSQLException;
+
 /**
  * A helper that runs a unit of work inside a UserTransaction,
  * transparently retrying the unit of work if the cause of
@@ -451,10 +453,30 @@ public class RetryingTransactionHelper
     public static Throwable extractRetryCause(Throwable cause)
     {
         Throwable retryCause = ExceptionStackUtil.getCause(cause, RETRY_EXCEPTIONS);
-        if (retryCause == null || retryCause instanceof SQLGrammarException
-                && ((SQLGrammarException) retryCause).getErrorCode() != 3960)
+        
+        if (retryCause == null)
         {
             return null;
+        }
+        else if (retryCause instanceof SQLGrammarException
+                && ((SQLGrammarException) retryCause).getErrorCode() != 3960)
+        {
+           return null;
+        }
+        else if (retryCause instanceof NestedSQLException || retryCause instanceof UncategorizedSQLException)
+        {
+            // The exception will have been caused by something else, so check that instead
+            if (retryCause.getCause() != null && retryCause.getCause() != retryCause)
+            {
+                // We dig further into this
+                cause = retryCause.getCause();
+                // Recurse
+                return extractRetryCause(cause);
+            }
+            else
+            {
+                return null;
+            }
         }
         // A simple match
         return retryCause;

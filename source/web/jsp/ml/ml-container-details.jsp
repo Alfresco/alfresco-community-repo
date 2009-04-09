@@ -278,7 +278,7 @@
                         </a:actionLink>
                      </a:column>
                      
-                     <a:dataPager id="pager1" styleClass="pager" />
+                     <a:dataPager id="pager1_${idx}" styleClass="pager" />
                   </a:richList>
                </a:panel>
                <f:verbatim>

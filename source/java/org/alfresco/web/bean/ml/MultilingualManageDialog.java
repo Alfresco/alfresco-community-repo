@@ -487,6 +487,19 @@ public class MultilingualManageDialog extends BaseDialogBean
          // add each translation in the SingleEditionBean
          for (VersionHistory versionHistory : translationHistories)
          {
+            for (Version checkVersion : versionHistory.getAllVersions())
+            {
+                NodeRef frozenStateNodeRef = checkVersion.getFrozenStateNodeRef();
+                if (frozenStateNodeRef.getStoreRef().getIdentifier().equals("lightWeightVersionStore"))
+                {
+                    // It's the old one pulled back by serialization
+                    // Repopulate the version history
+                    NodeRef versionedNodeRef = checkVersion.getVersionedNodeRef();
+                    versionHistory = versionService.getVersionHistory(versionedNodeRef);
+                    break;
+                }
+            }
+
             // get the list of versions and sort them ascending according their version label
             List<Version> orderedVersions = new ArrayList<Version>(versionHistory.getAllVersions());
             Collections.sort(orderedVersions, new VersionLabelComparator());

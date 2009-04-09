@@ -42,31 +42,35 @@
    
 <script type="text/javascript">
    
-   window.onload = pageLoaded;
+   /* The mootools API is used since its lib included in head.
+      It also usefull to use their String.trim() to disable blank subject field */
    
-   function pageLoaded()
+   window.addEvent('load', mailPageLoaded);
+
+   function mailPageLoaded()
    {
-      document.getElementById("email-action:subject").focus();
-      checkButtonState();
+      // ensure the attribute exists
+      $("email-action:ok-button").set({disabled:'disabled'});
+      $("email-action:subject").focus();
+      mailCheckButtonState();
    }
    
-   function checkButtonState()
+   function mailCheckButtonState()
    {
-      var disableBtn = document.getElementById("finishButtonDisabled").innerHTML;
-      if (document.getElementById("email-action:subject").value.length > 0 && disableBtn == "false")
+      if ($("email-action:subject").value.trim().length > 0 && $("finishButtonDisabled").value == "false")
       {
-         document.getElementById("email-action:ok-button").disabled = false;
+         $("email-action:ok-button").disabled = false;
       }
       else
       {
-         document.getElementById("email-action:ok-button").disabled = true;
+         $("email-action:ok-button").disabled = true;
       }
    }
 </script>
    
 <f:view>
    
-   <h:outputText id="finishButtonDisabled" value="#{WizardManager.bean.finishButtonDisabled}" style="display:none;"/>
+   <h:inputHidden id="finishButtonDisabled" value="#{WizardManager.bean.emailRecipientsDataModel.rowCount le 0}"/>
 
    
    <%-- load a bundle of properties with I18N strings --%>
@@ -207,7 +211,7 @@
                                     <td style="padding-left:16px"><h:outputText value="#{msg.subject}"/>:</td>
                                     <td width="90%">
                                        <h:inputText id="subject" value="#{WizardManager.bean.actionProperties.subject}" size="75" maxlength="1024" 
-                                                    onkeyup="javascript:checkButtonState();" />&nbsp;*
+                                                    onkeyup="javascript:mailCheckButtonState();" />&nbsp;*
                                     </td>
                                  </tr>
                                  

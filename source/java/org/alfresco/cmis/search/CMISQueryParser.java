@@ -36,7 +36,6 @@ import org.alfresco.cmis.CMISCardinalityEnum;
 import org.alfresco.cmis.CMISDictionaryService;
 import org.alfresco.cmis.CMISJoinEnum;
 import org.alfresco.cmis.CMISPropertyDefinition;
-import org.alfresco.cmis.CMISPropertyId;
 import org.alfresco.cmis.CMISQueryException;
 import org.alfresco.cmis.CMISQueryOptions;
 import org.alfresco.cmis.CMISScope;
@@ -533,7 +532,7 @@ public class CMISQueryParser
                 {
                     throw new CMISQueryException("Type unsupported in CMIS queries: " + selector.getAlias());
                 }
-                Map<CMISPropertyId, CMISPropertyDefinition> propDefs = typeDef.getPropertyDefinitions();
+                Map<String, CMISPropertyDefinition> propDefs = typeDef.getPropertyDefinitions();
                 for (CMISPropertyDefinition definition : propDefs.values())
                 {
                     if (definition.getCardinality() == CMISCardinalityEnum.SINGLE_VALUED)
@@ -570,7 +569,7 @@ public class CMISQueryParser
                     {
                         throw new CMISQueryException("Type unsupported in CMIS queries: " + selector.getAlias());
                     }
-                    Map<CMISPropertyId, CMISPropertyDefinition> propDefs = typeDef.getPropertyDefinitions();
+                    Map<String, CMISPropertyDefinition> propDefs = typeDef.getPropertyDefinitions();
                     for (CMISPropertyDefinition definition : propDefs.values())
                     {
                         if (definition.getCardinality() == CMISCardinalityEnum.SINGLE_VALUED)

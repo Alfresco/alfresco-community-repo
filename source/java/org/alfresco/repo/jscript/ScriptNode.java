@@ -24,7 +24,10 @@
  */
 package org.alfresco.repo.jscript;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -2704,16 +2707,41 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
         {
             ContentService contentService = services.getContentService();
             ContentReader reader = contentService.getReader(nodeRef, property);
-            
             return (reader != null && reader.exists()) ? reader.getContentString() : "";
         }
         
+        /*
+         * (non-Javadoc)
+         * @see org.alfresco.util.Content#getInputStream()
+         */
         public InputStream getInputStream()
         {
             ContentService contentService = services.getContentService();
             ContentReader reader = contentService.getReader(nodeRef, property);
-            
             return (reader != null && reader.exists()) ? reader.getContentInputStream() : null;
+        }
+        
+        /*
+         * (non-Javadoc)
+         * @see org.alfresco.util.Content#getReader()
+         */
+        public Reader getReader()
+        {
+            ContentService contentService = services.getContentService();
+            ContentReader reader = contentService.getReader(nodeRef, property);
+            
+            if (reader != null && reader.exists())
+            {
+                try
+                {
+                    return (contentData.getEncoding() == null) ? new InputStreamReader(reader.getContentInputStream()) : new InputStreamReader(reader.getContentInputStream(), contentData.getEncoding());
+                }
+                catch (IOException e)
+                {
+                    // NOTE: fall-through
+                }
+            }
+            return null;
         }
         
         /**

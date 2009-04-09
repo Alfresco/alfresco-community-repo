@@ -31,7 +31,6 @@ import java.util.Map;
 
 import org.alfresco.cmis.CMISDictionaryModel;
 import org.alfresco.cmis.CMISPropertyDefinition;
-import org.alfresco.cmis.CMISPropertyId;
 import org.alfresco.cmis.CMISScope;
 import org.alfresco.cmis.CMISTypeDefinition;
 import org.alfresco.cmis.CMISTypeId;
@@ -120,7 +119,7 @@ public class CMISRelationshipTypeDefinition extends CMISAbstractTypeDefinition
      * @see org.alfresco.cmis.dictionary.CMISObjectTypeDefinition#createProperties(org.alfresco.cmis.dictionary.CMISMapping, org.alfresco.service.cmr.dictionary.DictionaryService)
      */
     @Override
-    /*package*/ Map<CMISPropertyId, CMISPropertyDefinition> createProperties(CMISMapping cmisMapping, DictionaryService dictionaryService)
+    /*package*/ Map<String, CMISPropertyDefinition> createProperties(CMISMapping cmisMapping, DictionaryService dictionaryService)
     {
         if (objectTypeId.equals(CMISDictionaryModel.RELATIONSHIP_TYPE_ID))
         {

@@ -161,14 +161,14 @@ public interface CMISTypeDefinition
      * 
      * @return  property definitions
      */
-    public Map<CMISPropertyId, CMISPropertyDefinition> getPropertyDefinitions();
+    public Map<String, CMISPropertyDefinition> getPropertyDefinitions();
 
     /**
      * Gets the property definitions owned by this type
      * 
      * @return
      */
-    public Map<CMISPropertyId, CMISPropertyDefinition> getOwnedPropertyDefinitions();
+    public Map<String, CMISPropertyDefinition> getOwnedPropertyDefinitions();
     
     /**
      * Gets the Action evaluators for this type

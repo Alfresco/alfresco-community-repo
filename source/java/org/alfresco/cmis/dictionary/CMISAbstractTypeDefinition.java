@@ -79,9 +79,9 @@ public class CMISAbstractTypeDefinition implements CMISTypeDefinition, Serializa
     protected boolean includeInSuperTypeQuery;
     protected Collection<CMISTypeId> subTypeIds = new ArrayList<CMISTypeId>();
     protected Collection<CMISTypeDefinition> subTypes = new ArrayList<CMISTypeDefinition>();
-    protected Map<CMISPropertyId, CMISPropertyDefinition> properties = new HashMap<CMISPropertyId, CMISPropertyDefinition>();
-    protected Map<CMISPropertyId, CMISPropertyDefinition> inheritedProperties = new HashMap<CMISPropertyId, CMISPropertyDefinition>();
-    protected Map<CMISPropertyId, CMISPropertyDefinition> ownedProperties = new HashMap<CMISPropertyId, CMISPropertyDefinition>();
+    protected Map<String, CMISPropertyDefinition> properties = new HashMap<String, CMISPropertyDefinition>();
+    protected Map<String, CMISPropertyDefinition> inheritedProperties = new HashMap<String, CMISPropertyDefinition>();
+    protected Map<String, CMISPropertyDefinition> ownedProperties = new HashMap<String, CMISPropertyDefinition>();
     protected Map<CMISAllowedActionEnum, CMISActionEvaluator> actionEvaluators;
     
 
@@ -92,7 +92,7 @@ public class CMISAbstractTypeDefinition implements CMISTypeDefinition, Serializa
      * @param dictionaryService
      * @return
      */
-    /*package*/ Map<CMISPropertyId, CMISPropertyDefinition> createProperties(CMISMapping cmisMapping, DictionaryService dictionaryService)
+    /*package*/ Map<String, CMISPropertyDefinition> createProperties(CMISMapping cmisMapping, DictionaryService dictionaryService)
     {
         // map properties directly defined on this type
         for (PropertyDefinition propDef : cmisClassDef.getProperties().values())
@@ -102,7 +102,7 @@ public class CMISAbstractTypeDefinition implements CMISTypeDefinition, Serializa
                 if (cmisMapping.getDataType(propDef.getDataType()) != null)
                 {
                     CMISPropertyDefinition cmisPropDef = createProperty(cmisMapping, propDef);
-                    properties.put(cmisPropDef.getPropertyId(), cmisPropDef);
+                    properties.put(cmisPropDef.getPropertyId().getName(), cmisPropDef);
                 }
             }
         }
@@ -374,7 +374,7 @@ public class CMISAbstractTypeDefinition implements CMISTypeDefinition, Serializa
      * (non-Javadoc)
      * @see org.alfresco.cmis.dictionary.CMISTypeDefinition#getPropertyDefinitions()
      */
-    public Map<CMISPropertyId, CMISPropertyDefinition> getPropertyDefinitions()
+    public Map<String, CMISPropertyDefinition> getPropertyDefinitions()
     {
         return inheritedProperties;
     }
@@ -383,7 +383,7 @@ public class CMISAbstractTypeDefinition implements CMISTypeDefinition, Serializa
      * (non-Javadoc)
      * @see org.alfresco.cmis.dictionary.CMISTypeDefinition#getOwnedPropertyDefinitions()
      */
-    public Map<CMISPropertyId, CMISPropertyDefinition> getOwnedPropertyDefinitions()
+    public Map<String, CMISPropertyDefinition> getOwnedPropertyDefinitions()
     {
         return ownedProperties;
     }

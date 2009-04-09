@@ -321,8 +321,8 @@ public abstract class CMISAbstractDictionaryService extends AbstractLifecycleBea
         boolean isMatchingType = (matchingType == null);
         if (property != null && matchingType != null)
         {
-            Map<CMISPropertyId, CMISPropertyDefinition> props = matchingType.getPropertyDefinitions();
-            if (props.containsKey(property.getPropertyId()))
+            Map<String, CMISPropertyDefinition> props = matchingType.getPropertyDefinitions();
+            if (props.containsKey(property.getPropertyId().getName()))
             {
                 isMatchingType = true;
             }
@@ -362,7 +362,7 @@ public abstract class CMISAbstractDictionaryService extends AbstractLifecycleBea
         createDefinitions(registry);
         for (CMISAbstractTypeDefinition objectTypeDef : registry.objectDefsByTypeId.values())
         {
-            Map<CMISPropertyId, CMISPropertyDefinition> propDefs = objectTypeDef.createProperties(cmisMapping, dictionaryService);
+            Map<String, CMISPropertyDefinition> propDefs = objectTypeDef.createProperties(cmisMapping, dictionaryService);
             for (CMISPropertyDefinition propDef : propDefs.values())
             {
                 registry.registerPropertyDefinition(propDef);

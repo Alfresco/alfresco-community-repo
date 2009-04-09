@@ -65,8 +65,12 @@ public class ContentStreamUriProperty extends AbstractProperty
         sb.append(nodeRef.getStoreRef().getIdentifier());
         sb.append("/");
         sb.append(nodeRef.getId());
-        sb.append("/content.");
-        sb.append(getServiceRegistry().getNodeService().getProperty(nodeRef, ContentModel.PROP_NAME));
+        sb.append("/content");
+        String name = (String)getServiceRegistry().getNodeService().getProperty(nodeRef, ContentModel.PROP_NAME);
+        if (name.lastIndexOf('.') != -1)
+        {
+            sb.append(name.substring(name.lastIndexOf('.')));
+        }
         return sb.toString();
     }
 

@@ -31,7 +31,6 @@ import java.util.Map;
 
 import org.alfresco.cmis.CMISDictionaryService;
 import org.alfresco.cmis.CMISPropertyDefinition;
-import org.alfresco.cmis.CMISPropertyId;
 import org.alfresco.cmis.CMISServices;
 import org.alfresco.cmis.CMISTypeDefinition;
 import org.alfresco.cmis.CMISTypesFilterEnum;
@@ -483,7 +482,7 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
         {
             throw new AlfrescoRuntimeException("Type " + typeQName + " not found in CMIS Dictionary");
         }
-        Map<CMISPropertyId, CMISPropertyDefinition> propDefs = typeDef.getPropertyDefinitions();
+        Map<String, CMISPropertyDefinition> propDefs = typeDef.getPropertyDefinitions();
         Map<String, Serializable> values = new HashMap<String, Serializable>(propDefs.size());
         for (CMISPropertyDefinition propDef : propDefs.values())
         {

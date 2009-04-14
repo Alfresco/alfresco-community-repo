@@ -32,16 +32,15 @@ import java.util.List;
 
 import javax.faces.context.FacesContext;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
-import org.alfresco.util.ISO9075;
-import org.alfresco.web.app.Application;
+import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.web.bean.repository.Repository;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -308,22 +307,33 @@ public final class DeploymentUtil
       return findServers(webProject, false, availableOnly);
    }
    
+   
+   /**
+    * Returns a list of NodeRefs representing the deployment servers configured
+    * for the given web project.
+    *  
+    * @param webProject Web project to get test servers for 
+    * @param live
+    * @param availableOnly if true only returns those servers still available for deployment 
+    * @return List of test servers
+    */
    private static List<NodeRef> findServers(NodeRef webProject, boolean live, boolean availableOnly)
    {
       FacesContext context = FacesContext.getCurrentInstance();
       NodeService nodeService = Repository.getServiceRegistry(context).getNodeService();
       SearchService searchService = Repository.getServiceRegistry(context).getSearchService();
       
-      // build the query
-      String webProjectName = (String)nodeService.getProperty(webProject, ContentModel.PROP_NAME);
-      String safeProjectName = ISO9075.encode(webProjectName); 
-      StringBuilder query = new StringBuilder("PATH:\"/");
-      query.append(Application.getRootPath(context));
-      query.append("/");
-      query.append(Application.getWebsitesFolderName(context));
-      query.append("/cm:");
-      query.append(safeProjectName);
-      query.append("/*\" AND @");
+      NamespacePrefixResolver namespacePrefixResolver = Repository.getServiceRegistry(context).getNamespaceService();
+            
+      Path projectPath = nodeService.getPath(webProject);
+      
+      String stringPath = projectPath.toPrefixString(namespacePrefixResolver);
+                 
+      StringBuilder query = new StringBuilder("PATH:\"");
+      
+      query.append(stringPath);  
+      query.append("/*\" ");  
+      query.append(" AND @");
       query.append(NamespaceService.WCMAPP_MODEL_PREFIX);
       query.append("\\:");
       query.append(WCMAppModel.PROP_DEPLOYSERVERTYPE.getLocalName());

@@ -1,5 +1,7 @@
+<#escape x as jsonUtils.encodeJSONString(x)>
 {
    "nodeRef": "${image.nodeRef}",
+   "fileName": "${image.name}",
    "status":
    {
       "code": 200,
@@ -7,3 +9,4 @@
       "description" : "File uploaded successfully"
    }
 }
+</#escape>

@@ -7,7 +7,8 @@
    <script type="text/javascript">
       ${args.successCallback}.call(${args.successScope},
       {
-         nodeRef: "${document.nodeRef}"
+         nodeRef: "${document.nodeRef}",
+         fileName: "${document.name}"
       });
    </script>
 </#if>

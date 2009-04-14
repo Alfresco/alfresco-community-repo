@@ -82,7 +82,7 @@ public abstract class AbstractServerConfigurationBean extends ServerConfiguratio
 
   // Debug logging
 
-  protected static final Log logger = LogFactory.getLog("org.alfresco.smb.protocol");
+  protected static final Log logger = LogFactory.getLog("org.alfresco.fileserver");
 
   // IP address representing null
   

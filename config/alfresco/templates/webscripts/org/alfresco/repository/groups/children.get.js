@@ -35,7 +35,7 @@ function main ()
 	}
 	else
 	{
-		model.children = group.getAllChildren();
+		model.children = group.getChildAuthorities();
 	}
 }
 

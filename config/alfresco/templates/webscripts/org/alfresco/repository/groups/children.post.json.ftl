@@ -1,13 +1,13 @@
-<#-- post children -->
+<#-- post children - add group or user to a group -->
 
 <#import "authority.lib.ftl" as authorityLib/>
+
 {
-	"data": [
-	
-	    <#list children as wibble>	
-    		<@authorityLib.authorityJSON authority=wibble />	 	   
-	   		<#if wibble_has_next>,</#if>
-    	     </#list>
-    	
-  	]
+	<#if group??>
+	"data": <@authorityLib.authorityJSON authority=group />
+	<#else>
+	"data" :  { }
+	</#if>	
 }
+
+

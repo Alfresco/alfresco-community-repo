@@ -1,4 +1,4 @@
-// delete group
+// update group
 
 function main ()
 {
@@ -13,9 +13,14 @@ function main ()
     	return;
     }
 	
-
-	group.deleteGroup();
-
+    if (json.has("displayName") == true)
+	{
+		group.setDisplayName(json.get("displayName"));
+	}
+	
+	model.group = group;
 }
 
 main();
+
+

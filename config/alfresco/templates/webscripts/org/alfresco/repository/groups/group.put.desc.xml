@@ -5,7 +5,7 @@
       <br />
       you must have "administrator" privileges to change the name of a group.
       </br /> 
-      The follwong properties may be updated.
+      The following properties may be updated.
       <dl>
       <dt>displayName</dt><dd>The display name</dd>
       </dl>

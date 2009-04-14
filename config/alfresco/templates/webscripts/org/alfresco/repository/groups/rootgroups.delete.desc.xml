@@ -1,0 +1,15 @@
+<webscript>
+   <shortname>Delete a root group.</shortname>
+   <description><![CDATA[
+      Delete a root group and all its dependents.
+      <br />
+      You must have "administrator" privileges to delete a group.
+      </br /> 
+   ]]>
+   </description>
+   <url>/api/rootgroups/{shortName}</url>
+   <format default="json">argument</format>
+   <authentication>user</authentication>
+   <transaction>required</transaction>
+   <lifecycle>draft_public_api</lifecycle>
+</webscript>

@@ -1,9 +1,12 @@
-// delete group
+/**
+ *  remove authority from group
+ */
 
 function main ()
 {
 	var urlElements = url.extension.split("/");
 	var shortName = urlElements[0];
+	var fullAuthorityName = urlElements[2];
 	
 	var group = groups.getGroup(shortName);
     if (group == null)
@@ -13,9 +16,7 @@ function main ()
     	return;
     }
 	
-
-	group.deleteGroup();
-
+    group.removeAuthority(fullAuthorityName);
 }
 
 main();

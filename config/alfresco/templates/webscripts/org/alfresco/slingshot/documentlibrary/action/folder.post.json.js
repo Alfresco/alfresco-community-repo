@@ -65,7 +65,7 @@ function runAction(p_params)
       var folderNode = parentNode.createFolder(folderName);
       // Always add title & description, default icon
       folderNode.properties["cm:title"] = folderTitle;
-      folderNode.properties["cm:description"] = folderDescription.substr(0, 100);
+      folderNode.properties["cm:description"] = folderDescription;
       folderNode.properties["app:icon"] = "space-icon-default";
       folderNode.save();
       // Add uifacets aspect for the web client

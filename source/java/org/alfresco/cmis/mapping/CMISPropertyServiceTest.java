@@ -76,13 +76,18 @@ public class CMISPropertyServiceTest extends BaseCMISTest
 
         assertEquals(rootNodeRef.toString(), properties.get(CMISDictionaryModel.PROP_PARENT_ID));
         assertNull(properties.get(CMISDictionaryModel.PROP_ALLOWED_CHILD_OBJECT_TYPE_IDS));
-
     }
 
     private String createContentUri(NodeRef nodeRef)
     {
-        return "/api/node/" + nodeRef.getStoreRef().getProtocol() + "/" + nodeRef.getStoreRef().getIdentifier() +
-               "/" + nodeRef.getId() + "/content." + nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+        String uri = "/api/node/" + nodeRef.getStoreRef().getProtocol() + "/" + nodeRef.getStoreRef().getIdentifier() + "/" + nodeRef.getId() + "/content";
+        String name = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+        int dotIndex = name.indexOf('.');
+        if (dotIndex != -1)
+        {
+            uri += "." + name.substring(dotIndex);
+        }
+        return uri;
     }
 
     public void testBasicDocument()
@@ -255,7 +260,6 @@ public class CMISPropertyServiceTest extends BaseCMISTest
 
         assertNull(properties.get(CMISDictionaryModel.PROP_PARENT_ID));
         assertNull(properties.get(CMISDictionaryModel.PROP_ALLOWED_CHILD_OBJECT_TYPE_IDS));
-
     }
 
     public void testCheckOut()
@@ -450,7 +454,6 @@ public class CMISPropertyServiceTest extends BaseCMISTest
 
         assertNull(properties.get(CMISDictionaryModel.PROP_PARENT_ID));
         assertNull(properties.get(CMISDictionaryModel.PROP_ALLOWED_CHILD_OBJECT_TYPE_IDS));
-
     }
 
     public void testVersioning()

@@ -59,6 +59,7 @@ import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
+import org.alfresco.util.PropertyCheck;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.invitation.site.*;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -83,10 +84,43 @@ public class InvitationServiceImpl implements InvitationService
 {
 	private static final Log logger = LogFactory
 			.getLog(InvitationServiceImpl.class);
+	
+	/**
+	 * Services
+	 */
+	private WorkflowService workflowService;
+	private PersonService personService;
+	private SiteService siteService;
+	private AuthenticationService authenticationService;
+	private PermissionService permissionService;
+	private MutableAuthenticationDao mutableAuthenticationDao;
+	private NamespaceService namespaceService;
+	private NodeService nodeService;
+	// user name and password generation beans
+	private UserNameGenerator usernameGenerator;
+	private PasswordGenerator passwordGenerator;
 
 	// maximum number of tries to generate a invitee user name which
 	// does not already belong to an existing person
 	public static final int MAX_NUM_INVITEE_USER_NAME_GEN_TRIES = 10;
+	
+    /**
+     * Checks that all necessary properties and services have been provided.
+     */
+    public void init()
+    {
+        PropertyCheck.mandatory(this, "nodeService", nodeService);
+        PropertyCheck.mandatory(this, "WorkflowService", workflowService);
+        PropertyCheck.mandatory(this, "PersonService", personService);
+        PropertyCheck.mandatory(this, "SiteService", siteService);
+        PropertyCheck.mandatory(this, "AuthenticationService", authenticationService);
+        PropertyCheck.mandatory(this, "PermissionService", permissionService);
+        PropertyCheck.mandatory(this, "MutableAuthenticationDao", mutableAuthenticationDao);
+        PropertyCheck.mandatory(this, "NamespaceService", namespaceService);
+        PropertyCheck.mandatory(this, "NodeService", nodeService);
+        PropertyCheck.mandatory(this, "UserNameGenerator", usernameGenerator);
+        PropertyCheck.mandatory(this, "PasswordGenerator", passwordGenerator);
+    }
 	
 	/**
 	 * Get the names of the workflows which are managed by the invitation service
@@ -766,20 +800,7 @@ public class InvitationServiceImpl implements InvitationService
 	}
 
 	// Implementation methods below
-	/**
-	 * Services
-	 */
-	private WorkflowService workflowService;
-	private PersonService personService;
-	private SiteService siteService;
-	private AuthenticationService authenticationService;
-	private PermissionService permissionService;
-	private MutableAuthenticationDao mutableAuthenticationDao;
-	private NamespaceService namespaceService;
-	private NodeService nodeService;
-	// user name and password generation beans
-	private UserNameGenerator usernameGenerator;
-	private PasswordGenerator passwordGenerator;
+
 
 	/**
 	 * Set the workflow service

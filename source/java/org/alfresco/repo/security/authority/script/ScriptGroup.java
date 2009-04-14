@@ -34,26 +34,26 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 
 /**
- * The Script group is a GROUP authority exposed to the scripting API
+ * The Script group is a GROUP authority exposed to the scripting API.
+ * It provides access to the properties of the group including the children of the group which may be groups or users.
+ * 
  * @author mrogers
  */
 public class ScriptGroup implements Authority, Serializable
 {
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 6073732221341647273L;
-	/**
-	 * 
-	 */
 	private transient AuthorityService authorityService;
     private ScriptAuthorityType authorityType = ScriptAuthorityType.GROUP;
     private String shortName;
     private String fullName;
     private String displayName;
     private boolean isAdmin; 
-    // how to calculate this private boolean isInternal;
     
+    /**
+     * New script group
+     * @param fullName
+     * @param authorityService
+     */
     public ScriptGroup(String fullName, AuthorityService authorityService)
     {
     	this.authorityService = authorityService;
@@ -95,12 +95,53 @@ public class ScriptGroup implements Authority, Serializable
 		return fullName;
 	}
 
+	/**
+	 * Change the display name for this group.    Need administrator permission to call this method to change a display name.
+	 * @param displayName
+	 */
 	public void setDisplayName(String displayName) {
+		if(this.displayName != null && !this.displayName.equals(displayName))
+		{
+			authorityService.setAuthorityDisplayName(fullName, displayName);
+		}
 		this.displayName = displayName;
 	}
 
 	public String getDisplayName() {
 		return displayName;
+	}
+	
+	/**
+	 * Get all users contained in this group
+	 * @return
+	 */
+	public ScriptUser[] getAllUsers()
+	{
+		Set<String> children = authorityService.getContainedAuthorities(AuthorityType.USER, fullName, false);
+		Set<ScriptUser> users = new LinkedHashSet<ScriptUser>();
+		for(String authority : children)
+		{
+			ScriptUser user = new ScriptUser(authority, authorityService);
+			users.add(user);
+		}
+	    return users.toArray(new ScriptUser[users.size()]);
+	}
+	
+	/**
+	 * Get all sub groups (all decendants)
+	 * @return the descenants of this group
+	 */
+	public ScriptGroup[] getAllGroups()
+	{
+		Set<String> children = authorityService.getContainedAuthorities(AuthorityType.GROUP, fullName, false);
+		Set<ScriptGroup> groups = new LinkedHashSet<ScriptGroup>();
+		for(String authority : children)
+		{
+			ScriptGroup group = new ScriptGroup(authority, authorityService);
+			groups.add(group);	
+		}
+		return groups.toArray(new ScriptGroup[groups.size()]);
+
 	}
 	
 	/**
@@ -126,17 +167,22 @@ public class ScriptGroup implements Authority, Serializable
 	/**
 	 * Get child groups of this group
 	 */
+	private ScriptGroup[] childGroups; 
 	public ScriptGroup[] getChildGroups()
 	{
-		Set<String> children = authorityService.getContainedAuthorities(AuthorityType.GROUP, fullName, true);
-		Set<ScriptGroup> groups = new LinkedHashSet<ScriptGroup>();
-		for(String authority : children)
+		if(childGroups == null)
 		{
-			ScriptGroup group = new ScriptGroup(authority, authorityService);
-			groups.add(group);
+			Set<String> children = authorityService.getContainedAuthorities(AuthorityType.GROUP, fullName, true);
+			Set<ScriptGroup> groups = new LinkedHashSet<ScriptGroup>();
+			for(String authority : children)
+			{
+				ScriptGroup group = new ScriptGroup(authority, authorityService);
+				groups.add(group);
 			
+			}
+			childGroups = groups.toArray(new ScriptGroup[groups.size()]);
 		}
-		return groups.toArray(new ScriptGroup[groups.size()]);
+		return childGroups;
 	}
 	
 	/**
@@ -144,6 +190,10 @@ public class ScriptGroup implements Authority, Serializable
 	 */
 	private ScriptGroup[] parentCache;
 	
+	/**
+	 * Get the immediate parents of this group
+	 * @return the immediate parents of this group
+	 */
 	public ScriptGroup[] getParentGroups()
 	{
 		if(parentCache == null)
@@ -163,6 +213,7 @@ public class ScriptGroup implements Authority, Serializable
 	
 	/**
 	 * Get all the parents of this this group
+	 * @return all the parents of this group
 	 */
 	public ScriptGroup[] getAllParentGroups()
 	{
@@ -180,7 +231,7 @@ public class ScriptGroup implements Authority, Serializable
 	/**
 	 * Get all the children of this group, regardless of type
 	 */
-	public Authority[] getAllChildren()
+	public Authority[] getChildAuthorities()
 	{
 		Authority[] groups = getChildGroups();
 		Authority[] users = getChildUsers();
@@ -189,7 +240,6 @@ public class ScriptGroup implements Authority, Serializable
 		System.arraycopy(groups, 0, ret, 0, groups.length);
 		System.arraycopy(users, 0, ret, groups.length, users.length);
 		return ret;
-
 	}
 	
 	/**
@@ -240,4 +290,70 @@ public class ScriptGroup implements Authority, Serializable
 		ScriptGroup[] groups = getChildGroups();
 		return groups.length;
 	}
+	
+	/**
+	 * Create a new group as a child of this group.
+	 * @return the new group
+	 */
+	public ScriptGroup createGroup(String shortName, String displayName)
+	{
+		String authorityName = authorityService.createAuthority(AuthorityType.GROUP, fullName, shortName, displayName);
+		ScriptGroup childGroup = new ScriptGroup(authorityName, authorityService);
+		clearCaches();
+		return childGroup;
+	}
+		
+	/**
+	 * remove sub group from this group
+	 * @param shortName the shortName of the sub group to remove from this group.
+	 */
+	public void removeGroup(String shortName)
+	{
+		String fullAuthorityName = authorityService.getName(AuthorityType.GROUP, shortName);
+		
+		authorityService.removeAuthority(fullName, fullAuthorityName);
+		clearCaches();
+	}
+	
+	/**
+	 * Remove child user from this group
+	 * @param shortName the shortName of the user to remove from this group.
+	 */
+	public void removeUser(String shortName)
+	{
+		String fullAuthorityName = authorityService.getName(AuthorityType.USER, shortName);
+		
+		authorityService.removeAuthority(fullName, fullAuthorityName);
+		clearCaches();
+	}
+	
+	/**
+	 * AddAuthority as a child of this group
+	 * @param fullAuthorityName the full name of the authority to add to this group.
+	 */
+	public void addAuthority(String fullAuthorityName)
+	{
+		authorityService.addAuthority(fullName, fullAuthorityName);
+		clearCaches();
+	}
+	
+	/**
+	 * Remove child Authority from this group
+	 * @param fullAuthorityName the full name of the authority to remove from this group.
+	 */
+	public void removeAuthority(String fullAuthorityName)
+	{
+		authorityService.removeAuthority(fullName, fullAuthorityName);
+		clearCaches();
+	}
+	
+	/**
+	 * clear the caches
+	 */
+	private void clearCaches()
+	{
+		childUsers = null;
+		childGroups = null;
+	}
+	
 }

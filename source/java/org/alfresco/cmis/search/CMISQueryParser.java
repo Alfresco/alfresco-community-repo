@@ -357,7 +357,28 @@ public class CMISQueryParser
         case CMISParser.PRED_FTS:
             String ftsExpression = predicateNode.getChild(0).getText();
             FTSQueryParser ftsQueryParser = new FTSQueryParser(cmisDictionaryService);
-            return ftsQueryParser.buildFTS(ftsExpression.substring(1, ftsExpression.length()-1), factory, selectors, columns);
+            Selector selector;
+            if(predicateNode.getChildCount() > 1)
+            {
+                String qualifier = predicateNode.getChild(1).getText();
+                selector = selectors.get(qualifier);
+                if (selector == null)
+                {
+                    throw new CMISQueryException("No selector for " + qualifier);
+                }
+            }
+            else
+            {
+                if(selectors.size() == 1)
+                {
+                    selector = selectors.get(selectors.keySet().iterator().next());
+                }
+                else
+                {
+                    throw new CMISQueryException("A selector must be specified when there are two or more selectors");
+                }
+            }
+            return ftsQueryParser.buildFTS(ftsExpression.substring(1, ftsExpression.length()-1), factory, selector, columns);
         case CMISParser.PRED_IN:
             functionName = In.NAME;
             function = factory.getFunction(functionName);

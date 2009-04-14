@@ -1,4 +1,4 @@
-// $ANTLR 3.1.2 W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g 2009-04-06 14:38:11
+// $ANTLR !Unknown version! W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g 2009-04-14 14:31:09
 package org.alfresco.repo.search.impl.parsers;
 
 import org.antlr.runtime.*;
@@ -277,7 +277,7 @@ public class CMISParser extends Parser {
 
 
             // AST REWRITE
-            // elements: selectList, fromClause, whereClause, orderByClause
+            // elements: whereClause, fromClause, selectList, orderByClause
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -717,7 +717,7 @@ public class CMISParser extends Parser {
 
 
                     // AST REWRITE
-                    // elements: valueExpression, columnName
+                    // elements: columnName, valueExpression
                     // token labels: 
                     // rule labels: retval
                     // token list labels: 
@@ -1111,7 +1111,7 @@ public class CMISParser extends Parser {
 
 
             // AST REWRITE
-            // elements: columnName, qualifier
+            // elements: qualifier, columnName
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -1384,7 +1384,7 @@ public class CMISParser extends Parser {
 
 
             // AST REWRITE
-            // elements: functionName, functionArgument, RPAREN, LPAREN
+            // elements: functionName, RPAREN, functionArgument, LPAREN
             // token labels: 
             // rule labels: retval, functionName
             // token list labels: 
@@ -2049,7 +2049,7 @@ public class CMISParser extends Parser {
 
 
             // AST REWRITE
-            // elements: singleTable, joinedTable
+            // elements: joinedTable, singleTable
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -2208,7 +2208,7 @@ public class CMISParser extends Parser {
 
 
                     // AST REWRITE
-                    // elements: tableName, correlationName
+                    // elements: correlationName, tableName
                     // token labels: 
                     // rule labels: retval
                     // token list labels: 
@@ -2401,7 +2401,7 @@ public class CMISParser extends Parser {
 
 
             // AST REWRITE
-            // elements: joinSpecification, joinType, JOIN, tableReference
+            // elements: joinType, joinSpecification, JOIN, tableReference
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -2529,7 +2529,7 @@ public class CMISParser extends Parser {
 
 
             // AST REWRITE
-            // elements: joinedTable, singleTable
+            // elements: singleTable, joinedTable
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -2788,7 +2788,7 @@ public class CMISParser extends Parser {
 
 
             // AST REWRITE
-            // elements: ON, lhs, rhs, EQUALS
+            // elements: lhs, ON, rhs, EQUALS
             // token labels: 
             // rule labels: retval, rhs, lhs
             // token list labels: 
@@ -3638,7 +3638,7 @@ public class CMISParser extends Parser {
 
 
             // AST REWRITE
-            // elements: compOp, valueExpression, literalOrParameterName
+            // elements: literalOrParameterName, valueExpression, compOp
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -3999,7 +3999,7 @@ public class CMISParser extends Parser {
 
 
             // AST REWRITE
-            // elements: NOT, columnReference, inValueList
+            // elements: columnReference, NOT, inValueList
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -4244,7 +4244,7 @@ public class CMISParser extends Parser {
 
 
             // AST REWRITE
-            // elements: NOT, columnReference, characterStringLiteral
+            // elements: characterStringLiteral, NOT, columnReference
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -4745,7 +4745,7 @@ public class CMISParser extends Parser {
 
 
             // AST REWRITE
-            // elements: multiValuedColumnReference, ANY, literalOrParameterName, compOp
+            // elements: multiValuedColumnReference, literalOrParameterName, ANY, compOp
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -4881,7 +4881,7 @@ public class CMISParser extends Parser {
 
 
             // AST REWRITE
-            // elements: inValueList, ANY, multiValuedColumnReference, NOT
+            // elements: inValueList, NOT, multiValuedColumnReference, ANY
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -5030,7 +5030,7 @@ public class CMISParser extends Parser {
 
 
             // AST REWRITE
-            // elements: qualifier, textSearchExpression
+            // elements: textSearchExpression, qualifier
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -5625,7 +5625,7 @@ public class CMISParser extends Parser {
 
 
                     // AST REWRITE
-                    // elements: by, columnReference
+                    // elements: columnReference, by
                     // token labels: by
                     // rule labels: retval
                     // token list labels: 

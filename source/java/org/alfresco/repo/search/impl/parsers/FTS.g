@@ -34,6 +34,7 @@ grammar FTS;
 options
 {
 	output=AST;
+	backtrack=false;
 }
 
 tokens
@@ -46,6 +47,8 @@ tokens
 	EXACT_TERM;
 	PHRASE;
 	SYNONYM;
+	RANGE;
+	PROXIMITY;
 	
 	DEFAULT;
 	MANDATORY;
@@ -71,6 +74,10 @@ tokens
 	
 	INCLUSIVE;
 	EXCLUSIVE;
+	
+	QUALIFIER;
+	PREFIX;
+	NAME_SPACE;
 }
 
 @lexer::header{package org.alfresco.repo.search.impl.parsers;} 
@@ -140,6 +147,23 @@ catch(RecognitionException e)
 }
 }
 
+@lexer::members {
+List tokens = new ArrayList();
+public void emit(Token token) {
+        state.token = token;
+        tokens.add(token);
+}
+public Token nextToken() {
+        super.nextToken();
+        if ( tokens.size()==0 ) {
+            return Token.EOF_TOKEN;
+        }
+        return (Token)tokens.remove(0);
+}
+}
+
+
+
 ftsQuery	
     : 	ftsImplicitConjunctionOrDisjunction EOF
 		->  ftsImplicitConjunctionOrDisjunction
@@ -159,7 +183,7 @@ ftsExplicitDisjunction
 	
 ftsExplictConjunction
 	:	ftsPrefixed ((and) => and ftsPrefixed)*
-		-> ^(CONJUNCTION ftsPrefixed)
+		-> ^(CONJUNCTION ftsPrefixed+)
 	;	
 	
 	
@@ -186,9 +210,9 @@ ftsTest
     |   ftsSynonym
         -> ^(SYNONYM ftsSynonym)
     |	ftsFieldGroupProximity  
-        -> ^(FG_PROXIMITY ftsFieldGroupProximity)
-    | 	ftsFieldGroupRange
-        -> ^(FG_RANGE ftsFieldGroupRange)
+        -> ^(PROXIMITY ftsFieldGroupProximity)
+    | 	ftsRange
+        -> ^(RANGE ftsRange)
     |	ftsFieldGroup    
 	|	LPAREN ftsImplicitConjunctionOrDisjunction RPAREN
 		-> ftsImplicitConjunctionOrDisjunction
@@ -214,6 +238,10 @@ ftsSynonym
 		-> ftsTerm
 	;
 
+ftsRange 
+: (columnReference COLON)? ftsFieldGroupRange
+  -> ftsFieldGroupRange columnReference?
+;
 	
 ftsFieldGroup
 	:	columnReference COLON LPAREN ftsFieldGroupImplicitConjunctionOrDisjunction RPAREN
@@ -261,11 +289,11 @@ ftsFieldGroupTest
 		-> ^(FG_PHRASE ftsFieldGroupPhrase)
 	|	ftsFieldGroupSynonym
 		-> ^(FG_SYNONYM ftsFieldGroupSynonym)
-	|   ftsFieldGroupProximity  
+	|  ftsFieldGroupProximity  
 		-> ^(FG_PROXIMITY ftsFieldGroupProximity)
     | 	ftsFieldGroupRange
         -> ^(FG_RANGE ftsFieldGroupRange)
-	|	LPAREN ftsFieldGroupImplicitConjunctionOrDisjunction RPAREN
+	|	 LPAREN ftsFieldGroupImplicitConjunctionOrDisjunction RPAREN
 		-> ftsFieldGroupImplicitConjunctionOrDisjunction
 	;
 	
@@ -300,24 +328,34 @@ ftsFieldGroupRange
 	;
 	
 range_left
-	:       LPAREN
+	:       LSQUARE
 		-> INCLUSIVE
-	|	LCURL
+	|	LT
 		-> EXCLUSIVE
 	;
 	
 range_right
-	:       RPAREN
+	:       RSQUARE
 		-> INCLUSIVE
-	|	RCURL
+	|	GT
 		-> EXCLUSIVE
 	;
-		
 	
+	/* Need to fix the generated parser for extra COLON check ??*/
 columnReference
-	:	( qualifier=identifier DOT )? name=identifier 
-		-> ^(COLUMN_REF $name $qualifier?)
+	: (prefix|uri)? identifier
+    -> ^(COLUMN_REF identifier prefix? uri?)
 	;
+	
+prefix
+: identifier COLON
+-> ^(PREFIX identifier)
+;	
+	
+uri
+  : URI
+  -> ^(NAME_SPACE URI)
+  ;
 	
 identifier
 	:	ID
@@ -330,12 +368,16 @@ ftsWord
     |   AND
     |   NOT
     |   TO
+    |   DECIMAL_INTEGER_LITERAL
+    |   FLOATING_POINT_LITERAL
     ;
     
 ftsRangeWord
     :   ID
     |   FTSWORD
     |   FTSPHRASE
+    |   DECIMAL_INTEGER_LITERAL
+    |   FLOATING_POINT_LITERAL
     ;
 	
 or
@@ -352,11 +394,34 @@ not
     :   NOT
     |   EXCLAMATION
     ;		
-	
-
 
 FTSPHRASE
   : '"' (F_ESC | ~('\\'|'"') )* '"' ;
+
+URI 
+: '{' ((F_URI_ALPHA|F_URI_DIGIT|F_URI_OTHER) => (F_URI_ALPHA|F_URI_DIGIT|F_URI_OTHER)+ COLON)? ((('//') =>'//') ( (F_URI_ALPHA|F_URI_DIGIT|F_URI_OTHER|COLON) => (F_URI_ALPHA|F_URI_DIGIT|F_URI_OTHER|COLON))*)? (F_URI_ALPHA|F_URI_DIGIT|F_URI_OTHER|COLON|'/')* ('?' (F_URI_ALPHA|F_URI_DIGIT|F_URI_OTHER|COLON|'/'|'?')*)? ('#' (F_URI_ALPHA|F_URI_DIGIT|F_URI_OTHER|COLON|'/'|'?'|'#')*)? '}'  
+;
+
+
+fragment 
+F_URI_ALPHA	
+	:	'A'..'Z' | 'a'..'z'
+	;
+
+fragment
+F_URI_DIGIT 
+	:	'0' ..'9'
+	;
+	
+fragment
+F_URI_ESC
+	:       '%' F_HEX F_HEX
+	;
+	
+fragment
+F_URI_OTHER
+	:	'-' |'.'|'_'|'~'|'['|']'|'@'|'!'|'$'|'&'|'\''|'('|')'|'*'|'+'|','|';'|'='
+	;
 
 
 OR	:	('O'|'o')('R'|'r');
@@ -369,7 +434,7 @@ PLUS	:	'+' ;
 MINUS	:	'-' ;
 COLON	:	':' ;
 STAR	:	'*' ;
-DOTDOT	:	'..' ;
+DOTDOT  : '..' ;
 DOT	:	'.' ;
 AMP	:	'&' ;
 EXCLAMATION : '!' ;
@@ -384,14 +449,17 @@ TO : ('T'|'t')('O'|'o') ;
 COMMA : ',';
 CARAT : '^';
 DOLLAR :  '$';
+GT : '>';
+LT : '<';
 
 /**
  * We should support _x????_ encoding for invalid sql characters 
  */ 
 ID  :   ('a'..'z'|'A'..'Z'|'_')('a'..'z'|'A'..'Z'|'0'..'9'|'_'|'$'|'#')* ;
 
-
 FTSWORD :	 (F_ESC | INWORD)+;
+	
+
 	
 fragment
 F_ESC   : '\\'
@@ -437,6 +505,70 @@ INWORD	: '\u0041' .. '\u005A'
 	| '\u1040' .. '\u1049'
 	;
 	
+DECIMAL_INTEGER_LITERAL
+        : ( PLUS | MINUS )? DECIMAL_NUMERAL
+        ;
+        
+      
+      
+        
+FLOATING_POINT_LITERAL 
+  : d=START_RANGE_I r=DOTDOT
+    {
+      $d.setType(DECIMAL_INTEGER_LITERAL);
+      emit($d);
+      $r.setType(DOTDOT);
+      emit($r);
+    }
+  | d=START_RANGE_F r=DOTDOT
+    {
+      $d.setType(FLOATING_POINT_LITERAL);
+      emit($d);
+      $r.setType(DOTDOT);
+      emit($r);
+    }
+  | (PLUS | MINUS)? DIGIT+ DOT DIGIT* EXPONENT?
+  | (PLUS | MINUS)? DOT DIGIT+ EXPONENT?
+  | (PLUS | MINUS)? DIGIT+  EXPONENT
+  ;
+
+fragment
+START_RANGE_I: (PLUS | MINUS)? DIGIT+ 
+;
+
+fragment
+START_RANGE_F: (PLUS | MINUS)? DIGIT+ DOT
+;
+
+/**   
+ * Fragments for decimal
+ */
+        
+fragment
+DECIMAL_NUMERAL
+  : ZERO_DIGIT 
+  | NON_ZERO_DIGIT DIGIT* 
+  ;
+fragment
+DIGIT : ZERO_DIGIT | NON_ZERO_DIGIT ;
+fragment
+ZERO_DIGIT  
+  : '0' ;
+fragment
+NON_ZERO_DIGIT 
+  : '1'..'9' ;
+
+fragment
+E : ('e' | 'E') ;
+  
+fragment
+EXPONENT
+  : E SIGNED_INTEGER
+  ;
+fragment
+SIGNED_INTEGER
+  : (PLUS | MINUS)? DIGIT+  
+  ;
 
 
 WS	:	( ' ' | '\t' | '\r' | '\n' )+ { $channel = HIDDEN; } ;

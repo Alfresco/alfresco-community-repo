@@ -1,4 +1,4 @@
-// $ANTLR 3.1.2 W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g 2009-04-06 14:38:12
+// $ANTLR !Unknown version! W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g 2009-04-14 14:31:11
 package org.alfresco.repo.search.impl.parsers;
 
 import org.antlr.runtime.*;
@@ -2065,45 +2065,41 @@ public class CMISLexer extends Lexer {
         try {
             int _type = FLOATING_POINT_LITERAL;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:575:2: ( ( DIGIT )+ DOT ( DIGIT )* ( EXPONENT )? | DOT ( DIGIT )+ ( EXPONENT )? | ( DIGIT )+ EXPONENT )
-            int alt9=3;
-            alt9 = dfa9.predict(input);
-            switch (alt9) {
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:575:2: ( ( PLUS | MINUS )? ( DIGIT )+ DOT ( DIGIT )* ( EXPONENT )? | ( PLUS | MINUS )? DOT ( DIGIT )+ ( EXPONENT )? | ( PLUS | MINUS )? ( DIGIT )+ EXPONENT )
+            int alt12=3;
+            alt12 = dfa12.predict(input);
+            switch (alt12) {
                 case 1 :
-                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:575:4: ( DIGIT )+ DOT ( DIGIT )* ( EXPONENT )?
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:575:4: ( PLUS | MINUS )? ( DIGIT )+ DOT ( DIGIT )* ( EXPONENT )?
                     {
-                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:575:4: ( DIGIT )+
-                    int cnt3=0;
-                    loop3:
-                    do {
-                        int alt3=2;
-                        int LA3_0 = input.LA(1);
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:575:4: ( PLUS | MINUS )?
+                    int alt3=2;
+                    int LA3_0 = input.LA(1);
 
-                        if ( ((LA3_0>='0' && LA3_0<='9')) ) {
-                            alt3=1;
-                        }
+                    if ( (LA3_0=='+'||LA3_0=='-') ) {
+                        alt3=1;
+                    }
+                    switch (alt3) {
+                        case 1 :
+                            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:
+                            {
+                            if ( input.LA(1)=='+'||input.LA(1)=='-' ) {
+                                input.consume();
+
+                            }
+                            else {
+                                MismatchedSetException mse = new MismatchedSetException(null,input);
+                                recover(mse);
+                                throw mse;}
 
 
-                        switch (alt3) {
-                    	case 1 :
-                    	    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:575:4: DIGIT
-                    	    {
-                    	    mDIGIT(); 
+                            }
+                            break;
 
-                    	    }
-                    	    break;
+                    }
 
-                    	default :
-                    	    if ( cnt3 >= 1 ) break loop3;
-                                EarlyExitException eee =
-                                    new EarlyExitException(3, input);
-                                throw eee;
-                        }
-                        cnt3++;
-                    } while (true);
-
-                    mDOT(); 
-                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:575:15: ( DIGIT )*
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:575:22: ( DIGIT )+
+                    int cnt4=0;
                     loop4:
                     do {
                         int alt4=2;
@@ -2116,7 +2112,7 @@ public class CMISLexer extends Lexer {
 
                         switch (alt4) {
                     	case 1 :
-                    	    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:575:15: DIGIT
+                    	    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:575:22: DIGIT
                     	    {
                     	    mDIGIT(); 
 
@@ -2124,20 +2120,50 @@ public class CMISLexer extends Lexer {
                     	    break;
 
                     	default :
-                    	    break loop4;
+                    	    if ( cnt4 >= 1 ) break loop4;
+                                EarlyExitException eee =
+                                    new EarlyExitException(4, input);
+                                throw eee;
+                        }
+                        cnt4++;
+                    } while (true);
+
+                    mDOT(); 
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:575:33: ( DIGIT )*
+                    loop5:
+                    do {
+                        int alt5=2;
+                        int LA5_0 = input.LA(1);
+
+                        if ( ((LA5_0>='0' && LA5_0<='9')) ) {
+                            alt5=1;
+                        }
+
+
+                        switch (alt5) {
+                    	case 1 :
+                    	    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:575:33: DIGIT
+                    	    {
+                    	    mDIGIT(); 
+
+                    	    }
+                    	    break;
+
+                    	default :
+                    	    break loop5;
                         }
                     } while (true);
 
-                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:575:22: ( EXPONENT )?
-                    int alt5=2;
-                    int LA5_0 = input.LA(1);
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:575:40: ( EXPONENT )?
+                    int alt6=2;
+                    int LA6_0 = input.LA(1);
 
-                    if ( (LA5_0=='E'||LA5_0=='e') ) {
-                        alt5=1;
+                    if ( (LA6_0=='E'||LA6_0=='e') ) {
+                        alt6=1;
                     }
-                    switch (alt5) {
+                    switch (alt6) {
                         case 1 :
-                            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:575:22: EXPONENT
+                            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:575:40: EXPONENT
                             {
                             mEXPONENT(); 
 
@@ -2150,64 +2176,36 @@ public class CMISLexer extends Lexer {
                     }
                     break;
                 case 2 :
-                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:576:4: DOT ( DIGIT )+ ( EXPONENT )?
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:576:4: ( PLUS | MINUS )? DOT ( DIGIT )+ ( EXPONENT )?
                     {
-                    mDOT(); 
-                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:576:8: ( DIGIT )+
-                    int cnt6=0;
-                    loop6:
-                    do {
-                        int alt6=2;
-                        int LA6_0 = input.LA(1);
-
-                        if ( ((LA6_0>='0' && LA6_0<='9')) ) {
-                            alt6=1;
-                        }
-
-
-                        switch (alt6) {
-                    	case 1 :
-                    	    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:576:8: DIGIT
-                    	    {
-                    	    mDIGIT(); 
-
-                    	    }
-                    	    break;
-
-                    	default :
-                    	    if ( cnt6 >= 1 ) break loop6;
-                                EarlyExitException eee =
-                                    new EarlyExitException(6, input);
-                                throw eee;
-                        }
-                        cnt6++;
-                    } while (true);
-
-                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:576:15: ( EXPONENT )?
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:576:4: ( PLUS | MINUS )?
                     int alt7=2;
                     int LA7_0 = input.LA(1);
 
-                    if ( (LA7_0=='E'||LA7_0=='e') ) {
+                    if ( (LA7_0=='+'||LA7_0=='-') ) {
                         alt7=1;
                     }
                     switch (alt7) {
                         case 1 :
-                            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:576:15: EXPONENT
+                            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:
                             {
-                            mEXPONENT(); 
+                            if ( input.LA(1)=='+'||input.LA(1)=='-' ) {
+                                input.consume();
+
+                            }
+                            else {
+                                MismatchedSetException mse = new MismatchedSetException(null,input);
+                                recover(mse);
+                                throw mse;}
+
 
                             }
                             break;
 
                     }
 
-
-                    }
-                    break;
-                case 3 :
-                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:577:4: ( DIGIT )+ EXPONENT
-                    {
-                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:577:4: ( DIGIT )+
+                    mDOT(); 
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:576:26: ( DIGIT )+
                     int cnt8=0;
                     loop8:
                     do {
@@ -2221,7 +2219,7 @@ public class CMISLexer extends Lexer {
 
                         switch (alt8) {
                     	case 1 :
-                    	    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:577:4: DIGIT
+                    	    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:576:26: DIGIT
                     	    {
                     	    mDIGIT(); 
 
@@ -2235,6 +2233,86 @@ public class CMISLexer extends Lexer {
                                 throw eee;
                         }
                         cnt8++;
+                    } while (true);
+
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:576:33: ( EXPONENT )?
+                    int alt9=2;
+                    int LA9_0 = input.LA(1);
+
+                    if ( (LA9_0=='E'||LA9_0=='e') ) {
+                        alt9=1;
+                    }
+                    switch (alt9) {
+                        case 1 :
+                            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:576:33: EXPONENT
+                            {
+                            mEXPONENT(); 
+
+                            }
+                            break;
+
+                    }
+
+
+                    }
+                    break;
+                case 3 :
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:577:4: ( PLUS | MINUS )? ( DIGIT )+ EXPONENT
+                    {
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:577:4: ( PLUS | MINUS )?
+                    int alt10=2;
+                    int LA10_0 = input.LA(1);
+
+                    if ( (LA10_0=='+'||LA10_0=='-') ) {
+                        alt10=1;
+                    }
+                    switch (alt10) {
+                        case 1 :
+                            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:
+                            {
+                            if ( input.LA(1)=='+'||input.LA(1)=='-' ) {
+                                input.consume();
+
+                            }
+                            else {
+                                MismatchedSetException mse = new MismatchedSetException(null,input);
+                                recover(mse);
+                                throw mse;}
+
+
+                            }
+                            break;
+
+                    }
+
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:577:22: ( DIGIT )+
+                    int cnt11=0;
+                    loop11:
+                    do {
+                        int alt11=2;
+                        int LA11_0 = input.LA(1);
+
+                        if ( ((LA11_0>='0' && LA11_0<='9')) ) {
+                            alt11=1;
+                        }
+
+
+                        switch (alt11) {
+                    	case 1 :
+                    	    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:577:22: DIGIT
+                    	    {
+                    	    mDIGIT(); 
+
+                    	    }
+                    	    break;
+
+                    	default :
+                    	    if ( cnt11 >= 1 ) break loop11;
+                                EarlyExitException eee =
+                                    new EarlyExitException(11, input);
+                                throw eee;
+                        }
+                        cnt11++;
                     } while (true);
 
                     mEXPONENT(); 
@@ -2269,17 +2347,17 @@ public class CMISLexer extends Lexer {
                 throw mse;}
 
             // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:584:29: ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_' | '$' | '#' )*
-            loop10:
+            loop13:
             do {
-                int alt10=2;
-                int LA10_0 = input.LA(1);
+                int alt13=2;
+                int LA13_0 = input.LA(1);
 
-                if ( ((LA10_0>='#' && LA10_0<='$')||(LA10_0>='0' && LA10_0<='9')||(LA10_0>='A' && LA10_0<='Z')||LA10_0=='_'||(LA10_0>='a' && LA10_0<='z')) ) {
-                    alt10=1;
+                if ( ((LA13_0>='#' && LA13_0<='$')||(LA13_0>='0' && LA13_0<='9')||(LA13_0>='A' && LA13_0<='Z')||LA13_0=='_'||(LA13_0>='a' && LA13_0<='z')) ) {
+                    alt13=1;
                 }
 
 
-                switch (alt10) {
+                switch (alt13) {
             	case 1 :
             	    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:
             	    {
@@ -2297,7 +2375,7 @@ public class CMISLexer extends Lexer {
             	    break;
 
             	default :
-            	    break loop10;
+            	    break loop13;
                 }
             } while (true);
 
@@ -2321,18 +2399,18 @@ public class CMISLexer extends Lexer {
             // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:585:6: ( ' ' | '\\t' | '\\r' | '\\n' )+
             {
             // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:585:6: ( ' ' | '\\t' | '\\r' | '\\n' )+
-            int cnt11=0;
-            loop11:
+            int cnt14=0;
+            loop14:
             do {
-                int alt11=2;
-                int LA11_0 = input.LA(1);
+                int alt14=2;
+                int LA14_0 = input.LA(1);
 
-                if ( ((LA11_0>='\t' && LA11_0<='\n')||LA11_0=='\r'||LA11_0==' ') ) {
-                    alt11=1;
+                if ( ((LA14_0>='\t' && LA14_0<='\n')||LA14_0=='\r'||LA14_0==' ') ) {
+                    alt14=1;
                 }
 
 
-                switch (alt11) {
+                switch (alt14) {
             	case 1 :
             	    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:
             	    {
@@ -2350,12 +2428,12 @@ public class CMISLexer extends Lexer {
             	    break;
 
             	default :
-            	    if ( cnt11 >= 1 ) break loop11;
+            	    if ( cnt14 >= 1 ) break loop14;
                         EarlyExitException eee =
-                            new EarlyExitException(11, input);
+                            new EarlyExitException(14, input);
                         throw eee;
                 }
-                cnt11++;
+                cnt14++;
             } while (true);
 
              _channel = HIDDEN; 
@@ -2374,22 +2452,22 @@ public class CMISLexer extends Lexer {
     public final void mDECIMAL_NUMERAL() throws RecognitionException {
         try {
             // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:594:2: ( ZERO_DIGIT | NON_ZERO_DIGIT ( DIGIT )* )
-            int alt13=2;
-            int LA13_0 = input.LA(1);
+            int alt16=2;
+            int LA16_0 = input.LA(1);
 
-            if ( (LA13_0=='0') ) {
-                alt13=1;
+            if ( (LA16_0=='0') ) {
+                alt16=1;
             }
-            else if ( ((LA13_0>='1' && LA13_0<='9')) ) {
-                alt13=2;
+            else if ( ((LA16_0>='1' && LA16_0<='9')) ) {
+                alt16=2;
             }
             else {
                 NoViableAltException nvae =
-                    new NoViableAltException("", 13, 0, input);
+                    new NoViableAltException("", 16, 0, input);
 
                 throw nvae;
             }
-            switch (alt13) {
+            switch (alt16) {
                 case 1 :
                     // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:594:4: ZERO_DIGIT
                     {
@@ -2402,17 +2480,17 @@ public class CMISLexer extends Lexer {
                     {
                     mNON_ZERO_DIGIT(); 
                     // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:595:19: ( DIGIT )*
-                    loop12:
+                    loop15:
                     do {
-                        int alt12=2;
-                        int LA12_0 = input.LA(1);
+                        int alt15=2;
+                        int LA15_0 = input.LA(1);
 
-                        if ( ((LA12_0>='0' && LA12_0<='9')) ) {
-                            alt12=1;
+                        if ( ((LA15_0>='0' && LA15_0<='9')) ) {
+                            alt15=1;
                         }
 
 
-                        switch (alt12) {
+                        switch (alt15) {
                     	case 1 :
                     	    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:595:19: DIGIT
                     	    {
@@ -2422,7 +2500,7 @@ public class CMISLexer extends Lexer {
                     	    break;
 
                     	default :
-                    	    break loop12;
+                    	    break loop15;
                         }
                     } while (true);
 
@@ -2573,13 +2651,13 @@ public class CMISLexer extends Lexer {
             // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:626:4: ( PLUS | MINUS )? ( DIGIT )+
             {
             // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:626:4: ( PLUS | MINUS )?
-            int alt14=2;
-            int LA14_0 = input.LA(1);
+            int alt17=2;
+            int LA17_0 = input.LA(1);
 
-            if ( (LA14_0=='+'||LA14_0=='-') ) {
-                alt14=1;
+            if ( (LA17_0=='+'||LA17_0=='-') ) {
+                alt17=1;
             }
-            switch (alt14) {
+            switch (alt17) {
                 case 1 :
                     // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:
                     {
@@ -2599,18 +2677,18 @@ public class CMISLexer extends Lexer {
             }
 
             // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:626:20: ( DIGIT )+
-            int cnt15=0;
-            loop15:
+            int cnt18=0;
+            loop18:
             do {
-                int alt15=2;
-                int LA15_0 = input.LA(1);
+                int alt18=2;
+                int LA18_0 = input.LA(1);
 
-                if ( ((LA15_0>='0' && LA15_0<='9')) ) {
-                    alt15=1;
+                if ( ((LA18_0>='0' && LA18_0<='9')) ) {
+                    alt18=1;
                 }
 
 
-                switch (alt15) {
+                switch (alt18) {
             	case 1 :
             	    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:626:20: DIGIT
             	    {
@@ -2620,12 +2698,12 @@ public class CMISLexer extends Lexer {
             	    break;
 
             	default :
-            	    if ( cnt15 >= 1 ) break loop15;
+            	    if ( cnt18 >= 1 ) break loop18;
                         EarlyExitException eee =
-                            new EarlyExitException(15, input);
+                            new EarlyExitException(18, input);
                         throw eee;
                 }
-                cnt15++;
+                cnt18++;
             } while (true);
 
 
@@ -2639,9 +2717,9 @@ public class CMISLexer extends Lexer {
 
     public void mTokens() throws RecognitionException {
         // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:1:8: ( QUOTED_STRING | SELECT | AS | UPPER | LOWER | FROM | JOIN | INNER | LEFT | OUTER | ON | WHERE | OR | AND | NOT | IN | LIKE | IS | NULL | ANY | CONTAINS | IN_FOLDER | IN_TREE | ORDER | BY | ASC | DESC | SCORE | LPAREN | RPAREN | STAR | COMMA | DOTSTAR | DOT | DOTDOT | EQUALS | TILDA | NOTEQUALS | GREATERTHAN | LESSTHAN | GREATERTHANOREQUALS | LESSTHANOREQUALS | COLON | DOUBLE_QUOTE | DECIMAL_INTEGER_LITERAL | FLOATING_POINT_LITERAL | ID | WS )
-        int alt16=48;
-        alt16 = dfa16.predict(input);
-        switch (alt16) {
+        int alt19=48;
+        alt19 = dfa19.predict(input);
+        switch (alt19) {
             case 1 :
                 // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\CMIS.g:1:10: QUOTED_STRING
                 {
@@ -2984,106 +3062,107 @@ public class CMISLexer extends Lexer {
     }
 
 
-    protected DFA9 dfa9 = new DFA9(this);
-    protected DFA16 dfa16 = new DFA16(this);
-    static final String DFA9_eotS =
-        "\5\uffff";
-    static final String DFA9_eofS =
-        "\5\uffff";
-    static final String DFA9_minS =
-        "\2\56\3\uffff";
-    static final String DFA9_maxS =
-        "\1\71\1\145\3\uffff";
-    static final String DFA9_acceptS =
-        "\2\uffff\1\2\1\3\1\1";
-    static final String DFA9_specialS =
-        "\5\uffff}>";
-    static final String[] DFA9_transitionS = {
-            "\1\2\1\uffff\12\1",
-            "\1\4\1\uffff\12\1\13\uffff\1\3\37\uffff\1\3",
+    protected DFA12 dfa12 = new DFA12(this);
+    protected DFA19 dfa19 = new DFA19(this);
+    static final String DFA12_eotS =
+        "\6\uffff";
+    static final String DFA12_eofS =
+        "\6\uffff";
+    static final String DFA12_minS =
+        "\1\53\2\56\3\uffff";
+    static final String DFA12_maxS =
+        "\2\71\1\145\3\uffff";
+    static final String DFA12_acceptS =
+        "\3\uffff\1\2\1\1\1\3";
+    static final String DFA12_specialS =
+        "\6\uffff}>";
+    static final String[] DFA12_transitionS = {
+            "\1\1\1\uffff\1\1\1\3\1\uffff\12\2",
+            "\1\3\1\uffff\12\2",
+            "\1\4\1\uffff\12\2\13\uffff\1\5\37\uffff\1\5",
             "",
             "",
             ""
     };
 
-    static final short[] DFA9_eot = DFA.unpackEncodedString(DFA9_eotS);
-    static final short[] DFA9_eof = DFA.unpackEncodedString(DFA9_eofS);
-    static final char[] DFA9_min = DFA.unpackEncodedStringToUnsignedChars(DFA9_minS);
-    static final char[] DFA9_max = DFA.unpackEncodedStringToUnsignedChars(DFA9_maxS);
-    static final short[] DFA9_accept = DFA.unpackEncodedString(DFA9_acceptS);
-    static final short[] DFA9_special = DFA.unpackEncodedString(DFA9_specialS);
-    static final short[][] DFA9_transition;
+    static final short[] DFA12_eot = DFA.unpackEncodedString(DFA12_eotS);
+    static final short[] DFA12_eof = DFA.unpackEncodedString(DFA12_eofS);
+    static final char[] DFA12_min = DFA.unpackEncodedStringToUnsignedChars(DFA12_minS);
+    static final char[] DFA12_max = DFA.unpackEncodedStringToUnsignedChars(DFA12_maxS);
+    static final short[] DFA12_accept = DFA.unpackEncodedString(DFA12_acceptS);
+    static final short[] DFA12_special = DFA.unpackEncodedString(DFA12_specialS);
+    static final short[][] DFA12_transition;
 
     static {
-        int numStates = DFA9_transitionS.length;
-        DFA9_transition = new short[numStates][];
+        int numStates = DFA12_transitionS.length;
+        DFA12_transition = new short[numStates][];
         for (int i=0; i<numStates; i++) {
-            DFA9_transition[i] = DFA.unpackEncodedString(DFA9_transitionS[i]);
+            DFA12_transition[i] = DFA.unpackEncodedString(DFA12_transitionS[i]);
         }
     }
 
-    class DFA9 extends DFA {
+    class DFA12 extends DFA {
 
-        public DFA9(BaseRecognizer recognizer) {
+        public DFA12(BaseRecognizer recognizer) {
             this.recognizer = recognizer;
-            this.decisionNumber = 9;
-            this.eot = DFA9_eot;
-            this.eof = DFA9_eof;
-            this.min = DFA9_min;
-            this.max = DFA9_max;
-            this.accept = DFA9_accept;
-            this.special = DFA9_special;
-            this.transition = DFA9_transition;
+            this.decisionNumber = 12;
+            this.eot = DFA12_eot;
+            this.eof = DFA12_eof;
+            this.min = DFA12_min;
+            this.max = DFA12_max;
+            this.accept = DFA12_accept;
+            this.special = DFA12_special;
+            this.transition = DFA12_transition;
         }
         public String getDescription() {
-            return "574:1: FLOATING_POINT_LITERAL : ( ( DIGIT )+ DOT ( DIGIT )* ( EXPONENT )? | DOT ( DIGIT )+ ( EXPONENT )? | ( DIGIT )+ EXPONENT );";
+            return "574:1: FLOATING_POINT_LITERAL : ( ( PLUS | MINUS )? ( DIGIT )+ DOT ( DIGIT )* ( EXPONENT )? | ( PLUS | MINUS )? DOT ( DIGIT )+ ( EXPONENT )? | ( PLUS | MINUS )? ( DIGIT )+ EXPONENT );";
         }
     }
-    static final String DFA16_eotS =
-        "\2\uffff\15\35\4\uffff\1\66\2\uffff\1\72\1\74\3\uffff\2\32\2\uffff"+
-        "\2\35\1\101\7\35\1\114\1\115\1\35\1\117\1\121\4\35\1\126\1\35\11"+
-        "\uffff\1\32\2\35\1\132\1\uffff\1\133\1\134\10\35\2\uffff\1\35\1"+
-        "\uffff\1\35\1\uffff\1\35\1\151\2\35\1\uffff\3\35\3\uffff\2\35\1"+
-        "\161\1\162\1\163\1\164\6\35\1\uffff\1\173\1\35\1\175\1\35\1\177"+
-        "\1\u0080\1\u0081\4\uffff\1\u0082\2\35\1\u0085\1\u0086\1\u0087\1"+
-        "\uffff\1\35\1\uffff\1\u0089\4\uffff\2\35\3\uffff\1\35\1\uffff\1"+
-        "\35\1\u008e\2\35\1\uffff\1\u0091\1\u0092\2\uffff";
-    static final String DFA16_eofS =
-        "\u0093\uffff";
-    static final String DFA16_minS =
+    static final String DFA19_eotS =
+        "\2\uffff\15\35\4\uffff\1\66\2\uffff\1\72\1\74\3\uffff\2\75\2\uffff"+
+        "\2\35\1\102\7\35\1\115\1\116\1\35\1\120\1\122\4\35\1\127\1\35\12"+
+        "\uffff\1\75\2\35\1\133\1\uffff\1\134\1\135\10\35\2\uffff\1\35\1"+
+        "\uffff\1\35\1\uffff\1\35\1\152\2\35\1\uffff\3\35\3\uffff\2\35\1"+
+        "\162\1\163\1\164\1\165\6\35\1\uffff\1\174\1\35\1\176\1\35\1\u0080"+
+        "\1\u0081\1\u0082\4\uffff\1\u0083\2\35\1\u0086\1\u0087\1\u0088\1"+
+        "\uffff\1\35\1\uffff\1\u008a\4\uffff\2\35\3\uffff\1\35\1\uffff\1"+
+        "\35\1\u008f\2\35\1\uffff\1\u0092\1\u0093\2\uffff";
+    static final String DFA19_eofS =
+        "\u0094\uffff";
+    static final String DFA19_minS =
         "\1\11\1\uffff\1\103\1\116\1\120\1\105\1\122\1\117\2\116\1\110\2"+
-        "\117\1\131\1\105\4\uffff\1\52\2\uffff\2\75\3\uffff\2\56\2\uffff"+
+        "\117\1\131\1\105\4\uffff\1\52\2\uffff\2\75\2\uffff\3\56\2\uffff"+
         "\1\114\1\117\1\43\1\104\1\120\1\127\1\106\1\113\1\117\1\111\2\43"+
-        "\1\124\2\43\1\105\1\124\1\114\1\116\1\43\1\123\11\uffff\1\56\1\105"+
+        "\1\124\2\43\1\105\1\124\1\114\1\116\1\43\1\123\12\uffff\1\56\1\105"+
         "\1\122\1\43\1\uffff\2\43\2\105\1\124\1\105\1\115\1\116\1\105\1\106"+
         "\2\uffff\1\105\1\uffff\1\105\1\uffff\1\122\1\43\1\114\1\124\1\uffff"+
         "\2\103\1\105\3\uffff\2\122\4\43\1\122\1\117\3\122\1\105\1\uffff"+
         "\1\43\1\101\1\43\1\124\3\43\4\uffff\1\43\1\114\1\105\3\43\1\uffff"+
         "\1\111\1\uffff\1\43\4\uffff\1\104\1\105\3\uffff\1\116\1\uffff\1"+
         "\105\1\43\1\123\1\122\1\uffff\2\43\2\uffff";
-    static final String DFA16_maxS =
+    static final String DFA19_maxS =
         "\1\176\1\uffff\1\145\1\163\1\160\1\157\1\162\1\157\1\163\1\165"+
-        "\1\150\1\165\1\157\1\171\1\145\4\uffff\1\71\2\uffff\1\76\1\75\3"+
-        "\uffff\2\145\2\uffff\1\154\1\157\1\172\1\171\1\160\1\167\1\146\1"+
-        "\153\1\157\1\151\2\172\1\164\2\172\1\145\1\164\1\154\1\156\1\172"+
-        "\1\163\11\uffff\2\145\1\162\1\172\1\uffff\2\172\2\145\1\164\1\145"+
-        "\1\155\1\156\1\145\1\164\2\uffff\1\145\1\uffff\1\145\1\uffff\1\162"+
-        "\1\172\1\154\1\164\1\uffff\2\143\1\145\3\uffff\2\162\4\172\1\162"+
-        "\1\157\3\162\1\145\1\uffff\1\172\1\141\1\172\1\164\3\172\4\uffff"+
-        "\1\172\1\154\1\145\3\172\1\uffff\1\151\1\uffff\1\172\4\uffff\1\144"+
-        "\1\145\3\uffff\1\156\1\uffff\1\145\1\172\1\163\1\162\1\uffff\2\172"+
-        "\2\uffff";
-    static final String DFA16_acceptS =
+        "\1\150\1\165\1\157\1\171\1\145\4\uffff\1\71\2\uffff\1\76\1\75\2"+
+        "\uffff\1\71\2\145\2\uffff\1\154\1\157\1\172\1\171\1\160\1\167\1"+
+        "\146\1\153\1\157\1\151\2\172\1\164\2\172\1\145\1\164\1\154\1\156"+
+        "\1\172\1\163\12\uffff\2\145\1\162\1\172\1\uffff\2\172\2\145\1\164"+
+        "\1\145\1\155\1\156\1\145\1\164\2\uffff\1\145\1\uffff\1\145\1\uffff"+
+        "\1\162\1\172\1\154\1\164\1\uffff\2\143\1\145\3\uffff\2\162\4\172"+
+        "\1\162\1\157\3\162\1\145\1\uffff\1\172\1\141\1\172\1\164\3\172\4"+
+        "\uffff\1\172\1\154\1\145\3\172\1\uffff\1\151\1\uffff\1\172\4\uffff"+
+        "\1\144\1\145\3\uffff\1\156\1\uffff\1\145\1\172\1\163\1\162\1\uffff"+
+        "\2\172\2\uffff";
+    static final String DFA19_acceptS =
         "\1\uffff\1\1\15\uffff\1\35\1\36\1\37\1\40\1\uffff\1\44\1\45\2\uffff"+
-        "\1\53\1\54\1\55\2\uffff\1\57\1\60\25\uffff\1\41\1\43\1\42\1\56\1"+
-        "\46\1\52\1\50\1\51\1\47\4\uffff\1\3\12\uffff\1\20\1\22\1\uffff\1"+
+        "\1\53\1\54\3\uffff\1\57\1\60\25\uffff\1\41\1\43\1\42\1\56\1\46\1"+
+        "\52\1\50\1\51\1\47\1\55\4\uffff\1\3\12\uffff\1\20\1\22\1\uffff\1"+
         "\13\1\uffff\1\15\4\uffff\1\31\3\uffff\1\32\1\16\1\24\14\uffff\1"+
         "\17\7\uffff\1\11\1\21\1\6\1\7\6\uffff\1\23\1\uffff\1\33\1\uffff"+
         "\1\34\1\4\1\5\1\10\2\uffff\1\12\1\30\1\14\1\uffff\1\2\4\uffff\1"+
         "\27\2\uffff\1\25\1\26";
-    static final String DFA16_specialS =
-        "\u0093\uffff}>";
-    static final String[] DFA16_transitionS = {
+    static final String DFA19_specialS =
+        "\u0094\uffff}>";
+    static final String[] DFA19_transitionS = {
             "\2\36\2\uffff\1\36\22\uffff\1\36\1\uffff\1\31\4\uffff\1\1\1"+
             "\17\1\20\1\21\1\32\1\22\1\32\1\23\1\uffff\1\33\11\34\1\30\1"+
             "\uffff\1\26\1\24\1\27\2\uffff\1\3\1\15\1\14\1\16\1\35\1\6\2"+
@@ -3118,50 +3197,51 @@ public class CMISLexer extends Lexer {
             "\1\73",
             "",
             "",
-            "",
+            "\1\67\1\uffff\1\33\11\34",
             "\1\67\1\uffff\12\67\13\uffff\1\67\37\uffff\1\67",
-            "\1\67\1\uffff\12\75\13\uffff\1\67\37\uffff\1\67",
+            "\1\67\1\uffff\12\76\13\uffff\1\67\37\uffff\1\67",
             "",
             "",
-            "\1\76\37\uffff\1\76",
             "\1\77\37\uffff\1\77",
-            "\2\35\13\uffff\12\35\7\uffff\2\35\1\100\27\35\4\uffff\1\35"+
-            "\1\uffff\2\35\1\100\27\35",
-            "\1\102\24\uffff\1\103\12\uffff\1\102\24\uffff\1\103",
-            "\1\104\37\uffff\1\104",
+            "\1\100\37\uffff\1\100",
+            "\2\35\13\uffff\12\35\7\uffff\2\35\1\101\27\35\4\uffff\1\35"+
+            "\1\uffff\2\35\1\101\27\35",
+            "\1\103\24\uffff\1\104\12\uffff\1\103\24\uffff\1\104",
             "\1\105\37\uffff\1\105",
             "\1\106\37\uffff\1\106",
             "\1\107\37\uffff\1\107",
             "\1\110\37\uffff\1\110",
             "\1\111\37\uffff\1\111",
-            "\2\35\13\uffff\12\35\7\uffff\15\35\1\112\14\35\4\uffff\1\113"+
-            "\1\uffff\15\35\1\112\14\35",
+            "\1\112\37\uffff\1\112",
+            "\2\35\13\uffff\12\35\7\uffff\15\35\1\113\14\35\4\uffff\1\114"+
+            "\1\uffff\15\35\1\113\14\35",
             "\2\35\13\uffff\12\35\7\uffff\32\35\4\uffff\1\35\1\uffff\32"+
             "\35",
-            "\1\116\37\uffff\1\116",
+            "\1\117\37\uffff\1\117",
             "\2\35\13\uffff\12\35\7\uffff\32\35\4\uffff\1\35\1\uffff\32"+
             "\35",
-            "\2\35\13\uffff\12\35\7\uffff\3\35\1\120\26\35\4\uffff\1\35"+
-            "\1\uffff\3\35\1\120\26\35",
-            "\1\122\37\uffff\1\122",
+            "\2\35\13\uffff\12\35\7\uffff\3\35\1\121\26\35\4\uffff\1\35"+
+            "\1\uffff\3\35\1\121\26\35",
             "\1\123\37\uffff\1\123",
             "\1\124\37\uffff\1\124",
             "\1\125\37\uffff\1\125",
+            "\1\126\37\uffff\1\126",
             "\2\35\13\uffff\12\35\7\uffff\32\35\4\uffff\1\35\1\uffff\32"+
             "\35",
-            "\1\127\37\uffff\1\127",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "\1\67\1\uffff\12\75\13\uffff\1\67\37\uffff\1\67",
             "\1\130\37\uffff\1\130",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "\1\67\1\uffff\12\76\13\uffff\1\67\37\uffff\1\67",
             "\1\131\37\uffff\1\131",
+            "\1\132\37\uffff\1\132",
             "\2\35\13\uffff\12\35\7\uffff\32\35\4\uffff\1\35\1\uffff\32"+
             "\35",
             "",
@@ -3169,34 +3249,34 @@ public class CMISLexer extends Lexer {
             "\35",
             "\2\35\13\uffff\12\35\7\uffff\32\35\4\uffff\1\35\1\uffff\32"+
             "\35",
-            "\1\135\37\uffff\1\135",
             "\1\136\37\uffff\1\136",
             "\1\137\37\uffff\1\137",
             "\1\140\37\uffff\1\140",
             "\1\141\37\uffff\1\141",
             "\1\142\37\uffff\1\142",
             "\1\143\37\uffff\1\143",
-            "\1\144\15\uffff\1\145\21\uffff\1\144\15\uffff\1\145",
+            "\1\144\37\uffff\1\144",
+            "\1\145\15\uffff\1\146\21\uffff\1\145\15\uffff\1\146",
             "",
-            "",
-            "\1\146\37\uffff\1\146",
             "",
             "\1\147\37\uffff\1\147",
             "",
             "\1\150\37\uffff\1\150",
+            "",
+            "\1\151\37\uffff\1\151",
             "\2\35\13\uffff\12\35\7\uffff\32\35\4\uffff\1\35\1\uffff\32"+
             "\35",
-            "\1\152\37\uffff\1\152",
             "\1\153\37\uffff\1\153",
-            "",
             "\1\154\37\uffff\1\154",
+            "",
             "\1\155\37\uffff\1\155",
             "\1\156\37\uffff\1\156",
-            "",
-            "",
-            "",
             "\1\157\37\uffff\1\157",
+            "",
+            "",
+            "",
             "\1\160\37\uffff\1\160",
+            "\1\161\37\uffff\1\161",
             "\2\35\13\uffff\12\35\7\uffff\32\35\4\uffff\1\35\1\uffff\32"+
             "\35",
             "\2\35\13\uffff\12\35\7\uffff\32\35\4\uffff\1\35\1\uffff\32"+
@@ -3205,19 +3285,19 @@ public class CMISLexer extends Lexer {
             "\35",
             "\2\35\13\uffff\12\35\7\uffff\32\35\4\uffff\1\35\1\uffff\32"+
             "\35",
-            "\1\165\37\uffff\1\165",
             "\1\166\37\uffff\1\166",
             "\1\167\37\uffff\1\167",
             "\1\170\37\uffff\1\170",
             "\1\171\37\uffff\1\171",
             "\1\172\37\uffff\1\172",
+            "\1\173\37\uffff\1\173",
             "",
             "\2\35\13\uffff\12\35\7\uffff\32\35\4\uffff\1\35\1\uffff\32"+
             "\35",
-            "\1\174\37\uffff\1\174",
+            "\1\175\37\uffff\1\175",
             "\2\35\13\uffff\12\35\7\uffff\32\35\4\uffff\1\35\1\uffff\32"+
             "\35",
-            "\1\176\37\uffff\1\176",
+            "\1\177\37\uffff\1\177",
             "\2\35\13\uffff\12\35\7\uffff\32\35\4\uffff\1\35\1\uffff\32"+
             "\35",
             "\2\35\13\uffff\12\35\7\uffff\32\35\4\uffff\1\35\1\uffff\32"+
@@ -3230,8 +3310,8 @@ public class CMISLexer extends Lexer {
             "",
             "\2\35\13\uffff\12\35\7\uffff\32\35\4\uffff\1\35\1\uffff\32"+
             "\35",
-            "\1\u0083\37\uffff\1\u0083",
             "\1\u0084\37\uffff\1\u0084",
+            "\1\u0085\37\uffff\1\u0085",
             "\2\35\13\uffff\12\35\7\uffff\32\35\4\uffff\1\35\1\uffff\32"+
             "\35",
             "\2\35\13\uffff\12\35\7\uffff\32\35\4\uffff\1\35\1\uffff\32"+
@@ -3239,7 +3319,7 @@ public class CMISLexer extends Lexer {
             "\2\35\13\uffff\12\35\7\uffff\32\35\4\uffff\1\35\1\uffff\32"+
             "\35",
             "",
-            "\1\u0088\37\uffff\1\u0088",
+            "\1\u0089\37\uffff\1\u0089",
             "",
             "\2\35\13\uffff\12\35\7\uffff\32\35\4\uffff\1\35\1\uffff\32"+
             "\35",
@@ -3247,18 +3327,18 @@ public class CMISLexer extends Lexer {
             "",
             "",
             "",
-            "\1\u008a\37\uffff\1\u008a",
             "\1\u008b\37\uffff\1\u008b",
-            "",
-            "",
-            "",
             "\1\u008c\37\uffff\1\u008c",
             "",
+            "",
+            "",
             "\1\u008d\37\uffff\1\u008d",
+            "",
+            "\1\u008e\37\uffff\1\u008e",
             "\2\35\13\uffff\12\35\7\uffff\32\35\4\uffff\1\35\1\uffff\32"+
             "\35",
-            "\1\u008f\37\uffff\1\u008f",
             "\1\u0090\37\uffff\1\u0090",
+            "\1\u0091\37\uffff\1\u0091",
             "",
             "\2\35\13\uffff\12\35\7\uffff\32\35\4\uffff\1\35\1\uffff\32"+
             "\35",
@@ -3268,34 +3348,34 @@ public class CMISLexer extends Lexer {
             ""
     };
 
-    static final short[] DFA16_eot = DFA.unpackEncodedString(DFA16_eotS);
-    static final short[] DFA16_eof = DFA.unpackEncodedString(DFA16_eofS);
-    static final char[] DFA16_min = DFA.unpackEncodedStringToUnsignedChars(DFA16_minS);
-    static final char[] DFA16_max = DFA.unpackEncodedStringToUnsignedChars(DFA16_maxS);
-    static final short[] DFA16_accept = DFA.unpackEncodedString(DFA16_acceptS);
-    static final short[] DFA16_special = DFA.unpackEncodedString(DFA16_specialS);
-    static final short[][] DFA16_transition;
+    static final short[] DFA19_eot = DFA.unpackEncodedString(DFA19_eotS);
+    static final short[] DFA19_eof = DFA.unpackEncodedString(DFA19_eofS);
+    static final char[] DFA19_min = DFA.unpackEncodedStringToUnsignedChars(DFA19_minS);
+    static final char[] DFA19_max = DFA.unpackEncodedStringToUnsignedChars(DFA19_maxS);
+    static final short[] DFA19_accept = DFA.unpackEncodedString(DFA19_acceptS);
+    static final short[] DFA19_special = DFA.unpackEncodedString(DFA19_specialS);
+    static final short[][] DFA19_transition;
 
     static {
-        int numStates = DFA16_transitionS.length;
-        DFA16_transition = new short[numStates][];
+        int numStates = DFA19_transitionS.length;
+        DFA19_transition = new short[numStates][];
         for (int i=0; i<numStates; i++) {
-            DFA16_transition[i] = DFA.unpackEncodedString(DFA16_transitionS[i]);
+            DFA19_transition[i] = DFA.unpackEncodedString(DFA19_transitionS[i]);
         }
     }
 
-    class DFA16 extends DFA {
+    class DFA19 extends DFA {
 
-        public DFA16(BaseRecognizer recognizer) {
+        public DFA19(BaseRecognizer recognizer) {
             this.recognizer = recognizer;
-            this.decisionNumber = 16;
-            this.eot = DFA16_eot;
-            this.eof = DFA16_eof;
-            this.min = DFA16_min;
-            this.max = DFA16_max;
-            this.accept = DFA16_accept;
-            this.special = DFA16_special;
-            this.transition = DFA16_transition;
+            this.decisionNumber = 19;
+            this.eot = DFA19_eot;
+            this.eof = DFA19_eof;
+            this.min = DFA19_min;
+            this.max = DFA19_max;
+            this.accept = DFA19_accept;
+            this.special = DFA19_special;
+            this.transition = DFA19_transition;
         }
         public String getDescription() {
             return "1:1: Tokens : ( QUOTED_STRING | SELECT | AS | UPPER | LOWER | FROM | JOIN | INNER | LEFT | OUTER | ON | WHERE | OR | AND | NOT | IN | LIKE | IS | NULL | ANY | CONTAINS | IN_FOLDER | IN_TREE | ORDER | BY | ASC | DESC | SCORE | LPAREN | RPAREN | STAR | COMMA | DOTSTAR | DOT | DOTDOT | EQUALS | TILDA | NOTEQUALS | GREATERTHAN | LESSTHAN | GREATERTHANOREQUALS | LESSTHANOREQUALS | COLON | DOUBLE_QUOTE | DECIMAL_INTEGER_LITERAL | FLOATING_POINT_LITERAL | ID | WS );";

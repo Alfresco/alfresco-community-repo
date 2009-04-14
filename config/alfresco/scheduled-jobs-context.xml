@@ -28,6 +28,9 @@
         <property name="waitForJobsToCompleteOnShutdown">
             <value>true</value>
         </property>
+        <property name="schedulerFactoryClass">
+            <value>org.alfresco.repo.scheduler.AlfrescoSchedulerFactory</value>
+        </property>
         <property name="quartzProperties">
             <ref bean="schedulerProperties" />
         </property>

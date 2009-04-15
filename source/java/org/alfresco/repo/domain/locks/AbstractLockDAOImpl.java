@@ -43,6 +43,8 @@ import org.springframework.dao.ConcurrencyFailureException;
  */
 public abstract class AbstractLockDAOImpl implements LockDAO
 {
+    private static final String LOCK_TOKEN_RELEASED = "not-locked";
+    
     private QNameDAO qnameDAO;
 
     /**
@@ -61,7 +63,7 @@ public abstract class AbstractLockDAOImpl implements LockDAO
         this.qnameDAO = qnameDAO;
     }
     
-    public boolean getLock(QName lockQName, String lockApplicant, long timeToLive)
+    public boolean getLock(QName lockQName, String lockToken, long timeToLive)
     {
         String qnameNamespaceUri = lockQName.getNamespaceURI();
         String qnameLocalName = lockQName.getLocalName();
@@ -71,8 +73,8 @@ public abstract class AbstractLockDAOImpl implements LockDAO
             lockQName = QName.createQName(qnameNamespaceUri, qnameLocalName.toLowerCase());
             qnameLocalName = lockQName.getLocalName();
         }
-        // Force the lock applicant to lowercase
-        lockApplicant = lockApplicant.toLowerCase();
+        // Force the lock token to lowercase
+        lockToken = lockToken.toLowerCase();
         
         // Resolve the namespace
         Long qnameNamespaceId = qnameDAO.getOrCreateNamespace(qnameNamespaceUri).getFirst();
@@ -94,7 +96,6 @@ public abstract class AbstractLockDAOImpl implements LockDAO
         {
             String localname = lockQNameIter.getLocalName();
             // Get the basic lock resource, forcing a create
-            // TODO: Pull back all lock resources in a single query
             LockResourceEntity lockResource = getLockResource(qnameNamespaceId, localname);
             if (lockResource == null)
             {
@@ -105,12 +106,12 @@ public abstract class AbstractLockDAOImpl implements LockDAO
         }
         
         // Now, get all locks for the resources we will need
-        List<LockEntity> existingLocks = getLocks(requiredLockResourceIds);
+        List<LockEntity> existingLocks = getLocksBySharedResourceIds(requiredLockResourceIds);
         Map<LockEntity, LockEntity> existingLocksMap = new HashMap<LockEntity, LockEntity>();
         // Check them and make sure they don't prevent locks
         for (LockEntity existingLock : existingLocks)
         {
-            boolean canTakeLock = canTakeLock(existingLock, lockApplicant, requiredExclusiveLockResourceId);
+            boolean canTakeLock = canTakeLock(existingLock, lockToken, requiredExclusiveLockResourceId);
             if (!canTakeLock)
             {
                 return false;
@@ -129,7 +130,7 @@ public abstract class AbstractLockDAOImpl implements LockDAO
             {
                 requiredLock = existingLocksMap.get(requiredLock);
                 // Do an update
-                throw new UnsupportedOperationException();
+                updateLock(requiredLock, lockToken, timeToLive);
             }
             else
             {
@@ -137,18 +138,78 @@ public abstract class AbstractLockDAOImpl implements LockDAO
                 requiredLock = createLock(
                         requiredLockResourceId,
                         requiredExclusiveLockResourceId,
-                        lockApplicant,
+                        lockToken,
                         timeToLive);
             }
         }
         return true;
     }
     
-    private boolean canTakeLock(LockEntity existingLock, String lockApplicant, Long desiredExclusiveLock)
+    public boolean refreshLock(QName lockQName, String lockToken, long timeToLive)
     {
-        if (EqualsHelper.nullSafeEquals(existingLock.getLockHolder(), lockApplicant))
+        return updateLocks(lockQName, lockToken, lockToken, timeToLive);
+    }
+    
+    public boolean releaseLock(QName lockQName, String lockToken)
+    {
+        return updateLocks(lockQName, lockToken, LOCK_TOKEN_RELEASED, 0L);
+    }
+    
+    /**
+     * Put new values against the given exclusive lock.  This works against the related locks as
+     * well.
+     */
+    private boolean updateLocks(QName lockQName, String lockToken, String newLockToken, long timeToLive)
+    {
+        String qnameNamespaceUri = lockQName.getNamespaceURI();
+        String qnameLocalName = lockQName.getLocalName();
+        // Force lower case for case insensitivity
+        if (!qnameLocalName.toLowerCase().equals(qnameLocalName))
         {
-            // The lock applicant to be is also the current lock holder.
+            lockQName = QName.createQName(qnameNamespaceUri, qnameLocalName.toLowerCase());
+            qnameLocalName = lockQName.getLocalName();
+        }
+        // Force the lock token to lowercase
+        lockToken = lockToken.toLowerCase();
+        
+        // Resolve the namespace
+        Long qnameNamespaceId = qnameDAO.getOrCreateNamespace(qnameNamespaceUri).getFirst();
+        
+        // Get the lock resource for the exclusive lock.
+        // All the locks that are created will need the exclusive case.
+        LockResourceEntity exclusiveLockResource = getLockResource(qnameNamespaceId, qnameLocalName);
+        if (exclusiveLockResource == null)
+        {
+            // If the exclusive lock doesn't exist, the locks don't exist
+            return false;
+        }
+        Long exclusiveLockResourceId = exclusiveLockResource.getId();
+        // Split the lock name
+        List<QName> lockQNames = splitLockQName(lockQName);
+        // We just need to know how many resources needed updating.
+        // They will all share the same exclusive lock resource
+        int requiredUpdateCount = lockQNames.size();
+        // Update
+        int updateCount = updateLocks(exclusiveLockResourceId, lockToken, newLockToken, timeToLive);
+        // Check
+        if (updateCount != requiredUpdateCount)
+        {
+            return false;
+        }
+        else
+        {
+            return true;
+        }
+    }
+
+    /**
+     * Validate if a lock can be taken or not.
+     */
+    private boolean canTakeLock(LockEntity existingLock, String lockToken, Long desiredExclusiveLock)
+    {
+        if (EqualsHelper.nullSafeEquals(existingLock.getLockToken(), lockToken))
+        {
+            // The lock token is the same.
             // Regardless of lock expiry, the lock can be taken
             return true;
         }
@@ -159,7 +220,7 @@ public abstract class AbstractLockDAOImpl implements LockDAO
         }
         else if (existingLock.isExclusive())
         {
-            // It's a valid, exclusive lock held by someone else ...
+            // It's a valid, exclusive lock held using a different token ...
             return false;
         }
         else if (desiredExclusiveLock.equals(existingLock.getSharedResourceId()))
@@ -173,48 +234,86 @@ public abstract class AbstractLockDAOImpl implements LockDAO
             return true;
         }
     }
-
+    
     /**
      * Override to get the unique, lock resource entity if one exists.
      * 
-     * @param qnameNamespaceId  the namespace entity ID
-     * @param qnameLocalName    the lock localname
-     * @return                  Returns the lock resource entity,
-     *                          or <tt>null</tt> if it doesn't exist
+     * @param qnameNamespaceId          the namespace entity ID
+     * @param qnameLocalName            the lock localname
+     * @return                          Returns the lock resource entity,
+     *                                  or <tt>null</tt> if it doesn't exist
      */
     protected abstract LockResourceEntity getLockResource(Long qnameNamespaceId, String qnameLocalName);
     
     /**
      * Create a unique lock resource
      * 
-     * @param qnameNamespaceId  the namespace entity ID
-     * @param qnameLocalName    the lock localname
-     * @return                  Returns the newly created lock resource entity
+     * @param qnameNamespaceId          the namespace entity ID
+     * @param qnameLocalName            the lock localname
+     * @return                          Returns the newly created lock resource entity
      */
     protected abstract LockResourceEntity createLockResource(Long qnameNamespaceId, String qnameLocalName);
     
     /**
-     * Get any existing lock data for the resources required.  The locks returned are not filtered and
+     * @param id                        the lock instance ID
+     * @return                          Returns the lock, if it exists, otherwise <tt>null</tt>
+     */
+    protected abstract LockEntity getLock(Long id);
+    
+    /**
+     * @param sharedResourceId          the shared lock resource ID
+     * @param exclusiveResourceId       the exclusive lock resource ID 
+     * @return                          Returns the lock, if it exists, otherwise <tt>null</tt>
+     */
+    protected abstract LockEntity getLock(Long sharedResourceId, Long exclusiveResourceId);
+    
+    /**
+     * Get any existing lock data for the shared resources.  The locks returned are not filtered and
      * may be expired.
      * 
-     * @param lockResourceIds           a list of resource IDs for which to retrieve the current locks
+     * @param lockResourceIds           a list of shared resource IDs for which to retrieve the current locks
      * @return                          Returns a list of locks (expired or not) for the given lock resources
      */
-    protected abstract List<LockEntity> getLocks(List<Long> lockResourceIds);
+    protected abstract List<LockEntity> getLocksBySharedResourceIds(List<Long> sharedLockResourceIds);
     
     /**
      * Create a new lock.
-     * @param sharedResourceId      the specific resource to lock
-     * @param exclusiveResourceId   the exclusive lock that is being sought
-     * @param lockApplicant         the ID of the lock applicant
-     * @param timeToLive            the time, in milliseconds, for the lock to remain valid
-     * @return                      Returns the new lock
+     * @param sharedResourceId          the specific resource to lock
+     * @param exclusiveResourceId       the exclusive lock that is being sought
+     * @param lockToken                 the lock token to assign
+     * @param timeToLive                the time, in milliseconds, for the lock to remain valid
+     * @return                          Returns the new lock
      * @throws ConcurrencyFailureException  if the lock was already taken at the time of creation
      */
     protected abstract LockEntity createLock(
             Long sharedResourceId,
             Long exclusiveResourceId,
-            String lockApplicant,
+            String lockToken,
+            long timeToLive);
+    
+    /**
+     * Update an existing lock
+     * @param lockEntity                the specific lock to update
+     * @param lockApplicant             the new lock token
+     * @param timeToLive                the new lock time, in milliseconds, for the lock to remain valid
+     * @return                          Returns the updated lock
+     */
+    protected abstract LockEntity updateLock(
+            LockEntity lockEntity,
+            String lockToken,
+            long timeToLive);
+    
+    /**
+     * @param exclusiveLockResourceId   the exclusive resource ID being locks
+     * @param oldLockToken              the lock token to change from
+     * @param newLockToken              the new lock token
+     * @param timeToLive                the new time to live (in milliseconds)
+     * @return                          the number of rows updated
+     */
+    protected abstract int updateLocks(
+            Long exclusiveLockResourceId,
+            String oldLockToken,
+            String newLockToken,
             long timeToLive);
     
     /**
@@ -222,8 +321,8 @@ public abstract class AbstractLockDAOImpl implements LockDAO
      * separator on the localname.  The namespace is preserved.  The provided qualified
      * name will always be the last component in the returned list. 
      * 
-     * @param lockQName         the lock name to split into it's higher-level paths
-     * @return                  Returns the namespace ID along with the ordered localnames
+     * @param lockQName                 the lock name to split into it's higher-level paths
+     * @return                          Returns the namespace ID along with the ordered localnames
      */
     protected List<QName> splitLockQName(QName lockQName)
     {

@@ -19,17 +19,32 @@
 
     <resultMap id="result.LockResource" class="LockResource">
         <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="version" column="version" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="qnameNamespaceId" column="qname_ns_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="qnameLocalName" column="qname_localname" jdbcType="VARCHAR" javaType="java.lang.String"/>
     </resultMap>
   
     <resultMap id="result.Lock" class="Lock">
         <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="version" column="version" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="sharedResourceId" column="shared_resource_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="exclusiveResourceId" column="excl_resource_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
-        <result property="lockHolder" column="lock_holder" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="lockToken" column="lock_token" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="startTime" column="start_time" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="expiryTime" column="expiry_time" jdbcType="BIGINT" javaType="java.lang.Long"/>
     </resultMap>
     
+    <!--                -->
+    <!-- Parameter Maps -->
+    <!--                -->
+
+    <parameterMap id="parameter.ExclusiveLockUpdateMap" class="map">
+        <parameter property="newLockToken" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <parameter property="newExpiryTime" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="exclusiveLockResourceId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="oldLockToken" jdbcType="VARCHAR" javaType="java.lang.String"/>
+    </parameterMap>
+  
     <!--                -->
     <!-- SQL Snippets   -->
     <!--                -->
@@ -40,15 +55,15 @@
     </sql>
     
     <sql id="insert.Lock.AutoIncrement">
-        insert into alf_lock (version, shared_resource_id, excl_resource_id, lock_holder) 
-        values (#version#, #sharedResourceId#, #exclusiveResourceId#, lower(#lockHolder#))
+        insert into alf_lock (version, shared_resource_id, excl_resource_id, lock_token, start_time, expiry_time) 
+        values (#version#, #sharedResourceId#, #exclusiveResourceId#, lower(#lockToken#), #startTime#, #expiryTime#)
     </sql>
     
     <!--                -->
     <!-- Statements     -->
     <!--                -->
     
-    <!-- Get the lock resource entity that is referenced by the locks -->
+    <!-- Get the lock resource entity by qualified name -->
     <select id="select.LockResourceByQName" parameterClass="LockResource" resultMap="result.LockResource">
         select
             *
@@ -59,6 +74,27 @@
             qname_localname = lower(#qnameLocalName#)
     </select>
 
+    <!-- Get a lock based on the ID -->
+    <select id="select.LockByID" parameterClass="Lock" resultMap="result.Lock">
+        select
+            *
+        from
+            alf_lock
+        where
+            id = #id#
+    </select>
+    
+    <!-- Get a lock based on the unique key (shared and exclusive lock IDs) -->
+    <select id="select.LockByKey" parameterClass="Lock" resultMap="result.Lock">
+        select
+            *
+        from
+            alf_lock
+        where
+            shared_resource_id = #sharedResourceId# and
+            excl_resource_id = #exclusiveResourceId#
+    </select>
+    
     <!-- Get all locks for a given list of resource IDs -->
     <select id="select.LockBySharedIds" resultMap="result.Lock">
         select
@@ -66,12 +102,39 @@
         from
             alf_lock
         where
-            shared_resource_id in  
+            shared_resource_id in 
         <dynamic>
             <iterate open="(" close=")" conjunction=", ">
                 #[]#
             </iterate>
         </dynamic>
-   </select>
+    </select>
+    
+    <!-- Optimistic update of the lock -->
+    <update id="update.Lock" parameterClass="Lock">
+        update
+            alf_lock
+        set
+            version = #version#,
+            lock_token = lower(#lockToken#),
+            start_time = #startTime#,
+            expiry_time = #expiryTime#
+        where
+            id = #id# and
+            version = (#version# -1)
+    </update>
+    
+    <!-- Update locks for a given exclusive lock -->
+    <update id="update.ExclusiveLock" parameterMap="parameter.ExclusiveLockUpdateMap">
+        update
+            alf_lock
+        set
+            version = version + 1,
+            lock_token = lower(?),
+            expiry_time = ?
+        where
+            excl_resource_id = ? and
+            lock_token = ?
+    </update>
 
 </sqlMap>

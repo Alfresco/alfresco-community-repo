@@ -37,12 +37,43 @@ public interface LockDAO
     /**
      * Aquire a given exclusive lock, assigning it (and any implicitly shared locks) a
      * timeout.  All shared locks are implicitly taken as well.
+     * <p>
+     * A lock can be re-taken if it has expired and if the lock token has not changed
      * 
      * @param lockQName             the unique name of the lock to acquire
-     * @param lockApplicant         the potential lock holder's identifier (max 36 chars)
+     * @param lockToken             the potential lock token (max 36 chars)
      * @param timeToLive            the time (in milliseconds) that the lock must remain 
      * @return                      Returns <tt>true</tt> if the lock was taken, 
      *                              otherwise <tt>false</tt>
      */
-    boolean getLock(QName lockQName, String lockApplicant, long timeToLive);
+    boolean getLock(QName lockQName, String lockToken, long timeToLive);
+
+    /**
+     * Refresh a held lock.  This is successful if the lock in question still exists
+     * and if the lock token has not changed.  Lock expiry does not prevent the lock
+     * from being refreshed.
+     * 
+     * @param lockQName             the unique name of the lock to update
+     * @param lockToken             the lock token for the lock held
+     * @param timeToLive            the new time to live (in milliseconds)
+     * @return                      Returns <tt>true</tt> if the lock was updated,
+     *                              otherwise <tt>false</tt>
+     */
+    boolean refreshLock(QName lockQName, String lockToken, long timeToLive);
+    
+    /**
+     * Release a lock.  The lock token must still apply and all the shared and exclusive
+     * locks need to still be present.  Lock expiration does not prevent this operation
+     * from succeeding.
+     * <p>
+     * Note: Failure to release a lock due to a exception condition is dealt with by
+     *       passing the exception out.
+     * 
+     * @param lockQName             the unique name of the lock to release
+     * @param lockToken             the current lock token
+     * @return                      Returns <tt>true</tt> if all the required locks were
+     *                              (still) held under the lock token and were
+     *                              valid at the time of release, otherwise <tt>false</tt>
+     */
+    boolean releaseLock(QName lockQName, String lockToken);
 }

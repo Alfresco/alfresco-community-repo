@@ -54,6 +54,7 @@ import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DeadlockLoserDataAccessException;
+import org.springframework.jdbc.JdbcUpdateAffectedIncorrectNumberOfRowsException;
 import org.springframework.jdbc.UncategorizedSQLException;
 
 import com.ibatis.common.jdbc.exception.NestedSQLException;
@@ -95,6 +96,7 @@ public class RetryingTransactionHelper
                 ConcurrencyFailureException.class,
                 DeadlockLoserDataAccessException.class,
                 StaleObjectStateException.class,
+                JdbcUpdateAffectedIncorrectNumberOfRowsException.class,     // Similar to StaleObjectState
                 LockAcquisitionException.class,
                 ConstraintViolationException.class,
                 UncategorizedSQLException.class,
@@ -137,7 +139,7 @@ public class RetryingTransactionHelper
 
     /**
      * Callback interface
-     * @author britt
+     * @author Derek Hulley
      */
     public interface RetryingTransactionCallback<Result>
     {

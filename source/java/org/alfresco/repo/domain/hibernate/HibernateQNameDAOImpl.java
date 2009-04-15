@@ -169,7 +169,9 @@ public class HibernateQNameDAOImpl extends HibernateDaoSupport implements QNameD
         NamespaceEntity namespace = new NamespaceEntityImpl();
         namespace.setUri(namespaceUri);
         // Persist
-        Long id = (Long) getSession().save(namespace);
+        Session session = getSession();
+        Long id = (Long) session.save(namespace);
+        DirtySessionMethodInterceptor.flushSession(session, true);
         // Cache it
         namespaceEntityCache.put(id, namespaceUri);
         namespaceEntityCache.put(namespaceUri, id);

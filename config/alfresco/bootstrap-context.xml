@@ -73,6 +73,7 @@
              <value>classpath:alfresco/dbscripts/create/2.2/${db.script.dialect}/AlfrescoPostCreate-2.2-Extra.sql</value>
              <value>classpath:alfresco/dbscripts/create/2.2/${db.script.dialect}/post-create-indexes-04.sql</value>
              <value>classpath:alfresco/dbscripts/create/3.0/${db.script.dialect}/create-activities-extras.sql</value>
+             <value>classpath:alfresco/dbscripts/create/3.2/${db.script.dialect}/AlfrescoPostCreate-3.2-LockTables.sql</value>
           </list>
        </property>
        <property name="validateUpdateScriptPatches">
@@ -90,6 +91,7 @@
              <ref bean="patch.db-V2.2-Upgrade-From-2.1" />
              <ref bean="patch.db-V2.2-Upgrade-From-2.2SP1" />
              <ref bean="patch.db-V2.2-Person-2" />
+             <ref bean="patch.db-V3.2-LockTables" />
           </list>
        </property>
        <property name="postUpdateScriptPatches">

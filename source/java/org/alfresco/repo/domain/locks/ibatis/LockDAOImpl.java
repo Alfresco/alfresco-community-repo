@@ -24,7 +24,9 @@
  */
 package org.alfresco.repo.domain.locks.ibatis;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.repo.domain.locks.AbstractLockDAOImpl;
 import org.alfresco.repo.domain.locks.LockEntity;
@@ -41,9 +43,13 @@ public class LockDAOImpl extends AbstractLockDAOImpl
 {
     private static final Long CONST_LONG_ZERO = new Long(0L);
     private static final String SELECT_LOCKRESOURCE_BY_QNAME = "select.LockResourceByQName";
+    private static final String SELECT_LOCK_BY_ID = "select.LockByID";
+    private static final String SELECT_LOCK_BY_KEY = "select.LockByKey";
     private static final String SELECT_LOCK_BY_SHARED_IDS = "select.LockBySharedIds";
     private static final String INSERT_LOCKRESOURCE = "insert.LockResource";
     private static final String INSERT_LOCK = "insert.Lock";
+    private static final String UPDATE_LOCK = "update.Lock";
+    private static final String UPDATE_EXCLUSIVE_LOCK = "update.ExclusiveLock";
     
     private SqlMapClientTemplate template;
 
@@ -78,25 +84,46 @@ public class LockDAOImpl extends AbstractLockDAOImpl
 
     @SuppressWarnings("unchecked")
     @Override
-    protected List<LockEntity> getLocks(List<Long> lockResourceIds)
+    protected List<LockEntity> getLocksBySharedResourceIds(List<Long> sharedLockResourceIds)
     {
-        List<LockEntity> locks = template.queryForList(SELECT_LOCK_BY_SHARED_IDS, lockResourceIds);
+        List<LockEntity> locks = template.queryForList(SELECT_LOCK_BY_SHARED_IDS, sharedLockResourceIds);
         // Done
         return locks;
+    }
+    
+    @Override
+    protected LockEntity getLock(Long id)
+    {
+        LockEntity lock = new LockEntity();
+        lock.setId(id);
+        lock = (LockEntity) template.queryForObject(SELECT_LOCK_BY_ID, lock);
+        // Done
+        return lock;
+    }
+
+    @Override
+    protected LockEntity getLock(Long sharedResourceId, Long exclusiveResourceId)
+    {
+        LockEntity lock = new LockEntity();
+        lock.setSharedResourceId(sharedResourceId);
+        lock.setExclusiveResourceId(exclusiveResourceId);
+        lock = (LockEntity) template.queryForObject(SELECT_LOCK_BY_KEY, lock);
+        // Done
+        return lock;
     }
 
     @Override
     protected LockEntity createLock(
             Long sharedResourceId,
             Long exclusiveResourceId,
-            String lockApplicant,
+            String lockToken,
             long timeToLive)
     {
         LockEntity lock = new LockEntity();
         lock.setVersion(CONST_LONG_ZERO);
         lock.setSharedResourceId(sharedResourceId);
         lock.setExclusiveResourceId(exclusiveResourceId);
-        lock.setLockHolder(lockApplicant);
+        lock.setLockToken(lockToken);
         long now = System.currentTimeMillis();
         long exp = now + timeToLive;
         lock.setStartTime(now);
@@ -105,5 +132,43 @@ public class LockDAOImpl extends AbstractLockDAOImpl
         lock.setId(id);
         // Done
         return lock;
+    }
+
+    @Override
+    protected LockEntity updateLock(LockEntity lockEntity, String lockToken, long timeToLive)
+    {
+        LockEntity updateLockEntity = new LockEntity();
+        updateLockEntity.setId(lockEntity.getId());
+        updateLockEntity.setVersion(lockEntity.getVersion());
+        updateLockEntity.incrementVersion();            // Increment the version number
+        updateLockEntity.setSharedResourceId(lockEntity.getSharedResourceId());
+        updateLockEntity.setExclusiveResourceId(lockEntity.getExclusiveResourceId());
+        updateLockEntity.setLockToken(lockToken);
+        long now = System.currentTimeMillis();
+        Long exp = now + timeToLive;
+        updateLockEntity.setStartTime(lockEntity.getStartTime());       // Keep original start time
+        updateLockEntity.setExpiryTime(exp);            // Don't update the start time
+        template.update(UPDATE_LOCK, updateLockEntity, 1);
+        // Done
+        return updateLockEntity;
+    }
+
+    @Override
+    protected int updateLocks(
+            Long exclusiveLockResourceId,
+            String oldLockToken,
+            String newLockToken,
+            long timeToLive)
+    {
+        Map<String, Object> params = new HashMap<String, Object>(11);
+        params.put("exclusiveLockResourceId", exclusiveLockResourceId);
+        params.put("oldLockToken", oldLockToken);
+        params.put("newLockToken", oldLockToken);
+        long now = System.currentTimeMillis();
+        Long exp = new Long(now + timeToLive);
+        params.put("newExpiryTime", exp);
+        int updateCount = template.update(UPDATE_EXCLUSIVE_LOCK, params);
+        // Done
+        return updateCount;
     }
 }

@@ -41,9 +41,9 @@ public class LockEntity
     private Long version;
     private Long sharedResourceId;
     private Long exclusiveResourceId;
-    private String lockHolder;
+    private String lockToken;
     private Long startTime;
-    private Long expiryTime = Long.MAX_VALUE;           // TODO: 
+    private Long expiryTime = Long.MIN_VALUE;           // 'expired' unless set 
     
     @Override
     public int hashCode()
@@ -144,19 +144,19 @@ public class LockEntity
     }
 
     /**
-     * @return              Returns the ID of the lock holder
+     * @return              Returns the token assigned when the lock was created
      */
-    public String getLockHolder()
+    public String getLockToken()
     {
-        return lockHolder;
+        return lockToken;
     }
 
     /**
-     * @param lockHolder    the ID of the lock holder
+     * @param lockToken     the token assigned when the lock was created
      */
-    public void setLockHolder(String lockHolder)
+    public void setLockToken(String lockToken)
     {
-        this.lockHolder = lockHolder;
+        this.lockToken = lockToken;
     }
 
     /**

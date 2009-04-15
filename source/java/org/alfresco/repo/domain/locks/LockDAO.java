@@ -24,6 +24,7 @@
  */
 package org.alfresco.repo.domain.locks;
 
+import org.alfresco.repo.lock.LockAcquisitionException;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -45,8 +46,9 @@ public interface LockDAO
      * @param timeToLive            the time (in milliseconds) that the lock must remain 
      * @return                      Returns <tt>true</tt> if the lock was taken, 
      *                              otherwise <tt>false</tt>
+     * @throws LockAcquisitionException     on failure
      */
-    boolean getLock(QName lockQName, String lockToken, long timeToLive);
+    void getLock(QName lockQName, String lockToken, long timeToLive);
 
     /**
      * Refresh a held lock.  This is successful if the lock in question still exists
@@ -58,8 +60,9 @@ public interface LockDAO
      * @param timeToLive            the new time to live (in milliseconds)
      * @return                      Returns <tt>true</tt> if the lock was updated,
      *                              otherwise <tt>false</tt>
+     * @throws LockAcquisitionException     on failure
      */
-    boolean refreshLock(QName lockQName, String lockToken, long timeToLive);
+    void refreshLock(QName lockQName, String lockToken, long timeToLive);
     
     /**
      * Release a lock.  The lock token must still apply and all the shared and exclusive
@@ -75,5 +78,5 @@ public interface LockDAO
      *                              (still) held under the lock token and were
      *                              valid at the time of release, otherwise <tt>false</tt>
      */
-    boolean releaseLock(QName lockQName, String lockToken);
+    void releaseLock(QName lockQName, String lockToken);
 }

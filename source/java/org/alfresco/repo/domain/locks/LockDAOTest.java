@@ -29,6 +29,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import junit.framework.TestCase;
 
+import org.alfresco.repo.lock.LockAcquisitionException;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -91,24 +92,32 @@ public class LockDAOTest extends TestCase
     
     private String lock(final QName lockName, final long timeToLive, boolean expectSuccess)
     {
-        String token = lock(lockName, timeToLive);
-        if (expectSuccess)
+        try
         {
-            assertNotNull(
-                    "Expected to get lock " + lockName + " with TTL of " + timeToLive,
-                    token);
+            String token = lock(lockName, timeToLive);
+            if (!expectSuccess)
+            {
+                fail("Expected lock " + lockName + " to have been denied");
+            }
+            return token;
         }
-        else
+        catch (LockAcquisitionException e)
         {
-            assertNull(
-                    "Expected lock " + lockName + " to have been denied",
-                    token);
+            if (expectSuccess)
+            {
+                // oops
+                throw new RuntimeException("Expected to get lock " + lockName + " with TTL of " + timeToLive, e);
+            }
+            else
+            {
+                return null;
+            }
         }
-        return token;
     }
     /**
      * Do the lock in a new transaction
      * @return              Returns the lock token or <tt>null</tt> if it didn't work
+     * @throws  LockAcquisitionException on failure
      */
     private String lock(final QName lockName, final long timeToLive)
     {
@@ -117,8 +126,8 @@ public class LockDAOTest extends TestCase
             public String execute() throws Throwable
             {
                 String txnId = AlfrescoTransactionSupport.getTransactionId();
-                boolean locked = lockDAO.getLock(lockName, txnId, timeToLive);
-                return locked ? txnId : null;
+                lockDAO.getLock(lockName, txnId, timeToLive);
+                return txnId;
             }
         };
         return txnHelper.doInTransaction(callback);
@@ -130,21 +139,24 @@ public class LockDAOTest extends TestCase
         {
             public Boolean execute() throws Throwable
             {
-                return lockDAO.refreshLock(lockName, lockToken, timeToLive);
+                lockDAO.refreshLock(lockName, lockToken, timeToLive);
+                return Boolean.TRUE;
             }
         };
-        Boolean released = txnHelper.doInTransaction(callback);
-        if (expectSuccess)
+        try
         {
-            assertTrue(
-                    "Expected to have refreshed lock " + lockName,
-                    released.booleanValue());
+            txnHelper.doInTransaction(callback);
+            if (!expectSuccess)
+            {
+                fail("Expected to have failed to refresh lock " + lockName);
+            }
         }
-        else
+        catch (LockAcquisitionException e)
         {
-            assertFalse(
-                    "Expected to have failed to refresh lock " + lockName,
-                    released.booleanValue());
+            if (expectSuccess)
+            {
+                throw new RuntimeException("Expected to have refreshed lock " + lockName, e);
+            }
         }
     }
     
@@ -154,21 +166,24 @@ public class LockDAOTest extends TestCase
         {
             public Boolean execute() throws Throwable
             {
-                return lockDAO.releaseLock(lockName, lockToken);
+                lockDAO.releaseLock(lockName, lockToken);
+                return Boolean.TRUE;
             }
         };
-        Boolean released = txnHelper.doInTransaction(callback);
-        if (expectSuccess)
+        try
         {
-            assertTrue(
-                    "Expected to have released lock " + lockName,
-                    released.booleanValue());
+            txnHelper.doInTransaction(callback);
+            if (!expectSuccess)
+            {
+                fail("Expected to have failed to release lock " + lockName);
+            }
         }
-        else
+        catch (LockAcquisitionException e)
         {
-            assertFalse(
-                    "Expected to have failed to release lock " + lockName,
-                    released.booleanValue());
+            if (expectSuccess)
+            {
+                throw new RuntimeException("Expected to have released lock " + lockName, e);
+            }
         }
     }
     
@@ -387,10 +402,15 @@ public class LockDAOTest extends TestCase
                 String tokenAAA = null;
                 while (true)
                 {
-                    tokenAAA = lock(lockAAA, 100000L);      // Lock for a long time
-                    if (tokenAAA != null)
+                    try
                     {
-                        break;          // Got the lock
+                        tokenAAA = lock(lockAAA, 100000L);      // Lock for a long time
+                        // Success
+                        break;
+                    }
+                    catch (LockAcquisitionException e)
+                    {
+                        // OK.  Keep trying.
                     }
                     try { wait(20L); } catch (InterruptedException e) {}
                 }

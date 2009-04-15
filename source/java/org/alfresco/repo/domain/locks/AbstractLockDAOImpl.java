@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.StringTokenizer;
 
 import org.alfresco.repo.domain.QNameDAO;
+import org.alfresco.repo.lock.LockAcquisitionException;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
 import org.springframework.dao.ConcurrencyFailureException;
@@ -63,7 +64,7 @@ public abstract class AbstractLockDAOImpl implements LockDAO
         this.qnameDAO = qnameDAO;
     }
     
-    public boolean getLock(QName lockQName, String lockToken, long timeToLive)
+    public void getLock(QName lockQName, String lockToken, long timeToLive)
     {
         String qnameNamespaceUri = lockQName.getNamespaceURI();
         String qnameLocalName = lockQName.getLocalName();
@@ -114,7 +115,9 @@ public abstract class AbstractLockDAOImpl implements LockDAO
             boolean canTakeLock = canTakeLock(existingLock, lockToken, requiredExclusiveLockResourceId);
             if (!canTakeLock)
             {
-                return false;
+                throw new LockAcquisitionException(
+                        LockAcquisitionException.ERR_EXCLUSIVE_LOCK_EXISTS,
+                        lockQName, lockToken);
             }
             existingLocksMap.put(existingLock, existingLock);
         }
@@ -142,24 +145,25 @@ public abstract class AbstractLockDAOImpl implements LockDAO
                         timeToLive);
             }
         }
-        return true;
+        // Done
     }
     
-    public boolean refreshLock(QName lockQName, String lockToken, long timeToLive)
+    public void refreshLock(QName lockQName, String lockToken, long timeToLive)
     {
-        return updateLocks(lockQName, lockToken, lockToken, timeToLive);
+        updateLocks(lockQName, lockToken, lockToken, timeToLive);
     }
     
-    public boolean releaseLock(QName lockQName, String lockToken)
+    public void releaseLock(QName lockQName, String lockToken)
     {
-        return updateLocks(lockQName, lockToken, LOCK_TOKEN_RELEASED, 0L);
+        updateLocks(lockQName, lockToken, LOCK_TOKEN_RELEASED, 0L);
     }
     
     /**
      * Put new values against the given exclusive lock.  This works against the related locks as
      * well.
+     * @throws LockAcquisitionException     on failure
      */
-    private boolean updateLocks(QName lockQName, String lockToken, String newLockToken, long timeToLive)
+    private void updateLocks(QName lockQName, String lockToken, String newLockToken, long timeToLive)
     {
         String qnameNamespaceUri = lockQName.getNamespaceURI();
         String qnameLocalName = lockQName.getLocalName();
@@ -181,7 +185,9 @@ public abstract class AbstractLockDAOImpl implements LockDAO
         if (exclusiveLockResource == null)
         {
             // If the exclusive lock doesn't exist, the locks don't exist
-            return false;
+            throw new LockAcquisitionException(
+                    LockAcquisitionException.ERR_LOCK_RESOURCE_MISSING,
+                    lockQName, lockToken);
         }
         Long exclusiveLockResourceId = exclusiveLockResource.getId();
         // Split the lock name
@@ -194,12 +200,11 @@ public abstract class AbstractLockDAOImpl implements LockDAO
         // Check
         if (updateCount != requiredUpdateCount)
         {
-            return false;
+            throw new LockAcquisitionException(
+                    LockAcquisitionException.ERR_LOCK_UPDATE_COUNT,
+                    lockQName, lockToken, new Integer(updateCount), new Integer(requiredUpdateCount));
         }
-        else
-        {
-            return true;
-        }
+        // Done
     }
 
     /**

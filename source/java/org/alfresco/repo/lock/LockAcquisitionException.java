@@ -64,6 +64,7 @@ public class LockAcquisitionException extends AlfrescoRuntimeException
      * <ul>
      *   <li>1: the qname</li>
      *   <li>2: the lock token</li>
+     *   <li>3: the existing other lock</li>
      * </ul>
      */
     public static final String ERR_EXCLUSIVE_LOCK_EXISTS = "system.locks.err.excl_lock_exists";

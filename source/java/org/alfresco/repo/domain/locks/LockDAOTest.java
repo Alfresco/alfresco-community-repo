@@ -335,7 +335,7 @@ public class LockDAOTest extends TestCase
     public synchronized void testConcurrentLockAquisition() throws Exception
     {
         ReentrantLock threadLock = new ReentrantLock();
-        GetLockThread[] threads = new GetLockThread[50];
+        GetLockThread[] threads = new GetLockThread[5];
         for (int i = 0; i < threads.length; i++)
         {
             threads[i] = new GetLockThread(threadLock);
@@ -346,7 +346,7 @@ public class LockDAOTest extends TestCase
         waitLoop:
         for (int waitLoop = 0; waitLoop < 50; waitLoop++)
         {
-            wait(2000L);
+            wait(1000L);
             for (int i = 0; i < threads.length; i++)
             {
                 if (!threads[i].done)

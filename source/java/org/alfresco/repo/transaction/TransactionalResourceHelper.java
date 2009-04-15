@@ -30,6 +30,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Helper class that will look up or create transactional resources.
@@ -72,6 +73,24 @@ public abstract class TransactionalResourceHelper
         if (set == null)
         {
             set = new HashSet<V>(29);
+            AlfrescoTransactionSupport.bindResource(resourceKey, set);
+        }
+        return set;
+    }
+
+    /**
+     * Support method to retrieve or create and bind a <tt>TreeSet</tt> to the current transaction.
+     * 
+     * @param <V>           the set value type
+     * @param resourceKey   the key under which the resource will be stored
+     * @return              Returns an previously-bound <tt>TreeSet</tt> or else a newly-bound <tt>TreeSet</tt>
+     */
+    public static final <V> TreeSet<V> getTreeSet(Object resourceKey)
+    {
+        TreeSet<V> set = AlfrescoTransactionSupport.<TreeSet<V>>getResource(resourceKey);
+        if (set == null)
+        {
+            set = new TreeSet<V>();
             AlfrescoTransactionSupport.bindResource(resourceKey, set);
         }
         return set;

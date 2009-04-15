@@ -117,7 +117,7 @@ public abstract class AbstractLockDAOImpl implements LockDAO
             {
                 throw new LockAcquisitionException(
                         LockAcquisitionException.ERR_EXCLUSIVE_LOCK_EXISTS,
-                        lockQName, lockToken);
+                        lockQName, lockToken, existingLock);
             }
             existingLocksMap.put(existingLock, existingLock);
         }

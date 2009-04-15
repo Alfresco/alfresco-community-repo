@@ -37,6 +37,8 @@ import org.alfresco.util.EqualsHelper;
  */
 public class LockEntity
 {
+    public static final Long CONST_LONG_ZERO = new Long(0L);
+    
     private Long id;
     private Long version;
     private Long sharedResourceId;
@@ -71,6 +73,18 @@ public class LockEntity
         }
     }
     
+    @Override
+    public String toString()
+    {
+        StringBuilder sb = new StringBuilder(512);
+        sb.append("LockEntity")
+          .append("[ ID=").append(id)
+          .append(", sharedResourceId=").append(sharedResourceId)
+          .append(", exclusiveResourceId=").append(exclusiveResourceId)
+          .append("]");
+        return sb.toString();
+    }
+
     /**
      * Determine if the lock is logically exclusive.  A lock is <b>exclusive</b> if the
      * shared lock resource matches the exclusive lock resource.
@@ -111,9 +125,20 @@ public class LockEntity
         this.version = version;
     }
     
+    /**
+     * Increments the version number or resets it if it reaches a large number
+     */
     public void incrementVersion()
     {
-        this.version = new Long(version.longValue() + 1L);
+        long currentVersion = version.longValue();
+        if (currentVersion >= 10E6)
+        {
+            this.version = CONST_LONG_ZERO;
+        }
+        else
+        {
+            this.version = new Long(version.longValue() + 1L);
+        }
     }
 
     /**

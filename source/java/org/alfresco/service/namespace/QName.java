@@ -40,7 +40,7 @@ import org.alfresco.repo.domain.hibernate.NamespaceEntityImpl;
  * @author David Caruana
  * 
  */
-public final class QName implements QNamePattern, Serializable, Cloneable
+public final class QName implements QNamePattern, Serializable, Cloneable, Comparable<QName>
 {
     private static final long serialVersionUID = 3977016258204348976L;
 
@@ -348,7 +348,22 @@ public final class QName implements QNamePattern, Serializable, Cloneable
                                     .append(localName).toString();
     }
 
-    
+    /**
+     * Uses the {@link #getNamespaceURI() namespace URI} and then the {@link #getLocalName() localname}
+     * to do the comparison i.e. the comparison is alphabetical.
+     */
+    public int compareTo(QName qname)
+    {
+        int namespaceComparison = this.namespaceURI.compareTo(qname.namespaceURI);
+        if (namespaceComparison != 0)
+        {
+            return namespaceComparison;
+        }
+        // Namespaces are the same.  Do comparison on localname
+        return this.localName.compareTo(qname.localName);
+    }
+
+
     /**
      * Render string representation of QName using format:
      * 

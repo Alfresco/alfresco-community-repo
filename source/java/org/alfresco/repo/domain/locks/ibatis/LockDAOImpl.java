@@ -41,7 +41,6 @@ import org.springframework.orm.ibatis.SqlMapClientTemplate;
  */
 public class LockDAOImpl extends AbstractLockDAOImpl
 {
-    private static final Long CONST_LONG_ZERO = new Long(0L);
     private static final String SELECT_LOCKRESOURCE_BY_QNAME = "select.LockResourceByQName";
     private static final String SELECT_LOCK_BY_ID = "select.LockByID";
     private static final String SELECT_LOCK_BY_KEY = "select.LockByKey";
@@ -73,7 +72,7 @@ public class LockDAOImpl extends AbstractLockDAOImpl
     protected LockResourceEntity createLockResource(Long qnameNamespaceId, String qnameLocalName)
     {
         LockResourceEntity lockResource = new LockResourceEntity();
-        lockResource.setVersion(CONST_LONG_ZERO);
+        lockResource.setVersion(LockEntity.CONST_LONG_ZERO);
         lockResource.setQnameNamespaceId(qnameNamespaceId);
         lockResource.setQnameLocalName(qnameLocalName);
         Long id = (Long) template.insert(INSERT_LOCKRESOURCE, lockResource);
@@ -120,7 +119,7 @@ public class LockDAOImpl extends AbstractLockDAOImpl
             long timeToLive)
     {
         LockEntity lock = new LockEntity();
-        lock.setVersion(CONST_LONG_ZERO);
+        lock.setVersion(LockEntity.CONST_LONG_ZERO);
         lock.setSharedResourceId(sharedResourceId);
         lock.setExclusiveResourceId(exclusiveResourceId);
         lock.setLockToken(lockToken);

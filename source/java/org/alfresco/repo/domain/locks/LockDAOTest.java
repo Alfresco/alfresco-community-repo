@@ -26,7 +26,6 @@ package org.alfresco.repo.domain.locks;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
 import junit.framework.TestCase;
 

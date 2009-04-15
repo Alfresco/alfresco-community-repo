@@ -145,9 +145,9 @@ public class LockDAOImpl extends AbstractLockDAOImpl
         updateLockEntity.setExclusiveResourceId(lockEntity.getExclusiveResourceId());
         updateLockEntity.setLockToken(lockToken);
         long now = System.currentTimeMillis();
-        Long exp = now + timeToLive;
-        updateLockEntity.setStartTime(lockEntity.getStartTime());       // Keep original start time
-        updateLockEntity.setExpiryTime(exp);            // Don't update the start time
+        long exp = now + timeToLive;
+        updateLockEntity.setStartTime(new Long(now));
+        updateLockEntity.setExpiryTime(new Long(exp));
         template.update(UPDATE_LOCK, updateLockEntity, 1);
         // Done
         return updateLockEntity;
@@ -163,10 +163,11 @@ public class LockDAOImpl extends AbstractLockDAOImpl
         Map<String, Object> params = new HashMap<String, Object>(11);
         params.put("exclusiveLockResourceId", exclusiveLockResourceId);
         params.put("oldLockToken", oldLockToken);
-        params.put("newLockToken", oldLockToken);
+        params.put("newLockToken", newLockToken);
         long now = System.currentTimeMillis();
-        Long exp = new Long(now + timeToLive);
-        params.put("newExpiryTime", exp);
+        long exp = now + timeToLive;
+        params.put("newStartTime", new Long(now));
+        params.put("newExpiryTime", new Long(exp));
         int updateCount = template.update(UPDATE_EXCLUSIVE_LOCK, params);
         // Done
         return updateCount;

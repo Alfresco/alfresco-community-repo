@@ -40,6 +40,7 @@
 
     <parameterMap id="parameter.ExclusiveLockUpdateMap" class="map">
         <parameter property="newLockToken" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <parameter property="newStartTime" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <parameter property="newExpiryTime" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <parameter property="exclusiveLockResourceId" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <parameter property="oldLockToken" jdbcType="VARCHAR" javaType="java.lang.String"/>
@@ -131,6 +132,7 @@
         set
             version = version + 1,
             lock_token = lower(?),
+            start_time = ?,
             expiry_time = ?
         where
             excl_resource_id = ? and

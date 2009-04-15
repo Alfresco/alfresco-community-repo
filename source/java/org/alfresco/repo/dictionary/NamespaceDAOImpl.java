@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -55,10 +55,13 @@ public class NamespaceDAOImpl implements NamespaceDAO
     private Lock readLock = lock.readLock();
     private Lock writeLock = lock.writeLock();
     
-    // internal caches that are clusterable
-    private SimpleCache<String, List<String>> urisCache;
-    private SimpleCache<String, Map<String, String>> prefixesCache;
-
+    // Internal cache (clusterable)
+    private SimpleCache<String, NamespaceData> namespaceDataCache;
+    
+    // used to reset the cache
+    private ThreadLocal<NamespaceData> namespaceDataThreadLocal = new ThreadLocal<NamespaceData>();
+    private ThreadLocal<NamespaceData> defaultNamespaceDataThreadLocal = new ThreadLocal<NamespaceData>();
+    
     // Dependencies
     private TenantService tenantService;
     private DictionaryDAO dictionaryDAO;
@@ -68,37 +71,24 @@ public class NamespaceDAOImpl implements NamespaceDAO
     {
         this.tenantService = tenantService;
     }
-
-    public void setUrisCache(SimpleCache<String, List<String>> urisCache)
-    {
-        this.urisCache = urisCache;
-    }
     
-    public void setPrefixesCache(SimpleCache<String, Map<String, String>> prefixesCache)
+    public void setNamespaceDataCache(SimpleCache<String, NamespaceData> namespaceDataCache)
     {
-        this.prefixesCache = prefixesCache;
+        this.namespaceDataCache = namespaceDataCache;
     }
     
     public void registerDictionary(DictionaryDAO dictionaryDAO)
     {
         this.dictionaryDAO = dictionaryDAO;
     }
-
+    
     
     /**
      * Initialise empty namespaces
      */
     public void init()
     {     
-        String tenantDomain = getTenantDomain();
-            
-        putUrisCtx(tenantDomain, new ArrayList<String>());
-        putPrefixesCtx(tenantDomain, new HashMap<String, String>());
-
-        if (logger.isDebugEnabled()) 
-        {
-            logger.debug("Empty namespaces initialised");
-        }
+        initNamespace(getTenantDomain());
     }
     
     /**
@@ -107,9 +97,8 @@ public class NamespaceDAOImpl implements NamespaceDAO
     public void destroy()
     {
         String tenantDomain = getTenantDomain();
-
-        removeUrisCtx(tenantDomain);
-        removePrefixesCtx(tenantDomain);
+        
+        removeNamespaceData(tenantDomain);
         
         if (logger.isDebugEnabled()) 
         {
@@ -118,31 +107,90 @@ public class NamespaceDAOImpl implements NamespaceDAO
     }
     
     /**
-     * Resets the namespaces (by resetting the dictionary)
+     * Resets the namespaces (by re-initialising the dictionary)
      */
-    private void reset()
+    private NamespaceData reset(String tenantDomain)
     {
-       if (logger.isDebugEnabled()) 
-       {
-           logger.debug("Resetting namespaces ...");
-       }
-       
-       if (dictionaryDAO == null)
-       {
-           // Unexpected
-           throw new AlfrescoRuntimeException("Dictionary should be registered in order to perform reset");
-       }
-       else
-       {
-           dictionaryDAO.reset();
-       }
-       
-       if (logger.isDebugEnabled()) 
-       {
-           logger.debug("... resetting namespaces completed");
-       }
+        if (dictionaryDAO == null)
+        {
+            // Unexpected
+            throw new AlfrescoRuntimeException("Dictionary should be registered in order to perform reset");
+        }
+        
+        if (logger.isDebugEnabled()) 
+        {
+            logger.debug("Resetting namespaces ...");
+        }
+        
+        dictionaryDAO.init();
+        
+        NamespaceData namespaceData = getNamespaceData(tenantDomain);
+        
+        if (logger.isDebugEnabled()) 
+        {
+            logger.debug("... resetting namespaces completed");
+        }
+        
+        return namespaceData;
     }
-
+    
+    private NamespaceData initNamespace(String tenantDomain)
+    {
+        try
+        {
+            createNamespaceLocal(tenantDomain);
+            
+            NamespaceData namespaceData = initNamespaceData(tenantDomain);
+            
+            if (namespaceData == null)
+            {     
+                // unexpected
+                throw new AlfrescoRuntimeException("Failed to init namespaceData " + tenantDomain);
+            }
+            
+            try
+            {
+                writeLock.lock();        
+                namespaceDataCache.put(tenantDomain, namespaceData);
+            }
+            finally
+            {
+                writeLock.unlock();
+            }
+            
+            return namespaceData;
+        }
+        finally
+        {
+            try
+            {
+                readLock.lock();
+                if (namespaceDataCache.get(tenantDomain) != null)
+                {
+                    removeNamespaceLocal(tenantDomain);
+                }
+            }
+            finally
+            {
+                readLock.unlock();
+            }
+        }
+    }
+    
+    private NamespaceData initNamespaceData(String tenantDomain)
+    {
+        getNamespaceData(tenantDomain).setUrisCache(new ArrayList<String>());
+        getNamespaceData(tenantDomain).setPrefixesCache(new HashMap<String, String>());
+        
+        if (logger.isDebugEnabled()) 
+        {
+            logger.debug("Empty namespaces initialised");
+        }
+        
+        return getNamespaceDataLocal(tenantDomain);
+    }
+    
+    
     /* (non-Javadoc)
      * @see org.alfresco.repo.ref.NamespacePrefixResolver#getURIs()
      */
@@ -175,8 +223,8 @@ public class NamespaceDAOImpl implements NamespaceDAO
             return Collections.unmodifiableCollection(urisFiltered);
         }
     }
-
-
+    
+    
     /* (non-Javadoc)
      * @see org.alfresco.repo.ref.NamespacePrefixResolver#getPrefixes()
      */
@@ -209,7 +257,7 @@ public class NamespaceDAOImpl implements NamespaceDAO
             return Collections.unmodifiableCollection(prefixesFiltered);
         }  
     }
-
+    
     
     /* (non-Javadoc)
      * @see org.alfresco.repo.dictionary.impl.NamespaceDAO#addURI(java.lang.String)
@@ -222,7 +270,7 @@ public class NamespaceDAOImpl implements NamespaceDAO
         }
         getUrisCtx().add(uri);
     }
-
+    
     
     /* (non-Javadoc)
      * @see org.alfresco.repo.dictionary.impl.NamespaceDAO#addPrefix(java.lang.String, java.lang.String)
@@ -235,8 +283,8 @@ public class NamespaceDAOImpl implements NamespaceDAO
         }
         getPrefixesCtx().put(prefix, uri);
     }
-
-
+    
+    
     /* (non-Javadoc)
      * @see org.alfresco.repo.dictionary.impl.NamespaceDAO#removeURI(java.lang.String)
      */
@@ -244,7 +292,7 @@ public class NamespaceDAOImpl implements NamespaceDAO
     {
         getUrisCtx().remove(uri);
     }
-
+    
     
     /* (non-Javadoc)
      * @see org.alfresco.repo.dictionary.impl.NamespaceDAO#removePrefix(java.lang.String)
@@ -253,8 +301,8 @@ public class NamespaceDAOImpl implements NamespaceDAO
     {
         getPrefixesCtx().remove(prefix);
     }
-
-
+    
+    
     /* (non-Javadoc)
      * @see org.alfresco.repo.ref.NamespacePrefixResolver#getNamespaceURI(java.lang.String)
      */
@@ -280,7 +328,7 @@ public class NamespaceDAOImpl implements NamespaceDAO
             }
         }
     }
-
+    
     
     /* (non-Javadoc)
      * @see org.alfresco.repo.ref.NamespacePrefixResolver#getPrefixes(java.lang.String)
@@ -343,6 +391,120 @@ public class NamespaceDAOImpl implements NamespaceDAO
         }
     }
     
+    
+    // re-entrant (eg. via reset)
+    private NamespaceData getNamespaceData(String tenantDomain)
+    {
+        NamespaceData namespaceData =  null;
+        try
+        {
+            // check cache first - return if set
+            readLock.lock();
+            namespaceData = namespaceDataCache.get(tenantDomain);
+            
+            if (namespaceData != null)
+            {
+                return namespaceData; // return cached config
+            }
+        }
+        finally
+        {
+            readLock.unlock();
+        }
+        
+        // check threadlocal second - return if set
+        namespaceData = getNamespaceDataLocal(tenantDomain);
+        if (namespaceData != null)
+        {
+            return namespaceData; // return local namespaceData
+        }
+        
+        // reset caches - may have been invalidated (e.g. in a cluster)
+        namespaceData = reset(tenantDomain);
+        
+        if (namespaceData == null)
+        {     
+            // unexpected
+            throw new AlfrescoRuntimeException("Failed to get namespaceData " + tenantDomain);
+        }
+        
+        return namespaceData;
+    }
+    
+    // create threadlocal
+    private void createNamespaceLocal(String tenantDomain)      
+    {
+         // create threadlocal, if needed
+        NamespaceData namespaceData = getNamespaceDataLocal(tenantDomain);
+        if (namespaceData == null)
+        {
+            namespaceData = new NamespaceData(tenantDomain);
+            
+            if (tenantDomain.equals(TenantService.DEFAULT_DOMAIN))
+            {
+                defaultNamespaceDataThreadLocal.set(namespaceData);
+            }
+            else
+            {
+                namespaceDataThreadLocal.set(namespaceData);
+            }
+        }
+    }
+    
+    // get threadlocal 
+    private NamespaceData getNamespaceDataLocal(String tenantDomain)
+    {
+        NamespaceData namespaceData = null;
+        
+        if (tenantDomain.equals(TenantService.DEFAULT_DOMAIN))
+        {
+            namespaceData = this.defaultNamespaceDataThreadLocal.get();
+        }
+        else
+        {
+            namespaceData = this.namespaceDataThreadLocal.get();
+        }
+        
+        // check to see if domain switched (eg. during login)
+        if ((namespaceData != null) && (tenantDomain.equals(namespaceData.getTenantDomain())))
+        {
+            return namespaceData; // return threadlocal, if set
+        }   
+        
+        return null;
+    }
+    
+    // remove threadlocal
+    private void removeNamespaceLocal(String tenantDomain)
+    {
+        if (tenantDomain.equals(TenantService.DEFAULT_DOMAIN))
+        {
+            defaultNamespaceDataThreadLocal.set(null); // it's in the cache, clear the threadlocal
+        }
+        else
+        {
+            namespaceDataThreadLocal.set(null); // it's in the cache, clear the threadlocal
+        }
+    }
+    
+    private void removeNamespaceData(String tenantDomain)
+    {
+        try
+        {
+            writeLock.lock();
+            if (namespaceDataCache.get(tenantDomain) != null)
+            {
+                namespaceDataCache.remove(tenantDomain);
+            }
+            
+            removeNamespaceLocal(tenantDomain);
+        }
+        finally
+        {
+            writeLock.unlock();
+        }
+    }
+    
     /**
      * Get URIs from the cache (in the context of the current user's tenant domain)
      * 
@@ -361,81 +523,8 @@ public class NamespaceDAOImpl implements NamespaceDAO
      */
     private List<String> getUrisCtx(String tenantDomain)
     {
-        List<String> uris = null;
-        try
-        {
-            readLock.lock();
-            uris = urisCache.get(tenantDomain);
-        }
-        finally
-        {
-            readLock.unlock();
-        }
-        
-        
-        if (uris == null)
-        {
-            reset(); // reset caches - may have been invalidated (e.g. in a cluster)
-            
-            try
-            {
-                readLock.lock();
-                uris = urisCache.get(tenantDomain);
-            }
-            finally
-            {
-                readLock.unlock();
-            }
-            
-            if (uris == null)
-            {     
-                // unexpected
-                throw new AlfrescoRuntimeException("Failed to re-initialise urisCache " + tenantDomain);
-            }
-        }
-        return uris;
+        return getNamespaceData(tenantDomain).getUrisCache();
     }
-    
-    /**
-     * Put URIs into the cache
-     * 
-     * @param tenantDomain
-     * @param uris
-     */
-    private void putUrisCtx(String tenantDomain, List<String> uris)
-    {
-        try 
-        {
-            writeLock.lock();
-            urisCache.put(tenantDomain, uris);
-        }
-        finally
-        {
-            writeLock.unlock();
-        }          
-    } 
-    
-    /**
-     * Remove URIs from the cache
-     * 
-     * @param tenantDomain
-     */
-    private void removeUrisCtx(String tenantDomain)
-    {
-        try 
-        {
-            writeLock.lock();
-            if (urisCache.get(tenantDomain) != null)
-            {
-                urisCache.get(tenantDomain).clear();
-                urisCache.remove(tenantDomain);
-            }
-        }
-        finally
-        {
-            writeLock.unlock();
-        }  
-    } 
     
     /**
      * Get prefixes from the cache
@@ -446,7 +535,7 @@ public class NamespaceDAOImpl implements NamespaceDAO
     {
         return getPrefixesCtx(getTenantDomain());
     }
-
+    
     /**
      * Get prefixes from the cache
      * 
@@ -455,81 +544,8 @@ public class NamespaceDAOImpl implements NamespaceDAO
      */
     private Map<String, String> getPrefixesCtx(String tenantDomain)
     {
-        Map<String, String> prefixes = null;       
-        try
-        {
-            readLock.lock();
-            prefixes = prefixesCache.get(tenantDomain);
-        }
-        finally
-        {
-            readLock.unlock();
-        }
-        
-        if (prefixes == null)
-        {
-            reset(); // reset caches - may have been invalidated (e.g. in a cluster)
-            
-            try
-            {
-                readLock.lock();
-                prefixes = prefixesCache.get(tenantDomain);
-            }
-            finally
-            {
-                readLock.unlock();
-            }
-            
-            if (prefixes == null)
-            {     
-                // unexpected
-                throw new AlfrescoRuntimeException("Failed to re-initialise prefixesCache " + tenantDomain);
-            }
-        }
-            
-        return prefixes;
-    }  
-
-    /**
-     * Put prefixes into the cache
-     * 
-     * @param tenantDomain
-     * @param prefixes
-     */
-    private void putPrefixesCtx(String tenantDomain, Map<String, String> prefixes)
-    {
-        try 
-        {
-            writeLock.lock();
-            prefixesCache.put(tenantDomain, prefixes);
-        }
-        finally
-        {
-            writeLock.unlock();
-        }               
-    } 
-    
-    /**
-     * Remove prefixes from the cache
-     * 
-     * @param tenantDomain
-     */
-    private void removePrefixesCtx(String tenantDomain)
-    {
-        try 
-        {
-            writeLock.lock();
-            if (prefixesCache.get(tenantDomain) != null)
-            {
-                prefixesCache.get(tenantDomain).clear();
-                prefixesCache.remove(tenantDomain);
-            }
-        }
-        finally
-        {
-            writeLock.unlock();
-        }        
-    } 
+        return getNamespaceData(tenantDomain).getPrefixesCache();
+    }
     
     /**
      * Local helper - returns tenant domain (or empty string if default non-tenant)
@@ -537,5 +553,43 @@ public class NamespaceDAOImpl implements NamespaceDAO
     private String getTenantDomain()
     {
         return tenantService.getCurrentUserDomain();
+    }
+    
+    /* package */ class NamespaceData
+    {
+        private List<String> urisCache;
+        private Map<String, String> prefixesCache;
+        
+        private String tenantDomain;
+        
+        public NamespaceData(String tenantDomain)
+        {
+            this.tenantDomain = tenantDomain;
+        }
+        
+        public String getTenantDomain()
+        {
+            return tenantDomain;
+        } 
+        
+        public List<String> getUrisCache()
+        {
+            return urisCache;
+        }
+        
+        public void setUrisCache(List<String> urisCache)
+        {
+            this.urisCache = urisCache;
+        }
+        
+        public Map<String, String> getPrefixesCache()
+        {
+            return prefixesCache;
+        }
+
+        public void setPrefixesCache(Map<String, String> prefixesCache)
+        {
+            this.prefixesCache = prefixesCache;
+        }
     }
 }

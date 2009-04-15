@@ -814,10 +814,7 @@
         <property name="tenantService">
             <ref bean="tenantService"/>
         </property>
-        <property name="urisCache">
-            <ref bean="urisCache"/>
-        </property>
-        <property name="prefixesCache">
+        <property name="namespaceDataCache">
             <ref bean="prefixesCache"/>
         </property>
     </bean>

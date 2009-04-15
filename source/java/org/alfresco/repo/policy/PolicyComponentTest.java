@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -27,13 +27,13 @@ package org.alfresco.repo.policy;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 import junit.framework.TestCase;
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
 
 import org.alfresco.repo.cache.EhCacheAdapter;
+import org.alfresco.repo.cache.NullCache;
 import org.alfresco.repo.dictionary.DictionaryBootstrap;
 import org.alfresco.repo.dictionary.DictionaryComponent;
 import org.alfresco.repo.dictionary.DictionaryDAOImpl;
@@ -112,23 +112,11 @@ public class PolicyComponentTest extends TestCase
         dictionaryDAO.setCompiledModelsCache(compileModelCache);
     }
     
+    @SuppressWarnings("unchecked")
     private void initNamespaceCaches(NamespaceDAOImpl namespaceDAO)
     {
-        CacheManager cacheManager = new CacheManager();
-        
-        Cache urisEhCache = new Cache("urisCache", 50, false, true, 0L, 0L);
-        cacheManager.addCache(urisEhCache);      
-        EhCacheAdapter<String, List<String>> urisCache = new EhCacheAdapter<String, List<String>>();
-        urisCache.setCache(urisEhCache);
-        
-        namespaceDAO.setUrisCache(urisCache);
-        
-        Cache prefixesEhCache = new Cache("prefixesCache", 50, false, true, 0L, 0L);
-        cacheManager.addCache(prefixesEhCache);
-        EhCacheAdapter<String, Map<String, String>> prefixesCache = new EhCacheAdapter<String, Map<String, String>>();
-        prefixesCache.setCache(prefixesEhCache);
-        
-        namespaceDAO.setPrefixesCache(prefixesCache);
+        // note: unit tested here with null cache
+        namespaceDAO.setNamespaceDataCache(new NullCache());
     }
 
     public void testJavaBehaviour()

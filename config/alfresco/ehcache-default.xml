@@ -379,6 +379,7 @@
         
     <!-- Dictionary / Namespace (tenant-based) -->
     
+    <!-- dictionary models -->
     <cache 
         name="org.alfresco.cache.uriToModelsCache" 
         maxElementsInMemory="100"
@@ -393,13 +394,7 @@
         overflowToDisk="false"
         />
 
-    <cache 
-        name="org.alfresco.cache.urisCache" 
-        maxElementsInMemory="100"
-        eternal="true"
-        overflowToDisk="false"
-        />
-        
+	<!-- dictionary namespaces -->
     <cache 
         name="org.alfresco.cache.prefixesCache" 
         maxElementsInMemory="100"

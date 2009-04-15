@@ -44,29 +44,35 @@ public interface FunctionEvaluationContext
 
     public Map<String, Float> getScores();
 
-    public Serializable getProperty(NodeRef nodeRef, QName propertyQName);
+    public Serializable getProperty(NodeRef nodeRef, String propertyName);
 
     public NodeService getNodeService();
 
     public Float getScore();
 
-    public Query buildLuceneEquality(LuceneQueryParser lqp, QName propertyQName, Serializable value, PredicateMode mode) throws ParseException;
+    public Query buildLuceneEquality(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode) throws ParseException;
 
-    public Query buildLuceneExists(LuceneQueryParser lqp, QName propertyQName, Boolean not) throws ParseException;
+    public Query buildLuceneExists(LuceneQueryParser lqp, String propertyName, Boolean not) throws ParseException;
 
-    public Query buildLuceneGreaterThan(LuceneQueryParser lqp, QName propertyQName, Serializable value, PredicateMode mode) throws ParseException;
+    public Query buildLuceneGreaterThan(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode) throws ParseException;
 
-    public Query buildLuceneGreaterThanOrEquals(LuceneQueryParser lqp, QName propertyQName, Serializable value, PredicateMode mode) throws ParseException;
+    public Query buildLuceneGreaterThanOrEquals(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode) throws ParseException;
 
-    public Query buildLuceneLessThan(LuceneQueryParser lqp, QName propertyQName, Serializable value, PredicateMode mode) throws ParseException;
+    public Query buildLuceneLessThan(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode) throws ParseException;
 
-    public Query buildLuceneLessThanOrEquals(LuceneQueryParser lqp, QName propertyQName, Serializable value, PredicateMode mode) throws ParseException;
+    public Query buildLuceneLessThanOrEquals(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode) throws ParseException;
 
-    public Query buildLuceneLike(LuceneQueryParser lqp, QName propertyQName, Serializable value, Boolean not) throws ParseException;
+    public Query buildLuceneLike(LuceneQueryParser lqp, String propertyName, Serializable value, Boolean not) throws ParseException;
 
-    public Query buildLuceneInequality(LuceneQueryParser lqp, QName propertyQName, Serializable value, PredicateMode mode) throws ParseException;
+    public Query buildLuceneInequality(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode) throws ParseException;
 
-    public Query buildLuceneIn(LuceneQueryParser lqp, QName propertyQName, Collection<Serializable> values, Boolean not, PredicateMode mode) throws ParseException;
+    public Query buildLuceneIn(LuceneQueryParser lqp, String propertyName, Collection<Serializable> values, Boolean not, PredicateMode mode) throws ParseException;
 
-    public String getLuceneSortField(QName propertyQName);
+    public String getLuceneSortField(String propertyName);
+
+    public boolean isObjectId(String propertyName);
+
+    public boolean isQueryable(String fieldName);
+
+    public boolean isOrderable(String fieldName);
 }

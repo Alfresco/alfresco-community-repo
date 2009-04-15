@@ -74,8 +74,8 @@ public class CMISResultSetMetaDataImpl implements CMISResultSetMetaData
             if (column.getFunction().getName().equals(PropertyAccessor.NAME))
             {
                 PropertyArgument arg = (PropertyArgument) column.getFunctionArguments().get(PropertyAccessor.ARG_PROPERTY);
-                QName propertyQName = arg.getPropertyName();
-                propertyDefinition = cmisDictionaryService.findProperty(propertyQName, null);
+                String propertyName = arg.getPropertyName();
+                propertyDefinition = cmisDictionaryService.findProperty(propertyName, null);
                 type = propertyDefinition.getDataType();
             }
             if (type == null)

@@ -457,9 +457,7 @@ LT : '<';
  */ 
 ID  :   ('a'..'z'|'A'..'Z'|'_')('a'..'z'|'A'..'Z'|'0'..'9'|'_'|'$'|'#')* ;
 
-FTSWORD :	 (F_ESC | INWORD)+;
-	
-
+FTSWORD :	 (F_ESC | INWORD | STAR | QUESTION_MARK)+;
 	
 fragment
 F_ESC   : '\\'

@@ -37,6 +37,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.cmis.CMISQueryException;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.search.CannedQueryDef;
 import org.alfresco.repo.search.EmptyResultSet;
@@ -45,6 +46,13 @@ import org.alfresco.repo.search.QueryRegisterComponent;
 import org.alfresco.repo.search.SearcherException;
 import org.alfresco.repo.search.impl.NodeSearcher;
 import org.alfresco.repo.search.impl.lucene.analysis.DateTimeAnalyser;
+import org.alfresco.repo.search.impl.parsers.FTSQueryParser;
+import org.alfresco.repo.search.impl.querymodel.Constraint;
+import org.alfresco.repo.search.impl.querymodel.QueryEngine;
+import org.alfresco.repo.search.impl.querymodel.QueryEngineResults;
+import org.alfresco.repo.search.impl.querymodel.QueryModelFactory;
+import org.alfresco.repo.search.impl.querymodel.QueryOptions;
+import org.alfresco.repo.search.impl.querymodel.Selector;
 import org.alfresco.repo.search.results.SortedResultSet;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -56,6 +64,7 @@ import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.XPathException;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
+import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.QueryParameter;
 import org.alfresco.service.cmr.search.QueryParameterDefinition;
 import org.alfresco.service.cmr.search.ResultSet;
@@ -107,6 +116,8 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
     private QueryRegisterComponent queryRegister;
 
     private LuceneIndexer indexer;
+
+    private QueryEngine queryEngine;
 
     /*
      * Searcher implementation
@@ -168,6 +179,11 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
     public void setTenantService(TenantService tenantService)
     {
         this.tenantService = tenantService;
+    }
+
+    public void setQueryEngine(QueryEngine queryEngine)
+    {
+        this.queryEngine = queryEngine;
     }
 
     /**
@@ -286,7 +302,8 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
                                 {
                                     throw new SearcherException("Order on content properties is not curently supported");
                                 }
-                                else if ((propertyDef.getDataType().getName().equals(DataTypeDefinition.MLTEXT)) || (propertyDef.getDataType().getName().equals(DataTypeDefinition.TEXT)))
+                                else if ((propertyDef.getDataType().getName().equals(DataTypeDefinition.MLTEXT))
+                                        || (propertyDef.getDataType().getName().equals(DataTypeDefinition.TEXT)))
                                 {
                                     List<Locale> locales = searchParameters.getLocales();
                                     if (((locales == null) || (locales.size() == 0)))
@@ -298,7 +315,7 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
                                     {
                                         throw new SearcherException("Order on text/mltext properties with more than one locale is not curently supported");
                                     }
-                                    
+
                                     sortLocale = locales.get(0);
                                     // find best field match
 
@@ -388,7 +405,7 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
 
                 Path[] paths = searchParameters.getAttributePaths().toArray(new Path[0]);
                 ResultSet rs = new LuceneResultSet(hits, searcher, nodeService, tenantService, paths, searchParameters, getLuceneConfig());
-                if(getLuceneConfig().getPostSortDateTime() && requiresPostSort)
+                if (getLuceneConfig().getPostSortDateTime() && requiresPostSort)
                 {
                     ResultSet sorted = new SortedResultSet(rs, nodeService, searchParameters, namespacePrefixResolver);
                     return sorted;
@@ -440,6 +457,31 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
             {
                 throw new SearcherException("IO exception during search", e);
             }
+        }
+        else if (searchParameters.getLanguage().equalsIgnoreCase(SearchService.LANGUAGE_FTS_ALFRESCO))
+        {
+            String ftsExpression = searchParameters.getQuery();
+            FTSQueryParser ftsQueryParser = new FTSQueryParser();
+            QueryModelFactory factory = queryEngine.getQueryModelFactory();
+            Constraint constraint = ftsQueryParser.buildFTS(ftsExpression.substring(1, ftsExpression.length() - 1), factory, null, null, null);
+            org.alfresco.repo.search.impl.querymodel.Query query = factory.createQuery(null, null, constraint, null);
+            QueryOptions options = new QueryOptions(searchParameters.getQuery(), null);
+            options.setFetchSize(searchParameters.getBulkFecthSize());
+            options.setIncludeInTransactionData(!searchParameters.excludeDataInTheCurrentTransaction());
+            if(searchParameters.getLimitBy() == LimitBy.FINAL_SIZE)
+            {
+                options.setMaxItems(searchParameters.getLimit());
+            }
+            else
+            {
+                options.setMaxItems(-1);
+            }
+            options.setMlAnalaysisMode(searchParameters.getMlAnalaysisMode());
+            options.setLocales(searchParameters.getLocales());
+            options.setStores(searchParameters.getStores());
+            
+            QueryEngineResults results = queryEngine.executeQuery(query, options, null);
+            return results.getResults().values().iterator().next();
         }
         else
         {

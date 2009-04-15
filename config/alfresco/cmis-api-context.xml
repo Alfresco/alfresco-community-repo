@@ -49,46 +49,29 @@
             <ref bean="CMISService" />
         </property>
         <property name="queryEngine">
-            <ref bean="cmis.luceneQueryEngine" />
+            <ref bean="adm.luceneQueryEngine" />
         </property>
         <property name="nodeService">
             <ref bean="nodeService" />
         </property>
     </bean>
    
-    <bean id="cmis.luceneQueryEngineImpl" class="org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryEngine" >
-        <property name="dictionaryService">
-            <ref bean="dictionaryService" />
-        </property>
-        <property name="indexAndSearcher">
-            <ref bean="admLuceneIndexerAndSearcherFactory" />
-        </property>
-        <property name="nodeService">
-            <ref bean="nodeService" />
-        </property>
-        <property name="tenantService">
-            <ref bean="tenantService" />
-        </property>
-        <property name="namespaceService">
-            <ref bean="namespaceService" />
-        </property>
-    </bean>
    
-    <bean id="cmis.luceneQueryEngine" class="org.springframework.aop.framework.ProxyFactoryBean">
+    <bean id="adm.luceneQueryEngine" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <value>org.alfresco.repo.search.impl.querymodel.QueryEngine</value>
         </property>
         <property name="target">
-            <ref bean="cmis.luceneQueryEngineImpl"/>
+            <ref bean="adm.luceneQueryEngineImpl"/>
         </property>
         <property name="interceptorNames">
             <list>
-                <idref bean="cmis.luceneQueryEngineSecurity"/>
+                <idref bean="adm.luceneQueryEngineSecurity"/>
             </list>
         </property>
     </bean>
    
-   <bean id="cmis.luceneQueryEngineSecurity" class="net.sf.acegisecurity.intercept.method.aopalliance.MethodSecurityInterceptor">
+   <bean id="adm.luceneQueryEngineSecurity" class="net.sf.acegisecurity.intercept.method.aopalliance.MethodSecurityInterceptor">
         <property name="authenticationManager"><ref bean="authenticationManager"/></property>
         <property name="accessDecisionManager"><ref bean="accessDecisionManager"/></property>
         <property name="afterInvocationManager"><ref bean="afterInvocationManager"/></property>

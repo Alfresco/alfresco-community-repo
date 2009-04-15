@@ -55,6 +55,12 @@ public interface SearchService
     public static final String LANGUAGE_XPATH = "xpath";
 
     public static final String LANGUAGE_JCR_XPATH = "jcr-xpath";
+    
+    public static final String LANGUAGE_FTS_ALFRESCO = "fts-alfresco";
+    
+    //public static final String LANGUAGE_SQL_CMIS_STRICT = "sql-cmis-strict";
+    
+    //public static final String LANGUAGE_SQL_ALFTRESCO = "sql-alfresco";
 
     /**
      * Search against a store.

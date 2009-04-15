@@ -33,5 +33,5 @@ public interface PropertyArgument extends DynamicArgument
 {
     public String getSelector();
     
-    public QName getPropertyName();
+    public String getPropertyName();
 }

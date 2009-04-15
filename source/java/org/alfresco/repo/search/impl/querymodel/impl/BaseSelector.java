@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
 import org.alfresco.repo.search.impl.querymodel.Selector;
 import org.alfresco.service.namespace.QName;
 
@@ -92,10 +93,9 @@ public class BaseSelector implements Selector
         return answer;
     }
 
-    
     public Selector getSelector(String name)
     {
-        if(getAlias().equals(name))
+        if (getAlias().equals(name))
         {
             return this;
         }
@@ -105,7 +105,7 @@ public class BaseSelector implements Selector
         }
     }
 
-    public List<Set<String>> getSelectorGroups()
+    public List<Set<String>> getSelectorGroups(FunctionEvaluationContext functionContext)
     {
         HashSet<String> set = new HashSet<String>();
         set.add(getAlias());

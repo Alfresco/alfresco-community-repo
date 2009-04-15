@@ -490,6 +490,9 @@
         <property name="queryRegister">
             <ref bean="queryRegisterComponent" />
         </property>
+		<property name="queryEngine">
+            <ref bean="adm.luceneQueryEngineImpl" />
+        </property>
         <property name="maxAtomicTransformationTime">
             <value>${lucene.maxAtomicTransformationTime}</value>  <!-- milliseconds allowed for inline text transformation -->
         </property>
@@ -532,7 +535,24 @@
         </property>
     </bean>
     
-    
+    <bean id="adm.luceneQueryEngineImpl" class="org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryEngine" >
+        <property name="dictionaryService">
+            <ref bean="dictionaryService" />
+        </property>
+        <property name="indexAndSearcher">
+            <ref bean="admLuceneIndexerAndSearcherFactory" />
+        </property>
+        <property name="nodeService">
+            <ref bean="nodeService" />
+        </property>
+        <property name="tenantService">
+            <ref bean="tenantService" />
+        </property>
+        <property name="namespaceService">
+            <ref bean="namespaceService" />
+        </property>
+    </bean>
+	
      <!-- Indexer and searchers for lucene -->
     <bean id="admLuceneUnIndexedIndexerAndSearcherFactory"
         class="org.alfresco.repo.search.impl.lucene.ADMLuceneUnIndexedIndexAndSearcherFactory">
@@ -556,6 +576,9 @@
         </property>
         <property name="queryRegister">
             <ref bean="queryRegisterComponent" />
+        </property>
+		<property name="queryEngine">
+            <ref bean="adm.luceneQueryEngineImpl" />
         </property>
         <property name="maxAtomicTransformationTime">
             <value>${lucene.maxAtomicTransformationTime}</value>  <!-- milliseconds allowed for inline text transformation -->
@@ -625,6 +648,9 @@
         <property name="queryRegister">
             <ref bean="queryRegisterComponent" />
         </property>
+		<property name="queryEngine">
+            <ref bean="avm.luceneQueryEngineImpl" />
+        </property>
         <property name="maxAtomicTransformationTime">
             <value>${lucene.maxAtomicTransformationTime}</value>  <!-- milliseconds allowed for inline text transformation -->
         </property>
@@ -664,6 +690,23 @@
         </property>
     </bean>
 
+	<bean id="avm.luceneQueryEngineImpl" class="org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryEngine" >
+        <property name="dictionaryService">
+            <ref bean="dictionaryService" />
+        </property>
+        <property name="indexAndSearcher">
+            <ref bean="avmLuceneIndexerAndSearcherFactory" />
+        </property>
+        <property name="nodeService">
+            <ref bean="nodeService" />
+        </property>
+        <property name="tenantService">
+            <ref bean="tenantService" />
+        </property>
+        <property name="namespaceService">
+            <ref bean="namespaceService" />
+        </property>
+    </bean>
 
     <!-- Indexer and searchers for lucene -->
     <bean id="luceneCategoryService" class="org.alfresco.repo.search.impl.lucene.LuceneCategoryServiceImpl">

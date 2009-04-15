@@ -122,7 +122,7 @@ public class LuceneQueryEngine implements QueryEngine
 
     public QueryEngineResults executeQuery(Query query, QueryOptions options, FunctionEvaluationContext functionContext)
     {
-        List<Set<String>> selectorGroups = query.getSource().getSelectorGroups();
+        List<Set<String>> selectorGroups = query.getSource().getSelectorGroups(functionContext);
         
         if(selectorGroups.size() == 0)
         {

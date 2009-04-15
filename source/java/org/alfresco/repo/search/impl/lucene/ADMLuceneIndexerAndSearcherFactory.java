@@ -29,6 +29,7 @@ import java.util.List;
 import org.alfresco.repo.search.SearcherException;
 import org.alfresco.repo.search.SupportsBackgroundIndexing;
 import org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexer;
+import org.alfresco.repo.search.impl.querymodel.QueryEngine;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -51,6 +52,8 @@ public class ADMLuceneIndexerAndSearcherFactory extends AbstractLuceneIndexerAnd
     protected FullTextSearchIndexer fullTextSearchIndexer;
 
     protected ContentService contentService;
+    
+    private QueryEngine queryEngine;
 
     /**
      * Set the dictinary service
@@ -94,6 +97,13 @@ public class ADMLuceneIndexerAndSearcherFactory extends AbstractLuceneIndexerAnd
         this.contentService = contentService;
     }
 
+    
+    
+    public void setQueryEngine(QueryEngine queryEngine)
+    {
+        this.queryEngine = queryEngine;
+    }
+
     protected LuceneIndexer createIndexer(StoreRef storeRef, String deltaId)
     {
         storeRef = tenantService.getName(storeRef);
@@ -120,6 +130,7 @@ public class ADMLuceneIndexerAndSearcherFactory extends AbstractLuceneIndexerAnd
         searcher.setTenantService(tenantService);
         searcher.setDictionaryService(dictionaryService);
         searcher.setQueryRegister(getQueryRegister());
+        searcher.setQueryEngine(queryEngine);
         return searcher;
     }
 

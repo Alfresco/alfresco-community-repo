@@ -38,5 +38,5 @@ public interface Source
     
     public Selector getSelector(String name);
     
-    public List<Set<String>> getSelectorGroups();
+    public List<Set<String>> getSelectorGroups(FunctionEvaluationContext functionContext);
 }

@@ -223,7 +223,7 @@ public class LuceneQueryModelFactory implements QueryModelFactory
      * @see org.alfresco.repo.search.impl.querymodel.QueryModelFactory#createPropertyArgument(java.lang.String,
      *      org.alfresco.service.namespace.QName)
      */
-    public PropertyArgument createPropertyArgument(String name, boolean queryable, boolean orderable, String selector, QName propertyName)
+    public PropertyArgument createPropertyArgument(String name, boolean queryable, boolean orderable, String selector, String propertyName)
     {
         return new LucenePropertyArgument(name, queryable, orderable, selector, propertyName);
     }

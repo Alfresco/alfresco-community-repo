@@ -86,6 +86,7 @@ ftsTest:
 "1.5" -> "(TERM 1.5)"
 "cm:name:1.5" -> "(TERM 1.5 (COLUMN_REF name (PREFIX cm)))"
 "cm:name:12" -> "(TERM 12 (COLUMN_REF name (PREFIX cm)))"
+"zebr*" -> "OK"
 
 ftsTerm:
 "name:woof" -> "woof (COLUMN_REF name)"

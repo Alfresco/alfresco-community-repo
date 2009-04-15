@@ -34,6 +34,7 @@ import org.alfresco.cmis.mapping.CMISMapping;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.impl.querymodel.Argument;
 import org.alfresco.repo.search.impl.querymodel.Constraint;
+import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
 import org.alfresco.repo.search.impl.querymodel.FunctionalConstraint;
 import org.alfresco.repo.search.impl.querymodel.Join;
 import org.alfresco.repo.search.impl.querymodel.JoinType;
@@ -156,12 +157,12 @@ public class BaseJoin implements Join
         return answer.get(name);
     }
 
-    public List<Set<String>> getSelectorGroups()
+    public List<Set<String>> getSelectorGroups(FunctionEvaluationContext functionContext)
     {
         List<Set<String>> answer = new ArrayList<Set<String>>();
 
-        List<Set<String>> left = getLeft().getSelectorGroups();
-        List<Set<String>> right = getRight().getSelectorGroups();
+        List<Set<String>> left = getLeft().getSelectorGroups(functionContext);
+        List<Set<String>> right = getRight().getSelectorGroups(functionContext);
 
         FunctionalConstraint joinCondition = (FunctionalConstraint) getJoinCondition();
         if (!joinCondition.getFunction().getName().equals(Equals.NAME))
@@ -178,8 +179,8 @@ public class BaseJoin implements Join
         if (lhs instanceof PropertyArgument)
         {
             PropertyArgument propertyArgument = (PropertyArgument) lhs;
-            QName qname = propertyArgument.getPropertyName();
-            if (isObjectId(qname))
+            String name = propertyArgument.getPropertyName();
+            if (functionContext.isObjectId(name))
             {
                 lhsSelector = propertyArgument.getSelector();
             }
@@ -188,8 +189,8 @@ public class BaseJoin implements Join
         if (rhs instanceof PropertyArgument)
         {
             PropertyArgument propertyArgument = (PropertyArgument) rhs;
-            QName qname = propertyArgument.getPropertyName();
-            if (isObjectId(qname))
+            String name = propertyArgument.getPropertyName();
+            if (functionContext.isObjectId(name))
             {
                 rhsSelector = propertyArgument.getSelector();
             }
@@ -247,10 +248,5 @@ public class BaseJoin implements Join
         }
 
         return answer;
-    }
-
-    private boolean isObjectId(QName qname)
-    {
-        return ContentModel.PROP_NODE_DBID.equals(qname) || CMISMapping.PROP_OBJECT_ID_QNAME.equals(qname);
     }
 }

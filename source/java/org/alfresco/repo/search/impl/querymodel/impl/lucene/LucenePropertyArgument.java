@@ -38,7 +38,7 @@ public class LucenePropertyArgument extends BasePropertyArgument
      * @param name
      * @param propertyName
      */
-    public LucenePropertyArgument(String name, boolean queryable, boolean orderable, String selector, QName propertyName)
+    public LucenePropertyArgument(String name, boolean queryable, boolean orderable, String selector, String propertyName)
     {
         super(name, queryable, orderable, selector, propertyName);
     }

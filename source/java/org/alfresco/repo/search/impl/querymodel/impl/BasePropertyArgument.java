@@ -36,14 +36,14 @@ import org.alfresco.service.namespace.QName;
  */
 public class BasePropertyArgument extends BaseDynamicArgument implements PropertyArgument
 {
-    private QName propertyName;
+    private String propertyName;
 
     private String selector;
 
     /**
      * @param name
      */
-    public BasePropertyArgument(String name, boolean queryable, boolean orderable, String selector, QName propertyName)
+    public BasePropertyArgument(String name, boolean queryable, boolean orderable, String selector, String propertyName)
     {
         super(name, queryable, orderable);
         this.selector = selector;
@@ -66,7 +66,7 @@ public class BasePropertyArgument extends BaseDynamicArgument implements Propert
      * 
      * @see org.alfresco.repo.search.impl.querymodel.PropertyArgument#getPropertyName()
      */
-    public QName getPropertyName()
+    public String getPropertyName()
     {
         return propertyName;
     }

@@ -1,4 +1,4 @@
-// $ANTLR !Unknown version! W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g 2009-04-14 14:56:06
+// $ANTLR !Unknown version! W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g 2009-04-14 15:35:36
 package org.alfresco.repo.search.impl.parsers;
 
 import org.antlr.runtime.*;
@@ -1261,14 +1261,14 @@ public class FTSLexer extends Lexer {
         try {
             int _type = FTSWORD;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:460:9: ( ( F_ESC | INWORD )+ )
-            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:460:12: ( F_ESC | INWORD )+
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:460:9: ( ( F_ESC | INWORD | STAR | QUESTION_MARK )+ )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:460:12: ( F_ESC | INWORD | STAR | QUESTION_MARK )+
             {
-            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:460:12: ( F_ESC | INWORD )+
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:460:12: ( F_ESC | INWORD | STAR | QUESTION_MARK )+
             int cnt12=0;
             loop12:
             do {
-                int alt12=3;
+                int alt12=5;
                 int LA12_0 = input.LA(1);
 
                 if ( (LA12_0=='\\') ) {
@@ -1276,6 +1276,12 @@ public class FTSLexer extends Lexer {
                 }
                 else if ( ((LA12_0>='0' && LA12_0<='9')||(LA12_0>='A' && LA12_0<='Z')||(LA12_0>='a' && LA12_0<='z')||(LA12_0>='\u00C0' && LA12_0<='\u00D6')||(LA12_0>='\u00D8' && LA12_0<='\u00F6')||(LA12_0>='\u00F8' && LA12_0<='\u1FFF')||(LA12_0>='\u3040' && LA12_0<='\u318F')||(LA12_0>='\u3300' && LA12_0<='\u337F')||(LA12_0>='\u3400' && LA12_0<='\u3D2D')||(LA12_0>='\u4E00' && LA12_0<='\u9FFF')||(LA12_0>='\uAC00' && LA12_0<='\uD7AF')||(LA12_0>='\uF900' && LA12_0<='\uFAFF')) ) {
                     alt12=2;
+                }
+                else if ( (LA12_0=='*') ) {
+                    alt12=3;
+                }
+                else if ( (LA12_0=='?') ) {
+                    alt12=4;
                 }
 
 
@@ -1291,6 +1297,20 @@ public class FTSLexer extends Lexer {
             	    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:460:21: INWORD
             	    {
             	    mINWORD(); if (state.failed) return ;
+
+            	    }
+            	    break;
+            	case 3 :
+            	    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:460:30: STAR
+            	    {
+            	    mSTAR(); if (state.failed) return ;
+
+            	    }
+            	    break;
+            	case 4 :
+            	    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:460:37: QUESTION_MARK
+            	    {
+            	    mQUESTION_MARK(); if (state.failed) return ;
 
             	    }
             	    break;
@@ -1319,11 +1339,11 @@ public class FTSLexer extends Lexer {
     // $ANTLR start "F_ESC"
     public final void mF_ESC() throws RecognitionException {
         try {
-            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:465:9: ( '\\\\' ( 'u' F_HEX F_HEX F_HEX F_HEX | . ) )
-            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:465:11: '\\\\' ( 'u' F_HEX F_HEX F_HEX F_HEX | . )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:463:9: ( '\\\\' ( 'u' F_HEX F_HEX F_HEX F_HEX | . ) )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:463:11: '\\\\' ( 'u' F_HEX F_HEX F_HEX F_HEX | . )
             {
             match('\\'); if (state.failed) return ;
-            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:466:5: ( 'u' F_HEX F_HEX F_HEX F_HEX | . )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:464:5: ( 'u' F_HEX F_HEX F_HEX F_HEX | . )
             int alt13=2;
             int LA13_0 = input.LA(1);
 
@@ -1348,7 +1368,7 @@ public class FTSLexer extends Lexer {
             }
             switch (alt13) {
                 case 1 :
-                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:466:7: 'u' F_HEX F_HEX F_HEX F_HEX
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:464:7: 'u' F_HEX F_HEX F_HEX F_HEX
                     {
                     match('u'); if (state.failed) return ;
                     mF_HEX(); if (state.failed) return ;
@@ -1359,7 +1379,7 @@ public class FTSLexer extends Lexer {
                     }
                     break;
                 case 2 :
-                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:467:7: .
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:465:7: .
                     {
                     matchAny(); if (state.failed) return ;
 
@@ -1380,7 +1400,7 @@ public class FTSLexer extends Lexer {
     // $ANTLR start "F_HEX"
     public final void mF_HEX() throws RecognitionException {
         try {
-            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:472:7: ( '0' .. '9' | 'a' .. 'f' | 'A' .. 'F' )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:470:7: ( '0' .. '9' | 'a' .. 'f' | 'A' .. 'F' )
             // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:
             {
             if ( (input.LA(1)>='0' && input.LA(1)<='9')||(input.LA(1)>='A' && input.LA(1)<='F')||(input.LA(1)>='a' && input.LA(1)<='f') ) {
@@ -1405,7 +1425,7 @@ public class FTSLexer extends Lexer {
     // $ANTLR start "INWORD"
     public final void mINWORD() throws RecognitionException {
         try {
-            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:479:8: ( '\\u0041' .. '\\u005A' | '\\u0061' .. '\\u007A' | '\\u00C0' .. '\\u00D6' | '\\u00D8' .. '\\u00F6' | '\\u00F8' .. '\\u00FF' | '\\u0100' .. '\\u1FFF' | '\\u3040' .. '\\u318F' | '\\u3300' .. '\\u337F' | '\\u3400' .. '\\u3D2D' | '\\u4E00' .. '\\u9FFF' | '\\uF900' .. '\\uFAFF' | '\\uAC00' .. '\\uD7AF' | '\\u0030' .. '\\u0039' | '\\u0660' .. '\\u0669' | '\\u06F0' .. '\\u06F9' | '\\u0966' .. '\\u096F' | '\\u09E6' .. '\\u09EF' | '\\u0A66' .. '\\u0A6F' | '\\u0AE6' .. '\\u0AEF' | '\\u0B66' .. '\\u0B6F' | '\\u0BE7' .. '\\u0BEF' | '\\u0C66' .. '\\u0C6F' | '\\u0CE6' .. '\\u0CEF' | '\\u0D66' .. '\\u0D6F' | '\\u0E50' .. '\\u0E59' | '\\u0ED0' .. '\\u0ED9' | '\\u1040' .. '\\u1049' )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:477:8: ( '\\u0041' .. '\\u005A' | '\\u0061' .. '\\u007A' | '\\u00C0' .. '\\u00D6' | '\\u00D8' .. '\\u00F6' | '\\u00F8' .. '\\u00FF' | '\\u0100' .. '\\u1FFF' | '\\u3040' .. '\\u318F' | '\\u3300' .. '\\u337F' | '\\u3400' .. '\\u3D2D' | '\\u4E00' .. '\\u9FFF' | '\\uF900' .. '\\uFAFF' | '\\uAC00' .. '\\uD7AF' | '\\u0030' .. '\\u0039' | '\\u0660' .. '\\u0669' | '\\u06F0' .. '\\u06F9' | '\\u0966' .. '\\u096F' | '\\u09E6' .. '\\u09EF' | '\\u0A66' .. '\\u0A6F' | '\\u0AE6' .. '\\u0AEF' | '\\u0B66' .. '\\u0B6F' | '\\u0BE7' .. '\\u0BEF' | '\\u0C66' .. '\\u0C6F' | '\\u0CE6' .. '\\u0CEF' | '\\u0D66' .. '\\u0D6F' | '\\u0E50' .. '\\u0E59' | '\\u0ED0' .. '\\u0ED9' | '\\u1040' .. '\\u1049' )
             // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:
             {
             if ( (input.LA(1)>='0' && input.LA(1)<='9')||(input.LA(1)>='A' && input.LA(1)<='Z')||(input.LA(1)>='a' && input.LA(1)<='z')||(input.LA(1)>='\u00C0' && input.LA(1)<='\u00D6')||(input.LA(1)>='\u00D8' && input.LA(1)<='\u00F6')||(input.LA(1)>='\u00F8' && input.LA(1)<='\u1FFF')||(input.LA(1)>='\u3040' && input.LA(1)<='\u318F')||(input.LA(1)>='\u3300' && input.LA(1)<='\u337F')||(input.LA(1)>='\u3400' && input.LA(1)<='\u3D2D')||(input.LA(1)>='\u4E00' && input.LA(1)<='\u9FFF')||(input.LA(1)>='\uAC00' && input.LA(1)<='\uD7AF')||(input.LA(1)>='\uF900' && input.LA(1)<='\uFAFF') ) {
@@ -1432,10 +1452,10 @@ public class FTSLexer extends Lexer {
         try {
             int _type = DECIMAL_INTEGER_LITERAL;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:509:9: ( ( PLUS | MINUS )? DECIMAL_NUMERAL )
-            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:509:11: ( PLUS | MINUS )? DECIMAL_NUMERAL
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:507:9: ( ( PLUS | MINUS )? DECIMAL_NUMERAL )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:507:11: ( PLUS | MINUS )? DECIMAL_NUMERAL
             {
-            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:509:11: ( PLUS | MINUS )?
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:507:11: ( PLUS | MINUS )?
             int alt14=2;
             int LA14_0 = input.LA(1);
 
@@ -1482,19 +1502,19 @@ public class FTSLexer extends Lexer {
             Token d=null;
             Token r=null;
 
-            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:516:3: (d= START_RANGE_I r= DOTDOT | d= START_RANGE_F r= DOTDOT | ( PLUS | MINUS )? ( DIGIT )+ DOT ( DIGIT )* ( EXPONENT )? | ( PLUS | MINUS )? DOT ( DIGIT )+ ( EXPONENT )? | ( PLUS | MINUS )? ( DIGIT )+ EXPONENT )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:514:3: (d= START_RANGE_I r= DOTDOT | d= START_RANGE_F r= DOTDOT | ( PLUS | MINUS )? ( DIGIT )+ DOT ( DIGIT )* ( EXPONENT )? | ( PLUS | MINUS )? DOT ( DIGIT )+ ( EXPONENT )? | ( PLUS | MINUS )? ( DIGIT )+ EXPONENT )
             int alt24=5;
             alt24 = dfa24.predict(input);
             switch (alt24) {
                 case 1 :
-                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:516:5: d= START_RANGE_I r= DOTDOT
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:514:5: d= START_RANGE_I r= DOTDOT
                     {
-                    int dStart1073 = getCharIndex();
+                    int dStart1078 = getCharIndex();
                     mSTART_RANGE_I(); if (state.failed) return ;
-                    d = new CommonToken(input, Token.INVALID_TOKEN_TYPE, Token.DEFAULT_CHANNEL, dStart1073, getCharIndex()-1);
-                    int rStart1077 = getCharIndex();
+                    d = new CommonToken(input, Token.INVALID_TOKEN_TYPE, Token.DEFAULT_CHANNEL, dStart1078, getCharIndex()-1);
+                    int rStart1082 = getCharIndex();
                     mDOTDOT(); if (state.failed) return ;
-                    r = new CommonToken(input, Token.INVALID_TOKEN_TYPE, Token.DEFAULT_CHANNEL, rStart1077, getCharIndex()-1);
+                    r = new CommonToken(input, Token.INVALID_TOKEN_TYPE, Token.DEFAULT_CHANNEL, rStart1082, getCharIndex()-1);
                     if ( state.backtracking==0 ) {
 
                             d.setType(DECIMAL_INTEGER_LITERAL);
@@ -1507,14 +1527,14 @@ public class FTSLexer extends Lexer {
                     }
                     break;
                 case 2 :
-                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:523:5: d= START_RANGE_F r= DOTDOT
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:521:5: d= START_RANGE_F r= DOTDOT
                     {
-                    int dStart1091 = getCharIndex();
+                    int dStart1096 = getCharIndex();
                     mSTART_RANGE_F(); if (state.failed) return ;
-                    d = new CommonToken(input, Token.INVALID_TOKEN_TYPE, Token.DEFAULT_CHANNEL, dStart1091, getCharIndex()-1);
-                    int rStart1095 = getCharIndex();
+                    d = new CommonToken(input, Token.INVALID_TOKEN_TYPE, Token.DEFAULT_CHANNEL, dStart1096, getCharIndex()-1);
+                    int rStart1100 = getCharIndex();
                     mDOTDOT(); if (state.failed) return ;
-                    r = new CommonToken(input, Token.INVALID_TOKEN_TYPE, Token.DEFAULT_CHANNEL, rStart1095, getCharIndex()-1);
+                    r = new CommonToken(input, Token.INVALID_TOKEN_TYPE, Token.DEFAULT_CHANNEL, rStart1100, getCharIndex()-1);
                     if ( state.backtracking==0 ) {
 
                             d.setType(FLOATING_POINT_LITERAL);
@@ -1527,9 +1547,9 @@ public class FTSLexer extends Lexer {
                     }
                     break;
                 case 3 :
-                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:530:5: ( PLUS | MINUS )? ( DIGIT )+ DOT ( DIGIT )* ( EXPONENT )?
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:528:5: ( PLUS | MINUS )? ( DIGIT )+ DOT ( DIGIT )* ( EXPONENT )?
                     {
-                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:530:5: ( PLUS | MINUS )?
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:528:5: ( PLUS | MINUS )?
                     int alt15=2;
                     int LA15_0 = input.LA(1);
 
@@ -1556,7 +1576,7 @@ public class FTSLexer extends Lexer {
 
                     }
 
-                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:530:21: ( DIGIT )+
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:528:21: ( DIGIT )+
                     int cnt16=0;
                     loop16:
                     do {
@@ -1570,7 +1590,7 @@ public class FTSLexer extends Lexer {
 
                         switch (alt16) {
                     	case 1 :
-                    	    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:530:21: DIGIT
+                    	    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:528:21: DIGIT
                     	    {
                     	    mDIGIT(); if (state.failed) return ;
 
@@ -1588,7 +1608,7 @@ public class FTSLexer extends Lexer {
                     } while (true);
 
                     mDOT(); if (state.failed) return ;
-                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:530:32: ( DIGIT )*
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:528:32: ( DIGIT )*
                     loop17:
                     do {
                         int alt17=2;
@@ -1601,7 +1621,7 @@ public class FTSLexer extends Lexer {
 
                         switch (alt17) {
                     	case 1 :
-                    	    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:530:32: DIGIT
+                    	    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:528:32: DIGIT
                     	    {
                     	    mDIGIT(); if (state.failed) return ;
 
@@ -1613,7 +1633,7 @@ public class FTSLexer extends Lexer {
                         }
                     } while (true);
 
-                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:530:39: ( EXPONENT )?
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:528:39: ( EXPONENT )?
                     int alt18=2;
                     int LA18_0 = input.LA(1);
 
@@ -1622,7 +1642,7 @@ public class FTSLexer extends Lexer {
                     }
                     switch (alt18) {
                         case 1 :
-                            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:530:39: EXPONENT
+                            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:528:39: EXPONENT
                             {
                             mEXPONENT(); if (state.failed) return ;
 
@@ -1635,9 +1655,9 @@ public class FTSLexer extends Lexer {
                     }
                     break;
                 case 4 :
-                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:531:5: ( PLUS | MINUS )? DOT ( DIGIT )+ ( EXPONENT )?
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:529:5: ( PLUS | MINUS )? DOT ( DIGIT )+ ( EXPONENT )?
                     {
-                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:531:5: ( PLUS | MINUS )?
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:529:5: ( PLUS | MINUS )?
                     int alt19=2;
                     int LA19_0 = input.LA(1);
 
@@ -1665,7 +1685,7 @@ public class FTSLexer extends Lexer {
                     }
 
                     mDOT(); if (state.failed) return ;
-                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:531:25: ( DIGIT )+
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:529:25: ( DIGIT )+
                     int cnt20=0;
                     loop20:
                     do {
@@ -1679,7 +1699,7 @@ public class FTSLexer extends Lexer {
 
                         switch (alt20) {
                     	case 1 :
-                    	    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:531:25: DIGIT
+                    	    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:529:25: DIGIT
                     	    {
                     	    mDIGIT(); if (state.failed) return ;
 
@@ -1696,7 +1716,7 @@ public class FTSLexer extends Lexer {
                         cnt20++;
                     } while (true);
 
-                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:531:32: ( EXPONENT )?
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:529:32: ( EXPONENT )?
                     int alt21=2;
                     int LA21_0 = input.LA(1);
 
@@ -1705,7 +1725,7 @@ public class FTSLexer extends Lexer {
                     }
                     switch (alt21) {
                         case 1 :
-                            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:531:32: EXPONENT
+                            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:529:32: EXPONENT
                             {
                             mEXPONENT(); if (state.failed) return ;
 
@@ -1718,9 +1738,9 @@ public class FTSLexer extends Lexer {
                     }
                     break;
                 case 5 :
-                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:532:5: ( PLUS | MINUS )? ( DIGIT )+ EXPONENT
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:530:5: ( PLUS | MINUS )? ( DIGIT )+ EXPONENT
                     {
-                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:532:5: ( PLUS | MINUS )?
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:530:5: ( PLUS | MINUS )?
                     int alt22=2;
                     int LA22_0 = input.LA(1);
 
@@ -1747,7 +1767,7 @@ public class FTSLexer extends Lexer {
 
                     }
 
-                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:532:21: ( DIGIT )+
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:530:21: ( DIGIT )+
                     int cnt23=0;
                     loop23:
                     do {
@@ -1761,7 +1781,7 @@ public class FTSLexer extends Lexer {
 
                         switch (alt23) {
                     	case 1 :
-                    	    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:532:21: DIGIT
+                    	    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:530:21: DIGIT
                     	    {
                     	    mDIGIT(); if (state.failed) return ;
 
@@ -1795,10 +1815,10 @@ public class FTSLexer extends Lexer {
     // $ANTLR start "START_RANGE_I"
     public final void mSTART_RANGE_I() throws RecognitionException {
         try {
-            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:536:14: ( ( PLUS | MINUS )? ( DIGIT )+ )
-            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:536:16: ( PLUS | MINUS )? ( DIGIT )+
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:534:14: ( ( PLUS | MINUS )? ( DIGIT )+ )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:534:16: ( PLUS | MINUS )? ( DIGIT )+
             {
-            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:536:16: ( PLUS | MINUS )?
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:534:16: ( PLUS | MINUS )?
             int alt25=2;
             int LA25_0 = input.LA(1);
 
@@ -1825,7 +1845,7 @@ public class FTSLexer extends Lexer {
 
             }
 
-            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:536:32: ( DIGIT )+
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:534:32: ( DIGIT )+
             int cnt26=0;
             loop26:
             do {
@@ -1839,7 +1859,7 @@ public class FTSLexer extends Lexer {
 
                 switch (alt26) {
             	case 1 :
-            	    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:536:32: DIGIT
+            	    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:534:32: DIGIT
             	    {
             	    mDIGIT(); if (state.failed) return ;
 
@@ -1868,10 +1888,10 @@ public class FTSLexer extends Lexer {
     // $ANTLR start "START_RANGE_F"
     public final void mSTART_RANGE_F() throws RecognitionException {
         try {
-            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:540:14: ( ( PLUS | MINUS )? ( DIGIT )+ DOT )
-            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:540:16: ( PLUS | MINUS )? ( DIGIT )+ DOT
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:538:14: ( ( PLUS | MINUS )? ( DIGIT )+ DOT )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:538:16: ( PLUS | MINUS )? ( DIGIT )+ DOT
             {
-            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:540:16: ( PLUS | MINUS )?
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:538:16: ( PLUS | MINUS )?
             int alt27=2;
             int LA27_0 = input.LA(1);
 
@@ -1898,7 +1918,7 @@ public class FTSLexer extends Lexer {
 
             }
 
-            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:540:32: ( DIGIT )+
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:538:32: ( DIGIT )+
             int cnt28=0;
             loop28:
             do {
@@ -1912,7 +1932,7 @@ public class FTSLexer extends Lexer {
 
                 switch (alt28) {
             	case 1 :
-            	    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:540:32: DIGIT
+            	    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:538:32: DIGIT
             	    {
             	    mDIGIT(); if (state.failed) return ;
 
@@ -1942,7 +1962,7 @@ public class FTSLexer extends Lexer {
     // $ANTLR start "DECIMAL_NUMERAL"
     public final void mDECIMAL_NUMERAL() throws RecognitionException {
         try {
-            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:549:3: ( ZERO_DIGIT | NON_ZERO_DIGIT ( DIGIT )* )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:547:3: ( ZERO_DIGIT | NON_ZERO_DIGIT ( DIGIT )* )
             int alt30=2;
             int LA30_0 = input.LA(1);
 
@@ -1961,17 +1981,17 @@ public class FTSLexer extends Lexer {
             }
             switch (alt30) {
                 case 1 :
-                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:549:5: ZERO_DIGIT
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:547:5: ZERO_DIGIT
                     {
                     mZERO_DIGIT(); if (state.failed) return ;
 
                     }
                     break;
                 case 2 :
-                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:550:5: NON_ZERO_DIGIT ( DIGIT )*
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:548:5: NON_ZERO_DIGIT ( DIGIT )*
                     {
                     mNON_ZERO_DIGIT(); if (state.failed) return ;
-                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:550:20: ( DIGIT )*
+                    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:548:20: ( DIGIT )*
                     loop29:
                     do {
                         int alt29=2;
@@ -1984,7 +2004,7 @@ public class FTSLexer extends Lexer {
 
                         switch (alt29) {
                     	case 1 :
-                    	    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:550:20: DIGIT
+                    	    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:548:20: DIGIT
                     	    {
                     	    mDIGIT(); if (state.failed) return ;
 
@@ -2010,7 +2030,7 @@ public class FTSLexer extends Lexer {
     // $ANTLR start "DIGIT"
     public final void mDIGIT() throws RecognitionException {
         try {
-            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:553:7: ( ZERO_DIGIT | NON_ZERO_DIGIT )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:551:7: ( ZERO_DIGIT | NON_ZERO_DIGIT )
             // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:
             {
             if ( (input.LA(1)>='0' && input.LA(1)<='9') ) {
@@ -2035,8 +2055,8 @@ public class FTSLexer extends Lexer {
     // $ANTLR start "ZERO_DIGIT"
     public final void mZERO_DIGIT() throws RecognitionException {
         try {
-            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:556:3: ( '0' )
-            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:556:5: '0'
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:554:3: ( '0' )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:554:5: '0'
             {
             match('0'); if (state.failed) return ;
 
@@ -2051,8 +2071,8 @@ public class FTSLexer extends Lexer {
     // $ANTLR start "NON_ZERO_DIGIT"
     public final void mNON_ZERO_DIGIT() throws RecognitionException {
         try {
-            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:559:3: ( '1' .. '9' )
-            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:559:5: '1' .. '9'
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:557:3: ( '1' .. '9' )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:557:5: '1' .. '9'
             {
             matchRange('1','9'); if (state.failed) return ;
 
@@ -2067,8 +2087,8 @@ public class FTSLexer extends Lexer {
     // $ANTLR start "E"
     public final void mE() throws RecognitionException {
         try {
-            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:562:3: ( ( 'e' | 'E' ) )
-            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:562:5: ( 'e' | 'E' )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:560:3: ( ( 'e' | 'E' ) )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:560:5: ( 'e' | 'E' )
             {
             if ( input.LA(1)=='E'||input.LA(1)=='e' ) {
                 input.consume();
@@ -2092,8 +2112,8 @@ public class FTSLexer extends Lexer {
     // $ANTLR start "EXPONENT"
     public final void mEXPONENT() throws RecognitionException {
         try {
-            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:566:3: ( E SIGNED_INTEGER )
-            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:566:5: E SIGNED_INTEGER
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:564:3: ( E SIGNED_INTEGER )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:564:5: E SIGNED_INTEGER
             {
             mE(); if (state.failed) return ;
             mSIGNED_INTEGER(); if (state.failed) return ;
@@ -2109,10 +2129,10 @@ public class FTSLexer extends Lexer {
     // $ANTLR start "SIGNED_INTEGER"
     public final void mSIGNED_INTEGER() throws RecognitionException {
         try {
-            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:570:3: ( ( PLUS | MINUS )? ( DIGIT )+ )
-            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:570:5: ( PLUS | MINUS )? ( DIGIT )+
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:568:3: ( ( PLUS | MINUS )? ( DIGIT )+ )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:568:5: ( PLUS | MINUS )? ( DIGIT )+
             {
-            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:570:5: ( PLUS | MINUS )?
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:568:5: ( PLUS | MINUS )?
             int alt31=2;
             int LA31_0 = input.LA(1);
 
@@ -2139,7 +2159,7 @@ public class FTSLexer extends Lexer {
 
             }
 
-            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:570:21: ( DIGIT )+
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:568:21: ( DIGIT )+
             int cnt32=0;
             loop32:
             do {
@@ -2153,7 +2173,7 @@ public class FTSLexer extends Lexer {
 
                 switch (alt32) {
             	case 1 :
-            	    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:570:21: DIGIT
+            	    // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:568:21: DIGIT
             	    {
             	    mDIGIT(); if (state.failed) return ;
 
@@ -2184,10 +2204,10 @@ public class FTSLexer extends Lexer {
         try {
             int _type = WS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:574:4: ( ( ' ' | '\\t' | '\\r' | '\\n' )+ )
-            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:574:6: ( ' ' | '\\t' | '\\r' | '\\n' )+
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:572:4: ( ( ' ' | '\\t' | '\\r' | '\\n' )+ )
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:572:6: ( ' ' | '\\t' | '\\r' | '\\n' )+
             {
-            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:574:6: ( ' ' | '\\t' | '\\r' | '\\n' )+
+            // W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:572:6: ( ' ' | '\\t' | '\\r' | '\\n' )+
             int cnt33=0;
             loop33:
             do {
@@ -2672,24 +2692,24 @@ public class FTSLexer extends Lexer {
         }
     }
     static final String DFA24_eotS =
-        "\5\uffff\1\7\1\11\3\uffff";
+        "\4\uffff\1\7\1\uffff\1\11\3\uffff";
     static final String DFA24_eofS =
         "\12\uffff";
     static final String DFA24_minS =
-        "\1\53\2\56\2\uffff\2\56\3\uffff";
+        "\1\53\2\56\1\uffff\1\56\1\uffff\1\56\3\uffff";
     static final String DFA24_maxS =
-        "\2\71\1\145\2\uffff\2\56\3\uffff";
+        "\2\71\1\145\1\uffff\1\56\1\uffff\1\56\3\uffff";
     static final String DFA24_acceptS =
-        "\3\uffff\1\4\1\5\2\uffff\1\3\1\2\1\1";
+        "\3\uffff\1\4\1\uffff\1\5\1\uffff\1\3\1\2\1\1";
     static final String DFA24_specialS =
         "\12\uffff}>";
     static final String[] DFA24_transitionS = {
             "\1\1\1\uffff\1\1\1\3\1\uffff\12\2",
             "\1\3\1\uffff\12\2",
-            "\1\5\1\uffff\12\2\13\uffff\1\4\37\uffff\1\4",
-            "",
+            "\1\4\1\uffff\12\2\13\uffff\1\5\37\uffff\1\5",
             "",
             "\1\6",
+            "",
             "\1\10",
             "",
             "",
@@ -2726,32 +2746,34 @@ public class FTSLexer extends Lexer {
             this.transition = DFA24_transition;
         }
         public String getDescription() {
-            return "515:1: FLOATING_POINT_LITERAL : (d= START_RANGE_I r= DOTDOT | d= START_RANGE_F r= DOTDOT | ( PLUS | MINUS )? ( DIGIT )+ DOT ( DIGIT )* ( EXPONENT )? | ( PLUS | MINUS )? DOT ( DIGIT )+ ( EXPONENT )? | ( PLUS | MINUS )? ( DIGIT )+ EXPONENT );";
+            return "513:1: FLOATING_POINT_LITERAL : (d= START_RANGE_I r= DOTDOT | d= START_RANGE_F r= DOTDOT | ( PLUS | MINUS )? ( DIGIT )+ DOT ( DIGIT )* ( EXPONENT )? | ( PLUS | MINUS )? DOT ( DIGIT )+ ( EXPONENT )? | ( PLUS | MINUS )? ( DIGIT )+ EXPONENT );";
         }
     }
     static final String DFA34_eotS =
-        "\2\uffff\1\42\3\36\3\uffff\1\53\1\54\2\uffff\1\56\10\uffff\1\36"+
-        "\5\uffff\1\36\2\uffff\2\35\3\uffff\1\63\3\36\2\66\5\uffff\1\70\3"+
-        "\35\1\uffff\1\72\1\73\1\uffff\1\66\1\uffff\1\35\2\uffff";
+        "\2\uffff\1\42\3\36\3\uffff\1\53\1\54\1\uffff\1\55\1\57\4\uffff"+
+        "\1\60\3\uffff\1\36\5\uffff\1\36\2\uffff\2\35\3\uffff\1\65\3\36\1"+
+        "\70\1\uffff\1\70\6\uffff\1\72\3\35\1\uffff\1\74\1\75\1\uffff\1\70"+
+        "\1\uffff\1\35\2\uffff";
     static final String DFA34_eofS =
-        "\74\uffff";
+        "\76\uffff";
     static final String DFA34_minS =
-        "\1\11\1\uffff\1\41\3\60\3\uffff\2\56\2\uffff\1\56\10\uffff\1\60"+
-        "\5\uffff\1\60\2\uffff\2\56\3\uffff\1\43\3\60\2\56\5\uffff\1\43\1"+
-        "\56\1\53\1\56\1\uffff\2\43\1\uffff\1\56\1\uffff\1\60\2\uffff";
+        "\1\11\1\uffff\1\41\3\52\3\uffff\2\56\1\uffff\1\52\1\56\4\uffff"+
+        "\1\52\3\uffff\1\52\5\uffff\1\52\2\uffff\2\56\3\uffff\1\43\3\52\1"+
+        "\56\1\uffff\1\56\6\uffff\1\43\1\56\1\53\1\56\1\uffff\2\43\1\uffff"+
+        "\1\56\1\uffff\1\60\2\uffff";
     static final String DFA34_maxS =
-        "\1\ufaff\1\uffff\1\176\3\ufaff\3\uffff\2\71\2\uffff\1\71\10\uffff"+
-        "\1\ufaff\5\uffff\1\ufaff\2\uffff\2\145\3\uffff\4\ufaff\2\145\5\uffff"+
-        "\1\ufaff\1\145\1\71\1\145\1\uffff\2\ufaff\1\uffff\1\145\1\uffff"+
-        "\1\71\2\uffff";
+        "\1\ufaff\1\uffff\1\176\3\ufaff\3\uffff\2\71\1\uffff\1\ufaff\1\71"+
+        "\4\uffff\1\ufaff\3\uffff\1\ufaff\5\uffff\1\ufaff\2\uffff\2\145\3"+
+        "\uffff\4\ufaff\1\145\1\uffff\1\145\6\uffff\1\ufaff\1\145\1\71\1"+
+        "\145\1\uffff\2\ufaff\1\uffff\1\145\1\uffff\1\71\2\uffff";
     static final String DFA34_acceptS =
-        "\1\uffff\1\1\4\uffff\1\6\1\7\1\10\2\uffff\1\13\1\14\1\uffff\1\17"+
-        "\1\20\1\21\1\22\1\23\1\25\1\26\1\27\1\uffff\1\31\1\32\1\33\1\34"+
-        "\1\35\1\uffff\1\37\1\36\2\uffff\1\42\1\24\1\2\6\uffff\1\41\1\11"+
-        "\1\12\1\15\1\16\4\uffff\1\3\2\uffff\1\40\1\uffff\1\30\1\uffff\1"+
-        "\4\1\5";
+        "\1\uffff\1\1\4\uffff\1\6\1\7\1\10\2\uffff\1\13\2\uffff\1\17\1\20"+
+        "\1\21\1\22\1\uffff\1\25\1\26\1\27\1\uffff\1\31\1\32\1\33\1\34\1"+
+        "\35\1\uffff\1\37\1\36\2\uffff\1\42\1\24\1\2\5\uffff\1\41\1\uffff"+
+        "\1\11\1\12\1\14\1\15\1\16\1\23\4\uffff\1\3\2\uffff\1\40\1\uffff"+
+        "\1\30\1\uffff\1\4\1\5";
     static final String DFA34_specialS =
-        "\74\uffff}>";
+        "\76\uffff}>";
     static final String[] DFA34_transitionS = {
             "\2\41\2\uffff\1\41\22\uffff\1\41\1\17\1\1\1\uffff\1\31\1\uffff"+
             "\1\16\1\uffff\1\7\1\10\1\14\1\11\1\27\1\12\1\15\1\uffff\1\37"+
@@ -2764,101 +2786,119 @@ public class FTSLexer extends Lexer {
             "",
             "\1\43\1\uffff\2\43\1\uffff\26\43\1\uffff\1\43\1\uffff\35\43"+
             "\1\uffff\1\43\1\uffff\1\43\1\uffff\32\43\2\uffff\2\43",
-            "\12\45\7\uffff\21\45\1\44\10\45\1\uffff\1\35\4\uffff\21\45"+
-            "\1\44\10\45\105\uffff\27\35\1\uffff\37\35\1\uffff\u1f08\35\u1040"+
-            "\uffff\u0150\35\u0170\uffff\u0080\35\u0080\uffff\u092e\35\u10d2"+
-            "\uffff\u5200\35\u0c00\uffff\u2bb0\35\u2150\uffff\u0200\35",
-            "\12\45\7\uffff\15\45\1\46\14\45\1\uffff\1\35\4\uffff\15\45"+
-            "\1\46\14\45\105\uffff\27\35\1\uffff\37\35\1\uffff\u1f08\35\u1040"+
-            "\uffff\u0150\35\u0170\uffff\u0080\35\u0080\uffff\u092e\35\u10d2"+
-            "\uffff\u5200\35\u0c00\uffff\u2bb0\35\u2150\uffff\u0200\35",
-            "\12\45\7\uffff\16\45\1\47\13\45\1\uffff\1\35\4\uffff\16\45"+
-            "\1\47\13\45\105\uffff\27\35\1\uffff\37\35\1\uffff\u1f08\35\u1040"+
-            "\uffff\u0150\35\u0170\uffff\u0080\35\u0080\uffff\u092e\35\u10d2"+
-            "\uffff\u5200\35\u0c00\uffff\u2bb0\35\u2150\uffff\u0200\35",
+            "\1\35\5\uffff\12\45\5\uffff\1\35\1\uffff\21\45\1\44\10\45"+
+            "\1\uffff\1\35\4\uffff\21\45\1\44\10\45\105\uffff\27\35\1\uffff"+
+            "\37\35\1\uffff\u1f08\35\u1040\uffff\u0150\35\u0170\uffff\u0080"+
+            "\35\u0080\uffff\u092e\35\u10d2\uffff\u5200\35\u0c00\uffff\u2bb0"+
+            "\35\u2150\uffff\u0200\35",
+            "\1\35\5\uffff\12\45\5\uffff\1\35\1\uffff\15\45\1\46\14\45"+
+            "\1\uffff\1\35\4\uffff\15\45\1\46\14\45\105\uffff\27\35\1\uffff"+
+            "\37\35\1\uffff\u1f08\35\u1040\uffff\u0150\35\u0170\uffff\u0080"+
+            "\35\u0080\uffff\u092e\35\u10d2\uffff\u5200\35\u0c00\uffff\u2bb0"+
+            "\35\u2150\uffff\u0200\35",
+            "\1\35\5\uffff\12\45\5\uffff\1\35\1\uffff\16\45\1\47\13\45"+
+            "\1\uffff\1\35\4\uffff\16\45\1\47\13\45\105\uffff\27\35\1\uffff"+
+            "\37\35\1\uffff\u1f08\35\u1040\uffff\u0150\35\u0170\uffff\u0080"+
+            "\35\u0080\uffff\u092e\35\u10d2\uffff\u5200\35\u0c00\uffff\u2bb0"+
+            "\35\u2150\uffff\u0200\35",
             "",
             "",
             "",
-            "\1\52\1\uffff\1\50\11\51",
-            "\1\52\1\uffff\1\50\11\51",
+            "\1\51\1\uffff\1\50\11\52",
+            "\1\51\1\uffff\1\50\11\52",
             "",
-            "",
-            "\1\55\1\uffff\12\52",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "\12\45\7\uffff\16\45\1\57\13\45\1\uffff\1\35\4\uffff\16\45"+
-            "\1\57\13\45\105\uffff\27\35\1\uffff\37\35\1\uffff\u1f08\35\u1040"+
-            "\uffff\u0150\35\u0170\uffff\u0080\35\u0080\uffff\u092e\35\u10d2"+
-            "\uffff\u5200\35\u0c00\uffff\u2bb0\35\u2150\uffff\u0200\35",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "\12\45\7\uffff\32\45\1\uffff\1\35\4\uffff\32\45\105\uffff"+
-            "\27\35\1\uffff\37\35\1\uffff\u1f08\35\u1040\uffff\u0150\35\u0170"+
-            "\uffff\u0080\35\u0080\uffff\u092e\35\u10d2\uffff\u5200\35\u0c00"+
-            "\uffff\u2bb0\35\u2150\uffff\u0200\35",
-            "",
-            "",
-            "\1\52\1\uffff\12\60\13\uffff\1\61\37\uffff\1\61",
-            "\1\52\1\uffff\12\62\13\uffff\1\61\37\uffff\1\61",
-            "",
-            "",
-            "",
-            "\2\36\13\uffff\12\45\7\uffff\32\45\1\uffff\1\35\2\uffff\1"+
-            "\36\1\uffff\32\45\105\uffff\27\35\1\uffff\37\35\1\uffff\u1f08"+
-            "\35\u1040\uffff\u0150\35\u0170\uffff\u0080\35\u0080\uffff\u092e"+
+            "\1\35\5\uffff\12\35\5\uffff\1\35\1\uffff\32\35\1\uffff\1\35"+
+            "\4\uffff\32\35\105\uffff\27\35\1\uffff\37\35\1\uffff\u1f08\35"+
+            "\u1040\uffff\u0150\35\u0170\uffff\u0080\35\u0080\uffff\u092e"+
             "\35\u10d2\uffff\u5200\35\u0c00\uffff\u2bb0\35\u2150\uffff\u0200"+
             "\35",
-            "\12\45\7\uffff\32\45\1\uffff\1\35\4\uffff\32\45\105\uffff"+
-            "\27\35\1\uffff\37\35\1\uffff\u1f08\35\u1040\uffff\u0150\35\u0170"+
-            "\uffff\u0080\35\u0080\uffff\u092e\35\u10d2\uffff\u5200\35\u0c00"+
-            "\uffff\u2bb0\35\u2150\uffff\u0200\35",
-            "\12\45\7\uffff\3\45\1\64\26\45\1\uffff\1\35\4\uffff\3\45\1"+
-            "\64\26\45\105\uffff\27\35\1\uffff\37\35\1\uffff\u1f08\35\u1040"+
-            "\uffff\u0150\35\u0170\uffff\u0080\35\u0080\uffff\u092e\35\u10d2"+
-            "\uffff\u5200\35\u0c00\uffff\u2bb0\35\u2150\uffff\u0200\35",
-            "\12\45\7\uffff\23\45\1\65\6\45\1\uffff\1\35\4\uffff\23\45"+
-            "\1\65\6\45\105\uffff\27\35\1\uffff\37\35\1\uffff\u1f08\35\u1040"+
-            "\uffff\u0150\35\u0170\uffff\u0080\35\u0080\uffff\u092e\35\u10d2"+
-            "\uffff\u5200\35\u0c00\uffff\u2bb0\35\u2150\uffff\u0200\35",
-            "\1\52\1\uffff\12\52\13\uffff\1\52\37\uffff\1\52",
-            "\1\52\1\uffff\12\67\13\uffff\1\52\37\uffff\1\52",
+            "\1\56\1\uffff\12\51",
             "",
             "",
             "",
             "",
-            "",
-            "\2\36\13\uffff\12\45\7\uffff\32\45\1\uffff\1\35\2\uffff\1"+
-            "\36\1\uffff\32\45\105\uffff\27\35\1\uffff\37\35\1\uffff\u1f08"+
-            "\35\u1040\uffff\u0150\35\u0170\uffff\u0080\35\u0080\uffff\u092e"+
-            "\35\u10d2\uffff\u5200\35\u0c00\uffff\u2bb0\35\u2150\uffff\u0200"+
-            "\35",
-            "\1\52\1\uffff\12\60\13\uffff\1\61\37\uffff\1\61",
-            "\1\52\1\uffff\1\52\2\uffff\12\71",
-            "\1\52\1\uffff\12\62\13\uffff\1\61\37\uffff\1\61",
-            "",
-            "\2\36\13\uffff\12\45\7\uffff\32\45\1\uffff\1\35\2\uffff\1"+
-            "\36\1\uffff\32\45\105\uffff\27\35\1\uffff\37\35\1\uffff\u1f08"+
-            "\35\u1040\uffff\u0150\35\u0170\uffff\u0080\35\u0080\uffff\u092e"+
-            "\35\u10d2\uffff\u5200\35\u0c00\uffff\u2bb0\35\u2150\uffff\u0200"+
-            "\35",
-            "\2\36\13\uffff\12\45\7\uffff\32\45\1\uffff\1\35\2\uffff\1"+
-            "\36\1\uffff\32\45\105\uffff\27\35\1\uffff\37\35\1\uffff\u1f08"+
-            "\35\u1040\uffff\u0150\35\u0170\uffff\u0080\35\u0080\uffff\u092e"+
+            "\1\35\5\uffff\12\35\5\uffff\1\35\1\uffff\32\35\1\uffff\1\35"+
+            "\4\uffff\32\35\105\uffff\27\35\1\uffff\37\35\1\uffff\u1f08\35"+
+            "\u1040\uffff\u0150\35\u0170\uffff\u0080\35\u0080\uffff\u092e"+
             "\35\u10d2\uffff\u5200\35\u0c00\uffff\u2bb0\35\u2150\uffff\u0200"+
             "\35",
             "",
-            "\1\52\1\uffff\12\67\13\uffff\1\52\37\uffff\1\52",
             "",
-            "\12\71",
+            "",
+            "\1\35\5\uffff\12\45\5\uffff\1\35\1\uffff\16\45\1\61\13\45"+
+            "\1\uffff\1\35\4\uffff\16\45\1\61\13\45\105\uffff\27\35\1\uffff"+
+            "\37\35\1\uffff\u1f08\35\u1040\uffff\u0150\35\u0170\uffff\u0080"+
+            "\35\u0080\uffff\u092e\35\u10d2\uffff\u5200\35\u0c00\uffff\u2bb0"+
+            "\35\u2150\uffff\u0200\35",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "\1\35\5\uffff\12\45\5\uffff\1\35\1\uffff\32\45\1\uffff\1\35"+
+            "\4\uffff\32\45\105\uffff\27\35\1\uffff\37\35\1\uffff\u1f08\35"+
+            "\u1040\uffff\u0150\35\u0170\uffff\u0080\35\u0080\uffff\u092e"+
+            "\35\u10d2\uffff\u5200\35\u0c00\uffff\u2bb0\35\u2150\uffff\u0200"+
+            "\35",
+            "",
+            "",
+            "\1\51\1\uffff\12\62\13\uffff\1\63\37\uffff\1\63",
+            "\1\51\1\uffff\12\64\13\uffff\1\63\37\uffff\1\63",
+            "",
+            "",
+            "",
+            "\2\36\5\uffff\1\35\5\uffff\12\45\5\uffff\1\35\1\uffff\32\45"+
+            "\1\uffff\1\35\2\uffff\1\36\1\uffff\32\45\105\uffff\27\35\1\uffff"+
+            "\37\35\1\uffff\u1f08\35\u1040\uffff\u0150\35\u0170\uffff\u0080"+
+            "\35\u0080\uffff\u092e\35\u10d2\uffff\u5200\35\u0c00\uffff\u2bb0"+
+            "\35\u2150\uffff\u0200\35",
+            "\1\35\5\uffff\12\45\5\uffff\1\35\1\uffff\32\45\1\uffff\1\35"+
+            "\4\uffff\32\45\105\uffff\27\35\1\uffff\37\35\1\uffff\u1f08\35"+
+            "\u1040\uffff\u0150\35\u0170\uffff\u0080\35\u0080\uffff\u092e"+
+            "\35\u10d2\uffff\u5200\35\u0c00\uffff\u2bb0\35\u2150\uffff\u0200"+
+            "\35",
+            "\1\35\5\uffff\12\45\5\uffff\1\35\1\uffff\3\45\1\66\26\45\1"+
+            "\uffff\1\35\4\uffff\3\45\1\66\26\45\105\uffff\27\35\1\uffff"+
+            "\37\35\1\uffff\u1f08\35\u1040\uffff\u0150\35\u0170\uffff\u0080"+
+            "\35\u0080\uffff\u092e\35\u10d2\uffff\u5200\35\u0c00\uffff\u2bb0"+
+            "\35\u2150\uffff\u0200\35",
+            "\1\35\5\uffff\12\45\5\uffff\1\35\1\uffff\23\45\1\67\6\45\1"+
+            "\uffff\1\35\4\uffff\23\45\1\67\6\45\105\uffff\27\35\1\uffff"+
+            "\37\35\1\uffff\u1f08\35\u1040\uffff\u0150\35\u0170\uffff\u0080"+
+            "\35\u0080\uffff\u092e\35\u10d2\uffff\u5200\35\u0c00\uffff\u2bb0"+
+            "\35\u2150\uffff\u0200\35",
+            "\1\51\1\uffff\12\51\13\uffff\1\51\37\uffff\1\51",
+            "",
+            "\1\51\1\uffff\12\71\13\uffff\1\51\37\uffff\1\51",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "\2\36\5\uffff\1\35\5\uffff\12\45\5\uffff\1\35\1\uffff\32\45"+
+            "\1\uffff\1\35\2\uffff\1\36\1\uffff\32\45\105\uffff\27\35\1\uffff"+
+            "\37\35\1\uffff\u1f08\35\u1040\uffff\u0150\35\u0170\uffff\u0080"+
+            "\35\u0080\uffff\u092e\35\u10d2\uffff\u5200\35\u0c00\uffff\u2bb0"+
+            "\35\u2150\uffff\u0200\35",
+            "\1\51\1\uffff\12\62\13\uffff\1\63\37\uffff\1\63",
+            "\1\51\1\uffff\1\51\2\uffff\12\73",
+            "\1\51\1\uffff\12\64\13\uffff\1\63\37\uffff\1\63",
+            "",
+            "\2\36\5\uffff\1\35\5\uffff\12\45\5\uffff\1\35\1\uffff\32\45"+
+            "\1\uffff\1\35\2\uffff\1\36\1\uffff\32\45\105\uffff\27\35\1\uffff"+
+            "\37\35\1\uffff\u1f08\35\u1040\uffff\u0150\35\u0170\uffff\u0080"+
+            "\35\u0080\uffff\u092e\35\u10d2\uffff\u5200\35\u0c00\uffff\u2bb0"+
+            "\35\u2150\uffff\u0200\35",
+            "\2\36\5\uffff\1\35\5\uffff\12\45\5\uffff\1\35\1\uffff\32\45"+
+            "\1\uffff\1\35\2\uffff\1\36\1\uffff\32\45\105\uffff\27\35\1\uffff"+
+            "\37\35\1\uffff\u1f08\35\u1040\uffff\u0150\35\u0170\uffff\u0080"+
+            "\35\u0080\uffff\u092e\35\u10d2\uffff\u5200\35\u0c00\uffff\u2bb0"+
+            "\35\u2150\uffff\u0200\35",
+            "",
+            "\1\51\1\uffff\12\71\13\uffff\1\51\37\uffff\1\51",
+            "",
+            "\12\73",
             "",
             ""
     };

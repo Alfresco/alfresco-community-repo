@@ -1,4 +1,4 @@
-// $ANTLR !Unknown version! W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g 2009-04-14 14:56:06
+// $ANTLR !Unknown version! W:\\alfresco\\HEAD\\root\\projects\\Repository\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g 2009-04-14 15:35:35
 package org.alfresco.repo.search.impl.parsers;
 
 import org.antlr.runtime.*;
@@ -1585,7 +1585,7 @@ public class FTSParser extends Parser {
 
 
             // AST REWRITE
-            // elements: columnReference, FTSPHRASE
+            // elements: FTSPHRASE, columnReference
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -1774,7 +1774,7 @@ public class FTSParser extends Parser {
 
 
             // AST REWRITE
-            // elements: columnReference, ftsFieldGroupRange
+            // elements: ftsFieldGroupRange, columnReference
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -3826,7 +3826,7 @@ public class FTSParser extends Parser {
 
 
             // AST REWRITE
-            // elements: prefix, identifier, uri
+            // elements: identifier, prefix, uri
             // token labels: 
             // rule labels: retval
             // token list labels: 

@@ -103,12 +103,13 @@ public class CMISQueryServiceImpl implements CMISQueryService
         {
             joinSupport = CMISJoinEnum.INNER_JOIN_SUPPORT;
         }
-        CMISQueryParser parser = new CMISQueryParser(options, cmisDictionaryService, joinSupport);
-        Query query = parser.parse(queryEngine.getQueryModelFactory());
-
+        
         CmisFunctionEvaluationContext functionContext = new CmisFunctionEvaluationContext();
         functionContext.setCmisDictionaryService(cmisDictionaryService);
         functionContext.setNodeService(nodeService);
+        
+        CMISQueryParser parser = new CMISQueryParser(options, cmisDictionaryService, joinSupport);
+        Query query = parser.parse(queryEngine.getQueryModelFactory(), functionContext);
 
         QueryEngineResults results = queryEngine.executeQuery(query, options, functionContext);
         Map<String, ResultSet> wrapped = new HashMap<String, ResultSet>();

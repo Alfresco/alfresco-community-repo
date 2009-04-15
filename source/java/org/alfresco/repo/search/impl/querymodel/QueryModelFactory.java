@@ -58,7 +58,7 @@ public interface QueryModelFactory
 
     public ParameterArgument createParameterArgument(String name, String parameterName);
 
-    public PropertyArgument createPropertyArgument(String name, boolean queryable, boolean orderable, String selectorAlias, QName propertyName);
+    public PropertyArgument createPropertyArgument(String name, boolean queryable, boolean orderable, String selectorAlias, String propertyName);
     
     public SelectorArgument createSelectorArgument(String name, String selectorAlias);
 

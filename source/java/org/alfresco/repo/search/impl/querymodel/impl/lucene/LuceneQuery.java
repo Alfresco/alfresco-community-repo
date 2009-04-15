@@ -154,9 +154,9 @@ public class LuceneQuery extends BaseQuery implements LuceneQueryBuilder
                     throw new IllegalStateException();
                 }
 
-                QName propertyQName = property.getPropertyName();
+                String propertyName = property.getPropertyName();
 
-                String luceneField = functionContext.getLuceneSortField(propertyQName);
+                String luceneField = functionContext.getLuceneSortField(propertyName);
 
                 if (luceneField != null)
                 {

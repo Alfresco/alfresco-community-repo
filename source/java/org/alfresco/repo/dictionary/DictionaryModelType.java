@@ -182,7 +182,7 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
     {
         this.searchService = searchService;
     }
-
+    
     /**
      * Set the namespace service
      */

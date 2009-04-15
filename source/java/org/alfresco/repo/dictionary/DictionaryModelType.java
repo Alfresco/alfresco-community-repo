@@ -125,7 +125,7 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
     private DictionaryModelTypeTransactionListener transactionListener;
         
     private List<String> storeUrls; // stores against which model deletes should be validated
-
+    
     
     /**
      * Set the dictionary DAO

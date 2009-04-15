@@ -30,41 +30,26 @@ import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.UnsupportedCallbackException;
 
+import org.apache.ws.security.WSConstants;
 import org.apache.ws.security.WSPasswordCallback;
 
 /**
- * @author Michael Shavnev
+ * @author Dmitry Velichkevich
  */
 public class AuthenticationTokenCallbackHandler implements CallbackHandler
 {
     public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException
     {
         WSPasswordCallback wssPasswordCallback = (WSPasswordCallback) callbacks[0];
-        String userName = wssPasswordCallback.getIdentifer();
-        String password = getPassword(userName);
 
-        // Check the UsernameToken element.
-        // Depending on the password type contained in the element the processing differs.
-        if (wssPasswordCallback.getUsage() == WSPasswordCallback.USERNAME_TOKEN)
+        if ((WSPasswordCallback.USERNAME_TOKEN_UNKNOWN != wssPasswordCallback.getUsage()) && (WSPasswordCallback.USERNAME_TOKEN != wssPasswordCallback.getUsage()))
         {
-            // If the password type is password digest provide stored password perform
-            // hash algorithm and compare the result with the transmitted password
-            wssPasswordCallback.setPassword(password);
+            throw new SecurityException("Only 'UsernameToken' usage is supported.");
         }
-        else
+
+        if (!WSConstants.PASSWORD_TEXT.equals(wssPasswordCallback.getPasswordType()))
         {
-            // If the password is of type password text or any other yet unknown password type
-            // the delegate the password validation to the callback class.
-            if (!password.equals(wssPasswordCallback.getPassword()))
-            {
-                throw new SecurityException("Incorrect password");
-            }
+            throw new SecurityException("Password type '" + wssPasswordCallback.getPasswordType() + "' unsupported. Only '" + WSConstants.PW_TEXT + "' is supported.");
         }
     }
-
-    private String getPassword(String userName)
-    {
-        return userName;
-    }
-
 }

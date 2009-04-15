@@ -26,7 +26,9 @@ package org.alfresco.repo.cmis.ws;
 
 import java.util.List;
 
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.transaction.TransactionService;
 import org.apache.cxf.binding.soap.SoapMessage;
 import org.apache.cxf.binding.soap.interceptor.AbstractSoapInterceptor;
 import org.apache.cxf.interceptor.Fault;
@@ -36,8 +38,13 @@ import org.apache.ws.security.WSUsernameTokenPrincipal;
 import org.apache.ws.security.handler.WSHandlerConstants;
 import org.apache.ws.security.handler.WSHandlerResult;
 
+/**
+ * @author Dmitry Velichkevich
+ */
 public class AuthenticationInterceptor extends AbstractSoapInterceptor
 {
+    private AuthenticationService authenticationService;
+    private TransactionService transactionService;
 
     public AuthenticationInterceptor()
     {
@@ -49,10 +56,34 @@ public class AuthenticationInterceptor extends AbstractSoapInterceptor
         @SuppressWarnings("unchecked")
         WSHandlerResult handlerResult = ((List<WSHandlerResult>) message.getContextualProperty(WSHandlerConstants.RECV_RESULTS)).get(0);
         WSSecurityEngineResult secRes = (WSSecurityEngineResult) handlerResult.getResults().get(0);
-        WSUsernameTokenPrincipal principal = (WSUsernameTokenPrincipal) secRes.get(WSSecurityEngineResult.TAG_PRINCIPAL);
+        final WSUsernameTokenPrincipal principal = (WSUsernameTokenPrincipal) secRes.get(WSSecurityEngineResult.TAG_PRINCIPAL);
 
         // Authenticate
-        AuthenticationUtil.setFullyAuthenticatedUser(principal.getName());
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
+        {
+            public Object execute() throws Throwable
+            {
+                try
+                {
+                    authenticationService.authenticate(principal.getName(), principal.getPassword().toCharArray());
+                }
+                catch (Throwable e)
+                {
+                    throw new SecurityException("Invalid user name or password specified");
+                }
+
+                return null;
+            }
+        });
     }
 
+    public void setAuthenticationService(AuthenticationService authenticationService)
+    {
+        this.authenticationService = authenticationService;
+    }
+
+    public void setTransactionService(TransactionService transactionService)
+    {
+        this.transactionService = transactionService;
+    }
 }

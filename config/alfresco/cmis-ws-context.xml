@@ -18,11 +18,13 @@
         </jaxws:inInterceptors>
 
         <jaxws:outInterceptors>
+            <ref local="authenticationClearInterceptor" />
             <ref local="saajOutInterceptor" />
             <ref local="wss4jOutInterceptor" />
         </jaxws:outInterceptors>
 
         <jaxws:outFaultInterceptors>
+            <ref local="authenticationClearInterceptor" />
             <ref local="saajOutInterceptor" />
             <ref local="wss4jOutInterceptor" />
         </jaxws:outFaultInterceptors>
@@ -45,11 +47,13 @@
         </jaxws:inInterceptors>
 
         <jaxws:outInterceptors>
+            <ref local="authenticationClearInterceptor" />
             <ref local="saajOutInterceptor" />
             <ref local="wss4jOutInterceptor" />
         </jaxws:outInterceptors>
 
         <jaxws:outFaultInterceptors>
+            <ref local="authenticationClearInterceptor" />
             <ref local="saajOutInterceptor" />
             <ref local="wss4jOutInterceptor" />
         </jaxws:outFaultInterceptors>
@@ -71,11 +75,13 @@
         </jaxws:inInterceptors>
 
         <jaxws:outInterceptors>
+            <ref local="authenticationClearInterceptor" />
             <ref local="saajOutInterceptor" />
             <ref local="wss4jOutInterceptorWithMTOM" />
         </jaxws:outInterceptors>
 
         <jaxws:outFaultInterceptors>
+            <ref local="authenticationClearInterceptor" />
             <ref local="saajOutInterceptor" />
             <ref local="wss4jOutInterceptor" />
         </jaxws:outFaultInterceptors>
@@ -99,11 +105,13 @@
         </jaxws:inInterceptors>
 
         <jaxws:outInterceptors>
+            <ref local="authenticationClearInterceptor" />
             <ref local="saajOutInterceptor" />
             <ref local="wss4jOutInterceptor" />
         </jaxws:outInterceptors>
 
         <jaxws:outFaultInterceptors>
+            <ref local="authenticationClearInterceptor" />
             <ref local="saajOutInterceptor" />
             <ref local="wss4jOutInterceptor" />
         </jaxws:outFaultInterceptors>
@@ -126,11 +134,13 @@
         </jaxws:inInterceptors>
 
         <jaxws:outInterceptors>
+            <ref local="authenticationClearInterceptor" />
             <ref local="saajOutInterceptor" />
             <ref local="wss4jOutInterceptor" />
         </jaxws:outInterceptors>
 
         <jaxws:outFaultInterceptors>
+            <ref local="authenticationClearInterceptor" />
             <ref local="saajOutInterceptor" />
             <ref local="wss4jOutInterceptor" />
         </jaxws:outFaultInterceptors>
@@ -153,11 +163,13 @@
         </jaxws:inInterceptors>
 
         <jaxws:outInterceptors>
+            <ref local="authenticationClearInterceptor" />
             <ref local="saajOutInterceptor" />
             <ref local="wss4jOutInterceptor" />
         </jaxws:outInterceptors>
 
         <jaxws:outFaultInterceptors>
+            <ref local="authenticationClearInterceptor" />
             <ref local="saajOutInterceptor" />
             <ref local="wss4jOutInterceptor" />
         </jaxws:outFaultInterceptors>
@@ -180,11 +192,13 @@
         </jaxws:inInterceptors>
 
         <jaxws:outInterceptors>
+            <ref local="authenticationClearInterceptor" />
             <ref local="saajOutInterceptor" />
             <ref local="wss4jOutInterceptor" />
         </jaxws:outInterceptors>
 
         <jaxws:outFaultInterceptors>
+            <ref local="authenticationClearInterceptor" />
             <ref local="saajOutInterceptor" />
             <ref local="wss4jOutInterceptor" />
         </jaxws:outFaultInterceptors>
@@ -206,11 +220,13 @@
         </jaxws:inInterceptors>
 
         <jaxws:outInterceptors>
+            <ref local="authenticationClearInterceptor" />
             <ref local="saajOutInterceptor" />
             <ref local="wss4jOutInterceptor" />
         </jaxws:outInterceptors>
 
         <jaxws:outFaultInterceptors>
+            <ref local="authenticationClearInterceptor" />
             <ref local="saajOutInterceptor" />
             <ref local="wss4jOutInterceptor" />
         </jaxws:outFaultInterceptors>
@@ -352,6 +368,11 @@
 
     <bean id="authenticationTokenCallback" class="org.alfresco.repo.cmis.ws.AuthenticationTokenCallbackHandler" />
 
-    <bean id="authenticationInterceptor" class="org.alfresco.repo.cmis.ws.AuthenticationInterceptor" />
+    <bean id="authenticationInterceptor" class="org.alfresco.repo.cmis.ws.AuthenticationInterceptor">
+      <property name="authenticationService" ref="authenticationService" />
+      <property name="transactionService" ref="transactionService" />
+    </bean>
+
+    <bean id="authenticationClearInterceptor" class="org.alfresco.repo.cmis.ws.AuthenticationClearInterceptor"/>
 
 </beans>

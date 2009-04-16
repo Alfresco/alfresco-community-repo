@@ -61,11 +61,11 @@ function runAction(p_params)
             // copy the node (deep copy for containers)
             if (fileNode.isContainer)
             {
-               result.nodeRef = fileNode.copy(destNode, true);
+               result.nodeRef = fileNode.copy(destNode, true).toString();
             }
             else
             {
-               result.nodeRef = fileNode.copy(destNode);
+               result.nodeRef = fileNode.copy(destNode).toString();
             }
             result.success = (result.nodeRef !== null);
          }

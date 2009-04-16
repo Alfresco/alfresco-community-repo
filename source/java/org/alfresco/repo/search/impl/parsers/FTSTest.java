@@ -38,22 +38,22 @@ public class FTSTest extends TestCase
 
     }
     
-    public void testLexer() throws IOException, RecognitionException
-    {
-        ClassLoader cl = BaseNodeServiceTest.class.getClassLoader();
-        InputStream modelStream = cl.getResourceAsStream("org/alfresco/repo/search/impl/parsers/fts_test.gunit");
-
-        CharStream input = new ANTLRInputStream(modelStream);
-        
-        
-        gUnitExecutor executer = new gUnitExecutor(parse(input));
-        
-        System.out.print(executer.execTest());  // unit test result
-        
-        assertEquals("Failures ", 0, executer.failures.size()); 
-        assertEquals("Invalids ", 0, executer.invalids.size()); 
-    }
-
+//    public void testLexer() throws IOException, RecognitionException
+//    {
+//        ClassLoader cl = BaseNodeServiceTest.class.getClassLoader();
+//        InputStream modelStream = cl.getResourceAsStream("org/alfresco/repo/search/impl/parsers/fts_test.gunit");
+//
+//        CharStream input = new ANTLRInputStream(modelStream);
+//        
+//        
+//        gUnitExecutor executer = new gUnitExecutor(parse(input));
+//        
+//        System.out.print(executer.execTest());  // unit test result
+//        
+//        assertEquals("Failures ", 0, executer.failures.size()); 
+//        assertEquals("Invalids ", 0, executer.invalids.size()); 
+//    }
+//
     public void testLexerOutput() throws IOException
     {
         CharStream input = new ANTLRInputStream(new StringInputStream("1..2"));

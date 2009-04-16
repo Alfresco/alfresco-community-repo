@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -182,7 +182,7 @@ public class LockServiceImpl implements LockService,
     /**
      * Initialise methods called by Spring framework
      */
-    public void initialise()
+    public void init()
     {
         // Register the various class behaviours to enable lock checking
         this.policyComponent.bindAssociationBehaviour(

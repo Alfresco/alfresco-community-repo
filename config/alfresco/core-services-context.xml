@@ -734,7 +734,7 @@
     <!--  Lock Service           -->
     <!--                               -->
 
-    <bean id="lockService" class="org.alfresco.repo.lock.LockServiceImpl" init-method="initialise">
+    <bean id="lockService" class="org.alfresco.repo.lock.LockServiceImpl" init-method="init">
         <property name="nodeService">
             <ref bean="nodeService" />
         </property>

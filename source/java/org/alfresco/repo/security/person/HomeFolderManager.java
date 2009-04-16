@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -36,14 +36,13 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.springframework.beans.factory.InitializingBean;
 
 /**
  * Manage home folder creation by binding to events from the cm:person type.
  *  
  * @author Andy Hind
  */
-public class HomeFolderManager implements InitializingBean, NodeServicePolicies.OnCreateNodePolicy
+public class HomeFolderManager implements NodeServicePolicies.OnCreateNodePolicy
 {
     
     private PolicyComponent policyComponent;
@@ -65,7 +64,7 @@ public class HomeFolderManager implements InitializingBean, NodeServicePolicies.
     /**
      * Bind the class behaviour to this implementation
      */
-    public void afterPropertiesSet() throws Exception
+    public void init() throws Exception
     {
         if (enableHomeFolderCreationAsPeopleAreCreated)
         {

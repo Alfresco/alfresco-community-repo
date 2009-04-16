@@ -287,10 +287,14 @@ public class PermissionServiceImpl implements PermissionServiceSPI, Initializing
             throw new IllegalArgumentException("Property 'aclDaoComponent' has not been set");
         }
 
-        policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "onMoveNode"), ContentModel.TYPE_BASE, new JavaBehaviour(this, "onMoveNode"));
-
         allPermissionReference = getPermissionReference(ALL_PERMISSIONS);
         
+    }
+    
+    public void init()
+    {
+        policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "onMoveNode"), ContentModel.TYPE_BASE, new JavaBehaviour(this, "onMoveNode"));
+
     }
 
     //

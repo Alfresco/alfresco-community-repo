@@ -357,7 +357,7 @@
         </property>
     </bean>
     
-    <bean name="homeFolderManager" class="org.alfresco.repo.security.person.HomeFolderManager">
+    <bean name="homeFolderManager" class="org.alfresco.repo.security.person.HomeFolderManager" init-method="init">
         <property name="nodeService">
             <ref bean="nodeService" />
         </property>

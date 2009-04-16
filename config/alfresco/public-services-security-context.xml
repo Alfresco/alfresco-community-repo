@@ -39,7 +39,7 @@
       <bean id="permissionServiceImpl" class="org.alfresco.repo.security.permissions.noop.PermissionServiceNOOPImpl" />
     -->
     
-    <bean id="permissionServiceImpl" class="org.alfresco.repo.security.permissions.impl.PermissionServiceImpl">
+    <bean id="permissionServiceImpl" class="org.alfresco.repo.security.permissions.impl.PermissionServiceImpl" init-method="init">
         <property name="nodeService">
             <ref bean="mtAwareNodeService" />
         </property>

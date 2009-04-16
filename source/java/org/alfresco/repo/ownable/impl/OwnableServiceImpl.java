@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -109,7 +109,10 @@ public class OwnableServiceImpl implements OwnableService, InitializingBean, Nod
         {
             throw new IllegalArgumentException("Property 'policyComponent' has not been set");
         }
-
+    }
+    
+    public void init()
+    {
         policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "onAddAspect"), ContentModel.ASPECT_OWNABLE, new JavaBehaviour(this, "onAddAspect"));
         policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateProperties"), ContentModel.ASPECT_OWNABLE, new JavaBehaviour(this, "onUpdateProperties"));
         policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "onRemoveAspect"), ContentModel.ASPECT_OWNABLE, new JavaBehaviour(this,
@@ -121,7 +124,6 @@ public class OwnableServiceImpl implements OwnableService, InitializingBean, Nod
         policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "onRemoveAspect"), ContentModel.ASPECT_AUDITABLE, new JavaBehaviour(this,
                 "onRemoveAspect"));
         policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "onDeleteNode"), ContentModel.ASPECT_AUDITABLE, new JavaBehaviour(this, "onDeleteNode"));
-
     }
 
     // OwnableService implmentation

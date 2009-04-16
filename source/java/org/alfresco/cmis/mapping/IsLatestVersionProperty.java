@@ -25,15 +25,11 @@
 package org.alfresco.cmis.mapping;
 
 import java.io.Serializable;
-import java.util.Collection;
 
 import org.alfresco.cmis.CMISDictionaryModel;
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
-import org.alfresco.repo.search.impl.querymodel.PredicateMode;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.apache.lucene.search.Query;
 
 /**
  * Accesser for CMIS is latest version property
@@ -59,104 +55,5 @@ public class IsLatestVersionProperty extends AbstractProperty
     public Serializable getValue(NodeRef nodeRef)
     {
         return !getServiceRegistry().getNodeService().hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY);
-    }
-
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.cmis.property.PropertyAccessor#setValue(org.alfresco.service.cmr.repository.NodeRef, java.io.Serializable)
-     */
-    public void setValue(NodeRef nodeRef, Serializable value)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.cmis.property.PropertyLuceneBuilder#buildLuceneEquality(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.io.Serializable, org.alfresco.repo.search.impl.querymodel.PredicateMode)
-     */
-    public Query buildLuceneEquality(LuceneQueryParser lqp, Serializable value, PredicateMode mode)
-    {
-        return null;
-    }
-
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.cmis.property.PropertyLuceneBuilder#buildLuceneExists(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.lang.Boolean)
-     */
-    public Query buildLuceneExists(LuceneQueryParser lqp, Boolean not)
-    {
-        return null;
-    }
-
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.cmis.property.PropertyLuceneBuilder#buildLuceneGreaterThan(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.io.Serializable, org.alfresco.repo.search.impl.querymodel.PredicateMode)
-     */
-    public Query buildLuceneGreaterThan(LuceneQueryParser lqp, Serializable value, PredicateMode mode)
-    {
-        return null;
-    }
-
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.cmis.property.PropertyLuceneBuilder#buildLuceneGreaterThanOrEquals(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.io.Serializable, org.alfresco.repo.search.impl.querymodel.PredicateMode)
-     */
-    public Query buildLuceneGreaterThanOrEquals(LuceneQueryParser lqp, Serializable value, PredicateMode mode)
-    {
-        return null;
-    }
-
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.cmis.property.PropertyLuceneBuilder#buildLuceneIn(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.util.Collection, java.lang.Boolean, org.alfresco.repo.search.impl.querymodel.PredicateMode)
-     */
-    public Query buildLuceneIn(LuceneQueryParser lqp, Collection<Serializable> values, Boolean not, PredicateMode mode)
-    {
-        return null;
-    }
-
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.cmis.property.PropertyLuceneBuilder#buildLuceneInequality(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.io.Serializable, org.alfresco.repo.search.impl.querymodel.PredicateMode)
-     */
-    public Query buildLuceneInequality(LuceneQueryParser lqp, Serializable value, PredicateMode mode)
-    {
-        return null;
-    }
-
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.cmis.property.PropertyLuceneBuilder#buildLuceneLessThan(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.io.Serializable, org.alfresco.repo.search.impl.querymodel.PredicateMode)
-     */
-    public Query buildLuceneLessThan(LuceneQueryParser lqp, Serializable value, PredicateMode mode)
-    {
-        return null;
-    }
-
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.cmis.property.PropertyLuceneBuilder#buildLuceneLessThanOrEquals(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.io.Serializable, org.alfresco.repo.search.impl.querymodel.PredicateMode)
-     */
-    public Query buildLuceneLessThanOrEquals(LuceneQueryParser lqp, Serializable value, PredicateMode mode)
-    {
-        return null;
-    }
-
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.cmis.property.PropertyLuceneBuilder#buildLuceneLike(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.io.Serializable, java.lang.Boolean)
-     */
-    public Query buildLuceneLike(LuceneQueryParser lqp, Serializable value, Boolean not)
-    {
-        return null;
-    }
-
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.cmis.property.PropertyLuceneBuilder#getLuceneSortField()
-     */
-    public String getLuceneSortField()
-    {
-        throw new UnsupportedOperationException();
     }
 }

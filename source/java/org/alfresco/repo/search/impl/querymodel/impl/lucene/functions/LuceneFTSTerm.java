@@ -30,6 +30,7 @@ import java.util.Set;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.search.impl.querymodel.Argument;
 import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
+import org.alfresco.repo.search.impl.querymodel.PropertyArgument;
 import org.alfresco.repo.search.impl.querymodel.impl.functions.FTSTerm;
 import org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderComponent;
 import org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderContext;
@@ -63,9 +64,19 @@ public class LuceneFTSTerm extends FTSTerm implements LuceneQueryBuilderComponen
         Argument argument = functionArgs.get(ARG_TERM);
         String term = (String) argument.getValue(functionContext);
 
-        Query query = lqp.getFieldQuery("TEXT", term);
+        PropertyArgument propArg = (PropertyArgument) functionArgs.get(ARG_PROPERTY);
+        Query query;
+        if (propArg != null)
+        {
+            String prop = propArg.getPropertyName();
+            query = lqp.getFieldQuery(functionContext.getLuceneFieldName(prop), term);
+        }
+        else
+        {
+            query = lqp.getFieldQuery("TEXT", term);
+            
+        }
         return query;
-
     }
 
 }

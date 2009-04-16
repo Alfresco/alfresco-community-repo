@@ -75,21 +75,24 @@ public class LuceneQuery extends BaseQuery implements LuceneQueryBuilder
 
         BooleanQuery luceneQuery = new BooleanQuery();
 
-        for (String selector : selectors)
+        if (selectors != null)
         {
-            Selector current = getSource().getSelector(selector);
-            if (current instanceof LuceneQueryBuilderComponent)
+            for (String selector : selectors)
             {
-                LuceneQueryBuilderComponent luceneQueryBuilderComponent = (LuceneQueryBuilderComponent) current;
-                Query selectorQuery = luceneQueryBuilderComponent.addComponent(selectors, null, luceneContext, functionContext);
-                if (selectorQuery != null)
+                Selector current = getSource().getSelector(selector);
+                if (current instanceof LuceneQueryBuilderComponent)
                 {
-                    luceneQuery.add(selectorQuery, Occur.MUST);
+                    LuceneQueryBuilderComponent luceneQueryBuilderComponent = (LuceneQueryBuilderComponent) current;
+                    Query selectorQuery = luceneQueryBuilderComponent.addComponent(selectors, null, luceneContext, functionContext);
+                    if (selectorQuery != null)
+                    {
+                        luceneQuery.add(selectorQuery, Occur.MUST);
+                    }
                 }
-            }
-            else
-            {
-                throw new UnsupportedOperationException();
+                else
+                {
+                    throw new UnsupportedOperationException();
+                }
             }
         }
 

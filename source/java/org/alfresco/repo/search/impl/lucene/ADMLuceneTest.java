@@ -54,7 +54,6 @@ import org.alfresco.repo.dictionary.DictionaryNamespaceComponent;
 import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.dictionary.NamespaceDAOImpl;
 import org.alfresco.repo.domain.hibernate.HibernateL1CacheBulkLoader;
-import org.alfresco.repo.domain.hibernate.HibernateSessionHelper;
 import org.alfresco.repo.domain.hibernate.SessionSizeResourceManager;
 import org.alfresco.repo.node.BaseNodeServiceTest;
 import org.alfresco.repo.search.MLAnalysisMode;
@@ -62,7 +61,7 @@ import org.alfresco.repo.search.QueryParameterDefImpl;
 import org.alfresco.repo.search.QueryRegisterComponent;
 import org.alfresco.repo.search.impl.lucene.analysis.DateTimeAnalyser;
 import org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexer;
-import org.alfresco.repo.search.impl.lucene.index.IndexInfo;
+import org.alfresco.repo.search.impl.querymodel.QueryEngine;
 import org.alfresco.repo.search.results.ChildAssocRefResultSet;
 import org.alfresco.repo.search.results.DetachedResultSet;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
@@ -208,6 +207,8 @@ public class ADMLuceneTest extends TestCase
 
     private HibernateL1CacheBulkLoader hibernateL1CacheBulkLoader;
 
+    private QueryEngine queryEngine;
+
     /**
      *
      */
@@ -230,6 +231,7 @@ public class ADMLuceneTest extends TestCase
         transactionService = (TransactionService) ctx.getBean("transactionComponent");
         retryingTransactionHelper = (RetryingTransactionHelper) ctx.getBean("retryingTransactionHelper");
         tenantService = (TenantService) ctx.getBean("tenantService");
+        queryEngine = (QueryEngine) ctx.getBean("adm.luceneQueryEngineImpl");
 
         hibernateL1CacheBulkLoader = (HibernateL1CacheBulkLoader) ctx.getBean("hibernateL1CacheBulkLoader");
 
@@ -539,7 +541,7 @@ public class ADMLuceneTest extends TestCase
         // testQuery(searcher, runner, "@"+LuceneQueryParser.escape(propQName.toString())+":\"lemon\"");
 
     }
-
+    
     private void testQuery(ADMLuceneSearcherImpl searcher, Thread runner, String query)
     {
         for (int i = 0; i < 1; i++)
@@ -637,6 +639,33 @@ public class ADMLuceneTest extends TestCase
 
     }
 
+    public void testFTS() throws InterruptedException
+    {
+        luceneFTS.pause();
+        buildBaseIndex();
+        
+        ADMLuceneSearcherImpl searcher = ADMLuceneSearcherImpl.getSearcher(rootNodeRef.getStoreRef(), indexerAndSearcher);
+        searcher.setNodeService(nodeService);
+        searcher.setDictionaryService(dictionaryService);
+        searcher.setTenantService(tenantService);
+        searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
+        searcher.setQueryRegister(queryRegisterComponent);
+        searcher.setQueryEngine(queryEngine);
+        ResultSet results;
+        
+        results = searcher.query(rootNodeRef.getStoreRef(), SearchService.LANGUAGE_FTS_ALFRESCO, "\"lazy\"", null, null);
+        assertEquals(1, results.length());
+        results.close();
+        
+        results = searcher.query(rootNodeRef.getStoreRef(), SearchService.LANGUAGE_FTS_ALFRESCO, "lazy and dog", null, null);
+        assertEquals(1, results.length());
+        results.close();
+        
+        results = searcher.query(rootNodeRef.getStoreRef(), SearchService.LANGUAGE_FTS_ALFRESCO, "TEXT:\"lazy\"", null, null);
+        assertEquals(1, results.length());
+        results.close();
+    }
+    
     public void testOverWritetoZeroSize() throws Exception
     {
         testTX.commit();

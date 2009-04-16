@@ -75,15 +75,6 @@ public class FixedValueProperty extends AbstractProperty
 
     /*
      * (non-Javadoc)
-     * @see org.alfresco.cmis.property.PropertyAccessor#setValue(org.alfresco.service.cmr.repository.NodeRef, java.io.Serializable)
-     */
-    public void setValue(NodeRef nodeRef, Serializable value)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    /*
-     * (non-Javadoc)
      * @see org.alfresco.cmis.property.PropertyLuceneBuilder#buildLuceneEquality(org.alfresco.repo.search.impl.lucene.LuceneQueryParser, java.io.Serializable, org.alfresco.repo.search.impl.querymodel.PredicateMode)
      */
     public Query buildLuceneEquality(LuceneQueryParser lqp, Serializable value, PredicateMode mode) throws ParseException
@@ -312,6 +303,11 @@ public class FixedValueProperty extends AbstractProperty
      * @see org.alfresco.cmis.property.PropertyLuceneBuilder#getLuceneSortField()
      */
     public String getLuceneSortField()
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    public String getLuceneFieldName()
     {
         throw new UnsupportedOperationException();
     }

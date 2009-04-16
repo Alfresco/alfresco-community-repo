@@ -46,6 +46,7 @@ import org.alfresco.repo.search.QueryRegisterComponent;
 import org.alfresco.repo.search.SearcherException;
 import org.alfresco.repo.search.impl.NodeSearcher;
 import org.alfresco.repo.search.impl.lucene.analysis.DateTimeAnalyser;
+import org.alfresco.repo.search.impl.parsers.AlfrescoFunctionEvaluationContext;
 import org.alfresco.repo.search.impl.parsers.FTSQueryParser;
 import org.alfresco.repo.search.impl.querymodel.Constraint;
 import org.alfresco.repo.search.impl.querymodel.QueryEngine;
@@ -463,7 +464,8 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
             String ftsExpression = searchParameters.getQuery();
             FTSQueryParser ftsQueryParser = new FTSQueryParser();
             QueryModelFactory factory = queryEngine.getQueryModelFactory();
-            Constraint constraint = ftsQueryParser.buildFTS(ftsExpression.substring(1, ftsExpression.length() - 1), factory, null, null, null);
+            AlfrescoFunctionEvaluationContext context = new AlfrescoFunctionEvaluationContext();
+            Constraint constraint = ftsQueryParser.buildFTS(ftsExpression, factory, context, null, null);
             org.alfresco.repo.search.impl.querymodel.Query query = factory.createQuery(null, null, constraint, null);
             QueryOptions options = new QueryOptions(searchParameters.getQuery(), null);
             options.setFetchSize(searchParameters.getBulkFecthSize());
@@ -480,7 +482,8 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
             options.setLocales(searchParameters.getLocales());
             options.setStores(searchParameters.getStores());
             
-            QueryEngineResults results = queryEngine.executeQuery(query, options, null);
+           
+            QueryEngineResults results = queryEngine.executeQuery(query, options, context);
             return results.getResults().values().iterator().next();
         }
         else

@@ -307,4 +307,20 @@ public class CmisFunctionEvaluationContext implements FunctionEvaluationContext
             return propertyDef.isQueryable();
         }
     }
+
+    public String getLuceneFieldName(String propertyName)
+    {
+        CMISPropertyDefinition propertyDef = cmisDictionaryService.findProperty(propertyName, null);
+        if(propertyDef != null)
+        {
+           return propertyDef.getPropertyLuceneBuilder().getLuceneFieldName();
+        }
+        else
+        {
+            // TODO: restrict to supported "special" fields
+            return propertyName;
+        }
+    }
+    
+    
 }

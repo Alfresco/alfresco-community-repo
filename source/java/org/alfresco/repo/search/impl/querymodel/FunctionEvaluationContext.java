@@ -72,7 +72,9 @@ public interface FunctionEvaluationContext
 
     public boolean isObjectId(String propertyName);
 
-    public boolean isQueryable(String fieldName);
+    public boolean isQueryable(String propertyName);
 
-    public boolean isOrderable(String fieldName);
+    public boolean isOrderable(String propertyName);
+    
+    public String getLuceneFieldName(String propertyName);
 }

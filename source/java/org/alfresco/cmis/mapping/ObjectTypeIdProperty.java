@@ -72,16 +72,8 @@ public class ObjectTypeIdProperty extends AbstractProperty
         return getServiceRegistry().getCMISDictionaryService().findTypeForClass(type).getTypeId().getId();
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.cmis.property.PropertyAccessor#setValue(org.alfresco.service.cmr.repository.NodeRef, java.io.Serializable)
-     */
-    public void setValue(NodeRef nodeRef, Serializable value)
-    {
-        throw new UnsupportedOperationException();
-    }
 
-    private String getLuceneFieldName()
+    public String getLuceneFieldName()
     {
         return "TYPE";
     }

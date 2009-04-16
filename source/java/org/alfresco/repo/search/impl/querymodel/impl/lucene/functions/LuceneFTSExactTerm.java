@@ -30,6 +30,7 @@ import java.util.Set;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.search.impl.querymodel.Argument;
 import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
+import org.alfresco.repo.search.impl.querymodel.PropertyArgument;
 import org.alfresco.repo.search.impl.querymodel.impl.functions.FTSExactTerm;
 import org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderComponent;
 import org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderContext;
@@ -64,6 +65,9 @@ public class LuceneFTSExactTerm extends FTSExactTerm implements LuceneQueryBuild
         Argument argument = functionArgs.get(ARG_TERM);
         String term = (String) argument.getValue(functionContext);
 
+        PropertyArgument propArg = (PropertyArgument)functionArgs.get(ARG_PROPERTY);
+        String prop = propArg.getPropertyName();
+        
         Query query = lqp.getFieldQuery("TEXT", term);
         return query;
 

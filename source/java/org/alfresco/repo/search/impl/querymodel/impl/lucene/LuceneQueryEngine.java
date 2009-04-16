@@ -122,20 +122,24 @@ public class LuceneQueryEngine implements QueryEngine
 
     public QueryEngineResults executeQuery(Query query, QueryOptions options, FunctionEvaluationContext functionContext)
     {
-        List<Set<String>> selectorGroups = query.getSource().getSelectorGroups(functionContext);
-        
-        if(selectorGroups.size() == 0)
+        Set<String> selectorGroup = null;
+        if (query.getSource() != null)
         {
-            throw new UnsupportedOperationException("No selectors"); 
+            List<Set<String>> selectorGroups = query.getSource().getSelectorGroups(functionContext);
+
+            if (selectorGroups.size() == 0)
+            {
+                throw new UnsupportedOperationException("No selectors");
+            }
+
+            if (selectorGroups.size() > 1)
+            {
+                throw new UnsupportedOperationException("Advanced join is not supported");
+            }
+
+            selectorGroup = selectorGroups.get(0);
         }
-        
-        if(selectorGroups.size() > 1)
-        {
-            throw new UnsupportedOperationException("Advanced join is not supported"); 
-        }
-        
-        Set<String> selectorGroup = selectorGroups.get(0);
-        
+
         SearchParameters searchParameters = new SearchParameters();
         searchParameters.setBulkFetch(options.getFetchSize() > 0);
         searchParameters.setBulkFetchSize(options.getFetchSize());
@@ -164,7 +168,7 @@ public class LuceneQueryEngine implements QueryEngine
 
                     LuceneQueryBuilder builder = (LuceneQueryBuilder) query;
                     org.apache.lucene.search.Query luceneQuery = builder.buildQuery(selectorGroup, luceneContext, functionContext);
-                    //System.out.println(luceneQuery);
+                    // System.out.println(luceneQuery);
 
                     Sort sort = builder.buildSort(selectorGroup, luceneContext, functionContext);
 
@@ -203,5 +207,5 @@ public class LuceneQueryEngine implements QueryEngine
             throw new SearcherException("IO exception during search", e);
         }
     }
-    
+
 }

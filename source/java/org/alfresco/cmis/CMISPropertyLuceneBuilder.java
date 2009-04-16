@@ -117,4 +117,9 @@ public interface CMISPropertyLuceneBuilder
      * @return
      */
     public String getLuceneSortField();
+    
+    /**
+     * 
+     */
+    public String getLuceneFieldName();
 }

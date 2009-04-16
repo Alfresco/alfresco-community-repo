@@ -24,10 +24,18 @@
  */
 package org.alfresco.cmis.mapping;
 
+import java.io.Serializable;
+import java.util.Collection;
+
 import org.alfresco.cmis.CMISPropertyAccessor;
 import org.alfresco.cmis.CMISPropertyLuceneBuilder;
+import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
+import org.alfresco.repo.search.impl.querymodel.PredicateMode;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+import org.apache.lucene.queryParser.ParseException;
+import org.apache.lucene.search.Query;
 
 /**
  * Base class for all property accessors
@@ -77,4 +85,72 @@ public abstract class AbstractProperty implements CMISPropertyAccessor, CMISProp
     {
         return null;
     }
+
+    
+    public Query buildLuceneEquality(LuceneQueryParser lqp, Serializable value, PredicateMode mode) throws ParseException
+    {
+        return null;
+    }
+
+    public Query buildLuceneExists(LuceneQueryParser lqp, Boolean not) throws ParseException
+    {
+        return null;
+    }
+
+    public Query buildLuceneGreaterThan(LuceneQueryParser lqp, Serializable value, PredicateMode mode) throws ParseException
+    {
+        return null;
+    }
+
+    public Query buildLuceneGreaterThanOrEquals(LuceneQueryParser lqp, Serializable value, PredicateMode mode) throws ParseException
+    {
+        return null;
+    }
+
+    public Query buildLuceneIn(LuceneQueryParser lqp, Collection<Serializable> values, Boolean not, PredicateMode mode) throws ParseException
+    {
+        return null;
+    }
+
+    public Query buildLuceneInequality(LuceneQueryParser lqp, Serializable value, PredicateMode mode) throws ParseException
+    {
+        return null;
+    }
+
+    public Query buildLuceneLessThan(LuceneQueryParser lqp, Serializable value, PredicateMode mode) throws ParseException
+    {
+        return null;
+    }
+
+    public Query buildLuceneLessThanOrEquals(LuceneQueryParser lqp, Serializable value, PredicateMode mode) throws ParseException
+    {
+        return null;
+    }
+
+    public Query buildLuceneLike(LuceneQueryParser lqp, Serializable value, Boolean not) throws ParseException
+    {
+        return null;
+    }
+
+    public String getLuceneFieldName()
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    public String getLuceneSortField()
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    public Serializable getValue(NodeRef nodeRef)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    public void setValue(NodeRef nodeRef, Serializable value)
+    {
+        throw new UnsupportedOperationException();
+    }
+    
+    
 }

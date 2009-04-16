@@ -1536,8 +1536,9 @@ public class QueryTest extends BaseCMISTest
     {
         testQuery("SELECT * FROM Document WHERE CONTAINS('\"zebra\"')", 9, false, "ObjectId", new String(), false);
         testQuery("SELECT * FROM Document WHERE CONTAINS('\"quick\"')", 1, false, "ObjectId", new String(), false);
-        testQuery("SELECT * FROM Document D WHERE CONTAINS(D, 'Name:\"quick\"')", 1, false, "ObjectId", new String(), false);
-        testQuery("SELECT Name as BOO FROM Document D WHERE CONTAINS('BOO:\"quick\"')", 1, false, "ObjectId", new String(), false);
+        testQuery("SELECT * FROM Document WHERE CONTAINS('TEXT:\"quick\"')", 1, false, "ObjectId", new String(), false);
+        testQuery("SELECT * FROM Document D WHERE CONTAINS(D, 'Name:\"Tutorial\"')", 1, false, "ObjectId", new String(), false);
+        testQuery("SELECT Name as BOO FROM Document D WHERE CONTAINS('BOO:\"Tutorial\"')", 1, false, "ObjectId", new String(), false);
     }
 
     public void testBasicSelectAsGuest()

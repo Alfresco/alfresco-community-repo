@@ -269,6 +269,106 @@ public class InvitationServiceImplTest extends BaseAlfrescoSpringTest
     	assertEquals("role name wrong", roleName, inviteeRole);
     	siteService.removeMembership(resourceName, inviteeUserName);
     }
+    
+    /**
+     * Test nominated user - new user
+     * 
+     * Creates two separate users with two the same email address.
+     * 
+     * @throws Exception
+     */
+    public void testNominatedInvitationNewUserSameEmails() throws Exception
+    {
+    	Date startDate = new java.util.Date();
+    	
+    	String inviteeAFirstName = "John";
+    	String inviteeALastName = "Smith"; 
+    	
+    	String inviteeBFirstName = "Jane";
+    	String inviteeBLastName = "Smith"; 
+    	
+    	String inviteeEmail = "123@alfrescotesting.com";
+    	String inviteeAUserName = null;
+    	String inviteeBUserName = null;
+    	
+    	Invitation.ResourceType resourceType = Invitation.ResourceType.WEB_SITE; 
+    	String resourceName = SITE_SHORT_NAME_INVITE;
+    	String inviteeRole = SiteModel.SITE_COLLABORATOR;
+    	String serverPath = "wibble";
+    	String acceptUrl = "froob";
+    	String rejectUrl = "marshmallow";
+    	
+    	this.authenticationComponent.setCurrentUser(USER_MANAGER);
+    	
+    	NominatedInvitation nominatedInvitationA = invitationService.inviteNominated(
+    			inviteeAFirstName,
+    			inviteeALastName,
+    			inviteeEmail, 
+    			resourceType, 
+    			resourceName, 
+    			inviteeRole, 
+    			serverPath, 
+    			acceptUrl, 
+    			rejectUrl) ;
+    	
+    	assertNotNull("nominated invitation is null", nominatedInvitationA);
+    	String inviteAId =  nominatedInvitationA.getInviteId();
+    	assertEquals("first name wrong", inviteeAFirstName, nominatedInvitationA.getInviteeFirstName());
+    	assertEquals("last name wrong", inviteeALastName, nominatedInvitationA.getInviteeLastName());
+    	assertEquals("email name wrong", inviteeEmail, nominatedInvitationA.getInviteeEmail());
+    	
+    	// Generated User Name should be returned
+    	inviteeAUserName = nominatedInvitationA.getInviteeUserName();
+    	assertNotNull("generated user name is null", inviteeAUserName);
+    	
+    	NominatedInvitation nominatedInvitationB = invitationService.inviteNominated(
+    			inviteeBFirstName,
+    			inviteeBLastName,
+    			inviteeEmail, 
+    			resourceType, 
+    			resourceName, 
+    			inviteeRole, 
+    			serverPath, 
+    			acceptUrl, 
+    			rejectUrl) ;
+    	
+    	assertNotNull("nominated invitation is null", nominatedInvitationB);
+    	String inviteBId =  nominatedInvitationB.getInviteId();
+    	assertEquals("first name wrong", inviteeBFirstName, nominatedInvitationB.getInviteeFirstName());
+    	assertEquals("last name wrong", inviteeBLastName, nominatedInvitationB.getInviteeLastName());
+    	assertEquals("email name wrong", inviteeEmail, nominatedInvitationB.getInviteeEmail());
+    	
+    	// Generated User Name should be returned
+    	inviteeBUserName = nominatedInvitationB.getInviteeUserName();
+    	assertNotNull("generated user name is null", inviteeBUserName);
+    	assertFalse("generated user names are the same", inviteeAUserName.equals(inviteeBUserName));    	
+    	    	
+    	/**
+    	 * Now accept the invitation
+    	 */
+    	NominatedInvitation acceptedInvitationA = (NominatedInvitation)invitationService.accept(inviteAId, nominatedInvitationA.getTicket());
+    	assertEquals("invite id wrong", inviteAId, acceptedInvitationA.getInviteId());
+    	assertEquals("first name wrong", inviteeAFirstName, acceptedInvitationA.getInviteeFirstName());
+    	assertEquals("last name wrong", inviteeALastName, acceptedInvitationA.getInviteeLastName());
+    	assertEquals("user name wrong", inviteeAUserName, acceptedInvitationA.getInviteeUserName());
+    	
+       	NominatedInvitation acceptedInvitationB = (NominatedInvitation)invitationService.accept(inviteBId, nominatedInvitationB.getTicket());
+    	assertEquals("invite id wrong", inviteBId, acceptedInvitationB.getInviteId());
+    	assertEquals("first name wrong", inviteeBFirstName, acceptedInvitationB.getInviteeFirstName());
+    	assertEquals("last name wrong", inviteeBLastName, acceptedInvitationB.getInviteeLastName());
+    	assertEquals("user name wrong", inviteeBUserName, acceptedInvitationB.getInviteeUserName());
+    	
+    	    	
+    	/**
+    	 * Now verify access control list
+    	 */
+    	String roleNameA = siteService.getMembersRole(resourceName, inviteeAUserName);
+    	assertEquals("role name wrong", roleNameA, inviteeRole);
+    	String roleNameB = siteService.getMembersRole(resourceName, inviteeBUserName);
+    	assertEquals("role name wrong", roleNameB, inviteeRole);
+    	siteService.removeMembership(resourceName, inviteeAUserName);
+    	siteService.removeMembership(resourceName, inviteeBUserName);
+    }
 
     
     /**

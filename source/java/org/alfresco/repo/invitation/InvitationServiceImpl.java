@@ -104,6 +104,9 @@ public class InvitationServiceImpl implements InvitationService
 	// does not already belong to an existing person
 	public static final int MAX_NUM_INVITEE_USER_NAME_GEN_TRIES = 10;
 	
+	private int maxUserNameGenRetries = MAX_NUM_INVITEE_USER_NAME_GEN_TRIES;
+	
+	
     /**
      * Checks that all necessary properties and services have been provided.
      */
@@ -915,7 +918,7 @@ public class InvitationServiceImpl implements InvitationService
 			inviteeUserName = usernameGenerator.generateUserName();
 			i++;
 		} while (this.personService.personExists(inviteeUserName)
-				&& (i < MAX_NUM_INVITEE_USER_NAME_GEN_TRIES));
+				&& (i < getMaxUserNameGenRetries()));
 
 		// if after 10 tries is not able to generate a user name for a
 		// person who doesn't already exist, then throw a web script exception
@@ -1125,52 +1128,75 @@ public class InvitationServiceImpl implements InvitationService
 		// if a person already exists who has the given invitee email address
 		//
 		// 1) obtain invitee user name from first person found having the
-		// invitee email address (there
-		// should only be one)
-		// 2) handle error conditions - (invitee already has an invitation in
-		// progress for the given site,
+		// invitee email address, first name and last name
+		// 2) handle error conditions - 
+		// (invitee already has an invitation in progress for the given site,
 		// or he/she is already a member of the given site
 		//        
 		if (inviteeUserName == null || inviteeUserName.trim().length() == 0) {
+			
+			inviteeUserName = null;
+			
 			Set<NodeRef> peopleWithInviteeEmail = this.personService
 					.getPeopleFilteredByProperty(ContentModel.PROP_EMAIL,
 							inviteeEmail);
-			if (peopleWithInviteeEmail.isEmpty() == false) {
+			
+			if (peopleWithInviteeEmail.size() > 0) {
 				// get person already existing who has the given
-				// invitee email address (there should only be one, so just take
-				// the first from the set of people).
-				NodeRef person = (NodeRef) peopleWithInviteeEmail.toArray()[0];
+				// invitee email address 
+				for(NodeRef personRef : peopleWithInviteeEmail)
+				{
+					Serializable firstNameVal = this.getNodeService().getProperty(personRef, ContentModel.PROP_FIRSTNAME);
+					Serializable lastNameVal = this.getNodeService().getProperty(personRef, ContentModel.PROP_LASTNAME);
+					
+					String personFirstName = DefaultTypeConverter.INSTANCE.convert(
+							String.class, firstNameVal);
+					String personLastName = DefaultTypeConverter.INSTANCE.convert(
+							String.class, lastNameVal);
+					
+					if(personFirstName != null && personFirstName.equalsIgnoreCase(inviteeFirstName))
+					{
+						if(personLastName != null && personLastName.equalsIgnoreCase(inviteeLastName))
+						{
+							// got a match on email, lastname, firstname
+							// get invitee user name of that person
+							Serializable userNamePropertyVal = this.getNodeService()
+									.getProperty(personRef, ContentModel.PROP_USERNAME);
+							inviteeUserName = DefaultTypeConverter.INSTANCE.convert(
+									String.class, userNamePropertyVal);
 
-				// get invitee user name of that person
-				Serializable userNamePropertyVal = this.getNodeService()
-						.getProperty(person, ContentModel.PROP_USERNAME);
-				inviteeUserName = DefaultTypeConverter.INSTANCE.convert(
-						String.class, userNamePropertyVal);
-
-				if (logger.isDebugEnabled())
-					logger
-							.debug("not explictly passed username - found matching email, resolved inviteeUserName="
+							if (logger.isDebugEnabled())
+							{
+								logger.debug("not explictly passed username - found matching email, resolved inviteeUserName="
 									+ inviteeUserName);
+							}
+						}
+					}
+				}
 			}
-			// else there are no existing people who have the given invitee
-			// email address
-			// so create invitee person
-			else 
+			
+			if(inviteeUserName == null )
 			{
+				// else there are no existing people who have the given invitee
+				// email address so create new person
 				inviteeUserName = createInviteePerson(inviteeFirstName,
-						inviteeLastName, inviteeEmail);
+						inviteeLastName, 
+						inviteeEmail);
 
 				if (logger.isDebugEnabled())
-					logger
-							.debug("not explictly passed username - created new person, inviteeUserName="
-									+ inviteeUserName);
+				{
+					logger.debug("not explictly passed username - created new person, inviteeUserName="
+					+ inviteeUserName);
+				}
 			}
 		}
 		else
 		{
+			//TODO MER - Is the code block neccessary - seems to do nothing ?
 			// inviteeUserName was specified
 			NodeRef person = this.personService.getPerson(inviteeUserName);
 			
+			//TODO
 			Serializable firstNameVal = this.getNodeService().getProperty(person, ContentModel.PROP_FIRSTNAME);
 			Serializable lastNameVal = this.getNodeService().getProperty(person, ContentModel.PROP_LASTNAME);
 			Serializable emailVal = this.getNodeService().getProperty(person, ContentModel.PROP_EMAIL);
@@ -1382,5 +1408,17 @@ public class InvitationServiceImpl implements InvitationService
         	Object objs[] = { invitationId };
         	throw new InvitationExceptionUserError("invitation.error.invalid_inviteId_format", objs);
         }
+	}
+
+	/**
+	 * Maximum number of attempts to generate a user name
+	 * @param maxUserNameGenRetries
+	 */
+	private void setMaxUserNameGenRetries(int maxUserNameGenRetries) {
+		this.maxUserNameGenRetries = maxUserNameGenRetries;
+	}
+
+	private int getMaxUserNameGenRetries() {
+		return maxUserNameGenRetries;
 	}
 }

@@ -42,7 +42,7 @@
       <property name="tenantService" ref="tenantService"/>
    </bean>
 
-   <bean id="workflowInterpreter" class="org.alfresco.repo.workflow.WorkflowInterpreter">
+   <bean id="workflowInterpreter" class="org.alfresco.repo.workflow.WorkflowInterpreter" parent="interpreterBase">
       <property name="workflowService" ref="WorkflowService"/>
       <property name="AVMService" ref="AVMService"/>
       <property name="AVMSyncService" ref="AVMSyncService"/>
@@ -50,10 +50,8 @@
       <property name="namespaceService" ref="namespaceService"/>
       <property name="personService" ref="PersonService"/>
       <property name="authorityDAO" ref="authorityDAO"/>
-      <property name="transactionService" ref="transactionService"/>
       <property name="fileFolderService" ref="FileFolderService"/>
       <property name="tenantService" ref="tenantService"/>
-      <property name="authorityService" ref="AuthorityService"/>
    </bean>
 
    <bean id="workflowInterpreterHelp" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">

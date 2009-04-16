@@ -38,6 +38,7 @@ import javax.transaction.UserTransaction;
 import net.sf.acegisecurity.providers.encoding.PasswordEncoder;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.admin.RepoModelDefinition;
 import org.alfresco.repo.attributes.BooleanAttributeValue;
 import org.alfresco.repo.attributes.MapAttribute;
@@ -68,6 +69,7 @@ import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
@@ -76,7 +78,7 @@ import org.springframework.context.ApplicationContextAware;
  * 
  */
     
-public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationContextAware
+public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationContextAware, InitializingBean
 {
     // Logger
     private static Log logger = LogFactory.getLog(MultiTAdminServiceImpl.class);
@@ -221,22 +223,31 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
     public static final String STORE_BASE_ID_VERSION1 = "lightWeightVersionStore"; // deprecated
     public static final String STORE_BASE_ID_VERSION2 = "version2Store";
     public static final String STORE_BASE_ID_SPACES = "SpacesStore";
-       
     
     private static final String TENANTS_ATTRIBUTE_PATH = "alfresco-tenants";
     private static final String TENANT_ATTRIBUTE_ENABLED = "enabled";
     private static final String TENANT_ROOT_CONTENT_STORE_DIR = "rootContentStoreDir";
-
-    private List<TenantDeployer> tenantDeployers = new ArrayList<TenantDeployer>();
-
-    private static final String WARN_MSG = "Please update your alfresco/extension/mt/mt-admin-context.xml to use baseMultiTAdminService (see latest alfresco/extension/mt/mt-admin-context.xml.sample)";
     
-    protected void checkProperties()
+    private List<TenantDeployer> tenantDeployers = new ArrayList<TenantDeployer>();
+    
+    private static final String WARN_MSG = "system.mt.warn.upgrade_mt_admin_context";
+    
+    public void afterPropertiesSet() throws Exception
     {
-        if (moduleService == null || siteAVMBootstrap == null || baseAdminUsername == null)
+        // for upgrade/backwards compatibility with 3.0.x (mt-admin-context.xml)
+        if (baseAdminUsername == null)
         {
-            logger.warn(WARN_MSG);
+            logger.warn(I18NUtil.getMessage(WARN_MSG));
         }
+        
+        // for upgrade/backwards compatibility with 3.0.x (mt-admin-context.xml)
+        if (siteAVMBootstrap == null)
+        {
+            logger.warn(I18NUtil.getMessage(WARN_MSG));
+            
+            siteAVMBootstrap = (SiteAVMBootstrap) ctx.getBean("siteAVMBootstrap");
+        }
+        
         PropertyCheck.mandatory(this, "NodeService", nodeService);
         PropertyCheck.mandatory(this, "DictionaryComponent", dictionaryComponent);
         PropertyCheck.mandatory(this, "RepoAdminService", repoAdminService);
@@ -247,9 +258,9 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         PropertyCheck.mandatory(this, "TenantFileContentStore", tenantFileContentStore);
         PropertyCheck.mandatory(this, "WorkflowService", workflowService);
         PropertyCheck.mandatory(this, "RepositoryExporterService", repositoryExporterService);
-        PropertyCheck.mandatory(this, "siteAVMBootstrap", siteAVMBootstrap);
         PropertyCheck.mandatory(this, "moduleService", moduleService);
-        PropertyCheck.mandatory(this, "baseAdminUsername", baseAdminUsername);
+        PropertyCheck.mandatory(this, "moduleService", moduleService);
+        PropertyCheck.mandatory(this, "siteAVMBootstrap", siteAVMBootstrap);
     }
     
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
@@ -259,8 +270,6 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
 
     public void startTenants()
     {
-        checkProperties();
-        
         AuthenticationUtil.setMtEnabled(true);
         
         // initialise the tenant admin service and status of tenants (using attribute service)

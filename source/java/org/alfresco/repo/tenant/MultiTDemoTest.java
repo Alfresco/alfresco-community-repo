@@ -24,6 +24,7 @@
  */
 package org.alfresco.repo.tenant;
 
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.io.StringWriter;
@@ -42,7 +43,10 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.service.cmr.admin.RepoAdminService;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
+import org.alfresco.service.cmr.dictionary.ClassDefinition;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -87,8 +91,10 @@ public class MultiTDemoTest extends TestCase
     private AuthorityService authorityService;
     private CategoryService categoryService;
     private CheckOutCheckInService cociService;
+    private RepoAdminService repoAdminService;
+    private DictionaryService dictionaryService;
     
-    public static int NUM_TENANTS = 11;
+    public static int NUM_TENANTS = 2;
     
     public static final String TEST_TENANT_DOMAIN = "my.test";
     public static final String TEST_TENANT_DOMAIN2 = TEST_TENANT_DOMAIN+"2";
@@ -143,6 +149,8 @@ public class MultiTDemoTest extends TestCase
         authorityService = (AuthorityService) ctx.getBean("AuthorityService");
         categoryService = (CategoryService) ctx.getBean("CategoryService");
         cociService = (CheckOutCheckInService) ctx.getBean("CheckoutCheckinService");
+        repoAdminService = (RepoAdminService) ctx.getBean("RepoAdminService");
+        dictionaryService = (DictionaryService) ctx.getBean("DictionaryService");
     }
 
     @Override
@@ -654,6 +662,59 @@ public class MultiTDemoTest extends TestCase
         }
     }
     
+    public void testCustomDynamicModels()
+    {
+        logger.info("test custom/dynamic models");
+        
+        final int defaultModelCnt = dictionaryService.getAllModels().size();
+            
+        for (final String tenantDomain : tenants)
+        {    
+            final String tenantAdminName = tenantService.getDomainUser(AuthenticationUtil.getAdminUserName(), tenantDomain);
+            
+            AuthenticationUtil.runAs(new RunAsWork<Object>()
+            {
+                public Object doWork() throws Exception
+                {
+                    // no custom models should be deployed yet (note: will fail if re-run)
+                    assertEquals(0, repoAdminService.getModels().size());
+                    assertEquals(defaultModelCnt, dictionaryService.getAllModels().size());
+                    assertNull(dictionaryService.getClass(QName.createQName("{my.new.model}sop")));
+                    
+                    // deploy custom model
+                    InputStream modelStream = getClass().getClassLoader().getResourceAsStream("tenant/exampleModel.xml");
+                    repoAdminService.deployModel(modelStream, "exampleModel.xml");
+                    
+                    assertEquals(1, repoAdminService.getModels().size());
+                    assertEquals(defaultModelCnt+1, dictionaryService.getAllModels().size());
+                    
+                    ClassDefinition myType = dictionaryService.getClass(QName.createQName("{my.new.model}sop"));
+                    assertNotNull(myType);
+                    assertEquals(QName.createQName("{my.new.model}mynewmodel"),myType.getModel().getName());
+                    
+                    // deactivate model
+                    repoAdminService.deactivateModel("exampleModel.xml");
+                    
+                    assertEquals(1, repoAdminService.getModels().size()); // still deployed, although not active
+                    assertEquals(defaultModelCnt, dictionaryService.getAllModels().size());
+                    assertNull(dictionaryService.getClass(QName.createQName("{my.new.model}sop")));
+                    
+                    // re-activate model
+                    repoAdminService.activateModel("exampleModel.xml");
+                    
+                    assertEquals(1, repoAdminService.getModels().size());
+                    assertEquals(defaultModelCnt+1, dictionaryService.getAllModels().size());
+                    
+                    myType = dictionaryService.getClass(QName.createQName("{my.new.model}sop"));
+                    assertNotNull(myType);
+                    assertEquals(QName.createQName("{my.new.model}mynewmodel"),myType.getModel().getName());
+                    
+                    return null;
+                }
+            }, tenantAdminName);
+        }
+    }
+    
     private void createGroup(String shortName, String parentShortName)
     {
         // create new Group using authority Service
@@ -751,21 +812,24 @@ public class MultiTDemoTest extends TestCase
     
     private NodeRef getUserHomesNodeRef(StoreRef storeRef)
     {
-        // get the users' home location
-        String path = "/app:company_home/app:user_homes";
+        // get the "User Homes" location
+        return findFolderNodeRef(storeRef, "/app:company_home/app:user_homes");
+    }
+    
+    private NodeRef findFolderNodeRef(StoreRef storeRef, String folderXPath)
+    {
+        ResultSet rs = this.searchService.query(storeRef, SearchService.LANGUAGE_XPATH, folderXPath);
         
-        ResultSet rs = this.searchService.query(storeRef, SearchService.LANGUAGE_XPATH, path);
-        
-        NodeRef usersHomeNodeRef = null;
-        if (rs.length() == 0)
+        NodeRef folderNodeRef = null;
+        if (rs.length() != 1)
         {
-            throw new AlfrescoRuntimeException("Cannot find user homes location: " + path);
+            throw new AlfrescoRuntimeException("Cannot find folder location: " + folderXPath);
         }
         else
         {
-            usersHomeNodeRef = rs.getNodeRef(0);
+            folderNodeRef = rs.getNodeRef(0);
         }
-        return usersHomeNodeRef;
+        return folderNodeRef;
     }
     
     private NodeRef createFolderNode(NodeRef parentFolderNodeRef, String nameValue)

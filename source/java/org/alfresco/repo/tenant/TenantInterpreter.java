@@ -37,23 +37,36 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.AuthorityService;
+import org.alfresco.util.PropertyCheck;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.io.ClassPathResource;
 
 /**
  * An interactive console for Tenants.
  *
  */
-public class TenantInterpreter extends BaseInterpreter
+public class TenantInterpreter extends BaseInterpreter implements ApplicationContextAware, InitializingBean
 {
+    private static Log logger = LogFactory.getLog(TenantInterpreter.class);
+    
     // Service dependencies    
+    
+    private ApplicationContext ctx;
     
     private TenantAdminService tenantAdminService;
     protected TenantService tenantService;
     private AuthenticationService authenticationService;
     
-    private String baseAdminUsername = null; // default for backwards compatibility only - eg. upgrade of existing MT instance (mt-admin-context.xml.sample)
-
+    private String baseAdminUsername = null;
+    
+    private static final String WARN_MSG = "system.mt.warn.upgrade_mt_admin_context";
+    
     public void setTenantAdminService(TenantAdminService tenantAdminService)
     {
         this.tenantAdminService = tenantAdminService;
@@ -83,6 +96,11 @@ public class TenantInterpreter extends BaseInterpreter
         return AuthenticationUtil.getAdminUserName();
     }
     
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
+    {
+        this.ctx = applicationContext;
+    }
+    
     /**
      * Main entry point.
      */
@@ -91,6 +109,22 @@ public class TenantInterpreter extends BaseInterpreter
         runMain("tenantInterpreter");
     }
     
+    public void afterPropertiesSet() throws Exception
+    {
+        // for upgrade/backwards compatibility with 3.0.x (mt-admin-context.xml)
+        if (authorityService == null || baseAdminUsername == null)
+        {
+            logger.warn(I18NUtil.getMessage(WARN_MSG));
+        }
+        
+        if (authorityService == null)
+        {
+            authorityService = (AuthorityService)ctx.getBean("AuthorityService");
+        }
+        
+        PropertyCheck.mandatory(this, "TransactionService", transactionService);
+        PropertyCheck.mandatory(this, "TenantService", tenantService);
+    }
     
     protected boolean hasAuthority(String username)
     {

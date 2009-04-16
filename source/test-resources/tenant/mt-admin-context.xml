@@ -20,10 +20,9 @@
             
    <bean id="tenantAdminService" parent="baseMultiTAdminService" />
                 
-   <bean id="tenantInterpreter" class="org.alfresco.repo.tenant.TenantInterpreter">
-        <property name="transactionService" ref="transactionComponent"/>
-        <property name="tenantAdminService" ref="tenantAdminService"/>       
-        <property name="tenantService" ref="tenantService"/>        
+   <bean id="tenantInterpreter" class="org.alfresco.repo.tenant.TenantInterpreter" parent="interpreterBase">
+        <property name="tenantAdminService" ref="tenantAdminService"/>   
+        <property name="tenantService" ref="tenantService"/>     
         <property name="authenticationService" ref="AuthenticationService"/>
    </bean>
 

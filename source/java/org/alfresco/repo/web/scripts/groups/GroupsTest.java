@@ -102,7 +102,6 @@ public class GroupsTest extends BaseWebScriptTest
         {
             this.authenticationComponent.setSystemUserAsCurrentUser();
         	 
-        	System.out.println("create test tree" + rootGroupName);
         	rootGroupName = authorityService.createAuthority(AuthorityType.GROUP, null, TEST_ROOTGROUP , TEST_ROOTGROUP_DISPLAY_NAME);
         	authorityService.createAuthority(AuthorityType.GROUP, rootGroupName, TEST_GROUPA);
         	String groupB = authorityService.createAuthority(AuthorityType.GROUP, rootGroupName, TEST_GROUPB);
@@ -571,11 +570,44 @@ public class GroupsTest extends BaseWebScriptTest
     	 
     	// Search on partial short name
     	{
-		    Response response = sendRequest(new GetRequest(URL_GROUPS + "?shortNameFilter=" + "*ADMIN*"), Status.STATUS_OK);
+		    Response response = sendRequest(new GetRequest(URL_GROUPS + "?shortNameFilter=" + "ALFRESCO_ADMIN*"), Status.STATUS_OK);
 		    JSONObject top = new JSONObject(response.getContentAsString());
 		    logger.debug(response.getContentAsString());
 		    JSONArray data = top.getJSONArray("data");
-		    assertTrue(data.length() > 0);
+		    assertEquals("length not 1", 1, data.length());
+ 			JSONObject authority = data.getJSONObject(0);
+			assertEquals("", ADMIN_GROUP, authority.getString("shortName"));
+    	}
+    	
+    	// Search on partial short name with a ?
+    	{
+		    Response response = sendRequest(new GetRequest(URL_GROUPS + "?shortNameFilter=" + "ALFRE?CO_ADMIN*"), Status.STATUS_OK);
+		    JSONObject top = new JSONObject(response.getContentAsString());
+		    logger.debug(response.getContentAsString());
+		    JSONArray data = top.getJSONArray("data");
+		    assertEquals("length not 1", 1, data.length());
+ 			JSONObject authority = data.getJSONObject(0);
+			assertEquals("", ADMIN_GROUP, authority.getString("shortName"));
+    	}
+    	
+    	// Search on partial short name, Query should be extended by a *.
+    	{
+		    Response response = sendRequest(new GetRequest(URL_GROUPS + "?shortNameFilter=" + "ALF"), Status.STATUS_OK);
+		    JSONObject top = new JSONObject(response.getContentAsString());
+		    logger.debug(response.getContentAsString());
+		    JSONArray data = top.getJSONArray("data");
+		    assertEquals("length not 1", 1, data.length());
+ 			JSONObject authority = data.getJSONObject(0);
+			assertEquals("", ADMIN_GROUP, authority.getString("shortName"));
+    	}
+    	
+    	// Negative test.
+    	{
+		    Response response = sendRequest(new GetRequest(URL_GROUPS + "?shortNameFilter=" + "XX?X"), Status.STATUS_OK);
+		    JSONObject top = new JSONObject(response.getContentAsString());
+		    logger.debug(response.getContentAsString());
+		    JSONArray data = top.getJSONArray("data");
+		    assertEquals("length not 0", 0, data.length());
     	}
     	
     	// Search on full shortName
@@ -584,14 +616,17 @@ public class GroupsTest extends BaseWebScriptTest
 		    JSONObject top = new JSONObject(response.getContentAsString());
 		    logger.debug(response.getContentAsString());
 		    JSONArray data = top.getJSONArray("data");
-		    assertTrue(data.length() > 0);
+		    assertEquals("length not 1", 1, data.length());
+ 			JSONObject authority = data.getJSONObject(0);
+			assertEquals("", ADMIN_GROUP, authority.getString("shortName"));
 		}
 		
     	// Search on partial short name of a non root group
     	{
-		    Response response = sendRequest(new GetRequest(URL_GROUPS + "?shortNameFilter=" + "*TD*"), Status.STATUS_OK);
+		    Response response = sendRequest(new GetRequest(URL_GROUPS + "?shortNameFilter=" + TEST_GROUPD ), Status.STATUS_OK);
 		    JSONObject top = new JSONObject(response.getContentAsString());
 		    logger.debug(response.getContentAsString());
+		    System.out.println(response.getContentAsString());
 		    JSONArray data = top.getJSONArray("data");
 		    assertEquals("length not 1", 1, data.length());
  			JSONObject authority = data.getJSONObject(0);
@@ -663,9 +698,7 @@ public class GroupsTest extends BaseWebScriptTest
     public void testGetChildren() throws Exception
     {
         createTestTree();
-        
-    	//Thread.sleep(10,000);
-    	
+            	
     	/**
     	 * Get All Children of GROUP B
     	 */
@@ -675,7 +708,6 @@ public class GroupsTest extends BaseWebScriptTest
     		JSONObject top = new JSONObject(response.getContentAsString());
     		logger.debug(response.getContentAsString());
     		JSONArray data = top.getJSONArray("data");
-    		System.out.println(response.getContentAsString());
     		assertTrue(data.length() > 0);
     		boolean gotGroupD = false;
     		boolean gotUserTwo = false;
@@ -711,7 +743,6 @@ public class GroupsTest extends BaseWebScriptTest
     		Response response = sendRequest(new GetRequest(URL_GROUPS + "/" + TEST_GROUPB + "/children?authorityType=GROUP"), Status.STATUS_OK);
     		JSONObject top = new JSONObject(response.getContentAsString());
     		logger.debug(response.getContentAsString());
-    		System.out.println(response.getContentAsString());
     		JSONArray data = top.getJSONArray("data");
     		//assertTrue("no child groups of group B", data.length() == 1);
     		

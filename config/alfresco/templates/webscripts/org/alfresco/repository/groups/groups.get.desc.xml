@@ -1,12 +1,12 @@
 <webscript>
    <shortname>List groups</shortname>
    <description><![CDATA[
-      Search for groups.
+      Search for groups. 
       <br />
       Parameters
       <ul>
       <li>if the optional includeInternal parameter is true then will include internal groups, otherwise internalGroups are not returned.</li>
-      <li>If the optional shortNameFilter parameter is set then returns those root groups with a partial match on shortName.</li>
+      <li>If the optional shortNameFilter parameter is set then returns those root groups with a partial match on shortName.  You can use the pattern matching characters * to match zero or more characters or ? to match one character.</li>
       </ul>
       <br />
       Returns an Array of groups in JSON format.

@@ -526,10 +526,27 @@
         </property>
     </bean>
     
-    <!-- Used for generating user names                                     -->
-    <bean id="userNameGenerator" class="org.alfresco.repo.security.authentication.BasicUserNameGenerator">
+    <!--  -->
+    <bean id="nameBasedUserNameGenerator" class="org.alfresco.repo.security.authentication.NameBasedUserNameGenerator">
+            <!-- name patterns available:
+       		%lastName%,  lower case last name
+       		%firstName%, lower case first name
+       		%emailAddress% email address
+           	%i% lower case first name inital
+     		-->
+        <property name="namePattern">
+        	<value>%firstName%_%lastName%</value>
+        </property>
+        
         <property name="userNameLength">
-            <value>6</value>
+            <value>10</value>
+        </property>
+    </bean>
+    
+    <!-- Used for generating user names                                     -->
+    <bean id="userNameGenerator" class="org.alfresco.repo.security.authentication.TenantAwareUserNameGenerator">
+        <property name="generator">
+            <ref bean="nameBasedUserNameGenerator"/>
         </property>
         <property name="tenantService">
             <ref bean="tenantService"/>

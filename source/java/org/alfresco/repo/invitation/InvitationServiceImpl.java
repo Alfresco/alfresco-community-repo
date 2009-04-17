@@ -915,7 +915,7 @@ public class InvitationServiceImpl implements InvitationService
 		String inviteeUserName = null;
 		int i = 0;
 		do {
-			inviteeUserName = usernameGenerator.generateUserName();
+			inviteeUserName = usernameGenerator.generateUserName(inviteeFirstName, inviteeLastName, inviteeEmail, i);
 			i++;
 		} while (this.personService.personExists(inviteeUserName)
 				&& (i < getMaxUserNameGenRetries()));

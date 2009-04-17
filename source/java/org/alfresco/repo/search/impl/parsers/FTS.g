@@ -78,7 +78,11 @@ tokens
 	QUALIFIER;
 	PREFIX;
 	NAME_SPACE;
+	
+	BOOST;
+	FUZZY;
 }
+
 
 @lexer::header{package org.alfresco.repo.search.impl.parsers;} 
 
@@ -201,22 +205,33 @@ ftsPrefixed
     ;
 
 ftsTest	
-    :	ftsTerm
-		-> ^(TERM ftsTerm)
-	|	ftsExactTerm
-		-> ^(EXACT_TERM ftsExactTerm)
-    |   ftsPhrase
-        -> ^(PHRASE ftsPhrase)
-    |   ftsSynonym
-        -> ^(SYNONYM ftsSynonym)
-    |	ftsFieldGroupProximity  
+    :	ftsTerm ((fuzzy) => fuzzy)? boost?
+		-> ^(TERM ftsTerm fuzzy? boost?)
+	|	ftsExactTerm ((fuzzy) => fuzzy)? boost?
+		-> ^(EXACT_TERM ftsExactTerm fuzzy? boost?)
+    |   ftsPhrase ((fuzzy) => fuzzy)? boost?
+        -> ^(PHRASE ftsPhrase fuzzy? boost?)
+    |   ftsSynonym ((fuzzy) => fuzzy)? boost?
+        -> ^(SYNONYM ftsSynonym fuzzy? boost?)
+    |	ftsFieldGroupProximity 
         -> ^(PROXIMITY ftsFieldGroupProximity)
-    | 	ftsRange
-        -> ^(RANGE ftsRange)
-    |	ftsFieldGroup    
-	|	LPAREN ftsImplicitConjunctionOrDisjunction RPAREN
-		-> ftsImplicitConjunctionOrDisjunction
+    | 	ftsRange boost?
+        -> ^(RANGE ftsRange boost?)
+    |	ftsFieldGroup 
+    -> ftsFieldGroup 
+	|	LPAREN ftsImplicitConjunctionOrDisjunction RPAREN boost?
+		-> ftsImplicitConjunctionOrDisjunction boost?
 	;
+
+fuzzy
+: TILDA number
+-> ^(FUZZY number)
+;
+
+boost
+: CARAT number
+-> ^(BOOST number)
+;
 
 ftsTerm
 	:	(columnReference COLON)? ftsWord
@@ -281,20 +296,20 @@ ftsFieldGroupPrefixed
 
 
 ftsFieldGroupTest
-	:	ftsFieldGroupTerm
-		-> ^(FG_TERM ftsFieldGroupTerm)
-	|	ftsFieldGroupExactTerm 
-		-> ^(FG_EXACT_TERM ftsFieldGroupExactTerm)
-	|	ftsFieldGroupPhrase
-		-> ^(FG_PHRASE ftsFieldGroupPhrase)
-	|	ftsFieldGroupSynonym
-		-> ^(FG_SYNONYM ftsFieldGroupSynonym)
-	|  ftsFieldGroupProximity  
+	:	ftsFieldGroupTerm ((fuzzy) => fuzzy)? boost?
+		-> ^(FG_TERM ftsFieldGroupTerm fuzzy? boost?)
+	|	ftsFieldGroupExactTerm ((fuzzy) => fuzzy)? boost?
+		-> ^(FG_EXACT_TERM ftsFieldGroupExactTerm fuzzy? boost?)
+	|	ftsFieldGroupPhrase ((fuzzy) => fuzzy)? boost?
+		-> ^(FG_PHRASE ftsFieldGroupPhrase fuzzy? boost?)
+	|	ftsFieldGroupSynonym ((fuzzy) => fuzzy)? boost?
+		-> ^(FG_SYNONYM ftsFieldGroupSynonym fuzzy? boost?)
+	|  ftsFieldGroupProximity
 		-> ^(FG_PROXIMITY ftsFieldGroupProximity)
-    | 	ftsFieldGroupRange
-        -> ^(FG_RANGE ftsFieldGroupRange)
-	|	 LPAREN ftsFieldGroupImplicitConjunctionOrDisjunction RPAREN
-		-> ftsFieldGroupImplicitConjunctionOrDisjunction
+    | 	ftsFieldGroupRange boost?
+        -> ^(FG_RANGE ftsFieldGroupRange boost?)
+	|	 LPAREN ftsFieldGroupImplicitConjunctionOrDisjunction RPAREN boost?
+		-> ftsFieldGroupImplicitConjunctionOrDisjunction boost?
 	;
 	
 ftsFieldGroupTerm
@@ -369,6 +384,11 @@ ftsWord
     |   NOT
     |   TO
     |   DECIMAL_INTEGER_LITERAL
+    |   FLOATING_POINT_LITERAL
+    ;
+    
+number 
+    :   DECIMAL_INTEGER_LITERAL
     |   FLOATING_POINT_LITERAL
     ;
     
@@ -457,6 +477,10 @@ LT : '<';
  */ 
 ID  :   ('a'..'z'|'A'..'Z'|'_')('a'..'z'|'A'..'Z'|'0'..'9'|'_'|'$'|'#')* ;
 
+DECIMAL_INTEGER_LITERAL
+        : ( PLUS | MINUS )? DECIMAL_NUMERAL
+        ;
+
 FTSWORD :	 (F_ESC | INWORD | STAR | QUESTION_MARK)+;
 	
 fragment
@@ -502,13 +526,7 @@ INWORD	: '\u0041' .. '\u005A'
 	| '\u0ED0' .. '\u0ED9'
 	| '\u1040' .. '\u1049'
 	;
-	
-DECIMAL_INTEGER_LITERAL
-        : ( PLUS | MINUS )? DECIMAL_NUMERAL
-        ;
-        
-      
-      
+             
         
 FLOATING_POINT_LITERAL 
   : d=START_RANGE_I r=DOTDOT

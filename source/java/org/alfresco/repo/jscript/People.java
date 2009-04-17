@@ -24,6 +24,7 @@
  */
 package org.alfresco.repo.jscript;
 
+import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
@@ -67,6 +68,7 @@ public final class People extends BaseScopableProcessorExtension
     private UserNameGenerator usernameGenerator;
     private PasswordGenerator passwordGenerator;
     private StoreRef storeRef;
+    private int numRetries = 10;
     
     
     /**
@@ -167,6 +169,10 @@ public final class People extends BaseScopableProcessorExtension
     /**
      * Create a Person with a generated user name
      * 
+     * @param firstName firstName
+     * @param lastName lastName
+     * @param emailAddress emailAddress
+     * 
      * @param createUserAccount
      *            set to 'true' to create a user account for the person with the
      *            generated user name and a generated password
@@ -176,41 +182,48 @@ public final class People extends BaseScopableProcessorExtension
      * @return the person node (type cm:person) created or null if the person
      *         could not be created
      */
-    public ScriptNode createPerson(boolean createUserAccount, boolean setAccountEnabled)
+    public ScriptNode createPerson(String firstName, String lastName, String emailAddress, boolean createUserAccount, boolean setAccountEnabled)
     {
+    	ParameterCheck.mandatory("firstName", firstName);
+    	ParameterCheck.mandatory("lastName", lastName);
         ParameterCheck.mandatory("createUserAccount", createUserAccount);
         ParameterCheck.mandatory("setAccountEnabled", setAccountEnabled);
 
         ScriptNode person = null;
 
         // generate user name
-        String userName = usernameGenerator.generateUserName();
-
-        // create person if user name does not already exist
-        if (!personService.personExists(userName))
+        for(int i=0; i < numRetries; i++)
         {
-            person = createPerson(userName);
+        	String userName = usernameGenerator.generateUserName(firstName, lastName, emailAddress, i);
+        
+        	// create person if user name does not already exist
+        	if (!personService.personExists(userName))
+        	{
+        		person = createPerson(userName, firstName, lastName, emailAddress);
 
-            if (createUserAccount)
-            {
-                // generate password
-                char[] password = passwordGenerator.generatePassword().toCharArray();
+        		if (createUserAccount)
+        		{
+        			// generate password
+        			char[] password = passwordGenerator.generatePassword().toCharArray();
 
-                // create account for person with generated userName and
-                // password
-                mutableAuthenticationDao.createUser(userName, password);
-                mutableAuthenticationDao.setEnabled(userName, setAccountEnabled);
+        			// create account for person with generated userName and
+        			// password
+        			mutableAuthenticationDao.createUser(userName, password);
+        			mutableAuthenticationDao.setEnabled(userName, setAccountEnabled);
                 
-                // TODO glen johnson at alfresco dot com -
-                // find a more secure way of making generated password
-                // available. I need to make it available for the invite
-                // workflow/service
-                person.getProperties().put("generatedPassword", new String(password));
-                person.save();
-            }
+        			// TODO glen johnson at alfresco dot com -
+        			// find a more secure way of making generated password
+        			// available. I need to make it available for the invite
+        			// workflow/service
+        			person.getProperties().put("generatedPassword", new String(password));        			
+        			person.save();
+        		}
+        		
+        		return person;
+        	}
         }
 
-        return person;
+        return null;
     }
 
     /**
@@ -265,6 +278,36 @@ public final class People extends BaseScopableProcessorExtension
         
         PropertyMap properties = new PropertyMap();
         properties.put(ContentModel.PROP_USERNAME, userName);
+        
+        if (!personService.personExists(userName))
+        {
+            NodeRef personRef = personService.createPerson(properties); 
+            person = new ScriptNode(personRef, services, getScope()); 
+        }
+        
+        return person;
+    }
+    
+    /**
+     * Create a Person with the given user name, firstName, lastName and emailAddress
+     * 
+     * @param userName the user name of the person to create
+     * @return the person node (type cm:person) created or null if the user name already exists
+     */
+    public ScriptNode createPerson(String userName, String firstName, String lastName, String emailAddress)
+    {
+        ParameterCheck.mandatoryString("userName", userName);
+        ParameterCheck.mandatoryString("firstName", firstName);
+        ParameterCheck.mandatoryString("lastName", lastName);
+        ParameterCheck.mandatoryString("emailAddress", emailAddress);
+        
+        ScriptNode person = null;
+        
+        PropertyMap properties = new PropertyMap();
+        properties.put(ContentModel.PROP_USERNAME, userName);
+        properties.put(ContentModel.PROP_FIRSTNAME, firstName);
+        properties.put(ContentModel.PROP_LASTNAME, lastName);
+        properties.put(ContentModel.PROP_EMAIL, emailAddress);
         
         if (!personService.personExists(userName))
         {

@@ -3,7 +3,7 @@
 <beans>
      
      <!--  Invitation Service Configuration File --> 
-     <bean id="invitationService" class="org.alfresco.repo.invitation.InvitationServiceImpl">
+     <bean id="invitationService" class="org.alfresco.repo.invitation.InvitationServiceImpl" init-method="init">
         <property name="workflowService" ref="WorkflowService"/>
         <property name="personService" ref="PersonService"/>
         <property name="permissionService" ref="PermissionService"/>
@@ -14,6 +14,9 @@
         <property name="nodeService" ref="NodeService"/>
         <property name="userNameGenerator" ref="userNameGenerator"/>
         <property name="passwordGenerator" ref="passwordGenerator"/> 
+        <property name="policyComponent">
+            <ref bean="policyComponent" />
+        </property>
      </bean>
      
     <!-- Site service security bean -->

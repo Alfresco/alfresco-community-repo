@@ -62,6 +62,9 @@ import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.invitation.site.*;
+import org.alfresco.repo.node.NodeServicePolicies;
+import org.alfresco.repo.policy.JavaBehaviour;
+import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
 import org.alfresco.repo.security.authentication.PasswordGenerator;
@@ -80,7 +83,7 @@ import org.apache.commons.logging.LogFactory;
  * @author mrogers
  * 
  */
-public class InvitationServiceImpl implements InvitationService 
+public class InvitationServiceImpl implements InvitationService, NodeServicePolicies.BeforeDeleteNodePolicy
 {
 	private static final Log logger = LogFactory
 			.getLog(InvitationServiceImpl.class);
@@ -99,12 +102,23 @@ public class InvitationServiceImpl implements InvitationService
 	// user name and password generation beans
 	private UserNameGenerator usernameGenerator;
 	private PasswordGenerator passwordGenerator;
+    private PolicyComponent policyComponent;
 
 	// maximum number of tries to generate a invitee user name which
 	// does not already belong to an existing person
 	public static final int MAX_NUM_INVITEE_USER_NAME_GEN_TRIES = 10;
 	
 	private int maxUserNameGenRetries = MAX_NUM_INVITEE_USER_NAME_GEN_TRIES;
+	
+    /**
+     * Set the policy component
+     * 
+     * @param policyComponent   policy component
+     */
+    public void setPolicyComponent(PolicyComponent policyComponent)
+    {
+        this.policyComponent = policyComponent;
+    }
 	
 	
     /**
@@ -123,6 +137,13 @@ public class InvitationServiceImpl implements InvitationService
         PropertyCheck.mandatory(this, "NodeService", nodeService);
         PropertyCheck.mandatory(this, "UserNameGenerator", usernameGenerator);
         PropertyCheck.mandatory(this, "PasswordGenerator", passwordGenerator);
+        PropertyCheck.mandatory(this, "PolicyComponent", policyComponent);
+        
+        //
+        this.policyComponent.bindClassBehaviour(
+                QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteNode"),
+                SiteModel.TYPE_SITE,
+                new JavaBehaviour(this, "beforeDeleteNode"));
     }
 	
 	/**
@@ -1420,5 +1441,42 @@ public class InvitationServiceImpl implements InvitationService
 
 	private int getMaxUserNameGenRetries() {
 		return maxUserNameGenRetries;
+	}
+
+	/**
+	 * NodeServicePolicies.BeforeDeleteNodePolicy
+	 * 
+	 * Called immediatly prior to deletion of a web site.
+	 */
+	public void beforeDeleteNode(NodeRef nodeRef) 
+	{
+		logger.debug("beforeDeleteNode");
+        
+		final NodeRef siteRef = nodeRef;
+		
+		// Run as system user
+        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
+        {
+            public Object doWork() throws Exception
+            {
+            	QName type = nodeService.getType(siteRef);
+            	if(type.equals(SiteModel.TYPE_SITE))
+            	{
+            		// this is a web site being deleted.
+            		String siteName = (String)nodeService.getProperty(siteRef, ContentModel.PROP_NAME);
+            		if(siteName != null)
+            		{
+            			logger.debug("Invitation service delete node fired " + type + ", " +siteName);
+            			List<Invitation> invitations = listPendingInvitationsForResource(Invitation.ResourceType.WEB_SITE, siteName);
+            			for(Invitation invitation : invitations)
+            			{
+            				logger.debug("cancel workflow " + invitation.getInviteId());
+            				workflowService.cancelWorkflow(invitation.getInviteId());
+            			}
+            		}
+            	}
+            	return null;
+            }
+        }, AuthenticationUtil.SYSTEM_USER_NAME);
 	}
 }

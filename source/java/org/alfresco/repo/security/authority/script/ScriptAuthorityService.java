@@ -124,8 +124,19 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
 	 */
 	public ScriptGroup[] searchGroups(String shortNameFilter, boolean includeInternal)
 	{
+		String filter = shortNameFilter;
+		
+		/**
+		 * Modify shortNameFilter to be "shortName*"
+		 */
+		if(shortNameFilter.length() > 0)
+		{
+			filter = filter + "*";
+		}
+		
+		
 		Set<ScriptGroup> groups = new LinkedHashSet<ScriptGroup>(0);
-		Set<String> authorities = authorityService.findAuthoritiesByShortName(AuthorityType.GROUP, shortNameFilter);
+		Set<String> authorities = authorityService.findAuthoritiesByShortName(AuthorityType.GROUP, filter);
 		for(String authority : authorities)
 		{
 			ScriptGroup group = new ScriptGroup(authority, authorityService);

@@ -24,9 +24,12 @@
  */
 package org.alfresco.repo.forms.processor;
 
+import java.util.List;
+
 import org.alfresco.repo.forms.Form;
 import org.alfresco.repo.forms.FormData;
 import org.alfresco.repo.forms.FormException;
+import org.alfresco.repo.forms.Item;
 
 /**
  * Abstract base class for all FormProcessor implementations that wish to use the 
@@ -52,11 +55,13 @@ public abstract class AbstractFormProcessorByHandlers extends AbstractFormProces
      * Generates a Form for the given item, constructed by calling each
      * applicable registered handler
      * 
-     * @see org.alfresco.repo.forms.processor.FormProcessor#generate(java.lang.String)
+     * @see org.alfresco.repo.forms.processor.FormProcessor#generate(org.alfresco.repo.forms.Item, java.util.List, java.util.List)
      * @param item The item to generate a form for
+     * @param fields Restricted list of fields to include
+     * @param forcedFields List of fields to forcibly include
      * @return The generated Form
      */
-    public Form generate(String item)
+    public Form generate(Item item, List<String> fields, List<String> forcedFields)
     {
         if (this.handlerRegistry == null)
         {
@@ -72,7 +77,7 @@ public abstract class AbstractFormProcessorByHandlers extends AbstractFormProces
         // execute each applicable handler
         for (Handler handler: this.handlerRegistry.getApplicableHandlers(typedItem))
         {
-            form = handler.handleGenerate(typedItem, form);
+            form = handler.handleGenerate(typedItem, fields, forcedFields, form);
         }
         
         return form;
@@ -82,11 +87,11 @@ public abstract class AbstractFormProcessorByHandlers extends AbstractFormProces
      * Persists the given form data for the given item, completed by calling 
      * each applicable registered handler
      * 
-     * @see org.alfresco.repo.forms.processor.FormProcessor#persist(java.lang.String, org.alfresco.repo.forms.FormData)
+     * @see org.alfresco.repo.forms.processor.FormProcessor#persist(org.alfresco.repo.forms.Item, org.alfresco.repo.forms.FormData)
      * @param item The item to save the form for
      * @param data The object representing the form data
      */
-    public void persist(String item, FormData data)
+    public void persist(Item item, FormData data)
     {
         if (this.handlerRegistry == null)
         {
@@ -113,5 +118,5 @@ public abstract class AbstractFormProcessorByHandlers extends AbstractFormProces
      * @param item The item to get a typed object for
      * @return The typed object
      */
-    protected abstract Object getTypedItem(String item);
+    protected abstract Object getTypedItem(Item item);
 }

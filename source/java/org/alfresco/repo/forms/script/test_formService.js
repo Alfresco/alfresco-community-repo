@@ -3,37 +3,48 @@ function testGetFormForNonExistentContentNode()
 	// Replace all the digits in the ID with an 'x'.
 	// Surely that node will not exist...
 	var corruptedTestDoc = testDoc.replace(/\d/g, "x");
-	var form = formService.getForm(corruptedTestDoc);
+	var form = null;
+	
+	try
+	{
+	   form = formService.getForm("node", corruptedTestDoc);
+	}
+	catch (e)
+	{
+	   // expected
+	}
+	
 	test.assertNull(form, "Form should have not been found: " + testDoc);
 }
 
 function testGetFormForContentNode()
 {
-	// Get a known form and check its various attributes/properties.
-	var form = formService.getForm(testDoc);
-	test.assertNotNull(form, "Form should have been found: " + testDoc);
-	
-	test.assertEquals(testDoc, form.item);
-	test.assertEquals('cm:content', form.type);
-	
-	test.assertNull(form.fieldGroups, "form.fieldGroups should be null.");
-	
-	var fieldDefs = form.fieldDefinitions;
-	test.assertNotNull(fieldDefs, "field definitions should not be null.");
-	test.assertEquals(23, fieldDefs.length);
-	
-	// as we know there are no duplicates we can safely create a map of the 
-	// field definitions for the purposes of this test
-	var fieldDefnDataHash = {};
-	var fieldDef = null;
-	for (var x = 0; x < fieldDefs.length; x++)
-	{
-		fieldDef = fieldDefs[x];
-		fieldDefnDataHash[fieldDef.name] = fieldDef;
-	}
-	
-	var nameField = fieldDefnDataHash['cm:name'];
-	var titleField = fieldDefnDataHash['cm:title'];
+    // Get a known form and check its various attributes/properties.
+    var form = formService.getForm("node", testDoc);
+    test.assertNotNull(form, "Form should have been found for: " + testDoc);
+
+    test.assertEquals("node", form.itemKind);
+    test.assertEquals(testDoc, form.itemId);
+    test.assertEquals('cm:content', form.type);
+
+    test.assertNull(form.fieldGroups, "form.fieldGroups should be null.");
+
+    var fieldDefs = form.fieldDefinitions;
+    test.assertNotNull(fieldDefs, "field definitions should not be null.");
+    test.assertEquals(22, fieldDefs.length);
+
+    // as we know there are no duplicates we can safely create a map of the 
+    // field definitions for the purposes of this test
+    var fieldDefnDataHash = {};
+    var fieldDef = null;
+    for (var x = 0; x < fieldDefs.length; x++)
+    {
+	     fieldDef = fieldDefs[x];
+	     fieldDefnDataHash[fieldDef.name] = fieldDef;
+    }
+
+    var nameField = fieldDefnDataHash['cm:name'];
+    var titleField = fieldDefnDataHash['cm:title'];
     var descField = fieldDefnDataHash['cm:description'];
     var originatorField = fieldDefnDataHash['cm:originator'];
     var addresseeField = fieldDefnDataHash['cm:addressee'];
@@ -101,6 +112,7 @@ function testGetFormForContentNode()
     test.assertNotNull(fieldData, "fieldData should not be null.");
     test.assertNotNull(fieldData.length, "fieldData.length should not be null.");
     
+    test.assertEquals(testDocName, fieldData["prop:cm:name"].value);
     test.assertEquals("This is the title for the test document", fieldData["prop:cm:title"].value);
     test.assertEquals("This is the description for the test document", fieldData["prop:cm:description"].value);
     test.assertEquals("fred@customer.com", fieldData["prop:cm:originator"].value);
@@ -126,6 +138,195 @@ function testGetFormForContentNode()
     test.assertEquals(testAssociatedDoc, targets);
 }
 
+function testGetFormForFolderNode()
+{
+    // Get a known form and check its various attributes/properties.
+    var form = formService.getForm("node", folder);
+    test.assertNotNull(form, "Form should have been found for: " + testDoc);
+
+    test.assertEquals("node", form.itemKind);
+    test.assertEquals(folder, form.itemId);
+    test.assertEquals('cm:folder', form.type);
+
+    test.assertNull(form.fieldGroups, "form.fieldGroups should be null.");
+
+    var fieldDefs = form.fieldDefinitions;
+    test.assertNotNull(fieldDefs, "field definitions should not be null.");
+    test.assertEquals(11, fieldDefs.length);
+
+    // as we know there are no duplicates we can safely create a map of the 
+    // field definitions for the purposes of this test
+    var fieldDefnDataHash = {};
+    var fieldDef = null;
+    for (var x = 0; x < fieldDefs.length; x++)
+    {
+        fieldDef = fieldDefs[x];
+        fieldDefnDataHash[fieldDef.name] = fieldDef;
+    }
+
+    var nameField = fieldDefnDataHash['cm:name'];
+    var containsField = fieldDefnDataHash['cm:contains'];
+
+    test.assertNotNull(nameField, "Expecting to find the cm:name field");
+    test.assertNotNull(containsField, "Expecting to find the cm:contains field");
+
+    // check the labels of all the fields
+    test.assertEquals("Name", nameField.label);
+    test.assertEquals("Contains", containsField.label);
+ 
+    // check details of name field
+    test.assertEquals("d:text", nameField.dataType);
+    test.assertTrue(nameField.mandatory);
+    // Expecting cm:name to be single-valued.
+    test.assertFalse(nameField.repeating, "nameField.repeating was not false.");
+ 
+    // compare the association details
+    test.assertEquals("TARGET", "" + containsField.endpointDirection);
+    test.assertFalse(containsField.endpointMandatory, "containsField.endpointMandatory was not false.");
+    test.assertTrue(containsField.endpointMany, "constainsField.endpointMany was not true.");
+ 
+    // check the form data
+    var formData = form.formData;
+    test.assertNotNull(formData, "formData should not be null.");
+    var fieldData = formData.data;
+    test.assertNotNull(fieldData, "fieldData should not be null.");
+    test.assertNotNull(fieldData.length, "fieldData.length should not be null.");
+ 
+    test.assertEquals(folderName, fieldData["prop:cm:name"].value);
+    var children = fieldData["assoc:cm:contains"].value;
+    test.assertNotNull(children, "children should not be null.");
+    var childrenArr = children.split(",");
+    test.assertTrue(childrenArr.length == 3, "Expecting there to be 3 children");
+}
+
+function testGetFormWithSelectedFields()
+{
+    // Define list of fields to retrieve
+    var fields = [];
+    fields.push("cm:name");
+    fields.push("cm:title");
+    fields.push("mimetype");
+    fields.push("cm:modified");
+    // add field that will be missing
+    fields.push("cm:author");
+    
+    // Get a a form for the given fields
+    var form = formService.getForm("node", testDoc, fields);
+    test.assertNotNull(form, "Form should have been found for: " + testDoc);
+    
+    var fieldDefs = form.fieldDefinitions;
+    test.assertNotNull(fieldDefs, "field definitions should not be null.");
+    test.assertEquals(4, fieldDefs.length);
+
+    // as we know there are no duplicates we can safely create a map of the 
+    // field definitions for the purposes of this test
+    var fieldDefnDataHash = {};
+    var fieldDef = null;
+    for (var x = 0; x < fieldDefs.length; x++)
+    {
+        fieldDef = fieldDefs[x];
+        fieldDefnDataHash[fieldDef.name] = fieldDef;
+    }
+
+    var nameField = fieldDefnDataHash['cm:name'];
+    var titleField = fieldDefnDataHash['cm:title'];
+    var mimetypeField = fieldDefnDataHash['mimetype'];
+    var modifiedField = fieldDefnDataHash['cm:modified'];
+    var authorField = fieldDefnDataHash['cm:author'];
+
+    test.assertNotNull(nameField, "Expecting to find the cm:name field");
+    test.assertNotNull(titleField, "Expecting to find the cm:title field");
+    test.assertNotNull(mimetypeField, "Expecting to find the mimetype field");
+    test.assertNotNull(modifiedField, "Expecting to find the cm:modified field");
+    test.assertTrue(authorField === undefined, "Expecting cm:author field to be missing");
+
+    // check the labels of all the fields
+    test.assertEquals("Name", nameField.label);
+    test.assertEquals("Title", titleField.label);
+    test.assertEquals("Mimetype", mimetypeField.label);
+    test.assertEquals("Modified Date", modifiedField.label);
+    
+    // check the form data
+    var formData = form.formData;
+    test.assertNotNull(formData, "formData should not be null.");
+    var fieldData = formData.data;
+    test.assertNotNull(fieldData, "fieldData should not be null.");
+    test.assertNotNull(fieldData.length, "fieldData.length should not be null.");
+ 
+    test.assertEquals(testDocName, fieldData["prop:cm:name"].value);
+    test.assertEquals("This is the title for the test document", fieldData["prop:cm:title"].value);
+}
+
+function testGetFormWithForcedFields()
+{
+    // Define list of fields to retrieve
+    var fields = [];
+    fields.push("cm:name");
+    fields.push("cm:title");
+    fields.push("mimetype");
+    fields.push("cm:modified");
+    fields.push("cm:author");
+    fields.push("cm:wrong");
+    
+    // define a list of fields to force
+    var force = [];
+    force.push("cm:author");
+    force.push("cm:wrong");
+    
+    // Get a a form for the given fields
+    var form = formService.getForm("node", testDoc, fields, force);
+    test.assertNotNull(form, "Form should have been found for: " + testDoc);
+    
+    var fieldDefs = form.fieldDefinitions;
+    test.assertNotNull(fieldDefs, "field definitions should not be null.");
+    test.assertEquals(5, fieldDefs.length);
+
+    // as we know there are no duplicates we can safely create a map of the 
+    // field definitions for the purposes of this test
+    var fieldDefnDataHash = {};
+    var fieldDef = null;
+    for (var x = 0; x < fieldDefs.length; x++)
+    {
+        fieldDef = fieldDefs[x];
+        fieldDefnDataHash[fieldDef.name] = fieldDef;
+    }
+
+    var nameField = fieldDefnDataHash['cm:name'];
+    var titleField = fieldDefnDataHash['cm:title'];
+    var mimetypeField = fieldDefnDataHash['mimetype'];
+    var modifiedField = fieldDefnDataHash['cm:modified'];
+    var authorField = fieldDefnDataHash['cm:author'];
+    var wrongField = fieldDefnDataHash['cm:wrong'];
+
+    test.assertNotNull(nameField, "Expecting to find the cm:name field");
+    test.assertNotNull(titleField, "Expecting to find the cm:title field");
+    test.assertNotNull(mimetypeField, "Expecting to find the mimetype field");
+    test.assertNotNull(modifiedField, "Expecting to find the cm:modified field");
+    test.assertNotNull(authorField, "Expecting to find the cm:author field");
+    test.assertTrue(wrongField === undefined, "Expecting cm:wrong field to be missing");
+
+    // check the labels of all the fields
+    test.assertEquals("Name", nameField.label);
+    test.assertEquals("Title", titleField.label);
+    test.assertEquals("Mimetype", mimetypeField.label);
+    test.assertEquals("Modified Date", modifiedField.label);
+    test.assertEquals("Author", authorField.label);
+    
+    // check the form data
+    var formData = form.formData;
+    test.assertNotNull(formData, "formData should not be null.");
+    var fieldData = formData.data;
+    test.assertNotNull(fieldData, "fieldData should not be null.");
+    test.assertNotNull(fieldData.length, "fieldData.length should not be null.");
+ 
+    test.assertEquals(testDocName, fieldData["prop:cm:name"].value);
+    test.assertEquals("This is the title for the test document", fieldData["prop:cm:title"].value);
+    test.assertNull(fieldData["prop:cm:author"], "Expecting cm:author to be null");
+}
+
 // Execute tests
 testGetFormForNonExistentContentNode();
 testGetFormForContentNode();
+testGetFormForFolderNode();
+testGetFormWithSelectedFields();
+testGetFormWithForcedFields();

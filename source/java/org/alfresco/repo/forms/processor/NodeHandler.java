@@ -26,7 +26,6 @@ package org.alfresco.repo.forms.processor;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -163,9 +162,9 @@ public class NodeHandler extends AbstractHandler
     }
 
     /*
-     * @see org.alfresco.repo.forms.processor.FormProcessorHandler#handleGenerate(java.lang.Object, org.alfresco.repo.forms.Form)
+     * @see org.alfresco.repo.forms.processor.Handler#handleGenerate(java.lang.Object, java.util.List, java.util.List, org.alfresco.repo.forms.Form)
      */
-    public Form handleGenerate(Object item, Form form)
+    public Form handleGenerate(Object item, List<String> fields, List<String> forcedFields, Form form)
     {
         if (logger.isDebugEnabled())
             logger.debug("Generating form for: " + item);
@@ -174,7 +173,7 @@ public class NodeHandler extends AbstractHandler
         NodeRef nodeRef = (NodeRef)item;
         
         // generate the form for the node
-        generateNode(nodeRef, form);
+        generateNode(nodeRef, fields, forcedFields, form);
         
         if (logger.isDebugEnabled())
             logger.debug("Returning form: " + form);
@@ -182,201 +181,384 @@ public class NodeHandler extends AbstractHandler
         return form;
     }
 
-    /*
-     * @see org.alfresco.repo.forms.processor.FormProcessorHandler#handlePersist(java.lang.Object, org.alfresco.repo.forms.FormData)
-     */
-    public void handlePersist(Object item, FormData data)
-    {
-        if (logger.isDebugEnabled())
-            logger.debug("Persisting form for: " + item);
-        
-        // cast to the expected NodeRef representation
-        NodeRef nodeRef = (NodeRef)item;
-        
-        // persist the node
-        persistNode(nodeRef, data);
-    }
-
     /**
      * Sets up the Form object for the given NodeRef
      * 
      * @param nodeRef The NodeRef to generate a Form for
+     * @param fields Restricted list of fields to include
+     * @param forcedFields List of fields to forcibly include
      * @param form The Form instance to populate
      */
-    protected void generateNode(NodeRef nodeRef, Form form)
+    protected void generateNode(NodeRef nodeRef, List<String> fields, List<String> forcedFields, Form form)
     {
         // set the type
         QName type = this.nodeService.getType(nodeRef);
         form.setType(type.toPrefixString(this.namespaceService));
         
-        // setup field definitions and data
-        FormData formData = new FormData();
-        generatePropertyFields(nodeRef, form, formData);
-        generateAssociationFields(nodeRef, form, formData);
-        generateChildAssociationFields(nodeRef, form, formData);
-        generateTransientFields(nodeRef, form, formData);
-        form.setFormData(formData);
+        if (fields != null && fields.size() > 0)
+        {
+            generateSelectedFields(nodeRef, fields, forcedFields, form);
+        }
+        else
+        {
+            // setup field definitions and data
+            generateAllPropertyFields(nodeRef, form);
+            generateAllAssociationFields(nodeRef, form);
+            generateAllChildAssociationFields(nodeRef, form);
+            generateTransientFields(nodeRef, form);
+        }
     }
     
     /**
-     * Persists the given FormData on the given NodeRef
+     * Sets up the field definitions for all the requested fields.
+     * If any of the requested fields are not present on the node and they
+     * appear in the forcedFields list an attempt to find a model
+     * definition for those fields is made so they can be included.
      * 
-     * @param nodeRef The NodeRef to persist the form data on
-     * @param data The FormData to persist
+     * @param nodeRef The NodeRef of the node being setup
+     * @param fields Restricted list of fields to include
+     * @param forcedFields List of field names that should be included
+     *                     even if the field is not currently present
+     * @param form The Form instance to populate
      */
-    protected void persistNode(NodeRef nodeRef, FormData data)
+    protected void generateSelectedFields(NodeRef nodeRef, List<String> fields, List<String> forcedFields, Form form)
     {
-        // get the property definitions for the type of node being persisted
+        if (logger.isDebugEnabled())
+            logger.debug("Generating selected fields: " + fields + " and forcing: " + forcedFields);
+        
+        // get data dictionary definition for node
         QName type = this.nodeService.getType(nodeRef);
-        Collection<QName> aspects = this.getAspectsToInclude(nodeRef);
-        TypeDefinition typeDef = this.dictionaryService.getAnonymousType(type, aspects);
+        TypeDefinition typeDef = this.dictionaryService.getAnonymousType(type,
+                    this.nodeService.getAspects(nodeRef));
+        Map<QName, PropertyDefinition> propDefs = typeDef.getProperties();
         Map<QName, AssociationDefinition> assocDefs = typeDef.getAssociations();
         Map<QName, ChildAssociationDefinition> childAssocDefs = typeDef.getChildAssociations();
-        Map<QName, PropertyDefinition> propDefs = typeDef.getProperties();
+        Map<QName, Serializable> propValues = this.nodeService.getProperties(nodeRef);
         
-        Map<QName, Serializable> propsToPersist = new HashMap<QName, Serializable>(data.getData().size());
-        List<AbstractAssocCommand> assocsToPersist = new ArrayList<AbstractAssocCommand>();
-        
-        for (String dataKey : data.getData().keySet())
+        for (String fieldName : fields)
         {
-            FieldData fieldData = data.getData().get(dataKey);
-            // NOTE: ignore file fields for now, not supported yet!
-            if (fieldData.isFile() == false)
+            // try and split the field name
+            String[] parts = fieldName.split(":");
+            if (parts.length == 2)
             {
-                String fieldName = fieldData.getName();
-                
-                if (fieldName.startsWith(PROP_PREFIX))
+                // create qname of field name
+                String qNamePrefix = parts[0];
+                String localName = parts[1];
+                QName fullQName = QName.createQName(qNamePrefix, localName, namespaceService);
+            
+                // lookup property def on node
+                PropertyDefinition propDef = propDefs.get(fullQName);
+                if (propDef != null)
                 {
-                    processPropertyPersist(nodeRef, propDefs, fieldData, propsToPersist);
+                    // generate the property field
+                    generatePropertyField(propDef, propValues.get(propDef.getName()), form);
                 }
-                else if (fieldName.startsWith(ASSOC_PREFIX))
+                else
                 {
-                    processAssociationPersist(nodeRef, assocDefs, childAssocDefs, fieldData, assocsToPersist);
+                    // look for association defined for the type
+                    AssociationDefinition assocDef = assocDefs.get(fullQName);
+                    if (assocDef != null)
+                    {
+                        // generate the association field
+                        generateAssociationField(assocDef, 
+                                    this.nodeService.getTargetAssocs(nodeRef, fullQName), form);
+                    }
+                    else
+                    {
+                        ChildAssociationDefinition childAssocDef = childAssocDefs.get(fullQName);
+                        if (childAssocDef != null)
+                        {
+                            // generate the association field
+                            // TODO: see if we can get just the specific child assoc data
+                            generateAssociationField(childAssocDef, 
+                                        this.nodeService.getChildAssocs(nodeRef), form);
+                        }
+                        else
+                        {
+                            // still not found the field, is it a force'd field?
+                            if (forcedFields != null && forcedFields.size() > 0 && 
+                                forcedFields.contains(fieldName))
+                            {
+                                generateForcedField(fullQName, form);
+                            }
+                            else if (logger.isWarnEnabled())
+                            {
+                                logger.warn("Ignoring field \"" + fieldName + 
+                                            "\" as it is not defined for the current node and it does not appear in the 'force' list");
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                // see if the fieldName is a well known transient property
+                if (TRANSIENT_MIMETYPE.equals(fieldName) || TRANSIENT_ENCODING.equals(fieldName) ||
+                    TRANSIENT_SIZE.equals(fieldName))
+                {
+                    // if the node type is content or sublcass thereof generate appropriate field
+                    if (this.dictionaryService.isSubClass(type, ContentModel.TYPE_CONTENT))
+                    {
+                        ContentData content = (ContentData)this.nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
+                        if (content != null)
+                        {
+                            if (TRANSIENT_MIMETYPE.equals(fieldName))
+                            {
+                                generateMimetypePropertyField(content, form);
+                            }
+                            else if (TRANSIENT_ENCODING.equals(fieldName))
+                            {
+                                generateEncodingPropertyField(content, form);
+                            }
+                            else if (TRANSIENT_SIZE.equals(fieldName))
+                            {
+                                generateSizePropertyField(content, form);
+                            }
+                        }
+                    }
                 }
                 else if (logger.isWarnEnabled())
                 {
-                    logger.warn("Ignoring unrecognised field '" + fieldName + "'");
+                    logger.warn("Ignoring unrecognised field \"" + fieldName + "\"");
                 }
             }
-        }
-        
-        // persist the properties using addProperties as this changes the repo values of 
-        // those properties included in the Map, but leaves any other property values unchanged,
-        // whereas setProperties causes the deletion of properties that are not included in the Map.
-        this.nodeService.addProperties(nodeRef, propsToPersist);
-        
-        for (AbstractAssocCommand cmd : assocsToPersist)
-        {
-            //TODO If there is an attempt to add and remove the same assoc in one request,
-            //     we could drop each request and do nothing.
-            cmd.updateAssociations(nodeService);
         }
     }
     
     /**
-     * Sets up the field definitions for the node's properties.
+     * Generates a field definition for the given field that is being forced
+     * to show
+     * 
+     * @param fieldName QName of the field to force
+     * @param form The Form instance to populated
+     */
+    protected void generateForcedField(QName fieldName, Form form)
+    {
+        if (logger.isDebugEnabled())
+            logger.debug("Attempting to force the inclusion of field \"" + 
+                        fieldName.toPrefixString(this.namespaceService) + "\"");
+        
+        // lookup the field as a property in the model
+        PropertyDefinition propDef = this.dictionaryService.getProperty(fieldName);
+        if (propDef != null)
+        {
+            // generate the property field
+            generatePropertyField(propDef, null, form);
+        }
+        else
+        {
+            // lookup the field as an association in the model
+            AssociationDefinition assocDef = this.dictionaryService.getAssociation(fieldName);
+            if (assocDef != null)
+            {
+                // generate the association field
+                generateAssociationField(assocDef, null, form);
+            }
+            else if (logger.isWarnEnabled())
+            {
+                logger.warn("Ignoring field \"" + fieldName.toPrefixString(this.namespaceService) + 
+                            "\" as it is not defined for the current node and can not be found in any model");
+            }
+        }
+    }
+    
+    /**
+     * Sets up the field definitions for all the node's properties.
      * 
      * @param nodeRef The NodeRef of the node being setup
      * @param form The Form instance to populate
-     * @param formData The FormData instance to populate
      */
-    @SuppressWarnings("unchecked")
-    protected void generatePropertyFields(NodeRef nodeRef, Form form, FormData formData)
+    protected void generateAllPropertyFields(NodeRef nodeRef, Form form)
     {
         // get data dictionary definition for node
         QName type = this.nodeService.getType(nodeRef);
-        Collection<QName> aspects = this.getAspectsToInclude(nodeRef);
-        TypeDefinition typeDef = this.dictionaryService.getAnonymousType(type, aspects);
+        TypeDefinition typeDef = this.dictionaryService.getAnonymousType(type,
+                    this.nodeService.getAspects(nodeRef));
         
-        // iterate round the property definitions, create the equivalent
-        // field definition and setup the data for the property
+        // iterate round the property definitions for the node and create 
+        // the equivalent field definition and setup the data for the property
         Map<QName, PropertyDefinition> propDefs = typeDef.getProperties();
         Map<QName, Serializable> propValues = this.nodeService.getProperties(nodeRef);
         for (PropertyDefinition propDef : propDefs.values())
         {
-            String propName = propDef.getName().toPrefixString(this.namespaceService);
-            PropertyFieldDefinition fieldDef = new PropertyFieldDefinition(
-                        propName, propDef.getDataType().getName().toPrefixString(
-                        this.namespaceService));
+            generatePropertyField(propDef, propValues.get(propDef.getName()), form);
+        }
+    }
+    
+    /**
+     * Sets up a field definition for the given property
+     * 
+     * @param propDef The PropertyDefinition of the field to generate
+     * @param propValue The value of the property field
+     * @param form The Form instance to populate
+     */
+    @SuppressWarnings("unchecked")
+    protected void generatePropertyField(PropertyDefinition propDef, Serializable propValue, Form form)
+    {
+        String propName = propDef.getName().toPrefixString(this.namespaceService);
+        PropertyFieldDefinition fieldDef = new PropertyFieldDefinition(
+                    propName, propDef.getDataType().getName().toPrefixString(
+                    this.namespaceService));
+        
+        String title = propDef.getTitle();
+        if (title == null)
+        {
+            title = propName;
+        }
+        fieldDef.setLabel(title);
+        fieldDef.setDefaultValue(propDef.getDefaultValue());
+        fieldDef.setDescription(propDef.getDescription());
+        fieldDef.setMandatory(propDef.isMandatory());
+        fieldDef.setProtectedField(propDef.isProtected());
+        fieldDef.setRepeating(propDef.isMultiValued());
+        
+        // setup constraints for the property
+        List<ConstraintDefinition> constraints = propDef.getConstraints();
+        if (constraints != null && constraints.size() > 0)
+        {
+            List<FieldConstraint> fieldConstraints = 
+                new ArrayList<FieldConstraint>(constraints.size());
             
-            String title = propDef.getTitle();
-            if (title == null)
+            for (ConstraintDefinition constraintDef : constraints)
             {
-                title = propName;
-            }
-            fieldDef.setLabel(title);
-            fieldDef.setDefaultValue(propDef.getDefaultValue());
-            fieldDef.setDescription(propDef.getDescription());
-            fieldDef.setMandatory(propDef.isMandatory());
-            fieldDef.setProtectedField(propDef.isProtected());
-            fieldDef.setRepeating(propDef.isMultiValued());
-            
-            // setup constraints for the property
-            List<ConstraintDefinition> constraints = propDef.getConstraints();
-            if (constraints != null && constraints.size() > 0)
-            {
-                List<FieldConstraint> fieldConstraints = 
-                    new ArrayList<FieldConstraint>(constraints.size());
-                
-                for (ConstraintDefinition constraintDef : constraints)
+                Constraint constraint = constraintDef.getConstraint();
+                Map<String, String> fieldConstraintParams = null;
+                Map<String, Object> constraintParams = constraint.getParameters();
+                if (constraintParams != null)
                 {
-                    Constraint constraint = constraintDef.getConstraint();
-                    Map<String, String> fieldConstraintParams = null;
-                    Map<String, Object> constraintParams = constraint.getParameters();
-                    if (constraintParams != null)
+                    // TODO: Just return the param value object, don't convert to String
+                    fieldConstraintParams = new HashMap<String, String>(constraintParams.size());
+                    for (String name : constraintParams.keySet())
                     {
-                        // TODO: Just return the param value object, don't convert to String
-                        fieldConstraintParams = new HashMap<String, String>(constraintParams.size());
-                        for (String name : constraintParams.keySet())
+                        Object paramValue = constraintParams.get(name);
+                        
+                        if (paramValue instanceof List)
                         {
-                            Object paramValue = constraintParams.get(name);
-                            
-                            if (paramValue instanceof List)
-                            {
-                                paramValue = makeListString((List)paramValue);
-                            }
-                            
-                            fieldConstraintParams.put(name, paramValue.toString());
+                            paramValue = makeListString((List)paramValue);
                         }
+                        
+                        fieldConstraintParams.put(name, paramValue.toString());
                     }
-                    FieldConstraint fieldConstraint = fieldDef.new FieldConstraint(
-                                constraint.getType(), fieldConstraintParams);
-                    fieldConstraints.add(fieldConstraint);
                 }
-                
-                fieldDef.setConstraints(fieldConstraints);
+                FieldConstraint fieldConstraint = fieldDef.new FieldConstraint(
+                            constraint.getType(), fieldConstraintParams);
+                fieldConstraints.add(fieldConstraint);
             }
             
-            form.addFieldDefinition(fieldDef);
-            
-            // get the field value and add to the form data object
-            Serializable fieldData = propValues.get(propDef.getName());
-            if (fieldData != null)
+            fieldDef.setConstraints(fieldConstraints);
+        }
+        
+        form.addFieldDefinition(fieldDef);
+        
+        // add the property value to the form
+        if (propValue != null)
+        {
+            if (propValue instanceof List)
             {
-                if (fieldData instanceof List)
-                {
-                    // temporarily add repeating field data as a comma
-                    // separated list, this will be changed to using
-                    // a separate field for each value once we have full
-                    // UI support in place.
-                    fieldData = makeListString((List)fieldData);
-                }
+                // temporarily add repeating field data as a comma
+                // separated list, this will be changed to using
+                // a separate field for each value once we have full
+                // UI support in place.
+                propValue = makeListString((List)propValue);
+            }
+            
+            form.addData(PROP_PREFIX + fieldDef.getName(), propValue);
+        }
+    }
+
+    /**
+     * Sets up the field definitions for any transient fields that may be
+     * useful, for example, 'mimetype', 'size' and 'encoding'.
+     * 
+     * @param nodeRef The NodeRef of the node being setup
+     * @param form The Form instance to populate
+     */
+    protected void generateTransientFields(NodeRef nodeRef, Form form)
+    {
+        // if the node is content add the 'mimetype', 'size' and 'encoding' fields.
+        QName type = this.nodeService.getType(nodeRef);
+        if (this.dictionaryService.isSubClass(type, ContentModel.TYPE_CONTENT))
+        {
+            ContentData content = (ContentData)this.nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
+            if (content != null)
+            {
+                // setup mimetype field
+                generateMimetypePropertyField(content, form);
                 
-                formData.addData(PROP_PREFIX + fieldDef.getName(), fieldData);
+                // setup encoding field
+                generateEncodingPropertyField(content, form);
+                
+                // setup size field
+                generateSizePropertyField(content, form);
             }
         }
     }
     
     /**
-     * Sets up the field definitions for the node's associations.
+     * Generates the field definition for the transient mimetype property
+     * 
+     * @param content The ContentData object to generate the field from
+     * @param form The Form instance to populate
+     */
+    protected void generateMimetypePropertyField(ContentData content, Form form)
+    {
+        PropertyFieldDefinition mimetypeField = new PropertyFieldDefinition(
+                    TRANSIENT_MIMETYPE, DataTypeDefinition.TEXT.toPrefixString(
+                    this.namespaceService));
+        mimetypeField.setLabel(I18NUtil.getMessage(MSG_MIMETYPE_LABEL));
+        mimetypeField.setDescription(I18NUtil.getMessage(MSG_MIMETYPE_DESC));
+        form.addFieldDefinition(mimetypeField);
+        form.addData(PROP_PREFIX + TRANSIENT_MIMETYPE, content.getMimetype());
+    }
+    
+    /**
+     * Generates the field definition for the transient encoding property
+     * 
+     * @param content The ContentData object to generate the field from
+     * @param form The Form instance to populate
+     */
+    protected void generateEncodingPropertyField(ContentData content, Form form)
+    {
+        PropertyFieldDefinition encodingField = new PropertyFieldDefinition(
+                    TRANSIENT_ENCODING, DataTypeDefinition.TEXT.toPrefixString(
+                    this.namespaceService));
+        encodingField.setLabel(I18NUtil.getMessage(MSG_ENCODING_LABEL));
+        encodingField.setDescription(I18NUtil.getMessage(MSG_ENCODING_DESC));
+        form.addFieldDefinition(encodingField);
+        form.addData(PROP_PREFIX + TRANSIENT_ENCODING, content.getEncoding());
+    }
+    
+    /**
+     * Generates the field definition for the transient size property
+     * 
+     * @param content The ContentData object to generate the field from
+     * @param form The Form instance to populate
+     */
+    protected void generateSizePropertyField(ContentData content, Form form)
+    {
+        PropertyFieldDefinition sizeField = new PropertyFieldDefinition(
+                    TRANSIENT_SIZE, DataTypeDefinition.LONG.toPrefixString(
+                    this.namespaceService));
+        sizeField.setLabel(I18NUtil.getMessage(MSG_SIZE_LABEL));
+        sizeField.setDescription(I18NUtil.getMessage(MSG_SIZE_DESC));
+        sizeField.setProtectedField(true);
+        form.addFieldDefinition(sizeField);
+        form.addData(PROP_PREFIX + TRANSIENT_SIZE, new Long(content.getSize()));
+    }
+    
+    /**
+     * Sets up the field definitions for all the node's associations.
      * 
      * @param nodeRef The NodeRef of the node being setup
      * @param form The Form instance to populate
-     * @param formData The FormData instance to populate
      */
     @SuppressWarnings("unchecked")
-    protected void generateAssociationFields(NodeRef nodeRef, Form form, FormData formData)
+    protected void generateAllAssociationFields(NodeRef nodeRef, Form form)
     {
+        // ********************************************************
+        //  re-factor this to gen. all assocs defs and not values
+        // ********************************************************
+        
         // add target association data
         List<AssociationRef> associations = this.nodeService.getTargetAssocs(nodeRef, 
                     RegexQNamePattern.MATCH_ALL);
@@ -431,11 +613,11 @@ public class NodeHandler extends AbstractHandler
                     
                     // add the value as a List (or add to the list if the form data
                     // is already present)
-                    FieldData fieldData = formData.getData().get(prefixedAssocName);
+                    FieldData fieldData = form.getFormData().getData().get(prefixedAssocName);
                     if (fieldData == null)
                     {
                         targets = new ArrayList<String>(4);
-                        formData.addData(prefixedAssocName, targets);
+                        form.addData(prefixedAssocName, targets);
                     }
                     else
                     {
@@ -448,7 +630,7 @@ public class NodeHandler extends AbstractHandler
                 else
                 {
                     // there should only be one value
-                    formData.addData(prefixedAssocName, assocValue);
+                    form.addData(prefixedAssocName, assocValue);
                 }
             }
         }
@@ -459,9 +641,8 @@ public class NodeHandler extends AbstractHandler
      * 
      * @param nodeRef The NodeRef of the node being setup
      * @param form The Form instance to populate
-     * @param formData The FormData instance to populate
      */
-    protected void generateChildAssociationFields(NodeRef nodeRef, Form form, FormData formData)
+    protected void generateAllChildAssociationFields(NodeRef nodeRef, Form form)
     {
         List<ChildAssociationRef> childAssocs = this.nodeService.getChildAssocs(nodeRef);
         if (childAssocs.isEmpty())
@@ -527,7 +708,7 @@ public class NodeHandler extends AbstractHandler
             
             // We don't want the whitespace or enclosing square brackets that come
             // with java.util.List.toString(), hence the custom String construction.
-            StringBuilder assocValue = new StringBuilder();
+            /*StringBuilder assocValue = new StringBuilder();
             for (Iterator<ChildAssociationRef> iter = values.iterator(); iter.hasNext(); )
             {
                 ChildAssociationRef nextChild = iter.next();
@@ -537,55 +718,142 @@ public class NodeHandler extends AbstractHandler
                     assocValue.append(",");
                 }
             }
-            formData.addData(ASSOC_PREFIX + associationName, assocValue.toString());
+            form.addData(ASSOC_PREFIX + associationName, assocValue.toString());*/
+            
+            List<String> nodeRefs = new ArrayList<String>(4);
+            for (Iterator<ChildAssociationRef> iter = values.iterator(); iter.hasNext(); )
+            {
+                ChildAssociationRef nextChild = iter.next();
+                nodeRefs.add(nextChild.getChildRef().toString());
+            }
+            form.addData(ASSOC_PREFIX + associationName, nodeRefs);
         }
     }
     
     /**
-     * Sets up the field definitions for any transient fields that may be
-     * useful, for example, 'mimetype', 'size' and 'encoding'.
+     * Sets up a field definition for the given association
      * 
-     * @param nodeRef The NodeRef of the node being setup
+     * @param assocDef The AssociationDefinition of the field to generate
+     * @param assocValues The values of the association field
      * @param form The Form instance to populate
-     * @param formData The FormData instance to populate
      */
-    protected void generateTransientFields(NodeRef nodeRef, Form form, FormData formData)
+    @SuppressWarnings("unchecked")
+    protected void generateAssociationField(AssociationDefinition assocDef, 
+                List assocValues, Form form)
     {
-        // if the node is content add the 'mimetype', 'size' and 'encoding' fields.
-        QName type = this.nodeService.getType(nodeRef);
-        if (this.dictionaryService.isSubClass(type, ContentModel.TYPE_CONTENT))
+        String assocName = assocDef.getName().toPrefixString(this.namespaceService);
+        AssociationFieldDefinition fieldDef = new AssociationFieldDefinition(assocName, 
+                    assocDef.getTargetClass().getName().toPrefixString(
+                    this.namespaceService), Direction.TARGET);
+        String title = assocDef.getTitle();
+        if (title == null)
         {
-            ContentData content = (ContentData)this.nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
-            if (content != null)
+            title = assocName;
+        }
+        fieldDef.setLabel(title);
+        fieldDef.setDescription(assocDef.getDescription());
+        fieldDef.setProtectedField(assocDef.isProtected());
+        fieldDef.setEndpointMandatory(assocDef.isTargetMandatory());
+        fieldDef.setEndpointMany(assocDef.isTargetMany());
+        
+        // add definition to the form
+        form.addFieldDefinition(fieldDef);
+        
+        // add the association value to the form
+        String prefixedAssocName = ASSOC_PREFIX + assocName;
+        
+        // determine the type of association values data and extract accordingly
+        List<String> values = new ArrayList<String>(4);
+        for (Object value : assocValues)
+        {
+            if (value instanceof ChildAssociationRef)
             {
-                // setup mimetype field
-                PropertyFieldDefinition mimetypeField = new PropertyFieldDefinition(
-                            TRANSIENT_MIMETYPE, DataTypeDefinition.TEXT.toPrefixString(
-                            this.namespaceService));
-                mimetypeField.setLabel(I18NUtil.getMessage(MSG_MIMETYPE_LABEL));
-                mimetypeField.setDescription(I18NUtil.getMessage(MSG_MIMETYPE_DESC));
-                form.addFieldDefinition(mimetypeField);
-                formData.addData(PROP_PREFIX + TRANSIENT_MIMETYPE, content.getMimetype());
-                
-                // setup encoding field
-                PropertyFieldDefinition encodingField = new PropertyFieldDefinition(
-                            TRANSIENT_ENCODING, DataTypeDefinition.TEXT.toPrefixString(
-                            this.namespaceService));
-                encodingField.setLabel(I18NUtil.getMessage(MSG_ENCODING_LABEL));
-                encodingField.setDescription(I18NUtil.getMessage(MSG_ENCODING_DESC));
-                form.addFieldDefinition(encodingField);
-                formData.addData(PROP_PREFIX + TRANSIENT_ENCODING, content.getEncoding());
-                
-                // setup size field
-                PropertyFieldDefinition sizeField = new PropertyFieldDefinition(
-                            TRANSIENT_SIZE, DataTypeDefinition.LONG.toPrefixString(
-                            this.namespaceService));
-                sizeField.setLabel(I18NUtil.getMessage(MSG_SIZE_LABEL));
-                sizeField.setDescription(I18NUtil.getMessage(MSG_SIZE_DESC));
-                sizeField.setProtectedField(true);
-                form.addFieldDefinition(sizeField);
-                formData.addData(PROP_PREFIX + TRANSIENT_SIZE, new Long(content.getSize()));
+                values.add(((ChildAssociationRef)value).getChildRef().toString());
             }
+            else if (value instanceof AssociationRef)
+            {
+                values.add(((AssociationRef)value).getTargetRef().toString());
+            }
+            else
+            {
+                values.add(value.toString());
+            }
+        }
+        
+        // Add the list as the value for the association.
+        // TODO: Do we also return a well known named list of association names
+        //       for each noderef so that clients do not have extra work to do
+        //       to display the current values to the user
+        form.addData(prefixedAssocName, values);
+    }
+    
+    /*
+     * @see org.alfresco.repo.forms.processor.FormProcessorHandler#handlePersist(java.lang.Object, org.alfresco.repo.forms.FormData)
+     */
+    public void handlePersist(Object item, FormData data)
+    {
+        if (logger.isDebugEnabled())
+            logger.debug("Persisting form for: " + item);
+        
+        // cast to the expected NodeRef representation
+        NodeRef nodeRef = (NodeRef)item;
+        
+        // persist the node
+        persistNode(nodeRef, data);
+    }
+    
+    /**
+     * Persists the given FormData on the given NodeRef
+     * 
+     * @param nodeRef The NodeRef to persist the form data on
+     * @param data The FormData to persist
+     */
+    protected void persistNode(NodeRef nodeRef, FormData data)
+    {
+        // get the property definitions for the type of node being persisted
+        QName type = this.nodeService.getType(nodeRef);
+        TypeDefinition typeDef = this.dictionaryService.getAnonymousType(type,
+                    this.nodeService.getAspects(nodeRef));
+        Map<QName, AssociationDefinition> assocDefs = typeDef.getAssociations();
+        Map<QName, ChildAssociationDefinition> childAssocDefs = typeDef.getChildAssociations();
+        Map<QName, PropertyDefinition> propDefs = typeDef.getProperties();
+        
+        Map<QName, Serializable> propsToPersist = new HashMap<QName, Serializable>(data.getData().size());
+        List<AbstractAssocCommand> assocsToPersist = new ArrayList<AbstractAssocCommand>();
+        
+        for (String dataKey : data.getData().keySet())
+        {
+            FieldData fieldData = data.getData().get(dataKey);
+            // NOTE: ignore file fields for now, not supported yet!
+            if (fieldData.isFile() == false)
+            {
+                String fieldName = fieldData.getName();
+                
+                if (fieldName.startsWith(PROP_PREFIX))
+                {
+                    processPropertyPersist(nodeRef, propDefs, fieldData, propsToPersist);
+                }
+                else if (fieldName.startsWith(ASSOC_PREFIX))
+                {
+                    processAssociationPersist(nodeRef, assocDefs, childAssocDefs, fieldData, assocsToPersist);
+                }
+                else if (logger.isWarnEnabled())
+                {
+                    logger.warn("Ignoring unrecognised field '" + fieldName + "'");
+                }
+            }
+        }
+        
+        // persist the properties using addProperties as this changes the repo values of 
+        // those properties included in the Map, but leaves any other property values unchanged,
+        // whereas setProperties causes the deletion of properties that are not included in the Map.
+        this.nodeService.addProperties(nodeRef, propsToPersist);
+        
+        for (AbstractAssocCommand cmd : assocsToPersist)
+        {
+            //TODO If there is an attempt to add and remove the same assoc in one request,
+            //     we could drop each request and do nothing.
+            cmd.updateAssociations(nodeService);
         }
     }
     
@@ -944,33 +1212,6 @@ public class NodeHandler extends AbstractHandler
             contentData = ContentData.setEncoding(contentData, (String)fieldData.getValue());
             propsToPersist.put(ContentModel.PROP_CONTENT, contentData);
         }
-    }
-    
-    /**
-     * Returns a Collection of aspects for the given noderef to use
-     * for generating and persisting the form.
-     * 
-     * @param nodeRef The NodeRef of the node to get aspects for
-     * @return The Collection of aspects
-     */
-    protected Collection<QName> getAspectsToInclude(NodeRef nodeRef)
-    {
-        List<QName> currentAspects = new ArrayList<QName>();
-        currentAspects.addAll(this.nodeService.getAspects(nodeRef));
-        
-        // TODO: make the list of aspects to ensure are present configurable
-        
-        // make sure the titled and author aspects are present
-        if (currentAspects.contains(ContentModel.ASPECT_TITLED) == false)
-        {
-            currentAspects.add(ContentModel.ASPECT_TITLED);
-        }
-        if (currentAspects.contains(ContentModel.ASPECT_AUTHOR) == false)
-        {
-            currentAspects.add(ContentModel.ASPECT_AUTHOR);
-        }
-        
-        return currentAspects;
     }
     
     /**

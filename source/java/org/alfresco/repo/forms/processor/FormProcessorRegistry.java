@@ -27,6 +27,7 @@ package org.alfresco.repo.forms.processor;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.alfresco.repo.forms.Item;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -85,7 +86,7 @@ public class FormProcessorRegistry
      * @param item The item to find a form processor for
      * @return An applicable FormProcessor
      */
-    public FormProcessor getApplicableFormProcessor(String item)
+    public FormProcessor getApplicableFormProcessor(Item item)
     {
         FormProcessor selectedProcessor = null;
         

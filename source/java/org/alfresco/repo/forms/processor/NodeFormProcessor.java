@@ -24,9 +24,13 @@
  */
 package org.alfresco.repo.forms.processor;
 
+import org.alfresco.repo.forms.FormNotFoundException;
+import org.alfresco.repo.forms.Item;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * FormProcessor implementation that can generate and persist Form objects
@@ -36,6 +40,9 @@ import org.alfresco.service.cmr.repository.NodeService;
  */
 public class NodeFormProcessor extends AbstractFormProcessorByHandlers
 {
+    /** Logger */
+    private static Log logger = LogFactory.getLog(NodeFormProcessor.class);
+    
     /** Services */
     protected NodeService nodeService;
     
@@ -50,18 +57,50 @@ public class NodeFormProcessor extends AbstractFormProcessorByHandlers
     }
     
     /*
-     * @see org.alfresco.repo.forms.processor.AbstractFormProcessor#getTypedItem(java.lang.String)
+     * @see org.alfresco.repo.forms.processor.AbstractFormProcessorByHandlers#getTypedItem(org.alfresco.repo.forms.Item)
      */
     @Override
-    protected Object getTypedItem(String item)
+    protected Object getTypedItem(Item item)
     {
-        // create NodeRef representation
-        NodeRef nodeRef = new NodeRef(item);
+        // create NodeRef representation, the id could already be in a valid
+        // NodeRef format or it may be in a URL friendly format
+        NodeRef nodeRef = null;
+        if (NodeRef.isNodeRef(item.getId()))
+        {
+            nodeRef = new NodeRef(item.getId());
+        }
+        else
+        {
+            // split the string into the 3 required parts
+            String[] parts = item.getId().split("/");
+            if (parts.length == 3)
+            {
+                try
+                {
+                    nodeRef = new NodeRef(parts[0], parts[1], parts[2]);
+                }
+                catch (IllegalArgumentException iae)
+                {
+                    // ignored for now, dealt with below
+                    
+                    if (logger.isDebugEnabled())
+                        logger.debug("NodeRef creation failed for: " + item.getId(), iae);
+                }
+            }
+        } 
+        
+        // check we have a valid node ref
+        if (nodeRef == null)
+        {
+            throw new FormNotFoundException(item, 
+                        new IllegalArgumentException(item.getId()));
+        }
         
         // check the node itself exists
         if (this.nodeService.exists(nodeRef) == false)
         {
-            throw new InvalidNodeRefException("Node does not exist: " + nodeRef, nodeRef);
+            throw new FormNotFoundException(item, 
+                        new InvalidNodeRefException("Node does not exist: " + nodeRef, nodeRef));
         }
         else
         {

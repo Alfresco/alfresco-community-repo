@@ -24,8 +24,11 @@
  */
 package org.alfresco.repo.forms.processor;
 
+import java.util.List;
+
 import org.alfresco.repo.forms.Form;
 import org.alfresco.repo.forms.FormData;
+import org.alfresco.repo.forms.Item;
 
 /**
  * Interface definition of a form processor which is responsible
@@ -44,7 +47,7 @@ public interface FormProcessor
      * @param item The item the form is being generated for
      * @return true if the processor is applicable
      */
-    public boolean isApplicable(String item);
+    public boolean isApplicable(Item item);
     
     /**
      * Determines whether this form processor is active
@@ -57,9 +60,16 @@ public interface FormProcessor
      * Returns a Form representation for an item
      * 
      * @param item The item to generate a Form object for
+     * @param fields Restricted list of fields to include, null
+     *               indicates all possible fields for the item 
+     *               should be included
+     * @param forcedFields List of field names from 'fields' list
+     *                     that should be forcibly included, it is
+     *                     up to the form processor implementation
+     *                     to determine how to enforce this 
      * @return The Form representation
      */
-    public Form generate(String item);
+    public Form generate(Item item, List<String> fields, List<String> forcedFields);
     
     /**
      * Persists the given object representing the form data
@@ -68,5 +78,5 @@ public interface FormProcessor
      * @param item The item to generate a Form object for
      * @param data An object representing the data of the form
      */
-    public void persist(String item, FormData data);
+    public void persist(Item item, FormData data);
 }

@@ -69,7 +69,10 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
 
     private NodeRef document;
     private NodeRef associatedDoc;
+    private NodeRef childDoc;
+    private NodeRef folder;
     private String documentName;
+    private String folderName;
     
     private static String VALUE_TITLE = "This is the title for the test document";
     private static String VALUE_DESCRIPTION = "This is the description for the test document";
@@ -88,6 +91,9 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
     private static String LABEL_NAME = "Name";
     private static String LABEL_TITLE = "Title";
     private static String LABEL_DESCRIPTION = "Description";
+    private static String LABEL_AUTHOR = "Author";
+    private static String LABEL_MODIFIED = "Modified Date";
+    private static String LABEL_MODIFIER = "Modifier";
     private static String LABEL_MIMETYPE = "Mimetype";
     private static String LABEL_ENCODING = "Encoding";
     private static String LABEL_SIZE = "Size";
@@ -97,9 +103,10 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
     private static String LABEL_SUBJECT = "Subject";
     private static String LABEL_SENT_DATE = "Sent Date";
     private static String LABEL_REFERENCES = "References";
+    private static String LABEL_CONTAINS = "Contains";
     
     private static final String USER_ONE = "UserOne_SiteServiceImplTest";
-
+    private static final String NODE_FORM_ITEM_KIND = "node";
     
     /**
      * Called during the transaction setup
@@ -129,8 +136,9 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
                     new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore"));
         
         Map<QName, Serializable> folderProps = new HashMap<QName, Serializable>(1);
-        folderProps.put(ContentModel.PROP_NAME, "testFolder" + guid);
-        NodeRef folder = this.nodeService.createNode(
+        this.folderName = "testFolder" + guid;
+        folderProps.put(ContentModel.PROP_NAME, this.folderName);
+        this.folder = this.nodeService.createNode(
                 rootNode, 
                 ContentModel.ASSOC_CHILDREN, 
                 QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "testFolder" + guid),
@@ -142,7 +150,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         this.documentName = "testDocument" + guid + ".txt";
         docProps.put(ContentModel.PROP_NAME, this.documentName);
         this.document = this.nodeService.createNode(
-                folder, 
+                this.folder, 
                 ContentModel.ASSOC_CONTAINS, 
                 QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "testDocument" + guid + ".txt"), 
                 ContentModel.TYPE_CONTENT,
@@ -151,9 +159,18 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         // create a node to use as target of association
         docProps.put(ContentModel.PROP_NAME, "associatedDocument" + guid + ".txt");
         this.associatedDoc = this.nodeService.createNode(
-                    folder, 
+                    this.folder, 
                     ContentModel.ASSOC_CONTAINS, 
                     QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "associatedDocument" + guid + ".txt"), 
+                    ContentModel.TYPE_CONTENT,
+                    docProps).getChildRef();
+        
+        // create a node to use as a 2nd child node of the folder
+        docProps.put(ContentModel.PROP_NAME, "childDocument" + guid + ".txt");
+        this.childDoc = this.nodeService.createNode(
+                    this.folder, 
+                    ContentModel.ASSOC_CONTAINS, 
+                    QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "childDocument" + guid + ".txt"), 
                     ContentModel.TYPE_CONTENT,
                     docProps).getChildRef();
         
@@ -190,9 +207,6 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         aspectProps.clear();
         this.nodeService.addAspect(document, ContentModel.ASPECT_REFERENCING, aspectProps);
         this.nodeService.createAssociation(this.document, this.associatedDoc, ContentModel.ASSOC_REFERENCES);
-        
-//        setComplete();
-//        endTransaction();
     }
     
     private void createUser(String userName)
@@ -213,15 +227,16 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
     }
 	
     @SuppressWarnings("unchecked")
-	public void testGetForm() throws Exception
+	public void testGetAllDocForm() throws Exception
     {
-        Form form = this.formService.getForm(this.document.toString());
+        Form form = this.formService.getForm(new Item(NODE_FORM_ITEM_KIND, this.document.toString()));
         
         // check a form got returned
         assertNotNull("Expecting form to be present", form);
         
         // check item identifier matches
-        assertEquals(this.document.toString(), form.getItem());
+        assertEquals(NODE_FORM_ITEM_KIND, form.getItem().getKind());
+        assertEquals(this.document.toString(), form.getItem().getId());
         
         // check the type is correct
         assertEquals(ContentModel.TYPE_CONTENT.toPrefixString(this.namespaceService), 
@@ -233,7 +248,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         // check the field definitions
         Collection<FieldDefinition> fieldDefs = form.getFieldDefinitions();
         assertNotNull("Expecting to find fields", fieldDefs);
-        assertEquals("Expecting to find 23 fields", 23, fieldDefs.size());
+        assertEquals("Expecting to find 22 fields", 22, fieldDefs.size());
         
         // create a Map of the field definitions
         // NOTE: we can safely do this as we know there are no duplicate field names and we're not
@@ -365,6 +380,339 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
     }
     
     @SuppressWarnings("unchecked")
+    public void testGetSelectedFieldsDocForm() throws Exception
+    {
+        // define a list of fields to retrieve from the node
+        List<String> fields = new ArrayList<String>(8);
+        fields.add("cm:name");
+        fields.add("cm:title");
+        fields.add("mimetype");
+        fields.add("cm:modified");
+        fields.add("cm:modifier");
+        fields.add("cm:subjectline");
+        fields.add("cm:sentdate");
+        fields.add("cm:references");
+        
+        Form form = this.formService.getForm(new Item(NODE_FORM_ITEM_KIND, this.document.toString()), fields);
+        
+        // check a form got returned
+        assertNotNull("Expecting form to be present", form);
+        
+        // check item identifier matches
+        assertEquals(NODE_FORM_ITEM_KIND, form.getItem().getKind());
+        assertEquals(this.document.toString(), form.getItem().getId());
+        
+        // check the type is correct
+        assertEquals(ContentModel.TYPE_CONTENT.toPrefixString(this.namespaceService), 
+                    form.getType());
+        
+        // check there is no group info
+        assertNull("Expecting the form groups to be null!", form.getFieldGroups());
+        
+        // check the field definitions
+        Collection<FieldDefinition> fieldDefs = form.getFieldDefinitions();
+        assertNotNull("Expecting to find fields", fieldDefs);
+        assertEquals("Expecting to find " + fields.size() + " fields", fields.size(), fieldDefs.size());
+        
+        // create a Map of the field definitions
+        // NOTE: we can safely do this as we know there are no duplicate field names and we're not
+        //       concerned with ordering!
+        Map<String, FieldDefinition> fieldDefMap = new HashMap<String, FieldDefinition>(fieldDefs.size());
+        for (FieldDefinition fieldDef : fieldDefs)
+        {
+            fieldDefMap.put(fieldDef.getName(), fieldDef);
+        }
+        
+        // find the fields
+        PropertyFieldDefinition nameField = (PropertyFieldDefinition)fieldDefMap.get("cm:name");
+        PropertyFieldDefinition titleField = (PropertyFieldDefinition)fieldDefMap.get("cm:title");
+        PropertyFieldDefinition mimetypeField = (PropertyFieldDefinition)fieldDefMap.get("mimetype");
+        PropertyFieldDefinition modifiedField = (PropertyFieldDefinition)fieldDefMap.get("cm:modified");
+        PropertyFieldDefinition modifierField = (PropertyFieldDefinition)fieldDefMap.get("cm:modifier");
+        PropertyFieldDefinition subjectField = (PropertyFieldDefinition)fieldDefMap.get("cm:subjectline");
+        PropertyFieldDefinition sentDateField = (PropertyFieldDefinition)fieldDefMap.get("cm:sentdate");
+        AssociationFieldDefinition referencesField = (AssociationFieldDefinition)fieldDefMap.get("cm:references");
+        
+        // check fields are present
+        assertNotNull("Expecting to find the cm:name field", nameField);
+        assertNotNull("Expecting to find the cm:title field", titleField);
+        assertNotNull("Expecting to find the mimetype field", mimetypeField);
+        assertNotNull("Expecting to find the cm:modified field", modifiedField);
+        assertNotNull("Expecting to find the cm:modifier field", modifierField);
+        assertNotNull("Expecting to find the cm:subjectline field", subjectField);
+        assertNotNull("Expecting to find the cm:sentdate field", sentDateField);
+        assertNotNull("Expecting to find the cm:references field", referencesField);
+        
+        // check the labels of all the fields
+        assertEquals("Expecting cm:name label to be " + LABEL_NAME, 
+                    LABEL_NAME, nameField.getLabel());
+        assertEquals("Expecting cm:title label to be " + LABEL_TITLE, 
+                    LABEL_TITLE, titleField.getLabel());
+        assertEquals("Expecting mimetype label to be " + LABEL_MIMETYPE, 
+                    LABEL_MIMETYPE, mimetypeField.getLabel());
+        assertEquals("Expecting cm:modified label to be " + LABEL_MODIFIED, 
+                    LABEL_MODIFIED, modifiedField.getLabel());
+        assertEquals("Expecting cm:modifier label to be " + LABEL_MODIFIER, 
+                    LABEL_MODIFIER, modifierField.getLabel());
+        assertEquals("Expecting cm:subjectline label to be " + LABEL_SUBJECT, 
+                    LABEL_SUBJECT, subjectField.getLabel());
+        assertEquals("Expecting cm:sentdate label to be " + LABEL_SENT_DATE, 
+                    LABEL_SENT_DATE, sentDateField.getLabel());
+        assertEquals("Expecting cm:references label to be " + LABEL_REFERENCES, 
+                    LABEL_REFERENCES, referencesField.getLabel());
+        
+        // check the details of the modified field
+        assertEquals("Expecting cm:modified type to be d:datetime", "d:datetime", modifiedField.getDataType());
+        assertTrue("Expecting cm:modified to be mandatory", modifiedField.isMandatory());
+        assertFalse("Expecting cm:modified to be single valued", modifiedField.isRepeating());
+        
+        // check the details of the association field
+        assertEquals("Expecting cm:references endpoint type to be cm:content", "cm:content", 
+                    referencesField.getEndpointType());
+        assertEquals("Expecting cm:references endpoint direction to be TARGET", 
+                    Direction.TARGET.toString(),
+                    referencesField.getEndpointDirection().toString());
+        assertFalse("Expecting cm:references endpoint to be optional", 
+                    referencesField.isEndpointMandatory());
+        assertTrue("Expecting cm:references endpoint to be 1 to many",
+                    referencesField.isEndpointMany());
+        
+        // check the form data
+        FormData data = form.getFormData();
+        assertNotNull("Expecting form data", data);
+        Map<String, FormData.FieldData> fieldData = data.getData();
+        assertNotNull("Expecting field data", fieldData);
+        assertEquals(this.documentName, fieldData.get("prop:cm:name").getValue());
+        assertEquals(VALUE_TITLE, fieldData.get("prop:cm:title").getValue());
+        assertEquals(VALUE_MIMETYPE, fieldData.get("prop:mimetype").getValue());
+        assertEquals(VALUE_SUBJECT, fieldData.get("prop:cm:subjectline").getValue());
+        assertEquals(USER_ONE, fieldData.get("prop:cm:modifier").getValue());
+
+        Date modifiedDate = (Date)fieldData.get("prop:cm:modified").getValue();
+        assertNotNull("Expecting to find modified date", modifiedDate);
+        assertTrue("Expecting modified field to return a Date", (modifiedDate instanceof Date));
+        
+        Calendar calTestValue = Calendar.getInstance();
+        calTestValue.setTime(VALUE_SENT_DATE);
+        Calendar calServiceValue = Calendar.getInstance();
+        calServiceValue.setTime((Date)fieldData.get("prop:cm:sentdate").getValue());
+        assertEquals(calTestValue.getTimeInMillis(), calServiceValue.getTimeInMillis());
+        
+        List<String> targets = (List<String>)fieldData.get("assoc:cm:references").getValue();
+        assertEquals("Expecting 1 target", 1, targets.size());
+        assertEquals(this.associatedDoc.toString(), targets.get(0));
+    }
+    
+    public void testMissingFieldsDocForm() throws Exception
+    {
+        // define a list of fields to retrieve from the node
+        List<String> fields = new ArrayList<String>(8);
+        fields.add("cm:name");
+        fields.add("cm:title");
+        
+        // add fields that will not be present
+        fields.add("cm:author");
+        fields.add("wrong-name");
+        
+        Form form = this.formService.getForm(new Item(NODE_FORM_ITEM_KIND, this.document.toString()), fields);
+        
+        // check a form got returned
+        assertNotNull("Expecting form to be present", form);
+        
+        // check the field definitions
+        Collection<FieldDefinition> fieldDefs = form.getFieldDefinitions();
+        assertNotNull("Expecting to find fields", fieldDefs);
+        assertEquals("Expecting to find " + (fields.size()-2) + " fields", fields.size()-2, fieldDefs.size());
+        
+        // create a Map of the field definitions
+        // NOTE: we can safely do this as we know there are no duplicate field names and we're not
+        //       concerned with ordering!
+        Map<String, FieldDefinition> fieldDefMap = new HashMap<String, FieldDefinition>(fieldDefs.size());
+        for (FieldDefinition fieldDef : fieldDefs)
+        {
+            fieldDefMap.put(fieldDef.getName(), fieldDef);
+        }
+        
+        // find the fields
+        PropertyFieldDefinition nameField = (PropertyFieldDefinition)fieldDefMap.get("cm:name");
+        PropertyFieldDefinition titleField = (PropertyFieldDefinition)fieldDefMap.get("cm:title");
+        PropertyFieldDefinition authorField = (PropertyFieldDefinition)fieldDefMap.get("cm:author");
+        
+        // check fields are present
+        assertNotNull("Expecting to find the cm:name field", nameField);
+        assertNotNull("Expecting to find the cm:title field", titleField);
+        assertNull("Expecting cm:author field to be missing", authorField);
+        
+        // check the labels of all the fields
+        assertEquals("Expecting cm:name label to be " + LABEL_NAME, 
+                    LABEL_NAME, nameField.getLabel());
+        assertEquals("Expecting cm:title label to be " + LABEL_TITLE, 
+                    LABEL_TITLE, titleField.getLabel());
+        
+        // check the form data
+        FormData data = form.getFormData();
+        assertNotNull("Expecting form data", data);
+        Map<String, FormData.FieldData> fieldData = data.getData();
+        assertNotNull("Expecting field data", fieldData);
+        assertEquals(this.documentName, fieldData.get("prop:cm:name").getValue());
+        assertEquals(VALUE_TITLE, fieldData.get("prop:cm:title").getValue());
+    }
+    
+    public void testForcedFieldsDocForm() throws Exception
+    {
+        // define a list of fields to retrieve from the node
+        List<String> fields = new ArrayList<String>(4);
+        fields.add("cm:name");
+        fields.add("cm:title");
+        
+        // add fields that will not be present
+        fields.add("cm:author");
+        fields.add("cm:never");
+        fields.add("wrong-name");
+        
+        // try and force the missing fields to appear
+        List<String> forcedFields = new ArrayList<String>(2);
+        forcedFields.add("cm:author");
+        forcedFields.add("cm:never");
+        forcedFields.add("wrong-name");
+        
+        Form form = this.formService.getForm(new Item(NODE_FORM_ITEM_KIND, this.document.toString()), fields, forcedFields);
+        
+        // check a form got returned
+        assertNotNull("Expecting form to be present", form);
+        
+        // check the field definitions
+        Collection<FieldDefinition> fieldDefs = form.getFieldDefinitions();
+        assertNotNull("Expecting to find fields", fieldDefs);
+        assertEquals("Expecting to find " + (fields.size()-2) + " fields", fields.size()-2, fieldDefs.size());
+        
+        // create a Map of the field definitions
+        // NOTE: we can safely do this as we know there are no duplicate field names and we're not
+        //       concerned with ordering!
+        Map<String, FieldDefinition> fieldDefMap = new HashMap<String, FieldDefinition>(fieldDefs.size());
+        for (FieldDefinition fieldDef : fieldDefs)
+        {
+            fieldDefMap.put(fieldDef.getName(), fieldDef);
+        }
+        
+        // find the fields
+        PropertyFieldDefinition nameField = (PropertyFieldDefinition)fieldDefMap.get("cm:name");
+        PropertyFieldDefinition titleField = (PropertyFieldDefinition)fieldDefMap.get("cm:title");
+        PropertyFieldDefinition authorField = (PropertyFieldDefinition)fieldDefMap.get("cm:author");
+        PropertyFieldDefinition neverField = (PropertyFieldDefinition)fieldDefMap.get("cm:never");
+        PropertyFieldDefinition wrongField = (PropertyFieldDefinition)fieldDefMap.get("wrong-name");
+        
+        // check fields are present
+        assertNotNull("Expecting to find the cm:name field", nameField);
+        assertNotNull("Expecting to find the cm:title field", titleField);
+        assertNotNull("Expecting to find the cm:author field", authorField);
+        assertNull("Expecting cm:never field to be missing", neverField);
+        assertNull("Expecting wrong-name field to be missing", wrongField);
+        
+        // check the labels of all the fields
+        assertEquals("Expecting cm:name label to be " + LABEL_NAME, 
+                    LABEL_NAME, nameField.getLabel());
+        assertEquals("Expecting cm:title label to be " + LABEL_TITLE, 
+                    LABEL_TITLE, titleField.getLabel());
+        assertEquals("Expecting cm:author label to be " + LABEL_AUTHOR, 
+                    LABEL_AUTHOR, authorField.getLabel());
+        
+        // check the form data
+        FormData data = form.getFormData();
+        assertNotNull("Expecting form data", data);
+        Map<String, FormData.FieldData> fieldData = data.getData();
+        assertNotNull("Expecting field data", fieldData);
+        assertEquals(this.documentName, fieldData.get("prop:cm:name").getValue());
+        assertEquals(VALUE_TITLE, fieldData.get("prop:cm:title").getValue());
+        assertNull("Didn't expect to find a value for cm:author", fieldData.get("prop:cm:author"));
+    }
+    
+    @SuppressWarnings("unchecked")
+    public void testGetAllFolderForm() throws Exception
+    {
+        Form form = this.formService.getForm(new Item(NODE_FORM_ITEM_KIND, this.folder.toString()));
+        
+        // check a form got returned
+        assertNotNull("Expecting form to be present", form);
+        
+        // check item identifier matches
+        assertEquals(NODE_FORM_ITEM_KIND, form.getItem().getKind());
+        assertEquals(this.folder.toString(), form.getItem().getId());
+        
+        // check the type is correct
+        assertEquals(ContentModel.TYPE_FOLDER.toPrefixString(this.namespaceService), 
+                    form.getType());
+        
+        // check there is no group info
+        assertNull("Expecting the form groups to be null!", form.getFieldGroups());
+        
+        // check the field definitions
+        Collection<FieldDefinition> fieldDefs = form.getFieldDefinitions();
+        assertNotNull("Expecting to find fields", fieldDefs);
+        assertEquals("Expecting to find 11 fields", 11, fieldDefs.size());
+        
+        // create a Map of the field definitions
+        // NOTE: we can safely do this as we know there are no duplicate field names and we're not
+        //       concerned with ordering!
+        Map<String, FieldDefinition> fieldDefMap = new HashMap<String, FieldDefinition>(fieldDefs.size());
+        for (FieldDefinition fieldDef : fieldDefs)
+        {
+            fieldDefMap.put(fieldDef.getName(), fieldDef);
+        }
+        
+        // find the fields
+        PropertyFieldDefinition nameField = (PropertyFieldDefinition)fieldDefMap.get("cm:name");
+        AssociationFieldDefinition containsField = (AssociationFieldDefinition)fieldDefMap.get("cm:contains");
+        
+        // check fields are present
+        assertNotNull("Expecting to find the cm:name field", nameField);
+        assertNotNull("Expecting to find the cm:contains field", containsField);
+        
+        // check the labels of all the fields
+        assertEquals("Expecting cm:name label to be " + LABEL_NAME, 
+                    LABEL_NAME, nameField.getLabel());
+        assertEquals("Expecting cm:contains label to be " + LABEL_CONTAINS, 
+                    LABEL_CONTAINS, containsField.getLabel());
+        
+        // check details of name field
+        assertEquals("Expecting cm:name type to be d:text", "d:text", nameField.getDataType());
+        assertTrue("Expecting cm:name to be mandatory", nameField.isMandatory());
+        assertFalse("Expecting cm:name to be single valued", nameField.isRepeating());
+        
+        // check the details of the association field
+        assertEquals("Expecting cm:contains endpoint type to be sys:base", "sys:base", 
+                    containsField.getEndpointType());
+        assertEquals("Expecting cm:contains endpoint direction to be TARGET", 
+                    Direction.TARGET.toString(),
+                    containsField.getEndpointDirection().toString());
+        assertFalse("Expecting cm:contains endpoint to be optional", 
+                    containsField.isEndpointMandatory());
+        assertTrue("Expecting cm:contains endpoint to be 1 to many",
+                    containsField.isEndpointMany());
+        
+        // check the form data
+        FormData data = form.getFormData();
+        assertNotNull("Expecting form data", data);
+        Map<String, FormData.FieldData> fieldData = data.getData();
+        assertNotNull("Expecting field data", fieldData);
+        assertEquals(this.folderName, fieldData.get("prop:cm:name").getValue());
+        
+        List<String> children = (List<String>)fieldData.get("assoc:cm:contains").getValue();
+        assertEquals("Expecting 3 children", 3, children.size());
+        assertEquals(this.document.toString(), children.get(0));
+        assertEquals(this.associatedDoc.toString(), children.get(1));
+        assertEquals(this.childDoc.toString(), children.get(2));
+    }
+    
+    @SuppressWarnings("unchecked")
+    public void testGetSelectedFieldsFolderForm() throws Exception
+    {
+        // attempt to get a form with fields that are not appropriate
+        // for a folder type i.e. mimetype and encoding
+        
+    }
+    
+    @SuppressWarnings("unchecked")
     public void testSaveForm() throws Exception
     {
         // create FormData object containing the values to update
@@ -398,7 +746,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         data.addData("cm:wrong", "This should not be persisted");
         
         // persist the data
-        this.formService.saveForm(this.document.toString(), data);
+        this.formService.saveForm(new Item(NODE_FORM_ITEM_KIND, this.document.toString()), data);
         
         // retrieve the data directly from the node service to ensure its been changed
         Map<QName, Serializable> updatedProps = this.nodeService.getProperties(this.document);
@@ -429,29 +777,13 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         }
     }
     
-//    public void testApplyAspectProgrammatically() throws Exception
-//    {
-//        NodeRef nrSrc = new NodeRef("workspace://SpacesStore/320c74ad-dc79-4812-adf1-8160c37fdecb");
-//        NodeRef nrDest = new NodeRef("workspace://SpacesStore/5ac5ccac-3409-4f4a-9338-a39ee1acd2cb");
-//        
-//        Map<QName, Serializable> aspectProps = new HashMap<QName, Serializable>(2);
-//        // add referencing aspect (has association)
-//        this.nodeService.addAspect(nrSrc, ContentModel.ASPECT_REFERENCING, aspectProps);
-//        this.nodeService.createAssociation(nrSrc, nrDest, ContentModel.ASSOC_REFERENCES);
-//        
-//        setComplete();
-//        endTransaction();
-//
-//        System.out.println("did it work?");
-//    }
-//    
     public void testNoForm() throws Exception
     {
         // test that a form can not be retrieved for a non-existent item
         try
         {
-            this.formService.getForm("Invalid Item");
-            fail("Expecting getForm for 'Invalid Item' to fail");
+            this.formService.getForm(new Item("Invalid Kind", "Invalid Id"));
+            fail("Expecting getForm for 'Invalid Kind/Item' to fail");
         }
         catch (Exception e)
         {
@@ -459,14 +791,22 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         }
         
         String missingNode = this.document.toString().replace("-", "x");
-        Form form = this.formService.getForm(missingNode);
-        assertNull("Expecting getForm for a missing node to be null", form);
+        
+        try
+        {
+            this.formService.getForm(new Item(NODE_FORM_ITEM_KIND, missingNode));
+            fail("Expecting getForm for a missing node to fail");
+        }
+        catch (FormNotFoundException fnne)
+        {
+            // expected
+        }
         
         // test that a form can not be saved for a non-existent item
         try
         {
-            this.formService.saveForm("Invalid Item", new FormData());
-            fail("Expecting saveForm for 'Invalid Item' to fail");
+            this.formService.saveForm(new Item("Invalid Kind", "Invalid Id"), new FormData());
+            fail("Expecting saveForm for 'Invalid Kind/Item' to fail");
         }
         catch (Exception e)
         {
@@ -475,7 +815,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         
         try
         {
-            this.formService.saveForm(missingNode, new FormData());
+            this.formService.saveForm(new Item(NODE_FORM_ITEM_KIND, missingNode), new FormData());
             fail("Expecting saveForm for a missing node to fail");
         }
         catch (Exception e)
@@ -488,7 +828,10 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
     {
     	Map<String, Object> model = new HashMap<String, Object>();
     	model.put("testDoc", this.document.toString());
+    	model.put("testDocName", this.documentName);
     	model.put("testAssociatedDoc", this.associatedDoc.toString());
+    	model.put("folder", this.folder.toString());
+    	model.put("folderName", this.folderName);
     	
         ScriptLocation location = new ClasspathScriptLocation("org/alfresco/repo/forms/script/test_formService.js");
         this.scriptService.executeScript(location, model);

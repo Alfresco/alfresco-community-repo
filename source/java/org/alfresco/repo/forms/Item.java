@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2008 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -24,24 +24,59 @@
  */
 package org.alfresco.repo.forms;
 
-import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.util.ParameterCheck;
 
 /**
- * Exception used by the Form services
- *
+ * Represents an item a form is generated for.
+ * 
  * @author Gavin Cornwell
  */
-public class FormException extends AlfrescoRuntimeException
+public class Item
 {
-    private static final long serialVersionUID = 688834574410335422L;
-
-    public FormException(String msgId)
+    private String kind;
+    private String id;
+    
+    /**
+     * Constructs an item.
+     * 
+     * @param kind The kind of item, for example, 'node', 'task'
+     * @param id The identifier of the item
+     */
+    public Item(String kind, String id)
     {
-        super(msgId);
+        ParameterCheck.mandatoryString("kind", kind);
+        ParameterCheck.mandatoryString("id", id);
+       
+        this.kind = kind;
+        this.id = id;
+    }
+
+    /**
+     * Returns the kind of item.
+     * 
+     * @return The kind of item
+     */
+    public String getKind()
+    {
+        return this.kind;
+    }
+
+    /**
+     * Returns the identifier of the item
+     * 
+     * @return The identifier of the item
+     */
+    public String getId()
+    {
+        return this.id;
     }
     
-    public FormException(String msgId, Throwable cause)
+    /*
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString()
     {
-        super(msgId, cause);
+       return "[" + this.kind + "]" + this.id;
     }
 }

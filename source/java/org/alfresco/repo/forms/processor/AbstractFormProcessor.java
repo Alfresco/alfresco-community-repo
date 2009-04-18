@@ -27,6 +27,7 @@ package org.alfresco.repo.forms.processor;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.alfresco.repo.forms.Item;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -114,14 +115,14 @@ public abstract class AbstractFormProcessor implements FormProcessor
     }
 
     /*
-     * @see org.alfresco.repo.forms.processor.FormProcessor#isApplicable(java.lang.String)
+     * @see org.alfresco.repo.forms.processor.FormProcessor#isApplicable(org.alfresco.repo.forms.Item)
      */
-    public boolean isApplicable(String item)
+    public boolean isApplicable(Item item)
     {
         // this form processor matches if the match pattern provided matches
-        // the item provided
+        // the kind of the item provided
         
-        Matcher matcher = patternMatcher.matcher(item);
+        Matcher matcher = patternMatcher.matcher(item.getKind());
         boolean matches = matcher.matches();
         
         if (logger.isDebugEnabled())

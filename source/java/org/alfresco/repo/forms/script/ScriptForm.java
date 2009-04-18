@@ -58,9 +58,14 @@ public class ScriptForm implements Serializable
         }
     }
 
-    public String getItem()
+    public String getItemKind()
     {
-        return form.getItem();
+        return form.getItem().getKind();
+    }
+    
+    public String getItemId()
+    {
+        return form.getItem().getId();
     }
 
     public String getType()

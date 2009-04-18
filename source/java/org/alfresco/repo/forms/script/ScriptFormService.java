@@ -24,11 +24,14 @@
  */
 package org.alfresco.repo.forms.script;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.alfresco.repo.forms.Form;
 import org.alfresco.repo.forms.FormData;
 import org.alfresco.repo.forms.FormService;
+import org.alfresco.repo.forms.Item;
 import org.alfresco.repo.jscript.BaseScopableProcessorExtension;
-import org.alfresco.service.ServiceRegistry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -40,21 +43,9 @@ import org.apache.commons.logging.LogFactory;
 public class ScriptFormService extends BaseScopableProcessorExtension
 {
     private static Log logger = LogFactory.getLog(ScriptFormService.class);
-    /** Service Registry */
-    private ServiceRegistry serviceRegistry;
-
+    
     /** The site service */
     private FormService formService;
-
-    /**
-     * Sets the Service Registry
-     * 
-     * @param serviceRegistry
-     */
-    public void setServiceRegistry(ServiceRegistry serviceRegistry)
-    {
-        this.serviceRegistry = serviceRegistry;
-    }
 
     /**
      * Set the form service
@@ -68,25 +59,79 @@ public class ScriptFormService extends BaseScopableProcessorExtension
     }
 
     /**
-     * Returns the form for the given item
+     * Returns a form representation of the given item,
+     * all known fields for the item are included.
      * 
-     * @param item The item to retrieve a form for
+     * @param itemKind The kind of item to retrieve a form for
+     * @param itemId The identifier of the item to retrieve a form for
      * @return The form
      */
-    public ScriptForm getForm(String item)
+    public ScriptForm getForm(String itemKind, String itemId)
     {
-        Form result = formService.getForm(item);
+        return getForm(itemKind, itemId, null);
+    }
+    
+    /**
+     * Returns a form representation of the given item consisting 
+     * only of the given fields.
+     * 
+     * @param itemKind The kind of item to retrieve a form for
+     * @param itemId The identifier of the item to retrieve a form for
+     * @param fields String array of fields to include, null
+     *               indicates all possible fields for the item 
+     *               should be included
+     * @return The form
+     */
+    public ScriptForm getForm(String itemKind, String itemId, String[] fields)
+    {
+        return getForm(itemKind, itemId, fields, null);
+    }
+    
+    /**
+     * Returns a form representation of the given item consisting 
+     * only of the given fields.
+     * 
+     * @param itemKind The kind of item to retrieve a form for
+     * @param itemId The identifier of the item to retrieve a form for
+     * @param fields String array of fields to include, null
+     *               indicates all possible fields for the item 
+     *               should be included
+     * @param forcedFields List of field names from 'fields' list
+     *                     that should be forcibly included, it is
+     *                     up to the form processor implementation
+     *                     to determine how to enforce this
+     * @return The form
+     */
+    public ScriptForm getForm(String itemKind, String itemId, 
+                String[] fields, String[] forcedFields)
+    {
+        // create List<String> representations of field params if necessary
+        List<String> fieldsList = null;
+        List<String> forcedFieldsList = null;
+        
+        if (fields != null)
+        {
+            fieldsList = Arrays.asList(fields);
+        }
+        
+        if (forcedFields != null)
+        {
+            forcedFieldsList = Arrays.asList(forcedFields);
+        }
+        
+        Form result = formService.getForm(new Item(itemKind, itemId), fieldsList, forcedFieldsList);
         return result == null ? null : new ScriptForm(result);
     }
     
     /**
      * Persists the given data object for the item provided
      * 
-     * @param item The item to persist the data for
+     * @param itemKind The kind of item to retrieve a form for
+     * @param itemId The identifier of the item to retrieve a form for
      * @param postData The post data, this can be a Map of name value
      *                 pairs, a webscript FormData object or a JSONObject
      */
-    public void saveForm(String item, Object postData)
+    public void saveForm(String itemKind, String itemId, Object postData)
     {
         // A note on data conversion as passed in to this method:
         // Each of the 3 submission methods (multipart/formdata, JSON Post and
@@ -109,6 +154,6 @@ public class ScriptFormService extends BaseScopableProcessorExtension
             return;
         }
        
-        formService.saveForm(item, dataForFormService);
+        formService.saveForm(new Item(itemKind, itemId), dataForFormService);
     }
 }

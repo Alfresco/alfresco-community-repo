@@ -35,7 +35,7 @@ import java.util.List;
  */
 public class Form
 {
-    protected String item;
+    protected Item item;
     protected String type;
     protected List<FieldDefinition> fieldDefinitions;
     protected Collection<FieldGroup> fieldGroups;
@@ -44,20 +44,19 @@ public class Form
     /**
      * Constructs a Form
      * 
-     * @param item An identifier for the item the form is for
+     * @param item The item the form is for
      */
-    public Form(String item)
+    public Form(Item item)
     {
         this.item = item;
     }
 
     /**
-     * Returns an identifier for the item the form is for, in the case of a node
-     * it will be a NodeRef, for a task, a task id etc.
+     * Returns the item the form is for
      * 
      * @return The item
      */
-    public String getItem()
+    public Item getItem()
     {
         return this.item;
     }  
@@ -167,13 +166,30 @@ public class Form
     }
 
     /**
-     * Sets the data this form should display
+     * Sets the data this form should display. This will overwrite
+     * any existing form data being held
      * 
      * @param data FormData instance containing the data
      */
     public void setFormData(FormData data)
     {
         this.data = data;
+    }
+    
+    /**
+     * Adds some data to be displayed by the form
+     * 
+     * @param fieldName Name of the field the data is for
+     * @param fieldData The value
+     */
+    public void addData(String fieldName, Object fieldData)
+    {
+        if (this.data == null)
+        {
+            this.data = new FormData();
+        }
+        
+        this.data.addData(fieldName, fieldData);
     }
     
     /*

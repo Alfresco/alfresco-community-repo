@@ -85,7 +85,7 @@ public abstract class AbstractHandler implements Handler
     }
     
     /*
-     * @see org.alfresco.repo.forms.processor.FormProcessorHandler#isApplicable(java.lang.String)
+     * @see org.alfresco.repo.forms.processor.Handler#isApplicable(java.lang.String)
      */
     public boolean isApplicable(Object item)
     {

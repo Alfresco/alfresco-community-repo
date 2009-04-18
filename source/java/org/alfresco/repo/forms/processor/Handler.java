@@ -24,6 +24,8 @@
  */
 package org.alfresco.repo.forms.processor;
 
+import java.util.List;
+
 import org.alfresco.repo.forms.Form;
 import org.alfresco.repo.forms.FormData;
 
@@ -35,8 +37,6 @@ import org.alfresco.repo.forms.FormData;
  */
 public interface Handler
 {
-    // TODO: Investigate whether Generics can be used instead of Object
-    
     /**
      * Determines whether the handler is applicable for the given item.
      * <p>
@@ -63,11 +63,14 @@ public interface Handler
      * to a more appropriate object, for example all the Node based handlers
      * can expect a NodeRef object and therefore cast to that.
      * 
+     * @see org.alfresco.repo.forms.processor.FormProcessor#generate(org.alfresco.repo.forms.Item, java.util.List, java.util.List)
      * @param item The item to generate a Form for
+     * @param fields Restricted list of fields to include
+     * @param forcedFields List of fields to forcibly include
      * @param form The Form object
      * @return The modified Form object
      */
-    public Form handleGenerate(Object item, Form form);
+    public Form handleGenerate(Object item, List<String> fields, List<String> forcedFields, Form form);
     
     /**
      * Handles the persistence of form data for the given item.

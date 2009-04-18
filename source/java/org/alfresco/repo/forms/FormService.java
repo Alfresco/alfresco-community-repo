@@ -24,6 +24,8 @@
  */
 package org.alfresco.repo.forms;
 
+import java.util.List;
+
 
 /**
  * Form service API.
@@ -35,18 +37,47 @@ package org.alfresco.repo.forms;
 public interface FormService
 {
     /**
-     * Returns a form representation of the given item
+     * Returns a form representation of the given item,
+     * all known fields for the item are included.
      * 
      * @param item The item to get a form for
      * @return The Form representation
      */
-    public Form getForm(String item);
+    public Form getForm(Item item);
     
     /**
-     * Persists the given form representation for the given item
+     * Returns a form representation of the given item consisting 
+     * only of the given fields.
+     * 
+     * @param item The item to get a form for
+     * @param fields Restricted list of fields to include, null
+     *               indicates all possible fields for the item 
+     *               should be included
+     * @return The Form representation
+     */
+    public Form getForm(Item item, List<String> fields);
+    
+    /**
+     * Returns a form representation of the given item consisting 
+     * only of the given fields.
+     * 
+     * @param item The item to get a form for
+     * @param fields Restricted list of fields to include, null
+     *               indicates all possible fields for the item 
+     *               should be included
+     * @param forcedFields List of field names from 'fields' list
+     *                     that should be forcibly included, it is
+     *                     up to the form processor implementation
+     *                     to determine how to enforce this
+     * @return The Form representation
+     */
+    public Form getForm(Item item, List<String> fields, List<String> forcedFields);
+    
+    /**
+     * Persists the given form representation for the given item.
      * 
      * @param item The item to persist the form for
      * @param data An object representing the form data to persist
      */
-    public void saveForm(String item, FormData data);
+    public void saveForm(Item item, FormData data);
 }

@@ -24,9 +24,10 @@
  */
 package org.alfresco.repo.forms;
 
+import java.util.List;
+
 import org.alfresco.repo.forms.processor.FormProcessor;
 import org.alfresco.repo.forms.processor.FormProcessorRegistry;
-import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -53,10 +54,26 @@ public class FormServiceImpl implements FormService
         this.processorRegistry = registry;
     }
 
-    /**
-     * @see org.alfresco.repo.forms.FormService#getForm(java.lang.String)
+    /*
+     * @see org.alfresco.repo.forms.FormService#getForm(org.alfresco.repo.forms.Item)
      */
-    public Form getForm(String item)
+    public Form getForm(Item item)
+    {
+        return getForm(item, null, null);
+    }
+
+    /*
+     * @see org.alfresco.repo.forms.FormService#getForm(org.alfresco.repo.forms.Item, java.util.List)
+     */
+    public Form getForm(Item item, List<String> fields)
+    {
+        return getForm(item, fields, null);
+    }
+
+    /*
+     * @see org.alfresco.repo.forms.FormService#getForm(org.alfresco.repo.forms.Item, java.util.List, java.util.List)
+     */
+    public Form getForm(Item item, List<String> fields, List<String> forcedFields)
     {
         if (this.processorRegistry == null)
         {
@@ -74,26 +91,14 @@ public class FormServiceImpl implements FormService
         }
         else
         {
-            Form result = null;
-            try
-            {
-                result = processor.generate(item);
-            }
-            catch (InvalidNodeRefException inrx)
-            {
-                if (logger.isDebugEnabled())
-                {
-                    logger.debug(inrx);
-                }
-            }
-            return result;
+            return processor.generate(item, fields, forcedFields);
         }
     }
-
+    
     /*
-     * @see org.alfresco.repo.forms.FormService#saveForm(java.lang.String, org.alfresco.repo.forms.FormData)
+     * @see org.alfresco.repo.forms.FormService#saveForm(org.alfresco.repo.forms.Item, org.alfresco.repo.forms.FormData)
      */
-    public void saveForm(String item, FormData data)
+    public void saveForm(Item item, FormData data)
     {
         if (this.processorRegistry == null)
         {

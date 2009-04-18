@@ -71,7 +71,7 @@
         <property name="handlerRegistry" ref="nodeHandlerRegistry" />
         <property name="nodeService" ref="NodeService" />
         <property name="matchPattern">
-            <value>workspace://[\w\-\/]*</value>
+            <value>node</value>
         </property>
     </bean>
     
@@ -99,7 +99,6 @@
         <property name="extensionName">
             <value>formService</value>
         </property>
-        <property name="serviceRegistry" ref="ServiceRegistry"/>
         <property name="formService" ref="FormService"/>
     </bean>
     

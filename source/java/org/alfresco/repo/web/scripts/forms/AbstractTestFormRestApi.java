@@ -49,9 +49,13 @@ import org.alfresco.web.scripts.TestWebScriptServer.Response;
 
 public abstract class AbstractTestFormRestApi extends BaseWebScriptTest
 {
+    protected static final String APPLICATION_JSON = "application/json";
     protected static final String TEST_FORM_DESCRIPTION = "Test form description";
     protected static final String TEST_FORM_TITLE = "Test form title";
-    protected String referencingNodeUrl;
+    protected String referencingNodeDefUrl;
+    protected String referencingNodeUpdateUrl;
+    protected String containingNodeDefUrl;
+    protected String containingNodeUpdateUrl;
     protected String containingNodeUrl;
     protected NodeRef referencingDocNodeRef;
     protected Map<QName, Serializable> refNodePropertiesAfterCreation;
@@ -148,17 +152,27 @@ public abstract class AbstractTestFormRestApi extends BaseWebScriptTest
         // The other childDoc nodes will be added as children over the REST API as part
         // of later test code.
 
-        // Create and store the url to the referencingNode
+        // Create and store the urls to the referencingNode
         StringBuilder builder = new StringBuilder();
-        builder.append("/api/forms/node/workspace/").append(referencingDocNodeRef.getStoreRef().getIdentifier())
+        builder.append("/api/form/definition/node/workspace/").append(referencingDocNodeRef.getStoreRef().getIdentifier())
                 .append("/").append(referencingDocNodeRef.getId());
-        this.referencingNodeUrl = builder.toString();
+        this.referencingNodeDefUrl = builder.toString();
         
-        // Create and store the url to the containing node
         builder = new StringBuilder();
-        builder.append("/api/forms/node/workspace/").append(containerNodeRef.getStoreRef().getIdentifier())
+        builder.append("/api/form/node/workspace/").append(referencingDocNodeRef.getStoreRef().getIdentifier())
+                .append("/").append(referencingDocNodeRef.getId());
+        this.referencingNodeUpdateUrl = builder.toString();
+        
+        // Create and store the urls to the containing node
+        builder = new StringBuilder();
+        builder.append("/api/form/definition/node/workspace/").append(containerNodeRef.getStoreRef().getIdentifier())
                 .append("/").append(containerNodeRef.getId());
-        this.containingNodeUrl = builder.toString();
+        this.containingNodeDefUrl = builder.toString();
+        
+        builder = new StringBuilder();
+        builder.append("/api/form/node/workspace/").append(containerNodeRef.getStoreRef().getIdentifier())
+                .append("/").append(containerNodeRef.getId());
+        this.containingNodeUpdateUrl = builder.toString();
         
         // Store the original properties of this node
         this.refNodePropertiesAfterCreation = nodeService.getProperties(referencingDocNodeRef);

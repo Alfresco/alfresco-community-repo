@@ -1,4 +1,4 @@
-<#macro formJSON form>
+<#macro formDefJSON form>
     <#escape x as jsonUtils.encodeJSONString(x)>
 {
     "data" :

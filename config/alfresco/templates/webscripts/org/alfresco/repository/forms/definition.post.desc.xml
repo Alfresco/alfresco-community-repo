@@ -1,0 +1,9 @@
+<webscript>
+  <shortname>Form Definition</shortname>
+  <description>Returns a form definition for the requested item</description>
+  <url>/api/form/definition/{item_kind}/{item_id}</url>
+  <format default="json"/>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+  <lifecycle>internal</lifecycle>
+</webscript>

@@ -126,8 +126,7 @@ public class FormRestApiGet_Test extends AbstractTestFormRestApi
         Response rsp = sendRequest(new PostRequest(FORM_DEF_URL, 
                     jsonPostString, APPLICATION_JSON), 200);
         String jsonResponseString = rsp.getContentAsString();
-        // At this point the formData names have underscores
-        
+
         JSONObject jsonParsedObject = new JSONObject(new JSONTokener(jsonResponseString));
         assertNotNull(jsonParsedObject);
         
@@ -137,9 +136,7 @@ public class FormRestApiGet_Test extends AbstractTestFormRestApi
         List<String> keys = new ArrayList<String>();
         for (Iterator iter = formDataObject.keys(); iter.hasNext(); )
         {
-        	// None of the formData keys should have a colon in them. We are
-        	// replacing colons in field names with underscores.
-            String nextFieldName = (String)iter.next();
+        	String nextFieldName = (String)iter.next();
             assertEquals("Did not expect to find a colon char in " + nextFieldName,
             		-1, nextFieldName.indexOf(':'));
 			keys.add(nextFieldName);
@@ -213,10 +210,16 @@ public class FormRestApiGet_Test extends AbstractTestFormRestApi
         JSONArray fieldsArray = (JSONArray)definitionObject.get("fields");
         assertEquals("Expected 2 fields", 2, fieldsArray.length());
         
+        // get the name and title definitions
+        JSONObject nameField = (JSONObject)fieldsArray.get(0);
+        JSONObject titleField = (JSONObject)fieldsArray.get(1);
+        String nameFieldDataKey = nameField.getString("dataKeyName");
+        String titleFieldDataKey = titleField.getString("dataKeyName");
+        
         // get the data and check it
         JSONObject formDataObject = (JSONObject)rootDataObject.get("formData");
-        assertNotNull("Expected to find cm:name data", formDataObject.get("prop_cm_name"));
-        assertNotNull("Expected to find cm:title data", formDataObject.get("prop_cm_title"));
+        assertNotNull("Expected to find cm:name data", formDataObject.get(nameFieldDataKey));
+        assertNotNull("Expected to find cm:title data", formDataObject.get(titleFieldDataKey));
         assertEquals(TEST_FORM_TITLE, formDataObject.get("prop_cm_title"));
     }
     
@@ -250,10 +253,16 @@ public class FormRestApiGet_Test extends AbstractTestFormRestApi
         JSONArray fieldsArray = (JSONArray)definitionObject.get("fields");
         assertEquals("Expected 3 fields", 3, fieldsArray.length());
         
+        // get the name and title definitions
+        JSONObject nameField = (JSONObject)fieldsArray.get(0);
+        JSONObject titleField = (JSONObject)fieldsArray.get(1);
+        String nameFieldDataKey = nameField.getString("dataKeyName");
+        String titleFieldDataKey = titleField.getString("dataKeyName");
+        
         // get the data and check it
         JSONObject formDataObject = (JSONObject)rootDataObject.get("formData");
-        assertNotNull("Expected to find cm:name data", formDataObject.get("prop_cm_name"));
-        assertNotNull("Expected to find cm:title data", formDataObject.get("prop_cm_title"));
+        assertNotNull("Expected to find cm:name data", formDataObject.get(nameFieldDataKey));
+        assertNotNull("Expected to find cm:title data", formDataObject.get(titleFieldDataKey));
         assertEquals(TEST_FORM_TITLE, formDataObject.get("prop_cm_title"));
     }
 }

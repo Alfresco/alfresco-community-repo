@@ -31,10 +31,8 @@ function main()
     var jsonKeys = json.keys();
     for ( ; jsonKeys.hasNext(); )
     {
-	     // Replace the first 2 underscores with colons.
 	     var nextKey = jsonKeys.next();
-	     var alteredKey = nextKey.replaceFirst("_", ":").replaceFirst("_", ":");
-	     repoFormData.addData(alteredKey, json.get(nextKey));
+	     repoFormData.addData(nextKey, json.get(nextKey));
     }
 
     try

@@ -94,11 +94,13 @@ function main()
     var formModel = {};
     formModel.data = {};
 
-    // TODO: retrieve the item URL from the response?
-    formModel.data.item = '/api/formdefinitions';
-    // TODO: look for overridden submission url
-    formModel.data.submissionUrl = '/api/' + itemKind + '/' + itemId + '/formprocessor';
-    formModel.data.type = formScriptObj.type;
+    formModel.data.item = formScriptObj.itemUrl;
+    formModel.data.type = formScriptObj.itemType;
+    formModel.data.submissionUrl = formScriptObj.submissionUrl;
+    if (formScriptObj.submissionUrl === null)
+    {
+        formModel.data.submissionUrl = '/api/' + itemKind + '/' + itemId + '/formprocessor';
+    }
     
     formModel.data.definition = {};
     formModel.data.definition.fields = [];
@@ -106,7 +108,7 @@ function main()
     // We're explicitly listing the object fields of FieldDefinition.java and its subclasses here.
     // I don't see a way to get these dynamically at runtime.
     var supportedBaseFieldNames = ['name', 'label', 'description', 'binding',
-                                   'defaultValue', 'group', 'protectedField'];
+                                   'defaultValue', 'dataKeyName', 'group', 'protectedField'];
     var supportedPropertyFieldNames = ['dataType', 'mandatory',
                                        'repeats', 'constraints'];
     var supportedAssociationFieldNames = ['endpointType', 'endpointDirection',
@@ -144,13 +146,13 @@ function main()
 
         if (value instanceof java.util.Date)
         {
-            formModel.data.formData[k.replace(/:/g, "_")] = utils.toISO8601(value);
+            formModel.data.formData[k] = utils.toISO8601(value);
         }
         // There is no need to handle java.util.List instances here as they are
         // returned from ScriptFormData.java as Strings
         else
         {
-            formModel.data.formData[k.replace(/:/g, "_")] = value;
+            formModel.data.formData[k] = value;
         }
     }
 

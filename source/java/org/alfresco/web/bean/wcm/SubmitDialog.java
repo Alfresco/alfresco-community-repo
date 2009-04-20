@@ -349,6 +349,15 @@ public class SubmitDialog extends BaseDialogBean
 
              String submitLabel = this.label;
              String submitComment = this.comment;
+             // crop to maximum length
+             if (submitLabel != null && submitLabel.length() > 255)
+             {
+                 submitLabel = submitLabel.substring(0, 255);
+             }
+             if (submitComment != null && submitComment.length() > 255)
+             {
+                 submitComment = submitComment.substring(0, 255);
+             }
 
              // note: always submit via workflow (if no workflow selected, then defaults to direct submit workflow)
              getSandboxService().submitListAssets(sbStoreId, relativePaths,

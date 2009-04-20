@@ -568,11 +568,11 @@ public final class Utils extends StringUtils
       if (alt != null)
       {
          alt = Utils.encode(alt);
-         buf.append(" alt='")
+         buf.append(" alt=\"")
             .append(alt)
-            .append("' title='")
+            .append("\" title=\"")
             .append(alt)
-            .append("'");
+            .append("\"");
       }
       else
       {
@@ -653,11 +653,11 @@ public final class Utils extends StringUtils
       if (alt != null)
       {
          alt = Utils.encode(alt);
-         buf.append(" alt='")
+         buf.append(" alt=\"")
             .append(alt)
-            .append("' title='")
+            .append("\" title=\"")
             .append(alt)
-            .append("'");
+            .append('"');
       }
       else
       {

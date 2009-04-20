@@ -81,7 +81,7 @@
    
    <h:graphicImage value="/images/icons/required_field.gif" alt="#{msg.required_field}" />
    <h:outputText value="#{msg.submit_snapshotlabel}:"/>
-   <h:inputText id="label" value="#{DialogManager.bean.label}" maxlength="1024" size="35"
+   <h:inputText id="label" value="#{DialogManager.bean.label}" maxlength="255" size="35"
         onkeyup="javascript:checkButtonState();" />
    <h:graphicImage value="/images/icons/required_field.gif" alt="#{msg.required_field}" />
    <h:outputText value="#{msg.submit_comment}:"/>

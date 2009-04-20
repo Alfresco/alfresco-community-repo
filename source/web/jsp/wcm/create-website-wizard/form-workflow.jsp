@@ -43,6 +43,6 @@
    
    <h:panelGrid id="grid-3" columns="2" cellpadding="2" cellspacing="2" style="margin-left:16px">
       <h:outputText id="msg-2" value="&nbsp;#{msg.website_filename_match}" escape="false" />
-      <h:inputText id="in-1" value="#{DialogManager.bean.filenamePattern}" size="70" />
+      <h:inputText id="in-1" value="#{DialogManager.bean.filenamePattern}" maxlength="1024" size="70" />
    </h:panelGrid>
 </h:panelGroup>

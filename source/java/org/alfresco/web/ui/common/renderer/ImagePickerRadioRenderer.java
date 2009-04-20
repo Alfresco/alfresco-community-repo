@@ -311,9 +311,9 @@ public class ImagePickerRadioRenderer extends BaseRenderer
       
       if (tooltip != null)
       {
-         out.write(" title='");
+         out.write(" title=\"");
          out.write(Utils.encode(tooltip));
-         out.write("'");
+         out.write('"');
       }
       
       if (onclick != null)
@@ -322,11 +322,6 @@ public class ImagePickerRadioRenderer extends BaseRenderer
          out.write(onclick);
          out.write("'");
       }
-      
-//            if (item.isDisabled())
-//            {
-//               out.write(" disabled='true'");
-//            }
       
       out.write(">");
       out.write("</td><td align='center'>");

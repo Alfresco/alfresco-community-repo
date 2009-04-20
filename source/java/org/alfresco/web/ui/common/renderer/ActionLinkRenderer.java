@@ -270,9 +270,9 @@ public class ActionLinkRenderer extends BaseRenderer
       }
       if (link.getTooltip() != null)
       {
-         out.write(" title='");
+         out.write(" title=\"");
          out.write(Utils.encode(link.getTooltip()));
-         out.write("'");
+         out.write('"');
       }
       out.write('>');
    }

@@ -209,7 +209,7 @@ function onlyDigits(e)
    var keychar = String.fromCharCode(keycode);
    var numcheck = /\d/;
    var dialogForm = $('dialog');
-   if (dialogForm && keyCode == 13)
+   if (dialogForm && keycode == 13)
    { 
       dialogForm.setProperty('onsubmit', 'return false;');
    }

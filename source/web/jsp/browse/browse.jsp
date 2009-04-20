@@ -262,7 +262,7 @@
                         </f:facet>
                         
                         <%-- Primary column for details view mode --%>
-                        <a:column id="col1" primary="true" width="200" style="padding:2px;text-align:left" rendered="#{BrowseBean.browseViewMode == 'details'}">
+                        <a:column id="col1" primary="true" style="padding:2px;text-align:left" rendered="#{BrowseBean.browseViewMode == 'details'}">
                            <f:facet name="header">
                               <a:sortLink id="col1-sort" label="#{msg.name}" value="name" mode="case-insensitive" styleClass="header"/>
                            </f:facet>
@@ -409,7 +409,7 @@
                         </f:facet>
                         
                         <%-- Primary column for details view mode --%>
-                        <a:column id="col10" primary="true" width="200" style="padding:2px;text-align:left" rendered="#{BrowseBean.browseViewMode == 'details'}">
+                        <a:column id="col10" primary="true" style="padding:2px;text-align:left" rendered="#{BrowseBean.browseViewMode == 'details'}">
                            <f:facet name="header">
                               <a:sortLink id="col10-sort" label="#{msg.name}" value="name" mode="case-insensitive" styleClass="header"/>
                            </f:facet>

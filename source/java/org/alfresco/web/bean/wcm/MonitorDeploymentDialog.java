@@ -124,4 +124,58 @@ public class MonitorDeploymentDialog extends BaseDialogBean
    {
       return this.webProjectRef;
    }
+   
+   // MER experiment
+   protected int versionToDeploy;
+   protected String[] deployTo;
+   protected String store;
+   protected String deployMode;
+   protected String calledFromTaskDialog;
+   protected NodeRef websiteRef;
+   
+   /**
+    * Returns the remote servers to deploy to as an array
+    * 
+    * @return String array of servers to deploy to
+    */
+   public String[] getDeployTo()
+   {
+      return this.deployTo;
+   }
+   
+   /**
+    * Sets the list of remote servers to deploy to
+    * 
+    * @param deployTo String array of servers to deploy to
+    */
+   public void setDeployTo(String[] deployTo)
+   {
+      this.deployTo = deployTo;
+   }
+   
+   /**
+    * Returns the type of server to deploy to, either 'live' or 'test'.
+    * 
+    * @return The type of server to deploy to
+    */
+   public String getDeployMode()
+   {
+      return this.deployMode;
+   }
+   
+   /**
+    * @return The store being deployed
+    */
+   public String getStore()
+   {
+      return this.store;
+   }
+   
+   /**
+    * @return The version of the snapshot to deploy
+    */
+   public int getSnapshotVersion()
+   {
+      return this.versionToDeploy;
+   }
 }

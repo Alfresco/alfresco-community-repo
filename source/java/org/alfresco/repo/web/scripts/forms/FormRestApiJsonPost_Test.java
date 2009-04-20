@@ -75,8 +75,7 @@ public class FormRestApiJsonPost_Test extends AbstractTestFormRestApi
         
         // Submit the JSON request.
         String jsonPostString = jsonPostData.toString();
-        Response ignoredRsp = sendRequest(new PostRequest(referencingNodeUpdateUrl, jsonPostString,
-                APPLICATION_JSON), 200);
+        sendRequest(new PostRequest(referencingNodeUpdateUrl, jsonPostString, APPLICATION_JSON), 200);
 
         // The nodeService should give us the modified property.
         Serializable modifiedDescription =

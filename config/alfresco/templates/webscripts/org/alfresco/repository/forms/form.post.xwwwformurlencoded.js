@@ -8,7 +8,7 @@ function main()
 	   logger.log("decodedparams: " + decodedparams);
    }
 
-   model.message = "Successfully updated item";
+   model.message = "Not implemented yet";
 }
 
 main();

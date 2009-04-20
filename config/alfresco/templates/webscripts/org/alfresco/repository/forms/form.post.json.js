@@ -9,8 +9,6 @@ function main()
         logger.log("itemKind = " + itemKind);
         logger.log("itemId = " + itemId);
     }
-
-    // TODO: Return error if item kind and/or id is missing?
    
     if (typeof json !== "undefined")
     {

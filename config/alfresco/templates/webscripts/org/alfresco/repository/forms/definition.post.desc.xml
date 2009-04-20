@@ -4,12 +4,11 @@
   Returns a form definition for the requested item.<br/>
   The body of the post should be in the form<br/>
   {<br/>
-     "itemKind" : item kind,<br/>
-     "itemId" : item id,<br/>
-     "fields" : [fields],<br/>
-     "force" : [force]<br/>
+  &nbsp;&nbsp;&nbsp;"itemKind" : item kind,<br/>
+  &nbsp;&nbsp;&nbsp;"itemId" : item id,<br/>
+  &nbsp;&nbsp;&nbsp;"fields" : [fields],<br/>
+  &nbsp;&nbsp;&nbsp;"force" : [force]<br/>
   }<br/>
-  <br/>
   Returns the form model.
   ]]>
   </description>

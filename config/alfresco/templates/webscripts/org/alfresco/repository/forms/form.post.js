@@ -10,8 +10,6 @@ function main()
         logger.log("itemId = " + itemId);
     }
 
-    // TODO: Return error if item kind and/or id is missing?
-
     try
     {
         // persist the submitted data using the most appropriate data set

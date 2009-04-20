@@ -25,9 +25,10 @@ function testGetFormForContentNode()
 
     test.assertEquals("node", form.itemKind);
     test.assertEquals(testDoc, form.itemId);
-    test.assertEquals('cm:content', form.type);
+    test.assertEquals('cm:content', form.itemType);
+    test.assertEquals('/api/node/' + testDoc.replace(":/", ""), form.itemUrl);
 
-    test.assertNull(form.fieldGroups, "form.fieldGroups should be null.");
+    test.assertNull(form.submissionUrl, "form.submissionUrl should be null.");
 
     var fieldDefs = form.fieldDefinitions;
     test.assertNotNull(fieldDefs, "field definitions should not be null.");
@@ -112,14 +113,14 @@ function testGetFormForContentNode()
     test.assertNotNull(fieldData, "fieldData should not be null.");
     test.assertNotNull(fieldData.length, "fieldData.length should not be null.");
     
-    test.assertEquals(testDocName, fieldData["prop:cm:name"].value);
-    test.assertEquals("This is the title for the test document", fieldData["prop:cm:title"].value);
-    test.assertEquals("This is the description for the test document", fieldData["prop:cm:description"].value);
-    test.assertEquals("fred@customer.com", fieldData["prop:cm:originator"].value);
-    test.assertEquals("bill@example.com", fieldData["prop:cm:addressee"].value);
-    test.assertEquals("The subject is...", fieldData["prop:cm:subjectline"].value);
+    test.assertEquals(testDocName, fieldData[nameField.dataKeyName].value);
+    test.assertEquals("This is the title for the test document", fieldData[titleField.dataKeyName].value);
+    test.assertEquals("This is the description for the test document", fieldData[descField.dataKeyName].value);
+    test.assertEquals("fred@customer.com", fieldData[originatorField.dataKeyName].value);
+    test.assertEquals("bill@example.com", fieldData[addresseeField.dataKeyName].value);
+    test.assertEquals("The subject is...", fieldData[subjectField.dataKeyName].value);
     
-    var addressees = fieldData["prop:cm:addressees"].value;
+    var addressees = fieldData[addresseesField.dataKeyName].value;
     test.assertNotNull(addressees);
     test.assertTrue(addressees.indexOf(",") != -1);
     var addresseesArr = addressees.split(",");
@@ -127,12 +128,12 @@ function testGetFormForContentNode()
     test.assertEquals("harry@example.com", addresseesArr[0]);
     test.assertEquals("jane@example.com", addresseesArr[1]);
 
-    var sentDate = fieldData["prop:cm:sentdate"].getValue();
+    var sentDate = fieldData[sentDateField.dataKeyName].getValue();
     test.assertTrue((typeof sentDate === "object"), "Expecting sentData to be an object");
     var month = sentDate.getMonth();
     test.assertTrue((month >= 0 && month < 12), "Expecting valid month");
     
-    var targets = fieldData["assoc:cm:references"].value;
+    var targets = fieldData[referencesField.dataKeyName].value;
     
     test.assertNotNull(targets, "targets should not be null.");
     test.assertEquals(testAssociatedDoc, targets);
@@ -146,9 +147,10 @@ function testGetFormForFolderNode()
 
     test.assertEquals("node", form.itemKind);
     test.assertEquals(folder, form.itemId);
-    test.assertEquals('cm:folder', form.type);
+    test.assertEquals('cm:folder', form.itemType);
+    test.assertEquals('/api/node/' + folder.replace(":/", ""), form.itemUrl);
 
-    test.assertNull(form.fieldGroups, "form.fieldGroups should be null.");
+    test.assertNull(form.submissionUrl, "form.submissionUrl should be null.");
 
     var fieldDefs = form.fieldDefinitions;
     test.assertNotNull(fieldDefs, "field definitions should not be null.");
@@ -192,8 +194,8 @@ function testGetFormForFolderNode()
     test.assertNotNull(fieldData, "fieldData should not be null.");
     test.assertNotNull(fieldData.length, "fieldData.length should not be null.");
  
-    test.assertEquals(folderName, fieldData["prop:cm:name"].value);
-    var children = fieldData["assoc:cm:contains"].value;
+    test.assertEquals(folderName, fieldData[nameField.dataKeyName].value);
+    var children = fieldData[containsField.dataKeyName].value;
     test.assertNotNull(children, "children should not be null.");
     var childrenArr = children.split(",");
     test.assertTrue(childrenArr.length == 3, "Expecting there to be 3 children");
@@ -253,8 +255,8 @@ function testGetFormWithSelectedFields()
     test.assertNotNull(fieldData, "fieldData should not be null.");
     test.assertNotNull(fieldData.length, "fieldData.length should not be null.");
  
-    test.assertEquals(testDocName, fieldData["prop:cm:name"].value);
-    test.assertEquals("This is the title for the test document", fieldData["prop:cm:title"].value);
+    test.assertEquals(testDocName, fieldData[nameField.dataKeyName].value);
+    test.assertEquals("This is the title for the test document", fieldData[titleField.dataKeyName].value);
 }
 
 function testGetFormWithForcedFields()
@@ -319,9 +321,9 @@ function testGetFormWithForcedFields()
     test.assertNotNull(fieldData, "fieldData should not be null.");
     test.assertNotNull(fieldData.length, "fieldData.length should not be null.");
  
-    test.assertEquals(testDocName, fieldData["prop:cm:name"].value);
-    test.assertEquals("This is the title for the test document", fieldData["prop:cm:title"].value);
-    test.assertNull(fieldData["prop:cm:author"], "Expecting cm:author to be null");
+    test.assertEquals(testDocName, fieldData[nameField.dataKeyName].value);
+    test.assertEquals("This is the title for the test document", fieldData[titleField.dataKeyName].value);
+    test.assertNull(fieldData[authorField.dataKeyName], "Expecting cm:author to be null");
 }
 
 // Execute tests

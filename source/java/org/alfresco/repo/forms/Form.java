@@ -36,7 +36,7 @@ import java.util.List;
 public class Form
 {
     protected Item item;
-    protected String type;
+    protected String submissionUrl;
     protected List<FieldDefinition> fieldDefinitions;
     protected Collection<FieldGroup> fieldGroups;
     protected FormData data;
@@ -59,27 +59,26 @@ public class Form
     public Item getItem()
     {
         return this.item;
-    }  
-    
-    /**
-     * Returns the type of the item the form is for, could be a content model type, a
-     * workflow task type, an XML schema etc.
-     * 
-     * @return The type of the item
-     */
-    public String getType()
-    {
-        return this.type;
     }
     
     /**
-     * Sets the type of the item this Form represents
+     * Returns the submission URL to use for the form
      * 
-     * @param type The type
+     * @return URL to submit to
      */
-    public void setType(String type)
+    public String getSubmissionUrl()
     {
-        this.type = type;
+        return this.submissionUrl;
+    }
+    
+    /**
+     * Sets the submission URL the form should use
+     * 
+     * @param url URL to submit to
+     */
+    public void setSubmissionUrl(String url)
+    {
+        this.submissionUrl = url;
     }
        
     /**
@@ -201,7 +200,7 @@ public class Form
         StringBuilder buffer = new StringBuilder(super.toString());
         buffer.append(" (");
         buffer.append("item=").append(this.item);
-        buffer.append(", type=").append(this.type);
+        buffer.append(", submissionUrl=").append(this.submissionUrl);
         buffer.append(", fieldGroups=").append(this.fieldGroups);
         buffer.append("\nfieldDefinitions=").append(this.fieldDefinitions);
         buffer.append("\nformData=").append(this.data);

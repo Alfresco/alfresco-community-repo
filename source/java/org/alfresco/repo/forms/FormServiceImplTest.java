@@ -240,7 +240,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         
         // check the type is correct
         assertEquals(ContentModel.TYPE_CONTENT.toPrefixString(this.namespaceService), 
-                    form.getType());
+                    form.getItem().getType());
         
         // check there is no group info
         assertNull("Expecting the form groups to be null!", form.getFieldGroups());
@@ -351,16 +351,16 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         assertNotNull("Expecting form data", data);
         Map<String, FormData.FieldData> fieldData = data.getData();
         assertNotNull("Expecting field data", fieldData);
-        assertEquals(VALUE_TITLE, fieldData.get("prop:cm:title").getValue());
-        assertEquals(VALUE_DESCRIPTION, fieldData.get("prop:cm:description").getValue());
-        assertEquals(VALUE_MIMETYPE, fieldData.get("prop:mimetype").getValue());
-        assertEquals(VALUE_ENCODING, fieldData.get("prop:encoding").getValue());
-        assertEquals(VALUE_ORIGINATOR, fieldData.get("prop:cm:originator").getValue());
-        assertEquals(VALUE_ADDRESSEE, fieldData.get("prop:cm:addressee").getValue());
-        assertEquals(VALUE_SUBJECT, fieldData.get("prop:cm:subjectline").getValue());
-        assertTrue("Expecting size to be > 0", ((Long)fieldData.get("prop:size").getValue()).longValue() > 0);
+        assertEquals(VALUE_TITLE, fieldData.get(titleField.getDataKeyName()).getValue());
+        assertEquals(VALUE_DESCRIPTION, fieldData.get(descField.getDataKeyName()).getValue());
+        assertEquals(VALUE_MIMETYPE, fieldData.get(mimetypeField.getDataKeyName()).getValue());
+        assertEquals(VALUE_ENCODING, fieldData.get(encodingField.getDataKeyName()).getValue());
+        assertEquals(VALUE_ORIGINATOR, fieldData.get(originatorField.getDataKeyName()).getValue());
+        assertEquals(VALUE_ADDRESSEE, fieldData.get(addresseeField.getDataKeyName()).getValue());
+        assertEquals(VALUE_SUBJECT, fieldData.get(subjectField.getDataKeyName()).getValue());
+        assertTrue("Expecting size to be > 0", ((Long)fieldData.get(sizeField.getDataKeyName()).getValue()).longValue() > 0);
         
-        String addressees = (String)fieldData.get("prop:cm:addressees").getValue();
+        String addressees = (String)fieldData.get(addresseesField.getDataKeyName()).getValue();
         assertNotNull(addressees);
         assertTrue("Expecting the addressees value to have at least 1 comma", addressees.indexOf(",") != -1);
         String[] addresseesArr = StringUtils.delimitedListToStringArray(addressees, ",");
@@ -371,10 +371,10 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         Calendar calTestValue = Calendar.getInstance();
         calTestValue.setTime(VALUE_SENT_DATE);
         Calendar calServiceValue = Calendar.getInstance();
-        calServiceValue.setTime((Date)fieldData.get("prop:cm:sentdate").getValue());
+        calServiceValue.setTime((Date)fieldData.get(sentDateField.getDataKeyName()).getValue());
         assertEquals(calTestValue.getTimeInMillis(), calServiceValue.getTimeInMillis());
         
-        List<String> targets = (List<String>)fieldData.get("assoc:cm:references").getValue();
+        List<String> targets = (List<String>)fieldData.get(referencesField.getDataKeyName()).getValue();
         assertEquals("Expecting 1 target", 1, targets.size());
         assertEquals(this.associatedDoc.toString(), targets.get(0));
     }
@@ -404,7 +404,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         
         // check the type is correct
         assertEquals(ContentModel.TYPE_CONTENT.toPrefixString(this.namespaceService), 
-                    form.getType());
+                    form.getItem().getType());
         
         // check there is no group info
         assertNull("Expecting the form groups to be null!", form.getFieldGroups());
@@ -482,23 +482,23 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         assertNotNull("Expecting form data", data);
         Map<String, FormData.FieldData> fieldData = data.getData();
         assertNotNull("Expecting field data", fieldData);
-        assertEquals(this.documentName, fieldData.get("prop:cm:name").getValue());
-        assertEquals(VALUE_TITLE, fieldData.get("prop:cm:title").getValue());
-        assertEquals(VALUE_MIMETYPE, fieldData.get("prop:mimetype").getValue());
-        assertEquals(VALUE_SUBJECT, fieldData.get("prop:cm:subjectline").getValue());
-        assertEquals(USER_ONE, fieldData.get("prop:cm:modifier").getValue());
+        assertEquals(this.documentName, fieldData.get(nameField.getDataKeyName()).getValue());
+        assertEquals(VALUE_TITLE, fieldData.get(titleField.getDataKeyName()).getValue());
+        assertEquals(VALUE_MIMETYPE, fieldData.get(mimetypeField.getDataKeyName()).getValue());
+        assertEquals(VALUE_SUBJECT, fieldData.get(subjectField.getDataKeyName()).getValue());
+        assertEquals(USER_ONE, fieldData.get(modifierField.getDataKeyName()).getValue());
 
-        Date modifiedDate = (Date)fieldData.get("prop:cm:modified").getValue();
+        Date modifiedDate = (Date)fieldData.get(modifiedField.getDataKeyName()).getValue();
         assertNotNull("Expecting to find modified date", modifiedDate);
         assertTrue("Expecting modified field to return a Date", (modifiedDate instanceof Date));
         
         Calendar calTestValue = Calendar.getInstance();
         calTestValue.setTime(VALUE_SENT_DATE);
         Calendar calServiceValue = Calendar.getInstance();
-        calServiceValue.setTime((Date)fieldData.get("prop:cm:sentdate").getValue());
+        calServiceValue.setTime((Date)fieldData.get(sentDateField.getDataKeyName()).getValue());
         assertEquals(calTestValue.getTimeInMillis(), calServiceValue.getTimeInMillis());
         
-        List<String> targets = (List<String>)fieldData.get("assoc:cm:references").getValue();
+        List<String> targets = (List<String>)fieldData.get(referencesField.getDataKeyName()).getValue();
         assertEquals("Expecting 1 target", 1, targets.size());
         assertEquals(this.associatedDoc.toString(), targets.get(0));
     }
@@ -554,8 +554,8 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         assertNotNull("Expecting form data", data);
         Map<String, FormData.FieldData> fieldData = data.getData();
         assertNotNull("Expecting field data", fieldData);
-        assertEquals(this.documentName, fieldData.get("prop:cm:name").getValue());
-        assertEquals(VALUE_TITLE, fieldData.get("prop:cm:title").getValue());
+        assertEquals(this.documentName, fieldData.get(nameField.getDataKeyName()).getValue());
+        assertEquals(VALUE_TITLE, fieldData.get(titleField.getDataKeyName()).getValue());
     }
     
     public void testForcedFieldsDocForm() throws Exception
@@ -622,9 +622,9 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         assertNotNull("Expecting form data", data);
         Map<String, FormData.FieldData> fieldData = data.getData();
         assertNotNull("Expecting field data", fieldData);
-        assertEquals(this.documentName, fieldData.get("prop:cm:name").getValue());
-        assertEquals(VALUE_TITLE, fieldData.get("prop:cm:title").getValue());
-        assertNull("Didn't expect to find a value for cm:author", fieldData.get("prop:cm:author"));
+        assertEquals(this.documentName, fieldData.get(nameField.getDataKeyName()).getValue());
+        assertEquals(VALUE_TITLE, fieldData.get(titleField.getDataKeyName()).getValue());
+        assertNull("Didn't expect to find a value for cm:author", fieldData.get(authorField.getDataKeyName()));
     }
     
     @SuppressWarnings("unchecked")
@@ -641,7 +641,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         
         // check the type is correct
         assertEquals(ContentModel.TYPE_FOLDER.toPrefixString(this.namespaceService), 
-                    form.getType());
+                    form.getItem().getType());
         
         // check there is no group info
         assertNull("Expecting the form groups to be null!", form.getFieldGroups());
@@ -695,19 +695,18 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         assertNotNull("Expecting form data", data);
         Map<String, FormData.FieldData> fieldData = data.getData();
         assertNotNull("Expecting field data", fieldData);
-        assertEquals(this.folderName, fieldData.get("prop:cm:name").getValue());
+        assertEquals(this.folderName, fieldData.get(nameField.getDataKeyName()).getValue());
         
-        List<String> children = (List<String>)fieldData.get("assoc:cm:contains").getValue();
+        List<String> children = (List<String>)fieldData.get(containsField.getDataKeyName()).getValue();
         assertEquals("Expecting 3 children", 3, children.size());
         assertEquals(this.document.toString(), children.get(0));
         assertEquals(this.associatedDoc.toString(), children.get(1));
         assertEquals(this.childDoc.toString(), children.get(2));
     }
     
-    @SuppressWarnings("unchecked")
     public void testGetSelectedFieldsFolderForm() throws Exception
     {
-        // attempt to get a form with fields that are not appropriate
+        // TODO: attempt to get a form with fields that are not appropriate
         // for a folder type i.e. mimetype and encoding
         
     }
@@ -720,30 +719,30 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         
         // update the name
         String newName = "new-" + this.documentName;
-        data.addData("prop:cm:name", newName);
+        data.addData("prop_cm_name", newName);
         
         // update the title property
         String newTitle = "This is the new title property";
-        data.addData("prop:cm:title", newTitle);
+        data.addData("prop_cm_title", newTitle);
         
         // update the mimetype
         String newMimetype = MimetypeMap.MIMETYPE_HTML;
-        data.addData("prop:mimetype", newMimetype);
+        data.addData("prop_mimetype", newMimetype);
         
         // update the originator
         String newOriginator = "jane@example.com";
-        data.addData("prop:cm:originator", newOriginator);
+        data.addData("prop_cm_originator", newOriginator);
         
         // update the adressees, add another
         String newAddressees = VALUE_ADDRESSEES1 + "," + VALUE_ADDRESSEES2 + "," + VALUE_ADDRESSEES3;
-        data.addData("prop:cm:addressees", newAddressees);
+        data.addData("prop_cm_addressees", newAddressees);
         
         // set the date to null (using an empty string)
-        data.addData("prop:cm:sentdate", "");
+        data.addData("prop_cm_sentdate", "");
         
         // try and update non-existent properties (make sure there are no exceptions)
-        data.addData("prop:cm:wrong", "This should not be persisted");
-        data.addData("cm:wrong", "This should not be persisted");
+        data.addData("prop_cm_wrong", "This should not be persisted");
+        data.addData("cm_wrong", "This should not be persisted");
         
         // persist the data
         this.formService.saveForm(new Item(NODE_FORM_ITEM_KIND, this.document.toString()), data);

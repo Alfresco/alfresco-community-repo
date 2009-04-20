@@ -78,10 +78,11 @@ public class NodeHandler extends AbstractHandler
 {
     private static final Log logger = LogFactory.getLog(NodeHandler.class);
 
-    protected static final String PROP_PREFIX = "prop:";
-    protected static final String ASSOC_PREFIX = "assoc:";
+    protected static final String PROP_PREFIX = "prop_";
+    protected static final String ASSOC_PREFIX = "assoc_";
     protected static final String ASSOC_ADD_SUFFIX = "_added";
     protected static final String ASSOC_REMOVE_SUFFIX = "_removed";
+    protected static final String DATA_KEY_SEPARATOR = "_";
     
     protected static final String TRANSIENT_MIMETYPE = "mimetype";
     protected static final String TRANSIENT_SIZE = "size";
@@ -105,7 +106,7 @@ public class NodeHandler extends AbstractHandler
      * These names will look like <code>"prop:cm:name"</code>.
      * The pattern can also be used to extract the "cm" and the "name" parts.
      */
-    protected Pattern propertyNamePattern = Pattern.compile(PROP_PREFIX + "(.*){1}?:(.*){1}?");
+    protected Pattern propertyNamePattern = Pattern.compile(PROP_PREFIX + "(.*){1}?_(.*){1}?");
     
     /**
      * A regular expression which can be used to match tranisent property names.
@@ -119,7 +120,7 @@ public class NodeHandler extends AbstractHandler
      * These names will look like <code>"assoc:cm:references_added"</code>.
      * The pattern can also be used to extract the "cm", the "name" and the suffix parts.
      */
-    protected Pattern associationNamePattern = Pattern.compile(ASSOC_PREFIX + "(.*){1}?:(.*){1}?(_[a-zA-Z]+)");
+    protected Pattern associationNamePattern = Pattern.compile(ASSOC_PREFIX + "(.*){1}?_(.*){1}?(_[a-zA-Z]+)");
     
     /**
      * Sets the node service 
@@ -191,9 +192,14 @@ public class NodeHandler extends AbstractHandler
      */
     protected void generateNode(NodeRef nodeRef, List<String> fields, List<String> forcedFields, Form form)
     {
-        // set the type
+        // set the type and URL of the item
         QName type = this.nodeService.getType(nodeRef);
-        form.setType(type.toPrefixString(this.namespaceService));
+        form.getItem().setType(type.toPrefixString(this.namespaceService));
+        StringBuilder builder = new StringBuilder("/api/node/");
+        builder.append(nodeRef.getStoreRef().getProtocol()).append("/");
+        builder.append(nodeRef.getStoreRef().getIdentifier()).append("/");
+        builder.append(nodeRef.getId());
+        form.getItem().setUrl(builder.toString());
         
         if (fields != null && fields.size() > 0)
         {
@@ -396,6 +402,7 @@ public class NodeHandler extends AbstractHandler
     protected void generatePropertyField(PropertyDefinition propDef, Serializable propValue, Form form)
     {
         String propName = propDef.getName().toPrefixString(this.namespaceService);
+        String[] nameParts = QName.splitPrefixedQName(propName);
         PropertyFieldDefinition fieldDef = new PropertyFieldDefinition(
                     propName, propDef.getDataType().getName().toPrefixString(
                     this.namespaceService));
@@ -411,6 +418,10 @@ public class NodeHandler extends AbstractHandler
         fieldDef.setMandatory(propDef.isMandatory());
         fieldDef.setProtectedField(propDef.isProtected());
         fieldDef.setRepeating(propDef.isMultiValued());
+        
+        // define the data key name and set
+        String dataKeyName = PROP_PREFIX + nameParts[0] + DATA_KEY_SEPARATOR + nameParts[1];
+        fieldDef.setDataKeyName(dataKeyName);
         
         // setup constraints for the property
         List<ConstraintDefinition> constraints = propDef.getConstraints();
@@ -462,7 +473,7 @@ public class NodeHandler extends AbstractHandler
                 propValue = makeListString((List)propValue);
             }
             
-            form.addData(PROP_PREFIX + fieldDef.getName(), propValue);
+            form.addData(dataKeyName, propValue);
         }
     }
 
@@ -502,13 +513,15 @@ public class NodeHandler extends AbstractHandler
      */
     protected void generateMimetypePropertyField(ContentData content, Form form)
     {
+        String dataKeyName = PROP_PREFIX + TRANSIENT_MIMETYPE;
         PropertyFieldDefinition mimetypeField = new PropertyFieldDefinition(
                     TRANSIENT_MIMETYPE, DataTypeDefinition.TEXT.toPrefixString(
                     this.namespaceService));
         mimetypeField.setLabel(I18NUtil.getMessage(MSG_MIMETYPE_LABEL));
         mimetypeField.setDescription(I18NUtil.getMessage(MSG_MIMETYPE_DESC));
+        mimetypeField.setDataKeyName(dataKeyName);
         form.addFieldDefinition(mimetypeField);
-        form.addData(PROP_PREFIX + TRANSIENT_MIMETYPE, content.getMimetype());
+        form.addData(dataKeyName, content.getMimetype());
     }
     
     /**
@@ -519,13 +532,15 @@ public class NodeHandler extends AbstractHandler
      */
     protected void generateEncodingPropertyField(ContentData content, Form form)
     {
+        String dataKeyName = PROP_PREFIX + TRANSIENT_ENCODING;
         PropertyFieldDefinition encodingField = new PropertyFieldDefinition(
                     TRANSIENT_ENCODING, DataTypeDefinition.TEXT.toPrefixString(
                     this.namespaceService));
         encodingField.setLabel(I18NUtil.getMessage(MSG_ENCODING_LABEL));
         encodingField.setDescription(I18NUtil.getMessage(MSG_ENCODING_DESC));
+        encodingField.setDataKeyName(dataKeyName);
         form.addFieldDefinition(encodingField);
-        form.addData(PROP_PREFIX + TRANSIENT_ENCODING, content.getEncoding());
+        form.addData(dataKeyName, content.getEncoding());
     }
     
     /**
@@ -536,14 +551,16 @@ public class NodeHandler extends AbstractHandler
      */
     protected void generateSizePropertyField(ContentData content, Form form)
     {
+        String dataKeyName = PROP_PREFIX + TRANSIENT_SIZE;
         PropertyFieldDefinition sizeField = new PropertyFieldDefinition(
                     TRANSIENT_SIZE, DataTypeDefinition.LONG.toPrefixString(
                     this.namespaceService));
         sizeField.setLabel(I18NUtil.getMessage(MSG_SIZE_LABEL));
         sizeField.setDescription(I18NUtil.getMessage(MSG_SIZE_DESC));
+        sizeField.setDataKeyName(dataKeyName);
         sizeField.setProtectedField(true);
         form.addFieldDefinition(sizeField);
-        form.addData(PROP_PREFIX + TRANSIENT_SIZE, new Long(content.getSize()));
+        form.addData(dataKeyName, new Long(content.getSize()));
     }
     
     /**
@@ -575,6 +592,7 @@ public class NodeHandler extends AbstractHandler
                 QName assocType = assoc.getTypeQName();
                 String assocName = assocType.toPrefixString(this.namespaceService);
                 String assocValue = assoc.getTargetRef().toString();
+                String dataKeyName = ASSOC_PREFIX + assocName.replace(":", DATA_KEY_SEPARATOR);
                 
                 // setup the field definition for the association if it hasn't before
                 AssociationFieldDefinition fieldDef = assocFieldDefs.get(assocName);
@@ -599,13 +617,12 @@ public class NodeHandler extends AbstractHandler
                     fieldDef.setProtectedField(assocDef.isProtected());
                     fieldDef.setEndpointMandatory(assocDef.isTargetMandatory());
                     fieldDef.setEndpointMany(assocDef.isTargetMany());
+                    fieldDef.setDataKeyName(dataKeyName);
                     
                     // add definition to Form and to internal cache
                     form.addFieldDefinition(fieldDef);
                     assocFieldDefs.put(assocName, fieldDef);
                 }
-                    
-                String prefixedAssocName = ASSOC_PREFIX + assocName;
                 
                 if (fieldDef.isEndpointMany())
                 {
@@ -613,11 +630,11 @@ public class NodeHandler extends AbstractHandler
                     
                     // add the value as a List (or add to the list if the form data
                     // is already present)
-                    FieldData fieldData = form.getFormData().getData().get(prefixedAssocName);
+                    FieldData fieldData = form.getFormData().getData().get(dataKeyName);
                     if (fieldData == null)
                     {
                         targets = new ArrayList<String>(4);
-                        form.addData(prefixedAssocName, targets);
+                        form.addData(dataKeyName, targets);
                     }
                     else
                     {
@@ -630,7 +647,7 @@ public class NodeHandler extends AbstractHandler
                 else
                 {
                     // there should only be one value
-                    form.addData(prefixedAssocName, assocValue);
+                    form.addData(dataKeyName, assocValue);
                 }
             }
         }
@@ -665,6 +682,7 @@ public class NodeHandler extends AbstractHandler
             // get the name of the association
             QName assocTypeName = childAssoc.getTypeQName();
             String assocName = assocTypeName.toPrefixString(this.namespaceService);
+            String dataKeyName = ASSOC_PREFIX + assocName.replace(":", DATA_KEY_SEPARATOR);
             
             // setup the field definition for the association if it hasn't before
             AssociationFieldDefinition fieldDef = childAssocFieldDefs.get(assocName);
@@ -690,6 +708,7 @@ public class NodeHandler extends AbstractHandler
                 fieldDef.setProtectedField(assocDef.isProtected());
                 fieldDef.setEndpointMandatory(assocDef.isTargetMandatory());
                 fieldDef.setEndpointMany(assocDef.isTargetMany());
+                fieldDef.setDataKeyName(dataKeyName);
                 
                 // add definition to Form and to internal cache
                 form.addFieldDefinition(fieldDef);
@@ -726,7 +745,7 @@ public class NodeHandler extends AbstractHandler
                 ChildAssociationRef nextChild = iter.next();
                 nodeRefs.add(nextChild.getChildRef().toString());
             }
-            form.addData(ASSOC_PREFIX + associationName, nodeRefs);
+            form.addData(ASSOC_PREFIX + associationName.replace(":", DATA_KEY_SEPARATOR), nodeRefs);
         }
     }
     
@@ -742,6 +761,7 @@ public class NodeHandler extends AbstractHandler
                 List assocValues, Form form)
     {
         String assocName = assocDef.getName().toPrefixString(this.namespaceService);
+        String[] nameParts = QName.splitPrefixedQName(assocName);
         AssociationFieldDefinition fieldDef = new AssociationFieldDefinition(assocName, 
                     assocDef.getTargetClass().getName().toPrefixString(
                     this.namespaceService), Direction.TARGET);
@@ -756,12 +776,14 @@ public class NodeHandler extends AbstractHandler
         fieldDef.setEndpointMandatory(assocDef.isTargetMandatory());
         fieldDef.setEndpointMany(assocDef.isTargetMany());
         
+        // define the data key name and set
+        String dataKeyName = ASSOC_PREFIX + nameParts[0] + DATA_KEY_SEPARATOR + nameParts[1];
+        fieldDef.setDataKeyName(dataKeyName);
+        
         // add definition to the form
         form.addFieldDefinition(fieldDef);
         
         // add the association value to the form
-        String prefixedAssocName = ASSOC_PREFIX + assocName;
-        
         // determine the type of association values data and extract accordingly
         List<String> values = new ArrayList<String>(4);
         for (Object value : assocValues)
@@ -784,7 +806,7 @@ public class NodeHandler extends AbstractHandler
         // TODO: Do we also return a well known named list of association names
         //       for each noderef so that clients do not have extra work to do
         //       to display the current values to the user
-        form.addData(prefixedAssocName, values);
+        form.addData(dataKeyName, values);
     }
     
     /*

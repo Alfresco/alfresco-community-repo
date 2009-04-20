@@ -25,14 +25,12 @@
 package org.alfresco.repo.forms.script;
 
 import java.io.Serializable;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.alfresco.repo.forms.FieldDefinition;
-import org.alfresco.repo.forms.FieldGroup;
 import org.alfresco.repo.forms.Form;
 
 /**
@@ -68,15 +66,19 @@ public class ScriptForm implements Serializable
         return form.getItem().getId();
     }
 
-    public String getType()
+    public String getItemType()
     {
-        return form.getType();
+        return form.getItem().getType();
     }
-
-    //TODO Wrap this type in a script type?
-    public Collection<FieldGroup> getFieldGroups()
+    
+    public String getItemUrl()
     {
-        return form.getFieldGroups();
+        return form.getItem().getUrl();
+    }
+    
+    public String getSubmissionUrl()
+    {
+        return form.getSubmissionUrl();
     }
 
     public FieldDefinition[] getFieldDefinitions()

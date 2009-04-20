@@ -28,13 +28,18 @@ import org.alfresco.util.ParameterCheck;
 
 /**
  * Represents an item a form is generated for.
+ * <p>This class can be augmented with the item's type and a 
+ * representational URL by the form processor used to process
+ * the item.</p> 
  * 
  * @author Gavin Cornwell
  */
 public class Item
 {
-    private String kind;
-    private String id;
+    protected String kind;
+    protected String id;
+    protected String type;
+    protected String url;
     
     /**
      * Constructs an item.
@@ -71,12 +76,65 @@ public class Item
         return this.id;
     }
     
+    /**
+     * Returns the type of the item the form is for, could be a content model type, a
+     * workflow task type, an XML schema etc.
+     * 
+     * @return The type of the item
+     */
+    public String getType()
+    {
+        return this.type;
+    }
+    
+    /**
+     * Returns a URL that represents the item
+     * 
+     * @return A URL representing the item
+     */
+    public String getUrl()
+    {
+        return this.url;
+    }
+    
+    /**
+     * Sets the type of the item
+     * 
+     * @param type The type
+     */
+    public void setType(String type)
+    {
+        this.type = type;
+    }
+
+    /**
+     * Sets the URL that represents the item
+     * 
+     * @param url The URL
+     */
+    public void setUrl(String url)
+    {
+        this.url = url;
+    }
+
     /*
      * @see java.lang.Object#toString()
      */
     @Override
     public String toString()
     {
-       return "[" + this.kind + "]" + this.id;
+        StringBuilder builder = new StringBuilder("[");
+        builder.append(this.kind).append("]").append(this.id);
+        
+        if (this.type != null)
+        {
+            builder.append(", type=").append(this.type);
+        }
+        if (this.url != null)
+        {
+            builder.append(", url=").append(this.url);
+        }
+        
+        return builder.toString();
     }
 }

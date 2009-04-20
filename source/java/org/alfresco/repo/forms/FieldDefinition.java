@@ -36,6 +36,7 @@ public abstract class FieldDefinition
     protected String description;
     protected String binding;
     protected String defaultValue;
+    protected String dataKeyName;
     protected FieldGroup group;
     protected boolean protectedField = false;
 
@@ -141,6 +142,26 @@ public abstract class FieldDefinition
         this.defaultValue = defaultValue;
     }
     
+    /**
+     * Returns the name of the key being used to hold the data for the field
+     * 
+     * @return Name of the key being used to hold the data for the field
+     */
+    public String getDataKeyName()
+    {
+        return this.dataKeyName;
+    }
+
+    /**
+     * Sets the name of the key to be used to hold the data for the field
+     * 
+     * @param dataKeyName The name of the key to be used to hold the data for the field
+     */
+    public void setDataKeyName(String dataKeyName)
+    {
+        this.dataKeyName = dataKeyName;
+    }
+
     /**
      * Returns the group the field may be a part of
      * 

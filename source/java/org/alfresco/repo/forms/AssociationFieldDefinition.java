@@ -137,6 +137,7 @@ public class AssociationFieldDefinition extends FieldDefinition
         buffer.append(", description=").append(this.description);
         buffer.append(", binding=").append(this.binding);
         buffer.append(", defaultValue=").append(this.defaultValue);
+        buffer.append(", dataKeyName=").append(this.dataKeyName);
         buffer.append(", group=").append(this.group);
         buffer.append(", protectedField=").append(this.protectedField);
         buffer.append(")");

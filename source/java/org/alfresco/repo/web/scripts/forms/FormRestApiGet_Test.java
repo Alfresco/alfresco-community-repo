@@ -29,6 +29,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.web.scripts.TestWebScriptServer.PostRequest;
 import org.alfresco.web.scripts.TestWebScriptServer.Response;
 import org.alfresco.web.scripts.json.JSONUtils;
@@ -38,30 +39,49 @@ import org.json.JSONTokener;
 
 public class FormRestApiGet_Test extends AbstractTestFormRestApi 
 {
-    public void testResponseContentType() throws Exception
+    protected JSONObject createItemJSON(NodeRef nodeRef) throws Exception
     {
         JSONObject jsonPostData = new JSONObject();
+        
+        jsonPostData.put("itemKind", "node");
+        
+        StringBuilder builder = new StringBuilder();
+        builder.append(nodeRef.getStoreRef().getProtocol()).append("/").append(
+                    nodeRef.getStoreRef().getIdentifier()).append("/").append(nodeRef.getId());
+        jsonPostData.put("itemId", builder.toString());
+        
+        return jsonPostData;
+    }
+    
+    public void testResponseContentType() throws Exception
+    {
+        JSONObject jsonPostData = createItemJSON(this.referencingDocNodeRef);
         String jsonPostString = jsonPostData.toString();
-        Response rsp = sendRequest(new PostRequest(referencingNodeDefUrl, 
+        Response rsp = sendRequest(new PostRequest(FORM_DEF_URL, 
                     jsonPostString, APPLICATION_JSON), 200);
         assertEquals("application/json;charset=UTF-8", rsp.getContentType());
     }
 
     public void testGetFormForNonExistentNode() throws Exception
     {
-    	// Replace all digits with an 'x' char - this should make for a non-existent node.
-        JSONObject jsonPostData = new JSONObject();
+    	// Create a NodeRef with all digits changed to an 'x' char - 
+        // this should make for a non-existent node.
+        String missingId = this.referencingDocNodeRef.getId().replaceAll("\\d", "x");
+        NodeRef missingNodeRef = new NodeRef(this.referencingDocNodeRef.getStoreRef(), 
+                    missingId);
+        
+        JSONObject jsonPostData = createItemJSON(missingNodeRef);
         String jsonPostString = jsonPostData.toString();
-        Response rsp = sendRequest(new PostRequest(referencingNodeDefUrl.replaceAll("\\d", "x"), 
+        Response rsp = sendRequest(new PostRequest(FORM_DEF_URL, 
                     jsonPostString, APPLICATION_JSON), 404);
         assertEquals("application/json;charset=UTF-8", rsp.getContentType());
     }
 
     public void testJsonContentParsesCorrectly() throws Exception
     {
-        JSONObject jsonPostData = new JSONObject();
+        JSONObject jsonPostData = createItemJSON(this.referencingDocNodeRef);
         String jsonPostString = jsonPostData.toString();
-        Response rsp = sendRequest(new PostRequest(referencingNodeDefUrl, 
+        Response rsp = sendRequest(new PostRequest(FORM_DEF_URL, 
                     jsonPostString, APPLICATION_JSON), 200);
         String jsonResponseString = rsp.getContentAsString();
         
@@ -71,9 +91,9 @@ public class FormRestApiGet_Test extends AbstractTestFormRestApi
 
     public void testJsonUpperStructure() throws Exception
     {
-        JSONObject jsonPostData = new JSONObject();
+        JSONObject jsonPostData = createItemJSON(this.referencingDocNodeRef);
         String jsonPostString = jsonPostData.toString();
-        Response rsp = sendRequest(new PostRequest(referencingNodeDefUrl, 
+        Response rsp = sendRequest(new PostRequest(FORM_DEF_URL, 
                     jsonPostString, APPLICATION_JSON), 200);
         String jsonResponseString = rsp.getContentAsString();
         
@@ -101,9 +121,9 @@ public class FormRestApiGet_Test extends AbstractTestFormRestApi
     @SuppressWarnings("unchecked")
     public void testJsonFormData() throws Exception
     {
-        JSONObject jsonPostData = new JSONObject();
+        JSONObject jsonPostData = createItemJSON(this.referencingDocNodeRef);
         String jsonPostString = jsonPostData.toString();
-        Response rsp = sendRequest(new PostRequest(referencingNodeDefUrl, 
+        Response rsp = sendRequest(new PostRequest(FORM_DEF_URL, 
                     jsonPostString, APPLICATION_JSON), 200);
         String jsonResponseString = rsp.getContentAsString();
         // At this point the formData names have underscores
@@ -135,9 +155,9 @@ public class FormRestApiGet_Test extends AbstractTestFormRestApi
     @SuppressWarnings("unchecked")
 	public void testJsonDefinitionFields() throws Exception
     {
-        JSONObject jsonPostData = new JSONObject();
+        JSONObject jsonPostData = createItemJSON(this.referencingDocNodeRef);
         String jsonPostString = jsonPostData.toString();
-        Response rsp = sendRequest(new PostRequest(referencingNodeDefUrl, 
+        Response rsp = sendRequest(new PostRequest(FORM_DEF_URL, 
                     jsonPostString, APPLICATION_JSON), 200);
         String jsonResponseString = rsp.getContentAsString();
         
@@ -172,7 +192,7 @@ public class FormRestApiGet_Test extends AbstractTestFormRestApi
     
     public void testJsonSelectedFields() throws Exception
     {
-        JSONObject jsonPostData = new JSONObject();
+        JSONObject jsonPostData = createItemJSON(this.referencingDocNodeRef);
         JSONArray jsonFields = new JSONArray();
         jsonFields.put("cm:name");
         jsonFields.put("cm:title");
@@ -181,7 +201,7 @@ public class FormRestApiGet_Test extends AbstractTestFormRestApi
         
         // Submit the JSON request.
         String jsonPostString = jsonPostData.toString();        
-        Response rsp = sendRequest(new PostRequest(referencingNodeDefUrl, jsonPostString,
+        Response rsp = sendRequest(new PostRequest(FORM_DEF_URL, jsonPostString,
                 APPLICATION_JSON), 200);
         
         String jsonResponseString = rsp.getContentAsString();
@@ -202,7 +222,7 @@ public class FormRestApiGet_Test extends AbstractTestFormRestApi
     
     public void testJsonForcedFields() throws Exception
     {
-        JSONObject jsonPostData = new JSONObject();
+        JSONObject jsonPostData = createItemJSON(this.referencingDocNodeRef);
         
         JSONArray jsonFields = new JSONArray();
         jsonFields.put("cm:name");
@@ -218,7 +238,7 @@ public class FormRestApiGet_Test extends AbstractTestFormRestApi
         
         // Submit the JSON request.
         String jsonPostString = jsonPostData.toString();
-        Response rsp = sendRequest(new PostRequest(referencingNodeDefUrl, jsonPostString,
+        Response rsp = sendRequest(new PostRequest(FORM_DEF_URL, jsonPostString,
                 APPLICATION_JSON), 200);
         
         String jsonResponseString = rsp.getContentAsString();

@@ -1,7 +1,7 @@
 <webscript>
-  <shortname>Form</shortname>
+  <shortname>Form Persistence</shortname>
   <description>Handles the submission of a form</description>
-  <url>/api/form/{item_kind}/{item_id}</url>
+  <url>/api/{item_kind}/{item_id}/formprocessor</url>
   <authentication>user</authentication>
   <transaction>required</transaction>
   <lifecycle>internal</lifecycle>

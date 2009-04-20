@@ -1,17 +1,28 @@
 function main()
 {
-    // Extract template args
-    var itemKind = url.templateArgs['item_kind'];
-    var itemId = url.templateArgs['item_id'];
+    // check that required data is present in request body
+    if (json.has("itemKind") === false)
+    {
+        status.setCode(status.STATUS_BAD_REQUEST, "itemKind parameter is not present");
+        return;
+    }
+    
+    if (json.has("itemId") === false)
+    {
+        status.setCode(status.STATUS_BAD_REQUEST, "itemId parameter is not present");
+        return;
+    }
 
+    // extract required data from request body
+    var itemKind = json.get("itemKind");
+    var itemId = json.get("itemId");
+       
     if (logger.isLoggingEnabled())
     {
         logger.log("itemKind = " + itemKind);
         logger.log("itemId = " + itemId);
     }
     
-    // TODO: Return error if item kind and/or id is missing?
-
     // extract optional data from request body (if present)
     var count = 0;
     var fields = null; 
@@ -84,9 +95,9 @@ function main()
     formModel.data = {};
 
     // TODO: retrieve the item URL from the response?
-    formModel.data.item = '/api/form/definition/' + itemKind + '/' + itemId;
+    formModel.data.item = '/api/formdefinitions';
     // TODO: look for overridden submission url
-    formModel.data.submissionUrl = '/api/form/' + itemKind + '/' + itemId;
+    formModel.data.submissionUrl = '/api/' + itemKind + '/' + itemId + '/formprocessor';
     formModel.data.type = formScriptObj.type;
     
     formModel.data.definition = {};

@@ -1,7 +1,19 @@
 <webscript>
-  <shortname>Form Definition</shortname>
-  <description>Returns a form definition for the requested item</description>
-  <url>/api/form/definition/{item_kind}/{item_id}</url>
+  <shortname>Form Definitions</shortname>
+  <description><![CDATA[
+  Returns a form definition for the requested item.<br/>
+  The body of the post should be in the form<br/>
+  {<br/>
+     "itemKind" : item kind,<br/>
+     "itemId" : item id,<br/>
+     "fields" : [fields],<br/>
+     "force" : [force]<br/>
+  }<br/>
+  <br/>
+  Returns the form model.
+  ]]>
+  </description>
+  <url>/api/formdefinitions</url>
   <format default="json"/>
   <authentication>user</authentication>
   <transaction>required</transaction>

@@ -52,9 +52,8 @@ public abstract class AbstractTestFormRestApi extends BaseWebScriptTest
     protected static final String APPLICATION_JSON = "application/json";
     protected static final String TEST_FORM_DESCRIPTION = "Test form description";
     protected static final String TEST_FORM_TITLE = "Test form title";
-    protected String referencingNodeDefUrl;
+    protected static final String FORM_DEF_URL = "/api/formdefinitions";
     protected String referencingNodeUpdateUrl;
-    protected String containingNodeDefUrl;
     protected String containingNodeUpdateUrl;
     protected String containingNodeUrl;
     protected NodeRef referencingDocNodeRef;
@@ -154,24 +153,13 @@ public abstract class AbstractTestFormRestApi extends BaseWebScriptTest
 
         // Create and store the urls to the referencingNode
         StringBuilder builder = new StringBuilder();
-        builder.append("/api/form/definition/node/workspace/").append(referencingDocNodeRef.getStoreRef().getIdentifier())
-                .append("/").append(referencingDocNodeRef.getId());
-        this.referencingNodeDefUrl = builder.toString();
-        
-        builder = new StringBuilder();
-        builder.append("/api/form/node/workspace/").append(referencingDocNodeRef.getStoreRef().getIdentifier())
-                .append("/").append(referencingDocNodeRef.getId());
+        builder.append("/api/node/workspace/").append(referencingDocNodeRef.getStoreRef().getIdentifier())
+                .append("/").append(referencingDocNodeRef.getId()).append("/formprocessor");
         this.referencingNodeUpdateUrl = builder.toString();
         
-        // Create and store the urls to the containing node
         builder = new StringBuilder();
-        builder.append("/api/form/definition/node/workspace/").append(containerNodeRef.getStoreRef().getIdentifier())
-                .append("/").append(containerNodeRef.getId());
-        this.containingNodeDefUrl = builder.toString();
-        
-        builder = new StringBuilder();
-        builder.append("/api/form/node/workspace/").append(containerNodeRef.getStoreRef().getIdentifier())
-                .append("/").append(containerNodeRef.getId());
+        builder.append("/api/node/workspace/").append(containerNodeRef.getStoreRef().getIdentifier())
+                .append("/").append(containerNodeRef.getId()).append("/formprocessor");
         this.containingNodeUpdateUrl = builder.toString();
         
         // Store the original properties of this node

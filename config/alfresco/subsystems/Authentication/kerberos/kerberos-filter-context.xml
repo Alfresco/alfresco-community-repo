@@ -2,6 +2,9 @@
 <!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
 <beans>
    <bean id="authenticationFilter" class="org.alfresco.web.app.servlet.KerberosAuthenticationFilter">
+      <property name="active">
+         <value>${kerberos.authentication.sso.enabled}</value>
+      </property>
       <property name="serverConfiguration">
          <ref bean="fileServerConfiguration" />
       </property>
@@ -35,10 +38,22 @@
    </bean>
 
    <!-- NullFilter used for these beans, as they are currenly only required by NTLM -->
-   <bean id="globalAuthenticationFilter" class="org.alfresco.repo.web.filter.beans.NullFilter"/>
-   <bean id="webscriptAuthenticationFilter" class="org.alfresco.repo.web.filter.beans.NullFilter"/>
+   <bean id="globalAuthenticationFilter" class="org.alfresco.repo.web.filter.beans.NullFilter">
+      <property name="active">
+         <value>${kerberos.authentication.sso.enabled}</value>		 
+      </property>
+   </bean>
+
+   <bean id="webscriptAuthenticationFilter" class="org.alfresco.repo.web.filter.beans.NullFilter">
+      <property name="active">
+         <value>${kerberos.authentication.sso.enabled}</value>
+      </property>
+   </bean>
 
    <bean id="webDavAuthenticationFilter" class="org.alfresco.repo.webdav.auth.KerberosAuthenticationFilter">
+      <property name="active">
+         <value>${kerberos.authentication.sso.enabled}</value>
+      </property>
       <property name="serverConfiguration">
          <ref bean="fileServerConfiguration" />
       </property>

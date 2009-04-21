@@ -95,7 +95,7 @@
       <filter-class>org.alfresco.repo.web.filter.beans.BeanProxyFilter</filter-class>
       <init-param>
          <param-name>beanName</param-name>
-         <param-value>authenticationFilter</param-value>
+         <param-value>AuthenticationFilter</param-value>
       </init-param>
 
       <!-- For Novell IChain support use the following filter -->
@@ -110,7 +110,7 @@
       <filter-class>org.alfresco.repo.web.filter.beans.BeanProxyFilter</filter-class>
       <init-param>
          <param-name>beanName</param-name>
-         <param-value>globalAuthenticationFilter</param-value>
+         <param-value>GlobalAuthenticationFilter</param-value>
       </init-param>
    </filter>
 
@@ -120,7 +120,7 @@
       <filter-class>org.alfresco.repo.web.filter.beans.BeanProxyFilter</filter-class>
       <init-param>
          <param-name>beanName</param-name>
-         <param-value>webscriptAuthenticationFilter</param-value>
+         <param-value>WebscriptAuthenticationFilter</param-value>
       </init-param>
    </filter>
    
@@ -129,7 +129,7 @@
       <filter-class>org.alfresco.repo.web.filter.beans.BeanProxyFilter</filter-class>
       <init-param>
          <param-name>beanName</param-name>
-         <param-value>webDavAuthenticationFilter</param-value>
+         <param-value>WebDavAuthenticationFilter</param-value>
       </init-param>
    </filter>
 

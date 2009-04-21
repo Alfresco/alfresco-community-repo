@@ -2,9 +2,16 @@
 <!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
 <beans>
    <!-- NullFilter used for this bean, as we are using the more widely-scoped globalAuthenticationFilter -->
-   <bean id="authenticationFilter" class="org.alfresco.repo.web.filter.beans.NullFilter"/>
+   <bean id="authenticationFilter" class="org.alfresco.repo.web.filter.beans.NullFilter">
+      <property name="active">
+         <value>${ntlm.authentication.sso.enabled}</value>
+      </property>
+   </bean>
 
    <bean id="globalAuthenticationFilter" class="org.alfresco.web.app.servlet.NTLMAuthenticationFilter">
+      <property name="active">
+         <value>${ntlm.authentication.sso.enabled}</value>
+      </property>
       <property name="serverConfiguration">
          <ref bean="fileServerConfiguration" />
       </property>
@@ -32,6 +39,9 @@
    </bean>
 
    <bean id="webscriptAuthenticationFilter" class="org.alfresco.web.app.servlet.WebScriptNTLMAuthenticationFilter">
+      <property name="active">
+         <value>${ntlm.authentication.sso.enabled}</value>
+      </property>
       <property name="serverConfiguration">
          <ref bean="fileServerConfiguration" />
       </property>
@@ -62,6 +72,9 @@
    </bean>
 
    <bean id="webDavAuthenticationFilter" class="org.alfresco.repo.webdav.auth.NTLMAuthenticationFilter">
+      <property name="active">
+         <value>${ntlm.authentication.sso.enabled}</value>
+      </property>
       <property name="serverConfiguration">
          <ref bean="fileServerConfiguration" />
       </property>

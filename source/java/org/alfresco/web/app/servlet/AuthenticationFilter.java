@@ -36,8 +36,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.config.ConfigService;
 import org.alfresco.repo.web.filter.beans.DependencyInjectedFilter;
+import org.alfresco.util.AbstractLifecycleBean;
 import org.alfresco.web.config.ClientConfigElement;
-import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.ApplicationEvent;
 
 /**
  * @author Kevin Roast
@@ -51,7 +52,7 @@ import org.springframework.beans.factory.InitializingBean;
  * Note that this filter is only active when the system is running in a servlet container -
  * the AlfrescoFacesPortlet will be used for a JSR-168 Portal environment.
  */
-public class AuthenticationFilter implements DependencyInjectedFilter, InitializingBean
+public class AuthenticationFilter extends AbstractLifecycleBean implements DependencyInjectedFilter
 {
 
     private String loginPage;
@@ -66,18 +67,30 @@ public class AuthenticationFilter implements DependencyInjectedFilter, Initializ
         this.configService = configService;
     }
     
-    public void afterPropertiesSet() throws Exception
+    /* (non-Javadoc)
+     * @see org.alfresco.util.AbstractLifecycleBean#onBootstrap(org.springframework.context.ApplicationEvent)
+     */
+    @Override
+    protected void onBootstrap(ApplicationEvent event)
     {
         if (this.loginPage == null)
         {
             ClientConfigElement clientConfig = (ClientConfigElement) this.configService.getGlobalConfig()
                     .getConfigElement(ClientConfigElement.CONFIG_ELEMENT_ID);
-
+    
             if (clientConfig != null)
             {
                 this.loginPage = clientConfig.getLoginPage();
             }
         }
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.util.AbstractLifecycleBean#onShutdown(org.springframework.context.ApplicationEvent)
+     */
+    @Override
+    protected void onShutdown(ApplicationEvent event)
+    {
     }
 
     public void doFilter(ServletContext context, ServletRequest req, ServletResponse res, FilterChain chain)

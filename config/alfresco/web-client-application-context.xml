@@ -170,9 +170,9 @@
       <property name="transactionService" ref="TransactionService" />
    </bean>
 
-   <bean id="authenticationFilter" class="org.alfresco.repo.management.ManagedSubsystemProxyFactory">
-      <property name="sourceApplicationContextFactory">
-         <ref bean="authenticationSelector" />
+   <bean id="AuthenticationFilter" class="org.alfresco.repo.management.subsystems.ChainingSubsystemProxyFactory">
+      <property name="applicationContextManager">
+         <ref bean="Authentication" />
       </property>
       <property name="interfaces">
          <list>
@@ -182,11 +182,21 @@
       <property name="sourceBeanName">
          <value>authenticationFilter</value>
       </property>
+      <!-- Fall back to the default alfresco implementation -->
+      <property name="defaultTarget">
+         <ref bean="defaultAuthenticationFilter"/>
+      </property>
    </bean>
 
-   <bean id="globalAuthenticationFilter" class="org.alfresco.repo.management.ManagedSubsystemProxyFactory">
-      <property name="sourceApplicationContextFactory">
-         <ref bean="authenticationSelector" />
+   <bean id="defaultAuthenticationFilter" class="org.alfresco.web.app.servlet.AuthenticationFilter">
+      <property name="configService">
+         <ref bean="webClientConfigService" />
+      </property>
+   </bean>
+    
+   <bean id="GlobalAuthenticationFilter" class="org.alfresco.repo.management.subsystems.ChainingSubsystemProxyFactory">
+      <property name="applicationContextManager">
+         <ref bean="Authentication" />
       </property>
       <property name="interfaces">
          <list>
@@ -196,11 +206,15 @@
       <property name="sourceBeanName">
          <value>globalAuthenticationFilter</value>
       </property>
+      <!-- Fall back to a benign default implementation -->
+      <property name="defaultTarget">
+         <bean class="org.alfresco.repo.web.filter.beans.NullFilter" />
+      </property>
    </bean>
 
-   <bean id="webscriptAuthenticationFilter" class="org.alfresco.repo.management.ManagedSubsystemProxyFactory">
-      <property name="sourceApplicationContextFactory">
-         <ref bean="authenticationSelector" />
+   <bean id="WebscriptAuthenticationFilter" class="org.alfresco.repo.management.subsystems.ChainingSubsystemProxyFactory">
+      <property name="applicationContextManager">
+         <ref bean="Authentication" />
       </property>
       <property name="interfaces">
          <list>
@@ -210,11 +224,15 @@
       <property name="sourceBeanName">
          <value>webscriptAuthenticationFilter</value>
       </property>
+      <!-- Fall back to a benign default implementation -->
+      <property name="defaultTarget">
+         <bean class="org.alfresco.repo.web.filter.beans.NullFilter" />
+      </property>
    </bean>
 
-   <bean id="webDavAuthenticationFilter" class="org.alfresco.repo.management.ManagedSubsystemProxyFactory">
-      <property name="sourceApplicationContextFactory">
-         <ref bean="authenticationSelector" />
+   <bean id="WebDavAuthenticationFilter" class="org.alfresco.repo.management.subsystems.ChainingSubsystemProxyFactory">
+      <property name="applicationContextManager">
+         <ref bean="Authentication" />
       </property>
       <property name="interfaces">
          <list>
@@ -223,6 +241,23 @@
       </property>
       <property name="sourceBeanName">
          <value>webDavAuthenticationFilter</value>
+      </property>
+      <!-- Fall back to the default alfresco implementation -->
+      <property name="defaultTarget">
+         <bean class="org.alfresco.repo.webdav.auth.AuthenticationFilter">
+            <property name="authenticationService">
+               <ref bean="AuthenticationService" />
+            </property>
+            <property name="personService">
+               <ref bean="PersonService" />
+            </property>
+            <property name="nodeService">
+               <ref bean="NodeService" />
+            </property>
+            <property name="transactionService">
+               <ref bean="TransactionService" />
+            </property>
+         </bean>
       </property>
    </bean>
    

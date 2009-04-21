@@ -287,9 +287,9 @@ public class NodeHandler extends AbstractHandler
                             {
                                 generateForcedField(fullQName, form);
                             }
-                            else if (logger.isWarnEnabled())
+                            else if (logger.isDebugEnabled())
                             {
-                                logger.warn("Ignoring field \"" + fieldName + 
+                                logger.debug("Ignoring field \"" + fieldName + 
                                             "\" as it is not defined for the current node and it does not appear in the 'force' list");
                             }
                         }
@@ -360,9 +360,9 @@ public class NodeHandler extends AbstractHandler
                 // generate the association field
                 generateAssociationField(assocDef, null, form);
             }
-            else if (logger.isWarnEnabled())
+            else if (logger.isDebugEnabled())
             {
-                logger.warn("Ignoring field \"" + fieldName.toPrefixString(this.namespaceService) + 
+                logger.debug("Ignoring field \"" + fieldName.toPrefixString(this.namespaceService) + 
                             "\" as it is not defined for the current node and can not be found in any model");
             }
         }

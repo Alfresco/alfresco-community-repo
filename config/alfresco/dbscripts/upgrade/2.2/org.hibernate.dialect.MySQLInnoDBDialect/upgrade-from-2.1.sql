@@ -934,6 +934,10 @@ DELETE alf_map_attribute_entries
    FROM alf_map_attribute_entries
    JOIN t_del_attributes t ON (alf_map_attribute_entries.map_id = t.id)
 ;
+DELETE alf_list_attribute_entries
+   FROM alf_list_attribute_entries
+   JOIN t_del_attributes t ON (alf_list_attribute_entries.list_id = t.id)
+;
 DELETE alf_attributes
    FROM alf_attributes
    JOIN t_del_attributes t ON (alf_attributes.id = t.id)

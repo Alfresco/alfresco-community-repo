@@ -28,12 +28,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import org.alfresco.repo.search.impl.lucene.index.CachingIndexReader;
 import org.alfresco.repo.search.impl.lucene.query.LeafScorer.Counter;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.index.TermDocs;
 import org.apache.lucene.index.TermPositions;
 import org.apache.lucene.search.Explanation;
 import org.apache.lucene.search.Scorer;
@@ -141,7 +143,16 @@ public class PathScorer extends Scorer
 
         TermPositions level0 = null;
 
-        TermPositions nodePositions = reader.termPositions(new Term("ISNODE", "T"));
+        TermDocs nodeDocs;
+        if (reader instanceof CachingIndexReader)
+        {
+            CachingIndexReader cachingIndexReader = (CachingIndexReader) reader;
+            nodeDocs = cachingIndexReader.getNodeDocs();
+        }
+        else
+        {
+            nodeDocs = reader.termDocs(new Term("ISNODE", "T"));
+        }
 
         // StructuredFieldPosition[] test =
         // (StructuredFieldPosition[])structuredFieldPositions.toArray(new
@@ -160,11 +171,11 @@ public class PathScorer extends Scorer
         if((cs == null) && 
                 (pathQuery.getQNameStructuredFieldPositions().get(pathQuery.getQNameStructuredFieldPositions().size()-1)).linkSelf())
         {
-            nodePositions = reader.termPositions(new Term("ISROOT", "T"));
+            nodeDocs = reader.termDocs(new Term("ISROOT", "T"));
         }
         
 
-        LeafScorer ls = new LeafScorer(weight, rootLeafPositions, level0, cs, (StructuredFieldPosition[]) pathQuery.getQNameStructuredFieldPositions().toArray(new StructuredFieldPosition[] {}), nodePositions,
+        LeafScorer ls = new LeafScorer(weight, rootLeafPositions, level0, cs, (StructuredFieldPosition[]) pathQuery.getQNameStructuredFieldPositions().toArray(new StructuredFieldPosition[] {}), nodeDocs,
                 selfIds, reader, similarity, reader.norms(pathQuery.getQnameField()), dictionarySertvice, repeat, tp);
 
         return new PathScorer(similarity, ls);

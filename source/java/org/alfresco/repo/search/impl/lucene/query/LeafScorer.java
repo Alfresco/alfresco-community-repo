@@ -49,6 +49,7 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.index.TermDocs;
 import org.apache.lucene.index.TermPositions;
 import org.apache.lucene.search.Explanation;
 import org.apache.lucene.search.Scorer;
@@ -103,7 +104,7 @@ public class LeafScorer extends Scorer
 
     IndexReader reader;
 
-    private TermPositions allNodes;
+    private TermDocs allNodes;
 
     TermPositions level0;
 
@@ -125,7 +126,7 @@ public class LeafScorer extends Scorer
 
     private int[] cats;
 
-    // private TermPositions tp;
+    private boolean matchAllLeaves;
 
     /**
      * Constructor - should use an arg object ...
@@ -144,7 +145,7 @@ public class LeafScorer extends Scorer
      * @param repeat
      * @param tp
      */
-    public LeafScorer(Weight weight, TermPositions root, TermPositions level0, ContainerScorer containerScorer, StructuredFieldPosition[] sfps, TermPositions allNodes,
+    public LeafScorer(Weight weight, TermPositions root, TermPositions level0, ContainerScorer containerScorer, StructuredFieldPosition[] sfps, TermDocs allNodes,
             HashMap<String, Counter> selfIds, IndexReader reader, Similarity similarity, byte[] norms, DictionaryService dictionaryService, boolean repeat, TermPositions tp)
     {
         super(similarity);
@@ -167,6 +168,8 @@ public class LeafScorer extends Scorer
         this.level0 = level0;
         this.dictionaryService = dictionaryService;
         this.repeat = repeat;
+        
+        matchAllLeaves = allNodes();
         try
         {
             initialise();
@@ -388,7 +391,7 @@ public class LeafScorer extends Scorer
             }
         }
 
-        if (allNodes())
+        if (matchAllLeaves)
         {
             int position = 0;
             parents = new int[10000];
@@ -513,11 +516,11 @@ public class LeafScorer extends Scorer
             counter = 0;
         }
 
-        if (allNodes())
+        if (matchAllLeaves)
         {
             while (more)
             {
-                if (allNodes.next() && root.next())
+                if (allNodes.next())
                 {
                     if (check())
                     {
@@ -736,7 +739,7 @@ public class LeafScorer extends Scorer
 
     private boolean check() throws IOException
     {
-        if (allNodes())
+        if (matchAllLeaves)
         {
             this.counter = 0;
             int position;
@@ -1027,7 +1030,7 @@ public class LeafScorer extends Scorer
 
     public int doc()
     {
-        if (allNodes())
+        if (matchAllLeaves)
         {
             return allNodes.doc();
         }
@@ -1045,7 +1048,7 @@ public class LeafScorer extends Scorer
         countInCounter = 1;
         counter = 0;
 
-        if (allNodes())
+        if (matchAllLeaves)
         {
             allNodes.skipTo(target);
             root.skipTo(allNodes.doc()); // must match
@@ -1055,7 +1058,7 @@ public class LeafScorer extends Scorer
             }
             while (more)
             {
-                if (allNodes.next() && root.next())
+                if (allNodes.next())
                 {
                     if (check())
                     {

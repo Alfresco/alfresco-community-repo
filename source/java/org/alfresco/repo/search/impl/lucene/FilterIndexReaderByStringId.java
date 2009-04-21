@@ -42,6 +42,7 @@ import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Searcher;
 import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.util.OpenBitSet;
 
 
 /**
@@ -54,7 +55,7 @@ public class FilterIndexReaderByStringId extends FilterIndexReader
 {
     private static Log s_logger = LogFactory.getLog(FilterIndexReaderByStringId.class);
 
-    BitSet deletedDocuments;
+    OpenBitSet deletedDocuments;
     
     private String id;
 
@@ -71,7 +72,7 @@ public class FilterIndexReaderByStringId extends FilterIndexReader
         super(reader);
         this.id = id;
         
-        deletedDocuments = new BitSet(reader.maxDoc());
+        deletedDocuments = new OpenBitSet(reader.maxDoc());
 
         if (s_logger.isDebugEnabled())
         {
@@ -87,7 +88,7 @@ public class FilterIndexReaderByStringId extends FilterIndexReader
                     TermDocs td = reader.termDocs(new Term("ID", stringRef));
                     while (td.next())
                     {
-                        deletedDocuments.set(td.doc(), true);
+                        deletedDocuments.set(td.doc());
                     }
                 }
             }
@@ -106,7 +107,7 @@ public class FilterIndexReaderByStringId extends FilterIndexReader
                             Document doc = hits.doc(i);
                             if (doc.getField("ISCONTAINER") == null)
                             {
-                                deletedDocuments.set(hits.id(i), true);
+                                deletedDocuments.set(hits.id(i));
                                 // There should only be one thing to delete
                                 // break;
                             }
@@ -131,7 +132,7 @@ public class FilterIndexReaderByStringId extends FilterIndexReader
      */
     public static class FilterTermDocs implements TermDocs
     {
-        BitSet deletedDocuments;
+        OpenBitSet deletedDocuments;
 
         protected TermDocs in;
         
@@ -142,7 +143,7 @@ public class FilterIndexReaderByStringId extends FilterIndexReader
          * @param in
          * @param deletedDocuments
          */
-        public FilterTermDocs(String id, TermDocs in, BitSet deletedDocuments)
+        public FilterTermDocs(String id, TermDocs in, OpenBitSet deletedDocuments)
         {
             this.in = in;
             this.deletedDocuments = deletedDocuments;
@@ -268,41 +269,44 @@ public class FilterIndexReaderByStringId extends FilterIndexReader
     public static class FilterTermPositions extends FilterTermDocs implements TermPositions
     {
 
+        TermPositions tp;
+        
         /**
          * @param id
          * @param in
          * @param deletedDocuements
          */
-        public FilterTermPositions(String id, TermPositions in, BitSet deletedDocuements)
+        public FilterTermPositions(String id, TermPositions in, OpenBitSet deletedDocuements)
         {
             super(id, in, deletedDocuements);
+            tp = in;
         }
 
         public int nextPosition() throws IOException
         {
-            return ((TermPositions) this.in).nextPosition();
+            return tp.nextPosition();
         }
 
         public byte[] getPayload(byte[] data, int offset) throws IOException
         {
-            return ((TermPositions) this.in).getPayload(data, offset);
+            return tp.getPayload(data, offset);
         }
 
         public int getPayloadLength()
         {
-            return ((TermPositions) this.in).getPayloadLength();
+            return tp.getPayloadLength();
         }
 
         public boolean isPayloadAvailable()
         {
-            return ((TermPositions) this.in).isPayloadAvailable();
+            return tp.isPayloadAvailable();
         }
     }
 
     @Override
     public int numDocs()
     {
-        return super.numDocs() - deletedDocuments.cardinality();
+        return super.numDocs() - (int)deletedDocuments.cardinality();
     }
 
     @Override

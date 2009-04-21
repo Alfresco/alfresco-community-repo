@@ -26,6 +26,8 @@ package org.alfresco.repo.search.impl.lucene.index;
 
 import java.io.IOException;
 
+import org.apache.lucene.index.TermDocs;
+
 /**
  * 
  * @author andyh
@@ -48,5 +50,7 @@ public interface CachingIndexReader
     public String[] getLinkAspects(int n) throws IOException;
     
     public String getType(int n) throws IOException;
+    
+    public TermDocs getNodeDocs() throws IOException;
     
 }

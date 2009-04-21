@@ -64,7 +64,12 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.search.IndexerException;
 import org.alfresco.repo.search.impl.lucene.FilterIndexReaderByStringId;
 import org.alfresco.repo.search.impl.lucene.LuceneConfig;
+import org.alfresco.repo.search.impl.lucene.LuceneXPathHandler;
 import org.alfresco.repo.search.impl.lucene.analysis.AlfrescoStandardAnalyser;
+import org.alfresco.repo.search.impl.lucene.query.PathQuery;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
 import org.alfresco.util.TraceableThreadFactory;
 import org.apache.commons.logging.Log;
@@ -78,21 +83,27 @@ import org.apache.lucene.index.MultiReader;
 import org.apache.lucene.index.SerialMergeScheduler;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermEnum;
+import org.apache.lucene.index.IndexReader.FieldOption;
 import org.apache.lucene.index.IndexWriter.MaxFieldLength;
 import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Searcher;
 import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.WildcardQuery;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
 import org.apache.lucene.store.RAMDirectory;
 import org.safehaus.uuid.UUID;
+import org.saxpath.SAXPathException;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.event.ContextRefreshedEvent;
+
+import com.werken.saxpath.XPathReader;
 
 /**
  * The information that makes up an index. IndexInfoVersion Repeated information of the form
@@ -177,7 +188,7 @@ public class IndexInfo implements IndexMonitor
      * The directory relative to the root path
      */
     private String relativePath;
-    
+
     /**
      * The file holding the index information
      */
@@ -326,9 +337,9 @@ public class IndexInfo implements IndexMonitor
     private ThreadPoolExecutor threadPoolExecutor;
 
     private LuceneConfig config;
-    
+
     private List<ApplicationListener> applicationListeners = new LinkedList<ApplicationListener>();
-    
+
     static
     {
         // We do not require any of the lucene in-built locking.
@@ -406,7 +417,7 @@ public class IndexInfo implements IndexMonitor
             catch (IOException e)
             {
                 throw new AlfrescoRuntimeException("Failed to determine index relative path", e);
-            }            
+            }
         }
         else
         {
@@ -438,7 +449,7 @@ public class IndexInfo implements IndexMonitor
             {
                 throw new AlfrescoRuntimeException("Failed to determine index relative path", e);
             }
-            
+
         }
 
         // Create an empty in memory index
@@ -476,7 +487,7 @@ public class IndexInfo implements IndexMonitor
         {
             throw new AlfrescoRuntimeException("The index must be held in a directory");
         }
-        
+
         // Create the info files.
         File indexInfoFile = new File(this.indexDirectory, INDEX_INFO);
         File indexInfoBackupFile = new File(this.indexDirectory, INDEX_INFO_BACKUP);
@@ -681,7 +692,7 @@ public class IndexInfo implements IndexMonitor
                 cleaner.schedule();
             }
         }, 0, 20000);
-        
+
         publishDiscoveryEvent();
     }
 
@@ -691,6 +702,7 @@ public class IndexInfo implements IndexMonitor
         {
             return true;
         }
+
         public Object doWork() throws Exception
         {
             setStatusFromFile();
@@ -1926,14 +1938,14 @@ public class IndexInfo implements IndexMonitor
         File location = new File(indexDirectory, id).getCanonicalFile();
         if (IndexReader.indexExists(location))
         {
-            if ((config != null) && (size > config.getMaxDocsForInMemoryMerge()))
-            {
-                reader = IndexReader.open(location);
-            }
-            else
+            if ((config != null) && (size < config.getMaxDocsForInMemoryMerge()))
             {
                 RAMDirectory rd = new RAMDirectory(location);
                 reader = IndexReader.open(rd);
+            }
+            else
+            {
+                reader = IndexReader.open(location);
             }
         }
         else
@@ -2436,9 +2448,25 @@ public class IndexInfo implements IndexMonitor
             readIndexInfo(indexLocation);
         }
     }
-    
+
+    static Query getPathQuery(String path) throws SAXPathException
+    {
+        ConfigurableApplicationContext ac = ApplicationContextHelper.getApplicationContext();
+        XPathReader reader = new XPathReader();
+        LuceneXPathHandler handler = new LuceneXPathHandler();
+        handler.setNamespacePrefixResolver((NamespaceService)ac.getBean("namespaceService"));
+        handler.setDictionaryService((DictionaryService)ac.getBean("dictionaryService"));
+        reader.setXPathHandler(handler);
+        reader.parse(path);
+        PathQuery pathQuery = handler.getQuery();
+        pathQuery.setRepeats(false);
+        return pathQuery;
+    }
+
     private static void readIndexInfo(File indexLocation) throws Throwable
     {
+        long start;
+        long end;
         IndexInfo ii = new IndexInfo(indexLocation, null);
 
         ii.readWriteLock.writeLock().lock();
@@ -2457,16 +2485,228 @@ public class IndexInfo implements IndexMonitor
             ii.releaseWriteLock();
         }
         IndexReader reader = ii.getMainIndexReferenceCountingReadOnlyIndexReader();
-        TermEnum terms = reader.terms(new Term("@{http://www.alfresco.org/model/user/1.0}members", ""));
-        while (terms.next() && terms.term().field().equals("@{http://www.alfresco.org/model/user/1.0}members"))
-        {
-            System.out.println("F = " + terms.term().field() + "     V = " + terms.term().text() + "     F = " + terms.docFreq());
-            if (terms.term().text().equals("xirmsi"))
-            {
-                System.out.println("Matched");
-            }
-        }
-        terms.close();
+        System.out.println(reader.getFieldNames(FieldOption.ALL));
+        IndexSearcher searcher = new IndexSearcher(reader);
+        Query query = new TermQuery(new Term("@{http://www.travelmuse.com/wcm}DestinationName", "bambino"));
+        start = System.nanoTime();
+        Hits hits = searcher.search(query);
+        end = System.nanoTime();
+        System.out.println("@{http://www.travelmuse.com/wcm}DestinationName:bambino = " + hits.length() + " in " + ((end - start) / 1e9));
+        searcher.close();
+
+        searcher = new IndexSearcher(reader);
+        query = new TermQuery(new Term("@{http://www.travelmuse.com/wcm}DestinationName", "bambino"));
+        start = System.nanoTime();
+        hits = searcher.search(query);
+        end = System.nanoTime();
+        System.out.println("@{http://www.travelmuse.com/wcm}DestinationName:bambino = " + hits.length() + " in " + ((end - start) / 1e9));
+        searcher.close();
+
+        searcher = new IndexSearcher(reader);
+        query = new WildcardQuery(new Term("@{http://www.travelmuse.com/wcm}DestinationPhoto", "*"));
+        start = System.nanoTime();
+        hits = searcher.search(query);
+        end = System.nanoTime();
+        System.out.println("@{http://www.travelmuse.com/wcm}DestinationPhoto:* = " + hits.length() + " in " + ((end - start) / 1e9));
+        searcher.close();
+
+        searcher = new IndexSearcher(reader);
+        query = new WildcardQuery(new Term("@{http://www.travelmuse.com/wcm}DestinationPhoto", "*"));
+        start = System.nanoTime();
+        hits = searcher.search(query);
+        end = System.nanoTime();
+        System.out.println("@{http://www.travelmuse.com/wcm}DestinationPhoto:* = " + hits.length() + " in " + ((end - start) / 1e9));
+        searcher.close();
+
+        searcher = new IndexSearcher(reader);
+        query = new TermQuery(new Term("@{http://www.travelmuse.com/wcm}ThemeName", "bambino"));
+        start = System.nanoTime();
+        hits = searcher.search(query);
+        end = System.nanoTime();
+        System.out.println("@{http://www.travelmuse.com/wcm}ThemeName:bambino = " + hits.length() + " in " + ((end - start) / 1e9));
+        searcher.close();
+
+        searcher = new IndexSearcher(reader);
+        query = new TermQuery(new Term("@{http://www.travelmuse.com/wcm}ThemeName", "bambino"));
+        start = System.nanoTime();
+        hits = searcher.search(query);
+        end = System.nanoTime();
+        System.out.println("@{http://www.travelmuse.com/wcm}ThemeName:bambino = " + hits.length() + " in " + ((end - start) / 1e9));
+        searcher.close();
+
+        searcher = new IndexSearcher(reader);
+        query = new TermQuery(new Term("@{http://www.travelmuse.com/wcm}ActivityName", "bambino"));
+        start = System.nanoTime();
+        hits = searcher.search(query);
+        end = System.nanoTime();
+        System.out.println("@{http://www.travelmuse.com/wcm}ActivityName:bambino = " + hits.length() + " in " + ((end - start) / 1e9));
+        searcher.close();
+
+        searcher = new IndexSearcher(reader);
+        query = new TermQuery(new Term("@{http://www.travelmuse.com/wcm}ActivityName", "bambino"));
+        start = System.nanoTime();
+        hits = searcher.search(query);
+        end = System.nanoTime();
+        System.out.println("@{http://www.travelmuse.com/wcm}ActivityName:bambino = " + hits.length() + " in " + ((end - start) / 1e9));
+        searcher.close();
+
+        searcher = new IndexSearcher(reader);
+        query = new TermQuery(new Term("@{http://www.travelmuse.com/wcm}EditorialItemTitle", "bambino"));
+        start = System.nanoTime();
+        hits = searcher.search(query);
+        end = System.nanoTime();
+        System.out.println("@{http://www.travelmuse.com/wcm}EditorialItemTitle:bambino = " + hits.length() + " in " + ((end - start) / 1e9));
+        searcher.close();
+
+        searcher = new IndexSearcher(reader);
+        query = new TermQuery(new Term("@{http://www.travelmuse.com/wcm}EditorialItemTitle", "bambino"));
+        start = System.nanoTime();
+        hits = searcher.search(query);
+        end = System.nanoTime();
+        System.out.println("@{http://www.travelmuse.com/wcm}EditorialItemTitle:bambino = " + hits.length() + " in " + ((end - start) / 1e9));
+        searcher.close();
+
+        searcher = new IndexSearcher(reader);
+        query = new TermQuery(new Term("@{http://www.travelmuse.com/wcm}PoiName", "bambino"));
+        start = System.nanoTime();
+        hits = searcher.search(query);
+        end = System.nanoTime();
+        System.out.println("@{http://www.travelmuse.com/wcm}PoiName:bambino = " + hits.length() + " in " + ((end - start) / 1e9));
+        searcher.close();
+
+        searcher = new IndexSearcher(reader);
+        query = new TermQuery(new Term("@{http://www.travelmuse.com/wcm}PoiName", "bambino"));
+        start = System.nanoTime();
+        hits = searcher.search(query);
+        end = System.nanoTime();
+        System.out.println("@{http://www.travelmuse.com/wcm}PoiName:bambino = " + hits.length() + " in " + ((end - start) / 1e9));
+        searcher.close();
+
+        searcher = new IndexSearcher(reader);
+        query = new TermQuery(new Term("@{http://www.travelmuse.com/wcm}PropertyName", "bambino"));
+        start = System.nanoTime();
+        hits = searcher.search(query);
+        end = System.nanoTime();
+        System.out.println("@{http://www.travelmuse.com/wcm}PropertyName:bambino = " + hits.length() + " in " + ((end - start) / 1e9));
+        searcher.close();
+
+        searcher = new IndexSearcher(reader);
+        query = new TermQuery(new Term("@{http://www.travelmuse.com/wcm}PropertyName", "bambino"));
+        start = System.nanoTime();
+        hits = searcher.search(query);
+        end = System.nanoTime();
+        System.out.println("@{http://www.travelmuse.com/wcm}PropertyName:bambino = " + hits.length() + " in " + ((end - start) / 1e9));
+        searcher.close();
+
+        searcher = new IndexSearcher(reader);
+        query = new TermQuery(new Term("@{http://www.alfresco.org/model/content/1.0}content", "bambino"));
+        start = System.nanoTime();
+        hits = searcher.search(query);
+        end = System.nanoTime();
+        System.out.println("@{http://www.alfresco.org/model/content/1.0}content:bambino = " + hits.length() + " in " + ((end - start) / 1e9));
+        searcher.close();
+
+        searcher = new IndexSearcher(reader);
+        query = new TermQuery(new Term("@{http://www.alfresco.org/model/content/1.0}content", "bambino"));
+        start = System.nanoTime();
+        hits = searcher.search(query);
+        end = System.nanoTime();
+        System.out.println("@{http://www.alfresco.org/model/content/1.0}content:bambino = " + hits.length() + " in " + ((end - start) / 1e9));
+        searcher.close();
+        
+        searcher = new IndexSearcher(reader);
+        query = getPathQuery("/www/avm_webapps/ROOT/editorial//*");
+        start = System.nanoTime();
+        hits = searcher.search(query);
+        end = System.nanoTime();
+        System.out.println("/www/avm_webapps/ROOT/editorial//* = " + hits.length() + " in " + ((end - start) / 1e9));
+        searcher.close();
+        
+        searcher = new IndexSearcher(reader);
+        query = getPathQuery("/www/avm_webapps/ROOT/editorial//*");
+        start = System.nanoTime();
+        hits = searcher.search(query);
+        end = System.nanoTime();
+        System.out.println("/www/avm_webapps/ROOT/editorial//* = " + hits.length() + " in " + ((end - start) / 1e9));
+        searcher.close();
+
+        
+        searcher = new IndexSearcher(reader);
+        query = getPathQuery("/www/avm_webapps/ROOT/tag//*");
+        start = System.nanoTime();
+        hits = searcher.search(query);
+        end = System.nanoTime();
+        System.out.println("/www/avm_webapps/ROOT/tag//* = " + hits.length() + " in " + ((end - start) / 1e9));
+        searcher.close();
+        
+        searcher = new IndexSearcher(reader);
+        query = getPathQuery("/www/avm_webapps/ROOT/tag//*");
+        start = System.nanoTime();
+        hits = searcher.search(query);
+        end = System.nanoTime();
+        System.out.println("/www/avm_webapps/ROOT/tag//* = " + hits.length() + " in " + ((end - start) / 1e9));
+        searcher.close();
+        
+        searcher = new IndexSearcher(reader);
+        query = getPathQuery("/www/avm_webapps/ROOT/poi//*");
+        start = System.nanoTime();
+        hits = searcher.search(query);
+        end = System.nanoTime();
+        System.out.println("/www/avm_webapps/ROOT/poi//* = " + hits.length() + " in " + ((end - start) / 1e9));
+        searcher.close();
+        
+        searcher = new IndexSearcher(reader);
+        query = getPathQuery("/www/avm_webapps/ROOT/poi//*");
+        start = System.nanoTime();
+        hits = searcher.search(query);
+        end = System.nanoTime();
+        System.out.println("/www/avm_webapps/ROOT/poi//* = " + hits.length() + " in " + ((end - start) / 1e9));
+        searcher.close();
+        
+        searcher = new IndexSearcher(reader);
+        query = getPathQuery("/www/avm_webapps/ROOT/property//*");
+        start = System.nanoTime();
+        hits = searcher.search(query);
+        end = System.nanoTime();
+        System.out.println("/www/avm_webapps/ROOT/property//* = " + hits.length() + " in " + ((end - start) / 1e9));
+        searcher.close();
+        
+        searcher = new IndexSearcher(reader);
+        query = getPathQuery("/www/avm_webapps/ROOT/property//*");
+        start = System.nanoTime();
+        hits = searcher.search(query);
+        end = System.nanoTime();
+        System.out.println("/www/avm_webapps/ROOT/property//* = " + hits.length() + " in " + ((end - start) / 1e9));
+        searcher.close();
+        
+        searcher = new IndexSearcher(reader);
+        query = getPathQuery("/www/avm_webapps/ROOT/web-reviews//*");
+        start = System.nanoTime();
+        hits = searcher.search(query);
+        end = System.nanoTime();
+        System.out.println("/www/avm_webapps/ROOT/web-reviews//* = " + hits.length() + " in " + ((end - start) / 1e9));
+        searcher.close();
+        
+        searcher = new IndexSearcher(reader);
+        query = getPathQuery("/www/avm_webapps/ROOT/web-reviews//*");
+        start = System.nanoTime();
+        hits = searcher.search(query);
+        end = System.nanoTime();
+        System.out.println("/www/avm_webapps/ROOT/web-reviews//* = " + hits.length() + " in " + ((end - start) / 1e9));
+        searcher.close();
+
+
+        // TermEnum terms = reader.terms(new Term("@{http://www.alfresco.org/model/user/1.0}members", ""));
+        // while (terms.next() && terms.term().field().equals("@{http://www.alfresco.org/model/user/1.0}members"))
+        // {
+        // System.out.println("F = " + terms.term().field() + " V = " + terms.term().text() + " F = " +
+        // terms.docFreq());
+        // if (terms.term().text().equals("xirmsi"))
+        // {
+        // System.out.println("Matched");
+        // }
+        // }
+        // terms.close();
 
     }
 
@@ -3290,7 +3530,7 @@ public class IndexInfo implements IndexMonitor
                         }
 
                         dumpInfo();
-                        
+
                         notifyListeners("MergedDeletions", toDelete.size());
 
                         return null;
@@ -3302,7 +3542,7 @@ public class IndexInfo implements IndexMonitor
                     }
 
                 });
-                
+
             }
             finally
             {
@@ -3551,7 +3791,7 @@ public class IndexInfo implements IndexMonitor
                         registerReferenceCountingIndexReader(finalMergeTargetId, finalNewReader);
 
                         notifyListeners("MergedIndexes", toMerge.size());
-                        
+
                         dumpInfo();
 
                         writeStatus();
@@ -3710,9 +3950,10 @@ public class IndexInfo implements IndexMonitor
         }
         return false;
     }
-        
+
     /*
      * (non-Javadoc)
+     * 
      * @see org.alfresco.repo.search.impl.lucene.index.IndexMonitor#getRelativePath()
      */
     public String getRelativePath()
@@ -3720,7 +3961,9 @@ public class IndexInfo implements IndexMonitor
         return this.relativePath;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.alfresco.repo.search.impl.lucene.index.IndexMonitor#getStatusSnapshot()
      */
     public Map<String, Integer> getStatusSnapshot()
@@ -3740,10 +3983,12 @@ public class IndexInfo implements IndexMonitor
         finally
         {
             readWriteLock.writeLock().unlock();
-        }        
+        }
     }
-   
-    /* (non-Javadoc)
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.alfresco.repo.search.impl.lucene.index.IndexMonitor#getActualSize()
      */
     public long getActualSize() throws IOException
@@ -3772,7 +4017,9 @@ public class IndexInfo implements IndexMonitor
         }
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.alfresco.repo.search.impl.lucene.index.IndexMonitor#getUsedSize()
      */
     public long getUsedSize() throws IOException
@@ -3787,8 +4034,10 @@ public class IndexInfo implements IndexMonitor
             releaseReadLock();
         }
     }
-    
-    /* (non-Javadoc)
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.alfresco.repo.search.impl.lucene.index.IndexMonitor#getNumberOfDocuments()
      */
     public int getNumberOfDocuments() throws IOException
@@ -3804,12 +4053,14 @@ public class IndexInfo implements IndexMonitor
         }
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.alfresco.repo.search.impl.lucene.index.IndexMonitor#getNumberOfFields()
      */
     public int getNumberOfFields() throws IOException
     {
-    
+
         IndexReader reader = getMainIndexReferenceCountingReadOnlyIndexReader();
         try
         {
@@ -3821,7 +4072,9 @@ public class IndexInfo implements IndexMonitor
         }
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.alfresco.repo.search.impl.lucene.index.IndexMonitor#getNumberOfIndexedFields()
      */
     public int getNumberOfIndexedFields() throws IOException
@@ -3839,8 +4092,9 @@ public class IndexInfo implements IndexMonitor
 
     /*
      * (non-Javadoc)
+     * 
      * @see org.alfresco.repo.search.impl.lucene.index.IndexMonitor#addApplicationListener(org.springframework.context.
-     * ApplicationListener)
+     *      ApplicationListener)
      */
     public void addApplicationListener(ApplicationListener listener)
     {
@@ -3864,7 +4118,7 @@ public class IndexInfo implements IndexMonitor
         }
         return size;
     }
-    
+
     private void publishDiscoveryEvent()
     {
         if (this.config == null)
@@ -3883,7 +4137,7 @@ public class IndexInfo implements IndexMonitor
             // that will fire when it has
             applicationContext.addApplicationListener(new ApplicationListener()
             {
-    
+
                 public void onApplicationEvent(ApplicationEvent event)
                 {
                     if (event instanceof ContextRefreshedEvent)

@@ -57,6 +57,10 @@ import org.apache.lucene.document.Field.Index;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.index.FilterIndexReader;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.index.TermDocs;
+import org.apache.lucene.index.TermEnum;
+import org.apache.lucene.util.OpenBitSet;
 
 public class ReferenceCountingReadOnlyIndexReaderFactory
 {
@@ -103,7 +107,7 @@ public class ReferenceCountingReadOnlyIndexReaderFactory
         private static final long serialVersionUID = 7693185658022810428L;
 
         private static java.lang.reflect.Field s_field;
-        
+
         String id;
 
         int refCount = 0;
@@ -146,15 +150,16 @@ public class ReferenceCountingReadOnlyIndexReaderFactory
             }
             catch (NoSuchFieldException e)
             {
-                throw new AlfrescoRuntimeException("Reference counting index reader needs access to org.apache.lucene.index.IndexReader.closed to work correctly (incompatible version of lucene)", e);
+                throw new AlfrescoRuntimeException(
+                        "Reference counting index reader needs access to org.apache.lucene.index.IndexReader.closed to work correctly (incompatible version of lucene)", e);
             }
         }
-        
+
         ReferenceCountingReadOnlyIndexReader(String id, IndexReader indexReader, boolean enableCaching, LuceneConfig config)
         {
             super(indexReader);
             this.id = id;
-            if(enableCaching && (config != null))
+            if (enableCaching && (config != null))
             {
                 this.enableCaching = config.isCacheEnabled();
             }
@@ -172,7 +177,7 @@ public class ReferenceCountingReadOnlyIndexReaderFactory
             {
                 s_logger.debug(Thread.currentThread().getName() + ": Reader " + id + " - increment - ref count is " + refCount + "        ... " + super.toString());
             }
-            if(!wrapper_closed)
+            if (!wrapper_closed)
             {
                 try
                 {
@@ -180,7 +185,7 @@ public class ReferenceCountingReadOnlyIndexReaderFactory
                 }
                 catch (IllegalArgumentException e)
                 {
-                   throw new AlfrescoRuntimeException("Failed to mark index as open ..", e);
+                    throw new AlfrescoRuntimeException("Failed to mark index as open ..", e);
                 }
                 catch (IllegalAccessException e)
                 {
@@ -269,7 +274,7 @@ public class ReferenceCountingReadOnlyIndexReaderFactory
                 throw new IllegalStateException(Thread.currentThread().getName() + "Indexer is closed " + id);
             }
             decrementReferenceCount();
-            if(!wrapper_closed)
+            if (!wrapper_closed)
             {
                 incRef();
             }
@@ -350,6 +355,8 @@ public class ReferenceCountingReadOnlyIndexReaderFactory
         private final MultipleValueFieldAccessor MV_PARENT_FIELD_ACCESSOR = new MultipleValueFieldAccessor("PARENT");
 
         private final MultipleValueFieldAccessor MV_LINKASPECT_FIELD_ACCESSOR = new MultipleValueFieldAccessor("LINKASPECT");
+
+        private OpenBitSet nodes = null;
 
         private <T> T manageCache(ConcurrentHashMap<Integer, WithUseCount<T>> cache, Accessor<T> accessor, int n, FieldSelector fieldSelector, int limit) throws IOException
         {
@@ -575,6 +582,21 @@ public class ReferenceCountingReadOnlyIndexReaderFactory
 
             return answer.toArray(new String[answer.size()]);
         }
+
+        public synchronized TermDocs getNodeDocs() throws IOException
+        {
+            if (nodes == null)
+            {
+                TermDocs nodeDocs = termDocs(new Term("ISNODE", "T"));
+                nodes = new OpenBitSet();
+                while (nodeDocs.next())
+                {
+                    nodes.set(nodeDocs.doc());
+                }
+                nodeDocs.close();
+            }
+            return new TermDocSet(nodes);
+        }
     }
 
     static class WithUseCount<T> implements Comparable<WithUseCount<T>>
@@ -619,6 +641,70 @@ public class ReferenceCountingReadOnlyIndexReaderFactory
             {
                 return FieldSelectorResult.NO_LOAD;
             }
+        }
+
+    }
+
+    static class TermDocSet implements TermDocs
+    {
+        OpenBitSet set;
+
+        int position = -1;
+
+        TermDocSet(OpenBitSet set)
+        {
+            this.set = set;
+        }
+
+        public void close() throws IOException
+        {
+            // Noop
+        }
+
+        public int doc()
+        {
+            return position;
+        }
+
+        public int freq()
+        {
+            return 1;
+        }
+
+        public boolean next() throws IOException
+        {
+           position++;
+           position = set.nextSetBit(position);
+           return (position != -1);
+        }
+
+        public int read(int[] docs, int[] freqs) throws IOException
+        {
+            throw new UnsupportedOperationException();
+        }
+
+        public void seek(Term term) throws IOException
+        {
+            throw new UnsupportedOperationException();
+        }
+
+        public void seek(TermEnum termEnum) throws IOException
+        {
+           throw new UnsupportedOperationException();
+        }
+
+        public boolean skipTo(int target) throws IOException
+        {
+            do
+            {
+                if (!next())
+                {
+                    return false;
+                }
+            }
+            while (target > doc());
+            return true;
+
         }
 
     }

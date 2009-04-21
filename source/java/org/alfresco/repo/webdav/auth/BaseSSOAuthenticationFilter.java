@@ -42,6 +42,7 @@ import org.alfresco.jlan.server.config.SecurityConfigSection;
 import org.alfresco.jlan.util.IPAddress;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.SessionUser;
+import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -61,7 +62,7 @@ import org.springframework.beans.factory.InitializingBean;
  * @author gkspencer
  * @author kroast
  */
-public abstract class BaseSSOAuthenticationFilter implements DependencyInjectedFilter, InitializingBean
+public abstract class BaseSSOAuthenticationFilter implements DependencyInjectedFilter, ActivateableBean, InitializingBean
 {
 	// Constants
 	//
@@ -112,6 +113,8 @@ public abstract class BaseSSOAuthenticationFilter implements DependencyInjectedF
     
     private String m_lastConfiguredServerName;
     private String m_lastResolvedServerName;
+    
+    private boolean m_isActive = true;
             
     /**
      * @param serverConfiguration the serverConfiguration to set
@@ -159,7 +162,27 @@ public abstract class BaseSSOAuthenticationFilter implements DependencyInjectedF
     public void setTransactionService(TransactionService transactionService)
     {
         this.transactionService = transactionService;
-    }    
+    }
+    
+    /**
+     * Activates or deactivates the bean
+     * 
+     * @param active
+     *            <code>true</code> if the bean is active and initialization should complete
+     */
+    public void setActive(boolean active)
+    {
+        this.m_isActive = active;
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.repo.management.subsystems.ActivateableBean#isActive()
+     */
+    public boolean isActive()
+    {
+        return m_isActive;
+    }
 
     /* (non-Javadoc)
      * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()

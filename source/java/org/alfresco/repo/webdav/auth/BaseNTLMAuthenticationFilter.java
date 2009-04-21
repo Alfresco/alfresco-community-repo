@@ -60,6 +60,7 @@ import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.MD4PasswordEncoder;
 import org.alfresco.repo.security.authentication.MD4PasswordEncoderImpl;
 import org.alfresco.repo.security.authentication.NTLMMode;
+import org.alfresco.repo.security.authentication.ntlm.NLTMAuthenticator;
 import org.alfresco.repo.security.authentication.ntlm.NTLMPassthruToken;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.logging.Log;
@@ -114,6 +115,9 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
     
     // Disable NTLMv2 support
     private boolean m_disableNTLMv2 = false;
+    
+    // SSO enabled authentication component (required)
+    private NLTMAuthenticator nltmAuthenticator;
 
        
     /**
@@ -135,8 +139,13 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
 
         // Check that the authentication component supports the required mode
     	
-        if (authenticationComponent.getNTLMMode() != NTLMMode.MD4_PROVIDER &&
-            authenticationComponent.getNTLMMode() != NTLMMode.PASS_THROUGH)
+        if (!(authenticationComponent instanceof NLTMAuthenticator))
+        {
+            throw new ServletException("Authentication component does not support NTLM");            
+        }
+        this.nltmAuthenticator = (NLTMAuthenticator)this.authenticationComponent;
+        if (nltmAuthenticator.getNTLMMode() != NTLMMode.MD4_PROVIDER &&
+                nltmAuthenticator.getNTLMMode() != NTLMMode.PASS_THROUGH)
         {
             throw new ServletException("Required authentication mode not available");
         }
@@ -154,7 +163,7 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
         // Set the NTLM flags depending on the authentication component supporting MD4 passwords,
         // or is using passthru auth
         
-        if (authenticationComponent.getNTLMMode() == NTLMMode.MD4_PROVIDER && m_disableNTLMv2 == false)
+        if (nltmAuthenticator.getNTLMMode() == NTLMMode.MD4_PROVIDER && m_disableNTLMv2 == false)
         {
             // Allow the client to use an NTLMv2 logon
         	
@@ -388,7 +397,7 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
             byte[] challenge = null;
             NTLMPassthruToken authToken = null;
             
-            if (authenticationComponent.getNTLMMode() == NTLMMode.MD4_PROVIDER)
+            if (nltmAuthenticator.getNTLMMode() == NTLMMode.MD4_PROVIDER)
             {
                 // Generate a random 8 byte challenge
             	
@@ -411,7 +420,7 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
                 authToken = new NTLMPassthruToken(domain);
                 
                 // Run the first stage of the passthru authentication to get the challenge
-                authenticationComponent.authenticate(authToken);
+                nltmAuthenticator.authenticate(authToken);
                 
                 // Get the challenge from the token
                 if (authToken.getChallenge() != null)
@@ -531,7 +540,7 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
         else
         {
             // Check if we are using local MD4 password hashes or passthru authentication
-            if (authenticationComponent.getNTLMMode() == NTLMMode.MD4_PROVIDER)
+            if (nltmAuthenticator.getNTLMMode() == NTLMMode.MD4_PROVIDER)
             {
                 // Check if guest logons are allowed and this is a guest logon
                 if (m_allowGuest && userName.equalsIgnoreCase(authenticationComponent.getGuestUserName()))
@@ -594,7 +603,7 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
                     try
                     {
                         // Run the second stage of the passthru authentication
-                        authenticationComponent.authenticate(authToken);
+                        nltmAuthenticator.authenticate(authToken);
                         authenticated = true;
                         
                         // Check if the user has been logged on as guest
@@ -1005,7 +1014,7 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
             tx.begin();
             
             // Get the stored MD4 hashed password for the user, or null if the user does not exist
-            md4hash = authenticationComponent.getMD4HashedPassword(userName);
+            md4hash = nltmAuthenticator.getMD4HashedPassword(userName);
         }
         catch (Throwable ex)
         {

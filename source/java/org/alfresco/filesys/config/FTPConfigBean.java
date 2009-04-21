@@ -62,6 +62,9 @@ public class FTPConfigBean
     /** The authenticator. */
     private FTPAuthenticator authenticator;
 
+    /** Is IP v6 enabled? */
+    private boolean ipv6Enabled;
+
     /**
      * Checks if is server enabled.
      * 
@@ -249,5 +252,26 @@ public class FTPConfigBean
     public void setAuthenticator(FTPAuthenticator authenticator)
     {
         this.authenticator = authenticator;
+    }
+
+    /**
+     * Checks if IP v6 is enabled.
+     * 
+     * @return <code>true</code> if IP v6 is enabled
+     */
+    public boolean getIpv6Enabled()
+    {
+        return ipv6Enabled;
+    }
+
+    /**
+     * Indicates whether IP v6 should be enabled.
+     * 
+     * @param ipv6Enabled
+     *            <code>true</code> if IP v6 should be enabled
+     */
+    public void setIpv6Enabled(boolean ipv6Enabled)
+    {
+        this.ipv6Enabled = ipv6Enabled;
     }
 }

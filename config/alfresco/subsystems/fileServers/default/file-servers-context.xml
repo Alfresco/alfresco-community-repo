@@ -197,6 +197,11 @@
          <value>${ftp.port}</value>
       </property>
 
+      <!-- IPv6 support -->
+      <property name="ipv6Enabled">
+         <value>${ftp.ipv6.enabled}</value>
+      </property>
+
       <!-- FTP authentication -->
       <property name="authenticator">
          <ref bean="FtpAuthenticator" />

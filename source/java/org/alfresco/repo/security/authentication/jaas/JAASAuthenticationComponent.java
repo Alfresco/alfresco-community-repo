@@ -40,7 +40,6 @@ import javax.security.sasl.RealmCallback;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.security.authentication.AbstractAuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationException;
-import org.alfresco.service.Managed;
 
 /**
  * JAAS based authentication
@@ -104,14 +103,12 @@ public class JAASAuthenticationComponent extends AbstractAuthenticationComponent
 
     // Springification
     
-    @Managed(category="Security")
     public void setJaasConfigEntryName(String jaasConfigEntryName)
     {
         this.jaasConfigEntryName = jaasConfigEntryName;
     }
     
    
-    @Managed(category="Security")
     public void setRealm(String realm)
     {
         this.realm = realm;

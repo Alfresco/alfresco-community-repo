@@ -41,15 +41,6 @@ public interface AuthenticationComponent extends AuthenticationContext
      * @throws AuthenticationException
      */     
     public void authenticate(String userName, char[] password) throws AuthenticationException;
-
-    /**
-     * Authenticate using a token
-     * 
-     * @param token Authentication
-     * @return Authentication
-     * @throws AuthenticationException
-     */
-    public Authentication authenticate(Authentication token) throws AuthenticationException;
     
     /**
      * Explicitly set the current user to be authenticated.
@@ -75,16 +66,6 @@ public interface AuthenticationComponent extends AuthenticationContext
      * True if Guest user authentication is allowed, false otherwise
      */
     public boolean guestUserAuthenticationAllowed();
-    
-    /**
-     * Get the enum that describes NTLM integration
-     */
-    public NTLMMode getNTLMMode();
-    
-    /**
-     * Get the MD4 password hash, as required by NTLM based authentication methods.
-     */
-    public String getMD4HashedPassword(String userName);
     
     /**
      * Gets a set of user names who for this particular authentication system should be considered administrators by

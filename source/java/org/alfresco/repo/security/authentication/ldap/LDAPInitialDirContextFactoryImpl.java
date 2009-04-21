@@ -38,7 +38,6 @@ import javax.naming.directory.BasicAttributes;
 import javax.naming.directory.InitialDirContext;
 
 import org.alfresco.repo.security.authentication.AuthenticationException;
-import org.alfresco.service.Managed;
 import org.alfresco.util.ApplicationContextHelper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -61,7 +60,6 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
         super();
     }
 
-    @Managed(category="Security")
     public void setInitialDirContextEnvironment(Map<String, String> initialDirContextEnvironment)
     {
         this.initialDirContextEnvironment = initialDirContextEnvironment;

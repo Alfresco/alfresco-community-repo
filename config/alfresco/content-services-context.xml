@@ -149,7 +149,7 @@
    </bean>
    
    <!-- Import the OpenOffice extractor worker from the third party subsystem -->
-   <bean id="extracter.worker.OpenOffice" class="org.alfresco.repo.management.ManagedSubsystemProxyFactory">
+   <bean id="extracter.worker.OpenOffice" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
       <property name="sourceApplicationContextFactory">
          <ref bean="thirdparty" />
       </property>
@@ -339,7 +339,7 @@
    </bean>
 
    <!-- Import the OpenOffice transformer worker from the third party subsystem -->
-   <bean id="transformer.worker.OpenOffice" class="org.alfresco.repo.management.ManagedSubsystemProxyFactory">
+   <bean id="transformer.worker.OpenOffice" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
       <property name="sourceApplicationContextFactory">
          <ref bean="thirdparty" />
       </property>
@@ -380,7 +380,7 @@
          parent="baseContentTransformer" />
 
    <!-- Import the ImageMagick transformer from the third party subsystem -->
-   <bean id="transformer.worker.ImageMagick" class="org.alfresco.repo.management.ManagedSubsystemProxyFactory">
+   <bean id="transformer.worker.ImageMagick" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
       <property name="sourceApplicationContextFactory">
          <ref bean="thirdparty" />
       </property>

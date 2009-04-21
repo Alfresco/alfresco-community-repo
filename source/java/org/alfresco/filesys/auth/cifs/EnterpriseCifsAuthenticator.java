@@ -79,6 +79,7 @@ import org.alfresco.jlan.smb.server.VirtualCircuit;
 import org.alfresco.jlan.util.DataPacker;
 import org.alfresco.jlan.util.HexDump;
 import org.alfresco.repo.security.authentication.NTLMMode;
+import org.alfresco.repo.security.authentication.ntlm.NLTMAuthenticator;
 import org.ietf.jgss.Oid;
 
 /**
@@ -390,12 +391,12 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
         // Make sure that either Kerberos support is enabled and/or the authentication component
         // supports MD4 hashed passwords
 
-        if (isKerberosEnabled() == false && getAuthenticationComponent().getNTLMMode() != NTLMMode.MD4_PROVIDER)
+        if (!isKerberosEnabled() && (!(getAuthenticationComponent() instanceof NLTMAuthenticator) || getNTLMAuthenticator().getNTLMMode() != NTLMMode.MD4_PROVIDER))
         {
             // Log an error
 
             logger.error("No valid CIFS authentication combination available");
-            logger.error("Either enable Kerberos support or use an authentication component that supports MD4 hashed passwords");
+            logger.error("Either enable Kerberos support or use an SSO-enabled authentication component that supports MD4 hashed passwords");
 
             // Throw an exception to stop the CIFS server startup
 
@@ -1652,7 +1653,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
         
         // Check if we are using local MD4 password hashes or passthru authentication
         
-        if ( getAuthenticationComponent().getNTLMMode() == NTLMMode.MD4_PROVIDER)
+        if ( getNTLMAuthenticator().getNTLMMode() == NTLMMode.MD4_PROVIDER)
         {
             // Get the NTLM logon details
             
@@ -1675,7 +1676,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
             
             //  Get the stored MD4 hashed password for the user, or null if the user does not exist
             
-            String md4hash = getAuthenticationComponent().getMD4HashedPassword(userName);
+            String md4hash = getNTLMAuthenticator().getMD4HashedPassword(userName);
             
             if ( md4hash != null)
             {
@@ -1778,7 +1779,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
         
         // Check if we are using local MD4 password hashes or passthru authentication
         
-        if ( getAuthenticationComponent().getNTLMMode() == NTLMMode.MD4_PROVIDER)
+        if ( getNTLMAuthenticator().getNTLMMode() == NTLMMode.MD4_PROVIDER)
         {
             //  Check for a null logon
             
@@ -1797,7 +1798,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
             
             //  Get the stored MD4 hashed password for the user, or null if the user does not exist
             
-            String md4hash = getAuthenticationComponent().getMD4HashedPassword(client.getUserName());
+            String md4hash = getNTLMAuthenticator().getMD4HashedPassword(client.getUserName());
             
             if ( md4hash != null)
             {
@@ -1903,7 +1904,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
         
     	  // Check if we are using local MD4 password hashes or passthru authentication
         
-        if ( getAuthenticationComponent().getNTLMMode() == NTLMMode.MD4_PROVIDER)
+        if ( getNTLMAuthenticator().getNTLMMode() == NTLMMode.MD4_PROVIDER)
         {
             // Get the NTLM logon details
             
@@ -1926,7 +1927,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
             
             //  Get the stored MD4 hashed password for the user, or null if the user does not exist
             
-            String md4hash = getAuthenticationComponent().getMD4HashedPassword(userName);
+            String md4hash = getNTLMAuthenticator().getMD4HashedPassword(userName);
             
             if ( md4hash != null)
             {
@@ -2021,7 +2022,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
     {
         // Check if we are using local MD4 password hashes or passthru authentication
         
-        if ( getAuthenticationComponent().getNTLMMode() == NTLMMode.MD4_PROVIDER)
+        if ( getNTLMAuthenticator().getNTLMMode() == NTLMMode.MD4_PROVIDER)
         {
             //  Check for a null logon
             
@@ -2040,7 +2041,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
             
             //  Get the stored MD4 hashed password for the user, or null if the user does not exist
             
-            String md4hash = getAuthenticationComponent().getMD4HashedPassword(client.getUserName());
+            String md4hash = getNTLMAuthenticator().getMD4HashedPassword(client.getUserName());
             
             if ( md4hash != null)
             {
@@ -2150,7 +2151,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
 
         // Check if we are using local MD4 password hashes or passthru authentication
        
-        if ( getAuthenticationComponent().getNTLMMode() == NTLMMode.MD4_PROVIDER)
+        if ( getNTLMAuthenticator().getNTLMMode() == NTLMMode.MD4_PROVIDER)
         {
             // Get the NTLM logon details
            
@@ -2173,7 +2174,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
            
             //  Get the stored MD4 hashed password for the user, or null if the user does not exist
            
-            String md4hash = getAuthenticationComponent().getMD4HashedPassword(userName);
+            String md4hash = getNTLMAuthenticator().getMD4HashedPassword(userName);
            
             if ( md4hash != null)
             {

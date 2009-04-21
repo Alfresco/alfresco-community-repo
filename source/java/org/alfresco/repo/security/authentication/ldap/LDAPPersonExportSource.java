@@ -44,7 +44,6 @@ import javax.transaction.UserTransaction;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.importer.ExportSource;
 import org.alfresco.repo.importer.ExportSourceImporterException;
-import org.alfresco.service.Managed;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -85,25 +84,21 @@ public class LDAPPersonExportSource implements ExportSource
         super();
     }
 
-    @Managed(category="Security")
     public void setPersonQuery(String personQuery)
     {
         this.personQuery = personQuery;
     }
 
-    @Managed(category="Security")
     public void setSearchBase(String searchBase)
     {
         this.searchBase = searchBase;
     }
 
-    @Managed(category="Security")
     public void setUserIdAttributeName(String userIdAttributeName)
     {
         this.userIdAttributeName = userIdAttributeName;
     }
 
-    @Managed(category="Security")
     public void setLDAPInitialDirContextFactory(LDAPInitialDirContextFactory ldapInitialDirContextFactory)
     {
         this.ldapInitialContextFactory = ldapInitialDirContextFactory;
@@ -114,7 +109,6 @@ public class LDAPPersonExportSource implements ExportSource
         this.personService = personService;
     }
 
-    @Managed(category="Security")
     public void setAttributeDefaults(Map<String, String> attributeDefaults)
     {
         this.attributeDefaults = attributeDefaults;
@@ -125,13 +119,11 @@ public class LDAPPersonExportSource implements ExportSource
         this.namespaceService = namespaceService;
     }
 
-    @Managed(category="Security")
     public void setAttributeMapping(Map<String, String> attributeMapping)
     {
         this.attributeMapping = attributeMapping;
     }
 
-    @Managed(category="Security")
     public void setErrorOnMissingUID(boolean errorOnMissingUID)
     {
         this.errorOnMissingUID = errorOnMissingUID;
@@ -175,7 +167,7 @@ public class LDAPPersonExportSource implements ExportSource
 
                 userSearchCtls.setCountLimit(Integer.MAX_VALUE);
 
-                NamingEnumeration searchResults = ctx.search(searchBase, personQuery, userSearchCtls);
+                NamingEnumeration<SearchResult> searchResults = ctx.search(searchBase, personQuery, userSearchCtls);
                 RESULT_LOOP: while (searchResults.hasMoreElements())
                 {
                     SearchResult result = (SearchResult) searchResults.next();

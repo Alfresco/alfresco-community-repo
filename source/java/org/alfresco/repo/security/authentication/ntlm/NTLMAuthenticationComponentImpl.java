@@ -67,7 +67,7 @@ import org.springframework.beans.factory.InitializingBean;
  * 
  * @author GKSpencer
  */
-public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationComponent implements InitializingBean
+public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationComponent implements NLTMAuthenticator, InitializingBean
 {
     // Logging
     

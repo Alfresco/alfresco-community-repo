@@ -24,6 +24,11 @@
  */
 package org.alfresco.repo.security.authentication;
 
+import net.sf.acegisecurity.Authentication;
+
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.security.authentication.ntlm.NLTMAuthenticator;
+
 
 /**
  * This implementation of an AuthenticationComponent can be configured to accept or reject all attempts to login.
@@ -37,7 +42,7 @@ package org.alfresco.repo.security.authentication;
  *  
  * @author Andy Hind
  */
-public class SimpleAcceptOrRejectAllAuthenticationComponentImpl extends AbstractAuthenticationComponent
+public class SimpleAcceptOrRejectAllAuthenticationComponentImpl extends AbstractAuthenticationComponent implements NLTMAuthenticator
 {
     private boolean accept = false;
 
@@ -70,7 +75,6 @@ public class SimpleAcceptOrRejectAllAuthenticationComponentImpl extends Abstract
        return accept;
     }
 
-    @Override
     public String getMD4HashedPassword(String userName)
     {
         if(accept)
@@ -83,11 +87,16 @@ public class SimpleAcceptOrRejectAllAuthenticationComponentImpl extends Abstract
         }
     }
 
-    @Override
     public NTLMMode getNTLMMode()
     {
         return NTLMMode.MD4_PROVIDER;
     }
     
-    
+    /**
+     * The default is not to support Authentication token base authentication
+     */
+    public Authentication authenticate(Authentication token) throws AuthenticationException
+    {
+        throw new AlfrescoRuntimeException("Authentication via token not supported");
+    }
 }

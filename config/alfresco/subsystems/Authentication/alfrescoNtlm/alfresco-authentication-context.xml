@@ -1,0 +1,97 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+<beans>
+   <bean id="authenticationComponent" class="org.alfresco.repo.security.authentication.AuthenticationComponentImpl"
+      parent="authenticationComponentBase">
+      <property name="authenticationDao">
+         <ref bean="authenticationDao" />
+      </property>
+      <property name="authenticationManager">
+         <ref bean="authenticationManager" />
+      </property>
+      <property name="allowGuestLogin">
+         <value>${alfresco.authentication.allowGuestLogin}</value>
+      </property>
+      <property name="nodeService">
+         <ref bean="nodeService" />
+      </property>
+      <property name="personService">
+         <ref bean="personService" />
+      </property>
+      <property name="transactionService">
+         <ref bean="transactionService" />
+      </property>
+   </bean>
+
+   <!-- Wrapped version to be used within subsystem -->
+   <bean id="AuthenticationComponent" class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
+      <property name="proxyInterfaces">
+         <list>
+            <value>org.alfresco.repo.security.authentication.AuthenticationComponent</value>
+            <value>org.alfresco.repo.security.authentication.ntlm.NLTMAuthenticator</value>
+         </list>
+      </property>
+      <property name="transactionManager">
+         <ref bean="transactionManager" />
+      </property>
+      <property name="target">
+         <ref bean="authenticationComponent" />
+      </property>
+      <property name="transactionAttributes">
+         <props>
+            <prop key="*">${server.transaction.mode.default}</prop>
+         </props>
+      </property>
+   </bean>
+
+   <bean id="authenticationDao" class="org.alfresco.repo.security.authentication.RepositoryAuthenticationDao">
+      <property name="nodeService">
+         <ref bean="nodeService" />
+      </property>
+      <property name="tenantService">
+         <ref bean="tenantService" />
+      </property>
+      <property name="dictionaryService">
+         <ref bean="dictionaryService" />
+      </property>
+      <property name="namespaceService">
+         <ref bean="namespaceService" />
+      </property>
+      <property name="searchService">
+         <ref bean="admSearchService" />
+      </property>
+      <property name="retryingTransactionHelper">
+         <ref bean="retryingTransactionHelper" />
+      </property>
+      <property name="userNameMatcher">
+         <ref bean="userNameMatcher" />
+      </property>
+      <property name="passwordEncoder">
+         <ref bean="passwordEncoder" />
+      </property>
+   </bean>
+
+   <!-- Authenticaton service for chaining -->
+   <bean id="localAuthenticationService" class="org.alfresco.repo.security.authentication.AuthenticationServiceImpl">
+      <property name="authenticationDao">
+         <ref bean="authenticationDao" />
+      </property>
+      <property name="ticketComponent">
+         <ref bean="ticketComponent" />
+      </property>
+      <property name="authenticationComponent">
+         <ref bean="authenticationComponent" />
+      </property>
+      <property name="sysAdminCache">
+         <ref bean="sysAdminCache" />
+      </property>
+   </bean>
+
+   <!-- CIFS authentication -->
+   <bean id="cifsAuthenticator" class="org.alfresco.filesys.auth.cifs.EnterpriseCifsAuthenticator" parent="cifsAuthenticatorBase">
+      <property name="active">
+         <value>${alfresco.authentication.authenticateCIFS}</value>
+      </property>
+   </bean>
+
+</beans>

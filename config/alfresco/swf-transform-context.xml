@@ -4,7 +4,7 @@
 <beans>
    
    <!-- Import the swftools transformer worker from the third party subsystem -->
-   <bean id="transformer.worker.Pdf2swf" class="org.alfresco.repo.management.ManagedSubsystemProxyFactory">
+   <bean id="transformer.worker.Pdf2swf" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
       <property name="sourceApplicationContextFactory">
          <ref bean="thirdparty" />
       </property>

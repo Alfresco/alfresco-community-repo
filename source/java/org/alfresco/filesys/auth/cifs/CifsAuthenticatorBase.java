@@ -43,9 +43,11 @@ import org.alfresco.jlan.server.filesys.DiskInterface;
 import org.alfresco.jlan.server.filesys.DiskSharedDevice;
 import org.alfresco.jlan.server.filesys.SrvDiskInfo;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.MD4PasswordEncoder;
 import org.alfresco.repo.security.authentication.MD4PasswordEncoderImpl;
+import org.alfresco.repo.security.authentication.ntlm.NLTMAuthenticator;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthenticationService;
@@ -55,49 +57,67 @@ import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.InitializingBean;
 
 /**
  * CIFS Authenticator Base Class
- * 
  * <p>
  * Base class for Alfresco CIFS authenticator implementations.
  * 
  * @author gkspencer
  */
-public abstract class CifsAuthenticatorBase extends CifsAuthenticator implements DisposableBean
+public abstract class CifsAuthenticatorBase extends CifsAuthenticator implements ActivateableBean, InitializingBean, DisposableBean
 {
     // Logging
     
+    /** The Constant logger. */
     protected static final Log logger = LogFactory.getLog("org.alfresco.smb.protocol.auth");
 
     // MD4 hash decoder
     
+    /** The m_md4 encoder. */
     protected MD4PasswordEncoder m_md4Encoder = new MD4PasswordEncoderImpl();
 
+    /** The authentication component. */
     private AuthenticationComponent authenticationComponent;
 
+    /** The authentication service. */
     private AuthenticationService authenticationService;
 
+    /** The node service. */
     private NodeService nodeService;
 
+    /** The person service. */
     private PersonService personService;
 
+    /** The transaction service. */
     private TransactionService transactionService;
 
+    /** The authority service. */
     private AuthorityService authorityService;
 
+    /** The disk interface. */
     private DiskInterface diskInterface;
+    
+    /** Is this component active, i.e. should it be used? */
+    private boolean active = true;
     
     // Alfresco configuration
     
+    /**
+     * Instantiates a new cifs authenticator base.
+     */
     public CifsAuthenticatorBase()
     {
         // The default access mode
         setAccessMode(USER_MODE);
     }
-        
+    
     /**
-     * @param authenticationComponent the authenticationComponent to set
+     * Sets the authentication component.
+     * 
+     * @param authenticationComponent
+     *            the authenticationComponent to set
      */
     public void setAuthenticationComponent(AuthenticationComponent authenticationComponent)
     {
@@ -105,7 +125,10 @@ public abstract class CifsAuthenticatorBase extends CifsAuthenticator implements
     }
 
     /**
-     * @param authenticationService the authenticationService to set
+     * Sets the authentication service.
+     * 
+     * @param authenticationService
+     *            the authenticationService to set
      */
     public void setAuthenticationService(AuthenticationService authenticationService)
     {
@@ -113,7 +136,10 @@ public abstract class CifsAuthenticatorBase extends CifsAuthenticator implements
     }
 
     /**
-     * @param nodeService the nodeService to set
+     * Sets the node service.
+     * 
+     * @param nodeService
+     *            the nodeService to set
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -121,7 +147,10 @@ public abstract class CifsAuthenticatorBase extends CifsAuthenticator implements
     }
 
     /**
-     * @param personService the personService to set
+     * Sets the person service.
+     * 
+     * @param personService
+     *            the personService to set
      */
     public void setPersonService(PersonService personService)
     {
@@ -129,7 +158,10 @@ public abstract class CifsAuthenticatorBase extends CifsAuthenticator implements
     }
 
     /**
-     * @param transactionService the transactionService to set
+     * Sets the transaction service.
+     * 
+     * @param transactionService
+     *            the transactionService to set
      */
     public void setTransactionService(TransactionService transactionService)
     {
@@ -137,7 +169,10 @@ public abstract class CifsAuthenticatorBase extends CifsAuthenticator implements
     }
 
     /**
-     * @param authorityService the authorityService to set
+     * Sets the authority service.
+     * 
+     * @param authorityService
+     *            the authorityService to set
      */
     public void setAuthorityService(AuthorityService authorityService)
     {
@@ -145,20 +180,46 @@ public abstract class CifsAuthenticatorBase extends CifsAuthenticator implements
     }
 
     /**
-     * Set the filesystem driver for the node service based filesystem
+     * Set the filesystem driver for the node service based filesystem.
      * 
-     * @param diskInterface DiskInterface
+     * @param diskInterface
+     *            DiskInterface
      */
     public void setDiskInterface(DiskInterface diskInterface)
     {
         this.diskInterface = diskInterface;
     }
     
+    
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.repo.management.subsystems.ActivateableBean#isActive()
+     */
+    public boolean isActive()
+    {
+        return active;
+    }
+
     /**
-     * Initialize the authenticator
+     * Activates or deactivates the bean.
      * 
-     * @param config ServerConfiguration
-     * @param params ConfigElement
+     * @param active
+     *            <code>true</code> if the bean is active and initialization should complete
+     */
+    public void setActive(boolean active)
+    {
+        this.active = active;
+    }
+
+    /**
+     * Initialize the authenticator.
+     * 
+     * @param config
+     *            ServerConfiguration
+     * @param params
+     *            ConfigElement
+     * @throws InvalidConfigurationException
+     *             the invalid configuration exception
      * @exception InvalidConfigurationException
      */
     public void initialize(ServerConfiguration config, ConfigElement params) throws InvalidConfigurationException
@@ -181,8 +242,10 @@ public abstract class CifsAuthenticatorBase extends CifsAuthenticator implements
 
     
     /**
-     * Initialize the authenticator
+     * Initialize the authenticator.
      * 
+     * @throws InvalidConfigurationException
+     *             the invalid configuration exception
      * @exception InvalidConfigurationException
      */
     @Override
@@ -207,9 +270,24 @@ public abstract class CifsAuthenticatorBase extends CifsAuthenticator implements
         if ( ! validateAuthenticationMode() )
             throw new InvalidConfigurationException("Required authentication mode not available");
     }
+    
+    
+
+    /*
+     * (non-Javadoc)
+     * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
+     */
+    public final void afterPropertiesSet() throws InvalidConfigurationException
+    {
+        // If the bean is active, call the overridable initialize method
+        if (this.active)
+        {
+            initialize();
+        }
+    }
 
     /**
-     * Validate that the authentication component supports the required mode
+     * Validate that the authentication component supports the required mode.
      * 
      * @return boolean
      */
@@ -219,10 +297,12 @@ public abstract class CifsAuthenticatorBase extends CifsAuthenticator implements
     }
     
     /**
-     * Logon using the guest user account
+     * Logon using the guest user account.
      * 
-     * @param client ClientInfo
-     * @param sess SrvSession
+     * @param client
+     *            ClientInfo
+     * @param sess
+     *            SrvSession
      */
     protected void doGuestLogon( ClientInfo client, SrvSession sess)
     {
@@ -263,9 +343,10 @@ public abstract class CifsAuthenticatorBase extends CifsAuthenticator implements
     }
     
     /**
-     * Get the home folder for the user
+     * Get the home folder for the user.
      * 
-     * @param client ClientInfo
+     * @param client
+     *            ClientInfo
      */
     protected final void getHomeFolderForUser(ClientInfo client)
     {
@@ -313,9 +394,10 @@ public abstract class CifsAuthenticatorBase extends CifsAuthenticator implements
     }
     
     /**
-     * Map the case insensitive logon name to the internal person object user name
+     * Map the case insensitive logon name to the internal person object user name.
      * 
-     * @param userName String
+     * @param userName
+     *            String
      * @return String
      */
     protected final String mapUserNameToPerson(String userName)
@@ -373,9 +455,10 @@ public abstract class CifsAuthenticatorBase extends CifsAuthenticator implements
     }
     
     /**
-     * Set the current authenticated user context for this thread
+     * Set the current authenticated user context for this thread.
      * 
-     * @param client ClientInfo
+     * @param client
+     *            ClientInfo
      */
     public void setCurrentUser(ClientInfo client) {
 
@@ -403,7 +486,7 @@ public abstract class CifsAuthenticatorBase extends CifsAuthenticator implements
     }
     
     /**
-     * Return the authentication component
+     * Return the authentication component.
      * 
      * @return AuthenticationComponent
      */
@@ -412,8 +495,23 @@ public abstract class CifsAuthenticatorBase extends CifsAuthenticator implements
         return this.authenticationComponent;
     }
     
+
     /**
-     * Return the authentication service
+     * Returns an SSO-enabled authentication component.
+     * 
+     * @return NLTMAuthenticator
+     */
+    protected final NLTMAuthenticator getNTLMAuthenticator()
+    {
+        if (!(this.authenticationComponent instanceof NLTMAuthenticator))
+        {
+            throw new IllegalStateException("Attempt to use non SSO-enabled authentication component for SSO");
+        }
+        return (NLTMAuthenticator)this.authenticationComponent;
+    }
+
+    /**
+     * Return the authentication service.
      * 
      * @return AuthenticationService
      */
@@ -423,7 +521,7 @@ public abstract class CifsAuthenticatorBase extends CifsAuthenticator implements
     }
     
     /**
-     * Return the node service
+     * Return the node service.
      * 
      * @return NodeService
      */
@@ -433,7 +531,7 @@ public abstract class CifsAuthenticatorBase extends CifsAuthenticator implements
     }
     
     /**
-     * Return the person service
+     * Return the person service.
      * 
      * @return PersonService
      */
@@ -443,7 +541,7 @@ public abstract class CifsAuthenticatorBase extends CifsAuthenticator implements
     }
 
     /**
-     * Return the transaction service
+     * Return the transaction service.
      * 
      * @return TransactionService
      */
@@ -453,7 +551,7 @@ public abstract class CifsAuthenticatorBase extends CifsAuthenticator implements
     }
     
     /**
-     * Return the authority service
+     * Return the authority service.
      * 
      * @return AuthorityService
      */
@@ -462,9 +560,10 @@ public abstract class CifsAuthenticatorBase extends CifsAuthenticator implements
     }
 
     /**
-     * Check if the user is an administrator user name
+     * Check if the user is an administrator user name.
      * 
-     * @param cInfo ClientInfo
+     * @param cInfo
+     *            ClientInfo
      */
     protected final void checkForAdminUserName(ClientInfo cInfo) {
         
@@ -503,9 +602,10 @@ public abstract class CifsAuthenticatorBase extends CifsAuthenticator implements
     }
     
     /**
-     * Create a transaction, this will be a wrteable transaction unless the system is in read-only mode.
+     * Create a transaction, this will be a wrteable transaction unless the system is in read-only mode. return
+     * UserTransaction
      * 
-     * return UserTransaction
+     * @return the user transaction
      */
     protected final UserTransaction createTransaction()
     {
@@ -524,7 +624,10 @@ public abstract class CifsAuthenticatorBase extends CifsAuthenticator implements
     }
 
     /**
-     * Handle tidy up on container shutdown
+     * Handle tidy up on container shutdown.
+     * 
+     * @throws Exception
+     *             the exception
      */
     public void destroy() throws Exception
     {

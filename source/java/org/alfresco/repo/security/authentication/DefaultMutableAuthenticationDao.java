@@ -30,7 +30,6 @@ import net.sf.acegisecurity.UserDetails;
 import net.sf.acegisecurity.providers.dao.UsernameNotFoundException;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.service.Managed;
 import org.springframework.dao.DataAccessException;
 
 /**
@@ -430,97 +429,81 @@ public class DefaultMutableAuthenticationDao implements MutableAuthenticationDao
     // Bean IOC //
     // -------- //
     
-    @Managed(category="Security")
     public void setAllowCreateUser(boolean allowCreateUser)
     {
         this.allowCreateUser = allowCreateUser;
     }
 
-    @Managed(category="Security")
     public void setAllowDeleteUser(boolean allowDeleteUser)
     {
         this.allowDeleteUser = allowDeleteUser;
     }
 
-    @Managed(category="Security")
     public void setAllowGetAccountExpiryDate(boolean allowGetAccountExpiryDate)
     {
         this.allowGetAccountExpiryDate = allowGetAccountExpiryDate;
     }
 
-    @Managed(category="Security")
     public void setAllowGetAccountHasExpired(boolean allowGetAccountHasExpired)
     {
         this.allowGetAccountHasExpired = allowGetAccountHasExpired;
     }
 
-    @Managed(category="Security")
     public void setAllowGetAccountLocked(boolean allowGetAccountLocked)
     {
         this.allowGetAccountLocked = allowGetAccountLocked;
     }
 
-    @Managed(category="Security")
     public void setAllowGetCredentialsExpire(boolean allowGetCredentialsExpire)
     {
         this.allowGetCredentialsExpire = allowGetCredentialsExpire;
     }
 
-    @Managed(category="Security")
     public void setAllowGetCredentialsExpiryDate(boolean allowGetCredentialsExpiryDate)
     {
         this.allowGetCredentialsExpiryDate = allowGetCredentialsExpiryDate;
     }
 
-    @Managed(category="Security")
     public void setAllowGetCredentialsHaveExpired(boolean allowGetCredentialsHaveExpired)
     {
         this.allowGetCredentialsHaveExpired = allowGetCredentialsHaveExpired;
     }
 
-    @Managed(category="Security")
     public void setAllowGetEnabled(boolean allowGetEnabled)
     {
         this.allowGetEnabled = allowGetEnabled;
     }
 
-    @Managed(category="Security")
     public void setAllowSetAccountExpires(boolean allowSetAccountExpires)
     {
         this.allowSetAccountExpires = allowSetAccountExpires;
     }
 
-    @Managed(category="Security")
     public void setAllowSetAccountExpiryDate(boolean allowSetAccountExpiryDate)
     {
         this.allowSetAccountExpiryDate = allowSetAccountExpiryDate;
     }
 
-    @Managed(category="Security")
     public void setAllowSetAccountLocked(boolean allowSetAccountLocked)
     {
         this.allowSetAccountLocked = allowSetAccountLocked;
     }
 
-    @Managed(category="Security")
     public void setAllowSetCredentialsExpire(boolean allowSetCredentialsExpire)
     {
         this.allowSetCredentialsExpire = allowSetCredentialsExpire;
     }
 
-    @Managed(category="Security")
     public void setAllowSetCredentialsExpiryDate(boolean allowSetCredentialsExpiryDate)
     {
         this.allowSetCredentialsExpiryDate = allowSetCredentialsExpiryDate;
     }
 
-    @Managed(category="Security")
     public void setAllowSetEnabled(boolean allowSetEnabled)
     {
         this.allowSetEnabled = allowSetEnabled;
     }
 
-    @Managed(category="Security")
     public void setAllowUpdateUser(boolean allowUpdateUser)
     {
         this.allowUpdateUser = allowUpdateUser;

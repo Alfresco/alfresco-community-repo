@@ -29,7 +29,6 @@ import javax.naming.directory.InitialDirContext;
 
 import org.alfresco.repo.security.authentication.AbstractAuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationException;
-import org.alfresco.service.Managed;
 
 /**
  * Currently expects the cn name of the user which is in a fixed location.
@@ -51,25 +50,21 @@ public class LDAPAuthenticationComponentImpl extends AbstractAuthenticationCompo
         super();
     }
 
-    @Managed(category="Security")
     public void setLDAPInitialDirContextFactory(LDAPInitialDirContextFactory ldapInitialDirContextFactory)
     {
         this.ldapInitialContextFactory = ldapInitialDirContextFactory;
     }
 
-    @Managed(category="Security")
     public void setUserNameFormat(String userNameFormat)
     {
         this.userNameFormat = userNameFormat;
     }
     
-    @Managed(category="Security")
     public void setEscapeCommasInBind(boolean escapeCommasInBind)
     {
         this.escapeCommasInBind = escapeCommasInBind;
     }
 
-    @Managed(category="Security")
     public void setEscapeCommasInUid(boolean escapeCommasInUid)
     {
         this.escapeCommasInUid = escapeCommasInUid;

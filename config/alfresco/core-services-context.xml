@@ -105,6 +105,12 @@
         </property>
     </bean>
 
+    <bean id="propertyBackedBeanRegistry" class="org.alfresco.repo.management.subsystems.DefaultPropertyBackedBeanRegistry"/>
+
+    <bean id="abstractPropertyBackedBean" class="org.alfresco.repo.management.subsystems.AbstractPropertyBackedBean" abstract="true">
+        <property name="registry"><ref local="propertyBackedBeanRegistry"/></property>
+    </bean>
+
     <bean id="exporter" class="org.springframework.jmx.export.MBeanExporter">
        <property name="server" ref="alfrescoMBeanServer"/>
        <property name="beans">

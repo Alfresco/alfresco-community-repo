@@ -1,0 +1,387 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING/DTD BEAN//EN"
+    "http://www.springframework.org/dtd/spring-beans.dtd">
+<beans>
+
+   <bean id="fileServerConfiguration" class="org.alfresco.filesys.config.ServerConfigurationBean" parent="fileServerConfigurationBase">
+      <property name="cifsConfigBean">
+         <ref bean="cifsServerConfig" />
+      </property>
+      <property name="ftpConfigBean">
+         <ref bean="ftpServerConfig" />
+      </property>
+      <property name="nfsConfigBean">
+         <ref bean="nfsServerConfig" />
+      </property>
+      <property name="filesystemContexts">
+         <ref bean="filesystemContexts" />
+      </property>
+      <property name="securityConfigBean">
+         <ref bean="fileSecurityConfig" />
+      </property>
+   </bean>
+
+   <!-- CIFS Server -->
+
+   <bean id="cifsServer" class="org.alfresco.filesys.CIFSServerBean" destroy-method="stopServer">
+      <constructor-arg>
+         <ref local="fileServerConfiguration" />
+      </constructor-arg>
+      <property name="sessionListeners">
+         <list>
+            <!-- Allow authentication subsystem to listen for SMB sessions, e.g. for passthru -->
+            <ref bean="SmbSessionListener" />
+         </list>
+      </property>
+   </bean>
+
+   <!-- FTP Server -->
+
+   <bean id="ftpServer" class="org.alfresco.filesys.FTPServerBean" destroy-method="stopServer">
+      <constructor-arg>
+         <ref local="fileServerConfiguration" />
+      </constructor-arg>
+   </bean>
+
+   <!-- NFS Server -->
+
+   <bean id="nfsServer" class="org.alfresco.filesys.NFSServerBean" destroy-method="stopServer">
+      <constructor-arg>
+         <ref local="fileServerConfiguration" />
+      </constructor-arg>
+   </bean>
+
+   <!--  JMX Monitoring -->
+
+   <bean id="FileServerConfig" class="org.alfresco.filesys.FileServerConfig">
+      <property name="fileServerConfiguration">
+         <ref bean="fileServerConfiguration" />
+      </property>
+      <property name="ftpServer">
+         <ref bean="ftpServer" />
+      </property>
+      <property name="cifsServer">
+         <ref bean="cifsServer" />
+      </property>
+      <property name="nfsServer">
+         <ref bean="nfsServer" />
+      </property>
+   </bean>
+
+   <bean id="cifsServerConfig" class="org.alfresco.filesys.config.CIFSConfigBean">
+      <property name="serverEnabled">
+         <value>${cifs.enabled}</value>
+      </property>
+      <property name="serverName">
+         <value>${cifs.serverName}</value>
+      </property>
+      <property name="domainName">
+         <value>${cifs.domain}</value>
+      </property>
+      <property name="serverComment">
+         <value>Alfresco CIFS Server</value>
+      </property>
+      <!-- Set to the broadcast mask for the subnet -->
+      <property name="broadcastAddress">
+         <value>${cifs.broadcast}</value>
+      </property>
+      <!-- Set to the IP for the adapter for Java socket -->
+      <property name="bindToAddress">
+         <value>${cifs.bindto}</value>
+      </property>
+      <!-- Use Java socket based NetBIOS over TCP/IP and native SMB on linux -->
+      <property name="tcpipSMB">
+         <bean class="org.alfresco.filesys.config.TcpipSMBConfigBean">
+            <!--
+               Can be mapped to non-privileged ports, then use firewall rules to forward requests from the standard
+               ports
+            -->
+            <property name="port">
+               <value>${cifs.tcpipSMB.port}</value>
+            </property>
+            <property name="platforms">
+               <value>linux,solaris,macosx</value>
+            </property>
+            <property name="ipv6Enabled">
+               <value>${cifs.ipv6.enabled}</value>
+            </property>
+         </bean>
+      </property>
+      <property name="netBIOSSMB">
+         <bean class="org.alfresco.filesys.config.NetBIOSSMBConfigBean">
+            <property name="bindTo">
+               <value>${cifs.bindto}</value>
+            </property>
+            <property name="sessionPort">
+               <value>${cifs.netBIOSSMB.sessionPort}</value>
+            </property>
+            <property name="namePort">
+               <value>${cifs.netBIOSSMB.namePort}</value>
+            </property>
+            <property name="datagramPort">
+               <value>${cifs.netBIOSSMB.datagramPort}</value>
+            </property>
+            <property name="platforms">
+               <value>linux,solaris,macosx</value>
+            </property>
+         </bean>
+      </property>
+
+      <property name="hostAccouncerEnabled">
+         <value>${cifs.hostannounce}</value>
+      </property>
+      <property name="hostAccounceInterval">
+         <value>5</value>
+      </property>
+
+      <!-- Use Win32 NetBIOS interface on Windows -->
+      <property name="win32NetBIOS">
+         <bean class="org.alfresco.filesys.config.Win32NetBIOSConfigBean" />
+      </property>
+      <property name="win32HostAnnouncerEnabled">
+         <value>${cifs.hostannounce}</value>
+      </property>
+      <property name="win32HostAnnounceInterval">
+         <value>5</value>
+      </property>
+
+      <!-- CIFS authentication -->
+      <property name="authenticator">
+         <ref bean="CifsAuthenticator" />
+      </property>
+
+      <!-- Disable the use of asynchronous sockets/NIO code -->
+      <property name="disableNIO">
+         <value>${cifs.disableNIO}</value>
+      </property>
+
+      <!-- Disable the use of JNI code -->
+      <!-- Only currently affects Windows -->
+      <property name="disableNativeCode">
+         <value>${cifs.disableNativeCode}</value>
+      </property>
+
+      <!-- Session timeout, in seconds -->
+      <!-- Defaults to 15 minutes, to match the default Windows client setting        -->
+      <!-- If no I/O is received within that time the session is closed by the server -->
+      <property name="sessionTimeout">
+         <value>${cifs.sessionTimeout}</value>
+      </property>
+
+      <!-- Enable WINS if used for NetBIOS name lookups -->
+      <property name="WINSConfig">
+         <bean class="org.alfresco.filesys.config.WINSConfigBean">
+            <property name="autoDetectEnabled">
+               <value>${cifs.WINS.autoDetectEnabled}</value>
+            </property>
+            <property name="primary">
+               <value>${cifs.WINS.primary}</value>
+            </property>
+            <property name="secondary">
+               <value>${cifs.WINS.secondary}</value>
+            </property>
+         </bean>
+      </property>
+
+      <!--
+      <property name="sessionDebugFlags"> <value>Negotiate,Socket</value> </property>
+      -->
+   </bean>
+
+   <bean id="ftpServerConfig" class="org.alfresco.filesys.config.FTPConfigBean">
+      <property name="serverEnabled">
+         <value>${ftp.enabled}</value>
+      </property>
+
+      <property name="port">
+         <value>${ftp.port}</value>
+      </property>
+
+      <!-- FTP authentication -->
+      <property name="authenticator">
+         <ref bean="FtpAuthenticator" />
+      </property>
+
+      <!-- FTP server debug settings -->
+      <!-- Enable 'log4j.logger.org.alfresco.fileserver=debug' in log4j.properties file -->
+      <!--
+         <property name="debugFlags"> <value>File,Search,Error,Directory,Info,DataPort</value> </property>
+      -->
+
+   </bean>
+
+   <bean id="nfsServerConfig" class="org.alfresco.filesys.config.NFSConfigBean">
+      <property name="serverEnabled">
+         <value>${nfs.enabled}</value>
+      </property>
+
+      <!-- Map NFS user/group ids to Alfresco users -->
+      <property name="rpcAuthenticator">
+         <bean class="org.alfresco.filesys.auth.nfs.AlfrescoRpcAuthenticator">
+            <property name="userMappings">
+               <list>
+                  <bean class="org.alfresco.filesys.auth.nfs.UserMapping">
+                     <property name="name">
+                        <value>${alfresco_user_store.adminusername}</value>
+                     </property>
+                     <property name="uid">
+                        <value>0</value>
+                     </property>
+                     <property name="gid">
+                        <value>0</value>
+                     </property>
+                  </bean>
+               </list>
+            </property>
+         </bean>
+      </property>
+   </bean>
+
+   <bean id="filesystemContexts" class="org.springframework.beans.factory.config.ListFactoryBean">
+      <property name="sourceList">
+         <list>
+            <!-- Alfresco repository access shared filesystem -->
+            <bean class="org.alfresco.filesys.repo.ContentContext">
+               <property name="deviceName">
+                  <value>${filesystem.name}</value>
+               </property>
+               <property name="storeName">
+                  <value>${spaces.store}</value>
+               </property>
+               <property name="rootPath">
+                  <value>/${spaces.company_home.childname}</value>
+               </property>
+               <!-- Add a URL file to each folder that links back to the web client -->
+               <property name="URLFileName">
+                  <value>__Alfresco.url</value>
+               </property>
+               <property name="URLPrefix">
+                  <value>${cifs.urlfile.prefix}</value>
+               </property>
+               <!-- Mark locked files as offline -->
+               <property name="offlineFiles">
+                  <value>true</value>
+               </property>
+
+               <!-- Desktop actions -->
+               <!-- Uses a client-side application to trigger a server-side action                         -->
+               <!--   Echo - displays a message echoed from the server                                     -->
+               <!--   URL  - launches a URL via the Windows shell                                          -->
+               <!--   CmdLine - launches the Notepad application                                           -->
+               <!--   CheckInOut - checks files in/out, drag and drop files onto the application           -->
+               <!--   JavaScript - run a server-side script                                                -->
+               <!--   JavaScriptURL - server-side script that generates a URL to the folder using a ticket -->
+               <!--                   to avoid having to logon                                             -->
+               <property name="globalDesktopActionConfig">
+                  <bean class="org.alfresco.filesys.config.GlobalDesktopActionConfigBean">
+                     <property name="path">
+                        <value>alfresco/desktop/Alfresco.exe</value>
+                     </property>
+                     <property name="webpath">
+                        <value>${cifs.urlfile.prefix}</value>
+                     </property>
+                  </bean>
+               </property>
+               <property name="desktopActionList">
+                  <list>
+                     <bean class="org.alfresco.filesys.repo.desk.CheckInOutDesktopAction">
+                        <property name="name">
+                           <value>CheckInOut</value>
+                        </property>
+                        <property name="filename">
+                           <value>__CheckInOut.exe</value>
+                        </property>
+                     </bean>
+                     <bean class="org.alfresco.filesys.repo.desk.JavaScriptDesktopAction">
+                        <property name="name">
+                           <value>JavaScriptURL</value>
+                        </property>
+                        <property name="filename">
+                           <value>__ShowDetails.exe</value>
+                        </property>
+                        <property name="scriptName">
+                           <value>alfresco/desktop/showDetails.js</value>
+                        </property>
+                        <property name="attributeList">
+                           <value>anyFiles</value>
+                        </property>
+                        <property name="preprocess">
+                           <value>copyToTarget</value>
+                        </property>
+                     </bean>
+                     <!-- Other desktop actions which may be enabled -->
+                     <!--
+                        <bean class="org.alfresco.filesys.repo.desk.EchoDesktopAction"> <property name="name">
+                        <value>Echo</value> </property> <property name="filename"> <value>__AlfrescoEcho.exe</value>
+                        </property> </bean> <bean class="org.alfresco.filesys.repo.desk.URLDesktopAction"> <property
+                        name="name"> <value>URL</value> </property> <property name="filename">
+                        <value>__AlfrescoURL.exe</value> </property> </bean> <bean
+                        class="org.alfresco.filesys.repo.desk.CmdLineDesktopAction"> <property name="name">
+                        <value>CmdLine</value> </property> <property name="filename"> <value>__AlfrescoCmd.exe</value>
+                        </property> </bean> <bean class="org.alfresco.filesys.repo.desk.JavaScriptDesktopAction">
+                        <property name="name"> <value>JavaScript</value> </property> <property name="filename">
+                        <value>__AlfrescoScript.exe</value> </property> <property name="scriptName">
+                        <value>alfresco/desktop/dumpRequest.js</value> </property> <property name="attributeList">
+                        <value>anyFiles, multiplePaths, allowNoParams</value> </property> <property name="preprocess">
+                        <value>confirm, copyToTarget</value> </property> </bean>
+                     -->
+                  </list>
+               </property>
+               <!-- Additional access control of the filesystem -->
+               <!-- Access type of 'none' will stop the filesystem from showing up for that user/address/protocol -->
+               <!--
+                  <property name="defaultAccessLevel"> <value>Write</value> </property> <property name="accessControl">
+                  <list> <bean class="org.alfresco.jlan.server.auth.acl.UserAccessControl"> <property name="name">
+                  <value>admin</value> </property> <property name="access"> <value>Write</value> </property> </bean>
+                  <bean class="org.alfresco.jlan.server.auth.acl.IpAddressAccessControl"> <property name="subNet">
+                  <value>192.168.1.0</value> </property> <property name="netMask"> <value>255.255.255.0</value>
+                  </property> <property name="access"> <value>Write</value> </property> </bean> </list> </property>
+               -->
+            </bean>
+            <!-- AVM virtualization view of all stores/versions for WCM -->
+            <!-- virtual view stores filter can be any of the following: normal, site, staging, author, preview -->
+            <bean class="org.alfresco.filesys.avm.AVMContext">
+               <property name="deviceName">
+                  <value>AVM</value>
+               </property>
+               <property name="virtualView">
+                  <value>true</value>
+               </property>
+               <property name="stores">
+                  <value>site,staging,author</value>
+               </property>
+            </bean>
+         </list>
+      </property>
+   </bean>
+
+   <bean id="fileSecurityConfig" class="org.alfresco.filesys.config.SecurityConfigBean">
+      <!-- Domain mappings used for passthru authentication routing -->
+      <!-- Used when the client does not provide a domain name in the NTLM logon -->
+      <!--
+         <property name="domainMappings"> <list> <bean class="org.alfresco.filesys.config.DomainMappingConfigBean">
+         <property name="name"> <value>ALFRESCO</value> </property> <property name="subnet"> <value>192.168.1.0</value>
+         </property> <property name="mask"> <value>192.168.1.255</value> </property> </bean> </list> </property>
+      -->
+
+      <!-- Custom share mapper when multi-tenancy is enabled -->
+      <!--
+         <property name="shareMapper"> <bean class="org.alfresco.filesys.alfresco.MultiTenantShareMapper"> <property
+         name="serverConfiguration"> <ref bean="fileServerConfiguration" /> </property> <property name="debug">
+         <value>true</value> </property> </bean> </property>
+      -->
+
+      <!-- Global access control list                                                                    -->
+      <!-- Applied to all filesystems that do not have an accessControl property                         -->
+      <!-- Access type of 'none' will stop the filesystem from showing up for that user/address/protocol -->
+      <!--
+         <property name="globalDefaultAccessLevel"> <value>None</value> </property> <property
+         name="globalAccessControl"> <list> <bean class="org.alfresco.jlan.server.auth.acl.UserAccessControl"> <property
+         name="name"> <value>admin</value> </property> <property name="access"> <value>Write</value> </property> </bean>
+         <bean class="org.alfresco.jlan.server.auth.acl.IpAddressAccessControl"> <property name="subNet">
+         <value>192.168.1.2</value> </property> <property name="netMask"> <value>255.255.255.0</value> </property>
+         <property name="access"> <value>Write</value> </property> </bean> </list> </property>
+      -->
+   </bean>
+
+</beans>

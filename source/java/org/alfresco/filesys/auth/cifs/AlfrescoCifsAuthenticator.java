@@ -72,12 +72,19 @@ public class AlfrescoCifsAuthenticator extends CifsAuthenticatorBase
      */
     protected boolean validateAuthenticationMode()
     {
-        // Make sure the authentication component supports MD4 hashed passwords or passthru mode
-        
-        if ( getAuthenticationComponent().getNTLMMode() != NTLMMode.MD4_PROVIDER &&
-                getAuthenticationComponent().getNTLMMode() != NTLMMode.PASS_THROUGH)
+        try
+        {
+            // Make sure the authentication component supports MD4 hashed passwords or passthru mode
+
+            if (getNTLMAuthenticator().getNTLMMode() != NTLMMode.MD4_PROVIDER
+                    && getNTLMAuthenticator().getNTLMMode() != NTLMMode.PASS_THROUGH)
+                return false;
+            return true;
+        }
+        catch (IllegalStateException e)
+        {
             return false;
-        return true;
+        }
     }
     
     /**
@@ -162,7 +169,7 @@ public class AlfrescoCifsAuthenticator extends CifsAuthenticatorBase
             
             // Check if MD4 or passthru mode is configured
             
-            else if ( getAuthenticationComponent().getNTLMMode() == NTLMMode.MD4_PROVIDER)
+            else if ( getNTLMAuthenticator().getNTLMMode() == NTLMMode.MD4_PROVIDER)
             {
                 // Start a transaction
               
@@ -248,7 +255,7 @@ public class AlfrescoCifsAuthenticator extends CifsAuthenticatorBase
         
         if ( logger.isDebugEnabled())
             logger.debug("Authenticated user " + client.getUserName() + " sts=" + getStatusAsString(authSts) +
-                    " via " + (getAuthenticationComponent().getNTLMMode() == NTLMMode.MD4_PROVIDER ? "MD4" : "Passthru"));
+                    " via " + (getNTLMAuthenticator().getNTLMMode() == NTLMMode.MD4_PROVIDER ? "MD4" : "Passthru"));
                     
         // Return the authentication status
         
@@ -296,7 +303,7 @@ public class AlfrescoCifsAuthenticator extends CifsAuthenticatorBase
             if ( logger.isDebugEnabled())
                 logger.debug("Re-using existing challenge, already authenticated");
         }
-        else if ( getAuthenticationComponent().getNTLMMode() == NTLMMode.MD4_PROVIDER)
+        else if ( getNTLMAuthenticator().getNTLMMode() == NTLMMode.MD4_PROVIDER)
         {
             // Create a new authentication context for the session
 
@@ -311,7 +318,7 @@ public class AlfrescoCifsAuthenticator extends CifsAuthenticatorBase
             
             // Run the first stage of the passthru authentication to get the challenge
             
-            getAuthenticationComponent().authenticate( authToken);
+            getNTLMAuthenticator().authenticate( authToken);
             
             // Save the authentication token for the second stage of the authentication
             
@@ -336,7 +343,7 @@ public class AlfrescoCifsAuthenticator extends CifsAuthenticatorBase
     {
         // Get the stored MD4 hashed password for the user, or null if the user does not exist
         
-        String md4hash = getAuthenticationComponent().getMD4HashedPassword(client.getUserName());
+        String md4hash = getNTLMAuthenticator().getMD4HashedPassword(client.getUserName());
         
         if ( md4hash != null)
         {
@@ -491,7 +498,7 @@ public class AlfrescoCifsAuthenticator extends CifsAuthenticatorBase
         {
             // Run the second stage of the passthru authentication
             
-            genAuthToken = getAuthenticationComponent().authenticate( authToken);
+            genAuthToken = getNTLMAuthenticator().authenticate( authToken);
             
             // Check if the user has been logged on as a guest
 

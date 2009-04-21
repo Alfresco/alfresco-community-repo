@@ -48,7 +48,9 @@ import org.alfresco.jlan.server.config.InvalidConfigurationException;
 import org.alfresco.jlan.server.config.SecurityConfigSection;
 import org.alfresco.jlan.server.config.ServerConfiguration;
 import org.alfresco.jlan.util.IPAddress;
+import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.NTLMMode;
+import org.alfresco.repo.security.authentication.ntlm.NLTMAuthenticator;
 
 /**
  * Passthru FTP Authenticator Class
@@ -217,16 +219,17 @@ public class PassthruFtpAuthenticator extends FTPAuthenticatorBase {
     public void initialize() throws InvalidConfigurationException
     {
         super.initialize();
-        
-        // Check if the appropriate authentication component type is configured
 
-        if (getAuthenticationComponent().getNTLMMode() == NTLMMode.MD4_PROVIDER)
+        // Check if the appropriate authentication component type is configured
+        AuthenticationComponent authenticationComponent = getAuthenticationComponent();
+        if (authenticationComponent instanceof NLTMAuthenticator
+                && ((NLTMAuthenticator) authenticationComponent).getNTLMMode() == NTLMMode.MD4_PROVIDER)
             throw new AlfrescoRuntimeException(
                     "Wrong authentication setup for passthru authenticator (cannot be used with Alfresco users)");
 
         // Create the password encryptor
-        
-        m_passwordEncryptor = new PasswordEncryptor();        
+
+        m_passwordEncryptor = new PasswordEncryptor();
     }
 
     /**

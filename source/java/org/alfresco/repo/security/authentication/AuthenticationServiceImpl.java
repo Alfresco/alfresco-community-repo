@@ -28,7 +28,6 @@ import java.util.Collections;
 import java.util.Set;
 
 import org.alfresco.repo.security.authentication.AuthenticationComponent.UserNameValidationMode;
-import org.alfresco.service.Managed;
 import org.alfresco.service.cmr.security.PermissionService;
 
 public class AuthenticationServiceImpl extends AbstractAuthenticationService
@@ -52,7 +51,6 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService
         super();
     }
     
-    @Managed(category="Security")
     public void setAuthenticationDao(MutableAuthenticationDao authenticationDao)
     {
         this.authenticationDao = authenticationDao;
@@ -63,7 +61,6 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService
         this.ticketComponent = ticketComponent;
     }
 
-    @Managed(category="Security")
     public void setAuthenticationComponent(AuthenticationComponent authenticationComponent)
     {
         this.authenticationComponent = authenticationComponent;

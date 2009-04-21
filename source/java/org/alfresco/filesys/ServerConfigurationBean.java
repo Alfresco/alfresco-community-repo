@@ -84,6 +84,7 @@ import org.alfresco.jlan.util.Platform;
 import org.alfresco.jlan.util.StringList;
 import org.alfresco.jlan.util.X64;
 import org.alfresco.repo.security.authentication.NTLMMode;
+import org.alfresco.repo.security.authentication.ntlm.NLTMAuthenticator;
 
 /**
  * Alfresco File Server Configuration Bean Class
@@ -385,11 +386,15 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean {
   
             // Get the authentication component type
             
-            NTLMMode ntlmMode = m_authenticationComponent.getNTLMMode();
+            NTLMMode ntlmMode = NTLMMode.NONE;
+            if (m_authenticationComponent instanceof NLTMAuthenticator)
+            {
+                ntlmMode = ((NLTMAuthenticator)m_authenticationComponent).getNTLMMode();
+            }
             
             // Set the authenticator class to use
   
-           String authClass = "org.alfresco.filesys.auth.cifs.AlfrescoCifsAuthenticator";
+            String authClass = "org.alfresco.filesys.auth.cifs.AlfrescoCifsAuthenticator";
   
             if (authType.equalsIgnoreCase("passthru"))
             {
@@ -1462,11 +1467,15 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean {
 
             // Get the authentication component type
             
-            NTLMMode ntlmMode = m_authenticationComponent.getNTLMMode();
+            NTLMMode ntlmMode = NTLMMode.NONE;
+            if (m_authenticationComponent instanceof NLTMAuthenticator)
+            {
+                ntlmMode = ((NLTMAuthenticator)m_authenticationComponent).getNTLMMode();
+            }
             
             // Set the authenticator class to use
 
-           String authClass = "org.alfresco.filesys.auth.ftp.AlfrescoFtpAuthenticator";
+            String authClass = "org.alfresco.filesys.auth.ftp.AlfrescoFtpAuthenticator";
 
             if (authType.equalsIgnoreCase("passthru"))
             {

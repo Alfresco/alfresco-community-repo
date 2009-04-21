@@ -29,13 +29,15 @@ import java.io.StringWriter;
 import java.util.Collections;
 import java.util.Set;
 
+import net.sf.acegisecurity.Authentication;
 import net.sf.acegisecurity.AuthenticationManager;
 import net.sf.acegisecurity.UserDetails;
 import net.sf.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 
-import org.alfresco.service.Managed;
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.security.authentication.ntlm.NLTMAuthenticator;
 
-public class AuthenticationComponentImpl extends AbstractAuthenticationComponent
+public class AuthenticationComponentImpl extends AbstractAuthenticationComponent implements NLTMAuthenticator
 {
     private MutableAuthenticationDao authenticationDao;
 
@@ -61,7 +63,6 @@ public class AuthenticationComponentImpl extends AbstractAuthenticationComponent
      * 
      * @param authenticationDao
      */
-    @Managed(category = "Security")
     public void setAuthenticationDao(MutableAuthenticationDao authenticationDao)
     {
         this.authenticationDao = authenticationDao;
@@ -107,16 +108,22 @@ public class AuthenticationComponentImpl extends AbstractAuthenticationComponent
     /**
      * Get the password hash from the DAO
      */
-    @Override
     public String getMD4HashedPassword(String userName)
     {
         return this.authenticationDao.getMD4HashedPassword(userName);
     }
 
     /**
+     * The default is not to support Authentication token base authentication
+     */
+    public Authentication authenticate(Authentication token) throws AuthenticationException
+    {
+        throw new AlfrescoRuntimeException("Authentication via token not supported");
+    }
+    
+    /**
      * This implementation supported MD4 password hashes.
      */
-    @Override
     public NTLMMode getNTLMMode()
     {
         return NTLMMode.MD4_PROVIDER;

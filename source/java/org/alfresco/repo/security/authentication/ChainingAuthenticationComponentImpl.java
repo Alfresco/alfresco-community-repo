@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,18 +18,19 @@
  * As a special exception to the terms and conditions of version 2.0 of 
  * the GPL, you may redistribute this Program in connection with Free/Libre 
  * and Open Source Software ("FLOSS") applications as described in Alfresco's 
- * FLOSS exception.  You should have recieved a copy of the text describing 
+ * FLOSS exception.  You should have received a copy of the text describing 
  * the FLOSS exception, and it is also available here: 
  * http://www.alfresco.com/legal/licensing"
  */
 package org.alfresco.repo.security.authentication;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import net.sf.acegisecurity.Authentication;
 
-import org.alfresco.service.Managed;
+import org.alfresco.repo.security.authentication.ntlm.NLTMAuthenticator;
 
 /**
  * A chaining authentication component is required for all the beans that qire up an authentication component and not an
@@ -38,7 +39,7 @@ import org.alfresco.service.Managed;
  * 
  * @author andyh
  */
-public class ChainingAuthenticationComponentImpl extends AbstractAuthenticationComponent
+public class ChainingAuthenticationComponentImpl extends AbstractChainingAuthenticationComponent implements NLTMAuthenticator
 {
     /**
      * NLTM authentication mode - if unset - finds the first component that supports NTLM - if set - finds the first
@@ -72,7 +73,6 @@ public class ChainingAuthenticationComponentImpl extends AbstractAuthenticationC
      * 
      * @param authenticationComponents
      */
-    @Managed(category = "Security")
     public void setAuthenticationComponents(List<AuthenticationComponent> authenticationComponents)
     {
         this.authenticationComponents = authenticationComponents;
@@ -93,44 +93,20 @@ public class ChainingAuthenticationComponentImpl extends AbstractAuthenticationC
      * 
      * @param mutableAuthenticationComponent
      */
-    @Managed(category = "Security")
     public void setMutableAuthenticationComponent(AuthenticationComponent mutableAuthenticationComponent)
     {
         this.mutableAuthenticationComponent = mutableAuthenticationComponent;
     }
 
-    @Managed(category = "Security")
     public void setNtlmMode(NTLMMode ntlmMode)
     {
         this.ntlmMode = ntlmMode;
     }
 
     /**
-     * Chain authentication with user name and password - tries all in order until one works, or fails.
-     */
-    @Override
-    protected void authenticateImpl(String userName, char[] password)
-    {
-        for (AuthenticationComponent authComponent : getUsableAuthenticationComponents())
-        {
-            try
-            {
-                authComponent.authenticate(userName, password);
-                return;
-            }
-            catch (AuthenticationException e)
-            {
-                // Ignore and chain
-            }
-        }
-        throw new AuthenticationException("Failed to authenticate");
-    }
-
-    /**
      * NTLM passthrough authentication - if a mode is defined - the first PASS_THROUGH provider is used - if not, the
      * first component that supports NTLM is used if it supports PASS_THROUGH
      */
-    @Override
     public Authentication authenticate(Authentication token) throws AuthenticationException
     {
         if (this.ntlmMode != null)
@@ -144,9 +120,14 @@ public class ChainingAuthenticationComponentImpl extends AbstractAuthenticationC
             case PASS_THROUGH:
                 for (AuthenticationComponent authComponent : getUsableAuthenticationComponents())
                 {
-                    if (authComponent.getNTLMMode() == NTLMMode.PASS_THROUGH)
+                    if (!(authComponent instanceof NLTMAuthenticator))
                     {
-                        return authComponent.authenticate(token);
+                        continue;
+                    }
+                    NLTMAuthenticator ssoAuthenticator = (NLTMAuthenticator)authComponent;
+                    if (ssoAuthenticator.getNTLMMode() == NTLMMode.PASS_THROUGH)
+                    {
+                        return ssoAuthenticator.authenticate(token);
                     }
                 }
                 throw new AuthenticationException("No NTLM passthrough authentication to use");
@@ -158,11 +139,16 @@ public class ChainingAuthenticationComponentImpl extends AbstractAuthenticationC
         {
             for (AuthenticationComponent authComponent : getUsableAuthenticationComponents())
             {
-                if (authComponent.getNTLMMode() != NTLMMode.NONE)
+                if (!(authComponent instanceof NLTMAuthenticator))
                 {
-                    if (authComponent.getNTLMMode() == NTLMMode.PASS_THROUGH)
+                    continue;
+                }
+                NLTMAuthenticator ssoAuthenticator = (NLTMAuthenticator)authComponent;
+                if (ssoAuthenticator.getNTLMMode() != NTLMMode.NONE)
+                {
+                    if (ssoAuthenticator.getNTLMMode() == NTLMMode.PASS_THROUGH)
                     {
-                        return authComponent.authenticate(token);
+                        return ssoAuthenticator.authenticate(token);
                     }
                     else
                     {
@@ -179,7 +165,6 @@ public class ChainingAuthenticationComponentImpl extends AbstractAuthenticationC
     /**
      * Get the MD4 password hash
      */
-    @Override
     public String getMD4HashedPassword(String userName)
     {
         if (this.ntlmMode != null)
@@ -193,9 +178,14 @@ public class ChainingAuthenticationComponentImpl extends AbstractAuthenticationC
             case MD4_PROVIDER:
                 for (AuthenticationComponent authComponent : getUsableAuthenticationComponents())
                 {
-                    if (authComponent.getNTLMMode() == NTLMMode.MD4_PROVIDER)
+                    if (!(authComponent instanceof NLTMAuthenticator))
                     {
-                        return authComponent.getMD4HashedPassword(userName);
+                        continue;
+                    }
+                    NLTMAuthenticator ssoAuthenticator = (NLTMAuthenticator)authComponent;
+                    if (ssoAuthenticator.getNTLMMode() == NTLMMode.MD4_PROVIDER)
+                    {
+                        return ssoAuthenticator.getMD4HashedPassword(userName);
                     }
                 }
                 throw new AuthenticationException("No MD4 provider available");
@@ -207,16 +197,21 @@ public class ChainingAuthenticationComponentImpl extends AbstractAuthenticationC
         {
             for (AuthenticationComponent authComponent : getUsableAuthenticationComponents())
             {
-                if (authComponent.getNTLMMode() != NTLMMode.NONE)
+                if (!(authComponent instanceof NLTMAuthenticator))
                 {
-                    if (authComponent.getNTLMMode() == NTLMMode.PASS_THROUGH)
+                    continue;
+                }
+                NLTMAuthenticator ssoAuthenticator = (NLTMAuthenticator)authComponent;
+                if (ssoAuthenticator.getNTLMMode() != NTLMMode.NONE)
+                {
+                    if (ssoAuthenticator.getNTLMMode() == NTLMMode.PASS_THROUGH)
                     {
                         throw new AuthenticationException(
                                 "The first authentication component to support NTLM supports passthrough");
                     }
                     else
                     {
-                        return authComponent.getMD4HashedPassword(userName);
+                        return ssoAuthenticator.getMD4HashedPassword(userName);
                     }
                 }
             }
@@ -228,7 +223,6 @@ public class ChainingAuthenticationComponentImpl extends AbstractAuthenticationC
     /**
      * Get the NTLM mode - this is only what is set if one of the implementations provides support for that mode.
      */
-    @Override
     public NTLMMode getNTLMMode()
     {
         if (this.ntlmMode != null)
@@ -240,7 +234,12 @@ public class ChainingAuthenticationComponentImpl extends AbstractAuthenticationC
             case PASS_THROUGH:
                 for (AuthenticationComponent authComponent : getUsableAuthenticationComponents())
                 {
-                    if (authComponent.getNTLMMode() == NTLMMode.PASS_THROUGH)
+                    if (!(authComponent instanceof NLTMAuthenticator))
+                    {
+                        continue;
+                    }
+                    NLTMAuthenticator ssoAuthenticator = (NLTMAuthenticator)authComponent;
+                    if (ssoAuthenticator.getNTLMMode() == NTLMMode.PASS_THROUGH)
                     {
                         return NTLMMode.PASS_THROUGH;
                     }
@@ -249,7 +248,12 @@ public class ChainingAuthenticationComponentImpl extends AbstractAuthenticationC
             case MD4_PROVIDER:
                 for (AuthenticationComponent authComponent : getUsableAuthenticationComponents())
                 {
-                    if (authComponent.getNTLMMode() == NTLMMode.MD4_PROVIDER)
+                    if (!(authComponent instanceof NLTMAuthenticator))
+                    {
+                        continue;
+                    }
+                    NLTMAuthenticator ssoAuthenticator = (NLTMAuthenticator)authComponent;
+                    if (ssoAuthenticator.getNTLMMode() == NTLMMode.MD4_PROVIDER)
                     {
                         return NTLMMode.MD4_PROVIDER;
                     }
@@ -263,9 +267,14 @@ public class ChainingAuthenticationComponentImpl extends AbstractAuthenticationC
         {
             for (AuthenticationComponent authComponent : getUsableAuthenticationComponents())
             {
-                if (authComponent.getNTLMMode() != NTLMMode.NONE)
+                if (!(authComponent instanceof NLTMAuthenticator))
                 {
-                    return authComponent.getNTLMMode();
+                    continue;
+                }
+                NLTMAuthenticator ssoAuthenticator = (NLTMAuthenticator)authComponent;
+                if (ssoAuthenticator.getNTLMMode() != NTLMMode.NONE)
+                {
+                    return ssoAuthenticator.getNTLMMode();
                 }
             }
             return NTLMMode.NONE;
@@ -273,64 +282,11 @@ public class ChainingAuthenticationComponentImpl extends AbstractAuthenticationC
     }
 
     /**
-     * If any implementation supports guest then guest is allowed
-     */
-    @Override
-    protected boolean implementationAllowsGuestLogin()
-    {
-        for (AuthenticationComponent authComponent : getUsableAuthenticationComponents())
-        {
-            if (authComponent.guestUserAuthenticationAllowed())
-            {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    @Override
-    public Authentication setCurrentUser(String userName, UserNameValidationMode validationMode)
-    {
-        for (AuthenticationComponent authComponent : getUsableAuthenticationComponents())
-        {
-            try
-            {
-                return authComponent.setCurrentUser(userName, validationMode);
-            }
-            catch (AuthenticationException e)
-            {
-                // Ignore and chain
-            }
-        }
-        throw new AuthenticationException("Failed to set current user " + userName);
-    }
-
-    /**
-     * Set the current user - try all implementations - as some may check the user exists
-     */
-    @Override
-    public Authentication setCurrentUser(String userName)
-    {
-        for (AuthenticationComponent authComponent : getUsableAuthenticationComponents())
-        {
-            try
-            {
-                return authComponent.setCurrentUser(userName);
-            }
-            catch (AuthenticationException e)
-            {
-                // Ignore and chain
-            }
-        }
-        throw new AuthenticationException("Failed to set current user " + userName);
-    }
-
-    /**
      * Helper to get authentication components
      * 
      * @return
      */
-    private List<AuthenticationComponent> getUsableAuthenticationComponents()
+    protected Collection<AuthenticationComponent> getUsableAuthenticationComponents()
     {
         if (this.mutableAuthenticationComponent == null)
         {

@@ -415,30 +415,6 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
         authenticationContext.clearCurrentSecurityContext();
     }
 
-    /**
-     * The default is not to support Authentication token base authentication
-     */
-    public Authentication authenticate(Authentication token) throws AuthenticationException
-    {
-        throw new AlfrescoRuntimeException("Authentication via token not supported");
-    }
-
-    /**
-     * The should only be supported if getNTLMMode() is NTLMMode.MD4_PROVIDER.
-     */
-    public String getMD4HashedPassword(String userName)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * Get the NTML mode - none - supports MD4 hash to integrate - or it can asct as an NTLM authentication
-     */
-    public NTLMMode getNTLMMode()
-    {
-        return NTLMMode.NONE;
-    }
-
     class SetCurrentUserCallback implements RetryingTransactionHelper.RetryingTransactionCallback<Authentication>
     {
         AuthenticationException ae = null;
@@ -527,7 +503,7 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
      * 
      * @param defaultAdministratorUserNames
      */
-    public void setDefaultAdministratorUserNames(String defaultAdministratorUserNames)
+    public void setDefaultAdministratorUserNameList(String defaultAdministratorUserNames)
     {
         Set<String> nameSet = new TreeSet<String>();
         if (defaultAdministratorUserNames.length() > 0)

@@ -65,7 +65,9 @@ import org.alfresco.jlan.smb.server.VirtualCircuit;
 import org.alfresco.jlan.util.DataPacker;
 import org.alfresco.jlan.util.HexDump;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.NTLMMode;
+import org.alfresco.repo.security.authentication.ntlm.NLTMAuthenticator;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -1144,7 +1146,9 @@ public class PassthruCifsAuthenticator extends CifsAuthenticatorBase implements 
     protected boolean validateAuthenticationMode()
     {
         // Check if the appropriate authentication component type is configured
-        return getAuthenticationComponent().getNTLMMode() != NTLMMode.MD4_PROVIDER;
+        AuthenticationComponent authenticationComponent = getAuthenticationComponent();
+        return !(authenticationComponent instanceof NLTMAuthenticator)
+                || ((NLTMAuthenticator) authenticationComponent).getNTLMMode() != NTLMMode.MD4_PROVIDER;
     }
 
     /**

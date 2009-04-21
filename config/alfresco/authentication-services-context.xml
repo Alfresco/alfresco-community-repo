@@ -71,38 +71,48 @@
 
     <bean id="authenticatedAuthenticationPassthroughProvider" class="org.alfresco.repo.security.authentication.AuthenticatedAuthenticationPassthroughProvider" />
 
-    <!-- The authroity DAO implements an interface extended from the Acegi  -->
+    <!-- The authority DAO implements an interface extended from the Acegi  -->
     <!-- DAO that supports CRUD.                                            -->
 
-   <bean id="alfrescoAuthentication" class="org.alfresco.repo.management.DefaultManagedApplicationContextFactory"/>
-   <bean id="alfrescoNtlmAuthentication" class="org.alfresco.repo.management.DefaultManagedApplicationContextFactory"/>
-   <bean id="kerberosAuthentication" class="org.alfresco.repo.management.DefaultManagedApplicationContextFactory"/>
-   <bean id="ldapAuthentication" class="org.alfresco.repo.management.DefaultManagedApplicationContextFactory"/>
-   <bean id="passthruAuthentication" class="org.alfresco.repo.management.DefaultManagedApplicationContextFactory"/>
-
-   <bean id="authenticationSelector" class="org.alfresco.repo.management.SwitchableManagedApplicationContextFactory">
-      <property name="sourceBeanName">
-         <value>alfrescoAuthentication</value>
+   <!-- The editable authentication chain -->
+   <bean id="Authentication" class="org.alfresco.repo.management.subsystems.DefaultChildApplicationContextManager"
+      parent="abstractPropertyBackedBean">
+      <property name="defaultChain">
+         <value>${authentication.chain}</value>
       </property>
    </bean>
 
-   <bean id="authenticationDao" class="org.alfresco.repo.management.ManagedSubsystemProxyFactory">
-      <property name="sourceApplicationContextFactory">
-         <ref bean="authenticationSelector" />
+   <!-- Acegi providers now proxy to the first authentication DAO in the chain -->
+   <bean id="authenticationDao" class="org.alfresco.repo.management.subsystems.ChainingSubsystemProxyFactory">
+      <property name="applicationContextManager">
+         <ref bean="Authentication" />
       </property>
       <property name="interfaces">
          <list>
-            <value>org.alfresco.repo.security.authentication.AuthenticationComponent</value>
             <value>org.alfresco.repo.security.authentication.MutableAuthenticationDao</value>
-            <!-- Allow listening for SMB Server session events -->
-            <value>org.alfresco.jlan.server.SessionListener</value>
          </list>
       </property>
    </bean>
 
-   <bean id="cifsAuthenticator" class="org.alfresco.repo.management.ManagedSubsystemProxyFactory">
-      <property name="sourceApplicationContextFactory">
-         <ref bean="authenticationSelector" />
+   <!-- Allow the authentication subsystem to listen for SMB Server session events -->
+   <bean id="SmbSessionListener" class="org.alfresco.repo.management.subsystems.ChainingSubsystemProxyFactory">
+      <property name="applicationContextManager">
+         <ref bean="Authentication" />
+      </property>
+      <property name="interfaces">
+         <list>
+            <value>org.alfresco.jlan.server.SessionListener</value>
+         </list>
+      </property>
+      <!-- A benign fallback implementation, in case the chain isn't interested! -->
+      <property name="defaultTarget">
+         <bean class="org.alfresco.filesys.NullSessionListener" />
+      </property>
+   </bean>
+
+   <bean id="CifsAuthenticator" class="org.alfresco.repo.management.subsystems.ChainingSubsystemProxyFactory">
+      <property name="applicationContextManager">
+         <ref bean="Authentication" />
       </property>
       <property name="sourceBeanName">
          <value>cifsAuthenticator</value>
@@ -110,13 +120,14 @@
       <property name="interfaces">
          <list>
             <value>org.alfresco.jlan.server.auth.ICifsAuthenticator</value>
+            <value>org.alfresco.repo.management.subsystems.ActivateableBean</value>
          </list>
       </property>
    </bean>
 
-   <bean id="ftpAuthenticator" class="org.alfresco.repo.management.ManagedSubsystemProxyFactory">
-      <property name="sourceApplicationContextFactory">
-         <ref bean="authenticationSelector" />
+   <bean id="FtpAuthenticator" class="org.alfresco.repo.management.subsystems.ChainingSubsystemProxyFactory">
+      <property name="applicationContextManager">
+         <ref bean="Authentication" />
       </property>
       <property name="sourceBeanName">
          <value>ftpAuthenticator</value>
@@ -124,7 +135,12 @@
       <property name="interfaces">
          <list>
             <value>org.alfresco.jlan.ftp.FTPAuthenticator</value>
+            <value>org.alfresco.repo.management.subsystems.ActivateableBean</value>
          </list>
+      </property>
+      <!-- A generic fallback implementation, in case the chain doesn't provide one-->
+      <property name="defaultTarget">
+         <bean class="org.alfresco.filesys.auth.ftp.AlfrescoFtpAuthenticator" parent="ftpAuthenticatorBase" />
       </property>
    </bean>
     
@@ -141,28 +157,21 @@
 
     <!-- The Authentication Service implementation.                         -->
     <!--                                                                    -->
-    <!-- This delegates its work to two services:                           -->
-    <!-- an AuthenticationComponent and a MutableAuthenticationDAO.         -->
-    <!--                                                                    -->
-    <!-- The permissions service is required so that permissions can be     -->
-    <!-- cleaned up when a user is deleted.                                 -->
+    <!-- Each method 'chains' through all AuthenticationService implementations in the authentication chain -->
 
-    <bean id="authenticationService" class="org.alfresco.repo.security.authentication.AuthenticationServiceImpl">
-        <property name="authenticationDao">
-            <ref bean="authenticationDao" />
-        </property>
-        <property name="ticketComponent">
-            <ref bean="ticketComponent" />
-        </property>
-        <property name="authenticationComponent">
-            <ref bean="authenticationComponent" />
-        </property>
+    <bean id="authenticationService" class="org.alfresco.repo.security.authentication.subsystems.SubsystemChainingAuthenticationService">
         <property name="sysAdminCache">
-            <ref bean="sysAdminCache"/>
+            <ref bean="sysAdminCache" />
+        </property>
+        <property name="applicationContextManager">
+            <ref bean="Authentication" />
+        </property>
+        <property name="sourceBeanName">
+            <value>localAuthenticationService</value>
         </property>
     </bean>
 
-    <!-- The authentication component.                                      -->
+    <!-- The public authentication component.                                      -->
 
     <bean id="AuthenticationComponent" class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
         <property name="proxyInterfaces">
@@ -188,14 +197,32 @@
         </property>
     </bean>
 
+    <!-- The chaining authentication component -->
+    <bean id="authenticationComponent" class="org.alfresco.repo.security.authentication.subsystems.SubsystemChainingAuthenticationComponent"
+        parent="authenticationComponentBase">
+        <property name="nodeService">
+            <ref bean="nodeService" />
+        </property>
+        <property name="personService">
+            <ref bean="personService" />
+        </property>
+        <property name="transactionService">
+            <ref bean="transactionService" />
+        </property>
+        <property name="applicationContextManager">
+            <ref bean="Authentication" />
+        </property>
+        <property name="sourceBeanName">
+            <value>authenticationComponent</value>
+        </property>
+    </bean>
+
     <bean id="authenticationContext" class="org.alfresco.repo.security.authentication.AuthenticationContextImpl">
        <property name="tenantService">
             <ref bean="tenantService"/>
         </property>
     </bean>
 
-    <alias name="authenticationDao" alias="authenticationComponent"/>
-             
     <!-- Simple Authentication component that rejects all authentication requests -->
     <!-- Use this defintion for Novell IChain integration.                        -->
     <!-- It should never go to the login screen  so this is not required          -->

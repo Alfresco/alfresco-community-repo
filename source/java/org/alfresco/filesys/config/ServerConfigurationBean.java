@@ -80,6 +80,7 @@ import org.alfresco.jlan.util.MemorySize;
 import org.alfresco.jlan.util.Platform;
 import org.alfresco.jlan.util.StringList;
 import org.alfresco.jlan.util.X64;
+import org.alfresco.repo.management.subsystems.ActivateableBean;
 
 /**
  * Alfresco File Server Configuration Bean Class
@@ -172,6 +173,15 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean
             return;
         }
 
+        // Before we go any further, let's make sure there's a compatible authenticator in the authentication chain.
+        ICifsAuthenticator authenticator = cifsConfigBean.getAuthenticator();
+        if (authenticator == null || authenticator instanceof ActivateableBean && !((ActivateableBean)authenticator).isActive())
+        {
+            logger.warn("No enabled CIFS authenticator found in authentication chain. CIFS Server disabled");
+            removeConfigSection(CIFSConfigSection.SectionName);
+            return;
+        }
+            
         // Create the CIFS server configuration section
 
         CIFSConfigSection cifsConfig = new CIFSConfigSection(this);
@@ -343,7 +353,6 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean
 
             // Get the authenticator
 
-            ICifsAuthenticator authenticator = cifsConfigBean.getAuthenticator();
             if (authenticator != null)
             {
                 cifsConfig.setAuthenticator(authenticator);

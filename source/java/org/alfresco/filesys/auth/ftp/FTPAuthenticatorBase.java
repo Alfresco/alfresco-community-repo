@@ -35,7 +35,9 @@ import org.alfresco.jlan.server.auth.ClientInfo;
 import org.alfresco.jlan.server.config.InvalidConfigurationException;
 import org.alfresco.jlan.server.config.ServerConfiguration;
 import org.alfresco.jlan.server.config.ServerConfigurationAccessor;
+import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.ntlm.NLTMAuthenticator;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.transaction.TransactionService;
@@ -47,7 +49,7 @@ import org.springframework.beans.factory.DisposableBean;
  * 
  * @author gkspencer
  */
-public abstract class FTPAuthenticatorBase implements FTPAuthenticator, DisposableBean {
+public abstract class FTPAuthenticatorBase implements FTPAuthenticator, ActivateableBean, DisposableBean {
 
     // Logging
 	  
@@ -68,7 +70,10 @@ public abstract class FTPAuthenticatorBase implements FTPAuthenticator, Disposab
 
     private AuthorityService authorityService;
     
-	/**
+    /** Is this component active, i.e. should it be used? */
+    private boolean active = true;
+
+    /**
 	 * Default constructor
 	 */
 	public FTPAuthenticatorBase() {
@@ -98,6 +103,26 @@ public abstract class FTPAuthenticatorBase implements FTPAuthenticator, Disposab
     public void setAuthorityService(AuthorityService authorityService)
     {
         this.authorityService = authorityService;
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.repo.management.subsystems.ActivateableBean#isActive()
+     */
+    public boolean isActive()
+    {
+        return active;
+    }
+
+    /**
+     * Activates or deactivates the bean.
+     * 
+     * @param active
+     *            <code>true</code> if the bean is active and initialization should complete
+     */
+    public void setActive(boolean active)
+    {
+        this.active = active;
     }
 
     /**
@@ -162,7 +187,21 @@ public abstract class FTPAuthenticatorBase implements FTPAuthenticator, Disposab
 		return this.authenticationComponent;
 	}
 
-	/**
+    /**
+     * Returns an SSO-enabled authentication component.
+     * 
+     * @return NLTMAuthenticator
+     */
+    protected final NLTMAuthenticator getNTLMAuthenticator()
+    {
+        if (!(this.authenticationComponent instanceof NLTMAuthenticator))
+        {
+            throw new IllegalStateException("Attempt to use non SSO-enabled authentication component for SSO");
+        }
+        return (NLTMAuthenticator)this.authenticationComponent;
+    }
+
+    /**
 	 * Return the authentication service
 	 * 
 	 * @return AuthenticationService

@@ -157,10 +157,10 @@ public class InviteServiceTest extends BaseWebScriptTest
             public Object doWork() throws Exception
             {
                 // Create inviter person
-                createPerson(USER_INVITER, INVITER_EMAIL);
+                createPerson(PERSON_FIRSTNAME, PERSON_LASTNAME, USER_INVITER, INVITER_EMAIL);
                 
                 // Create inviter2 person
-                createPerson(USER_INVITER_2, INVITER_EMAIL_2);
+                createPerson(PERSON_FIRSTNAME, PERSON_LASTNAME, USER_INVITER_2, INVITER_EMAIL_2);
                 
                 return null;
             }
@@ -316,7 +316,7 @@ public class InviteServiceTest extends BaseWebScriptTest
     public static String PERSON_ORG = "Organisation123";
     
     
-    private void createPerson(String userName, String emailAddress)
+    private void createPerson(String firstName, String lastName, String userName, String emailAddress)
     {
         // if user with given user name doesn't already exist then create user
         if (this.authenticationService.authenticationExists(userName) == false)
@@ -333,8 +333,8 @@ public class InviteServiceTest extends BaseWebScriptTest
             // create person properties
             PropertyMap personProps = new PropertyMap();
             personProps.put(ContentModel.PROP_USERNAME, userName);
-            personProps.put(ContentModel.PROP_FIRSTNAME, PERSON_FIRSTNAME);
-            personProps.put(ContentModel.PROP_LASTNAME, PERSON_LASTNAME);
+            personProps.put(ContentModel.PROP_FIRSTNAME, firstName);
+            personProps.put(ContentModel.PROP_LASTNAME, lastName);
             personProps.put(ContentModel.PROP_EMAIL, emailAddress);
             personProps.put(ContentModel.PROP_JOBTITLE, PERSON_JOBTITLE);
             personProps.put(ContentModel.PROP_ORGANIZATION, PERSON_ORG);
@@ -510,7 +510,7 @@ public class InviteServiceTest extends BaseWebScriptTest
         {
             public Object doWork() throws Exception
             {
-                createPerson(inviteeUserName, inviteeEmailAddr);
+                createPerson(INVITEE_FIRSTNAME, INVITEE_LASTNAME, inviteeUserName, inviteeEmailAddr);
                 return null;
             }
     
@@ -530,8 +530,19 @@ public class InviteServiceTest extends BaseWebScriptTest
             
         }, USER_INVITER);
         
+        /**
+         * Should conflict
+         */
         startInvite(INVITEE_FIRSTNAME, INVITEE_LASTNAME, inviteeEmailAddr, INVITEE_SITE_ROLE, 
                 SITE_SHORT_NAME_INVITE_1, Status.STATUS_CONFLICT);
+        
+        // Should go through
+        startInvite(INVITEE_FIRSTNAME, "Belzebub", inviteeEmailAddr, INVITEE_SITE_ROLE, 
+                SITE_SHORT_NAME_INVITE_1, Status.STATUS_OK);
+        
+        // Should go through
+        startInvite("Lucifer", INVITEE_LASTNAME, inviteeEmailAddr, INVITEE_SITE_ROLE, 
+                SITE_SHORT_NAME_INVITE_1, Status.STATUS_OK);
     }
 
 //    public void testStartInviteWhenAlreadyInProgress()
@@ -834,7 +845,7 @@ public class InviteServiceTest extends BaseWebScriptTest
         {
             public Object doWork() throws Exception
             {
-                createPerson(userName, " ");
+                createPerson(PERSON_FIRSTNAME, PERSON_LASTNAME, userName, " ");
                 return null;
             }
     

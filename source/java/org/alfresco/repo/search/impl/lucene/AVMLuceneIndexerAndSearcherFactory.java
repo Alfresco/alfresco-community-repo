@@ -187,6 +187,7 @@ public class AVMLuceneIndexerAndSearcherFactory extends AbstractLuceneIndexerAnd
         searcher.setDictionaryService(dictionaryService);
         searcher.setQueryRegister(getQueryRegister());
         searcher.setQueryEngine(queryEngine);
+        searcher.setDictionaryService(dictionaryService);
         return searcher;
     }
 

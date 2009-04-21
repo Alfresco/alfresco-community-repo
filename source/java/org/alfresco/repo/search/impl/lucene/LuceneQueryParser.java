@@ -219,6 +219,11 @@ public class LuceneQueryParser extends QueryParser
 
     public Query getFieldQuery(String field, String queryText) throws ParseException
     {
+        return getFieldQuery(field, queryText, true);
+    }
+
+    public Query getFieldQuery(String field, String queryText, boolean tokenise) throws ParseException
+    {
         try
         {
             if (field.equals("PATH"))
@@ -255,7 +260,7 @@ public class LuceneQueryParser extends QueryParser
                     for (QName qname : contentAttributes)
                     {
                         // The super implementation will create phrase queries etc if required
-                        Query part = getFieldQuery("@" + qname.toString(), queryText);
+                        Query part = getFieldQuery("@" + qname.toString(), queryText, tokenise);
                         if (part != null)
                         {
                             query.add(part, Occur.SHOULD);
@@ -272,7 +277,7 @@ public class LuceneQueryParser extends QueryParser
                     BooleanQuery query = new BooleanQuery();
                     for (String fieldName : text)
                     {
-                        Query part = getFieldQuery(fieldName, queryText);
+                        Query part = getFieldQuery(fieldName, queryText, tokenise);
                         if (part != null)
                         {
                             query.add(part, Occur.SHOULD);
@@ -372,7 +377,7 @@ public class LuceneQueryParser extends QueryParser
                 {
                     throw new SearcherException("Invalid type: " + queryText);
                 }
-                return getFieldQuery(target.isAspect() ? "ASPECT" : "TYPE", queryText);
+                return getFieldQuery(target.isAspect() ? "ASPECT" : "TYPE", queryText, tokenise);
             }
             else if (field.equals("TYPE"))
             {
@@ -509,7 +514,7 @@ public class LuceneQueryParser extends QueryParser
             }
             else if (field.startsWith("@"))
             {
-                Query query = attributeQueryBuilder(field, queryText, new FieldQuery(), true);
+                Query query = attributeQueryBuilder(field, queryText, new FieldQuery(), tokenise);
                 return query;
             }
             else if (field.equals("ALL"))
@@ -522,7 +527,7 @@ public class LuceneQueryParser extends QueryParser
                     for (QName qname : contentAttributes)
                     {
                         // The super implementation will create phrase queries etc if required
-                        Query part = getFieldQuery("@" + qname.toString(), queryText);
+                        Query part = getFieldQuery("@" + qname.toString(), queryText, tokenise);
                         if (part != null)
                         {
                             query.add(part, Occur.SHOULD);
@@ -539,7 +544,7 @@ public class LuceneQueryParser extends QueryParser
                     BooleanQuery query = new BooleanQuery();
                     for (String fieldName : all)
                     {
-                        Query part = getFieldQuery(fieldName, queryText);
+                        Query part = getFieldQuery(fieldName, queryText, tokenise);
                         if (part != null)
                         {
                             query.add(part, Occur.SHOULD);
@@ -564,7 +569,7 @@ public class LuceneQueryParser extends QueryParser
                     QName container = containerClass.getName();
                     BooleanQuery query = new BooleanQuery();
                     String classType = containerClass.isAspect() ? "ASPECT" : "TYPE";
-                    Query typeQuery = getFieldQuery(classType, container.toString());
+                    Query typeQuery = getFieldQuery(classType, container.toString(), tokenise);
                     Query presenceQuery = getWildcardQuery("@" + qname.toString(), "*");
                     if ((typeQuery != null) && (presenceQuery != null))
                     {
@@ -575,7 +580,7 @@ public class LuceneQueryParser extends QueryParser
                 }
                 else
                 {
-                    return getFieldQueryImpl(field, queryText);
+                    return getFieldQueryImpl(field, queryText, tokenise);
                 }
 
             }
@@ -597,7 +602,7 @@ public class LuceneQueryParser extends QueryParser
                 }
                 else
                 {
-                    return getFieldQueryImpl(field, queryText);
+                    return getFieldQueryImpl(field, queryText, tokenise);
                 }
 
             }
@@ -612,7 +617,7 @@ public class LuceneQueryParser extends QueryParser
                     QName container = containerClass.getName();
                     BooleanQuery query = new BooleanQuery();
                     String classType = containerClass.isAspect() ? "ASPECT" : "TYPE";
-                    Query typeQuery = getFieldQuery(classType, container.toString());
+                    Query typeQuery = getFieldQuery(classType, container.toString(), tokenise);
                     Query presenceQuery = getWildcardQuery("@" + qname.toString(), "*");
                     if ((typeQuery != null) && (presenceQuery != null))
                     {
@@ -623,7 +628,7 @@ public class LuceneQueryParser extends QueryParser
                 }
                 else
                 {
-                    return getFieldQueryImpl(field, queryText);
+                    return getFieldQueryImpl(field, queryText, tokenise);
                 }
 
             }
@@ -634,7 +639,7 @@ public class LuceneQueryParser extends QueryParser
                 for (QName qname : contentAttributes)
                 {
                     // The super implementation will create phrase queries etc if required
-                    Query part = getFieldQuery("@" + qname.toString(), queryText);
+                    Query part = getFieldQuery("@" + qname.toString(), queryText, tokenise);
                     if (part != null)
                     {
                         query.add(part, Occur.SHOULD);
@@ -648,7 +653,7 @@ public class LuceneQueryParser extends QueryParser
             }
             else
             {
-                return getFieldQueryImpl(field, queryText);
+                return getFieldQueryImpl(field, queryText, tokenise);
             }
 
         }
@@ -659,7 +664,7 @@ public class LuceneQueryParser extends QueryParser
 
     }
 
-    private Query getFieldQueryImpl(String field, String queryText) throws ParseException
+    private Query getFieldQueryImpl(String field, String queryText, boolean tokenise) throws ParseException
     {
         // Use the analyzer to get all the tokens, and then build a TermQuery,
         // PhraseQuery, or nothing based on the term count
@@ -681,7 +686,15 @@ public class LuceneQueryParser extends QueryParser
             }
         }
 
-        TokenStream source = getAnalyzer().tokenStream(field, new StringReader(queryText));
+        TokenStream source;
+        if (tokenise)
+        {
+            source = getAnalyzer().tokenStream(field, new StringReader(queryText));
+        }
+        else
+        {
+            source = new VerbatimAnalyser(false).tokenStream(field, new StringReader(queryText));
+        }
         ArrayList<org.apache.lucene.analysis.Token> list = new ArrayList<org.apache.lucene.analysis.Token>();
         org.apache.lucene.analysis.Token reusableToken = new org.apache.lucene.analysis.Token();
         org.apache.lucene.analysis.Token nextToken;
@@ -2305,9 +2318,9 @@ public class LuceneQueryParser extends QueryParser
         this.dictionaryService = dictionaryService;
     }
 
-    public Query getSuperFieldQuery(String field, String queryText) throws ParseException
+    public Query getSuperFieldQuery(String field, String queryText, boolean tokenise) throws ParseException
     {
-        return getFieldQueryImpl(field, queryText);
+        return getFieldQueryImpl(field, queryText, tokenise);
     }
 
     public Query getSuperFuzzyQuery(String field, String termStr, float minSimilarity) throws ParseException
@@ -2334,7 +2347,7 @@ public class LuceneQueryParser extends QueryParser
     {
         public Query getQuery(String field, String queryText) throws ParseException
         {
-            return getSuperFieldQuery(field, queryText);
+            return getSuperFieldQuery(field, queryText, true);
         }
     }
 

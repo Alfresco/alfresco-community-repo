@@ -69,11 +69,11 @@ public class LuceneFTSTerm extends FTSTerm implements LuceneQueryBuilderComponen
         if (propArg != null)
         {
             String prop = propArg.getPropertyName();
-            query = lqp.getFieldQuery(functionContext.getLuceneFieldName(prop), term);
+            query = lqp.getFieldQuery(functionContext.getLuceneFieldName(prop), term, true);
         }
         else
         {
-            query = lqp.getFieldQuery("TEXT", term);
+            query = lqp.getFieldQuery("TEXT", term, true);
             
         }
         return query;

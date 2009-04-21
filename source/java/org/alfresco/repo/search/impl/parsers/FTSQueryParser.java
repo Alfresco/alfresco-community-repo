@@ -48,6 +48,7 @@ import org.antlr.runtime.CharStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.tree.CommonTree;
+import org.antlr.runtime.tree.Tree;
 
 public class FTSQueryParser
 {
@@ -269,6 +270,21 @@ public class FTSQueryParser
                     fieldName = arg.getPropertyName();
                     break;
                 }
+            }
+        }
+        
+        // prepend prefixes and name spaces
+        
+        if(columnReferenceNode.getChildCount() > 1)
+        {
+            CommonTree child = (CommonTree)columnReferenceNode.getChild(1);
+            if(child.getType() == FTSParser.PREFIX)
+            {
+                fieldName = child.getChild(0).getText() + ":" + fieldName;
+            }
+            else if(child.getType() == FTSParser.NAME_SPACE)
+            {
+                fieldName = child.getChild(0).getText() + fieldName;
             }
         }
         

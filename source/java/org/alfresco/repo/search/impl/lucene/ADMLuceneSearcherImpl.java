@@ -57,6 +57,7 @@ import org.alfresco.repo.search.impl.querymodel.Selector;
 import org.alfresco.repo.search.results.SortedResultSet;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -186,7 +187,7 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
     {
         this.queryEngine = queryEngine;
     }
-
+    
     /**
      * Set the query register
      * 
@@ -464,7 +465,7 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
             String ftsExpression = searchParameters.getQuery();
             FTSQueryParser ftsQueryParser = new FTSQueryParser();
             QueryModelFactory factory = queryEngine.getQueryModelFactory();
-            AlfrescoFunctionEvaluationContext context = new AlfrescoFunctionEvaluationContext();
+            AlfrescoFunctionEvaluationContext context = new AlfrescoFunctionEvaluationContext(namespacePrefixResolver, getDictionaryService());
             Constraint constraint = ftsQueryParser.buildFTS(ftsExpression, factory, context, null, null);
             org.alfresco.repo.search.impl.querymodel.Query query = factory.createQuery(null, null, constraint, null);
             QueryOptions options = new QueryOptions(searchParameters.getQuery(), null);

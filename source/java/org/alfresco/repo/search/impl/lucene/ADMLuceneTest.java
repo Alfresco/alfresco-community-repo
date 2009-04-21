@@ -651,18 +651,25 @@ public class ADMLuceneTest extends TestCase
         searcher.setNamespacePrefixResolver(getNamespacePrefixReolsver("namespace"));
         searcher.setQueryRegister(queryRegisterComponent);
         searcher.setQueryEngine(queryEngine);
-        ResultSet results;
         
-        results = searcher.query(rootNodeRef.getStoreRef(), SearchService.LANGUAGE_FTS_ALFRESCO, "\"lazy\"", null, null);
-        assertEquals(1, results.length());
-        results.close();
-        
-        results = searcher.query(rootNodeRef.getStoreRef(), SearchService.LANGUAGE_FTS_ALFRESCO, "lazy and dog", null, null);
-        assertEquals(1, results.length());
-        results.close();
-        
-        results = searcher.query(rootNodeRef.getStoreRef(), SearchService.LANGUAGE_FTS_ALFRESCO, "TEXT:\"lazy\"", null, null);
-        assertEquals(1, results.length());
+        ftsQueryWithCount(searcher, "\"lazy\"", 1);
+        ftsQueryWithCount(searcher, "lazy and dog", 1);
+        ftsQueryWithCount(searcher, "TEXT:\"lazy\"", 1);
+        ftsQueryWithCount(searcher, "cm_content:\"lazy\"", 1);
+        ftsQueryWithCount(searcher, "cm:content:big OR cm:content:lazy", 1);
+        ftsQueryWithCount(searcher, "cm:content:big AND cm:content:lazy", 0);
+        ftsQueryWithCount(searcher, "{http://www.alfresco.org/model/content/1.0}content:\"lazy\"", 1);
+        ftsQueryWithCount(searcher, "=lazy", 1);
+        ftsQueryWithCount(searcher, "@cm:content:big OR @cm:content:lazy", 1);
+        ftsQueryWithCount(searcher, "@cm:content:big AND @cm:content:lazy", 0);
+        ftsQueryWithCount(searcher, "@{http://www.alfresco.org/model/content/1.0}content:\"lazy\"", 1);
+       
+    }
+    
+    public void ftsQueryWithCount(ADMLuceneSearcherImpl searcher, String query, int count)
+    {
+        ResultSet results = searcher.query(rootNodeRef.getStoreRef(), SearchService.LANGUAGE_FTS_ALFRESCO, query, null, null);
+        assertEquals(count, results.length());
         results.close();
     }
     

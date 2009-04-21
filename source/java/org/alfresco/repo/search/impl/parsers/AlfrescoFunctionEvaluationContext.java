@@ -31,17 +31,29 @@ import java.util.Map;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
 import org.alfresco.repo.search.impl.querymodel.PredicateMode;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.namespace.NamespacePrefixResolver;
+import org.alfresco.service.namespace.QName;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.search.Query;
 
 public class AlfrescoFunctionEvaluationContext implements FunctionEvaluationContext
 {
+    private NamespacePrefixResolver namespacePrefixResolver;
+
+    private DictionaryService dictionaryService;
+
+    public AlfrescoFunctionEvaluationContext(NamespacePrefixResolver namespacePrefixResolver, DictionaryService dictionaryService)
+    {
+        this.namespacePrefixResolver = namespacePrefixResolver;
+        this.dictionaryService = dictionaryService;
+    }
 
     public Query buildLuceneEquality(LuceneQueryParser lqp, String propertyName, Serializable value, PredicateMode mode) throws ParseException
     {
-       throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException();
     }
 
     public Query buildLuceneExists(LuceneQueryParser lqp, String propertyName, Boolean not) throws ParseException
@@ -131,7 +143,58 @@ public class AlfrescoFunctionEvaluationContext implements FunctionEvaluationCont
 
     public String getLuceneFieldName(String propertyName)
     {
+        if (propertyName.startsWith("@"))
+        {
+            // Leave it to the query parser to expand
+            return propertyName;
+        }
+
+        if(propertyName.startsWith("{"))
+        {
+            QName qname = QName.createQName(propertyName);
+            if (dictionaryService.getProperty(qname) != null)
+            {
+                return "@" + qname.toString();
+            }
+            else
+            {
+                throw new FTSQueryException("Unknown property: "+propertyName);
+            }
+        }
+        
+        int index = propertyName.indexOf(':');
+        if (index != -1)
+        {
+            // Try as a property, if invalid pass through
+            QName qname = QName.createQName(propertyName, namespacePrefixResolver);
+            if (dictionaryService.getProperty(qname) != null)
+            {
+                return "@" + qname.toString();
+            }
+            else
+            {
+                throw new FTSQueryException("Unknown property: "+propertyName);
+            }
+        }
+        
+        index = propertyName.indexOf('_');
+        if (index != -1)
+        {
+            // Try as a property, if invalid pass through
+            QName qname = QName.createQName(propertyName.substring(0, index), propertyName.substring(index+1), namespacePrefixResolver);
+            if (dictionaryService.getProperty(qname) != null)
+            {
+                return "@" + qname.toString();
+            }
+            else
+            {
+                throw new FTSQueryException("Unknown property: "+propertyName);
+            }
+        }
+        
         return propertyName;
+        
+        
     }
 
 }

@@ -66,9 +66,18 @@ public class LuceneFTSExactTerm extends FTSExactTerm implements LuceneQueryBuild
         String term = (String) argument.getValue(functionContext);
 
         PropertyArgument propArg = (PropertyArgument)functionArgs.get(ARG_PROPERTY);
-        String prop = propArg.getPropertyName();
-        
-        Query query = lqp.getFieldQuery("TEXT", term);
+       
+        Query query;
+        if (propArg != null)
+        {
+            String prop = propArg.getPropertyName();
+            query = lqp.getFieldQuery(functionContext.getLuceneFieldName(prop), term, false);
+        }
+        else
+        {
+            query = lqp.getFieldQuery("TEXT", term, false);
+            
+        }
         return query;
 
     }

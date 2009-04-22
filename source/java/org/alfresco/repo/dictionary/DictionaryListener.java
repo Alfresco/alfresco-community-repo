@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -37,6 +37,9 @@ public interface DictionaryListener
     // callback for (re-)initialising the Dictionary caches
     public void onDictionaryInit();
     
-    // callback once initialisation is complete
+    // callback once dictionary destroy is complete
+    public void afterDictionaryDestroy();
+    
+    // callback once dictionary initialisation is complete
     public void afterDictionaryInit();
 }

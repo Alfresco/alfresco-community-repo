@@ -147,7 +147,7 @@ public class DictionaryDAOImpl implements DictionaryDAO
         // initialise empty dictionary & namespaces
         putCompiledModels(tenantDomain, new HashMap<QName,CompiledModel>());
         putUriToModels(tenantDomain, new HashMap<String, List<CompiledModel>>());
-                
+        
         namespaceDAO.init();
         
         // populate the dictionary
@@ -155,8 +155,8 @@ public class DictionaryDAOImpl implements DictionaryDAO
         {
             dictionaryListener.onDictionaryInit();
         }
-
-        // populate the dictionary
+        
+        // notify registered listeners that dictionary has been initialised
         for (DictionaryListener dictionaryListener : dictionaryListeners)
         {
             dictionaryListener.afterDictionaryInit();
@@ -176,6 +176,12 @@ public class DictionaryDAOImpl implements DictionaryDAO
         removeUriToModels(tenantDomain);                 
         
         namespaceDAO.destroy();
+        
+        // notify registered listeners that dictionary has been destroyed
+        for (DictionaryListener dictionaryDeployer : dictionaryListeners)
+        {
+            dictionaryDeployer.afterDictionaryDestroy();
+        }
         
         logger.info("Dictionary destroyed");
     }

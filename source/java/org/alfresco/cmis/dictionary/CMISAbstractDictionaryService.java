@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.alfresco.cmis.CMISDataTypeEnum;
 import org.alfresco.cmis.CMISDictionaryService;
@@ -43,6 +44,7 @@ import org.alfresco.cmis.mapping.CMISMapping;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.DictionaryListener;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.AbstractLifecycleBean;
@@ -65,6 +67,7 @@ public abstract class CMISAbstractDictionaryService extends AbstractLifecycleBea
     private DictionaryDAO dictionaryDAO;
     protected CMISMapping cmisMapping;
     protected DictionaryService dictionaryService;
+    protected TenantService tenantService;
 
     /**
      * Set the mapping service
@@ -95,11 +98,21 @@ public abstract class CMISAbstractDictionaryService extends AbstractLifecycleBea
     {
         this.dictionaryDAO = dictionaryDAO;
     }
+    
+    /**
+     * Set the tenant Service
+     * 
+     * @param tenantService
+     */
+    public void setTenantService(TenantService tenantService)
+    {
+        this.tenantService = tenantService;
+    }
 
 
-    // TODO: Handle tenants
     // TODO: read / write locks
-    private DictionaryRegistry registry;
+    /** CMIS Dictionary Registry (tenant-aware) */
+    private Map<String, DictionaryRegistry> registryMap = new ConcurrentHashMap<String, DictionaryRegistry>(4);
 
     
     /**
@@ -205,14 +218,26 @@ public abstract class CMISAbstractDictionaryService extends AbstractLifecycleBea
             return builder.toString();
         }
     }
-
+    
+    private DictionaryRegistry getRegistry()
+    {
+        String tenantDomain = tenantService.getCurrentUserDomain();
+        DictionaryRegistry registry = registryMap.get(tenantDomain);
+        if (registry == null)
+        {
+            init();
+            registry = registryMap.get(tenantDomain);
+        }
+        return registry;
+    }
+    
     /*
      * (non-Javadoc)
      * @see org.alfresco.cmis.dictionary.CMISDictionaryService#findType(org.alfresco.cmis.dictionary.CMISTypeId)
      */
     public CMISTypeDefinition findType(CMISTypeId typeId)
     {
-        return registry.objectDefsByTypeId.get(typeId);
+        return getRegistry().objectDefsByTypeId.get(typeId);
     }
 
     /*
@@ -246,11 +271,11 @@ public abstract class CMISAbstractDictionaryService extends AbstractLifecycleBea
         CMISTypeDefinition typeDef = null;
         if (scopeByRelationship)
         {
-            typeDef = registry.assocDefsByQName.get(clazz);
+            typeDef = getRegistry().assocDefsByQName.get(clazz);
         }
         else
         {
-            typeDef = registry.typeDefsByQName.get(clazz);
+            typeDef = getRegistry().typeDefsByQName.get(clazz);
         }
 
         // ensure matches one of provided matching scopes
@@ -276,7 +301,7 @@ public abstract class CMISAbstractDictionaryService extends AbstractLifecycleBea
      */
     public CMISTypeDefinition findTypeForTable(String tableName)
     {
-        CMISTypeDefinition typeDef = registry.typeDefsByTable.get(tableName.toLowerCase());
+        CMISTypeDefinition typeDef = getRegistry().typeDefsByTable.get(tableName.toLowerCase());
         return typeDef;
     }
     
@@ -286,7 +311,7 @@ public abstract class CMISAbstractDictionaryService extends AbstractLifecycleBea
      */
     public Collection<CMISTypeDefinition> getAllTypes()
     {
-        return Collections.unmodifiableCollection(registry.typeDefsByTypeId.values());
+        return Collections.unmodifiableCollection(getRegistry().typeDefsByTypeId.values());
     }
     
     /*
@@ -295,7 +320,7 @@ public abstract class CMISAbstractDictionaryService extends AbstractLifecycleBea
      */
     public CMISPropertyDefinition findProperty(QName property, CMISTypeDefinition matchingType)
     {
-        CMISPropertyDefinition propDef = registry.propDefsByQName.get(property);
+        CMISPropertyDefinition propDef = getRegistry().propDefsByQName.get(property);
         return getProperty(propDef, matchingType);
     }
     
@@ -305,7 +330,7 @@ public abstract class CMISAbstractDictionaryService extends AbstractLifecycleBea
      */
     public CMISPropertyDefinition findProperty(String property, CMISTypeDefinition matchingType)
     {
-        CMISPropertyDefinition propDef = registry.propDefsByName.get(property.toLowerCase());
+        CMISPropertyDefinition propDef = getRegistry().propDefsByName.get(property.toLowerCase());
         return getProperty(propDef, matchingType);
     }
     
@@ -413,7 +438,7 @@ public abstract class CMISAbstractDictionaryService extends AbstractLifecycleBea
         }
 
         // publish new registry
-        this.registry = registry;
+        registryMap.put(tenantService.getCurrentUserDomain(), registry);
         
         if (logger.isInfoEnabled())
             logger.info("Initialized CMIS Dictionary. Types:" + registry.typeDefsByTypeId.size() + ", Properties:" + registry.propDefsByPropId.size());
@@ -435,7 +460,16 @@ public abstract class CMISAbstractDictionaryService extends AbstractLifecycleBea
     {
         init();
     }
-
+    
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.repo.dictionary.DictionaryListener#afterDictionaryDestroy()
+     */
+    public void afterDictionaryDestroy()
+    {
+        registryMap.remove(tenantService.getCurrentUserDomain());
+    }
+    
     /*
      * (non-Javadoc)
      * @see org.alfresco.util.AbstractLifecycleBean#onBootstrap(org.springframework.context.ApplicationEvent)

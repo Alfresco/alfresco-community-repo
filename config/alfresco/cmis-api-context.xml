@@ -31,6 +31,9 @@
         <property name="CMISMapping">
             <ref bean="CMISMapping" />
         </property>
+        <property name="tenantService">
+            <ref bean="tenantService" />
+        </property>
     </bean>
     
     <bean id="CMIS.DictionaryBootstrap" parent="dictionaryModelBootstrap" depends-on="dictionaryBootstrap">

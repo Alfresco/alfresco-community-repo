@@ -105,7 +105,7 @@
         
         <!-- Services -->
         <property name="LDAPInitialDirContextFactory">
-            <ref bean="ldapSyncInitialDirContextFactory"/>
+            <ref bean="ldapInitialDirContextFactory"/>
         </property>
         <property name="personService">
             <ref bean="personService"></ref>
@@ -224,7 +224,7 @@
             <value>${ldap.synchronisation.personType}</value>
         </property>
         <property name="LDAPInitialDirContextFactory">
-            <ref bean="ldapSyncInitialDirContextFactory"/>
+            <ref bean="ldapInitialDirContextFactory"/>
         </property>
         <property name="namespaceService">
             <ref bean="namespaceService"/>

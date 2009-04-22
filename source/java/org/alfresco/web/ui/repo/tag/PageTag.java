@@ -376,20 +376,19 @@ public class PageTag extends TagSupport
           CCProperties ccProps = (CCProperties)FacesHelper.getManagedBean(fc, "CCProperties");
           if (ccProps.getWebdavUrl() != null || ccProps.getCifsPath() != null)
           {
-             out.write("window.onload=onloadFunc('");
+             out.write("window.onload=onloadFunc(\"");
              if (ccProps.getWebdavUrl() != null)
              {
                 out.write(ccProps.getWebdavUrl());
              }
-             out.write("','");
+             out.write("\",\"");
              if (ccProps.getCifsPath() != null)
              {
                 String val = ccProps.getCifsPath();
                 val = Utils.replace(val, "\\", "\\\\");   // encode escape character
-                val = Utils.replace(val, "'", "\\'");     // encode single quote as we wrap string with that
                 out.write(val);
              }
-             out.write("');");
+             out.write("\");");
              
              // reset session bean state
              ccProps.setCifsPath(null);

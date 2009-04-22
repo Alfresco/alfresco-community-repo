@@ -1,6 +1,6 @@
 {
-   "data":
-   {
-	"ticket":"${jsonUtils.encodeJSONString(ticket)}"
-   }
+	"data":
+	{
+		"ticket":"${jsonUtils.encodeJSONString(ticket)}"
+	}
 }

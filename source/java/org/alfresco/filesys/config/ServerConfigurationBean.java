@@ -331,7 +331,8 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean
 
                 cifsConfig.setSMBBindAddress(bindAddr);
             }
-            else if ((bindTo = cifsConfigBean.getBindToAddress()) != null && !bindTo.equals(BIND_TO_IGNORE))
+            else if ((bindTo = cifsConfigBean.getBindToAddress()) != null && bindTo.length() > 0
+                    && !bindTo.equals(BIND_TO_IGNORE))
             {
 
                 // Validate the bind address

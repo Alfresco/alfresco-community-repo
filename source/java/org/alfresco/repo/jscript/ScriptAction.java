@@ -27,6 +27,8 @@ package org.alfresco.repo.jscript;
 import java.io.Serializable;
 import java.util.Map;
 
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionDefinition;
@@ -118,7 +120,7 @@ public final class ScriptAction implements Serializable, Scopeable
     }
 
     /**
-     * Execute action
+     * Execute action.  The existing transaction will be joined.
      * 
      * @param node
      *            the node to execute action upon
@@ -149,7 +151,53 @@ public final class ScriptAction implements Serializable, Scopeable
     }
     
     /**
-     * Execute action
+     * Execute action, optionally starting a new, potentially read-only transaction.
+     * 
+     * @param node
+     *            the node to execute action upon
+     * @param newTxn
+     *            <tt>true</tt> to start a new, isolated transaction
+     * 
+     * @see RetryingTransactionHelper#doInTransaction(RetryingTransactionCallback, boolean, boolean)
+     */
+    @SuppressWarnings("synthetic-access")
+    public void execute(final ScriptNode node, boolean readOnly, boolean newTxn)
+    {
+        if (this.parameters != null && this.parameters.isModified())
+        {
+            Map<String, Serializable> actionParams = action.getParameterValues();
+            actionParams.clear();
+
+            for (Map.Entry<String, Serializable> entry : this.parameters.entrySet())
+            {
+                // perform the conversion from script wrapper object to repo serializable values
+                String name = entry.getKey();
+                Serializable value = converter.convertActionParamForRepo(name, entry.getValue());
+                actionParams.put(name, value);
+            }
+        }
+        RetryingTransactionCallback<Object> executionActionCallback = new RetryingTransactionCallback<Object>()
+        {
+            public Object execute() throws Throwable
+            {
+                services.getActionService().executeAction(action, node.getNodeRef());
+                return null;
+            }
+        };
+        services.getTransactionService().getRetryingTransactionHelper().doInTransaction(
+                executionActionCallback,
+                readOnly,
+                newTxn);
+        
+        // Parameters may have been updated by action execution, so reset cache
+        this.parameters = null;
+        
+        // Reset the actioned upon node
+        node.reset();
+    }
+    
+    /**
+     * Execute action.  The existing transaction will be joined.
      * 
      * @param nodeRef
      *            the node to execute action upon
@@ -171,6 +219,49 @@ public final class ScriptAction implements Serializable, Scopeable
             }
         }
         services.getActionService().executeAction(action, nodeRef);
+
+        // Parameters may have been updated by action execution, so reset cache
+        this.parameters = null;
+    }
+
+    /**
+     * Execute action, optionally starting a new, potentially read-only transaction.
+     * 
+     * @param nodeRef
+     *            the node to execute action upon
+     * @param newTxn
+     *            <tt>true</tt> to start a new, isolated transaction
+     * 
+     * @see RetryingTransactionHelper#doInTransaction(RetryingTransactionCallback, boolean, boolean)
+     */
+    @SuppressWarnings("synthetic-access")
+    public void execute(final NodeRef nodeRef, boolean readOnly, boolean newTxn)
+    {
+        if (this.parameters != null && this.parameters.isModified())
+        {
+            Map<String, Serializable> actionParams = action.getParameterValues();
+            actionParams.clear();
+
+            for (Map.Entry<String, Serializable> entry : this.parameters.entrySet())
+            {
+                // perform the conversion from script wrapper object to repo serializable values
+                String name = entry.getKey();
+                Serializable value = converter.convertActionParamForRepo(name, entry.getValue());
+                actionParams.put(name, value);
+            }
+        }
+        RetryingTransactionCallback<Object> executionActionCallback = new RetryingTransactionCallback<Object>()
+        {
+            public Object execute() throws Throwable
+            {
+                services.getActionService().executeAction(action, nodeRef);
+                return null;
+            }
+        };
+        services.getTransactionService().getRetryingTransactionHelper().doInTransaction(
+                executionActionCallback,
+                readOnly,
+                newTxn);
 
         // Parameters may have been updated by action execution, so reset cache
         this.parameters = null;

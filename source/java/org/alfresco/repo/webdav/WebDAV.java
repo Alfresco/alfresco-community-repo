@@ -348,11 +348,11 @@ public class WebDAV
 
         String strPath = null;
         
-        try {
+        try 
+        {
             strPath = URLDecoder.decode( request.getRequestURI(), "UTF-8");
         }
-        catch (Exception ex) {
-        }
+        catch (Exception ex) {}
 
         // Find the servlet path and trim from the request path
         
@@ -360,7 +360,9 @@ public class WebDAV
         
         int rootPos = strPath.indexOf(servletPath);
         if ( rootPos != -1)
+        {
             strPath = strPath.substring( rootPos);
+        }
         
         // If we failed to get the path from the request try and get the path from the servlet path
 
@@ -369,30 +371,31 @@ public class WebDAV
             strPath = request.getServletPath();
         }
 
-        // If we still have not got a path then default to the root directory
-
         if (strPath == null || strPath.length() == 0)
         {
+            // If we still have not got a path then default to the root directory
             strPath = RootPath;
+        }
+        else if (strPath.startsWith(request.getServletPath()))
+        {
+            // Check if the path starts with the base servlet path
+            int len = request.getServletPath().length();
+            
+            if (strPath.length() > len)
+            {
+                strPath = strPath.substring(len);
+            }
+            else
+            {
+                strPath = RootPath;
+            }
         }
 
         // Make sure there are no trailing slashes
-
-        else if (strPath.endsWith(DIR_SEPARATOR))
+        
+        if (strPath.length() > 1 && strPath.endsWith(DIR_SEPARATOR))
         {
             strPath = strPath.substring(0, strPath.length() - 1);
-        }
-        
-        // Check if the path starts with the base servlet path
-        
-        if ( strPath.startsWith(request.getServletPath()))
-        {
-            int len = request.getServletPath().length();
-            
-            if ( strPath.length() > len)
-                strPath = strPath.substring(len);
-            else
-                strPath = RootPath;
         }
 
         // Return the path

@@ -84,10 +84,17 @@ public class PdfBoxMetadataExtracter extends AbstractMappingMetadataExtracter
                 putRawValue(KEY_TITLE, docInfo.getTitle(), rawProperties);
                 putRawValue(KEY_SUBJECT, docInfo.getSubject(), rawProperties);
     
-                Calendar created = docInfo.getCreationDate();
-                if (created != null)
+                try
                 {
-                    putRawValue(KEY_CREATED, created.getTime(), rawProperties);
+                    Calendar created = docInfo.getCreationDate();
+                    if (created != null)
+                    {
+                        putRawValue(KEY_CREATED, created.getTime(), rawProperties);
+                    }
+                }
+                catch (IOException e)
+                {
+                    // This sometimes fails because the date is a string: ETHREEOH-1936
                 }
             }
         }

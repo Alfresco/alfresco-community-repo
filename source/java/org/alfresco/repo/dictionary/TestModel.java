@@ -26,16 +26,15 @@ package org.alfresco.repo.dictionary;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
 
 import org.alfresco.repo.cache.EhCacheAdapter;
-import org.alfresco.repo.dictionary.NamespaceDAOImpl.NamespaceData;
+import org.alfresco.repo.dictionary.DictionaryDAOImpl.DictionaryRegistry;
+import org.alfresco.repo.dictionary.NamespaceDAOImpl.NamespaceRegistry;
 import org.alfresco.repo.tenant.SingleTServiceImpl;
 import org.alfresco.repo.tenant.TenantService;
-import org.alfresco.service.namespace.QName;
 
 
 /**
@@ -114,19 +113,12 @@ public class TestModel
     {
         CacheManager cacheManager = new CacheManager();
         
-        Cache uriToModelsEhCache = new Cache("uriToModelsCache", 50, false, true, 0L, 0L);
-        cacheManager.addCache(uriToModelsEhCache);      
-        EhCacheAdapter<String, Map<String, List<CompiledModel>>> uriToModelsCache = new EhCacheAdapter<String, Map<String, List<CompiledModel>>>();
-        uriToModelsCache.setCache(uriToModelsEhCache);
+        Cache dictionaryEhCache = new Cache("dictionaryCache", 50, false, true, 0L, 0L);
+        cacheManager.addCache(dictionaryEhCache);
+        EhCacheAdapter<String, DictionaryRegistry> dictionaryCache = new EhCacheAdapter<String, DictionaryRegistry>();
+        dictionaryCache.setCache(dictionaryEhCache);
         
-        dictionaryDAO.setUriToModelsCache(uriToModelsCache);
-        
-        Cache compileModelsEhCache = new Cache("compiledModelsCache", 50, false, true, 0L, 0L);
-        cacheManager.addCache(compileModelsEhCache);
-        EhCacheAdapter<String, Map<QName,CompiledModel>> compileModelCache = new EhCacheAdapter<String, Map<QName,CompiledModel>>();
-        compileModelCache.setCache(compileModelsEhCache);
-        
-        dictionaryDAO.setCompiledModelsCache(compileModelCache);
+        dictionaryDAO.setDictionaryRegistryCache(dictionaryCache);
     }
     
     private static void initNamespaceCaches(NamespaceDAOImpl namespaceDAO)
@@ -135,9 +127,9 @@ public class TestModel
         
         Cache namespaceEhCache = new Cache("namespaceCache", 50, false, true, 0L, 0L);
         cacheManager.addCache(namespaceEhCache);
-        EhCacheAdapter<String, NamespaceData> namespaceCache = new EhCacheAdapter<String, NamespaceData>();
+        EhCacheAdapter<String, NamespaceRegistry> namespaceCache = new EhCacheAdapter<String, NamespaceRegistry>();
         namespaceCache.setCache(namespaceEhCache);
         
-        namespaceDAO.setNamespaceDataCache(namespaceCache);
+        namespaceDAO.setNamespaceRegistryCache(namespaceCache);
     }
 }

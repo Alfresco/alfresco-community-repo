@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -24,8 +24,13 @@
  */
 package org.alfresco.repo.dictionary;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.i18n.MessageService;
+import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.dictionary.DictionaryException;
@@ -33,6 +38,8 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.ModelDefinition;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.BaseAlfrescoSpringTest;
@@ -136,7 +143,35 @@ public class DictionaryModelTypeTest extends BaseAlfrescoSpringTest
         this.namespaceService = (NamespaceService)this.applicationContext.getBean("namespaceService");
         this.cociService = (CheckOutCheckInService)this.applicationContext.getBean("checkOutCheckInService");
         this.dictionaryDAO = (DictionaryDAO)this.applicationContext.getBean("dictionaryDAO");
+        this.nodeService = (NodeService)this.applicationContext.getBean("NodeService");
         
+        SearchService searchService = (SearchService)this.applicationContext.getBean("searchService");
+        TenantAdminService tenantAdminService = (TenantAdminService)this.applicationContext.getBean("tenantAdminService");
+        MessageService messageService = (MessageService)this.applicationContext.getBean("messageService");
+        
+        DictionaryRepositoryBootstrap bootstrap = new DictionaryRepositoryBootstrap();
+        bootstrap.setContentService(this.contentService);
+        bootstrap.setSearchService(searchService);
+        bootstrap.setDictionaryDAO(this.dictionaryDAO);
+        bootstrap.setTransactionService(this.transactionService);
+        bootstrap.setTenantAdminService(tenantAdminService); 
+        bootstrap.setNodeService(this.nodeService);
+        bootstrap.setNamespaceService(this.namespaceService);
+        bootstrap.setMessageService(messageService);
+        
+        RepositoryLocation location = new RepositoryLocation();
+        location.setStoreProtocol(this.storeRef.getProtocol());
+        location.setStoreId(this.storeRef.getIdentifier());
+        location.setQueryLanguage(SearchService.LANGUAGE_XPATH);
+        // NOTE: we are not setting the path for now .. in doing so we are searching the whole store
+        
+        List<RepositoryLocation> locations = new ArrayList<RepositoryLocation>();
+        locations.add(location);
+        
+        bootstrap.setRepositoryModelsLocations(locations);
+        
+        // register with dictionary service
+        bootstrap.register();
     }
     
     /**
@@ -232,13 +267,20 @@ public class DictionaryModelTypeTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
+        
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
+        {
+            public Object execute() throws Exception
+            {                        
+                DictionaryModelTypeTest.this.nodeService.deleteNode(modelNode);
+                return null;
+            }
+        });
        
     }
     
     public void testIsActiveFlagAndDelete()
     {
-        this.dictionaryDAO.removeModel(TEST_MODEL_ONE);
-        
         try
         {
             // Check that the model has not yet been loaded into the dictionary

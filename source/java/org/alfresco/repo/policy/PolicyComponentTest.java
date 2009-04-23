@@ -29,10 +29,7 @@ import java.util.Collection;
 import java.util.List;
 
 import junit.framework.TestCase;
-import net.sf.ehcache.Cache;
-import net.sf.ehcache.CacheManager;
 
-import org.alfresco.repo.cache.EhCacheAdapter;
 import org.alfresco.repo.cache.NullCache;
 import org.alfresco.repo.dictionary.DictionaryBootstrap;
 import org.alfresco.repo.dictionary.DictionaryComponent;
@@ -93,30 +90,15 @@ public class PolicyComponentTest extends TestCase
     @SuppressWarnings("unchecked")
     private void initDictionaryCaches(DictionaryDAOImpl dictionaryDAO)
     {
-        CacheManager cacheManager = new CacheManager();
-        
-        Cache uriToModelsEhCache = new Cache("uriToModelsCache", 50, false, true, 0L, 0L);
-        cacheManager.addCache(uriToModelsEhCache);      
-        //EhCacheAdapter<String, Map<String, List<CompiledModel>>> uriToModelsCache = new EhCacheAdapter<String, Map<String, List<CompiledModel>>>();
-        EhCacheAdapter uriToModelsCache = new EhCacheAdapter();
-        uriToModelsCache.setCache(uriToModelsEhCache);
-        
-        dictionaryDAO.setUriToModelsCache(uriToModelsCache);
-        
-        Cache compileModelsEhCache = new Cache("compiledModelsCache", 50, false, true, 0L, 0L);
-        cacheManager.addCache(compileModelsEhCache);
-        //EhCacheAdapter<String, Map<QName,CompiledModel>> compileModelCache = new EhCacheAdapter<String, Map<QName,CompiledModel>>();
-        EhCacheAdapter compileModelCache = new EhCacheAdapter();
-        compileModelCache.setCache(compileModelsEhCache);
-        
-        dictionaryDAO.setCompiledModelsCache(compileModelCache);
+        // note: unit tested here with null cache
+        dictionaryDAO.setDictionaryRegistryCache(new NullCache());
     }
     
     @SuppressWarnings("unchecked")
     private void initNamespaceCaches(NamespaceDAOImpl namespaceDAO)
     {
         // note: unit tested here with null cache
-        namespaceDAO.setNamespaceDataCache(new NullCache());
+        namespaceDAO.setNamespaceRegistryCache(new NullCache());
     }
 
     public void testJavaBehaviour()

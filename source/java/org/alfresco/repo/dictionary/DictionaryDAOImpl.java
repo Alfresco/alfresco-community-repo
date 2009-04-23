@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -64,13 +64,6 @@ import org.apache.commons.logging.LogFactory;
  */
 public class DictionaryDAOImpl implements DictionaryDAO
 {
-    // TODO: Allow for the dynamic creation of models.  Supporting
-    //       this requires the ability to persistently store the
-    //       registration of models, the ability to load models
-    //       from a persistent store, the refresh of the cache
-    //       and concurrent read/write of the models.
-    //       (in progress)
-    
     /**
      * Lock objects
      */
@@ -83,12 +76,13 @@ public class DictionaryDAOImpl implements DictionaryDAO
 
     // Tenant Service
     private TenantService tenantService;
+    
+    // Internal cache (clusterable)
+    private SimpleCache<String, DictionaryRegistry> dictionaryRegistryCache;
 
-    // Map of Namespace URI usages to Models
-    private SimpleCache<String, Map<String, List<CompiledModel>>> uriToModelsCache;
-
-    // Map of model name to compiled model
-    private SimpleCache<String, Map<QName,CompiledModel>> compiledModelsCache;
+    // used to reset the cache
+    private ThreadLocal<DictionaryRegistry> dictionaryRegistryThreadLocal = new ThreadLocal<DictionaryRegistry>();
+    private ThreadLocal<DictionaryRegistry> defaultDictionaryRegistryThreadLocal = new ThreadLocal<DictionaryRegistry>();
 
     // Static list of registered dictionary listeners
     private List<DictionaryListener> dictionaryListeners = new ArrayList<DictionaryListener>();
@@ -104,14 +98,9 @@ public class DictionaryDAOImpl implements DictionaryDAO
         this.tenantService = tenantService;
     }
     
-    public void setUriToModelsCache(SimpleCache<String, Map<String, List<CompiledModel>>> uriToModelsCache)
+    public void setDictionaryRegistryCache(SimpleCache<String, DictionaryRegistry> dictionaryRegistryCache)
     {
-        this.uriToModelsCache = uriToModelsCache;
-    }
-    
-    public void setCompiledModelsCache(SimpleCache<String, Map<QName,CompiledModel>> compiledModelsCache)
-    {
-        this.compiledModelsCache = compiledModelsCache;
+        this.dictionaryRegistryCache = dictionaryRegistryCache;
     }
     
     /**
@@ -133,6 +122,7 @@ public class DictionaryDAOImpl implements DictionaryDAO
     {
         if (! dictionaryListeners.contains(dictionaryDeployer))
         {
+            destroy(); // force reload on next get
             dictionaryListeners.add(dictionaryDeployer);
         }
     }
@@ -142,27 +132,7 @@ public class DictionaryDAOImpl implements DictionaryDAO
      */
     public void init()
     {
-        String tenantDomain = tenantService.getCurrentUserDomain();
-        
-        // initialise empty dictionary & namespaces
-        putCompiledModels(tenantDomain, new HashMap<QName,CompiledModel>());
-        putUriToModels(tenantDomain, new HashMap<String, List<CompiledModel>>());
-        
-        namespaceDAO.init();
-        
-        // populate the dictionary
-        for (DictionaryListener dictionaryListener : dictionaryListeners)
-        {
-            dictionaryListener.onDictionaryInit();
-        }
-        
-        // notify registered listeners that dictionary has been initialised
-        for (DictionaryListener dictionaryListener : dictionaryListeners)
-        {
-            dictionaryListener.afterDictionaryInit();
-        }
-        
-        logger.info("Dictionary initialised");
+        initDictionary(tenantService.getCurrentUserDomain());
     }
     
     /**
@@ -172,8 +142,7 @@ public class DictionaryDAOImpl implements DictionaryDAO
     {
         String tenantDomain = tenantService.getCurrentUserDomain();
         
-        removeCompiledModels(tenantDomain);
-        removeUriToModels(tenantDomain);                 
+        removeDictionaryRegistry(tenantDomain);
         
         namespaceDAO.destroy();
         
@@ -183,7 +152,10 @@ public class DictionaryDAOImpl implements DictionaryDAO
             dictionaryDeployer.afterDictionaryDestroy();
         }
         
-        logger.info("Dictionary destroyed");
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Dictionary destroyed");
+        }
     }
     
     /**
@@ -191,31 +163,104 @@ public class DictionaryDAOImpl implements DictionaryDAO
      */      
     public void reset()
     {
-    	reset(tenantService.getCurrentUserDomain());
+        if (logger.isDebugEnabled()) 
+        {
+            logger.debug("Resetting dictionary ...");
+        }
+        
+        destroy();
+    	init();
+    	
+        if (logger.isDebugEnabled()) 
+        {
+            logger.debug("... resetting dictionary completed");
+        }
     }
     
-    private void reset(String tenantDomain)
+    // load dictionary (models and namespaces)
+    private DictionaryRegistry initDictionary(final String tenantDomain)
     {
-		if (logger.isDebugEnabled()) 
-		{
-			logger.debug("Resetting dictionary ...");
-		}
+        long startTime = System.currentTimeMillis();
         
-		AuthenticationUtil.runAs(new RunAsWork<Object>()
-		{
-			public Object doWork()
-			{  
-		       destroy();
-		       init();
-		       
-		       return null;
-			}                               
-		}, tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain));
-		
-		if (logger.isDebugEnabled()) 
-		{
-			logger.debug("... resetting dictionary completed");
-		}
+        try
+        {
+            return AuthenticationUtil.runAs(new RunAsWork<DictionaryRegistry>()
+            {
+                public DictionaryRegistry doWork()
+                {  
+                    try
+                    {
+                        // create threadlocal, if needed
+                        createDataDictionaryLocal(tenantDomain);
+                        
+                        DictionaryRegistry dictionaryRegistry = initDictionaryRegistry(tenantDomain);
+                        
+                        if (dictionaryRegistry == null)
+                        {     
+                            // unexpected
+                            throw new AlfrescoRuntimeException("Failed to init dictionaryRegistry " + tenantDomain);
+                        }
+                        
+                        try
+                        {
+                            writeLock.lock();
+                            dictionaryRegistryCache.put(tenantDomain, dictionaryRegistry);
+                        }
+                        finally
+                        {
+                            writeLock.unlock();
+                        }
+                        
+                        return dictionaryRegistry;
+                    }
+                    finally
+                    {
+                        try
+                        {
+                            readLock.lock();
+                            if (dictionaryRegistryCache.get(tenantDomain) != null)
+                            {
+                                removeDataDictionaryLocal(tenantDomain);
+                            }
+                        }
+                        finally
+                        {
+                            readLock.unlock();
+                        }
+                    }
+                }                               
+            }, tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain));
+        }
+        finally
+        {
+            if (logger.isInfoEnabled())
+            {
+                logger.info("Init Dictionary: model count = "+(getModels() != null ? getModels().size() : 0) +" in "+(System.currentTimeMillis()-startTime)+" msecs "+(tenantDomain.equals(TenantService.DEFAULT_DOMAIN) ? "" : " (Tenant: "+tenantDomain+")"));
+            }
+        }
+    }
+    
+    private DictionaryRegistry initDictionaryRegistry(String tenantDomain)
+    {
+        getDictionaryRegistry(tenantDomain).setCompiledModels(new HashMap<QName,CompiledModel>());
+        getDictionaryRegistry(tenantDomain).setUriToModels(new HashMap<String, List<CompiledModel>>());
+        
+        // initialise empty dictionary & namespaces
+        namespaceDAO.init();
+        
+        // populate the dictionary based on registered sources
+        for (DictionaryListener dictionaryDeployer : dictionaryListeners)
+        {
+            dictionaryDeployer.onDictionaryInit();
+        }
+        
+        // notify registered listeners that dictionary has been initialised (population is complete)
+        for (DictionaryListener dictionaryListener : dictionaryListeners)
+        {
+            dictionaryListener.afterDictionaryInit();
+        }
+        
+        return getDictionaryRegistryLocal(tenantDomain);
     }
     
     /* (non-Javadoc)
@@ -228,7 +273,7 @@ public class DictionaryDAOImpl implements DictionaryDAO
         // Compile model definition
         CompiledModel compiledModel = model.compile(this, namespaceDAO);
         QName modelName = compiledModel.getModelDefinition().getName();
-
+        
         // Remove namespace definitions for previous model, if it exists
         CompiledModel previousVersion = getCompiledModels(tenantDomain).get(modelName);
         if (previousVersion != null)
@@ -260,19 +305,18 @@ public class DictionaryDAOImpl implements DictionaryDAO
         // Publish new Model Definition
         getCompiledModels(tenantDomain).put(modelName, compiledModel);
 
-        if (logger.isInfoEnabled())
+        if (logger.isDebugEnabled())
         {
-            logger.info("Registered model " + modelName.toPrefixString(namespaceDAO));
+            logger.debug("Registered model " + modelName.toPrefixString(namespaceDAO));
             for (M2Namespace namespace : model.getNamespaces())
             {
-                logger.info("Registered namespace '" + namespace.getUri() + "' (prefix '" + namespace.getPrefix() + "')");
+                logger.debug("Registered namespace '" + namespace.getUri() + "' (prefix '" + namespace.getPrefix() + "')");
             }
         }
-
+        
         return modelName;
     }
     
-
     /**
      * @see org.alfresco.repo.dictionary.DictionaryDAO#removeModel(org.alfresco.service.namespace.QName)
      */
@@ -296,8 +340,7 @@ public class DictionaryDAOImpl implements DictionaryDAO
             getCompiledModels(tenantDomain).remove(modelName);
         }
     }
-
-
+    
     /**
      * Map Namespace URI to Model
      * 
@@ -318,7 +361,6 @@ public class DictionaryDAOImpl implements DictionaryDAO
     		models.add(model);
     	}
     }
-
     
     /**
      * Unmap Namespace URI from Model
@@ -378,14 +420,14 @@ public class DictionaryDAOImpl implements DictionaryDAO
                 filteredModels.addAll(tenantModels);
                 models = filteredModels;
             }
-    
+            
             if (models == null)
             {
                 models = Collections.emptyList();
             }
             return models;
         }
-
+        
         List<CompiledModel> models = getUriToModels(TenantService.DEFAULT_DOMAIN).get(uri);
         if (models == null)
         {
@@ -393,8 +435,7 @@ public class DictionaryDAOImpl implements DictionaryDAO
         }
         return models;
     }
-
-
+    
     /**
      * @param modelName  the model name
      * @return the compiled model of the given name
@@ -439,8 +480,7 @@ public class DictionaryDAOImpl implements DictionaryDAO
         }
         return null;
     }
-
-
+    
     /* (non-Javadoc)
      * @see org.alfresco.repo.dictionary.ModelQuery#getDataType(java.lang.Class)
      */
@@ -714,7 +754,7 @@ public class DictionaryDAOImpl implements DictionaryDAO
     public Collection<QName> getModels()
     {
         // get all models - including inherited models, if applicable
-    	return getCompiledModels().keySet();
+        return getCompiledModels().keySet();
     }
     
     // MT-specific
@@ -892,6 +932,120 @@ public class DictionaryDAOImpl implements DictionaryDAO
         return namespaces;
     }
     
+    // re-entrant (eg. via reset)
+    private DictionaryRegistry getDictionaryRegistry(String tenantDomain)
+    {
+        DictionaryRegistry dictionaryRegistry = null;
+        
+        try
+        {
+            // check cache first - return if set
+            readLock.lock();
+            dictionaryRegistry = dictionaryRegistryCache.get(tenantDomain);
+
+            if (dictionaryRegistry != null)
+            {
+                return dictionaryRegistry; // return cached config
+            }
+        }
+        finally
+        {
+            readLock.unlock();
+        }
+        
+        // check threadlocal second - return if set
+        dictionaryRegistry = getDictionaryRegistryLocal(tenantDomain);
+        if (dictionaryRegistry != null)
+        {
+            return dictionaryRegistry; // return local dictionaryRegistry
+        }
+        
+        // reset caches - may have been invalidated (e.g. in a cluster)
+        dictionaryRegistry = initDictionary(tenantDomain);
+        
+        if (dictionaryRegistry == null)
+        {     
+            // unexpected
+            throw new AlfrescoRuntimeException("Failed to get dictionaryRegistry " + tenantDomain);
+        }
+        
+        return dictionaryRegistry;
+    }
+    
+    // create threadlocal
+    private void createDataDictionaryLocal(String tenantDomain)      
+    {
+       // create threadlocal, if needed
+        DictionaryRegistry dictionaryRegistry = getDictionaryRegistryLocal(tenantDomain);
+        if (dictionaryRegistry == null)
+        {
+            dictionaryRegistry = new DictionaryRegistry(tenantDomain);
+            
+            if (tenantDomain.equals(TenantService.DEFAULT_DOMAIN))
+            {
+                defaultDictionaryRegistryThreadLocal.set(dictionaryRegistry);
+            }
+            else
+            {
+                dictionaryRegistryThreadLocal.set(dictionaryRegistry);
+            }
+        }
+    }
+    
+    // get threadlocal 
+    private DictionaryRegistry getDictionaryRegistryLocal(String tenantDomain)
+    {
+        DictionaryRegistry dictionaryRegistry = null;
+        
+        if (tenantDomain.equals(TenantService.DEFAULT_DOMAIN))
+        {
+            dictionaryRegistry = this.defaultDictionaryRegistryThreadLocal.get();
+        }
+        else
+        {
+            dictionaryRegistry = this.dictionaryRegistryThreadLocal.get();
+        }
+        
+        // check to see if domain switched
+        if ((dictionaryRegistry != null) && (tenantDomain.equals(dictionaryRegistry.getTenantDomain())))
+        {
+            return dictionaryRegistry; // return threadlocal, if set
+        }   
+        
+        return null;
+    }
+    
+    // remove threadlocal
+    private void removeDataDictionaryLocal(String tenantDomain)      
+    {
+        if (tenantDomain.equals(TenantService.DEFAULT_DOMAIN))
+        {
+            defaultDictionaryRegistryThreadLocal.set(null); // it's in the cache, clear the threadlocal
+        }
+        else
+        {
+            dictionaryRegistryThreadLocal.set(null); // it's in the cache, clear the threadlocal
+        }
+    }
+    
+    private void removeDictionaryRegistry(String tenantDomain)
+    {
+        try
+        {
+            writeLock.lock();
+            if (dictionaryRegistryCache.get(tenantDomain) != null)
+            {
+                dictionaryRegistryCache.remove(tenantDomain);
+            }
+            
+            removeDataDictionaryLocal(tenantDomain);
+        }
+        finally
+        {
+            writeLock.unlock();
+        }          
+    }
+    
     /**
      * Get compiledModels from the cache (in the context of the given tenant domain)
      * 
@@ -899,80 +1053,7 @@ public class DictionaryDAOImpl implements DictionaryDAO
      */
     private Map<QName,CompiledModel> getCompiledModels(String tenantDomain)
     {
-        Map<QName,CompiledModel> compiledModels = null;
-        try 
-        {
-            readLock.lock();
-            compiledModels = compiledModelsCache.get(tenantDomain);
-        }
-        finally
-        {
-            readLock.unlock();
-        }
-        
-        
-        if (compiledModels == null)
-        {          
-            reset(tenantDomain); // reset caches - may have been invalidated (e.g. in a cluster)
-
-            try 
-            {
-                readLock.lock();
-                compiledModels = compiledModelsCache.get(tenantDomain);
-            }
-            finally
-            {
-                readLock.unlock();
-            }                
-                
-            if (compiledModels == null)
-            {     
-                // unexpected
-                throw new AlfrescoRuntimeException("Failed to re-initialise compiledModelsCache " + tenantDomain);
-            }
-        }
-            
-        return compiledModels;
-    }  
-
-    /**
-     * Put compiledModels into the cache (in the context of the given tenant domain)
-     * 
-     * @param tenantDomain
-     */
-    private void putCompiledModels(String tenantDomain, Map<QName, CompiledModel> compiledModels)
-    {      
-        try 
-        {
-            writeLock.lock();
-            compiledModelsCache.put(tenantDomain, compiledModels);
-        }
-        finally
-        {
-            writeLock.unlock();
-        }       
-    } 
-    
-    /**
-     * Remove compiledModels from the cache (in the context of the given tenant domain)
-     * 
-     * @param tenantDomain
-     */
-    private void removeCompiledModels(String tenantDomain)
-    {
-        try
-        {
-            writeLock.lock();
-            if (compiledModelsCache.get(tenantDomain) != null)
-            {
-                compiledModelsCache.get(tenantDomain).clear();
-                compiledModelsCache.remove(tenantDomain);
-            }
-        }
-        finally
-        {
-            writeLock.unlock();
-        }        
+        return getDictionaryRegistry(tenantDomain).getCompiledModels();
     }
 
     /**
@@ -982,80 +1063,8 @@ public class DictionaryDAOImpl implements DictionaryDAO
      */
     private Map<String, List<CompiledModel>> getUriToModels(String tenantDomain)
     {
-        Map<String, List<CompiledModel>> uriToModels = null;
-        try
-        {
-            readLock.lock();
-            uriToModels = uriToModelsCache.get(tenantDomain);
-        }
-        finally
-        {
-            readLock.unlock();
-        }
-        
-        if (uriToModels == null)
-        {
-            reset(tenantDomain); // reset caches - may have been invalidated (e.g. in a cluster)
-            
-            try
-            {
-                readLock.lock();
-                uriToModels = uriToModelsCache.get(tenantDomain);
-            }
-            finally
-            {
-                readLock.unlock();
-            }
-            
-            if (uriToModels == null)
-            {     
-                // unexpected
-                throw new AlfrescoRuntimeException("Failed to re-initialise uriToModelsCache " + tenantDomain);
-            }
-        }
-            
-        return uriToModels;
-    }  
-    
-    /**
-     * Put uriToModels into the cache (in the context of the given tenant domain)
-     * 
-     * @param tenantDomain
-     */
-    private void putUriToModels(String tenantDomain, Map<String, List<CompiledModel>> uriToModels)
-    {
-        try 
-        {
-            writeLock.lock();
-            uriToModelsCache.put(tenantDomain, uriToModels);
-        }
-        finally
-        {
-            writeLock.unlock();
-        }
-    } 
-    
-    /**
-     * Remove uriToModels from the cache (in the context of the given tenant domain)
-     * 
-     * @param tenantDomain
-     */
-    private void removeUriToModels(String tenantDomain)
-    {
-        try 
-        {
-            writeLock.lock();
-            if (uriToModelsCache.get(tenantDomain) != null)
-            {
-                uriToModelsCache.get(tenantDomain).clear();
-                uriToModelsCache.remove(tenantDomain);
-            }
-        }
-        finally
-        {
-            writeLock.unlock();
-        }
-    } 
+        return getDictionaryRegistry(tenantDomain).getUriToModels();
+    }
     
     /**
      * Return diffs between input model and model in the Dictionary.
@@ -1204,5 +1213,40 @@ public class DictionaryDAOImpl implements DictionaryDAO
                 throw new AlfrescoRuntimeException("Failed to validate model update - found non-incrementally updated " + modelDiff.getElementType() + " '" + modelDiff.getElementName() + "'");
             }
         } 
+    }
+    
+    /* package */ class DictionaryRegistry
+    {
+        private Map<String, List<CompiledModel>> uriToModels = new HashMap<String, List<CompiledModel>>(0);
+        private Map<QName,CompiledModel> compiledModels = new HashMap<QName,CompiledModel>(0);
+        
+        private String tenantDomain;
+        
+        public DictionaryRegistry(String tenantDomain)
+        {
+            this.tenantDomain = tenantDomain;
+        }
+        
+        public String getTenantDomain()
+        {
+            return tenantDomain;
+        }
+        
+        public Map<String, List<CompiledModel>> getUriToModels()
+        {
+            return uriToModels;
+        }
+        public void setUriToModels(Map<String, List<CompiledModel>> uriToModels)
+        {
+            this.uriToModels = uriToModels;
+        }
+        public Map<QName, CompiledModel> getCompiledModels()
+        {
+            return compiledModels;
+        }
+        public void setCompiledModels(Map<QName, CompiledModel> compiledModels)
+        {
+            this.compiledModels = compiledModels;
+        }
     }
 }

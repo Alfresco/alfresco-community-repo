@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -37,7 +37,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.cmis.CMISQueryException;
 import org.alfresco.i18n.I18NUtil;
 import org.alfresco.repo.search.CannedQueryDef;
 import org.alfresco.repo.search.EmptyResultSet;
@@ -53,11 +52,9 @@ import org.alfresco.repo.search.impl.querymodel.QueryEngine;
 import org.alfresco.repo.search.impl.querymodel.QueryEngineResults;
 import org.alfresco.repo.search.impl.querymodel.QueryModelFactory;
 import org.alfresco.repo.search.impl.querymodel.QueryOptions;
-import org.alfresco.repo.search.impl.querymodel.Selector;
 import org.alfresco.repo.search.results.SortedResultSet;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -161,7 +158,16 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
     {
         return getSearcher(storeRef, null, config);
     }
-
+    
+    /**
+     * Get a select-node-based searcher
+     * @return
+     */
+    public static ADMLuceneSearcherImpl getNodeSearcher()
+    {
+        return new ADMLuceneSearcherImpl();
+    }
+    
     public void setNamespacePrefixResolver(NamespacePrefixResolver namespacePrefixResolver)
     {
         this.namespacePrefixResolver = namespacePrefixResolver;

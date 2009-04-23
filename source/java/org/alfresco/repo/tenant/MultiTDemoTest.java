@@ -493,12 +493,13 @@ public class MultiTDemoTest extends TestCase
                         {
                             NodeRef homeSpaceRef = getHomeSpaceFolderNode(tenantUserName);
                             
-                            NodeRef contentRef = addTextContent(homeSpaceRef, tenantUserName+" quick brown fox.txt", "The quick brown fox jumps over the lazy dog (tenant " + tenantDomain + ")");
+                            NodeRef contentRef = addContent(homeSpaceRef, tenantUserName+" quick brown fox.txt", "The quick brown fox jumps over the lazy dog (tenant " + tenantDomain + ")", MimetypeMap.MIMETYPE_TEXT_PLAIN);
                             nodeService.addAspect(contentRef, ContentModel.ASPECT_VERSIONABLE, null);
                             
                             if (tenantDomain.equals(TEST_TENANT_DOMAIN2))
                             {
-                                contentRef = addTextContent(homeSpaceRef, tenantUserName+" quick brown fox ANO.txt", "The quick brown fox jumps over the lazy dog ANO (tenant " + tenantDomain + ")");                                   
+                                contentRef = addContent(homeSpaceRef, tenantUserName+" quick brown fox ANO.txt", "The quick brown fox jumps over the lazy dog ANO (tenant " + tenantDomain + ")", MimetypeMap.MIMETYPE_TEXT_PLAIN);
+                                
                                 nodeService.addAspect(contentRef, ContentModel.ASPECT_VERSIONABLE, null);
                             }
                             
@@ -519,7 +520,12 @@ public class MultiTDemoTest extends TestCase
         {
             public Object doWork() throws Exception
             {
-                assertTrue("System: ", (nodeService.getStores().size() >= (DEFAULT_STORE_COUNT * (tenants.size()+1))));
+                for (StoreRef storeRef : nodeService.getStores())
+                {
+                    System.out.println("StoreRef: "+storeRef);
+                }
+                
+                assertTrue("System: "+nodeService.getStores().size()+", "+(tenants.size()+1), (nodeService.getStores().size() >= (DEFAULT_STORE_COUNT * (tenants.size()+1))));
                 return null;                      
             }
         }, AuthenticationUtil.getSystemUserName());
@@ -529,7 +535,7 @@ public class MultiTDemoTest extends TestCase
         {
             public Object doWork() throws Exception
             {
-                assertTrue("Super admin: ", (nodeService.getStores().size() >= DEFAULT_STORE_COUNT));
+                assertTrue("Super admin: "+nodeService.getStores().size(), (nodeService.getStores().size() >= DEFAULT_STORE_COUNT));
                 return null;                      
             }
         }, AuthenticationUtil.getAdminUserName());
@@ -644,8 +650,8 @@ public class MultiTDemoTest extends TestCase
                 public Object doWork() throws Exception
                 {
                     NodeRef homeSpaceRef = getHomeSpaceFolderNode(tenantUserName);
-                    NodeRef contentRef = addTextContent(homeSpaceRef, tenantUserName+" tqbfjotld.txt", "The quick brown fox jumps over the lazy dog (tenant " + tenantDomain + ")");
-
+                    NodeRef contentRef = addContent(homeSpaceRef, tenantUserName+" tqbfjotld.txt", "The quick brown fox jumps over the lazy dog (tenant " + tenantDomain + ")", MimetypeMap.MIMETYPE_TEXT_PLAIN);
+                    
                     NodeRef storeArchiveNode = nodeService.getStoreArchiveNode(contentRef.getStoreRef());
                     
                     nodeService.deleteNode(contentRef);
@@ -662,9 +668,9 @@ public class MultiTDemoTest extends TestCase
         }
     }
     
-    public void testCustomDynamicModels()
+    public void testCustomModels()
     {
-        logger.info("test custom/dynamic models");
+        logger.info("test custom models");
         
         final int defaultModelCnt = dictionaryService.getAllModels().size();
             
@@ -708,6 +714,33 @@ public class MultiTDemoTest extends TestCase
                     myType = dictionaryService.getClass(QName.createQName("{my.new.model}sop"));
                     assertNotNull(myType);
                     assertEquals(QName.createQName("{my.new.model}mynewmodel"),myType.getModel().getName());
+                    
+                    return null;
+                }
+            }, tenantAdminName);
+        }
+    }
+    
+    public void testAddCustomWebClient()
+    {
+        // note: add as demo files - need to re-start Alfresco to see custom web client config / messages 
+        logger.info("test add custom web client config");
+        
+        for (final String tenantDomain : tenants)
+        {    
+            final String tenantAdminName = tenantService.getDomainUser(AuthenticationUtil.getAdminUserName(), tenantDomain);
+            
+            AuthenticationUtil.runAs(new RunAsWork<Object>()
+            {
+                public Object doWork() throws Exception
+                {
+                    NodeRef webClientExtFolder = getWebClientExtensionNodeRef(SPACES_STORE);
+                    
+                    InputStream is = getClass().getClassLoader().getResourceAsStream("tenant/webclient.properties");
+                    addContent(webClientExtFolder, "webclient.properties", is, MimetypeMap.MIMETYPE_TEXT_PLAIN);
+                    
+                    is = getClass().getClassLoader().getResourceAsStream("tenant/web-client-config-custom.xml");
+                    addContent(webClientExtFolder, "web-client-config-custom.xml", is, MimetypeMap.MIMETYPE_XML);
                     
                     return null;
                 }
@@ -814,6 +847,12 @@ public class MultiTDemoTest extends TestCase
     {
         // get the "User Homes" location
         return findFolderNodeRef(storeRef, "/app:company_home/app:user_homes");
+    }
+    
+    private NodeRef getWebClientExtensionNodeRef(StoreRef storeRef)
+    {
+        // get the "Web Client Extensions" location
+        return findFolderNodeRef(storeRef, "/app:company_home/app:dictionary/app:webclient_extension");
     }
     
     private NodeRef findFolderNodeRef(StoreRef storeRef, String folderXPath)
@@ -926,7 +965,7 @@ public class MultiTDemoTest extends TestCase
         return (NodeRef)this.nodeService.getProperty(personService.getPerson(userName), ContentModel.PROP_HOMEFOLDER);
     }
     
-    private NodeRef addTextContent(NodeRef spaceRef, String name, String textData)
+    private NodeRef addContent(NodeRef spaceRef, String name, String textData, String mimeType)
     {
         Map<QName, Serializable> contentProps = new HashMap<QName, Serializable>();
         contentProps.put(ContentModel.PROP_NAME, name);
@@ -947,10 +986,39 @@ public class MultiTDemoTest extends TestCase
 
         ContentWriter writer = contentService.getWriter(content, ContentModel.PROP_CONTENT, true);
 
-        writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+        writer.setMimetype(mimeType);
         writer.setEncoding("UTF-8");
 
         writer.putContent(textData);
+        
+        return content;
+    }
+    
+    private NodeRef addContent(NodeRef spaceRef, String name, InputStream is, String mimeType)
+    {
+        Map<QName, Serializable> contentProps = new HashMap<QName, Serializable>();
+        contentProps.put(ContentModel.PROP_NAME, name);
+
+        ChildAssociationRef association = nodeService.createNode(spaceRef,
+                ContentModel.ASSOC_CONTAINS, 
+                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, name), 
+                ContentModel.TYPE_CONTENT,
+                contentProps);
+
+        NodeRef content = association.getChildRef();
+
+        // add titled aspect (for Web Client display)
+        Map<QName, Serializable> titledProps = new HashMap<QName, Serializable>();
+        titledProps.put(ContentModel.PROP_TITLE, name);
+        titledProps.put(ContentModel.PROP_DESCRIPTION, name);
+        this.nodeService.addAspect(content, ContentModel.ASPECT_TITLED, titledProps);
+
+        ContentWriter writer = contentService.getWriter(content, ContentModel.PROP_CONTENT, true);
+
+        writer.setMimetype(mimeType);
+        writer.setEncoding("UTF-8");
+
+        writer.putContent(is);
         
         return content;
     }

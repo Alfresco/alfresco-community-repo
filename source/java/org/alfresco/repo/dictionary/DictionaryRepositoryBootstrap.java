@@ -251,8 +251,8 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
                     
                     for (NodeRef dictionaryModel : nodeRefs)
                     {
-                        // Ignore if the node is a working copy or if its inactive
-                        if (nodeService.hasAspect(dictionaryModel, ContentModel.ASPECT_WORKING_COPY) == false)
+                        // Ignore if the node is a working copy or archived, or if its inactive
+                        if (! (nodeService.hasAspect(dictionaryModel, ContentModel.ASPECT_WORKING_COPY) || nodeService.hasAspect(dictionaryModel, ContentModel.ASPECT_ARCHIVED))) 
                         {
                             Boolean isActive = (Boolean)nodeService.getProperty(dictionaryModel, ContentModel.PROP_MODEL_ACTIVE);
                             
@@ -261,6 +261,11 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
                                 M2Model model = createM2Model(dictionaryModel);
                                 if (model != null)
                                 {
+                                    if (logger.isTraceEnabled())
+                                    {
+                                        logger.trace("onDictionaryInit: "+model.getName()+" ("+dictionaryModel+")");
+                                    }
+                                    
                                     for (M2Namespace namespace : model.getNamespaces())
                                     {
                                         modelMap.put(namespace.getUri(), model);
@@ -407,22 +412,7 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
     @Override
     protected void onBootstrap(ApplicationEvent event)
     {
-        // run as System on bootstrap
-        AuthenticationUtil.runAs(new RunAsWork<Object>()
-        {
-            public Object doWork()
-            {            
-                init();
-                return null;
-            }                               
-        }, AuthenticationUtil.getSystemUserName());
-               
-        if (tenantAdminService.isEnabled())
-        {
-            tenantAdminService.deployTenants(this, logger);
-        }
-        
-    	register();
+        register();
     }
 
     @Override

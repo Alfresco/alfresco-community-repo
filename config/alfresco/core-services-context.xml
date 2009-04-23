@@ -863,7 +863,7 @@
         <property name="tenantService">
             <ref bean="tenantService"/>
         </property>
-        <property name="namespaceDataCache">
+        <property name="namespaceRegistryCache">
             <ref bean="prefixesCache"/>
         </property>
     </bean>
@@ -889,11 +889,8 @@
         </constructor-arg>
         <property name="tenantService">
             <ref bean="tenantService"/>
-        </property>    
-        <property name="uriToModelsCache">
-            <ref bean="uriToModelsCache"/>
         </property>
-        <property name="compiledModelsCache">
+        <property name="dictionaryRegistryCache">
             <ref bean="compiledModelsCache"/>
         </property>
     </bean>

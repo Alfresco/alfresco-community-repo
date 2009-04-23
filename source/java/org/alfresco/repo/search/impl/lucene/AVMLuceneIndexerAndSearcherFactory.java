@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -40,9 +40,8 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Factory for AVM indexers and searchers
@@ -52,7 +51,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public class AVMLuceneIndexerAndSearcherFactory extends AbstractLuceneIndexerAndSearcherFactory implements SupportsBackgroundIndexing
 {
-    private static Log s_logger = LogFactory.getLog(AVMLuceneIndexerAndSearcherFactory.class);
+    //private static Log s_logger = LogFactory.getLog(AVMLuceneIndexerAndSearcherFactory.class);
     
     private DictionaryService dictionaryService;
 
@@ -189,6 +188,12 @@ public class AVMLuceneIndexerAndSearcherFactory extends AbstractLuceneIndexerAnd
         searcher.setQueryEngine(queryEngine);
         searcher.setDictionaryService(dictionaryService);
         return searcher;
+    }
+    
+    @Override
+    protected SearchService getNodeSearcher() throws SearcherException
+    {
+        throw new UnsupportedOperationException();
     }
 
     /** 

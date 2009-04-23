@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -275,8 +275,10 @@ import org.apache.commons.logging.LogFactory;
             }
             classes.add(def);
             
-            if (logger.isDebugEnabled())
-                logger.debug("Resolving inheritance: class " + def.getName() + " found at depth " + depth);
+            if (logger.isTraceEnabled())
+            {
+                logger.trace("Resolving inheritance: class " + def.getName() + " found at depth " + depth);
+            }
         }
         
         // Resolve inheritance of each class

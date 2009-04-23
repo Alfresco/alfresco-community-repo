@@ -147,11 +147,6 @@
        <property name="avmLockingService" ref="avmLockingService"/>
        <property name="transactionService" ref="transactionService"/>
     </bean>
-
-    <!-- Bootstrap MT (multi-tenancy) if applicable -->
-    <bean id="multiTenantBootstrap" class="org.alfresco.repo.tenant.MultiTenantBootstrap" >
-        <property name="tenantAdminService" ref="tenantAdminService" />
-    </bean>
     
     <!-- Load models -->
     <bean id="dictionaryRepositoryBootstrap" class="org.alfresco.repo.dictionary.DictionaryRepositoryBootstrap">
@@ -277,7 +272,12 @@
         </property>
         <property name="repositoryWorkflowDefsLocations" ref="customWorkflowDefsRepositoryLocation"/>
     </bean>
-
+    
+    <!-- Bootstrap MT (multi-tenancy) if applicable -->
+    <bean id="multiTenantBootstrap" class="org.alfresco.repo.tenant.MultiTenantBootstrap" >
+        <property name="tenantAdminService" ref="tenantAdminService" />
+    </bean>
+    
     <bean id="personDaoBootstrap" class="org.alfresco.repo.security.person.PersonDaoBootstrap" >
        <property name="personDaoImpl">
          <ref bean="personDaoImpl"/>

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2007 Alfresco Software Limited.
+ * Copyright (C) 2005-2009 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -60,6 +60,7 @@ import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.GUID;
 import org.apache.commons.logging.Log;
@@ -464,6 +465,11 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory implements LuceneI
         LuceneSearcher searcher = getSearcher(storeRef, indexer);
         return searcher;
     }
+    
+    /**
+     * Get node-based searcher (for "selectNodes / selectProperties")
+     */
+    protected abstract SearchService getNodeSearcher() throws SearcherException;
 
     /**
      * Get a searcher over the index and the current delta

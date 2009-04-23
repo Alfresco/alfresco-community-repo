@@ -1,0 +1,121 @@
+<alfresco-config>
+
+   <!-- Example of overriding the search settings -->
+   <config>
+      <client>
+         <search-max-results>2</search-max-results>
+         
+         <!-- Shelf component default visibility, set to false to hide the shelf by default -->
+         <shelf-visible>false</shelf-visible>
+      </client>
+   </config>
+
+   <!-- Example of adding languages to the list in the login page -->
+   
+   <!--
+   <config evaluator="string-compare" condition="Languages">
+      <languages>
+         <language locale="ca_ES">Catalan</language>
+         <language locale="da_DK">Danish</language>
+         <language locale="de_DE">German</language>
+         <language locale="es_ES">Spanish</language>
+         <language locale="el_GR">Greek</language>
+         <language locale="fr_FR">French</language>
+         <language locale="it_IT">Italian</language>
+         <language locale="ja_JP">Japanese</language>
+         <language locale="du_NL">Dutch</language>
+         <language locale="pt_BR">Portuguese (Brazilian)</language>
+         <language locale="ru_RU">Russian</language>
+         <language locale="fi_FI">Finnish</language>
+         <language locale="tr_TR">Turkish</language>
+         <language locale="zh_CN">Simplified Chinese</language>
+      </languages>
+   </config>
+   -->
+
+   <!-- Example of configuring advanced search -->
+   <!--
+   <config evaluator="string-compare" condition="Advanced Search">
+      <advanced-search>
+         <content-types>
+         </content-types>
+         <custom-properties>
+            <meta-data aspect="app:simpleworkflow" property="app:approveStep" />
+         </custom-properties>
+      </advanced-search>
+   </config>
+   -->
+
+   <!-- Example of changing the sort direction for a view in the client -->
+   <!--
+   <config evaluator="string-compare" condition="Views">
+      <views>
+         <view-defaults>
+            <topic>
+               <sort-direction>ascending</sort-direction>
+            </topic>
+         </view-defaults>
+      </views>
+   </config>
+   -->
+
+   <!-- Example of adding a custom icon to the Create Space dialog -->
+   <!--
+   <config evaluator="string-compare" condition="cm:folder icons">
+      <icons>
+         <icon name="space-icon-custom" path="/images/icons/space-icon-custom.gif" />
+      </icons>
+   </config>
+   -->
+
+   <!-- The config below shows how to incorporate the example model-->
+   <!-- into the web client, for this to work you will need to -->
+   <!-- rename example-model-context.xml.sample to example-model-context.xml -->
+
+   <config evaluator="string-compare" condition="Content Wizards">
+      <content-types>
+         <type name="my:sop" />
+      </content-types>
+   </config>
+
+   <config evaluator="node-type" condition="my:sop">
+      <property-sheet>
+         <show-property name="mimetype" display-label-id="content_type" 
+                        component-generator="MimeTypeSelectorGenerator" />
+         <show-property name="size" display-label-id="size" 
+                        converter="org.alfresco.faces.ByteSizeConverter" 
+                        show-in-edit-mode="false" />               
+         <show-property name="my:publishedDate" display-label-id="my.publishedDate" />
+         <show-association name="my:signOff" display-label-id="my.signOff" />
+         <show-property name="my:authorisedBy" display-label-id="my.authorisedBy" />
+         <show-child-association name="my:processSteps" display-label-id="my.processSteps" />
+      </property-sheet>
+   </config>
+
+   <config evaluator="aspect-name" condition="my:imageClassification">
+      <property-sheet>
+         <show-property name="my:width" display-label-id="my.width" />
+         <show-property name="my:height" display-label-id="my.height" />
+         <show-property name="my:resolution" display-label-id="my.resolution" />
+      </property-sheet>
+   </config>
+
+   <config evaluator="string-compare" condition="Action Wizards">
+      <aspects>
+         <aspect name="my:imageClassification"/>
+      </aspects>
+   </config>
+
+   <config evaluator="string-compare" condition="Advanced Search">
+      <advanced-search>
+         <content-types>
+            <type name="my:sop" />
+         </content-types>
+         <custom-properties>
+            <meta-data type="my:sop" property="my:authorisedBy" />
+            <meta-data aspect="my:imageClassification" property="my:resolution" />
+         </custom-properties>
+      </advanced-search>
+   </config>
+
+</alfresco-config>

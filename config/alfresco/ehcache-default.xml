@@ -381,13 +381,6 @@
     
     <!-- dictionary models -->
     <cache 
-        name="org.alfresco.cache.uriToModelsCache" 
-        maxElementsInMemory="100"
-        eternal="true"
-        overflowToDisk="false"
-        />
-        
-    <cache 
         name="org.alfresco.cache.compiledModelsCache" 
         maxElementsInMemory="100"
         eternal="true"

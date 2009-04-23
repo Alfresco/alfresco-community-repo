@@ -71,11 +71,12 @@ import org.apache.commons.logging.LogFactory;
 /**
  * Dictionary model type behaviour.
  * 
- * @author Roy Wetherall
+ * @author Roy Wetherall, janv
  */
 public class DictionaryModelType implements ContentServicePolicies.OnContentUpdatePolicy,
                                             NodeServicePolicies.OnUpdatePropertiesPolicy,
                                             NodeServicePolicies.BeforeDeleteNodePolicy,
+                                            NodeServicePolicies.OnDeleteNodePolicy,
                                             NodeServicePolicies.OnCreateNodePolicy,
                                             NodeServicePolicies.OnRemoveAspectPolicy
 {
@@ -84,6 +85,9 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
     
     /** Key to the pending models */
     private static final String KEY_PENDING_MODELS = "dictionaryModelType.pendingModels";
+    
+    /** Key to the pending deleted models */
+    private static final String KEY_PENDING_DELETE_MODELS = "dictionaryModelType.pendingDeleteModels";
     
     /** Key to the removed "workingcopy" aspect */
     private static final String KEY_WORKING_COPY = "dictionaryModelType.workingCopy";
@@ -214,7 +218,7 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
     
     
     /**
-     * The initialise method     
+     * The initialise method
      */
     public void init()
     {
@@ -224,25 +228,31 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
                 ContentModel.TYPE_DICTIONARY_MODEL, 
                 new JavaBehaviour(this, "onContentUpdate"));
         
-        // Register interest in the onPropertyUpdate policy for the dictionary model type
+        // Register interest in the onUpdateProperties policy for the dictionary model type
         policyComponent.bindClassBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateProperties"), 
                 ContentModel.TYPE_DICTIONARY_MODEL, 
                 new JavaBehaviour(this, "onUpdateProperties"));
         
-        // Register interest in the node delete policy
+        // Register interest in the beforeDeleteNode policy for the dictionary model type
         policyComponent.bindClassBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteNode"), 
                 ContentModel.TYPE_DICTIONARY_MODEL, 
                 new JavaBehaviour(this, "beforeDeleteNode"));
         
-        // Register interest in the remove aspect policy
+        // Register interest in the onDeleteNode policy for the dictionary model type
+        policyComponent.bindClassBehaviour(
+                QName.createQName(NamespaceService.ALFRESCO_URI, "onDeleteNode"), 
+                ContentModel.TYPE_DICTIONARY_MODEL, 
+                new JavaBehaviour(this, "onDeleteNode"));
+        
+        // Register interest in the onRemoveAspect policy
         policyComponent.bindClassBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "onRemoveAspect"), 
                 this, 
                 new JavaBehaviour(this, "onRemoveAspect"));
         
-        // Register interest in the onCreateNode policy for the dictionary model type
+        // Register interest in the onCreateNode policy
         policyComponent.bindClassBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateNode"),
                 this, 
@@ -321,6 +331,7 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
         }
     }
     
+    @SuppressWarnings("unchecked")
     public void beforeDeleteNode(NodeRef nodeRef)
     {
     	boolean workingCopy = nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY);
@@ -336,18 +347,58 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
         {
             archived = true;
         }
-    	
+        
         // Ignore if the node is a working copy or archived
         if (! (workingCopy || archived))
         {
             QName modelName = (QName)this.nodeService.getProperty(nodeRef, ContentModel.PROP_MODEL_NAME);
             if (modelName != null)
             {
-            	// Validate model delete against usages - content and/or workflows
-            	validateModelDelete(modelName);
-            	
-                // Remove the model from the dictionary
-                dictionaryDAO.removeModel(modelName);
+                // Validate model delete against usages - content and/or workflows
+                validateModelDelete(modelName);
+                
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("beforeDeleteNode: modelName="+modelName+" ("+nodeRef+")");
+                }
+                
+                Set<NodeRef> pendingModelDeletes = (Set<NodeRef>)AlfrescoTransactionSupport.getResource(KEY_PENDING_DELETE_MODELS);
+                if (pendingModelDeletes == null)
+                {
+                    pendingModelDeletes = new HashSet<NodeRef>();
+                    AlfrescoTransactionSupport.bindResource(KEY_PENDING_DELETE_MODELS, pendingModelDeletes);
+                }
+                pendingModelDeletes.add(tenantService.getName(nodeRef));
+                
+                AlfrescoTransactionSupport.bindListener(this.transactionListener);
+            }
+        }
+    }
+    
+    @SuppressWarnings("unchecked")
+    public void onDeleteNode(ChildAssociationRef childAssocRef, boolean isNodeArchived)
+    {
+        NodeRef nodeRef = childAssocRef.getChildRef();
+        
+        Set<NodeRef> pendingDeleteModels = (Set<NodeRef>)AlfrescoTransactionSupport.getResource(KEY_PENDING_DELETE_MODELS);
+        
+        if (pendingDeleteModels != null)
+        {
+            if (pendingDeleteModels.contains(nodeRef))
+            {
+                String tenantDomain = tenantService.getDomain(nodeRef.getStoreRef().getIdentifier());
+                String tenantSystemUserName = tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain);
+                
+                AuthenticationUtil.runAs(new RunAsWork<Object>()
+                {
+                    public Object doWork()
+                    {
+                        // invalidate - to force lazy re-init
+                        dictionaryDAO.destroy();
+                        
+                        return null; 
+                    }
+                }, tenantSystemUserName);
             }
         }
     }
@@ -395,6 +446,11 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
             
             if (pendingModels != null)
             {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("beforeCommit: pendingModelsCnt="+pendingModels.size());
+                }
+                
                 for (NodeRef pendingNodeRef : pendingModels)
                 {
                     String tenantDomain = tenantService.getDomain(pendingNodeRef.getStoreRef().getIdentifier());
@@ -405,7 +461,7 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
                     AuthenticationUtil.runAs(new RunAsWork<Object>()
                     {
                         public Object doWork()
-                        {            
+                        {
                             // Find out whether the model is active
                             boolean isActive = false;
                             Boolean value = (Boolean)nodeService.getProperty(nodeRef, ContentModel.PROP_MODEL_ACTIVE);
@@ -464,8 +520,8 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
                                         // Validate model against dictionary - could be new, unchanged or updated
                                         dictionaryDAO.validateModel(m2Model);
                                         
-                                        // Put the model
-                                        dictionaryDAO.putModel(m2Model);
+                                        // invalidate - to force lazy re-init
+                                        dictionaryDAO.destroy();
                                     }
                                 }
                                 else
@@ -476,19 +532,19 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
                                         // Validate model delete against usages - content and/or workflows
                                         validateModelDelete(modelName);
                                         
-                                        // Remove the model from the dictionary
-                                        dictionaryDAO.removeModel(modelName);
+                                        // invalidate - to force lazy re-init
+                                        dictionaryDAO.destroy();
                                     }
                                 }
                             }
-
+                            
                             return null; 
                         }
                     }, tenantSystemUserName);
                 }
             }
         }
-
+        
         /**
          * @see java.lang.Object#equals(java.lang.Object)
          */
@@ -534,13 +590,13 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
         // TODO - in case of MT we do not currently allow deletion of an overridden model (with usages) ... but could allow if (re-)inherited model is equivalent to an incremental update only ?
         validateModelDelete(modelName, false);
         
-        if (tenantService.isEnabled() && tenantService.isTenantUser() == false)  
+        if (tenantService.isEnabled() && tenantService.isTenantUser() == false)
         {
             // shared model - need to check all tenants (whether enabled or disabled) unless they have overridden
-            List<Tenant> tenants = tenantAdminService.getAllTenants();              
+            List<Tenant> tenants = tenantAdminService.getAllTenants();
             for (Tenant tenant : tenants)
             {
-                // validate model delete within context of tenant domain                    
+                // validate model delete within context of tenant domain
                 AuthenticationUtil.runAs(new RunAsWork<Object>()
                 {
                     public Object doWork()
@@ -550,7 +606,7 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
                             validateModelDelete(modelName, true);
                         }
                         return null;
-                    }                               
+                    }
                 }, tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenant.getTenantDomain()));
             }
         }

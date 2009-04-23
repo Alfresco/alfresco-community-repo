@@ -256,7 +256,7 @@ public class WorkflowDeployer extends AbstractLifecycleBean
             userTransaction.begin();
         
             // bootstrap the workflow models and static labels (from classpath)
-            if (models != null && resourceBundles != null)
+            if (models != null && resourceBundles != null && ((models.size() > 0) || (resourceBundles.size() > 0)))
             {
             	DictionaryBootstrap dictionaryBootstrap = new DictionaryBootstrap();
             	dictionaryBootstrap.setDictionaryDAO(dictionaryDAO);

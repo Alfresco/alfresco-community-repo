@@ -137,8 +137,10 @@ public class DictionaryBootstrap implements DictionaryListener
                 }
                 try
                 {
-                    if (logger.isInfoEnabled())
-                        logger.info("Loading model from " + bootstrapModel);
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("Loading model from " + bootstrapModel);
+                    }
                     
                     M2Model model = M2Model.createModel(modelStream);
                     dictionaryDAO.putModel(model);

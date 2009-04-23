@@ -26,6 +26,7 @@ package org.alfresco.service.cmr.repository;
 
 import java.util.Map;
 
+import org.alfresco.processor.Processor;
 import org.alfresco.service.namespace.QName;
 
 /**

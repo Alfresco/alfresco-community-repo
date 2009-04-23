@@ -24,6 +24,8 @@
  */
 package org.alfresco.service.cmr.repository;
 
+import org.alfresco.processor.ProcessorExtension;
+
 /**
  * Interface to represent a server side template extension implementation
  * 

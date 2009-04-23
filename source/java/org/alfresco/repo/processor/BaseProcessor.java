@@ -28,9 +28,9 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.alfresco.processor.Processor;
+import org.alfresco.processor.ProcessorExtension;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.repository.Processor;
-import org.alfresco.service.cmr.repository.ProcessorExtension;
 import org.alfresco.service.cmr.repository.ScriptProcessor;
 import org.alfresco.service.cmr.repository.ScriptService;
 import org.alfresco.service.cmr.repository.TemplateProcessor;
@@ -60,7 +60,7 @@ public abstract class BaseProcessor implements Processor
     protected ServiceRegistry services;
     
     /** A map containing all the processor extenstions */
-    protected Map<String, ProcessorExtension> processorExtensions = new HashMap<String, ProcessorExtension>(10);
+    protected Map<String, ProcessorExtension> processorExtensions = new HashMap<String, ProcessorExtension>(16);
     
     /**
      * Registers this processor with the relevant services

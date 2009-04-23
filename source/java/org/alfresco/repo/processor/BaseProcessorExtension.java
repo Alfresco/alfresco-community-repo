@@ -24,8 +24,8 @@
  */
 package org.alfresco.repo.processor;
 
-import org.alfresco.service.cmr.repository.Processor;
-import org.alfresco.service.cmr.repository.ProcessorExtension;
+import org.alfresco.processor.Processor;
+import org.alfresco.processor.ProcessorExtension;
 
 /**
  * Abstract base class for a processor extension
@@ -69,7 +69,7 @@ public abstract class BaseProcessorExtension implements ProcessorExtension
 	}
     
     /**
-     * @see org.alfresco.service.cmr.repository.ProcessorExtension#getExtensionName()
+     * @see org.alfresco.processor.ProcessorExtension#getExtensionName()
      */
     public String getExtensionName()
     {

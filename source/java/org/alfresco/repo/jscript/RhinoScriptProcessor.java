@@ -37,6 +37,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.processor.ProcessorExtension;
 import org.alfresco.repo.processor.BaseProcessor;
 import org.alfresco.scripts.ScriptException;
 import org.alfresco.scripts.ScriptResourceHelper;
@@ -46,7 +47,6 @@ import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.ProcessorExtension;
 import org.alfresco.service.cmr.repository.ScriptLocation;
 import org.alfresco.service.cmr.repository.ScriptProcessor;
 import org.alfresco.service.cmr.repository.StoreRef;

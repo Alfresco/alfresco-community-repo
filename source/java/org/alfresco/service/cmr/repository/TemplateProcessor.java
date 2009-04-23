@@ -26,6 +26,8 @@ package org.alfresco.service.cmr.repository;
 
 import java.io.Writer;
 
+import org.alfresco.processor.Processor;
+
 /**
  * Interface to be implemented by template engine wrapper classes. The developer is responsible
  * for interfacing to an appropriate template engine, using the supplied data model as input to

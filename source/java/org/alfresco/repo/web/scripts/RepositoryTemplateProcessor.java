@@ -29,9 +29,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.alfresco.processor.ProcessorExtension;
 import org.alfresco.repo.template.FreeMarkerProcessor;
 import org.alfresco.repo.template.QNameAwareObjectWrapper;
-import org.alfresco.service.cmr.repository.ProcessorExtension;
 import org.alfresco.util.AbstractLifecycleBean;
 import org.alfresco.web.scripts.SearchPath;
 import org.alfresco.web.scripts.Store;

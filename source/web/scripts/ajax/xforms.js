@@ -412,8 +412,14 @@ alfresco.xforms.Widget = new Class({
   /** Returns the widget's label. */
   getLabel: function()
   {
+	var result = "";
     var node = this._getChildXFormsNode("label");
-    var result = node ? node.firstChild.nodeValue : "";
+    
+    if (node && node.firstChild !== null)
+    {
+      result = node.firstChild.nodeValue;
+    }
+    
     if (alfresco.constants.DEBUG)
     {
       result += " [" + this.id + "]";
@@ -1259,7 +1265,7 @@ alfresco.xforms.CheckboxSelect = alfresco.xforms.AbstractSelectWidget.extend({
     {
       this.parent(value, forceCommit);
       this._selectedValues = value.split(' ');
-      var checkboxes = this.widgets.getElementsByTagName("input");
+      var checkboxes = this.widget.getElementsByTagName("input");
       for (var i = 0; i < checkboxes.length; i++)
       {
         checkboxes[i].checked = 
@@ -1341,7 +1347,7 @@ alfresco.xforms.ListSelect = alfresco.xforms.AbstractSelectWidget.extend({
     {
       this.parent(value, forceCommit);
       this._selectedValues = value.split(' ');
-      var options = this.widgets.getElementsByTagName("option");
+      var options = this.widget.getElementsByTagName("option");
       for (var i = 0; i < options.length; i++)
       {
         options[i].selected = 

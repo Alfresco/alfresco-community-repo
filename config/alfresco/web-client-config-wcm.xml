@@ -10,7 +10,7 @@
          </workflows>
          
          <admin-workflows>
-            wcmwf:changerequest
+            wcmwf:changerequest, wcmwf:submitdirect
          </admin-workflows>
          
          <views>

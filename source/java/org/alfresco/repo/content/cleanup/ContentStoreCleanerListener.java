@@ -24,17 +24,29 @@
  */
 package org.alfresco.repo.content.cleanup;
 
+import org.alfresco.repo.content.ContentStore;
 import org.alfresco.service.cmr.repository.ContentIOException;
-import org.alfresco.service.cmr.repository.ContentReader;
 
 /**
  * A listener that can be plugged into a
  * {@link org.alfresco.repo.content.cleanup.ContentStoreCleaner cleaner} to
- * move soon-to-be-deleted content to a new location.
+ * move pre-process any content that is about to be deleted from a store.
+ * <p>
+ * Implementations may backup the content or even perform scrubbing or obfuscation
+ * tasks on the content.  In either case, this interface is called when the content
+ * really will disappear i.e. there is no potential rollback of this operation.
  * 
  * @author Derek Hulley
  */
 public interface ContentStoreCleanerListener
 {
-    public void beforeDelete(ContentReader reader) throws ContentIOException;
+    /**
+     * Handle the notification that a store is about to be deleted
+     * 
+     * @param sourceStore       the store from which the content will be deleted
+     * @param contentUrl        the URL of the content to be deleted
+     * 
+     * @since 3.2
+     */
+    public void beforeDelete(ContentStore sourceStore, String contentUrl) throws ContentIOException;
 }

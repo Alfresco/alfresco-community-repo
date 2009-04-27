@@ -22,11 +22,26 @@
       </property>
    </bean>
    
+   <!-- A list of content deletion listeners.  This is split out for re-use. -->
+   <bean id="deletedContentBackupListeners" class="java.util.ArrayList">
+      <constructor-arg>
+         <list>
+            <ref bean="deletedContentBackupListener" />
+         </list>
+      </constructor-arg>
+   </bean>
+   
    <!-- Abstract bean definition defining base definition for content store cleaner -->
    <!-- Performs the content cleanup -->
    <bean id="baseContentStoreCleaner" class="org.alfresco.repo.content.cleanup.ContentStoreCleaner" abstract="true">
       <property name="dictionaryService">
          <ref bean="dictionaryService" />
+      </property>
+      <property name="policyComponent">
+         <ref bean="policyComponent" />
+      </property>
+      <property name="contentService" >
+         <ref bean="contentService" />
       </property>
       <property name="nodeDaoService" >
          <ref bean="nodeDaoService" />
@@ -40,17 +55,18 @@
       <property name="transactionService" >
          <ref bean="transactionService" />
       </property>
+      <property name="eagerOrphanCleanup" >
+         <value>${system.content.eagerOrphanCleanup}</value>
+      </property>
       <property name="protectDays" >
          <value>14</value>
       </property>
       <property name="listeners" >
-         <list>
-            <ref bean="deletedContentBackupListener" />
-         </list>
+         <ref bean="deletedContentBackupListeners" />
       </property>
    </bean>
 
-   <bean id="contentStoreCleaner" parent="baseContentStoreCleaner">
+   <bean id="contentStoreCleaner" parent="baseContentStoreCleaner" init-method="init">
       <property name="stores" >
          <list>
             <ref bean="fileContentStore" />
@@ -59,7 +75,7 @@
    </bean>
    
    <!-- Abstract bean definition defining base definition for content service -->
-   <bean id="baseContentService" class="org.alfresco.repo.content.RoutingContentService" abstract="true" init-method="init">
+   <bean id="baseContentService" class="org.alfresco.repo.content.ContentServiceImpl" abstract="true" init-method="init">
       <property name="retryingTransactionHelper">
           <ref bean="retryingTransactionHelper"/>
       </property>

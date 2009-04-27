@@ -25,6 +25,7 @@
 package org.alfresco.repo.content;
 
 import org.alfresco.repo.policy.ClassPolicy;
+import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -33,15 +34,19 @@ import org.alfresco.service.namespace.QName;
  * Content service policies interface
  * 
  * @author Roy Wetherall
+ * @author Derek Hulley
  */
 public interface ContentServicePolicies
 {
     /** The QName's of the policies */
     public static final QName ON_CONTENT_UPDATE = QName.createQName(NamespaceService.ALFRESCO_URI, "onContentUpdate");
+    public static final QName ON_CONTENT_PROPERTY_UPDATE = QName.createQName(NamespaceService.ALFRESCO_URI, "onContentPropertyUpdate");
     public static final QName ON_CONTENT_READ = QName.createQName(NamespaceService.ALFRESCO_URI, "onContentRead");
     
 	/**
-	 * On content update policy interface
+	 * Policy that is raised once per node when any of the content properties on the node are
+	 * changed; the specific properties are irrelevant.  This is primarily useful to determine
+	 * when a new file is introduced into the system.
 	 */
 	public interface OnContentUpdatePolicy extends ClassPolicy
 	{
@@ -50,6 +55,35 @@ public interface ContentServicePolicies
 		 */
 		public void onContentUpdate(NodeRef nodeRef, boolean newContent);
 	}
+    
+    /**
+     * Policy that is raised for each content property change.  Any policy implementations must be aware
+     * that the transaction in which this is called could still roll back; no filesystem changes should
+     * occur against the source content until after the transaction has <u>successfully</u> completed.
+     * 
+     * @since 3.2
+     */
+    public interface OnContentPropertyUpdatePolicy extends ClassPolicy
+    {
+        /**
+         * @param nodeRef           the node reference
+         * @param propertyQName     the name of the property that changed
+         * @param beforeValue       the value of the content data prior to the change.
+         *                          Note that this value may be <tt>null</tt> or any of it's member
+         *                          values may be <tt>null</tt> according to the contract of the
+         *                          {@link ContentData} class.
+         * @param afterValue        the value of the content data after the change
+         * 
+         * @see ContentData#hasContent(ContentData)
+         * @see RoutingContentService#onUpdateProperties(NodeRef, java.util.Map, java.util.Map)
+         * @since 3.2
+         */
+        public void onContentPropertyUpdate(
+                NodeRef nodeRef,
+                QName propertyQName,
+                ContentData beforeValue,
+                ContentData afterValue);
+    }
     
     /**
      * On content read policy interface.

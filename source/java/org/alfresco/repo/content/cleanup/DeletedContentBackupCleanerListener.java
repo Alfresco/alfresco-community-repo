@@ -24,6 +24,7 @@
  */
 package org.alfresco.repo.content.cleanup;
 
+import org.alfresco.repo.content.ContentContext;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -57,18 +58,26 @@ public class DeletedContentBackupCleanerListener implements ContentStoreCleanerL
         this.store = store;
     }
 
-    public void beforeDelete(ContentReader reader) throws ContentIOException
+    public void beforeDelete(ContentStore sourceStore, String contentUrl) throws ContentIOException
     {
+        ContentContext context = new ContentContext(null, contentUrl);
+        ContentReader reader = sourceStore.getReader(contentUrl);
+        if (!reader.exists())
+        {
+            // Nothing to copy over
+            return;
+        }
         // write the content into the target store
-        ContentWriter writer = store.getWriter(null, reader.getContentUrl());
+        ContentWriter writer = store.getWriter(context);
         // copy across
         writer.putContent(reader);
         // done
         if (logger.isDebugEnabled())
         {
             logger.debug("Moved content before deletion: \n" +
-                    "   URL: " + reader.getContentUrl() + "\n" +
-                    "   Store: " + store);
+                    "   URL:    " + contentUrl + "\n" +
+                    "   Source: " + sourceStore + "\n" +
+                    "   Target: " + store);
         }
     }
 }

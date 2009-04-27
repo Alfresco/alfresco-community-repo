@@ -28,50 +28,110 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.avm.AVMNodeDAO;
 import org.alfresco.repo.avm.AVMNodeDAO.ContentUrlHandler;
+import org.alfresco.repo.content.ContentServicePolicies;
 import org.alfresco.repo.content.ContentStore;
+import org.alfresco.repo.copy.CopyServicePolicies;
 import org.alfresco.repo.domain.ContentUrlDAO;
+import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.node.db.NodeDaoService;
 import org.alfresco.repo.node.db.NodeDaoService.NodePropertyHandler;
+import org.alfresco.repo.policy.JavaBehaviour;
+import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.TransactionListenerAdapter;
+import org.alfresco.repo.transaction.TransactionalResourceHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ContentData;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.VmShutdownListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * This component is responsible for finding orphaned content in a given
- * content store or stores.  Deletion handlers can be provided to ensure
- * that the content is moved to another location prior to being removed
- * from the store(s) being cleaned.
+ * This component is responsible cleaning up orphaned content.
+ * <p/>
+ * Clean-up happens at two levels.<p/>
+ * <u><b>Eager cleanup:</b></u> (since 3.2)<p/>
+ * If {@link #setEagerOrphanCleanup(boolean) eager cleanup} is activated, then this
+ * component listens to all content property change events and recorded for post-transaction
+ * processing.  All orphaned content is deleted from the registered store(s).  Note that
+ * any {@link #setListeners(List) listeners} are called as normal; backup or scrubbing
+ * procedures should be plugged in as listeners if this is required.
+ * <p/>
+ * <u><b>Lazy cleanup:</b></u><p/>
+ * This is triggered by means of a {@link ContentStoreCleanupJob Quartz job}.  This is
+ * a heavy-weight process that effectively compares the database metadata with the
+ * content URLs controlled by the various stores.  Once again, the listeners are called
+ * appropriately.
+ * <p/>
+ * <u><b>How backup policies are affected:</b></u><p/>
+ * When restoring the system from a backup, the type of restore required is dictated by
+ * the cleanup policy being enforced.  If eager cleanup is active, the system must<br/>
+ * (a) have a listeners configured to backup the deleted content
+ *     e.g. {@link DeletedContentBackupCleanerListener}, or <br/>
+ * (b) ensure consistent backups across the database and content stores: backup
+ *     when the system is not running; use a DB-based content store.  This is the
+ *     recommended route when running with eager cleanup.
+ * <p/>
+ * Lazy cleanup protects the content for a given period (e.g. 7 days) giving plenty of
+ * time for a backup to be taken; this allows hot backup without needing metadata-content
+ * consistency to be enforced.
  * 
  * @author Derek Hulley
  */
 public class ContentStoreCleaner
+            extends TransactionListenerAdapter
+            implements CopyServicePolicies.OnCopyCompletePolicy,
+                       NodeServicePolicies.BeforeDeleteNodePolicy,
+                       ContentServicePolicies.OnContentPropertyUpdatePolicy
+                       
 {
+    /**
+     * Content URLs to delete once the transaction commits.
+     * @see #onContentPropertyUpdate(NodeRef, QName, ContentData, ContentData)
+     * @see #afterCommit()
+     */
+    private static final String KEY_POST_COMMIT_DELETION_URLS = "ContentStoreCleaner.PostCommitDeletionUrls";
+    /**
+     * Content URLs to delete if the transaction rolls b ack.
+     * @see #onContentPropertyUpdate(NodeRef, QName, ContentData, ContentData)
+     * @see #afterRollback()
+     */
+    private static final String KEY_POST_ROLLBACK_DELETION_URLS = "ContentStoreCleaner.PostRollbackDeletionUrls";
+    
     private static Log logger = LogFactory.getLog(ContentStoreCleaner.class);
     
     /** kept to notify the thread that it should quit */
     private static VmShutdownListener vmShutdownListener = new VmShutdownListener("ContentStoreCleaner");
     
     private DictionaryService dictionaryService;
+    private PolicyComponent policyComponent;
+    private ContentService contentService;
     private NodeDaoService nodeDaoService;
     private AVMNodeDAO avmNodeDAO;
     private ContentUrlDAO contentUrlDAO;
     private TransactionService transactionService;
     private List<ContentStore> stores;
+    private boolean eagerOrphanCleanup;
     private List<ContentStoreCleanerListener> listeners;
     private int protectDays;
     
@@ -88,6 +148,22 @@ public class ContentStoreCleaner
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;
+    }
+
+    /**
+     * @param policyComponent   used to register to listen for content updates
+     */
+    public void setPolicyComponent(PolicyComponent policyComponent)
+    {
+        this.policyComponent = policyComponent;
+    }
+
+    /**
+     * @param contentService    service to copy content binaries
+     */
+    public void setContentService(ContentService contentService)
+    {
+        this.contentService = contentService;
     }
 
     /**
@@ -131,6 +207,15 @@ public class ContentStoreCleaner
     }
 
     /**
+     * 
+     * @param eagerOrphanCleanup    <tt>true</tt> to clean up content
+     */
+    public void setEagerOrphanCleanup(boolean eagerOrphanCleanup)
+    {
+        this.eagerOrphanCleanup = eagerOrphanCleanup;
+    }
+
+    /**
      * @param listeners the listeners that can react to deletions
      */
     public void setListeners(List<ContentStoreCleanerListener> listeners)
@@ -150,11 +235,41 @@ public class ContentStoreCleaner
     }
     
     /**
+     * Initializes the cleaner based on the {@link #setEagerOrphanCleanup(boolean) eagerCleanup} flag.
+     */
+    public void init()
+    {
+        checkProperties();
+        if (!eagerOrphanCleanup)
+        {
+            // Don't register for anything because eager cleanup is disabled
+            return;
+        }
+        // Register for the updates
+        this.policyComponent.bindClassBehaviour(
+                QName.createQName(NamespaceService.ALFRESCO_URI, "onContentPropertyUpdate"),
+                this,
+                new JavaBehaviour(this, "onContentPropertyUpdate"));
+        // TODO: This is a RM-specific hack.  Once content properties are separated out, the
+        //       following should be accomplished with a trigger to clean up orphaned content.
+        this.policyComponent.bindClassBehaviour(
+                QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteNode"),
+                ContentModel.TYPE_CONTENT,
+                new JavaBehaviour(this, "beforeDeleteNode"));
+        this.policyComponent.bindClassBehaviour(
+                QName.createQName(NamespaceService.ALFRESCO_URI, "onCopyComplete"),
+                ContentModel.TYPE_CONTENT,
+                new JavaBehaviour(this, "onCopyComplete"));
+    }
+    
+    /**
      * Perform basic checks to ensure that the necessary dependencies were injected.
      */
     private void checkProperties()
     {
         PropertyCheck.mandatory(this, "dictionaryService", dictionaryService);
+        PropertyCheck.mandatory(this, "policyComponent", policyComponent);
+        PropertyCheck.mandatory(this, "contentService", contentService);
         PropertyCheck.mandatory(this, "nodeDaoService", nodeDaoService);
         PropertyCheck.mandatory(this, "avmNodeDAO", avmNodeDAO);
         PropertyCheck.mandatory(this, "contentUrlDAO", contentUrlDAO);
@@ -173,7 +288,185 @@ public class ContentStoreCleaner
                     "It is possible that in-transaction content will be deleted.");
         }
     }
-    
+
+    /**
+     * Makes sure that copied files get a new, unshared binary.
+     */
+    public void onCopyComplete(
+            QName classRef,
+            NodeRef sourceNodeRef,
+            NodeRef targetNodeRef,
+            boolean copyToNewNode,
+            Map<NodeRef, NodeRef> copyMap)
+    {
+        // Get the cm:content of the source
+        ContentReader sourceReader = contentService.getReader(sourceNodeRef, ContentModel.PROP_CONTENT);
+        if (sourceReader == null || !sourceReader.exists())
+        {
+            // No point attempting to duplicate missing content.  We're only interested in cleanin up.
+            return;
+        }
+        // Get the cm:content of the target
+        ContentReader targetReader = contentService.getReader(targetNodeRef, ContentModel.PROP_CONTENT);
+        if (targetReader == null || !targetReader.exists())
+        {
+            // The target's content is not present, so we don't copy anything over
+            return;
+        }
+        else if (!targetReader.getContentUrl().equals(sourceReader.getContentUrl()))
+        {
+            // The target already has a different binary
+            return;
+        }
+        // Create new content for the target node.  This will behave just like an update to the node
+        // but occurs in the same txn as the copy process.  Clearly this is a hack and is only
+        // able to work when properties are copied with all the proper copy-related policies being
+        // triggered.
+        ContentWriter targetWriter = contentService.getWriter(targetNodeRef, ContentModel.PROP_CONTENT, true);
+        targetWriter.putContent(sourceReader);
+        // This will have triggered deletion of the source node's content because the target node
+        // is being updated.  Force the source node's content to be protected.
+        Set<String> urlsToDelete = TransactionalResourceHelper.getSet(KEY_POST_COMMIT_DELETION_URLS);
+        urlsToDelete.remove(sourceReader.getContentUrl());
+    }
+
+    /**
+     * Records the content URLs of <b>cm:content</b> for post-commit cleanup.
+     */
+    public void beforeDeleteNode(NodeRef nodeRef)
+    {
+        // Get the cm:content property
+        Pair<Long, NodeRef> nodePair = nodeDaoService.getNodePair(nodeRef);
+        if (nodePair == null)
+        {
+            return;
+        }
+        ContentData contentData = (ContentData) nodeDaoService.getNodeProperty(
+                nodePair.getFirst(), ContentModel.PROP_CONTENT);
+        if (contentData == null || !ContentData.hasContent(contentData))
+        {
+            return;
+        }
+        String contentUrl = contentData.getContentUrl();
+        // Bind it to the list
+        Set<String> urlsToDelete = TransactionalResourceHelper.getSet(KEY_POST_COMMIT_DELETION_URLS);
+        urlsToDelete.add(contentUrl);
+        AlfrescoTransactionSupport.bindListener(this);
+    }
+
+    /**
+     * Checks for {@link #setEagerOrphanCleanup(boolean) eager cleanup} and pushes the old content URL into
+     * a list for post-transaction deletion.
+     */
+    public void onContentPropertyUpdate(
+            NodeRef nodeRef,
+            QName propertyQName,
+            ContentData beforeValue,
+            ContentData afterValue)
+    {
+        boolean registerListener = false;
+        // Bind in URLs to delete when txn commits
+        if (beforeValue != null && ContentData.hasContent(beforeValue))
+        {
+            // Register the URL to delete
+            String contentUrl = beforeValue.getContentUrl();
+            Set<String> urlsToDelete = TransactionalResourceHelper.getSet(KEY_POST_COMMIT_DELETION_URLS);
+            urlsToDelete.add(contentUrl);
+            // Register to listen for transaction commit
+            registerListener = true;
+        }
+        // Bind in URLs to delete when txn rolls back
+        if (afterValue != null && ContentData.hasContent(afterValue))
+        {
+            // Register the URL to delete
+            String contentUrl = afterValue.getContentUrl();
+            Set<String> urlsToDelete = TransactionalResourceHelper.getSet(KEY_POST_ROLLBACK_DELETION_URLS);
+            urlsToDelete.add(contentUrl);
+            // Register to listen for transaction rollback
+            registerListener = true;
+        }
+        // Register listener
+        if (registerListener)
+        {
+            AlfrescoTransactionSupport.bindListener(this);
+        }
+    }
+
+    /**
+     * Cleans up all newly-orphaned content
+     */
+    @Override
+    public void afterCommit()
+    {
+        Set<String> urlsToDelete = TransactionalResourceHelper.getSet(KEY_POST_COMMIT_DELETION_URLS);
+        // Debug
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Post-commit deletion of old content URLs: ");
+            int count = 0;
+            for (String contentUrl : urlsToDelete)
+            {
+                if (count == 10)
+                {
+                    logger.debug("   " + (urlsToDelete.size() - 10) + " more ...");
+                }
+                else
+                {
+                    logger.debug("   Deleting content URL: " + contentUrl);
+                }
+                count++;
+            }
+        }
+        // Delete
+        for (String contentUrl : urlsToDelete)
+        {
+            for (ContentStore store : stores)
+            {
+                for (ContentStoreCleanerListener listener : listeners)
+                {
+                    listener.beforeDelete(store, contentUrl);
+                }
+                store.delete(contentUrl);
+            }
+        }
+    }
+
+    @Override
+    public void afterRollback()
+    {
+        Set<String> urlsToDelete = TransactionalResourceHelper.getSet(KEY_POST_ROLLBACK_DELETION_URLS);
+        // Debug
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Post-rollback deletion of new content URLs: ");
+            int count = 0;
+            for (String contentUrl : urlsToDelete)
+            {
+                if (count == 10)
+                {
+                    logger.debug("   " + (urlsToDelete.size() - 10) + " more ...");
+                }
+                else
+                {
+                    logger.debug("   Deleting content URL: " + contentUrl);
+                }
+                count++;
+            }
+        }
+        // Delete
+        for (String contentUrl : urlsToDelete)
+        {
+            for (ContentStore store : stores)
+            {
+                for (ContentStoreCleanerListener listener : listeners)
+                {
+                    listener.beforeDelete(store, contentUrl);
+                }
+                store.delete(contentUrl);
+            }
+        }
+    }
+
     private void removeContentUrlsPresentInMetadata()
     {
         RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
@@ -273,7 +566,6 @@ public class ContentStoreCleaner
         {
             public void handle(String contentUrl)
             {
-                boolean listenersCalled = false;
                 for (ContentStore store : stores)
                 {
                     if (vmShutdownListener.isVmShuttingDown())
@@ -287,15 +579,9 @@ public class ContentStoreCleaner
                             logger.debug("   Deleting content URL: " + contentUrl);
                         }
                     }
-                    // Only transfer the URL to the listeners once
-                    if (!listenersCalled && listeners.size() > 0)
+                    for (ContentStoreCleanerListener listener : listeners)
                     {
-                        listenersCalled = true;
-                        ContentReader reader = store.getReader(contentUrl);
-                        for (ContentStoreCleanerListener listener : listeners)
-                        {
-                            listener.beforeDelete(reader);
-                        }
+                        listener.beforeDelete(store, contentUrl);
                     }
                     // Delete
                     store.delete(contentUrl);

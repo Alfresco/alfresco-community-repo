@@ -30,7 +30,6 @@ import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.Date;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.AbstractContentStore;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.content.EmptyContentReader;
@@ -38,9 +37,6 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.filestore.FileContentReader;
 import org.alfresco.repo.content.filestore.FileContentStore;
 import org.alfresco.repo.content.filestore.FileContentWriter;
-import org.alfresco.repo.domain.Node;
-import org.alfresco.repo.domain.PropertyValue;
-import org.alfresco.repo.domain.hibernate.NodeImpl;
 import org.alfresco.repo.node.db.NodeDaoService;
 import org.alfresco.repo.node.db.NodeDaoService.NodePropertyHandler;
 import org.alfresco.repo.transaction.SingleEntryTransactionResourceInterceptor;
@@ -52,13 +48,11 @@ import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.tools.Repository;
 import org.alfresco.tools.ToolException;
-import org.alfresco.util.GUID;
 import org.alfresco.util.TempFileProvider;
 import org.alfresco.util.VmShutdownListener;
 import org.apache.commons.lang.mutable.MutableInt;
@@ -217,7 +211,7 @@ public class ContentStoreCleanerScalabilityRunner extends Repository
         ContentStoreCleanerListener listener = new ContentStoreCleanerListener()
         {
             private int count = 0;
-            public void beforeDelete(ContentReader reader) throws ContentIOException
+            public void beforeDelete(ContentStore store, String contentUrl) throws ContentIOException
             {
                 count++;
                 if (count % 1000 == 0)

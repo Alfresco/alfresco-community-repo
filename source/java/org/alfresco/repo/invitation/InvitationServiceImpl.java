@@ -148,13 +148,15 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
 	
 	/**
 	 * Get the names of the workflows which are managed by the invitation service
-	 * @return
+	 * @return the workflows which are managed by the invitation service
 	 */
 	public List<String> getInvitationServiceWorkflowNames()
 	{
-		List<String> ret = new ArrayList<String>(2);
+		List<String> ret = new ArrayList<String>(3);
 		ret.add(WorkflowModelNominatedInvitation.WORKFLOW_DEFINITION_NAME);
 		ret.add(WorkflowModelModeratedInvitation.WORKFLOW_DEFINITION_NAME);
+		// old deprecated invitation workflow.
+		ret.add("jbpm$wf:invite");
 		return ret;
 	}
 

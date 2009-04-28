@@ -30,8 +30,6 @@ import java.util.Set;
 import org.alfresco.repo.search.impl.querymodel.Column;
 import org.alfresco.repo.search.impl.querymodel.Constraint;
 import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
-import org.alfresco.repo.search.impl.querymodel.Join;
-import org.alfresco.repo.search.impl.querymodel.Negation;
 import org.alfresco.repo.search.impl.querymodel.Order;
 import org.alfresco.repo.search.impl.querymodel.Ordering;
 import org.alfresco.repo.search.impl.querymodel.PropertyArgument;
@@ -40,7 +38,6 @@ import org.alfresco.repo.search.impl.querymodel.Source;
 import org.alfresco.repo.search.impl.querymodel.impl.BaseQuery;
 import org.alfresco.repo.search.impl.querymodel.impl.functions.PropertyAccessor;
 import org.alfresco.repo.search.impl.querymodel.impl.functions.Score;
-import org.alfresco.service.namespace.QName;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
@@ -105,13 +102,18 @@ public class LuceneQuery extends BaseQuery implements LuceneQueryBuilder
                 Query constraintQuery = luceneQueryBuilderComponent.addComponent(selectors, null, luceneContext, functionContext);
                 if (constraintQuery != null)
                 {
-                    if (constraint instanceof Negation)
+                    switch(constraint.getOccur())
                     {
-                        luceneQuery.add(constraintQuery, Occur.MUST_NOT);
-                    }
-                    else
-                    {
+                    case DEFAULT:
+                    case MANDATORY:
                         luceneQuery.add(constraintQuery, Occur.MUST);
+                        break;
+                    case OPTIONAL:
+                        luceneQuery.add(constraintQuery, Occur.SHOULD);
+                        break;
+                    case EXCLUDE:
+                        luceneQuery.add(constraintQuery, Occur.MUST_NOT);
+                        break;
                     }
                 }
                 else

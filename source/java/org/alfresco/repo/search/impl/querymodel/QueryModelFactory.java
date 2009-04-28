@@ -46,8 +46,6 @@ public interface QueryModelFactory
 
     public Constraint createDisjunction(List<Constraint> constraints);
 
-    public Constraint createNegation(Constraint constraint);
-
     public Constraint createFunctionalConstraint(Function function, Map<String, Argument> functionArguments);
 
     public Column createColumn(Function function, Map<String, Argument> functionArguments, String alias);

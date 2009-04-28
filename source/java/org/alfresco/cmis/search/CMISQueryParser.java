@@ -63,6 +63,8 @@ import org.alfresco.repo.search.impl.querymodel.QueryModelFactory;
 import org.alfresco.repo.search.impl.querymodel.Selector;
 import org.alfresco.repo.search.impl.querymodel.SelectorArgument;
 import org.alfresco.repo.search.impl.querymodel.Source;
+import org.alfresco.repo.search.impl.querymodel.Constraint.Occur;
+import org.alfresco.repo.search.impl.querymodel.QueryOptions.Connective;
 import org.alfresco.repo.search.impl.querymodel.impl.BaseComparison;
 import org.alfresco.repo.search.impl.querymodel.impl.functions.Child;
 import org.alfresco.repo.search.impl.querymodel.impl.functions.Descendant;
@@ -232,7 +234,8 @@ public class CMISQueryParser
         if (notNode.getType() == CMISParser.NEGATION)
         {
             Constraint constraint = buildTest((CommonTree) notNode.getChild(0), factory, functionEvaluationContext, selectors, columns);
-            return factory.createNegation(constraint);
+            constraint.setOccur(Occur.EXCLUDE);
+            return constraint;
         }
         else
         {
@@ -379,7 +382,7 @@ public class CMISQueryParser
                     throw new CMISQueryException("A selector must be specified when there are two or more selectors");
                 }
             }
-            return ftsQueryParser.buildFTS(ftsExpression.substring(1, ftsExpression.length() - 1), factory, functionEvaluationContext, selector, columns);
+            return ftsQueryParser.buildFTS(ftsExpression.substring(1, ftsExpression.length() - 1), factory, functionEvaluationContext, selector, columns, Connective.OR, Connective.OR);
         case CMISParser.PRED_IN:
             functionName = In.NAME;
             function = factory.getFunction(functionName);

@@ -654,6 +654,24 @@ public class ADMLuceneTest extends TestCase
         
         ftsQueryWithCount(searcher, "\"lazy\"", 1);
         ftsQueryWithCount(searcher, "lazy and dog", 1);
+        ftsQueryWithCount(searcher, "-lazy and -dog", 14);
+        ftsQueryWithCount(searcher, "-lazy and dog", 0);
+        ftsQueryWithCount(searcher, "lazy and -dog", 0);
+        ftsQueryWithCount(searcher, "|lazy and |dog", 1);
+        ftsQueryWithCount(searcher, "|eager and |dog", 1);
+        ftsQueryWithCount(searcher, "|lazy and |wolf", 1);
+        ftsQueryWithCount(searcher, "|eager and |wolf", 0);
+        ftsQueryWithCount(searcher, "-lazy or -dog", 14);
+        ftsQueryWithCount(searcher, "-eager or -dog", 15);
+        ftsQueryWithCount(searcher, "-lazy or -wolf", 15);
+        ftsQueryWithCount(searcher, "-eager or -wolf", 15);
+        ftsQueryWithCount(searcher, "lazy dog", 1);
+        ftsQueryWithCount(searcher, "lazy and not dog", 0);
+        ftsQueryWithCount(searcher, "lazy not dog", 15);
+        ftsQueryWithCount(searcher, "lazy and !dog", 0);
+        ftsQueryWithCount(searcher, "lazy !dog", 15);
+        ftsQueryWithCount(searcher, "lazy and -dog", 0);
+        ftsQueryWithCount(searcher, "lazy -dog", 15);
         ftsQueryWithCount(searcher, "TEXT:\"lazy\"", 1);
         ftsQueryWithCount(searcher, "cm_content:\"lazy\"", 1);
         ftsQueryWithCount(searcher, "cm:content:big OR cm:content:lazy", 1);
@@ -663,7 +681,59 @@ public class ADMLuceneTest extends TestCase
         ftsQueryWithCount(searcher, "@cm:content:big OR @cm:content:lazy", 1);
         ftsQueryWithCount(searcher, "@cm:content:big AND @cm:content:lazy", 0);
         ftsQueryWithCount(searcher, "@{http://www.alfresco.org/model/content/1.0}content:\"lazy\"", 1);
-       
+        ftsQueryWithCount(searcher, "~@cm:content:big OR ~@cm:content:lazy", 1);
+        ftsQueryWithCount(searcher, "brown * quick", 0);
+        ftsQueryWithCount(searcher, "brown * dog", 1);
+        ftsQueryWithCount(searcher, "brown * dog", 1);
+        ftsQueryWithCount(searcher, "brown *(0) dog", 0);
+        ftsQueryWithCount(searcher, "brown *(1) dog", 0);
+        ftsQueryWithCount(searcher, "brown *(2) dog", 0);
+        ftsQueryWithCount(searcher, "brown *(3) dog", 0);
+        ftsQueryWithCount(searcher, "brown *(4) dog", 1); // "the" does not count
+        ftsQueryWithCount(searcher, "brown *(5) dog", 1);
+        ftsQueryWithCount(searcher, "brown *(6) dog", 1);
+        ftsQueryWithCount(searcher, "TEXT:(\"lazy\")", 1);
+        ftsQueryWithCount(searcher, "TEXT:(lazy and dog)", 1);
+        ftsQueryWithCount(searcher, "TEXT:(-lazy and -dog)", 14);
+        ftsQueryWithCount(searcher, "TEXT:(-lazy and dog)", 0);
+        ftsQueryWithCount(searcher, "TEXT:(lazy and -dog)", 0);
+        ftsQueryWithCount(searcher, "TEXT:(|lazy and |dog)", 1);
+        ftsQueryWithCount(searcher, "TEXT:(|eager and |dog)", 1);
+        ftsQueryWithCount(searcher, "TEXT:(|lazy and |wolf)", 1);
+        ftsQueryWithCount(searcher, "TEXT:(|eager and |wolf)", 0);
+        ftsQueryWithCount(searcher, "TEXT:(-lazy or -dog)", 14);
+        ftsQueryWithCount(searcher, "TEXT:(-eager or -dog)", 15);
+        ftsQueryWithCount(searcher, "TEXT:(-lazy or -wolf)", 15);
+        ftsQueryWithCount(searcher, "TEXT:(-eager or -wolf)", 15);
+        ftsQueryWithCount(searcher, "TEXT:(lazy dog)", 1);
+        ftsQueryWithCount(searcher, "TEXT:(lazy and not dog)", 0);
+        ftsQueryWithCount(searcher, "TEXT:(lazy not dog)", 15);
+        ftsQueryWithCount(searcher, "TEXT:(lazy and !dog)", 0);
+        ftsQueryWithCount(searcher, "TEXT:(lazy !dog)", 15);
+        ftsQueryWithCount(searcher, "TEXT:(lazy and -dog)", 0);
+        ftsQueryWithCount(searcher, "TEXT:(lazy -dog)", 15);
+        ftsQueryWithCount(searcher, "cm_content:(\"lazy\")", 1);
+        ftsQueryWithCount(searcher, "cm:content:(big OR lazy)", 1);
+        ftsQueryWithCount(searcher, "cm:content:(big AND lazy)", 0);
+        ftsQueryWithCount(searcher, "{http://www.alfresco.org/model/content/1.0}content:(\"lazy\")", 1);
+        ftsQueryWithCount(searcher, "TEXT:(=lazy)", 1);
+        ftsQueryWithCount(searcher, "@cm:content:(big) OR @cm:content:(lazy)", 1);
+        ftsQueryWithCount(searcher, "@cm:content:(big) AND @cm:content:(lazy)", 0);       
+        ftsQueryWithCount(searcher, "@{http://www.alfresco.org/model/content/1.0}content:(\"lazy\")", 1);
+        ftsQueryWithCount(searcher, "@cm:content:(~big OR ~lazy)", 1);
+        ftsQueryWithCount(searcher, "TEXT:(brown * quick)", 0);
+        ftsQueryWithCount(searcher, "TEXT:(brown * dog)", 1);
+        ftsQueryWithCount(searcher, "TEXT:(brown * dog)", 1);
+        ftsQueryWithCount(searcher, "TEXT:(brown *(0) dog)", 0);
+        ftsQueryWithCount(searcher, "TEXT:(brown *(1) dog)", 0);
+        ftsQueryWithCount(searcher, "TEXT:(brown *(2) dog)", 0);
+        ftsQueryWithCount(searcher, "TEXT:(brown *(3) dog)", 0);
+        ftsQueryWithCount(searcher, "TEXT:(brown *(4) dog)", 1); // "the" does not count
+        ftsQueryWithCount(searcher, "TEXT:(brown *(5) dog)", 1);
+        ftsQueryWithCount(searcher, "TEXT:(brown *(6) dog)", 1);
+        
+        QName qname = QName.createQName(TEST_NAMESPACE, "float\\-ista");
+        ftsQueryWithCount(searcher, qname+":3.40", 1);
     }
     
     public void ftsQueryWithCount(ADMLuceneSearcherImpl searcher, String query, int count)

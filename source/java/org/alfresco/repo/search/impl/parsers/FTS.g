@@ -70,7 +70,7 @@ tokens
 	FG_PROXIMITY;
 	FG_RANGE;
 	
-	COLUMN_REF;
+	FIELD_REF;
 	
 	INCLUSIVE;
 	EXCLUSIVE;
@@ -92,14 +92,28 @@ tokens
 {
     private Stack<String> paraphrases = new Stack<String>();
    
+    private boolean defaultConjunction = true;
+    
+    private boolean defaultFieldConjunction = true;
+   
     public boolean defaultConjunction()
     {
-       return true;
+       return defaultConjunction;
     }
     
     public boolean defaultFieldConjunction()
     {
-       return true;
+       return defaultFieldConjunction;
+    }
+    
+    public void setDefaultConjunction(boolean defaultConjunction)
+    {
+       this.defaultConjunction = defaultConjunction;
+    }
+    
+    public void setDefaultFieldConjunction(boolean defaultFieldConjunction)
+    {
+       this.defaultFieldConjunction = defaultFieldConjunction;
     }
     
     protected void mismatch(IntStream input, int ttype, BitSet follow) throws RecognitionException
@@ -234,8 +248,8 @@ boost
 ;
 
 ftsTerm
-	:	(columnReference COLON)? ftsWord
-		-> ftsWord columnReference?
+	:	(fieldReference COLON)? ftsWord
+		-> ftsWord fieldReference?
 	;
 	
 ftsExactTerm
@@ -244,8 +258,8 @@ ftsExactTerm
 	;
 	
 ftsPhrase
-	:  	(columnReference COLON)? FTSPHRASE
-		-> FTSPHRASE columnReference?
+	:  	(fieldReference COLON)? FTSPHRASE
+		-> FTSPHRASE fieldReference?
 	;
 
 ftsSynonym 
@@ -254,13 +268,13 @@ ftsSynonym
 	;
 
 ftsRange 
-: (columnReference COLON)? ftsFieldGroupRange
-  -> ftsFieldGroupRange columnReference?
+: (fieldReference COLON)? ftsFieldGroupRange
+  -> ftsFieldGroupRange fieldReference?
 ;
 	
 ftsFieldGroup
-	:	columnReference COLON LPAREN ftsFieldGroupImplicitConjunctionOrDisjunction RPAREN
-		-> ^(FIELD_GROUP columnReference ftsFieldGroupImplicitConjunctionOrDisjunction)
+	:	fieldReference COLON LPAREN ftsFieldGroupImplicitConjunctionOrDisjunction RPAREN
+		-> ^(FIELD_GROUP fieldReference ftsFieldGroupImplicitConjunctionOrDisjunction)
 	;
 
 ftsFieldGroupImplicitConjunctionOrDisjunction	
@@ -331,9 +345,14 @@ ftsFieldGroupSynonym
 	;	
 
 ftsFieldGroupProximity
-	:	ftsFieldGroupTerm STAR ftsFieldGroupTerm
-		-> ftsFieldGroupTerm ftsFieldGroupTerm
+	:	ftsFieldGroupTerm (proximityGroup ftsFieldGroupTerm)+
+		-> ftsFieldGroupTerm (proximityGroup ftsFieldGroupTerm)+
 	;
+	
+proximityGroup
+  : STAR ( LPAREN DECIMAL_INTEGER_LITERAL? RPAREN)?
+  -> ^(PROXIMITY DECIMAL_INTEGER_LITERAL?)
+  ;
 	
 ftsFieldGroupRange
         :	ftsRangeWord DOTDOT ftsRangeWord
@@ -357,9 +376,9 @@ range_right
 	;
 	
 	/* Need to fix the generated parser for extra COLON check ??*/
-columnReference
-	: (prefix|uri)? identifier
-    -> ^(COLUMN_REF identifier prefix? uri?)
+fieldReference
+	: AT? (prefix|uri)? identifier
+    -> ^(FIELD_REF identifier prefix? uri?)
 	;
 	
 prefix
@@ -418,6 +437,7 @@ not
 FTSPHRASE
   : '"' (F_ESC | ~('\\'|'"') )* '"' ;
 
+
 URI 
 : '{' ((F_URI_ALPHA|F_URI_DIGIT|F_URI_OTHER) => (F_URI_ALPHA|F_URI_DIGIT|F_URI_OTHER)+ COLON)? ((('//') =>'//') ( (F_URI_ALPHA|F_URI_DIGIT|F_URI_OTHER|COLON) => (F_URI_ALPHA|F_URI_DIGIT|F_URI_OTHER|COLON))*)? (F_URI_ALPHA|F_URI_DIGIT|F_URI_OTHER|COLON|'/')* ('?' (F_URI_ALPHA|F_URI_DIGIT|F_URI_OTHER|COLON|'/'|'?')*)? ('#' (F_URI_ALPHA|F_URI_DIGIT|F_URI_OTHER|COLON|'/'|'?'|'#')*)? '}'  
 ;
@@ -442,7 +462,6 @@ fragment
 F_URI_OTHER
 	:	'-' |'.'|'_'|'~'|'['|']'|'@'|'!'|'$'|'&'|'\''|'('|')'|'*'|'+'|','|';'|'='
 	;
-
 
 OR	:	('O'|'o')('R'|'r');
 AND	:	('A'|'a')('N'|'n')('D'|'d');
@@ -471,11 +490,12 @@ CARAT : '^';
 DOLLAR :  '$';
 GT : '>';
 LT : '<';
+AT: '@';
 
 /**
  * We should support _x????_ encoding for invalid sql characters 
  */ 
-ID  :   ('a'..'z'|'A'..'Z'|'_')('a'..'z'|'A'..'Z'|'0'..'9'|'_'|'$'|'#')* ;
+ID  :   ('a'..'z'|'A'..'Z'|'_')('a'..'z'|'A'..'Z'|'0'..'9'|'_'|'$'|'#'|F_ESC)* ;
 
 DECIMAL_INTEGER_LITERAL
         : ( PLUS | MINUS )? DECIMAL_NUMERAL

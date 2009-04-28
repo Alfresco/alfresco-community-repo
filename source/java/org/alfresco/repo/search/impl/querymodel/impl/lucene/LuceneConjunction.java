@@ -31,12 +31,14 @@ import java.util.Set;
 import org.alfresco.repo.search.impl.querymodel.Argument;
 import org.alfresco.repo.search.impl.querymodel.Constraint;
 import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
-import org.alfresco.repo.search.impl.querymodel.Negation;
 import org.alfresco.repo.search.impl.querymodel.impl.BaseConjunction;
+import org.apache.lucene.index.Term;
 import org.apache.lucene.queryParser.ParseException;
+import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.BooleanClause.Occur;
+import org.apache.lucene.search.TermQuery;
 
 /**
  * @author andyh
@@ -69,15 +71,30 @@ public class LuceneConjunction extends BaseConjunction implements LuceneQueryBui
             {
                 LuceneQueryBuilderComponent luceneQueryBuilderComponent = (LuceneQueryBuilderComponent) constraint;
                 Query constraintQuery = luceneQueryBuilderComponent.addComponent(selectors, functionArgs, luceneContext, functionContext);
+                boolean must = false;
+                boolean should = false;
+                boolean must_not = false;
                 if (constraintQuery != null)
                 {
-                    if (constraint instanceof Negation)
+                    switch (constraint.getOccur())
                     {
-                        query.add(constraintQuery, Occur.MUST_NOT);
+                    case DEFAULT:
+                    case MANDATORY:
+                        query.add(constraintQuery, BooleanClause.Occur.MUST);
+                        must = true;
+                        break;
+                    case OPTIONAL:
+                        query.add(constraintQuery, BooleanClause.Occur.SHOULD);
+                        should = true;
+                        break;
+                    case EXCLUDE:
+                        query.add(constraintQuery, BooleanClause.Occur.MUST_NOT);
+                        must_not = true;
+                        break;
                     }
-                    else
+                    if(!must && must_not)
                     {
-                        query.add(constraintQuery, Occur.MUST);
+                        query.add(new TermQuery(new Term("ISNODE", "T")),  BooleanClause.Occur.MUST);
                     }
                 }
                 else

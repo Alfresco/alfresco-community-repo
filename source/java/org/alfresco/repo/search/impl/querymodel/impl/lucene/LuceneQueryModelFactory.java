@@ -71,7 +71,9 @@ import org.alfresco.repo.search.impl.querymodel.impl.lucene.functions.LuceneDesc
 import org.alfresco.repo.search.impl.querymodel.impl.lucene.functions.LuceneEquals;
 import org.alfresco.repo.search.impl.querymodel.impl.lucene.functions.LuceneExists;
 import org.alfresco.repo.search.impl.querymodel.impl.lucene.functions.LuceneFTSExactTerm;
+import org.alfresco.repo.search.impl.querymodel.impl.lucene.functions.LuceneFTSExpandTerm;
 import org.alfresco.repo.search.impl.querymodel.impl.lucene.functions.LuceneFTSPhrase;
+import org.alfresco.repo.search.impl.querymodel.impl.lucene.functions.LuceneFTSProximity;
 import org.alfresco.repo.search.impl.querymodel.impl.lucene.functions.LuceneFTSTerm;
 import org.alfresco.repo.search.impl.querymodel.impl.lucene.functions.LuceneGreaterThan;
 import org.alfresco.repo.search.impl.querymodel.impl.lucene.functions.LuceneGreaterThanOrEquals;
@@ -117,6 +119,8 @@ public class LuceneQueryModelFactory implements QueryModelFactory
         functions.put(FTSTerm.NAME, new LuceneFTSTerm());
         functions.put(FTSExactTerm.NAME, new LuceneFTSExactTerm());
         functions.put(FTSPhrase.NAME, new LuceneFTSPhrase());
+        functions.put(LuceneFTSExpandTerm.NAME, new LuceneFTSExpandTerm());
+        functions.put(LuceneFTSProximity.NAME, new LuceneFTSProximity());
 
     }
 
@@ -183,16 +187,6 @@ public class LuceneQueryModelFactory implements QueryModelFactory
     public LiteralArgument createLiteralArgument(String name, QName type, Serializable value)
     {
         return new LuceneLiteralArgument(name, type, value);
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.alfresco.repo.search.impl.querymodel.QueryModelFactory#createNegation(org.alfresco.repo.search.impl.querymodel.Constraint)
-     */
-    public Constraint createNegation(Constraint constraint)
-    {
-        return new LuceneNegation(constraint);
     }
 
     /*

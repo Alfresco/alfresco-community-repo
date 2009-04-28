@@ -79,6 +79,9 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.WildcardTermEnum;
 import org.apache.lucene.search.BooleanClause.Occur;
+import org.apache.lucene.search.spans.SpanNearQuery;
+import org.apache.lucene.search.spans.SpanQuery;
+import org.apache.lucene.search.spans.SpanTermQuery;
 import org.saxpath.SAXPathException;
 
 import com.werken.saxpath.XPathReader;
@@ -220,6 +223,85 @@ public class LuceneQueryParser extends QueryParser
     public Query getFieldQuery(String field, String queryText) throws ParseException
     {
         return getFieldQuery(field, queryText, true);
+    }
+
+    public Query getSpanQuery(String field, String first, String last, int slop, boolean inOrder)
+    {
+        if (field.equals("TEXT"))
+        {
+            Set<String> text = searchParameters.getTextAttributes();
+            if ((text == null) || (text.size() == 0))
+            {
+                Collection<QName> contentAttributes = dictionaryService.getAllProperties(DataTypeDefinition.CONTENT);
+                BooleanQuery query = new BooleanQuery();
+                for (QName qname : contentAttributes)
+                {
+                    Query part = getSpanQuery("@" + qname.toString(), first, last, slop, inOrder);
+                    query.add(part, Occur.SHOULD);
+                }
+                return query;
+            }
+            else
+            {
+                BooleanQuery query = new BooleanQuery();
+                for (String fieldName : text)
+                {
+                    Query part = getSpanQuery(fieldName, first, last, slop, inOrder);
+                    query.add(part, Occur.SHOULD);
+                }
+                return query;
+            }
+        }
+        else if (field.startsWith("@"))
+        {
+            SpanQuery firstTerm = new SpanTermQuery(new Term(field, first));
+            SpanQuery lastTerm = new SpanTermQuery(new Term(field, last));
+            return new SpanNearQuery(new SpanQuery[] { firstTerm, lastTerm }, slop, inOrder);
+        }
+        else if (field.equals("ALL"))
+        {
+            Set<String> all = searchParameters.getAllAttributes();
+            if ((all == null) || (all.size() == 0))
+            {
+                Collection<QName> contentAttributes = dictionaryService.getAllProperties(null);
+                BooleanQuery query = new BooleanQuery();
+                for (QName qname : contentAttributes)
+                {
+                    Query part = getSpanQuery("@" + qname.toString(), first, last, slop, inOrder);
+                    query.add(part, Occur.SHOULD);
+                }
+                return query;
+            }
+            else
+            {
+                BooleanQuery query = new BooleanQuery();
+                for (String fieldName : all)
+                {
+                    Query part = getSpanQuery(fieldName, first, last, slop, inOrder);
+                    query.add(part, Occur.SHOULD);
+                }
+                return query;
+            }
+
+        }
+        else if (dictionaryService.getDataType(QName.createQName(expandFieldName(field))) != null)
+        {
+            Collection<QName> contentAttributes = dictionaryService.getAllProperties(dictionaryService.getDataType(QName.createQName(expandFieldName(field))).getName());
+            BooleanQuery query = new BooleanQuery();
+            for (QName qname : contentAttributes)
+            {
+                Query part = getSpanQuery("@" + qname.toString(), first, last, slop, inOrder);
+                query.add(part, Occur.SHOULD);
+            }
+            return query;
+        }
+        else
+        {
+            SpanQuery firstTerm = new SpanTermQuery(new Term(field, first));
+            SpanQuery lastTerm = new SpanTermQuery(new Term(field, last));
+            return new SpanNearQuery(new SpanQuery[] { firstTerm, lastTerm }, slop, inOrder);
+        }
+
     }
 
     public Query getFieldQuery(String field, String queryText, boolean tokenise) throws ParseException

@@ -31,11 +31,14 @@ import java.util.Set;
 import org.alfresco.repo.search.impl.querymodel.Argument;
 import org.alfresco.repo.search.impl.querymodel.Constraint;
 import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
-import org.alfresco.repo.search.impl.querymodel.Negation;
 import org.alfresco.repo.search.impl.querymodel.impl.BaseDisjunction;
+import org.apache.lucene.index.Term;
 import org.apache.lucene.queryParser.ParseException;
+import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.BooleanClause.Occur;
 
 /**
@@ -71,13 +74,19 @@ public class LuceneDisjunction extends BaseDisjunction implements LuceneQueryBui
                 Query constraintQuery = luceneQueryBuilderComponent.addComponent(selectors, functionArgs, luceneContext, functionContext);
                 if (constraintQuery != null)
                 {
-                    if (constraint instanceof Negation)
+                    switch (constraint.getOccur())
                     {
-                        query.add(constraintQuery, Occur.MUST_NOT);
-                    }
-                    else
-                    {
-                        query.add(constraintQuery, Occur.SHOULD);
+                    case DEFAULT:
+                    case MANDATORY:
+                    case OPTIONAL:
+                        query.add(constraintQuery, BooleanClause.Occur.SHOULD);
+                        break;
+                    case EXCLUDE:
+                        BooleanQuery subQuery = new BooleanQuery();
+                        subQuery.add(new TermQuery(new Term("ISNODE", "T")),  BooleanClause.Occur.MUST);
+                        subQuery.add(constraintQuery, BooleanClause.Occur.MUST_NOT);
+                        query.add(subQuery, BooleanClause.Occur.SHOULD);
+                        break;
                     }
                 }
                 else

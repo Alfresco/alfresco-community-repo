@@ -28,12 +28,13 @@ import java.util.List;
 
 import org.alfresco.repo.search.impl.querymodel.Constraint;
 import org.alfresco.repo.search.impl.querymodel.Disjunction;
+import org.alfresco.repo.search.impl.querymodel.Constraint.Occur;
 
 /**
  * @author andyh
  *
  */
-public class BaseDisjunction implements Disjunction
+public class BaseDisjunction extends BaseConstraint implements Disjunction
 {
     private List<Constraint> constraints;
 

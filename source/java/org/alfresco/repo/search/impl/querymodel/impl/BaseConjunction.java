@@ -33,7 +33,7 @@ import org.alfresco.repo.search.impl.querymodel.Constraint;
  * @author andyh
  *
  */
-public class BaseConjunction implements Conjunction
+public class BaseConjunction extends BaseConstraint implements Conjunction
 {
 
     private List<Constraint> constraints;

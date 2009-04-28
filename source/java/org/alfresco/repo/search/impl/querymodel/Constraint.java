@@ -32,5 +32,17 @@ package org.alfresco.repo.search.impl.querymodel;
  */
 public interface Constraint
 {
+    public enum Occur
+    {
+        DEFAULT,
+        MANDATORY,
+        OPTIONAL,
+        EXCLUDE
+    }
+    
     public boolean evaluate();
+    
+    public Occur getOccur();
+    
+    public void setOccur(Occur occur);
 }

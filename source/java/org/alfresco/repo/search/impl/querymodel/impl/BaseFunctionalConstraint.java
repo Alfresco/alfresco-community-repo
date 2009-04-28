@@ -34,7 +34,7 @@ import org.alfresco.repo.search.impl.querymodel.FunctionalConstraint;
  * @author andyh
  *
  */
-public class BaseFunctionalConstraint implements FunctionalConstraint
+public class BaseFunctionalConstraint extends BaseConstraint implements FunctionalConstraint
 {
     private Function function;
     

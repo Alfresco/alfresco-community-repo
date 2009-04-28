@@ -24,7 +24,6 @@
  */
 package org.alfresco.repo.jscript;
 
-import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
@@ -188,42 +187,35 @@ public final class People extends BaseScopableProcessorExtension
     	ParameterCheck.mandatory("lastName", lastName);
         ParameterCheck.mandatory("createUserAccount", createUserAccount);
         ParameterCheck.mandatory("setAccountEnabled", setAccountEnabled);
-
+        
         ScriptNode person = null;
-
+        
         // generate user name
-        for(int i=0; i < numRetries; i++)
+        for (int i=0; i < numRetries; i++)
         {
         	String userName = usernameGenerator.generateUserName(firstName, lastName, emailAddress, i);
-        
+        	
         	// create person if user name does not already exist
         	if (!personService.personExists(userName))
         	{
         		person = createPerson(userName, firstName, lastName, emailAddress);
-
+        		
         		if (createUserAccount)
         		{
         			// generate password
         			char[] password = passwordGenerator.generatePassword().toCharArray();
-
-        			// create account for person with generated userName and
-        			// password
+        			
+        			// create account for person with generated userName and password
         			mutableAuthenticationDao.createUser(userName, password);
         			mutableAuthenticationDao.setEnabled(userName, setAccountEnabled);
-                
-        			// TODO glen johnson at alfresco dot com -
-        			// find a more secure way of making generated password
-        			// available. I need to make it available for the invite
-        			// workflow/service
-        			person.getProperties().put("generatedPassword", new String(password));        			
+        			
         			person.save();
         		}
-        		
-        		return person;
+        		break;
         	}
         }
-
-        return null;
+        
+        return person;
     }
 
     /**

@@ -44,6 +44,7 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.cmr.usage.ContentUsageService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.PropertyMap;
@@ -64,6 +65,7 @@ public final class People extends BaseScopableProcessorExtension
     private AuthorityService authorityService;
     private PersonService personService;
     private MutableAuthenticationDao mutableAuthenticationDao;
+    private ContentUsageService contentUsageService;
     private UserNameGenerator usernameGenerator;
     private PasswordGenerator passwordGenerator;
     private StoreRef storeRef;
@@ -136,6 +138,14 @@ public final class People extends BaseScopableProcessorExtension
     }
     
     /**
+     * @param contentUsageService   the ContentUsageService to set
+     */
+    public void setContentUsageService(ContentUsageService contentUsageService)
+    {
+        this.contentUsageService = contentUsageService;
+    }
+
+    /**
      * Set the user name generator service
      * 
      * @param userNameGenerator the user name generator 
@@ -163,11 +173,13 @@ public final class People extends BaseScopableProcessorExtension
     public void deletePerson(String username)
     {
         personService.deletePerson(username);
+        mutableAuthenticationDao.deleteUser(username);
     }
     
     /**
-     * Create a Person with a generated user name
+     * Create a Person with an optionally generated user name
      * 
+     * @param userName userName or null for a generated user name
      * @param firstName firstName
      * @param lastName lastName
      * @param emailAddress emailAddress
@@ -181,38 +193,44 @@ public final class People extends BaseScopableProcessorExtension
      * @return the person node (type cm:person) created or null if the person
      *         could not be created
      */
-    public ScriptNode createPerson(String firstName, String lastName, String emailAddress, boolean createUserAccount, boolean setAccountEnabled)
+    public ScriptNode createPerson(String userName, String firstName, String lastName, String emailAddress, boolean createUserAccount, boolean setAccountEnabled)
     {
     	ParameterCheck.mandatory("firstName", firstName);
     	ParameterCheck.mandatory("lastName", lastName);
-        ParameterCheck.mandatory("createUserAccount", createUserAccount);
-        ParameterCheck.mandatory("setAccountEnabled", setAccountEnabled);
+    	ParameterCheck.mandatory("emailAddress", emailAddress);
         
         ScriptNode person = null;
         
-        // generate user name
-        for (int i=0; i < numRetries; i++)
+        // generate user name if not supplied
+        if (userName == null)
         {
-        	String userName = usernameGenerator.generateUserName(firstName, lastName, emailAddress, i);
-        	
-        	// create person if user name does not already exist
-        	if (!personService.personExists(userName))
-        	{
-        		person = createPerson(userName, firstName, lastName, emailAddress);
-        		
-        		if (createUserAccount)
-        		{
-        			// generate password
-        			char[] password = passwordGenerator.generatePassword().toCharArray();
-        			
-        			// create account for person with generated userName and password
-        			mutableAuthenticationDao.createUser(userName, password);
-        			mutableAuthenticationDao.setEnabled(userName, setAccountEnabled);
-        			
-        			person.save();
-        		}
-        		break;
-        	}
+            for (int i=0; i < numRetries; i++)
+            {
+            	userName = usernameGenerator.generateUserName(firstName, lastName, emailAddress, i);
+            	
+            	// create person if user name does not already exist
+            	if (!personService.personExists(userName))
+            	{
+            	    break;
+            	}
+            }
+        }
+		
+        if (userName != null)
+        {
+            person = createPerson(userName, firstName, lastName, emailAddress);
+    		
+    		if (createUserAccount)
+    		{
+    			// generate password
+    			char[] password = passwordGenerator.generatePassword().toCharArray();
+    			
+    			// create account for person with the userName and password
+    			mutableAuthenticationDao.createUser(userName, password);
+    			mutableAuthenticationDao.setEnabled(userName, setAccountEnabled);
+    			
+    			person.save();
+    		}
         }
         
         return person;
@@ -303,11 +321,38 @@ public final class People extends BaseScopableProcessorExtension
         
         if (!personService.personExists(userName))
         {
-            NodeRef personRef = personService.createPerson(properties); 
+            NodeRef personRef = personService.createPerson(properties);
             person = new ScriptNode(personRef, services, getScope()); 
         }
         
         return person;
+    }
+    
+    /**
+     * Set the content quota in bytes for a person.
+     * Only the admin authority can set this value.
+     * 
+     * @param person    Person to set quota against.
+     * @param quota     In bytes, a value of -1 means no quota is set
+     */
+    public void setQuota(ScriptNode person, Integer quota)
+    {
+        setQuota(person, quota.longValue());
+    }
+    
+    /**
+     * Set the content quota in bytes for a person.
+     * Only the admin authority can set this value.
+     * 
+     * @param person    Person to set quota against.
+     * @param quota     In bytes, a value of -1 means no quota is set
+     */
+    public void setQuota(ScriptNode person, Long quota)
+    {
+        if (this.authorityService.isAdminAuthority(AuthenticationUtil.getFullyAuthenticatedUser()))
+        {
+            this.contentUsageService.setUserQuota((String)person.getProperties().get(ContentModel.PROP_USERNAME), quota);
+        }
     }
     
     /**

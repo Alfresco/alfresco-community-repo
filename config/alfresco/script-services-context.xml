@@ -120,6 +120,9 @@
         <property name="mutableAuthenticationDao">
             <ref bean="authenticationDao"/>
         </property>
+        <property name="contentUsageService">
+            <ref bean="ContentUsageService"/>
+        </property>
         <property name="userNameGenerator">
             <ref bean="userNameGenerator"/>
         </property>

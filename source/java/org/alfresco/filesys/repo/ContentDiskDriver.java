@@ -1360,11 +1360,44 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                     if ( fstate.exists() == false)
                         throw new FileNotFoundException();
                     
-                    // Check if the open request shared access indicates exclusive file access
+                    // Check the file sharing mode
                     
-                    if ( fstate != null && params.getSharedAccess() == SharingMode.NOSHARING &&
-                            fstate.getOpenCount() > 0)
-                        throw new FileSharingException("File already open, " + params.getPath());
+                    if ( fstate != null) {
+                    
+                    	// Check if the current file open allows the required shared access
+                    	
+                    	boolean nosharing = false;
+                    	
+                    	if ( fstate.getOpenCount() > 0) {
+                    		
+                    		// Check if the file has been opened for exclusive access
+                    		
+                    		if ( fstate.getSharedAccess() == SharingMode.NOSHARING)
+                    			nosharing = true;
+                    		
+                    		// Check if the required sharing mode is allowed by the current file open
+                    		
+                    		else if ( ( fstate.getSharedAccess() & params.getSharedAccess()) != params.getSharedAccess())
+                    			nosharing = true;
+                    		
+                    		// Check if the caller wants exclusive access to the file
+                    		
+                        	else if ( params.getSharedAccess() == SharingMode.NOSHARING)
+                        		nosharing = true;
+                    	}
+                    	
+                    	// Check if the file allows shared access
+                    	
+                    	if ( nosharing == true)
+	                    {
+	                    	if ( params.getPath().equals( "\\") == false)
+	                    		throw new FileSharingException("File already open, " + params.getPath());
+	                    }
+                    	
+                    	// Update the file sharing mode, if this is the first file open
+                    	
+                    	fstate.setSharedAccess( params.getSharedAccess());
+                    }
                 }
             }
             
@@ -1588,6 +1621,10 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                 FileState fstate = ctx.getStateTable().findFileState(params.getPath(), false, true);
                 if ( fstate != null)
                 {
+                    // Save the file sharing mode, needs to be done before the open count is incremented
+                    
+                    fstate.setSharedAccess( params.getSharedAccess());
+                    
                     // Indicate that the file is open
     
                     fstate.setFileStatus(FileStateStatus.FileExists);
@@ -1869,8 +1906,13 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
         if ( ctx.hasStateTable())
         {
             FileState fstate = ctx.getStateTable().findFileState(file.getFullName());
-            if ( fstate != null)
-                fstate.decrementOpenCount();
+            if ( fstate != null) {
+            	
+            	// If the file open count is now zero then reset the stored sharing mode
+            
+                if ( fstate.decrementOpenCount() == 0)
+                	fstate.setSharedAccess( SharingMode.READWRITE + SharingMode.DELETE);
+            }
         }
         
         // Defer to the network file to close the stream and remove the content
@@ -2088,32 +2130,37 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                     	
                     	if ( renState.getFileStatus() == FileStateStatus.Renamed)
 	                    {
-	                        // DEBUG
-	                        
-	                        if ( logger.isDebugEnabled())
-	                            logger.debug(" Found rename state, relinking, " + renState);
-	                        
-	                        // Relink the new version of the file data to the previously renamed node so that it
-	                        // picks up version history and other settings.
-	                        
-	                        cifsHelper.relinkNode( renState.getNodeRef(), nodeToMoveRef, targetFolderRef, name);
-	                        relinked = true;
-	
-	                        // Link the node ref for the associated rename state
-	                        
-	                        if ( renState.hasRenameState())
-	                            renState.getRenameState().setNodeRef(nodeToMoveRef);
-	                        
-	                        // Remove the file state for the old file name
+                    		// Check if the renamed node still exists
+                    		
+                    		if ( nodeService.exists( renState.getNodeRef()))
+                    		{
+		                        // DEBUG
+		                        
+		                        if ( logger.isDebugEnabled())
+		                            logger.debug(" Found rename state, relinking, " + renState);
+		                        
+		                        // Relink the new version of the file data to the previously renamed node so that it
+		                        // picks up version history and other settings.
+		                        
+		                        cifsHelper.relinkNode( renState.getNodeRef(), nodeToMoveRef, targetFolderRef, name);
+		                        relinked = true;
+		
+		                        // Link the node ref for the associated rename state
+		                        
+		                        if ( renState.hasRenameState())
+		                            renState.getRenameState().setNodeRef(nodeToMoveRef);
+		                        
+		                        // Get, or create, a file state for the new file path
+		                        
+		                        FileState fstate = ctx.getStateTable().findFileState(newName, false, true);
+		                        
+		                        fstate.setNodeRef(renState.getNodeRef());
+		                        fstate.setFileStatus(FileStateStatus.FileExists);
+                    		}
+
+                    		// Remove the file state for the old file name
 	                        
 	                        ctx.getStateTable().removeFileState(oldName);
-	                        
-	                        // Get, or create, a file state for the new file path
-	                        
-	                        FileState fstate = ctx.getStateTable().findFileState(newName, false, true);
-	                        
-	                        fstate.setNodeRef(renState.getNodeRef());
-	                        fstate.setFileStatus(FileStateStatus.FileExists);
 	                    }
                     	else if ( renState.getFileStatus() == FileStateStatus.DeleteOnClose)
                     	{
@@ -2408,6 +2455,18 @@ public class ContentDiskDriver extends AlfrescoDiskDriver implements DiskInterfa
                     
                     if ( lockTypeStr != null)
                         throw new AccessDeniedException("Node locked, cannot mark for delete");
+                }
+                
+                // Check if a folder is being marked for delete
+                
+                // Get the node for the folder
+            	
+                if (fileFolderService.exists(nodeRef))
+                {
+                	// Check if the folder is empty
+                	
+                	if ( cifsHelper.isFolderEmpty( nodeRef) == false)
+                		throw new DirectoryNotEmptyException( name);
                 }
                 
                 // Update the change date/time

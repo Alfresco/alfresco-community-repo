@@ -77,7 +77,7 @@ public class FileState
 
     // Sharing mode
 
-    private int m_sharedAccess = SharingMode.READWRITE;
+    private int m_sharedAccess = SharingMode.READWRITE + SharingMode.DELETE;
 
     // File lock list, allocated once there are active locks on this file
 
@@ -715,6 +715,9 @@ public class FileState
             str.append(getNodeRef().getId());
         else
             str.append("Null");
+        
+        str.append(",Shr=0x");
+        str.append(Integer.toHexString(getSharedAccess()));
         
         if ( isDirectory())
         {

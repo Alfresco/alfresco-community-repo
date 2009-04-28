@@ -30,7 +30,8 @@ function main()
    
    // Create the person with the supplied user name
    var userName = json.get("userName");
-   var person = people.createPerson(userName, json.get("firstName"), json.get("lastName"), json.get("email"));
+   var enableAccount = ((json.has("disableAccount") && json.get("disableAccount")) == false);
+   var person = people.createPerson(userName, json.get("firstName"), json.get("lastName"), json.get("email"), true, enableAccount);
    
    // return error message if a person with that user name could not be created
    if (person === null)
@@ -53,6 +54,10 @@ function main()
       person.properties["jobtitle"] = json.get("jobtitle");
    }
    person.save();
+   
+   // set quota if any - note that only Admin can set this and will be ignored otherwise
+   var quota = (json.has("quota") ? json.get("quota") : -1);
+   people.setQuota(person, quota);
    
    // Put the created person into the model
    model.person = person;

@@ -31,8 +31,12 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.core.io.support.ResourcePatternResolver;
 
 /**
  * Initialises Log4j's HierarchyDynamicMBean (refer to core-services-context.xml) and any overriding log4.properties files.
@@ -62,10 +66,11 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
  * WEB - INF / classes / alfresco / module / org.alfresco.module.avmCompare / log4j.properties
  * </pre>
  */
-public class Log4JHierarchyInit
+public class Log4JHierarchyInit implements ApplicationContextAware
 {
     private static Log logger = LogFactory.getLog(Log4JHierarchyInit.class);
     private List<String> extraLog4jUrls;
+    private ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
 
     public Log4JHierarchyInit()
     {
@@ -84,6 +89,16 @@ public class Log4JHierarchyInit
         {
             extraLog4jUrls.add(url);
         }
+    }
+    
+    
+
+    /* (non-Javadoc)
+     * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
+     */
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
+    {
+        this.resolver = applicationContext;
     }
 
     @SuppressWarnings("unchecked")
@@ -120,7 +135,6 @@ public class Log4JHierarchyInit
 
     private void importLogSettings(Method method, String springUrl)
     {
-        PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
         Resource[] resources = null;
 
         try

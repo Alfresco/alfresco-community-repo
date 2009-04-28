@@ -25,18 +25,18 @@
 package org.alfresco.filesys.alfresco;
 
 import java.io.File;
-import java.io.UnsupportedEncodingException;
+import java.io.IOException;
 import java.net.InetAddress;
-import java.net.URL;
-import java.net.URLDecoder;
 
 import org.alfresco.config.ConfigElement;
 import org.alfresco.jlan.server.filesys.DiskSharedDevice;
 import org.alfresco.jlan.server.filesys.pseudo.LocalPseudoFile;
 import org.alfresco.jlan.server.filesys.pseudo.PseudoFile;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.util.ResourceFinder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.core.io.Resource;
 
 /**
  * Desktop Action Class
@@ -409,28 +409,31 @@ public abstract class DesktopAction {
                 throw new DesktopActionException("Desktop action executable path not specified");
             
             // Check that the application exists on the local filesystem
-            
-            URL appURL = this.getClass().getClassLoader().getResource(m_path);
-            if ( appURL == null)
+            Resource resource = new ResourceFinder().getResource(m_path);
+            if (!resource.exists())
+            {
                 throw new DesktopActionException("Failed to find drag and drop application, " + m_path);
+            }
             
             // Decode the URL path, it might contain escaped characters
             
-            String appURLPath = null;
-            try
-            {
-                appURLPath = URLDecoder.decode( appURL.getFile(), "UTF-8");
-            }
-            catch ( UnsupportedEncodingException ex)
-            {
-                throw new DesktopActionException("Failed to decode drag/drop path, " + ex.getMessage());
-            }
 
             // Check that the drag/drop file exists
-            
-            File appFile = new File(appURLPath);
-            if ( appFile.exists() == false)
-                throw new DesktopActionException("Drag and drop application not found, " + appFile);
+            File appFile;
+            try
+            {
+                appFile = resource.getFile();
+
+                if (!appFile.exists())
+                {
+                    throw new DesktopActionException("Drag and drop application not found, " + appFile);
+                }
+            }
+            catch (IOException e)
+            {
+                throw new DesktopActionException("Unable to resolve drag and drop application as a file, "
+                        + resource.getDescription());
+            }
             
             // Create the pseudo file for the action
             

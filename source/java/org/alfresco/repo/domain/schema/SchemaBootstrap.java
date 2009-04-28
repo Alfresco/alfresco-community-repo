@@ -132,10 +132,9 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     
     public static final int DEFAULT_MAX_STRING_LENGTH = 1024;
     private static volatile int maxStringLength = DEFAULT_MAX_STRING_LENGTH;
-    
-    
-   
-   
+        
+    private ResourcePatternResolver rpr = new PathMatchingResourcePatternResolver(this.getClass().getClassLoader());
+      
 
     /**
      * @see PropertyValue#DEFAULT_MAX_STRING_LENGTH
@@ -838,7 +837,6 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         // replace the dialect placeholder
         String dialectScriptUrl = scriptUrl.replaceAll(PLACEHOLDER_SCRIPT_DIALECT, dialectClazz.getName());
         // get a handle on the resource
-        ResourcePatternResolver rpr = new PathMatchingResourcePatternResolver(this.getClass().getClassLoader());
         Resource resource = rpr.getResource(dialectScriptUrl);
         if (!resource.exists())
         {
@@ -1147,6 +1145,9 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     @Override
     protected synchronized void onBootstrap(ApplicationEvent event)
     {
+        // Use the application context to load resources
+        rpr = (ApplicationContext)event.getSource();
+        
         // do everything in a transaction
         Session session = getSessionFactory().openSession();
         Connection connection = null;

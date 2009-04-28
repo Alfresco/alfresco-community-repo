@@ -27,9 +27,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URL;
-import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -44,6 +41,8 @@ import org.alfresco.filesys.alfresco.DesktopResponse;
 import org.alfresco.jlan.server.filesys.DiskSharedDevice;
 import org.alfresco.scripts.ScriptException;
 import org.alfresco.service.cmr.repository.ScriptService;
+import org.alfresco.util.ResourceFinder;
+import org.springframework.core.io.Resource;
 
 /**
  * Javascript Desktop Action Class
@@ -155,28 +154,25 @@ public class JavaScriptDesktopAction extends DesktopAction {
         }
 
         // Check if the script exists on the classpath
-            
-        URL scriptURL = this.getClass().getClassLoader().getResource(m_scriptName);
-        if ( scriptURL == null)
+        Resource resource = new ResourceFinder().getResource(m_scriptName);
+        if (!resource.exists())
+        {
             throw new DesktopActionException("Failed to find script on classpath, " + getScriptName());
+        }
 
-        // Decode the URL path, it might contain escaped characters
-        
-        String scriptURLPath = null;
-        try
-        {
-            scriptURLPath = URLDecoder.decode( scriptURL.getFile(), "UTF-8");
-        }
-        catch ( UnsupportedEncodingException ex)
-        {
-            throw new DesktopActionException("Failed to decode script path, " + ex.getMessage());
-        }
 
         // Check that the script file exists
-        
-        File scriptFile = new File(scriptURLPath);
-        if ( scriptFile.exists() == false)
-            throw new DesktopActionException("Script file not found, " + m_scriptName);
+        File scriptFile;
+        try
+        {
+            scriptFile = resource.getFile();
+            if (scriptFile.exists() == false)
+                throw new DesktopActionException("Script file not found, " + m_scriptName);
+        }
+        catch (IOException e)
+        {
+            throw new DesktopActionException("Unable to resolve script as a file, " + resource.getDescription());
+        }
         
         m_scriptPath = scriptFile.getAbsolutePath();
         m_lastModified =scriptFile.lastModified();

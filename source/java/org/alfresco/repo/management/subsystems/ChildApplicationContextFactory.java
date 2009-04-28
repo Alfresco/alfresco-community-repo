@@ -30,6 +30,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.alfresco.config.JBossEnabledResourcePatternResolver;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
@@ -43,6 +44,7 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.ResourcePatternResolver;
 
 /**
  * A factory allowing initialization of an entire 'subsystem' in a child application context. As with other
@@ -309,7 +311,20 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
                     + ChildApplicationContextFactory.CONTEXT_SUFFIX,
             ChildApplicationContextFactory.EXTENSION_CLASSPATH_PREFIX + getCategory() + '/' + getTypeName() + '/'
                     + getId() + '/' + ChildApplicationContextFactory.CONTEXT_SUFFIX
-        }, false, this.parent);
+        }, false, this.parent)
+        {
+
+            /*
+             * (non-Javadoc)
+             * @see org.springframework.context.support.AbstractApplicationContext#getResourcePatternResolver()
+             */
+            @Override
+            protected ResourcePatternResolver getResourcePatternResolver()
+            {
+                return new JBossEnabledResourcePatternResolver(this);
+            }
+
+        };
 
         // Add a property placeholder configurer, with the subsystem-scoped default properties
         PropertyPlaceholderConfigurer configurer = new PropertyPlaceholderConfigurer();

@@ -43,8 +43,12 @@ import org.alfresco.service.cmr.module.ModuleService;
 import org.alfresco.service.descriptor.DescriptorService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.core.io.support.ResourcePatternResolver;
 
 /**
  * This component controls the execution of
@@ -63,7 +67,7 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
  * @author Derek Hulley
  * @since 2.0
  */
-public class ModuleServiceImpl implements ModuleService
+public class ModuleServiceImpl implements ApplicationContextAware, ModuleService
 {
     /** Error messages **/
     private static final String ERR_UNABLE_TO_OPEN_MODULE_PROPETIES = "module.err.unable_to_open_module_properties";
@@ -78,6 +82,8 @@ public class ModuleServiceImpl implements ModuleService
     /** A cache of module details by module ID */
     private Map<String, ModuleDetails> moduleDetailsById;    
 
+    ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
+    
     /** Default constructor */
     public ModuleServiceImpl()
     {
@@ -109,6 +115,16 @@ public class ModuleServiceImpl implements ModuleService
         this.moduleComponentHelper.setTenantAdminService(tenantAdminService);
     }
     
+    
+    
+    /* (non-Javadoc)
+     * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
+     */
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
+    {
+        this.resolver = applicationContext;
+    }
+
     /**
      * @see ModuleComponentHelper#registerComponent(ModuleComponent)
      */
@@ -169,7 +185,6 @@ public class ModuleServiceImpl implements ModuleService
         {
             moduleDetailsById = new HashMap<String, ModuleDetails>(13);
             
-            PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
             Resource[] resources = resolver.getResources(MODULE_CONFIG_SEARCH_ALL);
             
             // Read each resource

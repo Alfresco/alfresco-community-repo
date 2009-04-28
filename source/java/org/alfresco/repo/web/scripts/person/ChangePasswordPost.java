@@ -30,6 +30,7 @@ import java.util.Map;
 
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.util.Content;
 import org.alfresco.web.scripts.DeclarativeWebScript;
 import org.alfresco.web.scripts.Status;
@@ -45,7 +46,10 @@ import org.json.JSONObject;
  */
 public class ChangePasswordPost extends DeclarativeWebScript
 {
+    private static final String PARAM_NEWPW = "newpw";
+    private static final String PARAM_OLDPW = "oldpw";
     private AuthenticationService authenticationService;
+    private AuthorityService authorityService;
     
     
     /**
@@ -55,8 +59,16 @@ public class ChangePasswordPost extends DeclarativeWebScript
     {
         this.authenticationService = authenticationService;
     }
-
-
+    
+    /**
+     * @param authorityService          the AuthorityService to set
+     */
+    public void setAuthorityService(AuthorityService authorityService)
+    {
+        this.authorityService = authorityService;
+    }
+    
+    
     /* (non-Javadoc)
      * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status)
      */
@@ -70,30 +82,43 @@ public class ChangePasswordPost extends DeclarativeWebScript
         Content c = req.getContent();
         if (c == null)
         {
-            throw new WebScriptException(Status.STATUS_INTERNAL_SERVER_ERROR,
-                    "Missing POST body.");
+            throw new WebScriptException(Status.STATUS_INTERNAL_SERVER_ERROR, "Missing POST body.");
         }
         JSONObject json;
         try
         {
             json = new JSONObject(c.getContent());
             
-            String oldPassword = json.getString("oldpw");
-            String newPassword = json.getString("newpw");
+            String oldPassword = null;
+            String newPassword;
             
-            if (oldPassword == null || oldPassword.length() == 0)
+            // admin users can change/set a password without knowing the old one
+            boolean isAdmin = authorityService.hasAdminAuthority();
+            if (!isAdmin)
+            {
+                if (!json.has(PARAM_OLDPW) || json.getString(PARAM_OLDPW).length() == 0)
+                {
+                    throw new WebScriptException(Status.STATUS_BAD_REQUEST,
+                        "Old password 'oldpw' is a required POST parameter.");
+                }
+                oldPassword = json.getString(PARAM_OLDPW);
+            }
+            if (!json.has(PARAM_NEWPW) || json.getString(PARAM_NEWPW).length() == 0)
             {
                 throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                "Old password 'oldpw' is a required POST parameter.");
+                    "New password 'newpw' is a required POST parameter.");
             }
-            if (newPassword == null || newPassword.length() == 0)
-            {
-                throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                "New password 'newpw' is a required POST parameter.");
-            }
+            newPassword = json.getString(PARAM_NEWPW);
             
             // update the password
-            authenticationService.updateAuthentication(userName, oldPassword.toCharArray(), newPassword.toCharArray());
+            if (!isAdmin)
+            {
+                authenticationService.updateAuthentication(userName, oldPassword.toCharArray(), newPassword.toCharArray());
+            }
+            else
+            {
+                authenticationService.setAuthentication(userName, newPassword.toCharArray());
+            }
         }
         catch (AuthenticationException err)
         {

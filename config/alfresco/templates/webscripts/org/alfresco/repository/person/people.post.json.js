@@ -22,9 +22,15 @@ function main()
       return;
    }
    
+   if ((json.isNull("email")) || (json.get("email").length() == 0))
+   {
+      status.setCode(status.STATUS_BAD_REQUEST, "Email missing when creating person");
+      return;
+   }
+   
    // Create the person with the supplied user name
    var userName = json.get("userName");
-   var person = people.createPerson(userName);
+   var person = people.createPerson(userName, json.get("firstName"), json.get("lastName"), json.get("email"));
    
    // return error message if a person with that user name could not be created
    if (person === null)
@@ -33,13 +39,19 @@ function main()
       return;
    }
    
-   // assign values to the person's properties   
-   person.properties["title"] = json.get("title");
-   person.properties["firstName"] = json.get("firstName");
-   person.properties["lastName"] = json.get("lastName");
-   person.properties["organization"] = json.get("organisation");
-   person.properties["jobtitle"] = json.get("jobtitle");
-   person.properties["email"] = json.get("email");
+   // assign values to the person's properties
+   if (json.has("title"))
+   {
+      person.properties["title"] = json.get("title");
+   }
+   if (json.has("organisation"))
+   {
+      person.properties["organization"] = json.get("organisation");
+   }
+   if (json.has("jobtitle"))
+   {
+      person.properties["jobtitle"] = json.get("jobtitle");
+   }
    person.save();
    
    // Put the created person into the model

@@ -436,7 +436,8 @@
    <bean id="webscript.org.alfresco.repository.person.changepassword.post"
          class="org.alfresco.repo.web.scripts.person.ChangePasswordPost"
          parent="webscript">
-      <property name="authenticationService" ref="AuthenticationService"/>
+      <property name="authenticationService" ref="AuthenticationService" />
+      <property name="authorityService" ref="AuthorityService" />
    </bean>
 
 

@@ -44,6 +44,7 @@ import org.alfresco.repo.search.impl.querymodel.impl.functions.FTSExactTerm;
 import org.alfresco.repo.search.impl.querymodel.impl.functions.FTSExpandTerm;
 import org.alfresco.repo.search.impl.querymodel.impl.functions.FTSPhrase;
 import org.alfresco.repo.search.impl.querymodel.impl.functions.FTSProximity;
+import org.alfresco.repo.search.impl.querymodel.impl.functions.FTSRange;
 import org.alfresco.repo.search.impl.querymodel.impl.functions.FTSTerm;
 import org.alfresco.repo.search.impl.querymodel.impl.functions.PropertyAccessor;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -57,7 +58,8 @@ import org.apache.lucene.search.function.FieldScoreQuery;
 
 public class FTSQueryParser
 {
-    public Constraint buildFTS(String ftsExpression, QueryModelFactory factory, FunctionEvaluationContext functionEvaluationContext, Selector selector, ArrayList<Column> columns, Connective defaultConnective, Connective defaultFieldConnective)
+    public Constraint buildFTS(String ftsExpression, QueryModelFactory factory, FunctionEvaluationContext functionEvaluationContext, Selector selector, ArrayList<Column> columns,
+            Connective defaultConnective, Connective defaultFieldConnective)
     {
         // TODO: Decode sql escape for '' should do in CMIS layer
         FTSParser parser = null;
@@ -295,7 +297,23 @@ public class FTSQueryParser
             functionArguments.put(larg.getName(), larg);
             return factory.createFunctionalConstraint(function, functionArguments);
         case FTSParser.RANGE:
-            throw new FTSQueryException("Unsupported FTS option " + testNode.getText());
+            functionName = FTSRange.NAME;
+            function = factory.getFunction(functionName);
+            functionArguments = new LinkedHashMap<String, Argument>();
+            larg = factory.createLiteralArgument(FTSRange.ARG_FROM_INC, DataTypeDefinition.BOOLEAN, testNode.getChild(0).getType() == FTSParser.INCLUSIVE);
+            functionArguments.put(larg.getName(), larg);
+            larg = factory.createLiteralArgument(FTSRange.ARG_FROM, DataTypeDefinition.TEXT, getText(testNode.getChild(1)));
+            functionArguments.put(larg.getName(), larg);
+            larg = factory.createLiteralArgument(FTSRange.ARG_TO, DataTypeDefinition.TEXT, getText(testNode.getChild(2)));
+            functionArguments.put(larg.getName(), larg);
+            larg = factory.createLiteralArgument(FTSRange.ARG_TO_INC, DataTypeDefinition.BOOLEAN, testNode.getChild(3).getType() == FTSParser.INCLUSIVE);
+            functionArguments.put(larg.getName(), larg);
+            if (testNode.getChildCount() > 4)
+            {
+                parg = buildFieldReference(FTSExpandTerm.ARG_PROPERTY, (CommonTree) testNode.getChild(4), factory, functionEvaluationContext, selector, columns);
+                functionArguments.put(parg.getName(), parg);
+            }
+            return factory.createFunctionalConstraint(function, functionArguments);
         case FTSParser.FIELD_GROUP:
             CommonTree fieldReferenceNode = (CommonTree) testNode.getChild(0);
             CommonTree fieldExperssion = (CommonTree) testNode.getChild(1);
@@ -504,7 +522,20 @@ public class FTSQueryParser
             functionArguments.put(parg.getName(), parg);
             return factory.createFunctionalConstraint(function, functionArguments);
         case FTSParser.FG_RANGE:
-            throw new FTSQueryException("Unsupported FTS option " + testNode.getText());
+            functionName = FTSRange.NAME;
+            function = factory.getFunction(functionName);
+            functionArguments = new LinkedHashMap<String, Argument>();
+            larg = factory.createLiteralArgument(FTSRange.ARG_FROM_INC, DataTypeDefinition.BOOLEAN, testNode.getChild(0).getType() == FTSParser.INCLUSIVE);
+            functionArguments.put(larg.getName(), larg);
+            larg = factory.createLiteralArgument(FTSRange.ARG_FROM, DataTypeDefinition.TEXT, getText(testNode.getChild(1)));
+            functionArguments.put(larg.getName(), larg);
+            larg = factory.createLiteralArgument(FTSRange.ARG_TO, DataTypeDefinition.TEXT, getText(testNode.getChild(2)));
+            functionArguments.put(larg.getName(), larg);
+            larg = factory.createLiteralArgument(FTSRange.ARG_TO_INC, DataTypeDefinition.BOOLEAN, testNode.getChild(3).getType() == FTSParser.INCLUSIVE);
+            functionArguments.put(larg.getName(), larg);
+            parg = buildFieldReference(FTSExpandTerm.ARG_PROPERTY, fieldReferenceNode, factory, functionEvaluationContext, selector, columns);
+            functionArguments.put(parg.getName(), parg);
+            return factory.createFunctionalConstraint(function, functionArguments);
         default:
             throw new FTSQueryException("Unsupported FTS option " + testNode.getText());
         }

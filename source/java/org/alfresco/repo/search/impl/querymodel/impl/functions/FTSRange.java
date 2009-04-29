@@ -36,27 +36,30 @@ import org.alfresco.repo.search.impl.querymodel.impl.BaseArgumentDefinition;
 import org.alfresco.repo.search.impl.querymodel.impl.BaseFunction;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 
-public class FTSProximity extends BaseFunction
+public class FTSRange extends BaseFunction
 {
-    public final static String NAME = "FTSProximity";
+    public final static String NAME = "FTSRange";
 
-    public final static String ARG_FIRST = "First";
+    public final static String ARG_FROM_INC = "FromInc";
     
-    public final static String ARG_LAST = "Last";
+    public final static String ARG_FROM = "From";
+    
+    public final static String ARG_TO = "To";
+    
+    public final static String ARG_TO_INC = "ToInc";
     
     public final static String ARG_PROPERTY = "Property";
-    
-    public final static String ARG_SLOP = "Slop";
 
     public static LinkedHashMap<String, ArgumentDefinition> args;
 
     static
     {
         args = new LinkedHashMap<String, ArgumentDefinition>();
-        args.put(ARG_FIRST, new BaseArgumentDefinition(Multiplicity.SINGLE_VALUED, ARG_FIRST, DataTypeDefinition.ANY, true));
-        args.put(ARG_LAST, new BaseArgumentDefinition(Multiplicity.SINGLE_VALUED, ARG_LAST, DataTypeDefinition.ANY, true));
+        args.put(ARG_FROM_INC, new BaseArgumentDefinition(Multiplicity.SINGLE_VALUED, ARG_FROM_INC, DataTypeDefinition.BOOLEAN, true));
+        args.put(ARG_FROM, new BaseArgumentDefinition(Multiplicity.SINGLE_VALUED, ARG_FROM, DataTypeDefinition.TEXT, true));
+        args.put(ARG_TO, new BaseArgumentDefinition(Multiplicity.SINGLE_VALUED, ARG_TO, DataTypeDefinition.TEXT, true));
+        args.put(ARG_TO_INC, new BaseArgumentDefinition(Multiplicity.SINGLE_VALUED, ARG_TO_INC, DataTypeDefinition.BOOLEAN, true));
         args.put(ARG_PROPERTY, new BaseArgumentDefinition(Multiplicity.SINGLE_VALUED, ARG_PROPERTY, DataTypeDefinition.ANY, false));
-        args.put(ARG_SLOP, new BaseArgumentDefinition(Multiplicity.SINGLE_VALUED, ARG_SLOP, DataTypeDefinition.INT, false));
     }
 
     /**
@@ -64,10 +67,12 @@ public class FTSProximity extends BaseFunction
      * @param returnType
      * @param argumentDefinitions
      */
-    public FTSProximity()
+    public FTSRange()
     {
         super(NAME, DataTypeDefinition.BOOLEAN, args);
     }
+    
+    
     public Serializable getValue(Map<String, Argument> args, FunctionEvaluationContext context)
     {
         throw new UnsupportedOperationException();

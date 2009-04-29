@@ -74,6 +74,7 @@ import org.alfresco.repo.search.impl.querymodel.impl.lucene.functions.LuceneFTSE
 import org.alfresco.repo.search.impl.querymodel.impl.lucene.functions.LuceneFTSExpandTerm;
 import org.alfresco.repo.search.impl.querymodel.impl.lucene.functions.LuceneFTSPhrase;
 import org.alfresco.repo.search.impl.querymodel.impl.lucene.functions.LuceneFTSProximity;
+import org.alfresco.repo.search.impl.querymodel.impl.lucene.functions.LuceneFTSRange;
 import org.alfresco.repo.search.impl.querymodel.impl.lucene.functions.LuceneFTSTerm;
 import org.alfresco.repo.search.impl.querymodel.impl.lucene.functions.LuceneGreaterThan;
 import org.alfresco.repo.search.impl.querymodel.impl.lucene.functions.LuceneGreaterThanOrEquals;
@@ -121,6 +122,7 @@ public class LuceneQueryModelFactory implements QueryModelFactory
         functions.put(FTSPhrase.NAME, new LuceneFTSPhrase());
         functions.put(LuceneFTSExpandTerm.NAME, new LuceneFTSExpandTerm());
         functions.put(LuceneFTSProximity.NAME, new LuceneFTSProximity());
+        functions.put(LuceneFTSRange.NAME, new LuceneFTSRange());
 
     }
 

@@ -31,19 +31,18 @@ import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.search.impl.querymodel.Argument;
 import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
 import org.alfresco.repo.search.impl.querymodel.PropertyArgument;
-import org.alfresco.repo.search.impl.querymodel.impl.functions.FTSProximity;
+import org.alfresco.repo.search.impl.querymodel.impl.functions.FTSRange;
 import org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderComponent;
 import org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderContext;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.search.Query;
 
-public class LuceneFTSProximity extends FTSProximity implements LuceneQueryBuilderComponent
+public class LuceneFTSRange extends FTSRange implements LuceneQueryBuilderComponent
 {
-    
     /**
      * 
      */
-    public LuceneFTSProximity()
+    public LuceneFTSRange()
     {
         super();
     }
@@ -59,31 +58,25 @@ public class LuceneFTSProximity extends FTSProximity implements LuceneQueryBuild
             throws ParseException
     {
         LuceneQueryParser lqp = luceneContext.getLuceneQueryParser();
-        Argument argument = functionArgs.get(ARG_FIRST);
-        String first = (String) argument.getValue(functionContext);
-        argument = functionArgs.get(ARG_LAST);
-        String last = (String) argument.getValue(functionContext);
-
-        int slop = 100;
-        argument = functionArgs.get(ARG_SLOP);
-        if(argument != null)
-        {
-            String val = (String) argument.getValue(functionContext);
-            slop = Integer.parseInt(val);
-        }
-        
+        Argument argument = functionArgs.get(ARG_FROM_INC);
+        Boolean fromInc = (Boolean) argument.getValue(functionContext);
+        argument = functionArgs.get(ARG_FROM);
+        String from = (String) argument.getValue(functionContext);
+        argument = functionArgs.get(ARG_TO);
+        String to = (String) argument.getValue(functionContext);
+        argument = functionArgs.get(ARG_TO_INC);
+        Boolean toInc = (Boolean) argument.getValue(functionContext);
         
         PropertyArgument propArg = (PropertyArgument) functionArgs.get(ARG_PROPERTY);
         Query query;
         if (propArg != null)
         {
             String prop = propArg.getPropertyName();
-            query = lqp.getSpanQuery(functionContext.getLuceneFieldName(prop), first, last, slop, true);
+            query = lqp.getRangeQuery(functionContext.getLuceneFieldName(prop), from, to, fromInc, toInc);
         }
         else
         {
-            query = lqp.getSpanQuery("TEXT", first, last, slop, true);
-            
+            query = lqp.getRangeQuery("TEXT", from, to, fromInc, toInc);
         }
         return query;
     }

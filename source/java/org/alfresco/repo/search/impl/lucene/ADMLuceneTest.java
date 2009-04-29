@@ -732,8 +732,44 @@ public class ADMLuceneTest extends TestCase
         ftsQueryWithCount(searcher, "TEXT:(brown *(5) dog)", 1);
         ftsQueryWithCount(searcher, "TEXT:(brown *(6) dog)", 1);
         
+        //ftsQueryWithCount(searcher, "brown..dog", 1); // is this allowed??
+        ftsQueryWithCount(searcher, "cm:content:brown..dog", 1); 
+        
         QName qname = QName.createQName(TEST_NAMESPACE, "float\\-ista");
         ftsQueryWithCount(searcher, qname+":3.40", 1);
+        ftsQueryWithCount(searcher, qname+":3..4", 1);
+        ftsQueryWithCount(searcher, qname+":3..3.39", 0);
+        ftsQueryWithCount(searcher, qname+":3..3.40", 1);
+        ftsQueryWithCount(searcher, qname+":3.41..3.9", 0);
+        ftsQueryWithCount(searcher, qname+":3.40..3.9", 1);
+        
+        ftsQueryWithCount(searcher, qname+":[3 TO 4]", 1);
+        ftsQueryWithCount(searcher, qname+":[3 TO 3.39]", 0);
+        ftsQueryWithCount(searcher, qname+":[3 TO 3.4]", 1);
+        ftsQueryWithCount(searcher, qname+":[3.41 TO 4]", 0);
+        ftsQueryWithCount(searcher, qname+":[3.4 TO 4]", 1);
+        ftsQueryWithCount(searcher, qname+":[3 TO 3.4>", 0);
+        ftsQueryWithCount(searcher, qname+":<3.4 TO 4]", 0);
+        ftsQueryWithCount(searcher, qname+":<3.4 TO 3.4>", 0);
+        
+        ftsQueryWithCount(searcher, qname+":(3.40)", 1);
+        ftsQueryWithCount(searcher, qname+":(3..4)", 1);
+        ftsQueryWithCount(searcher, qname+":(3..3.39)", 0);
+        ftsQueryWithCount(searcher, qname+":(3..3.40)", 1);
+        ftsQueryWithCount(searcher, qname+":(3.41..3.9)", 0);
+        ftsQueryWithCount(searcher, qname+":(3.40..3.9)", 1);
+        
+        ftsQueryWithCount(searcher, qname+":([3 TO 4])", 1);
+        ftsQueryWithCount(searcher, qname+":([3 TO 3.39])", 0);
+        ftsQueryWithCount(searcher, qname+":([3 TO 3.4])", 1);
+        ftsQueryWithCount(searcher, qname+":([3.41 TO 4])", 0);
+        ftsQueryWithCount(searcher, qname+":([3.4 TO 4])", 1);
+        ftsQueryWithCount(searcher, qname+":([3 TO 3.4>)", 0);
+        ftsQueryWithCount(searcher, qname+":(<3.4 TO 4])", 0);
+        ftsQueryWithCount(searcher, qname+":(<3.4 TO 3.4>)", 0);
+        
+        
+        
     }
     
     public void ftsQueryWithCount(ADMLuceneSearcherImpl searcher, String query, int count)

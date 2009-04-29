@@ -46,6 +46,32 @@ public class ActivityFeedDAOImpl extends IBatisSqlMapper implements ActivityFeed
         return getSqlMapClient().delete("delete.activity.feed.entries.older.than.date", keepDate);
     }
     
+    public int deleteSiteFeedEntries(String siteId, String format, Date keepDate) throws SQLException
+    {
+        ActivityFeedEntity params = new ActivityFeedEntity();
+        params.setSiteNetwork(siteId);
+        params.setActivitySummaryFormat(format);
+        params.setPostDate(keepDate);
+        
+        return getSqlMapClient().delete("delete.activity.feed.for.site.entries.older.than.date", params);
+    }
+    
+    public int deleteUserFeedEntries(String feedUserId, String format, Date keepDate) throws SQLException
+    {
+        ActivityFeedEntity params = new ActivityFeedEntity();
+        params.setFeedUserId(feedUserId);
+        params.setActivitySummaryFormat(format);
+        params.setPostDate(keepDate);
+        
+        return getSqlMapClient().delete("delete.activity.feed.for.feeduser.entries.older.than.date", params);
+    }
+    
+    @SuppressWarnings("unchecked")
+    public List<ActivityFeedEntity> selectFeedsToClean(int maxFeedSize) throws SQLException
+    {
+        return (List<ActivityFeedEntity>)getSqlMapClient().queryForList("select.activity.feed.greater.than.max", maxFeedSize);
+    }
+    
     @SuppressWarnings("unchecked")
     public List<ActivityFeedEntity> selectUserFeedEntries(String feedUserId, String format, String siteId, boolean excludeThisUser, boolean excludeOtherUsers) throws SQLException
     {

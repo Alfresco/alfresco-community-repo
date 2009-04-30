@@ -152,7 +152,7 @@
    <#if d.isDocument >
       <#if d.hasAspect("cm:versionable")>
          <#assign versionRow=0>
-         <#list d.versionHistory?sort_by("versionLabel")?reverse as record>
+         <#list d.versionHistory as record>
             <#assign versionRow=versionRow+1>
          <tr class="${(versionRow % 2 = 0)?string("odd", "even")}">
             <td valign="top">

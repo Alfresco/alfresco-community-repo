@@ -78,7 +78,7 @@
 <#if d.isDocument >
    <#if d.hasAspect("cm:versionable")>
       <#assign versionRow=0>
-      <#list d.versionHistory?sort_by("versionLabel")?reverse as record>
+      <#list d.versionHistory as record>
          <#assign versionRow=versionRow+1>
 	<version>
             <title>${record.versionLabel}</title> 

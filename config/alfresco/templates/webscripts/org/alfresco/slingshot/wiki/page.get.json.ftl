@@ -21,7 +21,7 @@
    ],
    <#if page.hasAspect("cm:versionable")>
    "versionhistory": [
-      <#list page.versionHistory?sort_by("versionLabel")?reverse as record>
+      <#list page.versionHistory as record>
    {
       "name": "${record.name}",
       "version": "${record.versionLabel}",

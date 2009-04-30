@@ -333,25 +333,13 @@ public final class People extends BaseScopableProcessorExtension
      * Only the admin authority can set this value.
      * 
      * @param person    Person to set quota against.
-     * @param quota     In bytes, a value of -1 means no quota is set
+     * @param quota     As a string, in bytes, a value of "-1" means no quota is set
      */
-    public void setQuota(ScriptNode person, Integer quota)
-    {
-        setQuota(person, quota.longValue());
-    }
-    
-    /**
-     * Set the content quota in bytes for a person.
-     * Only the admin authority can set this value.
-     * 
-     * @param person    Person to set quota against.
-     * @param quota     In bytes, a value of -1 means no quota is set
-     */
-    public void setQuota(ScriptNode person, Long quota)
+    public void setQuota(ScriptNode person, String quota)
     {
         if (this.authorityService.isAdminAuthority(AuthenticationUtil.getFullyAuthenticatedUser()))
         {
-            this.contentUsageService.setUserQuota((String)person.getProperties().get(ContentModel.PROP_USERNAME), quota);
+            this.contentUsageService.setUserQuota((String)person.getProperties().get(ContentModel.PROP_USERNAME), Long.parseLong(quota));
         }
     }
     

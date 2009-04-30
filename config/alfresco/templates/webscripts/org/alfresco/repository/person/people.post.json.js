@@ -57,7 +57,7 @@ function main()
    
    // set quota if any - note that only Admin can set this and will be ignored otherwise
    var quota = (json.has("quota") ? json.get("quota") : -1);
-   people.setQuota(person, quota);
+   people.setQuota(person, quota.toString());
    
    // Put the created person into the model
    model.person = person;

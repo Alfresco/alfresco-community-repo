@@ -193,7 +193,7 @@ function getDocList(filter)
                site: null,
                container: null,
                path: null,
-               file: null
+               file: locationAsset.name
             }
          }
       }

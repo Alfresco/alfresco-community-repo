@@ -31,6 +31,7 @@ function getFilterParams(filter, parsedArgs)
          break;
          
       case "node":
+         filterParams.variablePath = true;
          filterParams.query = "+ID:\"" + parsedArgs.parentNode.nodeRef + "\"";
          break;
       

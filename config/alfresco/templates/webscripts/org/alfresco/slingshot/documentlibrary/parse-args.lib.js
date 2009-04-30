@@ -32,35 +32,48 @@ function getParsedArgs()
       else
       {
          rootNode = search.findNode(nodeRef);
-      	if (rootNode === null)
-      	{
+         if (rootNode === null)
+         {
             status.setCode(status.STATUS_NOT_FOUND, "Not a valid nodeRef: '" + nodeRef + "'");
             return null;
-      	}
+         }
       }
    }
    else
    {
       // site, component container, path input
-      var site = url.templateArgs.site;
-      var container = url.templateArgs.container;
+      var siteId = url.templateArgs.site;
+      var containerId = url.templateArgs.container;
 
-      var siteNode = siteService.getSite(site);
+      var siteNode = siteService.getSite(siteId);
       if (siteNode === null)
       {
-         status.setCode(status.STATUS_NOT_FOUND, "Site not found: '" + site + "'");
+         status.setCode(status.STATUS_NOT_FOUND, "Site not found: '" + siteId + "'");
          return null;
       }
 
-      rootNode = siteNode.getContainer(container);
+      rootNode = siteNode.getContainer(containerId);
       if (rootNode === null)
       {
-      	 rootNode = siteNode.createContainer(container);
-      	 if (rootNode === null)
-      	 {
-         	status.setCode(status.STATUS_NOT_FOUND, "Document Library container '" + container + "' not found in '" + site + "'. (No permission?)");
-         	return null;
+          rootNode = siteNode.createContainer(containerId);
+          if (rootNode === null)
+          {
+            status.setCode(status.STATUS_NOT_FOUND, "Document Library container '" + containerId + "' not found in '" + siteId + "'. (No permission?)");
+            return null;
          }
+
+         /**
+          * MOB-593: Add email alias on documentLibrary container creation
+          *
+         rootNode.addAspect("emailserver:aliasable");
+         var emailAlias = siteId;
+         if (containerId != "documentLibrary")
+         {
+            emailAlias += "-" + containerId;
+         }
+         rootNode.properties["emailserver:alias"] = emailAlias;
+         rootNode.save();
+         */
       }
    }
 
@@ -85,10 +98,10 @@ function getParsedArgs()
    {
       site: null,
       container: null,
-      path: null
+      path: "/" + path
    };
 
-   var site, siteNode, container,
+   var siteId, siteNode, containerId,
       qnamePaths = search.ISO9075Decode(parentNode.qnamePath).split("/");
       displayPaths = parentNode.displayPath.split("/");
    
@@ -99,16 +112,16 @@ function getParsedArgs()
       
    if ((qnamePaths.length > 4) && (qnamePaths[2] == "st:sites"))
    {
-      site = displayPaths[3];
-      siteNode = siteService.getSite(site);
-      container = qnamePaths[4].substr(3);
+      siteId = displayPaths[3];
+      siteNode = siteService.getSite(siteId);
+      containerId = qnamePaths[4].substr(3);
       
       location = 
       {
-         site: site,
+         site: siteId,
          siteNode: siteNode,
-         container: container,
-         containerNode: siteNode.getContainer(container),
+         container: containerId,
+         containerNode: siteNode.getContainer(containerId),
          path: "/" + displayPaths.slice(5, displayPaths.length).join("/")
       }
    }
@@ -164,6 +177,6 @@ function getMultipleInputValues(param)
       error = e.toString();
    }
    
-	// Return the values array, or the error string if it was set
-	return (error !== null ? error : values);
+   // Return the values array, or the error string if it was set
+   return (error !== null ? error : values);
 }

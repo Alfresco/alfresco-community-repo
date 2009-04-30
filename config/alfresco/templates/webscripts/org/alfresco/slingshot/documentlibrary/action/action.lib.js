@@ -138,46 +138,59 @@ function getSiteInputParams()
       // SiteId
       if (template.indexOf("{site}") != -1)
       {
-      	if ((siteId === null) || (siteId.length === 0))
-      	{
-      		return "'site' parameter is missing.";
-      	}
+         if ((siteId === null) || (siteId.length === 0))
+         {
+            return "'site' parameter is missing.";
+         }
 
          // Find the site
          siteNode = siteService.getSite(siteId);
          if (siteNode === null)
          {
-      		return "Site '" + siteId + "' not found.";
+            return "Site '" + siteId + "' not found.";
          }
 
          // ContainerId
          if (template.indexOf("{container}") != -1)
          {
-         	if ((containerId === null) || (containerId.length === 0))
-         	{
-         		return "'container' parameter is missing.";
-         	}
+            if ((containerId === null) || (containerId.length === 0))
+            {
+               return "'container' parameter is missing.";
+            }
 
             // Find the component container
             var rootNode = siteNode.getContainer(containerId);
             if (rootNode === null)
             {
-              rootNode = siteNode.createContainer(containerId);
-              if (rootNode === null)
-              {
-         			return "Component container '" + containerId + "' not found in '" + siteId + "'.";
-         		}
+               rootNode = siteNode.createContainer(containerId);
+               if (rootNode === null)
+               {
+                  return "Component container '" + containerId + "' not found in '" + siteId + "'.";
+               }
+
+               /**
+                * MOB-593: Add email alias on documentLibrary container creation
+                *
+               rootNode.addAspect("emailserver:aliasable");
+               var emailAlias = siteId;
+               if (containerId != "documentLibrary")
+               {
+                  emailAlias += "-" + containerId;
+               }
+               rootNode.properties["emailserver:alias"] = emailAlias;
+               rootNode.save();
+               */
             }
          }
 
          // Populate the return object
          params =
          {
-         	usingNodeRef: false,
-         	siteId: siteId,
-         	containerId: containerId,
-         	siteNode: siteNode,
-         	rootNode: rootNode
+            usingNodeRef: false,
+            siteId: siteId,
+            containerId: containerId,
+            siteNode: siteNode,
+            rootNode: rootNode
          }
       }
    }
@@ -186,8 +199,8 @@ function getSiteInputParams()
       error = e.toString();
    }
    
-	// Return the params object, or the error string if it was set
-	return (error !== null ? error : params);
+   // Return the params object, or the error string if it was set
+   return (error !== null ? error : params);
 }
 
 /**
@@ -223,11 +236,11 @@ function getNodeRefInputParams()
       {
          rootNode = search.findNode(nodeRef);
 
-      	if (rootNode === null)
-      	{
-      		return "'" + nodeRef  + "' is not a valid nodeRef.";
-      	}
-   	}
+         if (rootNode === null)
+         {
+            return "'" + nodeRef  + "' is not a valid nodeRef.";
+         }
+      }
 
       // Populate the return object
       params =
@@ -242,8 +255,8 @@ function getNodeRefInputParams()
       error = e.toString();
    }
    
-	// Return the params object, or the error string if it was set
-	return (error !== null ? error : params);
+   // Return the params object, or the error string if it was set
+   return (error !== null ? error : params);
 }
 
 /**
@@ -278,8 +291,8 @@ function getMultipleInputValues(param)
       error = e.toString();
    }
    
-	// Return the values array, or the error string if it was set
-	return (error !== null ? error : values);
+   // Return the values array, or the error string if it was set
+   return (error !== null ? error : values);
 }
 
 
@@ -310,9 +323,9 @@ function getAssetNode(p_rootNode, p_assetPath)
    }
    catch(e)
    {
-		error = e.toString();
+      error = e.toString();
    }
 
-	// Return the node object, or the error string if it was set
-	return (error !== null ? error : assetNode);
+   // Return the node object, or the error string if it was set
+   return (error !== null ? error : assetNode);
 }

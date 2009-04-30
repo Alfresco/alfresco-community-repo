@@ -11,7 +11,7 @@
       <property name="tenantService" ref="tenantService"/>
       <property name="userNamesAreCaseSensitive" value="${user.name.caseSensitive}"/>
       <property name="feedGenerator" ref="feedGenerator"/>
-      <property name="maxFeedItems" value="100"/>
+      <property name="maxFeedItems" value="${activities.feed.max.size}"/>
    </bean>
 
    <!-- cleans out-of-date feed entries -->

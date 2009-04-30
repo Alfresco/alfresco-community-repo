@@ -176,7 +176,15 @@ public class TemplateNode extends BasePermissionsNode implements NamespacePrefix
         
         return type;
     }
-    
+
+    /**
+     * @return Returns the type in short format.
+     */
+    public String getTypeShort()
+    {
+        return this.getType().toPrefixString(this.services.getNamespaceService());
+    }
+
     /**
      * @return The display name for the node
      */

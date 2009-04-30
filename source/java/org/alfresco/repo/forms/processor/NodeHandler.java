@@ -262,22 +262,22 @@ public class NodeHandler extends AbstractHandler
                 else
                 {
                     // look for association defined for the type
-                    AssociationDefinition assocDef = assocDefs.get(fullQName);
-                    if (assocDef != null)
+                    ChildAssociationDefinition childAssocDef = childAssocDefs.get(fullQName);
+                    if (childAssocDef != null)
                     {
                         // generate the association field
-                        generateAssociationField(assocDef, 
-                                    this.nodeService.getTargetAssocs(nodeRef, fullQName), form);
+                        // TODO: see if we can get just the specific child assoc data
+                        generateAssociationField(childAssocDef, 
+                                    this.nodeService.getChildAssocs(nodeRef), form);
                     }
                     else
                     {
-                        ChildAssociationDefinition childAssocDef = childAssocDefs.get(fullQName);
-                        if (childAssocDef != null)
+                        AssociationDefinition assocDef = assocDefs.get(fullQName);
+                        if (assocDef != null)
                         {
                             // generate the association field
-                            // TODO: see if we can get just the specific child assoc data
-                            generateAssociationField(childAssocDef, 
-                                        this.nodeService.getChildAssocs(nodeRef), form);
+                            generateAssociationField(assocDef, 
+                                        this.nodeService.getTargetAssocs(nodeRef, fullQName), form);
                         }
                         else
                         {

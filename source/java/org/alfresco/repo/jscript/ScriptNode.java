@@ -307,7 +307,15 @@ public class ScriptNode implements Serializable, Scopeable, NamespacePrefixResol
     {
         return getQNameType().toString();
     }
-    
+
+    /**
+     * @return Returns the type in short format.
+     */
+    public String getTypeShort()
+    {
+        return this.getShortQName(getQNameType());
+    }
+
     /**
      * @return Helper to return the 'name' property for the node
      */

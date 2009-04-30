@@ -1,20 +1,20 @@
 function main()
 {
-	 // Extract args
-	 var type = args['type'];
-	 var filter = args['filter'];
-	 var maxResults = args['maxResults'];
-	 
-	 if (type === null)
-	 {
-	     type = "cm:content";
-	 }
-	 
-	 if (maxResults === null)
-	 {
-	     maxResults = 100;
-	 }
-	
+    // Extract args
+    var type = args['type'];
+    var filter = args['filter'];
+    var maxResults = args['maxResults'];
+    
+    if (type === null)
+    {
+        type = "cm:content";
+    }
+    
+    if (maxResults === null)
+    {
+        maxResults = 100;
+    }
+   
     if (logger.isLoggingEnabled())
     {
         logger.log("type = " + type);

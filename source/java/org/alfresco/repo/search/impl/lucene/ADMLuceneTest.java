@@ -769,7 +769,55 @@ public class ADMLuceneTest extends TestCase
         ftsQueryWithCount(searcher, qname+":(<3.4 TO 3.4>)", 0);
         
         
+        ftsQueryWithCount(searcher, "test:float_x002D_ista:3.40", 1);
         
+        ftsQueryWithCount(searcher, "lazy", 1);
+        ftsQueryWithCount(searcher, "laz*", 1);
+        ftsQueryWithCount(searcher, "l*y", 1);
+        ftsQueryWithCount(searcher, "l??y", 1);
+        ftsQueryWithCount(searcher, "?az?", 1);
+        ftsQueryWithCount(searcher, "*zy", 1);
+        
+        ftsQueryWithCount(searcher, "\"lazy\"", 1);
+        ftsQueryWithCount(searcher, "\"laz*\"", 1);
+        ftsQueryWithCount(searcher, "\"l*y\"", 1);
+        ftsQueryWithCount(searcher, "\"l??y\"", 1);
+        ftsQueryWithCount(searcher, "\"?az?\"", 1);
+        ftsQueryWithCount(searcher, "\"*zy\"", 1);
+        
+        ftsQueryWithCount(searcher, "cm:content:lazy", 1);
+        ftsQueryWithCount(searcher, "cm:content:laz*", 1);
+        ftsQueryWithCount(searcher, "cm:content:l*y", 1);
+        ftsQueryWithCount(searcher, "cm:content:l??y", 1);
+        ftsQueryWithCount(searcher, "cm:content:?az?", 1);
+        ftsQueryWithCount(searcher, "cm:content:*zy", 1);
+        
+        ftsQueryWithCount(searcher, "cm:content:\"lazy\"", 1);
+        ftsQueryWithCount(searcher, "cm:content:\"laz*\"", 1);
+        ftsQueryWithCount(searcher, "cm:content:\"l*y\"", 1);
+        ftsQueryWithCount(searcher, "cm:content:\"l??y\"", 1);
+        ftsQueryWithCount(searcher, "cm:content:\"?az?\"", 1);
+        ftsQueryWithCount(searcher, "cm:content:\"*zy\"", 1);
+        
+        ftsQueryWithCount(searcher, "cm:content:(lazy)", 1);
+        ftsQueryWithCount(searcher, "cm:content:(laz*)", 1);
+        ftsQueryWithCount(searcher, "cm:content:(l*y)", 1);
+        ftsQueryWithCount(searcher, "cm:content:(l??y)", 1);
+        ftsQueryWithCount(searcher, "cm:content:(?az?)", 1);
+        ftsQueryWithCount(searcher, "cm:content:(*zy)", 1);
+        
+        ftsQueryWithCount(searcher, "cm:content:(\"lazy\")", 1);
+        ftsQueryWithCount(searcher, "cm:content:(\"laz*\")", 1);
+        ftsQueryWithCount(searcher, "cm:content:(\"l*y\")", 1);
+        ftsQueryWithCount(searcher, "cm:content:(\"l??y\")", 1);
+        ftsQueryWithCount(searcher, "cm:content:(\"?az?\")", 1);
+        ftsQueryWithCount(searcher, "cm:content:(\"*zy\")", 1);
+        
+        ftsQueryWithCount(searcher, "lazy^2 dog^4.2", 1);
+        
+        ftsQueryWithCount(searcher, "lazy~0.7", 1);
+        ftsQueryWithCount(searcher, "cm:content:laxy~0.7", 1);
+        ftsQueryWithCount(searcher, "laxy~0.7", 1);
     }
     
     public void ftsQueryWithCount(ADMLuceneSearcherImpl searcher, String query, int count)

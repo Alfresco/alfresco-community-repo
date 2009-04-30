@@ -46,6 +46,8 @@ public class FTSPhrase extends BaseFunction
     public final static String ARG_PHRASE = "Phrase";
 
     public final static String ARG_PROPERTY = "Property";
+    
+    public final static String ARG_SLOP = "Slop";
 
     public static LinkedHashMap<String, ArgumentDefinition> args;
 
@@ -54,6 +56,7 @@ public class FTSPhrase extends BaseFunction
         args = new LinkedHashMap<String, ArgumentDefinition>();
         args.put(ARG_PHRASE, new BaseArgumentDefinition(Multiplicity.SINGLE_VALUED, ARG_PHRASE, DataTypeDefinition.ANY, true));
         args.put(ARG_PROPERTY, new BaseArgumentDefinition(Multiplicity.SINGLE_VALUED, ARG_PROPERTY, DataTypeDefinition.ANY, false));
+        args.put(ARG_SLOP, new BaseArgumentDefinition(Multiplicity.SINGLE_VALUED, ARG_SLOP, DataTypeDefinition.FLOAT, false));
     }
 
     /**

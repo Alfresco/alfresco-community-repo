@@ -2235,7 +2235,7 @@ public class LuceneQueryParser extends QueryParser
     }
 
     @Override
-    protected Query getPrefixQuery(String field, String termStr) throws ParseException
+    public Query getPrefixQuery(String field, String termStr) throws ParseException
     {
         if (field.startsWith("@"))
         {
@@ -2288,7 +2288,7 @@ public class LuceneQueryParser extends QueryParser
     }
 
     @Override
-    protected Query getWildcardQuery(String field, String termStr) throws ParseException
+    public Query getWildcardQuery(String field, String termStr) throws ParseException
     {
         if (field.startsWith("@"))
         {
@@ -2342,7 +2342,7 @@ public class LuceneQueryParser extends QueryParser
     }
 
     @Override
-    protected Query getFuzzyQuery(String field, String termStr, float minSimilarity) throws ParseException
+    public Query getFuzzyQuery(String field, String termStr, float minSimilarity) throws ParseException
     {
         if (field.startsWith("@"))
         {

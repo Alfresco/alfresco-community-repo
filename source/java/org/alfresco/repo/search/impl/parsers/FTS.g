@@ -34,9 +34,12 @@ grammar FTS;
 options
 {
 	output=AST;
-	backtrack=false;
+	backtrack=false; // Only set to true for grammar debug
 }
 
+/*
+ * Additional tokens for tree building.
+ */
 tokens
 {
 	FTS;
@@ -84,10 +87,20 @@ tokens
 }
 
 
+/*
+ * Make sure the lexer and parser are generated in the correct package
+ */
 @lexer::header{package org.alfresco.repo.search.impl.parsers;} 
 
 @header {package org.alfresco.repo.search.impl.parsers;}
 
+/*
+ * Embeded java to control the default connective when not specified.
+ *
+ * Do not support recover from errors
+ *
+ * Add extra detail to teh error message
+ */
 @members
 {
     private Stack<String> paraphrases = new Stack<String>();
@@ -133,10 +146,11 @@ tokens
        if(e instanceof NoViableAltException)
        {
             NoViableAltException nvae = (NoViableAltException)e;
-            msg = "No viable alt; token="+e.token+
-             " (decision="+nvae.decisionNumber+
-             " state "+nvae.stateNumber+")"+
-             " decision=<<"+nvae.grammarDecisionDescription+">>";
+            msg = "Syntax error at line "+nvae.line+ " position "+nvae.charPositionInLine+" at token " + nvae.token.getText() + 
+             "\n\tNo viable alternative: token="+e.token+
+             "\n\t\tDecision No ="+nvae.decisionNumber+
+             "\n\t\tState No "+nvae.stateNumber+
+             "\n\t\tDecision=<<"+nvae.grammarDecisionDescription+">>";
        }
        else
        {
@@ -145,10 +159,10 @@ tokens
        if(paraphrases.size() > 0)
        {
            String paraphrase = (String)paraphrases.peek();
-           msg = msg+" "+paraphrase;
+           msg = msg+"\n\t\tParaphrase: "+paraphrase;
        }
        
-       return stack+" "+msg;
+       return msg+"\n\tStack\n\t\t"+stack;
     }
     
     public String getTokenErrorDisplay(Token t)
@@ -157,6 +171,9 @@ tokens
     }      
 }
 
+/*
+ * Always throw exceptions
+ */
 @rulecatch
 {
 catch(RecognitionException e)
@@ -165,6 +182,10 @@ catch(RecognitionException e)
 }
 }
 
+/*
+ * Support for emitting duplicate tokens from the lexer
+ * - required to emit ranges after matching floating point literals ...
+ */
 @lexer::members {
 List tokens = new ArrayList();
 public void emit(Token token) {
@@ -181,12 +202,17 @@ public Token nextToken() {
 }
 
 
-
+/*
+ * Top level query
+ */
 ftsQuery	
-    : 	ftsImplicitConjunctionOrDisjunction EOF
+    	: 	ftsImplicitConjunctionOrDisjunction EOF
 		->  ftsImplicitConjunctionOrDisjunction
 	;	
 
+/*
+ * When and and or are not specified between query components decide what to do ...
+ */
 ftsImplicitConjunctionOrDisjunction	
 	:	{defaultConjunction()}? ftsExplicitDisjunction (ftsExplicitDisjunction)*
 		-> ^(CONJUNCTION ftsExplicitDisjunction+)
@@ -194,58 +220,74 @@ ftsImplicitConjunctionOrDisjunction
 		-> ^(DISJUNCTION ftsExplicitDisjunction+)
 	;
 	
+/*
+ * "OR"
+ * As SQL, OR has lower precedence than AND
+ */
 ftsExplicitDisjunction
 	:	ftsExplictConjunction ((or) => or ftsExplictConjunction)*
 		-> ^(DISJUNCTION ftsExplictConjunction+)
 	;
-	
+
+/*
+ * "AND"
+ */	
 ftsExplictConjunction
 	:	ftsPrefixed ((and) => and ftsPrefixed)*
 		-> ^(CONJUNCTION ftsPrefixed+)
 	;	
 	
-	
+/*
+ * Additional info around query compoents 
+ * - negation, default, mandatory, optional, exclude and boost
+ * These options control how individual elements are embedded in OR and AND
+ * and how matches affect the overall score.
+ */	
 ftsPrefixed  
-    :	(not) => not ftsTest
-		-> ^(NEGATION ftsTest)
-    |	ftsTest
-		-> ^(DEFAULT ftsTest)
-    |   PLUS ftsTest
-                -> ^(MANDATORY ftsTest)
-    |   BAR ftsTest
-                -> ^(OPTIONAL ftsTest)
-    |   MINUS ftsTest
-                -> ^(EXCLUDE ftsTest)
-    ;
+    	:	(not) => not ftsTest  boost?
+		-> ^(NEGATION ftsTest  boost?)
+    	|	ftsTest  boost?
+		-> ^(DEFAULT ftsTest boost?)
+    	|   	PLUS ftsTest boost?
+                -> ^(MANDATORY ftsTest boost?)
+    	|   	BAR ftsTest boost?
+                -> ^(OPTIONAL ftsTest boost?)
+    	|   	MINUS ftsTest boost?
+                -> ^(EXCLUDE ftsTest boost?)
+    	;
 
+/*
+ * Individual query components
+ */
 ftsTest	
-    :	ftsTerm ((fuzzy) => fuzzy)? boost?
-		-> ^(TERM ftsTerm fuzzy? boost?)
-	|	ftsExactTerm ((fuzzy) => fuzzy)? boost?
-		-> ^(EXACT_TERM ftsExactTerm fuzzy? boost?)
-    |   ftsPhrase ((fuzzy) => fuzzy)? boost?
-        -> ^(PHRASE ftsPhrase fuzzy? boost?)
-    |   ftsSynonym ((fuzzy) => fuzzy)? boost?
-        -> ^(SYNONYM ftsSynonym fuzzy? boost?)
-    |	ftsFieldGroupProximity 
-        -> ^(PROXIMITY ftsFieldGroupProximity)
-    | 	ftsRange boost?
-        -> ^(RANGE ftsRange boost?)
-    |	ftsFieldGroup 
-    -> ftsFieldGroup 
-	|	LPAREN ftsImplicitConjunctionOrDisjunction RPAREN boost?
-		-> ftsImplicitConjunctionOrDisjunction boost?
+    	:	ftsTerm ((fuzzy) => fuzzy)?
+		-> ^(TERM ftsTerm fuzzy?)
+	|	ftsExactTerm ((fuzzy) => fuzzy)?
+		-> ^(EXACT_TERM ftsExactTerm fuzzy?)
+    	|   	ftsPhrase ((fuzzy) => fuzzy)?
+       		-> ^(PHRASE ftsPhrase fuzzy?)
+    	|   	ftsSynonym ((fuzzy) => fuzzy)? 
+        	-> ^(SYNONYM ftsSynonym fuzzy?)
+    	|	ftsFieldGroupProximity 
+        	-> ^(PROXIMITY ftsFieldGroupProximity)
+    	| 	ftsRange 
+        	-> ^(RANGE ftsRange)
+    	|	ftsFieldGroup 
+    		-> ftsFieldGroup 
+	|	LPAREN ftsImplicitConjunctionOrDisjunction RPAREN
+		-> ftsImplicitConjunctionOrDisjunction
 	;
+	
 
 fuzzy
-: TILDA number
--> ^(FUZZY number)
-;
+	: 	TILDA number
+		-> ^(FUZZY number)
+	;
 
 boost
-: CARAT number
--> ^(BOOST number)
-;
+	: 	CARAT number
+		-> ^(BOOST number)
+	;
 
 ftsTerm
 	:	(fieldReference COLON)? ftsWord
@@ -268,9 +310,9 @@ ftsSynonym
 	;
 
 ftsRange 
-: (fieldReference COLON)? ftsFieldGroupRange
-  -> ftsFieldGroupRange fieldReference?
-;
+	: 	(fieldReference COLON)? ftsFieldGroupRange
+  		-> ftsFieldGroupRange fieldReference?
+	;
 	
 ftsFieldGroup
 	:	fieldReference COLON LPAREN ftsFieldGroupImplicitConjunctionOrDisjunction RPAREN
@@ -296,34 +338,34 @@ ftsFieldGroupExplictConjunction
 	
 	
 ftsFieldGroupPrefixed  
-:	(not) => not ftsFieldGroupTest
-		-> ^(FIELD_NEGATION ftsFieldGroupTest)
-    |	ftsFieldGroupTest
-		-> ^(FIELD_DEFAULT ftsFieldGroupTest)
-    |   PLUS ftsFieldGroupTest
-                -> ^(FIELD_MANDATORY ftsFieldGroupTest)
-    |   BAR ftsFieldGroupTest
-                -> ^(FIELD_OPTIONAL ftsFieldGroupTest)
-    |   MINUS ftsFieldGroupTest
-                -> ^(FIELD_EXCLUDE ftsFieldGroupTest)
-    ;
+	:	(not) => not ftsFieldGroupTest boost?
+		-> ^(FIELD_NEGATION ftsFieldGroupTest boost?)
+    	|	ftsFieldGroupTest boost?
+		-> ^(FIELD_DEFAULT ftsFieldGroupTest boost?)
+	|   	PLUS ftsFieldGroupTest boost?
+                -> ^(FIELD_MANDATORY ftsFieldGroupTest boost?)
+    	|   	BAR ftsFieldGroupTest boost?
+                -> ^(FIELD_OPTIONAL ftsFieldGroupTest boost?)
+    	|   	MINUS ftsFieldGroupTest boost?
+                -> ^(FIELD_EXCLUDE ftsFieldGroupTest boost?)
+    	;
 
 
 ftsFieldGroupTest
-	:	ftsFieldGroupTerm ((fuzzy) => fuzzy)? boost?
-		-> ^(FG_TERM ftsFieldGroupTerm fuzzy? boost?)
-	|	ftsFieldGroupExactTerm ((fuzzy) => fuzzy)? boost?
-		-> ^(FG_EXACT_TERM ftsFieldGroupExactTerm fuzzy? boost?)
-	|	ftsFieldGroupPhrase ((fuzzy) => fuzzy)? boost?
-		-> ^(FG_PHRASE ftsFieldGroupPhrase fuzzy? boost?)
-	|	ftsFieldGroupSynonym ((fuzzy) => fuzzy)? boost?
-		-> ^(FG_SYNONYM ftsFieldGroupSynonym fuzzy? boost?)
-	|  ftsFieldGroupProximity
+	:	ftsFieldGroupTerm ((fuzzy) => fuzzy)?
+		-> ^(FG_TERM ftsFieldGroupTerm fuzzy?)
+	|	ftsFieldGroupExactTerm ((fuzzy) => fuzzy)?
+		-> ^(FG_EXACT_TERM ftsFieldGroupExactTerm fuzzy?)
+	|	ftsFieldGroupPhrase ((fuzzy) => fuzzy)? 
+		-> ^(FG_PHRASE ftsFieldGroupPhrase fuzzy? )
+	|	ftsFieldGroupSynonym ((fuzzy) => fuzzy)?
+		-> ^(FG_SYNONYM ftsFieldGroupSynonym fuzzy?)
+	|  	ftsFieldGroupProximity
 		-> ^(FG_PROXIMITY ftsFieldGroupProximity)
-    | 	ftsFieldGroupRange boost?
-        -> ^(FG_RANGE ftsFieldGroupRange boost?)
-	|	 LPAREN ftsFieldGroupImplicitConjunctionOrDisjunction RPAREN boost?
-		-> ftsFieldGroupImplicitConjunctionOrDisjunction boost?
+    	| 	ftsFieldGroupRange
+        	-> ^(FG_RANGE ftsFieldGroupRange)
+	|	 LPAREN ftsFieldGroupImplicitConjunctionOrDisjunction RPAREN 
+		-> ftsFieldGroupImplicitConjunctionOrDisjunction 
 	;
 	
 ftsFieldGroupTerm
@@ -350,9 +392,9 @@ ftsFieldGroupProximity
 	;
 	
 proximityGroup
-  : STAR ( LPAREN DECIMAL_INTEGER_LITERAL? RPAREN)?
-  -> ^(PROXIMITY DECIMAL_INTEGER_LITERAL?)
-  ;
+  	: 	STAR ( LPAREN DECIMAL_INTEGER_LITERAL? RPAREN)?
+  		-> ^(PROXIMITY DECIMAL_INTEGER_LITERAL?)
+  	;
 	
 ftsFieldGroupRange
         :	ftsRangeWord DOTDOT ftsRangeWord
@@ -377,70 +419,89 @@ range_right
 	
 	/* Need to fix the generated parser for extra COLON check ??*/
 fieldReference
-	: AT? (prefix|uri)? identifier
-    -> ^(FIELD_REF identifier prefix? uri?)
+	: 	AT? (prefix|uri)? identifier
+    		-> ^(FIELD_REF identifier prefix? uri?)
 	;
 	
 prefix
-: identifier COLON
--> ^(PREFIX identifier)
-;	
+	: 	identifier COLON
+		-> ^(PREFIX identifier)
+	;	
 	
 uri
-  : URI
-  -> ^(NAME_SPACE URI)
-  ;
+  	: 	URI
+  		-> ^(NAME_SPACE URI)
+  	;
 	
 identifier
 	:	ID
 	;
 	
 ftsWord
-    :   ID
-    |   FTSWORD
-    |   OR
-    |   AND
-    |   NOT
-    |   TO
-    |   DECIMAL_INTEGER_LITERAL
-    |   FLOATING_POINT_LITERAL
-    ;
+    	:   	ID
+    	|  	FTSWORD
+    	|  	FTSPRE
+    	|   	FTSWILD
+    	|   	OR
+    	|   	AND
+    	|   	NOT
+    	|   	TO
+    	|   	DECIMAL_INTEGER_LITERAL
+    	|  	FLOATING_POINT_LITERAL
+    	;
     
 number 
-    :   DECIMAL_INTEGER_LITERAL
-    |   FLOATING_POINT_LITERAL
-    ;
+    	:   	DECIMAL_INTEGER_LITERAL
+    	|   	FLOATING_POINT_LITERAL
+    	;
     
 ftsRangeWord
-    :   ID
-    |   FTSWORD
-    |   FTSPHRASE
-    |   DECIMAL_INTEGER_LITERAL
-    |   FLOATING_POINT_LITERAL
-    ;
+    	:   	ID
+    	|   	FTSWORD
+    	|   	FTSPRE
+    	|   	FTSWILD
+    	|   	FTSPHRASE
+    	|   	DECIMAL_INTEGER_LITERAL
+    	|   	FLOATING_POINT_LITERAL
+    	;
 	
 or
-    :   OR
-    |	BAR BAR
-    ;
+    	:   	OR
+    	|	BAR BAR
+    	;
     
 and	
-    :	AND
-    |	AMP AMP
-    ;
+    	:	AND
+    	|	AMP AMP
+    	;
     
 not
-    :   NOT
-    |   EXCLAMATION
-    ;		
+    	:  	NOT
+    	|   	EXCLAMATION
+    	;			
+
+// ===== //
+// LEXER //
+// ===== //
 
 FTSPHRASE
-  : '"' (F_ESC | ~('\\'|'"') )* '"' ;
+  	: 	'"' (F_ESC | ~('\\'|'"') )* '"' ;
 
 
+/*
+ * Basic URI pattern based on the regular expression patttern taken from the RFC (it it not full URI parsing)
+ * Note this means the language can not use {} anywhere else in the syntax
+ */
 URI 
-: '{' ((F_URI_ALPHA|F_URI_DIGIT|F_URI_OTHER) => (F_URI_ALPHA|F_URI_DIGIT|F_URI_OTHER)+ COLON)? ((('//') =>'//') ( (F_URI_ALPHA|F_URI_DIGIT|F_URI_OTHER|COLON) => (F_URI_ALPHA|F_URI_DIGIT|F_URI_OTHER|COLON))*)? (F_URI_ALPHA|F_URI_DIGIT|F_URI_OTHER|COLON|'/')* ('?' (F_URI_ALPHA|F_URI_DIGIT|F_URI_OTHER|COLON|'/'|'?')*)? ('#' (F_URI_ALPHA|F_URI_DIGIT|F_URI_OTHER|COLON|'/'|'?'|'#')*)? '}'  
-;
+	: 	'{' 
+	        ((F_URI_ALPHA|F_URI_DIGIT|F_URI_OTHER) => (F_URI_ALPHA|F_URI_DIGIT|F_URI_OTHER)+ COLON)? 
+	        ((('//') =>'//') 
+	        ( (F_URI_ALPHA|F_URI_DIGIT|F_URI_OTHER|COLON) => (F_URI_ALPHA|F_URI_DIGIT|F_URI_OTHER|COLON))*)? 
+	        (F_URI_ALPHA|F_URI_DIGIT|F_URI_OTHER|COLON|'/')* 
+	        ('?' (F_URI_ALPHA|F_URI_DIGIT|F_URI_OTHER|COLON|'/'|'?')*)? 
+	        ('#' (F_URI_ALPHA|F_URI_DIGIT|F_URI_OTHER|COLON|'/'|'?'|'#')*)? 
+	        '}'  
+	;
 
 
 fragment 
@@ -463,6 +524,10 @@ F_URI_OTHER
 	:	'-' |'.'|'_'|'~'|'['|']'|'@'|'!'|'$'|'&'|'\''|'('|')'|'*'|'+'|','|';'|'='
 	;
 
+/*
+ * Simple tokens, note all are case insensitive
+ */ 
+
 OR	:	('O'|'o')('R'|'r');
 AND	:	('A'|'a')('N'|'n')('D'|'d');
 NOT	:	('N'|'n')('O'|'o')('T'|'t');
@@ -473,108 +538,135 @@ PLUS	:	'+' ;
 MINUS	:	'-' ;
 COLON	:	':' ;
 STAR	:	'*' ;
-DOTDOT  : '..' ;
+DOTDOT  : 	'..' ;
 DOT	:	'.' ;
 AMP	:	'&' ;
-EXCLAMATION : '!' ;
-BAR : '|' ;
-EQUALS : '=' ;
+EXCLAMATION : 	'!' ;
+BAR 	: 	'|' ;
+EQUALS 	: 	'=' ;
 QUESTION_MARK : '?' ;
-LCURL : '{' ;
-RCURL : '}' ;
-LSQUARE : '[' ;
-RSQUARE : ']' ;
-TO : ('T'|'t')('O'|'o') ;
-COMMA : ',';
-CARAT : '^';
-DOLLAR :  '$';
-GT : '>';
-LT : '<';
-AT: '@';
+LCURL 	: 	'{' ;
+RCURL 	: 	'}' ;
+LSQUARE : 	'[' ;
+RSQUARE : 	']' ;
+TO 	: 	('T'|'t')('O'|'o') ;
+COMMA 	: 	',';
+CARAT 	: 	'^';
+DOLLAR 	:  	'$';
+GT 	: 	'>';
+LT 	: 	'<';
+AT	: 	'@';
 
 /**
- * We should support _x????_ encoding for invalid sql characters 
+ * ID
+ * _x????_ encoding is supported for invalid sql characters but requires nothing here, they are handled in the code 
+ * Also supports \ style escaping for non CMIS SQL 
  */ 
-ID  :   ('a'..'z'|'A'..'Z'|'_')('a'..'z'|'A'..'Z'|'0'..'9'|'_'|'$'|'#'|F_ESC)* ;
+ID  	:   	('a'..'z'|'A'..'Z'|'_')('a'..'z'|'A'..'Z'|'0'..'9'|'_'|'$'|'#'|F_ESC)* ;
 
 DECIMAL_INTEGER_LITERAL
-        : ( PLUS | MINUS )? DECIMAL_NUMERAL
+        : 	( PLUS | MINUS )? DECIMAL_NUMERAL
         ;
 
-FTSWORD :	 (F_ESC | INWORD | STAR | QUESTION_MARK)+;
+FTSWORD :  	(F_ESC | INWORD)+;
+
+FTSPRE 	:  	(F_ESC | INWORD)+ STAR;
+
+FTSWILD : 	(F_ESC | INWORD | STAR | QUESTION_MARK)+;
 	
 fragment
-F_ESC   : '\\'
-    ( 'u' F_HEX F_HEX F_HEX F_HEX
-    | . // any single char escaped 
-    )
-  ;
+F_ESC   : 	'\\'
+    		(
+    		// unicode 	
+    		'u' F_HEX F_HEX F_HEX F_HEX
+    		// any single char escaped 
+   		| . 
+    		)
+  	;
 
 fragment
-F_HEX :
-    '0' .. '9'
-  | 'a' .. 'f'
-  | 'A' .. 'F'
-  ;	
+F_HEX 	
+	:	'0' .. '9'
+  	| 	'a' .. 'f'
+  	| 	'A' .. 'F'
+  	;	
 	
 fragment 
-INWORD	: '\u0041' .. '\u005A'
-	| '\u0061' .. '\u007A'
-	| '\u00C0' .. '\u00D6'
-	| '\u00D8' .. '\u00F6'
-	| '\u00F8' .. '\u00FF'
-	| '\u0100' .. '\u1FFF'
-	| '\u3040' .. '\u318F'
-	| '\u3300' .. '\u337F'
-	| '\u3400' .. '\u3D2D'
-	| '\u4E00' .. '\u9FFF'
-	| '\uF900' .. '\uFAFF'
-	| '\uAC00' .. '\uD7AF'
-	| '\u0030' .. '\u0039'
-	| '\u0660' .. '\u0669'
-	| '\u06F0' .. '\u06F9'
-	| '\u0966' .. '\u096F'
-	| '\u09E6' .. '\u09EF' 
-	| '\u0A66' .. '\u0A6F'
-	| '\u0AE6' .. '\u0AEF'
-	| '\u0B66' .. '\u0B6F'
-	| '\u0BE7' .. '\u0BEF'
-	| '\u0C66' .. '\u0C6F'
-	| '\u0CE6' .. '\u0CEF'
-	| '\u0D66' .. '\u0D6F'
-	| '\u0E50' .. '\u0E59'
-	| '\u0ED0' .. '\u0ED9'
-	| '\u1040' .. '\u1049'
+INWORD	
+	: 	'\u0041' .. '\u005A'
+	| 	'\u0061' .. '\u007A'
+	| 	'\u00C0' .. '\u00D6'
+	| 	'\u00D8' .. '\u00F6'
+	| 	'\u00F8' .. '\u00FF'
+	| 	'\u0100' .. '\u1FFF'
+	| 	'\u3040' .. '\u318F'
+	|	'\u3300' .. '\u337F'
+	| 	'\u3400' .. '\u3D2D'
+	| 	'\u4E00' .. '\u9FFF'
+	| 	'\uF900' .. '\uFAFF'
+	| 	'\uAC00' .. '\uD7AF'
+	| 	'\u0030' .. '\u0039'
+	| 	'\u0660' .. '\u0669'
+	| 	'\u06F0' .. '\u06F9'
+	| 	'\u0966' .. '\u096F'
+	|	'\u09E6' .. '\u09EF' 
+	|	'\u0A66' .. '\u0A6F'
+	| 	'\u0AE6' .. '\u0AEF'
+	| 	'\u0B66' .. '\u0B6F'
+	| 	'\u0BE7' .. '\u0BEF'
+	| 	'\u0C66' .. '\u0C6F'
+	| 	'\u0CE6' .. '\u0CEF'
+	| 	'\u0D66' .. '\u0D6F'
+	| 	'\u0E50' .. '\u0E59'
+	| 	'\u0ED0' .. '\u0ED9'
+	| 	'\u1040' .. '\u1049'
 	;
              
         
+/*
+ * Range and floating point have to be conbined to avoid lexer issues.
+ * This requires multi-token emits and addition supporting java code - see above ...
+ *
+ * Special rules for the likes of
+ * 1..  integer ranges
+ * 1... float range with the float terminated by .
+ * If floats are 'full' e.g. 2.4.. then the parse matches the normal float tokem and a DOTDOT token
+ * Likewise .1...2 does not require any special support
+ *
+ * Float and integer are based on the Java language spec.
+ */        
 FLOATING_POINT_LITERAL 
-  : d=START_RANGE_I r=DOTDOT
-    {
-      $d.setType(DECIMAL_INTEGER_LITERAL);
-      emit($d);
-      $r.setType(DOTDOT);
-      emit($r);
-    }
-  | d=START_RANGE_F r=DOTDOT
-    {
-      $d.setType(FLOATING_POINT_LITERAL);
-      emit($d);
-      $r.setType(DOTDOT);
-      emit($r);
-    }
-  | (PLUS | MINUS)? DIGIT+ DOT DIGIT* EXPONENT?
-  | (PLUS | MINUS)? DOT DIGIT+ EXPONENT?
-  | (PLUS | MINUS)? DIGIT+  EXPONENT
-  ;
+                // Integer ranges
+  	: 	d=START_RANGE_I r=DOTDOT
+    		{
+      			$d.setType(DECIMAL_INTEGER_LITERAL);
+      			emit($d);
+      			$r.setType(DOTDOT);
+      			emit($r);
+    		}
+    		// Float ranges
+  	| 	d=START_RANGE_F r=DOTDOT
+    		{
+      			$d.setType(FLOATING_POINT_LITERAL);
+      			emit($d);
+      			$r.setType(DOTDOT);
+      			emit($r);
+    		}
+    		// Normal float rules
+  	| 	(PLUS | MINUS)? DIGIT+ DOT DIGIT* EXPONENT?
+  	| 	(PLUS | MINUS)? DOT DIGIT+ EXPONENT?
+  	| 	(PLUS | MINUS)? DIGIT+  EXPONENT
+  	;
 
 fragment
-START_RANGE_I: (PLUS | MINUS)? DIGIT+ 
-;
+START_RANGE_I
+	: 	(PLUS | MINUS)? DIGIT+ 
+	;
 
 fragment
-START_RANGE_F: (PLUS | MINUS)? DIGIT+ DOT
-;
+START_RANGE_F
+	: 	(PLUS | MINUS)? DIGIT+ DOT
+	;
 
 /**   
  * Fragments for decimal
@@ -582,29 +674,40 @@ START_RANGE_F: (PLUS | MINUS)? DIGIT+ DOT
         
 fragment
 DECIMAL_NUMERAL
-  : ZERO_DIGIT 
-  | NON_ZERO_DIGIT DIGIT* 
-  ;
+  	: 	ZERO_DIGIT 
+  	| 	NON_ZERO_DIGIT DIGIT* 
+  	;
+  	
 fragment
-DIGIT : ZERO_DIGIT | NON_ZERO_DIGIT ;
+DIGIT 
+	: 	ZERO_DIGIT 
+	| 	NON_ZERO_DIGIT 
+	;
+	
 fragment
 ZERO_DIGIT  
-  : '0' ;
+  	: 	'0' ;
+  	
 fragment
 NON_ZERO_DIGIT 
-  : '1'..'9' ;
+  	: 	'1'..'9' 
+  	;
 
 fragment
-E : ('e' | 'E') ;
+E 	: 	('e' | 'E') ;
   
 fragment
 EXPONENT
-  : E SIGNED_INTEGER
-  ;
+  	: 	E SIGNED_INTEGER
+  	;
+  	
 fragment
 SIGNED_INTEGER
-  : (PLUS | MINUS)? DIGIT+  
-  ;
+  	: 	(PLUS | MINUS)? DIGIT+  
+  	;
 
-
+/*
+ * Standard white space
+ * White space may be escaped by \ in some tokens 
+ */
 WS	:	( ' ' | '\t' | '\r' | '\n' )+ { $channel = HIDDEN; } ;

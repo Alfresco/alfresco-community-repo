@@ -31,6 +31,8 @@ public abstract class BaseConstraint implements Constraint
 
     private Occur occur = Occur.DEFAULT;
     
+    private float boost = 1.0f;
+    
     public BaseConstraint()
     {
        this.occur = occur;
@@ -44,6 +46,16 @@ public abstract class BaseConstraint implements Constraint
     public void setOccur(Occur occur)
     {
         this.occur = occur;
+    }
+
+    public float getBoost()
+    {
+        return boost;
+    }
+
+    public void setBoost(float boost)
+    {
+        this.boost = boost;
     }
 
 }

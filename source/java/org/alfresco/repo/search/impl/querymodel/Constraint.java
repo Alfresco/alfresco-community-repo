@@ -45,4 +45,8 @@ public interface Constraint
     public Occur getOccur();
     
     public void setOccur(Occur occur);
+    
+    public float getBoost();
+    
+    public void setBoost(float boost);
 }

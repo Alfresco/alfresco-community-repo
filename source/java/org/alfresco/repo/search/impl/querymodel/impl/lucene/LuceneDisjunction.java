@@ -72,6 +72,7 @@ public class LuceneDisjunction extends BaseDisjunction implements LuceneQueryBui
             {
                 LuceneQueryBuilderComponent luceneQueryBuilderComponent = (LuceneQueryBuilderComponent) constraint;
                 Query constraintQuery = luceneQueryBuilderComponent.addComponent(selectors, functionArgs, luceneContext, functionContext);
+                constraintQuery.setBoost(constraint.getBoost());
                 if (constraintQuery != null)
                 {
                     switch (constraint.getOccur())

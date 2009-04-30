@@ -71,6 +71,7 @@ public class LuceneConjunction extends BaseConjunction implements LuceneQueryBui
             {
                 LuceneQueryBuilderComponent luceneQueryBuilderComponent = (LuceneQueryBuilderComponent) constraint;
                 Query constraintQuery = luceneQueryBuilderComponent.addComponent(selectors, functionArgs, luceneContext, functionContext);
+                constraintQuery.setBoost(constraint.getBoost());
                 boolean must = false;
                 boolean should = false;
                 boolean must_not = false;

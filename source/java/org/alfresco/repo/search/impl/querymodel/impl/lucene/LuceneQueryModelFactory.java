@@ -53,8 +53,14 @@ import org.alfresco.repo.search.impl.querymodel.impl.functions.Descendant;
 import org.alfresco.repo.search.impl.querymodel.impl.functions.Equals;
 import org.alfresco.repo.search.impl.querymodel.impl.functions.Exists;
 import org.alfresco.repo.search.impl.querymodel.impl.functions.FTSExactTerm;
+import org.alfresco.repo.search.impl.querymodel.impl.functions.FTSExpandTerm;
+import org.alfresco.repo.search.impl.querymodel.impl.functions.FTSFuzzyTerm;
 import org.alfresco.repo.search.impl.querymodel.impl.functions.FTSPhrase;
+import org.alfresco.repo.search.impl.querymodel.impl.functions.FTSPrefixTerm;
+import org.alfresco.repo.search.impl.querymodel.impl.functions.FTSProximity;
+import org.alfresco.repo.search.impl.querymodel.impl.functions.FTSRange;
 import org.alfresco.repo.search.impl.querymodel.impl.functions.FTSTerm;
+import org.alfresco.repo.search.impl.querymodel.impl.functions.FTSWildTerm;
 import org.alfresco.repo.search.impl.querymodel.impl.functions.GreaterThan;
 import org.alfresco.repo.search.impl.querymodel.impl.functions.GreaterThanOrEquals;
 import org.alfresco.repo.search.impl.querymodel.impl.functions.In;
@@ -72,10 +78,13 @@ import org.alfresco.repo.search.impl.querymodel.impl.lucene.functions.LuceneEqua
 import org.alfresco.repo.search.impl.querymodel.impl.lucene.functions.LuceneExists;
 import org.alfresco.repo.search.impl.querymodel.impl.lucene.functions.LuceneFTSExactTerm;
 import org.alfresco.repo.search.impl.querymodel.impl.lucene.functions.LuceneFTSExpandTerm;
+import org.alfresco.repo.search.impl.querymodel.impl.lucene.functions.LuceneFTSFuzzyTerm;
 import org.alfresco.repo.search.impl.querymodel.impl.lucene.functions.LuceneFTSPhrase;
+import org.alfresco.repo.search.impl.querymodel.impl.lucene.functions.LuceneFTSPrefixTerm;
 import org.alfresco.repo.search.impl.querymodel.impl.lucene.functions.LuceneFTSProximity;
 import org.alfresco.repo.search.impl.querymodel.impl.lucene.functions.LuceneFTSRange;
 import org.alfresco.repo.search.impl.querymodel.impl.lucene.functions.LuceneFTSTerm;
+import org.alfresco.repo.search.impl.querymodel.impl.lucene.functions.LuceneFTSWildTerm;
 import org.alfresco.repo.search.impl.querymodel.impl.lucene.functions.LuceneGreaterThan;
 import org.alfresco.repo.search.impl.querymodel.impl.lucene.functions.LuceneGreaterThanOrEquals;
 import org.alfresco.repo.search.impl.querymodel.impl.lucene.functions.LuceneIn;
@@ -120,10 +129,12 @@ public class LuceneQueryModelFactory implements QueryModelFactory
         functions.put(FTSTerm.NAME, new LuceneFTSTerm());
         functions.put(FTSExactTerm.NAME, new LuceneFTSExactTerm());
         functions.put(FTSPhrase.NAME, new LuceneFTSPhrase());
-        functions.put(LuceneFTSExpandTerm.NAME, new LuceneFTSExpandTerm());
-        functions.put(LuceneFTSProximity.NAME, new LuceneFTSProximity());
-        functions.put(LuceneFTSRange.NAME, new LuceneFTSRange());
-
+        functions.put(FTSExpandTerm.NAME, new LuceneFTSExpandTerm());
+        functions.put(FTSProximity.NAME, new LuceneFTSProximity());
+        functions.put(FTSRange.NAME, new LuceneFTSRange());
+        functions.put(FTSPrefixTerm.NAME, new LuceneFTSPrefixTerm());
+        functions.put(FTSWildTerm.NAME, new LuceneFTSWildTerm());
+        functions.put(FTSFuzzyTerm.NAME, new LuceneFTSFuzzyTerm());
     }
 
     /*

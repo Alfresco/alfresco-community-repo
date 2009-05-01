@@ -15,7 +15,7 @@ script:
     }
 
     // check permissions
-    model.checkin = cmis.findArg(args.checkin, headers["CMIS-checkin"]) == "true" ? true : false;
+    model.checkin = args[cmis.ARG_CHECKIN] == "true" ? true : false;
     if (model.checkin && !model.node.hasPermission("CheckIn"))
     {
         status.code = 403;
@@ -41,8 +41,8 @@ script:
     // checkin
     if (model.checkin)
     {
-        var comment = cmis.findArg(args.checkinComment, headers["CMIS-checkinComment"]);
-        var major = cmis.findArg(args.major, headers["CMIS-major"]);
+        var comment = args[cmis.ARG_CHECKIN_COMMENT];
+        var major = args[cmis.ARG_MAJOR];
         major = (major === null || major == "true") ? true : false;
         model.node = model.node.checkin(comment === null ? "" : comment, major);
     }

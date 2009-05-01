@@ -69,10 +69,9 @@ public class CMISTest extends BaseCMISWebScriptTest
 //        server.username = "admin";
 //        server.password = "admin";
 //        setRemoteServer(server);
-//        setArgsAsHeaders(false);
 //        setValidateResponse(false);
-        setListener(new CMISTestListener(System.out));
-        setTraceReqRes(true);
+//        setListener(new CMISTestListener(System.out));
+//        setTraceReqRes(true);
         
         super.setUp();
     }
@@ -328,8 +327,8 @@ public class CMISTest extends BaseCMISWebScriptTest
             for (Entry entry : children.getEntries())
             {
                 CMISObject object = entry.getExtension(CMISConstants.OBJECT);
-                assertNotNull(object.getObjectId().getValue());
-                assertNotNull(object.getObjectTypeId().getValue());
+                assertNotNull(object.getObjectId().getStringValue());
+                assertNotNull(object.getObjectTypeId().getStringValue());
             }
         }
 
@@ -341,7 +340,7 @@ public class CMISTest extends BaseCMISWebScriptTest
             for (Entry entry : children.getEntries())
             {
                 CMISObject object = entry.getExtension(CMISConstants.OBJECT);
-                assertNotNull(object.getObjectId().getValue());
+                assertNotNull(object.getObjectId().getStringValue());
                 assertNull(object.getObjectTypeId());
             }
         }
@@ -555,6 +554,8 @@ public class CMISTest extends BaseCMISWebScriptTest
         String updateFile = loadString("/org/alfresco/repo/cmis/rest/test/updateatomentry.atomentry.xml");
         Response res = sendRequest(new PutRequest(document.getSelfLink().getHref().toString(), updateFile, Format.ATOMENTRY.mimetype()), 200, getAtomValidator());
         assertNotNull(res);
+        Entry updated = getAbdera().parseEntry(new StringReader(res.getContentAsString()), null);
+        assertEquals("Iñtërnâtiônàlizætiøn - 2", updated.getTitle());
     }
 
     public void testContentStream()
@@ -606,7 +607,7 @@ public class CMISTest extends BaseCMISWebScriptTest
             CMISObject childObject = child.getExtension(CMISConstants.OBJECT);
             assertNotNull(childObject);
             assertEquals(((CMISAllowableActions)allowableActions).getParentUrl(), child.getSelfLink().getHref().toString());
-            assertEquals(((CMISAllowableActions)allowableActions).getParentId(), childObject.getObjectId().getValue());
+            assertEquals(((CMISAllowableActions)allowableActions).getParentId(), childObject.getObjectId().getStringValue());
             CMISAllowableActions objectAllowableActions = childObject.getExtension(CMISConstants.ALLOWABLEACTIONS);
             assertNotNull(objectAllowableActions);
             compareAllowableActions((CMISAllowableActions)allowableActions, objectAllowableActions);
@@ -636,7 +637,7 @@ public class CMISTest extends BaseCMISWebScriptTest
             CMISObject childObject = child.getExtension(CMISConstants.OBJECT);
             assertNotNull(childObject);
             assertEquals(((CMISAllowableActions)allowableActions).getParentUrl(), child.getSelfLink().getHref().toString());
-            assertEquals(((CMISAllowableActions)allowableActions).getParentId(), childObject.getObjectId().getValue());
+            assertEquals(((CMISAllowableActions)allowableActions).getParentId(), childObject.getObjectId().getStringValue());
             CMISAllowableActions objectAllowableActions = childObject.getExtension(CMISConstants.ALLOWABLEACTIONS);
             assertNotNull(objectAllowableActions);
             compareAllowableActions((CMISAllowableActions)allowableActions, objectAllowableActions);
@@ -677,7 +678,7 @@ public class CMISTest extends BaseCMISWebScriptTest
                 
                 // compare the two
                 assertEquals(((CMISAllowableActions)allowableActions).getParentUrl(), child.getSelfLink().getHref().toString());
-                assertEquals(((CMISAllowableActions)allowableActions).getParentId(), childObject.getObjectId().getValue());
+                assertEquals(((CMISAllowableActions)allowableActions).getParentId(), childObject.getObjectId().getStringValue());
                 compareAllowableActions((CMISAllowableActions)allowableActions, objectAllowableActions);
             }
         }
@@ -689,7 +690,7 @@ public class CMISTest extends BaseCMISWebScriptTest
         // retrieve test folder for checkouts
         Entry testFolder = createTestFolder("testGetCheckedOut");
         CMISObject object = testFolder.getExtension(CMISConstants.OBJECT);
-        String scopeId = object.getObjectId().getValue();
+        String scopeId = object.getObjectId().getStringValue();
         assertNotNull(scopeId);
         
         // retrieve checkouts within scope of test checkout folder
@@ -729,9 +730,9 @@ public class CMISTest extends BaseCMISWebScriptTest
         CMISObject pwcObject = pwc.getExtension(CMISConstants.OBJECT);
         assertNotNull(pwcObject);
         assertTrue(pwcObject.isVersionSeriesCheckedOut().getBooleanValue());
-        assertEquals(docObject.getObjectId().getValue(), pwcObject.getVersionSeriesId().getValue());
-        assertEquals(pwcObject.getObjectId().getValue(), pwcObject.getVersionSeriesCheckedOutId().getValue());
-        assertNotNull(pwcObject.getVersionSeriesCheckedOutBy().getValue());
+        assertEquals(docObject.getObjectId().getStringValue(), pwcObject.getVersionSeriesId().getStringValue());
+        assertEquals(pwcObject.getObjectId().getStringValue(), pwcObject.getVersionSeriesCheckedOutId().getStringValue());
+        assertNotNull(pwcObject.getVersionSeriesCheckedOutBy().getStringValue());
         
         // retrieve pwc directly
         Response pwcGetRes = sendRequest(new GetRequest(pwc.getSelfLink().getHref().toString()), 200);
@@ -742,13 +743,13 @@ public class CMISTest extends BaseCMISWebScriptTest
         CMISObject pwcGetObject = pwc.getExtension(CMISConstants.OBJECT);
         assertNotNull(pwcGetObject);
         assertTrue(pwcGetObject.isVersionSeriesCheckedOut().getBooleanValue());
-        assertEquals(docObject.getObjectId().getValue(), pwcGetObject.getVersionSeriesId().getValue());
-        assertEquals(pwcGetObject.getObjectId().getValue(), pwcGetObject.getVersionSeriesCheckedOutId().getValue());
-        assertNotNull(pwcGetObject.getVersionSeriesCheckedOutBy().getValue());
+        assertEquals(docObject.getObjectId().getStringValue(), pwcGetObject.getVersionSeriesId().getStringValue());
+        assertEquals(pwcGetObject.getObjectId().getStringValue(), pwcGetObject.getVersionSeriesCheckedOutId().getStringValue());
+        assertNotNull(pwcGetObject.getVersionSeriesCheckedOutBy().getStringValue());
 
         // test getCheckedOut is updated
         CMISObject object = testFolder.getExtension(CMISConstants.OBJECT);
-        String scopeId = object.getObjectId().getValue();
+        String scopeId = object.getObjectId().getStringValue();
         Map<String, String> args = new HashMap<String, String>();
         args.put("folderId", scopeId);
         Feed checkedout = getFeed(new IRI(checkedoutHREF.toString()), args);
@@ -778,7 +779,7 @@ public class CMISTest extends BaseCMISWebScriptTest
         
         // test getCheckedOut is updated
         CMISObject object = testFolder.getExtension(CMISConstants.OBJECT);
-        String scopeId = object.getObjectId().getValue();
+        String scopeId = object.getObjectId().getStringValue();
         Map<String, String> args = new HashMap<String, String>();
         args.put("folderId", scopeId);
         Feed checkedout = getFeed(new IRI(checkedoutHREF.toString()), args);
@@ -793,7 +794,7 @@ public class CMISTest extends BaseCMISWebScriptTest
 
         // test getCheckedOut is updated
         CMISObject object2 = testFolder.getExtension(CMISConstants.OBJECT);
-        String scopeId2 = object2.getObjectId().getValue();
+        String scopeId2 = object2.getObjectId().getStringValue();
         Map<String, String> args2 = new HashMap<String, String>();
         args2.put("folderId", scopeId2);
         Feed checkedout2 = getFeed(new IRI(checkedoutHREF.toString()), args2);
@@ -824,7 +825,7 @@ public class CMISTest extends BaseCMISWebScriptTest
         
         // test getCheckedOut is updated
         CMISObject object = testFolder.getExtension(CMISConstants.OBJECT);
-        String scopeId = object.getObjectId().getValue();
+        String scopeId = object.getObjectId().getStringValue();
         Map<String, String> args = new HashMap<String, String>();
         args.put("folderId", scopeId);
         Feed checkedout = getFeed(new IRI(checkedoutHREF.toString()), args);
@@ -837,9 +838,9 @@ public class CMISTest extends BaseCMISWebScriptTest
         CMISObject checkedoutdocObject = checkedoutdoc.getExtension(CMISConstants.OBJECT);
         assertNotNull(checkedoutdocObject);
         assertTrue(checkedoutdocObject.isVersionSeriesCheckedOut().getBooleanValue());
-        //assertEquals(checkedoutdocObject.getObjectId().getValue(), checkedoutdocObject.getVersionSeriesId().getValue());
-        assertNotNull(checkedoutdocObject.getVersionSeriesCheckedOutId().getValue());
-        assertNotNull(checkedoutdocObject.getVersionSeriesCheckedOutBy().getValue());
+        //assertEquals(checkedoutdocObject.getObjectId().getStringValue(), checkedoutdocObject.getVersionSeriesId().getStringValue());
+        assertNotNull(checkedoutdocObject.getVersionSeriesCheckedOutId().getStringValue());
+        assertNotNull(checkedoutdocObject.getVersionSeriesCheckedOutBy().getStringValue());
         
         // test update of private working copy
         String updateFile = loadString("/org/alfresco/repo/cmis/rest/test/updatedocument.atomentry.xml");
@@ -868,7 +869,7 @@ public class CMISTest extends BaseCMISWebScriptTest
     
         // test getCheckedOut is updated
         CMISObject object2 = testFolder.getExtension(CMISConstants.OBJECT);
-        String scopeId2 = object2.getObjectId().getValue();
+        String scopeId2 = object2.getObjectId().getStringValue();
         Map<String, String> args3 = new HashMap<String, String>();
         args3.put("folderId", scopeId2);
         Feed checkedout2 = getFeed(new IRI(checkedoutHREF.toString()), args3);
@@ -888,10 +889,10 @@ public class CMISTest extends BaseCMISWebScriptTest
         CMISObject updatedObject = updatedDoc.getExtension(CMISConstants.OBJECT);
         assertNotNull(updatedObject);
         assertFalse(updatedObject.isVersionSeriesCheckedOut().getBooleanValue());
-        //assertEquals(updatedObject.getObjectId().getValue(), updatedObject.getVersionSeriesId().getValue());
-        assertNull(updatedObject.getVersionSeriesCheckedOutId().getValue());
-        assertNull(updatedObject.getVersionSeriesCheckedOutBy().getValue());
-        assertEquals(guid, updatedObject.getCheckinComment().getValue());
+        //assertEquals(updatedObject.getObjectId().getStringValue(), updatedObject.getVersionSeriesId().getStringValue());
+        assertNull(updatedObject.getVersionSeriesCheckedOutId().getStringValue());
+        assertNull(updatedObject.getVersionSeriesCheckedOutBy().getStringValue());
+        assertEquals(guid, updatedObject.getCheckinComment().getStringValue());
     }
 
     public void testUpdateOnCheckIn()
@@ -917,7 +918,7 @@ public class CMISTest extends BaseCMISWebScriptTest
         
         // test getCheckedOut is updated
         CMISObject object = testFolder.getExtension(CMISConstants.OBJECT);
-        String scopeId = object.getObjectId().getValue();
+        String scopeId = object.getObjectId().getStringValue();
         Map<String, String> args = new HashMap<String, String>();
         args.put("folderId", scopeId);
         Feed checkedout = getFeed(new IRI(checkedoutHREF.toString()), args);
@@ -938,7 +939,7 @@ public class CMISTest extends BaseCMISWebScriptTest
     
         // test getCheckedOut is updated
         CMISObject object2 = testFolder.getExtension(CMISConstants.OBJECT);
-        String scopeId2 = object2.getObjectId().getValue();
+        String scopeId2 = object2.getObjectId().getStringValue();
         Map<String, String> args3 = new HashMap<String, String>();
         args3.put("folderId", scopeId2);
         Feed checkedout2 = getFeed(new IRI(checkedoutHREF.toString()), args3);
@@ -1009,7 +1010,7 @@ public class CMISTest extends BaseCMISWebScriptTest
             assertEquals("updated content checkin " + (NUMBER_OF_VERSIONS -1 - i), versionContentRes.getContentAsString());
             CMISObject versionObject = version.getExtension(CMISConstants.OBJECT);
             assertNotNull(versionObject);
-            assertEquals("checkin" + + (NUMBER_OF_VERSIONS -1 - i), versionObject.getCheckinComment().getValue());
+            assertEquals("checkin" + + (NUMBER_OF_VERSIONS -1 - i), versionObject.getCheckinComment().getStringValue());
         }
     }
     
@@ -1125,42 +1126,42 @@ public class CMISTest extends BaseCMISWebScriptTest
             {
                 // meta data only query against folder
                 String query = "SELECT * FROM Folder " +
-                               "WHERE ObjectId = '" + testFolderObject.getObjectId().getValue() + "'";
+                               "WHERE ObjectId = '" + testFolderObject.getObjectId().getStringValue() + "'";
                 String queryReq = queryDoc.replace("${STATEMENT}", query);
                 queryReq = queryReq.replace("${SKIPCOUNT}", "0");
                 queryReq = queryReq.replace("${PAGESIZE}", "5");
         
-                Response queryRes = sendRequest(new PostRequest(queryHREF.toString(), queryReq.getBytes(), CMISConstants.MIMETYPE_QUERY), 200);
+                Response queryRes = sendRequest(new PostRequest(queryHREF.toString(), queryReq, CMISConstants.MIMETYPE_QUERY), 200);
                 assertNotNull(queryRes);
                 Feed queryFeed = getAbdera().parseFeed(new StringReader(queryRes.getContentAsString()), null);
                 assertNotNull(queryFeed);
                 assertEquals(1, queryFeed.getEntries().size());
                 assertNotNull(queryFeed.getEntry(testFolder.getId().toString()));
                 CMISObject result1 = queryFeed.getEntry(testFolder.getId().toString()).getExtension(CMISConstants.OBJECT);
-                assertEquals(testFolderObject.getName().getValue(), result1.getName().getValue());
-                assertEquals(testFolderObject.getObjectId().getValue(), result1.getObjectId().getValue());
-                assertEquals(testFolderObject.getObjectTypeId().getValue(), result1.getObjectTypeId().getValue());
+                assertEquals(testFolderObject.getName().getStringValue(), result1.getName().getStringValue());
+                assertEquals(testFolderObject.getObjectId().getStringValue(), result1.getObjectId().getStringValue());
+                assertEquals(testFolderObject.getObjectTypeId().getStringValue(), result1.getObjectTypeId().getStringValue());
             }
     
             {
                 // meta data only query against document
                 String query = "SELECT * FROM Document " +
-                               "WHERE IN_FOLDER('" + testFolderObject.getObjectId().getValue() + "') " +
+                               "WHERE IN_FOLDER('" + testFolderObject.getObjectId().getStringValue() + "') " +
                                "AND Name = 'apple1'";
                 String queryReq = queryDoc.replace("${STATEMENT}", query);
                 queryReq = queryReq.replace("${SKIPCOUNT}", "0");
                 queryReq = queryReq.replace("${PAGESIZE}", "5");
         
-                Response queryRes = sendRequest(new PostRequest(queryHREF.toString(), queryReq.getBytes(), CMISConstants.MIMETYPE_QUERY), 200);
+                Response queryRes = sendRequest(new PostRequest(queryHREF.toString(), queryReq, CMISConstants.MIMETYPE_QUERY), 200);
                 assertNotNull(queryRes);
                 Feed queryFeed = getAbdera().parseFeed(new StringReader(queryRes.getContentAsString()), null);
                 assertNotNull(queryFeed);
                 assertEquals(1, queryFeed.getEntries().size());
                 assertNotNull(queryFeed.getEntry(document1.getId().toString()));
                 CMISObject result1 = queryFeed.getEntry(document1.getId().toString()).getExtension(CMISConstants.OBJECT);
-                assertEquals(document1Object.getName().getValue(), result1.getName().getValue());
-                assertEquals(document1Object.getObjectId().getValue(), result1.getObjectId().getValue());
-                assertEquals(document1Object.getObjectTypeId().getValue(), result1.getObjectTypeId().getValue());
+                assertEquals(document1Object.getName().getStringValue(), result1.getName().getStringValue());
+                assertEquals(document1Object.getObjectId().getStringValue(), result1.getObjectId().getStringValue());
+                assertEquals(document1Object.getObjectTypeId().getStringValue(), result1.getObjectTypeId().getStringValue());
             }
         }
         
@@ -1173,39 +1174,39 @@ public class CMISTest extends BaseCMISWebScriptTest
             queryReq = queryReq.replace("${SKIPCOUNT}", "0");
             queryReq = queryReq.replace("${PAGESIZE}", "5");
     
-            Response queryRes = sendRequest(new PostRequest(queryHREF.toString(), queryReq.getBytes(), CMISConstants.MIMETYPE_QUERY), 200);
+            Response queryRes = sendRequest(new PostRequest(queryHREF.toString(), queryReq, CMISConstants.MIMETYPE_QUERY), 200);
             assertNotNull(queryRes);
             Feed queryFeed = getAbdera().parseFeed(new StringReader(queryRes.getContentAsString()), null);
             assertNotNull(queryFeed);
             assertEquals(1, queryFeed.getEntries().size());
             assertNotNull(queryFeed.getEntry(document2.getId().toString()));
             CMISObject result1 = queryFeed.getEntry(document2.getId().toString()).getExtension(CMISConstants.OBJECT);
-            assertEquals(document2Object.getName().getValue(), result1.getName().getValue());
-            assertEquals(document2Object.getObjectId().getValue(), result1.getObjectId().getValue());
-            assertEquals(document2Object.getObjectTypeId().getValue(), result1.getObjectTypeId().getValue());
+            assertEquals(document2Object.getName().getStringValue(), result1.getName().getStringValue());
+            assertEquals(document2Object.getObjectId().getStringValue(), result1.getObjectId().getStringValue());
+            assertEquals(document2Object.getObjectTypeId().getStringValue(), result1.getObjectTypeId().getStringValue());
         }
 
         if (queryCapability.equals("bothcombined"))
         {
             // combined meta data and full text
             String query = "SELECT ObjectId, ObjectTypeId, Name FROM Document " +
-                           "WHERE IN_FOLDER('" + testFolderObject.getObjectId().getValue() + "') " +
+                           "WHERE IN_FOLDER('" + testFolderObject.getObjectId().getStringValue() + "') " +
                            "AND Name = 'apple1' " +
                            "AND CONTAINS('apple1')";
             String queryReq = queryDoc.replace("${STATEMENT}", query);
             queryReq = queryReq.replace("${SKIPCOUNT}", "0");
             queryReq = queryReq.replace("${PAGESIZE}", "5");
     
-            Response queryRes = sendRequest(new PostRequest(queryHREF.toString(), queryReq.getBytes(), CMISConstants.MIMETYPE_QUERY), 200);
+            Response queryRes = sendRequest(new PostRequest(queryHREF.toString(), queryReq, CMISConstants.MIMETYPE_QUERY), 200);
             assertNotNull(queryRes);
             Feed queryFeed = getAbdera().parseFeed(new StringReader(queryRes.getContentAsString()), null);
             assertNotNull(queryFeed);
             assertEquals(1, queryFeed.getEntries().size());
             assertNotNull(queryFeed.getEntry(document1.getId().toString()));
             CMISObject result1 = queryFeed.getEntry(document1.getId().toString()).getExtension(CMISConstants.OBJECT);
-            assertEquals(document1Object.getName().getValue(), result1.getName().getValue());
-            assertEquals(document1Object.getObjectId().getValue(), result1.getObjectId().getValue());
-            assertEquals(document1Object.getObjectTypeId().getValue(), result1.getObjectTypeId().getValue());
+            assertEquals(document1Object.getName().getStringValue(), result1.getName().getStringValue());
+            assertEquals(document1Object.getObjectId().getStringValue(), result1.getObjectId().getStringValue());
+            assertEquals(document1Object.getObjectTypeId().getStringValue(), result1.getObjectTypeId().getStringValue());
         }
     }
     
@@ -1236,14 +1237,14 @@ public class CMISTest extends BaseCMISWebScriptTest
         // query children
         String queryDoc = loadString("/org/alfresco/repo/cmis/rest/test/query.cmisquery.xml");
         CMISObject testFolderObject = testFolder.getExtension(CMISConstants.OBJECT);
-        String query = "SELECT ObjectId, ObjectTypeId, Name FROM Document " + "WHERE IN_FOLDER('" + testFolderObject.getObjectId().getValue() + "')";
+        String query = "SELECT ObjectId, ObjectTypeId, Name FROM Document " + "WHERE IN_FOLDER('" + testFolderObject.getObjectId().getStringValue() + "')";
 
         for (int page = 0; page < 4; page++)
         {
             String queryReq = queryDoc.replace("${STATEMENT}", query);
             queryReq = queryReq.replace("${SKIPCOUNT}", new Integer(page * 4).toString());
             queryReq = queryReq.replace("${PAGESIZE}", "4");
-            Response queryRes = sendRequest(new PostRequest(queryHREF.toString(), queryReq.getBytes(), CMISConstants.MIMETYPE_QUERY), 200);
+            Response queryRes = sendRequest(new PostRequest(queryHREF.toString(), queryReq, CMISConstants.MIMETYPE_QUERY), 200);
             assertNotNull(queryRes);
 
             Feed queryFeed = getAbdera().parseFeed(new StringReader(queryRes.getContentAsString()), null);
@@ -1295,14 +1296,14 @@ public class CMISTest extends BaseCMISWebScriptTest
         {
             // construct structured query
             String query = "SELECT * FROM Document " +
-                           "WHERE IN_FOLDER('" + testFolderObject.getObjectId().getValue() + "') ";
+                           "WHERE IN_FOLDER('" + testFolderObject.getObjectId().getStringValue() + "') ";
             String queryReq = queryDoc.replace("${STATEMENT}", query);
             queryReq = queryReq.replace("${INCLUDEALLOWABLEACTIONS}", "true");
             queryReq = queryReq.replace("${SKIPCOUNT}", "0");
             queryReq = queryReq.replace("${PAGESIZE}", "5");
     
             // issue structured query
-            Response queryRes = sendRequest(new PostRequest(queryHREF.toString(), queryReq.getBytes(), CMISConstants.MIMETYPE_QUERY), 200);
+            Response queryRes = sendRequest(new PostRequest(queryHREF.toString(), queryReq, CMISConstants.MIMETYPE_QUERY), 200);
             assertNotNull(queryRes);
             Feed queryFeed = getAbdera().parseFeed(new StringReader(queryRes.getContentAsString()), null);
             assertNotNull(queryFeed);

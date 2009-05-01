@@ -47,7 +47,7 @@ public class CMISTestRunnerWebScript extends AbstractWebScript
         throws IOException
     {
         // setup CMIS tests
-        PrintStream printStream = new PrintStream(res.getOutputStream());
+        PrintStream printStream = new PrintStream(res.getOutputStream(), true, "UTF-8");
         WebScriptTestListener testListener = new CMISTestListener(printStream);
         CMISTestRunner runner = new CMISTestRunner();
         runner.setListener(testListener);
@@ -62,11 +62,6 @@ public class CMISTestRunnerWebScript extends AbstractWebScript
         if (userpass != null && userpass.length() > 0)
         {
             runner.setUserPass(userpass);
-        }
-        String args = req.getParameter("args");
-        if (args != null && args.length() > 0)
-        {
-            runner.setArguments(args);
         }
         String validate = req.getParameter("validate");
         if (validate != null && validate.length() > 0)

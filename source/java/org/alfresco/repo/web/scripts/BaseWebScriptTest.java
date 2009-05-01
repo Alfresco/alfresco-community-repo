@@ -302,7 +302,7 @@ public abstract class BaseWebScriptTest extends TestCase
         if (traceReqRes && isLogEnabled())
         {
             log("");
-            log("* Request: " + req.getMethod() + " " + req.getFullUri() + (req.getBody() == null ? "" : "\n" + new String(req.getBody())));
+            log("* Request: " + req.getMethod() + " " + req.getFullUri() + (req.getBody() == null ? "" : "\n" + new String(req.getBody(), "UTF-8")));
         }
 
         Response res = null;

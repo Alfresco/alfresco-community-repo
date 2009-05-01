@@ -13,18 +13,18 @@ script:
     }
  
     // property filter 
-    model.filter = cmis.findArg(args.filter, headers["CMIS-filter"]);
+    model.filter = args[cmis.ARG_FILTER];
     if (model.filter === null)
     {
         model.filter = "*";
     }
    
     // include allowable actions
-    var includeAllowableActions = cmis.findArg(args.includeAllowableActions, headers["CMIS-includeAllowableActions"]);
+    var includeAllowableActions = args[cmis.ARG_INCLUDE_ALLOWABLE_ACTIONS];
     model.includeAllowableActions = (includeAllowableActions == "true" ? true : false);
     
     // retrieve parent
-    var returnToRoot = cmis.findArg(args.returnToRoot, headers["CMIS-returnToRoot"]);
+    var returnToRoot = args[cmis.ARG_RETURN_TO_ROOT];
     model.returnToRoot = returnToRoot == "true" ? true : false;
     model.rootNode = cmis.defaultRootFolder;
 }

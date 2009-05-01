@@ -25,6 +25,7 @@
 package org.alfresco.repo.cmis.rest.test;
 
 import java.io.StringReader;
+import java.util.List;
 
 import org.alfresco.util.GUID;
 import org.alfresco.web.scripts.Format;
@@ -66,8 +67,8 @@ public class CMISCustomTypeTest extends BaseCMISWebScriptTest
 //      setRemoteServer(server);
 //      setArgsAsHeaders(false);
 //      setValidateResponse(false);
-      setListener(new CMISTestListener(System.out));
-      setTraceReqRes(true);
+//      setListener(new CMISTestListener(System.out));
+//      setTraceReqRes(true);
 
         super.setUp();
     }
@@ -88,10 +89,10 @@ public class CMISCustomTypeTest extends BaseCMISWebScriptTest
         assertEquals(entriesBefore +1, entriesAfter);
         Entry entry = feedFolderAfter.getEntry(folder.getId().toString());
         CMISObject object = entry.getExtension(CMISConstants.OBJECT);
-        assertEquals("F/cmiscustom_folder", object.getObjectTypeId().getValue());
+        assertEquals("F/cmiscustom_folder", object.getObjectTypeId().getStringValue());
         CMISProperty customProp = object.getProperties().find("cmiscustom_folderprop_string");
         assertNotNull(customProp);
-        assertEquals("custom string", customProp.getValue());
+        assertEquals("custom string", customProp.getStringValue());
     }
 
     public void testCreateDocument()
@@ -109,10 +110,17 @@ public class CMISCustomTypeTest extends BaseCMISWebScriptTest
         assertEquals(entriesBefore +1, entriesAfter);
         Entry entry = feedFolderAfter.getEntry(folder.getId().toString());
         CMISObject object = entry.getExtension(CMISConstants.OBJECT);
-        assertEquals("D/cmiscustom_document", object.getObjectTypeId().getValue());
+        assertEquals("D/cmiscustom_document", object.getObjectTypeId().getStringValue());
         CMISProperty customProp = object.getProperties().find("cmiscustom_docprop_string");
         assertNotNull(customProp);
-        assertEquals("custom string", customProp.getValue());
+        assertEquals("custom string", customProp.getStringValue());
+        CMISProperty multiProp = object.getProperties().find("cmiscustom_docprop_boolean_multi");
+        assertNotNull(multiProp);
+        List<Object> multiValues = multiProp.getNativeValues();
+        assertNotNull(multiValues);
+        assertEquals(2, multiValues.size());
+        assertEquals(true, multiValues.get(0));
+        assertEquals(false, multiValues.get(1));
     }
 
     public void testUpdate()
@@ -139,10 +147,17 @@ public class CMISCustomTypeTest extends BaseCMISWebScriptTest
         assertEquals(document.getPublished(), updated.getPublished());
         assertEquals("Updated Title " + guid, updated.getTitle());
         CMISObject object = updated.getExtension(CMISConstants.OBJECT);
-        assertEquals("D/cmiscustom_document", object.getObjectTypeId().getValue());
+        assertEquals("D/cmiscustom_document", object.getObjectTypeId().getStringValue());
         CMISProperty customProp = object.getProperties().find("cmiscustom_docprop_string");
         assertNotNull(customProp);
-        assertEquals("custom " + guid, customProp.getValue());
+        assertEquals("custom " + guid, customProp.getStringValue());
+        CMISProperty multiProp = object.getProperties().find("cmiscustom_docprop_boolean_multi");
+        assertNotNull(multiProp);
+        List<Object> multiValues = multiProp.getNativeValues();
+        assertNotNull(multiValues);
+        assertEquals(2, multiValues.size());
+        assertEquals(false, multiValues.get(0));
+        assertEquals(true, multiValues.get(1));
     }
  
     public void testDelete()
@@ -209,15 +224,15 @@ public class CMISCustomTypeTest extends BaseCMISWebScriptTest
     
         {
             // construct structured query
-            String query = "SELECT ObjectId, Name, ObjectTypeId, cmiscustom_docprop_string FROM cmiscustom_document " +
-                           "WHERE IN_FOLDER('" + testFolderObject.getObjectId().getValue() + "') " +
+            String query = "SELECT ObjectId, Name, ObjectTypeId, cmiscustom_docprop_string, cmiscustom_docprop_boolean_multi FROM cmiscustom_document " +
+                           "WHERE IN_FOLDER('" + testFolderObject.getObjectId().getStringValue() + "') " +
                            "AND cmiscustom_docprop_string = 'custom string' ";
             String queryReq = queryDoc.replace("${STATEMENT}", query);
             queryReq = queryReq.replace("${SKIPCOUNT}", "0");
             queryReq = queryReq.replace("${PAGESIZE}", "5");
     
             // issue structured query
-            Response queryRes = sendRequest(new PostRequest(queryHREF.toString(), queryReq.getBytes(), CMISConstants.MIMETYPE_QUERY), 200);
+            Response queryRes = sendRequest(new PostRequest(queryHREF.toString(), queryReq, CMISConstants.MIMETYPE_QUERY), 200);
             assertNotNull(queryRes);
             Feed queryFeed = getAbdera().parseFeed(new StringReader(queryRes.getContentAsString()), null);
             assertNotNull(queryFeed);
@@ -226,26 +241,40 @@ public class CMISCustomTypeTest extends BaseCMISWebScriptTest
             assertNotNull(queryFeed.getEntry(document2.getId().toString()));
             CMISObject result1 = queryFeed.getEntry(document2.getId().toString()).getExtension(CMISConstants.OBJECT);
             assertNotNull(result1);
-            assertEquals(document2Object.getName().getValue(), result1.getName().getValue());
-            assertEquals(document2Object.getObjectId().getValue(), result1.getObjectId().getValue());
-            assertEquals(document2Object.getObjectTypeId().getValue(), result1.getObjectTypeId().getValue());
+            assertEquals(document2Object.getName().getStringValue(), result1.getName().getStringValue());
+            assertEquals(document2Object.getObjectId().getStringValue(), result1.getObjectId().getStringValue());
+            assertEquals(document2Object.getObjectTypeId().getStringValue(), result1.getObjectTypeId().getStringValue());
             CMISProperties result1properties = result1.getProperties();
             assertNotNull(result1properties);
             CMISProperty result1property = result1properties.find("cmiscustom_docprop_string");
             assertNotNull(result1property);
-            assertEquals("custom string", result1property.getValue());
+            assertEquals("custom string", result1property.getStringValue());
+            CMISProperty result1multiproperty = result1properties.find("cmiscustom_docprop_boolean_multi");
+            assertNotNull(result1multiproperty);
+            List<Object> result1multiValues = result1multiproperty.getNativeValues();
+            assertNotNull(result1multiValues);
+            assertEquals(2, result1multiValues.size());
+            assertEquals(true, result1multiValues.get(0));
+            assertEquals(false, result1multiValues.get(1));
             
             assertNotNull(queryFeed.getEntry(document3.getId().toString()));
             CMISObject result2 = queryFeed.getEntry(document3.getId().toString()).getExtension(CMISConstants.OBJECT);
             assertNotNull(result2);
-            assertEquals(document3Object.getName().getValue(), result2.getName().getValue());
-            assertEquals(document3Object.getObjectId().getValue(), result2.getObjectId().getValue());
-            assertEquals(document3Object.getObjectTypeId().getValue(), result2.getObjectTypeId().getValue());
+            assertEquals(document3Object.getName().getStringValue(), result2.getName().getStringValue());
+            assertEquals(document3Object.getObjectId().getStringValue(), result2.getObjectId().getStringValue());
+            assertEquals(document3Object.getObjectTypeId().getStringValue(), result2.getObjectTypeId().getStringValue());
             CMISProperties result2properties = result2.getProperties();
             assertNotNull(result2properties);
             CMISProperty result2property = result2properties.find("cmiscustom_docprop_string");
             assertNotNull(result2property);
-            assertEquals("custom string", result2property.getValue());
+            assertEquals("custom string", result2property.getStringValue());
+            CMISProperty result2multiproperty = result1properties.find("cmiscustom_docprop_boolean_multi");
+            assertNotNull(result2multiproperty);
+            List<Object> result2multiValues = result2multiproperty.getNativeValues();
+            assertNotNull(result2multiValues);
+            assertEquals(2, result2multiValues.size());
+            assertEquals(true, result2multiValues.get(0));
+            assertEquals(false, result2multiValues.get(1));
         }
     }
     

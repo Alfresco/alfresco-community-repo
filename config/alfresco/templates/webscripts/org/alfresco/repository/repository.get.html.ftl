@@ -33,7 +33,6 @@
         <tr><td>Username/Password: <input name="user" value="">  ** enter in the form of username/password</td></tr>
         <tr><td>Validate Responses: <input type="checkbox" name="validate" value="true" checked="checked"></td></tr>
         <tr><td>Trace Request/Responses: <input type="checkbox" name="trace" value="true"></td></tr>
-        <tr><td>Argument Style: <select name="args"><option value="url" selected="selected">URL Arguments</option><option value="headers">Request Headers</option><option value="both">Both</option></select></td></tr>
         <tr><td>Tests (use * for wildcard in name): <input name="tests" value="*"></td></tr>
         <tr><td>** available tests: <#list tests as test>${test}<#if test_has_next>, </#if></#list></td></tr>
         <tr><td><input type="submit" value="Test"></td></tr>
@@ -68,8 +67,7 @@
         <tr><td>AllVersionsSearchable:</td><td>${allVersionsSearchable?string}</td></tr>
         <tr><td>Query:</td><td>${querySupport}</td></tr>
         <tr><td>Join:</td><td>${joinSupport}</td></tr>
-        <tr><td>FullText:</td></td><td>${fullTextSupport}</td></tr>
-        <tr><td>VersionsSupported:</td><td>${cmisVersion}</td></tr>
+        <tr><td>VersionSupported:</td><td>${cmisVersion}</td></tr>
         <tr><td>repositorySpecificInformation:</td><td>[none]</td></tr>
     </table>
     </div>

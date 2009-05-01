@@ -30,7 +30,6 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -80,10 +79,6 @@ public class BaseCMISWebScriptTest extends BaseWebScriptTest
     // Repository Access
     private String serviceUrl = "http://localhost:8080/alfresco/service/api/repository";
 
-    // TODO: remove this for v0.6 of spec
-    // Argument support
-    private boolean argsAsHeaders = false;
-
     // validation support
     private CMISValidator cmisValidator = new CMISValidator();
     private boolean validateResponse = true;
@@ -106,16 +101,6 @@ public class BaseCMISWebScriptTest extends BaseWebScriptTest
         this.serviceUrl = serviceUrl;
     }
     
-    /**
-     * Pass URL arguments as headers
-     * 
-     * @param argsAsHeaders
-     */
-    protected void setArgsAsHeaders(boolean argsAsHeaders)
-    {
-        this.argsAsHeaders = argsAsHeaders;
-    }
-
     /**
      * Validate Response
      * 
@@ -149,16 +134,6 @@ public class BaseCMISWebScriptTest extends BaseWebScriptTest
     protected AbderaService getAbdera()
     {
         return abdera;
-    }
-    
-    /**
-     * Determines if URL arguments are passed as headers
-     * 
-     * @return
-     */
-    protected boolean getArgsAsHeaders()
-    {
-        return argsAsHeaders;
     }
     
     /**
@@ -306,42 +281,6 @@ public class BaseCMISWebScriptTest extends BaseWebScriptTest
     }
     
     /**
-     * Send Request to Test Web Script Server
-     * @param req
-     * @param expectedStatus
-     * @param asUser
-     * @return response
-     * @throws IOException
-     */
-    protected Response sendRequest(Request req, int expectedStatus, String asUser)
-        throws IOException
-    {
-        if (argsAsHeaders)
-        {
-            Map<String, String> args = req.getArgs();
-            if (args != null)
-            {
-                Map<String, String> headers = req.getHeaders();
-                if (headers == null)
-                {
-                    headers = new HashMap<String, String>();
-                }
-                for (Map.Entry<String, String> arg : args.entrySet())
-                {
-                    headers.put("CMIS-" + arg.getKey(), arg.getValue());
-                }
-                
-                req = new Request(req);
-                req.setArgs(null);
-                req.setHeaders(headers);
-            }
-        }
-        
-        return super.sendRequest(req, expectedStatus, asUser);
-    }
-    
-    
-    /**
      * Default Test Listener
      */
     public static class CMISTestListener extends BaseWebScriptTestListener implements WebScriptTestListener
@@ -364,7 +303,7 @@ public class BaseCMISWebScriptTest extends BaseWebScriptTest
         {
             BaseCMISWebScriptTest cmisTest = (BaseCMISWebScriptTest)test;
             getWriter().println();
-            getWriter().println("*** Test started: " + cmisTest.getName() + " (remote: " + (cmisTest.getRemoteServer() != null) + ", headers: " + cmisTest.getArgsAsHeaders() + ")");
+            getWriter().println("*** Test started: " + cmisTest.getName() + " (remote: " + (cmisTest.getRemoteServer() != null) + ")");
         }
     }
     
@@ -390,7 +329,7 @@ public class BaseCMISWebScriptTest extends BaseWebScriptTest
         // TODO: fix up self links with arguments
         if (args == null)
         {
-            assertEquals(getArgsAsHeaders() ? get.getUri() : get.getFullUri(), entry.getSelfLink().getHref().toString());
+            assertEquals(get.getFullUri(), entry.getSelfLink().getHref().toString());
         }
         return entry;
     }
@@ -410,7 +349,7 @@ public class BaseCMISWebScriptTest extends BaseWebScriptTest
         String xml = res.getContentAsString();
         Feed feed = abdera.parseFeed(new StringReader(xml), null);
         assertNotNull(feed);
-        assertEquals(getArgsAsHeaders() ? get.getUri() : get.getFullUri(), feed.getSelfLink().getHref().toString());
+        assertEquals(get.getFullUri(), feed.getSelfLink().getHref().toString());
         return feed;
     }
 
@@ -525,7 +464,7 @@ public class BaseCMISWebScriptTest extends BaseWebScriptTest
         assertEquals(name, entry.getTitle());
         //assertEquals(name + " (summary)", entry.getSummary());
         CMISObject object = entry.getExtension(CMISConstants.OBJECT);
-        assertEquals("folder", object.getBaseType().getValue());
+        assertEquals("folder", object.getBaseType().getStringValue());
         String testFolderHREF = (String)res.getHeader("Location");
         assertNotNull(testFolderHREF);
         return entry;
@@ -556,7 +495,7 @@ public class BaseCMISWebScriptTest extends BaseWebScriptTest
         //assertEquals(name + " (summary)", entry.getSummary());
         assertNotNull(entry.getContentSrc());
         CMISObject object = entry.getExtension(CMISConstants.OBJECT);
-        assertEquals("document", object.getBaseType().getValue());
+        assertEquals("document", object.getBaseType().getStringValue());
         String testFileHREF = (String)res.getHeader("Location");
         assertNotNull(testFileHREF);
         return entry;
@@ -634,10 +573,10 @@ public class BaseCMISWebScriptTest extends BaseWebScriptTest
         CMISObject object = entry.getExtension(CMISConstants.OBJECT);
         if (object != null)
         {
-            String strNodeRef = object.getObjectId().getValue();
+            String strNodeRef = object.getObjectId().getStringValue();
             if (strNodeRef != null)
             {
-                nodeRef = new NodeRef(object.getObjectId().getValue());
+                nodeRef = new NodeRef(strNodeRef);
             }
         }
         return nodeRef;

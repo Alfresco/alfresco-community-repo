@@ -158,7 +158,7 @@
 [#macro folderCMISLinks node]
 <link rel="allowableactions" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/permissions"/>
 <link rel="relationships" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/associations"/>
-[#if cmisproperty(node, "ParentId")??]
+[#if cmisproperty(node, "ParentId")?is_string]
 <link rel="parent" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/parent"/>
 [/#if]
 <link rel="children" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/children"/>
@@ -213,11 +213,11 @@
   [@propvalue "BaseType" "folder" "STRING"/]
 [/#if]    
 
-[#assign values = row.values]
-[#list values?keys as colname]
+[#assign rowvalues = row.values]
+[#list rowvalues?keys as colname]
   [#assign coltype = row.getColumnType(colname)]
-  [#if values[colname]??]
-  [@propvalue colname values[colname] coltype/]
+  [#if rowvalues[colname]??]
+  [@propvalue colname rowvalues[colname] coltype/]
   [#else]
   [@propnull colname coltype/]
   [/#if]
@@ -240,31 +240,30 @@
 [/#macro]
 
 [#macro prop name node type]
-[#-- TODO: Freemarker doesn't support NULL - better workaround required --]
-[#assign value=cmisproperty(node, name)!"__N_U_L_L__"/]
-[#if value?is_string && value == "__N_U_L_L__"]
-[@propnull name type/]
-[#else]
+[#assign value=cmisproperty(node, name)/]
+[#if value?is_string || value?is_number || value?is_boolean || value?is_date || value?is_enumerable]
 [@propvalue name value type/]
+[#elseif value.class.canonicalName?ends_with("NULL")]
+[@propnull name type/]
 [/#if]
 [/#macro]
 
 [#macro propvalue name value type]
 [#if type == "STRING"]
-<cmis:propertyString cmis:name="${name}">[@stringvalue value/]</cmis:propertyString>
+<cmis:propertyString cmis:name="${name}">[@values value;v][@stringvalue v/][/@values]</cmis:propertyString>
 [#elseif type == "INTEGER"]
-<cmis:propertyInteger cmis:name="${name}">[@integervalue value/]</cmis:propertyInteger>
+<cmis:propertyInteger cmis:name="${name}">[@values value;v][@integervalue v/][/@values]</cmis:propertyInteger>
 [#elseif type == "DECIMAL"]
-<cmis:propertyDecimal cmis:name="${name}">[@decimalvalue value/]</cmis:propertyDecimal>
+<cmis:propertyDecimal cmis:name="${name}">[@values value;v][@decimalvalue v/][/@values]</cmis:propertyDecimal>
 [#elseif type == "BOOLEAN"]
-<cmis:propertyBoolean cmis:name="${name}">[@booleanvalue value/]</cmis:propertyBoolean>
+<cmis:propertyBoolean cmis:name="${name}">[@values value;v][@booleanvalue v/][/@values]</cmis:propertyBoolean>
 [#elseif type == "DATETIME"]
-<cmis:propertyDateTime cmis:name="${name}">[@datetimevalue value/]</cmis:propertyDateTime>
+<cmis:propertyDateTime cmis:name="${name}">[@values value;v][@datetimevalue v/][/@values]</cmis:propertyDateTime>
 [#elseif type == "URI"]
 [#-- TODO: check validity of abs url prefix --]
-<cmis:propertyUri cmis:name="${name}">[@urivalue absurl(url.serviceContext) + value/]</cmis:propertyUri>
+<cmis:propertyUri cmis:name="${name}">[@values value;v][@urivalue absurl(url.serviceContext) + v/][/@values]</cmis:propertyUri>
 [#elseif type == "ID"]
-<cmis:propertyId cmis:name="${name}">[@idvalue value/]</cmis:propertyId>
+<cmis:propertyId cmis:name="${name}">[@values value;v][@idvalue v/][/@values]</cmis:propertyId>
 [#-- TODO: remaining property types --]
 [/#if]
 [/#macro]
@@ -292,6 +291,8 @@
 [#--             --]
 [#-- CMIS Values --]
 [#--             --]
+
+[#macro values vals][#if vals?is_enumerable][#list vals as val][#nested val][/#list][#else][#nested vals][/#if][/#macro]
 
 [#macro stringvalue value]<cmis:value>${value}</cmis:value>[/#macro]
 [#macro integervalue value]<cmis:value>${value?c}</cmis:value>[/#macro]

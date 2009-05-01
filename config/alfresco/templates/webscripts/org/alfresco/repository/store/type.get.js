@@ -12,6 +12,6 @@ script:
     }
 
     // handle inherited properties
-    var includeInheritedProperties = cmis.findArg(args.includeInheritedProperties, headers["CMIS-includeInheritedProperties"]);
+    var includeInheritedProperties = args[cmis.ARG_INCLUDE_INHERITED_PROPERTIES];
     model.includeInheritedProperties = includeInheritedProperties == "false" ? false : true;
 }

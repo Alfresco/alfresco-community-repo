@@ -1,11 +1,10 @@
 script:
 {
     // process paging
-    var page = paging.createPageOrWindow(args, headers);
+    var page = paging.createPageOrWindow(args);
         
     // query types
-    // TODO: spec issue 34
-    var typeId = cmis.findArg(args.type, headers["CMIS-type"]);
+    var typeId = args[cmis.ARG_TYPE];
     if (typeId === null)
     {
         // query all types
@@ -32,7 +31,6 @@ script:
     }
 
     // handle property definitions
-    // TODO: spec issue 34
-    var returnPropertyDefinitions = cmis.findArg(args.includePropertyDefinitions, headers["CMIS-includePropertyDefinitions"]);
+    var returnPropertyDefinitions = args[cmis.ARG_INCLUDE_PROPERTY_DEFINITIONS];
     model.returnPropertyDefinitions = (returnPropertyDefinitions == "true" ? true : false);
 }

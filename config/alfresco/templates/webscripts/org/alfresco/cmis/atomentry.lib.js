@@ -10,7 +10,7 @@
 function createNode(parent, entry, slug)
 {
     var object = entry.getExtension(atom.names.cmis_object);
-    var typeId = (object !== null) ? object.objectTypeId.value : null;
+    var typeId = (object !== null) ? object.objectTypeId.nativeValue : null;
 
     // locate type definition
     // TODO: check this against spec - default to Document, if not specified
@@ -151,8 +151,21 @@ function updateNode(node, entry, exclude, pwc)
             var prop = (props == null) ? null : props.find(propName);
             if (prop != null && !prop.isNull())
             {
-                // TODO: handle multi-valued properties
-                val = prop.value;
+                if (prop.isMultiValued())
+                {
+                    if (propDef.updatability === Packages.org.alfresco.cmis.CMISCardinalityEnum.MULTI_VALUED)
+                    {
+                        status.code = 500;
+                        status.message = "Property " + propName + " is single valued."
+                        status.redirect = true;
+                        return null;
+                    }
+                    val = prop.nativeValues;
+                }
+                else
+                {
+                    val = prop.nativeValue;
+                }
             }
             
             // NOTE: special case name: entry.title overrides cmis:name

@@ -138,7 +138,7 @@ public class Paging
     }
 
     /**
-     * Create a Page or Window from standardised request arguments / headers
+     * Create a Page or Window from standardised request arguments
      *
      * For Paged based index (take precedence over window based index, if both are specified):
      * 
@@ -157,14 +157,13 @@ public class Paging
      *     CMIS-maxItems  => size of page
      * 
      * @param args  request args
-     * @param headers  request headers
      * @return  page (if pageNumber driven) or window (if skipCount driven)
      */
-    public Page createPageOrWindow(Map<String, String> args, Map<String, String> headers)
+    public Page createPageOrWindow(Map<String, String> args)
     {
         // page number
-        String strPageNo = args.get("pageNo");
         Integer pageNo = null;
+        String strPageNo = args.get("pageNo");
         if (strPageNo != null)
         {
             try
@@ -175,8 +174,8 @@ public class Paging
         }
         
         // page size
-        String strPageSize = args.get("pageSize");
         Integer pageSize = null;
+        String strPageSize = args.get("pageSize");
         if (strPageSize != null)
         {
             try
@@ -187,12 +186,8 @@ public class Paging
         }
         
         // skip count
-        String strSkipCount = args.get("skipCount");
-        if (strSkipCount == null)
-        {
-            strSkipCount = (headers == null) ? null : headers.get("CMIS-skipCount");
-        }
         Integer skipCount = null;
+        String strSkipCount = args.get("skipCount");
         if (strSkipCount != null)
         {
             try
@@ -203,12 +198,8 @@ public class Paging
         }
 
         // max items
-        String strMaxItems = args.get("maxItems");
-        if (strMaxItems == null)
-        {
-            strMaxItems = (headers == null) ? null : headers.get("CMIS-maxItems");
-        }
         Integer maxItems = null;
+        String strMaxItems = args.get("maxItems");
         if (strMaxItems != null)
         {
             try

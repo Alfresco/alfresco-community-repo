@@ -30,7 +30,9 @@ import org.alfresco.cmis.CMISServices;
 import org.alfresco.repo.template.TemplateNode;
 
 import freemarker.ext.beans.BeanModel;
+import freemarker.ext.beans.BeansWrapper;
 import freemarker.template.TemplateMethodModelEx;
+import freemarker.template.TemplateModel;
 import freemarker.template.TemplateModelException;
 import freemarker.template.TemplateScalarModel;
 
@@ -45,8 +47,14 @@ import freemarker.template.TemplateScalarModel;
  */
 public final class CMISPropertyValueMethod implements TemplateMethodModelEx
 {
-    private CMISServices cmisService;
+    /**
+     * NULL value marker
+     */
+    public static class NULL {};
+    public static TemplateModel IS_NULL = new BeanModel(new NULL(), BeansWrapper.getDefaultInstance());
     
+    private CMISServices cmisService;
+
     /**
      * Construct
      */
@@ -89,6 +97,6 @@ public final class CMISPropertyValueMethod implements TemplateMethodModelEx
             }
         }
         
-        return result;
+        return result == null ? IS_NULL : result;
     }
 }

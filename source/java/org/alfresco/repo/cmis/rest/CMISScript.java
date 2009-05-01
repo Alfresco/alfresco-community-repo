@@ -57,6 +57,41 @@ import org.alfresco.service.namespace.QName;
  */
 public class CMISScript extends BaseScopableProcessorExtension
 {
+    //
+    // Argument Names
+    //
+    
+    public static final String ARG_CHILD_TYPES = "childTypes";
+    public static final String ARG_CONTINUE_ON_FAILURE = "continueOnFailure";
+    public static final String ARG_CHECKIN = "checkin";
+    public static final String ARG_CHECKIN_COMMENT = "checkinComment";
+    public static final String ARG_DEPTH = "depth";
+    public static final String ARG_DIRECTION = "direction";
+    public static final String ARG_FILTER = "filter";
+    public static final String ARG_FOLDER_BY_PATH = "folderByPath";
+    public static final String ARG_FOLDER_ID = "folderId";
+    public static final String ARG_INCLUDE_ALLOWABLE_ACTIONS = "includeAllowableActions";
+    public static final String ARG_INCLUDE_PROPERTY_DEFINITIONS = "includePropertyDefinitions";
+    public static final String ARG_INCLUDE_RELATIONSHIPS = "includeRelationships";
+    public static final String ARG_INCLUDE_SUB_RELATIONSHIP_TYPES = "includeSubrelationshipTypes";
+    public static final String ARG_LENGTH = "length";
+    public static final String ARG_MAJOR = "major";
+    public static final String ARG_MAJOR_VERSION = "majorVersion";
+    public static final String ARG_MAX_ITEMS = "maxItems";
+    public static final String ARG_OFFSET = "offset";
+    public static final String ARG_REMOVE_FROM = "removeFrom";
+    public static final String ARG_RELATIONSHIP_TYPE = "relationshipType";
+    public static final String ARG_REPOSITORY_ID = "repositoryId";
+    public static final String ARG_RETURN_TO_ROOT = "returnToRoot";
+    public static final String ARG_RETURN_VERSION = "returnVersion";
+    public static final String ARG_SKIP_COUNT = "skipCount";
+    public static final String ARG_THIS_VERSION = "thisVersion";
+    public static final String ARG_TYPE_ID = "typeId";
+    public static final String ARG_TYPES = "types";
+    public static final String ARG_UNFILE_MULTIFILE_DOCUMENTS = "unfileMultiFiledDocuments";
+    public static final String ARG_VERSIONING_STATE = "versioningState";
+
+    // service dependencies
     private ServiceRegistry services;
     private Repository repository;
     private CMISServices cmisService;
@@ -153,34 +188,6 @@ public class CMISScript extends BaseScopableProcessorExtension
     public ScriptNode getDefaultRootFolder()
     {
         return new ScriptNode(cmisService.getDefaultRootNodeRef(), services, getScope());
-    }
-
-    /**
-     * Finds the arg value from the specified url argument and header
-     * 
-     * NOTE: Url argument takes precedence over header
-     * 
-     * @param argVal  url arg value
-     * @param headerVal  header value
-     * @return  value (or null)
-     */
-    public String findArg(String argVal, String headerVal)
-    {
-        return (argVal == null) ? headerVal : argVal;
-    }
-
-    /**
-     * Finds the arg value from the specified url argument and header
-     * 
-     * NOTE: Url argument takes precedence over header
-     * 
-     * @param argVal  url arg value
-     * @param headerVal  header value
-     * @return  value (or null)
-     */
-    public String[] findArgM(String[] argVal, String[] headerVal)
-    {
-        return (argVal == null) ? headerVal : argVal;
     }
 
     /**

@@ -11,7 +11,7 @@ script:
 
     // extract object id from atom entry
     var object = entry.getExtension(atom.names.cmis_object);
-    var objectId = (object !== null) ? object.objectId.value : null;
+    var objectId = (object !== null) ? object.objectId.stringValue : null;
     if (objectId === null)
     {
         status.code = 400;

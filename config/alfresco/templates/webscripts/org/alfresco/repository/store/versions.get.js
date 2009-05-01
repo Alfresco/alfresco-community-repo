@@ -14,7 +14,7 @@ script:
     }
  
     // property filter 
-    model.filter = cmis.findArg(args.filter, headers["CMIS-filter"]);
+    model.filter = args[cmis.ARG_FILTER];
     if (model.filter === null)
     {
         model.filter = "*";

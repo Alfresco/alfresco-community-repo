@@ -36,6 +36,11 @@
                 <title>Custom Document Property (string)</title>
                 <type>d:text</type>
             </property>
+            <property name="cmiscustom:docprop_boolean_multi">
+                <title>Custom Document Property (multi-valued boolean)</title>
+                <type>d:boolean</type>
+                <multiple>true</multiple>
+            </property>
          </properties>
       </type>
     </types>

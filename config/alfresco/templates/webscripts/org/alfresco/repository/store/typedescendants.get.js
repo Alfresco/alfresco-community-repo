@@ -12,13 +12,12 @@ script:
     }
 
     // query type descendants    
-    var page = paging.createPageOrWindow(args, headers);
+    var page = paging.createPageOrWindow(args);
     var paged = cmis.queryTypeHierarchy(model.typedef, true, page);
     model.results = paged.results;
     model.cursor = paged.cursor;
 
     // handle property definitions
-    // TODO: spec issue 34
-    var returnPropertyDefinitions = cmis.findArg(args.includePropertyDefinitions, headers["CMIS-includePropertyDefinitions"]);
+    var returnPropertyDefinitions = args[cmis.ARG_INCLUDE_PROPERTY_DEFINITIONS];
     model.returnPropertyDefinitions = returnPropertyDefinitions == "true" ? true : false;
 }

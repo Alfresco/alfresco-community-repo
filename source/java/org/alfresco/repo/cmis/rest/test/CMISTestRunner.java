@@ -50,7 +50,6 @@ public class CMISTestRunner
     private boolean traceReqRes = false;
     private String serviceUrl = null;
     private String userpass = null;
-    private String arguments = "url";
     private boolean validateResponse = true;
 
     
@@ -94,14 +93,6 @@ public class CMISTestRunner
         this.userpass = userpass;
     }
 
-    /**
-     * @param arguments  "url" => url arguments, "headers" => request headers, "both" => url & headers
-     */
-    public void setArguments(String arguments)
-    {
-        this.arguments = arguments;
-    }
-    
     /**
      * @param validateResponse  true => test response against CMIS XSDs
      */
@@ -161,24 +152,13 @@ public class CMISTestRunner
             listener.addLog(null, "Test Started at " + df.format(today.getTime()));
             listener.addLog(null, "Service URL: " + (serviceUrl == null ? "[not set]" : serviceUrl));
             listener.addLog(null, "User: " + (userpass == null ? "[not set]" : userpass));
-            listener.addLog(null, "Args: " + (arguments == null ? "[not set]" : arguments));
             listener.addLog(null, "Validate Responses: " + validateResponse);
             listener.addLog(null, "Trace Requests/Responses: " + traceReqRes);
             listener.addLog(null, "Tests: " + (match == null ? "*" : match));
             listener.addLog(null, "");
         }
         
-        // execute cmis tests with url arguments
-        if (arguments.equals("both") || arguments.equals("url"))
-        {
-            executeSuite(match, server, false);
-        }
-        
-        // execute cmis tests with headers
-        if (arguments.equals("both") || arguments.equals("headers"))
-        {
-            executeSuite(match, server, true);
-        }            
+        executeSuite(match, server);
     }
 
     /**
@@ -188,7 +168,7 @@ public class CMISTestRunner
      * @param server  remote server
      * @param argsAsHeaders  arguments passed in Headers
      */
-    private void executeSuite(String match, RemoteServer server, boolean argsAsHeaders)
+    private void executeSuite(String match, RemoteServer server)
     {
         TestSuite allSuite = new TestSuite(CMISTest.class);
         TestSuite suite = new TestSuite();
@@ -210,8 +190,6 @@ public class CMISTestRunner
                         test.setRemoteServer(server);
                     }
                 }
-                test.setArgsAsHeaders(argsAsHeaders);
-                test.setValidateResponse(validateResponse);
                 suite.addTest(test);
             }
         }
@@ -244,10 +222,6 @@ public class CMISTestRunner
             else if (argSegment[0].equals("user"))
             {
                 runner.setUserPass(argSegment[1]);
-            }
-            else if (argSegment[0].equalsIgnoreCase("args"))
-            {
-                runner.setArguments(argSegment[1].toLowerCase());
             }
         }
 

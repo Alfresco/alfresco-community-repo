@@ -13,7 +13,7 @@ script:
     }
  
     // handle filters
-    model.types = cmis.findArg(args.types, headers["CMIS-types"]) === null ? cmis.defaultTypesFilter : cmis.findArg(args.types, headers["CMIS-types"]);
+    model.types = args[cmis.ARG_TYPES] === null ? cmis.defaultTypesFilter : args[cmis.ARG_TYPES];
     if (!cmis.isValidTypesFilter(model.types))
     {
         status.code = 400;
@@ -23,18 +23,18 @@ script:
     }
     
     // property filter
-    model.filter = cmis.findArg(args.filter, headers["CMIS-filter"]);
+    model.filter = args[cmis.ARG_FILTER];
     if (model.filter === null)
     {
         model.filter = "*";
     }
    
     // include allowable actions
-    var includeAllowableActions = cmis.findArg(args.includeAllowableActions, headers["CMIS-includeAllowableActions"]);
+    var includeAllowableActions = args[cmis.ARG_INCLUDE_ALLOWABLE_ACTIONS];
     model.includeAllowableActions = (includeAllowableActions == "true" ? true : false);
     
     // retrieve children
-    var page = paging.createPageOrWindow(args, headers);
+    var page = paging.createPageOrWindow(args);
     var paged = cmis.queryChildren(model.node, model.types, page);
     model.results = paged.results;
     model.cursor = paged.cursor;

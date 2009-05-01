@@ -2,7 +2,7 @@ script:
 {
     // locate (optional) folder
     model.folder = null;
-    var folderId = cmis.findArg(args.folderId, headers["CMIS-folderId"]);
+    var folderId = args[cmis.ARG_FOLDER_ID];
     if (folderId !== null)
     {
         model.folder = search.findNode(folderId);
@@ -25,18 +25,18 @@ script:
     model.includeDescendants = (args.includeDescendants == "true") ? true : false;
  
     // property filter 
-    model.filter = cmis.findArg(args.filter, headers["CMIS-filter"]);
+    model.filter = args[cmis.ARG_FILTER];
     if (model.filter === null)
     {
         model.filter = "*";
     }
    
     // include allowable actions
-    var includeAllowableActions = cmis.findArg(args.includeAllowableActions, headers["CMIS-includeAllowableActions"]);
+    var includeAllowableActions = args[cmis.ARG_INCLUDE_ALLOWABLE_ACTIONS];
     model.includeAllowableActions = (includeAllowableActions == "true" ? true : false);   
 
     // retrieve checked-out
-    var page = paging.createPageOrWindow(args, headers);
+    var page = paging.createPageOrWindow(args);
     var paged = cmis.queryCheckedOut(person.properties.userName, model.folder, model.includeDescendants, page);
     model.results = paged.results;
     model.cursor = paged.cursor;

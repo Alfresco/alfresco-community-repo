@@ -1,0 +1,483 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ns3:feed xmlns:ns1="http://docs.oasis-open.org/ns/cmis/core/200901" xmlns:ns2="http://docs.oasis-open.org/ns/cmis/messaging/200901" xmlns:ns3="http://www.w3.org/2005/Atom" xmlns:ns4="http://www.w3.org/2007/app">
+    <ns3:author>
+        <ns3:name>Al Brown</ns3:name>
+        <ns3:uri>http://www.ibm.com/</ns3:uri>
+        <ns3:email>albertcbrown@us.ibm.com</ns3:email>
+    </ns3:author>
+    <ns3:id>urn:uuid:782f2f72-7c87-466e-aab7-b2564c254719</ns3:id>
+    <ns3:link type="application/atom+xml;type=feed" rel="self" href="http://cmisexample.oasis-open.org/rep1/7de39a2b-258d-4602-9dbb-7ef3dd6585cc/3"/>
+    <ns3:link type="application/atom+xml;type=entry" rel="source" href="http://cmisexample.oasis-open.org/rep1/7de39a2b-258d-4602-9dbb-7ef3dd6585cc"/>
+    <ns3:title type="text">Feed for folder1</ns3:title>
+    <ns3:updated>2009-04-03T13:49:50.765-07:00</ns3:updated>
+    <ns3:entry>
+        <ns3:author>
+            <ns3:name>Al Brown</ns3:name>
+            <ns3:uri>http://www.ibm.com/</ns3:uri>
+            <ns3:email>albertcbrown@us.ibm.com</ns3:email>
+        </ns3:author>
+        <ns3:content src="http://cmisexample.oasis-open.org/rep1/a47f3dd1-3721-4db9-ae1e-df54b09283bb"/>
+        <ns3:id>urn:uuid:a47f3dd1-3721-4db9-ae1e-df54b09283bb</ns3:id>
+        <ns3:link rel="self" href="http://cmisexample.oasis-open.org/rep1/a47f3dd1-3721-4db9-ae1e-df54b09283bb"/>
+        <ns3:link rel="edit" href="http://cmisexample.oasis-open.org/rep1/a47f3dd1-3721-4db9-ae1e-df54b09283bb"/>
+        <ns3:link type="application/cmis+xml;type=allowableActions" rel="allowableactions" href="http://cmisexample.oasis-open.org/rep1/a47f3dd1-3721-4db9-ae1e-df54b09283bb/allowableactions"/>
+        <ns3:link type="application/atom+xml;type=entry" rel="type" href="http://cmisexample.oasis-open.org/rep1/a47f3dd1-3721-4db9-ae1e-df54b09283bb/type"/>
+        <ns3:link type="application/atom+xml;type=feed" rel="relationships" href="http://cmisexample.oasis-open.org/rep1/a47f3dd1-3721-4db9-ae1e-df54b09283bb/relationships"/>
+        <ns3:link type="application/atom+xml;type=entry" rel="parent" href="http://cmisexample.oasis-open.org/rep1/a47f3dd1-3721-4db9-ae1e-df54b09283bb/parent"/>
+        <ns3:published>2009-04-03T13:49:50.765-07:00</ns3:published>
+        <ns3:summary type="html">HTML summary of Entry  a47f3dd1-3721-4db9-ae1e-df54b09283bb</ns3:summary>
+        <ns3:title type="text">CMIS Example Folder as Customer type</ns3:title>
+        <ns3:updated>2009-04-03T13:49:50.781-07:00</ns3:updated>
+        <ns1:object>
+            <ns1:properties>
+                <ns1:propertyBoolean ns1:name="IsImmutable">
+                    <ns1:value>false</ns1:value>
+                </ns1:propertyBoolean>
+                <ns1:propertyDateTime ns1:name="CreationDate">
+                    <ns1:value>2009-04-03T13:49:50.781-07:00</ns1:value>
+                </ns1:propertyDateTime>
+                <ns1:propertyDateTime ns1:name="LastModificationDate">
+                    <ns1:value>2009-04-03T13:49:50.781-07:00</ns1:value>
+                </ns1:propertyDateTime>
+                <ns1:propertyId ns1:name="ObjectId">
+                    <ns1:value>a47f3dd1-3721-4db9-ae1e-df54b09283bb</ns1:value>
+                </ns1:propertyId>
+                <ns1:propertyId ns1:name="ObjectTypeId">
+                    <ns1:value>customer</ns1:value>
+                </ns1:propertyId>
+                <ns1:propertyId ns1:name="BaseTypeId">
+                    <ns1:value>folder</ns1:value>
+                </ns1:propertyId>
+                <ns1:propertyString ns1:name="LastModifiedBy">
+                    <ns1:value>Al Brown</ns1:value>
+                </ns1:propertyString>
+                <ns1:propertyString ns1:name="CreatedBy">
+                    <ns1:value>Al Brown</ns1:value>
+                </ns1:propertyString>
+                <ns1:propertyId ns1:name="ParentId">
+                    <ns1:value>a47f3dd1-3721-4db9-ae1e-df54b09283bbparent</ns1:value>
+                </ns1:propertyId>
+            </ns1:properties>
+            <ns1:allowableActions>
+                <ns1:canDelete>true</ns1:canDelete>
+                <ns1:canUpdateProperties>true</ns1:canUpdateProperties>
+                <ns1:canGetProperties>true</ns1:canGetProperties>
+                <ns1:canGetRelationships>true</ns1:canGetRelationships>
+                <ns1:canGetFolderParent>true</ns1:canGetFolderParent>
+                <ns1:canGetDescendants>true</ns1:canGetDescendants>
+                <ns1:canMove>true</ns1:canMove>
+                <ns1:canAddToFolder>true</ns1:canAddToFolder>
+                <ns1:canRemoveFromFolder>true</ns1:canRemoveFromFolder>
+                <ns1:canAddPolicy>true</ns1:canAddPolicy>
+                <ns1:canGetAppliedPolicies>true</ns1:canGetAppliedPolicies>
+                <ns1:canRemovePolicy>true</ns1:canRemovePolicy>
+                <ns1:canGetChildren>true</ns1:canGetChildren>
+                <ns1:canCreateFolder>true</ns1:canCreateFolder>
+                <ns1:canDeleteTree>true</ns1:canDeleteTree>
+            </ns1:allowableActions>
+        </ns1:object>
+        <ns3:entry>
+            <ns3:author>
+                <ns3:name>Al Brown</ns3:name>
+                <ns3:uri>http://www.ibm.com/</ns3:uri>
+                <ns3:email>albertcbrown@us.ibm.com</ns3:email>
+            </ns3:author>
+            <ns3:content src="http://cmisexample.oasis-open.org/rep1/a51359a1-29d2-4a2b-9d3c-490136318393"/>
+            <ns3:id>urn:uuid:a51359a1-29d2-4a2b-9d3c-490136318393</ns3:id>
+            <ns3:link rel="self" href="http://cmisexample.oasis-open.org/rep1/a51359a1-29d2-4a2b-9d3c-490136318393"/>
+            <ns3:link rel="edit" href="http://cmisexample.oasis-open.org/rep1/a51359a1-29d2-4a2b-9d3c-490136318393"/>
+            <ns3:link type="application/cmis+xml;type=allowableActions" rel="allowableactions" href="http://cmisexample.oasis-open.org/rep1/a51359a1-29d2-4a2b-9d3c-490136318393/allowableactions"/>
+            <ns3:link type="application/atom+xml;type=entry" rel="type" href="http://cmisexample.oasis-open.org/rep1/a51359a1-29d2-4a2b-9d3c-490136318393/type"/>
+            <ns3:link rel="edit-media" href="http://cmisexample.oasis-open.org/rep1/a51359a1-29d2-4a2b-9d3c-490136318393/edit-media"/>
+            <ns3:link rel="alternate" href="http://cmisexample.oasis-open.org/rep1/a51359a1-29d2-4a2b-9d3c-490136318393/alternate"/>
+            <ns3:link type="application/atom+xml;type=feed" rel="parents" href="http://cmisexample.oasis-open.org/rep1/a51359a1-29d2-4a2b-9d3c-490136318393/parents"/>
+            <ns3:link type="application/atom+xml;type=feed" rel="allversions" href="http://cmisexample.oasis-open.org/rep1/a51359a1-29d2-4a2b-9d3c-490136318393/allversions"/>
+            <ns3:link type="application/atom+xml;type=entry" rel="latestversion" href="http://cmisexample.oasis-open.org/rep1/a51359a1-29d2-4a2b-9d3c-490136318393/latestversions"/>
+            <ns3:link length="4123" type="text/plain" rel="stream" href="http://cmisexample.oasis-open.org/rep1/a51359a1-29d2-4a2b-9d3c-490136318393media"/>
+            <ns3:link type="application/atom+xml;type=feed" rel="relationships" href="http://cmisexample.oasis-open.org/rep1/a51359a1-29d2-4a2b-9d3c-490136318393/relationships"/>
+            <ns3:published>2009-04-03T13:49:50.781-07:00</ns3:published>
+            <ns3:summary type="html">HTML summary of Entry  a51359a1-29d2-4a2b-9d3c-490136318393</ns3:summary>
+            <ns3:title type="text">CMIS Example Doc as Invoice type</ns3:title>
+            <ns3:updated>2009-04-03T13:49:50.781-07:00</ns3:updated>
+            <ns1:object>
+                <ns1:properties>
+                    <ns1:propertyBoolean ns1:name="IsImmutable">
+                        <ns1:value>false</ns1:value>
+                    </ns1:propertyBoolean>
+                    <ns1:propertyDateTime ns1:name="CreationDate">
+                        <ns1:value>2009-04-03T13:49:50.781-07:00</ns1:value>
+                    </ns1:propertyDateTime>
+                    <ns1:propertyDateTime ns1:name="LastModificationDate">
+                        <ns1:value>2009-04-03T13:49:50.781-07:00</ns1:value>
+                    </ns1:propertyDateTime>
+                    <ns1:propertyId ns1:name="ObjectId">
+                        <ns1:value>a51359a1-29d2-4a2b-9d3c-490136318393</ns1:value>
+                    </ns1:propertyId>
+                    <ns1:propertyId ns1:name="ObjectTypeId">
+                        <ns1:value>invoice</ns1:value>
+                    </ns1:propertyId>
+                    <ns1:propertyId ns1:name="BaseTypeId">
+                        <ns1:value>document</ns1:value>
+                    </ns1:propertyId>
+                    <ns1:propertyString ns1:name="LastModifiedBy">
+                        <ns1:value>Al Brown</ns1:value>
+                    </ns1:propertyString>
+                    <ns1:propertyString ns1:name="CreatedBy">
+                        <ns1:value>Al Brown</ns1:value>
+                    </ns1:propertyString>
+                    <ns1:propertyBoolean ns1:name="IsLatestVersion">
+                        <ns1:value>true</ns1:value>
+                    </ns1:propertyBoolean>
+                    <ns1:propertyBoolean ns1:name="IsVersionSeriesCheckedOut">
+                        <ns1:value>false</ns1:value>
+                    </ns1:propertyBoolean>
+                    <ns1:propertyBoolean ns1:name="IsMajorVersion">
+                        <ns1:value>false</ns1:value>
+                    </ns1:propertyBoolean>
+                    <ns1:propertyBoolean ns1:name="IsLatestMajorVersion">
+                        <ns1:value>false</ns1:value>
+                    </ns1:propertyBoolean>
+                    <ns1:propertyString ns1:name="CheckinComment">
+                        <ns1:value>Checkin comment</ns1:value>
+                    </ns1:propertyString>
+                    <ns1:propertyString ns1:name="VersionLabel">
+                        <ns1:value>0.1</ns1:value>
+                    </ns1:propertyString>
+                    <ns1:propertyString ns1:name="ContentStreamMimeType">
+                        <ns1:value>text/plain</ns1:value>
+                    </ns1:propertyString>
+                    <ns1:propertyString ns1:name="ContentStreamFilename">
+                        <ns1:value>text.txt</ns1:value>
+                    </ns1:propertyString>
+                    <ns1:propertyUri ns1:name="ContentStreamUri">
+                        <ns1:value>http://cmis-server.foo/document-entry/media</ns1:value>
+                    </ns1:propertyUri>
+                    <ns1:propertyInteger ns1:name="ContentStreamLength">
+                        <ns1:value>4234</ns1:value>
+                    </ns1:propertyInteger>
+                    <ns1:propertyString ns1:name="keywords">
+                        <ns1:value>document</ns1:value>
+                        <ns1:value>example</ns1:value>
+                        <ns1:value>sample</ns1:value>
+                        <ns1:value>cmis</ns1:value>
+                    </ns1:propertyString>
+                </ns1:properties>
+                <ns1:allowableActions>
+                    <ns1:canDelete>true</ns1:canDelete>
+                    <ns1:canUpdateProperties>true</ns1:canUpdateProperties>
+                    <ns1:canGetProperties>true</ns1:canGetProperties>
+                    <ns1:canGetRelationships>true</ns1:canGetRelationships>
+                    <ns1:canGetParents>true</ns1:canGetParents>
+                    <ns1:canMove>true</ns1:canMove>
+                    <ns1:canDeleteVersion>true</ns1:canDeleteVersion>
+                    <ns1:canDeleteContent>true</ns1:canDeleteContent>
+                    <ns1:canCheckout>true</ns1:canCheckout>
+                    <ns1:canCancelCheckout>true</ns1:canCancelCheckout>
+                    <ns1:canCheckin>true</ns1:canCheckin>
+                    <ns1:canSetContent>true</ns1:canSetContent>
+                    <ns1:canGetAllVersions>true</ns1:canGetAllVersions>
+                    <ns1:canAddToFolder>true</ns1:canAddToFolder>
+                    <ns1:canRemoveFromFolder>true</ns1:canRemoveFromFolder>
+                    <ns1:canViewContent>true</ns1:canViewContent>
+                    <ns1:canAddPolicy>true</ns1:canAddPolicy>
+                    <ns1:canGetAppliedPolicies>true</ns1:canGetAppliedPolicies>
+                    <ns1:canRemovePolicy>true</ns1:canRemovePolicy>
+                    <ns1:canCreateDocument>true</ns1:canCreateDocument>
+                </ns1:allowableActions>
+            </ns1:object>
+            <ns1:terminator xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:nil="true"/>
+        </ns3:entry>
+        <ns3:entry>
+            <ns3:author>
+                <ns3:name>Al Brown</ns3:name>
+                <ns3:uri>http://www.ibm.com/</ns3:uri>
+                <ns3:email>albertcbrown@us.ibm.com</ns3:email>
+            </ns3:author>
+            <ns3:content src="http://cmisexample.oasis-open.org/rep1/773cd9e1-09af-4ed4-af82-abbf62855aab"/>
+            <ns3:id>urn:uuid:773cd9e1-09af-4ed4-af82-abbf62855aab</ns3:id>
+            <ns3:link rel="self" href="http://cmisexample.oasis-open.org/rep1/773cd9e1-09af-4ed4-af82-abbf62855aab"/>
+            <ns3:link rel="edit" href="http://cmisexample.oasis-open.org/rep1/773cd9e1-09af-4ed4-af82-abbf62855aab"/>
+            <ns3:link type="application/cmis+xml;type=allowableActions" rel="allowableactions" href="http://cmisexample.oasis-open.org/rep1/773cd9e1-09af-4ed4-af82-abbf62855aab/allowableactions"/>
+            <ns3:link type="application/atom+xml;type=entry" rel="type" href="http://cmisexample.oasis-open.org/rep1/773cd9e1-09af-4ed4-af82-abbf62855aab/type"/>
+            <ns3:link rel="edit-media" href="http://cmisexample.oasis-open.org/rep1/773cd9e1-09af-4ed4-af82-abbf62855aab/edit-media"/>
+            <ns3:link rel="alternate" href="http://cmisexample.oasis-open.org/rep1/773cd9e1-09af-4ed4-af82-abbf62855aab/alternate"/>
+            <ns3:link type="application/atom+xml;type=feed" rel="parents" href="http://cmisexample.oasis-open.org/rep1/773cd9e1-09af-4ed4-af82-abbf62855aab/parents"/>
+            <ns3:link type="application/atom+xml;type=feed" rel="allversions" href="http://cmisexample.oasis-open.org/rep1/773cd9e1-09af-4ed4-af82-abbf62855aab/allversions"/>
+            <ns3:link type="application/atom+xml;type=entry" rel="latestversion" href="http://cmisexample.oasis-open.org/rep1/773cd9e1-09af-4ed4-af82-abbf62855aab/latestversions"/>
+            <ns3:link length="4123" type="text/plain" rel="stream" href="http://cmisexample.oasis-open.org/rep1/773cd9e1-09af-4ed4-af82-abbf62855aabmedia"/>
+            <ns3:link type="application/atom+xml;type=feed" rel="relationships" href="http://cmisexample.oasis-open.org/rep1/773cd9e1-09af-4ed4-af82-abbf62855aab/relationships"/>
+            <ns3:published>2009-04-03T13:49:50.781-07:00</ns3:published>
+            <ns3:summary type="html">HTML summary of Entry  773cd9e1-09af-4ed4-af82-abbf62855aab</ns3:summary>
+            <ns3:title type="text">CMIS Example Doc as Invoice type</ns3:title>
+            <ns3:updated>2009-04-03T13:49:50.781-07:00</ns3:updated>
+            <ns1:object>
+                <ns1:properties>
+                    <ns1:propertyBoolean ns1:name="IsImmutable">
+                        <ns1:value>false</ns1:value>
+                    </ns1:propertyBoolean>
+                    <ns1:propertyDateTime ns1:name="CreationDate">
+                        <ns1:value>2009-04-03T13:49:50.781-07:00</ns1:value>
+                    </ns1:propertyDateTime>
+                    <ns1:propertyDateTime ns1:name="LastModificationDate">
+                        <ns1:value>2009-04-03T13:49:50.781-07:00</ns1:value>
+                    </ns1:propertyDateTime>
+                    <ns1:propertyId ns1:name="ObjectId">
+                        <ns1:value>773cd9e1-09af-4ed4-af82-abbf62855aab</ns1:value>
+                    </ns1:propertyId>
+                    <ns1:propertyId ns1:name="ObjectTypeId">
+                        <ns1:value>invoice</ns1:value>
+                    </ns1:propertyId>
+                    <ns1:propertyId ns1:name="BaseTypeId">
+                        <ns1:value>document</ns1:value>
+                    </ns1:propertyId>
+                    <ns1:propertyString ns1:name="LastModifiedBy">
+                        <ns1:value>Al Brown</ns1:value>
+                    </ns1:propertyString>
+                    <ns1:propertyString ns1:name="CreatedBy">
+                        <ns1:value>Al Brown</ns1:value>
+                    </ns1:propertyString>
+                    <ns1:propertyBoolean ns1:name="IsLatestVersion">
+                        <ns1:value>true</ns1:value>
+                    </ns1:propertyBoolean>
+                    <ns1:propertyBoolean ns1:name="IsVersionSeriesCheckedOut">
+                        <ns1:value>false</ns1:value>
+                    </ns1:propertyBoolean>
+                    <ns1:propertyBoolean ns1:name="IsMajorVersion">
+                        <ns1:value>false</ns1:value>
+                    </ns1:propertyBoolean>
+                    <ns1:propertyBoolean ns1:name="IsLatestMajorVersion">
+                        <ns1:value>false</ns1:value>
+                    </ns1:propertyBoolean>
+                    <ns1:propertyString ns1:name="CheckinComment">
+                        <ns1:value>Checkin comment</ns1:value>
+                    </ns1:propertyString>
+                    <ns1:propertyString ns1:name="VersionLabel">
+                        <ns1:value>0.1</ns1:value>
+                    </ns1:propertyString>
+                    <ns1:propertyString ns1:name="ContentStreamMimeType">
+                        <ns1:value>text/plain</ns1:value>
+                    </ns1:propertyString>
+                    <ns1:propertyString ns1:name="ContentStreamFilename">
+                        <ns1:value>text.txt</ns1:value>
+                    </ns1:propertyString>
+                    <ns1:propertyUri ns1:name="ContentStreamUri">
+                        <ns1:value>http://cmis-server.foo/document-entry/media</ns1:value>
+                    </ns1:propertyUri>
+                    <ns1:propertyInteger ns1:name="ContentStreamLength">
+                        <ns1:value>4234</ns1:value>
+                    </ns1:propertyInteger>
+                    <ns1:propertyString ns1:name="keywords">
+                        <ns1:value>document</ns1:value>
+                        <ns1:value>example</ns1:value>
+                        <ns1:value>sample</ns1:value>
+                        <ns1:value>cmis</ns1:value>
+                    </ns1:propertyString>
+                </ns1:properties>
+                <ns1:allowableActions>
+                    <ns1:canDelete>true</ns1:canDelete>
+                    <ns1:canUpdateProperties>true</ns1:canUpdateProperties>
+                    <ns1:canGetProperties>true</ns1:canGetProperties>
+                    <ns1:canGetRelationships>true</ns1:canGetRelationships>
+                    <ns1:canGetParents>true</ns1:canGetParents>
+                    <ns1:canMove>true</ns1:canMove>
+                    <ns1:canDeleteVersion>true</ns1:canDeleteVersion>
+                    <ns1:canDeleteContent>true</ns1:canDeleteContent>
+                    <ns1:canCheckout>true</ns1:canCheckout>
+                    <ns1:canCancelCheckout>true</ns1:canCancelCheckout>
+                    <ns1:canCheckin>true</ns1:canCheckin>
+                    <ns1:canSetContent>true</ns1:canSetContent>
+                    <ns1:canGetAllVersions>true</ns1:canGetAllVersions>
+                    <ns1:canAddToFolder>true</ns1:canAddToFolder>
+                    <ns1:canRemoveFromFolder>true</ns1:canRemoveFromFolder>
+                    <ns1:canViewContent>true</ns1:canViewContent>
+                    <ns1:canAddPolicy>true</ns1:canAddPolicy>
+                    <ns1:canGetAppliedPolicies>true</ns1:canGetAppliedPolicies>
+                    <ns1:canRemovePolicy>true</ns1:canRemovePolicy>
+                    <ns1:canCreateDocument>true</ns1:canCreateDocument>
+                </ns1:allowableActions>
+            </ns1:object>
+            <ns1:terminator xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:nil="true"/>
+        </ns3:entry>
+        <ns1:terminator xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:nil="true"/>
+    </ns3:entry>
+    <ns3:entry>
+        <ns3:author>
+            <ns3:name>Al Brown</ns3:name>
+            <ns3:uri>http://www.ibm.com/</ns3:uri>
+            <ns3:email>albertcbrown@us.ibm.com</ns3:email>
+        </ns3:author>
+        <ns3:content src="http://cmisexample.oasis-open.org/rep1/eb8ba6f5-00dc-4938-aed5-820de7be6e77"/>
+        <ns3:id>urn:uuid:eb8ba6f5-00dc-4938-aed5-820de7be6e77</ns3:id>
+        <ns3:link rel="self" href="http://cmisexample.oasis-open.org/rep1/eb8ba6f5-00dc-4938-aed5-820de7be6e77"/>
+        <ns3:link rel="edit" href="http://cmisexample.oasis-open.org/rep1/eb8ba6f5-00dc-4938-aed5-820de7be6e77"/>
+        <ns3:link type="application/cmis+xml;type=allowableActions" rel="allowableactions" href="http://cmisexample.oasis-open.org/rep1/eb8ba6f5-00dc-4938-aed5-820de7be6e77/allowableactions"/>
+        <ns3:link type="application/atom+xml;type=entry" rel="type" href="http://cmisexample.oasis-open.org/rep1/eb8ba6f5-00dc-4938-aed5-820de7be6e77/type"/>
+        <ns3:link type="application/atom+xml;type=feed" rel="relationships" href="http://cmisexample.oasis-open.org/rep1/eb8ba6f5-00dc-4938-aed5-820de7be6e77/relationships"/>
+        <ns3:link type="application/atom+xml;type=entry" rel="parent" href="http://cmisexample.oasis-open.org/rep1/eb8ba6f5-00dc-4938-aed5-820de7be6e77/parent"/>
+        <ns3:published>2009-04-03T13:49:50.781-07:00</ns3:published>
+        <ns3:summary type="html">HTML summary of Entry  eb8ba6f5-00dc-4938-aed5-820de7be6e77</ns3:summary>
+        <ns3:title type="text">CMIS Example Folder as Customer type</ns3:title>
+        <ns3:updated>2009-04-03T13:49:50.781-07:00</ns3:updated>
+        <ns1:object>
+            <ns1:properties>
+                <ns1:propertyBoolean ns1:name="IsImmutable">
+                    <ns1:value>false</ns1:value>
+                </ns1:propertyBoolean>
+                <ns1:propertyDateTime ns1:name="CreationDate">
+                    <ns1:value>2009-04-03T13:49:50.796-07:00</ns1:value>
+                </ns1:propertyDateTime>
+                <ns1:propertyDateTime ns1:name="LastModificationDate">
+                    <ns1:value>2009-04-03T13:49:50.796-07:00</ns1:value>
+                </ns1:propertyDateTime>
+                <ns1:propertyId ns1:name="ObjectId">
+                    <ns1:value>eb8ba6f5-00dc-4938-aed5-820de7be6e77</ns1:value>
+                </ns1:propertyId>
+                <ns1:propertyId ns1:name="ObjectTypeId">
+                    <ns1:value>customer</ns1:value>
+                </ns1:propertyId>
+                <ns1:propertyId ns1:name="BaseTypeId">
+                    <ns1:value>folder</ns1:value>
+                </ns1:propertyId>
+                <ns1:propertyString ns1:name="LastModifiedBy">
+                    <ns1:value>Al Brown</ns1:value>
+                </ns1:propertyString>
+                <ns1:propertyString ns1:name="CreatedBy">
+                    <ns1:value>Al Brown</ns1:value>
+                </ns1:propertyString>
+                <ns1:propertyId ns1:name="ParentId">
+                    <ns1:value>eb8ba6f5-00dc-4938-aed5-820de7be6e77parent</ns1:value>
+                </ns1:propertyId>
+            </ns1:properties>
+            <ns1:allowableActions>
+                <ns1:canDelete>true</ns1:canDelete>
+                <ns1:canUpdateProperties>true</ns1:canUpdateProperties>
+                <ns1:canGetProperties>true</ns1:canGetProperties>
+                <ns1:canGetRelationships>true</ns1:canGetRelationships>
+                <ns1:canGetFolderParent>true</ns1:canGetFolderParent>
+                <ns1:canGetDescendants>true</ns1:canGetDescendants>
+                <ns1:canMove>true</ns1:canMove>
+                <ns1:canAddToFolder>true</ns1:canAddToFolder>
+                <ns1:canRemoveFromFolder>true</ns1:canRemoveFromFolder>
+                <ns1:canAddPolicy>true</ns1:canAddPolicy>
+                <ns1:canGetAppliedPolicies>true</ns1:canGetAppliedPolicies>
+                <ns1:canRemovePolicy>true</ns1:canRemovePolicy>
+                <ns1:canGetChildren>true</ns1:canGetChildren>
+                <ns1:canCreateFolder>true</ns1:canCreateFolder>
+                <ns1:canDeleteTree>true</ns1:canDeleteTree>
+            </ns1:allowableActions>
+        </ns1:object>
+        <ns1:terminator xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:nil="true"/>
+    </ns3:entry>
+    <ns3:entry>
+        <ns3:author>
+            <ns3:name>Al Brown</ns3:name>
+            <ns3:uri>http://www.ibm.com/</ns3:uri>
+            <ns3:email>albertcbrown@us.ibm.com</ns3:email>
+        </ns3:author>
+        <ns3:content src="http://cmisexample.oasis-open.org/rep1/f0ba7610-ed2c-4cab-883e-10f18d205216"/>
+        <ns3:id>urn:uuid:f0ba7610-ed2c-4cab-883e-10f18d205216</ns3:id>
+        <ns3:link rel="self" href="http://cmisexample.oasis-open.org/rep1/f0ba7610-ed2c-4cab-883e-10f18d205216"/>
+        <ns3:link rel="edit" href="http://cmisexample.oasis-open.org/rep1/f0ba7610-ed2c-4cab-883e-10f18d205216"/>
+        <ns3:link type="application/cmis+xml;type=allowableActions" rel="allowableactions" href="http://cmisexample.oasis-open.org/rep1/f0ba7610-ed2c-4cab-883e-10f18d205216/allowableactions"/>
+        <ns3:link type="application/atom+xml;type=entry" rel="type" href="http://cmisexample.oasis-open.org/rep1/f0ba7610-ed2c-4cab-883e-10f18d205216/type"/>
+        <ns3:link rel="edit-media" href="http://cmisexample.oasis-open.org/rep1/f0ba7610-ed2c-4cab-883e-10f18d205216/edit-media"/>
+        <ns3:link rel="alternate" href="http://cmisexample.oasis-open.org/rep1/f0ba7610-ed2c-4cab-883e-10f18d205216/alternate"/>
+        <ns3:link type="application/atom+xml;type=feed" rel="parents" href="http://cmisexample.oasis-open.org/rep1/f0ba7610-ed2c-4cab-883e-10f18d205216/parents"/>
+        <ns3:link type="application/atom+xml;type=feed" rel="allversions" href="http://cmisexample.oasis-open.org/rep1/f0ba7610-ed2c-4cab-883e-10f18d205216/allversions"/>
+        <ns3:link type="application/atom+xml;type=entry" rel="latestversion" href="http://cmisexample.oasis-open.org/rep1/f0ba7610-ed2c-4cab-883e-10f18d205216/latestversions"/>
+        <ns3:link length="4123" type="text/plain" rel="stream" href="http://cmisexample.oasis-open.org/rep1/f0ba7610-ed2c-4cab-883e-10f18d205216media"/>
+        <ns3:link type="application/atom+xml;type=feed" rel="relationships" href="http://cmisexample.oasis-open.org/rep1/f0ba7610-ed2c-4cab-883e-10f18d205216/relationships"/>
+        <ns3:published>2009-04-03T13:49:50.796-07:00</ns3:published>
+        <ns3:summary type="html">HTML summary of Entry  f0ba7610-ed2c-4cab-883e-10f18d205216</ns3:summary>
+        <ns3:title type="text">CMIS Example Doc as Invoice type</ns3:title>
+        <ns3:updated>2009-04-03T13:49:50.796-07:00</ns3:updated>
+        <ns1:object>
+            <ns1:properties>
+                <ns1:propertyBoolean ns1:name="IsImmutable">
+                    <ns1:value>false</ns1:value>
+                </ns1:propertyBoolean>
+                <ns1:propertyDateTime ns1:name="CreationDate">
+                    <ns1:value>2009-04-03T13:49:50.796-07:00</ns1:value>
+                </ns1:propertyDateTime>
+                <ns1:propertyDateTime ns1:name="LastModificationDate">
+                    <ns1:value>2009-04-03T13:49:50.796-07:00</ns1:value>
+                </ns1:propertyDateTime>
+                <ns1:propertyId ns1:name="ObjectId">
+                    <ns1:value>f0ba7610-ed2c-4cab-883e-10f18d205216</ns1:value>
+                </ns1:propertyId>
+                <ns1:propertyId ns1:name="ObjectTypeId">
+                    <ns1:value>invoice</ns1:value>
+                </ns1:propertyId>
+                <ns1:propertyId ns1:name="BaseTypeId">
+                    <ns1:value>document</ns1:value>
+                </ns1:propertyId>
+                <ns1:propertyString ns1:name="LastModifiedBy">
+                    <ns1:value>Al Brown</ns1:value>
+                </ns1:propertyString>
+                <ns1:propertyString ns1:name="CreatedBy">
+                    <ns1:value>Al Brown</ns1:value>
+                </ns1:propertyString>
+                <ns1:propertyBoolean ns1:name="IsLatestVersion">
+                    <ns1:value>true</ns1:value>
+                </ns1:propertyBoolean>
+                <ns1:propertyBoolean ns1:name="IsVersionSeriesCheckedOut">
+                    <ns1:value>false</ns1:value>
+                </ns1:propertyBoolean>
+                <ns1:propertyBoolean ns1:name="IsMajorVersion">
+                    <ns1:value>false</ns1:value>
+                </ns1:propertyBoolean>
+                <ns1:propertyBoolean ns1:name="IsLatestMajorVersion">
+                    <ns1:value>false</ns1:value>
+                </ns1:propertyBoolean>
+                <ns1:propertyString ns1:name="CheckinComment">
+                    <ns1:value>Checkin comment</ns1:value>
+                </ns1:propertyString>
+                <ns1:propertyString ns1:name="VersionLabel">
+                    <ns1:value>0.1</ns1:value>
+                </ns1:propertyString>
+                <ns1:propertyString ns1:name="ContentStreamMimeType">
+                    <ns1:value>text/plain</ns1:value>
+                </ns1:propertyString>
+                <ns1:propertyString ns1:name="ContentStreamFilename">
+                    <ns1:value>text.txt</ns1:value>
+                </ns1:propertyString>
+                <ns1:propertyUri ns1:name="ContentStreamUri">
+                    <ns1:value>http://cmis-server.foo/document-entry/media</ns1:value>
+                </ns1:propertyUri>
+                <ns1:propertyInteger ns1:name="ContentStreamLength">
+                    <ns1:value>4234</ns1:value>
+                </ns1:propertyInteger>
+                <ns1:propertyString ns1:name="keywords">
+                    <ns1:value>document</ns1:value>
+                    <ns1:value>example</ns1:value>
+                    <ns1:value>sample</ns1:value>
+                    <ns1:value>cmis</ns1:value>
+                </ns1:propertyString>
+            </ns1:properties>
+            <ns1:allowableActions>
+                <ns1:canDelete>true</ns1:canDelete>
+                <ns1:canUpdateProperties>true</ns1:canUpdateProperties>
+                <ns1:canGetProperties>true</ns1:canGetProperties>
+                <ns1:canGetRelationships>true</ns1:canGetRelationships>
+                <ns1:canGetParents>true</ns1:canGetParents>
+                <ns1:canMove>true</ns1:canMove>
+                <ns1:canDeleteVersion>true</ns1:canDeleteVersion>
+                <ns1:canDeleteContent>true</ns1:canDeleteContent>
+                <ns1:canCheckout>true</ns1:canCheckout>
+                <ns1:canCancelCheckout>true</ns1:canCancelCheckout>
+                <ns1:canCheckin>true</ns1:canCheckin>
+                <ns1:canSetContent>true</ns1:canSetContent>
+                <ns1:canGetAllVersions>true</ns1:canGetAllVersions>
+                <ns1:canAddToFolder>true</ns1:canAddToFolder>
+                <ns1:canRemoveFromFolder>true</ns1:canRemoveFromFolder>
+                <ns1:canViewContent>true</ns1:canViewContent>
+                <ns1:canAddPolicy>true</ns1:canAddPolicy>
+                <ns1:canGetAppliedPolicies>true</ns1:canGetAppliedPolicies>
+                <ns1:canRemovePolicy>true</ns1:canRemovePolicy>
+                <ns1:canCreateDocument>true</ns1:canCreateDocument>
+            </ns1:allowableActions>
+        </ns1:object>
+        <ns1:terminator xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:nil="true"/>
+    </ns3:entry>
+    <ns1:hasMoreItems>false</ns1:hasMoreItems>
+</ns3:feed>

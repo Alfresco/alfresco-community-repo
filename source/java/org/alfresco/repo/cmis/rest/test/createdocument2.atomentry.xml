@@ -1,4 +1,4 @@
-<entry xmlns="http://www.w3.org/2005/Atom" xmlns:cmis="http://www.cmis.org/2008/05" xmlns:app="http://www.w3.org/2007/app">
+<entry xmlns="http://www.w3.org/2005/Atom" xmlns:cmis="http://docs.oasis-open.org/ns/cmis/core/200901" xmlns:app="http://www.w3.org/2007/app">
   <title type="text">onesentence.txt</title>
   <content type="text/plain">MQ==&#xd;</content>
   <cmis:object>

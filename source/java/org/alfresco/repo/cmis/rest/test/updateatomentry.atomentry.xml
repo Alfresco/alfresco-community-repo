@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<entry xmlns="http://www.w3.org/2005/Atom" xmlns:app="http://www.w3.org/2007/app" xmlns:cmis="http://www.cmis.org/2008/05" xmlns:alf="http://www.alfresco.org">
+<entry xmlns="http://www.w3.org/2005/Atom" xmlns:app="http://www.w3.org/2007/app" xmlns:cmis="http://docs.oasis-open.org/ns/cmis/core/200901" xmlns:alf="http://www.alfresco.org">
 <author><name>admin</name></author>
 <content type="text/xhtml">sdsds</content> <id>urn:uuid:87067d6a-e471-4b21-83bd-125e44dc9d75</id>
 <link rel="self" href="http://localhost:8080/alfresco/service/api/node/workspace/SpacesStore/87067d6a-e471-4b21-83bd-125e44dc9d75"/>

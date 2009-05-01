@@ -91,7 +91,7 @@ public class BaseCMISWebScriptTest extends BaseWebScriptTest
     // cached responses
     private AbderaService abdera;
     private Service service = null;
-    private String fullTextCapability = null;
+    private String queryCapability = null;
     private Entry testRootFolder = null;
     private Entry testRunFolder = null;
     
@@ -433,21 +433,21 @@ public class BaseCMISWebScriptTest extends BaseWebScriptTest
         return service;
     }
     
-    protected String getFullTextCapability()
+    protected String getQueryCapability()
         throws Exception
     {
-        if (fullTextCapability == null)
+        if (queryCapability == null)
         {
             Service repo = getRepository();
-            Workspace workspace = getWorkspace(service);
+            Workspace workspace = getWorkspace(repo);
             CMISRepositoryInfo repoInfo = workspace.getExtension(CMISConstants.REPOSITORY_INFO);
             assertNotNull(repoInfo);
             CMISCapabilities capabilities = repoInfo.getCapabilities();
             assertNotNull(repoInfo);
-            fullTextCapability = capabilities.getFullText();
-            assertNotNull(fullTextCapability);
+            queryCapability = capabilities.getJoin();
+            assertNotNull(queryCapability);
         }
-        return fullTextCapability;
+        return queryCapability;
     }
     
     protected Workspace getWorkspace(Service service)

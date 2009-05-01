@@ -28,7 +28,6 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import org.alfresco.cmis.CMISDictionaryService;
-import org.alfresco.cmis.CMISFullTextSearchEnum;
 import org.alfresco.cmis.CMISJoinEnum;
 import org.alfresco.cmis.CMISPropertyDefinition;
 import org.alfresco.cmis.CMISQueryEnum;
@@ -459,16 +458,6 @@ public class CMISScript extends BaseScopableProcessorExtension
     public CMISJoinEnum getJoinSupport()
     {
        return cmisQueryService.getJoinSupport(); 
-    }
-    
-    /**
-     * Get the full text search support level in queries.
-     * 
-     * @return
-     */
-    public CMISFullTextSearchEnum getFullTextSearchSupport()
-    {
-        return cmisQueryService.getFullTextSearchSupport();
     }
     
     /**

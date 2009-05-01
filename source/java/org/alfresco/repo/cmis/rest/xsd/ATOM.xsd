@@ -6,14 +6,13 @@
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
 	elementFormDefault="qualified" targetNamespace="http://www.w3.org/2005/Atom"
 	xmlns:atom="http://www.w3.org/2005/Atom" xmlns:xhtml="http://www.w3.org/1999/xhtml"
-	xmlns:cmis="http://www.cmis.org/2008/05" xmlns:xml="http://www.w3.org/XML/1998/namespace"
+	xmlns:cmis="http://docs.oasis-open.org/ns/cmis/core/200901" xmlns:xml="http://www.w3.org/XML/1998/namespace"
 	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb" xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
 	jaxb:extensionBindingPrefixes="xjc" jaxb:version="2.1" version="0.5">
 	<xs:import namespace="http://www.w3.org/XML/1998/namespace"
 		schemaLocation="xml.xsd" />
-	<xs:import namespace="http://www.cmis.org/2008/05"
-		schemaLocation="CMIS.xsd" />
-
+	<xs:import namespace="http://docs.oasis-open.org/ns/cmis/core/200901"
+		schemaLocation="CMIS-Core.xsd" />
 
 	<!-- Common attributes -->
 	<xs:attributeGroup name="atomCommonAttributes">

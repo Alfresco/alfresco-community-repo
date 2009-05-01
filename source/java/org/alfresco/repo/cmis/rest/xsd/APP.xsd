@@ -6,12 +6,12 @@
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
 	elementFormDefault="qualified" targetNamespace="http://www.w3.org/2007/app"
 	xmlns:atom="http://www.w3.org/2005/Atom" xmlns:app="http://www.w3.org/2007/app"
-	xmlns:cmis="http://www.cmis.org/2008/05"
-	version="0.5">
+	xmlns:cmis="http://docs.oasis-open.org/ns/cmis/core/200901"
+	version="0.52">
 	<xs:import namespace="http://www.w3.org/2005/Atom"
-		schemaLocation="ATOM4CMIS.xsd" />
-	<xs:import namespace="http://www.cmis.org/2008/05"
-		schemaLocation="CMIS.xsd" />
+		schemaLocation="ATOM.xsd" />
+	<xs:import namespace="http://docs.oasis-open.org/ns/cmis/core/200901"
+		schemaLocation="CMIS-Core.xsd" />
 	<xs:element name="service" type="app:appServiceType"></xs:element>
 	<xs:complexType name="appServiceType">
 		<xs:sequence>

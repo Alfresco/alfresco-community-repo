@@ -5,6 +5,5 @@ model.defaultRootFolder = cmis.defaultRootFolder;
 model.defaultRootFolderPath = cmis.defaultRootFolderPath;
 model.querySupport = cmis.querySupport.label;
 model.joinSupport = cmis.joinSupport.label;
-model.fullTextSupport = cmis.fullTextSearchSupport.label;
 model.pwcSearchable = cmis.pwcSearchable;
 model.allVersionsSearchable = cmis.allVersionsSearchable;

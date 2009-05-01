@@ -41,7 +41,6 @@ import org.alfresco.cmis.CMISChoice;
 import org.alfresco.cmis.CMISContentStreamAllowedEnum;
 import org.alfresco.cmis.CMISDataTypeEnum;
 import org.alfresco.cmis.CMISDictionaryModel;
-import org.alfresco.cmis.CMISFullTextSearchEnum;
 import org.alfresco.cmis.CMISJoinEnum;
 import org.alfresco.cmis.CMISPropertyDefinition;
 import org.alfresco.cmis.CMISTypeDefinition;
@@ -57,7 +56,6 @@ import org.alfresco.service.descriptor.Descriptor;
 @javax.jws.WebService(name = "RepositoryServicePort", serviceName = "RepositoryService", portName = "RepositoryServicePort", targetNamespace = "http://www.cmis.org/ns/1.0", endpointInterface = "org.alfresco.repo.cmis.ws.RepositoryServicePort")
 public class DMRepositoryServicePort extends DMAbstractServicePort implements RepositoryServicePort
 {
-    private static Map<CMISFullTextSearchEnum, EnumCapabilityFullText> fulltextEnumMapping;
     private static Map<CMISJoinEnum, EnumCapabilityJoin> joinEnumMapping;
     private static Map<CMISContentStreamAllowedEnum, EnumContentStreamAllowed> contentStreamAllowedEnumMapping;
     private static Map<CMISUpdatabilityEnum, EnumUpdateability> updatabilityEnumMapping;
@@ -66,11 +64,6 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
 
     static
     {
-        fulltextEnumMapping = new HashMap<CMISFullTextSearchEnum, EnumCapabilityFullText>();
-        fulltextEnumMapping.put(CMISFullTextSearchEnum.NO_FULL_TEXT, EnumCapabilityFullText.NONE);
-        fulltextEnumMapping.put(CMISFullTextSearchEnum.FULL_TEXT_ONLY, EnumCapabilityFullText.FULLTEXTONLY);
-        fulltextEnumMapping.put(CMISFullTextSearchEnum.FULL_TEXT_AND_STRUCTURED, EnumCapabilityFullText.FULLTEXTANDSTRUCTURED);
-
         joinEnumMapping = new HashMap<CMISJoinEnum, EnumCapabilityJoin>();
         joinEnumMapping.put(CMISJoinEnum.INNER_AND_OUTER_JOIN_SUPPORT, EnumCapabilityJoin.INNERANDOUTER);
         joinEnumMapping.put(CMISJoinEnum.INNER_JOIN_SUPPORT, EnumCapabilityJoin.INNERONLY);
@@ -158,7 +151,6 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
         capabilities.setCapabilityPWCUpdateable(true);
         capabilities.setCapabilityAllVersionsSearchable(cmisQueryService.getAllVersionsSearchable());
         capabilities.setCapabilityJoin(joinEnumMapping.get(cmisQueryService.getJoinSupport()));
-        capabilities.setCapabilityFullText(fulltextEnumMapping.get(cmisQueryService.getFullTextSearchSupport()));
         repositoryInfoType.setCapabilities(capabilities);
 
         repositoryInfoType.setCmisVersionsSupported(cmisService.getCMISVersion());
@@ -311,9 +303,9 @@ public class DMRepositoryServicePort extends DMAbstractServicePort implements Re
         cmisTypeDefinition.setTypeId(typeDefinition.getTypeId().getId());
         cmisTypeDefinition.setQueryName(typeDefinition.getQueryName());
         cmisTypeDefinition.setDisplayName(typeDefinition.getDisplayName());
-        cmisTypeDefinition.setBaseType(EnumObjectType.fromValue(typeDefinition.getRootType().getTypeId().getId()));
+        cmisTypeDefinition.setBaseType(EnumObjectType.fromValue(typeDefinition.getBaseType().getTypeId().getId()));
         cmisTypeDefinition.setParentId(typeDefinition.getParentType().getTypeId().getId());
-        cmisTypeDefinition.setBaseTypeQueryName(typeDefinition.getRootType().getQueryName());
+        cmisTypeDefinition.setBaseTypeQueryName(typeDefinition.getBaseType().getQueryName());
         cmisTypeDefinition.setDescription(typeDefinition.getDescription());
         cmisTypeDefinition.setCreatable(typeDefinition.isCreatable());
         cmisTypeDefinition.setFileable(typeDefinition.isFileable());

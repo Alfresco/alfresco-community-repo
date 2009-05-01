@@ -40,13 +40,13 @@
 [/#macro]
 
 [#macro documentCMISLinks node]
-<link rel="cmis-allowableactions" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/permissions"/>
-<link rel="cmis-relationships" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/associations"/>
-<link rel="cmis-parents" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/parents"/>
-<link rel="cmis-allversions" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/versions"/>
-[@linkstream node "cmis-stream"/]
-<link rel="cmis-type" href="${absurl(url.serviceContext)}/api/type/${cmistype(node).typeId.id!"unknown"}"/>
-<link rel="cmis-repository" href="[@serviceuri/]"/>
+<link rel="allowableactions" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/permissions"/>
+<link rel="relationships" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/associations"/>
+<link rel="parents" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/parents"/>
+<link rel="allversions" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/versions"/>
+[@linkstream node "stream"/]
+<link rel="type" href="${absurl(url.serviceContext)}/api/type/${cmistype(node).typeId.id!"unknown"}"/>
+<link rel="repository" href="[@serviceuri/]"/>
 [/#macro]
 
 [#macro documentCMISProps node propfilter]
@@ -156,16 +156,15 @@
 [/#macro]
 
 [#macro folderCMISLinks node]
-<link rel="cmis-allowableactions" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/permissions"/>
-<link rel="cmis-relationships" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/associations"/>
+<link rel="allowableactions" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/permissions"/>
+<link rel="relationships" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/associations"/>
 [#if cmisproperty(node, "ParentId")??]
-<link rel="cmis-parent" href="${absurl(url.serviceContext)}/api/node/${node.parent.nodeRef.storeRef.protocol}/${node.parent.nodeRef.storeRef.identifier}/${node.parent.nodeRef.id}"/>
-<link rel="cmis-folderparent" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/parent"/>
+<link rel="parent" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/parent"/>
 [/#if]
-<link rel="cmis-children" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/children"/>
-<link rel="cmis-descendants" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/descendants"/>
-<link rel="cmis-type" href="${absurl(url.serviceContext)}/api/type/${cmistype(node).typeId.id!"unknown"}"/>
-<link rel="cmis-repository" href="[@serviceuri/]"/>
+<link rel="children" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/children"/>
+<link rel="descendants" href="${absurl(url.serviceContext)}/api/node/${node.nodeRef.storeRef.protocol}/${node.nodeRef.storeRef.identifier}/${node.nodeRef.id}/descendants"/>
+<link rel="type" href="${absurl(url.serviceContext)}/api/type/${cmistype(node).typeId.id!"unknown"}"/>
+<link rel="repository" href="[@serviceuri/]"/>
 [/#macro]
 
 [#macro folderCMISProps node propfilter]
@@ -342,23 +341,23 @@
 [/#macro]
 
 [#macro typedefCMISLinks typedef]
-<link rel="cmis-type" href="${absurl(url.serviceContext)}/api/type/${typedef.typeId.id}"/>
+<link rel="type" href="${absurl(url.serviceContext)}/api/type/${typedef.typeId.id}"/>
 [#if typedef.parentType??]
-<link rel="cmis-parent" href="${absurl(url.serviceContext)}/api/type/${typedef.parentType.typeId.id}"/>
+<link rel="parent" href="${absurl(url.serviceContext)}/api/type/${typedef.parentType.typeId.id}"/>
 [/#if]
-<link rel="cmis-children" href="${absurl(url.serviceContext)}/api/type/${typedef.typeId.id}/children"/>
-<link rel="cmis-descendants" href="${absurl(url.serviceContext)}/api/type/${typedef.typeId.id}/descendants"/>
-<link rel="cmis-repository" href="[@serviceuri/]"/>
+<link rel="children" href="${absurl(url.serviceContext)}/api/type/${typedef.typeId.id}/children"/>
+<link rel="descendants" href="${absurl(url.serviceContext)}/api/type/${typedef.typeId.id}/descendants"/>
+<link rel="repository" href="[@serviceuri/]"/>
 [/#macro]
 
 [#macro typedefCMISProps typedef includeProperties=true includeInheritedProperties=true]
-[#if typedef.rootType.typeId.id = "document"]
+[#if typedef.baseType.typeId.id = "document"]
 [@documenttypedefCMISProps typedef includeProperties includeInheritedProperties/]
-[#elseif typedef.rootType.typeId.id = "folder"]
+[#elseif typedef.baseType.typeId.id = "folder"]
 [@foldertypedefCMISProps typedef includeProperties includeInheritedProperties/]
-[#elseif typedef.rootType.typeId.id = "relationship"]
+[#elseif typedef.baseType.typeId.id = "relationship"]
 [@relationshiptypedefCMISProps typedef includeProperties includeInheritedProperties/]
-[#elseif typedef.rootType.typeId.id = "policy"]
+[#elseif typedef.baseType.typeId.id = "policy"]
 [@policytypedefCMISProps typedef includeProperties includeInheritedProperties/]
 [/#if]
 [/#macro]
@@ -394,8 +393,8 @@
   <cmis:typeId>${typedef.typeId.id}</cmis:typeId>
   <cmis:queryName>${typedef.queryName}</cmis:queryName>
   <cmis:displayName>[#if typedef.displayName??]${typedef.displayName?xml}[/#if]</cmis:displayName>
-  <cmis:baseType>${typedef.rootType.typeId.id}</cmis:baseType>  [#-- TODO: remove spec issue 36 --]
-  <cmis:baseTypeQueryName>${typedef.rootType.queryName}</cmis:baseTypeQueryName>
+  <cmis:baseType>${typedef.baseType.typeId.id}</cmis:baseType>  [#-- TODO: remove spec issue 36 --]
+  <cmis:baseTypeQueryName>${typedef.baseType.queryName}</cmis:baseTypeQueryName>
 [#if typedef.parentType??]  
   <cmis:parentId>${typedef.parentType.typeId.id}</cmis:parentId>
 [/#if]
@@ -500,6 +499,8 @@
 [#macro abstractpropdefCMISProps propdef inherited=false]
   <cmis:name>${propdef.propertyId.name}</cmis:name>
   <cmis:id>${propdef.propertyId}</cmis:id>
+  [#-- TODO: CMIS spec issue: wait for definition of this --]
+  <cmis:package>TODO</cmis:package>
   <cmis:displayName>[#if propdef.displayName??]${propdef.displayName?xml}[/#if]</cmis:displayName>
 [#if propdef.description??]
   <cmis:description>${propdef.description?xml}</cmis:description>

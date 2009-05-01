@@ -2,7 +2,7 @@ script:
 {
     // process query statement
     // <?xml version="1.0"?>
-    // <query xmlns="http://www.cmis.org/CMIS/2008/05">
+    // <query xmlns="http://docs.oasis-open.org/ns/cmis/core/200901">
     //    <statement>SELECT name FROM DOCUMENT_OBJECT_TYPE</statement>
     //    <searchAllVersions>false</searchAllVersions>
     //    <pageSize>0</pageSize>
@@ -16,7 +16,7 @@ script:
         return str.replace(/^\s+/, '');
     }
 
-    default xml namespace = 'http://www.cmis.org/2008/05';
+    default xml namespace = 'http://docs.oasis-open.org/ns/cmis/core/200901';
     
     // regex to match an XML declaration
     var xmlDeclaration = /^<\?xml version[^>]+?>/; 

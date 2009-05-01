@@ -110,8 +110,8 @@ public class CMISValidator
         if (atomValidator == null)
         {
             SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-            Source ATOM4CMISFile = new StreamSource(getClass().getResourceAsStream("ATOM4CMIS.xsd"), getClass().getResource("ATOM4CMIS.xsd").toExternalForm());
-            Schema schema = factory.newSchema(ATOM4CMISFile);
+            Source ATOMFile = new StreamSource(getClass().getResourceAsStream("ATOM.xsd"), getClass().getResource("ATOM.xsd").toExternalForm());
+            Schema schema = factory.newSchema(ATOMFile);
             atomValidator = schema.newValidator();
         }
         

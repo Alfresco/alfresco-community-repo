@@ -31,7 +31,7 @@ package org.alfresco.cmis;
  */
 public enum CMISJoinEnum implements EnumLabel
 {
-    NO_JOIN_SUPPORT("nojoin"),
+    NO_JOIN_SUPPORT("none"),
     INNER_JOIN_SUPPORT("inneronly"),
     INNER_AND_OUTER_JOIN_SUPPORT("innerandouter");
     

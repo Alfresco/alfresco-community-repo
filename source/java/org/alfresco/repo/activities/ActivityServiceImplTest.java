@@ -34,6 +34,8 @@ import org.alfresco.service.cmr.activities.FeedControl;
 import org.alfresco.service.cmr.repository.ScriptLocation;
 import org.alfresco.service.cmr.repository.ScriptService;
 import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.site.SiteService;
+import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.util.BaseSpringTest;
 
 /**
@@ -46,6 +48,7 @@ public class ActivityServiceImplTest extends BaseSpringTest
     private ActivityService activityService;
     private ScriptService scriptService;
     private AuthenticationService authenticationService;
+    private SiteService siteService;
     
     private static final String ADMIN_PW = "admin";
     
@@ -59,6 +62,7 @@ public class ActivityServiceImplTest extends BaseSpringTest
         // Get the required services
         this.activityService = (ActivityService)this.applicationContext.getBean("activityService");
         this.scriptService = (ScriptService)this.applicationContext.getBean("ScriptService");
+        this.siteService = (SiteService)this.applicationContext.getBean("SiteService");
         
         this.authenticationService = (AuthenticationService)applicationContext.getBean("authenticationService");
         
@@ -112,7 +116,9 @@ public class ActivityServiceImplTest extends BaseSpringTest
         }
         authenticationService.authenticate(USER_UN, USER_PW.toCharArray());
         
-        List<String> siteFeedEntries = this.activityService.getSiteFeedEntries("unknown site", "some format");
+        siteService.createSite("mypreset", "emptySite", "empty site title", "empty site description", SiteVisibility.PUBLIC);
+        
+        List<String> siteFeedEntries = this.activityService.getSiteFeedEntries("emptySite", "json");
         
         assertNotNull(siteFeedEntries);
         assertTrue(siteFeedEntries.isEmpty());
